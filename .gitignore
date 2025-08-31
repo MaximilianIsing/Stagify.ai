@@ -4,6 +4,12 @@ node_modules/
 # Text files
 *.txt
 
+# API Keys and sensitive files
+*key*.txt
+*key*.json
+*secret*.txt
+*secret*.json
+
 # Logs
 *.log
 npm-debug.log*
