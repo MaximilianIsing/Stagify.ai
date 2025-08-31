@@ -4,12 +4,8 @@
   "description": "Stagify.ai - Virtual Staging with One Click",
   "main": "index.html",
   "scripts": {
-    "start": "npx serve -s . -l $PORT",
     "build": "echo 'Static site - no build required'",
     "dev": "npx serve -s . -l 3000"
-  },
-  "dependencies": {
-    "serve": "^14.2.1"
   },
   "engines": {
     "node": ">=18.0.0"
