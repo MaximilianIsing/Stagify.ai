@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>stageify.ai — Virtual Staging with One Click</title>
+    <meta name="description" content="Upload a photo and get a staged result in seconds. Simple, fast, black & white design.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/styles.css">
+    <script defer src="scripts/app.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav">
+        <div class="brand"><span class="brand-strong">stageify</span><span class="brand-light">.ai</span></div>
+        <div class="nav-center">
+          <a href="why.html#why" class="nav-link">Why Us?</a>
+          <a href="faq.html#faq" class="nav-link">FAQ</a>
+          <a href="contact.html#contact" class="nav-link">Contact Us</a>
+        </div>
+        <div class="nav-actions">
+          <button id="nav-upload" class="btn btn-primary">Upload for free</button>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="home">
+        <div class="hero-content">
+          <div class="announcement">Built for real estate agents and teams</div>
+          <h1>
+            <span class="w-free">Free</span>
+            <span class="w-virtual">virtual</span>
+            <span class="w-staging">staging</span>
+            <span class="w-with">with</span>
+            <span class="w-one">one</span>
+            <span class="w-click">click</span>
+          </h1>
+          <p class="subtitle">Upload a picture and our AI will add furniture within seconds.</p>
+          <div class="hero-ctas">
+            <button id="hero-upload" class="btn btn-primary">Upload image for free</button>
+          </div>
+        </div>
+        <div class="hero-media">
+          <div class="hero-stage-card light-card">
+            <div class="hero-tabs" role="tablist" aria-label="Furniture style">
+              <button class="chip selected" data-hero-style="original" role="tab" aria-selected="true">Original</button>
+              <button class="chip" data-hero-style="modern" role="tab">Modern</button>
+              <button class="chip" data-hero-style="scandinavian" role="tab">Scandinavian</button>
+              <button class="chip" data-hero-style="luxury" role="tab">Luxury</button>
+            </div>
+            <div class="hero-stage-frame">
+              <img id="hero-stage-img" class="hero-stage-img filtered original" alt="Hero staged preview"
+                   src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1600&auto=format&fit=crop" />
+            </div>
+            <div class="hero-note">Example preview — upload your photo to stage</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="modal hidden" id="stage-modal">
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="stage-title">
+          <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+          <section class="stage" id="stage">
+            <div class="stage-inner">
+              <div class="toolbar">
+                <div class="tool-header">
+                  <h3 id="stage-title">Options</h3>
+                </div>
+                <div class="tool-row">
+                  <label class="toggle"><input id="tool-remove" type="checkbox"> <span>Remove existing furniture</span></label>
+                </div>
+                <div class="tool-row">
+                  <label class="toggle"><input id="tool-add" type="checkbox" checked> <span>Add furniture</span></label>
+                </div>
+                <div class="tool-row">
+                  <label class="label">Room type</label>
+                  <div id="room-type-select" class="custom-select" data-value="Bedroom">
+                    <button class="select-trigger" type="button"><span class="select-value">Bedroom</span><span class="caret">▾</span></button>
+                    <div class="select-menu hidden" role="listbox">
+                      <div class="option selected" data-value="Bedroom" role="option" aria-selected="true">Bedroom</div>
+                      <div class="option" data-value="Living room" role="option">Living room</div>
+                      <div class="option" data-value="Dining room" role="option">Dining room</div>
+                      <div class="option" data-value="Kitchen" role="option">Kitchen</div>
+                      <div class="option" data-value="Office" role="option">Office</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tool-row">
+                  <label class="label">Furniture style</label>
+                  <div id="furniture-style-select" class="custom-select" data-value="standard">
+                    <button class="select-trigger" type="button"><span class="select-value">Standard</span><span class="caret">▾</span></button>
+                    <div class="select-menu hidden" role="listbox">
+                      <div class="option selected" data-value="standard" role="option" aria-selected="true">Standard</div>
+                      <div class="option" data-value="modern" role="option">Modern</div>
+                      <div class="option" data-value="midcentury" role="option">Midcentury</div>
+                      <div class="option" data-value="scandinavian" role="option">Scandinavian</div>
+                      <div class="option" data-value="luxury" role="option">Luxury</div>
+                      <div class="option" data-value="coastal" role="option">Coastal</div>
+                      <div class="option" data-value="farmhouse" role="option">Farmhouse</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="process-cta">
+                  <button id="process-btn" class="btn btn-primary btn-lg">Process photo</button>
+                </div>
+                <div class="progress hidden" id="progress" aria-live="polite">
+                  <div class="bar" id="progress-bar"></div>
+                  <span id="progress-text">Preparing…</span>
+                </div>
+              </div>
+
+              <div class="stage-workspace">
+                <div id="stage-dropzone" class="stage-dropzone" aria-label="Upload area" tabindex="0">
+                  <input id="stage-file-input" type="file" accept="image/*" hidden>
+                  <div class="stage-dz-inner">
+                    <div class="dz-icon" aria-hidden="true">⬆︎</div>
+                    <div class="dz-text">Upload an image or drag and drop</div>
+                  </div>
+                  <img id="stage-preview" class="preview hidden" alt="Uploaded preview">
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <section class="results hidden" id="results">
+        <div class="results-header">
+          <h2>Result</h2>
+          <div class="result-actions">
+            <button id="download-btn" class="btn btn-primary">Download</button>
+            <button id="new-upload" class="btn btn-ghost">Upload another</button>
+          </div>
+        </div>
+        <div class="views" id="views">
+          <div class="view" id="view1">
+            <canvas id="canvas1" class="canvas"></canvas>
+            <div class="view-caption">View 1</div>
+          </div>
+          <!-- Second view can be enabled later if multi-view is needed -->
+        </div>
+      </section>
+
+      
+
+      
+
+      
+
+      
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div>© <span id="year"></span> stageify.ai</div>
+      </div>
+    </footer>
+  </body>
+  </html>
+
+
