@@ -6,9 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "node scripts/convert-to-webp.js public/media",
-    "build:webp": "node scripts/convert-to-webp.js public/media public/media/webp 85",
-    "convert:all": "node scripts/convert-to-webp.js public/media && node scripts/convert-to-webp.js public/media/example && node scripts/convert-to-webp.js public/media/logo",
+    "convert:webp": "node \"to build/convert-to-webp.js\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["ai", "staging", "real-estate", "image-processing"],
