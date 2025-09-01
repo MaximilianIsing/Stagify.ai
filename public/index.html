@@ -31,8 +31,8 @@
     <main>
       <section class="hero" id="home">
         <div class="hero-content">
-          <div class="announcement">Built for real estate agents and teams</div>
-          <h1>
+          <div class="announcement" style="background: rgba(255, 255, 255, 0.4); color: #2563eb; backdrop-filter: blur(10px);">Built for real estate agents and teams</div>
+          <h1 style="color: #2563eb;">
             <span class="w-free">Free</span>
             <span class="w-virtual">virtual</span>
             <span class="w-staging">staging</span>
@@ -40,7 +40,7 @@
             <span class="w-one">one</span>
             <span class="w-click">click</span>
           </h1>
-          <p class="subtitle">Upload a picture and our AI will add furniture within seconds.</p>
+          <p class="subtitle" style="color: #3b82f6;">Upload a picture and our AI will add furniture in seconds.</p>
           <div class="hero-ctas">
             <button id="hero-upload" class="btn btn-primary">Upload image for free</button>
           </div>
@@ -52,10 +52,13 @@
               <button class="chip" data-hero-style="modern" role="tab">Modern</button>
               <button class="chip" data-hero-style="scandinavian" role="tab">Scandinavian</button>
               <button class="chip" data-hero-style="luxury" role="tab">Luxury</button>
+              <button class="chip" data-hero-style="coastal" role="tab">Coastal</button>
+              <button class="chip" data-hero-style="midcentury" role="tab">Midcentury</button>
+              <button class="chip" data-hero-style="farmhouse" role="tab">Farmhouse</button>
             </div>
             <div class="hero-stage-frame">
               <img id="hero-stage-img" class="hero-stage-img filtered original" alt="Hero staged preview"
-                   src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1600&auto=format&fit=crop" />
+                   src="media/example/Original.png" />
             </div>
             <div class="hero-note">Example preview — upload your photo to stage</div>
           </div>
@@ -156,11 +159,6 @@
       
     </main>
 
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <div>© <span id="year"></span> stagify.ai</div>
-      </div>
-    </footer>
   </body>
   </html>
 
