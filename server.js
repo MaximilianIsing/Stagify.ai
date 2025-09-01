@@ -38,7 +38,12 @@ const upload = multer({
 // Initialize Google AI
 let genAI;
 try {
-  const apiKey = process.env.GOOGLE_AI_API_KEY || fs.readFileSync(path.join(__dirname, 'key.txt'), 'utf8').trim();
+  // Try environment variable first (Render), then fall back to local file
+  const env = process.env.GOOGLE_AI_API_KEY;
+  if (env === undefined){
+    console.log('GOOGLE_AI_API_KEY is not set, using local file');
+    env = fs.readFileSync(path.join(__dirname, 'key.txt'), 'utf8').trim();
+  }
   genAI = new GoogleGenerativeAI(apiKey);
 } catch (error) {
   console.error('Error initializing Google AI:', error.message);
