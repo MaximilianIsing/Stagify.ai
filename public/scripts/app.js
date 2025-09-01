@@ -2,10 +2,13 @@
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-  const results = $('#results');
   const canvas1 = $('#canvas1');
   const downloadBtn = $('#download-btn');
   const newUploadBtn = $('#new-upload');
+  const imageViewerContainer = $('#image-viewer-container');
+  const processingPlaceholder = $('#processing-placeholder');
+  const toggleBeforeBtn = $('#toggle-before');
+  const toggleAfterBtn = $('#toggle-after');
 
   const heroUpload = $('#hero-upload');
   const navUpload = $('#nav-upload');
@@ -46,14 +49,14 @@
   const stageFileInput = $('#stage-file-input');
   const stagePreview = $('#stage-preview');
   const processBtn = $('#process-btn');
-  const toolRemove = $('#tool-remove');
-  const toolAdd = $('#tool-add');
+  const additionalPrompt = $('#additional-prompt');
   // Custom selects
   const roomSelect = initCustomSelect('#room-type-select');
   const styleSelect = initCustomSelect('#furniture-style-select');
   const progress = $('#progress');
   const progressBar = $('#progress-bar');
   const progressText = $('#progress-text');
+  const loadingMessage = $('#loading-message');
 
   const yearSpan = $('#year');
   if (yearSpan) yearSpan.textContent = new Date().getFullYear();
@@ -102,36 +105,158 @@
     });
   }
 
+  let currentImageFile = null;
+  let hasProcessedImage = false;
+
   function handleStageFile(file) {
     if (!file.type.startsWith('image/')) return;
+    currentImageFile = file; // Store the file for processing
+    hasProcessedImage = false; // Reset processing state for new image
     const reader = new FileReader();
     reader.onload = () => {
       stagePreview.src = reader.result;
-      stagePreview.classList.remove('hidden');
-      $('.stage-dz-inner').classList.add('hidden');
-      results.classList.add('hidden');
+      // Show image viewer, hide upload zone
+      stageDropzone.classList.add('hidden');
+      imageViewerContainer.classList.remove('hidden');
+      // Hide placeholder and show the uploaded image
+      processingPlaceholder.style.display = 'none';
+      canvas1.classList.add('hidden');
+      // Reset to "Before" view
+      showBeforeView();
     };
     reader.readAsDataURL(file);
   }
 
-  // Simple mock processing pipeline
-  async function mockProcess() {
+    // Real AI processing pipeline with realistic progress
+  async function processWithAI(imageFile) {
     progress.classList.remove('hidden');
     progressBar.style.width = '0%';
     progressText.textContent = 'Uploading image…';
-    await sleep(400);
-    progressBar.style.width = '20%';
-    progressText.textContent = 'Preparing model…';
-    await sleep(500);
-    progressBar.style.width = '45%';
-    progressText.textContent = 'Detecting room layout…';
-    await sleep(800);
-    progressBar.style.width = '70%';
-    progressText.textContent = 'Adding furniture (' + getSelectedPreset() + ')…';
-    await sleep(900);
-    progressBar.style.width = '100%';
-    progressText.textContent = 'Finalizing…';
-    await sleep(300);
+
+    // Show loading message immediately
+    loadingMessage.classList.remove('hidden');
+    loadingMessage.textContent = 'Preparing AI model';
+
+    // Random loading messages that will be shown during AI processing
+    const loadingMessages = [
+      'Finding the perfect furniture for you',
+      'Staging your ideal room',
+      'Selecting beautiful decor pieces',
+      'Arranging furniture for maximum appeal',
+      'Creating the perfect ambiance',
+      'Enhancing your space with style',
+      'Designing your dream interior',
+      'Optimizing room layout and flow',
+      'Adding finishing touches',
+      'Bringing your vision to life'
+    ];
+
+    let messageInterval;
+    let isProcessingPhase = false;
+    
+    // Start progress simulation
+    let currentProgress = 0;
+    const progressInterval = setInterval(() => {
+      if (currentProgress < 15) {
+        currentProgress += Math.random() * 3;
+        progressBar.style.width = Math.min(currentProgress, 15) + '%';
+      }
+    }, 200);
+    
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('roomType', roomSelect?.value || 'Living room');
+      formData.append('furnitureStyle', styleSelect?.value || 'standard');
+      formData.append('additionalPrompt', additionalPrompt?.value || '');
+      
+      // Simulate upload progress
+      await new Promise(resolve => setTimeout(resolve, 800));
+      clearInterval(progressInterval);
+      currentProgress = 25;
+      progressBar.style.width = '25%';
+      progressText.textContent = 'Preparing AI model…';
+      
+      // Start dynamic message cycling after preparation
+      setTimeout(() => {
+        isProcessingPhase = true;
+        progressText.textContent = 'AI is staging your room…';
+        
+        // Start cycling through the loading messages
+        messageInterval = setInterval(() => {
+          if (isProcessingPhase) {
+            const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            loadingMessage.textContent = randomMessage;
+          }
+        }, 2000);
+        
+        // Set first AI message immediately
+        const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+        loadingMessage.textContent = randomMessage;
+      }, 1000);
+      
+      // Start AI processing simulation
+      const aiProgressInterval = setInterval(() => {
+        if (currentProgress < 70) {
+          currentProgress += Math.random() * 2;
+          progressBar.style.width = Math.min(currentProgress, 70) + '%';
+        }
+      }, 300);
+      
+      const response = await fetch('/api/process-image', {
+        method: 'POST',
+        body: formData
+      });
+      
+      // Update progress during AI processing
+      clearInterval(aiProgressInterval);
+      currentProgress = 75;
+      progressBar.style.width = '75%';
+      progressText.textContent = 'AI is staging your room…';
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Processing failed');
+      }
+      
+      // Simulate final processing steps
+      const finalProgressInterval = setInterval(() => {
+        if (currentProgress < 95) {
+          currentProgress += Math.random() * 3;
+          progressBar.style.width = Math.min(currentProgress, 95) + '%';
+        }
+      }, 150);
+      
+      const result = await response.json();
+      
+      // Complete the progress
+      clearInterval(finalProgressInterval);
+      clearInterval(messageInterval);
+      isProcessingPhase = false;
+      loadingMessage.classList.add('hidden');
+      progressBar.style.width = '100%';
+      progressText.textContent = 'Complete!';
+      
+      if (result.success && result.image) {
+        return result.image;
+      } else {
+        throw new Error('No image data received');
+      }
+      
+    } catch (error) {
+      // Clear any running intervals
+      clearInterval(progressInterval);
+      clearInterval(messageInterval);
+      isProcessingPhase = false;
+      loadingMessage.classList.add('hidden');
+      
+      progressText.textContent = 'Error: ' + error.message;
+      progressBar.style.width = '0%';
+      setTimeout(() => {
+        progress.classList.add('hidden');
+      }, 3000);
+      throw error;
+    }
   }
 
   function getSelectedPreset() {
@@ -139,54 +264,77 @@
     return val;
   }
 
-  function applyPresetToCanvas(ctx, img, preset) {
-    const w = img.width, h = img.height;
-    ctx.canvas.width = w; ctx.canvas.height = h;
-    ctx.drawImage(img, 0, 0, w, h);
-    // Stylize to imply different furniture styles (visual hint only)
-    const imageData = ctx.getImageData(0, 0, w, h);
-    const data = imageData.data;
-    const adjust = {
-      original: { c: 1.0, b: 1.0, s: 1.0 },
-      modern: { c: 1.1, b: 1.05, s: 1.0 },
-      midcentury: { c: 1.08, b: 1.02, s: 1.0 },
-      scandinavian: { c: 0.98, b: 1.06, s: 0.92 },
-      luxury: { c: 1.18, b: 1.02, s: 1.0 },
-      coastal: { c: 1.02, b: 1.08, s: 1.05 },
-      farmhouse: { c: 1.04, b: 1.03, s: 0.98 }
-    }[preset] || { c: 1.0, b: 1.0, s: 1.0 };
-
-    // Very lightweight brightness/contrast-ish tweak
-    const contrast = adjust.c, brightness = adjust.b;
-    for (let i = 0; i < data.length; i += 4) {
-      data[i] = clamp((data[i] - 128) * contrast + 128 * brightness);
-      data[i+1] = clamp((data[i+1] - 128) * contrast + 128 * brightness);
-      data[i+2] = clamp((data[i+2] - 128) * contrast + 128 * brightness);
+  // Toggle between Before and After views
+  function showBeforeView() {
+    stagePreview.classList.remove('hidden');
+    canvas1.classList.add('hidden');
+    toggleBeforeBtn.classList.add('active');
+    toggleAfterBtn.classList.remove('active');
+    // Hide placeholder when showing the image
+    if (stagePreview.src) {
+      processingPlaceholder.style.display = 'none';
     }
-    ctx.putImageData(imageData, 0, 0);
   }
 
-  function clamp(v) { return Math.max(0, Math.min(255, v)); }
+  function showAfterView() {
+    stagePreview.classList.add('hidden');
+    canvas1.classList.remove('hidden');
+    toggleBeforeBtn.classList.remove('active');
+    toggleAfterBtn.classList.add('active');
+    // Show placeholder if no processing has been done yet
+    if (!hasProcessedImage) {
+      processingPlaceholder.style.display = 'flex';
+    } else {
+      processingPlaceholder.style.display = 'none';
+    }
+  }
 
-  function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
+  // Add toggle event listeners
+  if (toggleBeforeBtn) toggleBeforeBtn.addEventListener('click', showBeforeView);
+  if (toggleAfterBtn) toggleAfterBtn.addEventListener('click', () => {
+    // Always allow switching to "After" view
+    showAfterView();
+  });
 
   async function stageImage() {
-    if (!stagePreview.src) return;
+    if (!currentImageFile) {
+      alert('Please upload an image first');
+      return;
+    }
+    
     processBtn.disabled = true;
-    await mockProcess();
-
-    const img = new Image();
-    img.onload = () => {
-      const preset = getSelectedPreset();
-      const ctx1 = canvas1.getContext('2d');
-      applyPresetToCanvas(ctx1, img, preset);
-
-      results.classList.remove('hidden');
-      progress.classList.add('hidden');
+    
+    try {
+      const processedImageData = await processWithAI(currentImageFile);
+      
+      // Display the processed image
+      const img = new Image();
+      img.onload = () => {
+        const ctx1 = canvas1.getContext('2d');
+        const w = img.width, h = img.height;
+        ctx1.canvas.width = w;
+        ctx1.canvas.height = h;
+        ctx1.drawImage(img, 0, 0, w, h);
+        
+        // Mark that we have a processed image
+        hasProcessedImage = true;
+        
+        // Hide placeholder and show result
+        processingPlaceholder.style.display = 'none';
+        
+        // Automatically switch to "After" view to show the result
+        showAfterView();
+        
+        progress.classList.add('hidden');
+        processBtn.disabled = false;
+      };
+      img.src = processedImageData;
+      
+    } catch (error) {
+      console.error('Processing error:', error);
       processBtn.disabled = false;
-    };
-    img.src = stagePreview.src;
-    processBtn.disabled = false;
+      // Progress bar will show error message from processWithAI
+    }
   }
 
   // Only add modal event listeners if elements exist
@@ -197,17 +345,29 @@
   if (downloadBtn) downloadBtn.addEventListener('click', () => {
     if (!canvas1.width) return;
     const link = document.createElement('a');
-    link.download = 'stagedly-result.png';
+    link.download = 'stagify-result.png';
     link.href = canvas1.toDataURL('image/png');
     link.click();
   });
 
   if (newUploadBtn) newUploadBtn.addEventListener('click', () => {
+    currentImageFile = null;
+    hasProcessedImage = false; // Reset processing state
     stagePreview.src = '';
-    stagePreview.classList.add('hidden');
-    $('.stage-dz-inner').classList.remove('hidden');
-    results.classList.add('hidden');
+    // Show upload zone, hide viewer
+    stageDropzone.classList.remove('hidden');
+    imageViewerContainer.classList.add('hidden');
     stageFileInput.value = '';
+    progress.classList.add('hidden');
+    // Reset placeholder to show state
+    processingPlaceholder.style.display = 'flex';
+    // Reset canvas
+    if (canvas1) {
+      const ctx = canvas1.getContext('2d');
+      ctx.clearRect(0, 0, canvas1.width, canvas1.height);
+      canvas1.width = 0;
+      canvas1.height = 0;
+    }
   });
 
   // Sample button removed from UI
