@@ -1087,6 +1087,11 @@ h2 {
     gap: 12px;
   }
   
+  /* Center role titles on mobile */
+  .contact-card div[style*="font-size: 13px"] {
+    text-align: center !important;
+  }
+  
   .contact-info {
     width: 100%;
     max-width: 100%;
