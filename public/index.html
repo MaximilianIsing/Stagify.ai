@@ -75,12 +75,7 @@
                 <div class="tool-header">
                   <h3 id="stage-title">Options</h3>
                 </div>
-                <div class="tool-row">
-                  <label class="toggle"><input id="tool-remove" type="checkbox"> <span>Remove existing furniture</span></label>
-                </div>
-                <div class="tool-row">
-                  <label class="toggle"><input id="tool-add" type="checkbox" checked> <span>Add furniture</span></label>
-                </div>
+
                 <div class="tool-row">
                   <label class="label">Room type</label>
                   <div id="room-type-select" class="custom-select" data-value="Bedroom">
@@ -109,6 +104,10 @@
                     </div>
                   </div>
                 </div>
+                <div class="tool-row">
+                  <label class="label" for="additional-prompt">Additional prompting</label>
+                  <textarea id="additional-prompt" class="text-input" placeholder="Add specific details or requests for your staging..." rows="3"></textarea>
+                </div>
                 <div class="process-cta">
                   <button id="process-btn" class="btn btn-primary btn-lg">Process photo</button>
                 </div>
@@ -116,16 +115,45 @@
                   <div class="bar" id="progress-bar"></div>
                   <span id="progress-text">Preparing…</span>
                 </div>
+                <div id="loading-message" class="loading-message hidden">Preparing AI model</div>
               </div>
 
               <div class="stage-workspace">
+                <!-- Upload area when no image is uploaded -->
                 <div id="stage-dropzone" class="stage-dropzone" aria-label="Upload area" tabindex="0">
                   <input id="stage-file-input" type="file" accept="image/*" hidden>
                   <div class="stage-dz-inner">
                     <div class="dz-icon" aria-hidden="true">⬆︎</div>
                     <div class="dz-text">Upload an image or drag and drop</div>
                   </div>
-                  <img id="stage-preview" class="preview hidden" alt="Uploaded preview">
+                </div>
+                
+                <!-- Full-size image viewer with before/after toggle -->
+                <div id="image-viewer-container" class="image-viewer-container hidden">
+                  <div class="viewer-header">
+                    <div class="toggle-container">
+                      <button id="toggle-before" class="toggle-btn active">Before</button>
+                      <button id="toggle-after" class="toggle-btn">After</button>
+                    </div>
+                    <div class="viewer-actions">
+                      <button id="download-btn" class="btn btn-primary">Download Result</button>
+                      <button id="new-upload" class="btn btn-ghost">Upload Another</button>
+                    </div>
+                  </div>
+                  
+                  <div class="image-viewer">
+                    <img id="stage-preview" class="viewer-image" alt="Original image">
+                    <canvas id="canvas1" class="viewer-image hidden"></canvas>
+                    <div id="processing-placeholder" class="processing-placeholder">
+                      <div class="placeholder-content">
+                        <div class="placeholder-icon">
+                          <img src="media/warning.png" alt="Warning" class="warning-icon">
+                        </div>
+                        <div class="placeholder-text">No processed image available yet</div>
+                        <div class="placeholder-subtext">Please click "Process photo" first to generate an AI-staged version of your image</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -133,22 +161,7 @@
         </div>
       </div>
 
-      <section class="results hidden" id="results">
-        <div class="results-header">
-          <h2>Result</h2>
-          <div class="result-actions">
-            <button id="download-btn" class="btn btn-primary">Download</button>
-            <button id="new-upload" class="btn btn-ghost">Upload another</button>
-          </div>
-        </div>
-        <div class="views" id="views">
-          <div class="view" id="view1">
-            <canvas id="canvas1" class="canvas"></canvas>
-            <div class="view-caption">View 1</div>
-          </div>
-          <!-- Second view can be enabled later if multi-view is needed -->
-        </div>
-      </section>
+
 
       
 
