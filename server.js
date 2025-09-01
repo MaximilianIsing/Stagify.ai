@@ -24,13 +24,14 @@ const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 100 * 1024 * 1024, // 50MB limit
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error('Only PNG, JPG, JPEG, and WebP files are allowed'));
     }
   }
 });
@@ -127,6 +128,25 @@ function generatePrompt(roomType, furnitureStyle, additionalPrompt) {
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Error handling middleware for multer
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ 
+        error: 'File too large', 
+        message: 'Please upload an image smaller than 100MB',
+        code: 'FILE_TOO_LARGE'
+      });
+    }
+    return res.status(400).json({ 
+      error: 'Upload error', 
+      message: err.message,
+      code: err.code 
+    });
+  }
+  next(err);
 });
 
 // Image processing endpoint
