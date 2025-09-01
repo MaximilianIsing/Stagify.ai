@@ -678,7 +678,7 @@ function createBird() {
   const birdImg = document.createElement('img');
   // Add random parameter to force different GIF start times
   const randomParam = Math.random();
-  birdImg.src = `media/Bird.gif?t=${randomParam}`;
+  birdImg.src = `media-webp/Bird.gif?t=${randomParam}`;
   birdImg.alt = 'Flying bird';
   
   bird.appendChild(birdImg);
@@ -816,7 +816,7 @@ function createRestoredBird(birdInfo) {
   // Create bird image
   const birdImg = document.createElement('img');
   const randomParam = Math.random();
-  birdImg.src = `media/Bird.gif?t=${randomParam}`;
+  birdImg.src = `media-webp/Bird.gif?t=${randomParam}`;
   birdImg.alt = 'Flying bird';
   
   bird.appendChild(birdImg);
