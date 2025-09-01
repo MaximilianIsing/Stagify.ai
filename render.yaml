@@ -11,7 +11,3 @@ services:
       - key: GOOGLE_AI_API_KEY
         sync: false # Set this manually in Render dashboard
     autoDeploy: true
-    disk:
-      name: stagify-data
-      mountPath: /tmp
-      sizeGB: 1
