@@ -41,6 +41,67 @@ body {
   align-items: center;
   padding: 16px 24px;
 }
+
+/* Mobile responsive navigation */
+@media (max-width: 768px) {
+  .nav {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+  
+  .brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  .nav-center {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .nav-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  
+  .brand {
+    font-size: 24px;
+  }
+  
+  .nav-link {
+    font-size: 14px;
+  }
+}
+
+/* Extra small mobile screens */
+@media (max-width: 480px) {
+  .nav {
+    padding: 8px 12px;
+  }
+  
+  .nav-center {
+    gap: 16px;
+  }
+  
+  .brand {
+    font-size: 20px;
+  }
+  
+  .nav-link {
+    font-size: 13px;
+  }
+  
+  .brand-logo {
+    width: 24px;
+    height: 24px;
+    margin-right: 6px;
+  }
+}
 .brand { font-weight: 800; font-size: 30px; letter-spacing: 0.4px; position: relative; display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 12px; width: max-content; justify-self: start; color: #2563eb; }
 /* removed logo image styling */
 .brand-strong { font-weight: 900; }
@@ -79,7 +140,7 @@ main {
   gap: 32px;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 8px 24px 240px;
+  padding: 8px 48px 240px;
   flex: 1;
   align-items: center;
   min-height: 0;
@@ -211,7 +272,7 @@ main {
 .gallery, .how, .advantages, .pricing, .faq {
   max-width: 1100px;
   margin: 30px auto;
-  padding: 0 20px;
+  padding: 0 48px;
 }
 
 .how {
@@ -259,14 +320,14 @@ main {
   line-height: 1.6;
 }
 .trust { padding: 16px 0 0; }
-.trust-inner { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; gap: 12px; align-items: center; color: var(--muted); }
+.trust-inner { max-width: 1100px; margin: 0 auto; padding: 0 48px; display: flex; gap: 12px; align-items: center; color: var(--muted); }
 .trust-label { font-weight: 600; font-size: 12px; }
 .trust-logos { list-style: none; display: flex; gap: 16px; margin: 0; padding: 0; font-size: 12px; opacity: 0.8; }
 
 .features { 
   max-width: 1100px; 
   margin: 0px auto; 
-  padding: 0 20px; 
+  padding: 0 48px; 
 }
 
 .features h2 {
@@ -744,7 +805,188 @@ main {
   .views { grid-template-columns: 1fr; }
   .gallery-grid { grid-template-columns: 1fr 1fr; }
   .vs { grid-template-columns: 1fr; }
-  .stage-inner { grid-template-columns: 1fr; }
+}
+
+/* Mobile optimizations for hero and buttons */
+@media (max-width: 768px) {
+  .hero {
+    gap: 20px;
+    padding: 20px 32px;
+  }
+  
+  .hero-ctas {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  
+  .hero-tabs {
+    gap: 6px;
+  }
+  
+  .chip {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  /* Mobile modal optimizations */
+  .modal-dialog {
+    margin: 10px;
+    max-width: none;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+  }
+  
+  .stage {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .stage-inner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    grid-template-rows: auto auto;
+  }
+  
+  /* Reorder: upload area first, then options */
+  .toolbar {
+    order: 2;
+    padding: 12px;
+  }
+  
+  .stage-workspace {
+    order: 1;
+    padding: 12px;
+  }
+  
+  .stage-dropzone {
+    aspect-ratio: 16/10;
+    min-height: 200px;
+  }
+  
+  /* Compact form elements for mobile */
+  .tool-row {
+    margin-bottom: 12px;
+  }
+  
+  .label {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  
+  .select-trigger,
+  .text-input {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .text-input {
+    min-height: 60px;
+  }
+  
+  .process-cta {
+    margin: 12px 0 8px;
+  }
+  
+  .btn-lg {
+    padding: 12px 18px;
+    font-size: 15px;
+    width: 100%;
+  }
+  
+  /* Adjust section padding for tablets */
+  .gallery, .how, .advantages, .pricing, .faq,
+  .features, .trust-inner {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    gap: 16px;
+    padding: 16px 24px;
+  }
+  
+  .hero-content h1 {
+    font-size: clamp(28px, 8vw, 40px);
+    text-align: center;
+  }
+  
+  .hero-content .subtitle {
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  .announcement {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  
+  .btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .hero-ctas {
+    justify-content: center;
+  }
+  
+  .stage-inner { 
+    grid-template-columns: 1fr; 
+  }
+  
+  /* Extra compact modal for small screens */
+  .modal-dialog {
+    margin: 5px;
+    border-radius: 12px;
+  }
+  
+  .stage-dropzone {
+    min-height: 160px;
+    aspect-ratio: 4/3;
+  }
+  
+  .toolbar {
+    padding: 10px;
+  }
+  
+  .stage-workspace {
+    padding: 10px;
+  }
+  
+  .tool-row {
+    margin-bottom: 10px;
+  }
+  
+  .text-input {
+    min-height: 50px;
+    rows: 2;
+  }
+  
+  .btn-lg {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  
+  /* Ensure adequate padding on small mobile */
+  .gallery, .how, .advantages, .pricing, .faq,
+  .features, .trust-inner {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
 }
 
 /* City Skyline Background */
