@@ -104,17 +104,23 @@ function generatePrompt(roomType, furnitureStyle, additionalPrompt) {
     scandinavian: "Stage this room in Scandinavian style with light wood furniture, neutral textiles, cozy textures, and minimalist décor. Emphasize functionality and hygge comfort.",
     luxury: "Stage this room with high-end luxury furniture featuring rich materials like marble, velvet, and gold accents. Create an opulent, sophisticated atmosphere.",
     coastal: "Stage this room with coastal-inspired furniture in light blues, whites, and natural textures. Add nautical elements and beach-inspired décor.",
-    farmhouse: "Stage this room with rustic farmhouse furniture featuring reclaimed wood, vintage pieces, and cozy textiles in warm, earthy tones."
+    farmhouse: "Stage this room with rustic farmhouse furniture featuring reclaimed wood, vintage pieces, and cozy textiles in warm, earthy tones.",
+    custom: "Stage this room with the furniture and decor the user asks for."
   };
 
   const roomSpecific = roomType === 'Bedroom' ? ' Focus on bedroom furniture like beds, nightstands, and dressers.' :
                      roomType === 'Living room' ? ' Focus on living room furniture like sofas, coffee tables, and entertainment centers.' :
                      roomType === 'Dining room' ? ' Focus on dining furniture like tables, chairs, and storage.' :
                      roomType === 'Kitchen' ? ' Focus on kitchen elements and dining areas.' :
-                     roomType === 'Office' ? ' Focus on office furniture like desks, chairs, and storage.' : '';
+                     roomType === 'Office' ? ' Focus on office furniture like desks, chairs, and storage.' :
+                     roomType === 'Bathroom' ? ' Focus on bathroom elements like a toilet, sink, and shower. Ignore other elements like sofas or beds.' : ''; 
 
-  let prompt = `${styleDescriptions[furnitureStyle] || styleDescriptions.standard}${roomSpecific}. Do not alter or remove any walls, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room.`;
-  
+  let prompt = "";
+  if (roomType === 'Bathroom') {
+    prompt = `Stage this room as a bathroom. ${roomSpecific} In a ${roomType} space. Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room.`;
+  } else {
+    prompt = `${styleDescriptions[furnitureStyle] || styleDescriptions.standard}${roomSpecific}. Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room.`;
+  }
   // Add additional prompting if provided
   if (additionalPrompt && additionalPrompt.trim()) {
     prompt += ` ${additionalPrompt.trim()}`;
