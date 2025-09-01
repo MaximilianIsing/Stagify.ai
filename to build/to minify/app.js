@@ -16,13 +16,13 @@
   const trySample = $('#try-sample');
   // Hero tabs switching image
   const styleToImg = {
-    original: 'media/example/Original.png',
-    modern: 'media/example/Modern.png',
-    scandinavian: 'media/example/Scandinavian.png',
-    luxury: 'media/example/Luxury.png',
-    coastal: 'media/example/Coastal.png',
-    midcentury: 'media/example/Midcentury.png',
-    farmhouse: 'media/example/Farmhouse.png'
+    original: 'media-webp/example/Original.webp',
+    modern: 'media-webp/example/Modern.webp',
+    scandinavian: 'media-webp/example/Scandinavian.webp',
+    luxury: 'media-webp/example/Luxury.webp',
+    coastal: 'media-webp/example/Coastal.webp',
+    midcentury: 'media-webp/example/Midcentury.webp',
+    farmhouse: 'media-webp/example/Farmhouse.webp'
   };
   $$('.hero-tabs .chip').forEach((chip) => {
     chip.addEventListener('click', () => {
@@ -109,7 +109,19 @@
   let hasProcessedImage = false;
 
   function handleStageFile(file) {
-    if (!file.type.startsWith('image/')) return;
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload a PNG, JPG, JPEG, WebP, or GIF image file.');
+      return;
+    }
+    
+    // Check file size (100MB limit)
+    const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+    if (file.size > maxSize) {
+      alert('File is too large. Please upload an image smaller than 100MB.');
+      return;
+    }
+    
     currentImageFile = file; // Store the file for processing
     hasProcessedImage = false; // Reset processing state for new image
     const reader = new FileReader();
@@ -216,7 +228,10 @@
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Processing failed');
+        if (errorData.code === 'FILE_TOO_LARGE') {
+          throw new Error('File is too large. Please upload an image smaller than 100MB.');
+        }
+        throw new Error(errorData.message || errorData.error || 'Processing failed');
       }
       
       // Simulate final processing steps
@@ -408,199 +423,10 @@
   }
 })();
 
-// City Skyline Generator
-function generateCitySkyline() {
-  
-  // Remove existing skyline if it exists
-  const existingSkyline = document.querySelector('.city-skyline');
-  if (existingSkyline) {
-    existingSkyline.remove();
-  }
 
-  // Create skyline container
-  const skyline = document.createElement('div');
-  skyline.className = 'city-skyline';
-  
-  // Add skyline as background layer
-  document.body.appendChild(skyline);
 
-  const containerWidth = window.innerWidth;
-  const containerHeight = 500;
-  let currentX = 0;
-
-  // Generate buildings
-  let buildingCount = 0;
-  while (currentX < containerWidth) {
-    const building = createBuilding(currentX, containerWidth - currentX, buildingCount);
-    skyline.appendChild(building);
-    currentX += building.offsetWidth + seededRandom(buildingCount * 0.2) * 20; // Consistent spacing between buildings
-    buildingCount++;
-  }
-  
-
-  // Add windows to buildings
-  addWindowsToBuildings();
-}
-
-// Session-based seeded random number generator for consistent skyline
-let sessionSeed;
-
-// Get or create session seed that persists across page navigation
-if (sessionStorage.getItem('skylineSeed')) {
-  sessionSeed = parseFloat(sessionStorage.getItem('skylineSeed'));
-} else {
-  sessionSeed = Math.random() * 1000;
-  sessionStorage.setItem('skylineSeed', sessionSeed.toString());
-}
-
-function seededRandom(seed) {
-  const x = Math.sin(seed + sessionSeed) * 10000;
-  return x - Math.floor(x);
-}
-
-function createBuilding(x, maxWidth, buildingIndex) {
-  const building = document.createElement('div');
-  building.className = 'building';
-  
-  // Use building index as seed for consistent randomization
-  const seed = buildingIndex * 0.1;
-  
-  // NYC-style building dimensions with consistent variety
-  const width = seededRandom(seed) * 60 + 30; // 30-90px wide (narrower for NYC feel)
-  
-  // Create varied heights like NYC skyline
-  let height;
-  const heightType = seededRandom(seed + 1);
-  if (heightType < 0.1) {
-    // 10% chance for very tall buildings (like Empire State)
-    height = seededRandom(seed + 2) * 200 + 300; // 300-500px
-  } else if (heightType < 0.3) {
-    // 20% chance for tall buildings
-    height = seededRandom(seed + 3) * 150 + 200; // 200-350px
-  } else if (heightType < 0.6) {
-    // 30% chance for medium buildings
-    height = seededRandom(seed + 4) * 100 + 120; // 120-220px
-  } else {
-    // 40% chance for shorter buildings
-    height = seededRandom(seed + 5) * 80 + 60; // 60-140px
-  }
-  
-  building.style.left = x + 'px';
-  building.style.width = width + 'px';
-  building.style.height = height + 'px';
-  
-  return building;
-}
-
-function addWindowsToBuildings() {
-  const buildings = document.querySelectorAll('.building');
-  
-  buildings.forEach((building, index) => {
-    const buildingRect = building.getBoundingClientRect();
-    const buildingWidth = buildingRect.width;
-    const buildingHeight = buildingRect.height;
-    
-    // NYC-style window patterns
-    const buildingHeightPx = building.offsetHeight;
-    
-    if (buildingHeightPx > 300) {
-      // Very tall buildings - dense window grid
-      addDenseWindows(building, buildingWidth, buildingHeightPx, index);
-    } else if (buildingHeightPx > 200) {
-      // Tall buildings - regular window grid
-      addRegularWindows(building, buildingWidth, buildingHeightPx, index);
-    } else {
-      // Shorter buildings - sparse windows
-      addSparseWindows(building, buildingWidth, buildingHeightPx, index);
-    }
-  });
-}
-
-function addDenseWindows(building, width, height, buildingIndex) {
-  const windowSize = 3;
-  const windowSpacing = 6;
-  const columns = Math.floor(width / windowSpacing);
-  const rows = Math.floor(height / windowSpacing);
-  
-  for (let row = 2; row < rows - 2; row++) {
-    for (let col = 1; col < columns - 1; col++) {
-      const windowSeed = buildingIndex * 100 + row * 10 + col;
-      if (seededRandom(windowSeed) > 0.2) { // 80% chance of window
-        addWindow(building, col * windowSpacing, row * windowSpacing, windowSize, windowSeed);
-      }
-    }
-  }
-}
-
-function addRegularWindows(building, width, height, buildingIndex) {
-  const windowSize = 4;
-  const windowSpacing = 8;
-  const columns = Math.floor(width / windowSpacing);
-  const rows = Math.floor(height / windowSpacing);
-  
-  for (let row = 1; row < rows - 1; row++) {
-    for (let col = 1; col < columns - 1; col++) {
-      const windowSeed = buildingIndex * 100 + row * 10 + col;
-      if (seededRandom(windowSeed) > 0.3) { // 70% chance of window
-        addWindow(building, col * windowSpacing, row * windowSpacing, windowSize, windowSeed);
-      }
-    }
-  }
-}
-
-function addSparseWindows(building, width, height, buildingIndex) {
-  const windowSize = 4;
-  const windowSpacing = 10;
-  const columns = Math.floor(width / windowSpacing);
-  const rows = Math.floor(height / windowSpacing);
-  
-  for (let row = 1; row < rows - 1; row++) {
-    for (let col = 1; col < columns - 1; col++) {
-      const windowSeed = buildingIndex * 100 + row * 10 + col;
-      if (seededRandom(windowSeed) > 0.5) { // 50% chance of window
-        addWindow(building, col * windowSpacing, row * windowSpacing, windowSize, windowSeed);
-      }
-    }
-  }
-}
-
-function addWindow(building, x, y, size, windowSeed) {
-  const window = document.createElement('div');
-  window.className = 'window';
-  
-  window.style.left = x + 'px';
-  window.style.top = y + 'px';
-  window.style.width = size + 'px';
-  window.style.height = size + 'px';
-  
-  // More realistic lighting patterns with consistent randomization
-  const lightingChance = seededRandom(windowSeed + 1000);
-  const lightingType = seededRandom(windowSeed + 2000);
-  
-  if (lightingChance < 0.25) {
-    // 25% chance of lit windows with different types
-    if (lightingType < 0.4) {
-      window.classList.add('lit'); // Standard yellow
-    } else if (lightingType < 0.7) {
-      window.classList.add('bright'); // Bright white
-    } else if (lightingType < 0.85) {
-      window.classList.add('warm'); // Warm orange
-    } else {
-      window.classList.add('cool'); // Cool blue
-    }
-  }
-  
-  building.appendChild(window);
-}
-
-// Generate skyline on page load (all pages)
+// Initialize on page load (all pages)
 document.addEventListener('DOMContentLoaded', function() {
-  generateCitySkyline();
-  
-  // Regenerate on window resize
-  window.addEventListener('resize', function() {
-    generateCitySkyline();
-  });
   
   // Start bird animations on all pages
   startBirdAnimations();
