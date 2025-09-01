@@ -13,10 +13,13 @@
   const trySample = $('#try-sample');
   // Hero tabs switching image
   const styleToImg = {
-    original: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1600&auto=format&fit=crop',
-    modern: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1600&auto=format&fit=crop',
-    scandinavian: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=1600&auto=format&fit=crop',
-    luxury: 'https://images.unsplash.com/photo-1505692794403-34d4982f88aa?q=80&w=1600&auto=format&fit=crop'
+    original: 'media/example/Original.png',
+    modern: 'media/example/Modern.png',
+    scandinavian: 'media/example/Scandinavian.png',
+    luxury: 'media/example/Luxury.png',
+    coastal: 'media/example/Coastal.png',
+    midcentury: 'media/example/Midcentury.png',
+    farmhouse: 'media/example/Farmhouse.png'
   };
   $$('.hero-tabs .chip').forEach((chip) => {
     chip.addEventListener('click', () => {
@@ -248,7 +251,6 @@
 
 // City Skyline Generator
 function generateCitySkyline() {
-  console.log('Generating city skyline on:', window.location.pathname);
   
   // Remove existing skyline if it exists
   const existingSkyline = document.querySelector('.city-skyline');
@@ -276,7 +278,6 @@ function generateCitySkyline() {
     buildingCount++;
   }
   
-  console.log(`Generated ${buildingCount} buildings for skyline`);
 
   // Add windows to buildings
   addWindowsToBuildings();
@@ -446,24 +447,75 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Start bird animations on all pages
   startBirdAnimations();
+  
+  // Initialize 3D tilt effect for advantages section and contact cards
+  init3DTiltEffect();
 });
 
-// Bird Animation System
+// Bird Animation System with persistence
+let birdInterval;
+let cleanupInterval;
+let activeBirds = [];
+const MAX_BIRDS = 3; // Limit concurrent birds to prevent performance issues
+const CLEANUP_INTERVAL = 30000; // Clean up every 30 seconds
+
 function startBirdAnimations() {
+  // Clean up any existing intervals/listeners first
+  cleanup();
+  
+  // Restore any existing birds from previous page
+  restoreBirdsFromStorage();
+  
   // Create birds very rarely
-  setInterval(() => {
-    if (Math.random() > 0.6) { // 40% chance every interval
+  birdInterval = setInterval(() => {
+    // Only create new birds if we haven't hit the limit
+    if (activeBirds.length < MAX_BIRDS && Math.random() > 0.6) {
       createBird();
     }
   }, 4000); // Check every 8 seconds
   
   // Create initial bird after a longer delay
-  setTimeout(() => createBird(), 10000);
+  setTimeout(() => {
+    if (activeBirds.length < MAX_BIRDS) {
+      createBird();
+    }
+  }, 6000);
+  
+  // Regular cleanup of expired birds and storage
+  cleanupInterval = setInterval(cleanupExpiredBirds, CLEANUP_INTERVAL);
+  
+  // Save bird states before page unload
+  window.addEventListener('beforeunload', saveBirdsToStorage);
+}
+
+function cleanup() {
+  // Clear existing intervals
+  if (birdInterval) {
+    clearInterval(birdInterval);
+    birdInterval = null;
+  }
+  
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
+  
+  // Remove existing event listeners
+  window.removeEventListener('beforeunload', saveBirdsToStorage);
+  
+  // Clear any birds that might be left over
+  const existingBirds = document.querySelectorAll('.bird');
+  existingBirds.forEach(bird => bird.remove());
+  
+  // Reset active birds array
+  activeBirds = [];
 }
 
 function createBird() {
+  const birdId = 'bird_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   const bird = document.createElement('div');
   bird.className = 'bird';
+  bird.id = birdId;
   
   // Create bird image
   const birdImg = document.createElement('img');
@@ -484,12 +536,218 @@ function createBird() {
   
   document.body.appendChild(bird);
   
+  // Store bird info
+  const birdInfo = {
+    id: birdId,
+    y: birdY,
+    direction: direction,
+    startTime: Date.now(),
+    duration: 15000
+  };
+  
+  activeBirds.push(birdInfo);
+  
   // Remove bird after animation completes
   setTimeout(() => {
     if (bird.parentNode) {
       bird.parentNode.removeChild(bird);
     }
+    // Remove from active birds array
+    activeBirds = activeBirds.filter(b => b.id !== birdId);
   }, 15000);
+}
+
+function saveBirdsToStorage() {
+  try {
+    const currentTime = Date.now();
+    const validBirds = activeBirds.filter(bird => {
+      const elapsed = currentTime - bird.startTime;
+      return elapsed < bird.duration && elapsed >= 0; // Only save birds that haven't finished their animation
+    }).map(bird => ({
+      ...bird,
+      remainingTime: bird.duration - (currentTime - bird.startTime)
+    }));
+    
+    // Only save if there are valid birds, otherwise clear storage
+    if (validBirds.length > 0) {
+      sessionStorage.setItem('stagify_birds', JSON.stringify(validBirds));
+    } else {
+      sessionStorage.removeItem('stagify_birds');
+    }
+  } catch (e) {
+    // Handle sessionStorage quota exceeded or other errors
+    console.warn('Could not save birds to storage:', e);
+    sessionStorage.removeItem('stagify_birds');
+  }
+}
+
+function cleanupExpiredBirds() {
+  const currentTime = Date.now();
+  const initialCount = activeBirds.length;
+  
+  // Remove expired birds from tracking
+  activeBirds = activeBirds.filter(bird => {
+    const elapsed = currentTime - bird.startTime;
+    return elapsed < bird.duration;
+  });
+  
+  // Clean up any orphaned bird elements
+  const birdElements = document.querySelectorAll('.bird');
+  birdElements.forEach(element => {
+    const isTracked = activeBirds.some(bird => bird.id === element.id);
+    if (!isTracked) {
+      element.remove();
+    }
+  });
+  
+  // Clear old sessionStorage entries
+  try {
+    const stored = sessionStorage.getItem('stagify_birds');
+    if (stored) {
+      const birds = JSON.parse(stored);
+      const validStored = birds.filter(bird => 
+        bird.remainingTime > 0 && 
+        (currentTime - (bird.startTime || 0)) < (bird.duration || 15000)
+      );
+      
+      if (validStored.length === 0) {
+        sessionStorage.removeItem('stagify_birds');
+      }
+    }
+  } catch (e) {
+    sessionStorage.removeItem('stagify_birds');
+  }
+  
+  if (initialCount !== activeBirds.length) {
+    console.log(`Cleaned up ${initialCount - activeBirds.length} expired birds`);
+  }
+}
+
+function restoreBirdsFromStorage() {
+  const savedBirds = sessionStorage.getItem('stagify_birds');
+  if (!savedBirds) return;
+  
+  try {
+    const birds = JSON.parse(savedBirds);
+    let restoredCount = 0;
+    
+    // Validate and restore birds
+    birds.forEach(birdInfo => {
+      // Only restore valid birds with sufficient time left and within limits
+      if (birdInfo && 
+          birdInfo.remainingTime > 1000 && 
+          birdInfo.remainingTime <= 15000 &&
+          restoredCount < MAX_BIRDS &&
+          activeBirds.length < MAX_BIRDS) {
+        createRestoredBird(birdInfo);
+        restoredCount++;
+      }
+    });
+    
+    // Clear the storage after restoring
+    sessionStorage.removeItem('stagify_birds');
+    
+    if (restoredCount > 0) {
+      console.log(`Restored ${restoredCount} birds from previous page`);
+    }
+  } catch (e) {
+    console.warn('Error restoring birds:', e);
+    sessionStorage.removeItem('stagify_birds');
+  }
+}
+
+function createRestoredBird(birdInfo) {
+  const bird = document.createElement('div');
+  bird.className = 'bird';
+  bird.id = birdInfo.id;
+  
+  // Create bird image
+  const birdImg = document.createElement('img');
+  const randomParam = Math.random();
+  birdImg.src = `media/Bird.gif?t=${randomParam}`;
+  birdImg.alt = 'Flying bird';
+  
+  bird.appendChild(birdImg);
+  
+  // Restore bird properties
+  bird.style.setProperty('--bird-y', birdInfo.y + 'px');
+  bird.classList.add(birdInfo.direction, 'single');
+  
+  // Calculate how far through the animation the bird should be
+  const progress = (birdInfo.duration - birdInfo.remainingTime) / birdInfo.duration;
+  const animationDelay = -progress * 15; // Negative delay to start partway through
+  bird.style.animationDelay = animationDelay + 's';
+  
+  document.body.appendChild(bird);
+  
+  // Add to active birds with updated info
+  const updatedBirdInfo = {
+    ...birdInfo,
+    startTime: Date.now() - (birdInfo.duration - birdInfo.remainingTime)
+  };
+  activeBirds.push(updatedBirdInfo);
+  
+  // Remove bird after remaining time
+  setTimeout(() => {
+    if (bird.parentNode) {
+      bird.parentNode.removeChild(bird);
+    }
+    activeBirds = activeBirds.filter(b => b.id !== birdInfo.id);
+  }, birdInfo.remainingTime);
+}
+
+// 3D Tilt Effect for Advantages Section, Contact Cards, and FAQ
+function init3DTiltEffect() {
+  // Apply to advantages section
+  applyTiltEffect('.advantages');
+  
+  // Apply to FAQ section
+  applyTiltEffect('.faq');
+  
+  // Apply to all contact cards
+  const contactCards = document.querySelectorAll('.contact-card');
+  contactCards.forEach((card, index) => {
+    applyTiltEffectToElement(card);
+  });
+}
+
+function applyTiltEffect(selector) {
+  const element = document.querySelector(selector);
+  if (!element) return;
+  applyTiltEffectToElement(element);
+}
+
+function applyTiltEffectToElement(element) {
+  let isHovering = false;
+  
+  element.addEventListener('mouseenter', function() {
+    isHovering = true;
+  });
+  
+  element.addEventListener('mouseleave', function() {
+    isHovering = false;
+    // Reset to neutral position
+    element.style.transform = 'rotateX(0deg) rotateY(0deg)';
+  });
+  
+  element.addEventListener('mousemove', function(e) {
+    if (!isHovering) return;
+    
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // Calculate mouse position relative to center
+    const mouseX = e.clientX - centerX;
+    const mouseY = e.clientY - centerY;
+    
+    // Calculate rotation values (max 8 degrees)
+    const rotateY = (mouseX / (rect.width / 2)) * 8;
+    const rotateX = -(mouseY / (rect.height / 2)) * 8;
+    
+    // Apply 3D transformation
+    element.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  });
 }
 
 
