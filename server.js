@@ -44,6 +44,7 @@ try {
     console.log('GOOGLE_AI_API_KEY is not set, using local file');
     apiKey = fs.readFileSync(path.join(__dirname, 'key.txt'), 'utf8').trim();
   }
+  console.log('API key:', apiKey);
   genAI = new GoogleGenerativeAI(apiKey);
 } catch (error) {
   console.error('Error initializing Google AI:', error.message);
