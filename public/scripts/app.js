@@ -182,6 +182,10 @@
       formData.append('furnitureStyle', styleSelect?.value || 'standard');
       formData.append('additionalPrompt', additionalPrompt?.value || '');
       
+      // Get checkbox value
+      const removeFurnitureCheckbox = document.getElementById('remove-furniture');
+      formData.append('removeFurniture', removeFurnitureCheckbox?.checked || false);
+      
       // Simulate upload progress
       await new Promise(resolve => setTimeout(resolve, 800));
       clearInterval(progressInterval);

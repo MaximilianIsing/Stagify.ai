@@ -63,6 +63,23 @@
         </div>
       </section>
 
+      <section class="sponsors">
+        <div class="sponsors-content">
+          <h2 class="sponsors-title" style="color: #1e3a8a; font-weight: thin;">Officially Recognized By</h2>
+          <div class="sponsors-grid">
+            <div class="sponsor-item">
+              <img src="media-webp/sponsors/Centennial.webp" alt="Centennial" class="sponsor-logo">
+            </div>
+            <div class="sponsor-item">
+              <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid" class="sponsor-logo">
+            </div>
+            <div class="sponsor-item">
+              <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital" class="sponsor-logo">
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div class="modal hidden" id="stage-modal">
         <div class="modal-backdrop" id="modal-backdrop"></div>
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="stage-title">
@@ -71,7 +88,7 @@
             <div class="stage-inner">
               <div class="toolbar">
                 <div class="tool-header">
-                  <h3 id="stage-title">Options</h3>
+                  <h3 id="stage-title" style="color: #2563eb; text-align: center;">Options</h3>
                 </div>
 
                 <div class="tool-row">
@@ -107,6 +124,12 @@
                 <div class="tool-row">
                   <label class="label" for="additional-prompt">Additional prompting</label>
                   <textarea id="additional-prompt" class="text-input" placeholder="Add specific details or requests for your staging..." rows="3"></textarea>
+                </div>
+                <div class="tool-row">
+                  <div class="checkbox-container">
+                    <input type="checkbox" id="remove-furniture" class="checkbox-input">
+                    <label for="remove-furniture" class="checkbox-label">Remove existing furniture</label>
+                  </div>
                 </div>
                 <div class="process-cta">
                   <button id="process-btn" class="btn btn-primary btn-lg"><strong>Process photo</strong></button>
