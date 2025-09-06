@@ -11,6 +11,38 @@ import cors from 'cors';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Function to log prompts to file
+function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture) {
+  try {
+    const timestamp = new Date().toISOString();
+    const logEntry = JSON.stringify({
+      timestamp: timestamp,
+      roomType: roomType,
+      furnitureStyle: furnitureStyle,
+      additionalPrompt: additionalPrompt || '',
+      removeFurniture: removeFurniture
+    }) + '\n';
+    
+    // Use persistent disk on Render, fallback to local for development
+    const logDir = process.env.RENDER ? '/data' : __dirname;
+    const logFile = path.join(logDir, 'prompt_logs.txt');
+    
+    // Ensure directory exists on Render
+    if (process.env.RENDER && !fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    
+    // Use async version with callback to ensure it completes
+    fs.appendFile(logFile, logEntry, (err) => {
+      if (err) {
+        console.error('Error writing to prompt log:', err);
+      }
+    });
+  } catch (error) {
+    console.error('Error in logPromptToFile:', error);
+  }
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -45,7 +77,7 @@ try {
     console.log('GOOGLE_AI_API_KEY is not set, using local file');
     apiKey = fs.readFileSync(path.join(__dirname, 'key.txt'), 'utf8').trim();
   }
-  console.log('API key:', apiKey);
+  console.log("API key Asuccessfully loaded");
   genAI = new GoogleGenerativeAI(apiKey);
 } catch (error) {
   console.error('Error initializing Google AI:', error.message);
@@ -58,12 +90,9 @@ async function downscaleImage(imageBuffer) {
   try {
     const image = sharp(imageBuffer);
     const metadata = await image.metadata();
-    
-    console.log(`Original image dimensions: ${metadata.width}x${metadata.height}`);
-    
+      
     // Check if downscaling is needed
     if (metadata.width <= 1920 && metadata.height <= 1080) {
-      console.log("Image is already within size limits, returning original...");
       return imageBuffer;
     }
     
@@ -75,8 +104,6 @@ async function downscaleImage(imageBuffer) {
     const newWidth = Math.floor(metadata.width * scale);
     const newHeight = Math.floor(metadata.height * scale);
     
-    console.log(`Downscaling to: ${newWidth}x${newHeight} (scale factor: ${scale.toFixed(3)})`);
-    
     const processedBuffer = await image
       .resize(newWidth, newHeight, {
         kernel: sharp.kernel.lanczos3,
@@ -84,8 +111,7 @@ async function downscaleImage(imageBuffer) {
       })
       .jpeg({ quality: 90 })
       .toBuffer();
-      
-    console.log(`Image successfully downscaled`);
+
     return processedBuffer;
   } catch (error) {
     console.error("Error downscaling image:", error);
@@ -161,7 +187,6 @@ app.use((err, req, res, next) => {
 
 // Image processing endpoint
 app.post('/api/process-image', upload.single('image'), async (req, res) => {
-  console.log('Processing image request received');
   
   try {
     if (!req.file) {
@@ -174,16 +199,15 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
 
     const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '', removeFurniture = false } = req.body;
     
-    console.log('Processing options:', { roomType, furnitureStyle, additionalPrompt, removeFurniture });
 
-    // Downscale the image if needed
-    console.log("Processing image...");
     const processedImageBuffer = await downscaleImage(req.file.buffer);
     const base64Image = processedImageBuffer.toString("base64");
 
     // Generate prompt based on user preferences
     const promptText = generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture);
-    console.log('Generated prompt:', promptText);
+    
+    // Log prompt to file instead of console
+    logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture);
 
     const prompt = [
       { text: promptText },
@@ -195,8 +219,6 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
       },
     ];
 
-    console.log("Processing image with Gemini 2.5 Flash Image Preview...");
-    
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-image-preview" });
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -210,8 +232,7 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
     for (const part of response.candidates[0].content.parts) {
       if (part.inlineData) {
         const imageData = part.inlineData.data;
-        console.log("Successfully processed image");
-        
+
         // Return the base64 image data
         return res.json({
           success: true,
