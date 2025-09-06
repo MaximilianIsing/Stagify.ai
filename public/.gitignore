@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
 
-# Text files
+# Text files (but allow ads.txt)
 *.txt
+!ads.txt
 
 # API Keys and sensitive files
 *key*.txt
