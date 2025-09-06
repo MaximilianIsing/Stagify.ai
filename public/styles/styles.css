@@ -370,7 +370,8 @@ main {
 /* Mobile responsive adjustments for sponsors */
 @media (max-width: 768px) {
   .sponsors {
-    padding: 48px 0 64px;
+    padding: 64px 0 32px;
+    margin-top: calc(100vh - 200px);
   }
   
   .sponsors-content {
@@ -379,7 +380,7 @@ main {
   
   .sponsors-title {
     font-size: 1.25rem;
-    margin-bottom: 32px;
+    margin-bottom: 16px;
   }
   
   .sponsors-grid {
@@ -396,7 +397,8 @@ main {
 
 @media (max-width: 480px) {
   .sponsors {
-    padding: 40px 0 56px;
+    padding: 56px 0 24px;
+    margin-top: calc(100vh - 150px);
   }
   
   .sponsors-content {
@@ -405,7 +407,7 @@ main {
   
   .sponsors-title {
     font-size: 1.15rem;
-    margin-bottom: 28px;
+    margin-bottom: 12px;
   }
   
   .sponsors-grid {
