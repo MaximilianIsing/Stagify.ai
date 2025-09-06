@@ -1418,13 +1418,9 @@ h2 {
     padding-bottom: 20px;
   }
   
-  /* Keep disclaimer at bottom-right of modal on mobile */
+  /* Hide disclaimer on mobile */
   .modal-ad-disclaimer {
-    position: absolute;
-    bottom: -109px; 
-    right: 28px;
-    font-size: 10px;
-    text-align: right;
+    display: none;
   }
   
   .btn-lg {
@@ -1544,13 +1540,9 @@ h2 {
     padding-bottom: 30px;
   }
   
-  /* Keep disclaimer at bottom-right of modal for small screens */
+  /* Hide disclaimer on small screens */
   .modal-ad-disclaimer {
-    position: absolute;
-    bottom: -109px;
-    right: 28px;
-    font-size: 9px;
-    text-align: right;
+    display: none;
   }
   
   .stage-dropzone {
