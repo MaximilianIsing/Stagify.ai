@@ -890,7 +890,7 @@ h2 {
   background: var(--bg-elevated);
   box-shadow: 0 4px 6px -1px rgba(75, 85, 99, 0.1);
 }
-.tool-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.tool-header { display: flex; justify-content: center; align-items: center; margin-bottom: 0px; }
 .tool-row { margin-top: 10px; display: grid; gap: 8px; }
 .label { font-size: 14px; color: var(--fg); }
 .select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-elevated); color: var(--fg); }
