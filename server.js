@@ -118,7 +118,7 @@ function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurnit
   let prompt = "";
   
   // Add furniture removal instruction if requested
-  const furnitureRemovalText = removeFurniture ? "First, remove all existing furniture and decor from the room. Then, " : "";
+  const furnitureRemovalText = removeFurniture ? "First, remove all existing furniture and decor from the room. Then, " : "Try not to remove existing furniture, if there is any.";
   
   if (roomType === 'Bathroom') {
     prompt = `${furnitureRemovalText}Stage this room as a bathroom. ${roomSpecific} In a ${roomType} space. Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room.`;

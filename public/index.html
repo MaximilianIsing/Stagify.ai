@@ -87,6 +87,8 @@
         <div class="modal-backdrop" id="modal-backdrop"></div>
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="stage-title">
           <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+          <!-- Modal disclaimer in bottom right -->
+          <div class="modal-ad-disclaimer">*Advertisements help us pay for generation costs</div>
           <section class="stage" id="stage">
             <div class="stage-inner">
               <div class="toolbar">
@@ -170,6 +172,18 @@
                   <div class="image-viewer">
                     <img id="stage-preview" class="viewer-image" alt="Original image">
                     <canvas id="canvas1" class="viewer-image hidden"></canvas>
+                    
+                    <!-- AdSense Ad Container for Loading (in main workspace) -->
+                    <div id="loading-ad-container" class="workspace-ad-container hidden">
+                      <div class="ad-label">Advertisement</div>
+                      
+                      <!-- Loading video ad -->
+                      <ins class="adsbygoogle loading-adsense-ad"
+                           style="display:inline-block;width:468px;height:280px"
+                           data-ad-client="ca-pub-3963065765933801"
+                           data-ad-slot="1759452885"></ins>
+                    </div>
+                    
                     <div id="processing-placeholder" class="processing-placeholder">
                       <div class="placeholder-content">
                         <div class="placeholder-icon">
@@ -179,6 +193,7 @@
                         <div class="placeholder-subtext">Please click "Process photo" first to generate an AI-staged version of your image</div>
                       </div>
                     </div>
+                    
                   </div>
                 </div>
               </div>

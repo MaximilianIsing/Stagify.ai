@@ -57,6 +57,7 @@
   const progressBar = $('#progress-bar');
   const progressText = $('#progress-text');
   const loadingMessage = $('#loading-message');
+  const loadingAdContainer = $('#loading-ad-container');
 
   const yearSpan = $('#year');
   if (yearSpan) yearSpan.textContent = new Date().getFullYear();
@@ -145,9 +146,24 @@
     progressBar.style.width = '0%';
     progressText.textContent = 'Uploading image…';
 
-    // Show loading message immediately
+    // Show loading message and ad immediately
     loadingMessage.classList.remove('hidden');
     loadingMessage.textContent = 'Preparing AI model';
+    
+    // Show ad container in workspace and initialize AdSense
+    if (loadingAdContainer) {
+      loadingAdContainer.classList.remove('hidden');
+      // Hide the processing placeholder while ad is showing
+      if (processingPlaceholder) {
+        processingPlaceholder.style.display = 'none';
+      }
+      // Initialize your AdSense ad
+      try {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.log('AdSense not loaded yet');
+      }
+    }
 
     // Random loading messages that will be shown during AI processing
     const loadingMessages = [
@@ -253,6 +269,16 @@
       clearInterval(messageInterval);
       isProcessingPhase = false;
       loadingMessage.classList.add('hidden');
+      
+      // Hide ad container when processing is complete
+      if (loadingAdContainer) {
+        loadingAdContainer.classList.add('hidden');
+      }
+      // Show processing placeholder again if needed
+      if (processingPlaceholder && !hasProcessedImage) {
+        processingPlaceholder.style.display = 'flex';
+      }
+      
       progressBar.style.width = '100%';
       progressText.textContent = 'Complete!';
       
@@ -268,6 +294,15 @@
       clearInterval(messageInterval);
       isProcessingPhase = false;
       loadingMessage.classList.add('hidden');
+      
+      // Hide ad container when processing is complete
+      if (loadingAdContainer) {
+        loadingAdContainer.classList.add('hidden');
+      }
+      // Show processing placeholder again if needed
+      if (processingPlaceholder && !hasProcessedImage) {
+        processingPlaceholder.style.display = 'flex';
+      }
       
       progressText.textContent = 'Error: ' + error.message;
       progressBar.style.width = '0%';
