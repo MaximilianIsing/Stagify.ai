@@ -18,6 +18,7 @@ npm-debug.log*
 # Logs
 *.log
 logs/
+/data/
 
 # Runtime data
 pids/
