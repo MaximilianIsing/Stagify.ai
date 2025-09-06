@@ -55,3 +55,4 @@ build/
 # Text files (but allow ads.txt)
 *.txt
 !public/ads.txt
+!public/robots.txt
