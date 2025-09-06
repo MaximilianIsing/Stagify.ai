@@ -46,11 +46,8 @@ function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt,
         }
       }
     }
-    
-    console.log('Using log directory:', logDir);
-    
+
     const logFile = path.join(logDir, 'prompt_logs.txt');
-    console.log('Full log file path:', logFile);
     
     // Use async version with callback to ensure it completes
     fs.appendFile(logFile, logEntry, (err) => {
