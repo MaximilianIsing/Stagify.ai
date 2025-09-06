@@ -1414,7 +1414,17 @@ h2 {
   }
   
   .process-cta {
-    margin: 12px 0 8px;
+    margin: 12px 0 32px;
+    padding-bottom: 20px;
+  }
+  
+  /* Keep disclaimer at bottom-right of modal on mobile */
+  .modal-ad-disclaimer {
+    position: absolute;
+    bottom: -109px; 
+    right: 28px;
+    font-size: 10px;
+    text-align: right;
   }
   
   .btn-lg {
@@ -1526,6 +1536,21 @@ h2 {
   .modal-dialog {
     margin: 5px;
     border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .process-cta {
+    margin: 12px 0 40px;
+    padding-bottom: 30px;
+  }
+  
+  /* Keep disclaimer at bottom-right of modal for small screens */
+  .modal-ad-disclaimer {
+    position: absolute;
+    bottom: -109px;
+    right: 28px;
+    font-size: 9px;
+    text-align: right;
   }
   
   .stage-dropzone {
