@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Function to log prompts to file
-function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture) {
+function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole) {
   try {
     const timestamp = new Date().toISOString();
     const logEntry = JSON.stringify({
@@ -20,7 +20,8 @@ function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt,
       roomType: roomType,
       furnitureStyle: furnitureStyle,
       additionalPrompt: additionalPrompt || '',
-      removeFurniture: removeFurniture
+      removeFurniture: removeFurniture,
+      userRole: userRole || 'unknown'
     }) + '\n';
     
     // Use mounted disk on Render, project data folder locally
@@ -216,7 +217,7 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '', removeFurniture = false } = req.body;
+    const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '', removeFurniture = false, userRole = 'unknown' } = req.body;
     
 
     const processedImageBuffer = await downscaleImage(req.file.buffer);
@@ -226,7 +227,7 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
     const promptText = generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture);
     
     // Log prompt to file instead of console
-    logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture);
+    logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole);
 
     const prompt = [
       { text: promptText },
