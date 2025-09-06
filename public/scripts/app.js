@@ -202,6 +202,10 @@
       const removeFurnitureCheckbox = document.getElementById('remove-furniture');
       formData.append('removeFurniture', removeFurnitureCheckbox?.checked || false);
       
+      // Get user role from localStorage
+      const userRole = localStorage.getItem('userRole') || 'unknown';
+      formData.append('userRole', userRole);
+      
       // Simulate upload progress
       await new Promise(resolve => setTimeout(resolve, 800));
       clearInterval(progressInterval);
@@ -466,6 +470,9 @@
 
 // Initialize on page load (all pages)
 document.addEventListener('DOMContentLoaded', function() {
+  
+  // Check if user is first-time visitor and show role popup
+  initRolePopup();
   
   // Start bird animations on all pages
   startBirdAnimations();
@@ -765,6 +772,74 @@ function applyTiltEffectToElement(element) {
     // Apply 3D transformation
     element.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
   });
+}
+
+// Role Selection Popup System
+function initRolePopup() {
+  // Check if user has already selected a role
+  const hasSelectedRole = localStorage.getItem('userRole');
+  
+  if (!hasSelectedRole) {
+    // Show popup after a short delay for better UX
+    setTimeout(() => {
+      showRolePopup();
+    }, 1000);
+  }
+}
+
+function showRolePopup() {
+  const popup = document.getElementById('role-popup');
+  if (popup) {
+    popup.classList.remove('hidden');
+    
+    // Add event listeners to role buttons
+    const roleButtons = popup.querySelectorAll('[data-role]');
+    roleButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const selectedRole = this.getAttribute('data-role');
+        handleRoleSelection(selectedRole);
+      });
+    });
+  }
+}
+
+function handleRoleSelection(role) {
+  // Save the selected role to localStorage
+  localStorage.setItem('userRole', role);
+  localStorage.setItem('roleSelectedAt', new Date().toISOString());
+  
+  // Hide the popup
+  const popup = document.getElementById('role-popup');
+  if (popup) {
+    popup.classList.add('hidden');
+  }
+  
+  // Optional: Log the selection for analytics
+  console.log('User selected role:', role);
+  
+  // You can add role-specific customizations here
+  customizeExperienceForRole(role);
+}
+
+function customizeExperienceForRole(role) {
+  // Add role-specific customizations based on user selection
+  document.body.setAttribute('data-user-role', role);
+  
+  // You can add different messaging, features, or styling based on role
+  switch(role) {
+    case 'seller':
+      // Customize for sellers
+      break;
+    case 'agent':
+      // Customize for agents
+      break;
+    case 'buyer':
+      // Customize for buyers
+      break;
+    case 'other':
+      // Default experience
+      break;
+  }
 }
 
 
