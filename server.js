@@ -96,7 +96,7 @@ async function downscaleImage(imageBuffer) {
 /**
  * Generate styling prompt based on user preferences
  */
-function generatePrompt(roomType, furnitureStyle, additionalPrompt) {
+function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture = false) {
   const styleDescriptions = {
     standard: "Stage this room with stylish, contemporary furniture that appeals to a broad audience. Use neutral colors and clean lines.",
     modern: "Stage this room in a modern style by adding a low-profile sectional sofa in a neutral color such as gray, white, or black, a sleek glass or polished stone coffee table with minimalist lines, and an accent chair with a bold sculptural design. Incorporate a large area rug in a solid tone or subtle geometric pattern to ground the space, and add statement lighting such as a slim arc floor lamp or a contemporary pendant with metallic or matte finishes. Keep accessories minimal, using a few curated décor pieces like abstract sculptures, modern art prints, or monochrome vases. Emphasize clean lines, open space, and a neutral palette with occasional bold accents to create a refined, sophisticated atmosphere.",
@@ -116,10 +116,14 @@ function generatePrompt(roomType, furnitureStyle, additionalPrompt) {
                      roomType === 'Bathroom' ? ' Focus on bathroom elements like a toilet, sink, and shower. Ignore other elements like sofas or beds.' : ''; 
 
   let prompt = "";
+  
+  // Add furniture removal instruction if requested
+  const furnitureRemovalText = removeFurniture ? "First, remove all existing furniture and decor from the room. Then, " : "";
+  
   if (roomType === 'Bathroom') {
-    prompt = `Stage this room as a bathroom. ${roomSpecific} In a ${roomType} space. Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room.`;
+    prompt = `${furnitureRemovalText}Stage this room as a bathroom. ${roomSpecific} In a ${roomType} space. Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room.`;
   } else {
-    prompt = `${styleDescriptions[furnitureStyle] || styleDescriptions.standard}${roomSpecific}. Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room.`;
+    prompt = `${furnitureRemovalText}${styleDescriptions[furnitureStyle] || styleDescriptions.standard}${roomSpecific}. Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room.`;
   }
   // Add additional prompting if provided
   if (additionalPrompt && additionalPrompt.trim()) {
@@ -168,9 +172,9 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '' } = req.body;
+    const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '', removeFurniture = false } = req.body;
     
-    console.log('Processing options:', { roomType, furnitureStyle, additionalPrompt });
+    console.log('Processing options:', { roomType, furnitureStyle, additionalPrompt, removeFurniture });
 
     // Downscale the image if needed
     console.log("Processing image...");
@@ -178,7 +182,7 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
     const base64Image = processedImageBuffer.toString("base64");
 
     // Generate prompt based on user preferences
-    const promptText = generatePrompt(roomType, furnitureStyle, additionalPrompt);
+    const promptText = generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture);
     console.log('Generated prompt:', promptText);
 
     const prompt = [
