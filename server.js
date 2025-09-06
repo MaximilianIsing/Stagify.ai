@@ -23,14 +23,33 @@ function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt,
       removeFurniture: removeFurniture
     }) + '\n';
     
-    // Use persistent disk on Render, fallback to local for development
-    const logDir = process.env.RENDER ? '/data' : __dirname;
-    const logFile = path.join(logDir, 'prompt_logs.txt');
+    // Use mounted disk on Render, project data folder locally
+    let logDir;
     
-    // Ensure directory exists on Render
-    if (process.env.RENDER && !fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+      console.log('Using Render persistent disk');
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+      
+      // Create data directory if it doesn't exist
+      if (!fs.existsSync(logDir)) {
+        try {
+          fs.mkdirSync(logDir, { recursive: true });
+          console.log('Created local data directory successfully');
+        } catch (error) {
+          console.log('Error: Cannot create data directory, using project root');
+          logDir = __dirname;
+        }
+      }
     }
+    
+    console.log('Using log directory:', logDir);
+    
+    const logFile = path.join(logDir, 'prompt_logs.txt');
+    console.log('Full log file path:', logFile);
     
     // Use async version with callback to ensure it completes
     fs.appendFile(logFile, logEntry, (err) => {
