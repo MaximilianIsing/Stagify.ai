@@ -813,10 +813,6 @@ function handleRoleSelection(role) {
   if (popup) {
     popup.classList.add('hidden');
   }
-  
-  // Optional: Log the selection for analytics
-  console.log('User selected role:', role);
-  
   // You can add role-specific customizations here
   customizeExperienceForRole(role);
 }
