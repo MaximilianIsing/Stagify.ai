@@ -13,7 +13,6 @@ const __dirname = dirname(__filename);
 
 // Function to log prompts to file
 function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture) {
-  console.log('🚀 logPromptToFile function started');
   try {
     const timestamp = new Date().toISOString();
     const logEntry = JSON.stringify({
@@ -227,9 +226,7 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
     const promptText = generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture);
     
     // Log prompt to file instead of console
-    console.log('🔥 About to call logPromptToFile...');
     logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture);
-    console.log('🔥 Called logPromptToFile');
 
     const prompt = [
       { text: promptText },

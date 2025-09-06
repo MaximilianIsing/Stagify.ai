@@ -52,4 +52,6 @@ Thumbs.db
 dist/
 build/
 
+# Text files (but allow ads.txt)
 *.txt
+!public/ads.txt
