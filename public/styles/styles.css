@@ -1380,6 +1380,7 @@ h2 {
     max-width: none;
     max-height: calc(100vh - 20px);
     overflow-y: auto;
+    padding-bottom: 80px; /* Extra space to avoid mobile browser UI */
   }
   
   .stage {
@@ -1430,8 +1431,8 @@ h2 {
   }
   
   .process-cta {
-    margin: 12px 0 32px;
-    padding-bottom: 20px;
+    margin: 12px 0 8px;
+    padding-bottom: 0px;
   }
   
   /* Hide disclaimer on mobile */
@@ -1453,17 +1454,31 @@ h2 {
   }
   
   /* Mobile contact cards */
+  .contact {
+    max-width: 100%;
+    width: 100%;
+    margin: 40px auto;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+  
   .contact-card {
     padding: 12px;
     margin: 0 auto 16px;
     max-width: 100%;
     width: 100%;
+    box-sizing: border-box;
   }
   
   .contact-content {
     flex-direction: column;
     text-align: center;
     gap: 12px;
+  }
+  
+  /* Center contact hero heading on mobile */
+  .contact-hero h1 {
+    text-align: center;
   }
   
   /* Center role titles on mobile */
@@ -1549,11 +1564,12 @@ h2 {
     margin: 5px;
     border-radius: 12px;
     margin-bottom: 20px;
+    padding-bottom: 100px; /* Extra space to avoid mobile browser UI on small screens */
   }
   
   .process-cta {
-    margin: 12px 0 40px;
-    padding-bottom: 30px;
+    margin: 12px 0 8px;
+    padding-bottom: 0px;
   }
   
   /* Hide disclaimer on small screens */
@@ -1602,12 +1618,21 @@ h2 {
   }
   
   /* Extra compact contact cards for small screens */
+  .contact {
+    max-width: 100%;
+    width: 100%;
+    margin: 30px auto;
+    padding: 0 12px;
+    box-sizing: border-box;
+  }
+  
   .contact-card {
     padding: 8px;
     margin: 0 auto 12px;
     max-width: 100%;
     width: 100%;
     border-radius: 12px;
+    box-sizing: border-box;
   }
   
   .contact-content {
@@ -1666,13 +1691,19 @@ h2 {
 /* Extra small mobile screens - very narrow devices */
 @media (max-width: 360px) {
   .contact {
-    padding-left: 16px;
-    padding-right: 16px;
+    max-width: 100%;
+    width: 100%;
+    margin: 20px auto;
+    padding: 0 8px;
+    box-sizing: border-box;
   }
   
   .contact-card {
     padding: 6px;
     margin: 0 auto 10px;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .contact-content {

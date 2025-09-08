@@ -1,4 +1,7 @@
 (() => {
+  // AD CONTROL VARIABLE - Set to false to hide all ads
+  const SHOW_ADS = false; // Change this to false to disable all advertisements
+  
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
@@ -150,8 +153,8 @@
     loadingMessage.classList.remove('hidden');
     loadingMessage.textContent = 'Preparing AI model';
     
-    // Show ad container in workspace and initialize AdSense
-    if (loadingAdContainer) {
+    // Show ad container in workspace and initialize AdSense (only if ads are enabled)
+    if (loadingAdContainer && SHOW_ADS) {
       loadingAdContainer.classList.remove('hidden');
       // Hide the processing placeholder while ad is showing
       if (processingPlaceholder) {
@@ -163,6 +166,9 @@
       } catch (e) {
         console.log('AdSense not loaded yet');
       }
+    } else if (!SHOW_ADS) {
+      // When ads are disabled, show the before image (original uploaded image)
+      showBeforeView();
     }
 
     // Random loading messages that will be shown during AI processing
@@ -274,8 +280,8 @@
       isProcessingPhase = false;
       loadingMessage.classList.add('hidden');
       
-      // Hide ad container when processing is complete
-      if (loadingAdContainer) {
+      // Hide ad container when processing is complete (only if ads were shown)
+      if (loadingAdContainer && SHOW_ADS) {
         loadingAdContainer.classList.add('hidden');
       }
       // Show processing placeholder again if needed
@@ -299,8 +305,8 @@
       isProcessingPhase = false;
       loadingMessage.classList.add('hidden');
       
-      // Hide ad container when processing is complete
-      if (loadingAdContainer) {
+      // Hide ad container when processing is complete (only if ads were shown)
+      if (loadingAdContainer && SHOW_ADS) {
         loadingAdContainer.classList.add('hidden');
       }
       // Show processing placeholder again if needed
