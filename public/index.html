@@ -39,6 +39,20 @@
           crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="styles/styles.css">
+    <script>
+      // AD CONTROL VARIABLE - Set to false to hide all ads
+      const SHOW_ADS = false; // Change this to false to disable all advertisements
+      
+      // Hide ad disclaimer if ads are disabled
+      document.addEventListener('DOMContentLoaded', function() {
+        if (!SHOW_ADS) {
+          const adDisclaimer = document.querySelector('.modal-ad-disclaimer');
+          if (adDisclaimer) {
+            adDisclaimer.style.display = 'none';
+          }
+        }
+      });
+    </script>
     <script defer src="scripts/app.js"></script>
     
     <!-- Structured Data -->
