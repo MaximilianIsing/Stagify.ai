@@ -202,6 +202,14 @@ body {
   .nav-link {
     font-size: 14px;
   }
+  
+  /* Mobile catchphrase styling */
+  .catchphrase {
+    font-size: 1.8rem !important;
+    margin: 0 0 1rem 0 !important;
+    text-align: center !important;
+    display: block !important;
+  }
 }
 
 /* Extra small mobile screens */
@@ -216,6 +224,14 @@ body {
   
   .brand {
     font-size: 20px;
+  }
+  
+  /* Extra small mobile catchphrase styling */
+  .catchphrase {
+    font-size: 1.4rem !important;
+    margin: 0 0 0.8rem 0 !important;
+    text-align: center !important;
+    display: block !important;
   }
   
   .nav-link {
