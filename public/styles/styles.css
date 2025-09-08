@@ -1287,6 +1287,12 @@ h2 {
 }
 .contact-hero h1 { font-size: 48px; margin: 0 0 8px; letter-spacing: -0.3px; }
 .contact-hero p { color: var(--muted); margin: 0; font-size: 18px; }
+
+/* Ensure contact text stays on one line on desktop */
+.contact-text-desktop {
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
 .contact-card {
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -1405,6 +1411,18 @@ h2 {
     padding: 12px;
   }
   
+  /* Make image viewer fit image size on mobile */
+  .image-viewer {
+    min-height: auto !important;
+    height: auto !important;
+  }
+  
+  .viewer-image {
+    height: auto !important;
+    max-height: 70vh;
+    object-fit: contain;
+  }
+  
   .stage-dropzone {
     aspect-ratio: 16/10;
     min-height: 200px;
@@ -1481,6 +1499,13 @@ h2 {
     text-align: center;
   }
   
+  /* Allow contact text to wrap on mobile */
+  .contact-text-desktop {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  
   /* Center role titles on mobile */
   .contact-card div[style*="font-size: 13px"] {
     text-align: center !important;
@@ -1518,7 +1543,12 @@ h2 {
   
   .contact-hero p {
     font-size: 15px;
-    white-space: normal;
+  }
+  
+  .contact-text-desktop {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
   }
 }
 
@@ -1588,6 +1618,18 @@ h2 {
   
   .stage-workspace {
     padding: 10px;
+  }
+  
+  /* Make image viewer fit image size on small mobile */
+  .image-viewer {
+    min-height: auto !important;
+    height: auto !important;
+  }
+  
+  .viewer-image {
+    height: auto !important;
+    max-height: 60vh;
+    object-fit: contain;
   }
   
   .tool-row {
@@ -1683,8 +1725,13 @@ h2 {
   
   .contact-hero p {
     font-size: 13px;
-    white-space: normal;
     line-height: 1.4;
+  }
+  
+  .contact-text-desktop {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
   }
 }
 
