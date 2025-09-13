@@ -148,6 +148,68 @@ body {
   opacity: 1;
 }
 
+/* Email Input Styling */
+.email-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.email-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+  height: 36px;
+}
+
+.email-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.submit-email-btn {
+  padding: 8px 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 36px;
+  height: 36px;
+}
+
+.submit-email-btn:hover {
+  background: #1d4ed8;
+}
+
+.submit-email-btn:disabled {
+  background: var(--muted);
+  cursor: not-allowed;
+}
+
+/* No Animation Class */
+.role-popup-content.no-animation {
+  animation: none;
+}
+
+/* Referral Question Styling */
+.referral-question {
+  margin: 0 0 16px 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: normal;
+}
+
 .site-header {
   position: sticky;
   top: 0;

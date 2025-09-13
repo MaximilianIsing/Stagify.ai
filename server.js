@@ -11,18 +11,34 @@ import cors from 'cors';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Function to log prompts to file
-function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole) {
+// Function to log prompts to CSV file
+function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, userReferralSource, userEmail, req) {
   try {
     const timestamp = new Date().toISOString();
-    const logEntry = JSON.stringify({
-      timestamp: timestamp,
-      roomType: roomType,
-      furnitureStyle: furnitureStyle,
-      additionalPrompt: additionalPrompt || '',
-      removeFurniture: removeFurniture,
-      userRole: userRole || 'unknown'
-    }) + '\n';
+    const ipAddress = req ? (req.ip || req.connection.remoteAddress || 'unknown') : 'unknown';
+    
+    // Escape CSV fields that contain commas, quotes, or newlines
+    function escapeCSVField(field) {
+      if (field === null || field === undefined) return '';
+      const str = String(field);
+      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    }
+    
+    // Create CSV row
+    const csvRow = [
+      escapeCSVField(timestamp),
+      escapeCSVField(roomType),
+      escapeCSVField(furnitureStyle),
+      escapeCSVField(additionalPrompt || ''),
+      escapeCSVField(removeFurniture),
+      escapeCSVField(userRole || 'unknown'),
+      escapeCSVField(userReferralSource || ''),
+      escapeCSVField(userEmail || ''),
+      escapeCSVField(ipAddress)
+    ].join(',') + '\n';
     
     // Use mounted disk on Render, project data folder locally
     let logDir;
@@ -47,14 +63,23 @@ function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt,
       }
     }
 
-    const logFile = path.join(logDir, 'prompt_logs.txt');
+    const logFile = path.join(logDir, 'prompt_logs.csv');
     
-    // Use async version with callback to ensure it completes
-    fs.appendFile(logFile, logEntry, (err) => {
-      if (err) {
-        console.error('Error writing to prompt log:', err);
-      }
-    });
+    // Check if file exists to add header if it's a new file
+    const fileExists = fs.existsSync(logFile);
+    
+    if (!fileExists) {
+      // Create new file with header and first row
+      const header = 'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress\n';
+      fs.writeFileSync(logFile, header + csvRow);
+    } else {
+      // Append to existing file
+      fs.appendFile(logFile, csvRow, (err) => {
+        if (err) {
+          console.error('Error writing to prompt log:', err);
+        }
+      });
+    }
   } catch (error) {
     console.error('Error in logPromptToFile:', error);
   }
@@ -161,7 +186,12 @@ function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurnit
   let prompt = "";
   
   // Add furniture removal instruction if requested
-  const furnitureRemovalText = removeFurniture ? "First, remove all existing furniture and decor from the room. Then, " : "Try not to remove existing furniture, if there is any.";
+  let furnitureRemovalText ="";
+  if (removeFurniture) {
+    furnitureRemovalText = "First, remove all existing furniture and decor from the room. Then, ";
+  } else {
+    furnitureRemovalText = "Try not to remove existing furniture, if there is any.";
+  }
   
   if (roomType === 'Bathroom') {
     prompt = `${furnitureRemovalText}Stage this room as a bathroom. ${roomSpecific} In a ${roomType} space. Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room.`;
@@ -214,7 +244,7 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '', removeFurniture = false, userRole = 'unknown' } = req.body;
+    const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '', removeFurniture = false, userRole = 'unknown', userReferralSource = '', userEmail = '' } = req.body;
     
 
     const processedImageBuffer = await downscaleImage(req.file.buffer);
@@ -224,7 +254,7 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
     const promptText = generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture);
     
     // Log prompt to file instead of console
-    logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole);
+    logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, userReferralSource, userEmail, req);
 
     const prompt = [
       { text: promptText },
@@ -267,6 +297,62 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
       error: 'Image processing failed', 
       details: error.message 
     });
+  }
+});
+
+// Contact logging endpoint
+app.post('/api/log-contact', (req, res) => {
+  try {
+    const { userRole, referralSource, email, userAgent } = req.body;
+    const timestamp = new Date().toISOString();
+    const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+    
+    // Create CSV row
+    const csvRow = `${timestamp},"${userRole || ''}","${referralSource || ''}","${email || ''}","${userAgent || ''}","${ipAddress}"\n`;
+    
+    // Determine log directory
+    let logDir = path.join(__dirname, 'data');
+    if (process.env.NODE_ENV === 'production') {
+      // In production, try to use a writable directory
+      const possibleDirs = ['/tmp', '/var/log', process.cwd()];
+      for (const dir of possibleDirs) {
+        try {
+          if (fs.existsSync(dir) && fs.accessSync(dir, fs.constants.W_OK) === undefined) {
+            logDir = dir;
+            break;
+          }
+        } catch (e) {
+          // Directory not writable, try next
+        }
+      }
+      if (logDir === path.join(__dirname, 'data')) {
+        // Fallback to current directory
+        logDir = __dirname;
+      }
+    }
+
+    const logFile = path.join(logDir, 'contact_logs.csv');
+    
+    // Check if file exists to add header if it's a new file
+    const fileExists = fs.existsSync(logFile);
+    
+    if (!fileExists) {
+      // Create new file with header and first row
+      const header = 'timestamp,userRole,referralSource,email,userAgent,ipAddress\n';
+      fs.writeFileSync(logFile, header + csvRow);
+    } else {
+      // Append to existing file
+      fs.appendFile(logFile, csvRow, (err) => {
+        if (err) {
+          console.error('Error writing to contact log:', err);
+        }
+      });
+    }
+    
+    res.json({ success: true, message: 'Contact logged successfully' });
+  } catch (error) {
+    console.error('Error in contact logging:', error);
+    res.status(500).json({ success: false, message: 'Failed to log contact' });
   }
 });
 

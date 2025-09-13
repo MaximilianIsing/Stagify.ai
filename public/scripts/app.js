@@ -208,9 +208,13 @@
       const removeFurnitureCheckbox = document.getElementById('remove-furniture');
       formData.append('removeFurniture', removeFurnitureCheckbox?.checked || false);
       
-      // Get user role from localStorage
+      // Get user data from localStorage
       const userRole = localStorage.getItem('userRole') || 'unknown';
+      const userReferralSource = localStorage.getItem('userReferralSource') || '';
+      const userEmail = localStorage.getItem('userEmail') || '';
       formData.append('userRole', userRole);
+      formData.append('userReferralSource', userReferralSource);
+      formData.append('userEmail', userEmail);
       
       // Simulate upload progress
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -256,13 +260,16 @@
       progressBar.style.width = '75%';
       progressText.textContent = 'AI is staging your room…';
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (errorData.code === 'FILE_TOO_LARGE') {
-          throw new Error('File is too large. Please upload an image smaller than 100MB.');
-        }
-        throw new Error(errorData.message || errorData.error || 'Processing failed');
-      }
+       if (!response.ok) {
+         const errorData = await response.json();
+         if (errorData.code === 'FILE_TOO_LARGE') {
+           throw new Error('File is too large. Please upload an image smaller than 100MB.');
+         }
+         if (response.status === 500) {
+           throw new Error('Bad prompt inputted');
+         }
+         throw new Error(errorData.message || errorData.error || 'Processing failed');
+       }
       
       // Simulate final processing steps
       const finalProgressInterval = setInterval(() => {
@@ -394,10 +401,10 @@
       };
       img.src = processedImageData;
       
-    } catch (error) {
-      processBtn.disabled = false;
-      // Progress bar will show error message from processWithAI
-    }
+     } catch (error) {
+       processBtn.disabled = false;
+       // Progress bar will show error message from processWithAI
+     }
   }
 
   // Only add modal event listeners if elements exist
@@ -780,13 +787,13 @@ function applyTiltEffectToElement(element) {
   });
 }
 
-// Role Selection Popup System
+// User Information Popup System
 function initRolePopup() {
-  // Check if user has already selected a role
-  const hasSelectedRole = localStorage.getItem('userRole');
+  // Check if user has already completed all questions
+  const hasCompletedAll = localStorage.getItem('userInfoCompleted');
   
-  if (!hasSelectedRole) {
-    // Show popup after a short delay for better UX
+  if (!hasCompletedAll) {
+    // Show role popup after a short delay for better UX
     setTimeout(() => {
       showRolePopup();
     }, 1000);
@@ -814,13 +821,133 @@ function handleRoleSelection(role) {
   localStorage.setItem('userRole', role);
   localStorage.setItem('roleSelectedAt', new Date().toISOString());
   
-  // Hide the popup
-  const popup = document.getElementById('role-popup');
+  // Show referral popup immediately (no delay)
+  showReferralPopup();
+}
+
+function showReferralPopup() {
+  const popup = document.getElementById('referral-popup');
   if (popup) {
-    popup.classList.add('hidden');
+    popup.classList.remove('hidden');
+    
+    // Add event listeners to referral buttons
+    const referralButtons = popup.querySelectorAll('[data-referral]');
+    referralButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const selectedReferral = this.getAttribute('data-referral');
+        handleReferralSelection(selectedReferral);
+      });
+    });
   }
-  // You can add role-specific customizations here
-  customizeExperienceForRole(role);
+}
+
+function handleReferralSelection(referral) {
+  // Save the selected referral source to localStorage
+  localStorage.setItem('userReferralSource', referral);
+  localStorage.setItem('referralSelectedAt', new Date().toISOString());
+  
+  // Show email popup immediately (no delay)
+  showEmailPopup();
+}
+
+function showEmailPopup() {
+  const popup = document.getElementById('email-popup');
+  if (popup) {
+    popup.classList.remove('hidden');
+    
+    // Add event listeners to skip button
+    const skipButton = document.getElementById('skip-email');
+    if (skipButton) {
+      skipButton.addEventListener('click', function() {
+        handleEmailSubmission('');
+      });
+    }
+    
+    // Add event listener to submit button
+    const submitButton = document.getElementById('submit-email');
+    if (submitButton) {
+      submitButton.addEventListener('click', function() {
+        const emailInput = document.getElementById('user-email');
+        const email = emailInput ? emailInput.value.trim() : '';
+        handleEmailSubmission(email);
+      });
+      
+      // Update button state based on email input
+      const emailInput = document.getElementById('user-email');
+      if (emailInput) {
+        emailInput.addEventListener('input', function() {
+          const email = this.value.trim();
+          const isValidEmail = email.includes('@') && email.includes('.');
+          submitButton.disabled = !isValidEmail;
+        });
+        // Initial state
+        submitButton.disabled = true;
+      }
+    }
+    
+    // Add event listener to email input (Enter key)
+    const emailInput = document.getElementById('user-email');
+    if (emailInput) {
+      emailInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          const email = this.value.trim();
+          const isValidEmail = email.includes('@') && email.includes('.');
+          if (isValidEmail) {
+            handleEmailSubmission(email);
+          }
+        }
+      });
+    }
+  }
+}
+
+function handleEmailSubmission(email) {
+  // Save the email to localStorage
+  localStorage.setItem('userEmail', email);
+  localStorage.setItem('emailSubmittedAt', new Date().toISOString());
+  localStorage.setItem('userInfoCompleted', 'true');
+  
+  // Get all user information from localStorage
+  const userRole = localStorage.getItem('userRole') || '';
+  const referralSource = localStorage.getItem('userReferralSource') || '';
+  const userAgent = navigator.userAgent;
+  
+  // Send contact information to server
+  fetch('/api/log-contact', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userRole: userRole,
+      referralSource: referralSource,
+      email: email,
+      userAgent: userAgent
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log('Contact logged successfully');
+    } else {
+      console.error('Failed to log contact:', data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error logging contact:', error);
+  });
+  
+  // Hide all popups
+  const rolePopup = document.getElementById('role-popup');
+  const referralPopup = document.getElementById('referral-popup');
+  const emailPopup = document.getElementById('email-popup');
+  
+  if (rolePopup) rolePopup.classList.add('hidden');
+  if (referralPopup) referralPopup.classList.add('hidden');
+  if (emailPopup) emailPopup.classList.add('hidden');
+  
+  // Apply role-specific customizations
+  customizeExperienceForRole(userRole);
 }
 
 function customizeExperienceForRole(role) {

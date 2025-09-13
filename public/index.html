@@ -84,13 +84,42 @@
       <div class="role-popup-backdrop"></div>
       <div class="role-popup-content">
         <h2>Let's tailor your experience!</h2>
-        <p>What is your role?</p>
+        <p class="referral-question">What is your role?</p>
         <div class="role-options">
           <button class="role-btn" data-role="agent">Agent</button>
           <button class="role-btn" data-role="seller">Seller</button>
           <button class="role-btn" data-role="buyer">Buyer</button>
         </div>
         <button class="role-other" data-role="other">other</button>
+      </div>
+    </div>
+
+    <!-- Referral Source Popup -->
+    <div id="referral-popup" class="role-popup hidden">
+      <div class="role-popup-backdrop"></div>
+      <div class="role-popup-content no-animation">
+        <h2>Let's tailor your experience!</h2>
+        <p class="referral-question">How did you find us?</p>
+        <div class="role-options">
+          <button class="role-btn" data-referral="socials">Socials</button>
+          <button class="role-btn" data-referral="friend">Friend</button>
+          <button class="role-btn" data-referral="email">Email</button>
+        </div>
+        <button class="role-other" data-referral="other">other</button>
+      </div>
+    </div>
+
+    <!-- Email Popup -->
+    <div id="email-popup" class="role-popup hidden">
+      <div class="role-popup-backdrop"></div>
+      <div class="role-popup-content no-animation">
+        <h2>Let's tailor your experience!</h2>
+        <p class="referral-question">Want email updates?</p>
+        <div class="email-container">
+          <input type="email" id="user-email" class="email-input" placeholder="your@email.com" />
+          <button class="submit-email-btn" id="submit-email"><img src="media-webp/Check.webp" alt="Check" style="width: 16px; height: 16px; display: block; margin: 2px auto 0 auto; transform: translateX(-1px);"></button>
+        </div>
+        <button class="role-other" id="skip-email">Skip</button>
       </div>
     </div>
 
