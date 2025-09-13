@@ -247,9 +247,9 @@ body {
   .nav-center {
     grid-column: 1 / -1;
     grid-row: 2;
-    justify-content: flex-start;
-    gap: 20px;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: nowrap;
   }
   
   .nav-actions {
@@ -262,7 +262,8 @@ body {
   }
   
   .nav-link {
-    font-size: 14px;
+    font-size: 13px;
+    white-space: nowrap;
   }
   
   /* Mobile catchphrase styling */
@@ -281,7 +282,9 @@ body {
   }
   
   .nav-center {
-    gap: 16px;
+    gap: 6px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
   }
   
   .brand {
@@ -297,7 +300,8 @@ body {
   }
   
   .nav-link {
-    font-size: 13px;
+    font-size: 12px;
+    white-space: nowrap;
   }
   
   .brand-logo {
