@@ -117,7 +117,7 @@ try {
   // Try environment variable first (Render), then fall back to local file
   let apiKey = process.env.GOOGLE_AI_API_KEY;
   if (apiKey === undefined){
-    console.log('GOOGLE_AI_API_KEY is not set, using local file');
+    console.log('GOOGLE_AI_API_KEY is not set in an enviorment variable, using local file');
     apiKey = fs.readFileSync(path.join(__dirname, 'key.txt'), 'utf8').trim();
   }
   console.log("API key Asuccessfully loaded");
