@@ -35,7 +35,13 @@
       const img = $('#hero-stage-img');
       img.className = 'hero-stage-img filtered ' + style;
       if (style && styleToImg[style]) {
-        img.src = styleToImg[style];
+        // Lazy load all images except the original
+        if (style === 'original') {
+          img.src = styleToImg[style];
+        } else {
+          img.loading = 'lazy';
+          img.src = styleToImg[style];
+        }
         const label = style.charAt(0).toUpperCase() + style.slice(1);
         img.alt = label + ' staged apartment example';
       }
