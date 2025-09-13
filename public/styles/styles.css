@@ -271,6 +271,7 @@ body {
     transition: all 0.3s ease;
     transform-origin: center;
     cursor: pointer;
+    white-space: nowrap;
   }
   
   .brand {
@@ -309,12 +310,9 @@ body {
     font-size: 20px;
   }
   
-  /* Extra small mobile catchphrase styling */
+  /* Keep catchphrase hidden on extra small mobile too */
   .catchphrase {
-    font-size: 1.4rem !important;
-    margin: 0 0 0.8rem 0 !important;
-    text-align: center !important;
-    display: block !important;
+    display: none !important;
   }
   
   .nav-link {
