@@ -263,15 +263,19 @@ body {
     grid-column: 3;
     grid-row: 1;
     text-align: right;
-    font-size: 1.2rem;
+    font-size: clamp(0.9rem, 2.8vw, 1.3rem);
     color: #1e3a8a;
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.1;
     align-self: center;
     transition: all 0.3s ease;
     transform-origin: center;
     cursor: pointer;
-    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-width: 100%;
+    margin-right: 12px;
   }
   
   .brand {
@@ -330,6 +334,20 @@ body {
   }
 }
 
+/* Extra narrow screens - smaller font for mobile test text */
+@media (max-width: 360px) {
+  .mobile-test-text {
+    font-size: clamp(0.8rem, 2.3vw, 1.1rem);
+  }
+}
+
+/* Ultra narrow screens - even smaller font */
+@media (max-width: 320px) {
+  .mobile-test-text {
+    font-size: clamp(0.7rem, 2vw, 0.9rem);
+  }
+}
+
 /* Hide mobile test text on desktop */
 .mobile-test-text {
   display: none;
@@ -345,7 +363,7 @@ body {
 /* removed logo image styling */
 .brand-strong { font-weight: 900; }
 .brand-light { font-weight: 600; opacity: 0.8; }
-.nav-center { display: flex; gap: 56px; align-items: center; justify-content: center; }
+.nav-center { display: flex; gap: 35px; align-items: center; justify-content: center; }
 .nav-actions { display: flex; gap: 12px; align-items: center; justify-content: flex-end; }
 .nav-link { color: var(--fg); text-decoration: none; font-size: 16px; opacity: 0.85; position: relative; transition: opacity .18s ease, color .18s ease; }
 .nav-link:hover { opacity: 1; text-decoration: none; }
