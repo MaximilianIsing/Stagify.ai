@@ -53,14 +53,7 @@
         }
       });
     </script>
-    <!-- Load JavaScript after page load to prevent render blocking -->
-    <script>
-      window.addEventListener('load', function() {
-        var script = document.createElement('script');
-        script.src = 'scripts/app.js';
-        document.head.appendChild(script);
-      });
-    </script>
+    <script src="scripts/app.js" defer></script>
     
     <!-- Structured Data -->
     <script type="application/ld+json">
