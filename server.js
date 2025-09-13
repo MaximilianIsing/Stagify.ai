@@ -177,7 +177,7 @@ function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurnit
     : "Try not to remove existing furniture, if there is any. ";
   
   // Build the complete prompt
-  let prompt = `${furnitureRemovalText}${basePrompt} Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room. Leave the rest of the room's architecture the same to highlight the furniture and design. Ensure the result looks realistic and professionally staged.`;
+  let prompt = `${furnitureRemovalText}${basePrompt} Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room. Leave the rest of the room's architecture the same to highlight the furniture and design. Ensure the result looks realistic and professionally staged. Ensure that no extra doors, windows, or walls are added.`;
   // Add additional prompting if provided
   if (additionalPrompt && additionalPrompt.trim()) {
     prompt += ` ${additionalPrompt.trim()}`;
@@ -287,24 +287,26 @@ app.post('/api/log-contact', (req, res) => {
     // Create CSV row
     const csvRow = `${timestamp},"${userRole}","${referralSource}","${email}","${userAgent}","${ipAddress}"\n`;
     
-    // Determine log directory
-    let logDir = path.join(__dirname, 'data');
-    if (process.env.NODE_ENV === 'production') {
-      // In production, try to use a writable directory
-      const possibleDirs = ['/tmp', '/var/log', process.cwd()];
-      for (const dir of possibleDirs) {
+    // Use mounted disk on Render, project data folder locally
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+      console.log('Using Render persistent disk for contact logs');
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+      
+      // Create data directory if it doesn't exist
+      if (!fs.existsSync(logDir)) {
         try {
-          if (fs.existsSync(dir) && fs.accessSync(dir, fs.constants.W_OK) === undefined) {
-            logDir = dir;
-            break;
-          }
-        } catch (e) {
-          // Directory not writable, try next
+          fs.mkdirSync(logDir, { recursive: true });
+          console.log('Created local data directory successfully');
+        } catch (error) {
+          console.log('Error: Cannot create data directory, using project root');
+          logDir = __dirname;
         }
-      }
-      if (logDir === path.join(__dirname, 'data')) {
-        // Fallback to current directory
-        logDir = __dirname;
       }
     }
 
