@@ -248,8 +248,10 @@ body {
     grid-column: 1 / -1;
     grid-row: 2;
     justify-content: space-between;
-    gap: 8px;
+    gap: 4px;
     flex-wrap: nowrap;
+    min-width: 0;
+    flex-shrink: 1;
   }
   
   .nav-actions {
@@ -264,6 +266,9 @@ body {
   .nav-link {
     font-size: 13px;
     white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
+    padding: 0 2px;
   }
   
   /* Mobile catchphrase styling */
@@ -282,9 +287,11 @@ body {
   }
   
   .nav-center {
-    gap: 6px;
+    gap: 2px;
     flex-wrap: nowrap;
     justify-content: space-between;
+    min-width: 0;
+    flex-shrink: 1;
   }
   
   .brand {
@@ -302,6 +309,9 @@ body {
   .nav-link {
     font-size: 12px;
     white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
+    padding: 0 1px;
   }
   
   .brand-logo {
@@ -1433,6 +1443,17 @@ h2 {
     flex: none;
   }
   
+  .hero-content {
+    text-align: center;
+  }
+  
+  .announcement {
+    display: block !important;
+    margin: 0 auto 12px auto !important;
+    width: fit-content !important;
+    text-align: center !important;
+  }
+  
   .hero-ctas {
     flex-wrap: wrap;
     justify-content: center;
@@ -1631,6 +1652,10 @@ h2 {
     flex: none;
   }
   
+  .hero-content {
+    text-align: center;
+  }
+  
   .hero-content h1 {
     font-size: clamp(28px, 8vw, 40px);
     text-align: center;
@@ -1642,8 +1667,13 @@ h2 {
   }
   
   .announcement {
-    font-size: 11px;
-    padding: 4px 8px;
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+    text-align: center !important;
+    display: block !important;
+    margin: 0 auto 12px auto !important;
+    width: fit-content !important;
+    max-width: 100% !important;
   }
   
   .btn {
