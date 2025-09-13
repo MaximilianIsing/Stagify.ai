@@ -136,16 +136,17 @@ body {
   right: 12px;
   background: none;
   border: none;
-  color: var(--muted);
+  color: #1e3a8a;
   font-style: italic;
   font-size: 12px;
   cursor: pointer;
-  opacity: 0.7;
+  opacity: 0.9;
   transition: opacity 0.2s ease;
 }
 
 .role-other:hover {
   opacity: 1;
+  color: #2563eb;
 }
 
 /* Email Input Styling */
