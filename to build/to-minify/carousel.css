@@ -144,6 +144,10 @@
     padding: 12px;
   }
   
+  .carousel-track {
+    transform: translateX(6px); /*to center the carousel*/
+  }
+  
   .carousel-item-overlay {
     padding: 16px;
   }
@@ -159,6 +163,10 @@
   .carousel-indicators {
     width: 120px;
     padding: 0 24px;
+  }
+  
+  .carousel-note {
+    margin-bottom: 16px;
   }
 }
 
