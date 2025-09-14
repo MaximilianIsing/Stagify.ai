@@ -28,6 +28,7 @@ class Carousel {
   init() {
     this.createCarousel();
     this.setupEventListeners();
+    this.updateSlidePosition(); // Apply initial position with mobile offset
     this.startAutoplay();
   }
 
@@ -113,7 +114,8 @@ class Carousel {
     e.preventDefault();
     const deltaX = e.clientX - this.dragStartX;
     const currentTransform = -this.currentIndex * this.trackItemOffset;
-    this.track.style.transform = `translateX(${currentTransform + deltaX}px)`;
+    const mobileOffset = window.innerWidth <= 768 ? 6 : 0;
+    this.track.style.transform = `translateX(${currentTransform + deltaX + mobileOffset}px)`;
   }
 
   handleDragEnd(e) {
@@ -136,7 +138,8 @@ class Carousel {
     if (!this.isDragging) return;
     const deltaX = e.touches[0].clientX - this.dragStartX;
     const currentTransform = -this.currentIndex * this.trackItemOffset;
-    this.track.style.transform = `translateX(${currentTransform + deltaX}px)`;
+    const mobileOffset = window.innerWidth <= 768 ? 6 : 0;
+    this.track.style.transform = `translateX(${currentTransform + deltaX + mobileOffset}px)`;
   }
 
   handleTouchEnd(e) {
@@ -191,7 +194,8 @@ class Carousel {
 
   updateSlidePosition() {
     const translateX = -this.currentIndex * this.trackItemOffset;
-    this.track.style.transform = `translateX(${translateX}px)`;
+    const mobileOffset = window.innerWidth <= 768 ? 6 : 0;
+    this.track.style.transform = `translateX(${translateX + mobileOffset}px)`;
   }
 
   updateIndicators() {
