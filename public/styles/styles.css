@@ -329,11 +329,14 @@
     .nav-center {
       grid-column: 1 / -1;
       grid-row: 2;
-      justify-content: center;
-      gap: 0px;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 20px;
       flex-wrap: nowrap;
-      min-width: 0;
-      flex-shrink: 1;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 20px;
     }
     
     .nav-actions {
@@ -369,6 +372,8 @@
       color: #2563eb !important;
       padding: 0 !important;
       border-radius: 0 !important;
+      white-space: nowrap !important;
+      text-align: center !important;
     }
     
     .nav-link::before {
