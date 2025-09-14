@@ -117,36 +117,7 @@
   const navUpload = $('#nav-upload');
   const pricingUpload = $('#pricing-upload');
   const trySample = $('#try-sample');
-  // Hero tabs switching image
-  const styleToImg = {
-    original: 'media-webp/example/Original.webp',
-    modern: 'media-webp/example/Modern.webp',
-    scandinavian: 'media-webp/example/Scandinavian.webp',
-    luxury: 'media-webp/example/Luxury.webp',
-    coastal: 'media-webp/example/Coastal.webp',
-    midcentury: 'media-webp/example/Midcentury.webp',
-    farmhouse: 'media-webp/example/Farmhouse.webp'
-  };
-  $$('.hero-tabs .chip').forEach((chip) => {
-    chip.addEventListener('click', () => {
-      $$('.hero-tabs .chip').forEach(c => c.classList.remove('selected'));
-      chip.classList.add('selected');
-      const style = chip.dataset.heroStyle;
-      const img = $('#hero-stage-img');
-      img.className = 'hero-stage-img filtered ' + style;
-      if (style && styleToImg[style]) {
-        // Lazy load all images except the original
-        if (style === 'original') {
-          img.src = styleToImg[style];
-        } else {
-          img.loading = 'lazy';
-          img.src = styleToImg[style];
-        }
-        const label = style.charAt(0).toUpperCase() + style.slice(1);
-        img.alt = label + ' staged apartment example';
-      }
-    });
-  });
+  // Carousel is now handled by carousel.js
   
 
   // Stage screen elements (only on home page)
