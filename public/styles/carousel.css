@@ -144,9 +144,7 @@
       padding: 12px;
     }
     
-    .carousel-track {
-      transform: translateX(6px); /*to center the carousel*/
-    }
+    /* Mobile offset now handled in JavaScript */
     
     .carousel-item-overlay {
       padding: 16px;
@@ -185,6 +183,10 @@
     
     .carousel-item-description {
       font-size: 12px;
+    }
+    
+    .carousel-note {
+      margin-bottom: 16px;
     }
   }
   
