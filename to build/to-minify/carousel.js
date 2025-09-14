@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
       {
         title: 'Original',
         description: 'The original empty room before staging',
-        image: '<img src="media-webp/example/Original.webp" alt="Original staging" style="width: 100%; height: 100%; object-fit: cover;">'
+        image: '<img src="media-webp/example/Original.webp" alt="Original staging" style="width: 100%; height: 100%; object-fit: cover;" fetchpriority="high">'
       },
       {
         title: 'Modern',
