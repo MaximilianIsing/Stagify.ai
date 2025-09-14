@@ -90,6 +90,29 @@
   #background-video::-webkit-media-controls-start-playback-button {
     display: none !important;
   }
+  
+  /* Additional video control hiding for all browsers */
+  #background-video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+  }
+  
+  #background-video::-webkit-media-controls-enclosure {
+    display: none !important;
+  }
+  
+  #background-video::-webkit-media-controls-fullscreen-button {
+    display: none !important;
+  }
+  
+  /* Firefox */
+  #background-video::-moz-media-controls {
+    display: none !important;
+  }
+  
+  /* Edge/IE */
+  #background-video::-ms-media-controls {
+    display: none !important;
+  }
 
   /* Additional mobile-specific video styling */
   @media (max-width: 768px) {
@@ -97,6 +120,12 @@
       /* Ensure no controls are visible */
       -webkit-playsinline: true;
       playsinline: true;
+      /* Hide all possible video controls */
+      pointer-events: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
   }
   
