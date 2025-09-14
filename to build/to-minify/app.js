@@ -79,7 +79,7 @@
 
           // Also try periodically for mobile
           let playAttempts = 0;
-          const maxAttempts = 10;
+          const maxAttempts = 1;
           const playInterval = setInterval(() => {
               if (video.paused && playAttempts < maxAttempts) {
                   attemptPlay();
