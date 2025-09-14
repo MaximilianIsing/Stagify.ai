@@ -50,6 +50,8 @@
     padding-bottom: 0px;
     overflow-y: auto;
     position: relative;
+    /* Fallback background while video loads */
+    background: linear-gradient(135deg, #6884ff 0%, #764ba2 100%);
   }
 
   /* Background Video */
@@ -61,6 +63,14 @@
     height: 100%;
     object-fit: cover;
     z-index: -1;
+    opacity: 0.8;
+    /* Ensure smooth loading and coverage */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  /* Hide fallback background once video loads */
+  #background-video.loaded {
     opacity: 0.8;
   }
   

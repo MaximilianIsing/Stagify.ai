@@ -43,6 +43,19 @@
         const video = $('#background-video');
         if (video) {
             const storedTime = localStorage.getItem(BACKGROUND_VIDEO_KEY);
+            
+            // Handle smooth video loading transition
+            video.addEventListener('loadeddata', () => {
+                video.classList.add('loaded');
+            });
+            
+            // Ensure video starts playing smoothly
+            video.addEventListener('canplay', () => {
+                video.play().catch(() => {
+                    // Handle autoplay restrictions gracefully
+                });
+            });
+            
             if (storedTime) {
                 const targetTime = parseFloat(storedTime);
                 
