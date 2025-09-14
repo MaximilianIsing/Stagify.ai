@@ -5,6 +5,80 @@
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
+  // Background video synchronization across page navigation
+  const BACKGROUND_VIDEO_KEY = 'stagify_background_video_time';
+  
+  // Store video currentTime when navigating away
+  const storeVideoTime = () => {
+      const video = $('#background-video');
+      if (video && !video.paused) {
+          localStorage.setItem(BACKGROUND_VIDEO_KEY, video.currentTime.toString());
+      }
+  };
+  
+  // Listen for various navigation events
+  window.addEventListener('beforeunload', storeVideoTime);
+  window.addEventListener('pagehide', storeVideoTime);
+  
+  // Also store time periodically while video is playing
+  let timeStoreInterval;
+  document.addEventListener('DOMContentLoaded', () => {
+      const video = $('#background-video');
+      if (video) {
+          video.addEventListener('play', () => {
+              // Store time every 2 seconds while playing
+              timeStoreInterval = setInterval(storeVideoTime, 2000);
+          });
+          
+          video.addEventListener('pause', () => {
+              if (timeStoreInterval) {
+                  clearInterval(timeStoreInterval);
+              }
+          });
+      }
+  });
+  
+  // Restore video currentTime when page loads
+  document.addEventListener('DOMContentLoaded', () => {
+      const video = $('#background-video');
+      if (video) {
+          const storedTime = localStorage.getItem(BACKGROUND_VIDEO_KEY);
+          
+          // Handle smooth video loading transition
+          video.addEventListener('loadeddata', () => {
+              video.classList.add('loaded');
+          });
+          
+          // Ensure video starts playing smoothly
+          video.addEventListener('canplay', () => {
+              video.play().catch(() => {
+                  // Handle autoplay restrictions gracefully
+              });
+          });
+          
+          if (storedTime) {
+              const targetTime = parseFloat(storedTime);
+              
+              const restoreTime = () => {
+                  if (video.duration && targetTime < video.duration) {
+                      video.currentTime = targetTime;
+                  }
+              };
+              
+              // Try to restore time when metadata is loaded
+              video.addEventListener('loadedmetadata', restoreTime);
+              
+              // Fallback if metadata is already loaded
+              if (video.readyState >= 1 && video.duration) {
+                  restoreTime();
+              }
+              
+              // Additional fallback after a short delay
+              setTimeout(restoreTime, 100);
+          }
+      }
+  });
+
   const canvas1 = $('#canvas1');
   const downloadBtn = $('#download-btn');
   const newUploadBtn = $('#new-upload');
