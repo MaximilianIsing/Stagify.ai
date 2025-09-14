@@ -569,6 +569,16 @@
   .hero-content .subtitle { margin: 0 0 18px; color: var(--muted); font-size: clamp(16px, 2vw, 18px); max-width: 520px; }
   .announcement { display: inline-block; padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; color: var(--fg); font-size: 12px; margin-bottom: 12px; background: rgba(158,158,158,0.08); }
   .hero-ctas { display: flex; gap: 12px; align-items: center; justify-content: flex-start; }
+      
+  /* Larger hero upload button on desktop only */
+  @media (min-width: 769px) {
+    #hero-upload {
+      padding: 12px 24px;
+      font-size: 20px;
+      font-weight: 600;
+      border-radius: 8px;
+    }
+  }
   /* badges removed */
   .microcopy { color: var(--muted); font-size: 12px; margin-top: 8px; }
   
