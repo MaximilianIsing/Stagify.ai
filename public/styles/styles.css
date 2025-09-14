@@ -329,7 +329,7 @@
     .nav-center {
       grid-column: 1 / -1;
       grid-row: 2;
-      justify-content: space-between;
+      justify-content: center;
       gap: 0px;
       flex-wrap: nowrap;
       min-width: 0;
@@ -365,11 +365,14 @@
     }
     
     .nav-link {
-      font-size: 13px;
-      white-space: nowrap;
-      flex-shrink: 1;
-      min-width: 0;
-      padding: 2px 4px !important;
+      background-color: transparent !important;
+      color: #2563eb !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+    }
+    
+    .nav-link::before {
+      display: none !important;
     }
     
     /* Hide main catchphrase on mobile */
@@ -401,13 +404,6 @@
       display: none !important;
     }
     
-    .nav-link {
-      font-size: 12px;
-      white-space: nowrap;
-      flex-shrink: 1;
-      min-width: 0;
-      padding: 8px 4px !important;
-    }
     
     .brand-logo {
       width: 24px;
