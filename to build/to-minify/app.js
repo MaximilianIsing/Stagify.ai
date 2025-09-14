@@ -52,7 +52,9 @@
           // Ensure video starts playing smoothly
           video.addEventListener('canplay', () => {
               video.play().catch(() => {
-                  // Handle autoplay restrictions gracefully
+                  // Handle autoplay restrictions gracefully - fallback to solid background
+                  video.style.display = 'none';
+                  document.body.style.background = '#b2c4f6';
               });
           });
 
@@ -61,6 +63,11 @@
               if (video.paused) {
                   video.play().catch(() => {
                       // Still failed, keep trying on user interaction
+                      // If this is the final attempt, hide video and show solid background
+                      if (playAttempts >= maxAttempts - 1) {
+                          video.style.display = 'none';
+                          document.body.style.background = '#b2c4f6';
+                      }
                   });
               }
           };
@@ -79,6 +86,11 @@
                   playAttempts++;
               } else if (!video.paused || playAttempts >= maxAttempts) {
                   clearInterval(playInterval);
+                  // If we've exhausted all attempts, hide video and show solid background
+                  if (video.paused) {
+                      video.style.display = 'none';
+                      document.body.style.background = '#b2c4f6';
+                  }
               }
           }, 1000);
           
