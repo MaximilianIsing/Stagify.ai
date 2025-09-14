@@ -19,8 +19,6 @@
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: grab;
   height: calc(100% - 50px); /* Account for indicators */
-  justify-content: center;
-  align-items: center;
 }
 
 .carousel-track:active {

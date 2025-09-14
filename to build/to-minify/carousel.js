@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pauseOnHover: true,
       loop: true,
       round: false,
-      gap: 18
+      gap: 21
     });
   }
 });
