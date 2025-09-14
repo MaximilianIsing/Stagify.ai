@@ -337,6 +337,8 @@
       width: 100%;
       margin: 0 auto;
       padding: 0 20px;
+      overflow: visible !important;
+      min-width: 0;
     }
     
     .nav-actions {
@@ -374,6 +376,9 @@
       border-radius: 0 !important;
       white-space: nowrap !important;
       text-align: center !important;
+      flex-shrink: 0 !important;
+      min-width: max-content !important;
+      overflow: visible !important;
     }
     
     .nav-link::before {
@@ -1754,6 +1759,19 @@
     /* Center role titles on mobile */
     .contact-card div[style*="font-size: 13px"] {
       text-align: center !important;
+    }
+    
+    /* Remove hover effects on mobile */
+    .contact-card:hover,
+    .feature-card:hover,
+    .testimonial:hover,
+    .faq-item:hover,
+    .faq:hover,
+    .advantages:hover,
+    .vs:hover,
+    .vs > div:hover {
+      transform: none !important;
+      box-shadow: none !important;
     }
     
     .contact-info {
