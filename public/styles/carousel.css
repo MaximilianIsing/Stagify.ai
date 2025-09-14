@@ -9,7 +9,7 @@
     width: 100%;
     max-width: 800px;
     aspect-ratio: 16/10;
-    margin: 0 auto;
+    margin: 40px auto 0 auto;
     --outer-r: 24px;
     --p-distance: 12px;
   }
@@ -137,11 +137,47 @@
     margin-top: 6px;
     text-align: center;
   }
+
+  /* Stats pills below carousel */
+  .stats-pills {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+
+  .stat-pill {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-width: auto;
+    cursor: default;
+    white-space: nowrap;
+  }
+
+  .stat-pill-number {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+    margin-right: 4px;
+  }
+
+  .stat-pill-text {
+    font-size: 0.875rem;
+    color: white;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+  }
   
   /* Mobile responsive adjustments */
   @media (max-width: 768px) {
     .carousel-container {
       padding: 12px;
+      margin: 0 auto;
     }
     
     /* Mobile offset now handled in JavaScript */
@@ -166,6 +202,19 @@
     .carousel-note {
       margin-bottom: 24px;
     }
+
+    .stats-pills {
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .stat-pill-number {
+      font-size: 0.9rem;
+    }
+
+    .stat-pill-text {
+      font-size: 0.75rem;
+    }
   }
   
   @media (max-width: 480px) {
@@ -187,6 +236,19 @@
     
     .carousel-note {
       margin-bottom: 16px;
+    }
+
+    .stats-pills {
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .stat-pill-number {
+      font-size: 0.8rem;
+    }
+
+    .stat-pill-text {
+      font-size: 0.7rem;
     }
   }
   
