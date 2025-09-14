@@ -39,6 +39,7 @@
           crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/carousel.css">
     <script>
       // AD CONTROL VARIABLE - Set to false to hide all ads
       const SHOW_ADS = false; // Change this to false to disable all advertisements
@@ -54,6 +55,7 @@
       });
     </script>
     <script src="scripts/app.js" defer></script>
+    <script src="scripts/carousel.js" defer></script>
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -158,27 +160,13 @@
             <span class="w-one">one</span>
             <span class="w-click">click</span>
           </h1>
-          <p class="subtitle" style="color: #2563eb;">Upload a picture and our AI will add furniture in seconds.</p>
           <div class="hero-ctas">
             <button id="hero-upload" class="btn btn-primary"><strong>Upload image for free</strong></button>
           </div>
         </div>
         <div class="hero-media">
-          <div class="hero-stage-card light-card">
-            <div class="hero-tabs" role="tablist" aria-label="Furniture style">
-              <button class="chip selected" data-hero-style="original" role="tab" aria-selected="true">Original</button>
-              <button class="chip" data-hero-style="modern" role="tab">Modern</button>
-              <button class="chip" data-hero-style="scandinavian" role="tab">Scandinavian</button>
-              <button class="chip" data-hero-style="luxury" role="tab">Luxury</button>
-              <button class="chip" data-hero-style="coastal" role="tab">Coastal</button>
-              <button class="chip" data-hero-style="midcentury" role="tab">Midcentury</button>
-              <button class="chip" data-hero-style="farmhouse" role="tab">Farmhouse</button>
-            </div>
-            <div class="hero-stage-frame">
-              <img id="hero-stage-img" class="hero-stage-img filtered original" alt="Hero staged preview"
-                   src="media-webp/example/Original.webp" fetchpriority="high" />
-            </div>
-            <div class="hero-note">Example preview — upload your photo to stage</div>
+          <div class="carousel-container">
+            <div class="carousel-note">Example preview — upload your photo to stage</div>
           </div>
         </div>
       </section>
