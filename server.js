@@ -182,7 +182,6 @@ function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurnit
   if (additionalPrompt && additionalPrompt.trim()) {
     prompt += ` ${additionalPrompt.trim()}`;
   };
-  console.log(prompt);
   return prompt;
 }
 
