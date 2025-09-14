@@ -787,7 +787,7 @@
   @media (max-width: 768px) {
     .sponsors {
       padding: 20px 0 32px;
-      margin-top: 10px;
+      margin-top: 0px;
     }
     
     .sponsors-content {
