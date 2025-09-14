@@ -55,6 +55,32 @@
                     // Handle autoplay restrictions gracefully
                 });
             });
+
+            // Handle mobile autoplay restrictions
+            const attemptPlay = () => {
+                if (video.paused) {
+                    video.play().catch(() => {
+                        // Still failed, keep trying on user interaction
+                    });
+                }
+            };
+
+            // Try to play on various user interactions
+            document.addEventListener('touchstart', attemptPlay, { once: true });
+            document.addEventListener('click', attemptPlay, { once: true });
+            document.addEventListener('scroll', attemptPlay, { once: true });
+
+            // Also try periodically for mobile
+            let playAttempts = 0;
+            const maxAttempts = 10;
+            const playInterval = setInterval(() => {
+                if (video.paused && playAttempts < maxAttempts) {
+                    attemptPlay();
+                    playAttempts++;
+                } else if (!video.paused || playAttempts >= maxAttempts) {
+                    clearInterval(playInterval);
+                }
+            }, 1000);
             
             if (storedTime) {
                 const targetTime = parseFloat(storedTime);
