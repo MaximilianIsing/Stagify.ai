@@ -827,6 +827,10 @@ function handleRoleSelection(role) {
   localStorage.setItem('userRole', role);
   localStorage.setItem('roleSelectedAt', new Date().toISOString());
   
+  // Hide the role popup
+  const rolePopup = document.getElementById('role-popup');
+  if (rolePopup) rolePopup.classList.add('hidden');
+  
   // Show referral popup immediately (no delay)
   showReferralPopup();
 }
@@ -851,6 +855,10 @@ function handleReferralSelection(referral) {
   // Save the selected referral source to localStorage
   localStorage.setItem('userReferralSource', referral);
   localStorage.setItem('referralSelectedAt', new Date().toISOString());
+  
+  // Hide the referral popup
+  const referralPopup = document.getElementById('referral-popup');
+  if (referralPopup) referralPopup.classList.add('hidden');
   
   // Show email popup immediately (no delay)
   showEmailPopup();
