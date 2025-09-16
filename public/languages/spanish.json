@@ -1,0 +1,223 @@
+{
+  "meta": {
+    "title": "Escenificación IA | Stagify.ai - Herramienta Gratuita de Escenificación de Hogares con IA",
+    "description": "Transforma habitaciones vacías con escenificación IA. Sube fotos y obtén resultados profesionalmente escenificados en segundos. Escenificación de hogares con IA gratuita para agentes inmobiliarios, vendedores y compradores.",
+    "keywords": "escenificación IA, escenificación de hogares, escenificación inmobiliaria, escenificación virtual, escenificación de hogares IA, escenificación de propiedades, fotografía inmobiliaria, herramienta de escenificación, muebles virtuales"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "whyUs": "Nosotros",
+    "faq": "PF",
+    "contactUs": "Contáctanos",
+    "brand": "stagify",
+    "brandSuffix": ".ai"
+  },
+  "hero": {
+    "catchphrase": "Sube. Prepara. Imagina.",
+    "announcement": "Creado para hacer realidad la casa de tus sueños",
+    "title": {
+      "free": "Gratis",
+      "virtual": "virtual",
+      "staging": "escenificación",
+      "with": "con",
+      "one": "un",
+      "click": "clic",
+      "upload": "Sube.",
+      "stage": "Prepara.",
+      "imagine": "Imagina."
+    },
+    "cta": "Suba su imagen gratiz",
+    "carouselNote": "Ejemplo de vista previa: sube tu foto al scenario",
+    "stats": {
+      "roomsStaged": "Habitaciones Escenificadas",
+      "usersServed": "Usuarios Atendidos"
+    }
+  },
+  "sponsors": {
+    "title": "Reconocido oficialmente por"
+  },
+  "modal": {
+    "rolePopup": {
+      "title": "¡Personalicemos tu experiencia!",
+      "question": "¿Cuál es tu rol?",
+      "options": {
+        "agent": "Agente",
+        "seller": "Vender",
+        "buyer": "Compra",
+        "other": "otro"
+      }
+    },
+    "referralPopup": {
+      "title": "¡Personalicemos tu experiencia!",
+      "question": "¿Cómo nos encontraste?",
+      "options": {
+        "socials": "Social",
+        "friend": "Amigo",
+        "email": "Correo",
+        "other": "otro"
+      }
+    },
+    "emailPopup": {
+      "title": "¡Personalicemos tu experiencia!",
+      "question": "¿Quieres actualizaciones por correo?",
+      "placeholder": "tu@email.com",
+      "skip": "Omitir"
+    },
+    "staging": {
+      "title": "Opciones",
+      "close": "x",
+      "adDisclaimer": "*Los anuncios nos permiten hacer esta herramienta gratuita",
+      "roomType": "Tipo de habitación",
+      "furnitureStyle": "Estilo de muebles",
+      "additionalPrompt": "Prompt adicional",
+      "additionalPromptPlaceholder": "Añade detalles específicos o solicitudes para tu escenificación...",
+      "removeFurniture": "Eliminar muebles existentes",
+      "processButton": "Procesar foto",
+      "uploadArea": "Sube una imagen o arrastra y suelta",
+      "before": "Antes",
+      "after": "Después",
+      "downloadResult": "Descargar Resultado",
+      "uploadAnother": "Subir Otra",
+      "noProcessedImage": "Aún no hay imagen procesada disponible",
+      "noProcessedImageSubtext": "Por favor haz clic en \"Procesar foto\" primero para generar una versión escenificada con IA de tu imagen",
+      "advertisement": "Anuncio",
+      "progress": {
+        "preparing": "Preparando…",
+        "uploading": "Subiendo imagen…",
+        "preparingAI": "Preparando modelo de IA…",
+        "staging": "La IA está escenificando tu habitación…",
+        "complete": "¡Completo!",
+        "error": "Error: ",
+        "loadingMessages": [
+          "Encontrando los muebles perfectos para ti",
+          "Escenificando tu habitación ideal",
+          "Seleccionando hermosas piezas de decoración",
+          "Organizando muebles para máximo atractivo",
+          "Creando el ambiente perfecto",
+          "Mejorando tu espacio con estilo",
+          "Diseñando tu interior de ensueño",
+          "Optimizando el diseño y flujo de la habitación",
+          "Añadiendo toques finales",
+          "Dando vida a tu visión"
+        ]
+      }
+    }
+  },
+  "roomTypes": {
+    "bedroom": "Dormitorio",
+    "livingRoom": "Sala de estar",
+    "diningRoom": "Comedor",
+    "kitchen": "Cocina",
+    "bathroom": "Baño",
+    "office": "Oficina"
+  },
+  "furnitureStyles": {
+    "standard": "Estándar",
+    "modern": "Moderno",
+    "midcentury": "Mediados de siglo",
+    "scandinavian": "Escandinava",
+    "luxury": "Lujo",
+    "coastal": "Costera",
+    "farmhouse": "Cortijo",
+    "custom": "Personalizado (Experimental)"
+  },
+  "whyUs": {
+    "title": "¿Por qué elegirnos?",
+    "stagify": {
+      "title": "stagify.ai",
+      "features": {
+        "instantResults": "<strong>Resultados instantáneos</strong>: ~8 segundos",
+        "oneClickStaging": "<strong>Puesta en escena con un solo clic</strong>: Sin complicaciones",
+        "free": "<strong>Gratis</strong>: No tiene costo de uso",
+        "noAds": "<strong>Sin anuncios</strong>: una experiencia sin distracciones",
+        "noLogin": "<strong>No es necesario iniciar sesión</strong>: comience de inmediato",
+        "unlimited": "<strong>Generaciones ilimitadas</strong>: Hasta que estés satisfecho",
+        "copyright": "<strong>Derechos de autor completos</strong>: uso en cualquier lugar"
+      }
+    },
+    "others": {
+      "title": "Otros",
+      "features": {
+        "slowResults": "<strong style=\"color: #6d1c2c;\">Resultados lentos: </strong>Días de espera",
+        "longProcess": "<strong style=\"color: #6d1c2c;\">Proceso largo: </strong>Ida y vuelta tediosa",
+        "expensive": "<strong style=\"color: #6d1c2c;\">Caro: </strong>tarifas costosas por imagen",
+        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Anuncios y galletas: </strong>una experiencia intrusive",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">Cuenta requerida: </strong>Inicio frustrante",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Generaciones limitadas: </strong>Límites de velocidad estrictos",
+        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Derechos de autor poco claros: </strong>Responsabilidad legal"
+      }
+    },
+    "keyFeatures": {
+      "title": "Características Clave",
+      "unlimitedVariations": {
+        "title": "Variaciones ilimitadas",
+        "description": "Explora múltiples estilos hasta que se adapten a tu marca y al perfil de tu comprador."
+      },
+      "fastTurnarounds": {
+        "title": "Entrega rápida",
+        "description": "Prepara fotos en aproximadamente 8 segundos para que pueda publicar antes y cerrar más tratos."
+      }
+    }
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "questions": {
+      "whatIsVirtualStaging": {
+        "question": "¿Qué es la escenificación virtual?",
+        "answer": "La escenificación virtual es el proceso de amueblar digitalmente una foto de propiedad para mostrar su potencial, ayudando a los compradores a visualizar cómo puede verse y sentirse un espacio cuando está completamente decorado. A diferencia de la escenificación tradicional, es más rápida, más rentable y permite múltiples opciones de diseño adaptadas a diferentes preferencias de compradores. Con imágenes de alta calidad, la escenificación virtual resalta las mejores características de la propiedad, facilitando que los compradores se conecten emocionalmente e imaginen viviendo allí."
+      },
+      "howLong": {
+        "question": "¿Cuánto tiempo toma?",
+        "answer": "En promedio, la escenificación virtual toma alrededor de 8 segundos por foto para procesar, aunque el tiempo exacto puede ser un poco más corto o más largo dependiendo de la complejidad del espacio y el estilo de diseño elegido. El resultado es una transformación rápida y fluida que hace que las fotos de tu propiedad destaquen."
+      },
+      "customTheme": {
+        "question": "¿Cómo selecciono un tema personalizado?",
+        "answer": "Si no ves el tema que quieres, puedes seleccionar \"Personalizado\" y luego añadir un prompt específico para el tema que deseas. Usaremos tu prompt para generar el tema que quieres."
+      }
+    }
+  },
+  "contact": {
+    "title": "Ponte en contacto",
+    "description": "Nos encantaría saber de ti. Contáctanos individualmente o escríbenos a <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
+    "social": "¡Síguenos en <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> para actualizaciones y ejemplos!",
+    "labels": {
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "phone": "Teléfono"
+    },
+    "team": {
+      "maximilian": {
+        "name": "Maximilian Ising",
+        "email": "maximilianbising@gmail.com",
+        "phone": "(917) 690-6253",
+        "title": "Co-Fundador, Jefe de Desarrollo e IA"
+      },
+      "lucas": {
+        "name": "Lucas Shtainer",
+        "email": "lucasshtainer1@gmail.com",
+        "phone": "(347) 491-9609",
+        "title": "Co-Fundador, Jefe de Marketing"
+      },
+      "ryan": {
+        "name": "Ryan Croman",
+        "email": "ryancroman10@gmail.com",
+        "phone": "(646) 709-6715",
+        "title": "Co-Fundador, Jefe de Alcance"
+      },
+      "emil": {
+        "name": "Emil Volvosky",
+        "email": "emvolvovsky@gmail.com",
+        "phone": "(917) 691-2013",
+        "title": "Analista de Marketing Estadístico"
+      }
+    }
+  },
+  "errors": {
+    "fileType": "Por favor sube un archivo de imagen PNG, JPG, JPEG, WebP o GIF.",
+    "fileTooLarge": "El archivo es demasiado grande. Por favor sube una imagen menor a 100MB.",
+    "uploadFirst": "Por favor sube una imagen primero",
+    "badPrompt": "Prompt incorrecto ingresado",
+    "processingFailed": "El procesamiento falló",
+    "noImageData": "No se recibieron datos de imagen"
+  }
+}

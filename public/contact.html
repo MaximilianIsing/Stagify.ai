@@ -6,12 +6,12 @@
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
     <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
-    <title>Contact Us - Stagify.ai Free AI Staging</title>
-    <meta name="description" content="Get in touch with the Stagify.ai team. Contact our co-founders for support, partnerships, or questions about our free AI home staging tool.">
+    <title data-lang="meta.title">Contact Us - Stagify.ai Free AI Staging</title>
+    <meta name="description" data-lang-attr="meta.description|content" content="Get in touch with the Stagify.ai team. Contact our co-founders for support, partnerships, or questions about our free AI home staging tool.">
     
     <!-- SEO Meta Tags -->
     <meta name="robots" content="index, follow">
-    <meta name="keywords" content="contact stagify, AI staging support, home staging contact, real estate staging help">
+    <meta name="keywords" data-lang-attr="meta.keywords|content" content="contact stagify, AI staging support, home staging contact, real estate staging help">
     
     <!-- Open Graph Tags -->
     <meta property="og:title" content="Contact Us - Stagify.ai">
@@ -20,6 +20,8 @@
     <meta property="og:url" content="https://stagify.ai/contact.html">
 
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script src="scripts/language-loader.js" defer></script>
   </head>
   <body>
     <!-- Background Video -->
@@ -29,17 +31,17 @@
 
     <header class="site-header">
       <nav class="nav">
-        <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong">stagify</span><span class="brand-light">.ai</span></div>
+        <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></div>
         <div class="nav-center">
-          <a href="index.html" class="nav-link">Home</a>
-          <a href="why.html#why" class="nav-link">Why Us?</a>
-          <a href="faq.html#faq" class="nav-link">FAQ</a>
-          <a href="#contact" class="nav-link">Contact Us</a>
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
+          <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
+          <a href="#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
         </div>
         <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
-          <div>Upload.</div>
-          <div>Stage.</div>
-          <div>Imagine.</div>
+          <div data-lang="hero.title.upload">Upload.</div>
+          <div data-lang="hero.title.stage">Stage.</div>
+          <div data-lang="hero.title.imagine">Imagine.</div>
         </div>
       </nav>
     </header>
@@ -48,9 +50,9 @@
       <section class="contact" id="contact">
         <div class="contact-hero">
           <div>
-            <h1 style="color: #1e3a8a;">Get in touch</h1>
-            <p style="color: #2563eb; white-space: nowrap;" class="contact-text-desktop">We'd love to hear from you. Reach out individually or contact us at <a href="mailto:team@stagify.ai" style="color: #1e3a8a; text-decoration: underline;">team@stagify.ai</a>.</p>
-            <p style="color: #2563eb; margin-top: 12px; white-space: nowrap;" class="contact-text-desktop">
+            <h1 style="color: #1e3a8a;" data-lang="contact.title">Get in touch</h1>
+            <p style="color: #2563eb; white-space: nowrap;" class="contact-text-desktop" data-lang-html="contact.description">We'd love to hear from you. Reach out individually or contact us at <a href="mailto:team@stagify.ai" style="color: #1e3a8a; text-decoration: underline;">team@stagify.ai</a>.</p>
+            <p style="color: #2563eb; margin-top: 12px; white-space: nowrap;" class="contact-text-desktop" data-lang-html="contact.social">
               Follow us on <a href="https://www.instagram.com/stagify.ai/" target="_blank" style="color: #1e3a8a; text-decoration: underline;">Instagram@stagify.ai</a> for updates and examples!
             </p>
           </div>
@@ -60,19 +62,19 @@
           <div class="contact-content">
             <div class="contact-info">
               <div class="contact-row">
-                <div class="contact-label">Name</div>
-                <div class="contact-value" style="font-size:18px; text-decoration:none; color:#1e3a8a;">Maximilian Ising</div>
+                <div class="contact-label" data-lang="contact.labels.name">Name</div>
+                <div class="contact-value" style="font-size:18px; text-decoration:none; color:#1e3a8a;" data-lang="contact.team.maximilian.name">Maximilian Ising</div>
               </div>
               <div class="contact-row">
-                <div class="contact-label">Email</div>
+                <div class="contact-label" data-lang="contact.labels.email">Email</div>
                 <div class="contact-value"><a href="mailto:maximilianbising@gmail.com" style="font-size:18px; text-decoration:none; color:#1e3a8a;">maximilianbising@gmail.com</a></div>
               </div>
               <div class="contact-row">
-                <div class="contact-label">Phone</div>
+                <div class="contact-label" data-lang="contact.labels.phone">Phone</div>
                 <div class="contact-value"><a href="tel:+19176906253" style="font-size:18px; text-decoration:none; color:#1e3a8a;">(917) 690-6253</a></div>
               </div>
               <div style="margin-top: 0px; font-size: 13px; color: var(--muted); text-align: left;">
-                <em>Co-Founder, Head of Development and AI</em>
+                <em data-lang="contact.team.maximilian.title">Co-Founder, Head of Development and AI</em>
               </div>
             </div>
             <img src="media-webp/contact_photos/Max.webp" alt="Maximilian Ising" class="contact-photo">
@@ -83,19 +85,19 @@
           <div class="contact-content">
             <div class="contact-info">
               <div class="contact-row">
-                <div class="contact-label">Name</div>
-                <div class="contact-value" style="font-size:18px; text-decoration:none; color:#1e3a8a;">Lucas Shtainer</div>
+                <div class="contact-label" data-lang="contact.labels.name">Name</div>
+                <div class="contact-value" style="font-size:18px; text-decoration:none; color:#1e3a8a;" data-lang="contact.team.lucas.name">Lucas Shtainer</div>
               </div>
               <div class="contact-row">
-                <div class="contact-label">Email</div>
+                <div class="contact-label" data-lang="contact.labels.email">Email</div>
                 <div class="contact-value"><a href="mailto:lucasshtainer1@gmail.com" style="font-size:18px; text-decoration:none; color:#1e3a8a;">lucasshtainer1@gmail.com</a></div>
               </div>
               <div class="contact-row">
-                <div class="contact-label">Phone</div>
+                <div class="contact-label" data-lang="contact.labels.phone">Phone</div>
                 <div class="contact-value"><a href="tel:+13474919609" style="font-size:18px; text-decoration:none; color:#1e3a8a;">(347) 491-9609</a></div>
               </div>
               <div style="margin-top: 0px; font-size: 13px; color: var(--muted); text-align: left;">
-                <em>Co-Founder, Head of Marketing</em>
+                <em data-lang="contact.team.lucas.title">Co-Founder, Head of Marketing</em>
               </div>
             </div>
             <img src="media-webp/contact_photos/Lucas.webp" alt="Lucas Shtainer" class="contact-photo">
@@ -106,19 +108,19 @@
           <div class="contact-content">
             <div class="contact-info">
               <div class="contact-row">
-                <div class="contact-label">Name</div>
-                <div class="contact-value" style="font-size:18px; text-decoration:none; color:#1e3a8a;">Ryan Croman</div>
+                <div class="contact-label" data-lang="contact.labels.name">Name</div>
+                <div class="contact-value" style="font-size:18px; text-decoration:none; color:#1e3a8a;" data-lang="contact.team.ryan.name">Ryan Croman</div>
               </div>
               <div class="contact-row">
-                <div class="contact-label">Email</div>
+                <div class="contact-label" data-lang="contact.labels.email">Email</div>
                 <div class="contact-value"><a href="mailto:ryancroman10@gmail.com" style="font-size:18px; text-decoration:none; color:#1e3a8a;">ryancroman10@gmail.com</a></div>
               </div>
               <div class="contact-row">
-                <div class="contact-label">Phone</div>
+                <div class="contact-label" data-lang="contact.labels.phone">Phone</div>
                 <div class="contact-value"><a href="tel:+16467096715" style="font-size:18px; text-decoration:none; color:#1e3a8a;">(646) 709-6715</a></div>
               </div>
               <div style="margin-top: 0px; font-size: 13px; color: var(--muted); text-align: left;">
-                <em>Co-Founder, Head of Outreach</em>
+                <em data-lang="contact.team.ryan.title">Co-Founder, Head of Outreach</em>
               </div>
             </div>
             <img src="media-webp/contact_photos/Ryan.webp" alt="Ryan Croman" class="contact-photo">
@@ -129,19 +131,19 @@
           <div class="contact-content">
             <div class="contact-info">
               <div class="contact-row">
-                <div class="contact-label">Name</div>
-                <div class="contact-value" style="font-size:18px; text-decoration:none; color:#1e3a8a;">Emil Volvosky</div>
+                <div class="contact-label" data-lang="contact.labels.name">Name</div>
+                <div class="contact-value" style="font-size:18px; text-decoration:none; color:#1e3a8a;" data-lang="contact.team.emil.name">Emil Volvosky</div>
               </div>
               <div class="contact-row">
-                <div class="contact-label">Email</div>
+                <div class="contact-label" data-lang="contact.labels.email">Email</div>
                 <div class="contact-value"><a href="mailto:emvolvovsky@gmail.com" style="font-size:18px; text-decoration:none; color:#1e3a8a;">emvolvovsky@gmail.com</a></div>
               </div>
               <div class="contact-row">
-                <div class="contact-label">Phone</div>
+                <div class="contact-label" data-lang="contact.labels.phone">Phone</div>
                 <div class="contact-value"><a href="tel:+19176912013" style="font-size:18px; text-decoration:none; color:#1e3a8a;">(917) 691-2013</a></div>
               </div>
               <div style="margin-top: 0px; font-size: 13px; color: var(--muted); text-align: left;">
-                <em>Stastical Marketing Analyst</em>
+                <em data-lang="contact.team.emil.title">Stastical Marketing Analyst</em>
               </div>
             </div>
             <img src="media-webp/contact_photos/Emil.webp" alt="Emil Volvolsky" class="contact-photo">

@@ -6,11 +6,11 @@
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
     <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
-    <title>AI Staging | Stagify.ai - Free AI Home Staging Tool</title>
-    <meta name="description" content="Transform empty rooms with AI staging. Upload photos and get professionally staged results in seconds. Free AI home staging for real estate agents, sellers, and buyers.">
+    <title data-lang="meta.title">AI Staging | Stagify.ai - Free AI Home Staging Tool</title>
+    <meta name="description" data-lang-attr="meta.description|content" content="Transform empty rooms with AI staging. Upload photos and get professionally staged results in seconds. Free AI home staging for real estate agents, sellers, and buyers.">
     
     <!-- SEO Keywords -->
-    <meta name="keywords" content="AI staging, home staging, real estate staging, virtual staging, AI home staging, property staging, real estate photography, staging tool, virtual furniture">
+    <meta name="keywords" data-lang-attr="meta.keywords|content" content="AI staging, home staging, real estate staging, virtual staging, AI home staging, property staging, real estate photography, staging tool, virtual furniture">
     
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
@@ -61,6 +61,8 @@
         }
       });
     </script>
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script src="scripts/language-loader.js" defer></script>
     <script src="scripts/app.js" defer></script>
     <script src="scripts/carousel.js" defer></script>
     <script src="scripts/star-border.js" defer></script>
@@ -98,14 +100,14 @@
     <div id="role-popup" class="role-popup hidden">
       <div class="role-popup-backdrop"></div>
       <div class="role-popup-content">
-        <h2>Let's tailor your experience!</h2>
-        <p class="referral-question">What is your role?</p>
+        <h2 data-lang="modal.rolePopup.title">Let's tailor your experience!</h2>
+        <p class="referral-question" data-lang="modal.rolePopup.question">What is your role?</p>
         <div class="role-options">
-          <button class="role-btn" data-role="agent">Agent</button>
-          <button class="role-btn" data-role="seller">Seller</button>
-          <button class="role-btn" data-role="buyer">Buyer</button>
+          <button class="role-btn" data-role="agent" data-lang="modal.rolePopup.options.agent">Agent</button>
+          <button class="role-btn" data-role="seller" data-lang="modal.rolePopup.options.seller">Seller</button>
+          <button class="role-btn" data-role="buyer" data-lang="modal.rolePopup.options.buyer">Buyer</button>
         </div>
-        <button class="role-other" data-role="other">other</button>
+        <button class="role-other" data-role="other" data-lang="modal.rolePopup.options.other">other</button>
       </div>
     </div>
 
@@ -113,14 +115,14 @@
     <div id="referral-popup" class="role-popup hidden">
       <div class="role-popup-backdrop"></div>
       <div class="role-popup-content no-animation">
-        <h2>Let's tailor your experience!</h2>
-        <p class="referral-question">How did you find us?</p>
+        <h2 data-lang="modal.referralPopup.title">Let's tailor your experience!</h2>
+        <p class="referral-question" data-lang="modal.referralPopup.question">How did you find us?</p>
         <div class="role-options">
-          <button class="role-btn" data-referral="socials">Socials</button>
-          <button class="role-btn" data-referral="friend">Friend</button>
-          <button class="role-btn" data-referral="email">Email</button>
+          <button class="role-btn" data-referral="socials" data-lang="modal.referralPopup.options.socials">Socials</button>
+          <button class="role-btn" data-referral="friend" data-lang="modal.referralPopup.options.friend">Friend</button>
+          <button class="role-btn" data-referral="email" data-lang="modal.referralPopup.options.email">Email</button>
         </div>
-        <button class="role-other" data-referral="other">other</button>
+        <button class="role-other" data-referral="other" data-lang="modal.referralPopup.options.other">other</button>
       </div>
     </div>
 
@@ -128,62 +130,70 @@
     <div id="email-popup" class="role-popup hidden">
       <div class="role-popup-backdrop"></div>
       <div class="role-popup-content no-animation">
-        <h2>Let's tailor your experience!</h2>
-        <p class="referral-question">Want email updates?</p>
+        <h2 data-lang="modal.emailPopup.title">Let's tailor your experience!</h2>
+        <p class="referral-question" data-lang="modal.emailPopup.question">Want email updates?</p>
         <div class="email-container">
-          <input type="email" id="user-email" class="email-input" placeholder="your@email.com" />
+          <input type="email" id="user-email" class="email-input" data-lang="modal.emailPopup.placeholder" placeholder="your@email.com" />
           <button class="submit-email-btn" id="submit-email"><img src="media-webp/Check.webp" alt="Check" style="width: 16px; height: 16px; display: block; margin: 2px auto 0 auto; transform: translateX(-1px);"></button>
         </div>
-        <button class="role-other" id="skip-email">Skip</button>
+        <button class="role-other" id="skip-email" data-lang="modal.emailPopup.skip">Skip</button>
       </div>
     </div>
 
     <header class="site-header">
       <nav class="nav">
-        <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong">stagify</span><span class="brand-light">.ai</span></div>
+        <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></div>
         <div class="nav-center">
-          <a href="index.html" class="nav-link">Home</a>
-          <a href="why.html#why" class="nav-link">Why Us?</a>
-          <a href="faq.html#faq" class="nav-link">FAQ</a>
-          <a href="contact.html#contact" class="nav-link">Contact Us</a>
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
+          <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
+          <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
         </div>
         <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
-          <div>Upload.</div>
-          <div>Stage.</div>
-          <div>Imagine.</div>
+          <div data-lang="hero.title.upload">Upload.</div>
+          <div data-lang="hero.title.stage">Stage.</div>
+          <div data-lang="hero.title.imagine">Imagine.</div>
         </div>
       </nav>
     </header>
 
     <main>
+      <div class="language-picker-container">
+        <div class="language-selector">
+          <select id="language-select" class="language-dropdown">
+            <option value="english" selected>EN</option>
+            <option value="spanish">🇪🇸 ES</option>
+          </select>
+        </div>
+      </div>
       <section class="hero" id="home">
         <div class="hero-content">
-          <p class="catchphrase" style="color: #1e3a8a; font-size: 2.5rem; font-weight: 700; margin: 0 0 1.5rem 0; text-align: center; line-height: 1.2; white-space: nowrap; transition: all 0.3s ease; display: inline-block; transform-origin: center;" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">Upload. Stage. Imagine.</p>
-          <div class="announcement" style="background: rgba(255, 255, 255, 0.4); color: #1e3a8a; backdrop-filter: blur(10px);">Built to make your dream home a reality</div>
+          <p class="catchphrase" style="color: #1e3a8a; font-size: 2.5rem; font-weight: 700; margin: 0 0 1.5rem 0; text-align: center; line-height: 1.2; white-space: nowrap; transition: all 0.3s ease; display: inline-block; transform-origin: center;" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'" data-lang="hero.catchphrase">Upload. Stage. Imagine.</p>
+          <div class="announcement" style="background: rgba(255, 255, 255, 0.4); color: #1e3a8a; backdrop-filter: blur(10px);" data-lang="hero.announcement">Built to make your dream home a reality</div>
           <h1 style="color: #1e3a8a;">
-            <span class="w-free">Free</span>
-            <span class="w-virtual">virtual</span>
-            <span class="w-staging">staging</span>
-            <span class="w-with">with</span>
-            <span class="w-one">one</span>
-            <span class="w-click">click</span>
+            <span class="w-free" data-lang="hero.title.free">Free</span>
+            <span class="w-virtual" data-lang="hero.title.virtual">virtual</span>
+            <span class="w-staging" data-lang="hero.title.staging">staging</span>
+            <span class="w-with" data-lang="hero.title.with">with</span>
+            <span class="w-one" data-lang="hero.title.one">one</span>
+            <span class="w-click" data-lang="hero.title.click">click</span>
           </h1>
           <div class="hero-ctas">
-            <button id="hero-upload" class="btn btn-primary"><strong>Upload image for free</strong></button>
+            <button id="hero-upload" class="btn btn-primary"><strong data-lang="hero.cta">Upload image for free</strong></button>
           </div>
         </div>
         <div class="hero-media">
           <div class="carousel-container">
-            <div class="carousel-note">Example preview — upload your photo to stage</div>
+            <div class="carousel-note" data-lang="hero.carouselNote">Example preview — upload your photo to stage</div>
           </div>
           <div class="stats-pills">
             <div class="stat-pill">
               <span class="stat-pill-number">300+</span>
-              <span class="stat-pill-text">Rooms Staged</span>
+              <span class="stat-pill-text" data-lang="hero.stats.roomsStaged">Rooms Staged</span>
             </div>
             <div class="stat-pill">
               <span class="stat-pill-number">100+</span>
-              <span class="stat-pill-text">Users Served</span>
+              <span class="stat-pill-text" data-lang="hero.stats.usersServed">Users Served</span>
             </div>
           </div>
         </div>
@@ -191,7 +201,7 @@
 
       <section class="sponsors">
         <div class="sponsors-content">
-          <h2 class="sponsors-title" style="color: #1e3a8a; font-weight: thin;">Officially Recognized By</h2>
+          <h2 class="sponsors-title" style="color: #1e3a8a; font-weight: thin;" data-lang="sponsors.title">Officially Recognized By</h2>
           <div class="sponsors-grid">
             <div class="sponsor-item">
               <img src="media-webp/sponsors/Centennial.webp" alt="Centennial" class="sponsor-logo" fetchpriority="high">
@@ -215,64 +225,64 @@
       <div class="modal hidden" id="stage-modal">
         <div class="modal-backdrop" id="modal-backdrop"></div>
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="stage-title">
-          <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+          <button class="modal-close" id="modal-close" aria-label="Close" data-lang="modal.staging.close">✕</button>
           <!-- Modal disclaimer in bottom right -->
-          <div class="modal-ad-disclaimer">*Advertisements allow us to make this tool free</div>
+          <div class="modal-ad-disclaimer" data-lang="modal.staging.adDisclaimer">*Advertisements allow us to make this tool free</div>
           <section class="stage" id="stage">
             <div class="stage-inner">
               <div class="toolbar">
                 <div class="tool-header">
-                  <h3 id="stage-title" style="color: #2563eb; text-align: center; font-size: 2rem; font-weight: 700; margin: 8px 0 12px 0;">Options</h3>
+                  <h3 id="stage-title" style="color: #2563eb; text-align: center; font-size: 2rem; font-weight: 700; margin: 8px 0 12px 0;" data-lang="modal.staging.title">Options</h3>
                 </div>
 
                 <div class="tool-row">
-                  <label class="label">Room type</label>
+                  <label class="label" data-lang="modal.staging.roomType">Room type</label>
                   <div id="room-type-select" class="custom-select" data-value="Bedroom">
-                    <button class="select-trigger" type="button"><span class="select-value">Bedroom</span><span class="caret">▾</span></button>
+                    <button class="select-trigger" type="button"><span class="select-value" data-lang="roomTypes.bedroom">Bedroom</span><span class="caret">▾</span></button>
                     <div class="select-menu hidden" role="listbox">
-                      <div class="option selected" data-value="Bedroom" role="option" aria-selected="true">Bedroom</div>
-                      <div class="option" data-value="Living room" role="option">Living room</div>
-                      <div class="option" data-value="Dining room" role="option">Dining room</div>
-                      <div class="option" data-value="Kitchen" role="option">Kitchen</div>
-                      <div class="option" data-value="Bathroom" role="option">Bathroom</div>
-                      <div class="option" data-value="Office" role="option">Office</div>
+                      <div class="option selected" data-value="Bedroom" role="option" aria-selected="true" data-lang="roomTypes.bedroom">Bedroom</div>
+                      <div class="option" data-value="Living room" role="option" data-lang="roomTypes.livingRoom">Living room</div>
+                      <div class="option" data-value="Dining room" role="option" data-lang="roomTypes.diningRoom">Dining room</div>
+                      <div class="option" data-value="Kitchen" role="option" data-lang="roomTypes.kitchen">Kitchen</div>
+                      <div class="option" data-value="Bathroom" role="option" data-lang="roomTypes.bathroom">Bathroom</div>
+                      <div class="option" data-value="Office" role="option" data-lang="roomTypes.office">Office</div>
                     </div>
                   </div>
                 </div>
                 <div class="tool-row">
-                  <label class="label">Furniture style</label>
+                  <label class="label" data-lang="modal.staging.furnitureStyle">Furniture style</label>
                   <div id="furniture-style-select" class="custom-select" data-value="standard">
-                    <button class="select-trigger" type="button"><span class="select-value">Standard</span><span class="caret">▾</span></button>
+                    <button class="select-trigger" type="button"><span class="select-value" data-lang="furnitureStyles.standard">Standard</span><span class="caret">▾</span></button>
                     <div class="select-menu hidden" role="listbox">
-                      <div class="option selected" data-value="standard" role="option" aria-selected="true">Standard</div>
-                      <div class="option" data-value="modern" role="option">Modern</div>
-                      <div class="option" data-value="midcentury" role="option">Midcentury</div>
-                      <div class="option" data-value="scandinavian" role="option">Scandinavian</div>
-                      <div class="option" data-value="luxury" role="option">Luxury</div>
-                      <div class="option" data-value="coastal" role="option">Coastal</div>
-                      <div class="option" data-value="farmhouse" role="option">Farmhouse</div>
-                      <div class="option" data-value="custom" role="option">Custom (Experimental)</div>
+                      <div class="option selected" data-value="standard" role="option" aria-selected="true" data-lang="furnitureStyles.standard">Standard</div>
+                      <div class="option" data-value="modern" role="option" data-lang="furnitureStyles.modern">Modern</div>
+                      <div class="option" data-value="midcentury" role="option" data-lang="furnitureStyles.midcentury">Midcentury</div>
+                      <div class="option" data-value="scandinavian" role="option" data-lang="furnitureStyles.scandinavian">Scandinavian</div>
+                      <div class="option" data-value="luxury" role="option" data-lang="furnitureStyles.luxury">Luxury</div>
+                      <div class="option" data-value="coastal" role="option" data-lang="furnitureStyles.coastal">Coastal</div>
+                      <div class="option" data-value="farmhouse" role="option" data-lang="furnitureStyles.farmhouse">Farmhouse</div>
+                      <div class="option" data-value="custom" role="option" data-lang="furnitureStyles.custom">Custom (Experimental)</div>
                     </div>
                   </div>
                 </div>
                 <div class="tool-row">
-                  <label class="label" for="additional-prompt">Additional prompting</label>
-                  <textarea id="additional-prompt" class="text-input" placeholder="Add specific details or requests for your staging..." rows="3"></textarea>
+                  <label class="label" for="additional-prompt" data-lang="modal.staging.additionalPrompt">Additional prompting</label>
+                  <textarea id="additional-prompt" class="text-input" data-lang="modal.staging.additionalPromptPlaceholder" placeholder="Add specific details or requests for your staging..." rows="3"></textarea>
                 </div>
                 <div class="tool-row">
                   <div class="checkbox-container">
                     <input type="checkbox" id="remove-furniture" class="checkbox-input">
-                    <label for="remove-furniture" class="checkbox-label">Remove existing furniture</label>
+                    <label for="remove-furniture" class="checkbox-label" data-lang="modal.staging.removeFurniture">Remove existing furniture</label>
                   </div>
                 </div>
                 <div class="process-cta">
-                  <button id="process-btn" class="btn btn-primary btn-lg"><strong>Process photo</strong></button>
+                  <button id="process-btn" class="btn btn-primary btn-lg"><strong data-lang="modal.staging.processButton">Process photo</strong></button>
                 </div>
                 <div class="progress hidden" id="progress" aria-live="polite">
                   <div class="bar" id="progress-bar"></div>
-                  <span id="progress-text">Preparing…</span>
+                  <span id="progress-text" data-lang="modal.staging.progress.preparing">Preparing…</span>
                 </div>
-                <div id="loading-message" class="loading-message hidden">Preparing AI model</div>
+                <div id="loading-message" class="loading-message hidden" data-lang="modal.staging.progress.preparing">Preparing AI model</div>
               </div>
 
               <div class="stage-workspace">
@@ -281,7 +291,7 @@
                   <input id="stage-file-input" type="file" accept="image/*" hidden>
                   <div class="stage-dz-inner">
                     <div class="dz-icon" aria-hidden="true">⬆︎</div>
-                    <div class="dz-text">Upload an image or drag and drop</div>
+                    <div class="dz-text" data-lang="modal.staging.uploadArea">Upload an image or drag and drop</div>
                   </div>
                 </div>
                 
@@ -289,12 +299,12 @@
                 <div id="image-viewer-container" class="image-viewer-container hidden">
                   <div class="viewer-header">
                     <div class="toggle-container">
-                      <button id="toggle-before" class="toggle-btn active">Before</button>
-                      <button id="toggle-after" class="toggle-btn">After</button>
+                      <button id="toggle-before" class="toggle-btn active" data-lang="modal.staging.before">Before</button>
+                      <button id="toggle-after" class="toggle-btn" data-lang="modal.staging.after">After</button>
                     </div>
                     <div class="viewer-actions">
-                      <button id="download-btn" class="btn btn-primary"><strong>Download Result</strong></button>
-                      <button id="new-upload" class="btn btn-ghost"><strong>Upload Another</strong></button>
+                      <button id="download-btn" class="btn btn-primary"><strong data-lang="modal.staging.downloadResult">Download Result</strong></button>
+                      <button id="new-upload" class="btn btn-ghost"><strong data-lang="modal.staging.uploadAnother">Upload Another</strong></button>
                     </div>
                   </div>
                   
@@ -304,7 +314,7 @@
                     
                     <!-- AdSense Ad Container for Loading (in main workspace) -->
                     <div id="loading-ad-container" class="workspace-ad-container hidden">
-                      <div class="ad-label">Advertisement</div>
+                      <div class="ad-label" data-lang="modal.staging.advertisement">Advertisement</div>
                       
                       <!-- Loading video ad -->
                       <ins class="adsbygoogle loading-adsense-ad"
@@ -318,8 +328,8 @@
                         <div class="placeholder-icon">
                           <img src="media-webp/Warning.webp" alt="Warning" class="warning-icon">
                         </div>
-                        <div class="placeholder-text">No processed image available yet</div>
-                        <div class="placeholder-subtext">Please click "Process photo" first to generate an AI-staged version of your image</div>
+                        <div class="placeholder-text" data-lang="modal.staging.noProcessedImage">No processed image available yet</div>
+                        <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Please click "Process photo" first to generate an AI-staged version of your image</div>
                       </div>
                     </div>
                     
