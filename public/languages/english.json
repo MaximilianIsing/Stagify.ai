@@ -1,0 +1,223 @@
+{
+  "meta": {
+    "title": "AI Staging | Stagify.ai - Free AI Home Staging Tool",
+    "description": "Transform empty rooms with AI staging. Upload photos and get professionally staged results in seconds. Free AI home staging for real estate agents, sellers, and buyers.",
+    "keywords": "AI staging, home staging, real estate staging, virtual staging, AI home staging, property staging, real estate photography, staging tool, virtual furniture"
+  },
+  "navigation": {
+    "home": "Home",
+    "whyUs": "Why Us?",
+    "faq": "FAQ",
+    "contactUs": "Contact Us",
+    "brand": "stagify",
+    "brandSuffix": ".ai"
+  },
+  "hero": {
+    "catchphrase": "Upload. Stage. Imagine.",
+    "announcement": "Built to make your dream home a reality",
+    "title": {
+      "free": "Free",
+      "virtual": "virtual",
+      "staging": "staging",
+      "with": "with",
+      "one": "one",
+      "click": "click",
+      "upload": "Upload.",
+      "stage": "Stage.",
+      "imagine": "Imagine."
+    },
+    "cta": "Upload image for free",
+    "carouselNote": "Example preview — upload your photo to stage",
+    "stats": {
+      "roomsStaged": "Rooms Staged",
+      "usersServed": "Users Served"
+    }
+  },
+  "sponsors": {
+    "title": "Officially Recognized By"
+  },
+  "modal": {
+    "rolePopup": {
+      "title": "Let's tailor your experience!",
+      "question": "What is your role?",
+      "options": {
+        "agent": "Agent",
+        "seller": "Seller",
+        "buyer": "Buyer",
+        "other": "other"
+      }
+    },
+    "referralPopup": {
+      "title": "Let's tailor your experience!",
+      "question": "How did you find us?",
+      "options": {
+        "socials": "Socials",
+        "friend": "Friend",
+        "email": "Email",
+        "other": "other"
+      }
+    },
+    "emailPopup": {
+      "title": "Let's tailor your experience!",
+      "question": "Want email updates?",
+      "placeholder": "your@email.com",
+      "skip": "Skip"
+    },
+    "staging": {
+      "title": "Options",
+      "close": "x",
+      "adDisclaimer": "*Advertisements allow us to make this tool free",
+      "roomType": "Room type",
+      "furnitureStyle": "Furniture style",
+      "additionalPrompt": "Additional prompting",
+      "additionalPromptPlaceholder": "Add specific details or requests for your staging...",
+      "removeFurniture": "Remove existing furniture",
+      "processButton": "Process photo",
+      "uploadArea": "Upload an image or drag and drop",
+      "before": "Before",
+      "after": "After",
+      "downloadResult": "Download Result",
+      "uploadAnother": "Upload Another",
+      "noProcessedImage": "No processed image available yet",
+      "noProcessedImageSubtext": "Please click \"Process photo\" first to generate an AI-staged version of your image",
+      "advertisement": "Advertisement",
+      "progress": {
+        "preparing": "Preparing…",
+        "uploading": "Uploading image…",
+        "preparingAI": "Preparing AI model…",
+        "staging": "AI is staging your room…",
+        "complete": "Complete!",
+        "error": "Error: ",
+        "loadingMessages": [
+          "Finding the perfect furniture for you",
+          "Staging your ideal room",
+          "Selecting beautiful decor pieces",
+          "Arranging furniture for maximum appeal",
+          "Creating the perfect ambiance",
+          "Enhancing your space with style",
+          "Designing your dream interior",
+          "Optimizing room layout and flow",
+          "Adding finishing touches",
+          "Bringing your vision to life"
+        ]
+      }
+    }
+  },
+  "roomTypes": {
+    "bedroom": "Bedroom",
+    "livingRoom": "Living room",
+    "diningRoom": "Dining room",
+    "kitchen": "Kitchen",
+    "bathroom": "Bathroom",
+    "office": "Office"
+  },
+  "furnitureStyles": {
+    "standard": "Standard",
+    "modern": "Modern",
+    "midcentury": "Midcentury",
+    "scandinavian": "Scandinavian",
+    "luxury": "Luxury",
+    "coastal": "Coastal",
+    "farmhouse": "Farmhouse",
+    "custom": "Custom (Experimental)"
+  },
+  "whyUs": {
+    "title": "Why Choose Us?",
+    "stagify": {
+      "title": "stagify.ai",
+      "features": {
+        "instantResults": "<strong>Instant results</strong>: ~8 seconds",
+        "oneClickStaging": "<strong>One‑click staging</strong>: No hassle",
+        "free": "<strong>Free</strong>: No cost to use",
+        "noAds": "<strong>No ads</strong>: Distraction‑free experience",
+        "noLogin": "<strong>No login required</strong>: Start instantly",
+        "unlimited": "<strong>Unlimited generations</strong>: Until you're satisfied",
+        "copyright": "<strong>Full copyright</strong>: Use anywhere"
+      }
+    },
+    "others": {
+      "title": "Others",
+      "features": {
+        "slowResults": "<strong style=\"color: #6d1c2c;\">Slow results: </strong>Days of waiting",
+        "longProcess": "<strong style=\"color: #6d1c2c;\">Long Process: </strong>Tedious back‑and‑forth",
+        "expensive": "<strong style=\"color: #6d1c2c;\">Expensive: </strong>Costly, per‑image fees",
+        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Ads and cookies: </strong>Instrusive experience",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">Account required: </strong>Frustrating start",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Limited generations: </strong>Hard rate limits",
+        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Unclear copyright: </strong>Legal liability"
+      }
+    },
+    "keyFeatures": {
+      "title": "Key Features",
+      "unlimitedVariations": {
+        "title": "Unlimited Variations",
+        "description": "Explore multiple styles until it fits your brand and buyer profile."
+      },
+      "fastTurnarounds": {
+        "title": "Fast Turnarounds",
+        "description": "Stage photos in about 8 seconds so you can list sooner and finish more deals."
+      }
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "questions": {
+      "whatIsVirtualStaging": {
+        "question": "What is virtual staging?",
+        "answer": "Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled. Unlike traditional staging, it's faster, more cost-effective, and allows for multiple design options tailored to different buyer preferences. With high-quality visuals, virtual staging highlights the property's best features, making it easier for buyers to connect emotionally and imagine themselves living there."
+      },
+      "howLong": {
+        "question": "How long does it take?",
+        "answer": "On average, virtual staging takes around 8 seconds per photo to process, though the exact time can be a little shorter or longer depending on the complexity of the space and the design style chosen. The result is a quick, seamless transformation that makes your property photos stand out."
+      },
+      "customTheme": {
+        "question": "How do I select a custom theme?",
+        "answer": "If you don't see the theme you want, you can select \"Custom\" and then add a specific prompt for the theme you want. We'll use your prompt to generate the theme you want."
+      }
+    }
+  },
+  "contact": {
+    "title": "Get in touch",
+    "description": "We'd love to hear from you. Reach out individually or contact us at <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
+    "social": "Follow us on <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> for updates and examples!",
+    "labels": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "team": {
+      "maximilian": {
+        "name": "Maximilian Ising",
+        "email": "maximilianbising@gmail.com",
+        "phone": "(917) 690-6253",
+        "title": "Co-Founder, Head of Development and AI"
+      },
+      "lucas": {
+        "name": "Lucas Shtainer",
+        "email": "lucasshtainer1@gmail.com",
+        "phone": "(347) 491-9609",
+        "title": "Co-Founder, Head of Marketing"
+      },
+      "ryan": {
+        "name": "Ryan Croman",
+        "email": "ryancroman10@gmail.com",
+        "phone": "(646) 709-6715",
+        "title": "Co-Founder, Head of Outreach"
+      },
+      "emil": {
+        "name": "Emil Volvosky",
+        "email": "emvolvovsky@gmail.com",
+        "phone": "(917) 691-2013",
+        "title": "Stastical Marketing Analyst"
+      }
+    }
+  },
+  "errors": {
+    "fileType": "Please upload a PNG, JPG, JPEG, WebP, or GIF image file.",
+    "fileTooLarge": "File is too large. Please upload an image smaller than 100MB.",
+    "uploadFirst": "Please upload an image first",
+    "badPrompt": "Bad prompt inputted",
+    "processingFailed": "Processing failed",
+    "noImageData": "No image data received"
+  }
+}
