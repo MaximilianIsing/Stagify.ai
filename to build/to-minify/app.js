@@ -204,14 +204,14 @@
     function handleStageFile(file) {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Please upload a PNG, JPG, JPEG, WebP, or GIF image file.');
+        alert(window.LanguageSystem?.getText('errors.fileType') || 'Please upload a PNG, JPG, JPEG, WebP, or GIF image file.');
         return;
       }
       
       // Check file size (100MB limit)
       const maxSize = 100 * 1024 * 1024; // 100MB in bytes
       if (file.size > maxSize) {
-        alert('File is too large. Please upload an image smaller than 100MB.');
+        alert(window.LanguageSystem?.getText('errors.fileTooLarge') || 'File is too large. Please upload an image smaller than 100MB.');
         return;
       }
       
@@ -236,14 +236,14 @@
     async function processWithAI(imageFile) {
       progress.classList.remove('hidden');
       progressBar.style.width = '0%';
-      progressText.textContent = 'Uploading image…';
+        progressText.textContent = window.LanguageSystem?.getText('modal.staging.progress.uploading') || 'Uploading image…';
       
       // Add blur effect to the before image
       stagePreview.classList.add('processing');
   
       // Show loading message and ad immediately
       loadingMessage.classList.remove('hidden');
-      loadingMessage.textContent = 'Preparing AI model';
+      loadingMessage.textContent = window.LanguageSystem?.getText('modal.staging.progress.preparingAI') || 'Preparing AI model';
       
       // Show ad container in workspace and initialize AdSense (only if ads are enabled)
       if (loadingAdContainer && SHOW_ADS) {
@@ -264,7 +264,21 @@
       }
   
       // Random loading messages that will be shown during AI processing
-      const loadingMessages = [
+      const loadingMessages = window.LanguageSystem?.getText('modal.staging.progress.loadingMessages') || [
+        'Finding the perfect furniture for you',
+        'Staging your ideal room',
+        'Selecting beautiful decor pieces',
+        'Arranging furniture for maximum appeal',
+        'Creating the perfect ambiance',
+        'Enhancing your space with style',
+        'Designing your dream interior',
+        'Optimizing room layout and flow',
+        'Adding finishing touches',
+        'Bringing your vision to life'
+      ];
+      
+      // Ensure loadingMessages is an array
+      const messagesArray = Array.isArray(loadingMessages) ? loadingMessages : [
         'Finding the perfect furniture for you',
         'Staging your ideal room',
         'Selecting beautiful decor pieces',
@@ -313,23 +327,23 @@
         clearInterval(progressInterval);
         currentProgress = 25;
         progressBar.style.width = '25%';
-        progressText.textContent = 'Preparing AI model…';
+        progressText.textContent = window.LanguageSystem?.getText('modal.staging.progress.preparingAI') || 'Preparing AI model…';
         
         // Start dynamic message cycling after preparation
         setTimeout(() => {
           isProcessingPhase = true;
-          progressText.textContent = 'AI is staging your room…';
+          progressText.textContent = window.LanguageSystem?.getText('modal.staging.progress.staging') || 'AI is staging your room…';
           
           // Start cycling through the loading messages
           messageInterval = setInterval(() => {
             if (isProcessingPhase) {
-              const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+              const randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
               loadingMessage.textContent = randomMessage;
             }
           }, 2000);
           
           // Set first AI message immediately
-          const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+          const randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
           loadingMessage.textContent = randomMessage;
         }, 1000);
         
@@ -350,17 +364,17 @@
         clearInterval(aiProgressInterval);
         currentProgress = 75;
         progressBar.style.width = '75%';
-        progressText.textContent = 'AI is staging your room…';
+        progressText.textContent = window.LanguageSystem?.getText('modal.staging.progress.staging') || 'AI is staging your room…';
         
          if (!response.ok) {
            const errorData = await response.json();
            if (errorData.code === 'FILE_TOO_LARGE') {
-             throw new Error('File is too large. Please upload an image smaller than 100MB.');
+             throw new Error(window.LanguageSystem?.getText('errors.fileTooLarge') || 'File is too large. Please upload an image smaller than 100MB.');
            }
            if (response.status === 500) {
-             throw new Error('Bad prompt inputted');
+             throw new Error(window.LanguageSystem?.getText('errors.badPrompt') || 'Bad prompt inputted');
            }
-           throw new Error(errorData.message || errorData.error || 'Processing failed');
+           throw new Error(errorData.message || errorData.error || window.LanguageSystem?.getText('errors.processingFailed') || 'Processing failed');
          }
         
         // Simulate final processing steps
@@ -392,12 +406,12 @@
         }
         
         progressBar.style.width = '100%';
-        progressText.textContent = 'Complete!';
+        progressText.textContent = window.LanguageSystem?.getText('modal.staging.progress.complete') || 'Complete!';
         
         if (result.success && result.image) {
           return result.image;
         } else {
-          throw new Error('No image data received');
+          throw new Error(window.LanguageSystem?.getText('errors.noImageData') || 'No image data received');
         }
         
       } catch (error) {
@@ -419,7 +433,7 @@
           processingPlaceholder.style.display = 'flex';
         }
         
-        progressText.textContent = 'Error: ' + error.message;
+        progressText.textContent = (window.LanguageSystem?.getText('modal.staging.progress.error') || 'Error: ') + error.message;
         progressBar.style.width = '0%';
         setTimeout(() => {
           progress.classList.add('hidden');
@@ -467,7 +481,7 @@
   
     async function stageImage() {
       if (!currentImageFile) {
-        alert('Please upload an image first');
+        alert(window.LanguageSystem?.getText('errors.uploadFirst') || 'Please upload an image first');
         return;
       }
       
