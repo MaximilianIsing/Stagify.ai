@@ -57,7 +57,7 @@ class Carousel {
           `).join('')}
         </div>
       </div>
-      <div class="carousel-note">Example preview — upload your photo to stage</div>
+      <div class="carousel-note" data-lang="hero.carouselNote">Example preview — upload your photo to stage</div>
     `;
 
     this.track = this.container.querySelector('.carousel-track');
@@ -65,6 +65,11 @@ class Carousel {
     this.indicators = this.container.querySelectorAll('.carousel-indicator');
     this.itemWidth = itemWidth;
     this.trackItemOffset = trackItemOffset;
+    
+    // Apply language to the dynamically created carousel note
+    if (window.LanguageSystem && window.LanguageSystem.isLoaded()) {
+      window.LanguageSystem.applyLanguageToElements();
+    }
   }
 
   setupEventListeners() {

@@ -315,6 +315,94 @@
     padding: 16px 24px;
   }
   
+  /* Language Picker */
+  .language-picker-container {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 1000;
+  }
+  
+  .language-selector {
+    position: relative;
+  }
+  
+  .language-dropdown {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e3a8a;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e"), url("../media-webp/flags/US.webp");
+    background-repeat: no-repeat, no-repeat;
+    background-position: right 10px center, right 25px center;
+    background-size: 14px, 20px;
+    padding-right: 32px;
+    min-width:85px;
+    text-align: left;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+  }
+  
+  .language-dropdown.spanish {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e"), url("../media-webp/flags/Spain.webp");
+  }
+  
+  /* Hide flag on mobile devices */
+  @media (max-width: 768px) {
+    .language-dropdown {
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-position: right 10px center;
+      background-size: 14px;
+      padding-right: 28px;
+      min-width: 60px;
+      padding: 6px 8px;
+    }
+    
+    .language-dropdown.spanish {
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    }
+  }
+  
+  .language-dropdown:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    transform: translateY(-1px);
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e"), url("../media-webp/flags/US.webp");
+    background-repeat: no-repeat, no-repeat;
+    background-position: right 10px center, right 25px center;
+    background-size: 14px, 20px;
+  }
+  
+  .language-dropdown.spanish:hover {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e"), url("../media-webp/flags/Spain.webp");
+  }
+  
+  /* Hide flag on mobile devices - hover states */
+  @media (max-width: 768px) {
+    .language-dropdown:hover {
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-position: right 10px center;
+      background-size: 14px;
+    }
+    
+    .language-dropdown.spanish:hover {
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    }
+  }
+  
+  .language-dropdown:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
   /* Mobile responsive navigation */
   @media (max-width: 768px) {
     body {
@@ -327,6 +415,18 @@
       grid-template-rows: auto auto;
       gap: 12px;
       padding: 12px 16px;
+    }
+    
+    .language-picker-container {
+      top: 130px;
+      right: 15px;
+    }
+    
+    .language-dropdown {
+      font-size: 12px;
+      padding: 6px 8px;
+      min-width: 40px;
+      padding-right: 28px;
     }
     
     .brand {
@@ -411,6 +511,18 @@
       justify-content: space-between;
       min-width: 0;
       flex-shrink: 1;
+    }
+    
+    .language-picker-container {
+      top: 120px;
+      right: 10px;
+    }
+    
+    .language-dropdown {
+      font-size: 11px;
+      padding: 5px 6px;
+      min-width: 55px;
+      padding-right: 24px;
     }
     
     .brand {
@@ -1382,7 +1494,7 @@
     user-select: none;
   }
   .stage-workspace { 
-    border: 1px dashed var(--border); 
+    border: 1px solid var(--border); 
     border-radius: 16px; 
     padding: 14px; 
     background: var(--bg-elevated);
@@ -1399,6 +1511,11 @@
     outline: none; 
     color: var(--fg);
     transition: all 0.2s ease;
+  }
+  
+  .stage-dropzone.hidden { 
+    border: none; 
+    background: transparent; 
   }
   .stage-dropzone:hover {
     border-color: var(--accent);
@@ -1459,7 +1576,7 @@
     border-radius: 12px;
     overflow: hidden;
     background: var(--bg-elevated);
-    border: 1px solid var(--border);
+    border: none;
   }
   
   .viewer-image {
@@ -1570,6 +1687,11 @@
   }
   .modal:not(.hidden) .modal-dialog { animation: fadeInUp 220ms ease; }
   .modal:not(.hidden) .modal-backdrop { animation: fadeBackdrop 220ms ease; }
+  
+  /* Hide language dropdown when staging modal is open */
+  body:has(.modal:not(.hidden)) .language-picker-container {
+    display: none;
+  }
   
   /* Brand logo */
   .brand-logo {
@@ -2201,6 +2323,21 @@
   @keyframes twinkle {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
+  }
+  
+  /* Language system styles */
+  /* Hide translatable content until language is loaded to prevent flash */
+  body:not(.language-loaded) [data-lang],
+  body:not(.language-loaded) [data-lang-html],
+  body:not(.language-loaded) [data-lang-attr] {
+    visibility: hidden;
+  }
+
+  /* Show content after language is loaded */
+  body.language-loaded [data-lang],
+  body.language-loaded [data-lang-html],
+  body.language-loaded [data-lang-attr] {
+    visibility: visible;
   }
   
   
