@@ -6,12 +6,12 @@
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
     <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
-    <title>FAQ - Stagify.ai Free AI Home Staging Questions</title>
-    <meta name="description" content="Find answers to frequently asked questions about Stagify.ai's free AI home staging tool. Learn how to use our virtual staging service for real estate.">
+    <title data-lang="meta.title">FAQ - Stagify.ai Free AI Home Staging Questions</title>
+    <meta name="description" data-lang-attr="meta.description|content" content="Find answers to frequently asked questions about Stagify.ai's free AI home staging tool. Learn how to use our virtual staging service for real estate.">
     
     <!-- SEO Meta Tags -->
     <meta name="robots" content="index, follow">
-    <meta name="keywords" content="stagify FAQ, AI staging questions, home staging help, virtual staging guide, real estate staging FAQ">
+    <meta name="keywords" data-lang-attr="meta.keywords|content" content="stagify FAQ, AI staging questions, home staging help, virtual staging guide, real estate staging FAQ">
     
     <!-- Open Graph Tags -->
     <meta property="og:title" content="FAQ - Stagify.ai Free AI Home Staging">
@@ -20,6 +20,8 @@
     <meta property="og:url" content="https://stagify.ai/faq.html">
 
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script src="scripts/language-loader.js" defer></script>
     <script defer src="scripts/app.js"></script>
   </head>
   <body>
@@ -30,36 +32,36 @@
 
     <header class="site-header">
       <nav class="nav">
-        <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong">stagify</span><span class="brand-light">.ai</span></div>
+        <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></div>
         <div class="nav-center">
-          <a href="index.html" class="nav-link">Home</a>
-          <a href="why.html#why" class="nav-link">Why Us?</a>
-          <a href="faq.html#faq" class="nav-link">FAQ</a>
-          <a href="contact.html#contact" class="nav-link">Contact Us</a>
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
+          <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
+          <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
         </div>
         <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
-          <div>Upload.</div>
-          <div>Stage.</div>
-          <div>Imagine.</div>
+          <div data-lang="hero.title.upload">Upload.</div>
+          <div data-lang="hero.title.stage">Stage.</div>
+          <div data-lang="hero.title.imagine">Imagine.</div>
         </div>
       </nav>
     </header>
 
     <main>
       <section class="faq" id="faq">
-        <h2 style="color: #1e3a8a;">Frequently Asked Questions</h2>
+        <h2 style="color: #1e3a8a;" data-lang="faq.title">Frequently Asked Questions</h2>
         <div class="faq-list">
           <div class="faq-item">
-            <h3>What is virtual staging?</h3>
-            <p>Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled. Unlike traditional staging, it's faster, more cost-effective, and allows for multiple design options tailored to different buyer preferences. With high-quality visuals, virtual staging highlights the property's best features, making it easier for buyers to connect emotionally and imagine themselves living there.</p>
+            <h3 data-lang="faq.questions.whatIsVirtualStaging.question">What is virtual staging?</h3>
+            <p data-lang="faq.questions.whatIsVirtualStaging.answer">Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled. Unlike traditional staging, it's faster, more cost-effective, and allows for multiple design options tailored to different buyer preferences. With high-quality visuals, virtual staging highlights the property's best features, making it easier for buyers to connect emotionally and imagine themselves living there.</p>
           </div>
           <div class="faq-item">
-            <h3>How long does it take?</h3>
-            <p>On average, virtual staging takes around 8 seconds per photo to process, though the exact time can be a little shorter or longer depending on the complexity of the space and the design style chosen. The result is a quick, seamless transformation that makes your property photos stand out.</p>
+            <h3 data-lang="faq.questions.howLong.question">How long does it take?</h3>
+            <p data-lang="faq.questions.howLong.answer">On average, virtual staging takes around 8 seconds per photo to process, though the exact time can be a little shorter or longer depending on the complexity of the space and the design style chosen. The result is a quick, seamless transformation that makes your property photos stand out.</p>
           </div>
           <div class="faq-item">
-            <h3>How do I select a custom theme?</h3>
-            <p>If you don't see the theme you want, you can select "Custom" and then add a specific prompt for the theme you want. We'll use your prompt to generate the theme you want.</p>
+            <h3 data-lang="faq.questions.customTheme.question">How do I select a custom theme?</h3>
+            <p data-lang="faq.questions.customTheme.answer">If you don't see the theme you want, you can select "Custom" and then add a specific prompt for the theme you want. We'll use your prompt to generate the theme you want.</p>
           </div>
         </div>
       </section>
