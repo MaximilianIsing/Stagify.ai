@@ -121,6 +121,15 @@
     "farmhouse": "Farmhouse",
     "custom": "Custom (Experimental)"
   },
+  "carouselItems": {
+    "original": "Original",
+    "modern": "Modern",
+    "scandinavian": "Scandinavian",
+    "luxury": "Luxury",
+    "coastal": "Coastal",
+    "midcentury": "Midcentury",
+    "farmhouse": "Farmhouse"
+  },
   "whyUs": {
     "title": "Why Choose Us?",
     "stagify": {
@@ -173,6 +182,14 @@
       "customTheme": {
         "question": "How do I select a custom theme?",
         "answer": "If you don't see the theme you want, you can select \"Custom\" and then add a specific prompt for the theme you want. We'll use your prompt to generate the theme you want."
+      },
+      "idealRoom": {
+        "question": "What makes an ideal room for staging?",
+        "answer": "An ideal room for staging should have good lighting, clear walls, and minimal clutter. Empty or sparsely furnished rooms work best, as they provide a clean canvas for the AI to add furniture and decor that matches your chosen style."
+      },
+      "privacy": {
+        "question": "Is my data private and secure?",
+        "answer": "Yes, we take your privacy seriously. Your uploaded images are processed securely and are not stored permanently on our servers. We use industry-standard encryption and do not share your data with third parties."
       }
     }
   },
