@@ -146,13 +146,15 @@
   }
   
   .role-popup-content {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.7);
     border-radius: 12px;
     padding: 20px;
     text-align: left;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     border: 1px solid var(--border);
     animation: slideInUp 0.3s ease-out;
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
   }
   
   /* Reduce opacity on mobile for better visibility with video background */
@@ -317,9 +319,18 @@
   
   /* Language Picker */
   .language-picker-container {
-    position: fixed;
-    top: 100px;
-    right: 20px;
+    position: relative;
+    height: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+  
+  .language-picker-container .language-selector {
+    position: absolute;
+    top: 10px;
+    right: 10px;
     z-index: 1000;
   }
   
@@ -370,7 +381,7 @@
   }
   
   .language-dropdown:hover {
-    background: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.7);
     border-color: #3b82f6;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
     transform: translateY(-1px);
@@ -418,7 +429,13 @@
     }
     
     .language-picker-container {
-      top: 130px;
+      height: 0;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .language-picker-container .language-selector {
+      top: 15px;
       right: 15px;
     }
     
@@ -514,7 +531,13 @@
     }
     
     .language-picker-container {
-      top: 120px;
+      height: 0;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .language-picker-container .language-selector {
+      top: 10px;
       right: 10px;
     }
     
@@ -812,7 +835,7 @@
   }
   
   .sponsors-content {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 0 48px;
     text-align: center;
@@ -1382,7 +1405,7 @@
   
   .faq-list {
     display: grid;
-    gap: 20px;
+    gap: 0px;
   }
   
   .faq-item {
@@ -1693,6 +1716,33 @@
     display: none;
   }
   
+  /* Move language dropdown down different amounts for each page - mobile only */
+  @media (max-width: 768px) {
+    /* Why us page - move down 25px */
+    body:has(#why) .language-picker-container .language-selector {
+      top: 35px;
+      right: 30px;
+    }
+    
+    /* FAQ page - move down 50px */
+    body:has(#faq) .language-picker-container .language-selector {
+      top: 35px;
+      right: 20px;
+    }
+    
+    /* Contact page - move down 60px */
+    body:has(#contact) .language-picker-container .language-selector {
+      top: 44px;
+      right: 20px;
+    }
+    
+    /* Main page (index) - move down 30px */
+    body:has(#home) .language-picker-container .language-selector {
+      top: 10px;
+      right: 10px;
+    }
+  }
+  
   /* Brand logo */
   .brand-logo {
     width: 32px;
@@ -1813,6 +1863,31 @@
     .btn {
       padding: 12px 20px;
       font-size: 14px;
+    }
+    
+    /* Special plasma effect for hero upload button on mobile */
+    #hero-upload {
+      background: 
+        radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, #1d4ed8 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, #2563eb 0%, transparent 50%),
+        radial-gradient(circle at 0% 100%, #1e40af 0%, transparent 50%),
+        radial-gradient(circle at 100% 0%, #60a5fa 0%, transparent 50%),
+        #1e3a8a;
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    #hero-upload:hover {
+      background: 
+        radial-gradient(circle at 30% 40%, #3b82f6 0%, transparent 60%),
+        radial-gradient(circle at 70% 30%, #1d4ed8 0%, transparent 60%),
+        radial-gradient(circle at 50% 70%, #2563eb 0%, transparent 60%),
+        radial-gradient(circle at 10% 90%, #1e40af 0%, transparent 60%),
+        radial-gradient(circle at 90% 10%, #60a5fa 0%, transparent 60%),
+        #1e3a8a;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
     
     .hero-tabs {

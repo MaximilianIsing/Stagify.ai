@@ -13,17 +13,17 @@
     "brandSuffix": ".ai"
   },
   "hero": {
-    "catchphrase": "Sube. Prepara. Imagina.",
+    "catchphrase": "Sube. Diseña. Imagina.",
     "announcement": "Creado para hacer realidad la casa de tus sueños",
     "title": {
-      "free": "Gratis",
+      "free": "Diseño",
       "virtual": "virtual",
-      "staging": "escenificación",
+      "staging": "gratis",
       "with": "con",
       "one": "un",
       "click": "clic",
       "upload": "Sube.",
-      "stage": "Prepara.",
+      "stage": "Diseña.",
       "imagine": "Imagina."
     },
     "cta": "Suba su imagen gratiz",
@@ -79,7 +79,7 @@
       "downloadResult": "Descargar Resultado",
       "uploadAnother": "Subir Otra",
       "noProcessedImage": "Aún no hay imagen procesada disponible",
-      "noProcessedImageSubtext": "Por favor haz clic en \"Procesar foto\" primero para generar una versión escenificada con IA de tu imagen",
+      "noProcessedImageSubtext": "Por favor cliquea en \"Procesar foto\" primero para generar una versión escenificada con IA de tu imagen",
       "advertisement": "Anuncio",
       "progress": {
         "preparing": "Preparando…",
@@ -121,13 +121,22 @@
     "farmhouse": "Cortijo",
     "custom": "Personalizado (Experimental)"
   },
+  "carouselItems": {
+    "original": "Original",
+    "modern": "Moderno",
+    "scandinavian": "Escandinava",
+    "luxury": "Lujo",
+    "coastal": "Costera",
+    "midcentury": "Mediados de siglo",
+    "farmhouse": "Cortijo"
+  },
   "whyUs": {
     "title": "¿Por qué elegirnos?",
     "stagify": {
       "title": "stagify.ai",
       "features": {
         "instantResults": "<strong>Resultados instantáneos</strong>: ~8 segundos",
-        "oneClickStaging": "<strong>Puesta en escena con un solo clic</strong>: Sin complicaciones",
+        "oneClickStaging": "<strong>Crea un escenario con un solo clic</strong>: Sin complicaciones",
         "free": "<strong>Gratis</strong>: No tiene costo de uso",
         "noAds": "<strong>Sin anuncios</strong>: una experiencia sin distracciones",
         "noLogin": "<strong>No es necesario iniciar sesión</strong>: comience de inmediato",
@@ -173,6 +182,14 @@
       "customTheme": {
         "question": "¿Cómo selecciono un tema personalizado?",
         "answer": "Si no ves el tema que quieres, puedes seleccionar \"Personalizado\" y luego añadir un prompt específico para el tema que deseas. Usaremos tu prompt para generar el tema que quieres."
+      },
+      "idealRoom": {
+        "question": "¿Qué hace que una habitación sea ideal para el staging?",
+        "answer": "Una habitación ideal para el staging debe tener buena iluminación, paredes claras y desorden mínimo. Las habitaciones vacías o escasamente amuebladas funcionan mejor, ya que proporcionan un lienzo limpio para que la IA añada muebles y decoración que coincida con tu estilo elegido."
+      },
+      "privacy": {
+        "question": "¿Mis datos son privados y seguros?",
+        "answer": "Sí, nos tomamos tu privacidad en serio. Tus imágenes subidas se procesan de forma segura y no se almacenan permanentemente en nuestros servidores. Utilizamos encriptación de nivel industrial y no compartimos tus datos con terceros."
       }
     }
   },

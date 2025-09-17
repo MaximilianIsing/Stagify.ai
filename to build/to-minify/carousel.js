@@ -45,7 +45,7 @@ class Carousel {
               ${item.image || '<div class="carousel-image-placeholder"></div>'}
             </div>
             <div class="carousel-item-overlay">
-              <div class="carousel-item-title">${item.title}</div>
+              <div class="carousel-item-title" data-lang="carouselItems.${item.key}">${item.title}</div>
             </div>
           </div>
         `).join('')}
@@ -237,36 +237,43 @@ document.addEventListener('DOMContentLoaded', () => {
   if (carouselContainer) {
     const stagingItems = [
       {
+        key: 'original',
         title: 'Original',
         description: 'The original empty room before staging',
         image: '<img src="media-webp/example/Original.webp" alt="Original staging" style="width: 100%; height: 100%; object-fit: cover;" fetchpriority="high">'
       },
       {
+        key: 'modern',
         title: 'Modern',
         description: 'Clean lines and contemporary furniture',
         image: '<img src="media-webp/example/Modern.webp" alt="Modern staging" style="width: 100%; height: 100%; object-fit: cover;">'
       },
       {
+        key: 'scandinavian',
         title: 'Scandinavian',
         description: 'Minimalist design with natural materials',
         image: '<img src="media-webp/example/Scandinavian.webp" alt="Scandinavian staging" style="width: 100%; height: 100%; object-fit: cover;">'
       },
       {
+        key: 'luxury',
         title: 'Luxury',
         description: 'High-end finishes and elegant furnishings',
         image: '<img src="media-webp/example/Luxury.webp" alt="Luxury staging" style="width: 100%; height: 100%; object-fit: cover;">'
       },
       {
+        key: 'coastal',
         title: 'Coastal',
         description: 'Beach-inspired colors and relaxed vibes',
         image: '<img src="media-webp/example/Coastal.webp" alt="Coastal staging" style="width: 100%; height: 100%; object-fit: cover;">'
       },
       {
+        key: 'midcentury',
         title: 'Midcentury',
         description: 'Retro design with bold colors and shapes',
         image: '<img src="media-webp/example/Midcentury.webp" alt="Midcentury staging" style="width: 100%; height: 100%; object-fit: cover;">'
       },
       {
+        key: 'farmhouse',
         title: 'Farmhouse',
         description: 'Rustic charm with vintage elements',
         image: '<img src="media-webp/example/Farmhouse.webp" alt="Farmhouse staging" style="width: 100%; height: 100%; object-fit: cover;">'
