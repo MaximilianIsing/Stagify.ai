@@ -66,6 +66,7 @@
     <script src="scripts/app.js" defer></script>
     <script src="scripts/carousel.js" defer></script>
     <script src="scripts/star-border.js" defer></script>
+    <script src="scripts/sponsors-scroll.js" defer></script>
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -163,6 +164,7 @@
           <select id="language-select" class="language-dropdown">
             <option value="english" selected>EN</option>
             <option value="spanish">ES</option>
+            <option value="chinese">中文</option>
           </select>
         </div>
       </div>
@@ -188,11 +190,11 @@
           </div>
           <div class="stats-pills">
             <div class="stat-pill">
-              <span class="stat-pill-number">300+</span>
+              <span class="stat-pill-number">1000+</span>
               <span class="stat-pill-text" data-lang="hero.stats.roomsStaged">Rooms Staged</span>
             </div>
             <div class="stat-pill">
-              <span class="stat-pill-number">100+</span>
+              <span class="stat-pill-number">200+</span>
               <span class="stat-pill-text" data-lang="hero.stats.usersServed">Users Served</span>
             </div>
           </div>
@@ -202,24 +204,46 @@
       <section class="sponsors">
         <div class="sponsors-content">
           <h2 class="sponsors-title" style="color: #1e3a8a; font-weight: thin;" data-lang="sponsors.title">Officially Recognized By</h2>
-          <div class="sponsors-grid">
-            <div class="sponsor-item">
-              <img src="media-webp/sponsors/Centennial.webp" alt="Centennial" class="sponsor-logo" fetchpriority="high">
-            </div>
-            <div class="sponsor-item">
-              <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid" class="sponsor-logo" fetchpriority="high">
-            </div>
-            <div class="sponsor-item">
-              <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital" class="sponsor-logo" fetchpriority="high">
-            </div>
-            <div class="sponsor-item">
-              <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue" class="sponsor-logo" fetchpriority="high">
-            </div>
-            <div class="sponsor-item">
-              <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft" class="sponsor-logo" fetchpriority="high">
-            </div>
-            <div class="sponsor-item">
-              <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services" class="sponsor-logo" fetchpriority="high">
+          <div class="sponsors-container">
+            <div class="sponsors-track" id="sponsors-track">
+              <!-- First set of sponsors -->
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <!-- Duplicate set for seamless loop -->
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services" class="sponsor-logo" fetchpriority="high">
+              </div>
             </div>
           </div>
         </div>

@@ -1,0 +1,240 @@
+{
+  "meta": {
+    "title": "AI虚拟装修 | Stagify.ai - 免费AI家居装修工具",
+    "description": "用AI装修改造空房间。上传照片，几秒钟内获得专业装修效果。为房地产经纪人、卖家和买家提供的免费AI家居装修服务。",
+    "keywords": "AI装修, 家居装修, 房地产装修, 虚拟装修, AI家居装修, 房产装修, 房地产摄影, 装修工具, 虚拟家具"
+  },
+  "navigation": {
+    "home": "首页",
+    "whyUs": "我们",
+    "faq": "常见问题",
+    "contactUs": "联系我们",
+    "brand": "stagify",
+    "brandSuffix": ".ai"
+  },
+  "hero": {
+    "catchphrase": "上传。装修。想象。",
+    "announcement": "为您的梦想之家而打造",
+    "title": {
+      "free": "免费",
+      "virtual": "虚拟",
+      "staging": "装修",
+      "with": "键",
+      "one": "一",
+      "click": "点击",
+      "upload": "上传。",
+      "stage": "装修。",
+      "imagine": "想象。"
+    },
+    "cta": "免费上传图片",
+    "carouselNote": "示例预览 — 上传您的照片进行装修",
+    "stats": {
+      "roomsStaged": "已装修房间",
+      "usersServed": "服务用户"
+    }
+  },
+  "sponsors": {
+    "title": "官方认可："
+  },
+  "modal": {
+    "rolePopup": {
+      "title": "让我们为您定制体验！",
+      "question": "您的角色是什么？",
+      "options": {
+        "agent": "经纪人",
+        "seller": "卖家",
+        "buyer": "买家",
+        "other": "其他"
+      }
+    },
+    "referralPopup": {
+      "title": "让我们为您定制体验！",
+      "question": "您是如何找到我们的？",
+      "options": {
+        "socials": "社交媒体",
+        "friend": "朋友推荐",
+        "email": "邮件",
+        "other": "其他"
+      }
+    },
+    "emailPopup": {
+      "title": "让我们为您定制体验！",
+      "question": "想要邮件更新吗？",
+      "placeholder": "your@email.com",
+      "skip": "跳过"
+    },
+    "staging": {
+      "title": "选项",
+      "close": "x",
+      "adDisclaimer": "*广告使我们能够免费提供此工具",
+      "roomType": "房间类型",
+      "furnitureStyle": "家具风格",
+      "additionalPrompt": "额外提示",
+      "additionalPromptPlaceholder": "为您的装修添加具体细节或要求...",
+      "removeFurniture": "移除现有家具",
+      "processButton": "处理照片",
+      "uploadArea": "上传图片或拖拽放置",
+      "before": "之前",
+      "after": "之后",
+      "downloadResult": "下载结果",
+      "uploadAnother": "上传另一张",
+      "noProcessedImage": "暂无处理后的图片",
+      "noProcessedImageSubtext": "请先点击\"处理照片\"以生成AI装修版本的图片",
+      "advertisement": "广告",
+      "progress": {
+        "preparing": "准备中…",
+        "uploading": "上传图片中…",
+        "preparingAI": "准备AI模型中…",
+        "staging": "AI正在装修您的房间…",
+        "complete": "完成！",
+        "error": "错误：",
+        "loadingMessages": [
+          "为您寻找完美的家具",
+          "装修您的理想房间",
+          "选择精美的装饰品",
+          "为最大吸引力布置家具",
+          "营造完美的氛围",
+          "用风格提升您的空间",
+          "设计您梦想中的室内",
+          "优化房间布局和流线",
+          "添加最后的修饰",
+          "实现您的愿景"
+        ]
+      }
+    }
+  },
+  "roomTypes": {
+    "bedroom": "卧室",
+    "livingRoom": "客厅",
+    "diningRoom": "餐厅",
+    "kitchen": "厨房",
+    "bathroom": "浴室",
+    "office": "办公室"
+  },
+  "furnitureStyles": {
+    "standard": "标准",
+    "modern": "现代",
+    "midcentury": "中世纪",
+    "scandinavian": "斯堪的纳维亚",
+    "luxury": "奢华",
+    "coastal": "海岸",
+    "farmhouse": "农舍",
+    "custom": "自定义（实验性）"
+  },
+  "carouselItems": {
+    "original": "原始",
+    "modern": "现代",
+    "scandinavian": "斯堪的纳维亚",
+    "luxury": "奢华",
+    "coastal": "海岸",
+    "midcentury": "中世纪",
+    "farmhouse": "农舍"
+  },
+  "whyUs": {
+    "title": "为什么选择我们？",
+    "stagify": {
+      "title": "stagify.ai",
+      "features": {
+        "instantResults": "<strong>即时结果</strong>：约8秒",
+        "oneClickStaging": "<strong>一键装修</strong>：无麻烦",
+        "free": "<strong>免费</strong>：使用无成本",
+        "noAds": "<strong>无广告</strong>：无干扰体验",
+        "noLogin": "<strong>无需登录</strong>：立即开始",
+        "unlimited": "<strong>无限生成</strong>：直到您满意",
+        "copyright": "<strong>完整版权</strong>：随处使用"
+      }
+    },
+    "others": {
+      "title": "其他",
+      "features": {
+        "slowResults": "<strong style=\"color: #6d1c2c;\">结果缓慢：</strong>等待数天",
+        "longProcess": "<strong style=\"color: #6d1c2c;\">过程冗长：</strong>繁琐的来回沟通",
+        "expensive": "<strong style=\"color: #6d1c2c;\">昂贵：</strong>按图片收费，成本高昂",
+        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">广告和Cookie：</strong>侵入式体验",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">需要账户：</strong>令人沮丧的开始",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">生成受限：</strong>严格的速率限制",
+        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">版权不明确：</strong>法律责任"
+      }
+    },
+    "keyFeatures": {
+      "title": "关键特性",
+      "unlimitedVariations": {
+        "title": "无限变化",
+        "description": "探索多种风格，直到适合您的品牌和买家档案。"
+      },
+      "fastTurnarounds": {
+        "title": "快速周转",
+        "description": "约8秒内装修照片，让您更快上市并完成更多交易。"
+      }
+    }
+  },
+  "faq": {
+    "title": "常见问题",
+    "questions": {
+      "whatIsVirtualStaging": {
+        "question": "什么是虚拟装修？",
+        "answer": "虚拟装修是通过数字方式为房产照片添加家具以展示其潜力的过程，帮助买家设想空间在完全装修时的外观和感觉。与传统装修不同，它更快、更经济实惠，并允许多种设计选项以适应不同买家的偏好。通过高质量的视觉效果，虚拟装修突出房产的最佳特征，让买家更容易产生情感连接并想象自己住在那里。"
+      },
+      "howLong": {
+        "question": "需要多长时间？",
+        "answer": "平均而言，虚拟装修每张照片大约需要8秒来处理，尽管确切时间可能会根据空间的复杂性和所选择的设计风格而略有不同。结果是一个快速、无缝的转换，让您的房产照片脱颖而出。"
+      },
+      "customTheme": {
+        "question": "如何选择自定义主题？",
+        "answer": "如果您没有看到想要的主题，可以选择\"自定义\"，然后为您想要的主题添加特定提示。我们将使用您的提示来生成您想要的主题。"
+      },
+      "idealRoom": {
+        "question": "什么样的房间适合装修？",
+        "answer": "适合装修的理想房间应该有良好的照明、清晰的墙壁和最小的杂物。空的或家具稀少的房间效果最好，因为它们为AI提供了一个干净的画布来添加与您选择的风格相匹配的家具和装饰。"
+      },
+      "privacy": {
+        "question": "我的数据是私密和安全的吗？",
+        "answer": "是的，我们认真对待您的隐私。您上传的图片会安全处理，不会永久存储在我们的服务器上。我们使用行业标准加密，不会与第三方共享您的数据。"
+      }
+    }
+  },
+  "contact": {
+    "title": "联系我们",
+    "description": "我们很乐意听到您的声音。单独联系我们或发邮件至 <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>。",
+    "social": "在 <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> 关注我们，获取更新和示例！",
+    "labels": {
+      "name": "姓名",
+      "email": "邮箱",
+      "phone": "电话"
+    },
+    "team": {
+      "maximilian": {
+        "name": "Maximilian Ising",
+        "email": "maximilianbising@gmail.com",
+        "phone": "(917) 690-6253",
+        "title": "联合创始人，开发与AI主管"
+      },
+      "lucas": {
+        "name": "Lucas Shtainer",
+        "email": "lucasshtainer1@gmail.com",
+        "phone": "(347) 491-9609",
+        "title": "联合创始人，营销主管"
+      },
+      "ryan": {
+        "name": "Ryan Croman",
+        "email": "ryancroman10@gmail.com",
+        "phone": "(646) 709-6715",
+        "title": "联合创始人，外联主管"
+      },
+      "emil": {
+        "name": "Emil Volvosky",
+        "email": "emvolvovsky@gmail.com",
+        "phone": "(917) 691-2013",
+        "title": "统计营销分析师"
+      }
+    }
+  },
+  "errors": {
+    "fileType": "请上传PNG、JPG、JPEG、WebP或GIF图片文件。",
+    "fileTooLarge": "文件过大。请上传小于100MB的图片。",
+    "uploadFirst": "请先上传图片",
+    "badPrompt": "输入了错误的提示",
+    "processingFailed": "处理失败",
+    "noImageData": "未接收到图片数据"
+  }
+}
