@@ -30,7 +30,8 @@
     "carouselNote": "Ejemplo de vista previa: sube tu foto al scenario",
     "stats": {
       "roomsStaged": "Habitaciones Escenificadas",
-      "usersServed": "Usuarios Atendidos"
+      "usersServed": "Usuarios Atendidos",
+      "andCounting": "y contando..."
     }
   },
   "sponsors": {

@@ -30,7 +30,8 @@
     "carouselNote": "示例预览 — 上传您的照片进行装修",
     "stats": {
       "roomsStaged": "已装修房间",
-      "usersServed": "服务用户"
+      "usersServed": "服务用户",
+      "andCounting": "还在继续..."
     }
   },
   "sponsors": {
