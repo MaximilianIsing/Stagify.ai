@@ -16,29 +16,18 @@ document.addEventListener('DOMContentLoaded', function() {
   let scrollPosition = 0;
   
   function getScrollSpeed() {
-    // Convert inches per second to pixels per frame
-    const targetInchesPerSecond = window.innerWidth <= 768 ? 0.5 : 0.8; // inches per second
-    const targetPixelsPerSecond = targetInchesPerSecond * getDeviceDPI();
-    const pixelsPerFrame = targetPixelsPerSecond / 60; // Assuming 60fps
-    
-    return pixelsPerFrame;
-  }
-  
-  function getDeviceDPI() {
-    // Create a temporary element to measure DPI
-    const testElement = document.createElement('div');
-    testElement.style.width = '1in';
-    testElement.style.height = '1in';
-    testElement.style.position = 'absolute';
-    testElement.style.left = '-1000px';
-    testElement.style.top = '-1000px';
-    testElement.style.visibility = 'hidden';
-    
-    document.body.appendChild(testElement);
-    const dpi = testElement.offsetWidth;
-    document.body.removeChild(testElement);
-    
-    return dpi;
+    // Simple speed based on screen size
+    if (window.innerWidth <= 480) {
+      return 0.4; // Small phones
+    } else if (window.innerWidth <= 768) {
+      return 0.4; // Large phones/small tablets
+    } else if (window.innerWidth <= 1366) {
+      return 0.7; // Laptops
+    } else if (window.innerWidth <= 1920) {
+      return 0.6; // Desktop monitors
+    } else {
+      return 0.3; // Large monitors
+    }
   }
   
   let scrollSpeed = getScrollSpeed();
