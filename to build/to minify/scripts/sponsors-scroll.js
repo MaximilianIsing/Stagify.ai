@@ -3,7 +3,16 @@
  * Continuous scroll without any time-based resets
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+// Global variables to prevent multiple initializations
+let sponsorsAnimationId = null;
+let sponsorsInitialized = false;
+
+function initSponsorsScroll() {
+  // Prevent multiple initializations
+  if (sponsorsInitialized) {
+    return;
+  }
+  
   const sponsorsTrack = document.getElementById('sponsors-track');
   if (!sponsorsTrack) return;
 
@@ -53,9 +62,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   let loopDistance = calculateLoopDistance();
-  let animationId;
 
   function scroll() {
+    // Cancel any existing animation to prevent multiple running
+    if (sponsorsAnimationId) {
+      cancelAnimationFrame(sponsorsAnimationId);
+    }
+    
     scrollPosition += scrollSpeed;
     
     // Reset position when we've scrolled one complete loop
@@ -64,11 +77,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     sponsorsTrack.style.transform = `translateX(-${scrollPosition}px)`;
-    animationId = requestAnimationFrame(scroll);
+    sponsorsAnimationId = requestAnimationFrame(scroll);
+  }
+
+  // Clean up any existing animation before starting
+  if (sponsorsAnimationId) {
+    cancelAnimationFrame(sponsorsAnimationId);
   }
 
   // Start scrolling
   scroll();
+  sponsorsInitialized = true;
 
   // Recalculate on resize
   let resizeTimeout;
@@ -83,9 +102,29 @@ document.addEventListener('DOMContentLoaded', function() {
   // Pause when page is hidden
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-      cancelAnimationFrame(animationId);
+      if (sponsorsAnimationId) {
+        cancelAnimationFrame(sponsorsAnimationId);
+        sponsorsAnimationId = null;
+      }
     } else {
-      scroll();
+      if (!sponsorsAnimationId) {
+        scroll();
+      }
     }
   });
-});
+}
+
+// Clean up function for page unload
+function cleanupSponsorsScroll() {
+  if (sponsorsAnimationId) {
+    cancelAnimationFrame(sponsorsAnimationId);
+    sponsorsAnimationId = null;
+  }
+  sponsorsInitialized = false;
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', initSponsorsScroll);
+
+// Clean up on page unload
+window.addEventListener('beforeunload', cleanupSponsorsScroll);

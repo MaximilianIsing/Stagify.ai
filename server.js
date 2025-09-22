@@ -180,7 +180,7 @@ function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurnit
   let prompt = `${furnitureRemovalText}${basePrompt} Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room. Leave the rest of the room's architecture the same to highlight the furniture and design. Ensure the result looks realistic and professionally staged. Ensure that no extra doors, windows, or walls are added.`;
   // Add additional prompting if provided
   if (additionalPrompt && additionalPrompt.trim()) {
-    prompt += ` ${additionalPrompt.trim()}`;
+    prompt += ` Pritoritize the following above everything else: ${additionalPrompt.trim()}`;
   };
   return prompt;
 }
