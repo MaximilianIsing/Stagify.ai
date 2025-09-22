@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function getScrollSpeed() {
     // Simple speed based on screen size
     if (window.innerWidth <= 480) {
-      return 0.4; // Small phones
+      return 0.5; // Small phones
     } else if (window.innerWidth <= 768) {
-      return 0.4; // Large phones/small tablets
+      return 0.5; // Large phones/small tablets
     } else if (window.innerWidth <= 1366) {
       return 0.7; // Laptops
     } else if (window.innerWidth <= 1920) {
