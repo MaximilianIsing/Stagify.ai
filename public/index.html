@@ -40,27 +40,10 @@
     <!-- Preload background video -->
     <link rel="preload" as="video" href="background.mp4">
     
-    <meta name="google-adsense-account" content="ca-pub-3963065765933801">
-     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3963065765933801"
-          crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/carousel.css">
     <link rel="stylesheet" href="styles/star-border.css">
-    <script>
-      // AD CONTROL VARIABLE - Set to false to hide all ads
-      const SHOW_ADS = false; // Change this to false to disable all advertisements
-      
-      // Hide ad disclaimer if ads are disabled
-      document.addEventListener('DOMContentLoaded', function() {
-        if (!SHOW_ADS) {
-          const adDisclaimer = document.querySelector('.modal-ad-disclaimer');
-          if (adDisclaimer) {
-            adDisclaimer.style.display = 'none';
-          }
-        }
-      });
-    </script>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script src="scripts/language-loader.js" defer></script>
     <script src="scripts/app.js" defer></script>
@@ -254,8 +237,6 @@
         <div class="modal-backdrop" id="modal-backdrop"></div>
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="stage-title">
           <button class="modal-close" id="modal-close" aria-label="Close" data-lang="modal.staging.close">✕</button>
-          <!-- Modal disclaimer in bottom right -->
-          <div class="modal-ad-disclaimer" data-lang="modal.staging.adDisclaimer">*Advertisements allow us to make this tool free</div>
           <section class="stage" id="stage">
             <div class="stage-inner">
               <div class="toolbar">
@@ -340,16 +321,6 @@
                     <img id="stage-preview" class="viewer-image" alt="Original image">
                     <canvas id="canvas1" class="viewer-image hidden"></canvas>
                     
-                    <!-- AdSense Ad Container for Loading (in main workspace) -->
-                    <div id="loading-ad-container" class="workspace-ad-container hidden">
-                      <div class="ad-label" data-lang="modal.staging.advertisement">Advertisement</div>
-                      
-                      <!-- Loading video ad -->
-                      <ins class="adsbygoogle loading-adsense-ad"
-                           style="display:inline-block;width:468px;height:280px"
-                           data-ad-client="ca-pub-3963065765933801"
-                           data-ad-slot="1759452885"></ins>
-                    </div>
                     
                     <div id="processing-placeholder" class="processing-placeholder">
                       <div class="placeholder-content">
