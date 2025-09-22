@@ -487,6 +487,9 @@
           
           progress.classList.add('hidden');
           processBtn.disabled = false;
+          
+          // Refresh prompt count after successful processing
+          loadPromptCount();
         };
         img.src = processedImageData;
         
@@ -576,10 +579,59 @@
     // Check if user is first-time visitor and show role popup
     initRolePopup();
     
+    // Load and display prompt count
+    loadPromptCount();
+    
+    // Load and display contact count
+    loadContactCount();
     
     // Initialize 3D tilt effect for advantages section and contact cards
     init3DTiltEffect();
   });
+  
+  // Load and display prompt count from server
+  function loadPromptCount() {
+    fetch('/api/prompt-count')
+      .then(response => response.json())
+      .then(data => {
+        // Find the specific stat pill for "Rooms Staged" by looking for the one with the roomsStaged data-lang attribute
+        const roomsStagedPill = document.querySelector('.stat-pill-text[data-lang="hero.stats.roomsStaged"]');
+        const statPillNumber = roomsStagedPill ? roomsStagedPill.parentElement.querySelector('.stat-pill-number') : null;
+        
+        if (statPillNumber && data.promptCount !== undefined) {
+          // Format the number nicely
+          const count = data.promptCount;
+          statPillNumber.textContent = count.toString();
+
+        }
+      })
+      .catch(error => {
+        console.error('Error loading prompt count:', error);
+        // Keep the default "1000+" if there's an error
+      });
+  }
+
+  // Load and display contact count from server
+  function loadContactCount() {
+    fetch('/api/contact-count')
+      .then(response => response.json())
+      .then(data => {
+        // Find the specific stat pill for "Users Served" by looking for the one with the usersServed data-lang attribute
+        const usersServedPill = document.querySelector('.stat-pill-text[data-lang="hero.stats.usersServed"]');
+        const statPillNumber = usersServedPill ? usersServedPill.parentElement.querySelector('.stat-pill-number') : null;
+        
+        if (statPillNumber && data.contactCount !== undefined) {
+          // Format the number nicely
+          const count = data.contactCount;
+          statPillNumber.textContent = count.toString();
+        }
+      })
+      .catch(error => {
+        console.error('Error loading contact count:', error);
+        // Keep the default "200+" if there's an error
+      });
+  }
+
   
   
   // 3D Tilt Effect for Advantages Section, Contact Cards, and FAQ
@@ -785,7 +837,7 @@
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        console.log('Contact logged successfully');
+        loadContactCount();
       } else {
         console.error('Failed to log contact:', data.message);
       }
