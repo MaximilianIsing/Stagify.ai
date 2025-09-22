@@ -30,7 +30,8 @@
     "carouselNote": "Example preview — upload your photo to stage",
     "stats": {
       "roomsStaged": "Rooms Staged",
-      "usersServed": "Users Served"
+      "usersServed": "Users Served",
+      "andCounting": "and counting..."
     }
   },
   "sponsors": {
