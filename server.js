@@ -86,6 +86,75 @@ function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt,
   }
 }
 
+// Global variable to track prompt count
+let promptCount = 0;
+
+// Global variable to track contact count
+let contactCount = 0;
+
+// Function to initialize prompt count from CSV file
+function initializePromptCount() {
+  try {
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+    }
+
+    const logFile = path.join(logDir, 'prompt_logs.csv');
+    
+    if (fs.existsSync(logFile)) {
+      const fileContent = fs.readFileSync(logFile, 'utf8');
+      const lines = fileContent.trim().split('\n');
+      
+      // Subtract 1 for the header row to get actual prompt count
+      promptCount = Math.max(0, lines.length - 1);
+
+    } else {
+      console.log('No prompt log file found, starting with count 0');
+      promptCount = 0;
+    }
+  } catch (error) {
+    console.error('Error initializing prompt count:', error);
+    promptCount = 0;
+  }
+}
+
+// Function to initialize contact count from CSV file
+function initializeContactCount() {
+  try {
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+    }
+
+    const logFile = path.join(logDir, 'contact_logs.csv');
+    
+    if (fs.existsSync(logFile)) {
+      const fileContent = fs.readFileSync(logFile, 'utf8');
+      const lines = fileContent.trim().split('\n');
+      
+      // Subtract 1 for the header row to get actual contact count
+      contactCount = Math.max(0, lines.length - 1);
+    } else {
+      console.log('No contact log file found, starting with count 0');
+      contactCount = 0;
+    }
+  } catch (error) {
+    console.error('Error initializing contact count:', error);
+    contactCount = 0;
+  }
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -231,6 +300,9 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
     
     // Log prompt to file instead of console
     logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, userReferralSource, userEmail, req);
+    
+    // Increment prompt count
+    promptCount++;
 
     const prompt = [
       { text: promptText },
@@ -327,6 +399,9 @@ app.post('/api/log-contact', (req, res) => {
       });
     }
     
+    // Increment contact count
+    contactCount++;
+    
     res.json({ success: true, message: 'Contact logged successfully' });
   } catch (error) {
     console.error('Error in contact logging:', error);
@@ -343,7 +418,32 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Prompt count endpoint
+app.get('/api/prompt-count', (req, res) => {
+  res.json({ 
+    promptCount: promptCount
+  });
+});
+
+// Contact count endpoint
+app.get('/api/contact-count', (req, res) => {
+  res.json({ 
+    contactCount: contactCount
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`AI configured: ${!!genAI}`);
+  
+
+  const fakePromptAdd = 200;
+  const fakeContactAdd = 170;
+  // Initialize prompt count on server startup
+  initializePromptCount(fakePromptAdd);
+  promptCount += fakePromptAdd;
+  
+  // Initialize contact count on server startup
+  initializeContactCount(fakeContactAdd);
+  contactCount += fakeContactAdd;
 });
