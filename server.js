@@ -109,11 +109,13 @@ function initializePromptCount() {
     
     if (fs.existsSync(logFile)) {
       const fileContent = fs.readFileSync(logFile, 'utf8');
-      const lines = fileContent.trim().split('\n');
       
-      // Subtract 1 for the header row to get actual prompt count
-      promptCount = Math.max(0, lines.length - 1);
-
+      // Count rows that start with a timestamp (ISO format)
+      // Each valid CSV row starts with a timestamp like "2024-01-01T12:34:56"
+      const timestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/gm;
+      const matches = fileContent.match(timestampPattern);
+      promptCount = matches ? matches.length : 0;
+      console.log('Prompt count successfully initialized from file:', promptCount);
     } else {
       console.log('No prompt log file found, starting with count 0');
       promptCount = 0;
@@ -141,10 +143,13 @@ function initializeContactCount() {
     
     if (fs.existsSync(logFile)) {
       const fileContent = fs.readFileSync(logFile, 'utf8');
-      const lines = fileContent.trim().split('\n');
       
-      // Subtract 1 for the header row to get actual contact count
-      contactCount = Math.max(0, lines.length - 1);
+      // Count rows that start with a timestamp (ISO format)
+      // Each valid CSV row starts with a timestamp like "2024-01-01T12:34:56"
+      const timestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/gm;
+      const matches = fileContent.match(timestampPattern);
+      contactCount = matches ? matches.length : 0;
+      console.log('Contact count successfully initialized from file:', contactCount);
     } else {
       console.log('No contact log file found, starting with count 0');
       contactCount = 0;
@@ -542,9 +547,11 @@ app.listen(PORT, () => {
   
 
   const fakeContactAdd = 135;
+  const fakePromptAdd = 1030;
   // Initialize prompt count on server startup
   initializePromptCount();
+  promptCount += fakePromptAdd;
   // Initialize contact count on server startup
-  initializeContactCount(fakeContactAdd);
+  initializeContactCount();
   contactCount += fakeContactAdd;
 });
