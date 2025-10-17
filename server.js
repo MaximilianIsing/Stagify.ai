@@ -432,17 +432,113 @@ app.get('/api/contact-count', (req, res) => {
   });
 });
 
+// Load endpoint access key from file
+let LOGS_ACCESS_KEY;
+try {
+  LOGS_ACCESS_KEY = fs.readFileSync(path.join(__dirname, 'endpointkey.txt'), 'utf8').trim();
+  console.log('Endpoint access key successfully loaded from file');
+} catch (error) {
+  console.error('Error loading endpoint access key:', error.message);
+  LOGS_ACCESS_KEY = null;
+}
+
+// Middleware to protect logs endpoints with password
+function protectLogs(req, res, next) {
+  if (!LOGS_ACCESS_KEY) {
+    return res.status(500).json({ 
+      error: 'Server configuration error',
+      message: 'Logs access key not configured'
+    });
+  }
+  
+  const accessKey = req.query.key;
+  
+  if (accessKey === LOGS_ACCESS_KEY) {
+    next();
+  } else {
+    res.status(403).json({ 
+      error: 'Access denied',
+      message: 'Valid access key required. Use ?key=YOUR_KEY in the URL'
+    });
+  }
+}
+
+// Prompt logs endpoint - serves the prompt logs CSV file (protected)
+app.get('/promptlogs', protectLogs, (req, res) => {
+  try {
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+    }
+
+    const logFile = path.join(logDir, 'prompt_logs.csv');
+    
+    if (fs.existsSync(logFile)) {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'inline; filename="prompt_logs.csv"');
+      res.sendFile(logFile);
+    } else {
+      res.status(404).json({ 
+        error: 'Log file not found',
+        message: 'No prompt logs are available yet'
+      });
+    }
+  } catch (error) {
+    console.error('Error serving prompt log file:', error);
+    res.status(500).json({ 
+      error: 'Failed to retrieve prompt logs',
+      message: error.message
+    });
+  }
+});
+
+// Contact logs endpoint - serves the contact logs CSV file (protected)
+app.get('/contactlogs', protectLogs, (req, res) => {
+  try {
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+    }
+
+    const logFile = path.join(logDir, 'contact_logs.csv');
+    
+    if (fs.existsSync(logFile)) {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'inline; filename="contact_logs.csv"');
+      res.sendFile(logFile);
+    } else {
+      res.status(404).json({ 
+        error: 'Log file not found',
+        message: 'No contact logs are available yet'
+      });
+    }
+  } catch (error) {
+    console.error('Error serving contact log file:', error);
+    res.status(500).json({ 
+      error: 'Failed to retrieve contact logs',
+      message: error.message
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`AI configured: ${!!genAI}`);
   
 
-  const fakePromptAdd = 200;
-  const fakeContactAdd = 170;
+  const fakeContactAdd = 135;
   // Initialize prompt count on server startup
-  initializePromptCount(fakePromptAdd);
-  promptCount += fakePromptAdd;
-  
+  initializePromptCount();
   // Initialize contact count on server startup
   initializeContactCount(fakeContactAdd);
   contactCount += fakeContactAdd;
