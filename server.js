@@ -189,7 +189,7 @@ try {
     console.log('GOOGLE_AI_API_KEY is not set in an enviorment variable, using local file');
     apiKey = fs.readFileSync(path.join(__dirname, 'key.txt'), 'utf8').trim();
   }
-  console.log("API key Asuccessfully loaded");
+  console.log("API key successfully loaded");
   genAI = new GoogleGenerativeAI(apiKey);
 } catch (error) {
   console.error('Error initializing Google AI:', error.message);
@@ -432,14 +432,19 @@ app.get('/api/contact-count', (req, res) => {
   });
 });
 
-// Load endpoint access key from file
+// Load endpoint access key from file, fall back to environment variable
 let LOGS_ACCESS_KEY;
 try {
   LOGS_ACCESS_KEY = fs.readFileSync(path.join(__dirname, 'endpointkey.txt'), 'utf8').trim();
   console.log('Endpoint access key successfully loaded from file');
 } catch (error) {
-  console.error('Error loading endpoint access key:', error.message);
-  LOGS_ACCESS_KEY = null;
+  console.log('Endpoint key file not found, trying environment variable');
+  LOGS_ACCESS_KEY = process.env.endpoint_key;
+  if (LOGS_ACCESS_KEY) {
+    console.log('Endpoint access key successfully loaded from environment variable');
+  } else {
+    console.error('Error: No endpoint access key found in file or environment variable');
+  }
 }
 
 // Middleware to protect logs endpoints with password
