@@ -109,7 +109,8 @@
     "diningRoom": "餐厅",
     "kitchen": "厨房",
     "bathroom": "浴室",
-    "office": "办公室"
+    "office": "办公室",
+    "outdoors": "户外"
   },
   "furnitureStyles": {
     "standard": "标准",

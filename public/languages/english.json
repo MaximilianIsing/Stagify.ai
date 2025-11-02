@@ -108,7 +108,8 @@
     "diningRoom": "Dining room",
     "kitchen": "Kitchen",
     "bathroom": "Bathroom",
-    "office": "Office"
+    "office": "Office",
+    "outdoors": "Outdoors"
   },
   "furnitureStyles": {
     "standard": "Standard",
@@ -118,7 +119,7 @@
     "luxury": "Luxury",
     "coastal": "Coastal",
     "farmhouse": "Farmhouse",
-    "custom": "Custom (Experimental)"
+    "custom": "Custom"
   },
   "carouselItems": {
     "original": "Original",

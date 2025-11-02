@@ -109,7 +109,8 @@
     "diningRoom": "Comedor",
     "kitchen": "Cocina",
     "bathroom": "Baño",
-    "office": "Oficina"
+    "office": "Oficina",
+    "outdoors": "Exterior"
   },
   "furnitureStyles": {
     "standard": "Estándar",
