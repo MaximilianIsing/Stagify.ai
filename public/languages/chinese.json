@@ -6,6 +6,7 @@
   },
   "navigation": {
     "home": "首页",
+    "pdfTo3d": "PDF转3D",
     "whyUs": "我们",
     "faq": "常见问题",
     "contactUs": "联系我们",
@@ -237,5 +238,55 @@
     "badPrompt": "输入了错误的提示",
     "processingFailed": "处理失败",
     "noImageData": "未接收到图片数据"
+  },
+  "pdf": {
+    "meta": {
+      "title": "PDF转3D渲染 | Stagify.ai - 将平面图转换为3D可视化",
+      "description": "使用AI将CAD平面图PDF转换为逼真的3D室内可视化。立即将您的平面图转换为令人惊叹的3D渲染。",
+      "keywords": "PDF转3D, 平面图可视化, CAD转3D, 3D室内渲染, AI平面图转换, PDF渲染"
+    },
+    "title": "PDF转3D渲染",
+    "description": "将您的CAD平面图PDF转换为逼真的3D室内可视化",
+    "uploadArea": "上传PDF或拖放",
+    "uploadSubtext": "支持：PDF文件",
+    "options": {
+      "title": "处理选项",
+      "skip": "跳过前几页",
+      "skipHint": "跳过封面页和标题页",
+      "concurrency": "处理速度",
+      "concurrencyHint": "更高的速度可能会增加每个房间的处理时间",
+      "dpi": "图像质量（DPI）",
+      "dpiHint": "更高的DPI产生更好的质量，但需要更长时间"
+    },
+    "processButton": "处理PDF",
+    "progress": {
+      "uploading": "上传PDF中…",
+      "processing": "处理PDF中…",
+      "complete": "完成！"
+    },
+    "result": {
+      "title": "处理完成！",
+      "description": "您处理后的PDF已准备好下载。",
+      "download": "下载处理后的PDF",
+      "uploadAnother": "上传另一个PDF"
+    },
+    "info": {
+      "title": "工作原理",
+      "step1": "上传您的CAD平面图PDF",
+      "step2": "我们的AI识别房间并提取平面图详细信息",
+      "step3": "每个房间都转换为逼真的3D可视化",
+      "step4": "下载您处理后的PDF，包含3D渲染（通常需要2分钟）",
+      "note": "注意：处理通常需要大约2分钟。请耐心等待我们的AI生成您的3D渲染。"
+    },
+    "status": {
+      "fileReady": "文件已准备"
+    },
+    "errors": {
+      "invalidFileType": "请上传PDF文件。",
+      "fileTooLarge": "文件过大。请上传小于100MB的PDF。",
+      "noFile": "请先上传PDF文件",
+      "processingFailed": "处理失败。请重试。",
+      "noProcessedFile": "没有可用的处理后PDF。"
+    }
   }
 }
