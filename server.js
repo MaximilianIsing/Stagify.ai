@@ -4,6 +4,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
+import https from 'https';
+import FormData from 'form-data';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import sharp from "sharp";
 import cors from 'cors';
@@ -168,12 +170,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Configure multer for file uploads
+// Configure multer for file uploads (images)
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 50MB limit
+    fileSize: 100 * 1024 * 1024, // 100MB limit
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -184,6 +186,24 @@ const upload = multer({
     }
   }
 });
+
+// Configure multer for PDF uploads
+const pdfUpload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
+    }
+  }
+});
+
+// External PDF processing server URL
+const PDF_PROCESSING_SERVER = 'https://stagify-project-imagination.onrender.com';
 
 // Initialize Google AI
 let genAI;
@@ -435,6 +455,181 @@ app.get('/api/contact-count', (req, res) => {
   res.json({ 
     contactCount: contactCount
   });
+});
+
+// PDF Processing Proxy Endpoints
+// Health check proxy
+app.get('/api/pdf-health', async (req, res) => {
+  try {
+    const response = await fetch(`${PDF_PROCESSING_SERVER}/health`);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error checking PDF server health:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Failed to check PDF server health',
+      error: error.message 
+    });
+  }
+});
+
+// PDF processing proxy endpoint
+app.post('/api/process-pdf', pdfUpload.single('pdf'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No PDF file provided' });
+    }
+
+    // Get query parameters from request
+    const skip = req.query.skip || '4';
+    const concurrency = req.query.concurrency || '2';
+    const dpi = req.query.dpi || '110';
+    const continueOnError = req.query.continue || 'false';
+    const merge = req.query.merge || 'false';
+    const filename = req.query.filename || req.file.originalname;
+
+    // Build query parameters for external server
+    const params = new URLSearchParams();
+    params.append('skip', skip);
+    params.append('concurrency', concurrency);
+    params.append('dpi', dpi);
+    if (continueOnError !== 'false') params.append('continue', continueOnError);
+    if (merge !== 'false') params.append('merge', merge);
+    if (filename) params.append('filename', filename);
+
+    const urlPath = `/process?${params.toString()}`;
+    const targetUrl = new URL(PDF_PROCESSING_SERVER);
+
+    // Create FormData for the external server using form-data package
+    const formData = new FormData();
+    formData.append('pdf', req.file.buffer, {
+      filename: req.file.originalname,
+      contentType: 'application/pdf'
+    });
+
+    // Forward the request to the external server using https module
+    console.log(`Forwarding PDF processing request to ${PDF_PROCESSING_SERVER}${urlPath}`);
+    
+    return new Promise((resolve, reject) => {
+      const options = {
+        hostname: targetUrl.hostname,
+        port: targetUrl.port || 443,
+        path: urlPath,
+        method: 'POST',
+        headers: formData.getHeaders()
+      };
+
+      const proxyReq = https.request(options, (proxyRes) => {
+        // Handle errors from proxy response
+        if (proxyRes.statusCode && proxyRes.statusCode >= 400) {
+          let errorData = '';
+          proxyRes.on('data', (chunk) => {
+            errorData += chunk.toString();
+          });
+          proxyRes.on('end', () => {
+            try {
+              const parsedError = JSON.parse(errorData);
+              res.status(proxyRes.statusCode).json({
+                error: parsedError.message || parsedError.error || `Server error: ${proxyRes.statusCode}`,
+                ...parsedError
+              });
+            } catch {
+              res.status(proxyRes.statusCode).json({ 
+                error: errorData || `Server error: ${proxyRes.statusCode}` 
+              });
+            }
+            resolve();
+          });
+          return;
+        }
+
+        // Set status code for successful response
+        res.status(proxyRes.statusCode || 200);
+
+        // Copy headers from proxy response (skip problematic ones)
+        Object.keys(proxyRes.headers).forEach(key => {
+          const lowerKey = key.toLowerCase();
+          // Skip headers that shouldn't be forwarded or will be set manually
+          if (lowerKey !== 'content-encoding' && 
+              lowerKey !== 'transfer-encoding' &&
+              lowerKey !== 'connection' &&
+              lowerKey !== 'content-length') {
+            try {
+              res.setHeader(key, proxyRes.headers[key]);
+            } catch (err) {
+              // Ignore header setting errors
+              console.warn(`Could not set header ${key}:`, err.message);
+            }
+          }
+        });
+
+        // Ensure Content-Type is set for PDF
+        if (!res.getHeader('content-type')) {
+          res.setHeader('Content-Type', 'application/pdf');
+        }
+
+        // Set Content-Disposition for download
+        if (filename) {
+          res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        }
+
+        // Handle proxy response errors
+        proxyRes.on('error', (err) => {
+          console.error('Proxy response error:', err);
+          if (!res.headersSent) {
+            res.status(500).json({ 
+              error: 'Error receiving response from PDF server', 
+              details: err.message 
+            });
+          }
+          resolve();
+        });
+
+        // Stream the response from proxy to client
+        proxyRes.pipe(res);
+        
+        proxyRes.on('end', () => {
+          resolve();
+        });
+      });
+
+      proxyReq.on('error', (error) => {
+        console.error('Proxy request error:', error);
+        if (!res.headersSent) {
+          res.status(500).json({ 
+            error: 'PDF processing failed', 
+            details: error.message 
+          });
+        }
+        reject(error);
+      });
+
+      // Pipe form data to the proxy request
+      formData.pipe(proxyReq);
+      
+      formData.on('error', (error) => {
+        console.error('FormData error:', error);
+        proxyReq.destroy();
+        if (!res.headersSent) {
+          res.status(500).json({ 
+            error: 'PDF processing failed', 
+            details: error.message 
+          });
+        }
+        reject(error);
+      });
+    });
+
+  } catch (error) {
+    console.error('Error processing PDF:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ 
+        error: 'PDF processing failed', 
+        details: error.message 
+      });
+    }
+  }
 });
 
 // Load endpoint access key from file, fall back to environment variable

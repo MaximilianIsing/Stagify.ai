@@ -6,6 +6,7 @@
   },
   "navigation": {
     "home": "Home",
+    "pdfTo3d": "PDF to 3D",
     "whyUs": "Why Us?",
     "faq": "FAQ",
     "contactUs": "Contact Us",
@@ -236,5 +237,55 @@
     "badPrompt": "Bad prompt inputted",
     "processingFailed": "Processing failed",
     "noImageData": "No image data received"
+  },
+  "pdf": {
+    "meta": {
+      "title": "PDF to 3D Render | Stagify.ai - Convert Floorplans to 3D Visualizations",
+      "description": "Convert CAD floorplan PDFs into photorealistic 3D interior visualizations using AI. Transform your floorplans into stunning 3D renders instantly.",
+      "keywords": "PDF to 3D, floorplan visualization, CAD to 3D, 3D interior rendering, AI floorplan conversion, PDF rendering"
+    },
+    "title": "PDF to 3D Render",
+    "description": "Convert your CAD floorplan PDFs into photorealistic 3D interior visualizations",
+    "uploadArea": "Upload a PDF or drag and drop",
+    "uploadSubtext": "Supported: PDF files",
+    "options": {
+      "title": "Processing Options",
+      "skip": "Skip first pages",
+      "skipHint": "Skip cover pages and title sheets",
+      "concurrency": "Processing speed",
+      "concurrencyHint": "Higher speeds may increase processing time per room",
+      "dpi": "Image Quality (DPI)",
+      "dpiHint": "Higher DPI produces better quality but takes longer"
+    },
+    "processButton": "Process PDF",
+    "progress": {
+      "uploading": "Uploading PDF…",
+      "processing": "Processing PDF…",
+      "complete": "Complete!"
+    },
+    "result": {
+      "title": "Processing Complete!",
+      "description": "Your processed PDF is ready to download.",
+      "download": "Download Processed PDF",
+      "uploadAnother": "Upload Another PDF"
+    },
+    "info": {
+      "title": "How It Works",
+      "step1": "Upload your CAD floorplan PDF",
+      "step2": "Our AI identifies rooms and extracts floorplan details",
+      "step3": "Each room is converted into a photorealistic 3D visualization",
+      "step4": "Download your processed PDF with 3D renders (usually takes 2 minutes)",
+      "note": "Note: Processing typically takes about 2 minutes. Please be patient while our AI generates your 3D renders."
+    },
+    "status": {
+      "fileReady": "File ready"
+    },
+    "errors": {
+      "invalidFileType": "Please upload a PDF file.",
+      "fileTooLarge": "File is too large. Please upload a PDF smaller than 100MB.",
+      "noFile": "Please upload a PDF file first",
+      "processingFailed": "Processing failed. Please try again.",
+      "noProcessedFile": "No processed PDF available."
+    }
   }
 }

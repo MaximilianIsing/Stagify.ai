@@ -6,6 +6,7 @@
   },
   "navigation": {
     "home": "Inicio",
+    "pdfTo3d": "PDF a 3D",
     "whyUs": "Nosotros",
     "faq": "PF",
     "contactUs": "Contáctanos",
@@ -237,5 +238,55 @@
     "badPrompt": "Prompt incorrecto ingresado",
     "processingFailed": "El procesamiento falló",
     "noImageData": "No se recibieron datos de imagen"
+  },
+  "pdf": {
+    "meta": {
+      "title": "PDF a Renderizado 3D | Stagify.ai - Convertir Planos en Visualizaciones 3D",
+      "description": "Convierte PDFs de planos CAD en visualizaciones 3D fotorrealistas de interiores usando IA. Transforma tus planos en impresionantes renders 3D al instante.",
+      "keywords": "PDF a 3D, visualización de planos, CAD a 3D, renderizado 3D de interiores, conversión de planos con IA, renderizado de PDF"
+    },
+    "title": "PDF a Renderizado 3D",
+    "description": "Convierte tus PDFs de planos CAD en visualizaciones 3D fotorrealistas de interiores",
+    "uploadArea": "Sube un PDF o arrastra y suelta",
+    "uploadSubtext": "Soportado: archivos PDF",
+    "options": {
+      "title": "Opciones de Procesamiento",
+      "skip": "Omitir primeras páginas",
+      "skipHint": "Omitir páginas de portada y hojas de título",
+      "concurrency": "Velocidad de procesamiento",
+      "concurrencyHint": "Velocidades más altas pueden aumentar el tiempo de procesamiento por habitación",
+      "dpi": "Calidad de Imagen (DPI)",
+      "dpiHint": "DPI más alto produce mejor calidad pero tarda más"
+    },
+    "processButton": "Procesar PDF",
+    "progress": {
+      "uploading": "Subiendo PDF…",
+      "processing": "Procesando PDF…",
+      "complete": "¡Completo!"
+    },
+    "result": {
+      "title": "¡Procesamiento Completo!",
+      "description": "Tu PDF procesado está listo para descargar.",
+      "download": "Descargar PDF Procesado",
+      "uploadAnother": "Subir Otro PDF"
+    },
+    "info": {
+      "title": "Cómo Funciona",
+      "step1": "Sube tu PDF de plano CAD",
+      "step2": "Nuestra IA identifica habitaciones y extrae detalles del plano",
+      "step3": "Cada habitación se convierte en una visualización 3D fotorrealista",
+      "step4": "Descarga tu PDF procesado con renders 3D (generalmente toma 2 minutos)",
+      "note": "Nota: El procesamiento generalmente toma aproximadamente 2 minutos. Por favor sé paciente mientras nuestra IA genera tus renders 3D."
+    },
+    "status": {
+      "fileReady": "Archivo listo"
+    },
+    "errors": {
+      "invalidFileType": "Por favor sube un archivo PDF.",
+      "fileTooLarge": "El archivo es demasiado grande. Por favor sube un PDF menor a 100MB.",
+      "noFile": "Por favor sube un archivo PDF primero",
+      "processingFailed": "El procesamiento falló. Por favor intenta de nuevo.",
+      "noProcessedFile": "No hay PDF procesado disponible."
+    }
   }
 }
