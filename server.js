@@ -233,17 +233,23 @@ const chatUpload = multer({
 // External PDF processing server URL
 const PDF_PROCESSING_SERVER = 'https://stagify-project-imagination.onrender.com';
 
-// Debug mode - read from debug.txt on startup
+// Debug mode - check environment variable first, then fall back to debug.txt
 let DEBUG_MODE = false;
 try {
-  const debugFile = path.join(__dirname, 'debug.txt');
-  if (fs.existsSync(debugFile)) {
-    const debugValue = fs.readFileSync(debugFile, 'utf8').trim().toLowerCase();
-    DEBUG_MODE = debugValue === 'true';
+  // Try environment variable first (Render), then fall back to local file
+  let debugValue = process.env.DEBUG;
+  if (debugValue === undefined) {
+    const debugFile = path.join(__dirname, 'debug.txt');
+    if (fs.existsSync(debugFile)) {
+      debugValue = fs.readFileSync(debugFile, 'utf8').trim();
+    }
+  }
+  if (debugValue !== undefined) {
+    DEBUG_MODE = debugValue.toLowerCase() === 'true';
     console.log(`Debug mode: ${DEBUG_MODE ? 'ENABLED' : 'DISABLED'}`);
   }
 } catch (error) {
-  console.error('Error reading debug.txt:', error.message);
+  console.error('Error reading debug configuration:', error.message);
   DEBUG_MODE = false;
 }
 
@@ -459,10 +465,13 @@ try {
 let openai;
 try {
   // Try environment variable first (Render), then fall back to local file
-  let gptApiKey = process.env.OPENAI_API_KEY;
+  let gptApiKey = process.env.GPT_KEY;
   if (gptApiKey === undefined) {
-    console.log('OPENAI_API_KEY is not set in an environment variable, using local file');
-    gptApiKey = fs.readFileSync(path.join(__dirname, 'gpt-key.txt'), 'utf8').trim();
+    console.log('OPENAI_API_KEY/GPT_KEY is not set in an environment variable, using local file');
+    const gptKeyFile = path.join(__dirname, 'gpt-key.txt');
+    if (fs.existsSync(gptKeyFile)) {
+      gptApiKey = fs.readFileSync(gptKeyFile, 'utf8').trim();
+    }
   }
   if (gptApiKey) {
     openai = new OpenAI({ apiKey: gptApiKey });
