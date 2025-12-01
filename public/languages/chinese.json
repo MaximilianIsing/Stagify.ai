@@ -6,7 +6,7 @@
   },
   "navigation": {
     "home": "首页",
-    "pdfTo3d": "PDF转3D",
+    "pdfTo3d": "AI设计师",
     "whyUs": "我们",
     "faq": "常见问题",
     "contactUs": "联系我们",
@@ -198,7 +198,7 @@
   "contact": {
     "title": "联系我们",
     "description": "我们很乐意听到您的声音。单独联系我们或发邮件至 <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>。",
-    "social": "在 <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> 关注我们，获取更新和示例！",
+    "social": "在 <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> 或 <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> 关注我们，获取更新和示例！",
     "labels": {
       "name": "姓名",
       "email": "邮箱",
@@ -241,12 +241,16 @@
   },
   "pdf": {
     "meta": {
-      "title": "PDF转3D渲染 | Stagify.ai - 将平面图转换为3D可视化",
-      "description": "使用AI将CAD平面图PDF转换为逼真的3D室内可视化。立即将您的平面图转换为令人惊叹的3D渲染。",
-      "keywords": "PDF转3D, 平面图可视化, CAD转3D, 3D室内渲染, AI平面图转换, PDF渲染"
+      "title": "AI设计师 | Stagify.ai - AI驱动的设计助手",
+      "description": "与AI设计师聊天，获得设计问题帮助，上传文件进行分析，立即获得专业设计建议。",
+      "keywords": "AI设计师, AI设计助手, 设计咨询, AI聊天, 设计帮助, 室内设计AI"
     },
-    "title": "PDF转3D渲染",
+    "title": "AI设计师",
     "description": "将您的CAD平面图PDF转换为逼真的3D室内可视化",
+    "emptyState": "通过输入消息或上传文件开始对话",
+    "uploadFile": "上传文件",
+    "inputPlaceholder": "输入您的消息...",
+    "sendButton": "发送",
     "uploadArea": "上传PDF或拖放",
     "uploadSubtext": "支持：PDF文件",
     "options": {

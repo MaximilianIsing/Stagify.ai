@@ -6,7 +6,7 @@
   },
   "navigation": {
     "home": "Inicio",
-    "pdfTo3d": "PDF a 3D",
+    "pdfTo3d": "Diseñador IA",
     "whyUs": "Nosotros",
     "faq": "PF",
     "contactUs": "Contáctanos",
@@ -198,7 +198,7 @@
   "contact": {
     "title": "Ponte en contacto",
     "description": "Nos encantaría saber de ti. Contáctanos individualmente o escríbenos a <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
-    "social": "¡Síguenos en <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> para actualizaciones y ejemplos!",
+    "social": "¡Síguenos en <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> o en <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> para actualizaciones y ejemplos!",
     "labels": {
       "name": "Nombre",
       "email": "Correo electrónico",
@@ -241,12 +241,16 @@
   },
   "pdf": {
     "meta": {
-      "title": "PDF a Renderizado 3D | Stagify.ai - Convertir Planos en Visualizaciones 3D",
-      "description": "Convierte PDFs de planos CAD en visualizaciones 3D fotorrealistas de interiores usando IA. Transforma tus planos en impresionantes renders 3D al instante.",
-      "keywords": "PDF a 3D, visualización de planos, CAD a 3D, renderizado 3D de interiores, conversión de planos con IA, renderizado de PDF"
+      "title": "Diseñador IA | Stagify.ai - Asistente de Diseño con IA",
+      "description": "Chatea con el Diseñador IA para obtener ayuda con preguntas de diseño, sube archivos para análisis y obtén consejos profesionales de diseño al instante.",
+      "keywords": "Diseñador IA, asistente de diseño IA, consultoría de diseño, chat IA, ayuda de diseño, diseño de interiores IA"
     },
-    "title": "PDF a Renderizado 3D",
+    "title": "Diseñador IA",
     "description": "Convierte tus PDFs de planos CAD en visualizaciones 3D fotorrealistas de interiores",
+    "emptyState": "Comienza una conversación escribiendo un mensaje o subiendo un archivo",
+    "uploadFile": "Subir archivo",
+    "inputPlaceholder": "Escribe tu mensaje...",
+    "sendButton": "Enviar",
     "uploadArea": "Sube un PDF o arrastra y suelta",
     "uploadSubtext": "Soportado: archivos PDF",
     "options": {
