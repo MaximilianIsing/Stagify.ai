@@ -1,0 +1,1622 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
+    <title data-lang="pdf.meta.title">AI Designer | Stagify.ai</title>
+    <meta name="description" data-lang-attr="pdf.meta.description|content" content="Chat with AI Designer to get help with design questions, upload files for analysis, and get professional design advice instantly.">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="robots" content="index, follow">
+    <meta name="keywords" data-lang-attr="pdf.meta.keywords|content" content="AI Designer, AI design assistant, design consultation, AI chat, design help, interior design AI, room staging AI, virtual staging assistant, AI interior designer">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="AI Designer | Stagify.ai - AI-Powered Design Assistant">
+    <meta property="og:description" content="Chat with AI Designer to get help with design questions, upload files for analysis, and get professional design advice instantly.">
+    <meta property="og:url" content="https://stagify.ai/ai-designer.html">
+    <meta property="og:site_name" content="Stagify.ai">
+    <meta property="og:image" content="https://stagify.ai/media-webp/logo/Logo180x180.webp">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AI Designer | Stagify.ai - AI-Powered Design Assistant">
+    <meta name="twitter:description" content="Chat with AI Designer to get help with design questions, upload files for analysis, and get professional design advice instantly.">
+    <meta name="twitter:image" content="https://stagify.ai/media-webp/logo/Logo180x180.webp">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://stagify.ai/ai-designer.html">
+    
+    <!-- Hreflang Tags for Multi-language Support -->
+    <link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html">
+    <link rel="alternate" hreflang="es" href="https://stagify.ai/ai-designer.html">
+    <link rel="alternate" hreflang="zh" href="https://stagify.ai/ai-designer.html">
+    <link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "AI Designer - Stagify.ai",
+      "description": "AI-powered design assistant for room staging and interior design. Chat with AI to get design advice, upload images for staging, and receive professional design recommendations.",
+      "url": "https://stagify.ai/ai-designer.html",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Stagify.ai"
+      },
+      "featureList": [
+        "AI-powered design consultation",
+        "Image upload and analysis",
+        "Room staging assistance",
+        "Interior design advice",
+        "Real-time chat interface"
+      ],
+      "keywords": "AI Designer, AI design assistant, design consultation, AI chat, design help, interior design AI, room staging AI"
+    }
+    </script>
+    
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script src="scripts/language-loader.js" defer></script>
+    <style>
+      /* Prevent horizontal scrolling */
+      html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+      
+      /* Ensure hero section doesn't constrain chat container */
+      section.hero {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 20px !important;
+        box-sizing: border-box;
+      }
+      
+      .chat-container {
+        width: 100%;
+        max-width: 1400px;
+        min-width: min(100%, 1400px);
+        margin: 0 auto;
+        height: calc(100vh - 120px);
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        box-sizing: border-box;
+        flex-shrink: 0;
+      }
+      
+      .chat-messages {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border);
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 0;
+        width: 100%;
+        flex-shrink: 0;
+      }
+      
+      .message {
+        display: flex;
+        gap: 12px;
+        animation: fadeIn 0.3s ease-in;
+        min-width: 0;
+        width: 100%;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .message.user {
+        flex-direction: row-reverse;
+      }
+      
+      .message-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+      
+      .message.user .message-avatar {
+        width: 28.8px;
+        height: 28.8px;
+      }
+      
+      .message.user .message-avatar {
+        background: #2563eb;
+        padding: 0;
+        overflow: hidden;
+      }
+      
+      .message.user .message-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+      
+      .message.assistant .message-avatar {
+        background: transparent;
+        color: white;
+        padding: 0;
+        overflow: hidden;
+      }
+      
+      .message.assistant .message-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+      
+      .message-content {
+        padding: 12px 16px;
+        border-radius: 12px;
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+      
+      .message.assistant .message-content {
+        white-space: pre-wrap;
+      }
+      
+      .message.assistant .message-content strong {
+        font-weight: 600;
+      }
+      
+      .message.assistant .message-content ul,
+      .message.assistant .message-content ol {
+        margin: 8px 0;
+        padding-left: 24px;
+      }
+      
+      .message.assistant .message-content li {
+        margin: 4px 0;
+      }
+      
+      .message.user .message-content {
+        background: #2563eb;
+        color: white;
+        border-bottom-right-radius: 4px;
+      }
+      
+      .message.assistant .message-content {
+        background: rgba(255, 255, 255, 0.8);
+        color: #1e3a8a;
+        border-bottom-left-radius: 4px;
+      }
+      
+      .message-file {
+        margin-top: 8px;
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .message-file img {
+        max-width: 100%;
+        max-width: min(200px, 100%);
+        max-height: 200px;
+        border-radius: 6px;
+        height: auto;
+        width: auto;
+      }
+      
+      .message-file a {
+        color: inherit;
+        text-decoration: underline;
+      }
+      
+      .chat-input-container {
+        display: flex;
+        flex-direction: column;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border);
+        padding: 12px;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+      
+      .file-preview-container {
+        display: none;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 8px;
+      }
+      
+      .file-preview-container.has-files {
+        display: block;
+      }
+      
+      .file-preview-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      .file-preview-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 6px;
+        font-size: 14px;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+      
+      .file-preview-item img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+      }
+      
+      .file-preview-item .file-info {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .file-preview-item .file-name {
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
+      .file-preview-item .file-size {
+        font-size: 12px;
+        color: #666;
+      }
+      
+      .file-preview-item .file-remove {
+        background: none;
+        border: none;
+        color: #ef4444;
+        cursor: pointer;
+        padding: 4px;
+        font-size: 18px;
+        line-height: 1;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+      }
+      
+      .file-preview-item .file-remove:hover {
+        opacity: 1;
+      }
+      
+      .chat-input-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 48px;
+        min-width: 0;
+        width: 100%;
+      }
+      
+      .reload-btn {
+        padding: 12px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        height: 48px;
+        width: 48px;
+        flex-shrink: 0;
+        align-self: center;
+        margin-right: 4px;
+      }
+      
+      .reload-btn img {
+        filter: brightness(0) invert(1);
+        width: 24px !important;
+        height: 24px !important;
+        object-fit: contain;
+      }
+      
+      .reload-btn:hover {
+        background: #1d4ed8;
+      }
+      
+      .file-upload-btn {
+        padding: 12px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        height: 48px;
+        width: 48px;
+        flex-shrink: 0;
+        align-self: center;
+      }
+      
+      .file-upload-btn img {
+        filter: brightness(0) invert(1);
+        width: 24px !important;
+        height: 24px !important;
+        object-fit: contain;
+      }
+      
+      .file-upload-btn:hover {
+        background: #1d4ed8;
+      }
+      
+      .file-upload-btn input {
+        display: none;
+      }
+      
+      .chat-input-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      
+      .chat-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 16px;
+        font-family: inherit;
+        resize: none;
+        height: 48px;
+        background: white;
+        color: #1e3a8a;
+        line-height: 1.5;
+        box-sizing: border-box;
+        overflow-y: hidden;
+        overflow-x: hidden;
+        margin: 0;
+      }
+      
+      .chat-input:focus {
+        outline: none;
+        border-color: #2563eb;
+      }
+      
+      .chat-input.multi-line {
+        overflow-y: auto;
+      }
+      
+      .send-btn {
+        padding: 12px 24px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s;
+        white-space: nowrap;
+        height: 48px;
+        flex-shrink: 0;
+        align-self: center;
+      }
+      
+      .send-btn:hover:not(:disabled) {
+        background: #1d4ed8;
+      }
+      
+      .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      
+      .typing-indicator {
+        padding: 12px 16px;
+        color: #6b7280;
+        font-style: italic;
+      }
+      
+      .empty-state {
+        text-align: center;
+        color: #6b7280;
+        padding: 40px 20px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      .empty-state h3 {
+        color: #1e3a8a;
+        margin-bottom: 8px;
+      }
+      
+      @media (max-width: 768px) {
+        .chat-container {
+          height: calc(100vh - 100px);
+          padding: 10px;
+        }
+        
+        .message-content {
+          max-width: 85%;
+        }
+        
+        .chat-input-container {
+          padding: 12px;
+        }
+        
+        .file-preview-item {
+          max-width: 100%;
+        }
+      }
+      
+      /* Custom Stagify Scrollbar */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #2563eb rgba(255, 255, 255, 0.2);
+      }
+      
+      *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      
+      *::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+      
+      *::-webkit-scrollbar-thumb {
+        background: #2563eb;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+      }
+      
+      *::-webkit-scrollbar-thumb:hover {
+        background: #1d4ed8;
+        background-clip: padding-box;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Background Video -->
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+      <source src="background.mp4" type="video/mp4">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong">stagify</span><span class="brand-light">.ai</span></div>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <a href="ai-designer.html" class="nav-link desktop-only" data-lang="navigation.pdfTo3d">AI Designer</a>
+          <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
+          <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
+          <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
+        </div>
+        <div class="mobile-test-text">
+          <div data-lang="hero.title.upload">Upload.</div>
+          <div data-lang="hero.title.stage">Stage.</div>
+          <div data-lang="hero.title.imagine">Imagine.</div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <div class="language-picker-container">
+        <div class="language-selector">
+          <label for="language-select" class="sr-only">Select language</label>
+          <select id="language-select" class="language-dropdown">
+            <option value="english" selected>EN</option>
+            <option value="spanish">ES</option>
+            <option value="chinese">中文</option>
+          </select>
+        </div>
+      </div>
+
+      <section class="hero" style="grid-template-columns: 1fr; padding: 20px; width: 100%; max-width: 100%; box-sizing: border-box;">
+        <div class="chat-container">
+          <div class="chat-messages" id="chat-messages">
+            <div class="empty-state">
+              <h3 data-lang="pdf.title">AI Designer</h3>
+              <p data-lang="pdf.emptyState">Start a conversation by typing a message or uploading a file</p>
+            </div>
+          </div>
+          
+          <div class="chat-input-container">
+            <div class="file-preview-container" id="file-preview-container">
+              <div class="file-preview-list" id="file-preview-list"></div>
+            </div>
+            
+            <div class="chat-input-row">
+              <button class="reload-btn" id="reload-btn" title="Reload chat">
+                <img src="media-webp/Reload.webp" alt="Reload chat">
+              </button>
+              
+              <label class="file-upload-btn" data-lang-attr="pdf.uploadFile|title" title="Upload file">
+                <img src="media-webp/file.webp" alt="Upload file">
+                <input type="file" id="file-input" multiple accept="image/*,.pdf,.txt,.doc,.docx,.jpg,.jpeg">
+              </label>
+              
+              <div class="chat-input-wrapper">
+                <textarea 
+                  id="chat-input" 
+                  class="chat-input" 
+                  data-lang="pdf.inputPlaceholder"
+                  placeholder="Type your message..."
+                  rows="1"
+                  maxlength="5000"
+                ></textarea>
+              </div>
+              
+              <button id="send-btn" class="send-btn" data-lang="pdf.sendButton">Send</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const chatMessages = document.getElementById('chat-messages');
+      const chatInput = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('send-btn');
+      const fileInput = document.getElementById('file-input');
+      
+      let conversationHistory = [];
+      let selectedFiles = [];
+      let isProcessing = false; // Track if we're currently processing a message
+      
+      // Load welcome message on page load
+      async function loadWelcomeMessage() {
+        try {
+          // Remove empty state immediately
+          const emptyState = chatMessages.querySelector('.empty-state');
+          if (emptyState) {
+            emptyState.remove();
+          }
+          
+          // Show typing indicator while loading welcome message
+          const typingId = showTypingIndicator();
+          
+          // Generate a simple user ID (you can enhance this with actual user identification)
+          const userId = localStorage.getItem('userId') || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          localStorage.setItem('userId', userId);
+          
+          const response = await fetch(`/api/welcome-message?userId=${encodeURIComponent(userId)}`);
+          const data = await response.json();
+          
+          // Remove typing indicator
+          removeTypingIndicator(typingId);
+          
+          if (data.message) {
+            // Add welcome message
+            addMessage('assistant', data.message);
+            
+            // Add to conversation history
+            conversationHistory.push({ role: 'assistant', content: data.message });
+          }
+        } catch (error) {
+          console.error('Error loading welcome message:', error);
+          // Remove typing indicator if it exists
+          const typingIndicator = document.getElementById('typing-indicator');
+          if (typingIndicator) {
+            typingIndicator.remove();
+          }
+          // If welcome message fails, just remove empty state (already removed above)
+        }
+      }
+      
+      // Load welcome message when page loads
+      loadWelcomeMessage();
+      
+      // Reload button functionality
+      const reloadBtn = document.getElementById('reload-btn');
+      reloadBtn.addEventListener('click', function() {
+        // Reset conversation history
+        conversationHistory = [];
+        
+        // Clear chat messages
+        chatMessages.innerHTML = '';
+        
+        // Clear file selection
+        selectedFiles = [];
+        updateFilePreview();
+        
+        // Clear input
+        chatInput.value = '';
+        
+        // Reset processing state
+        isProcessing = false;
+        updateSendButtonState();
+        
+        // Load welcome message (same as page load)
+        loadWelcomeMessage();
+      });
+      
+      // Format file size
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+      }
+      
+      // Update file preview
+      function updateFilePreview() {
+        const container = document.getElementById('file-preview-container');
+        const list = document.getElementById('file-preview-list');
+        
+        if (selectedFiles.length === 0) {
+          container.classList.remove('has-files');
+          list.innerHTML = '';
+          return;
+        }
+        
+        container.classList.add('has-files');
+        list.innerHTML = '';
+        
+        selectedFiles.forEach((file, index) => {
+          const item = document.createElement('div');
+          item.className = 'file-preview-item';
+          
+          if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = file.name;
+            item.appendChild(img);
+          } else {
+            const icon = document.createElement('div');
+            icon.style.cssText = 'width: 40px; height: 40px; background: #2563eb; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;';
+            icon.textContent = file.name.split('.').pop().toUpperCase().substring(0, 3);
+            item.appendChild(icon);
+          }
+          
+          const fileInfo = document.createElement('div');
+          fileInfo.className = 'file-info';
+          
+          const fileName = document.createElement('div');
+          fileName.className = 'file-name';
+          fileName.textContent = file.name;
+          
+          const fileSize = document.createElement('div');
+          fileSize.className = 'file-size';
+          fileSize.textContent = formatFileSize(file.size);
+          
+          fileInfo.appendChild(fileName);
+          fileInfo.appendChild(fileSize);
+          item.appendChild(fileInfo);
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'file-remove';
+          removeBtn.innerHTML = '×';
+          removeBtn.onclick = () => {
+            selectedFiles.splice(index, 1);
+            updateFilePreview();
+          };
+          item.appendChild(removeBtn);
+          
+          list.appendChild(item);
+        });
+      }
+      
+      // Format markdown text to HTML
+      function formatMarkdown(text) {
+        if (!text) return '';
+        
+        // Split into lines for processing
+        const lines = text.split('\n');
+        let html = '';
+        let inList = false;
+        
+        lines.forEach((line, index) => {
+          // Check for bullet points: * item, - item, or • item
+          const bulletMatch = line.match(/^[\*\-\+•]\s+(.+)$/);
+          
+          if (bulletMatch) {
+            if (!inList) {
+              html += '<ul>';
+              inList = true;
+            }
+            let itemText = bulletMatch[1];
+            // Process bold and italic within list items
+            itemText = itemText.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            itemText = itemText.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+            html += `<li>${itemText}</li>`;
+          } else {
+            if (inList) {
+              html += '</ul>';
+              inList = false;
+            }
+            
+            if (line.trim()) {
+              // Process bold and italic in regular lines
+              let processedLine = line
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+              html += processedLine;
+            }
+            
+            // Add line break if not last line
+            if (index < lines.length - 1) {
+              html += '<br>';
+            }
+          }
+        });
+        
+        if (inList) {
+          html += '</ul>';
+        }
+        
+        return html;
+      }
+      
+      // Handle input (fixed height, no auto-resize)
+      chatInput.addEventListener('input', function() {
+        // Enforce character limit (maxlength should handle this, but just in case)
+        if (this.value.length > 5000) {
+          this.value = this.value.substring(0, 5000);
+        }
+        
+        // Show scrollbar only if content exceeds one line
+        if (this.scrollHeight > 48) {
+          this.classList.add('multi-line');
+        } else {
+          this.classList.remove('multi-line');
+        }
+        
+        if (!isProcessing) {
+          updateSendButtonState();
+        }
+      });
+      
+      // Check on focus to show scrollbar if needed
+      chatInput.addEventListener('focus', function() {
+        if (this.scrollHeight > 48) {
+          this.classList.add('multi-line');
+        }
+      });
+      
+      // Hide scrollbar when not focused if content fits in one line
+      chatInput.addEventListener('blur', function() {
+        if (this.scrollHeight <= 48) {
+          this.classList.remove('multi-line');
+        }
+      });
+      
+      // Send message on Enter (Shift+Enter for new line)
+      chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      
+      // Send button click
+      sendBtn.addEventListener('click', sendMessage);
+      
+      // File upload - add to preview instead of uploading immediately
+      fileInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        selectedFiles.push(...files);
+        updateFilePreview();
+        e.target.value = ''; // Reset input
+        if (!isProcessing) {
+          updateSendButtonState();
+        }
+      });
+      
+      // Initialize send button state
+      updateSendButtonState();
+      
+      function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message && selectedFiles.length === 0) return;
+        
+        // Show user message in chat
+        const userMessageText = message || (selectedFiles.length > 0 ? `Uploaded ${selectedFiles.length} file(s)` : '');
+        if (userMessageText) {
+          addMessage('user', userMessageText, selectedFiles);
+        }
+        
+        // Clear input and files
+        chatInput.value = '';
+        const filesToSend = [...selectedFiles];
+        selectedFiles = [];
+        updateFilePreview();
+        
+        // Disable send button while processing (but allow typing and file selection)
+        isProcessing = true;
+        updateSendButtonState();
+        
+        // Determine message type based on user input
+        const messageLower = message.toLowerCase();
+        let messageType = 'general';
+        if (messageLower.includes('generate') || messageLower.includes('create an image') || messageLower.includes('make an image') || messageLower.includes('draw') || messageLower.includes('show me an image of')) {
+          messageType = 'generating';
+        } else if (messageLower.includes('stage') || messageLower.includes('design') || messageLower.includes('furniture') || messageLower.includes('decorate')) {
+          messageType = 'staging';
+        } else if (messageLower.includes('describe') || messageLower.includes('analyze') || messageLower.includes('look at') || messageLower.includes('show me') || (messageLower.includes('image') && (messageLower.includes('how') || messageLower.includes('what')))) {
+          messageType = 'analyzing';
+        }
+        
+        // Show typing indicator
+        const typingId = showTypingIndicator(messageType);
+        
+        // Store images in conversation history and send
+        const userMessageContent = [];
+        if (message && message.trim()) {
+          userMessageContent.push({ type: 'text', text: message });
+        }
+        
+        // Convert files to base64 and store in conversation history
+        const filePromises = filesToSend.map(file => {
+          return new Promise((resolve) => {
+            if (file.type.startsWith('image/')) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                userMessageContent.push({
+                  type: 'image_url',
+                  image_url: { url: e.target.result },
+                  filename: file.name // Store filename for annotation matching
+                });
+                resolve();
+              };
+              reader.readAsDataURL(file);
+            } else {
+              // For non-image files, just store the filename
+              userMessageContent.push({
+                type: 'text',
+                text: `[File: ${file.name}]`
+              });
+              resolve();
+            }
+          });
+        });
+        
+        // Wait for all files to be read, then send
+        Promise.all(filePromises).then(() => {
+          // Add user message to conversation history (avoid duplicates)
+          const userMessage = { 
+            role: 'user', 
+            content: userMessageContent.length > 0 ? userMessageContent : userMessageText
+          };
+          
+          // Check if the last message is the same (avoid duplicates)
+          const lastMessage = conversationHistory[conversationHistory.length - 1];
+          const isDuplicate = lastMessage && 
+            lastMessage.role === 'user' && 
+            JSON.stringify(lastMessage.content) === JSON.stringify(userMessage.content);
+          
+          if (!isDuplicate) {
+            conversationHistory.push(userMessage);
+          }
+          
+          // Send to backend
+          if (filesToSend.length > 0) {
+            // Send with files
+            const formData = new FormData();
+            filesToSend.forEach(file => {
+              formData.append('files', file);
+            });
+            if (message) {
+              formData.append('message', message);
+            }
+            // Send conversation history so backend can access previous images
+            formData.append('conversationHistory', JSON.stringify(conversationHistory));
+            
+            // Get userId from localStorage
+            const userId = localStorage.getItem('userId');
+            if (userId) {
+              formData.append('userId', userId);
+            }
+            
+            fetch('/api/chat-upload', {
+              method: 'POST',
+              body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+              removeTypingIndicator(typingId);
+              
+              if (data.error) {
+                addMessage('assistant', 'Sorry, I encountered an error: ' + data.error);
+              } else if (data.contextLimitReached) {
+                // Context limit reached - show message and don't add to history
+                addMessage('assistant', data.response);
+              } else {
+                // Update user message in conversation history with annotations if available
+                if (data.imageAnnotations && Object.keys(data.imageAnnotations).length > 0) {
+                  // Find the last user message in conversation history
+                  for (let i = conversationHistory.length - 1; i >= 0; i--) {
+                    const msg = conversationHistory[i];
+                    if (msg.role === 'user' && Array.isArray(msg.content)) {
+                      // Update images with their annotations
+                      msg.content.forEach(item => {
+                        if (item.type === 'image_url') {
+                          // Try to match by filename
+                          const filename = item.filename;
+                          if (filename && data.imageAnnotations[filename]) {
+                            item.annotation = data.imageAnnotations[filename];
+                          } else {
+                            // Try matching by checking all annotation keys
+                            const matchingKey = Object.keys(data.imageAnnotations).find(key => 
+                              filename && (filename.includes(key) || key.includes(filename))
+                            );
+                            if (matchingKey) {
+                              item.annotation = data.imageAnnotations[matchingKey];
+                            }
+                          }
+                        }
+                      });
+                      break;
+                    }
+                  }
+                }
+                
+                // If staging was processed, display the staged image
+                if (data.stagedImage) {
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the staged image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const stagedImageDiv = document.createElement('div');
+                    stagedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    
+                    const stagedImg = document.createElement('img');
+                    stagedImg.src = data.stagedImage;
+                    stagedImg.alt = 'Staged Room';
+                    stagedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
+                    stagedImageDiv.appendChild(stagedImg);
+                    
+                    lastMessage.appendChild(stagedImageDiv);
+                  }
+                  
+                  // Store staged image in conversation history so it can be accessed later
+                  const assistantMessage = { 
+                    role: 'assistant', 
+                    content: [
+                      { type: 'text', text: data.response },
+                      { 
+                        type: 'image_url', 
+                        image_url: { url: data.stagedImage },
+                        isStaged: true // Mark as staged image for backend
+                      }
+                    ]
+                  };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                } else if (data.generatedImage) {
+                  // If image generation was processed, display the generated image
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the generated image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const generatedImageDiv = document.createElement('div');
+                    generatedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    
+                    const generatedImg = document.createElement('img');
+                    generatedImg.src = data.generatedImage;
+                    generatedImg.alt = 'Generated Image';
+                    generatedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
+                    generatedImageDiv.appendChild(generatedImg);
+                    
+                    lastMessage.appendChild(generatedImageDiv);
+                  }
+                  
+                  // Store generated image in conversation history so it can be accessed later
+                  const assistantMessage = { 
+                    role: 'assistant', 
+                    content: [
+                      { type: 'text', text: data.response },
+                      { 
+                        type: 'image_url', 
+                        image_url: { url: data.generatedImage },
+                        isGenerated: true // Mark as generated image for backend
+                      }
+                    ]
+                  };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                } else if (data.recalledImage) {
+                  // If an image was recalled for display, show it
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the recalled image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const recalledImageDiv = document.createElement('div');
+                    recalledImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    
+                    const recalledImg = document.createElement('img');
+                    recalledImg.src = data.recalledImage;
+                    recalledImg.alt = 'Recalled Image';
+                    recalledImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
+                    recalledImageDiv.appendChild(recalledImg);
+                    
+                    lastMessage.appendChild(recalledImageDiv);
+                  }
+                  
+                  // Store the message in conversation history (don't duplicate the image)
+                  const assistantMessage = { 
+                    role: 'assistant', 
+                    content: data.response
+                  };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                } else if (data.recalledImage) {
+                  // If an image was recalled for display, show it
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the recalled image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const recalledImageDiv = document.createElement('div');
+                    recalledImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    
+                    const recalledImg = document.createElement('img');
+                    recalledImg.src = data.recalledImage;
+                    recalledImg.alt = 'Recalled Image';
+                    recalledImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
+                    recalledImageDiv.appendChild(recalledImg);
+                    
+                    lastMessage.appendChild(recalledImageDiv);
+                  }
+                  
+                  // Store the message in conversation history (don't duplicate the image)
+                  const assistantMessage = { 
+                    role: 'assistant', 
+                    content: data.response
+                  };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                } else if (data.requestedImage) {
+                  // If an image was requested for display, show it
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the requested image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const requestedImageDiv = document.createElement('div');
+                    requestedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    
+                    const requestedImg = document.createElement('img');
+                    requestedImg.src = data.requestedImage;
+                    requestedImg.alt = 'Requested Image';
+                    requestedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
+                    requestedImageDiv.appendChild(requestedImg);
+                    
+                    lastMessage.appendChild(requestedImageDiv);
+                  }
+                  
+                  // Store the message in conversation history (don't duplicate the image)
+                  const assistantMessage = { 
+                    role: 'assistant', 
+                    content: data.response
+                  };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                } else {
+                  addMessage('assistant', data.response);
+                  const assistantMessage = { role: 'assistant', content: data.response };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                }
+              }
+            })
+            .catch(error => {
+              removeTypingIndicator(typingId);
+              addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+              console.error('Error:', error);
+            })
+            .finally(() => {
+              sendBtn.disabled = false;
+              chatInput.disabled = false;
+              fileInput.disabled = false;
+              chatInput.focus();
+            });
+          } else {
+            // Send text only - also include conversation history for context
+            // Check if the last message is the same (avoid duplicates)
+            const userMessage = { 
+              role: 'user', 
+              content: message 
+            };
+            const lastMessage = conversationHistory[conversationHistory.length - 1];
+            const isDuplicate = lastMessage && 
+              lastMessage.role === 'user' && 
+              JSON.stringify(lastMessage.content) === JSON.stringify(userMessage.content);
+            
+            if (!isDuplicate) {
+              conversationHistory.push(userMessage);
+            }
+            
+        // Determine message type based on user input
+        const messageLower = message.toLowerCase();
+        let messageType = 'general';
+        if (messageLower.includes('generate') || messageLower.includes('create an image') || messageLower.includes('make an image') || messageLower.includes('draw') || messageLower.includes('show me an image of')) {
+          messageType = 'generating';
+        } else if (messageLower.includes('stage') || messageLower.includes('design') || messageLower.includes('furniture') || messageLower.includes('decorate')) {
+          messageType = 'staging';
+        } else if (messageLower.includes('describe') || messageLower.includes('analyze') || messageLower.includes('look at') || messageLower.includes('show me') || (messageLower.includes('image') && (messageLower.includes('how') || messageLower.includes('what')))) {
+          messageType = 'analyzing';
+        }
+        
+        // Show typing indicator
+        const typingId = showTypingIndicator(messageType);
+            
+            // Get userId from localStorage
+            const userId = localStorage.getItem('userId');
+            
+            fetch('/api/chat', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                messages: conversationHistory,
+                userId: userId
+              }),
+            })
+            .then(response => response.json())
+            .then(data => {
+              removeTypingIndicator(typingId);
+              
+              if (data.error) {
+                addMessage('assistant', 'Sorry, I encountered an error: ' + data.error);
+              } else if (data.contextLimitReached) {
+                // Context limit reached - show message and don't add to history
+                addMessage('assistant', data.response);
+              } else {
+                // If staging was processed, display the staged image
+                if (data.stagedImage) {
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the staged image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const stagedImageDiv = document.createElement('div');
+                    stagedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    
+                    const stagedImg = document.createElement('img');
+                    stagedImg.src = data.stagedImage;
+                    stagedImg.alt = 'Staged Room';
+                    stagedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
+                    stagedImageDiv.appendChild(stagedImg);
+                    
+                    lastMessage.appendChild(stagedImageDiv);
+                  }
+                  
+                  // Store staged image in conversation history so it can be accessed later
+                  const assistantMessage = { 
+                    role: 'assistant', 
+                    content: [
+                      { type: 'text', text: data.response },
+                      { 
+                        type: 'image_url', 
+                        image_url: { url: data.stagedImage },
+                        isStaged: true // Mark as staged image for backend
+                      }
+                    ]
+                  };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                } else if (data.generatedImage) {
+                  // If image generation was processed, display the generated image
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the generated image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const generatedImageDiv = document.createElement('div');
+                    generatedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    
+                    const generatedImg = document.createElement('img');
+                    generatedImg.src = data.generatedImage;
+                    generatedImg.alt = 'Generated Image';
+                    generatedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
+                    generatedImageDiv.appendChild(generatedImg);
+                    
+                    lastMessage.appendChild(generatedImageDiv);
+                  }
+                  
+                  // Store generated image in conversation history so it can be accessed later
+                  const assistantMessage = { 
+                    role: 'assistant', 
+                    content: [
+                      { type: 'text', text: data.response },
+                      { 
+                        type: 'image_url', 
+                        image_url: { url: data.generatedImage },
+                        isGenerated: true // Mark as generated image for backend
+                      }
+                    ]
+                  };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                } else if (data.requestedImage) {
+                  // If an image was requested for display, show it
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the requested image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const requestedImageDiv = document.createElement('div');
+                    requestedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    
+                    const requestedImg = document.createElement('img');
+                    requestedImg.src = data.requestedImage;
+                    requestedImg.alt = 'Requested Image';
+                    requestedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
+                    requestedImageDiv.appendChild(requestedImg);
+                    
+                    lastMessage.appendChild(requestedImageDiv);
+                  }
+                  
+                  // Store the message in conversation history (don't duplicate the image)
+                  const assistantMessage = { 
+                    role: 'assistant', 
+                    content: data.response
+                  };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                } else {
+                  addMessage('assistant', data.response);
+                  const assistantMessage = { role: 'assistant', content: data.response };
+                  
+                  // Check for duplicates
+                  const lastMsg = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate = lastMsg && 
+                    lastMsg.role === 'assistant' && 
+                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+                  
+                  if (!isDuplicate) {
+                    conversationHistory.push(assistantMessage);
+                  }
+                }
+              }
+            })
+            .catch(error => {
+              removeTypingIndicator(typingId);
+              addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+              console.error('Error:', error);
+            })
+            .finally(() => {
+              isProcessing = false;
+              updateSendButtonState();
+              chatInput.focus();
+            });
+          }
+        });
+      }
+      
+      // Update send button state based on input and whether we're processing
+      function updateSendButtonState() {
+        const hasContent = chatInput.value.trim() || selectedFiles.length > 0;
+        sendBtn.disabled = !hasContent || isProcessing;
+      }
+      
+      // Update send button when input changes
+      chatInput.addEventListener('input', function() {
+        if (!isProcessing) {
+          updateSendButtonState();
+        }
+      });
+      
+      // Update send button when files are added/removed
+      const originalUpdateFilePreview = updateFilePreview;
+      updateFilePreview = function() {
+        originalUpdateFilePreview();
+        if (!isProcessing) {
+          updateSendButtonState();
+        }
+      };
+      
+      // Initialize send button state
+      updateSendButtonState();
+      
+      function addMessage(role, content, files = null) {
+        // Remove empty state if present
+        const emptyState = chatMessages.querySelector('.empty-state');
+        if (emptyState) {
+          emptyState.remove();
+        }
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${role}`;
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        if (role === 'user') {
+          const userImg = document.createElement('img');
+          userImg.src = 'media-webp/user.webp';
+          userImg.alt = 'User';
+          avatar.appendChild(userImg);
+        } else {
+          const logoImg = document.createElement('img');
+          logoImg.src = 'media-webp/logo/Logo64x64.webp';
+          logoImg.alt = 'Stagify';
+          avatar.appendChild(logoImg);
+        }
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        // Add text content with formatting
+        const textDiv = document.createElement('div');
+        if (role === 'assistant') {
+          // Format markdown for AI messages
+          textDiv.innerHTML = formatMarkdown(content);
+        } else {
+          textDiv.textContent = content;
+        }
+        contentDiv.appendChild(textDiv);
+        
+        // Add files if present
+        if (files) {
+          const filesArray = Array.isArray(files) ? files : [files];
+          filesArray.forEach(file => {
+            if (file && file.name) {
+              const fileDiv = document.createElement('div');
+              fileDiv.className = 'message-file';
+              fileDiv.style.cssText = 'margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 6px;';
+              
+              if (file.type && file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.alt = file.name;
+                img.style.cssText = 'max-width: 100%; max-width: min(300px, 100%); max-height: 300px; border-radius: 4px; width: auto; height: auto; box-sizing: border-box;';
+                fileDiv.appendChild(img);
+              } else {
+                const fileInfo = document.createElement('div');
+                fileInfo.textContent = `📄 ${file.name}`;
+                fileDiv.appendChild(fileInfo);
+              }
+              
+              contentDiv.appendChild(fileDiv);
+            }
+          });
+        }
+        
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+        
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+      
+      function showTypingIndicator(messageType = 'general') {
+        // Remove any existing typing indicator first
+        const existingIndicator = document.getElementById('typing-indicator');
+        if (existingIndicator) {
+          removeTypingIndicator('typing-indicator');
+        }
+        
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message assistant';
+        typingDiv.id = 'typing-indicator';
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        const logoImg = document.createElement('img');
+        logoImg.src = 'media-webp/logo/Logo64x64.webp';
+        logoImg.alt = 'Stagify';
+        avatar.appendChild(logoImg);
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        const typing = document.createElement('div');
+        typing.className = 'typing-indicator';
+        
+        // Messages based on type
+        let messages = [];
+        if (messageType === 'generating') {
+          messages = [
+            'generating image...',
+            'creating your image...',
+            'bringing your vision to life...',
+            'crafting the details...',
+            'rendering...',
+            'almost ready...',
+            'finalizing...',
+            'polishing the result...',
+            'just a moment...'
+          ];
+        } else if (messageType === 'staging') {
+          messages = [
+            'staging your room...',
+            'adding furniture...',
+            'selecting decor...',
+            'arranging elements...',
+            'applying styles...',
+            'creating the design...',
+            'generating the layout...',
+            'refining details...',
+            'almost ready...'
+          ];
+        } else if (messageType === 'analyzing') {
+          messages = [
+            'analyzing image...',
+            'examining details...',
+            'identifying elements...',
+            'processing visual data...',
+            'understanding the space...',
+            'reviewing composition...',
+            'studying the layout...',
+            'almost done...'
+          ];
+        } else {
+          messages = [
+            'thinking...',
+            'processing your request...',
+            'analyzing...',
+            'considering options...',
+            'working on it...',
+            'almost there...',
+            'just a moment...',
+            'preparing response...'
+          ];
+        }
+        
+        let currentIndex = 0;
+        typing.textContent = messages[currentIndex];
+        
+        // Rotate messages every 1.5 seconds
+        const messageInterval = setInterval(() => {
+          currentIndex = (currentIndex + 1) % messages.length;
+          typing.textContent = messages[currentIndex];
+        }, 1500);
+        
+        // Store interval ID so we can clear it later
+        typingDiv.dataset.intervalId = messageInterval;
+        
+        contentDiv.appendChild(typing);
+        typingDiv.appendChild(avatar);
+        typingDiv.appendChild(contentDiv);
+        chatMessages.appendChild(typingDiv);
+        
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        return 'typing-indicator';
+      }
+      
+      function removeTypingIndicator(id) {
+        const indicator = document.getElementById(id);
+        if (indicator) {
+          // Clear the message rotation interval
+          if (indicator.dataset.intervalId) {
+            clearInterval(parseInt(indicator.dataset.intervalId));
+          }
+          indicator.remove();
+        }
+      }
+    </script>
+  </body>
+</html>
+

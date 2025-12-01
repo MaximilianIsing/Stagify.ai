@@ -18,10 +18,46 @@
     <meta property="og:description" content="Get in touch with the Stagify.ai team for support or questions about our free AI home staging tool.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://stagify.ai/contact.html">
+    <meta property="og:site_name" content="Stagify.ai">
+    <meta property="og:image" content="https://stagify.ai/media-webp/logo/Logo180x180.webp">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Contact Us - Stagify.ai">
+    <meta name="twitter:description" content="Get in touch with the Stagify.ai team for support or questions about our free AI home staging tool.">
+    <meta name="twitter:image" content="https://stagify.ai/media-webp/logo/Logo180x180.webp">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://stagify.ai/contact.html">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "name": "Contact Stagify.ai",
+      "description": "Get in touch with the Stagify.ai team for support, partnerships, or questions about our free AI home staging tool.",
+      "url": "https://stagify.ai/contact.html",
+      "mainEntity": {
+        "@type": "Organization",
+        "name": "Stagify.ai",
+        "email": "team@stagify.ai",
+        "url": "https://stagify.ai"
+      }
+    }
+    </script>
 
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script src="scripts/language-loader.js" defer></script>
+    <style>
+      /* Hide AI Designer link on mobile */
+      @media (max-width: 768px) {
+        .desktop-only {
+          display: none !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <!-- Background Video -->
@@ -34,7 +70,7 @@
         <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></div>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <a href="pdf.html" class="nav-link" data-lang="navigation.pdfTo3d">PDF to 3D</a>
+          <a href="ai-designer.html" class="nav-link desktop-only" data-lang="navigation.pdfTo3d">AI Designer</a>
           <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
           <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
           <a href="#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
@@ -65,9 +101,7 @@
           <div>
             <h1 style="color: #1e3a8a;" data-lang="contact.title">Get in touch</h1>
             <p style="color: #2563eb; white-space: nowrap;" class="contact-text-desktop" data-lang-html="contact.description">We'd love to hear from you. Reach out individually or contact us at <a href="mailto:team@stagify.ai" style="color: #1e3a8a; text-decoration: underline;">team@stagify.ai</a>.</p>
-            <p style="color: #2563eb; margin-top: 12px; white-space: nowrap;" class="contact-text-desktop" data-lang-html="contact.social">
-              Follow us on <a href="https://www.instagram.com/stagify.ai/" target="_blank" style="color: #1e3a8a; text-decoration: underline;">Instagram@stagify.ai</a> for updates and examples!
-            </p>
+            <p style="color: #2563eb; margin-top: 12px; white-space: nowrap;" class="contact-text-desktop" data-lang-html="contact.social"></p>
           </div>
         </div>
 
