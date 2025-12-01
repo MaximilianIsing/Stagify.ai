@@ -29,6 +29,12 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://stagify.ai">
     
+    <!-- Hreflang Tags for Multi-language Support -->
+    <link rel="alternate" hreflang="en" href="https://stagify.ai">
+    <link rel="alternate" hreflang="es" href="https://stagify.ai">
+    <link rel="alternate" hreflang="zh" href="https://stagify.ai">
+    <link rel="alternate" hreflang="x-default" href="https://stagify.ai">
+    
     <!-- Preload critical fonts -->
     <link rel="preload" href="fonts/inter-all-400-normal.woff" as="font" type="font/woff" crossorigin>
     <link rel="preload" href="fonts/inter-all-600-normal.woff" as="font" type="font/woff" crossorigin>
@@ -48,6 +54,27 @@
     <script src="scripts/language-loader.js" defer></script>
     <script src="scripts/app.js" defer></script>
     <script src="scripts/carousel.js" defer></script>
+    <style>
+      /* Hide AI Designer link on mobile */
+      @media (max-width: 768px) {
+        .desktop-only {
+          display: none !important;
+        }
+      }
+      
+      /* Make upload button 20% larger (growing down and right only) - Desktop only */
+      @media (min-width: 769px) {
+        #hero-upload {
+          padding: 14.4px 28.8px !important;
+          font-size: 24px !important;
+          transform-origin: top left;
+        }
+        
+        #hero-upload strong {
+          font-size: 24px !important;
+        }
+      }
+    </style>
     <script src="scripts/star-border.js" defer></script>
     <script src="scripts/sponsors-scroll.js" defer></script>
     
@@ -68,9 +95,35 @@
       },
       "creator": {
         "@type": "Organization",
-        "name": "Stagify.ai"
+        "name": "Stagify.ai",
+        "url": "https://stagify.ai",
+        "logo": "https://stagify.ai/media-webp/logo/Logo180x180.webp",
+        "sameAs": [
+          "https://www.instagram.com/stagify.ai/",
+          "https://www.tiktok.com/@stagify.ai"
+        ]
       },
-      "keywords": "AI staging, home staging, real estate staging, virtual staging, property staging"
+      "keywords": "AI staging, home staging, real estate staging, virtual staging, property staging",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "1000"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Stagify.ai",
+      "url": "https://stagify.ai",
+      "logo": "https://stagify.ai/media-webp/logo/Logo180x180.webp",
+      "description": "Free AI-powered virtual staging tool for real estate professionals",
+      "email": "team@stagify.ai",
+      "sameAs": [
+        "https://www.instagram.com/stagify.ai/",
+        "https://www.tiktok.com/@stagify.ai"
+      ]
     }
     </script>
   </head>
@@ -129,7 +182,7 @@
         <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></div>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <a href="pdf.html" class="nav-link" data-lang="navigation.pdfTo3d">PDF to 3D</a>
+          <a href="ai-designer.html" class="nav-link desktop-only" data-lang="navigation.pdfTo3d">AI Designer</a>
           <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
           <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
           <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
@@ -161,7 +214,7 @@
             <span class="w-free" data-lang="hero.title.free">Free</span>
             <span class="w-virtual" data-lang="hero.title.virtual">virtual</span>
             <span class="w-staging" data-lang="hero.title.staging">staging</span>
-            <span class="w-with" data-lang="hero.title.with">with</span>
+            <span class="w-with" data-lang="hero.title.with">with</span><br>
             <span class="w-one" data-lang="hero.title.one">one</span>
             <span class="w-click" data-lang="hero.title.click">click</span>
           </h1>
@@ -211,6 +264,9 @@
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services" class="sponsor-logo" fetchpriority="high">
               </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Compass.webp" alt="Compass" class="sponsor-logo" fetchpriority="high">
+              </div>
               <!-- Duplicate set for seamless loop -->
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/Centennial.webp" alt="Centennial" class="sponsor-logo" fetchpriority="high">
@@ -229,6 +285,9 @@
               </div>
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Compass.webp" alt="Compass" class="sponsor-logo" fetchpriority="high">
               </div>
             </div>
           </div>

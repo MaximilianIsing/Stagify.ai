@@ -6,7 +6,7 @@
   },
   "navigation": {
     "home": "Home",
-    "pdfTo3d": "PDF to 3D",
+    "pdfTo3d": "AI Designer",
     "whyUs": "Why Us?",
     "faq": "FAQ",
     "contactUs": "Contact Us",
@@ -197,7 +197,7 @@
   "contact": {
     "title": "Get in touch",
     "description": "We'd love to hear from you. Reach out individually or contact us at <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
-    "social": "Follow us on <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> for updates and examples!",
+    "social": "Follow us on <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> or on <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> for updates and examples!",
     "labels": {
       "name": "Name",
       "email": "Email",
@@ -240,12 +240,16 @@
   },
   "pdf": {
     "meta": {
-      "title": "PDF to 3D Render | Stagify.ai - Convert Floorplans to 3D Visualizations",
-      "description": "Convert CAD floorplan PDFs into photorealistic 3D interior visualizations using AI. Transform your floorplans into stunning 3D renders instantly.",
-      "keywords": "PDF to 3D, floorplan visualization, CAD to 3D, 3D interior rendering, AI floorplan conversion, PDF rendering"
+      "title": "AI Designer | Stagify.ai - AI-Powered Design Assistant",
+      "description": "Chat with AI Designer to get help with design questions, upload files for analysis, and get professional design advice instantly.",
+      "keywords": "AI Designer, AI design assistant, design consultation, AI chat, design help, interior design AI"
     },
-    "title": "PDF to 3D Render",
+    "title": "AI Designer",
     "description": "Convert your CAD floorplan PDFs into photorealistic 3D interior visualizations",
+    "emptyState": "Start a conversation by typing a message or uploading a file",
+    "uploadFile": "Upload file",
+    "inputPlaceholder": "Type your message...",
+    "sendButton": "Send",
     "uploadArea": "Upload a PDF or drag and drop",
     "uploadSubtext": "Supported: PDF files",
     "options": {
