@@ -70,6 +70,23 @@
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script src="scripts/language-loader.js" defer></script>
     <style>
+      /* Beta badge styling */
+      .beta-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #5c1a1a 100%);
+        border-radius: 6px;
+        padding: 2px 8px;
+        margin-right: 6px;
+        box-shadow: 0 2px 4px rgba(153, 27, 27, 0.4);
+      }
+      
+      .beta-badge em {
+        font-style: italic;
+        color: white;
+        font-size: 0.85em;
+        font-weight: 600;
+      }
+      
       /* Prevent horizontal scrolling */
       html, body {
         overflow-x: hidden;
@@ -90,11 +107,14 @@
         min-width: min(100%, 1400px);
         margin: 0 auto;
         height: calc(100vh - 120px);
+        max-height: calc(100vh - 120px);
         display: flex;
         flex-direction: column;
         padding: 20px;
         box-sizing: border-box;
         flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
       }
       
       .chat-messages {
@@ -112,7 +132,38 @@
         gap: 16px;
         min-width: 0;
         width: 100%;
-        flex-shrink: 0;
+        min-height: 0;
+        transition: border-color 0.2s, background 0.2s;
+      }
+      
+      /* Drag and drop styles */
+      .chat-messages.drag-over {
+        border: 2px dashed #2563eb;
+        background: rgba(37, 99, 235, 0.1);
+      }
+      
+      /* Drop files message - centered when shown on drag */
+      .chat-container::before {
+        content: 'Drop files here to upload';
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(37, 99, 235, 0.9);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 600;
+        z-index: 100;
+        pointer-events: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        transition: opacity 0.2s ease-in;
+      }
+      
+      .chat-container.drag-over::before {
+        opacity: 1;
       }
       
       .message {
@@ -144,8 +195,10 @@
       }
       
       .message.user .message-avatar {
-        width: 28.8px;
-        height: 28.8px;
+        width: 36px;
+        height: 36px;
+        align-self: flex-start;
+        margin-top: 0;
       }
       
       .message.user .message-avatar {
@@ -221,18 +274,21 @@
         background: rgba(0, 0, 0, 0.1);
         border-radius: 6px;
         font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        display: inline-block;
+        box-sizing: border-box;
+        max-width: 100%;
       }
       
       .message-file img {
-        max-width: 100%;
-        max-width: min(200px, 100%);
-        max-height: 200px;
-        border-radius: 6px;
+        max-width: min(400px, 100%);
+        max-height: 300px;
+        border-radius: 4px;
         height: auto;
         width: auto;
+        display: block;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
       
       .message-file a {
@@ -250,6 +306,7 @@
         padding: 12px;
         min-width: 0;
         box-sizing: border-box;
+        flex-shrink: 0;
       }
       
       .file-preview-container {
@@ -469,6 +526,147 @@
         margin-bottom: 8px;
       }
       
+      /* AI-generated image container - relative positioning for download button */
+      .ai-image-container {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+      }
+      
+      /* AI-generated image styles - smaller by default, clickable */
+      .ai-generated-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        display: block;
+        margin: 0;
+        width: auto;
+        height: auto;
+        box-sizing: border-box;
+        cursor: pointer;
+        transition: transform 0.2s, opacity 0.2s;
+        transform-origin: center;
+      }
+      
+      /* Scale image when hovering over container (image or button) */
+      .ai-image-container:hover .ai-generated-image {
+        opacity: 0.9;
+        transform: scale(1.02);
+      }
+      
+      /* Download button for AI-generated images */
+      .ai-image-download-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 6px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.2s;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        padding: 0;
+        transform-origin: center;
+      }
+      
+      .ai-image-download-btn img {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+        filter: brightness(0) invert(1);
+      }
+      
+      .ai-image-download-btn:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: scale(1.1);
+      }
+      
+      .ai-image-download-btn:active {
+        transform: scale(0.95);
+      }
+      
+      /* Move download button to maintain distance from edge when image scales */
+      /* When image scales by 1.02 from center, the top-right corner moves outward */
+      /* For a typical 300px image: corner moves by ~1.5px (half of 3px increase) */
+      /* We use a small fixed value that works well for most image sizes */
+      .ai-image-container:hover .ai-image-download-btn {
+        transform: translate(1.5px, -1.5px);
+      }
+      
+      .ai-image-container:hover .ai-image-download-btn:hover {
+        transform: translate(1.5px, -1.5px) scale(1.1);
+      }
+      
+      .ai-image-container:hover .ai-image-download-btn:active {
+        transform: translate(1.5px, -1.5px) scale(0.95);
+      }
+      
+      /* Image modal/lightbox */
+      .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(5px);
+        animation: fadeIn 0.3s ease-in;
+        cursor: pointer;
+      }
+      
+      .image-modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .image-modal-content {
+        max-width: 95%;
+        max-height: 95%;
+        width: auto;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        animation: zoomIn 0.3s ease-in;
+        cursor: default;
+      }
+      
+      @keyframes zoomIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      
+      .image-modal-close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10001;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        transition: background 0.2s;
+      }
+      
+      .image-modal-close:hover {
+        background: rgba(0, 0, 0, 0.8);
+      }
+      
       @media (max-width: 768px) {
         .chat-container {
           height: calc(100vh - 100px);
@@ -528,7 +726,7 @@
         <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong">stagify</span><span class="brand-light">.ai</span></div>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <a href="ai-designer.html" class="nav-link desktop-only" data-lang="navigation.pdfTo3d">AI Designer</a>
+          <a href="ai-designer.html" class="nav-link desktop-only" data-lang-html="navigation.pdfTo3d">AI Designer</a>
           <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
           <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
           <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
@@ -600,10 +798,12 @@
       const chatInput = document.getElementById('chat-input');
       const sendBtn = document.getElementById('send-btn');
       const fileInput = document.getElementById('file-input');
+      const chatContainer = document.querySelector('.chat-container');
       
       let conversationHistory = [];
       let selectedFiles = [];
       let isProcessing = false; // Track if we're currently processing a message
+      let dragCounter = 0; // Track drag enter/leave events to handle nested elements
       
       // Load welcome message on page load
       async function loadWelcomeMessage() {
@@ -837,14 +1037,128 @@
       // Send button click
       sendBtn.addEventListener('click', sendMessage);
       
+      // Helper function to handle files (used by both file input and drag & drop)
+      function handleFiles(files) {
+        // Filter files to only accept the same types as the file input
+        const acceptedTypes = ['image/', '.pdf', '.txt', '.doc', '.docx', '.jpg', '.jpeg'];
+        const filteredFiles = Array.from(files).filter(file => {
+          return acceptedTypes.some(type => 
+            file.type.startsWith(type) || 
+            file.name.toLowerCase().endsWith(type.replace('.', '.'))
+          );
+        });
+        
+        if (filteredFiles.length > 0) {
+          // Check how many files can still be added (max 3 total)
+          const remainingSlots = 3 - selectedFiles.length;
+          if (remainingSlots > 0) {
+            const filesToAdd = filteredFiles.slice(0, remainingSlots);
+            selectedFiles.push(...filesToAdd);
+            updateFilePreview();
+            if (!isProcessing) {
+              updateSendButtonState();
+            }
+            
+            // Show message if user tried to add more than allowed
+            if (filteredFiles.length > remainingSlots) {
+              const excessCount = filteredFiles.length - remainingSlots;
+              alert(`Maximum of 3 files allowed. Only ${remainingSlots} file(s) added. ${excessCount} file(s) were not added.`);
+            }
+          } else {
+            alert('Maximum of 3 files allowed. Please remove some files before adding more.');
+          }
+        }
+      }
+      
       // File upload - add to preview instead of uploading immediately
       fileInput.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
-        selectedFiles.push(...files);
-        updateFilePreview();
+        handleFiles(files);
         e.target.value = ''; // Reset input
-        if (!isProcessing) {
-          updateSendButtonState();
+      });
+      
+      // Drag and drop functionality
+      chatMessages.addEventListener('dragenter', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter++;
+        if (e.dataTransfer.types.includes('Files')) {
+          chatMessages.classList.add('drag-over');
+          chatContainer.classList.add('drag-over');
+        }
+      });
+      
+      chatMessages.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer.types.includes('Files')) {
+          e.dataTransfer.dropEffect = 'copy';
+        }
+      });
+      
+      chatMessages.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter--;
+        if (dragCounter === 0) {
+          chatMessages.classList.remove('drag-over');
+          chatContainer.classList.remove('drag-over');
+        }
+      });
+      
+      chatMessages.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter = 0;
+        chatMessages.classList.remove('drag-over');
+        chatContainer.classList.remove('drag-over');
+        
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+          handleFiles(files);
+        }
+      });
+      
+      // Also handle drag and drop on the chat container for better coverage
+      chatContainer.addEventListener('dragenter', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer.types.includes('Files')) {
+          dragCounter++;
+          chatMessages.classList.add('drag-over');
+          chatContainer.classList.add('drag-over');
+        }
+      });
+      
+      chatContainer.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer.types.includes('Files')) {
+          e.dataTransfer.dropEffect = 'copy';
+        }
+      });
+      
+      chatContainer.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        // Only remove if we're leaving the container entirely
+        if (!chatContainer.contains(e.relatedTarget)) {
+          dragCounter = 0;
+          chatMessages.classList.remove('drag-over');
+          chatContainer.classList.remove('drag-over');
+        }
+      });
+      
+      chatContainer.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter = 0;
+        chatMessages.classList.remove('drag-over');
+        chatContainer.classList.remove('drag-over');
+        
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+          handleFiles(files);
         }
       });
       
@@ -996,40 +1310,41 @@
                   }
                 }
                 
-                // If staging was processed, display the staged image
-                if (data.stagedImage) {
+                // Handle staged images (single or array)
+                const stagedImages = data.stagedImages || (data.stagedImage ? [data.stagedImage] : []);
+                if (stagedImages.length > 0) {
                   // Add the AI response text first
                   addMessage('assistant', data.response);
                   
-                  // Then add the staged image to the last assistant message
+                  // Then add the staged image(s) to the last assistant message
                   const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
                   if (lastMessage) {
-                    const stagedImageDiv = document.createElement('div');
-                    stagedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
-                    
-                    const stagedImg = document.createElement('img');
-                    stagedImg.src = data.stagedImage;
-                    stagedImg.alt = 'Staged Room';
-                    stagedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
-                    stagedImageDiv.appendChild(stagedImg);
-                    
-                    lastMessage.appendChild(stagedImageDiv);
+                    stagedImages.forEach((stagedImage, index) => {
+                      const stagedImageDiv = document.createElement('div');
+                      stagedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                      
+                      const imageContainer = createAIImageWithDownload(stagedImage, `Staged Room ${stagedImages.length > 1 ? `(${index + 1})` : ''}`, `staged-room-${index}`);
+                      stagedImageDiv.appendChild(imageContainer);
+                      
+                      lastMessage.appendChild(stagedImageDiv);
+                    });
                   }
                   
-                  // Store staged image in conversation history so it can be accessed later
+                  // Store staged image(s) in conversation history
+                  const contentItems = [{ type: 'text', text: data.response }];
+                  stagedImages.forEach((stagedImage) => {
+                    contentItems.push({ 
+                      type: 'image_url', 
+                      image_url: { url: stagedImage },
+                      isStaged: true
+                    });
+                  });
+                  
                   const assistantMessage = { 
                     role: 'assistant', 
-                    content: [
-                      { type: 'text', text: data.response },
-                      { 
-                        type: 'image_url', 
-                        image_url: { url: data.stagedImage },
-                        isStaged: true // Mark as staged image for backend
-                      }
-                    ]
+                    content: contentItems
                   };
                   
-                  // Check for duplicates
                   const lastMsg = conversationHistory[conversationHistory.length - 1];
                   const isDuplicate = lastMsg && 
                     lastMsg.role === 'assistant' && 
@@ -1038,37 +1353,40 @@
                   if (!isDuplicate) {
                     conversationHistory.push(assistantMessage);
                   }
-                } else if (data.generatedImage) {
-                  // If image generation was processed, display the generated image
+                } else if (data.generatedImages || data.generatedImage) {
+                  // If image generation was processed, display the generated image(s)
+                  const generatedImages = data.generatedImages || (data.generatedImage ? [data.generatedImage] : []);
+                  
                   // Add the AI response text first
                   addMessage('assistant', data.response);
                   
-                  // Then add the generated image to the last assistant message
+                  // Then add the generated image(s) to the last assistant message
                   const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
                   if (lastMessage) {
-                    const generatedImageDiv = document.createElement('div');
-                    generatedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
-                    
-                    const generatedImg = document.createElement('img');
-                    generatedImg.src = data.generatedImage;
-                    generatedImg.alt = 'Generated Image';
-                    generatedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
-                    generatedImageDiv.appendChild(generatedImg);
-                    
-                    lastMessage.appendChild(generatedImageDiv);
+                    generatedImages.forEach((generatedImage, index) => {
+                      const generatedImageDiv = document.createElement('div');
+                      generatedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                      
+                      const imageContainer = createAIImageWithDownload(generatedImage, `Generated Image ${generatedImages.length > 1 ? `(${index + 1})` : ''}`, `generated-image-${index}`);
+                      generatedImageDiv.appendChild(imageContainer);
+                      
+                      lastMessage.appendChild(generatedImageDiv);
+                    });
                   }
                   
-                  // Store generated image in conversation history so it can be accessed later
+                  // Store generated image(s) in conversation history so they can be accessed later
+                  const contentItems = [{ type: 'text', text: data.response }];
+                  generatedImages.forEach((generatedImage) => {
+                    contentItems.push({ 
+                      type: 'image_url', 
+                      image_url: { url: generatedImage },
+                      isGenerated: true // Mark as generated image for backend
+                    });
+                  });
+                  
                   const assistantMessage = { 
                     role: 'assistant', 
-                    content: [
-                      { type: 'text', text: data.response },
-                      { 
-                        type: 'image_url', 
-                        image_url: { url: data.generatedImage },
-                        isGenerated: true // Mark as generated image for backend
-                      }
-                    ]
+                    content: contentItems
                   };
                   
                   // Check for duplicates
@@ -1089,13 +1407,10 @@
                   const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
                   if (lastMessage) {
                     const recalledImageDiv = document.createElement('div');
-                    recalledImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    recalledImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
                     
-                    const recalledImg = document.createElement('img');
-                    recalledImg.src = data.recalledImage;
-                    recalledImg.alt = 'Recalled Image';
-                    recalledImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
-                    recalledImageDiv.appendChild(recalledImg);
+                    const imageContainer = createAIImageWithDownload(data.recalledImage, 'Recalled Image', 'recalled-image');
+                    recalledImageDiv.appendChild(imageContainer);
                     
                     lastMessage.appendChild(recalledImageDiv);
                   }
@@ -1124,13 +1439,10 @@
                   const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
                   if (lastMessage) {
                     const recalledImageDiv = document.createElement('div');
-                    recalledImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    recalledImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
                     
-                    const recalledImg = document.createElement('img');
-                    recalledImg.src = data.recalledImage;
-                    recalledImg.alt = 'Recalled Image';
-                    recalledImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
-                    recalledImageDiv.appendChild(recalledImg);
+                    const imageContainer = createAIImageWithDownload(data.recalledImage, 'Recalled Image', 'recalled-image');
+                    recalledImageDiv.appendChild(imageContainer);
                     
                     lastMessage.appendChild(recalledImageDiv);
                   }
@@ -1159,13 +1471,10 @@
                   const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
                   if (lastMessage) {
                     const requestedImageDiv = document.createElement('div');
-                    requestedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    requestedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
                     
-                    const requestedImg = document.createElement('img');
-                    requestedImg.src = data.requestedImage;
-                    requestedImg.alt = 'Requested Image';
-                    requestedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
-                    requestedImageDiv.appendChild(requestedImg);
+                    const imageContainer = createAIImageWithDownload(data.requestedImage, 'Requested Image', 'requested-image');
+                    requestedImageDiv.appendChild(imageContainer);
                     
                     lastMessage.appendChild(requestedImageDiv);
                   }
@@ -1266,39 +1575,41 @@
                 addMessage('assistant', data.response);
               } else {
                 // If staging was processed, display the staged image
-                if (data.stagedImage) {
+                // Handle staged images (single or array)
+                const stagedImages = data.stagedImages || (data.stagedImage ? [data.stagedImage] : []);
+                if (stagedImages.length > 0) {
                   // Add the AI response text first
                   addMessage('assistant', data.response);
                   
-                  // Then add the staged image to the last assistant message
+                  // Then add the staged image(s) to the last assistant message
                   const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
                   if (lastMessage) {
-                    const stagedImageDiv = document.createElement('div');
-                    stagedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
-                    
-                    const stagedImg = document.createElement('img');
-                    stagedImg.src = data.stagedImage;
-                    stagedImg.alt = 'Staged Room';
-                    stagedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
-                    stagedImageDiv.appendChild(stagedImg);
-                    
-                    lastMessage.appendChild(stagedImageDiv);
+                    stagedImages.forEach((stagedImage, index) => {
+                      const stagedImageDiv = document.createElement('div');
+                      stagedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                      
+                      const imageContainer = createAIImageWithDownload(stagedImage, `Staged Room ${stagedImages.length > 1 ? `(${index + 1})` : ''}`, `staged-room-${index}`);
+                      stagedImageDiv.appendChild(imageContainer);
+                      
+                      lastMessage.appendChild(stagedImageDiv);
+                    });
                   }
                   
-                  // Store staged image in conversation history so it can be accessed later
+                  // Store staged image(s) in conversation history
+                  const contentItems = [{ type: 'text', text: data.response }];
+                  stagedImages.forEach((stagedImage) => {
+                    contentItems.push({ 
+                      type: 'image_url', 
+                      image_url: { url: stagedImage },
+                      isStaged: true
+                    });
+                  });
+                  
                   const assistantMessage = { 
                     role: 'assistant', 
-                    content: [
-                      { type: 'text', text: data.response },
-                      { 
-                        type: 'image_url', 
-                        image_url: { url: data.stagedImage },
-                        isStaged: true // Mark as staged image for backend
-                      }
-                    ]
+                    content: contentItems
                   };
                   
-                  // Check for duplicates
                   const lastMsg = conversationHistory[conversationHistory.length - 1];
                   const isDuplicate = lastMsg && 
                     lastMsg.role === 'assistant' && 
@@ -1307,40 +1618,42 @@
                   if (!isDuplicate) {
                     conversationHistory.push(assistantMessage);
                   }
-                } else if (data.generatedImage) {
-                  // If image generation was processed, display the generated image
+                } else if (data.generatedImages || data.generatedImage) {
+                  // Handle generated images (single or array)
+                  const generatedImages = data.generatedImages || (data.generatedImage ? [data.generatedImage] : []);
+                  
                   // Add the AI response text first
                   addMessage('assistant', data.response);
                   
-                  // Then add the generated image to the last assistant message
+                  // Then add the generated image(s) to the last assistant message
                   const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
                   if (lastMessage) {
-                    const generatedImageDiv = document.createElement('div');
-                    generatedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
-                    
-                    const generatedImg = document.createElement('img');
-                    generatedImg.src = data.generatedImage;
-                    generatedImg.alt = 'Generated Image';
-                    generatedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
-                    generatedImageDiv.appendChild(generatedImg);
-                    
-                    lastMessage.appendChild(generatedImageDiv);
+                    generatedImages.forEach((generatedImage, index) => {
+                      const generatedImageDiv = document.createElement('div');
+                      generatedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                      
+                      const imageContainer = createAIImageWithDownload(generatedImage, `Generated Image ${generatedImages.length > 1 ? `(${index + 1})` : ''}`, `generated-image-${index}`);
+                      generatedImageDiv.appendChild(imageContainer);
+                      
+                      lastMessage.appendChild(generatedImageDiv);
+                    });
                   }
                   
-                  // Store generated image in conversation history so it can be accessed later
+                  // Store generated image(s) in conversation history
+                  const contentItems = [{ type: 'text', text: data.response }];
+                  generatedImages.forEach((generatedImage) => {
+                    contentItems.push({ 
+                      type: 'image_url', 
+                      image_url: { url: generatedImage },
+                      isGenerated: true
+                    });
+                  });
+                  
                   const assistantMessage = { 
                     role: 'assistant', 
-                    content: [
-                      { type: 'text', text: data.response },
-                      { 
-                        type: 'image_url', 
-                        image_url: { url: data.generatedImage },
-                        isGenerated: true // Mark as generated image for backend
-                      }
-                    ]
+                    content: contentItems
                   };
                   
-                  // Check for duplicates
                   const lastMsg = conversationHistory[conversationHistory.length - 1];
                   const isDuplicate = lastMsg && 
                     lastMsg.role === 'assistant' && 
@@ -1358,13 +1671,10 @@
                   const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
                   if (lastMessage) {
                     const requestedImageDiv = document.createElement('div');
-                    requestedImageDiv.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; text-align: center;';
+                    requestedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
                     
-                    const requestedImg = document.createElement('img');
-                    requestedImg.src = data.requestedImage;
-                    requestedImg.alt = 'Requested Image';
-                    requestedImg.style.cssText = 'max-width: 100%; max-height: 600px; border-radius: 8px; display: block; margin: 0 auto; width: auto; height: auto; box-sizing: border-box;';
-                    requestedImageDiv.appendChild(requestedImg);
+                    const imageContainer = createAIImageWithDownload(data.requestedImage, 'Requested Image', 'requested-image');
+                    requestedImageDiv.appendChild(imageContainer);
                     
                     lastMessage.appendChild(requestedImageDiv);
                   }
@@ -1483,13 +1793,13 @@
             if (file && file.name) {
               const fileDiv = document.createElement('div');
               fileDiv.className = 'message-file';
-              fileDiv.style.cssText = 'margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 6px;';
+              fileDiv.style.cssText = 'margin-top: 8px; padding: 8px 0 8px 8px; background: rgba(0,0,0,0.05); border-radius: 6px; box-sizing: border-box;';
               
               if (file.type && file.type.startsWith('image/')) {
                 const img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
                 img.alt = file.name;
-                img.style.cssText = 'max-width: 100%; max-width: min(300px, 100%); max-height: 300px; border-radius: 4px; width: auto; height: auto; box-sizing: border-box;';
+                img.style.cssText = 'max-width: 100%; max-width: min(300px, 100%); max-height: 300px; border-radius: 4px; width: auto; height: auto; box-sizing: border-box; display: block; margin: 0; padding: 0;';
                 fileDiv.appendChild(img);
               } else {
                 const fileInfo = document.createElement('div');
@@ -1616,6 +1926,126 @@
           indicator.remove();
         }
       }
+      
+      // Image modal functions
+      function openImageModal(imageSrc) {
+        const modal = document.getElementById('image-modal');
+        const modalImg = document.getElementById('image-modal-img');
+        if (modal && modalImg) {
+          modalImg.src = imageSrc;
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+      }
+      
+      function closeImageModal() {
+        const modal = document.getElementById('image-modal');
+        if (modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = ''; // Restore scrolling
+        }
+      }
+      
+      // Download image function
+      function downloadImage(imageSrc, filename = 'image') {
+        // Convert base64 data URL to blob
+        fetch(imageSrc)
+          .then(res => res.blob())
+          .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'image.png';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          })
+          .catch(error => {
+            console.error('Error downloading image:', error);
+            // Fallback: try direct download for data URLs
+            try {
+              const a = document.createElement('a');
+              a.href = imageSrc;
+              a.download = filename || 'image.png';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            } catch (e) {
+              console.error('Fallback download also failed:', e);
+            }
+          });
+      }
+      
+      // Helper function to create AI image with download button
+      function createAIImageWithDownload(imageSrc, altText, imageType = 'image') {
+        const container = document.createElement('div');
+        container.className = 'ai-image-container';
+        
+        const img = document.createElement('img');
+        img.src = imageSrc;
+        img.alt = altText;
+        img.className = 'ai-generated-image';
+        img.addEventListener('click', () => openImageModal(imageSrc));
+        
+        const downloadBtn = document.createElement('button');
+        downloadBtn.className = 'ai-image-download-btn';
+        downloadBtn.title = 'Download image';
+        downloadBtn.setAttribute('aria-label', 'Download image');
+        
+        const downloadIcon = document.createElement('img');
+        downloadIcon.src = 'media-webp/download.webp';
+        downloadIcon.alt = 'Download';
+        downloadBtn.appendChild(downloadIcon);
+        downloadBtn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent opening modal when clicking download
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+          const extension = imageSrc.includes('data:image/png') ? 'png' : 
+                          imageSrc.includes('data:image/jpeg') || imageSrc.includes('data:image/jpg') ? 'jpg' : 
+                          imageSrc.includes('data:image/webp') ? 'webp' : 'png';
+          const filename = `${imageType}-${timestamp}.${extension}`;
+          downloadImage(imageSrc, filename);
+        });
+        
+        container.appendChild(img);
+        container.appendChild(downloadBtn);
+        
+        return container;
+      }
+    </script>
+    
+    <!-- Image Modal/Lightbox -->
+    <div id="image-modal" class="image-modal">
+      <span id="image-modal-close" class="image-modal-close">&times;</span>
+      <img id="image-modal-img" class="image-modal-content" src="" alt="Enlarged image">
+    </div>
+    
+    <script>
+      // Initialize modal event listeners (run immediately since script is at end of body)
+      (function initImageModal() {
+        const modal = document.getElementById('image-modal');
+        const closeBtn = document.getElementById('image-modal-close');
+        
+        if (modal) {
+          // Close modal when clicking outside the image
+          modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+              closeImageModal();
+            }
+          });
+          
+          // Close modal with Escape key
+          document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+              closeImageModal();
+            }
+          });
+        }
+        
+        if (closeBtn) {
+          closeBtn.addEventListener('click', closeImageModal);
+        }
+      })();
     </script>
   </body>
 </html>

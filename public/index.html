@@ -74,6 +74,23 @@
           font-size: 24px !important;
         }
       }
+      
+      /* Beta badge styling */
+      .beta-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #5c1a1a 100%);
+        border-radius: 6px;
+        padding: 2px 8px;
+        margin-right: 6px;
+        box-shadow: 0 2px 4px rgba(153, 27, 27, 0.4);
+      }
+      
+      .beta-badge em {
+        font-style: italic;
+        color: white;
+        font-size: 0.85em;
+        font-weight: 600;
+      }
     </style>
     <script src="scripts/star-border.js" defer></script>
     <script src="scripts/sponsors-scroll.js" defer></script>
@@ -182,7 +199,7 @@
         <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></div>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <a href="ai-designer.html" class="nav-link desktop-only" data-lang="navigation.pdfTo3d">AI Designer</a>
+          <a href="ai-designer.html" class="nav-link desktop-only" data-lang-html="navigation.pdfTo3d">AI Designer</a>
           <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
           <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
           <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
