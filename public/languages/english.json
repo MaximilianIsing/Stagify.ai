@@ -6,7 +6,7 @@
   },
   "navigation": {
     "home": "Home",
-    "pdfTo3d": "AI Designer",
+    "pdfTo3d": "<span class=\"beta-badge\"><em>Beta</em></span> AI Designer",
     "whyUs": "Why Us?",
     "faq": "FAQ",
     "contactUs": "Contact Us",

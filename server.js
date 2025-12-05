@@ -404,6 +404,7 @@ Respond with a JSON object in this exact format:
 If no actions are needed, return: {"stores": [], "forgets": []}
 If storing memories, include brief descriptions in the "stores" array.
 If forgetting memories, include the memory IDs from the current memories list in the "forgets" array.
+If the user wants to forget ALL memories, use "forgets": ["all"] - this will clear all stored memories for the user.
 
 Be very selective. Only store truly important LONG-TERM information that will be useful across multiple conversations.`;
 
@@ -467,7 +468,7 @@ try {
   // Try environment variable first (Render), then fall back to local file
   let gptApiKey = process.env.GPT_KEY;
   if (gptApiKey === undefined) {
-    console.log('OPENAI_API_KEY/GPT_KEY is not set in an environment variable, using local file');
+    console.log('GPT_KEY is not set in an environment variable, using local file');
     const gptKeyFile = path.join(__dirname, 'gpt-key.txt');
     if (fs.existsSync(gptKeyFile)) {
       gptApiKey = fs.readFileSync(gptKeyFile, 'utf8').trim();
@@ -871,28 +872,44 @@ function getImageFromHistory(messages, imageIndex = 0) {
   
   const imageMessages = [];
   
-  // Collect all messages with images (both user and assistant)
+  // Collect ALL images from all messages (both user and assistant)
+  // Process in reverse chronological order (most recent first)
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i];
     if (msg.role === 'user' && Array.isArray(msg.content)) {
-      const imageItem = msg.content.find(item => item.type === 'image_url');
-      if (imageItem && imageItem.image_url && imageItem.image_url.url) {
+      // Get ALL images from this message, not just the first one
+      const imageItems = msg.content.filter(item => item.type === 'image_url' && item.image_url && item.image_url.url);
+      // Process images in order (first image in message = most recent in that message)
+      for (let j = imageItems.length - 1; j >= 0; j--) {
+        const imageItem = imageItems[j];
         imageMessages.push({
           url: imageItem.image_url.url,
           isStaged: false,
-          messageIndex: i
+          messageIndex: i,
+          filename: imageItem.filename || imageItem.originalname || null
         });
-        console.log(`[getImageFromHistory] Found user-uploaded image at message index ${i}, total images found: ${imageMessages.length}`);
+        console.log(`[getImageFromHistory] Found user-uploaded image at message index ${i}, image ${j + 1}/${imageItems.length}, filename: ${imageItem.filename || imageItem.originalname || 'unknown'}, total images found: ${imageMessages.length}`);
       }
     } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-      const imageItem = msg.content.find(item => item.type === 'image_url' && item.isStaged);
-      if (imageItem && imageItem.image_url && imageItem.image_url.url) {
+      // Get ALL staged and generated images from this message
+      const imageItems = msg.content.filter(item => 
+        item.type === 'image_url' && 
+        item.image_url && 
+        item.image_url.url && 
+        (item.isStaged || item.isGenerated)
+      );
+      // Process images in order
+      for (let j = imageItems.length - 1; j >= 0; j--) {
+        const imageItem = imageItems[j];
         imageMessages.push({
           url: imageItem.image_url.url,
-          isStaged: true,
-          messageIndex: i
+          isStaged: item.isStaged || false,
+          isGenerated: item.isGenerated || false,
+          messageIndex: i,
+          filename: imageItem.filename || imageItem.originalname || null
         });
-        console.log(`[getImageFromHistory] Found staged image at message index ${i}, total images found: ${imageMessages.length}`);
+        const imageType = imageItem.isStaged ? 'staged' : 'generated';
+        console.log(`[getImageFromHistory] Found ${imageType} image at message index ${i}, image ${j + 1}/${imageItems.length}, total images found: ${imageMessages.length}`);
       }
     }
   }
@@ -962,18 +979,40 @@ async function evaluateStagingRequest(userMessage, aiResponse, hasCurrentImage, 
     let originalImageIndex = null;
     if (conversationHistory && Array.isArray(conversationHistory)) {
       const imageMessages = [];
-      // Collect all images in reverse chronological order (most recent first)
+      // Collect ALL images in reverse chronological order (most recent first)
       for (let i = conversationHistory.length - 1; i >= 0; i--) {
         const msg = conversationHistory[i];
         if (msg.role === 'user' && Array.isArray(msg.content)) {
-          const imageItem = msg.content.find(item => item.type === 'image_url');
-          if (imageItem) {
-            imageMessages.push({ index: imageMessages.length, type: 'user-uploaded', messageIndex: i });
+          // Get ALL images from this message, not just the first one
+          const imageItems = msg.content.filter(item => item.type === 'image_url');
+          // Process images in reverse order within the message (so first image in message = most recent)
+          for (let j = imageItems.length - 1; j >= 0; j--) {
+            const imageItem = imageItems[j];
+            const filename = imageItem.filename || imageItem.originalname || null;
+            imageMessages.push({ 
+              index: imageMessages.length, 
+              type: 'user-uploaded', 
+              messageIndex: i,
+              filename: filename
+            });
           }
         } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-          const imageItem = msg.content.find(item => item.type === 'image_url' && item.isStaged);
-          if (imageItem) {
-            imageMessages.push({ index: imageMessages.length, type: 'staged', messageIndex: i });
+          // Get ALL staged and generated images from this message
+          const imageItems = msg.content.filter(item => 
+            item.type === 'image_url' && 
+            (item.isStaged || item.isGenerated)
+          );
+          // Process images in reverse order within the message
+          for (let j = imageItems.length - 1; j >= 0; j--) {
+            const imageItem = imageItems[j];
+            const filename = imageItem.filename || imageItem.originalname || null;
+            const imageType = imageItem.isStaged ? 'staged' : 'generated';
+            imageMessages.push({ 
+              index: imageMessages.length, 
+              type: imageType, 
+              messageIndex: i,
+              filename: filename
+            });
           }
         }
       }
@@ -988,11 +1027,19 @@ async function evaluateStagingRequest(userMessage, aiResponse, hasCurrentImage, 
       if (imageMessages.length > 0) {
         imageContext = `\n\nAvailable images in conversation history (index 0 = most recent, higher index = older):\n`;
         imageMessages.forEach((img, idx) => {
-          imageContext += `- Index ${idx}: ${img.type} image (from message ${img.messageIndex})${idx === originalImageIndex ? ' [ORIGINAL/FIRST USER-UPLOADED IMAGE]' : ''}\n`;
+          let description = `${img.type} image (from message ${img.messageIndex})`;
+          if (img.filename) {
+            description += ` (filename: ${img.filename})`;
+          }
+          if (idx === originalImageIndex) {
+            description += ' [ORIGINAL/FIRST USER-UPLOADED IMAGE]';
+          }
+          imageContext += `- Index ${idx}: ${description}\n`;
         });
         if (originalImageIndex !== null) {
           imageContext += `\nIMPORTANT: The "original image" or "first image" is at index ${originalImageIndex}. When the user says "original image", "first image", "initial image", "go back to the original", or "refer back to the original image", use index ${originalImageIndex}.`;
         }
+        imageContext += `\nIMPORTANT: When multiple images are uploaded in the same message, they are indexed separately. Use the filename to identify which image the user is referring to (e.g., if user says "add this chair" or mentions a specific filename, look for an image with that filename or matching description).`;
       }
     }
     
@@ -1774,11 +1821,11 @@ app.post('/api/chat', async (req, res) => {
       console.log(`[Deduplication] Removed ${messages.length - deduplicatedMessages.length} duplicate message(s)`);
     }
     
-    // Check message limit (49 user messages max)
+    // Check message limit (20 user messages max)
     const userMessageCount = deduplicatedMessages.filter(msg => msg.role === 'user').length;
-    if (userMessageCount >= 49) {
+    if (userMessageCount >= 20) {
       return res.json({
-        response: "You've reached the maximum conversation context limit (49 messages). Please reload the chat by clicking the reload button (↻) to the left of the file upload button to start a fresh conversation.",
+        response: "You've reached the maximum conversation context limit (20 messages). Please reload the chat by clicking the reload button (↻) to the left of the file upload button to start a fresh conversation.",
         contextLimitReached: true
       });
     }
@@ -1794,18 +1841,40 @@ app.post('/api/chat', async (req, res) => {
     let originalImageIndex = null;
     if (deduplicatedMessages && Array.isArray(deduplicatedMessages)) {
       const imageMessages = [];
-      // Collect all images in reverse chronological order (most recent first)
+      // Collect ALL images in reverse chronological order (most recent first)
       for (let i = deduplicatedMessages.length - 1; i >= 0; i--) {
         const msg = deduplicatedMessages[i];
         if (msg.role === 'user' && Array.isArray(msg.content)) {
-          const imageItem = msg.content.find(item => item.type === 'image_url');
-          if (imageItem) {
-            imageMessages.push({ index: imageMessages.length, type: 'user-uploaded', messageIndex: i });
+          // Get ALL images from this message, not just the first one
+          const imageItems = msg.content.filter(item => item.type === 'image_url');
+          // Process images in reverse order within the message (so first image in message = most recent)
+          for (let j = imageItems.length - 1; j >= 0; j--) {
+            const imageItem = imageItems[j];
+            const filename = imageItem.filename || imageItem.originalname || null;
+            imageMessages.push({ 
+              index: imageMessages.length, 
+              type: 'user-uploaded', 
+              messageIndex: i,
+              filename: filename
+            });
           }
         } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-          const imageItem = msg.content.find(item => item.type === 'image_url' && item.isStaged);
-          if (imageItem) {
-            imageMessages.push({ index: imageMessages.length, type: 'staged', messageIndex: i });
+          // Get ALL staged and generated images from this message
+          const imageItems = msg.content.filter(item => 
+            item.type === 'image_url' && 
+            (item.isStaged || item.isGenerated)
+          );
+          // Process images in reverse order within the message
+          for (let j = imageItems.length - 1; j >= 0; j--) {
+            const imageItem = imageItems[j];
+            const filename = imageItem.filename || imageItem.originalname || null;
+            const imageType = imageItem.isStaged ? 'staged' : 'generated';
+            imageMessages.push({ 
+              index: imageMessages.length, 
+              type: imageType, 
+              messageIndex: i,
+              filename: filename
+            });
           }
         }
       }
@@ -1819,11 +1888,19 @@ app.post('/api/chat', async (req, res) => {
       if (imageMessages.length > 0) {
         imageContext = '\n\nAvailable images in conversation history (index 0 = most recent, higher index = older):\n';
         imageMessages.forEach((img, idx) => {
-          imageContext += `- Index ${idx}: ${img.type} image${idx === originalImageIndex ? ' [ORIGINAL/FIRST USER-UPLOADED IMAGE]' : ''}\n`;
+          let description = `${img.type} image`;
+          if (img.filename) {
+            description += ` (filename: ${img.filename})`;
+          }
+          if (idx === originalImageIndex) {
+            description += ' [ORIGINAL/FIRST USER-UPLOADED IMAGE]';
+          }
+          imageContext += `- Index ${idx}: ${description}\n`;
         });
         if (originalImageIndex !== null) {
           imageContext += `\nIMPORTANT: The "original image" or "first image" is at index ${originalImageIndex}. When the user says "original image", "first image", "initial image", "go back to the original", or "refer back to the original image", use index ${originalImageIndex} in the staging request.`;
         }
+        imageContext += `\nIMPORTANT: When multiple images are uploaded in the same message, they are indexed separately. Use the filename to identify which image the user is referring to (e.g., if user says "add this chair", look for an image with "chair" in the filename).`;
       }
     }
     
@@ -1851,11 +1928,11 @@ app.post('/api/chat', async (req, res) => {
     }
     systemInstruction += '\n\nYou must respond with a JSON object containing:';
     systemInstruction += '\n- "response": Your text response to the user';
-    systemInstruction += '\n- "memories": { "stores": ["memory description 1", ...], "forgets": ["memory ID 1", ...] } - Store or forget memories based on the conversation';
-    systemInstruction += '\n- "staging": { "shouldStage": true/false, "roomType": "Living room"|"Bedroom"|"Kitchen"|"Bathroom"|"Dining room"|"Office"|"Other", "additionalPrompt": "detailed staging description", "removeFurniture": true/false, "usePreviousImage": false|0|1|2|..., "furnitureImageIndex": null|0|1|2|... } - Request staging if the user wants to stage/modify a room image (ONLY use staging when the user has uploaded or is referring to an existing room image to modify). If the user wants to add a specific piece of furniture from a previous message, set "furnitureImageIndex" to the index of that furniture image (0 = most recent image, 1 = second most recent, etc.)';
+    systemInstruction += '\n- "memories": { "stores": ["memory description 1", ...], "forgets": ["memory ID 1", ...] } - Store or forget memories based on the conversation. To forget ALL memories, use "forgets": ["all"]';
+    systemInstruction += '\n- "staging": { "shouldStage": true/false, "roomType": "Living room"|"Bedroom"|"Kitchen"|"Bathroom"|"Dining room"|"Office"|"Other", "additionalPrompt": "detailed staging description", "removeFurniture": true/false, "usePreviousImage": false|0|1|2|..., "furnitureImageIndex": null|0|1|2|... } OR "staging": [ { "shouldStage": true, ... }, { "shouldStage": true, ... }, ... ] - Request staging if the user wants to stage/modify a room image (ONLY use staging when the user has uploaded or is referring to an existing room image to modify). If the user wants to add a specific piece of furniture from a previous message, set "furnitureImageIndex" to the index of that furniture image (0 = most recent image, 1 = second most recent, etc.). You can provide MULTIPLE staging requests (up to 3) in an array if the user asks for multiple variations (e.g., "stage this room in 3 different themes"). Each staging request in the array will be processed separately.';
     systemInstruction += '\n- "imageRequest": { "requestImage": true/false, "imageIndex": 0|1|2|... } - Request to view/analyze a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "show me", "see", "view", or "display" a previous image. The image will be displayed to the user. If the user also wants analysis/description, the system will analyze it automatically.';
     systemInstruction += '\n- "recall": { "shouldRecall": true/false, "imageIndex": 0|1|2|... } - Recall and display a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "see", "show", "recall", or "bring back" an old image. This is simpler than imageRequest - it just retrieves and displays the image without analysis. If user says "original image", "first image", or "initial image", use the original image index shown above.';
-    systemInstruction += '\n- "generate": { "shouldGenerate": true/false, "prompt": "detailed image generation prompt" } - Generate a completely new image from text description (ONLY use generation when the user wants to create a NEW image from scratch, NOT when they want to modify an existing room image. If they uploaded an image or are referring to a previous image, use staging instead)';
+    systemInstruction += '\n- "generate": { "shouldGenerate": true/false, "prompt": "detailed image generation prompt" } OR "generate": [ { "shouldGenerate": true, "prompt": "..." }, { "shouldGenerate": true, "prompt": "..." }, ... ] - Generate a completely new image from text description (ONLY use generation when the user wants to create a NEW image from scratch, NOT when they want to modify an existing room image. If they uploaded an image or are referring to a previous image, use staging instead). You can provide MULTIPLE generation requests (up to 3) in an array if the user asks for multiple variations. Each generation request in the array will be processed separately.';
     systemInstruction += '\n\nIMPORTANT DISTINCTION:\n- Use "staging" when: user uploaded a room image, user refers to a previous room image, user wants to modify/redesign an existing room\n- Use "generate" when: user wants to create a completely new image from text only (no existing image involved), user asks to "generate", "create", "draw", or "make" an image of something that is NOT a room modification';
     systemInstruction += '\n\nSTAGING RULES:';
     systemInstruction += '\n- Set "shouldStage": true if the user wants to stage a room, modify an image, change colors/walls/furniture, or apply any visual changes';
@@ -2039,27 +2116,36 @@ app.post('/api/chat', async (req, res) => {
       
       // Process forget actions first
       if (memoryActionsFromAI.forgets && memoryActionsFromAI.forgets.length > 0) {
-        for (const memoryId of memoryActionsFromAI.forgets) {
-          const initialLength = memories.length;
-          // Try exact ID match first
-          memories = memories.filter(m => m.id !== memoryId);
-          
-          if (memories.length < initialLength) {
-            memoryActions.forgets.push(memoryId);
-            console.log(`Forgot memory with ID for user ${userId}:`, memoryId);
-          } else {
-            // Try to find by content match if ID didn't work
-            const memoryToForget = memories.find(m => 
-              m.content.toLowerCase().includes(memoryId.toLowerCase()) ||
-              memoryId.toLowerCase().includes(m.content.toLowerCase()) ||
-              m.id.includes(memoryId) ||
-              memoryId.includes(m.id)
-            );
+        // Check if user wants to forget all memories
+        if (memoryActionsFromAI.forgets.includes('all')) {
+          const forgottenCount = memories.length;
+          memories = [];
+          memoryActions.forgets = ['all'];
+          console.log(`Forgot ALL ${forgottenCount} memories for user ${userId}`);
+        } else {
+          // Process individual memory forgets
+          for (const memoryId of memoryActionsFromAI.forgets) {
+            const initialLength = memories.length;
+            // Try exact ID match first
+            memories = memories.filter(m => m.id !== memoryId);
             
-            if (memoryToForget) {
-              memories = memories.filter(m => m.id !== memoryToForget.id);
-              memoryActions.forgets.push(memoryToForget.id);
-              console.log(`Forgot memory for user ${userId}:`, memoryToForget.content);
+            if (memories.length < initialLength) {
+              memoryActions.forgets.push(memoryId);
+              console.log(`Forgot memory with ID for user ${userId}:`, memoryId);
+            } else {
+              // Try to find by content match if ID didn't work
+              const memoryToForget = memories.find(m => 
+                m.content.toLowerCase().includes(memoryId.toLowerCase()) ||
+                memoryId.toLowerCase().includes(m.content.toLowerCase()) ||
+                m.id.includes(memoryId) ||
+                memoryId.includes(m.id)
+              );
+              
+              if (memoryToForget) {
+                memories = memories.filter(m => m.id !== memoryToForget.id);
+                memoryActions.forgets.push(memoryToForget.id);
+                console.log(`Forgot memory for user ${userId}:`, memoryToForget.content);
+              }
             }
           }
         }
@@ -2088,140 +2174,171 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    // Process image generation request from AI response
-    let generatedImage = null;
+    // Process image generation request(s) from AI response (supports single or array)
+    let generatedImages = [];
     
-    if (generateRequestFromAI && generateRequestFromAI.shouldGenerate && generateRequestFromAI.prompt) {
-      console.log(`[Image Generation] Processing generation request from AI:`, generateRequestFromAI);
+    if (generateRequestFromAI) {
+      // Normalize to array (max 3)
+      const generateRequests = Array.isArray(generateRequestFromAI) 
+        ? generateRequestFromAI.slice(0, 3).filter(g => g.shouldGenerate && g.prompt)
+        : (generateRequestFromAI.shouldGenerate && generateRequestFromAI.prompt ? [generateRequestFromAI] : []);
       
-      try {
-        generatedImage = await processImageGeneration(generateRequestFromAI.prompt, req);
-        console.log(`[Image Generation] Successfully generated image`);
-      } catch (error) {
-        console.error(`[Image Generation] Error generating image:`, error);
-        // Don't fail the entire request, just log the error
-        text = text + '\n\nSorry, I encountered an error while generating the image. Please try again.';
+      if (generateRequests.length > 0) {
+        console.log(`[Image Generation] Processing ${generateRequests.length} generation request(s) from AI`);
+        
+        for (let i = 0; i < generateRequests.length; i++) {
+          const genRequest = generateRequests[i];
+          try {
+            console.log(`[Image Generation] Processing generation request ${i + 1}/${generateRequests.length}:`, genRequest.prompt.substring(0, 100) + '...');
+            const generatedImage = await processImageGeneration(genRequest.prompt, req);
+            if (generatedImage) {
+              generatedImages.push(generatedImage);
+              console.log(`[Image Generation] Successfully generated image ${i + 1}/${generateRequests.length}`);
+            }
+          } catch (error) {
+            console.error(`[Image Generation] Error generating image ${i + 1}:`, error);
+            // Continue with other images if one fails
+          }
+        }
+        
+        if (generateRequests.length > 0 && generatedImages.length === 0) {
+          text = text + '\n\nSorry, I encountered an error while generating the images. Please try again.';
+        }
       }
     }
     
-    // Process staging request from AI response
-    let stagingResult = null;
+    // Process staging request(s) from AI response (supports single or array)
+    let stagingResults = [];
     
-    if (stagingRequestFromAI && stagingRequestFromAI.shouldStage) {
-      console.log(`[Staging] Processing staging request from AI:`, stagingRequestFromAI);
+    if (stagingRequestFromAI) {
+      // Normalize to array (max 3)
+      const stagingRequests = Array.isArray(stagingRequestFromAI)
+        ? stagingRequestFromAI.slice(0, 3).filter(s => s.shouldStage)
+        : (stagingRequestFromAI.shouldStage ? [stagingRequestFromAI] : []);
       
-      // Build staging params from AI response
-      let stagingParams = {
-        roomType: stagingRequestFromAI.roomType || 'Other',
-        furnitureStyle: 'custom', // Always use custom
-        additionalPrompt: stagingRequestFromAI.additionalPrompt || '',
-        removeFurniture: stagingRequestFromAI.removeFurniture || false,
-        usePreviousImage: stagingRequestFromAI.usePreviousImage !== undefined ? stagingRequestFromAI.usePreviousImage : false,
-        furnitureImageIndex: stagingRequestFromAI.furnitureImageIndex !== undefined && stagingRequestFromAI.furnitureImageIndex !== null ? stagingRequestFromAI.furnitureImageIndex : null
-      };
-      
-      // Fallback: If user mentions "original", "first", or "initial" image but AI didn't set usePreviousImage correctly
-      const messageLower = lastUserMessageText.toLowerCase();
-      const hasOriginalKeywords = messageLower.includes('original') || 
-                                  messageLower.includes('first image') || 
-                                  messageLower.includes('initial image') ||
-                                  messageLower.includes('go back to') ||
-                                  messageLower.includes('refer back to');
-      
-      if (hasOriginalKeywords && (stagingParams.usePreviousImage === false || stagingParams.usePreviousImage === null)) {
-        // Find the original (first) user-uploaded image
-        const originalImageIndex = getOriginalImageIndex(messages);
-        if (originalImageIndex !== null) {
-          console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
-          stagingParams.usePreviousImage = originalImageIndex;
-        } else {
-          // If no original found, use most recent (index 0)
-          console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
-          stagingParams.usePreviousImage = 0;
-        }
-      }
-      
-      if (stagingParams) {
-        try {
-          let imageBuffer = null;
-          let imageSource = '';
+      if (stagingRequests.length > 0) {
+        console.log(`[Staging] Processing ${stagingRequests.length} staging request(s) from AI`);
+        
+        for (let i = 0; i < stagingRequests.length; i++) {
+          const stagingRequest = stagingRequests[i];
+          console.log(`[Staging] Processing staging request ${i + 1}/${stagingRequests.length}:`, stagingRequest);
           
-          // Determine which image to use based on usePreviousImage
-          if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
-            // AI requested a previous image - use the AI's chosen index (AI should use context to determine the correct image)
-            const imageIndex = typeof stagingParams.usePreviousImage === 'number' ? stagingParams.usePreviousImage : 0;
-            console.log(`[Staging] Looking for image at index ${imageIndex}`);
-            
-            const previousImage = getImageFromHistory(messages, imageIndex);
-            
-            if (previousImage && previousImage.url) {
-              const base64Data = previousImage.url.split(',')[1];
-              if (base64Data) {
-                imageBuffer = Buffer.from(base64Data, 'base64');
-                imageSource = previousImage.isStaged ? `staged image (index ${imageIndex})` : `user-uploaded image (index ${imageIndex})`;
-                console.log(`[Staging] Using previous ${imageSource}`);
-              } else {
-                console.log(`[Staging] Previous image found but base64 data extraction failed`);
-              }
+          // Build staging params from AI response
+          let stagingParams = {
+            roomType: stagingRequest.roomType || 'Other',
+            furnitureStyle: 'custom', // Always use custom
+            additionalPrompt: stagingRequest.additionalPrompt || '',
+            removeFurniture: stagingRequest.removeFurniture || false,
+            usePreviousImage: stagingRequest.usePreviousImage !== undefined ? stagingRequest.usePreviousImage : false,
+            furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null
+          };
+          
+          // Fallback: If user mentions "original", "first", or "initial" image but AI didn't set usePreviousImage correctly
+          const messageLower = lastUserMessageText.toLowerCase();
+          const hasOriginalKeywords = messageLower.includes('original') || 
+                                      messageLower.includes('first image') || 
+                                      messageLower.includes('initial image') ||
+                                      messageLower.includes('go back to') ||
+                                      messageLower.includes('refer back to');
+          
+          if (hasOriginalKeywords && (stagingParams.usePreviousImage === false || stagingParams.usePreviousImage === null)) {
+            // Find the original (first) user-uploaded image
+            const originalImageIndex = getOriginalImageIndex(messages);
+            if (originalImageIndex !== null) {
+              console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
+              stagingParams.usePreviousImage = originalImageIndex;
             } else {
-              console.log(`[Staging] Previous image at index ${imageIndex} not found`);
-              // Fallback: try to use the most recent image (index 0) if requested index doesn't exist
-              if (imageIndex > 0) {
-                console.log(`[Staging] Attempting fallback to index 0`);
-                const fallbackImage = getImageFromHistory(messages, 0);
-                if (fallbackImage && fallbackImage.url) {
-                  const base64Data = fallbackImage.url.split(',')[1];
-                  if (base64Data) {
-                    imageBuffer = Buffer.from(base64Data, 'base64');
-                    imageSource = fallbackImage.isStaged ? `staged image (fallback to index 0)` : `user-uploaded image (fallback to index 0)`;
-                    console.log(`[Staging] Using fallback ${imageSource}`);
+              // If no original found, use most recent (index 0)
+              console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
+              stagingParams.usePreviousImage = 0;
+            }
+          }
+          
+          if (stagingParams) {
+            try {
+              let imageBuffer = null;
+              let imageSource = '';
+              
+              // Determine which image to use based on usePreviousImage
+              if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
+              // AI requested a previous image - use the AI's chosen index (AI should use context to determine the correct image)
+              const imageIndex = typeof stagingParams.usePreviousImage === 'number' ? stagingParams.usePreviousImage : 0;
+              console.log(`[Staging] Looking for image at index ${imageIndex}`);
+              
+              const previousImage = getImageFromHistory(messages, imageIndex);
+              
+              if (previousImage && previousImage.url) {
+                const base64Data = previousImage.url.split(',')[1];
+                if (base64Data) {
+                  imageBuffer = Buffer.from(base64Data, 'base64');
+                  imageSource = previousImage.isStaged ? `staged image (index ${imageIndex})` : `user-uploaded image (index ${imageIndex})`;
+                  console.log(`[Staging] Using previous ${imageSource}`);
+                } else {
+                  console.log(`[Staging] Previous image found but base64 data extraction failed`);
+                }
+              } else {
+                console.log(`[Staging] Previous image at index ${imageIndex} not found`);
+                // Fallback: try to use the most recent image (index 0) if requested index doesn't exist
+                if (imageIndex > 0) {
+                  console.log(`[Staging] Attempting fallback to index 0`);
+                  const fallbackImage = getImageFromHistory(messages, 0);
+                  if (fallbackImage && fallbackImage.url) {
+                    const base64Data = fallbackImage.url.split(',')[1];
+                    if (base64Data) {
+                      imageBuffer = Buffer.from(base64Data, 'base64');
+                      imageSource = fallbackImage.isStaged ? `staged image (fallback to index 0)` : `user-uploaded image (fallback to index 0)`;
+                      console.log(`[Staging] Using fallback ${imageSource}`);
+                    }
                   }
                 }
               }
-            }
-          } else if (imageFromHistory) {
-            // Fallback to old logic if usePreviousImage is false but we have imageFromHistory
-            const base64Data = imageFromHistory.split(',')[1];
-            if (base64Data) {
-              imageBuffer = Buffer.from(base64Data, 'base64');
-              imageSource = isStagedImage ? 'staged image' : 'conversation history';
-              console.log(`[Staging] Using image from conversation history (fallback)`);
-            }
-          }
-          
-          // Retrieve furniture image if specified
-          let furnitureImageBuffer = null;
-          if (stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
-            const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
-            if (furnitureIndex !== null) {
-              console.log(`[Staging] Looking for furniture image at index ${furnitureIndex}`);
-              const furnitureImage = getImageFromHistory(messages, furnitureIndex);
-              
-              if (furnitureImage && furnitureImage.url) {
-                const base64Data = furnitureImage.url.split(',')[1];
-                if (base64Data) {
-                  furnitureImageBuffer = Buffer.from(base64Data, 'base64');
-                  console.log(`[Staging] Found furniture image at index ${furnitureIndex}`);
-                }
-              } else {
-                console.log(`[Staging] Furniture image at index ${furnitureIndex} not found`);
+            } else if (imageFromHistory) {
+              // Fallback to old logic if usePreviousImage is false but we have imageFromHistory
+              const base64Data = imageFromHistory.split(',')[1];
+              if (base64Data) {
+                imageBuffer = Buffer.from(base64Data, 'base64');
+                imageSource = isStagedImage ? 'staged image' : 'conversation history';
+                console.log(`[Staging] Using image from conversation history (fallback)`);
               }
             }
+            
+            // Retrieve furniture image if specified
+            let furnitureImageBuffer = null;
+            if (stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
+              const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
+              if (furnitureIndex !== null) {
+                console.log(`[Staging] Looking for furniture image at index ${furnitureIndex}`);
+                const furnitureImage = getImageFromHistory(messages, furnitureIndex);
+                
+                if (furnitureImage && furnitureImage.url) {
+                  const base64Data = furnitureImage.url.split(',')[1];
+                  if (base64Data) {
+                    furnitureImageBuffer = Buffer.from(base64Data, 'base64');
+                    console.log(`[Staging] Found furniture image at index ${furnitureIndex}`);
+                  }
+                } else {
+                  console.log(`[Staging] Furniture image at index ${furnitureIndex} not found`);
+                }
+              }
+            }
+            
+            if (imageBuffer) {
+              const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer);
+              if (stagedImage) {
+                stagingResults.push({
+                  stagedImage: stagedImage,
+                  params: stagingParams
+                });
+                console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+              }
+            } else {
+              console.log(`[Staging] No image found for staging ${i + 1}`);
+            }
+          } catch (error) {
+            console.error(`Error processing staging ${i + 1}:`, error);
+            // Continue with other staging requests if one fails
           }
-          
-          if (imageBuffer) {
-            const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer);
-            stagingResult = {
-              stagedImage: stagedImage,
-              params: stagingParams
-            };
-            console.log(`[Staging] Successfully processed staging for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
-          } else {
-            console.log(`[Staging] No image found for staging`);
           }
-        } catch (error) {
-          console.error('Error processing staging:', error);
-          // Continue with normal chat if staging fails
         }
       }
     }
@@ -2281,15 +2398,15 @@ app.post('/api/chat', async (req, res) => {
               ...openaiMessages.slice(1), // Skip the original system message, keep the rest
               {
                 role: 'user',
-              content: [
-                { type: 'text', text: lastUserMessageText },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: await downscaleImageForGPT(requestedImage.url)
+                content: [
+                  { type: 'text', text: lastUserMessageText },
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: await downscaleImageForGPT(requestedImage.url)
+                    }
                   }
-                }
-              ]
+                ]
               }
             ];
             
@@ -2317,19 +2434,34 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    // Return JSON response with text, memory actions, staging result, generated image, and requested image if available
+    // Return JSON response with text, memory actions, staging result(s), generated image(s), and requested image if available
     const response = { 
       response: text,
       memories: memoryActions
     };
     
-    if (stagingResult) {
-      response.stagedImage = stagingResult.stagedImage;
-      response.stagingParams = stagingResult.params;
+    // Handle multiple staging results
+    if (stagingResults.length > 0) {
+      if (stagingResults.length === 1) {
+        // Single result - maintain backward compatibility
+        response.stagedImage = stagingResults[0].stagedImage;
+        response.stagingParams = stagingResults[0].params;
+      } else {
+        // Multiple results - return as array
+        response.stagedImages = stagingResults.map(r => r.stagedImage);
+        response.stagingParams = stagingResults.map(r => r.params);
+      }
     }
     
-    if (generatedImage) {
-      response.generatedImage = generatedImage;
+    // Handle multiple generated images
+    if (generatedImages.length > 0) {
+      if (generatedImages.length === 1) {
+        // Single result - maintain backward compatibility
+        response.generatedImage = generatedImages[0];
+      } else {
+        // Multiple results - return as array
+        response.generatedImages = generatedImages;
+      }
     }
     
     if (requestedImageForDisplay) {
@@ -2390,10 +2522,10 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     }
     systemInstruction += '\n\nYou must respond with a JSON object containing:';
     systemInstruction += '\n- "response": Your text response to the user';
-    systemInstruction += '\n- "memories": { "stores": ["memory description 1", ...], "forgets": ["memory ID 1", ...] } - Store or forget memories based on the conversation';
-    systemInstruction += '\n- "staging": { "shouldStage": true/false, "roomType": "Living room"|"Bedroom"|"Kitchen"|"Bathroom"|"Dining room"|"Office"|"Other", "additionalPrompt": "detailed staging description", "removeFurniture": true/false, "usePreviousImage": false|0|1|2|..., "furnitureImageIndex": null|0|1|2|... } - Request staging if the user wants to stage/modify a room image (ONLY use staging when the user has uploaded or is referring to an existing room image to modify). If the user wants to add a specific piece of furniture from a previous message, set "furnitureImageIndex" to the index of that furniture image (0 = most recent image, 1 = second most recent, etc.)';
+    systemInstruction += '\n- "memories": { "stores": ["memory description 1", ...], "forgets": ["memory ID 1", ...] } - Store or forget memories based on the conversation. To forget ALL memories, use "forgets": ["all"]';
+    systemInstruction += '\n- "staging": { "shouldStage": true/false, "roomType": "Living room"|"Bedroom"|"Kitchen"|"Bathroom"|"Dining room"|"Office"|"Other", "additionalPrompt": "detailed staging description", "removeFurniture": true/false, "usePreviousImage": false|0|1|2|..., "furnitureImageIndex": null|0|1|2|... } OR "staging": [ { "shouldStage": true, ... }, { "shouldStage": true, ... }, ... ] - Request staging if the user wants to stage/modify a room image (ONLY use staging when the user has uploaded or is referring to an existing room image to modify). If the user wants to add a specific piece of furniture from a previous message, set "furnitureImageIndex" to the index of that furniture image (0 = most recent image, 1 = second most recent, etc.). You can provide MULTIPLE staging requests (up to 3) in an array if the user asks for multiple variations (e.g., "stage this room in 3 different themes"). Each staging request in the array will be processed separately.';
     systemInstruction += '\n- "imageRequest": { "requestImage": true/false, "imageIndex": 0|1|2|... } - Request to view/analyze a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "show me", "see", "view", or "display" a previous image. The image will be displayed to the user. If the user also wants analysis/description, the system will analyze it automatically.';
-    systemInstruction += '\n- "generate": { "shouldGenerate": true/false, "prompt": "detailed image generation prompt" } - Generate a completely new image from text description (ONLY use generation when the user wants to create a NEW image from scratch, NOT when they want to modify an existing room image. If they uploaded an image or are referring to a previous image, use staging instead)';
+    systemInstruction += '\n- "generate": { "shouldGenerate": true/false, "prompt": "detailed image generation prompt" } OR "generate": [ { "shouldGenerate": true, "prompt": "..." }, { "shouldGenerate": true, "prompt": "..." }, ... ] - Generate a completely new image from text description (ONLY use generation when the user wants to create a NEW image from scratch, NOT when they want to modify an existing room image. If they uploaded an image or are referring to a previous image, use staging instead). You can provide MULTIPLE generation requests (up to 3) in an array if the user asks for multiple variations. Each generation request in the array will be processed separately.';
     systemInstruction += '\n\nIMPORTANT DISTINCTION:\n- Use "staging" when: user uploaded a room image, user refers to a previous room image, user wants to modify/redesign an existing room\n- Use "generate" when: user wants to create a completely new image from text only (no existing image involved), user asks to "generate", "create", "draw", or "make" an image of something that is NOT a room modification';
     systemInstruction += '\n\nSTAGING RULES:';
     systemInstruction += '\n- Set "shouldStage": true if the user wants to stage a room, modify an image, change colors/walls/furniture, or apply any visual changes';
@@ -2430,11 +2562,11 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       console.log(`[Deduplication] Removed ${originalHistoryLength - conversationHistory.length} duplicate message(s) from conversation history`);
     }
     
-    // Check message limit (49 user messages max)
+    // Check message limit (20 user messages max)
     const userMessageCount = conversationHistory.filter(msg => msg.role === 'user').length;
-    if (userMessageCount >= 49) {
+    if (userMessageCount >= 20) {
       return res.json({
-        response: "You've reached the maximum conversation context limit (49 messages). Please reload the chat by clicking the reload button (↻) to the left of the file upload button to start a fresh conversation.",
+        response: "You've reached the maximum conversation context limit (20 messages). Please reload the chat by clicking the reload button (↻) to the left of the file upload button to start a fresh conversation.",
         contextLimitReached: true
       });
     }
@@ -2444,27 +2576,41 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     let originalImageIndex = null;
     if (conversationHistory && Array.isArray(conversationHistory)) {
       const imageMessages = [];
-      // Collect all images in reverse chronological order (most recent first)
+      // Collect ALL images in reverse chronological order (most recent first)
       for (let i = conversationHistory.length - 1; i >= 0; i--) {
         const msg = conversationHistory[i];
         if (msg.role === 'user' && Array.isArray(msg.content)) {
-          const imageItem = msg.content.find(item => item.type === 'image_url');
-          if (imageItem) {
+          // Get ALL images from this message, not just the first one
+          const imageItems = msg.content.filter(item => item.type === 'image_url');
+          // Process images in reverse order within the message (so first image in message = most recent)
+          for (let j = imageItems.length - 1; j >= 0; j--) {
+            const imageItem = imageItems[j];
             const annotation = imageItem.annotation || null;
+            const filename = imageItem.filename || imageItem.originalname || null;
             imageMessages.push({ 
               index: imageMessages.length, 
               type: 'user-uploaded', 
               messageIndex: i,
-              annotation: annotation
+              annotation: annotation,
+              filename: filename
             });
           }
         } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-          const imageItem = msg.content.find(item => item.type === 'image_url' && item.isStaged);
-          if (imageItem) {
+          // Get ALL staged and generated images from this message
+          const imageItems = msg.content.filter(item => 
+            item.type === 'image_url' && 
+            (item.isStaged || item.isGenerated)
+          );
+          // Process images in reverse order within the message
+          for (let j = imageItems.length - 1; j >= 0; j--) {
+            const imageItem = imageItems[j];
+            const filename = imageItem.filename || imageItem.originalname || null;
+            const imageType = imageItem.isStaged ? 'staged' : 'generated';
             imageMessages.push({ 
               index: imageMessages.length, 
-              type: 'staged', 
-              messageIndex: i 
+              type: imageType, 
+              messageIndex: i,
+              filename: filename
             });
           }
         }
@@ -2480,6 +2626,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         imageContext = '\n\nAvailable images in conversation history (index 0 = most recent, higher index = older):\n';
         imageMessages.forEach((img, idx) => {
           let description = `${img.type} image`;
+          if (img.filename) {
+            description += ` (filename: ${img.filename})`;
+          }
           if (img.annotation) {
             description += ` (${img.annotation})`;
           }
@@ -2491,6 +2640,7 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         if (originalImageIndex !== null) {
           imageContext += `\nIMPORTANT: The "original image" or "first image" is at index ${originalImageIndex}. When the user says "original image", "first image", "initial image", "go back to the original", or "refer back to the original image", use index ${originalImageIndex} in the staging request.`;
         }
+        imageContext += `\nIMPORTANT: When multiple images are uploaded in the same message, they are indexed separately. Use the filename to identify which image the user is referring to (e.g., if user says "add this chair" or mentions a specific filename, look for an image with that filename or matching description).`;
         systemInstruction += imageContext;
       }
     }
@@ -2901,27 +3051,36 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       
       // Process forget actions first
       if (memoryActionsFromAI.forgets && memoryActionsFromAI.forgets.length > 0) {
-        for (const memoryId of memoryActionsFromAI.forgets) {
-          const initialLength = memories.length;
-          // Try exact ID match first
-          memories = memories.filter(m => m.id !== memoryId);
-          
-          if (memories.length < initialLength) {
-            memoryActions.forgets.push(memoryId);
-            console.log(`Forgot memory with ID for user ${userId}:`, memoryId);
-          } else {
-            // Try to find by content match if ID didn't work
-            const memoryToForget = memories.find(m => 
-              m.content.toLowerCase().includes(memoryId.toLowerCase()) ||
-              memoryId.toLowerCase().includes(m.content.toLowerCase()) ||
-              m.id.includes(memoryId) ||
-              memoryId.includes(m.id)
-            );
+        // Check if user wants to forget all memories
+        if (memoryActionsFromAI.forgets.includes('all')) {
+          const forgottenCount = memories.length;
+          memories = [];
+          memoryActions.forgets = ['all'];
+          console.log(`Forgot ALL ${forgottenCount} memories for user ${userId}`);
+        } else {
+          // Process individual memory forgets
+          for (const memoryId of memoryActionsFromAI.forgets) {
+            const initialLength = memories.length;
+            // Try exact ID match first
+            memories = memories.filter(m => m.id !== memoryId);
             
-            if (memoryToForget) {
-              memories = memories.filter(m => m.id !== memoryToForget.id);
-              memoryActions.forgets.push(memoryToForget.id);
-              console.log(`Forgot memory for user ${userId}:`, memoryToForget.content);
+            if (memories.length < initialLength) {
+              memoryActions.forgets.push(memoryId);
+              console.log(`Forgot memory with ID for user ${userId}:`, memoryId);
+            } else {
+              // Try to find by content match if ID didn't work
+              const memoryToForget = memories.find(m => 
+                m.content.toLowerCase().includes(memoryId.toLowerCase()) ||
+                memoryId.toLowerCase().includes(m.content.toLowerCase()) ||
+                m.id.includes(memoryId) ||
+                memoryId.includes(m.id)
+              );
+              
+              if (memoryToForget) {
+                memories = memories.filter(m => m.id !== memoryToForget.id);
+                memoryActions.forgets.push(memoryToForget.id);
+                console.log(`Forgot memory for user ${userId}:`, memoryToForget.content);
+              }
             }
           }
         }
@@ -2950,59 +3109,69 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       }
     }
 
-    // Process staging request from AI response
-    let stagingResult = null;
+    // Process staging request(s) from AI response (supports single or array)
+    let stagingResults = [];
     
     // Check if current message has an image
     const currentMessageHasImage = firstImageFile !== null;
     
-    if (stagingRequestFromAI && stagingRequestFromAI.shouldStage) {
-      console.log(`[Staging] Processing staging request from AI:`, stagingRequestFromAI);
+    if (stagingRequestFromAI) {
+      // Normalize to array (max 3)
+      const stagingRequests = Array.isArray(stagingRequestFromAI)
+        ? stagingRequestFromAI.slice(0, 3).filter(s => s.shouldStage)
+        : (stagingRequestFromAI.shouldStage ? [stagingRequestFromAI] : []);
       
-      // Build staging params from AI response
-      let stagingParams = {
-        roomType: stagingRequestFromAI.roomType || 'Other',
-        furnitureStyle: 'custom', // Always use custom
-        additionalPrompt: stagingRequestFromAI.additionalPrompt || '',
-        removeFurniture: stagingRequestFromAI.removeFurniture || false,
-        usePreviousImage: stagingRequestFromAI.usePreviousImage !== undefined ? stagingRequestFromAI.usePreviousImage : false,
-        furnitureImageIndex: stagingRequestFromAI.furnitureImageIndex !== undefined && stagingRequestFromAI.furnitureImageIndex !== null ? stagingRequestFromAI.furnitureImageIndex : null
-      };
-      
-      // Fallback: If user mentions "original", "first", or "initial" image but AI didn't set usePreviousImage correctly
-      if (!currentMessageHasImage) {
-        const messageLower = message.toLowerCase();
-        const hasOriginalKeywords = messageLower.includes('original') || 
-                                    messageLower.includes('first image') || 
-                                    messageLower.includes('initial image') ||
-                                    messageLower.includes('go back to') ||
-                                    messageLower.includes('refer back to');
+      if (stagingRequests.length > 0) {
+        console.log(`[Staging] Processing ${stagingRequests.length} staging request(s) from AI`);
         
-        if (hasOriginalKeywords && (stagingParams.usePreviousImage === false || stagingParams.usePreviousImage === null)) {
-          // Find the original (first) user-uploaded image
-          const originalImageIndex = getOriginalImageIndex(conversationHistory);
-          if (originalImageIndex !== null) {
-            console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
-            stagingParams.usePreviousImage = originalImageIndex;
-          } else {
-            // If no original found, use most recent (index 0)
-            console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
-            stagingParams.usePreviousImage = 0;
-          }
-        }
-      }
-      
-      if (stagingParams) {
-      try {
-        let imageBuffer = null;
-        let imageSource = '';
-        
-        // Determine which image to use
-        if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
-          // AI requested a previous image
-          const imageIndex = typeof stagingParams.usePreviousImage === 'number' ? stagingParams.usePreviousImage : 0;
+        for (let i = 0; i < stagingRequests.length; i++) {
+          const stagingRequest = stagingRequests[i];
+          console.log(`[Staging] Processing staging request ${i + 1}/${stagingRequests.length}:`, stagingRequest);
           
-          // Use the AI's chosen image index (AI should use context to determine the correct image)
+          // Build staging params from AI response
+          let stagingParams = {
+            roomType: stagingRequest.roomType || 'Other',
+            furnitureStyle: 'custom', // Always use custom
+            additionalPrompt: stagingRequest.additionalPrompt || '',
+            removeFurniture: stagingRequest.removeFurniture || false,
+            usePreviousImage: stagingRequest.usePreviousImage !== undefined ? stagingRequest.usePreviousImage : false,
+            furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null
+          };
+          
+          // Fallback: If user mentions "original", "first", or "initial" image but AI didn't set usePreviousImage correctly
+          if (!currentMessageHasImage) {
+            const messageLower = message.toLowerCase();
+            const hasOriginalKeywords = messageLower.includes('original') || 
+                                        messageLower.includes('first image') || 
+                                        messageLower.includes('initial image') ||
+                                        messageLower.includes('go back to') ||
+                                        messageLower.includes('refer back to');
+            
+            if (hasOriginalKeywords && (stagingParams.usePreviousImage === false || stagingParams.usePreviousImage === null)) {
+              // Find the original (first) user-uploaded image
+              const originalImageIndex = getOriginalImageIndex(conversationHistory);
+              if (originalImageIndex !== null) {
+                console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
+                stagingParams.usePreviousImage = originalImageIndex;
+              } else {
+                // If no original found, use most recent (index 0)
+                console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
+                stagingParams.usePreviousImage = 0;
+              }
+            }
+          }
+          
+          if (stagingParams) {
+            try {
+            let imageBuffer = null;
+            let imageSource = '';
+            
+            // Determine which image to use
+            if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
+            // AI requested a previous image
+            const imageIndex = typeof stagingParams.usePreviousImage === 'number' ? stagingParams.usePreviousImage : 0;
+            
+            // Use the AI's chosen image index (AI should use context to determine the correct image)
             // Debug: Log conversation history structure
             console.log(`[Staging] Looking for image at index ${imageIndex}`);
             console.log(`[Staging] Conversation history length: ${conversationHistory.length}`);
@@ -3044,12 +3213,12 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
               }
             }
           } else if (firstImageFile) {
-          // Use current message's image
-          imageBuffer = firstImageFile.buffer;
-          imageSource = 'current message';
-          console.log(`[Staging] Using image from current message`);
-        }
-        
+            // Use current message's image
+            imageBuffer = firstImageFile.buffer;
+            imageSource = 'current message';
+            console.log(`[Staging] Using image from current message`);
+          }
+          
           // Retrieve furniture image if specified
           let furnitureImageBuffer = null;
           if (stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
@@ -3072,34 +3241,55 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
           
           if (imageBuffer) {
             const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer);
-            stagingResult = {
-              stagedImage: stagedImage,
-              params: stagingParams
-            };
-            console.log(`[Staging] Successfully processed staging for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+            if (stagedImage) {
+              stagingResults.push({
+                stagedImage: stagedImage,
+                params: stagingParams
+              });
+              console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+            }
           } else {
-            console.log(`[Staging] No image found for staging`);
+            console.log(`[Staging] No image found for staging ${i + 1}`);
           }
         } catch (error) {
-          console.error('Error processing staging:', error);
-          // Continue with normal chat if staging fails
+          console.error(`Error processing staging ${i + 1}:`, error);
+          // Continue with other staging requests if one fails
+        }
+          }
         }
       }
     }
 
-    // Process image generation request from AI response
-    let generatedImage = null;
+    // Process image generation request(s) from AI response (supports single or array)
+    let generatedImages = [];
     
-    if (generateRequestFromAI && generateRequestFromAI.shouldGenerate && generateRequestFromAI.prompt) {
-      console.log(`[Image Generation] Processing generation request from AI:`, generateRequestFromAI);
+    if (generateRequestFromAI) {
+      // Normalize to array (max 3)
+      const generateRequests = Array.isArray(generateRequestFromAI) 
+        ? generateRequestFromAI.slice(0, 3).filter(g => g.shouldGenerate && g.prompt)
+        : (generateRequestFromAI.shouldGenerate && generateRequestFromAI.prompt ? [generateRequestFromAI] : []);
       
-      try {
-        generatedImage = await processImageGeneration(generateRequestFromAI.prompt, req);
-        console.log(`[Image Generation] Successfully generated image`);
-      } catch (error) {
-        console.error(`[Image Generation] Error generating image:`, error);
-        // Don't fail the entire request, just log the error
-        text = text + '\n\nSorry, I encountered an error while generating the image. Please try again.';
+      if (generateRequests.length > 0) {
+        console.log(`[Image Generation] Processing ${generateRequests.length} generation request(s) from AI`);
+        
+        for (let i = 0; i < generateRequests.length; i++) {
+          const genRequest = generateRequests[i];
+          try {
+            console.log(`[Image Generation] Processing generation request ${i + 1}/${generateRequests.length}:`, genRequest.prompt.substring(0, 100) + '...');
+            const generatedImage = await processImageGeneration(genRequest.prompt, req);
+            if (generatedImage) {
+              generatedImages.push(generatedImage);
+              console.log(`[Image Generation] Successfully generated image ${i + 1}/${generateRequests.length}`);
+            }
+          } catch (error) {
+            console.error(`[Image Generation] Error generating image ${i + 1}:`, error);
+            // Continue with other images if one fails
+          }
+        }
+        
+        if (generateRequests.length > 0 && generatedImages.length === 0) {
+          text = text + '\n\nSorry, I encountered an error while generating the images. Please try again.';
+        }
       }
     }
 
@@ -3158,15 +3348,15 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
               ...safeMessages.slice(1), // Skip the original system message, keep the rest
               {
                 role: 'user',
-              content: [
-                { type: 'text', text: message || 'Please analyze this image.' },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: await downscaleImageForGPT(requestedImage.url)
+                content: [
+                  { type: 'text', text: message || 'Please analyze this image.' },
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: await downscaleImageForGPT(requestedImage.url)
+                    }
                   }
-                }
-              ]
+                ]
               }
             ];
             
@@ -3206,20 +3396,35 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       }
     });
     
-    // Return JSON response with text, memory actions, staging result, generated image, requested image, recalled image, and annotations if available
+    // Return JSON response with text, memory actions, staging result(s), generated image(s), requested image, recalled image, and annotations if available
     const response = { 
       response: text,
       files: fileInfo,
       memories: memoryActions
     };
     
-    if (stagingResult) {
-      response.stagedImage = stagingResult.stagedImage;
-      response.stagingParams = stagingResult.params;
+    // Handle multiple staging results
+    if (stagingResults.length > 0) {
+      if (stagingResults.length === 1) {
+        // Single result - maintain backward compatibility
+        response.stagedImage = stagingResults[0].stagedImage;
+        response.stagingParams = stagingResults[0].params;
+      } else {
+        // Multiple results - return as array
+        response.stagedImages = stagingResults.map(r => r.stagedImage);
+        response.stagingParams = stagingResults.map(r => r.params);
+      }
     }
     
-    if (generatedImage) {
-      response.generatedImage = generatedImage;
+    // Handle multiple generated images
+    if (generatedImages.length > 0) {
+      if (generatedImages.length === 1) {
+        // Single result - maintain backward compatibility
+        response.generatedImage = generatedImages[0];
+      } else {
+        // Multiple results - return as array
+        response.generatedImages = generatedImages;
+      }
     }
     
     if (requestedImageForDisplay) {
