@@ -76,7 +76,7 @@
         display: inline-block;
         background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #5c1a1a 100%);
         border-radius: 6px;
-        padding: 2px 8px;
+        padding: 1px 8px;
         margin-right: 6px;
         box-shadow: 0 2px 4px rgba(153, 27, 27, 0.4);
       }
@@ -116,6 +116,12 @@
         flex-shrink: 0;
         position: relative;
         overflow: hidden;
+      }
+      
+      .chat-input-container {
+        max-width: 900px;
+        margin: 0 auto;
+        width: 100%;
       }
       
       .chat-messages {
@@ -232,7 +238,7 @@
       .message-content {
         padding: 12px 16px;
         border-radius: 12px;
-        max-width: 100%;
+        max-width: min(80%, 800px);
         word-wrap: break-word;
         overflow-wrap: break-word;
         min-width: 0;
@@ -300,20 +306,24 @@
       .chat-input-container {
         display: flex;
         flex-direction: column;
-        background: rgba(255, 255, 255, 0.4);
-        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
         backdrop-filter: blur(10px);
-        border: 1px solid var(--border);
-        padding: 12px;
+        border: 1px solid rgba(37, 99, 235, 0.2);
+        padding: 8px 16px 12px 16px;
         min-width: 0;
         box-sizing: border-box;
         flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        max-width: 900px;
+        margin: 0 auto;
+        width: 100%;
       }
       
       .file-preview-container {
         display: none;
         padding: 8px 0;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid rgba(37, 99, 235, 0.2);
         margin-bottom: 8px;
       }
       
@@ -332,12 +342,13 @@
         align-items: center;
         gap: 8px;
         padding: 6px 10px;
-        background: rgba(0, 0, 0, 0.05);
+        background: rgba(37, 99, 235, 0.1);
         border-radius: 6px;
         font-size: 14px;
         max-width: 100%;
         min-width: 0;
         box-sizing: border-box;
+        color: #1e3a8a;
       }
       
       .file-preview-item img {
@@ -361,7 +372,7 @@
       
       .file-preview-item .file-size {
         font-size: 12px;
-        color: #666;
+        color: #6b7280;
       }
       
       .file-preview-item .file-remove {
@@ -382,46 +393,64 @@
       
       .chat-input-row {
         display: flex;
-        align-items: center;
-        gap: 12px;
-        height: 48px;
+        align-items: flex-end;
+        gap: 8px;
         min-width: 0;
         width: 100%;
+        position: relative;
+      }
+      
+      .input-bottom-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: absolute;
+        bottom: 0;
+        left: 2px;
+        padding-bottom: 4px;
+        z-index: 10;
+        pointer-events: auto;
       }
       
       .reload-btn {
-        padding: 12px;
-        background: #2563eb;
-        color: white;
+        padding: 8px;
+        background: transparent;
+        color: #2563eb;
         border: none;
         border-radius: 8px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.2s;
-        height: 48px;
-        width: 48px;
+        transition: background 0.2s, color 0.2s;
+        height: 36px;
+        width: 36px;
         flex-shrink: 0;
-        align-self: center;
-        margin-right: 4px;
+        position: relative;
+        z-index: 11;
+        pointer-events: auto;
       }
       
       .reload-btn img {
-        filter: brightness(0) invert(1);
-        width: 24px !important;
-        height: 24px !important;
+        filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(99%) contrast(96%);
+        width: 20px !important;
+        height: 20px !important;
         object-fit: contain;
+        transition: filter 0.2s;
       }
       
       .reload-btn:hover {
-        background: #1d4ed8;
+        background: rgba(37, 99, 235, 0.1);
+      }
+      
+      .reload-btn:hover img {
+        filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(110%) contrast(96%);
       }
       
       .file-upload-btn {
-        padding: 12px;
-        background: #2563eb;
-        color: white;
+        padding: 8px;
+        background: transparent;
+        color: #2563eb;
         border: none;
         border-radius: 8px;
         cursor: pointer;
@@ -429,21 +458,28 @@
         align-items: center;
         justify-content: center;
         transition: background 0.2s;
-        height: 48px;
-        width: 48px;
+        height: 36px;
+        width: 36px;
         flex-shrink: 0;
-        align-self: center;
+        position: relative;
+        z-index: 11;
+        pointer-events: auto;
       }
       
       .file-upload-btn img {
-        filter: brightness(0) invert(1);
-        width: 24px !important;
-        height: 24px !important;
+        filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(99%) contrast(96%);
+        width: 20px !important;
+        height: 20px !important;
         object-fit: contain;
+        transition: filter 0.2s;
       }
       
       .file-upload-btn:hover {
-        background: #1d4ed8;
+        background: rgba(37, 99, 235, 0.1);
+      }
+      
+      .file-upload-btn:hover img {
+        filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(110%) contrast(96%);
       }
       
       .file-upload-btn input {
@@ -455,29 +491,47 @@
         position: relative;
         display: flex;
         align-items: center;
+        margin-left: 0;
+        margin-bottom: 40px;
+        margin-top: -5px;
+      }
+      
+      .chat-input-wrapper::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 56px;
+        height: 40px;
+        z-index: 5;
+        pointer-events: none;
       }
       
       .chat-input {
         width: 100%;
-        padding: 12px 16px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
+        padding: 12px 16px 12px 8px;
+        border: none;
+        border-radius: 0;
         font-size: 16px;
         font-family: inherit;
         resize: none;
-        height: 48px;
-        background: white;
+        min-height: 48px;
+        max-height: 50px;
+        background: transparent;
         color: #1e3a8a;
         line-height: 1.5;
         box-sizing: border-box;
-        overflow-y: hidden;
+        overflow-y: auto;
         overflow-x: hidden;
         margin: 0;
       }
       
+      .chat-input::placeholder {
+        color: #6b7280;
+      }
+      
       .chat-input:focus {
         outline: none;
-        border-color: #2563eb;
       }
       
       .chat-input.multi-line {
@@ -485,27 +539,164 @@
       }
       
       .send-btn {
-        padding: 12px 24px;
-        background: #2563eb;
-        color: white;
+        padding: 8px;
+        background: transparent;
         border: none;
         border-radius: 8px;
         cursor: pointer;
-        font-weight: 600;
         transition: background 0.2s;
-        white-space: nowrap;
-        height: 48px;
+        height: 64px;
+        width: 64px;
         flex-shrink: 0;
-        align-self: center;
+        position: absolute;
+        bottom: 25px;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .send-btn img {
+        width: 24px !important;
+        height: 24px !important;
+        object-fit: contain;
+        transition: filter 0.2s;
+      }
+      
+      .send-btn:not(:disabled) img {
+        filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(99%) contrast(96%);
       }
       
       .send-btn:hover:not(:disabled) {
-        background: #1d4ed8;
+        background: rgba(37, 99, 235, 0.1);
+      }
+      
+      .send-btn:hover:not(:disabled) img {
+        filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(110%) contrast(96%);
       }
       
       .send-btn:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+      }
+      
+      .send-btn:disabled img {
+        filter: brightness(0) invert(0.4);
+      }
+      
+      .send-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        flex-shrink: 0;
+        position: relative;
+      }
+      
+      .model-selector {
+        position: relative;
+      }
+      
+      .model-selector-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+        color: #1e3a8a;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      
+      .model-selector-btn:hover {
+        background: rgba(37, 99, 235, 0.1);
+      }
+      
+      .model-selector-text {
+        color: #1e3a8a;
+        font-weight: bold;
+        font-family: inherit;
+      }
+      
+      .model-selector-chevron {
+        color: #1e3a8a;
+        transition: transform 0.2s;
+      }
+      
+      .model-selector.open .model-selector-chevron {
+        transform: rotate(180deg);
+      }
+      
+      .model-dropdown {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.15);
+        min-width: 200px;
+        padding: 8px;
+        display: none;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+      }
+      
+      .model-selector.open .model-dropdown {
+        display: block;
+      }
+      
+      .model-dropdown-header {
+        padding: 12px 16px 8px 16px;
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .model-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      
+      .model-option:hover {
+        background: rgba(37, 99, 235, 0.1);
+      }
+      
+      .model-option-content {
+        flex: 1;
+      }
+      
+      .model-option-name {
+        color: #1e3a8a;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      
+      .model-option-description {
+        color: #6b7280;
+        font-size: 12px;
+      }
+      
+      .model-badge {
+        background: #2563eb;
+        color: white;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 10px;
+        margin-left: 12px;
       }
       
       .typing-indicator {
@@ -767,14 +958,16 @@
             </div>
             
             <div class="chat-input-row">
-              <button class="reload-btn" id="reload-btn" title="Reload chat">
-                <img src="media-webp/Reload.webp" alt="Reload chat">
-              </button>
-              
-              <label class="file-upload-btn" data-lang-attr="pdf.uploadFile|title" title="Upload file">
-                <img src="media-webp/file.webp" alt="Upload file">
-                <input type="file" id="file-input" multiple accept="image/*,.pdf,.txt,.doc,.docx,.jpg,.jpeg">
-              </label>
+              <div class="input-bottom-controls">
+                <label class="file-upload-btn" data-lang-attr="pdf.uploadFile|title" title="Upload file">
+                  <img src="media-webp/file.webp" alt="Upload file">
+                  <input type="file" id="file-input" multiple accept="image/*,.pdf,.txt,.doc,.docx,.jpg,.jpeg">
+                </label>
+                
+                <button class="reload-btn" id="reload-btn" title="Reload chat">
+                  <img src="media-webp/Reload.webp" alt="Reload chat">
+                </button>
+              </div>
               
               <div class="chat-input-wrapper">
                 <textarea 
@@ -787,7 +980,34 @@
                 ></textarea>
               </div>
               
-              <button id="send-btn" class="send-btn" data-lang="pdf.sendButton">Send</button>
+              <div class="send-controls">
+                <button id="send-btn" class="send-btn" title="Send message">
+                  <img src="media-webp/send.webp" alt="Send">
+                </button>
+                <div class="model-selector">
+                  <button class="model-selector-btn" id="model-selector-btn">
+                    <span class="model-selector-text">Fast</span>
+                    <svg class="model-selector-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <div class="model-dropdown" id="model-dropdown">
+                    <div class="model-dropdown-header">Choose your model</div>
+                    <div class="model-option" data-model="fast">
+                      <div class="model-option-content">
+                        <div class="model-option-name">Fast</div>
+                        <div class="model-option-description">Standard quality, faster</div>
+                      </div>
+                    </div>
+                    <div class="model-option" data-model="pro">
+                      <div class="model-option-content">
+                        <div class="model-option-name">Pro</div>
+                        <div class="model-option-description">Higher quality, slower</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -816,7 +1036,7 @@
           }
           
           // Show typing indicator while loading welcome message
-          const typingId = showTypingIndicator();
+          const typingId = showTypingIndicator('welcome');
           
           // Generate a simple user ID (you can enhance this with actual user identification)
           const userId = localStorage.getItem('userId') || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -1031,7 +1251,10 @@
       chatInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
-          sendMessage();
+          // Only send if not currently processing and send button is enabled
+          if (!isProcessing && !sendBtn.disabled) {
+            sendMessage();
+          }
         }
       });
       
@@ -1268,6 +1491,10 @@
               formData.append('userId', userId);
             }
             
+            // Add model to formData
+            const selectedModel = window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini';
+            formData.append('model', selectedModel);
+            
             fetch('/api/chat-upload', {
               method: 'POST',
               body: formData,
@@ -1333,11 +1560,14 @@
                   
                   // Store staged image(s) in conversation history
                   const contentItems = [{ type: 'text', text: data.response }];
-                  stagedImages.forEach((stagedImage) => {
+                  stagedImages.forEach((stagedImage, index) => {
+                    const annotationKey = stagedImages.length === 1 ? 'staged_0' : `staged_${index}`;
+                    const annotation = data.stagedImageAnnotations && data.stagedImageAnnotations[annotationKey] ? data.stagedImageAnnotations[annotationKey] : null;
                     contentItems.push({ 
                       type: 'image_url', 
                       image_url: { url: stagedImage },
-                      isStaged: true
+                      isStaged: true,
+                      _annotation: annotation // Store annotation for backend context building
                     });
                   });
                   
@@ -1377,11 +1607,14 @@
                   
                   // Store generated image(s) in conversation history so they can be accessed later
                   const contentItems = [{ type: 'text', text: data.response }];
-                  generatedImages.forEach((generatedImage) => {
+                  generatedImages.forEach((generatedImage, index) => {
+                    const annotationKey = generatedImages.length === 1 ? 'generated_0' : `generated_${index}`;
+                    const annotation = data.generatedImageAnnotations && data.generatedImageAnnotations[annotationKey] ? data.generatedImageAnnotations[annotationKey] : null;
                     contentItems.push({ 
                       type: 'image_url', 
                       image_url: { url: generatedImage },
-                      isGenerated: true // Mark as generated image for backend
+                      isGenerated: true, // Mark as generated image for backend
+                      _annotation: annotation // Store annotation for backend context building
                     });
                   });
                   
@@ -1398,6 +1631,46 @@
                   
                   if (!isDuplicate) {
                     conversationHistory.push(assistantMessage);
+                  }
+                } else if (data.cadImage) {
+                  // If CAD processing was done, display the CAD image
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the CAD image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const cadImageDiv = document.createElement('div');
+                    cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                    
+                    const imageContainer = createAIImageWithDownload(data.cadImage, '3D Render from Blueprint', 'cad-render');
+                    cadImageDiv.appendChild(imageContainer);
+                    
+                    lastMessage.appendChild(cadImageDiv);
+                  }
+                  
+                  // Store CAD image in conversation history
+                  const cadAnnotation = data.cadImageAnnotation || null;
+                  const cadAssistantMessage = { 
+                    role: 'assistant', 
+                    content: [
+                      { type: 'text', text: data.response },
+                      { 
+                        type: 'image_url', 
+                        image_url: { url: data.cadImage },
+                        isGenerated: true, // Mark as generated image for backend
+                        _annotation: cadAnnotation // Store annotation for backend context building
+                      }
+                    ]
+                  };
+                  
+                  const lastMsg2 = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate2 = lastMsg2 && 
+                    lastMsg2.role === 'assistant' && 
+                    JSON.stringify(lastMsg2.content) === JSON.stringify(cadAssistantMessage.content);
+                  
+                  if (!isDuplicate2) {
+                    conversationHistory.push(cadAssistantMessage);
                   }
                 } else if (data.recalledImage) {
                   // If an image was recalled for display, show it
@@ -1562,7 +1835,8 @@
               },
               body: JSON.stringify({
                 messages: conversationHistory,
-                userId: userId
+                userId: userId,
+                model: window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini'
               }),
             })
             .then(response => response.json())
@@ -1662,6 +1936,46 @@
                   
                   if (!isDuplicate) {
                     conversationHistory.push(assistantMessage);
+                  }
+                } else if (data.cadImage) {
+                  // If CAD processing was done, display the CAD image
+                  // Add the AI response text first
+                  addMessage('assistant', data.response);
+                  
+                  // Then add the CAD image to the last assistant message
+                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                  if (lastMessage) {
+                    const cadImageDiv = document.createElement('div');
+                    cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                    
+                    const imageContainer = createAIImageWithDownload(data.cadImage, '3D Render from Blueprint', 'cad-render');
+                    cadImageDiv.appendChild(imageContainer);
+                    
+                    lastMessage.appendChild(cadImageDiv);
+                  }
+                  
+                  // Store CAD image in conversation history
+                  const cadAnnotation2 = data.cadImageAnnotation || null;
+                  const cadAssistantMessage = { 
+                    role: 'assistant', 
+                    content: [
+                      { type: 'text', text: data.response },
+                      { 
+                        type: 'image_url', 
+                        image_url: { url: data.cadImage },
+                        isGenerated: true,
+                        _annotation: cadAnnotation2 // Store annotation for backend context building
+                      }
+                    ]
+                  };
+                  
+                  const lastMsg2 = conversationHistory[conversationHistory.length - 1];
+                  const isDuplicate2 = lastMsg2 && 
+                    lastMsg2.role === 'assistant' && 
+                    JSON.stringify(lastMsg2.content) === JSON.stringify(cadAssistantMessage.content);
+                  
+                  if (!isDuplicate2) {
+                    conversationHistory.push(cadAssistantMessage);
                   }
                 } else if (data.requestedImage) {
                   // If an image was requested for display, show it
@@ -1854,8 +2168,8 @@
             'bringing your vision to life...',
             'crafting the details...',
             'rendering...',
-            'almost ready...',
-            'finalizing...',
+            'almost there...',
+            'finalizing details...',
             'polishing the result...',
             'just a moment...'
           ];
@@ -1882,6 +2196,17 @@
             'studying the layout...',
             'almost done...'
           ];
+        } else if (messageType === 'welcome') {
+          messages = [
+            'preparing your welcome...',
+            'getting ready for you...',
+            'setting things up...',
+            'preparing a warm welcome...',
+            'getting everything ready for you...',
+            'almost ready to greet you...',
+            'setting up your space...',
+            'preparing something special...',
+          ];
         } else {
           messages = [
             'thinking...',
@@ -1895,12 +2220,17 @@
           ];
         }
         
-        let currentIndex = 0;
+        // Start with a random message
+        let currentIndex = Math.floor(Math.random() * messages.length);
         typing.textContent = messages[currentIndex];
         
-        // Rotate messages every 1.5 seconds
+        // Rotate messages randomly every 1.5 seconds (avoiding immediate repetition)
         const messageInterval = setInterval(() => {
-          currentIndex = (currentIndex + 1) % messages.length;
+          let nextIndex;
+          do {
+            nextIndex = Math.floor(Math.random() * messages.length);
+          } while (nextIndex === currentIndex && messages.length > 1);
+          currentIndex = nextIndex;
           typing.textContent = messages[currentIndex];
         }, 1500);
         
@@ -2022,6 +2352,74 @@
     </div>
     
     <script>
+      // Model selector dropdown functionality
+      (function initModelSelector() {
+        const modelSelector = document.querySelector('.model-selector');
+        const modelSelectorBtn = document.getElementById('model-selector-btn');
+        const modelDropdown = document.getElementById('model-dropdown');
+        const modelOptions = document.querySelectorAll('.model-option');
+        
+        // Get saved model from localStorage or default to "Fast"
+        function getSelectedModel() {
+          return localStorage.getItem('selectedModel') || 'Fast';
+        }
+        
+        // Save model to localStorage
+        function setSelectedModel(modelName) {
+          localStorage.setItem('selectedModel', modelName);
+        }
+        
+        // Map model display name to API model name
+        function getModelApiName(displayName) {
+          const modelMap = {
+            'Fast': 'gpt-4o-mini',
+            'Pro': 'gpt-5-mini'
+          };
+          return modelMap[displayName] || 'gpt-4o-mini';
+        }
+        
+        // Initialize display from localStorage
+        const savedModel = getSelectedModel();
+        const modelText = modelSelectorBtn?.querySelector('.model-selector-text');
+        if (modelText) {
+          modelText.textContent = savedModel;
+        }
+        
+        // Expose getModelApiName for use in fetch calls
+        window.getSelectedModelApiName = function() {
+          return getModelApiName(getSelectedModel());
+        };
+        
+        if (modelSelectorBtn && modelDropdown) {
+          // Toggle dropdown on button click
+          modelSelectorBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            modelSelector.classList.toggle('open');
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', (e) => {
+            if (!modelSelector.contains(e.target)) {
+              modelSelector.classList.remove('open');
+            }
+          });
+          
+          // Handle model option selection
+          modelOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const modelName = option.querySelector('.model-option-name').textContent;
+              const modelText = modelSelectorBtn.querySelector('.model-selector-text');
+              if (modelText) {
+                modelText.textContent = modelName;
+              }
+              setSelectedModel(modelName);
+              modelSelector.classList.remove('open');
+            });
+          });
+        }
+      })();
+      
       // Initialize modal event listeners (run immediately since script is at end of body)
       (function initImageModal() {
         const modal = document.getElementById('image-modal');

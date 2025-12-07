@@ -11,6 +11,7 @@ import OpenAI from 'openai';
 import sharp from "sharp";
 import cors from 'cors';
 import { promptMatrix } from './promptMatrix.js';
+import { blueprintTo3D } from './cad-handling.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -330,6 +331,25 @@ function saveMemories(userId, memories) {
   }
 }
 
+// Helper function to get appropriate temperature for a model
+// gpt-5-mini only supports temperature 1 (default), other models can use 0.7
+function getTemperatureForModel(model) {
+  if (model && model.includes('gpt-5')) {
+    return 1; // gpt-5-mini only supports default temperature (1)
+  }
+  return 0.7; // Default for other models
+}
+
+// Helper function to map GPT model selection to Gemini image model
+// Fast (gpt-4o-mini) → gemini-2.5-flash-image-preview
+// Pro (gpt-5-mini) → gemini-3-pro-image-preview
+function getGeminiImageModel(gptModel) {
+  if (gptModel && gptModel.includes('gpt-5')) {
+    return 'gemini-3-pro-image-preview'; // Pro model
+  }
+  return 'gemini-2.5-flash-image-preview'; // Fast model (default)
+}
+
 function getUserIdentifier(req) {
   // Try to get userId from request body
   if (req.body && req.body.userId) {
@@ -347,7 +367,7 @@ function getUserIdentifier(req) {
   return `user_${ip.replace(/\./g, '_').replace(/:/g, '_')}`;
 }
 
-async function evaluateMemoryActions(userMessage, aiResponse, currentMemories) {
+async function evaluateMemoryActions(userMessage, aiResponse, currentMemories, model = 'gpt-4o-mini') {
   try {
     if (!openai) {
       console.error('OpenAI not initialized, cannot evaluate memory actions');
@@ -415,7 +435,7 @@ Be very selective. Only store truly important LONG-TERM information that will be
         { role: "user", content: prompt }
       ],
       temperature: 0.3,
-      max_tokens: 500,
+      max_tokens: 700,
       response_format: { type: "json_object" }
     });
     
@@ -523,7 +543,7 @@ async function downscaleImage(imageBuffer) {
 
 // Downscale base64 image data URL for GPT API (max 2048x2048, recommended 1024x1024)
 // Annotate an image with a short description using GPT
-async function annotateImage(imageDataUrl) {
+async function annotateImage(imageDataUrl, isCAD = false, detectBlueprint = false) {
   try {
     if (!openai) {
       console.log('[Image Annotation] OpenAI not initialized, skipping annotation');
@@ -533,22 +553,47 @@ async function annotateImage(imageDataUrl) {
     // Downscale image first to save tokens
     const downscaledUrl = await downscaleImageForGPT(imageDataUrl);
     
+    // Build prompt based on whether we need to detect blueprint
+    let promptText = 'Briefly describe this image in 5-10 words. Then, on a new line, answer: "CAD: True" if this is a blueprint, floor plan, or architectural drawing (top-down 2D plan view), or "CAD: False" if it is a normal room photo or 3D interior view.';
+    if (isCAD) {
+      // For explicitly CAD images, just get description and mark as CAD: True
+      promptText = 'Briefly describe this image in 5-10 words. Then, on a new line, answer: "CAD: True".';
+    } else if (!detectBlueprint) {
+      // For staged/generated images that are not CAD, just get description and mark as CAD: False
+      promptText = 'Briefly describe this image in 5-10 words. Then, on a new line, answer: "CAD: False".';
+    }
+    
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'Briefly describe this image in 5-10 words.' },
+            { type: 'text', text: promptText },
             { type: 'image_url', image_url: { url: downscaledUrl } }
           ]
         }
       ],
       temperature: 0.3,
-      max_tokens: 30
+      max_tokens: 50
     });
     
-    const annotation = completion.choices[0].message.content.trim();
+    let annotation = completion.choices[0].message.content.trim();
+    
+    // Extract CAD classification from the response
+    const cadMatch = annotation.match(/CAD:\s*(True|False)/i);
+    if (cadMatch) {
+      // Remove the CAD: True/False line from the annotation text
+      annotation = annotation.replace(/\n?\s*CAD:\s*(True|False)\s*\.?$/i, '').trim();
+      // Add CAD classification back in standardized format
+      const cadValue = cadMatch[1];
+      annotation += ` CAD: ${cadValue}`;
+    } else {
+      // If API didn't return CAD classification, use the provided isCAD value
+      annotation += ` CAD: ${isCAD ? 'True' : 'False'}`;
+      console.log(`[Image Annotation] Warning: API did not return CAD classification, using default: ${isCAD ? 'True' : 'False'}`);
+    }
+    
     console.log(`[Image Annotation] Generated annotation: "${annotation}"`);
     return annotation;
   } catch (error) {
@@ -749,6 +794,11 @@ function deduplicateMessages(messages) {
   const deduplicated = [];
   
   for (const msg of messages) {
+    // Skip invalid messages
+    if (!msg || !msg.role) {
+      continue;
+    }
+    
     // Create a unique key based on role and content
     let key;
     if (Array.isArray(msg.content)) {
@@ -757,18 +807,41 @@ function deduplicateMessages(messages) {
         if (item.type === 'image_url' && item.image_url && item.image_url.url) {
           // For images, use a placeholder to avoid comparing base64 data
           return { type: 'image_url', image_url: { url: '[IMAGE_DATA]' } };
+        } else if (item.type === 'text') {
+          // Normalize text content (trim whitespace)
+          return { type: 'text', text: (item.text || '').trim() };
         }
         return item;
       });
+      // Sort array items to ensure consistent ordering
+      simplifiedContent.sort((a, b) => {
+        if (a.type !== b.type) return a.type.localeCompare(b.type);
+        if (a.type === 'text' && b.type === 'text') {
+          return (a.text || '').localeCompare(b.text || '');
+        }
+        return 0;
+      });
       key = `${msg.role}:${JSON.stringify(simplifiedContent)}`;
+    } else if (typeof msg.content === 'string') {
+      // Normalize text content (trim whitespace) for consistent comparison
+      key = `${msg.role}:${msg.content.trim()}`;
     } else {
-      key = `${msg.role}:${msg.content}`;
+      // Fallback for other content types
+      key = `${msg.role}:${JSON.stringify(msg.content)}`;
     }
     
     // Only add if we haven't seen this exact message before
     if (!seen.has(key)) {
       seen.add(key);
       deduplicated.push(msg);
+    } else {
+      // Log when we skip a duplicate
+      if (DEBUG_MODE) {
+        const contentPreview = Array.isArray(msg.content) 
+          ? `[${msg.content.length} items]` 
+          : (typeof msg.content === 'string' ? msg.content.substring(0, 50) : 'non-string');
+        console.log(`[Deduplication] Skipping duplicate ${msg.role} message: ${contentPreview}...`);
+      }
     }
   }
   
@@ -885,8 +958,10 @@ function getImageFromHistory(messages, imageIndex = 0) {
         imageMessages.push({
           url: imageItem.image_url.url,
           isStaged: false,
+          isGenerated: false,
           messageIndex: i,
-          filename: imageItem.filename || imageItem.originalname || null
+          filename: imageItem.filename || imageItem.originalname || null,
+          annotation: imageItem._annotation || imageItem.annotation || null
         });
         console.log(`[getImageFromHistory] Found user-uploaded image at message index ${i}, image ${j + 1}/${imageItems.length}, filename: ${imageItem.filename || imageItem.originalname || 'unknown'}, total images found: ${imageMessages.length}`);
       }
@@ -903,10 +978,11 @@ function getImageFromHistory(messages, imageIndex = 0) {
         const imageItem = imageItems[j];
         imageMessages.push({
           url: imageItem.image_url.url,
-          isStaged: item.isStaged || false,
-          isGenerated: item.isGenerated || false,
+          isStaged: imageItem.isStaged || false,
+          isGenerated: imageItem.isGenerated || false,
           messageIndex: i,
-          filename: imageItem.filename || imageItem.originalname || null
+          filename: imageItem.filename || imageItem.originalname || null,
+          annotation: imageItem._annotation || imageItem.annotation || null
         });
         const imageType = imageItem.isStaged ? 'staged' : 'generated';
         console.log(`[getImageFromHistory] Found ${imageType} image at message index ${i}, image ${j + 1}/${imageItems.length}, total images found: ${imageMessages.length}`);
@@ -928,6 +1004,144 @@ function getImageFromHistory(messages, imageIndex = 0) {
   }
   
   return null;
+}
+
+/**
+ * Builds image context with annotations for GPT system instructions
+ * Returns an object with imageContext string and imagesSentToGPT array
+ */
+function buildImageContext(messages) {
+  const imageMessages = [];
+  const imagesSentToGPT = []; // Separate list of images that were sent to GPT (for assistant messages)
+  
+  if (!Array.isArray(messages)) {
+    return { imageContext: '', imagesSentToGPT: [], originalImageIndex: null };
+  }
+  
+  // Collect ALL images in reverse chronological order (most recent first)
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg.role === 'user' && Array.isArray(msg.content)) {
+      // Get ALL images from this message
+      const imageItems = msg.content.filter(item => item.type === 'image_url' && item.image_url && item.image_url.url);
+      // Process images in reverse order within the message
+      for (let j = imageItems.length - 1; j >= 0; j--) {
+        const imageItem = imageItems[j];
+        const filename = imageItem.filename || imageItem.originalname || null;
+        const annotation = imageItem._annotation || imageItem.annotation || null;
+        imageMessages.push({ 
+          index: imageMessages.length, 
+          type: 'user-uploaded', 
+          messageIndex: i,
+          filename: filename,
+          annotation: annotation
+        });
+        // User-uploaded images are sent to GPT
+        imagesSentToGPT.push({
+          index: imagesSentToGPT.length,
+          type: 'user-uploaded',
+          filename: filename,
+          annotation: annotation
+        });
+      }
+    } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
+      // Get ALL staged and generated images from this message
+      const imageItems = msg.content.filter(item => 
+        item.type === 'image_url' && 
+        item.image_url && 
+        item.image_url.url && 
+        (item.isStaged || item.isGenerated)
+      );
+      // Process images in reverse order within the message
+      for (let j = imageItems.length - 1; j >= 0; j--) {
+        const imageItem = imageItems[j];
+        const filename = imageItem.filename || imageItem.originalname || null;
+        const imageType = imageItem.isStaged ? 'staged' : 'generated';
+        const annotation = imageItem._annotation || imageItem.annotation || null;
+        imageMessages.push({ 
+          index: imageMessages.length, 
+          type: imageType, 
+          messageIndex: i,
+          filename: filename,
+          annotation: annotation
+        });
+        // AI-generated images are also sent to GPT in future messages
+        imagesSentToGPT.push({
+          index: imagesSentToGPT.length,
+          type: imageType,
+          filename: filename,
+          annotation: annotation
+        });
+      }
+    }
+  }
+  
+  // Find the original (first) user-uploaded image
+  const userUploadedImages = imageMessages.filter(img => img.type === 'user-uploaded');
+  let originalImageIndex = null;
+  if (userUploadedImages.length > 0) {
+    originalImageIndex = userUploadedImages[userUploadedImages.length - 1].index;
+  }
+  
+  // Build image context string
+  let imageContext = '';
+  if (imageMessages.length > 0) {
+    imageContext = '\n\nAvailable images in conversation history (index 0 = most recent, higher index = older):\n';
+    imageMessages.forEach((img, idx) => {
+      let description = `${img.type} image`;
+      if (img.filename) {
+        description += ` (filename: ${img.filename})`;
+      }
+      if (img.annotation) {
+        // Parse CAD classification from annotation
+        const cadMatch = img.annotation.match(/CAD:\s*(True|False)/i);
+        const isCAD = cadMatch ? cadMatch[1].toLowerCase() === 'true' : false;
+        // Remove CAD classification from description for cleaner display, but show it separately
+        const annotationWithoutCAD = img.annotation.replace(/\s*CAD:\s*(True|False)/i, '').trim();
+        description += ` - ${annotationWithoutCAD}`;
+        description += ` [CAD: ${isCAD ? 'True' : 'False'}]`;
+      } else {
+        // If no annotation, default to False for CAD
+        description += ` [CAD: False]`;
+      }
+      if (idx === originalImageIndex) {
+        description += ' [ORIGINAL/FIRST USER-UPLOADED IMAGE]';
+      }
+      imageContext += `- Index ${idx}: ${description}\n`;
+    });
+    if (originalImageIndex !== null) {
+      imageContext += `\nIMPORTANT: The "original image" or "first image" is at index ${originalImageIndex}. When the user says "original image", "first image", "initial image", "go back to the original", or "refer back to the original image", use index ${originalImageIndex} in the staging request.`;
+    }
+    imageContext += `\nIMPORTANT: When multiple images are uploaded in the same message, they are indexed separately. Use the filename and annotation to identify which image the user is referring to (e.g., if user says "add this chair", look for an image with "chair" in the filename or annotation).`;
+    imageContext += `\nIMPORTANT: All images in the list above (user-uploaded, staged, generated, and CAD-staging renders) can be recalled using the recall function. Generated and staged images you created are included in this list and can be recalled by their index.`;
+    
+    // Add separate list of images sent to GPT
+    if (imagesSentToGPT.length > 0) {
+      imageContext += `\n\nImages sent to GPT in previous messages (for reference when building responses):\n`;
+      imagesSentToGPT.forEach((img, idx) => {
+        // Parse CAD classification from annotation
+        let cadStatus = 'False';
+        let annotationText = img.annotation || '';
+        if (img.annotation) {
+          const cadMatch = img.annotation.match(/CAD:\s*(True|False)/i);
+          cadStatus = cadMatch ? cadMatch[1] : 'False';
+          // Remove CAD classification from annotation text for cleaner display
+          annotationText = img.annotation.replace(/\s*CAD:\s*(True|False)/i, '').trim();
+        }
+        let description = `${img.type} image`;
+        if (img.filename) {
+          description += ` (filename: ${img.filename})`;
+        }
+        if (annotationText) {
+          description += ` - ${annotationText}`;
+        }
+        description += ` [CAD: ${cadStatus}]`;
+        imageContext += `- GPT Image ${idx}: ${description}\n`;
+      });
+    }
+  }
+  
+  return { imageContext, imagesSentToGPT, originalImageIndex };
 }
 
 /**
@@ -967,7 +1181,7 @@ function getOriginalImageIndex(messages) {
  * Evaluates if staging should be performed and if an old image should be used
  * Similar to evaluateMemoryActions, but for staging requests
  */
-async function evaluateStagingRequest(userMessage, aiResponse, hasCurrentImage, conversationHistory) {
+async function evaluateStagingRequest(userMessage, aiResponse, hasCurrentImage, conversationHistory, model = 'gpt-4o-mini') {
   try {
     if (!openai) {
       console.error('OpenAI not initialized, cannot evaluate staging request');
@@ -1121,16 +1335,17 @@ Extract the parameters from the user's message and the AI's response.`;
  * Generate an image from a text prompt using Gemini
  * This is separate from the staging system - pure text-to-image generation
  */
-async function processImageGeneration(prompt, req) {
+async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-flash-image-preview') {
   try {
     if (!genAI) {
       throw new Error('Gemini AI service not properly configured');
     }
     
     console.log(`[Image Generation] Generating image with prompt: "${prompt}"`);
+    console.log(`[Image Generation] Using Gemini model: ${geminiModel}`);
     
     // Use Gemini's image generation model (text-to-image, no input image needed)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-image-preview" });
+    const model = genAI.getGenerativeModel({ model: geminiModel });
     
     // For text-to-image generation, we only send the text prompt
     const generatePrompt = [
@@ -1161,7 +1376,7 @@ async function processImageGeneration(prompt, req) {
   }
 }
 
-async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer = null) {
+async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer = null, geminiModel = 'gemini-2.5-flash-image-preview') {
   try {
     if (!genAI) {
       throw new Error('AI service not properly configured');
@@ -1213,7 +1428,8 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       req
     );
     
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-image-preview" });
+    console.log(`[Staging] Using Gemini model: ${geminiModel}`);
+    const model = genAI.getGenerativeModel({ model: geminiModel });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     
@@ -1272,7 +1488,11 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '', removeFurniture = false, userRole = 'unknown', userReferralSource = 'unknown', userEmail = 'unknown' } = req.body;
+    const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '', removeFurniture = false, userRole = 'unknown', userReferralSource = 'unknown', userEmail = 'unknown', model: gptModel } = req.body;
+    
+    // Get model from request or default to gpt-4o-mini
+    const selectedModel = gptModel || 'gpt-4o-mini';
+    const geminiModel = getGeminiImageModel(selectedModel);
     
     const processedImageBuffer = await downscaleImage(req.file.buffer);
     const base64Image = processedImageBuffer.toString("base64");
@@ -1296,8 +1516,9 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
       },
     ];
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-image-preview" });
-    const result = await model.generateContent(prompt);
+    console.log(`[Image Processing] Using Gemini model: ${geminiModel}`);
+    const geminiModelInstance = genAI.getGenerativeModel({ model: geminiModel });
+    const result = await geminiModelInstance.generateContent(prompt);
     const response = await result.response;
 
     if (!response || !response.candidates || response.candidates.length === 0) {
@@ -1760,15 +1981,15 @@ The message should:
 
 Just return the message text, no additional formatting.`;
 
-        const completion = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: 'You are a friendly AI assistant for Stagify.ai. Generate brief, personalized welcome messages.' },
-            { role: 'user', content: prompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 150
-        });
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4.1-nano',
+      messages: [
+        { role: 'system', content: 'You are a friendly AI assistant for Stagify.ai. Generate brief, personalized welcome messages.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 150
+    });
         
         const personalizedMessage = completion.choices[0].message.content.trim();
         
@@ -1787,7 +2008,7 @@ Just return the message text, no additional formatting.`;
     } else {
       // First-time user - return generic welcome message
       return res.json({ 
-        message: 'Hello! I\'m Stagify AI Designer, your AI assistant for room staging and interior design. I can help you:\n\n• Stage rooms by uploading images and describing your desired style\n• Answer questions about interior design and home staging\n• Modify and refine staged room designs\n• Work with images, PDFs, and text files\n\nUpload an image of a room to get started, or ask me anything about interior design!',
+        message: 'Hello! I\'m Stagify AI Designer, your AI assistant for room staging and interior design. I can help you:\n• Stage rooms by uploading images and describing your desired style\n• Answer questions about interior design and home staging\n• Modify and refine staged room designs\n• Convert your top-down floorplans into 3D renders\n\nUpload an image of a room to get started, or ask me anything about interior design!',
         isReturning: false
       });
     }
@@ -1809,7 +2030,10 @@ app.post('/api/chat', async (req, res) => {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { messages } = req.body;
+    const { messages, model } = req.body;
+    
+    // Get model from request or default to gpt-4o-mini
+    const selectedModel = model || 'gpt-4o-mini';
     
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'Messages array is required' });
@@ -1818,7 +2042,22 @@ app.post('/api/chat', async (req, res) => {
     // Deduplicate messages to prevent double counting
     const deduplicatedMessages = deduplicateMessages(messages);
     if (deduplicatedMessages.length !== messages.length) {
-      console.log(`[Deduplication] Removed ${messages.length - deduplicatedMessages.length} duplicate message(s)`);
+      const removedCount = messages.length - deduplicatedMessages.length;
+      console.log(`[Deduplication] Removed ${removedCount} duplicate message(s) from ${messages.length} total messages`);
+      if (DEBUG_MODE) {
+        // Log which messages were duplicates
+        const seenKeys = new Set();
+        messages.forEach((msg, idx) => {
+          const key = Array.isArray(msg.content) 
+            ? `${msg.role}:${JSON.stringify(msg.content.map(item => item.type === 'text' ? item.text : item.type))}`
+            : `${msg.role}:${typeof msg.content === 'string' ? msg.content.trim() : 'non-string'}`;
+          if (seenKeys.has(key)) {
+            console.log(`[Deduplication] Duplicate found at index ${idx}: ${msg.role} message`);
+          } else {
+            seenKeys.add(key);
+          }
+        });
+      }
     }
     
     // Check message limit (20 user messages max)
@@ -1836,72 +2075,16 @@ app.post('/api/chat', async (req, res) => {
     // Load stored memories for this user
     let memories = loadMemories(userId);
     
-    // Build context about available images in history for staging
-    let imageContext = '';
-    let originalImageIndex = null;
-    if (deduplicatedMessages && Array.isArray(deduplicatedMessages)) {
-      const imageMessages = [];
-      // Collect ALL images in reverse chronological order (most recent first)
-      for (let i = deduplicatedMessages.length - 1; i >= 0; i--) {
-        const msg = deduplicatedMessages[i];
-        if (msg.role === 'user' && Array.isArray(msg.content)) {
-          // Get ALL images from this message, not just the first one
-          const imageItems = msg.content.filter(item => item.type === 'image_url');
-          // Process images in reverse order within the message (so first image in message = most recent)
-          for (let j = imageItems.length - 1; j >= 0; j--) {
-            const imageItem = imageItems[j];
-            const filename = imageItem.filename || imageItem.originalname || null;
-            imageMessages.push({ 
-              index: imageMessages.length, 
-              type: 'user-uploaded', 
-              messageIndex: i,
-              filename: filename
-            });
-          }
-        } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-          // Get ALL staged and generated images from this message
-          const imageItems = msg.content.filter(item => 
-            item.type === 'image_url' && 
-            (item.isStaged || item.isGenerated)
-          );
-          // Process images in reverse order within the message
-          for (let j = imageItems.length - 1; j >= 0; j--) {
-            const imageItem = imageItems[j];
-            const filename = imageItem.filename || imageItem.originalname || null;
-            const imageType = imageItem.isStaged ? 'staged' : 'generated';
-            imageMessages.push({ 
-              index: imageMessages.length, 
-              type: imageType, 
-              messageIndex: i,
-              filename: filename
-            });
-          }
-        }
-      }
-      
-      // Find the original (first) user-uploaded image
-      const userUploadedImages = imageMessages.filter(img => img.type === 'user-uploaded');
-      if (userUploadedImages.length > 0) {
-        originalImageIndex = userUploadedImages[userUploadedImages.length - 1].index;
-      }
-      
-      if (imageMessages.length > 0) {
-        imageContext = '\n\nAvailable images in conversation history (index 0 = most recent, higher index = older):\n';
-        imageMessages.forEach((img, idx) => {
-          let description = `${img.type} image`;
-          if (img.filename) {
-            description += ` (filename: ${img.filename})`;
-          }
-          if (idx === originalImageIndex) {
-            description += ' [ORIGINAL/FIRST USER-UPLOADED IMAGE]';
-          }
-          imageContext += `- Index ${idx}: ${description}\n`;
-        });
-        if (originalImageIndex !== null) {
-          imageContext += `\nIMPORTANT: The "original image" or "first image" is at index ${originalImageIndex}. When the user says "original image", "first image", "initial image", "go back to the original", or "refer back to the original image", use index ${originalImageIndex} in the staging request.`;
-        }
-        imageContext += `\nIMPORTANT: When multiple images are uploaded in the same message, they are indexed separately. Use the filename to identify which image the user is referring to (e.g., if user says "add this chair", look for an image with "chair" in the filename).`;
-      }
+    // Build context about available images in history with annotations
+    const { imageContext, imagesSentToGPT, originalImageIndex } = buildImageContext(deduplicatedMessages);
+    
+    // Log image context for debugging
+    if (imageContext) {
+      console.log('=== IMAGE CONTEXT SENT TO AI (CHAT) ===');
+      console.log(imageContext);
+      console.log('========================================');
+    } else {
+      console.log('[Image Context] No images in conversation history');
     }
     
     // Build system instruction with memories
@@ -1931,11 +2114,13 @@ app.post('/api/chat', async (req, res) => {
     systemInstruction += '\n- "memories": { "stores": ["memory description 1", ...], "forgets": ["memory ID 1", ...] } - Store or forget memories based on the conversation. To forget ALL memories, use "forgets": ["all"]';
     systemInstruction += '\n- "staging": { "shouldStage": true/false, "roomType": "Living room"|"Bedroom"|"Kitchen"|"Bathroom"|"Dining room"|"Office"|"Other", "additionalPrompt": "detailed staging description", "removeFurniture": true/false, "usePreviousImage": false|0|1|2|..., "furnitureImageIndex": null|0|1|2|... } OR "staging": [ { "shouldStage": true, ... }, { "shouldStage": true, ... }, ... ] - Request staging if the user wants to stage/modify a room image (ONLY use staging when the user has uploaded or is referring to an existing room image to modify). If the user wants to add a specific piece of furniture from a previous message, set "furnitureImageIndex" to the index of that furniture image (0 = most recent image, 1 = second most recent, etc.). You can provide MULTIPLE staging requests (up to 3) in an array if the user asks for multiple variations (e.g., "stage this room in 3 different themes"). Each staging request in the array will be processed separately.';
     systemInstruction += '\n- "imageRequest": { "requestImage": true/false, "imageIndex": 0|1|2|... } - Request to view/analyze a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "show me", "see", "view", or "display" a previous image. The image will be displayed to the user. If the user also wants analysis/description, the system will analyze it automatically.';
-    systemInstruction += '\n- "recall": { "shouldRecall": true/false, "imageIndex": 0|1|2|... } - Recall and display a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "see", "show", "recall", or "bring back" an old image. This is simpler than imageRequest - it just retrieves and displays the image without analysis. If user says "original image", "first image", or "initial image", use the original image index shown above.';
+    systemInstruction += '\n- "recall": { "shouldRecall": true/false, "imageIndex": 0|1|2|... } - Recall and display a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "see", "show", "recall", or "bring back" an old image. This works for ANY image in the conversation history: user-uploaded images, staged images, generated images, and CAD renders. This is simpler than imageRequest - it just retrieves and displays the image without analysis. If user says "original image", "first image", or "initial image", use the original image index shown above.';
     systemInstruction += '\n- "generate": { "shouldGenerate": true/false, "prompt": "detailed image generation prompt" } OR "generate": [ { "shouldGenerate": true, "prompt": "..." }, { "shouldGenerate": true, "prompt": "..." }, ... ] - Generate a completely new image from text description (ONLY use generation when the user wants to create a NEW image from scratch, NOT when they want to modify an existing room image. If they uploaded an image or are referring to a previous image, use staging instead). You can provide MULTIPLE generation requests (up to 3) in an array if the user asks for multiple variations. Each generation request in the array will be processed separately.';
-    systemInstruction += '\n\nIMPORTANT DISTINCTION:\n- Use "staging" when: user uploaded a room image, user refers to a previous room image, user wants to modify/redesign an existing room\n- Use "generate" when: user wants to create a completely new image from text only (no existing image involved), user asks to "generate", "create", "draw", or "make" an image of something that is NOT a room modification';
-    systemInstruction += '\n\nSTAGING RULES:';
-    systemInstruction += '\n- Set "shouldStage": true if the user wants to stage a room, modify an image, change colors/walls/furniture, or apply any visual changes';
+    systemInstruction += '\n\nIMPORTANT DISTINCTION:\n- Use "staging" when: user uploaded a room photo (3D perspective view of an interior space), user refers to a previous room photo with "CAD: False", user wants to modify/redesign an existing room photo that is NOT a CAD-staged image\n- Use "cad" (CAD-staging) when: (1) user uploaded a blueprint/floor plan (2D top-down architectural drawing), (2) user refers to a previous blueprint, (3) user says "stage" but the image is a blueprint/floor plan, OR (4) user wants to modify an image that has "CAD: True" in the image context - ALWAYS use CAD-staging for blueprints and CAD-staged images, even if the user says "stage"\n- Use "generate" when: user wants to create a completely new image from text only (no existing image involved), user asks to "generate", "create", "draw", or "make" an image of something that is NOT a room modification';
+    systemInstruction += '\n\nSTAGING RULES (for room photos only):';
+    systemInstruction += '\n- CRITICAL: Regular staging is ONLY for room photos (3D perspective interior views). If the user uploads or refers to a blueprint/floor plan (2D top-down architectural drawing), use CAD-staging ("cad" field) instead, even if they say "stage".';
+    systemInstruction += '\n- CRITICAL: Before using regular staging, check the image context above. If the image you are modifying has "CAD: True" in its annotation, you MUST use CAD-staging ("cad" field) instead, NOT regular staging. This includes images you previously created with CAD-staging - if a user asks to modify a CAD-staged image, use CAD-staging again.';
+    systemInstruction += '\n- Set "shouldStage": true if the user wants to stage a room photo, modify a room photo, change colors/walls/furniture, or apply any visual changes to a room photo (NOT a blueprint, and NOT a CAD-staged image with CAD: True)';
     systemInstruction += '\n- Set "usePreviousImage": false if using the current message\'s image, or the index (0 = most recent, 1 = second most recent, etc.) if modifying a previous image';
     systemInstruction += '\n- If user says "original image", "first image", or "initial image", use the original image index shown above';
     systemInstruction += '\n- Set "furnitureImageIndex" to the index of a furniture image from a previous message if the user wants to add a specific piece of furniture (e.g., "add that chair", "include the red sofa from before"). The furniture image will be sent to the staging system alongside the room image.';
@@ -1948,9 +2133,19 @@ app.post('/api/chat', async (req, res) => {
     systemInstruction += '\n- If "requestImage" is false, you can omit the "imageRequest" field or set it to null';
     systemInstruction += '\n\nRECALL RULES:';
     systemInstruction += '\n- Set "shouldRecall": true if the user asks to see, show, recall, or bring back an old image';
+    systemInstruction += '\n- You can recall ANY image from the conversation: user-uploaded images, images you staged, images you generated, or CAD-staging renders you created';
     systemInstruction += '\n- Set "imageIndex" to the index of the image (0 = most recent, 1 = second most recent, etc.)';
+    systemInstruction += '\n- Check the "Available images in conversation history" list above to find the correct index for any image (including your own generated/staged images)';
     systemInstruction += '\n- If user says "original image", "first image", or "initial image", use the original image index shown above';
+    systemInstruction += '\n- If user asks to see "the image I generated" or "the staged image", look for "generated image" or "staged image" in the image list above';
     systemInstruction += '\n- If "shouldRecall" is false, you can omit the "recall" field or set it to null';
+    systemInstruction += '\n\nCAD-STAGING RULES (for blueprints/floor plans and CAD-staged images):';
+    systemInstruction += '\n- "cad": { "shouldProcessCAD": true/false, "imageIndex": 0|1|2|..., "furnitureImageIndex": null|0|1|2|...|[...], "additionalPrompt": "detailed CAD-staging description" } - CAD-staging processes a top-down blueprint/floor plan image to create a 3D render. This is DIFFERENT from regular staging. Use CAD-staging when: (1) the user uploads a top-down blueprint, floor plan, or architectural drawing (2D plan view from above), OR (2) the user wants to modify an image that has "CAD: True" in its annotation (check the image context above). CRITICAL: Even if the user says "stage this blueprint" or "stage this floor plan", you MUST use CAD-staging (set "shouldProcessCAD": true), NOT regular staging. CRITICAL: If the user asks to modify a previously CAD-staged image (one with "CAD: True" in the image context), you MUST use CAD-staging again, NOT regular staging. Regular staging is ONLY for room photos (3D perspective views), NOT for blueprints or CAD-staged images. Set "imageIndex" to the index of the blueprint or CAD-staged image (0 = most recent, 1 = second most recent, etc.). If the user uploads a blueprint in the current message, use imageIndex 0. If the user wants to include specific furniture pieces in the 3D render, set "furnitureImageIndex" to the index (or array of indices) of the furniture image(s) from previous messages. The "additionalPrompt" should be a detailed description of any specific requirements, themes, styles, or preferences the user has (e.g., "medieval theme", "modern minimalist", "cozy atmosphere", etc.). The CAD-staging function will convert the blueprint to a top-down 3D render and include the furniture and styling preferences if specified.';
+    systemInstruction += '\n- CRITICAL: If the user uploads or refers to a blueprint/floor plan (2D top-down architectural drawing), you MUST set "shouldProcessCAD": true, even if they say "stage". Blueprints ALWAYS use CAD-staging, never regular staging.';
+    systemInstruction += '\n- CRITICAL: If the user asks to modify an image that has "CAD: True" in the image context above, you MUST use CAD-staging ("cad" field), NOT regular staging. Always check the CAD classification in the image annotations before deciding which pipeline to use.';
+    systemInstruction += '\n- CRITICAL: Regular staging ("staging" field) is ONLY for room photos (3D perspective interior views). If you see a blueprint/floor plan OR an image with "CAD: True", use CAD-staging instead.';
+    systemInstruction += '\n- Set "furnitureImageIndex" to the index (or array of indices) of furniture images from previous messages if the user wants to include specific furniture in the 3D render';
+    systemInstruction += '\n- If "shouldProcessCAD" is false, you can omit the "cad" field or set it to null';
 
     // Get the last user message
     const lastUserMessage = messages.filter(m => m.role === 'user').pop();
@@ -2045,19 +2240,31 @@ app.post('/api/chat', async (req, res) => {
     console.log('Number of messages:', openaiMessages.length);
     
     if (DEBUG_MODE) {
-      console.log('Full messages array:', messagesJson);
-      
-      // Extract and log user content specifically
-      const userMessages = openaiMessages.filter(msg => msg.role === 'user');
-      if (userMessages.length > 0) {
-        console.log('--- USER CONTENT ---');
-        userMessages.forEach((msg, index) => {
-          const contentStr = JSON.stringify(msg.content);
-          const contentSize = Buffer.byteLength(contentStr, 'utf8');
-          console.log(`User message ${index + 1} (${(contentSize / 1024).toFixed(2)} KB):`, contentStr.substring(0, 1000) + (contentStr.length > 1000 ? '... [truncated]' : ''));
-        });
-        console.log('-------------------');
-      }
+      // Log individual messages instead of full array
+      console.log('--- MESSAGES ---');
+      openaiMessages.forEach((msg, index) => {
+        if (msg.role === 'system') {
+          console.log(`Message ${index + 1} [SYSTEM]:`, msg.content.substring(0, 500) + (msg.content.length > 500 ? '... [truncated]' : ''));
+        } else if (msg.role === 'user') {
+          if (Array.isArray(msg.content)) {
+            const textItems = msg.content.filter(item => item.type === 'text');
+            const imageItems = msg.content.filter(item => item.type === 'image_url');
+            const textContent = textItems.map(item => item.text).join(' ');
+            console.log(`Message ${index + 1} [USER]: Text: "${textContent.substring(0, 200)}${textContent.length > 200 ? '...' : ''}" | Images: ${imageItems.length}`);
+          } else {
+            console.log(`Message ${index + 1} [USER]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
+          }
+        } else if (msg.role === 'assistant') {
+          if (Array.isArray(msg.content)) {
+            const textItems = msg.content.filter(item => item.type === 'text');
+            const textContent = textItems.map(item => item.text).join(' ');
+            console.log(`Message ${index + 1} [ASSISTANT]:`, textContent.substring(0, 200) + (textContent.length > 200 ? '...' : ''));
+          } else {
+            console.log(`Message ${index + 1} [ASSISTANT]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
+          }
+        }
+      });
+      console.log('----------------');
     }
     
     // Log image data sizes if present
@@ -2066,7 +2273,7 @@ app.post('/api/chat', async (req, res) => {
         msg.content.forEach((item, itemIdx) => {
           if (item.type === 'image_url' && item.image_url && item.image_url.url) {
             const imageDataSize = Buffer.byteLength(item.image_url.url, 'utf8');
-            console.log(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB (base64 encoded)`);
+            console.log(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB`);
           }
         });
       }
@@ -2076,20 +2283,32 @@ app.post('/api/chat', async (req, res) => {
 
     // Use OpenAI GPT with JSON response format
     console.log('Calling OpenAI API...');
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: openaiMessages,
-      temperature: 0.7,
-      response_format: { type: 'json_object' }
-    });
+    let aiResponseJson;
+    try {
+      const completion = await openai.chat.completions.create({
+        model: selectedModel,
+        messages: openaiMessages,
+        temperature: getTemperatureForModel(selectedModel),
+        response_format: { type: 'json_object' }
+      });
 
-    const aiResponseJson = JSON.parse(completion.choices[0].message.content);
+      aiResponseJson = JSON.parse(completion.choices[0].message.content);
+    } catch (gptError) {
+      console.error('[GPT] Error calling OpenAI API:', gptError);
+      console.error('[GPT] Error stack:', gptError.stack);
+      return res.status(500).json({ 
+        error: 'Failed to get AI response', 
+        details: 'The AI service encountered an error. Please try again.',
+        response: 'I apologize, but I encountered an error processing your request. Please try again.'
+      });
+    }
     let text = aiResponseJson.response || completion.choices[0].message.content;
     const memoryActionsFromAI = aiResponseJson.memories || { stores: [], forgets: [] };
     const stagingRequestFromAI = aiResponseJson.staging || null;
     const imageRequestFromAI = aiResponseJson.imageRequest || null;
     const recallRequestFromAI = aiResponseJson.recall || null;
     const generateRequestFromAI = aiResponseJson.generate || null;
+    const cadRequestFromAI = aiResponseJson.cad || null;
     
     // Log chat to CSV file
     const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
@@ -2190,9 +2409,22 @@ app.post('/api/chat', async (req, res) => {
           const genRequest = generateRequests[i];
           try {
             console.log(`[Image Generation] Processing generation request ${i + 1}/${generateRequests.length}:`, genRequest.prompt.substring(0, 100) + '...');
-            const generatedImage = await processImageGeneration(genRequest.prompt, req);
+            const geminiModel = getGeminiImageModel(selectedModel);
+            const generatedImage = await processImageGeneration(genRequest.prompt, req, geminiModel);
             if (generatedImage) {
-              generatedImages.push(generatedImage);
+              // Annotate generated image in parallel
+              const annotationPromise = annotateImage(generatedImage).then(annotation => {
+                console.log(`[Image Annotation] Annotation for generated image ${i + 1}: ${annotation || 'failed'}`);
+                return annotation;
+              }).catch(err => {
+                console.error(`[Image Annotation] Error annotating generated image ${i + 1}:`, err);
+                return null;
+              });
+              
+              generatedImages.push({
+                image: generatedImage,
+                annotationPromise: annotationPromise
+              });
               console.log(`[Image Generation] Successfully generated image ${i + 1}/${generateRequests.length}`);
             }
           } catch (error) {
@@ -2323,20 +2555,48 @@ app.post('/api/chat', async (req, res) => {
             }
             
             if (imageBuffer) {
-              const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer);
-              if (stagedImage) {
-                stagingResults.push({
-                  stagedImage: stagedImage,
-                  params: stagingParams
-                });
-                console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+              try {
+                const geminiModel = getGeminiImageModel(selectedModel);
+                const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer, geminiModel);
+                if (stagedImage) {
+                  // Annotate staged image in parallel
+                  const annotationPromise = annotateImage(stagedImage).then(annotation => {
+                    console.log(`[Image Annotation] Annotation for staged image ${i + 1}: ${annotation || 'failed'}`);
+                    return annotation;
+                  }).catch(err => {
+                    console.error(`[Image Annotation] Error annotating staged image ${i + 1}:`, err);
+                    return null;
+                  });
+                  
+                  stagingResults.push({
+                    stagedImage: stagedImage,
+                    params: stagingParams,
+                    annotationPromise: annotationPromise
+                  });
+                  console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+                }
+              } catch (stagingError) {
+                console.error(`[Staging] Error processing staging ${i + 1}:`, stagingError);
+                console.error(`[Staging] Error stack:`, stagingError.stack);
+                // Continue with other staging requests if one fails
+                // Add error message to text response
+                if (stagingRequests.length === 1) {
+                  text = (text || '') + '\n\nSorry, I encountered an error while staging the room. Please try again.';
+                }
               }
             } else {
               console.log(`[Staging] No image found for staging ${i + 1}`);
+              if (stagingRequests.length === 1) {
+                text = (text || '') + '\n\nSorry, I couldn\'t find the image to stage. Please make sure you\'ve uploaded an image.';
+              }
             }
           } catch (error) {
-            console.error(`Error processing staging ${i + 1}:`, error);
+            console.error(`[Staging] Error in staging request ${i + 1}:`, error);
+            console.error(`[Staging] Error stack:`, error.stack);
             // Continue with other staging requests if one fails
+            if (stagingRequests.length === 1) {
+              text = (text || '') + '\n\nSorry, I encountered an error while processing the staging request. Please try again.';
+            }
           }
           }
         }
@@ -2411,9 +2671,9 @@ app.post('/api/chat', async (req, res) => {
             ];
             
             const imageAnalysisCompletion = await openai.chat.completions.create({
-              model: "gpt-4o-mini",
+              model: selectedModel,
               messages: imageAnalysisMessages,
-              temperature: 0.7,
+              temperature: getTemperatureForModel(selectedModel),
               response_format: { type: 'json_object' }
             });
             
@@ -2434,6 +2694,115 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
+    // Process CAD request from AI response
+    let cadImageForDisplay = null;
+    let cadAnnotationPromise = null;
+    if (cadRequestFromAI && cadRequestFromAI.shouldProcessCAD) {
+      try {
+        const imageIndex = typeof cadRequestFromAI.imageIndex === 'number' ? cadRequestFromAI.imageIndex : 0;
+        console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
+        
+        // Retrieve the blueprint image from conversation history
+        const blueprintImage = getImageFromHistory(messages, imageIndex);
+        
+        if (blueprintImage && blueprintImage.url) {
+          console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
+          
+          // Extract base64 data from the image URL
+          const base64Data = blueprintImage.url.split(',')[1];
+          if (base64Data) {
+            const imageBuffer = Buffer.from(base64Data, 'base64');
+            const mimeType = blueprintImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+            
+            // Retrieve furniture images if specified
+            const furnitureImages = [];
+            if (cadRequestFromAI.furnitureImageIndex !== null && cadRequestFromAI.furnitureImageIndex !== undefined) {
+              const furnitureIndices = Array.isArray(cadRequestFromAI.furnitureImageIndex) 
+                ? cadRequestFromAI.furnitureImageIndex 
+                : [cadRequestFromAI.furnitureImageIndex];
+              
+              for (const furnitureIndex of furnitureIndices) {
+                if (furnitureIndex !== null && furnitureIndex !== undefined) {
+                  const furnitureImage = getImageFromHistory(messages, furnitureIndex);
+                  if (furnitureImage && furnitureImage.url) {
+                    const furnitureBase64Data = furnitureImage.url.split(',')[1];
+                    if (furnitureBase64Data) {
+                      const furnitureBuffer = Buffer.from(furnitureBase64Data, 'base64');
+                      const furnitureMimeType = furnitureImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+                      furnitureImages.push({
+                        image: furnitureBuffer,
+                        mimeType: furnitureMimeType
+                      });
+                      console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
+                    }
+                  } else {
+                    console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
+                  }
+                }
+              }
+            }
+            
+            console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequestFromAI.additionalPrompt ? ` (with additional prompt: ${cadRequestFromAI.additionalPrompt.substring(0, 50)}...)` : ''}...`);
+            // Process the blueprint through CAD function
+            const additionalPrompt = cadRequestFromAI.additionalPrompt || null;
+            const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
+            
+            // Convert result buffer to data URL
+            const cadImageBase64 = cadResultBuffer.toString('base64');
+            cadImageForDisplay = `data:${mimeType};base64,${cadImageBase64}`;
+            
+            // Annotate CAD image in parallel
+            cadAnnotationPromise = annotateImage(cadImageForDisplay, true).then(annotation => {
+              console.log(`[Image Annotation] Annotation for CAD render: ${annotation || 'failed'}`);
+              return annotation;
+            }).catch(err => {
+              console.error(`[Image Annotation] Error annotating CAD render:`, err);
+              return null;
+            });
+            
+            console.log(`[CAD] Successfully generated 3D render from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
+          } else {
+            console.log(`[CAD] Failed to extract base64 data from blueprint image`);
+          }
+        } else {
+          console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
+        }
+      } catch (error) {
+        console.error('Error processing CAD request:', error);
+        // Continue with original response if CAD fails
+      }
+    }
+
+    // Wait for all annotations to complete before building response
+    const stagedImageAnnotations = {};
+    if (stagingResults.length > 0) {
+      for (let i = 0; i < stagingResults.length; i++) {
+        if (stagingResults[i].annotationPromise) {
+          const annotation = await stagingResults[i].annotationPromise;
+          if (annotation) {
+            stagedImageAnnotations[`staged_${i}`] = annotation;
+          }
+        }
+      }
+    }
+    
+    const generatedImageAnnotations = {};
+    if (generatedImages.length > 0) {
+      for (let i = 0; i < generatedImages.length; i++) {
+        if (generatedImages[i].annotationPromise) {
+          const annotation = await generatedImages[i].annotationPromise;
+          if (annotation) {
+            generatedImageAnnotations[`generated_${i}`] = annotation;
+          }
+        }
+      }
+    }
+    
+    let cadImageAnnotation = null;
+    if (cadImageForDisplay && cadAnnotationPromise) {
+      cadImageAnnotation = await cadAnnotationPromise;
+    }
+
     // Return JSON response with text, memory actions, staging result(s), generated image(s), and requested image if available
     const response = { 
       response: text,
@@ -2451,16 +2820,24 @@ app.post('/api/chat', async (req, res) => {
         response.stagedImages = stagingResults.map(r => r.stagedImage);
         response.stagingParams = stagingResults.map(r => r.params);
       }
+      // Include annotations if available
+      if (Object.keys(stagedImageAnnotations).length > 0) {
+        response.stagedImageAnnotations = stagedImageAnnotations;
+      }
     }
     
     // Handle multiple generated images
     if (generatedImages.length > 0) {
       if (generatedImages.length === 1) {
         // Single result - maintain backward compatibility
-        response.generatedImage = generatedImages[0];
+        response.generatedImage = generatedImages[0].image || generatedImages[0];
       } else {
         // Multiple results - return as array
-        response.generatedImages = generatedImages;
+        response.generatedImages = generatedImages.map(g => g.image || g);
+      }
+      // Include annotations if available
+      if (Object.keys(generatedImageAnnotations).length > 0) {
+        response.generatedImageAnnotations = generatedImageAnnotations;
       }
     }
     
@@ -2470,6 +2847,13 @@ app.post('/api/chat', async (req, res) => {
     
     if (recalledImageForDisplay) {
       response.recalledImage = recalledImageForDisplay;
+    }
+    
+    if (cadImageForDisplay) {
+      response.cadImage = cadImageForDisplay;
+      if (cadImageAnnotation) {
+        response.cadImageAnnotation = cadImageAnnotation;
+      }
     }
     
     res.json(response);
@@ -2526,9 +2910,11 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     systemInstruction += '\n- "staging": { "shouldStage": true/false, "roomType": "Living room"|"Bedroom"|"Kitchen"|"Bathroom"|"Dining room"|"Office"|"Other", "additionalPrompt": "detailed staging description", "removeFurniture": true/false, "usePreviousImage": false|0|1|2|..., "furnitureImageIndex": null|0|1|2|... } OR "staging": [ { "shouldStage": true, ... }, { "shouldStage": true, ... }, ... ] - Request staging if the user wants to stage/modify a room image (ONLY use staging when the user has uploaded or is referring to an existing room image to modify). If the user wants to add a specific piece of furniture from a previous message, set "furnitureImageIndex" to the index of that furniture image (0 = most recent image, 1 = second most recent, etc.). You can provide MULTIPLE staging requests (up to 3) in an array if the user asks for multiple variations (e.g., "stage this room in 3 different themes"). Each staging request in the array will be processed separately.';
     systemInstruction += '\n- "imageRequest": { "requestImage": true/false, "imageIndex": 0|1|2|... } - Request to view/analyze a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "show me", "see", "view", or "display" a previous image. The image will be displayed to the user. If the user also wants analysis/description, the system will analyze it automatically.';
     systemInstruction += '\n- "generate": { "shouldGenerate": true/false, "prompt": "detailed image generation prompt" } OR "generate": [ { "shouldGenerate": true, "prompt": "..." }, { "shouldGenerate": true, "prompt": "..." }, ... ] - Generate a completely new image from text description (ONLY use generation when the user wants to create a NEW image from scratch, NOT when they want to modify an existing room image. If they uploaded an image or are referring to a previous image, use staging instead). You can provide MULTIPLE generation requests (up to 3) in an array if the user asks for multiple variations. Each generation request in the array will be processed separately.';
-    systemInstruction += '\n\nIMPORTANT DISTINCTION:\n- Use "staging" when: user uploaded a room image, user refers to a previous room image, user wants to modify/redesign an existing room\n- Use "generate" when: user wants to create a completely new image from text only (no existing image involved), user asks to "generate", "create", "draw", or "make" an image of something that is NOT a room modification';
-    systemInstruction += '\n\nSTAGING RULES:';
-    systemInstruction += '\n- Set "shouldStage": true if the user wants to stage a room, modify an image, change colors/walls/furniture, or apply any visual changes';
+    systemInstruction += '\n\nIMPORTANT DISTINCTION:\n- Use "staging" when: user uploaded a room photo (3D perspective view of an interior space), user refers to a previous room photo with "CAD: False", user wants to modify/redesign an existing room photo that is NOT a CAD-staged image\n- Use "cad" (CAD-staging) when: (1) user uploaded a blueprint/floor plan (2D top-down architectural drawing), (2) user refers to a previous blueprint, (3) user says "stage" but the image is a blueprint/floor plan, OR (4) user wants to modify an image that has "CAD: True" in the image context - ALWAYS use CAD-staging for blueprints and CAD-staged images, even if the user says "stage"\n- Use "generate" when: user wants to create a completely new image from text only (no existing image involved), user asks to "generate", "create", "draw", or "make" an image of something that is NOT a room modification';
+    systemInstruction += '\n\nSTAGING RULES (for room photos only):';
+    systemInstruction += '\n- CRITICAL: Regular staging is ONLY for room photos (3D perspective interior views). If the user uploads or refers to a blueprint/floor plan (2D top-down architectural drawing), use CAD-staging ("cad" field) instead, even if they say "stage".';
+    systemInstruction += '\n- CRITICAL: Before using regular staging, check the image context above. If the image you are modifying has "CAD: True" in its annotation, you MUST use CAD-staging ("cad" field) instead, NOT regular staging. This includes images you previously created with CAD-staging - if a user asks to modify a CAD-staged image, use CAD-staging again.';
+    systemInstruction += '\n- Set "shouldStage": true if the user wants to stage a room photo, modify a room photo, change colors/walls/furniture, or apply any visual changes to a room photo (NOT a blueprint, and NOT a CAD-staged image with CAD: True)';
     systemInstruction += '\n- Set "usePreviousImage": false if using the current message\'s image, or the index (0 = most recent, 1 = second most recent, etc.) if modifying a previous image';
     systemInstruction += '\n- IMPORTANT: When adding furniture to a staged room, set "usePreviousImage" to the index of the STAGED room image (not the furniture image). Set "furnitureImageIndex" to the index of the furniture image. Look at the image context above to find the correct indices.';
     systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request';
@@ -2538,9 +2924,28 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     systemInstruction += '\n- Set "imageIndex" to the index of the image (0 = most recent, 1 = second most recent, etc.)';
     systemInstruction += '\n- If user says "original image", "first image", or "initial image", use the original image index shown above';
     systemInstruction += '\n- If "requestImage" is false, you can omit the "imageRequest" field or set it to null';
+    systemInstruction += '\n\nRECALL RULES:';
+    systemInstruction += '\n- "recall": { "shouldRecall": true/false, "imageIndex": 0|1|2|... } - Recall and display a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "see", "show", "recall", or "bring back" an old image. This works for ANY image in the conversation history: user-uploaded images, staged images, generated images, and CAD-staging renders. This is simpler than imageRequest - it just retrieves and displays the image without analysis. If user says "original image", "first image", or "initial image", use the original image index shown above.';
+    systemInstruction += '\n- Set "shouldRecall": true if the user asks to see, show, recall, or bring back an old image';
+    systemInstruction += '\n- You can recall ANY image from the conversation: user-uploaded images, images you staged, images you generated, or CAD-staging renders you created';
+    systemInstruction += '\n- Set "imageIndex" to the index of the image (0 = most recent, 1 = second most recent, etc.)';
+    systemInstruction += '\n- Check the "Available images in conversation history" list above to find the correct index for any image (including your own generated/staged images)';
+    systemInstruction += '\n- If user says "original image", "first image", or "initial image", use the original image index shown above';
+    systemInstruction += '\n- If user asks to see "the image I generated" or "the staged image", look for "generated image" or "staged image" in the image list above';
+    systemInstruction += '\n- If "shouldRecall" is false, you can omit the "recall" field or set it to null';
+    systemInstruction += '\n\nCAD-STAGING RULES (for blueprints/floor plans and CAD-staged images):';
+    systemInstruction += '\n- "cad": { "shouldProcessCAD": true/false, "imageIndex": 0|1|2|..., "furnitureImageIndex": null|0|1|2|...|[...], "additionalPrompt": "detailed CAD-staging description" } - CAD-staging processes a top-down blueprint/floor plan image to create a 3D render. This is DIFFERENT from regular staging. Use CAD-staging when: (1) the user uploads a top-down blueprint, floor plan, or architectural drawing (2D plan view from above), OR (2) the user wants to modify an image that has "CAD: True" in its annotation (check the image context above). CRITICAL: Even if the user says "stage this blueprint" or "stage this floor plan", you MUST use CAD-staging (set "shouldProcessCAD": true), NOT regular staging. CRITICAL: If the user asks to modify a previously CAD-staged image (one with "CAD: True" in the image context), you MUST use CAD-staging again, NOT regular staging. Regular staging is ONLY for room photos (3D perspective views), NOT for blueprints or CAD-staged images. Set "imageIndex" to the index of the blueprint or CAD-staged image (0 = most recent, 1 = second most recent, etc.). If the user uploads a blueprint in the current message, use imageIndex 0. If the user wants to include specific furniture pieces in the 3D render, set "furnitureImageIndex" to the index (or array of indices) of the furniture image(s) from previous messages. The "additionalPrompt" should be a detailed description of any specific requirements, themes, styles, or preferences the user has (e.g., "medieval theme", "modern minimalist", "cozy atmosphere", etc.). The CAD-staging function will convert the blueprint to a top-down 3D render and include the furniture and styling preferences if specified.';
+    systemInstruction += '\n- CRITICAL: If the user uploads or refers to a blueprint/floor plan (2D top-down architectural drawing), you MUST set "shouldProcessCAD": true, even if they say "stage". Blueprints ALWAYS use CAD-staging, never regular staging.';
+    systemInstruction += '\n- CRITICAL: If the user asks to modify an image that has "CAD: True" in the image context above, you MUST use CAD-staging ("cad" field), NOT regular staging. Always check the CAD classification in the image annotations before deciding which pipeline to use.';
+    systemInstruction += '\n- CRITICAL: Regular staging ("staging" field) is ONLY for room photos (3D perspective interior views). If you see a blueprint/floor plan OR an image with "CAD: True", use CAD-staging instead.';
+    systemInstruction += '\n- Set "furnitureImageIndex" to the index (or array of indices) of furniture images from previous messages if the user wants to include specific furniture in the 3D render';
+    systemInstruction += '\n- If "shouldProcessCAD" is false, you can omit the "cad" field or set it to null';
 
-    const { message = '', conversationHistory: conversationHistoryStr } = req.body;
+    const { message = '', conversationHistory: conversationHistoryStr, model } = req.body;
     const files = Array.isArray(req.files) ? req.files : [req.files];
+    
+    // Get model from request or default to gpt-4o-mini
+    const selectedModel = model || 'gpt-4o-mini';
     
     // Parse conversation history if provided
     let conversationHistory = [];
@@ -2559,7 +2964,24 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     const originalHistoryLength = conversationHistory.length;
     conversationHistory = deduplicateMessages(conversationHistory);
     if (conversationHistory.length !== originalHistoryLength) {
-      console.log(`[Deduplication] Removed ${originalHistoryLength - conversationHistory.length} duplicate message(s) from conversation history`);
+      const removedCount = originalHistoryLength - conversationHistory.length;
+      console.log(`[Deduplication] Removed ${removedCount} duplicate message(s) from conversation history (${originalHistoryLength} -> ${conversationHistory.length})`);
+      if (DEBUG_MODE) {
+        // Log which messages were duplicates
+        const seenKeys = new Set();
+        const original = conversationHistory.length < originalHistoryLength ? 
+          JSON.parse(conversationHistoryStr || '[]') : conversationHistory;
+        original.forEach((msg, idx) => {
+          const key = Array.isArray(msg.content) 
+            ? `${msg.role}:${JSON.stringify(msg.content.map(item => item.type === 'text' ? item.text : item.type))}`
+            : `${msg.role}:${typeof msg.content === 'string' ? msg.content.trim() : 'non-string'}`;
+          if (seenKeys.has(key)) {
+            console.log(`[Deduplication] Duplicate found at index ${idx}: ${msg.role} message`);
+          } else {
+            seenKeys.add(key);
+          }
+        });
+      }
     }
     
     // Check message limit (20 user messages max)
@@ -2571,78 +2993,20 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       });
     }
     
-    // Build context about available images in history for staging (now that conversationHistory is parsed)
-    let imageContext = '';
-    let originalImageIndex = null;
-    if (conversationHistory && Array.isArray(conversationHistory)) {
-      const imageMessages = [];
-      // Collect ALL images in reverse chronological order (most recent first)
-      for (let i = conversationHistory.length - 1; i >= 0; i--) {
-        const msg = conversationHistory[i];
-        if (msg.role === 'user' && Array.isArray(msg.content)) {
-          // Get ALL images from this message, not just the first one
-          const imageItems = msg.content.filter(item => item.type === 'image_url');
-          // Process images in reverse order within the message (so first image in message = most recent)
-          for (let j = imageItems.length - 1; j >= 0; j--) {
-            const imageItem = imageItems[j];
-            const annotation = imageItem.annotation || null;
-            const filename = imageItem.filename || imageItem.originalname || null;
-            imageMessages.push({ 
-              index: imageMessages.length, 
-              type: 'user-uploaded', 
-              messageIndex: i,
-              annotation: annotation,
-              filename: filename
-            });
-          }
-        } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-          // Get ALL staged and generated images from this message
-          const imageItems = msg.content.filter(item => 
-            item.type === 'image_url' && 
-            (item.isStaged || item.isGenerated)
-          );
-          // Process images in reverse order within the message
-          for (let j = imageItems.length - 1; j >= 0; j--) {
-            const imageItem = imageItems[j];
-            const filename = imageItem.filename || imageItem.originalname || null;
-            const imageType = imageItem.isStaged ? 'staged' : 'generated';
-            imageMessages.push({ 
-              index: imageMessages.length, 
-              type: imageType, 
-              messageIndex: i,
-              filename: filename
-            });
-          }
-        }
-      }
-      
-      // Find the original (first) user-uploaded image
-      const userUploadedImages = imageMessages.filter(img => img.type === 'user-uploaded');
-      if (userUploadedImages.length > 0) {
-        originalImageIndex = userUploadedImages[userUploadedImages.length - 1].index;
-      }
-      
-      if (imageMessages.length > 0) {
-        imageContext = '\n\nAvailable images in conversation history (index 0 = most recent, higher index = older):\n';
-        imageMessages.forEach((img, idx) => {
-          let description = `${img.type} image`;
-          if (img.filename) {
-            description += ` (filename: ${img.filename})`;
-          }
-          if (img.annotation) {
-            description += ` (${img.annotation})`;
-          }
-          if (idx === originalImageIndex) {
-            description += ' [ORIGINAL/FIRST USER-UPLOADED IMAGE]';
-          }
-          imageContext += `- Index ${idx}: ${description}\n`;
-        });
-        if (originalImageIndex !== null) {
-          imageContext += `\nIMPORTANT: The "original image" or "first image" is at index ${originalImageIndex}. When the user says "original image", "first image", "initial image", "go back to the original", or "refer back to the original image", use index ${originalImageIndex} in the staging request.`;
-        }
-        imageContext += `\nIMPORTANT: When multiple images are uploaded in the same message, they are indexed separately. Use the filename to identify which image the user is referring to (e.g., if user says "add this chair" or mentions a specific filename, look for an image with that filename or matching description).`;
-        systemInstruction += imageContext;
-      }
+    // Build context about available images in history with annotations (now that conversationHistory is parsed)
+    const { imageContext, imagesSentToGPT, originalImageIndex } = buildImageContext(conversationHistory);
+    
+    // Log image context for debugging
+    if (imageContext) {
+      console.log('=== IMAGE CONTEXT SENT TO AI (CHAT-UPLOAD) ===');
+      console.log(imageContext);
+      console.log('===============================================');
+    } else {
+      console.log('[Image Context] No images in conversation history');
+    }
+    
+    if (imageContext) {
+      systemInstruction += imageContext;
     }
 
     // Build user message content array
@@ -2731,7 +3095,7 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         const imageDataUrl = `data:${file.mimetype};base64,${imageData}`;
         
         // Annotate image in parallel (don't await - let it run in background)
-        const annotationPromise = annotateImage(imageDataUrl).then(annotation => {
+        const annotationPromise = annotateImage(imageDataUrl, false, true).then(annotation => {
           console.log(`[Image Annotation] Annotation for ${file.originalname}: ${annotation || 'failed'}`);
           return annotation;
         }).catch(err => {
@@ -2808,7 +3172,7 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       })
     ];
     
-    // Wait for image annotations to complete and store them
+    // Wait for image annotations and type detection to complete and store them
     const cleanedUserContent = await Promise.all(filteredUserContent.map(async (item) => {
       if (item.type === 'image_url' && item.image_url && item.image_url.url) {
         // Wait for annotation if it's still in progress
@@ -2867,7 +3231,7 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     });
 
     // Use OpenAI GPT with vision support for images
-    const model = hasImages ? 'gpt-4o-mini' : 'gpt-4o-mini';
+    // Model is already set from req.body above
     
     // Debug logging - log what's being sent to AI (ALWAYS log, not just in DEBUG_MODE)
     const messagesJson = JSON.stringify(safeMessages);
@@ -2877,24 +3241,36 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     
     console.log('=== SENDING TO AI (CHAT-UPLOAD) ===');
     console.log('Payload size:', payloadSize, 'bytes (', payloadSizeKB, 'KB /', payloadSizeMB, 'MB)');
-    console.log('Model:', model);
+    console.log('Model:', selectedModel);
     console.log('Has images:', hasImages);
     console.log('Number of messages:', safeMessages.length);
     
     if (DEBUG_MODE) {
-      console.log('Full messages array:', messagesJson);
-      
-      // Extract and log user content specifically
-      const userMessages = safeMessages.filter(msg => msg.role === 'user');
-      if (userMessages.length > 0) {
-        console.log('--- USER CONTENT ---');
-        userMessages.forEach((msg, index) => {
-          const contentStr = JSON.stringify(msg.content);
-          const contentSize = Buffer.byteLength(contentStr, 'utf8');
-          console.log(`User message ${index + 1} (${(contentSize / 1024).toFixed(2)} KB):`, contentStr.substring(0, 1000) + (contentStr.length > 1000 ? '... [truncated]' : ''));
-        });
-        console.log('-------------------');
-      }
+      // Log individual messages instead of full array
+      console.log('--- MESSAGES ---');
+      safeMessages.forEach((msg, index) => {
+        if (msg.role === 'system') {
+          console.log(`Message ${index + 1} [SYSTEM]:`, msg.content.substring(0, 500) + (msg.content.length > 500 ? '... [truncated]' : ''));
+        } else if (msg.role === 'user') {
+          if (Array.isArray(msg.content)) {
+            const textItems = msg.content.filter(item => item.type === 'text');
+            const imageItems = msg.content.filter(item => item.type === 'image_url');
+            const textContent = textItems.map(item => item.text).join(' ');
+            console.log(`Message ${index + 1} [USER]: Text: "${textContent.substring(0, 200)}${textContent.length > 200 ? '...' : ''}" | Images: ${imageItems.length}`);
+          } else {
+            console.log(`Message ${index + 1} [USER]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
+          }
+        } else if (msg.role === 'assistant') {
+          if (Array.isArray(msg.content)) {
+            const textItems = msg.content.filter(item => item.type === 'text');
+            const textContent = textItems.map(item => item.text).join(' ');
+            console.log(`Message ${index + 1} [ASSISTANT]:`, textContent.substring(0, 200) + (textContent.length > 200 ? '...' : ''));
+          } else {
+            console.log(`Message ${index + 1} [ASSISTANT]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
+          }
+        }
+      });
+      console.log('----------------');
     }
     
     // Log image data sizes if present
@@ -2903,7 +3279,7 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         msg.content.forEach((item, itemIdx) => {
           if (item.type === 'image_url' && item.image_url && item.image_url.url) {
             const imageDataSize = Buffer.byteLength(item.image_url.url, 'utf8');
-            console.log(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB (base64 encoded)`);
+            console.log(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB`);
           }
         });
       }
@@ -2918,6 +3294,7 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     let imageRequestFromAI = null;
     let recallRequestFromAI = null;
     let generateRequestFromAI = null;
+    let cadRequestFromAI = null;
     
     try {
       console.log('Calling OpenAI API...');
@@ -2945,9 +3322,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       });
       
       const completion = await openai.chat.completions.create({
-        model: model,
+        model: selectedModel,
         messages: finalMessages,
-        temperature: 0.7,
+        temperature: getTemperatureForModel(selectedModel),
         response_format: { type: 'json_object' }
       });
 
@@ -2958,6 +3335,7 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       imageRequestFromAI = aiResponseJson.imageRequest || null;
       recallRequestFromAI = aiResponseJson.recall || null;
       generateRequestFromAI = aiResponseJson.generate || null;
+      cadRequestFromAI = aiResponseJson.cad || null;
     } catch (openaiError) {
       // If OpenAI API fails (e.g., due to unsupported image format), let the AI respond about it
       console.error('OpenAI API error:', openaiError);
@@ -3006,9 +3384,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         ];
         
         const errorCompletion = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
+          model: selectedModel,
           messages: errorMessages,
-          temperature: 0.7,
+          temperature: getTemperatureForModel(selectedModel),
           response_format: { type: 'json_object' }
         });
         
@@ -3239,22 +3617,49 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
             }
           }
           
-          if (imageBuffer) {
-            const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer);
-            if (stagedImage) {
-              stagingResults.push({
-                stagedImage: stagedImage,
-                params: stagingParams
-              });
-              console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+            if (imageBuffer) {
+              try {
+                const geminiModel = getGeminiImageModel(selectedModel);
+                const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer, geminiModel);
+                if (stagedImage) {
+                  // Annotate staged image in parallel
+                  const annotationPromise = annotateImage(stagedImage).then(annotation => {
+                    console.log(`[Image Annotation] Annotation for staged image ${i + 1}: ${annotation || 'failed'}`);
+                    return annotation;
+                  }).catch(err => {
+                    console.error(`[Image Annotation] Error annotating staged image ${i + 1}:`, err);
+                    return null;
+                  });
+                  
+                  stagingResults.push({
+                    stagedImage: stagedImage,
+                    params: stagingParams,
+                    annotationPromise: annotationPromise
+                  });
+                  console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+                }
+              } catch (stagingError) {
+                console.error(`[Staging] Error processing staging ${i + 1}:`, stagingError);
+                console.error(`[Staging] Error stack:`, stagingError.stack);
+                // Continue with other staging requests if one fails
+                if (stagingRequests.length === 1) {
+                  text = (text || '') + '\n\nSorry, I encountered an error while staging the room. Please try again.';
+                }
+              }
+            } else {
+              console.log(`[Staging] No image found for staging ${i + 1}`);
+              if (stagingRequests.length === 1) {
+                text = (text || '') + '\n\nSorry, I couldn\'t find the image to stage. Please make sure you\'ve uploaded an image.';
+              }
             }
-          } else {
-            console.log(`[Staging] No image found for staging ${i + 1}`);
+          } catch (error) {
+            console.error(`[Staging] Error in staging request ${i + 1}:`, error);
+            console.error(`[Staging] Error stack:`, error.stack);
+            // Continue with other staging requests if one fails
+            if (stagingRequests.length === 1) {
+              text = (text || '') + '\n\nSorry, I encountered an error while processing the staging request. Please try again.';
+            }
           }
-        } catch (error) {
-          console.error(`Error processing staging ${i + 1}:`, error);
-          // Continue with other staging requests if one fails
-        }
           }
         }
       }
@@ -3276,9 +3681,22 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
           const genRequest = generateRequests[i];
           try {
             console.log(`[Image Generation] Processing generation request ${i + 1}/${generateRequests.length}:`, genRequest.prompt.substring(0, 100) + '...');
-            const generatedImage = await processImageGeneration(genRequest.prompt, req);
+            const geminiModel = getGeminiImageModel(selectedModel);
+            const generatedImage = await processImageGeneration(genRequest.prompt, req, geminiModel);
             if (generatedImage) {
-              generatedImages.push(generatedImage);
+              // Annotate generated image in parallel
+              const annotationPromise = annotateImage(generatedImage).then(annotation => {
+                console.log(`[Image Annotation] Annotation for generated image ${i + 1}: ${annotation || 'failed'}`);
+                return annotation;
+              }).catch(err => {
+                console.error(`[Image Annotation] Error annotating generated image ${i + 1}:`, err);
+                return null;
+              });
+              
+              generatedImages.push({
+                image: generatedImage,
+                annotationPromise: annotationPromise
+              });
               console.log(`[Image Generation] Successfully generated image ${i + 1}/${generateRequests.length}`);
             }
           } catch (error) {
@@ -3361,9 +3779,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
             ];
             
             const imageAnalysisCompletion = await openai.chat.completions.create({
-              model: "gpt-4o-mini",
+              model: selectedModel,
               messages: imageAnalysisMessages,
-              temperature: 0.7,
+              temperature: getTemperatureForModel(selectedModel),
               response_format: { type: 'json_object' }
             });
             
@@ -3382,6 +3800,115 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         console.error('Error processing image request:', error);
         // Continue with original response if image request fails
       }
+    }
+
+    // Process CAD request from AI response
+    let cadImageForDisplay = null;
+    let cadAnnotationPromiseUpload = null;
+    if (cadRequestFromAI && cadRequestFromAI.shouldProcessCAD) {
+      try {
+        const imageIndex = typeof cadRequestFromAI.imageIndex === 'number' ? cadRequestFromAI.imageIndex : 0;
+        console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
+        
+        // Retrieve the blueprint image from conversation history
+        const blueprintImage = getImageFromHistory(conversationHistory, imageIndex);
+        
+        if (blueprintImage && blueprintImage.url) {
+          console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
+          
+          // Extract base64 data from the image URL
+          const base64Data = blueprintImage.url.split(',')[1];
+          if (base64Data) {
+            const imageBuffer = Buffer.from(base64Data, 'base64');
+            const mimeType = blueprintImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+            
+            // Retrieve furniture images if specified
+            const furnitureImages = [];
+            if (cadRequestFromAI.furnitureImageIndex !== null && cadRequestFromAI.furnitureImageIndex !== undefined) {
+              const furnitureIndices = Array.isArray(cadRequestFromAI.furnitureImageIndex) 
+                ? cadRequestFromAI.furnitureImageIndex 
+                : [cadRequestFromAI.furnitureImageIndex];
+              
+              for (const furnitureIndex of furnitureIndices) {
+                if (furnitureIndex !== null && furnitureIndex !== undefined) {
+                  const furnitureImage = getImageFromHistory(conversationHistory, furnitureIndex);
+                  if (furnitureImage && furnitureImage.url) {
+                    const furnitureBase64Data = furnitureImage.url.split(',')[1];
+                    if (furnitureBase64Data) {
+                      const furnitureBuffer = Buffer.from(furnitureBase64Data, 'base64');
+                      const furnitureMimeType = furnitureImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+                      furnitureImages.push({
+                        image: furnitureBuffer,
+                        mimeType: furnitureMimeType
+                      });
+                      console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
+                    }
+                  } else {
+                    console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
+                  }
+                }
+              }
+            }
+            
+            console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequestFromAI.additionalPrompt ? ` (with additional prompt: ${cadRequestFromAI.additionalPrompt.substring(0, 50)}...)` : ''}...`);
+            // Process the blueprint through CAD function
+            const additionalPrompt = cadRequestFromAI.additionalPrompt || null;
+            const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
+            
+            // Convert result buffer to data URL
+            const cadImageBase64 = cadResultBuffer.toString('base64');
+            cadImageForDisplay = `data:${mimeType};base64,${cadImageBase64}`;
+            
+            // Annotate CAD image in parallel
+            cadAnnotationPromiseUpload = annotateImage(cadImageForDisplay, true).then(annotation => {
+              console.log(`[Image Annotation] Annotation for CAD render: ${annotation || 'failed'}`);
+              return annotation;
+            }).catch(err => {
+              console.error(`[Image Annotation] Error annotating CAD render:`, err);
+              return null;
+            });
+            
+            console.log(`[CAD] Successfully generated 3D render from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
+          } else {
+            console.log(`[CAD] Failed to extract base64 data from blueprint image`);
+          }
+        } else {
+          console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
+        }
+      } catch (error) {
+        console.error('Error processing CAD request:', error);
+        // Continue with original response if CAD fails
+      }
+    }
+
+    // Wait for all annotations to complete before building response
+    const stagedImageAnnotationsUpload = {};
+    if (stagingResults.length > 0) {
+      for (let i = 0; i < stagingResults.length; i++) {
+        if (stagingResults[i].annotationPromise) {
+          const annotation = await stagingResults[i].annotationPromise;
+          if (annotation) {
+            stagedImageAnnotationsUpload[`staged_${i}`] = annotation;
+          }
+        }
+      }
+    }
+    
+    const generatedImageAnnotationsUpload = {};
+    if (generatedImages.length > 0) {
+      for (let i = 0; i < generatedImages.length; i++) {
+        if (generatedImages[i].annotationPromise) {
+          const annotation = await generatedImages[i].annotationPromise;
+          if (annotation) {
+            generatedImageAnnotationsUpload[`generated_${i}`] = annotation;
+          }
+        }
+      }
+    }
+    
+    let cadImageAnnotationUpload = null;
+    if (cadImageForDisplay && cadAnnotationPromiseUpload) {
+      cadImageAnnotationUpload = await cadAnnotationPromiseUpload;
     }
 
     // Extract image annotations from cleanedUserContent to return to frontend
@@ -3414,16 +3941,24 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         response.stagedImages = stagingResults.map(r => r.stagedImage);
         response.stagingParams = stagingResults.map(r => r.params);
       }
+      // Include annotations if available
+      if (Object.keys(stagedImageAnnotationsUpload).length > 0) {
+        response.stagedImageAnnotations = stagedImageAnnotationsUpload;
+      }
     }
     
     // Handle multiple generated images
     if (generatedImages.length > 0) {
       if (generatedImages.length === 1) {
         // Single result - maintain backward compatibility
-        response.generatedImage = generatedImages[0];
+        response.generatedImage = generatedImages[0].image || generatedImages[0];
       } else {
         // Multiple results - return as array
-        response.generatedImages = generatedImages;
+        response.generatedImages = generatedImages.map(g => g.image || g);
+      }
+      // Include annotations if available
+      if (Object.keys(generatedImageAnnotationsUpload).length > 0) {
+        response.generatedImageAnnotations = generatedImageAnnotationsUpload;
       }
     }
     
@@ -3435,13 +3970,21 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       response.recalledImage = recalledImageForDisplay;
     }
     
+    if (cadImageForDisplay) {
+      response.cadImage = cadImageForDisplay;
+      if (cadImageAnnotationUpload) {
+        response.cadImageAnnotation = cadImageAnnotationUpload;
+      }
+    }
+    
     if (Object.keys(imageAnnotations).length > 0) {
       response.imageAnnotations = imageAnnotations;
     }
     
     res.json(response);
   } catch (error) {
-    console.error('Error in chat upload:', error);
+    console.error('[Chat Upload] Fatal error in chat-upload endpoint:', error);
+    console.error('[Chat Upload] Error stack:', error.stack);
     
     // Try to have the AI respond about the error, especially for unsupported file types
     try {
@@ -3493,11 +4036,14 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       console.error('Error generating AI error response:', aiError);
     }
     
-    // Fallback to generic error
-    res.status(500).json({ 
-      error: 'File processing failed', 
-      details: error.message 
-    });
+    // Fallback to generic error - always send a response to prevent hanging requests
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        error: 'File processing failed', 
+        details: 'An unexpected error occurred. Please try again.',
+        response: 'I apologize, but I encountered an unexpected error processing your files. Please try again.'
+      });
+    }
   }
 });
 
