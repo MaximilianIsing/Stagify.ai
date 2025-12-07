@@ -1,33 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://stagify.ai/</loc>
-    <lastmod>2025-12-06</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://stagify.ai/" />
   </url>
   <url>
     <loc>https://stagify.ai/why.html</loc>
-    <lastmod>2025-12-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <lastmod>2025-12-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/why.html" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/why.html" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://stagify.ai/why.html" />
   </url>
   <url>
     <loc>https://stagify.ai/faq.html</loc>
-    <lastmod>2025-12-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <lastmod>2025-12-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/faq.html" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/faq.html" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://stagify.ai/faq.html" />
   </url>
   <url>
     <loc>https://stagify.ai/contact.html</loc>
-    <lastmod>2025-12-06</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2025-12-07</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/contact.html" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://stagify.ai/contact.html" />
   </url>
   <url>
     <loc>https://stagify.ai/ai-designer.html</loc>
-    <lastmod>2025-12-06</lastmod>
+    <lastmod>2025-12-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/ai-designer.html" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://stagify.ai/ai-designer.html" />
   </url>
 </urlset>

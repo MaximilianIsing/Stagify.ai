@@ -567,7 +567,9 @@ async function downscaleImage(imageBuffer) {
 async function annotateImage(imageDataUrl, isCAD = false, detectBlueprint = false) {
   try {
     if (!openai) {
-      console.log('[Image Annotation] OpenAI not initialized, skipping annotation');
+      if (DEBUG_MODE) {
+        console.log('[Image Annotation] OpenAI not initialized, skipping annotation');
+      }
       return null;
     }
     
@@ -612,10 +614,14 @@ async function annotateImage(imageDataUrl, isCAD = false, detectBlueprint = fals
     } else {
       // If API didn't return CAD classification, use the provided isCAD value
       annotation += ` CAD: ${isCAD ? 'True' : 'False'}`;
-      console.log(`[Image Annotation] Warning: API did not return CAD classification, using default: ${isCAD ? 'True' : 'False'}`);
+      if (DEBUG_MODE) {
+        console.log(`[Image Annotation] Warning: API did not return CAD classification, using default: ${isCAD ? 'True' : 'False'}`);
+      }
     }
     
-    console.log(`[Image Annotation] Generated annotation: "${annotation}"`);
+    if (DEBUG_MODE) {
+      console.log(`[Image Annotation] Generated annotation: "${annotation}"`);
+    }
     return annotation;
   } catch (error) {
     console.error('[Image Annotation] Error annotating image:', error);
@@ -628,7 +634,9 @@ async function downscaleImageForGPT(dataUrl) {
     // Extract base64 data and MIME type
     const matches = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
     if (!matches) {
-      console.log('[Image Downscale] Invalid data URL format, returning original');
+      if (DEBUG_MODE) {
+        console.log('[Image Downscale] Invalid data URL format, returning original');
+      }
       return dataUrl;
     }
     
@@ -647,11 +655,15 @@ async function downscaleImageForGPT(dataUrl) {
     
     // Check if downscaling is needed
     if (metadata.width <= maxDimension && metadata.height <= maxDimension) {
-      console.log(`[Image Downscale] Image ${metadata.width}x${metadata.height} is within limits, no downscaling needed`);
+      if (DEBUG_MODE) {
+        console.log(`[Image Downscale] Image ${metadata.width}x${metadata.height} is within limits, no downscaling needed`);
+      }
       return dataUrl;
     }
     
-    console.log(`[Image Downscale] Downscaling image from ${metadata.width}x${metadata.height} to fit within ${maxDimension}x${maxDimension}`);
+    if (DEBUG_MODE) {
+      console.log(`[Image Downscale] Downscaling image from ${metadata.width}x${metadata.height} to fit within ${maxDimension}x${maxDimension}`);
+    }
     
     // Calculate the scaling factor to fit within maxDimension while maintaining aspect ratio
     const scaleWidth = maxDimension / metadata.width;
@@ -690,7 +702,9 @@ async function downscaleImageForGPT(dataUrl) {
     const newSize = Buffer.byteLength(newDataUrl, 'utf8');
     const reduction = ((1 - newSize / originalSize) * 100).toFixed(1);
     
-    console.log(`[Image Downscale] Downscaled to ${newWidth}x${newHeight}, size reduced by ${reduction}%`);
+    if (DEBUG_MODE) {
+      console.log(`[Image Downscale] Downscaled to ${newWidth}x${newHeight}, size reduced by ${reduction}%`);
+    }
     
     return newDataUrl;
   } catch (error) {
@@ -969,7 +983,9 @@ function stripImagesFromHistory(messages, keepCurrentMessageImages = false) {
  */
 function getImageFromHistory(messages, imageIndex = 0) {
   if (!Array.isArray(messages)) {
-    console.log(`[getImageFromHistory] Messages is not an array:`, typeof messages);
+    if (DEBUG_MODE) {
+      console.log(`[getImageFromHistory] Messages is not an array:`, typeof messages);
+    }
     return null;
   }
   
@@ -993,7 +1009,9 @@ function getImageFromHistory(messages, imageIndex = 0) {
           filename: imageItem.filename || imageItem.originalname || null,
           annotation: imageItem._annotation || imageItem.annotation || null
         });
-        console.log(`[getImageFromHistory] Found user-uploaded image at message index ${i}, image ${j + 1}/${imageItems.length}, filename: ${imageItem.filename || imageItem.originalname || 'unknown'}, total images found: ${imageMessages.length}`);
+        if (DEBUG_MODE) {
+          console.log(`[getImageFromHistory] Found user-uploaded image at message index ${i}, image ${j + 1}/${imageItems.length}, filename: ${imageItem.filename || imageItem.originalname || 'unknown'}, total images found: ${imageMessages.length}`);
+        }
       }
     } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
       // Get ALL staged and generated images from this message
@@ -1014,13 +1032,17 @@ function getImageFromHistory(messages, imageIndex = 0) {
           filename: imageItem.filename || imageItem.originalname || null,
           annotation: imageItem._annotation || imageItem.annotation || null
         });
-        const imageType = imageItem.isStaged ? 'staged' : 'generated';
-        console.log(`[getImageFromHistory] Found ${imageType} image at message index ${i}, image ${j + 1}/${imageItems.length}, total images found: ${imageMessages.length}`);
+        if (DEBUG_MODE) {
+          const imageType = imageItem.isStaged ? 'staged' : 'generated';
+          console.log(`[getImageFromHistory] Found ${imageType} image at message index ${i}, image ${j + 1}/${imageItems.length}, total images found: ${imageMessages.length}`);
+        }
       }
     }
   }
   
-  console.log(`[getImageFromHistory] Total images found: ${imageMessages.length}, requested index: ${imageIndex}`);
+  if (DEBUG_MODE) {
+    console.log(`[getImageFromHistory] Total images found: ${imageMessages.length}, requested index: ${imageIndex}`);
+  }
   
   // Return the image at the requested index (0 = most recent)
   if (imageIndex >= 0 && imageIndex < imageMessages.length) {
@@ -1029,7 +1051,9 @@ function getImageFromHistory(messages, imageIndex = 0) {
   
   // If requested index doesn't exist but we have images, return the most recent (index 0) as fallback
   if (imageMessages.length > 0) {
-    console.log(`[getImageFromHistory] Requested index ${imageIndex} not found, returning most recent image (index 0) as fallback`);
+    if (DEBUG_MODE) {
+      console.log(`[getImageFromHistory] Requested index ${imageIndex} not found, returning most recent image (index 0) as fallback`);
+    }
     return imageMessages[0];
   }
   
@@ -1371,8 +1395,10 @@ async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-fla
       throw new Error('Gemini AI service not properly configured');
     }
     
-    console.log(`[Image Generation] Generating image with prompt: "${prompt}"`);
-    console.log(`[Image Generation] Using Gemini model: ${geminiModel}`);
+    if (DEBUG_MODE) {
+      console.log(`[Image Generation] Generating image with prompt: "${prompt}"`);
+      console.log(`[Image Generation] Using Gemini model: ${geminiModel}`);
+    }
     
     // Use Gemini's image generation model (text-to-image, no input image needed)
     const model = genAI.getGenerativeModel({ model: geminiModel });
@@ -1394,7 +1420,9 @@ async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-fla
       if (part.inlineData) {
         const imageData = part.inlineData.data;
         const generatedImage = `data:image/png;base64,${imageData}`;
-        console.log(`[Image Generation] Successfully generated image`);
+        if (DEBUG_MODE) {
+          console.log(`[Image Generation] Successfully generated image`);
+        }
         return generatedImage;
       }
     }
@@ -1442,7 +1470,9 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       });
       // Update the prompt text to include furniture reference
       prompt[0].text += '\n\nIMPORTANT: The second image provided is a specific piece of furniture that the user wants to add to the room. Please incorporate this exact furniture piece into the staged room design, matching its style, color, and appearance as closely as possible.';
-      console.log(`[Staging] Including furniture image in staging request`);
+      if (DEBUG_MODE) {
+        console.log(`[Staging] Including furniture image in staging request`);
+      }
     }
     
     // Log prompt to file
@@ -2073,8 +2103,8 @@ app.post('/api/chat', async (req, res) => {
     const deduplicatedMessages = deduplicateMessages(messages);
     if (deduplicatedMessages.length !== messages.length) {
       const removedCount = messages.length - deduplicatedMessages.length;
-      console.log(`[Deduplication] Removed ${removedCount} duplicate message(s) from ${messages.length} total messages`);
       if (DEBUG_MODE) {
+        console.log(`[Deduplication] Removed ${removedCount} duplicate message(s) from ${messages.length} total messages`);
         // Log which messages were duplicates
         const seenKeys = new Set();
         messages.forEach((msg, idx) => {
@@ -2109,12 +2139,14 @@ app.post('/api/chat', async (req, res) => {
     const { imageContext, imagesSentToGPT, originalImageIndex } = buildImageContext(deduplicatedMessages);
     
     // Log image context for debugging
-    if (imageContext) {
-      console.log('=== IMAGE CONTEXT SENT TO AI (CHAT) ===');
-      console.log(imageContext);
-      console.log('========================================');
-    } else {
-      console.log('[Image Context] No images in conversation history');
+    if (DEBUG_MODE) {
+      if (imageContext) {
+        console.log('=== IMAGE CONTEXT SENT TO AI (CHAT) ===');
+        console.log(imageContext);
+        console.log('========================================');
+      } else {
+        console.log('[Image Context] No images in conversation history');
+      }
     }
     
     // Build system instruction with memories
@@ -2195,7 +2227,9 @@ app.post('/api/chat', async (req, res) => {
           hasImageInHistory = true;
           imageFromHistory = imageItem.image_url.url;
           isStagedImage = true;
-          console.log(`[Staging] Found staged image in conversation history`);
+          if (DEBUG_MODE) {
+            console.log(`[Staging] Found staged image in conversation history`);
+          }
           break;
         }
       }
@@ -2210,7 +2244,9 @@ app.post('/api/chat', async (req, res) => {
           if (imageItem && imageItem.image_url && imageItem.image_url.url) {
             hasImageInHistory = true;
             imageFromHistory = imageItem.image_url.url;
-            console.log(`[Staging] Found user-uploaded image in conversation history`);
+            if (DEBUG_MODE) {
+              console.log(`[Staging] Found user-uploaded image in conversation history`);
+            }
             break;
           }
         }
@@ -2533,11 +2569,15 @@ app.post('/api/chat', async (req, res) => {
             // Find the original (first) user-uploaded image
             const originalImageIndex = getOriginalImageIndex(messages);
             if (originalImageIndex !== null) {
-              console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
+              if (DEBUG_MODE) {
+                console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
+              }
               stagingParams.usePreviousImage = originalImageIndex;
             } else {
               // If no original found, use most recent (index 0)
-              console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
+              if (DEBUG_MODE) {
+                console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
+              }
               stagingParams.usePreviousImage = 0;
             }
           }
@@ -2551,7 +2591,9 @@ app.post('/api/chat', async (req, res) => {
               if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
               // AI requested a previous image - use the AI's chosen index (AI should use context to determine the correct image)
               const imageIndex = typeof stagingParams.usePreviousImage === 'number' ? stagingParams.usePreviousImage : 0;
-              console.log(`[Staging] Looking for image at index ${imageIndex}`);
+              if (DEBUG_MODE) {
+                console.log(`[Staging] Looking for image at index ${imageIndex}`);
+              }
               
               const previousImage = getImageFromHistory(messages, imageIndex);
               
@@ -2560,22 +2602,32 @@ app.post('/api/chat', async (req, res) => {
                 if (base64Data) {
                   imageBuffer = Buffer.from(base64Data, 'base64');
                   imageSource = previousImage.isStaged ? `staged image (index ${imageIndex})` : `user-uploaded image (index ${imageIndex})`;
-                  console.log(`[Staging] Using previous ${imageSource}`);
+                  if (DEBUG_MODE) {
+                    console.log(`[Staging] Using previous ${imageSource}`);
+                  }
                 } else {
-                  console.log(`[Staging] Previous image found but base64 data extraction failed`);
+                  if (DEBUG_MODE) {
+                    console.log(`[Staging] Previous image found but base64 data extraction failed`);
+                  }
                 }
               } else {
-                console.log(`[Staging] Previous image at index ${imageIndex} not found`);
+                if (DEBUG_MODE) {
+                  console.log(`[Staging] Previous image at index ${imageIndex} not found`);
+                }
                 // Fallback: try to use the most recent image (index 0) if requested index doesn't exist
                 if (imageIndex > 0) {
-                  console.log(`[Staging] Attempting fallback to index 0`);
+                  if (DEBUG_MODE) {
+                    console.log(`[Staging] Attempting fallback to index 0`);
+                  }
                   const fallbackImage = getImageFromHistory(messages, 0);
                   if (fallbackImage && fallbackImage.url) {
                     const base64Data = fallbackImage.url.split(',')[1];
                     if (base64Data) {
                       imageBuffer = Buffer.from(base64Data, 'base64');
                       imageSource = fallbackImage.isStaged ? `staged image (fallback to index 0)` : `user-uploaded image (fallback to index 0)`;
-                      console.log(`[Staging] Using fallback ${imageSource}`);
+                      if (DEBUG_MODE) {
+                        console.log(`[Staging] Using fallback ${imageSource}`);
+                      }
                     }
                   }
                 }
@@ -2586,7 +2638,9 @@ app.post('/api/chat', async (req, res) => {
               if (base64Data) {
                 imageBuffer = Buffer.from(base64Data, 'base64');
                 imageSource = isStagedImage ? 'staged image' : 'conversation history';
-                console.log(`[Staging] Using image from conversation history (fallback)`);
+                if (DEBUG_MODE) {
+                  console.log(`[Staging] Using image from conversation history (fallback)`);
+                }
               }
             }
             
@@ -2595,17 +2649,23 @@ app.post('/api/chat', async (req, res) => {
             if (stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
               const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
               if (furnitureIndex !== null) {
-                console.log(`[Staging] Looking for furniture image at index ${furnitureIndex}`);
+                if (DEBUG_MODE) {
+                  console.log(`[Staging] Looking for furniture image at index ${furnitureIndex}`);
+                }
                 const furnitureImage = getImageFromHistory(messages, furnitureIndex);
                 
                 if (furnitureImage && furnitureImage.url) {
                   const base64Data = furnitureImage.url.split(',')[1];
                   if (base64Data) {
                     furnitureImageBuffer = Buffer.from(base64Data, 'base64');
-                    console.log(`[Staging] Found furniture image at index ${furnitureIndex}`);
+                    if (DEBUG_MODE) {
+                      console.log(`[Staging] Found furniture image at index ${furnitureIndex}`);
+                    }
                   }
                 } else {
-                  console.log(`[Staging] Furniture image at index ${furnitureIndex} not found`);
+                  if (DEBUG_MODE) {
+                    console.log(`[Staging] Furniture image at index ${furnitureIndex} not found`);
+                  }
                 }
               }
             }
@@ -2617,7 +2677,9 @@ app.post('/api/chat', async (req, res) => {
                 if (stagedImage) {
                   // Annotate staged image in parallel
                   const annotationPromise = annotateImage(stagedImage).then(annotation => {
-                    console.log(`[Image Annotation] Annotation for staged image ${i + 1}: ${annotation || 'failed'}`);
+                    if (DEBUG_MODE) {
+                      console.log(`[Image Annotation] Annotation for staged image ${i + 1}: ${annotation || 'failed'}`);
+                    }
                     return annotation;
                   }).catch(err => {
                     console.error(`[Image Annotation] Error annotating staged image ${i + 1}:`, err);
@@ -2629,7 +2691,9 @@ app.post('/api/chat', async (req, res) => {
                     params: stagingParams,
                     annotationPromise: annotationPromise
                   });
-                  console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+                  if (DEBUG_MODE) {
+                    console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+                  }
                 }
               } catch (stagingError) {
                 console.error(`[Staging] Error processing staging ${i + 1}:`, stagingError);
@@ -2641,7 +2705,9 @@ app.post('/api/chat', async (req, res) => {
                 }
               }
             } else {
-              console.log(`[Staging] No image found for staging ${i + 1}`);
+              if (DEBUG_MODE) {
+                console.log(`[Staging] No image found for staging ${i + 1}`);
+              }
               if (stagingRequests.length === 1) {
                 text = (text || '') + '\n\nSorry, I couldn\'t find the image to stage. Please make sure you\'ve uploaded an image.';
               }
@@ -3113,12 +3179,14 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     const { imageContext, imagesSentToGPT, originalImageIndex } = buildImageContext(conversationHistory);
     
     // Log image context for debugging
-    if (imageContext) {
-      console.log('=== IMAGE CONTEXT SENT TO AI (CHAT-UPLOAD) ===');
-      console.log(imageContext);
-      console.log('===============================================');
-    } else {
-      console.log('[Image Context] No images in conversation history');
+    if (DEBUG_MODE) {
+      if (imageContext) {
+        console.log('=== IMAGE CONTEXT SENT TO AI (CHAT-UPLOAD) ===');
+        console.log(imageContext);
+        console.log('===============================================');
+      } else {
+        console.log('[Image Context] No images in conversation history');
+      }
     }
     
     if (imageContext) {
@@ -3706,22 +3774,32 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
               if (base64Data) {
                 imageBuffer = Buffer.from(base64Data, 'base64');
                 imageSource = previousImage.isStaged ? `staged image (index ${imageIndex})` : `user-uploaded image (index ${imageIndex})`;
-                console.log(`[Staging] Using previous ${imageSource}`);
+                if (DEBUG_MODE) {
+                  console.log(`[Staging] Using previous ${imageSource}`);
+                }
               } else {
-                console.log(`[Staging] Previous image found but base64 data extraction failed`);
+                if (DEBUG_MODE) {
+                  console.log(`[Staging] Previous image found but base64 data extraction failed`);
+                }
               }
             } else {
-              console.log(`[Staging] Previous image at index ${imageIndex} not found`);
+              if (DEBUG_MODE) {
+                console.log(`[Staging] Previous image at index ${imageIndex} not found`);
+              }
               // Fallback: try to use the most recent image (index 0) if requested index doesn't exist
               if (imageIndex > 0) {
-                console.log(`[Staging] Attempting fallback to index 0`);
+                if (DEBUG_MODE) {
+                  console.log(`[Staging] Attempting fallback to index 0`);
+                }
                 const fallbackImage = getImageFromHistory(conversationHistory, 0);
                 if (fallbackImage && fallbackImage.url) {
                   const base64Data = fallbackImage.url.split(',')[1];
                   if (base64Data) {
                     imageBuffer = Buffer.from(base64Data, 'base64');
                     imageSource = fallbackImage.isStaged ? `staged image (fallback to index 0)` : `user-uploaded image (fallback to index 0)`;
-                    console.log(`[Staging] Using fallback ${imageSource}`);
+                    if (DEBUG_MODE) {
+                      console.log(`[Staging] Using fallback ${imageSource}`);
+                    }
                   }
                 }
               }
@@ -3730,7 +3808,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
             // Use current message's image
             imageBuffer = firstImageFile.buffer;
             imageSource = 'current message';
-            console.log(`[Staging] Using image from current message`);
+            if (DEBUG_MODE) {
+              console.log(`[Staging] Using image from current message`);
+            }
           }
           
           // Retrieve furniture image if specified
@@ -3738,7 +3818,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
           if (stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
             const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
             if (furnitureIndex !== null) {
-              console.log(`[Staging] Looking for furniture image at index ${furnitureIndex}`);
+              if (DEBUG_MODE) {
+                console.log(`[Staging] Looking for furniture image at index ${furnitureIndex}`);
+              }
               const furnitureImage = getImageFromHistory(conversationHistory, furnitureIndex);
               
               if (furnitureImage && furnitureImage.url) {
@@ -4274,6 +4356,98 @@ app.get('/contactlogs', protectLogs, (req, res) => {
   }
 });
 
+// Memories endpoint - serves the memories JSON file (protected)
+app.get('/memories', protectLogs, (req, res) => {
+  try {
+    const memoriesFile = getMemoriesFile();
+    
+    if (fs.existsSync(memoriesFile)) {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'inline; filename="memories.json"');
+      res.sendFile(memoriesFile);
+    } else {
+      res.status(404).json({ 
+        error: 'File not found',
+        message: 'No memories are available yet'
+      });
+    }
+  } catch (error) {
+    console.error('Error serving memories file:', error);
+    res.status(500).json({ 
+      error: 'Failed to retrieve memories',
+      message: error.message
+    });
+  }
+});
+
+// Chat logs endpoint - serves the chat logs CSV file (protected)
+app.get('/chatlogs', protectLogs, (req, res) => {
+  try {
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+    }
+
+    const logFile = path.join(logDir, 'chat_logs.csv');
+    
+    if (fs.existsSync(logFile)) {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'inline; filename="chat_logs.csv"');
+      res.sendFile(logFile);
+    } else {
+      res.status(404).json({ 
+        error: 'Log file not found',
+        message: 'No chat logs are available yet'
+      });
+    }
+  } catch (error) {
+    console.error('Error serving chat log file:', error);
+    res.status(500).json({ 
+      error: 'Failed to retrieve chat logs',
+      message: error.message
+    });
+  }
+});
+
+// Bug reports endpoint - serves the bug reports CSV file (protected)
+app.get('/bugreports', protectLogs, (req, res) => {
+  try {
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+    }
+
+    const logFile = path.join(logDir, 'bug_reports.csv');
+    
+    if (fs.existsSync(logFile)) {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'inline; filename="bug_reports.csv"');
+      res.sendFile(logFile);
+    } else {
+      res.status(404).json({ 
+        error: 'Log file not found',
+        message: 'No bug reports are available yet'
+      });
+    }
+  } catch (error) {
+    console.error('Error serving bug reports file:', error);
+    res.status(500).json({ 
+      error: 'Failed to retrieve bug reports',
+      message: error.message
+    });
+  }
+});
+
 // Bug report endpoint
 app.post('/api/bug-report', async (req, res) => {
   try {
@@ -4376,7 +4550,9 @@ app.post('/api/bug-report', async (req, res) => {
       });
     }
     
-    console.log(`✓ Bug report submitted by user: ${userId || 'unknown'}`);
+    if (DEBUG_MODE) {
+      console.log(`✓ Bug report submitted by user: ${userId || 'unknown'}`);
+    }
     
     return res.json({ success: true, message: 'Bug report submitted successfully' });
   } catch (error) {

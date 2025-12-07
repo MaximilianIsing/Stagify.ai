@@ -1,6 +1,7 @@
 {
-  "name": "Stagify.ai - AI Home Staging Tool",
+  "name": "Stagify.ai - Free AI Virtual Staging Tool",
   "short_name": "Stagify.ai",
+  "version": "2.0.2",
   "description": "Transform empty rooms with AI staging. Upload photos and get professionally staged results in seconds. Free AI home staging for real estate agents, sellers, and buyers.",
   "start_url": "/",
   "display": "standalone",
@@ -8,6 +9,9 @@
   "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "scope": "/",
+  "screenshots": [],
+  "shortcuts": [],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "media-webp/logo/Logo32x32.webp",
@@ -28,8 +32,18 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["business", "productivity", "utilities"],
+  "categories": ["business", "productivity", "utilities", "design", "photography"],
   "lang": "en",
-  "dir": "ltr"
+  "dir": "ltr",
+  "related_applications": [],
+  "i18n": {
+    "supported_languages": ["en", "es", "zh"],
+    "default_language": "en",
+    "language_display_names": {
+      "en": "English",
+      "es": "Español",
+      "zh": "中文"
+    }
+  }
 }
 

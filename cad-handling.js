@@ -7,6 +7,24 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Read DEBUG_MODE from environment or debug.txt (same as server.js)
+let DEBUG_MODE = false;
+try {
+  let debugValue = process.env.DEBUG;
+  if (debugValue === undefined) {
+    const debugFile = path.join(__dirname, 'debug.txt');
+    if (fs.existsSync(debugFile)) {
+      debugValue = fs.readFileSync(debugFile, 'utf8').trim();
+    }
+  }
+  if (debugValue !== undefined) {
+    DEBUG_MODE = debugValue.toLowerCase() === 'true';
+  }
+} catch (error) {
+  // Default to false if can't read
+  DEBUG_MODE = false;
+}
+
 // Cache the Gemini client instance to avoid reinitializing on every call
 let cachedGenAI = null;
 let cachedApiKey = null;
@@ -93,7 +111,9 @@ function extractBase64(imageData) {
  * @returns {Promise<Buffer>} Buffer containing the generated 3D render image
  */
 async function blueprintTo3D(blueprintImage, mimeType = null, furnitureImages = [], additionalPrompt = null) {
-  console.log("=== BLUEPRINT TO 3D RENDER ===\n");
+  if (DEBUG_MODE) {
+    console.log("=== BLUEPRINT TO 3D RENDER ===\n");
+  }
 
   // Read API key
   const apiKey = readApiKey();
@@ -102,9 +122,13 @@ async function blueprintTo3D(blueprintImage, mimeType = null, furnitureImages = 
   let genAI;
   if (cachedGenAI && cachedApiKey === apiKey) {
     genAI = cachedGenAI;
-    console.log("Reusing cached Gemini client");
+    if (DEBUG_MODE) {
+      console.log("Reusing cached Gemini client");
+    }
   } else {
-  console.log("Initializing Gemini...");
+    if (DEBUG_MODE) {
+      console.log("Initializing Gemini...");
+    }
     genAI = new GoogleGenerativeAI(apiKey);
     cachedGenAI = genAI;
     cachedApiKey = apiKey;
@@ -126,7 +150,9 @@ async function blueprintTo3D(blueprintImage, mimeType = null, furnitureImages = 
 
   // Add furniture images if provided
   if (furnitureImages && furnitureImages.length > 0) {
-    console.log(`Including ${furnitureImages.length} furniture image(s) in the render`);
+    if (DEBUG_MODE) {
+      console.log(`Including ${furnitureImages.length} furniture image(s) in the render`);
+    }
     for (let i = 0; i < furnitureImages.length; i++) {
       const furnitureImage = furnitureImages[i];
       const furnitureBase64 = extractBase64(furnitureImage.image);
@@ -182,7 +208,9 @@ Please incorporate these requirements into the 3D render while maintaining the t
 
   prompt += `\n\nGenerate the 3D render now. Ensure it is a TOP-DOWN view.`;
 
-  console.log("Sending request to Gemini...");
+  if (DEBUG_MODE) {
+    console.log("Sending request to Gemini...");
+  }
   
   try {
     // Use Gemini 3 Pro Image Preview for image understanding and generation
@@ -207,7 +235,9 @@ Please incorporate these requirements into the 3D render while maintaining the t
           if (part.inlineData && part.inlineData.data) {
             // Return the generated image as a Buffer
             const imageBuffer = Buffer.from(part.inlineData.data, "base64");
-            console.log(`\n✓ 3D render generated successfully`);
+            if (DEBUG_MODE) {
+              console.log(`\n✓ 3D render generated successfully`);
+            }
             return imageBuffer;
           }
         }
@@ -216,14 +246,18 @@ Please incorporate these requirements into the 3D render while maintaining the t
         const textParts = content.parts.filter(p => p.text);
         if (textParts.length > 0) {
           const text = textParts.map(p => p.text).join("\n");
-          console.log("Gemini response (text):", text.substring(0, 500));
+          if (DEBUG_MODE) {
+            console.log("Gemini response (text):", text.substring(0, 500));
+          }
           throw new Error("Gemini returned text instead of an image. This model may not support image generation. Response: " + text.substring(0, 200));
         }
       }
     }
     
     // If we get here, the response format is unexpected
-    console.log("Full response:", JSON.stringify(response, null, 2).substring(0, 1000));
+    if (DEBUG_MODE) {
+      console.log("Full response:", JSON.stringify(response, null, 2).substring(0, 1000));
+    }
     throw new Error("Unexpected response format from Gemini");
   } catch (error) {
     console.error("Error generating 3D render:", error.message);
