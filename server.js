@@ -2143,7 +2143,7 @@ app.post('/api/chat', async (req, res) => {
     systemInstruction += '\n- "response": Your text response to the user';
     systemInstruction += '\n- "memories": { "stores": ["memory description 1", ...], "forgets": ["memory ID 1", ...] } - Store or forget memories based on the conversation. To forget ALL memories, use "forgets": ["all"]';
     systemInstruction += '\n- "staging": { "shouldStage": true/false, "roomType": "Living room"|"Bedroom"|"Kitchen"|"Bathroom"|"Dining room"|"Office"|"Other", "additionalPrompt": "detailed staging description", "removeFurniture": true/false, "usePreviousImage": false|0|1|2|..., "furnitureImageIndex": null|0|1|2|... } OR "staging": [ { "shouldStage": true, ... }, { "shouldStage": true, ... }, ... ] - Request staging if the user wants to stage/modify a room image (ONLY use staging when the user has uploaded or is referring to an existing room image to modify). If the user wants to add a specific piece of furniture from a previous message, set "furnitureImageIndex" to the index of that furniture image (0 = most recent image, 1 = second most recent, etc.). You can provide MULTIPLE staging requests (up to 3) in an array if the user asks for multiple variations (e.g., "stage this room in 3 different themes"). Each staging request in the array will be processed separately.';
-    systemInstruction += '\n- "imageRequest": { "requestImage": true/false, "imageIndex": 0|1|2|... } - Request to view/analyze a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "show me", "see", "view", or "display" a previous image. The image will be displayed to the user. If the user also wants analysis/description, the system will analyze it automatically.';
+    systemInstruction += '\n- "imageRequest": { "requestImage": true/false, "imageIndex": 0|1|2|... } - Request to view/analyze a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "show me", "see", "view", "display", "describe", or "analyze" a previous image. The image will be displayed to the user. If the user also wants analysis/description, the system will analyze it automatically.';
     systemInstruction += '\n- "recall": { "shouldRecall": true/false, "imageIndex": 0|1|2|... } - Recall and display a previous image by index (0 = most recent, 1 = second most recent, etc.). Use this when the user asks to "see", "show", "recall", or "bring back" an old image. This works for ANY image in the conversation history: user-uploaded images, staged images, generated images, and CAD renders. This is simpler than imageRequest - it just retrieves and displays the image without analysis. If user says "original image", "first image", or "initial image", use the original image index shown above.';
     systemInstruction += '\n- "generate": { "shouldGenerate": true/false, "prompt": "detailed image generation prompt" } OR "generate": [ { "shouldGenerate": true, "prompt": "..." }, { "shouldGenerate": true, "prompt": "..." }, ... ] - Generate a completely new image from text description (ONLY use generation when the user wants to create a NEW image from scratch, NOT when they want to modify an existing room image. If they uploaded an image or are referring to a previous image, use staging instead). You can provide MULTIPLE generation requests (up to 3) in an array if the user asks for multiple variations. Each generation request in the array will be processed separately.';
     systemInstruction += '\n\nIMPORTANT DISTINCTION:\n- Use "staging" when: user uploaded a room photo (3D perspective view of an interior space), user refers to a previous room photo with "CAD: False", user wants to modify/redesign an existing room photo that is NOT a CAD-staged image\n- Use "cad" (CAD-staging) when: (1) user uploaded a blueprint/floor plan (2D top-down architectural drawing), (2) user refers to a previous blueprint, (3) user says "stage" but the image is a blueprint/floor plan, OR (4) user wants to modify an image that has "CAD: True" in the image context - ALWAYS use CAD-staging for blueprints and CAD-staged images, even if the user says "stage"\n- Use "generate" when: user wants to create a completely new image from text only (no existing image involved), user asks to "generate", "create", "draw", or "make" an image of something that is NOT a room modification';
@@ -2231,7 +2231,8 @@ app.post('/api/chat', async (req, res) => {
         const tagMap = {
           'generate': '[TAG: Generate]',
           'stage': '[TAG: Stage]',
-          'cad-stage': '[TAG: CAD-Stage]'
+          'cad-stage': '[TAG: CAD-Stage]',
+          'describe': '[TAG: Describe/Recall]'
         };
         const tagText = tagMap[messageTag] || '';
         
@@ -3135,7 +3136,8 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         const tagMap = {
           'generate': '[TAG: Generate]',
           'stage': '[TAG: Stage]',
-          'cad-stage': '[TAG: CAD-Stage]'
+          'cad-stage': '[TAG: CAD-Stage]',
+          'describe': '[TAG: Describe/Recall]'
         };
         messageText = `${tagMap[messageTag] || ''} ${messageText}`.trim();
       }
@@ -3145,7 +3147,8 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       const tagMap = {
         'generate': '[TAG: Generate]',
         'stage': '[TAG: Stage]',
-        'cad-stage': '[TAG: CAD-Stage]'
+        'cad-stage': '[TAG: CAD-Stage]',
+        'describe': '[TAG: Describe/Recall]'
       };
       userContent.push({ type: 'text', text: tagMap[messageTag] || '' });
     }
@@ -4268,6 +4271,117 @@ app.get('/contactlogs', protectLogs, (req, res) => {
       error: 'Failed to retrieve contact logs',
       message: error.message
     });
+  }
+});
+
+// Bug report endpoint
+app.post('/api/bug-report', async (req, res) => {
+  try {
+    const { description, steps, email, userId, userAgent, url, timestamp, conversationHistory } = req.body;
+    
+    if (!description || !description.trim()) {
+      return res.status(400).json({ error: 'Bug description is required' });
+    }
+    
+    // Escape CSV fields that contain commas, quotes, or newlines
+    function escapeCSVField(field) {
+      if (field === null || field === undefined) return '';
+      const str = String(field);
+      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    }
+    
+    const reportTimestamp = timestamp || new Date().toISOString();
+    const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
+    
+    // Format conversation history as a readable string (single line for CSV)
+    let conversationLog = '';
+    if (conversationHistory && Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      const formattedMessages = conversationHistory.map((msg, index) => {
+        let content = '';
+        if (Array.isArray(msg.content)) {
+          // Handle array content (may contain images)
+          const textParts = msg.content
+            .filter(item => item.type === 'text')
+            .map(item => item.text);
+          const imageCount = msg.content.filter(item => item.type === 'image_url').length;
+          content = textParts.join(' ');
+          if (imageCount > 0) {
+            content += ` [${imageCount} image(s)]`;
+          }
+        } else {
+          content = String(msg.content || '');
+        }
+        // Replace any newlines in content with space to keep it on one line
+        content = content.replace(/\n/g, ' ').replace(/\r/g, ' ');
+        return `Message ${index + 1} [${msg.role.toUpperCase()}]: ${content}`;
+      });
+      // Join with separator instead of newline to keep on one CSV line
+      conversationLog = formattedMessages.join(' | ');
+    } else {
+      conversationLog = 'No conversation history';
+    }
+    
+    // Create CSV row
+    const csvRow = [
+      escapeCSVField(reportTimestamp),
+      escapeCSVField(description),
+      escapeCSVField(steps || ''),
+      escapeCSVField(email || ''),
+      escapeCSVField(userId || 'unknown'),
+      escapeCSVField(userAgent || 'unknown'),
+      escapeCSVField(url || 'unknown'),
+      escapeCSVField(ipAddress),
+      escapeCSVField(conversationLog)
+    ].join(',') + '\n';
+    
+    // Use mounted disk on Render, project data folder locally
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+      
+      // Create data directory if it doesn't exist
+      if (!fs.existsSync(logDir)) {
+        try {
+          fs.mkdirSync(logDir, { recursive: true });
+        } catch (error) {
+          console.log('Error: Cannot create data directory, using project root');
+          logDir = __dirname;
+        }
+      }
+    }
+    
+    const logFile = path.join(logDir, 'bug_reports.csv');
+    
+    // Check if file exists to add header if it's a new file
+    const fileExists = fs.existsSync(logFile);
+    
+    if (!fileExists) {
+      // Create new file with header and first row
+      const header = 'timestamp,description,stepsToReproduce,email,userId,userAgent,url,ipAddress,conversationHistory\n';
+      fs.writeFileSync(logFile, header + csvRow);
+    } else {
+      // Append to existing file
+      fs.appendFile(logFile, csvRow, (err) => {
+        if (err) {
+          console.error('Error writing to bug report log:', err);
+        }
+      });
+    }
+    
+    console.log(`✓ Bug report submitted by user: ${userId || 'unknown'}`);
+    
+    return res.json({ success: true, message: 'Bug report submitted successfully' });
+  } catch (error) {
+    console.error('Error processing bug report:', error);
+    return res.status(500).json({ error: 'Failed to submit bug report' });
   }
 });
 
