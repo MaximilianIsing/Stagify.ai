@@ -285,6 +285,13 @@
     "status": {
       "fileReady": "Archivo listo"
     },
+    "modelSelector": {
+      "chooseModel": "Elige tu modelo",
+      "fast": "Rápido",
+      "fastDescription": "Calidad estándar, rápido",
+      "pro": "Pro",
+      "proDescription": "Mayor calidad, más lento"
+    },
     "errors": {
       "invalidFileType": "Por favor sube un archivo PDF.",
       "fileTooLarge": "El archivo es demasiado grande. Por favor sube un PDF menor a 100MB.",

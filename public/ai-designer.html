@@ -982,7 +982,7 @@
               
               <div class="send-controls">
                 <button id="send-btn" class="send-btn" title="Send message">
-                  <img src="media-webp/send.webp" alt="Send">
+                  <img src="media-webp/Send.webp" alt="Send">
                 </button>
                 <div class="model-selector">
                   <button class="model-selector-btn" id="model-selector-btn">
@@ -992,17 +992,17 @@
                     </svg>
                   </button>
                   <div class="model-dropdown" id="model-dropdown">
-                    <div class="model-dropdown-header">Choose your model</div>
+                    <div class="model-dropdown-header" data-lang="pdf.modelSelector.chooseModel">Choose your model</div>
                     <div class="model-option" data-model="fast">
                       <div class="model-option-content">
-                        <div class="model-option-name">Fast</div>
-                        <div class="model-option-description">Standard quality, faster</div>
+                        <div class="model-option-name" data-lang="pdf.modelSelector.fast">Fast</div>
+                        <div class="model-option-description" data-lang="pdf.modelSelector.fastDescription">Standard quality, faster</div>
                       </div>
                     </div>
                     <div class="model-option" data-model="pro">
                       <div class="model-option-content">
-                        <div class="model-option-name">Pro</div>
-                        <div class="model-option-description">Higher quality, slower</div>
+                        <div class="model-option-name" data-lang="pdf.modelSelector.pro">Pro</div>
+                        <div class="model-option-description" data-lang="pdf.modelSelector.proDescription">Higher quality, slower</div>
                       </div>
                     </div>
                   </div>
@@ -2359,35 +2359,105 @@
         const modelDropdown = document.getElementById('model-dropdown');
         const modelOptions = document.querySelectorAll('.model-option');
         
-        // Get saved model from localStorage or default to "Fast"
-        function getSelectedModel() {
-          return localStorage.getItem('selectedModel') || 'Fast';
+        // Get saved model key from localStorage or default to "fast"
+        function getSelectedModelKey() {
+          return localStorage.getItem('selectedModel') || 'fast';
         }
         
-        // Save model to localStorage
-        function setSelectedModel(modelName) {
-          localStorage.setItem('selectedModel', modelName);
+        // Save model key to localStorage
+        function setSelectedModelKey(modelKey) {
+          localStorage.setItem('selectedModel', modelKey);
         }
         
-        // Map model display name to API model name
-        function getModelApiName(displayName) {
+        // Map model key to API model name
+        function getModelApiName(modelKey) {
           const modelMap = {
-            'Fast': 'gpt-4o-mini',
-            'Pro': 'gpt-5-mini'
+            'fast': 'gpt-4o-mini',
+            'pro': 'gpt-5-mini'
           };
-          return modelMap[displayName] || 'gpt-4o-mini';
+          return modelMap[modelKey] || 'gpt-4o-mini';
+        }
+        
+        // Get translated text for model
+        function getModelText(modelKey) {
+          if (window.LanguageSystem && window.LanguageSystem.isLoaded()) {
+            const translationKey = modelKey === 'fast' ? 'pdf.modelSelector.fast' : 'pdf.modelSelector.pro';
+            return window.LanguageSystem.getText(translationKey) || (modelKey === 'fast' ? 'Fast' : 'Pro');
+          }
+          return modelKey === 'fast' ? 'Fast' : 'Pro';
+        }
+        
+        // Update the displayed model text
+        function updateModelDisplay() {
+          const savedModelKey = getSelectedModelKey();
+          const modelText = modelSelectorBtn?.querySelector('.model-selector-text');
+          if (modelText) {
+            modelText.textContent = getModelText(savedModelKey);
+          }
         }
         
         // Initialize display from localStorage
-        const savedModel = getSelectedModel();
-        const modelText = modelSelectorBtn?.querySelector('.model-selector-text');
-        if (modelText) {
-          modelText.textContent = savedModel;
+        // Wait for language system to be ready
+        function waitForLanguageSystem() {
+          if (window.LanguageSystem && window.LanguageSystem.isLoaded()) {
+            updateModelDisplay();
+          } else {
+            // Try again after a short delay
+            setTimeout(waitForLanguageSystem, 100);
+          }
         }
+        waitForLanguageSystem();
+        
+        // Update display when language changes
+        // Method 1: Hook into applyLanguageToElements
+        if (window.LanguageSystem) {
+          const originalApplyLanguage = window.LanguageSystem.applyLanguageToElements;
+          if (originalApplyLanguage) {
+            window.LanguageSystem.applyLanguageToElements = function() {
+              originalApplyLanguage.call(this);
+              // Small delay to ensure translations are applied first
+              setTimeout(updateModelDisplay, 50);
+            };
+          }
+        }
+        
+        // Method 2: Listen to language selector change event
+        const languageSelect = document.getElementById('language-select');
+        if (languageSelect) {
+          languageSelect.addEventListener('change', () => {
+            // Wait for language system to update translations
+            setTimeout(updateModelDisplay, 200);
+          });
+        }
+        
+        // Method 3: Watch for language-loaded class on body
+        const bodyObserver = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+              if (document.body.classList.contains('language-loaded')) {
+                updateModelDisplay();
+              }
+            }
+          });
+        });
+        bodyObserver.observe(document.body, {
+          attributes: true,
+          attributeFilter: ['class']
+        });
+        
+        // Method 4: Poll for language changes (fallback)
+        let lastLanguage = localStorage.getItem('selectedLanguage') || 'english';
+        setInterval(() => {
+          const currentLanguage = localStorage.getItem('selectedLanguage') || 'english';
+          if (currentLanguage !== lastLanguage) {
+            lastLanguage = currentLanguage;
+            setTimeout(updateModelDisplay, 200);
+          }
+        }, 500);
         
         // Expose getModelApiName for use in fetch calls
         window.getSelectedModelApiName = function() {
-          return getModelApiName(getSelectedModel());
+          return getModelApiName(getSelectedModelKey());
         };
         
         if (modelSelectorBtn && modelDropdown) {
@@ -2408,13 +2478,12 @@
           modelOptions.forEach(option => {
             option.addEventListener('click', (e) => {
               e.stopPropagation();
-              const modelName = option.querySelector('.model-option-name').textContent;
-              const modelText = modelSelectorBtn.querySelector('.model-selector-text');
-              if (modelText) {
-                modelText.textContent = modelName;
+              const modelKey = option.getAttribute('data-model');
+              if (modelKey) {
+                setSelectedModelKey(modelKey);
+                updateModelDisplay();
+                modelSelector.classList.remove('open');
               }
-              setSelectedModel(modelName);
-              modelSelector.classList.remove('open');
             });
           });
         }
