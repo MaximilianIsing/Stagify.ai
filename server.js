@@ -186,6 +186,17 @@ app.use((err, req, res, next) => {
 });
 app.use(express.static('public'));
 
+// Explicit routes for SEO files to ensure they're always accessible
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.sendFile(path.join(__dirname, 'public', 'robots.txt'));
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml');
+  res.sendFile(path.join(__dirname, 'public', 'sitemap.xml'));
+});
+
 // Configure multer for file uploads (images)
 const storage = multer.memoryStorage();
 const upload = multer({
