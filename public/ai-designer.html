@@ -275,21 +275,30 @@
         border-bottom-left-radius: 4px;
       }
       
-      .message-file {
+      .message-files-container {
         margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        max-width: 100%;
+      }
+      
+      .message-file {
+        margin-top: 0;
         padding: 8px;
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
         font-size: 0.9rem;
         display: inline-block;
         box-sizing: border-box;
+        width: fit-content;
         max-width: 100%;
       }
       
       .message-file img {
-        max-width: min(400px, 100%);
-        max-height: 300px;
-        border-radius: 4px;
+        max-width: 300px;
+        max-height: 200px;
+        border-radius: 6px;
         height: auto;
         width: auto;
         display: block;
@@ -298,11 +307,18 @@
         box-sizing: border-box;
         cursor: pointer;
         transition: opacity 0.2s, transform 0.2s;
+        object-fit: contain;
       }
       
       .message-file img:hover {
         opacity: 0.9;
         transform: scale(1.02);
+      }
+      
+      /* For single image, allow it to be larger */
+      .message-files-container.single-image .message-file img {
+        max-width: 100%;
+        max-height: 300px;
       }
       
       .message-file a {
@@ -2129,29 +2145,45 @@
         // Add files if present
         if (files) {
           const filesArray = Array.isArray(files) ? files : [files];
-          filesArray.forEach(file => {
-            if (file && file.name) {
+          const imageFiles = filesArray.filter(f => f && f.name && f.type && f.type.startsWith('image/'));
+          const nonImageFiles = filesArray.filter(f => f && f.name && (!f.type || !f.type.startsWith('image/')));
+          
+          // Create container for all files
+          if (imageFiles.length > 0 || nonImageFiles.length > 0) {
+            const filesContainer = document.createElement('div');
+            filesContainer.className = 'message-files-container';
+            // Add class for single image styling
+            if (imageFiles.length === 1 && nonImageFiles.length === 0) {
+              filesContainer.classList.add('single-image');
+            }
+            
+            // Add image files in organized grid
+            imageFiles.forEach(file => {
               const fileDiv = document.createElement('div');
               fileDiv.className = 'message-file';
-              fileDiv.style.cssText = 'margin-top: 8px; padding: 8px 0 8px 8px; background: rgba(0,0,0,0.05); border-radius: 6px; box-sizing: border-box;';
               
-              if (file.type && file.type.startsWith('image/')) {
-                const img = document.createElement('img');
-                const imageSrc = URL.createObjectURL(file);
-                img.src = imageSrc;
-                img.alt = file.name;
-                img.style.cssText = 'max-width: 100%; max-width: min(300px, 100%); max-height: 300px; border-radius: 4px; width: auto; height: auto; box-sizing: border-box; display: block; margin: 0; padding: 0; cursor: pointer; transition: opacity 0.2s, transform 0.2s;';
-                img.addEventListener('click', () => openImageModal(imageSrc));
-                fileDiv.appendChild(img);
-              } else {
-                const fileInfo = document.createElement('div');
-                fileInfo.textContent = `📄 ${file.name}`;
-                fileDiv.appendChild(fileInfo);
-              }
+              const img = document.createElement('img');
+              const imageSrc = URL.createObjectURL(file);
+              img.src = imageSrc;
+              img.alt = file.name;
+              img.addEventListener('click', () => openImageModal(imageSrc));
+              fileDiv.appendChild(img);
               
-              contentDiv.appendChild(fileDiv);
-            }
-          });
+              filesContainer.appendChild(fileDiv);
+            });
+            
+            // Add non-image files
+            nonImageFiles.forEach(file => {
+              const fileDiv = document.createElement('div');
+              fileDiv.className = 'message-file';
+              const fileInfo = document.createElement('div');
+              fileInfo.textContent = `📄 ${file.name}`;
+              fileDiv.appendChild(fileInfo);
+              filesContainer.appendChild(fileDiv);
+            });
+            
+            contentDiv.appendChild(filesContainer);
+          }
         }
         
         messageDiv.appendChild(avatar);
