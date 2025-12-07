@@ -403,26 +403,36 @@ You can perform two types of actions:
 1. STORE: Store new important information as a permanent memory (you can store MULTIPLE memories from one message)
 2. FORGET: Delete an existing memory that is no longer relevant, incorrect, or the user wants forgotten
 
-IMPORTANT - Only store LONG-TERM preferences and information:
-- DO store: Long-term preferences (e.g., "User prefers modern design style", "User likes minimalist furniture", "User is a real estate agent")
-- DO store: Personal context that applies across conversations (e.g., "User's name is John", "User works in interior design")
-- DO store: General preferences that will be useful in future conversations
-- DO NOT store: Image-specific requests (e.g., "stage this room in coastal theme" - this is about a specific image, not a long-term preference)
-- DO NOT store: Temporary requests (e.g., "make the walls red" - this is a one-time request for a specific image)
-- DO NOT store: Short-term context (e.g., "user uploaded an image", "user wants to stage a room" - these are actions, not preferences)
-- DO NOT store: Information that only applies to the current conversation or specific images
+CRITICAL RULES - Only store GENERAL, LONG-TERM preferences that apply to ALL future conversations:
 
-Consider storing a memory if:
-- The user shares a long-term preference or style preference that applies to future work
-- The user provides personal information that will be useful across multiple conversations
-- The user mentions something that should be remembered for ALL future conversations (not just this one)
-- The information represents a general preference, not a one-time request
+✅ DO store ONLY:
+- User's profession/role (e.g., "User is a real estate agent", "User works in interior design")
+- User's personal name or identity information
+- General design philosophy or approach (e.g., "User prefers sustainable/eco-friendly design", "User focuses on accessibility")
+- Long-term business context (e.g., "User runs a staging company", "User specializes in luxury properties")
+
+❌ DO NOT store (these are generation-specific and should NEVER be saved):
+- ANY room-specific requests (e.g., "stage this bedroom", "this living room", "this kitchen")
+- ANY image-specific requests (e.g., "stage this image", "this photo", "this room")
+- ANY styling requests for a specific generation (e.g., "coastal theme", "modern style", "luxury furniture" - these are for ONE image, not a general preference)
+- ANY furniture or decor preferences mentioned in context of a specific image
+- ANY color, material, or design choices for a specific room/image
+- Temporary requests or one-time instructions
+- Context about uploaded images, staging requests, or generation tasks
+- Any request that includes words like "this", "that", "the image", "the room", "stage", "generate", "create"
+
+When in doubt, DO NOT store. Only store information that:
+1. Applies to ALL future conversations regardless of what the user is working on
+2. Is about the USER themselves, not about their work or requests
+3. Would be useful even if the user never mentions images, staging, or design again
+4. Is explicitly stated as a general preference (e.g., "I always prefer modern design" vs "make this modern")
 
 Consider forgetting a memory if:
 - The user explicitly asks to forget something
 - A stored memory is incorrect or outdated
 - The user contradicts a previous memory
 - The memory is no longer relevant
+- The memory is actually generation-specific (clean up old mistakes)
 
 You can perform MULTIPLE actions in one response. For example, you can forget an old memory AND store a new one, or store multiple new memories.
 
@@ -437,7 +447,7 @@ If storing memories, include brief descriptions in the "stores" array.
 If forgetting memories, include the memory IDs from the current memories list in the "forgets" array.
 If the user wants to forget ALL memories, use "forgets": ["all"] - this will clear all stored memories for the user.
 
-Be very selective. Only store truly important LONG-TERM information that will be useful across multiple conversations.`;
+Be EXTREMELY selective. The default should be to NOT store anything. Only store if you are 100% certain it is a general, long-term preference about the user themselves, not about their work or specific requests.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -713,7 +723,16 @@ function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurnit
   }
   
   // Build the complete prompt
-  let prompt = `${furnitureRemovalText}${basePrompt} Do not alter or remove any walls, windows, doors, or architectural features. Focus only on adding or arranging furniture and decor to professionally stage the room. Leave the rest of the room's architecture the same to highlight the furniture and design. Ensure the result looks realistic and professionally staged with high quality, sharp focus, detailed textures, professional photography lighting, and ultra-realistic rendering. Ensure that no extra doors, windows, or walls are added.`;
+  let prompt = `${furnitureRemovalText}${basePrompt} 
+
+CRITICAL ARCHITECTURAL PRESERVATION RULES:
+- DO NOT alter, remove, modify, or change ANY architectural elements including: walls, windows, doors, door frames, window frames, ceilings, floors, floor patterns, room shape, room dimensions, structural elements, columns, beams, moldings, baseboards, trim, or any permanent fixtures
+- DO NOT add, remove, or modify windows, doors, or any openings
+- DO NOT change wall colors, textures, or materials unless explicitly requested by the user
+- DO NOT alter the room's structure, layout, or architectural integrity
+- PRESERVE all existing architectural features exactly as they appear in the original image
+
+The architecture must remain completely unchanged. Ensure the result looks realistic and professionally staged with high quality, sharp focus, detailed textures, professional photography lighting, and ultra-realistic rendering.`;
   
   // If not custom or if custom but we want to emphasize the additional details
   if (furnitureStyle !== 'custom' && additionalPrompt && additionalPrompt.trim()) {
@@ -1287,7 +1306,7 @@ If the user wants to stage a room or modify an image, respond with a JSON object
 {
   "shouldStage": true,
   "roomType": "Living room" | "Bedroom" | "Kitchen" | "Bathroom" | "Dining room" | "Office" | "Other",
-  "additionalPrompt": "Create a detailed, comprehensive staging prompt based on the user's request. Include specific details about: furniture style, color scheme, mood/atmosphere, specific furniture pieces to add, decor elements, lighting preferences, and any other relevant details. Make it detailed and descriptive, as if you're instructing a professional interior designer. Base this on what the user asked for in their message.",
+  "additionalPrompt": "Create a detailed, comprehensive staging prompt based on the user's request. Include specific details about: furniture style, color scheme, mood/atmosphere, specific furniture pieces to add, decor elements, lighting preferences, and any other relevant details. Make it detailed and descriptive, as if you're instructing a professional interior designer. Base this on what the user asked for in their message. IMPORTANT: Emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what's already there.",
   "removeFurniture": true/false,
   "usePreviousImage": false | 0 | 1 | 2 | ...
 }
@@ -2041,7 +2060,7 @@ app.post('/api/chat', async (req, res) => {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { messages, model } = req.body;
+    const { messages, model, messageTag } = req.body;
     
     // Get model from request or default to gpt-4o-mini
     const selectedModel = model || 'gpt-4o-mini';
@@ -2135,7 +2154,7 @@ app.post('/api/chat', async (req, res) => {
     systemInstruction += '\n- Set "usePreviousImage": false if using the current message\'s image, or the index (0 = most recent, 1 = second most recent, etc.) if modifying a previous image';
     systemInstruction += '\n- If user says "original image", "first image", or "initial image", use the original image index shown above';
     systemInstruction += '\n- Set "furnitureImageIndex" to the index of a furniture image from a previous message if the user wants to add a specific piece of furniture (e.g., "add that chair", "include the red sofa from before"). The furniture image will be sent to the staging system alongside the room image.';
-    systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request';
+    systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested';
     systemInstruction += '\n- If "shouldStage" is false, you can omit the "staging" field or set it to null';
     systemInstruction += '\n\nIMAGE REQUEST RULES:';
     systemInstruction += '\n- Set "requestImage": true if the user asks to see, describe, analyze, or look at a previous image';
@@ -2204,6 +2223,31 @@ app.post('/api/chat', async (req, res) => {
     
     // Apply middleman filter to remove unsupported files
     const filteredMessages = filterConversationHistory(strippedMessages);
+    
+    // Add message tag to the last user message if provided
+    if (messageTag && messageTag !== 'auto' && filteredMessages.length > 0) {
+      const lastMessage = filteredMessages[filteredMessages.length - 1];
+      if (lastMessage.role === 'user') {
+        const tagMap = {
+          'generate': '[TAG: Generate]',
+          'stage': '[TAG: Stage]',
+          'cad-stage': '[TAG: CAD-Stage]'
+        };
+        const tagText = tagMap[messageTag] || '';
+        
+        if (Array.isArray(lastMessage.content)) {
+          // Find the first text item or add one
+          const textItem = lastMessage.content.find(item => item.type === 'text');
+          if (textItem) {
+            textItem.text = `${tagText} ${textItem.text}`.trim();
+          } else {
+            lastMessage.content.unshift({ type: 'text', text: tagText });
+          }
+        } else if (typeof lastMessage.content === 'string') {
+          lastMessage.content = `${tagText} ${lastMessage.content}`.trim();
+        }
+      }
+    }
     
     const openaiMessages = [
       { role: 'system', content: systemInstruction },
@@ -2945,6 +2989,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       return res.status(400).json({ error: 'No files provided' });
     }
 
+    // Get message tag from form data
+    const messageTag = req.body.messageTag;
+    
     // Get user identifier
     const userId = getUserIdentifier(req);
     
@@ -2985,7 +3032,7 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     systemInstruction += '\n- Set "shouldStage": true if the user wants to stage a room photo, modify a room photo, change colors/walls/furniture, or apply any visual changes to a room photo (NOT a blueprint, and NOT a CAD-staged image with CAD: True)';
     systemInstruction += '\n- Set "usePreviousImage": false if using the current message\'s image, or the index (0 = most recent, 1 = second most recent, etc.) if modifying a previous image';
     systemInstruction += '\n- IMPORTANT: When adding furniture to a staged room, set "usePreviousImage" to the index of the STAGED room image (not the furniture image). Set "furnitureImageIndex" to the index of the furniture image. Look at the image context above to find the correct indices.';
-    systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request';
+    systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested';
     systemInstruction += '\n- If "shouldStage" is false, you can omit the "staging" field or set it to null';
     systemInstruction += '\n\nIMAGE REQUEST RULES:';
     systemInstruction += '\n- Set "requestImage": true if the user asks to see, describe, analyze, or look at a previous image';
@@ -3082,7 +3129,25 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     
     // Add text message if provided
     if (message && message.trim()) {
-      userContent.push({ type: 'text', text: message });
+      let messageText = message;
+      // Add message tag to the message if provided
+      if (messageTag && messageTag !== 'auto') {
+        const tagMap = {
+          'generate': '[TAG: Generate]',
+          'stage': '[TAG: Stage]',
+          'cad-stage': '[TAG: CAD-Stage]'
+        };
+        messageText = `${tagMap[messageTag] || ''} ${messageText}`.trim();
+      }
+      userContent.push({ type: 'text', text: messageText });
+    } else if (messageTag && messageTag !== 'auto') {
+      // If no text message but tag is provided, add tag as text
+      const tagMap = {
+        'generate': '[TAG: Generate]',
+        'stage': '[TAG: Stage]',
+        'cad-stage': '[TAG: CAD-Stage]'
+      };
+      userContent.push({ type: 'text', text: tagMap[messageTag] || '' });
     }
     
     // Define supported file types

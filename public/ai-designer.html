@@ -470,6 +470,88 @@
         filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(110%) contrast(96%);
       }
       
+      .message-tag-selector {
+        position: relative;
+        margin-left: 8px;
+        transform: translate(-5px, 0px);
+      }
+      
+      .message-tag-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        background: #2563eb;
+        border: none;
+        border-radius: 18px;
+        cursor: pointer;
+        transition: background 0.2s;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        height: 32px;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 11;
+        pointer-events: auto;
+      }
+      
+      .message-tag-btn:hover {
+        background: #1d4ed8;
+      }
+      
+      .message-tag-text {
+        color: white;
+        font-weight: bold;
+        font-family: inherit;
+      }
+      
+      .message-tag-chevron {
+        color: white;
+        transition: transform 0.2s;
+      }
+      
+      .message-tag-selector.open .message-tag-chevron {
+        transform: rotate(180deg);
+      }
+      
+      .message-tag-dropdown {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.15);
+        min-width: 165px;
+        padding: 8px;
+        display: none;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+      }
+      
+      .message-tag-selector.open .message-tag-dropdown {
+        display: block;
+      }
+      
+      .message-tag-option {
+        padding: 10px 12px;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: background 0.2s;
+      }
+      
+      .message-tag-option:hover {
+        background: rgba(37, 99, 235, 0.1);
+      }
+      
+      .message-tag-option-name {
+        color: #1e3a8a;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      
       .file-upload-btn {
         padding: 8px;
         background: transparent;
@@ -863,9 +945,6 @@
         position: absolute;
         top: 20px;
         right: 30px;
-        color: white;
-        font-size: 40px;
-        font-weight: bold;
         cursor: pointer;
         z-index: 10001;
         width: 40px;
@@ -876,6 +955,17 @@
         background: rgba(0, 0, 0, 0.5);
         border-radius: 50%;
         transition: background 0.2s;
+        font-size: 0;
+        line-height: 1;
+      }
+      
+      .image-modal-close::before {
+        content: '×';
+        display: block;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+        transform: translateY(-3px);
       }
       
       .image-modal-close:hover {
@@ -990,6 +1080,29 @@
                 <button class="reload-btn" id="reload-btn" title="Reload chat">
                   <img src="media-webp/Reload.webp" alt="Reload chat">
                 </button>
+                
+                <div class="message-tag-selector">
+                  <button class="message-tag-btn" id="message-tag-btn">
+                    <span class="message-tag-text">Auto</span>
+                    <svg class="message-tag-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <div class="message-tag-dropdown" id="message-tag-dropdown">
+                    <div class="message-tag-option" data-tag="auto">
+                      <div class="message-tag-option-name">Auto</div>
+                    </div>
+                    <div class="message-tag-option" data-tag="generate">
+                      <div class="message-tag-option-name">Generate</div>
+                    </div>
+                    <div class="message-tag-option" data-tag="stage">
+                      <div class="message-tag-option-name">Stage/Modify</div>
+                    </div>
+                    <div class="message-tag-option" data-tag="cad-stage">
+                      <div class="message-tag-option-name">Stage (Floor Plan)</div>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <div class="chat-input-wrapper">
@@ -1409,12 +1522,57 @@
         }
       });
       
+      // Handle paste events for images
+      document.addEventListener('paste', function(e) {
+        // Only handle paste if the chat container is visible and user isn't typing in another input
+        const activeElement = document.activeElement;
+        const isTypingInOtherInput = activeElement && 
+                                     activeElement.tagName === 'INPUT' && 
+                                     activeElement !== chatInput &&
+                                     activeElement.type !== 'file';
+        
+        // Don't intercept paste if user is typing in another input field
+        if (isTypingInOtherInput) return;
+        
+        // Check if chat container is visible
+        if (!chatContainer || chatContainer.offsetParent === null) return;
+        
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        
+        // Look for image items in the clipboard
+        const imageItems = Array.from(items).filter(item => item.type.indexOf('image') !== -1);
+        
+        if (imageItems.length > 0) {
+          e.preventDefault();
+          
+          // Process each image
+          imageItems.forEach((item, index) => {
+            if (index === 0) { // Only process the first image to avoid multiple alerts
+              const blob = item.getAsFile();
+              if (blob) {
+                // Convert blob to File object with a proper name
+                const fileName = `pasted-image-${Date.now()}.png`;
+                const file = new File([blob], fileName, { type: blob.type || 'image/png' });
+                
+                // Use the existing handleFiles function
+                handleFiles([file]);
+              }
+            }
+          });
+        }
+      });
+      
       // Initialize send button state
       updateSendButtonState();
       
       function sendMessage() {
         const message = chatInput.value.trim();
         if (!message && selectedFiles.length === 0) return;
+        
+        // Get message tag
+        const messageTagBtn = document.getElementById('message-tag-btn');
+        const messageTagValue = messageTagBtn ? messageTagBtn.getAttribute('data-tag') || 'auto' : 'auto';
         
         // Show user message in chat
         const userMessageText = message || (selectedFiles.length > 0 ? `Uploaded ${selectedFiles.length} file(s)` : '');
@@ -1517,6 +1675,11 @@
             // Add model to formData
             const selectedModel = window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini';
             formData.append('model', selectedModel);
+            
+            // Add message tag to formData
+            if (messageTagValue && messageTagValue !== 'auto') {
+              formData.append('messageTag', messageTagValue);
+            }
             
             fetch('/api/chat-upload', {
               method: 'POST',
@@ -1870,7 +2033,8 @@
               body: JSON.stringify({
                 messages: conversationHistory,
                 userId: userId,
-                model: window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini'
+                model: window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini',
+                messageTag: messageTagValue && messageTagValue !== 'auto' ? messageTagValue : undefined
               }),
             })
             .then(response => response.json())
@@ -2543,6 +2707,61 @@
                 setSelectedModelKey(modelKey);
                 updateModelDisplay();
                 modelSelector.classList.remove('open');
+              }
+            });
+          });
+        }
+      })();
+      
+      // Initialize message tag selector
+      (function initMessageTagSelector() {
+        const messageTagSelector = document.querySelector('.message-tag-selector');
+        const messageTagBtn = document.getElementById('message-tag-btn');
+        const messageTagDropdown = document.getElementById('message-tag-dropdown');
+        const messageTagOptions = document.querySelectorAll('.message-tag-option');
+        
+        // Map tag values to display text
+        const tagDisplayMap = {
+          'auto': 'Auto',
+          'generate': 'Generate',
+          'stage': 'Stage/Modify',
+          'cad-stage': 'Stage (Floor Plan)'
+        };
+        
+        // Update the displayed tag text
+        function updateTagDisplay(tagValue) {
+          const tagText = messageTagBtn?.querySelector('.message-tag-text');
+          if (tagText) {
+            tagText.textContent = tagDisplayMap[tagValue] || 'Auto';
+            messageTagBtn.setAttribute('data-tag', tagValue);
+          }
+        }
+        
+        // Initialize with 'auto'
+        updateTagDisplay('auto');
+        
+        if (messageTagBtn && messageTagDropdown) {
+          // Toggle dropdown on button click
+          messageTagBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            messageTagSelector.classList.toggle('open');
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', (e) => {
+            if (!messageTagSelector.contains(e.target)) {
+              messageTagSelector.classList.remove('open');
+            }
+          });
+          
+          // Handle tag option selection
+          messageTagOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const tagValue = option.getAttribute('data-tag');
+              if (tagValue) {
+                updateTagDisplay(tagValue);
+                messageTagSelector.classList.remove('open');
               }
             });
           });
