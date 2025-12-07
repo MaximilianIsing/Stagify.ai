@@ -284,6 +284,13 @@
     "status": {
       "fileReady": "File ready"
     },
+    "modelSelector": {
+      "chooseModel": "Choose your model",
+      "fast": "Fast",
+      "fastDescription": "Standard quality, faster",
+      "pro": "Pro",
+      "proDescription": "Higher quality, slower"
+    },
     "errors": {
       "invalidFileType": "Please upload a PDF file.",
       "fileTooLarge": "File is too large. Please upload a PDF smaller than 100MB.",
