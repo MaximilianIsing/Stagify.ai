@@ -291,6 +291,13 @@
       "pro": "Pro",
       "proDescription": "Higher quality, slower"
     },
+    "messageTag": {
+      "auto": "Auto",
+      "generate": "Generate",
+      "stage": "Stage/Modify",
+      "cadStage": "Stage (Floor Plan)",
+      "describe": "Describe/Recall"
+    },
     "errors": {
       "invalidFileType": "Please upload a PDF file.",
       "fileTooLarge": "File is too large. Please upload a PDF smaller than 100MB.",

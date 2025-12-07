@@ -470,6 +470,188 @@
         filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(110%) contrast(96%);
       }
       
+      .bug-report-btn {
+        padding: 8px;
+        background: transparent;
+        color: #2563eb;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, color 0.2s;
+        height: 40px;
+        width: 40px;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 11;
+        pointer-events: auto;
+        margin-right: 8px;
+        transform: translate(-60px, 42px);
+      }
+      
+      .bug-report-btn img {
+        filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(99%) contrast(96%);
+        width: 28px !important;
+        height: 28px !important;
+        object-fit: contain;
+        transition: filter 0.2s;
+      }
+      
+      .bug-report-btn:hover {
+        background: rgba(37, 99, 235, 0.1);
+      }
+      
+      .bug-report-btn:hover img {
+        filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(2598%) hue-rotate(212deg) brightness(110%) contrast(96%);
+      }
+      
+      .bug-report-popup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        backdrop-filter: blur(4px);
+      }
+      
+      .bug-report-popup.active {
+        display: flex;
+      }
+      
+      .bug-report-popup-content {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        position: relative;
+      }
+      
+      .bug-report-popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      
+      .bug-report-popup-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1e3a8a;
+        margin: 0;
+      }
+      
+      .bug-report-popup-close {
+        background: transparent;
+        border: none;
+        font-size: 28px;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: background 0.2s;
+      }
+      
+      .bug-report-popup-close:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      
+      .bug-report-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      
+      .bug-report-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .bug-report-form-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+      }
+      
+      .bug-report-form-input,
+      .bug-report-form-textarea {
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color 0.2s;
+      }
+      
+      .bug-report-form-input:focus,
+      .bug-report-form-textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+      
+      .bug-report-form-textarea {
+        resize: vertical;
+        min-height: 120px;
+      }
+      
+      .bug-report-form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 8px;
+      }
+      
+      .bug-report-form-submit,
+      .bug-report-form-cancel {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      
+      .bug-report-form-submit {
+        background: #2563eb;
+        color: white;
+      }
+      
+      .bug-report-form-submit:hover {
+        background: #1d4ed8;
+      }
+      
+      .bug-report-form-submit:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+      }
+      
+      .bug-report-form-cancel {
+        background: #f3f4f6;
+        color: #374151;
+      }
+      
+      .bug-report-form-cancel:hover {
+        background: #e5e7eb;
+      }
+      
       .message-tag-selector {
         position: relative;
         margin-left: 8px;
@@ -1083,23 +1265,26 @@
                 
                 <div class="message-tag-selector">
                   <button class="message-tag-btn" id="message-tag-btn">
-                    <span class="message-tag-text">Auto</span>
+                    <span class="message-tag-text" data-lang="pdf.messageTag.auto">Auto</span>
                     <svg class="message-tag-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </button>
                   <div class="message-tag-dropdown" id="message-tag-dropdown">
                     <div class="message-tag-option" data-tag="auto">
-                      <div class="message-tag-option-name">Auto</div>
+                      <div class="message-tag-option-name" data-lang="pdf.messageTag.auto">Auto</div>
                     </div>
                     <div class="message-tag-option" data-tag="generate">
-                      <div class="message-tag-option-name">Generate</div>
+                      <div class="message-tag-option-name" data-lang="pdf.messageTag.generate">Generate</div>
                     </div>
                     <div class="message-tag-option" data-tag="stage">
-                      <div class="message-tag-option-name">Stage/Modify</div>
+                      <div class="message-tag-option-name" data-lang="pdf.messageTag.stage">Stage/Modify</div>
                     </div>
                     <div class="message-tag-option" data-tag="cad-stage">
-                      <div class="message-tag-option-name">Stage (Floor Plan)</div>
+                      <div class="message-tag-option-name" data-lang="pdf.messageTag.cadStage">Stage (Floor Plan)</div>
+                    </div>
+                    <div class="message-tag-option" data-tag="describe">
+                      <div class="message-tag-option-name" data-lang="pdf.messageTag.describe">Describe/Recall</div>
                     </div>
                   </div>
                 </div>
@@ -1119,6 +1304,9 @@
               <div class="send-controls">
                 <button id="send-btn" class="send-btn" title="Send message">
                   <img src="media-webp/Send.webp" alt="Send">
+                </button>
+                <button class="bug-report-btn" id="bug-report-btn" title="Report a bug">
+                  <img src="media-webp/Bug.webp" alt="Report bug">
                 </button>
                 <div class="model-selector">
                   <button class="model-selector-btn" id="model-selector-btn">
@@ -1149,6 +1337,48 @@
         </div>
       </section>
     </main>
+    
+    <!-- Bug Report Popup -->
+    <div class="bug-report-popup" id="bug-report-popup">
+      <div class="bug-report-popup-content">
+        <div class="bug-report-popup-header">
+          <h2 class="bug-report-popup-title">Report a Bug</h2>
+          <button class="bug-report-popup-close" id="bug-report-popup-close">&times;</button>
+        </div>
+        <form class="bug-report-form" id="bug-report-form">
+          <div class="bug-report-form-group">
+            <label class="bug-report-form-label" for="bug-report-description">Description *</label>
+            <textarea 
+              id="bug-report-description" 
+              class="bug-report-form-textarea" 
+              placeholder="Please describe the bug you encountered..."
+              required
+            ></textarea>
+          </div>
+          <div class="bug-report-form-group">
+            <label class="bug-report-form-label" for="bug-report-steps">Steps to Reproduce</label>
+            <textarea 
+              id="bug-report-steps" 
+              class="bug-report-form-textarea" 
+              placeholder="1. Step one...&#10;2. Step two...&#10;3. Step three..."
+            ></textarea>
+          </div>
+          <div class="bug-report-form-group">
+            <label class="bug-report-form-label" for="bug-report-email">Email (optional)</label>
+            <input 
+              type="email" 
+              id="bug-report-email" 
+              class="bug-report-form-input" 
+              placeholder="your@email.com"
+            />
+          </div>
+          <div class="bug-report-form-actions">
+            <button type="button" class="bug-report-form-cancel" id="bug-report-cancel">Cancel</button>
+            <button type="submit" class="bug-report-form-submit" id="bug-report-submit">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <script>
       const chatMessages = document.getElementById('chat-messages');
@@ -2720,25 +2950,62 @@
         const messageTagDropdown = document.getElementById('message-tag-dropdown');
         const messageTagOptions = document.querySelectorAll('.message-tag-option');
         
-        // Map tag values to display text
-        const tagDisplayMap = {
-          'auto': 'Auto',
-          'generate': 'Generate',
-          'stage': 'Stage/Modify',
-          'cad-stage': 'Stage (Floor Plan)'
-        };
+        // Get translated text for tag
+        function getTagText(tagValue) {
+          if (window.LanguageSystem && window.LanguageSystem.isLoaded()) {
+            const translationKey = `pdf.messageTag.${tagValue === 'cad-stage' ? 'cadStage' : tagValue}`;
+            return window.LanguageSystem.getText(translationKey) || getTagTextFallback(tagValue);
+          }
+          return getTagTextFallback(tagValue);
+        }
+        
+        // Fallback text if language system not available
+        function getTagTextFallback(tagValue) {
+          const fallbackMap = {
+            'auto': 'Auto',
+            'generate': 'Generate',
+            'stage': 'Stage/Modify',
+            'cad-stage': 'Stage (Floor Plan)',
+            'describe': 'Describe/Recall'
+          };
+          return fallbackMap[tagValue] || 'Auto';
+        }
         
         // Update the displayed tag text
         function updateTagDisplay(tagValue) {
           const tagText = messageTagBtn?.querySelector('.message-tag-text');
           if (tagText) {
-            tagText.textContent = tagDisplayMap[tagValue] || 'Auto';
+            tagText.textContent = getTagText(tagValue);
             messageTagBtn.setAttribute('data-tag', tagValue);
           }
         }
         
         // Initialize with 'auto'
         updateTagDisplay('auto');
+        
+        // Update display when language changes
+        if (window.LanguageSystem) {
+          const originalApplyLanguage = window.LanguageSystem.applyLanguageToElements;
+          if (originalApplyLanguage) {
+            window.LanguageSystem.applyLanguageToElements = function() {
+              originalApplyLanguage.call(this);
+              // Update tag display after language is applied
+              const currentTag = messageTagBtn?.getAttribute('data-tag') || 'auto';
+              setTimeout(() => updateTagDisplay(currentTag), 50);
+            };
+          }
+        }
+        
+        // Listen to language selector change
+        const languageSelect = document.getElementById('language-select');
+        if (languageSelect) {
+          languageSelect.addEventListener('change', () => {
+            setTimeout(() => {
+              const currentTag = messageTagBtn?.getAttribute('data-tag') || 'auto';
+              updateTagDisplay(currentTag);
+            }, 200);
+          });
+        }
         
         if (messageTagBtn && messageTagDropdown) {
           // Toggle dropdown on button click
@@ -2766,6 +3033,109 @@
             });
           });
         }
+      })();
+      
+      // Initialize bug report popup
+      (function initBugReport() {
+        const bugReportBtn = document.getElementById('bug-report-btn');
+        const bugReportPopup = document.getElementById('bug-report-popup');
+        const bugReportClose = document.getElementById('bug-report-popup-close');
+        const bugReportCancel = document.getElementById('bug-report-cancel');
+        const bugReportForm = document.getElementById('bug-report-form');
+        const bugReportSubmit = document.getElementById('bug-report-submit');
+        
+        function openBugReport() {
+          bugReportPopup.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+        
+        function closeBugReport() {
+          bugReportPopup.classList.remove('active');
+          document.body.style.overflow = '';
+          bugReportForm.reset();
+        }
+        
+        if (bugReportBtn) {
+          bugReportBtn.addEventListener('click', openBugReport);
+        }
+        
+        if (bugReportClose) {
+          bugReportClose.addEventListener('click', closeBugReport);
+        }
+        
+        if (bugReportCancel) {
+          bugReportCancel.addEventListener('click', closeBugReport);
+        }
+        
+        // Close when clicking outside
+        if (bugReportPopup) {
+          bugReportPopup.addEventListener('click', function(e) {
+            if (e.target === bugReportPopup) {
+              closeBugReport();
+            }
+          });
+        }
+        
+        // Handle form submission
+        if (bugReportForm) {
+          bugReportForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const description = document.getElementById('bug-report-description').value.trim();
+            const steps = document.getElementById('bug-report-steps').value.trim();
+            const email = document.getElementById('bug-report-email').value.trim();
+            
+            if (!description) {
+              alert('Please provide a bug description.');
+              return;
+            }
+            
+            // Disable submit button
+            bugReportSubmit.disabled = true;
+            bugReportSubmit.textContent = 'Submitting...';
+            
+            try {
+              const response = await fetch('/api/bug-report', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  description,
+                  steps,
+                  email,
+                  userId: localStorage.getItem('userId') || 'unknown',
+                  userAgent: navigator.userAgent,
+                  url: window.location.href,
+                  timestamp: new Date().toISOString(),
+                  conversationHistory: conversationHistory
+                })
+              });
+              
+              const data = await response.json();
+              
+              if (response.ok) {
+                alert('Thank you for reporting this bug! We\'ll look into it.');
+                closeBugReport();
+              } else {
+                throw new Error(data.error || 'Failed to submit bug report');
+              }
+            } catch (error) {
+              console.error('Error submitting bug report:', error);
+              alert('Failed to submit bug report. Please try again later.');
+            } finally {
+              bugReportSubmit.disabled = false;
+              bugReportSubmit.textContent = 'Submit';
+            }
+          });
+        }
+        
+        // Close with Escape key
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && bugReportPopup.classList.contains('active')) {
+            closeBugReport();
+          }
+        });
       })();
       
       // Initialize modal event listeners (run immediately since script is at end of body)
