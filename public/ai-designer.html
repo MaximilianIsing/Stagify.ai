@@ -1822,9 +1822,11 @@
               console.error('Error:', error);
             })
             .finally(() => {
+              isProcessing = false;
               sendBtn.disabled = false;
               chatInput.disabled = false;
               fileInput.disabled = false;
+              updateSendButtonState();
               chatInput.focus();
             });
           } else {
@@ -2073,6 +2075,9 @@
             })
             .finally(() => {
               isProcessing = false;
+              sendBtn.disabled = false;
+              chatInput.disabled = false;
+              fileInput.disabled = false;
               updateSendButtonState();
               chatInput.focus();
             });
@@ -2088,18 +2093,14 @@
       
       // Update send button when input changes
       chatInput.addEventListener('input', function() {
-        if (!isProcessing) {
-          updateSendButtonState();
-        }
+        updateSendButtonState();
       });
       
       // Update send button when files are added/removed
       const originalUpdateFilePreview = updateFilePreview;
       updateFilePreview = function() {
         originalUpdateFilePreview();
-        if (!isProcessing) {
-          updateSendButtonState();
-        }
+        updateSendButtonState();
       };
       
       // Initialize send button state
