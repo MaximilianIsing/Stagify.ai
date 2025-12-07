@@ -168,7 +168,33 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+// Configure CORS to only allow specific origins
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or same-origin requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'https://stagify.ai',
+      'http://localhost:3000',
+      'http://localhost',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' })); // Increased limit to handle conversation history with images
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
