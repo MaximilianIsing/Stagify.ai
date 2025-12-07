@@ -292,6 +292,13 @@
       "pro": "Pro",
       "proDescription": "Mayor calidad, más lento"
     },
+    "messageTag": {
+      "auto": "Auto",
+      "generate": "Generar",
+      "stage": "Escenificar/Modificar",
+      "cadStage": "Escenificar (Plano)",
+      "describe": "Describir/Recordar"
+    },
     "errors": {
       "invalidFileType": "Por favor sube un archivo PDF.",
       "fileTooLarge": "El archivo es demasiado grande. Por favor sube un PDF menor a 100MB.",

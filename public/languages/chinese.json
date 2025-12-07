@@ -292,6 +292,13 @@
       "pro": "专业版",
       "proDescription": "更高质量，较慢"
     },
+    "messageTag": {
+      "auto": "自动",
+      "generate": "生成",
+      "stage": "装修/修改",
+      "cadStage": "装修（平面图）",
+      "describe": "描述/回忆"
+    },
     "errors": {
       "invalidFileType": "请上传PDF文件。",
       "fileTooLarge": "文件过大。请上传小于100MB的PDF。",
