@@ -2151,7 +2151,7 @@ app.post('/api/chat', async (req, res) => {
     systemInstruction += '\n- If user asks to see "the image I generated" or "the staged image", look for "generated image" or "staged image" in the image list above';
     systemInstruction += '\n- If "shouldRecall" is false, you can omit the "recall" field or set it to null';
     systemInstruction += '\n\nCAD-STAGING RULES (for blueprints/floor plans and CAD-staged images):';
-    systemInstruction += '\n- "cad": { "shouldProcessCAD": true/false, "imageIndex": 0|1|2|..., "furnitureImageIndex": null|0|1|2|...|[...], "additionalPrompt": "detailed CAD-staging description" } - CAD-staging processes a top-down blueprint/floor plan image to create a 3D render. This is DIFFERENT from regular staging. Use CAD-staging when: (1) the user uploads a top-down blueprint, floor plan, or architectural drawing (2D plan view from above), OR (2) the user wants to modify an image that has "CAD: True" in its annotation (check the image context above). CRITICAL: Even if the user says "stage this blueprint" or "stage this floor plan", you MUST use CAD-staging (set "shouldProcessCAD": true), NOT regular staging. CRITICAL: If the user asks to modify a previously CAD-staged image (one with "CAD: True" in the image context), you MUST use CAD-staging again, NOT regular staging. Regular staging is ONLY for room photos (3D perspective views), NOT for blueprints or CAD-staged images. Set "imageIndex" to the index of the blueprint or CAD-staged image (0 = most recent, 1 = second most recent, etc.). If the user uploads a blueprint in the current message, use imageIndex 0. If the user wants to include specific furniture pieces in the 3D render, set "furnitureImageIndex" to the index (or array of indices) of the furniture image(s) from previous messages. The "additionalPrompt" should be a detailed description of any specific requirements, themes, styles, or preferences the user has (e.g., "medieval theme", "modern minimalist", "cozy atmosphere", etc.). The CAD-staging function will convert the blueprint to a top-down 3D render and include the furniture and styling preferences if specified.';
+    systemInstruction += '\n- "cad": { "shouldProcessCAD": true/false, "imageIndex": 0|1|2|..., "furnitureImageIndex": null|0|1|2|...|[...], "additionalPrompt": "detailed CAD-staging description" } OR "cad": [ { "shouldProcessCAD": true, ... }, { "shouldProcessCAD": true, ... }, ... ] - CAD-staging processes a top-down blueprint/floor plan image to create a 3D render. This is DIFFERENT from regular staging. Use CAD-staging when: (1) the user uploads a top-down blueprint, floor plan, or architectural drawing (2D plan view from above), OR (2) the user wants to modify an image that has "CAD: True" in its annotation (check the image context above). CRITICAL: Even if the user says "stage this blueprint" or "stage this floor plan", you MUST use CAD-staging (set "shouldProcessCAD": true), NOT regular staging. CRITICAL: If the user asks to modify a previously CAD-staged image (one with "CAD: True" in the image context), you MUST use CAD-staging again, NOT regular staging. Regular staging is ONLY for room photos (3D perspective views), NOT for blueprints or CAD-staged images. Set "imageIndex" to the index of the blueprint or CAD-staged image (0 = most recent, 1 = second most recent, etc.). If the user uploads a blueprint in the current message, use imageIndex 0. If the user wants to include specific furniture pieces in the 3D render, set "furnitureImageIndex" to the index (or array of indices) of the furniture image(s) from previous messages. The "additionalPrompt" should be a detailed description of any specific requirements, themes, styles, or preferences the user has (e.g., "medieval theme", "modern minimalist", "cozy atmosphere", etc.). The CAD-staging function will convert the blueprint to a top-down 3D render and include the furniture and styling preferences if specified. You can provide MULTIPLE CAD requests (up to 3) in an array if the user asks for multiple variations (e.g., "stage this blueprint in 3 different themes"). Each CAD request in the array will be processed separately.';
     systemInstruction += '\n- CRITICAL: If the user uploads or refers to a blueprint/floor plan (2D top-down architectural drawing), you MUST set "shouldProcessCAD": true, even if they say "stage". Blueprints ALWAYS use CAD-staging, never regular staging.';
     systemInstruction += '\n- CRITICAL: If the user asks to modify an image that has "CAD: True" in the image context above, you MUST use CAD-staging ("cad" field), NOT regular staging. Always check the CAD classification in the image annotations before deciding which pipeline to use.';
     systemInstruction += '\n- CRITICAL: Regular staging ("staging" field) is ONLY for room photos (3D perspective interior views). If you see a blueprint/floor plan OR an image with "CAD: True", use CAD-staging instead.';
@@ -2705,83 +2705,114 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    // Process CAD request from AI response
-    let cadImageForDisplay = null;
-    let cadAnnotationPromise = null;
-    if (cadRequestFromAI && cadRequestFromAI.shouldProcessCAD) {
-      try {
-        const imageIndex = typeof cadRequestFromAI.imageIndex === 'number' ? cadRequestFromAI.imageIndex : 0;
-        console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
+    // Process CAD request(s) from AI response (supports single or array)
+    let cadResults = [];
+    
+    if (cadRequestFromAI) {
+      // Normalize to array (max 3)
+      const cadRequests = Array.isArray(cadRequestFromAI)
+        ? cadRequestFromAI.slice(0, 3).filter(c => c.shouldProcessCAD)
+        : (cadRequestFromAI.shouldProcessCAD ? [cadRequestFromAI] : []);
+      
+      if (cadRequests.length > 0) {
+        console.log(`[CAD] Processing ${cadRequests.length} CAD request(s) from AI`);
         
-        // Retrieve the blueprint image from conversation history
-        const blueprintImage = getImageFromHistory(messages, imageIndex);
-        
-        if (blueprintImage && blueprintImage.url) {
-          console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
+        for (let i = 0; i < cadRequests.length; i++) {
+          const cadRequest = cadRequests[i];
+          console.log(`[CAD] Processing CAD request ${i + 1}/${cadRequests.length}:`, cadRequest);
           
-          // Extract base64 data from the image URL
-          const base64Data = blueprintImage.url.split(',')[1];
-          if (base64Data) {
-            const imageBuffer = Buffer.from(base64Data, 'base64');
-            const mimeType = blueprintImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+          try {
+            const imageIndex = typeof cadRequest.imageIndex === 'number' ? cadRequest.imageIndex : 0;
+            console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
             
-            // Retrieve furniture images if specified
-            const furnitureImages = [];
-            if (cadRequestFromAI.furnitureImageIndex !== null && cadRequestFromAI.furnitureImageIndex !== undefined) {
-              const furnitureIndices = Array.isArray(cadRequestFromAI.furnitureImageIndex) 
-                ? cadRequestFromAI.furnitureImageIndex 
-                : [cadRequestFromAI.furnitureImageIndex];
+            // Retrieve the blueprint image from conversation history
+            const blueprintImage = getImageFromHistory(messages, imageIndex);
+            
+            if (blueprintImage && blueprintImage.url) {
+              console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
               
-              for (const furnitureIndex of furnitureIndices) {
-                if (furnitureIndex !== null && furnitureIndex !== undefined) {
-                  const furnitureImage = getImageFromHistory(messages, furnitureIndex);
-                  if (furnitureImage && furnitureImage.url) {
-                    const furnitureBase64Data = furnitureImage.url.split(',')[1];
-                    if (furnitureBase64Data) {
-                      const furnitureBuffer = Buffer.from(furnitureBase64Data, 'base64');
-                      const furnitureMimeType = furnitureImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
-                      furnitureImages.push({
-                        image: furnitureBuffer,
-                        mimeType: furnitureMimeType
-                      });
-                      console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
+              // Extract base64 data from the image URL
+              const base64Data = blueprintImage.url.split(',')[1];
+              if (base64Data) {
+                const imageBuffer = Buffer.from(base64Data, 'base64');
+                const mimeType = blueprintImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+                
+                // Retrieve furniture images if specified
+                const furnitureImages = [];
+                if (cadRequest.furnitureImageIndex !== null && cadRequest.furnitureImageIndex !== undefined) {
+                  const furnitureIndices = Array.isArray(cadRequest.furnitureImageIndex) 
+                    ? cadRequest.furnitureImageIndex 
+                    : [cadRequest.furnitureImageIndex];
+                  
+                  for (const furnitureIndex of furnitureIndices) {
+                    if (furnitureIndex !== null && furnitureIndex !== undefined) {
+                      const furnitureImage = getImageFromHistory(messages, furnitureIndex);
+                      if (furnitureImage && furnitureImage.url) {
+                        const furnitureBase64Data = furnitureImage.url.split(',')[1];
+                        if (furnitureBase64Data) {
+                          const furnitureBuffer = Buffer.from(furnitureBase64Data, 'base64');
+                          const furnitureMimeType = furnitureImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+                          furnitureImages.push({
+                            image: furnitureBuffer,
+                            mimeType: furnitureMimeType
+                          });
+                          console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
+                        }
+                      } else {
+                        console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
+                      }
                     }
-                  } else {
-                    console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
                   }
                 }
+                
+                console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequest.additionalPrompt ? ` (with additional prompt: ${cadRequest.additionalPrompt.substring(0, 50)}...)` : ''}...`);
+                // Process the blueprint through CAD function
+                const additionalPrompt = cadRequest.additionalPrompt || null;
+                const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
+                
+                // Convert result buffer to data URL
+                const cadImageBase64 = cadResultBuffer.toString('base64');
+                const cadImageForDisplay = `data:${mimeType};base64,${cadImageBase64}`;
+                
+                // Annotate CAD image in parallel
+                const annotationPromise = annotateImage(cadImageForDisplay, true).then(annotation => {
+                  console.log(`[Image Annotation] Annotation for CAD render ${i + 1}: ${annotation || 'failed'}`);
+                  return annotation;
+                }).catch(err => {
+                  console.error(`[Image Annotation] Error annotating CAD render ${i + 1}:`, err);
+                  return null;
+                });
+                
+                cadResults.push({
+                  cadImage: cadImageForDisplay,
+                  params: cadRequest,
+                  annotationPromise: annotationPromise
+                });
+                
+                console.log(`[CAD] Successfully generated 3D render ${i + 1}/${cadRequests.length} from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
+              } else {
+                console.log(`[CAD] Failed to extract base64 data from blueprint image`);
               }
+            } else {
+              console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
             }
-            
-            console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequestFromAI.additionalPrompt ? ` (with additional prompt: ${cadRequestFromAI.additionalPrompt.substring(0, 50)}...)` : ''}...`);
-            // Process the blueprint through CAD function
-            const additionalPrompt = cadRequestFromAI.additionalPrompt || null;
-            const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
-            
-            // Convert result buffer to data URL
-            const cadImageBase64 = cadResultBuffer.toString('base64');
-            cadImageForDisplay = `data:${mimeType};base64,${cadImageBase64}`;
-            
-            // Annotate CAD image in parallel
-            cadAnnotationPromise = annotateImage(cadImageForDisplay, true).then(annotation => {
-              console.log(`[Image Annotation] Annotation for CAD render: ${annotation || 'failed'}`);
-              return annotation;
-            }).catch(err => {
-              console.error(`[Image Annotation] Error annotating CAD render:`, err);
-              return null;
-            });
-            
-            console.log(`[CAD] Successfully generated 3D render from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
-          } else {
-            console.log(`[CAD] Failed to extract base64 data from blueprint image`);
+          } catch (error) {
+            console.error(`[CAD] Error processing CAD request ${i + 1}:`, error);
+            // Continue with other CAD requests if one fails
+            if (cadRequests.length === 1) {
+              text = (text || '') + '\n\nSorry, I encountered an error while processing the CAD blueprint. Please try again.';
+            }
           }
-        } else {
-          console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
         }
-      } catch (error) {
-        console.error('Error processing CAD request:', error);
-        // Continue with original response if CAD fails
       }
+    }
+    
+    // Legacy support: maintain cadImageForDisplay and cadAnnotationPromise for backward compatibility
+    let cadImageForDisplay = null;
+    let cadAnnotationPromise = null;
+    if (cadResults.length > 0) {
+      cadImageForDisplay = cadResults[0].cadImage;
+      cadAnnotationPromise = cadResults[0].annotationPromise;
     }
 
     // Wait for all annotations to complete before building response
@@ -2809,6 +2840,20 @@ app.post('/api/chat', async (req, res) => {
       }
     }
     
+    // Wait for all CAD annotations to complete
+    const cadImageAnnotations = {};
+    if (cadResults.length > 0) {
+      for (let i = 0; i < cadResults.length; i++) {
+        if (cadResults[i].annotationPromise) {
+          const annotation = await cadResults[i].annotationPromise;
+          if (annotation) {
+            cadImageAnnotations[`cad_${i}`] = annotation;
+          }
+        }
+      }
+    }
+    
+    // Legacy support
     let cadImageAnnotation = null;
     if (cadImageForDisplay && cadAnnotationPromise) {
       cadImageAnnotation = await cadAnnotationPromise;
@@ -2860,10 +2905,22 @@ app.post('/api/chat', async (req, res) => {
       response.recalledImage = recalledImageForDisplay;
     }
     
-    if (cadImageForDisplay) {
-      response.cadImage = cadImageForDisplay;
-      if (cadImageAnnotation) {
-        response.cadImageAnnotation = cadImageAnnotation;
+    // Handle multiple CAD results
+    if (cadResults.length > 0) {
+      if (cadResults.length === 1) {
+        // Single result - maintain backward compatibility
+        response.cadImage = cadResults[0].cadImage;
+        if (cadImageAnnotation) {
+          response.cadImageAnnotation = cadImageAnnotation;
+        }
+      } else {
+        // Multiple results - return as array
+        response.cadImages = cadResults.map(r => r.cadImage);
+        response.cadParams = cadResults.map(r => r.params);
+      }
+      // Include annotations if available
+      if (Object.keys(cadImageAnnotations).length > 0) {
+        response.cadImageAnnotations = cadImageAnnotations;
       }
     }
     
@@ -2945,7 +3002,7 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     systemInstruction += '\n- If user asks to see "the image I generated" or "the staged image", look for "generated image" or "staged image" in the image list above';
     systemInstruction += '\n- If "shouldRecall" is false, you can omit the "recall" field or set it to null';
     systemInstruction += '\n\nCAD-STAGING RULES (for blueprints/floor plans and CAD-staged images):';
-    systemInstruction += '\n- "cad": { "shouldProcessCAD": true/false, "imageIndex": 0|1|2|..., "furnitureImageIndex": null|0|1|2|...|[...], "additionalPrompt": "detailed CAD-staging description" } - CAD-staging processes a top-down blueprint/floor plan image to create a 3D render. This is DIFFERENT from regular staging. Use CAD-staging when: (1) the user uploads a top-down blueprint, floor plan, or architectural drawing (2D plan view from above), OR (2) the user wants to modify an image that has "CAD: True" in its annotation (check the image context above). CRITICAL: Even if the user says "stage this blueprint" or "stage this floor plan", you MUST use CAD-staging (set "shouldProcessCAD": true), NOT regular staging. CRITICAL: If the user asks to modify a previously CAD-staged image (one with "CAD: True" in the image context), you MUST use CAD-staging again, NOT regular staging. Regular staging is ONLY for room photos (3D perspective views), NOT for blueprints or CAD-staged images. Set "imageIndex" to the index of the blueprint or CAD-staged image (0 = most recent, 1 = second most recent, etc.). If the user uploads a blueprint in the current message, use imageIndex 0. If the user wants to include specific furniture pieces in the 3D render, set "furnitureImageIndex" to the index (or array of indices) of the furniture image(s) from previous messages. The "additionalPrompt" should be a detailed description of any specific requirements, themes, styles, or preferences the user has (e.g., "medieval theme", "modern minimalist", "cozy atmosphere", etc.). The CAD-staging function will convert the blueprint to a top-down 3D render and include the furniture and styling preferences if specified.';
+    systemInstruction += '\n- "cad": { "shouldProcessCAD": true/false, "imageIndex": 0|1|2|..., "furnitureImageIndex": null|0|1|2|...|[...], "additionalPrompt": "detailed CAD-staging description" } OR "cad": [ { "shouldProcessCAD": true, ... }, { "shouldProcessCAD": true, ... }, ... ] - CAD-staging processes a top-down blueprint/floor plan image to create a 3D render. This is DIFFERENT from regular staging. Use CAD-staging when: (1) the user uploads a top-down blueprint, floor plan, or architectural drawing (2D plan view from above), OR (2) the user wants to modify an image that has "CAD: True" in its annotation (check the image context above). CRITICAL: Even if the user says "stage this blueprint" or "stage this floor plan", you MUST use CAD-staging (set "shouldProcessCAD": true), NOT regular staging. CRITICAL: If the user asks to modify a previously CAD-staged image (one with "CAD: True" in the image context), you MUST use CAD-staging again, NOT regular staging. Regular staging is ONLY for room photos (3D perspective views), NOT for blueprints or CAD-staged images. Set "imageIndex" to the index of the blueprint or CAD-staged image (0 = most recent, 1 = second most recent, etc.). If the user uploads a blueprint in the current message, use imageIndex 0. If the user wants to include specific furniture pieces in the 3D render, set "furnitureImageIndex" to the index (or array of indices) of the furniture image(s) from previous messages. The "additionalPrompt" should be a detailed description of any specific requirements, themes, styles, or preferences the user has (e.g., "medieval theme", "modern minimalist", "cozy atmosphere", etc.). The CAD-staging function will convert the blueprint to a top-down 3D render and include the furniture and styling preferences if specified. You can provide MULTIPLE CAD requests (up to 3) in an array if the user asks for multiple variations (e.g., "stage this blueprint in 3 different themes"). Each CAD request in the array will be processed separately.';
     systemInstruction += '\n- CRITICAL: If the user uploads or refers to a blueprint/floor plan (2D top-down architectural drawing), you MUST set "shouldProcessCAD": true, even if they say "stage". Blueprints ALWAYS use CAD-staging, never regular staging.';
     systemInstruction += '\n- CRITICAL: If the user asks to modify an image that has "CAD: True" in the image context above, you MUST use CAD-staging ("cad" field), NOT regular staging. Always check the CAD classification in the image annotations before deciding which pipeline to use.';
     systemInstruction += '\n- CRITICAL: Regular staging ("staging" field) is ONLY for room photos (3D perspective interior views). If you see a blueprint/floor plan OR an image with "CAD: True", use CAD-staging instead.';
@@ -3813,46 +3870,58 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       }
     }
 
-    // Process CAD request from AI response
-    let cadImageForDisplay = null;
-    let cadAnnotationPromiseUpload = null;
-    if (cadRequestFromAI && cadRequestFromAI.shouldProcessCAD) {
-      try {
-        const imageIndex = typeof cadRequestFromAI.imageIndex === 'number' ? cadRequestFromAI.imageIndex : 0;
-        console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
+    // Process CAD request(s) from AI response (supports single or array)
+    let cadResultsUpload = [];
+    
+    if (cadRequestFromAI) {
+      // Normalize to array (max 3)
+      const cadRequests = Array.isArray(cadRequestFromAI)
+        ? cadRequestFromAI.slice(0, 3).filter(c => c.shouldProcessCAD)
+        : (cadRequestFromAI.shouldProcessCAD ? [cadRequestFromAI] : []);
+      
+      if (cadRequests.length > 0) {
+        console.log(`[CAD] Processing ${cadRequests.length} CAD request(s) from AI`);
         
-        // Retrieve the blueprint image from conversation history
-        const blueprintImage = getImageFromHistory(conversationHistory, imageIndex);
-        
-        if (blueprintImage && blueprintImage.url) {
-          console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
+        for (let i = 0; i < cadRequests.length; i++) {
+          const cadRequest = cadRequests[i];
+          console.log(`[CAD] Processing CAD request ${i + 1}/${cadRequests.length}:`, cadRequest);
           
-          // Extract base64 data from the image URL
-          const base64Data = blueprintImage.url.split(',')[1];
-          if (base64Data) {
-            const imageBuffer = Buffer.from(base64Data, 'base64');
-            const mimeType = blueprintImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+          try {
+            const imageIndex = typeof cadRequest.imageIndex === 'number' ? cadRequest.imageIndex : 0;
+            console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
             
-            // Retrieve furniture images if specified
-            const furnitureImages = [];
-            if (cadRequestFromAI.furnitureImageIndex !== null && cadRequestFromAI.furnitureImageIndex !== undefined) {
-              const furnitureIndices = Array.isArray(cadRequestFromAI.furnitureImageIndex) 
-                ? cadRequestFromAI.furnitureImageIndex 
-                : [cadRequestFromAI.furnitureImageIndex];
+            // Retrieve the blueprint image from conversation history
+            const blueprintImage = getImageFromHistory(conversationHistory, imageIndex);
+            
+            if (blueprintImage && blueprintImage.url) {
+              console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
               
-              for (const furnitureIndex of furnitureIndices) {
-                if (furnitureIndex !== null && furnitureIndex !== undefined) {
-                  const furnitureImage = getImageFromHistory(conversationHistory, furnitureIndex);
-                  if (furnitureImage && furnitureImage.url) {
-                    const furnitureBase64Data = furnitureImage.url.split(',')[1];
-                    if (furnitureBase64Data) {
-                      const furnitureBuffer = Buffer.from(furnitureBase64Data, 'base64');
-                      const furnitureMimeType = furnitureImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
-                      furnitureImages.push({
-                        image: furnitureBuffer,
-                        mimeType: furnitureMimeType
-                      });
-                      console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
+              // Extract base64 data from the image URL
+              const base64Data = blueprintImage.url.split(',')[1];
+              if (base64Data) {
+                const imageBuffer = Buffer.from(base64Data, 'base64');
+                const mimeType = blueprintImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+                
+                // Retrieve furniture images if specified
+                const furnitureImages = [];
+                if (cadRequest.furnitureImageIndex !== null && cadRequest.furnitureImageIndex !== undefined) {
+                  const furnitureIndices = Array.isArray(cadRequest.furnitureImageIndex) 
+                    ? cadRequest.furnitureImageIndex 
+                    : [cadRequest.furnitureImageIndex];
+                  
+                  for (const furnitureIndex of furnitureIndices) {
+                    if (furnitureIndex !== null && furnitureIndex !== undefined) {
+                      const furnitureImage = getImageFromHistory(conversationHistory, furnitureIndex);
+                      if (furnitureImage && furnitureImage.url) {
+                        const furnitureBase64Data = furnitureImage.url.split(',')[1];
+                        if (furnitureBase64Data) {
+                          const furnitureBuffer = Buffer.from(furnitureBase64Data, 'base64');
+                          const furnitureMimeType = furnitureImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
+                          furnitureImages.push({
+                            image: furnitureBuffer,
+                            mimeType: furnitureMimeType
+                          });
+                          console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
                     }
                   } else {
                     console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
@@ -3861,35 +3930,54 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
               }
             }
             
-            console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequestFromAI.additionalPrompt ? ` (with additional prompt: ${cadRequestFromAI.additionalPrompt.substring(0, 50)}...)` : ''}...`);
-            // Process the blueprint through CAD function
-            const additionalPrompt = cadRequestFromAI.additionalPrompt || null;
-            const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
-            
-            // Convert result buffer to data URL
-            const cadImageBase64 = cadResultBuffer.toString('base64');
-            cadImageForDisplay = `data:${mimeType};base64,${cadImageBase64}`;
-            
-            // Annotate CAD image in parallel
-            cadAnnotationPromiseUpload = annotateImage(cadImageForDisplay, true).then(annotation => {
-              console.log(`[Image Annotation] Annotation for CAD render: ${annotation || 'failed'}`);
-              return annotation;
-            }).catch(err => {
-              console.error(`[Image Annotation] Error annotating CAD render:`, err);
-              return null;
-            });
-            
-            console.log(`[CAD] Successfully generated 3D render from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
-          } else {
-            console.log(`[CAD] Failed to extract base64 data from blueprint image`);
+                console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequest.additionalPrompt ? ` (with additional prompt: ${cadRequest.additionalPrompt.substring(0, 50)}...)` : ''}...`);
+                // Process the blueprint through CAD function
+                const additionalPrompt = cadRequest.additionalPrompt || null;
+                const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
+                
+                // Convert result buffer to data URL
+                const cadImageBase64 = cadResultBuffer.toString('base64');
+                const cadImageForDisplay = `data:${mimeType};base64,${cadImageBase64}`;
+                
+                // Annotate CAD image in parallel
+                const annotationPromise = annotateImage(cadImageForDisplay, true).then(annotation => {
+                  console.log(`[Image Annotation] Annotation for CAD render ${i + 1}: ${annotation || 'failed'}`);
+                  return annotation;
+                }).catch(err => {
+                  console.error(`[Image Annotation] Error annotating CAD render ${i + 1}:`, err);
+                  return null;
+                });
+                
+                cadResultsUpload.push({
+                  cadImage: cadImageForDisplay,
+                  params: cadRequest,
+                  annotationPromise: annotationPromise
+                });
+                
+                console.log(`[CAD] Successfully generated 3D render ${i + 1}/${cadRequests.length} from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
+              } else {
+                console.log(`[CAD] Failed to extract base64 data from blueprint image`);
+              }
+            } else {
+              console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
+            }
+          } catch (error) {
+            console.error(`[CAD] Error processing CAD request ${i + 1}:`, error);
+            // Continue with other CAD requests if one fails
+            if (cadRequests.length === 1) {
+              text = (text || '') + '\n\nSorry, I encountered an error while processing the CAD blueprint. Please try again.';
+            }
           }
-        } else {
-          console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
         }
-      } catch (error) {
-        console.error('Error processing CAD request:', error);
-        // Continue with original response if CAD fails
       }
+    }
+    
+    // Legacy support: maintain cadImageForDisplay and cadAnnotationPromiseUpload for backward compatibility
+    let cadImageForDisplay = null;
+    let cadAnnotationPromiseUpload = null;
+    if (cadResultsUpload.length > 0) {
+      cadImageForDisplay = cadResultsUpload[0].cadImage;
+      cadAnnotationPromiseUpload = cadResultsUpload[0].annotationPromise;
     }
 
     // Wait for all annotations to complete before building response
@@ -3917,6 +4005,20 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       }
     }
     
+    // Wait for all CAD annotations to complete
+    const cadImageAnnotationsUpload = {};
+    if (cadResultsUpload.length > 0) {
+      for (let i = 0; i < cadResultsUpload.length; i++) {
+        if (cadResultsUpload[i].annotationPromise) {
+          const annotation = await cadResultsUpload[i].annotationPromise;
+          if (annotation) {
+            cadImageAnnotationsUpload[`cad_${i}`] = annotation;
+          }
+        }
+      }
+    }
+    
+    // Legacy support
     let cadImageAnnotationUpload = null;
     if (cadImageForDisplay && cadAnnotationPromiseUpload) {
       cadImageAnnotationUpload = await cadAnnotationPromiseUpload;
@@ -3981,10 +4083,22 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       response.recalledImage = recalledImageForDisplay;
     }
     
-    if (cadImageForDisplay) {
-      response.cadImage = cadImageForDisplay;
-      if (cadImageAnnotationUpload) {
-        response.cadImageAnnotation = cadImageAnnotationUpload;
+    // Handle multiple CAD results
+    if (cadResultsUpload.length > 0) {
+      if (cadResultsUpload.length === 1) {
+        // Single result - maintain backward compatibility
+        response.cadImage = cadResultsUpload[0].cadImage;
+        if (cadImageAnnotationUpload) {
+          response.cadImageAnnotation = cadImageAnnotationUpload;
+        }
+      } else {
+        // Multiple results - return as array
+        response.cadImages = cadResultsUpload.map(r => r.cadImage);
+        response.cadParams = cadResultsUpload.map(r => r.params);
+      }
+      // Include annotations if available
+      if (Object.keys(cadImageAnnotationsUpload).length > 0) {
+        response.cadImageAnnotations = cadImageAnnotationsUpload;
       }
     }
     

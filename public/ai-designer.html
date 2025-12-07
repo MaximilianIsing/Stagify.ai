@@ -296,6 +296,13 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.2s;
+      }
+      
+      .message-file img:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
       }
       
       .message-file a {
@@ -545,11 +552,11 @@
         border-radius: 8px;
         cursor: pointer;
         transition: background 0.2s;
-        height: 64px;
-        width: 64px;
+        height: 48px;
+        width: 48px;
         flex-shrink: 0;
         position: absolute;
-        bottom: 25px;
+        bottom: 32px;
         right: 0;
         display: flex;
         align-items: center;
@@ -557,8 +564,8 @@
       }
       
       .send-btn img {
-        width: 24px !important;
-        height: 24px !important;
+        width: 30px !important;
+        height: 30px !important;
         object-fit: contain;
         transition: filter 0.2s;
       }
@@ -1632,37 +1639,45 @@
                   if (!isDuplicate) {
                     conversationHistory.push(assistantMessage);
                   }
-                } else if (data.cadImage) {
-                  // If CAD processing was done, display the CAD image
+                } else if (data.cadImage || (data.cadImages && data.cadImages.length > 0)) {
+                  // If CAD processing was done, display the CAD image(s)
                   // Add the AI response text first
                   addMessage('assistant', data.response);
                   
-                  // Then add the CAD image to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    const cadImageDiv = document.createElement('div');
-                    cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                    
-                    const imageContainer = createAIImageWithDownload(data.cadImage, '3D Render from Blueprint', 'cad-render');
-                    cadImageDiv.appendChild(imageContainer);
-                    
-                    lastMessage.appendChild(cadImageDiv);
-                  }
+                  // Normalize to array
+                  const cadImages = data.cadImages || (data.cadImage ? [data.cadImage] : []);
                   
-                  // Store CAD image in conversation history
-                  const cadAnnotation = data.cadImageAnnotation || null;
-                  const cadAssistantMessage = { 
-                    role: 'assistant', 
-                    content: [
-                      { type: 'text', text: data.response },
-                      { 
-                        type: 'image_url', 
-                        image_url: { url: data.cadImage },
-                        isGenerated: true, // Mark as generated image for backend
-                        _annotation: cadAnnotation // Store annotation for backend context building
-                      }
-                    ]
-                  };
+                  if (cadImages.length > 0) {
+                    // Then add the CAD image(s) to the last assistant message
+                    const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                    if (lastMessage) {
+                      cadImages.forEach((cadImage, index) => {
+                        const cadImageDiv = document.createElement('div');
+                        cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                        
+                        const imageTitle = cadImages.length > 1 ? `3D Render from Blueprint (${index + 1})` : '3D Render from Blueprint';
+                        const imageContainer = createAIImageWithDownload(cadImage, imageTitle, `cad-render-${index}`);
+                        cadImageDiv.appendChild(imageContainer);
+                        
+                        lastMessage.appendChild(cadImageDiv);
+                      });
+                    }
+                    
+                    // Store CAD image(s) in conversation history
+                    const cadAnnotation = data.cadImageAnnotation || null;
+                    const cadAnnotations = data.cadImageAnnotations || {};
+                    const cadAssistantMessage = { 
+                      role: 'assistant', 
+                      content: [
+                        { type: 'text', text: data.response },
+                        ...cadImages.map((cadImage, index) => ({
+                          type: 'image_url', 
+                          image_url: { url: cadImage },
+                          isGenerated: true, // Mark as generated image for backend
+                          _annotation: cadImages.length === 1 ? cadAnnotation : (cadAnnotations[`cad_${index}`] || null) // Store annotation for backend context building
+                        }))
+                      ]
+                    };
                   
                   const lastMsg2 = conversationHistory[conversationHistory.length - 1];
                   const isDuplicate2 = lastMsg2 && 
@@ -1671,6 +1686,7 @@
                   
                   if (!isDuplicate2) {
                     conversationHistory.push(cadAssistantMessage);
+                  }
                   }
                 } else if (data.recalledImage) {
                   // If an image was recalled for display, show it
@@ -1937,37 +1953,45 @@
                   if (!isDuplicate) {
                     conversationHistory.push(assistantMessage);
                   }
-                } else if (data.cadImage) {
-                  // If CAD processing was done, display the CAD image
+                } else if (data.cadImage || (data.cadImages && data.cadImages.length > 0)) {
+                  // If CAD processing was done, display the CAD image(s)
                   // Add the AI response text first
                   addMessage('assistant', data.response);
                   
-                  // Then add the CAD image to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    const cadImageDiv = document.createElement('div');
-                    cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                    
-                    const imageContainer = createAIImageWithDownload(data.cadImage, '3D Render from Blueprint', 'cad-render');
-                    cadImageDiv.appendChild(imageContainer);
-                    
-                    lastMessage.appendChild(cadImageDiv);
-                  }
+                  // Normalize to array
+                  const cadImages = data.cadImages || (data.cadImage ? [data.cadImage] : []);
                   
-                  // Store CAD image in conversation history
-                  const cadAnnotation2 = data.cadImageAnnotation || null;
-                  const cadAssistantMessage = { 
-                    role: 'assistant', 
-                    content: [
-                      { type: 'text', text: data.response },
-                      { 
-                        type: 'image_url', 
-                        image_url: { url: data.cadImage },
-                        isGenerated: true,
-                        _annotation: cadAnnotation2 // Store annotation for backend context building
-                      }
-                    ]
-                  };
+                  if (cadImages.length > 0) {
+                    // Then add the CAD image(s) to the last assistant message
+                    const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+                    if (lastMessage) {
+                      cadImages.forEach((cadImage, index) => {
+                        const cadImageDiv = document.createElement('div');
+                        cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                        
+                        const imageTitle = cadImages.length > 1 ? `3D Render from Blueprint (${index + 1})` : '3D Render from Blueprint';
+                        const imageContainer = createAIImageWithDownload(cadImage, imageTitle, `cad-render-${index}`);
+                        cadImageDiv.appendChild(imageContainer);
+                        
+                        lastMessage.appendChild(cadImageDiv);
+                      });
+                    }
+                    
+                    // Store CAD image(s) in conversation history
+                    const cadAnnotation2 = data.cadImageAnnotation || null;
+                    const cadAnnotations2 = data.cadImageAnnotations || {};
+                    const cadAssistantMessage = { 
+                      role: 'assistant', 
+                      content: [
+                        { type: 'text', text: data.response },
+                        ...cadImages.map((cadImage, index) => ({
+                          type: 'image_url', 
+                          image_url: { url: cadImage },
+                          isGenerated: true,
+                          _annotation: cadImages.length === 1 ? cadAnnotation2 : (cadAnnotations2[`cad_${index}`] || null) // Store annotation for backend context building
+                        }))
+                      ]
+                    };
                   
                   const lastMsg2 = conversationHistory[conversationHistory.length - 1];
                   const isDuplicate2 = lastMsg2 && 
@@ -1976,6 +2000,7 @@
                   
                   if (!isDuplicate2) {
                     conversationHistory.push(cadAssistantMessage);
+                  }
                   }
                 } else if (data.requestedImage) {
                   // If an image was requested for display, show it
@@ -2112,9 +2137,11 @@
               
               if (file.type && file.type.startsWith('image/')) {
                 const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
+                const imageSrc = URL.createObjectURL(file);
+                img.src = imageSrc;
                 img.alt = file.name;
-                img.style.cssText = 'max-width: 100%; max-width: min(300px, 100%); max-height: 300px; border-radius: 4px; width: auto; height: auto; box-sizing: border-box; display: block; margin: 0; padding: 0;';
+                img.style.cssText = 'max-width: 100%; max-width: min(300px, 100%); max-height: 300px; border-radius: 4px; width: auto; height: auto; box-sizing: border-box; display: block; margin: 0; padding: 0; cursor: pointer; transition: opacity 0.2s, transform 0.2s;';
+                img.addEventListener('click', () => openImageModal(imageSrc));
                 fileDiv.appendChild(img);
               } else {
                 const fileInfo = document.createElement('div');
