@@ -4244,21 +4244,29 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         : (cadRequestFromAI.shouldProcessCAD ? [cadRequestFromAI] : []);
       
       if (cadRequests.length > 0) {
-        console.log(`[CAD] Processing ${cadRequests.length} CAD request(s) from AI`);
+        if (DEBUG_MODE) {
+          console.log(`[CAD] Processing ${cadRequests.length} CAD request(s) from AI`);
+        }
         
         for (let i = 0; i < cadRequests.length; i++) {
           const cadRequest = cadRequests[i];
-          console.log(`[CAD] Processing CAD request ${i + 1}/${cadRequests.length}:`, cadRequest);
+          if (DEBUG_MODE) {
+            console.log(`[CAD] Processing CAD request ${i + 1}/${cadRequests.length}:`, cadRequest);
+          }
           
           try {
             const imageIndex = typeof cadRequest.imageIndex === 'number' ? cadRequest.imageIndex : 0;
-            console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
+            if (DEBUG_MODE) {
+              console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
+            }
             
             // Retrieve the blueprint image from conversation history
             const blueprintImage = getImageFromHistory(conversationHistory, imageIndex);
             
             if (blueprintImage && blueprintImage.url) {
-              console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
+              if (DEBUG_MODE) {
+                console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
+              }
               
               // Extract base64 data from the image URL
               const base64Data = blueprintImage.url.split(',')[1];
@@ -4285,16 +4293,22 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
                             image: furnitureBuffer,
                             mimeType: furnitureMimeType
                           });
-                          console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
+                          if (DEBUG_MODE) {
+                            console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
+                          }
                     }
                   } else {
-                    console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
+                    if (DEBUG_MODE) {
+                      console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
+                    }
                   }
                 }
               }
             }
             
-                console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequest.additionalPrompt ? ` (with additional prompt: ${cadRequest.additionalPrompt.substring(0, 50)}...)` : ''}...`);
+                if (DEBUG_MODE) {
+                  console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequest.additionalPrompt ? ` (with additional prompt: ${cadRequest.additionalPrompt.substring(0, 50)}...)` : ''}...`);
+                }
                 // Process the blueprint through CAD function
                 const additionalPrompt = cadRequest.additionalPrompt || null;
                 const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
@@ -4320,15 +4334,23 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
                   annotationPromise: annotationPromise
                 });
                 
-                console.log(`[CAD] Successfully generated 3D render ${i + 1}/${cadRequests.length} from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
+                if (DEBUG_MODE) {
+                  console.log(`[CAD] Successfully generated 3D render ${i + 1}/${cadRequests.length} from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
+                }
               } else {
-                console.log(`[CAD] Failed to extract base64 data from blueprint image`);
+                if (DEBUG_MODE) {
+                  console.log(`[CAD] Failed to extract base64 data from blueprint image`);
+                }
               }
             } else {
-              console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
+              if (DEBUG_MODE) {
+                console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
+              }
             }
           } catch (error) {
-            console.error(`[CAD] Error processing CAD request ${i + 1}:`, error);
+            if (DEBUG_MODE) {
+              console.error(`[CAD] Error processing CAD request ${i + 1}:`, error);
+            }
             // Continue with other CAD requests if one fails
             if (cadRequests.length === 1) {
               text = (text || '') + '\n\nSorry, I encountered an error while processing the CAD blueprint. Please try again.';
