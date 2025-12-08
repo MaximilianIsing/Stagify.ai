@@ -90,6 +90,79 @@ function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt,
   }
 }
 
+// Function to log mask edits to CSV file
+function logMaskEditToFile(prompt, model, geminiModel, imageWidth, imageHeight, userId, req) {
+  try {
+    const timestamp = new Date().toISOString();
+    const ipAddress = req ? (req.ip || req.connection.remoteAddress || 'unknown') : 'unknown';
+    const userAgent = req ? (req.get('user-agent') || 'unknown') : 'unknown';
+    
+    // Escape CSV fields that contain commas, quotes, or newlines
+    function escapeCSVField(field) {
+      if (field === null || field === undefined) return '';
+      const str = String(field);
+      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    }
+    
+    // Create CSV row
+    const csvRow = [
+      escapeCSVField(timestamp),
+      escapeCSVField(prompt || ''),
+      escapeCSVField(model || 'unknown'),
+      escapeCSVField(geminiModel || 'unknown'),
+      escapeCSVField(imageWidth || ''),
+      escapeCSVField(imageHeight || ''),
+      escapeCSVField(userId || 'unknown'),
+      escapeCSVField(ipAddress),
+      escapeCSVField(userAgent)
+    ].join(',') + '\n';
+    
+    // Use mounted disk on Render, project data folder locally
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+      
+      // Create data directory if it doesn't exist
+      if (!fs.existsSync(logDir)) {
+        try {
+          fs.mkdirSync(logDir, { recursive: true });
+        } catch (error) {
+          console.log('Error: Cannot create data directory, using project root');
+          logDir = __dirname;
+        }
+      }
+    }
+
+    const logFile = path.join(logDir, 'mask_logs.csv');
+    
+    // Check if file exists to add header if it's a new file
+    const fileExists = fs.existsSync(logFile);
+    
+    if (!fileExists) {
+      // Create new file with header and first row
+      const header = 'timestamp,prompt,model,geminiModel,imageWidth,imageHeight,userId,ipAddress,userAgent\n';
+      fs.writeFileSync(logFile, header + csvRow);
+    } else {
+      // Append to existing file
+      fs.appendFile(logFile, csvRow, (err) => {
+        if (err) {
+          console.error('Error writing to mask log:', err);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in logMaskEditToFile:', error);
+  }
+}
+
 // Global variable to track prompt count
 let promptCount = 0;
 
@@ -4448,6 +4521,39 @@ app.get('/bugreports', protectLogs, (req, res) => {
   }
 });
 
+app.get('/masklogs', protectLogs, (req, res) => {
+  try {
+    let logDir;
+    
+    if (process.env.RENDER && fs.existsSync('/data')) {
+      // Use Render's mounted disk
+      logDir = '/data';
+    } else {
+      // Use project data folder for local development
+      logDir = path.join(__dirname, 'data');
+    }
+
+    const logFile = path.join(logDir, 'mask_logs.csv');
+    
+    if (fs.existsSync(logFile)) {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'inline; filename="mask_logs.csv"');
+      res.sendFile(logFile);
+    } else {
+      res.status(404).json({ 
+        error: 'Log file not found',
+        message: 'No mask logs are available yet'
+      });
+    }
+  } catch (error) {
+    console.error('Error serving mask logs file:', error);
+    res.status(500).json({ 
+      error: 'Failed to retrieve mask logs',
+      message: error.message
+    });
+  }
+});
+
 // Bug report endpoint
 app.post('/api/bug-report', async (req, res) => {
   try {
@@ -4558,6 +4664,125 @@ app.post('/api/bug-report', async (req, res) => {
   } catch (error) {
     console.error('Error processing bug report:', error);
     return res.status(500).json({ error: 'Failed to submit bug report' });
+  }
+});
+
+// Mask editing endpoint - uses Gemini API for better image editing
+app.post('/api/mask-edit', async (req, res) => {
+  try {
+    if (!genAI) {
+      return res.status(500).json({ error: 'AI service not properly configured' });
+    }
+
+    const { image, mask, prompt, model } = req.body;
+
+    if (!image || !mask || !prompt) {
+      return res.status(400).json({ error: 'Image, mask, and prompt are required' });
+    }
+
+    // Get model from request or default to fast model
+    const selectedModel = model || 'gpt-4o-mini';
+    const geminiModel = getGeminiImageModel(selectedModel);
+
+    // Convert base64 data URLs to buffers
+    const imageDataUrl = image.split(',');
+    const maskDataUrl = mask.split(',');
+    
+    let imageBuffer = Buffer.from(imageDataUrl[1], 'base64');
+    let maskBuffer = Buffer.from(maskDataUrl[1], 'base64');
+
+    // Downscale image if needed (Gemini has size limits)
+    imageBuffer = await downscaleImage(imageBuffer);
+    const imageBase64 = imageBuffer.toString('base64');
+    
+    // Process mask to match image size
+    const imageMetadata = await sharp(imageBuffer).metadata();
+    const maskMetadata = await sharp(maskBuffer).metadata();
+    
+    // Resize mask to match image dimensions exactly
+    const resizedMaskBuffer = await sharp(maskBuffer)
+      .resize(imageMetadata.width, imageMetadata.height, {
+        fit: 'fill'
+      })
+      .png()
+      .toBuffer();
+    
+    const maskBase64 = resizedMaskBuffer.toString('base64');
+
+    if (DEBUG_MODE) {
+      console.log('[Mask Edit] Processing masked image edit with Gemini');
+      console.log('[Mask Edit] Prompt:', prompt);
+      console.log('[Mask Edit] Image size:', imageMetadata.width, 'x', imageMetadata.height);
+      console.log('[Mask Edit] Mask size:', maskMetadata.width, 'x', maskMetadata.height, '(resized to match image)');
+    }
+
+    // Enhance the prompt to ensure only the masked area is edited
+    const enhancedPrompt = `${prompt}. CRITICAL INSTRUCTIONS: Only modify the area indicated by the white mask in the second image. Do NOT change anything outside the masked region. Preserve the exact room layout, all furniture positions, wall colors, windows, doors, flooring, lighting, and every other detail exactly as they appear in the original image. The edit must only affect the masked area and must seamlessly blend with the unchanged surroundings.`;
+
+    // Use Gemini's image editing capabilities
+    // Gemini can process images with masks for targeted editing
+    // Use the appropriate Gemini model based on user's selection (pro vs fast)
+    const modelInstance = genAI.getGenerativeModel({ model: geminiModel });
+    
+    // Build the prompt with image and mask
+    const geminiPrompt = [
+      { 
+        text: enhancedPrompt 
+      },
+      {
+        inlineData: {
+          mimeType: "image/png",
+          data: imageBase64,
+        },
+      },
+      {
+        inlineData: {
+          mimeType: "image/png",
+          data: maskBase64,
+        },
+      },
+    ];
+
+    if (DEBUG_MODE) {
+      console.log('[Mask Edit] Using Gemini model:', geminiModel, '(selected model:', selectedModel, ')');
+    }
+
+    const result = await modelInstance.generateContent(geminiPrompt);
+    const response = await result.response;
+
+    if (!response || !response.candidates || response.candidates.length === 0) {
+      throw new Error('Gemini processing failed - no results generated');
+    }
+
+    // Extract the generated image
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) {
+        const imageData = part.inlineData.data;
+        const editedImageDataUrl = `data:image/png;base64,${imageData}`;
+
+        if (DEBUG_MODE) {
+          console.log('[Mask Edit] Successfully generated edited image with Gemini');
+        }
+
+        // Log the mask edit request
+        const userId = getUserIdentifier(req);
+        logMaskEditToFile(prompt, selectedModel, geminiModel, imageMetadata.width, imageMetadata.height, userId, req);
+
+        return res.json({
+          success: true,
+          editedImage: editedImageDataUrl
+        });
+      }
+    }
+
+    throw new Error('No image data in Gemini response');
+
+  } catch (error) {
+    console.error('Error processing mask edit:', error);
+    return res.status(500).json({ 
+      error: 'Failed to process masked edit', 
+      details: error.message 
+    });
   }
 });
 

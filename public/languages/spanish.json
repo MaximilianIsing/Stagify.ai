@@ -299,6 +299,18 @@
       "cadStage": "Escenificar (Plano)",
       "describe": "Describir/Recordar"
     },
+    "maskEditor": {
+      "title": "Editar con Máscara",
+      "brushSize": "Tamaño del Pincel:",
+      "promptLabel": "¿Qué te gustaría cambiar en el área enmascarada?",
+      "promptPlaceholder": "ej., cambiar el color de la pared a azul, reemplazar el sofá con una silla moderna...",
+      "cancel": "Cancelar",
+      "clearMask": "Limpiar Máscara",
+      "applyEdit": "Aplicar Edición",
+      "processing": "Procesando...",
+      "pleaseDrawMask": "Por favor dibuja una máscara sobre el área que quieres editar.",
+      "pleaseDescribeChange": "Por favor describe lo que quieres cambiar en el área enmascarada."
+    },
     "errors": {
       "invalidFileType": "Por favor sube un archivo PDF.",
       "fileTooLarge": "El archivo es demasiado grande. Por favor sube un PDF menor a 100MB.",

@@ -299,6 +299,18 @@
       "cadStage": "装修（平面图）",
       "describe": "描述/回忆"
     },
+    "maskEditor": {
+      "title": "使用蒙版编辑",
+      "brushSize": "画笔大小：",
+      "promptLabel": "您想在蒙版区域中更改什么？",
+      "promptPlaceholder": "例如，将墙壁颜色改为蓝色，用现代椅子替换沙发...",
+      "cancel": "取消",
+      "clearMask": "清除蒙版",
+      "applyEdit": "应用编辑",
+      "processing": "处理中...",
+      "pleaseDrawMask": "请在要编辑的区域上绘制蒙版。",
+      "pleaseDescribeChange": "请描述您想在蒙版区域中更改的内容。"
+    },
     "errors": {
       "invalidFileType": "请上传PDF文件。",
       "fileTooLarge": "文件过大。请上传小于100MB的PDF。",

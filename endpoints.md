@@ -273,7 +273,7 @@ The access key is stored in `endpointkey.txt` (local) or `process.env.endpoint_k
 
 ---
 
-### `GET /bugreports?key=YOUR_KEY`
+### `GET /bugreports?key=YOUR_KEY` 
 **Description**: Retrieves the bug reports CSV file
 
 **Authentication**: Required via `key` query parameter
@@ -284,6 +284,20 @@ The access key is stored in `endpointkey.txt` (local) or `process.env.endpoint_k
 - Error (404): File not found
 
 **CSV Columns**: `timestamp,description,stepsToReproduce,email,userId,userAgent,url,ipAddress,conversationHistory`
+
+---
+
+### `GET /masklogs?key=YOUR_KEY`
+**Description**: Retrieves the mask edit logs CSV file
+
+**Authentication**: Required via `key` query parameter
+
+**Response**:
+- Success (200): CSV file (`mask_logs.csv`)
+- Error (403): Access denied
+- Error (404): File not found
+
+**CSV Columns**: `timestamp,prompt,model,geminiModel,imageWidth,imageHeight,userId,ipAddress,userAgent`
 
 ---
 
