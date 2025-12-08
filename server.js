@@ -51,7 +51,9 @@ function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt,
     if (process.env.RENDER && fs.existsSync('/data')) {
       // Use Render's mounted disk
       logDir = '/data';
-      console.log('Using Render persistent disk');
+      if (DEBUG_MODE) {
+        console.log('Using Render persistent disk');
+      }
     } else {
       // Use project data folder for local development
       logDir = path.join(__dirname, 'data');
@@ -60,9 +62,13 @@ function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt,
       if (!fs.existsSync(logDir)) {
         try {
           fs.mkdirSync(logDir, { recursive: true });
-          console.log('Created local data directory successfully');
+          if (DEBUG_MODE) {
+            console.log('Created local data directory successfully');
+          }
         } catch (error) {
-          console.log('Error: Cannot create data directory, using project root');
+          if (DEBUG_MODE) {
+            console.log('Error: Cannot create data directory, using project root');
+          }
           logDir = __dirname;
         }
       }
@@ -192,9 +198,13 @@ function initializePromptCount() {
       const timestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/gm;
       const matches = fileContent.match(timestampPattern);
       promptCount = matches ? matches.length : 0;
-      console.log('Prompt count successfully initialized from file:', promptCount);
+      if (DEBUG_MODE) {
+        console.log('Prompt count successfully initialized from file:', promptCount);
+      }
     } else {
-      console.log('No prompt log file found, starting with count 0');
+      if (DEBUG_MODE) {
+        console.log('No prompt log file found, starting with count 0');
+      }
       promptCount = 0;
     }
   } catch (error) {
@@ -226,9 +236,13 @@ function initializeContactCount() {
       const timestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/gm;
       const matches = fileContent.match(timestampPattern);
       contactCount = matches ? matches.length : 0;
-      console.log('Contact count successfully initialized from file:', contactCount);
+      if (DEBUG_MODE) {
+        console.log('Contact count successfully initialized from file:', contactCount);
+      }
     } else {
-      console.log('No contact log file found, starting with count 0');
+      if (DEBUG_MODE) {
+        console.log('No contact log file found, starting with count 0');
+      }
       contactCount = 0;
     }
   } catch (error) {
@@ -331,7 +345,9 @@ try {
   }
   if (debugValue !== undefined) {
     DEBUG_MODE = debugValue.toLowerCase() === 'true';
-    console.log(`Debug mode: ${DEBUG_MODE ? 'ENABLED' : 'DISABLED'}`);
+    if (DEBUG_MODE) {
+      console.log(`Debug mode: ${DEBUG_MODE ? 'ENABLED' : 'DISABLED'}`);
+    }
   }
 } catch (error) {
   console.error('Error reading debug configuration:', error.message);
@@ -401,7 +417,9 @@ function saveMemories(userId, memories) {
     const allMemories = loadAllMemories();
     allMemories[userId] = memories;
     fs.writeFileSync(file, JSON.stringify(allMemories, null, 2));
-    console.log(`✓ Successfully saved ${memories.length} memories for user: ${userId} to ${file}`);
+    if (DEBUG_MODE) {
+      console.log(`✓ Successfully saved ${memories.length} memories for user: ${userId} to ${file}`);
+    }
     
     if (DEBUG_MODE) {
       console.log('All memories structure:', JSON.stringify(allMemories, null, 2));
@@ -567,10 +585,14 @@ try {
   // Try environment variable first (Render), then fall back to local file
   let apiKey = process.env.GOOGLE_AI_API_KEY;
   if (apiKey === undefined){
-    console.log('GOOGLE_AI_API_KEY is not set in an enviorment variable, using local file');
+    if (DEBUG_MODE) {
+      console.log('GOOGLE_AI_API_KEY is not set in an enviorment variable, using local file');
+    }
     apiKey = fs.readFileSync(path.join(__dirname, 'key.txt'), 'utf8').trim();
   }
-  console.log("Google AI API key successfully loaded");
+  if (DEBUG_MODE) {
+    console.log("Google AI API key successfully loaded");
+  }
   genAI = new GoogleGenerativeAI(apiKey);
 } catch (error) {
   console.error('Error initializing Google AI:', error.message);
@@ -582,7 +604,9 @@ try {
   // Try environment variable first (Render), then fall back to local file
   let gptApiKey = process.env.GPT_KEY;
   if (gptApiKey === undefined) {
-    console.log('GPT_KEY is not set in an environment variable, using local file');
+    if (DEBUG_MODE) {
+      console.log('GPT_KEY is not set in an environment variable, using local file');
+    }
     const gptKeyFile = path.join(__dirname, 'gpt-key.txt');
     if (fs.existsSync(gptKeyFile)) {
       gptApiKey = fs.readFileSync(gptKeyFile, 'utf8').trim();
@@ -590,9 +614,13 @@ try {
   }
   if (gptApiKey) {
     openai = new OpenAI({ apiKey: gptApiKey });
-    console.log("OpenAI API key successfully loaded");
+    if (DEBUG_MODE) {
+      console.log("OpenAI API key successfully loaded");
+    }
   } else {
-    console.log("Warning: GPT key file is empty, chat features may not work");
+    if (DEBUG_MODE) {
+      console.log("Warning: GPT key file is empty, chat features may not work");
+    }
   }
 } catch (error) {
   console.error('Error initializing OpenAI:', error.message);
@@ -1561,7 +1589,9 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       req
     );
     
-    console.log(`[Staging] Using Gemini model: ${geminiModel}`);
+    if (DEBUG_MODE) {
+      console.log(`[Staging] Using Gemini model: ${geminiModel}`);
+    }
     const model = genAI.getGenerativeModel({ model: geminiModel });
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -1700,7 +1730,9 @@ app.post('/api/log-contact', (req, res) => {
     if (process.env.RENDER && fs.existsSync('/data')) {
       // Use Render's mounted disk
       logDir = '/data';
-      console.log('Using Render persistent disk for contact logs');
+      if (DEBUG_MODE) {
+        console.log('Using Render persistent disk for contact logs');
+      }
     } else {
       // Use project data folder for local development
       logDir = path.join(__dirname, 'data');
@@ -1709,9 +1741,13 @@ app.post('/api/log-contact', (req, res) => {
       if (!fs.existsSync(logDir)) {
         try {
           fs.mkdirSync(logDir, { recursive: true });
-          console.log('Created local data directory successfully');
+          if (DEBUG_MODE) {
+            console.log('Created local data directory successfully');
+          }
         } catch (error) {
-          console.log('Error: Cannot create data directory, using project root');
+          if (DEBUG_MODE) {
+            console.log('Error: Cannot create data directory, using project root');
+          }
           logDir = __dirname;
         }
       }
@@ -1760,9 +1796,13 @@ function logChatToFile(userId, userMessage, aiResponse, files, ipAddress, userAg
       if (!fs.existsSync(logDir)) {
         try {
           fs.mkdirSync(logDir, { recursive: true });
-          console.log('Created local data directory successfully');
+          if (DEBUG_MODE) {
+            console.log('Created local data directory successfully');
+          }
         } catch (error) {
-          console.log('Error: Cannot create data directory, using project root');
+          if (DEBUG_MODE) {
+            console.log('Error: Cannot create data directory, using project root');
+          }
           logDir = __dirname;
         }
       }
@@ -1878,7 +1918,9 @@ app.post('/api/process-pdf', pdfUpload.single('pdf'), async (req, res) => {
     });
 
     // Forward the request to the external server using https module
-    console.log(`Forwarding PDF processing request to ${PDF_PROCESSING_SERVER}${urlPath}`);
+    if (DEBUG_MODE) {
+      console.log(`Forwarding PDF processing request to ${PDF_PROCESSING_SERVER}${urlPath}`);
+    }
     
     return new Promise((resolve, reject) => {
       const options = {
@@ -2401,11 +2443,10 @@ app.post('/api/chat', async (req, res) => {
     const payloadSizeKB = (payloadSize / 1024).toFixed(2);
     const payloadSizeMB = (payloadSize / (1024 * 1024)).toFixed(2);
     
-    console.log('=== SENDING TO AI (CHAT) ===');
-    console.log('Payload size:', payloadSize, 'bytes (', payloadSizeKB, 'KB /', payloadSizeMB, 'MB)');
-    console.log('Number of messages:', openaiMessages.length);
-    
     if (DEBUG_MODE) {
+      console.log('=== SENDING TO AI (CHAT) ===');
+      console.log('Payload size:', payloadSize, 'bytes (', payloadSizeKB, 'KB /', payloadSizeMB, 'MB)');
+      console.log('Number of messages:', openaiMessages.length);
       // Log individual messages instead of full array
       console.log('--- MESSAGES ---');
       openaiMessages.forEach((msg, index) => {
@@ -2431,24 +2472,23 @@ app.post('/api/chat', async (req, res) => {
         }
       });
       console.log('----------------');
+      
+      // Log image data sizes if present
+      openaiMessages.forEach((msg, idx) => {
+        if (msg.role === 'user' && Array.isArray(msg.content)) {
+          msg.content.forEach((item, itemIdx) => {
+            if (item.type === 'image_url' && item.image_url && item.image_url.url) {
+              const imageDataSize = Buffer.byteLength(item.image_url.url, 'utf8');
+              console.log(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB`);
+            }
+          });
+        }
+      });
+        console.log('============================');
+        console.log('Calling OpenAI API...');
     }
-    
-    // Log image data sizes if present
-    openaiMessages.forEach((msg, idx) => {
-      if (msg.role === 'user' && Array.isArray(msg.content)) {
-        msg.content.forEach((item, itemIdx) => {
-          if (item.type === 'image_url' && item.image_url && item.image_url.url) {
-            const imageDataSize = Buffer.byteLength(item.image_url.url, 'utf8');
-            console.log(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB`);
-          }
-        });
-      }
-    });
-    
-    console.log('============================');
 
     // Use OpenAI GPT with JSON response format
-    console.log('Calling OpenAI API...');
     let aiResponseJson;
     try {
       const completion = await openai.chat.completions.create({
@@ -2497,7 +2537,9 @@ app.post('/api/chat', async (req, res) => {
     // Process memory actions from AI response
     const memoryActions = { stores: [], forgets: [] };
     if (lastUserMessageText && memoryActionsFromAI) {
-      console.log(`[Memory] Processing memory actions from AI response:`, memoryActionsFromAI);
+      if (DEBUG_MODE) {
+        console.log(`[Memory] Processing memory actions from AI response:`, memoryActionsFromAI);
+      }
       
       // Process forget actions first
       if (memoryActionsFromAI.forgets && memoryActionsFromAI.forgets.length > 0) {
@@ -2516,7 +2558,9 @@ app.post('/api/chat', async (req, res) => {
             
             if (memories.length < initialLength) {
               memoryActions.forgets.push(memoryId);
-              console.log(`Forgot memory with ID for user ${userId}:`, memoryId);
+              if (DEBUG_MODE) {
+                console.log(`Forgot memory with ID for user ${userId}:`, memoryId);
+              }
             } else {
               // Try to find by content match if ID didn't work
               const memoryToForget = memories.find(m => 
@@ -2529,7 +2573,9 @@ app.post('/api/chat', async (req, res) => {
               if (memoryToForget) {
                 memories = memories.filter(m => m.id !== memoryToForget.id);
                 memoryActions.forgets.push(memoryToForget.id);
-                console.log(`Forgot memory for user ${userId}:`, memoryToForget.content);
+                if (DEBUG_MODE) {
+                  console.log(`Forgot memory for user ${userId}:`, memoryToForget.content);
+                }
               }
             }
           }
@@ -2548,7 +2594,9 @@ app.post('/api/chat', async (req, res) => {
             };
             memories.push(newMemory);
             memoryActions.stores.push(newMemory.content);
-            console.log(`Stored new memory for user ${userId}:`, newMemory.content);
+            if (DEBUG_MODE) {
+              console.log(`Stored new memory for user ${userId}:`, newMemory.content);
+            }
           }
         }
       }
@@ -2569,18 +2617,24 @@ app.post('/api/chat', async (req, res) => {
         : (generateRequestFromAI.shouldGenerate && generateRequestFromAI.prompt ? [generateRequestFromAI] : []);
       
       if (generateRequests.length > 0) {
-        console.log(`[Image Generation] Processing ${generateRequests.length} generation request(s) from AI`);
+        if (DEBUG_MODE) {
+          console.log(`[Image Generation] Processing ${generateRequests.length} generation request(s) from AI`);
+        }
         
         for (let i = 0; i < generateRequests.length; i++) {
           const genRequest = generateRequests[i];
           try {
-            console.log(`[Image Generation] Processing generation request ${i + 1}/${generateRequests.length}:`, genRequest.prompt.substring(0, 100) + '...');
+            if (DEBUG_MODE) {
+              console.log(`[Image Generation] Processing generation request ${i + 1}/${generateRequests.length}:`, genRequest.prompt.substring(0, 100) + '...');
+            }
             const geminiModel = getGeminiImageModel(selectedModel);
             const generatedImage = await processImageGeneration(genRequest.prompt, req, geminiModel);
             if (generatedImage) {
               // Annotate generated image in parallel
               const annotationPromise = annotateImage(generatedImage).then(annotation => {
-                console.log(`[Image Annotation] Annotation for generated image ${i + 1}: ${annotation || 'failed'}`);
+                if (DEBUG_MODE) {
+                  console.log(`[Image Annotation] Annotation for generated image ${i + 1}: ${annotation || 'failed'}`);
+                }
                 return annotation;
               }).catch(err => {
                 console.error(`[Image Annotation] Error annotating generated image ${i + 1}:`, err);
@@ -2591,7 +2645,9 @@ app.post('/api/chat', async (req, res) => {
                 image: generatedImage,
                 annotationPromise: annotationPromise
               });
-              console.log(`[Image Generation] Successfully generated image ${i + 1}/${generateRequests.length}`);
+              if (DEBUG_MODE) {
+                console.log(`[Image Generation] Successfully generated image ${i + 1}/${generateRequests.length}`);
+              }
             }
           } catch (error) {
             console.error(`[Image Generation] Error generating image ${i + 1}:`, error);
@@ -2615,11 +2671,15 @@ app.post('/api/chat', async (req, res) => {
         : (stagingRequestFromAI.shouldStage ? [stagingRequestFromAI] : []);
       
       if (stagingRequests.length > 0) {
-        console.log(`[Staging] Processing ${stagingRequests.length} staging request(s) from AI`);
+        if (DEBUG_MODE) {
+          console.log(`[Staging] Processing ${stagingRequests.length} staging request(s) from AI`);
+        }
         
         for (let i = 0; i < stagingRequests.length; i++) {
           const stagingRequest = stagingRequests[i];
-          console.log(`[Staging] Processing staging request ${i + 1}/${stagingRequests.length}:`, stagingRequest);
+          if (DEBUG_MODE) {
+            console.log(`[Staging] Processing staging request ${i + 1}/${stagingRequests.length}:`, stagingRequest);
+          }
           
           // Build staging params from AI response
           let stagingParams = {
@@ -2804,16 +2864,22 @@ app.post('/api/chat', async (req, res) => {
     if (recallRequestFromAI && recallRequestFromAI.shouldRecall) {
       try {
         const imageIndex = typeof recallRequestFromAI.imageIndex === 'number' ? recallRequestFromAI.imageIndex : 0;
-        console.log(`[Recall] Processing recall request from AI, index: ${imageIndex}`);
+        if (DEBUG_MODE) {
+          console.log(`[Recall] Processing recall request from AI, index: ${imageIndex}`);
+        }
         
         // Retrieve the image from conversation history
         const recalledImage = getImageFromHistory(messages, imageIndex);
         
         if (recalledImage && recalledImage.url) {
-          console.log(`[Recall] Found image at index ${imageIndex}`);
+          if (DEBUG_MODE) {
+            console.log(`[Recall] Found image at index ${imageIndex}`);
+          }
           recalledImageForDisplay = recalledImage.url;
         } else {
-          console.log(`[Recall] Image at index ${imageIndex} not found`);
+          if (DEBUG_MODE) {
+            console.log(`[Recall] Image at index ${imageIndex} not found`);
+          }
         }
       } catch (error) {
         console.error('Error processing recall request:', error);
@@ -2826,13 +2892,17 @@ app.post('/api/chat', async (req, res) => {
     if (imageRequestFromAI && imageRequestFromAI.requestImage) {
       try {
         const imageIndex = typeof imageRequestFromAI.imageIndex === 'number' ? imageRequestFromAI.imageIndex : 0;
-        console.log(`[Image Request] Processing image request from AI, index: ${imageIndex}`);
+        if (DEBUG_MODE) {
+          console.log(`[Image Request] Processing image request from AI, index: ${imageIndex}`);
+        }
         
         // Retrieve the image from conversation history
         const requestedImage = getImageFromHistory(messages, imageIndex);
         
         if (requestedImage && requestedImage.url) {
-          console.log(`[Image Request] Found image at index ${imageIndex}`);
+          if (DEBUG_MODE) {
+            console.log(`[Image Request] Found image at index ${imageIndex}`);
+          }
           
           // Store the image URL to return in response for display
           requestedImageForDisplay = requestedImage.url;
@@ -2847,7 +2917,9 @@ app.post('/api/chat', async (req, res) => {
                                (messageLower.includes('explain') && !messageLower.includes('show'));
           
           if (wantsAnalysis) {
-            console.log(`[Image Request] User wants analysis, sending to GPT for analysis`);
+            if (DEBUG_MODE) {
+              console.log(`[Image Request] User wants analysis, sending to GPT for analysis`);
+            }
             // Make another GPT call with the image for analysis
             const imageAnalysisMessages = [
               { role: 'system', content: systemInstruction },
@@ -2876,13 +2948,19 @@ app.post('/api/chat', async (req, res) => {
             const imageAnalysisJson = JSON.parse(imageAnalysisCompletion.choices[0].message.content);
             text = imageAnalysisJson.response || imageAnalysisCompletion.choices[0].message.content;
             
-            console.log(`[Image Request] Successfully analyzed image, response: ${text.substring(0, 100)}...`);
+            if (DEBUG_MODE) {
+              console.log(`[Image Request] Successfully analyzed image, response: ${text.substring(0, 100)}...`);
+            }
           } else {
             // User just wants to see the image - keep the original text response
-            console.log(`[Image Request] User wants to view image, returning image for display`);
+            if (DEBUG_MODE) {
+              console.log(`[Image Request] User wants to view image, returning image for display`);
+            }
           }
         } else {
-          console.log(`[Image Request] Image at index ${imageIndex} not found`);
+          if (DEBUG_MODE) {
+            console.log(`[Image Request] Image at index ${imageIndex} not found`);
+          }
         }
       } catch (error) {
         console.error('Error processing image request:', error);
@@ -2900,21 +2978,29 @@ app.post('/api/chat', async (req, res) => {
         : (cadRequestFromAI.shouldProcessCAD ? [cadRequestFromAI] : []);
       
       if (cadRequests.length > 0) {
-        console.log(`[CAD] Processing ${cadRequests.length} CAD request(s) from AI`);
+        if (DEBUG_MODE) {
+          console.log(`[CAD] Processing ${cadRequests.length} CAD request(s) from AI`);
+        }
         
         for (let i = 0; i < cadRequests.length; i++) {
           const cadRequest = cadRequests[i];
-          console.log(`[CAD] Processing CAD request ${i + 1}/${cadRequests.length}:`, cadRequest);
+          if (DEBUG_MODE) {
+            console.log(`[CAD] Processing CAD request ${i + 1}/${cadRequests.length}:`, cadRequest);
+          }
           
           try {
             const imageIndex = typeof cadRequest.imageIndex === 'number' ? cadRequest.imageIndex : 0;
-            console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
+            if (DEBUG_MODE) {
+              console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
+            }
             
             // Retrieve the blueprint image from conversation history
             const blueprintImage = getImageFromHistory(messages, imageIndex);
             
             if (blueprintImage && blueprintImage.url) {
-              console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
+              if (DEBUG_MODE) {
+                console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
+              }
               
               // Extract base64 data from the image URL
               const base64Data = blueprintImage.url.split(',')[1];
@@ -2941,16 +3027,22 @@ app.post('/api/chat', async (req, res) => {
                             image: furnitureBuffer,
                             mimeType: furnitureMimeType
                           });
-                          console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
+                          if (DEBUG_MODE) {
+                            console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
+                          }
                         }
                       } else {
-                        console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
+                        if (DEBUG_MODE) {
+                          console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
+                        }
                       }
                     }
                   }
                 }
                 
-                console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequest.additionalPrompt ? ` (with additional prompt: ${cadRequest.additionalPrompt.substring(0, 50)}...)` : ''}...`);
+                if (DEBUG_MODE) {
+                  console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequest.additionalPrompt ? ` (with additional prompt: ${cadRequest.additionalPrompt.substring(0, 50)}...)` : ''}...`);
+                }
                 // Process the blueprint through CAD function
                 const additionalPrompt = cadRequest.additionalPrompt || null;
                 const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
@@ -2961,7 +3053,9 @@ app.post('/api/chat', async (req, res) => {
                 
                 // Annotate CAD image in parallel
                 const annotationPromise = annotateImage(cadImageForDisplay, true).then(annotation => {
-                  console.log(`[Image Annotation] Annotation for CAD render ${i + 1}: ${annotation || 'failed'}`);
+                  if (DEBUG_MODE) {
+                    console.log(`[Image Annotation] Annotation for CAD render ${i + 1}: ${annotation || 'failed'}`);
+                  }
                   return annotation;
                 }).catch(err => {
                   console.error(`[Image Annotation] Error annotating CAD render ${i + 1}:`, err);
@@ -2974,15 +3068,23 @@ app.post('/api/chat', async (req, res) => {
                   annotationPromise: annotationPromise
                 });
                 
-                console.log(`[CAD] Successfully generated 3D render ${i + 1}/${cadRequests.length} from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
+                if (DEBUG_MODE) {
+                  console.log(`[CAD] Successfully generated 3D render ${i + 1}/${cadRequests.length} from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
+                }
               } else {
-                console.log(`[CAD] Failed to extract base64 data from blueprint image`);
+                if (DEBUG_MODE) {
+                  console.log(`[CAD] Failed to extract base64 data from blueprint image`);
+                }
               }
             } else {
-              console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
+              if (DEBUG_MODE) {
+                console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
+              }
             }
           } catch (error) {
-            console.error(`[CAD] Error processing CAD request ${i + 1}:`, error);
+            if (DEBUG_MODE) {
+              console.error(`[CAD] Error processing CAD request ${i + 1}:`, error);
+            }
             // Continue with other CAD requests if one fails
             if (cadRequests.length === 1) {
               text = (text || '') + '\n\nSorry, I encountered an error while processing the CAD blueprint. Please try again.';
@@ -3222,8 +3324,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     conversationHistory = deduplicateMessages(conversationHistory);
     if (conversationHistory.length !== originalHistoryLength) {
       const removedCount = originalHistoryLength - conversationHistory.length;
-      console.log(`[Deduplication] Removed ${removedCount} duplicate message(s) from conversation history (${originalHistoryLength} -> ${conversationHistory.length})`);
+      
       if (DEBUG_MODE) {
+        console.log(`[Deduplication] Removed ${removedCount} duplicate message(s) from conversation history (${originalHistoryLength} -> ${conversationHistory.length})`);
         // Log which messages were duplicates
         const seenKeys = new Set();
         const original = conversationHistory.length < originalHistoryLength ? 
@@ -3375,7 +3478,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         
         // Annotate image in parallel (don't await - let it run in background)
         const annotationPromise = annotateImage(imageDataUrl, false, true).then(annotation => {
-          console.log(`[Image Annotation] Annotation for ${file.originalname}: ${annotation || 'failed'}`);
+          if (DEBUG_MODE) {
+            console.log(`[Image Annotation] Annotation for ${file.originalname}: ${annotation || 'failed'}`);
+          }
           return annotation;
         }).catch(err => {
           console.error(`[Image Annotation] Error annotating ${file.originalname}:`, err);
@@ -3518,11 +3623,13 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     const payloadSizeKB = (payloadSize / 1024).toFixed(2);
     const payloadSizeMB = (payloadSize / (1024 * 1024)).toFixed(2);
     
-    console.log('=== SENDING TO AI (CHAT-UPLOAD) ===');
-    console.log('Payload size:', payloadSize, 'bytes (', payloadSizeKB, 'KB /', payloadSizeMB, 'MB)');
-    console.log('Model:', selectedModel);
-    console.log('Has images:', hasImages);
-    console.log('Number of messages:', safeMessages.length);
+    if (DEBUG_MODE) {
+      console.log('=== SENDING TO AI (CHAT-UPLOAD) ===');
+      console.log('Payload size:', payloadSize, 'bytes (', payloadSizeKB, 'KB /', payloadSizeMB, 'MB)');
+      console.log('Model:', selectedModel);
+      console.log('Has images:', hasImages);
+      console.log('Number of messages:', safeMessages.length);
+    }
     
     if (DEBUG_MODE) {
       // Log individual messages instead of full array
@@ -3558,13 +3665,13 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         msg.content.forEach((item, itemIdx) => {
           if (item.type === 'image_url' && item.image_url && item.image_url.url) {
             const imageDataSize = Buffer.byteLength(item.image_url.url, 'utf8');
-            console.log(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB`);
+            if (DEBUG_MODE) {
+              console.log(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB`);
+            }
           }
         });
       }
     });
-    
-    console.log('===================================');
     
     let text;
     let aiResponseJson = null;
@@ -3576,7 +3683,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     let cadRequestFromAI = null;
     
     try {
-      console.log('Calling OpenAI API...');
+      if (DEBUG_MODE) {
+        console.log('Calling OpenAI API...');
+      }
       
       // Final safety check: ensure all image objects only have the expected structure
       const finalMessages = safeMessages.map(msg => {
@@ -3617,7 +3726,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       cadRequestFromAI = aiResponseJson.cad || null;
     } catch (openaiError) {
       // If OpenAI API fails (e.g., due to unsupported image format), let the AI respond about it
-      console.error('OpenAI API error:', openaiError);
+      if (DEBUG_MODE) {
+        console.error('OpenAI API error:', openaiError);
+      }
       
       // Check if error is related to image processing
       const errorMessage = openaiError.message || '';
@@ -3704,7 +3815,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     // Process memory actions from AI response
     const memoryActions = { stores: [], forgets: [] };
     if (message && memoryActionsFromAI) {
-      console.log(`[Memory] Processing memory actions from AI response:`, memoryActionsFromAI);
+      if (DEBUG_MODE) {
+        console.log(`[Memory] Processing memory actions from AI response:`, memoryActionsFromAI);
+      }
       
       // Process forget actions first
       if (memoryActionsFromAI.forgets && memoryActionsFromAI.forgets.length > 0) {
@@ -3713,7 +3826,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
           const forgottenCount = memories.length;
           memories = [];
           memoryActions.forgets = ['all'];
-          console.log(`Forgot ALL ${forgottenCount} memories for user ${userId}`);
+          if (DEBUG_MODE) {
+            console.log(`Forgot ALL ${forgottenCount} memories for user ${userId}`);
+          }
         } else {
           // Process individual memory forgets
           for (const memoryId of memoryActionsFromAI.forgets) {
@@ -3755,7 +3870,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
             };
             memories.push(newMemory);
             memoryActions.stores.push(newMemory.content);
-            console.log(`Stored new memory for user ${userId}:`, newMemory.content);
+            if (DEBUG_MODE) {
+              console.log(`Stored new memory for user ${userId}:`, newMemory.content);
+            }
           }
         }
       }
@@ -3779,11 +3896,15 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         : (stagingRequestFromAI.shouldStage ? [stagingRequestFromAI] : []);
       
       if (stagingRequests.length > 0) {
-        console.log(`[Staging] Processing ${stagingRequests.length} staging request(s) from AI`);
+        if (DEBUG_MODE) {
+          console.log(`[Staging] Processing ${stagingRequests.length} staging request(s) from AI`);
+        }
         
         for (let i = 0; i < stagingRequests.length; i++) {
           const stagingRequest = stagingRequests[i];
-          console.log(`[Staging] Processing staging request ${i + 1}/${stagingRequests.length}:`, stagingRequest);
+          if (DEBUG_MODE) {
+            console.log(`[Staging] Processing staging request ${i + 1}/${stagingRequests.length}:`, stagingRequest);
+          }
           
           // Build staging params from AI response
           let stagingParams = {
@@ -3808,11 +3929,15 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
               // Find the original (first) user-uploaded image
               const originalImageIndex = getOriginalImageIndex(conversationHistory);
               if (originalImageIndex !== null) {
-                console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
+                if (DEBUG_MODE) {
+                  console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
+                }
                 stagingParams.usePreviousImage = originalImageIndex;
               } else {
                 // If no original found, use most recent (index 0)
-                console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
+                if (DEBUG_MODE) {
+                  console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
+                }
                 stagingParams.usePreviousImage = 0;
               }
             }
@@ -3830,8 +3955,10 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
             
             // Use the AI's chosen image index (AI should use context to determine the correct image)
             // Debug: Log conversation history structure
-            console.log(`[Staging] Looking for image at index ${imageIndex}`);
-            console.log(`[Staging] Conversation history length: ${conversationHistory.length}`);
+            if (DEBUG_MODE) {
+              console.log(`[Staging] Looking for image at index ${imageIndex}`);
+              console.log(`[Staging] Conversation history length: ${conversationHistory.length}`);
+            }
             if (DEBUG_MODE) {
               console.log(`[Staging] Conversation history structure:`, JSON.stringify(conversationHistory.map(msg => ({
                 role: msg.role,
@@ -3917,7 +4044,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
                 if (stagedImage) {
                   // Annotate staged image in parallel
                   const annotationPromise = annotateImage(stagedImage).then(annotation => {
-                    console.log(`[Image Annotation] Annotation for staged image ${i + 1}: ${annotation || 'failed'}`);
+                    if (DEBUG_MODE) {
+                      console.log(`[Image Annotation] Annotation for staged image ${i + 1}: ${annotation || 'failed'}`);
+                    }
                     return annotation;
                   }).catch(err => {
                     console.error(`[Image Annotation] Error annotating staged image ${i + 1}:`, err);
@@ -3929,7 +4058,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
                     params: stagingParams,
                     annotationPromise: annotationPromise
                   });
-                  console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+                  if (DEBUG_MODE) {
+                    console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
+                  }
                 }
               } catch (stagingError) {
                 console.error(`[Staging] Error processing staging ${i + 1}:`, stagingError);
@@ -3979,7 +4110,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
             if (generatedImage) {
               // Annotate generated image in parallel
               const annotationPromise = annotateImage(generatedImage).then(annotation => {
-                console.log(`[Image Annotation] Annotation for generated image ${i + 1}: ${annotation || 'failed'}`);
+                if (DEBUG_MODE) {
+                  console.log(`[Image Annotation] Annotation for generated image ${i + 1}: ${annotation || 'failed'}`);
+                }
                 return annotation;
               }).catch(err => {
                 console.error(`[Image Annotation] Error annotating generated image ${i + 1}:`, err);
@@ -4166,7 +4299,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
                 
                 // Annotate CAD image in parallel
                 const annotationPromise = annotateImage(cadImageForDisplay, true).then(annotation => {
-                  console.log(`[Image Annotation] Annotation for CAD render ${i + 1}: ${annotation || 'failed'}`);
+                  if (DEBUG_MODE) {
+                    console.log(`[Image Annotation] Annotation for CAD render ${i + 1}: ${annotation || 'failed'}`);
+                  }
                   return annotation;
                 }).catch(err => {
                   console.error(`[Image Annotation] Error annotating CAD render ${i + 1}:`, err);
