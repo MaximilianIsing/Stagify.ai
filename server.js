@@ -2809,6 +2809,9 @@ app.post('/api/chat', async (req, res) => {
                 const geminiModel = getGeminiImageModel(selectedModel);
                 const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer, geminiModel);
                 if (stagedImage) {
+                  // Increment prompt count for staging
+                  promptCount++;
+                  
                   // Annotate staged image in parallel
                   const annotationPromise = annotateImage(stagedImage).then(annotation => {
                     if (DEBUG_MODE) {
@@ -4042,6 +4045,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
                 const geminiModel = getGeminiImageModel(selectedModel);
                 const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer, geminiModel);
                 if (stagedImage) {
+                  // Increment prompt count for staging
+                  promptCount++;
+                  
                   // Annotate staged image in parallel
                   const annotationPromise = annotateImage(stagedImage).then(annotation => {
                     if (DEBUG_MODE) {
