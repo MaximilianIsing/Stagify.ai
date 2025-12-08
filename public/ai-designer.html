@@ -1016,6 +1016,114 @@
       }
       
       /* AI-generated image container - relative positioning for download button */
+      /* Masked image carousel - Simple implementation */
+      .masked-image-carousel {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+      }
+      
+      .masked-image-carousel-viewport {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+      }
+      
+      .masked-image-carousel-track {
+        display: flex;
+        transition: transform 0.3s ease;
+      }
+      
+      .masked-image-carousel-item {
+        flex: 0 0 100%;
+        position: relative;
+      }
+      
+      .masked-image-carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        border: none;
+        color: white;
+        font-size: 24px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+        transition: background 0.2s;
+      }
+      
+      .masked-image-carousel-nav:hover {
+        background: rgba(0, 0, 0, 0.8);
+      }
+      
+      .masked-image-carousel-nav:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+      
+      .masked-image-carousel-nav.prev {
+        left: 10px;
+      }
+      
+      .masked-image-carousel-nav.next {
+        right: 10px;
+      }
+      
+      /* Right arrow positioned inside image container */
+      .masked-image-carousel-item .ai-image-container .masked-image-carousel-nav.next {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      
+      .masked-image-carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        padding: 0;
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 15;
+      }
+      
+      /* Dots positioned inside image container */
+      .masked-image-carousel-item .ai-image-container .masked-image-carousel-dots {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      
+      .masked-image-carousel-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.3);
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: background 0.2s, transform 0.2s;
+      }
+      
+      .masked-image-carousel-dot:hover {
+        background: rgba(0, 0, 0, 0.5);
+        transform: scale(1.2);
+      }
+      
+      .masked-image-carousel-dot.active {
+        background: #2563eb;
+        transform: scale(1.3);
+      }
+      
       .ai-image-container {
         position: relative;
         display: inline-block;
@@ -1094,6 +1202,330 @@
       
       .ai-image-container:hover .ai-image-download-btn:active {
         transform: translate(1.5px, -1.5px) scale(0.95);
+      }
+      
+      /* Mask button - styled like download button, positioned to the left */
+      .ai-image-mask-btn {
+        position: absolute;
+        top: 8px;
+        right: 48px; /* Position to the left of download button (36px button + 8px gap + 4px spacing) */
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 6px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.2s;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        padding: 0;
+        transform-origin: center;
+      }
+      
+      .ai-image-mask-btn img {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+        filter: brightness(0) invert(1);
+      }
+      
+      .ai-image-mask-btn:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: scale(1.1);
+      }
+      
+      .ai-image-mask-btn:active {
+        transform: scale(0.95);
+      }
+      
+      /* Move mask button to maintain distance from edge when image scales (same as download button) */
+      .ai-image-container:hover .ai-image-mask-btn {
+        transform: translate(1.5px, -1.5px);
+      }
+      
+      .ai-image-container:hover .ai-image-mask-btn:hover {
+        transform: translate(1.5px, -1.5px) scale(1.1);
+      }
+      
+      .ai-image-container:hover .ai-image-mask-btn:active {
+        transform: translate(1.5px, -1.5px) scale(0.95);
+      }
+      
+      /* Mask editor modal */
+      .mask-editor-modal {
+        display: none;
+        position: fixed;
+        z-index: 10001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+        animation: fadeIn 0.3s ease-in;
+      }
+      
+      .mask-editor-canvas-container.processing {
+        filter: blur(3px);
+        opacity: 0.7;
+        transition: filter 0.3s, opacity 0.3s;
+      }
+      
+      .mask-editor-canvas-container.processing .mask-editor-canvas,
+      .mask-editor-canvas-container.processing #mask-editor-mask-canvas {
+        pointer-events: none;
+        cursor: not-allowed;
+      }
+      
+      .mask-editor-canvas-container.processing #mask-editor-mask-canvas {
+        opacity: 0.5;
+      }
+      
+      .mask-editor-modal.active {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      
+      .mask-editor-content {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 90vw;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-sizing: border-box;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      }
+      
+      .mask-editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #1e3a8a;
+      }
+      
+      .mask-editor-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+        color: #1e3a8a;
+      }
+      
+      .mask-editor-close {
+        background: transparent;
+        border: none;
+        color: #1e3a8a;
+        font-size: 32px;
+        cursor: pointer;
+        padding: 0;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: background 0.2s;
+      }
+      
+      .mask-editor-close:hover {
+        background: rgba(37, 99, 235, 0.1);
+        color: #2563eb;
+      }
+      
+      .mask-editor-canvas-container {
+        position: relative;
+        display: inline-block;
+        border: 2px solid #2563eb;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #000;
+      }
+      
+      .mask-editor-canvas {
+        display: block;
+        max-width: 100%;
+        max-height: 70vh;
+        cursor: crosshair;
+      }
+      
+      #mask-editor-mask-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: auto;
+        mix-blend-mode: multiply;
+      }
+      
+      .mask-editor-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        color: #1e3a8a;
+      }
+      
+      .mask-editor-brush-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      
+      .mask-editor-brush-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1e3a8a;
+      }
+      
+      .mask-editor-brush-slider {
+        flex: 1;
+        min-width: 150px;
+        max-width: 300px;
+        height: 6px;
+        border-radius: 3px;
+        background: #e5e7eb;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      
+      .mask-editor-brush-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #2563eb;
+        cursor: pointer;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+      }
+      
+      .mask-editor-brush-slider::-webkit-slider-thumb:hover {
+        background: #1d4ed8;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.5);
+      }
+      
+      .mask-editor-brush-slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #2563eb;
+        cursor: pointer;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+      }
+      
+      .mask-editor-brush-slider::-moz-range-thumb:hover {
+        background: #1d4ed8;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.5);
+      }
+      
+      .mask-editor-brush-slider::-moz-range-track {
+        height: 6px;
+        border-radius: 3px;
+        background: #e5e7eb;
+      }
+      
+      .mask-editor-brush-size-display {
+        min-width: 40px;
+        text-align: center;
+        font-weight: 600;
+        color: #2563eb;
+      }
+      
+      .mask-editor-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      
+      .mask-editor-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      
+      .mask-editor-btn-primary {
+        background: #2563eb;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .mask-editor-btn-primary img {
+        width: 16px;
+        height: 16px;
+        margin-left: 8px;
+        filter: brightness(0) invert(1);
+        object-fit: contain;
+      }
+      
+      .mask-editor-btn-primary:hover {
+        background: #1d4ed8;
+      }
+      
+      .mask-editor-btn-secondary {
+        background: #f3f4f6;
+        color: #1e3a8a;
+        border: 1px solid #e5e7eb;
+      }
+      
+      .mask-editor-btn-secondary:hover {
+        background: #e5e7eb;
+        border-color: #2563eb;
+        color: #2563eb;
+      }
+      
+      .mask-editor-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      
+      .mask-editor-prompt-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .mask-editor-prompt-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1e3a8a;
+      }
+      
+      .mask-editor-prompt-input {
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #1e3a8a;
+        font-size: 14px;
+        font-family: inherit;
+      }
+      
+      .mask-editor-prompt-input:focus {
+        outline: none;
+        border-color: #2563eb;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+      
+      .mask-editor-prompt-input::placeholder {
+        color: #9ca3af;
       }
       
       /* Image modal/lightbox */
@@ -2805,7 +3237,991 @@
         container.appendChild(img);
         container.appendChild(downloadBtn);
         
+        // Add mask button for all AI-generated images
+        // This includes staged images, generated images, CAD renders, recalled images, etc.
+        const maskBtn = document.createElement('button');
+        maskBtn.className = 'ai-image-mask-btn';
+        maskBtn.title = 'Edit with mask';
+        maskBtn.setAttribute('aria-label', 'Edit with mask');
+        
+        const maskIcon = document.createElement('img');
+        maskIcon.src = 'media-webp/Mask.webp';
+        maskIcon.alt = 'Mask';
+        maskBtn.appendChild(maskIcon);
+        
+        maskBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openMaskEditor(imageSrc, imageType);
+        });
+        container.appendChild(maskBtn);
+        
         return container;
+      }
+      
+      // Create or update masked image carousel - Simple, clean implementation
+      function createOrUpdateMaskedImageCarousel(originalSrc, maskedVersions, originalContainer) {
+        // Check if carousel already exists
+        let carousel = originalContainer && originalContainer.classList.contains('masked-image-carousel') 
+          ? originalContainer 
+          : null;
+        
+        // If carousel exists, append new items instead of recreating
+        if (carousel) {
+          const track = carousel.querySelector('.masked-image-carousel-track');
+          
+          if (track) {
+            // Get current number of items (original + existing masked versions)
+            const currentItemCount = track.querySelectorAll('.masked-image-carousel-item').length;
+            const newMaskedVersions = maskedVersions.slice(currentItemCount - 1); // Get only new versions
+            
+            // Add new masked versions
+            newMaskedVersions.forEach((maskedImage, index) => {
+              // Ensure maskedImage is actually a URL string, not undefined or the original
+              if (!maskedImage) {
+                console.error('Invalid masked image URL:', maskedImage, 'for index', index);
+                return; // Skip invalid entries
+              }
+              const maskedItem = document.createElement('div');
+              maskedItem.className = 'masked-image-carousel-item';
+              const maskedImageContainer = createAIImageWithDownload(maskedImage, `Edited Image ${currentItemCount + index}`, 'masked-edit');
+              maskedItem.appendChild(maskedImageContainer);
+              track.appendChild(maskedItem);
+              
+              // Add next button to the new image container
+              const nextBtn = document.createElement('button');
+              nextBtn.className = 'masked-image-carousel-nav next';
+              nextBtn.innerHTML = '›';
+              nextBtn.setAttribute('aria-label', 'Next image');
+              maskedImageContainer.appendChild(nextBtn);
+              
+              // Add click handler - use carousel's updateCarousel function
+              nextBtn.addEventListener('click', () => {
+                if (carousel._updateCarousel && carousel._getCurrentIndex && carousel._setCurrentIndex) {
+                  let currentIdx = carousel._getCurrentIndex();
+                  const items = track.querySelectorAll('.masked-image-carousel-item');
+                  const totalItemsCount = items.length;
+                  
+                  if (currentIdx < totalItemsCount - 1) {
+                    currentIdx++;
+                    carousel._setCurrentIndex(currentIdx);
+                    carousel._updateCarousel();
+                  }
+                }
+              });
+            });
+            
+            // Update dots in all image containers to include new items
+            const totalItems = 1 + maskedVersions.length;
+            const allImageContainers = track.querySelectorAll('.ai-image-container');
+            allImageContainers.forEach((container) => {
+              let containerDots = container.querySelector('.masked-image-carousel-dots');
+              if (!containerDots) {
+                containerDots = document.createElement('div');
+                containerDots.className = 'masked-image-carousel-dots';
+                container.appendChild(containerDots);
+              }
+              
+              const currentDotCount = containerDots.querySelectorAll('.masked-image-carousel-dot').length;
+              for (let i = currentDotCount; i < totalItems; i++) {
+                const dot = document.createElement('button');
+                dot.className = 'masked-image-carousel-dot';
+                dot.setAttribute('aria-label', `Go to image ${i + 1}`);
+                containerDots.appendChild(dot);
+                
+                // Add click handler - use carousel's updateCarousel function
+                dot.addEventListener('click', () => {
+                  if (carousel._setCurrentIndex && carousel._updateCarousel) {
+                    carousel._setCurrentIndex(i);
+                    carousel._updateCarousel();
+                  }
+                });
+              }
+            });
+            
+            // Move to the most recent image (last item) and update arrow states
+            const newTotalItems = track.querySelectorAll('.masked-image-carousel-item').length;
+            const newCurrentIndex = newTotalItems - 1;
+            
+            // Update carousel state and move to new item
+            if (carousel._setCurrentIndex && carousel._updateCarousel) {
+              carousel._setCurrentIndex(newCurrentIndex);
+            } else {
+              // Fallback: directly update if functions not available
+              if (track) {
+                track.style.transform = `translateX(-${newCurrentIndex * 100}%)`;
+                
+                // Update dots in all containers
+                const allItems = track.querySelectorAll('.masked-image-carousel-item');
+                allItems.forEach((item) => {
+                  const itemDots = item.querySelector('.masked-image-carousel-dots');
+                  if (itemDots) {
+                    itemDots.querySelectorAll('.masked-image-carousel-dot').forEach((dot, idx) => {
+                      dot.classList.toggle('active', idx === newCurrentIndex);
+                    });
+                  }
+                });
+                
+                // Update nav buttons
+                const prevBtn = carousel.querySelector('.masked-image-carousel-nav.prev');
+                if (prevBtn) prevBtn.disabled = newCurrentIndex === 0;
+                track.querySelectorAll('.masked-image-carousel-nav.next').forEach((btn) => {
+                  btn.disabled = newCurrentIndex === newTotalItems - 1;
+                });
+              }
+            }
+            
+            return carousel; // Return existing carousel with new items added
+          }
+        }
+        
+        // Create new carousel if it doesn't exist
+        if (!carousel) {
+          carousel = document.createElement('div');
+          carousel.className = 'masked-image-carousel';
+        } else {
+          carousel.innerHTML = '';
+        }
+        
+        // Create viewport (only as wide as image)
+        const viewport = document.createElement('div');
+        viewport.className = 'masked-image-carousel-viewport';
+        
+        const track = document.createElement('div');
+        track.className = 'masked-image-carousel-track';
+        
+        // Add navigation arrows (will be positioned relative to visible image)
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'masked-image-carousel-nav prev';
+        prevBtn.innerHTML = '‹';
+        prevBtn.setAttribute('aria-label', 'Previous image');
+        
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'masked-image-carousel-nav next';
+        nextBtn.innerHTML = '›';
+        nextBtn.setAttribute('aria-label', 'Next image');
+        
+        // Add original image as first item
+        const originalItem = document.createElement('div');
+        originalItem.className = 'masked-image-carousel-item';
+        const originalImageContainer = createAIImageWithDownload(originalSrc, 'Original Image', 'original');
+        originalItem.appendChild(originalImageContainer);
+        track.appendChild(originalItem);
+        
+        // Add all masked versions
+        maskedVersions.forEach((maskedImage, index) => {
+          const maskedItem = document.createElement('div');
+          maskedItem.className = 'masked-image-carousel-item';
+          // Ensure maskedImage is actually a URL string
+          if (!maskedImage) {
+            console.error('Invalid masked image URL (undefined) for index', index);
+            return; // Skip invalid entries
+          }
+          if (maskedImage === originalSrc) {
+            console.warn('Masked image is same as original for index', index, '- this might be an issue');
+          }
+          console.log('Adding masked version', index + 1, ':', maskedImage.substring(0, 50) + '...');
+          const maskedImageContainer = createAIImageWithDownload(maskedImage, `Edited Image ${index + 1}`, 'masked-edit');
+          maskedItem.appendChild(maskedImageContainer);
+          track.appendChild(maskedItem);
+        });
+        
+        viewport.appendChild(track);
+        viewport.appendChild(prevBtn);
+        carousel.appendChild(viewport);
+        
+        // Add next button and dots to each image container (positioned inside the image)
+        const allImageContainers = track.querySelectorAll('.ai-image-container');
+        const totalItems = 1 + maskedVersions.length; // Original + masked versions
+        
+        allImageContainers.forEach((container) => {
+          // Add next button
+          const nextBtnClone = nextBtn.cloneNode(true);
+          container.appendChild(nextBtnClone);
+          
+          // Add click handler to each clone
+          nextBtnClone.addEventListener('click', () => {
+            if (currentIndex < totalItemsCount - 1) {
+              currentIndex++;
+              updateCarousel();
+            }
+          });
+          
+          // Add dots indicator
+          const dots = document.createElement('div');
+          dots.className = 'masked-image-carousel-dots';
+          
+          for (let i = 0; i < totalItems; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'masked-image-carousel-dot';
+            if (i === 0) dot.classList.add('active');
+            dot.setAttribute('aria-label', `Go to image ${i + 1}`);
+            dots.appendChild(dot);
+          }
+          
+          container.appendChild(dots);
+        });
+        
+        // Carousel functionality
+        let currentIndex = 0;
+        let items = track.querySelectorAll('.masked-image-carousel-item');
+        let totalItemsCount = items.length;
+        
+        function updateCarousel() {
+          // Refresh items count in case new items were added
+          items = track.querySelectorAll('.masked-image-carousel-item');
+          totalItemsCount = items.length;
+          
+          // Move track to show current item
+          track.style.transform = `translateX(-${currentIndex * 100}%)`;
+          
+          // Update dots in all image containers
+          items.forEach((item) => {
+            const itemDots = item.querySelector('.masked-image-carousel-dots');
+            if (itemDots) {
+              itemDots.querySelectorAll('.masked-image-carousel-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+              });
+            }
+          });
+          
+          // Update nav buttons
+          prevBtn.disabled = currentIndex === 0;
+          
+          // Update all next buttons (they're inside each image container)
+          const allNextButtons = track.querySelectorAll('.masked-image-carousel-nav.next');
+          allNextButtons.forEach((btn) => {
+            btn.disabled = currentIndex === totalItemsCount - 1;
+          });
+        }
+        
+        // Store updateCarousel function on carousel for access when appending
+        carousel._updateCarousel = updateCarousel;
+        carousel._getCurrentIndex = () => currentIndex;
+        carousel._setCurrentIndex = (idx) => { 
+          currentIndex = idx;
+          updateCarousel();
+        };
+        
+        // Navigation handlers
+        prevBtn.addEventListener('click', () => {
+          if (currentIndex > 0) {
+            currentIndex--;
+            updateCarousel();
+          }
+        });
+        
+        // Next button click is handled by the clones inside image containers
+        
+        // Dot navigation - attach to dots in all image containers
+        items.forEach((item) => {
+          const itemDots = item.querySelector('.masked-image-carousel-dots');
+          if (itemDots) {
+            itemDots.querySelectorAll('.masked-image-carousel-dot').forEach((dot, index) => {
+              dot.addEventListener('click', () => {
+                currentIndex = index;
+                updateCarousel();
+              });
+            });
+          }
+        });
+        
+        // Touch/swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        viewport.addEventListener('touchstart', (e) => {
+          touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        viewport.addEventListener('touchend', (e) => {
+          touchEndX = e.changedTouches[0].screenX;
+          const diff = touchStartX - touchEndX;
+          const swipeThreshold = 50;
+          
+          if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0 && currentIndex < totalItemsCount - 1) {
+              currentIndex++;
+              updateCarousel();
+            } else if (diff < 0 && currentIndex > 0) {
+              currentIndex--;
+              updateCarousel();
+            }
+          }
+        });
+        
+        // Initialize - if there are masked versions, start at the most recent (last) one
+        if (maskedVersions.length > 0) {
+          currentIndex = maskedVersions.length; // Last item (original is index 0, so last masked version is at length)
+        }
+        updateCarousel();
+        
+        return carousel;
+      }
+      
+      // Mask editor functionality
+      // Track original image containers and their masked versions
+      const maskedImageData = new Map(); // Map<originalImageSrc, {container, originalSrc, maskedVersions: []}>
+      
+      function openMaskEditor(imageSrc, imageType) {
+        const modal = document.getElementById('mask-editor-modal');
+        if (!modal) {
+          createMaskEditorModal();
+        }
+        
+        // Find the original image container
+        let originalContainer = null;
+        const allContainers = document.querySelectorAll('.ai-image-container');
+        for (const container of allContainers) {
+          const img = container.querySelector('.ai-generated-image');
+          if (img && img.src === imageSrc) {
+            originalContainer = container;
+            break;
+          }
+        }
+        
+        // Check if this image is already in a carousel
+        const carouselItem = document.querySelector(`.masked-image-carousel-item img[src="${imageSrc}"]`);
+        if (carouselItem) {
+          originalContainer = carouselItem.closest('.masked-image-carousel');
+        }
+        
+        // Determine the original image source
+        // If this image is in a carousel, find the original (first image in carousel)
+        let originalImageSrc = imageSrc;
+        if (carouselItem) {
+          const carousel = carouselItem.closest('.masked-image-carousel');
+          if (carousel) {
+            const firstItem = carousel.querySelector('.masked-image-carousel-item:first-child img');
+            if (firstItem) {
+              originalImageSrc = firstItem.src;
+            }
+          }
+        }
+        
+        // Store reference to original container and image source
+        if (!maskedImageData.has(originalImageSrc)) {
+          maskedImageData.set(originalImageSrc, {
+            container: originalContainer,
+            originalSrc: originalImageSrc,
+            maskedVersions: []
+          });
+        }
+        
+        const existingModal = document.getElementById('mask-editor-modal');
+        const canvas = document.getElementById('mask-editor-canvas');
+        const promptInput = document.getElementById('mask-editor-prompt');
+        
+        // Load image onto canvas
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          // Calculate display size (max 70vh height, maintain aspect ratio)
+          const maxHeight = window.innerHeight * 0.7;
+          const maxWidth = window.innerWidth * 0.9;
+          let displayWidth = img.width;
+          let displayHeight = img.height;
+          
+          if (displayHeight > maxHeight) {
+            displayWidth = (maxHeight / displayHeight) * displayWidth;
+            displayHeight = maxHeight;
+          }
+          if (displayWidth > maxWidth) {
+            displayHeight = (maxWidth / displayWidth) * displayHeight;
+            displayWidth = maxWidth;
+          }
+          
+          // Set canvas display size
+          canvas.style.width = displayWidth + 'px';
+          canvas.style.height = displayHeight + 'px';
+          
+          // Set canvas actual size (for drawing)
+          const scaleX = displayWidth / img.width;
+          const scaleY = displayHeight / img.height;
+          canvas.width = img.width;
+          canvas.height = img.height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+          
+          // Initialize mask canvas (transparent overlay)
+          const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+          maskCanvas.width = img.width;
+          maskCanvas.height = img.height;
+          maskCanvas.style.width = displayWidth + 'px';
+          maskCanvas.style.height = displayHeight + 'px';
+          const maskCtx = maskCanvas.getContext('2d');
+          maskCtx.fillStyle = 'rgba(37, 99, 235, 0.4)'; // Blue overlay for mask (Stagify blue)
+          
+          // Store image source and scale for later use
+          canvas.dataset.imageSrc = imageSrc;
+          canvas.dataset.imageType = imageType;
+          canvas.dataset.scaleX = scaleX;
+          canvas.dataset.scaleY = scaleY;
+          canvas.dataset.originalWidth = img.width;
+          canvas.dataset.originalHeight = img.height;
+          
+          existingModal.classList.add('active');
+          initMaskDrawing(maskCanvas, scaleX, scaleY);
+          
+          // Clear prompt input and disable button initially
+          if (promptInput) {
+            promptInput.value = '';
+          }
+          
+          // Remove blur effect if it exists (from previous session)
+          const canvasContainer = document.querySelector('.mask-editor-canvas-container');
+          if (canvasContainer) {
+            canvasContainer.classList.remove('processing');
+          }
+          
+          // Update translations when modal opens
+          updateMaskEditorTranslations();
+          
+          updateApplyButtonState();
+        };
+        img.src = imageSrc;
+      }
+      
+      function createMaskEditorModal() {
+        const modal = document.createElement('div');
+        modal.id = 'mask-editor-modal';
+        modal.className = 'mask-editor-modal';
+        
+        modal.innerHTML = `
+          <div class="mask-editor-content">
+            <div class="mask-editor-header">
+              <h2 class="mask-editor-title" data-i18n="pdf.maskEditor.title">Edit with Mask</h2>
+              <button class="mask-editor-close" id="mask-editor-close">&times;</button>
+            </div>
+            <div class="mask-editor-canvas-container">
+              <canvas id="mask-editor-canvas" class="mask-editor-canvas"></canvas>
+              <canvas id="mask-editor-mask-canvas" class="mask-editor-canvas" style="position: absolute; top: 0; left: 0; pointer-events: auto; mix-blend-mode: multiply; cursor: crosshair;"></canvas>
+            </div>
+            <div class="mask-editor-controls">
+              <div class="mask-editor-brush-controls">
+                <label class="mask-editor-brush-label" data-i18n="pdf.maskEditor.brushSize">Brush Size:</label>
+                <input type="range" id="mask-editor-brush-slider" class="mask-editor-brush-slider" min="20" max="150" value="50">
+                <span id="mask-editor-brush-size" class="mask-editor-brush-size-display">50 px</span>
+              </div>
+              <div class="mask-editor-prompt-container">
+                <label class="mask-editor-prompt-label" data-i18n="pdf.maskEditor.promptLabel">What would you like to change in the masked area?</label>
+                <input type="text" id="mask-editor-prompt" class="mask-editor-prompt-input" data-i18n-placeholder="pdf.maskEditor.promptPlaceholder" placeholder="e.g., change the wall color to blue, replace the sofa with a modern chair...">
+              </div>
+              <div class="mask-editor-actions">
+                <button class="mask-editor-btn mask-editor-btn-secondary" id="mask-editor-cancel" data-i18n="pdf.maskEditor.cancel">Cancel</button>
+                <button class="mask-editor-btn mask-editor-btn-secondary" id="mask-editor-clear" data-i18n="pdf.maskEditor.clearMask">Clear Mask</button>
+                <button class="mask-editor-btn mask-editor-btn-primary" id="mask-editor-submit">
+                  <span data-i18n="pdf.maskEditor.applyEdit">Apply Edit</span>
+                  <img src="media-webp/Mask.webp" alt="Mask">
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Apply translations to mask editor
+        updateMaskEditorTranslations();
+        
+        // Event listeners
+        document.getElementById('mask-editor-close').addEventListener('click', closeMaskEditor);
+        document.getElementById('mask-editor-cancel').addEventListener('click', closeMaskEditor);
+        document.getElementById('mask-editor-clear').addEventListener('click', clearMask);
+        document.getElementById('mask-editor-submit').addEventListener('click', submitMaskEdit);
+        document.getElementById('mask-editor-brush-slider').addEventListener('input', (e) => {
+          document.getElementById('mask-editor-brush-size').textContent = e.target.value + ' px';
+        });
+        
+        // Add event listener for prompt input changes
+        const promptInput = document.getElementById('mask-editor-prompt');
+        if (promptInput) {
+          promptInput.addEventListener('input', updateApplyButtonState);
+          promptInput.addEventListener('keyup', updateApplyButtonState);
+        }
+        
+        // Initially disable the button
+        const submitBtn = document.getElementById('mask-editor-submit');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+        }
+        
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeMaskEditor();
+          }
+        });
+        
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeMaskEditor();
+          }
+        });
+      }
+      
+      // Function to update mask editor translations
+      function updateMaskEditorTranslations() {
+        if (!window.LanguageSystem || !window.LanguageSystem.isLoaded()) {
+          return;
+        }
+        
+        const getText = (key) => {
+          return window.LanguageSystem.getText(key) || key;
+        };
+        
+        // Update title
+        const title = document.querySelector('.mask-editor-title');
+        if (title) {
+          title.textContent = getText('pdf.maskEditor.title');
+        }
+        
+        // Update brush size label
+        const brushLabel = document.querySelector('.mask-editor-brush-label');
+        if (brushLabel) {
+          brushLabel.textContent = getText('pdf.maskEditor.brushSize');
+        }
+        
+        // Update prompt label
+        const promptLabel = document.querySelector('.mask-editor-prompt-label');
+        if (promptLabel) {
+          promptLabel.textContent = getText('pdf.maskEditor.promptLabel');
+        }
+        
+        // Update prompt placeholder
+        const promptInput = document.getElementById('mask-editor-prompt');
+        if (promptInput) {
+          promptInput.placeholder = getText('pdf.maskEditor.promptPlaceholder');
+        }
+        
+        // Update buttons
+        const cancelBtn = document.getElementById('mask-editor-cancel');
+        if (cancelBtn) {
+          cancelBtn.textContent = getText('pdf.maskEditor.cancel');
+        }
+        
+        const clearBtn = document.getElementById('mask-editor-clear');
+        if (clearBtn) {
+          clearBtn.textContent = getText('pdf.maskEditor.clearMask');
+        }
+        
+        const submitBtn = document.getElementById('mask-editor-submit');
+        if (submitBtn) {
+          const submitText = submitBtn.querySelector('span');
+          if (submitText) {
+            submitText.textContent = getText('pdf.maskEditor.applyEdit');
+          }
+        }
+      }
+      
+      let isDrawing = false;
+      let brushSize = 50;
+      
+      function initMaskDrawing(maskCanvas, scaleX, scaleY) {
+        const ctx = maskCanvas.getContext('2d');
+        ctx.globalCompositeOperation = 'source-over';
+        
+        const brushSlider = document.getElementById('mask-editor-brush-slider');
+        brushSlider.addEventListener('input', (e) => {
+          brushSize = parseInt(e.target.value);
+        });
+        
+        let drawing = false;
+        let lastX = null;
+        let lastY = null;
+        
+        function isProcessing() {
+          const canvasContainer = document.querySelector('.mask-editor-canvas-container');
+          return canvasContainer && canvasContainer.classList.contains('processing');
+        }
+        
+        function startDrawing(e) {
+          if (isProcessing()) return; // Prevent drawing while processing
+          drawing = true;
+          lastX = null;
+          lastY = null;
+          draw(e);
+        }
+        
+        function stopDrawing() {
+          drawing = false;
+          lastX = null;
+          lastY = null;
+          updateApplyButtonState(); // Update button state after drawing stops
+        }
+        
+        function draw(e) {
+          if (!drawing || isProcessing()) return; // Prevent drawing while processing
+          
+          const rect = maskCanvas.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / scaleX;
+          const y = (e.clientY - rect.top) / scaleY;
+          
+          // Use lighten composite to prevent darkening on overlap - gives consistent opacity
+          ctx.globalCompositeOperation = 'lighten';
+          
+          // Create a soft gradient brush for smoother, more professional look
+          const gradient = ctx.createRadialGradient(x, y, 0, x, y, brushSize / 2);
+          gradient.addColorStop(0, 'rgba(37, 99, 235, 0.5)'); // Center opacity
+          gradient.addColorStop(0.7, 'rgba(37, 99, 235, 0.3)'); // Mid opacity
+          gradient.addColorStop(1, 'rgba(37, 99, 235, 0)'); // Transparent at edges
+          
+          ctx.fillStyle = gradient;
+          
+          // Draw smooth connected strokes if we have a previous position
+          if (lastX !== null && lastY !== null) {
+            // Calculate distance between points
+            const dx = x - lastX;
+            const dy = y - lastY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Draw intermediate circles for smooth strokes
+            const steps = Math.max(1, Math.floor(distance / (brushSize / 4)));
+            for (let i = 0; i <= steps; i++) {
+              const t = i / steps;
+              const px = lastX + dx * t;
+              const py = lastY + dy * t;
+              
+              const stepGradient = ctx.createRadialGradient(px, py, 0, px, py, brushSize / 2);
+              stepGradient.addColorStop(0, 'rgba(37, 99, 235, 0.5)');
+              stepGradient.addColorStop(0.7, 'rgba(37, 99, 235, 0.3)');
+              stepGradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+              
+              ctx.fillStyle = stepGradient;
+              ctx.beginPath();
+              ctx.arc(px, py, brushSize / 2, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          } else {
+            // First point - just draw a circle
+            ctx.beginPath();
+            ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          // Store current position for next draw
+          lastX = x;
+          lastY = y;
+          
+          // Reset composite operation
+          ctx.globalCompositeOperation = 'source-over';
+          
+          // Update button state after drawing
+          updateApplyButtonState();
+        }
+        
+        maskCanvas.addEventListener('mousedown', startDrawing);
+        maskCanvas.addEventListener('mousemove', draw);
+        maskCanvas.addEventListener('mouseup', stopDrawing);
+        maskCanvas.addEventListener('mouseleave', stopDrawing);
+        
+        // Touch support
+        maskCanvas.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          if (isProcessing()) return; // Prevent drawing while processing
+          drawing = true;
+          const touch = e.touches[0];
+          const mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+          });
+          startDrawing(mouseEvent);
+        });
+        
+        maskCanvas.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+          if (isProcessing()) return; // Prevent drawing while processing
+          const touch = e.touches[0];
+          const mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+          });
+          draw(mouseEvent);
+        });
+        
+        maskCanvas.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          stopDrawing();
+        });
+        
+        // Make canvas interactive
+        maskCanvas.style.pointerEvents = 'auto';
+        maskCanvas.style.cursor = 'crosshair';
+      }
+      
+      function clearMask() {
+        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+        const ctx = maskCanvas.getContext('2d');
+        ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+        updateApplyButtonState();
+      }
+      
+      function checkMaskHasContent() {
+        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+        if (!maskCanvas || maskCanvas.width === 0 || maskCanvas.height === 0) {
+          return false;
+        }
+        const maskCtx = maskCanvas.getContext('2d');
+        const imageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+        return imageData.data.some((val, idx) => idx % 4 === 3 && val > 0); // Check alpha channel
+      }
+      
+      function checkPromptHasContent() {
+        const promptInput = document.getElementById('mask-editor-prompt');
+        return promptInput && promptInput.value.trim().length > 0;
+      }
+      
+      function updateApplyButtonState() {
+        const submitBtn = document.getElementById('mask-editor-submit');
+        if (!submitBtn) return;
+        
+        const hasMask = checkMaskHasContent();
+        const hasPrompt = checkPromptHasContent();
+        
+        submitBtn.disabled = !hasMask || !hasPrompt;
+      }
+      
+      function closeMaskEditor() {
+        const modal = document.getElementById('mask-editor-modal');
+        if (modal) {
+          modal.classList.remove('active');
+          clearMask();
+          
+          // Remove blur effect if it exists
+          const canvasContainer = document.querySelector('.mask-editor-canvas-container');
+          if (canvasContainer) {
+            canvasContainer.classList.remove('processing');
+          }
+        }
+      }
+      
+      async function submitMaskEdit() {
+        const canvas = document.getElementById('mask-editor-canvas');
+        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+        const promptInput = document.getElementById('mask-editor-prompt');
+        const submitBtn = document.getElementById('mask-editor-submit');
+        
+        // Validation is already handled by button state, but double-check
+        const prompt = promptInput.value.trim();
+        if (!prompt) {
+          alert('Please describe what you want to change in the masked area.');
+          return;
+        }
+        
+        // Check if mask has any content
+        if (!checkMaskHasContent()) {
+          alert('Please draw a mask over the area you want to edit.');
+          return;
+        }
+        
+        submitBtn.disabled = true;
+        const originalButtonContent = submitBtn.innerHTML;
+        submitBtn.innerHTML = 'Processing... <img src="media-webp/Mask.webp" alt="Mask">';
+        
+        // Add blur effect to canvas container while processing and disable interaction
+        const canvasContainer = document.querySelector('.mask-editor-canvas-container');
+        if (canvasContainer) {
+          canvasContainer.classList.add('processing');
+          // Disable mask canvas interaction
+          const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+          if (maskCanvas) {
+            maskCanvas.style.pointerEvents = 'none';
+            maskCanvas.style.cursor = 'not-allowed';
+          }
+        }
+        
+        try {
+          // Convert mask to white/transparent format (OpenAI expects white areas to be edited)
+          // First, get the original image dimensions
+          const originalWidth = parseInt(canvas.dataset.originalWidth);
+          const originalHeight = parseInt(canvas.dataset.originalHeight);
+          
+          // Create a full-size mask canvas
+          const whiteMaskCanvas = document.createElement('canvas');
+          whiteMaskCanvas.width = originalWidth;
+          whiteMaskCanvas.height = originalHeight;
+          const whiteMaskCtx = whiteMaskCanvas.getContext('2d');
+          
+          // Create mask: white where we want to edit, transparent elsewhere
+          // Draw the mask canvas first (it has blue overlay where user drew)
+          whiteMaskCtx.drawImage(maskCanvas, 0, 0, originalWidth, originalHeight);
+          
+          // Convert the red mask areas to white (OpenAI edits white areas)
+          // Get image data and convert any non-transparent pixels to white
+          const whiteMaskImageData = whiteMaskCtx.getImageData(0, 0, originalWidth, originalHeight);
+          const whiteMaskData = whiteMaskImageData.data;
+          for (let i = 0; i < whiteMaskData.length; i += 4) {
+            const alpha = whiteMaskData[i + 3];
+            if (alpha > 0) {
+              // This pixel is part of the mask, make it white (keep alpha)
+              whiteMaskData[i] = 255;     // R -> white
+              whiteMaskData[i + 1] = 255;  // G -> white
+              whiteMaskData[i + 2] = 255;  // B -> white
+              // alpha stays the same
+            } else {
+              // Transparent areas stay transparent (already 0 alpha)
+              whiteMaskData[i] = 0;
+              whiteMaskData[i + 1] = 0;
+              whiteMaskData[i + 2] = 0;
+            }
+          }
+          whiteMaskCtx.putImageData(whiteMaskImageData, 0, 0);
+          
+          const maskDataUrl = whiteMaskCanvas.toDataURL('image/png');
+          const imageDataUrl = canvas.dataset.imageSrc;
+          
+          // Get selected model
+          const selectedModel = window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini';
+          
+          // Send to backend
+          const response = await fetch('/api/mask-edit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              image: imageDataUrl,
+              mask: maskDataUrl,
+              prompt: prompt,
+              model: selectedModel
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to process masked edit');
+          }
+          
+          // Get the original image source - this is the image being masked (could be original or a masked version)
+          const maskedImageSrc = imageDataUrl;
+          
+          // Find which carousel or container this image belongs to, and get the original image source
+          let originalImageSrc = maskedImageSrc;
+          let originalContainer = null;
+          let imageData = null;
+          
+          // First, check if this image is already in a carousel
+          const carouselItem = document.querySelector(`.masked-image-carousel-item img[src="${maskedImageSrc}"]`);
+          if (carouselItem) {
+            const carousel = carouselItem.closest('.masked-image-carousel');
+            if (carousel) {
+              // Find the original image in this carousel (first item)
+              const firstItem = carousel.querySelector('.masked-image-carousel-item:first-child img');
+              if (firstItem) {
+                originalImageSrc = firstItem.src;
+                originalContainer = carousel;
+                imageData = maskedImageData.get(originalImageSrc);
+              }
+            }
+          }
+          
+          // If not in carousel, check if it's a regular container
+          if (!imageData) {
+            const allContainers = document.querySelectorAll('.ai-image-container');
+            for (const container of allContainers) {
+              const img = container.querySelector('.ai-generated-image');
+              if (img && img.src === maskedImageSrc) {
+                originalImageSrc = maskedImageSrc; // This is the original
+                originalContainer = container;
+                break;
+              }
+            }
+          }
+          
+          // Get or create masked image data
+          if (!imageData) {
+            imageData = maskedImageData.get(originalImageSrc);
+            if (!imageData) {
+              imageData = {
+                container: originalContainer,
+                originalSrc: originalImageSrc,
+                maskedVersions: []
+              };
+              maskedImageData.set(originalImageSrc, imageData);
+            }
+          }
+          
+          // Update container reference if it changed
+          if (originalContainer && imageData.container !== originalContainer) {
+            imageData.container = originalContainer;
+          }
+          
+          // Add the new masked version
+          if (!data.editedImage) {
+            console.error('No edited image in response:', data);
+            throw new Error('No edited image received from server');
+          }
+          console.log('Adding masked version. Original:', imageData.originalSrc.substring(0, 50) + '...', 'Edited:', data.editedImage.substring(0, 50) + '...');
+          imageData.maskedVersions.push(data.editedImage);
+          console.log('Total masked versions:', imageData.maskedVersions.length, 'Versions:', imageData.maskedVersions.map(v => v.substring(0, 30) + '...'));
+          
+          // Create or update the carousel
+          const carousel = createOrUpdateMaskedImageCarousel(imageData.originalSrc, imageData.maskedVersions, imageData.container);
+          
+          // If this is the first masked version, replace the original container with the carousel
+          if (imageData.maskedVersions.length === 1 && imageData.container && imageData.container.parentElement && !imageData.container.classList.contains('masked-image-carousel')) {
+            const parent = imageData.container.parentElement;
+            parent.replaceChild(carousel, imageData.container);
+            imageData.container = carousel;
+          } else if (imageData.container && imageData.container.classList.contains('masked-image-carousel')) {
+            // Carousel already exists and was updated in place, no need to replace
+            // The createOrUpdateMaskedImageCarousel function already appended the new item
+            imageData.container = carousel;
+          } else {
+            // Add carousel to chat if no original container found
+            const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
+            if (lastMessage) {
+              const editedImageDiv = document.createElement('div');
+              editedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+              editedImageDiv.appendChild(carousel);
+              lastMessage.appendChild(editedImageDiv);
+            } else {
+              addMessage('assistant', '');
+              const newLastMessage = document.querySelector('.message.assistant:last-child .message-content');
+              if (newLastMessage) {
+                const editedImageDiv = document.createElement('div');
+                editedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                editedImageDiv.appendChild(carousel);
+                newLastMessage.appendChild(editedImageDiv);
+              }
+            }
+            imageData.container = carousel;
+          }
+          
+          // Update conversation history (just the image, no text)
+          conversationHistory.push({
+            role: 'assistant',
+            content: [
+              { type: 'image_url', image_url: { url: data.editedImage } }
+            ]
+          });
+          
+          closeMaskEditor();
+        } catch (error) {
+          console.error('Error submitting mask edit:', error);
+          alert('Failed to process masked edit. Please try again.');
+        } finally {
+          // Remove blur effect and re-enable interaction
+          const canvasContainer = document.querySelector('.mask-editor-canvas-container');
+          if (canvasContainer) {
+            canvasContainer.classList.remove('processing');
+            // Re-enable mask canvas interaction
+            const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+            if (maskCanvas) {
+              maskCanvas.style.pointerEvents = 'auto';
+              maskCanvas.style.cursor = 'crosshair';
+            }
+          }
+          
+          submitBtn.disabled = false;
+          const applyEditText = window.LanguageSystem && window.LanguageSystem.isLoaded() 
+            ? window.LanguageSystem.getText('pdf.maskEditor.applyEdit') 
+            : 'Apply Edit';
+          submitBtn.innerHTML = '<span>' + applyEditText + '</span> <img src="media-webp/Mask.webp" alt="Mask">';
+          updateApplyButtonState(); // Re-check state after restoring button
+        }
       }
     </script>
     
@@ -2881,6 +4297,8 @@
               originalApplyLanguage.call(this);
               // Small delay to ensure translations are applied first
               setTimeout(updateModelDisplay, 50);
+              // Update mask editor translations when language changes
+              setTimeout(updateMaskEditorTranslations, 50);
             };
           }
         }
@@ -2891,6 +4309,7 @@
           languageSelect.addEventListener('change', () => {
             // Wait for language system to update translations
             setTimeout(updateModelDisplay, 200);
+            setTimeout(updateMaskEditorTranslations, 200);
           });
         }
         
@@ -2900,6 +4319,7 @@
             if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
               if (document.body.classList.contains('language-loaded')) {
                 updateModelDisplay();
+                updateMaskEditorTranslations();
               }
             }
           });
