@@ -298,6 +298,18 @@
       "cadStage": "Stage (Floor Plan)",
       "describe": "Describe/Recall"
     },
+    "maskEditor": {
+      "title": "Edit with Mask",
+      "brushSize": "Brush Size:",
+      "promptLabel": "What would you like to change in the masked area?",
+      "promptPlaceholder": "e.g., change the wall color to blue, replace the sofa with a modern chair...",
+      "cancel": "Cancel",
+      "clearMask": "Clear Mask",
+      "applyEdit": "Apply Edit",
+      "processing": "Processing...",
+      "pleaseDrawMask": "Please draw a mask over the area you want to edit.",
+      "pleaseDescribeChange": "Please describe what you want to change in the masked area."
+    },
     "errors": {
       "invalidFileType": "Please upload a PDF file.",
       "fileTooLarge": "File is too large. Please upload a PDF smaller than 100MB.",
