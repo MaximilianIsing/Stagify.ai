@@ -179,8 +179,24 @@ CRITICAL REQUIREMENT - THE OUTPUT MUST BE TOP-DOWN:
 - DO NOT use any angled perspective, side view, or isometric view - ONLY top-down
 - The floor should be visible as the primary surface, with walls appearing as vertical lines or edges around the perimeter`;
 
+  prompt += `\n\nCRITICAL REQUIREMENT - DIMENSIONS AND SCALING:
+- CAREFULLY EXTRACT all dimension information from the floorplan blueprint:
+  * Identify wall dimensions and thicknesses
+  * Note door and window sizes and positions
+
+- USE THE EXACT DIMENSIONS from the blueprint - do not estimate or guess
+- MAINTAIN ACCURATE RELATIVE SIZES between different rooms, spaces, and elements
+- Preserve the exact proportions: if one room is twice the size of another in the blueprint, it must be twice the size in the 3D render
+- Ensure all elements (walls, doors, windows, furniture) are scaled proportionally to match the blueprint's dimensions
+- Furniture must be sized appropriately relative to the room dimensions - a small room should have smaller furniture, a large room should have larger furniture`;
+
   if (furnitureImages && furnitureImages.length > 0) {
-    prompt += `\n\nIMPORTANT: Additional furniture images have been provided. Include these furniture pieces in the 3D render based on the blueprint layout. Place the furniture appropriately within the room according to the blueprint's layout and scale. When placing furniture, show it from the top-down perspective (as if looking down at the furniture from above).`;
+    prompt += `\n\nIMPORTANT: Additional furniture images have been provided. Include these furniture pieces in the 3D render based on the blueprint layout. 
+- Scale the furniture to match the room dimensions from the blueprint
+- If the blueprint shows a 10ft x 12ft room, the furniture must be sized to fit proportionally within that space
+- Place furniture appropriately within the room according to the blueprint's layout and exact scale
+- When placing furniture, show it from the top-down perspective (as if looking down at the furniture from above)
+- Ensure furniture sizes are realistic relative to the room dimensions shown in the blueprint`;
   }
 
   prompt += `\n\nRequirements:
@@ -188,15 +204,16 @@ CRITICAL REQUIREMENT - THE OUTPUT MUST BE TOP-DOWN:
 - The viewing angle must be 90 degrees from horizontal (directly overhead)
 - Show all walls, doors, windows, and furniture in 3D perspective but from the top-down angle
 - Use appropriate colors and textures for different elements (walls, floor, furniture, etc.)
-- Maintain the exact layout and proportions from the blueprint`;
+- Maintain the EXACT layout, dimensions, and proportions from the blueprint - every measurement must be accurate`;
 
   if (furnitureImages && furnitureImages.length > 0) {
-    prompt += `\n- Include the furniture from the provided furniture images, placing them appropriately in the room according to the blueprint, showing them from the top-down perspective`;
+    prompt += `\n- Include the furniture from the provided furniture images, placing them appropriately in the room according to the blueprint, showing them from the top-down perspective\n- Scale furniture to match the room dimensions - use the blueprint's scale to determine proper furniture sizes`;
   }
 
   prompt += `\n- Make it look like a professional 3D architectural visualization
 - The output MUST be a top-down 3D render image - viewing the room from directly above
-- REMEMBER: The output must show the room from above, not from any side or angled perspective`;
+- REMEMBER: The output must show the room from above, not from any side or angled perspective
+- REMEMBER: Dimensions and relative sizes from the blueprint are CRITICAL - they must be preserved accurately`;
 
   // Add additional prompt/instructions from the AI if provided
   if (additionalPrompt && additionalPrompt.trim()) {
@@ -273,13 +290,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const argv = process.argv.slice(2);
     
     if (argv.length === 0) {
-      console.log("Usage: node cad-handling.js <blueprintImage> [outputImage]");
-      console.log("");
-      console.log("If only blueprint image is provided, output will be auto-generated as <name>-render.png");
-      console.log("");
-      console.log("Examples:");
-      console.log("  node cad-handling.js Room1.png");
-      console.log("  node cad-handling.js Room1.png output.png");
+      if (DEBUG_MODE) {
+        console.log("Usage: node cad-handling.js <blueprintImage> [outputImage]");
+        console.log("");
+        console.log("If only blueprint image is provided, output will be auto-generated as <name>-render.png");
+        console.log("");
+        console.log("Examples:");
+        console.log("  node cad-handling.js Room1.png");
+        console.log("  node cad-handling.js Room1.png output.png");
+      }
       process.exit(1);
     }
 
@@ -302,8 +321,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const resolvedOutputPath = path.resolve(outputPath);
       await fs.promises.mkdir(path.dirname(resolvedOutputPath), { recursive: true });
       await fs.promises.writeFile(resolvedOutputPath, resultBuffer);
-      console.log(`\n✓ 3D render saved to: ${resolvedOutputPath}`);
-      console.log("\n=== COMPLETE ===");
+      if (DEBUG_MODE) {
+        console.log(`\n✓ 3D render saved to: ${resolvedOutputPath}`);
+        console.log("\n=== COMPLETE ===");
+      }
     } catch (error) {
       console.error("Error:", error.message || error);
       if (error.stack) {

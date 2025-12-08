@@ -443,13 +443,13 @@ function getTemperatureForModel(model) {
 }
 
 // Helper function to map GPT model selection to Gemini image model
-// Fast (gpt-4o-mini) → gemini-2.5-flash-image-preview
+// Fast (gpt-4o-mini) → gemini-2.5-flash-image
 // Pro (gpt-5-mini) → gemini-3-pro-image-preview
 function getGeminiImageModel(gptModel) {
   if (gptModel && gptModel.includes('gpt-5')) {
     return 'gemini-3-pro-image-preview'; // Pro model
   }
-  return 'gemini-2.5-flash-image-preview'; // Fast model (default)
+  return 'gemini-2.5-flash-image'; // Fast model (default)
 }
 
 function getUserIdentifier(req) {
@@ -1490,7 +1490,7 @@ Extract the parameters from the user's message and the AI's response.`;
  * Generate an image from a text prompt using Gemini
  * This is separate from the staging system - pure text-to-image generation
  */
-async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-flash-image-preview') {
+async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-flash-image') {
   try {
     if (!genAI) {
       throw new Error('Gemini AI service not properly configured');
@@ -1535,7 +1535,7 @@ async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-fla
   }
 }
 
-async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer = null, geminiModel = 'gemini-2.5-flash-image-preview') {
+async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer = null, geminiModel = 'gemini-2.5-flash-image') {
   try {
     if (!genAI) {
       throw new Error('AI service not properly configured');
@@ -4591,6 +4591,38 @@ app.get('/memories', protectLogs, (req, res) => {
     console.error('Error serving memories file:', error);
     res.status(500).json({ 
       error: 'Failed to retrieve memories',
+      message: error.message
+    });
+  }
+});
+
+// Reset memories endpoint - empties the memories JSON file (protected)
+app.get('/resetmemories', protectLogs, (req, res) => {
+  try {
+    const memoriesFile = getMemoriesFile();
+    const logDir = path.dirname(memoriesFile);
+    
+    // Ensure directory exists
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    
+    // Write empty object to reset all memories
+    const emptyMemories = {};
+    fs.writeFileSync(memoriesFile, JSON.stringify(emptyMemories, null, 2));
+    
+    if (DEBUG_MODE) {
+      console.log('✓ Successfully reset all memories');
+    }
+    
+    res.status(200).json({ 
+      success: true,
+      message: 'All memories have been reset successfully'
+    });
+  } catch (error) {
+    console.error('Error resetting memories:', error);
+    res.status(500).json({ 
+      error: 'Failed to reset memories',
       message: error.message
     });
   }

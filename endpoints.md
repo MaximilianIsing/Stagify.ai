@@ -259,6 +259,24 @@ The access key is stored in `endpointkey.txt` (local) or `process.env.endpoint_k
 
 ---
 
+### `GET /resetmemories?key=YOUR_KEY`
+**Description**: Resets all memories by emptying the memories JSON file
+
+**Authentication**: Required via `key` query parameter
+
+**Request**: 
+- Method: `GET`
+- No body required
+
+**Response**:
+- Success (200): `{ "success": true, "message": "All memories have been reset successfully" }`
+- Error (403): Access denied
+- Error (500): Server error
+
+**Note**: This endpoint permanently deletes all stored memories for all users. Use with caution.
+
+---
+
 ### `GET /chatlogs?key=YOUR_KEY`
 **Description**: Retrieves the chat logs CSV file
 
