@@ -6,7 +6,7 @@
   },
   "navigation": {
     "home": "首页",
-    "pdfTo3d": "<span class=\"beta-badge\"><em>测试版</em></span> AI设计师",
+    "pdfTo3d": "AI设计师",
     "whyUs": "我们",
     "faq": "常见问题",
     "contactUs": "联系我们",
@@ -74,6 +74,8 @@
       "additionalPrompt": "额外提示",
       "additionalPromptPlaceholder": "为您的装修添加具体细节或要求...",
       "removeFurniture": "移除现有家具",
+      "furniturePhotosLabel": "家具参考图（可选）",
+      "furniturePhotosHint": "最多3张家具或软装参考图，将尽量融入装修效果",
       "processButton": "处理照片",
       "uploadArea": "上传图片或拖拽放置",
       "before": "之前",
@@ -237,7 +239,10 @@
     "uploadFirst": "请先上传图片",
     "badPrompt": "输入了错误的提示",
     "processingFailed": "处理失败",
-    "noImageData": "未接收到图片数据"
+    "noImageData": "未接收到图片数据",
+    "dailyLimitFree": "您已用完今日 {limit} 次免费虚拟布置（UTC 午夜重置）。升级 Stagify+ 可无限次使用。",
+    "dailyLimitAnonymous": "本网络今日免费次数已用尽（每天 {limit} 次，按 UTC 计算）。请登录以关联账户，或明天再试。",
+    "dailyLimitCta": "了解 Stagify+"
   },
   "pdf": {
     "meta": {
@@ -289,7 +294,7 @@
       "chooseModel": "选择您的模型",
       "fast": "快速",
       "fastDescription": "标准质量，更快",
-      "pro": "专业版",
+      "pro": "Stagify+",
       "proDescription": "更高质量，较慢"
     },
     "messageTag": {

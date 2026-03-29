@@ -6,7 +6,7 @@
   },
   "navigation": {
     "home": "Home",
-    "pdfTo3d": "<span class=\"beta-badge\"><em>Beta</em></span> AI Designer",
+    "pdfTo3d": "AI Designer",
     "whyUs": "Why Us?",
     "faq": "FAQ",
     "contactUs": "Contact Us",
@@ -73,6 +73,8 @@
       "additionalPrompt": "Additional prompting",
       "additionalPromptPlaceholder": "Add specific details or requests for your staging...",
       "removeFurniture": "Remove existing furniture",
+      "furniturePhotosLabel": "Furniture photos (optional)",
+      "furniturePhotosHint": "Up to 3 reference photos of furniture or decor to feature in the staged room",
       "processButton": "Process photo",
       "uploadArea": "Upload an image or drag and drop",
       "before": "Before",
@@ -138,10 +140,10 @@
       "features": {
         "instantResults": "<strong>Instant results</strong>: ~8 seconds",
         "oneClickStaging": "<strong>One‑click staging</strong>: No hassle",
-        "free": "<strong>Free</strong>: No cost to use",
+        "free": "<strong>Daily free generations</strong>: 5 per day",
         "noAds": "<strong>No ads</strong>: Distraction‑free experience",
-        "noLogin": "<strong>No login required</strong>: Start instantly",
-        "unlimited": "<strong>Unlimited generations</strong>: Until you're satisfied",
+        "noLogin": "<strong>Easy sign up</strong>: Start instantly",
+        "unlimited": "<strong>Advanced image models</strong>: Higher quality",
         "copyright": "<strong>Full copyright</strong>: Use anywhere"
       }
     },
@@ -152,8 +154,8 @@
         "longProcess": "<strong style=\"color: #6d1c2c;\">Long Process: </strong>Tedious back‑and‑forth",
         "expensive": "<strong style=\"color: #6d1c2c;\">Expensive: </strong>Costly, per‑image fees",
         "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Ads and cookies: </strong>Instrusive experience",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">Account required: </strong>Frustrating start",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Limited generations: </strong>Hard rate limits",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">Long Signup Process: </strong>Frustrating start",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Legacy, Cheaper models: </strong>Lower quality",
         "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Unclear copyright: </strong>Legal liability"
       }
     },
@@ -236,7 +238,10 @@
     "uploadFirst": "Please upload an image first",
     "badPrompt": "Bad prompt inputted",
     "processingFailed": "Processing failed",
-    "noImageData": "No image data received"
+    "noImageData": "No image data received",
+    "dailyLimitFree": "You've used all {limit} free staging runs for today (resets at midnight UTC). Upgrade to Stagify+ for unlimited staging.",
+    "dailyLimitAnonymous": "You've reached the free limit for this network ({limit} runs per day, UTC). Sign in to link staging to your account, or try again tomorrow.",
+    "dailyLimitCta": "View Stagify+"
   },
   "pdf": {
     "meta": {
@@ -288,7 +293,7 @@
       "chooseModel": "Choose your model",
       "fast": "Fast",
       "fastDescription": "Standard quality, faster",
-      "pro": "Pro",
+      "pro": "Stagify+",
       "proDescription": "Higher quality, slower"
     },
     "messageTag": {
