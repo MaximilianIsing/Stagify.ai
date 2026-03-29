@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Pro32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Pro64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Pro180x180.webp">
+    <title>Stagify+ — Plans &amp; checkout</title>
+    <meta name="description" content="Stagify+: unlimited AI staging, advanced models, AI Designer, masking, and more.">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <style>
+      /*
+        Global styles.css sets main { flex: 1; overflow-y: auto }, so the page scrolls
+        inside <main> instead of the window — the scrollbar can look “floating” beside
+        narrow content. On this page, scroll the document on <body> instead.
+      */
+      body.page-stagify-plus main.sp-page {
+        flex: 0 0 auto;
+        overflow-x: hidden;
+        overflow-y: visible;
+        width: 100%;
+      }
+      .sp-page {
+        max-width: min(1180px, 100%);
+        margin: 0 auto;
+        padding: 2rem clamp(1.25rem, 4vw, 2.5rem) 4.5rem;
+        box-sizing: border-box;
+      }
+      .sp-hero {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .sp-hero-logo {
+        width: clamp(88px, 22vw, 112px);
+        height: auto;
+        display: block;
+        margin: 0 auto 1rem;
+      }
+      .sp-hero h1 {
+        margin: 0 0 0.5rem;
+        font-size: clamp(1.75rem, 4vw, 2.125rem);
+        color: #1e3a8a;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+      }
+      .sp-hero p {
+        margin: 0 auto;
+        max-width: min(40rem, 100%);
+        color: #475569;
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+      .sp-split {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: clamp(1.5rem, 3vw, 2.5rem);
+        align-items: start;
+        margin-top: 0.5rem;
+      }
+      @media (max-width: 900px) {
+        .sp-split {
+          grid-template-columns: 1fr;
+        }
+      }
+      .sp-hint {
+        margin: 0 0 1rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: #64748b;
+        padding: 0.65rem 0.85rem;
+        background: rgba(241, 245, 249, 0.9);
+        border-radius: 10px;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+      }
+      .sp-checkout-aside {
+        position: sticky;
+        top: 88px;
+        width: min(340px, 100%);
+        max-width: 100%;
+        justify-self: start;
+        box-sizing: border-box;
+      }
+      @media (max-width: 900px) {
+        .sp-checkout-aside {
+          position: static;
+          width: min(360px, 100%);
+          justify-self: center;
+          margin-inline: auto;
+        }
+      }
+      .sp-stripe {
+        border-radius: 14px;
+        padding: 1.15rem 1rem 1rem;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+        box-sizing: border-box;
+        width: 100%;
+      }
+      /* Same plasma gradient + glare as top nav (.nav-link), desktop; solid blue on small screens */
+      .sp-gradient-checkout-btn {
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        color: #fff !important;
+        font-size: 17px;
+        font-weight: 700;
+        padding: 12px 16px;
+        border-radius: 20px;
+        margin-top: 1rem;
+        position: relative;
+        overflow: hidden;
+        background-color: #2563eb;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        transition: all 0.18s ease;
+      }
+      .sp-gradient-checkout-btn:hover {
+        color: #fff !important;
+        text-decoration: none;
+        background-color: #1d4ed8;
+        transform: translateY(-1px);
+      }
+      .sp-gradient-checkout-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.5s ease;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .sp-gradient-checkout-btn:hover::before {
+        left: 100%;
+        opacity: 1;
+      }
+      .sp-gradient-checkout-btn strong {
+        position: relative;
+        z-index: 1;
+      }
+      @media (min-width: 769px) {
+        .sp-gradient-checkout-btn {
+          background:
+            radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, #1d4ed8 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, #2563eb 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, #1e40af 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%, #60a5fa 0%, transparent 50%),
+            #1e3a8a;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .sp-gradient-checkout-btn:hover {
+          background:
+            radial-gradient(circle at 30% 40%, #3b82f6 0%, transparent 60%),
+            radial-gradient(circle at 70% 30%, #1d4ed8 0%, transparent 60%),
+            radial-gradient(circle at 50% 70%, #2563eb 0%, transparent 60%),
+            radial-gradient(circle at 10% 90%, #1e40af 0%, transparent 60%),
+            radial-gradient(circle at 90% 10%, #60a5fa 0%, transparent 60%),
+            #1e3a8a;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+      }
+      .sp-gradient-checkout-btn--subscribed,
+      .sp-gradient-checkout-btn--subscribed:hover {
+        transform: none !important;
+        cursor: not-allowed;
+        pointer-events: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
+        opacity: 0.95;
+      }
+      .sp-gradient-checkout-btn--subscribed::before {
+        display: none !important;
+      }
+      @media (min-width: 769px) {
+        .sp-gradient-checkout-btn--subscribed,
+        .sp-gradient-checkout-btn--subscribed:hover {
+          background:
+            radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, #1d4ed8 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, #2563eb 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, #1e40af 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%, #60a5fa 0%, transparent 50%),
+            #1e3a8a !important;
+        }
+      }
+      .sp-stripe-offer {
+        text-align: center;
+      }
+      .sp-stripe-logo {
+        width: 56px;
+        height: 56px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto 0.35rem;
+      }
+      .sp-stripe-title {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+      }
+      .sp-stripe-trial {
+        margin: 0.4rem 0 0;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.2;
+      }
+      .sp-stripe-price {
+        margin: 0.35rem 0 0;
+        font-size: 0.875rem;
+        color: #64748b;
+      }
+      .sp-stripe-pay-note {
+        margin: 0.75rem 0 0;
+        font-size: 0.72rem;
+        line-height: 1.4;
+        color: #94a3b8;
+        text-align: center;
+      }
+      .sp-manage-sub {
+        margin: 0.65rem 0 0;
+        text-align: center;
+      }
+      .sp-manage-sub__btn {
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: none;
+        font: inherit;
+        font-size: 0.78rem;
+        color: #64748b;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        cursor: pointer;
+      }
+      .sp-manage-sub__btn:hover {
+        color: #334155;
+      }
+      .sp-manage-sub__btn:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .sp-aside-note {
+        margin: 1rem 0 0;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        color: #64748b;
+      }
+      .sp-aside-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.25rem;
+        margin: 1rem 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: 0.8125rem;
+      }
+      .sp-aside-links a {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .sp-aside-links a:hover {
+        text-decoration: underline;
+      }
+      .sp-footnote {
+        margin: 1.25rem 0 0;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        color: #64748b;
+      }
+      .sp-footnote a {
+        color: #2563eb;
+        font-weight: 500;
+        text-decoration: none;
+      }
+      .sp-footnote a:hover {
+        text-decoration: underline;
+      }
+      .sp-compare {
+        min-width: 0;
+      }
+      .sp-compare-table-wrap {
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid rgba(37, 99, 235, 0.22);
+        box-shadow: 0 8px 28px -8px rgba(30, 58, 138, 0.12);
+      }
+      .sp-compare-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .sp-feature-table {
+        width: 100%;
+        min-width: 280px;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+        line-height: 1.45;
+      }
+      .sp-feature-table caption {
+        padding: 1rem 1.25rem 0.65rem;
+        text-align: left;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1e3a8a;
+        letter-spacing: -0.02em;
+      }
+      .sp-feature-table thead th {
+        background: rgba(241, 245, 249, 0.98);
+        padding: 0.7rem 0.75rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: middle;
+      }
+      .sp-feature-table thead th:first-child {
+        text-align: left;
+        padding-left: 1.15rem;
+        width: auto;
+      }
+      .sp-feature-table thead th:not(:first-child) {
+        text-align: center;
+        width: 7rem;
+      }
+      .sp-th-plan {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+      }
+      .sp-th-plan img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        display: block;
+      }
+      .sp-feature-table tbody th {
+        font-weight: 500;
+        text-align: left;
+        padding: 0.7rem 0.85rem 0.7rem 1.15rem;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+      }
+      .sp-feature-table td {
+        text-align: center;
+        padding: 0.65rem 0.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+      }
+      .sp-mark {
+        font-size: 1.05rem;
+        font-weight: 800;
+        line-height: 1;
+      }
+      .sp-mark--yes {
+        color: #16a34a;
+      }
+      .sp-mark--no {
+        color: #cbd5e1;
+        font-size: 1.15rem;
+      }
+      .sp-feature-table tbody tr:last-child th,
+      .sp-feature-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+      .sp-table-foot {
+        padding: 0.75rem 1.15rem 1rem;
+        font-size: 0.8125rem;
+        line-height: 1.45;
+        color: #64748b;
+        background: rgba(248, 250, 252, 0.9);
+        border-top: 1px solid #e2e8f0;
+      }
+      @media (min-width: 901px) {
+        .sp-feature-table {
+          font-size: 0.9375rem;
+        }
+        .sp-feature-table tbody th {
+          padding-top: 0.85rem;
+          padding-bottom: 0.85rem;
+        }
+      }
+    </style>
+  </head>
+  <body class="page-stagify-plus">
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+      <source src="background.mp4" type="video/mp4">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <div class="brand">
+          <img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high">
+          <span class="brand-strong">stagify</span><span class="brand-light">.ai</span>
+        </div>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden">AI Designer</a>
+          <a href="why.html#why" class="nav-link">Why Us?</a>
+          <a href="faq.html#faq" class="nav-link">FAQ</a>
+          <a href="contact.html#contact" class="nav-link">Contact Us</a>
+        </div>
+        <div class="nav-trailing">
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="sp-page">
+      <header class="sp-hero">
+        <img src="media-webp/logo/Pro180x180.webp" alt="Stagify+" class="sp-hero-logo" width="112" height="112">
+        <h1>Stagify+</h1>
+      </header>
+
+      <div class="sp-split">
+        <section class="sp-compare" aria-label="Free vs Stagify+ comparison">
+          <div class="sp-compare-table-wrap">
+            <div class="sp-compare-scroll">
+              <table class="sp-feature-table">
+                <caption>Plan comparison</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Feature</th>
+                    <th scope="col">
+                      <span class="sp-th-plan">
+                        <img src="media-webp/logo/Logo32x32.webp" width="24" height="24" alt="" aria-hidden="true">
+                        Free
+                      </span>
+                    </th>
+                    <th scope="col">
+                      <span class="sp-th-plan">
+                        <img src="media-webp/logo/Pro32x32.webp" width="24" height="24" alt="" aria-hidden="true">
+                        Stagify+
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Customizable staging</th>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Furniture removal</th>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Fast image model</th>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">High quality image model</th>
+                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Unlimited staging generations</th>
+                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">AI Designer</th>
+                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Masking tool</th>
+                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Multiple variations per generation</th>
+                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Furniture references</th>
+                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="3" class="sp-table-foot">
+                      Free accounts include up to <strong>5</strong> staging generations per day (daily reset).
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <aside class="sp-checkout-aside" aria-label="Subscribe with Stripe">
+          <p class="sp-hint" id="plus-checkout-hint" aria-live="polite">Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.</p>
+          <div class="sp-stripe">
+            <!-- Trial/price copy: keep in sync with your Stripe Payment Link -->
+            <div class="sp-stripe-offer">
+              <img class="sp-stripe-logo" src="media-webp/logo/Pro64x64.webp" width="56" height="56" alt="" aria-hidden="true">
+              <p class="sp-stripe-title">Stagify+</p>
+              <p class="sp-stripe-trial">7 days free</p>
+              <p class="sp-stripe-price">Then $11.99 per month</p>
+            </div>
+            <a
+              id="stagify-plus-checkout-link"
+              class="sp-gradient-checkout-btn"
+              href="https://buy.stripe.com/9B6cN5bC24w8aTG1Jf7EQ03"
+              rel="noopener noreferrer"
+              target="_blank"
+            ><strong>Start trial</strong></a>
+            <p class="sp-stripe-pay-note">Secure checkout with Stripe · Major cards and more</p>
+            <p class="sp-manage-sub hidden" id="sp-manage-subscription-wrap">
+              <button type="button" class="sp-manage-sub__btn" id="sp-manage-subscription-btn">
+                Manage or cancel subscription
+              </button>
+            </p>
+          </div>
+          <ul class="sp-aside-links">
+            <li><a href="index.html">Back to free staging</a></li>
+            <li><a href="faq.html#faq">Questions before you buy?</a></li>
+          </ul>
+          <p class="sp-footnote">Teams, invoicing, or custom terms: <a href="mailto:team@stagify.ai">team@stagify.ai</a></p>
+        </aside>
+      </div>
+    </main>
+    <script src="scripts/language-loader.js" defer></script>
+    <script src="scripts/auth.js" defer></script>
+    <script src="scripts/profile-menu.js" defer></script>
+    <script>
+      (function () {
+        var PAYMENT_LINK = 'https://buy.stripe.com/9B6cN5bC24w8aTG1Jf7EQ03';
+        function applyStripeCheckout(user) {
+          var hint = document.getElementById('plus-checkout-hint');
+          var link = document.getElementById('stagify-plus-checkout-link');
+          var manageWrap = document.getElementById('sp-manage-subscription-wrap');
+          var manageBtn = document.getElementById('sp-manage-subscription-btn');
+          if (!link) return;
+
+          if (user && user.plan === 'pro') {
+            link.removeAttribute('href');
+            link.removeAttribute('target');
+            link.removeAttribute('rel');
+            link.setAttribute('tabindex', '-1');
+            link.setAttribute('aria-disabled', 'true');
+            link.classList.add('sp-gradient-checkout-btn--subscribed');
+            link.innerHTML = '<strong>Subscribed ✓</strong>';
+            if (hint) {
+              hint.textContent = '';
+              hint.classList.add('hidden');
+            }
+            if (manageWrap && manageBtn) {
+              if (user.canManageSubscription) {
+                manageWrap.classList.remove('hidden');
+                manageBtn.disabled = false;
+              } else {
+                manageWrap.classList.add('hidden');
+              }
+            }
+            return;
+          }
+
+          link.removeAttribute('tabindex');
+          link.removeAttribute('aria-disabled');
+          link.classList.remove('sp-gradient-checkout-btn--subscribed');
+          link.setAttribute('rel', 'noopener noreferrer');
+          link.setAttribute('target', '_blank');
+          link.innerHTML = '<strong>Start trial</strong>';
+
+          var url = PAYMENT_LINK;
+          if (user && user.id) {
+            if (hint) {
+              hint.textContent = '';
+              hint.classList.add('hidden');
+            }
+            var sep = url.indexOf('?') === -1 ? '?' : '&';
+            if (user.email) {
+              url += sep + 'prefilled_email=' + encodeURIComponent(user.email);
+              sep = '&';
+            }
+            url += sep + 'client_reference_id=' + encodeURIComponent(user.id);
+          } else {
+            if (hint) {
+              hint.textContent =
+                'Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.';
+              hint.classList.remove('hidden');
+            }
+          }
+          link.href = url;
+          if (manageWrap) manageWrap.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+          var manageBtn = document.getElementById('sp-manage-subscription-btn');
+          if (manageBtn && window.StagifyAuth && typeof window.StagifyAuth.openBillingPortal === 'function') {
+            manageBtn.addEventListener('click', function () {
+              manageBtn.disabled = true;
+              window.StagifyAuth.openBillingPortal().finally(function () {
+                manageBtn.disabled = false;
+              });
+            });
+          }
+          if (!window.StagifyAuth) {
+            applyStripeCheckout(null);
+            return;
+          }
+          window.StagifyAuth.fetchMe().then(function () {
+            applyStripeCheckout(window.StagifyAuth.user);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

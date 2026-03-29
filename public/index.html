@@ -67,10 +67,13 @@
     
 
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/auth.css">
     <link rel="stylesheet" href="styles/carousel.css">
     <link rel="stylesheet" href="styles/star-border.css">
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script src="scripts/language-loader.js" defer></script>
+    <script src="scripts/auth.js" defer></script>
+    <script src="scripts/profile-menu.js" defer></script>
     <script src="scripts/app.js" defer></script>
     <script src="scripts/carousel.js" defer></script>
     <style>
@@ -78,6 +81,10 @@
       @media (max-width: 768px) {
         .desktop-only {
           display: none !important;
+        }
+        /* Hero title: let “Free virtual staging with one click” wrap naturally (no forced break before “one click”) */
+        .hero-content h1 br {
+          display: none;
         }
       }
       
@@ -93,22 +100,56 @@
           font-size: 24px !important;
         }
       }
-      
-      /* Beta badge styling */
-      .beta-badge {
-        display: inline-block;
-        background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #5c1a1a 100%);
-        border-radius: 6px;
-        padding: 1px 8px;
-        margin-right: 6px;
-        box-shadow: 0 2px 4px rgba(153, 27, 27, 0.4);
+
+      .variation-slider-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 4px;
       }
-      
-      .beta-badge em {
-        font-style: italic;
-        color: white;
-        font-size: 0.85em;
+      .variation-slider-head .label {
+        margin-bottom: 0;
+      }
+      .variation-slider-value {
         font-weight: 600;
+        color: #1e40af;
+        font-variant-numeric: tabular-nums;
+        min-width: 1.5rem;
+        text-align: right;
+      }
+      input.variation-slider[type='range'] {
+        width: 100%;
+        height: 8px;
+        margin: 8px 0 6px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: #e5e7eb;
+        border-radius: 999px;
+      }
+      input.variation-slider[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #2563eb;
+        cursor: pointer;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      }
+      input.variation-slider[type='range']::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #2563eb;
+        cursor: pointer;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      }
+      input.variation-slider[type='range']::-moz-range-track {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 999px;
       }
     </style>
     <script src="scripts/star-border.js" defer></script>
@@ -164,69 +205,79 @@
     </script>
   </head>
   <body>
+    <!-- Sign in / Create account -->
+    <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
+      <div class="auth-modal__backdrop" id="auth-modal-backdrop"></div>
+      <div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+        <button type="button" class="auth-modal__close" id="auth-modal-close" aria-label="Close">×</button>
+        <h2 id="auth-modal-title">Welcome to Stagify</h2>
+        <p class="auth-modal__sub" id="auth-modal-sub">Create a free account to upload and stage your photos.</p>
+        <div id="auth-error" class="auth-error" role="alert"></div>
+        <form id="auth-form" novalidate>
+          <div class="auth-field">
+            <label for="auth-email">Email</label>
+            <input type="email" id="auth-email" name="email" autocomplete="email" required placeholder="you@example.com">
+          </div>
+          <div id="auth-standard-panel">
+            <div class="auth-field">
+              <label for="auth-password">Password</label>
+              <input type="password" id="auth-password" name="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
+            </div>
+            <div class="auth-field" id="auth-password-confirm-row">
+              <label for="auth-password-confirm">Confirm password</label>
+              <input type="password" id="auth-password-confirm" name="passwordConfirm" autocomplete="new-password" minlength="8" placeholder="Re-enter password">
+            </div>
+            <div class="auth-actions">
+              <button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label">Create account</strong></button>
+            </div>
+            <button type="button" class="auth-forgot-link" id="auth-forgot-link">Forgot your password?</button>
+          </div>
+          <div id="auth-forgot-panel" class="hidden">
+            <p class="auth-modal__sub auth-forgot-copy">We’ll email you a one-time link to set a new password. The link expires in one hour.</p>
+            <div class="auth-actions">
+              <button type="button" class="btn btn-primary btn-lg" id="auth-forgot-send"><strong>Send reset link</strong></button>
+            </div>
+            <button type="button" class="auth-forgot-back" id="auth-forgot-back">Back to sign in</button>
+            <div id="auth-forgot-feedback" class="auth-error" role="status"></div>
+          </div>
+        </form>
+        <div class="auth-toggle">
+          <span id="auth-toggle-label">Already have an account?</span>
+          <button type="button" id="auth-mode-toggle">Sign in</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Background Video -->
     <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
       <source src="background.mp4" type="video/mp4">
     </video>
-
-    <!-- Role Selection Popup -->
-    <div id="role-popup" class="role-popup hidden">
-      <div class="role-popup-backdrop"></div>
-      <div class="role-popup-content">
-        <h2 data-lang="modal.rolePopup.title">Let's tailor your experience!</h2>
-        <p class="referral-question" data-lang="modal.rolePopup.question">What is your role?</p>
-        <div class="role-options">
-          <button class="role-btn" data-role="agent" data-lang="modal.rolePopup.options.agent">Agent</button>
-          <button class="role-btn" data-role="seller" data-lang="modal.rolePopup.options.seller">Seller</button>
-          <button class="role-btn" data-role="buyer" data-lang="modal.rolePopup.options.buyer">Buyer</button>
-        </div>
-        <button class="role-other" data-role="other" data-lang="modal.rolePopup.options.other">other</button>
-      </div>
-    </div>
-
-    <!-- Referral Source Popup -->
-    <div id="referral-popup" class="role-popup hidden">
-      <div class="role-popup-backdrop"></div>
-      <div class="role-popup-content no-animation">
-        <h2 data-lang="modal.referralPopup.title">Let's tailor your experience!</h2>
-        <p class="referral-question" data-lang="modal.referralPopup.question">How did you find us?</p>
-        <div class="role-options">
-          <button class="role-btn" data-referral="socials" data-lang="modal.referralPopup.options.socials">Socials</button>
-          <button class="role-btn" data-referral="friend" data-lang="modal.referralPopup.options.friend">Friend</button>
-          <button class="role-btn" data-referral="email" data-lang="modal.referralPopup.options.email">Email</button>
-        </div>
-        <button class="role-other" data-referral="other" data-lang="modal.referralPopup.options.other">other</button>
-      </div>
-    </div>
-
-    <!-- Email Popup -->
-    <div id="email-popup" class="role-popup hidden">
-      <div class="role-popup-backdrop"></div>
-      <div class="role-popup-content no-animation">
-        <h2 data-lang="modal.emailPopup.title">Let's tailor your experience!</h2>
-        <p class="referral-question" data-lang="modal.emailPopup.question">Want email updates?</p>
-        <div class="email-container">
-          <input type="email" id="user-email" class="email-input" data-lang="modal.emailPopup.placeholder" placeholder="your@email.com" />
-          <button class="submit-email-btn" id="submit-email"><img src="media-webp/Check.webp" alt="Check" style="width: 16px; height: 16px; display: block; margin: 2px auto 0 auto; transform: translateX(-1px);"></button>
-        </div>
-        <button class="role-other" id="skip-email" data-lang="modal.emailPopup.skip">Skip</button>
-      </div>
-    </div>
 
     <header class="site-header">
       <nav class="nav">
         <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></div>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <a href="ai-designer.html" class="nav-link desktop-only" data-lang-html="navigation.pdfTo3d">AI Designer</a>
+          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
           <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
           <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
           <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
         </div>
-        <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
-          <div data-lang="hero.title.upload">Upload.</div>
-          <div data-lang="hero.title.stage">Stage.</div>
-          <div data-lang="hero.title.imagine">Imagine.</div>
+        <div class="nav-trailing">
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+          <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
+            <div data-lang="hero.title.upload">Upload.</div>
+            <div data-lang="hero.title.stage">Stage.</div>
+            <div data-lang="hero.title.imagine">Imagine.</div>
+          </div>
         </div>
       </nav>
     </header>
@@ -382,12 +433,33 @@
                     <label for="remove-furniture" class="checkbox-label" data-lang="modal.staging.removeFurniture">Remove existing furniture</label>
                   </div>
                 </div>
+                <div id="stagify-pro-panel" class="stagify-pro-panel hidden desktop-only">
+                  <div class="tool-row">
+                    <label class="label" for="stagify-model-select">Image model</label>
+                    <select id="stagify-model-select" class="text-input" style="min-height: 44px;">
+                      <option value="gpt-4o-mini">Fast (Gemini 2.5)</option>
+                      <option value="gpt-5-mini">Stagify+ Quality (Gemini 3.0)</option>
+                    </select>
+                  </div>
+                  <div class="tool-row">
+                    <div class="variation-slider-head">
+                      <label class="label" for="stagify-variation-count">Image Generations</label>
+                      <span id="stagify-variation-value" class="variation-slider-value" aria-hidden="true">1</span>
+                    </div>
+                    <input type="range" id="stagify-variation-count" class="variation-slider" min="1" max="3" step="1" value="1" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" aria-label="Image Generations">
+                  </div>
+                  <div class="tool-row">
+                    <label class="label" for="stagify-furniture-file" data-lang="modal.staging.furniturePhotosLabel">Furniture photos (optional)</label>
+                    <input type="file" id="stagify-furniture-file" class="text-input" accept="image/jpeg,image/png,image/webp,image/jpg" multiple style="padding: 8px;">
+                    <span class="microcopy" data-lang="modal.staging.furniturePhotosHint">Up to 3 reference photos of furniture or decor to feature in the staged room</span>
+                  </div>
+                </div>
                 <div class="process-cta">
                   <button id="process-btn" class="btn btn-primary btn-lg"><strong data-lang="modal.staging.processButton">Process photo</strong></button>
                 </div>
                 <div class="progress hidden" id="progress" aria-live="polite">
                   <div class="bar" id="progress-bar"></div>
-                  <span id="progress-text" data-lang="modal.staging.progress.preparing">Preparing…</span>
+                  <span id="progress-text">Preparing…</span>
                 </div>
                 <div id="loading-message" class="loading-message hidden" data-lang="modal.staging.progress.preparing">Preparing AI model</div>
               </div>
@@ -418,8 +490,7 @@
                   <div class="image-viewer">
                     <img id="stage-preview" class="viewer-image" alt="Original image">
                     <canvas id="canvas1" class="viewer-image hidden"></canvas>
-                    
-                    
+                    <div id="variation-thumbs" class="variation-thumbs hidden" aria-label="Staging variations"></div>
                     <div id="processing-placeholder" class="processing-placeholder">
                       <div class="placeholder-content">
                         <div class="placeholder-icon">
@@ -429,7 +500,12 @@
                         <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Please click "Process photo" first to generate an AI-staged version of your image</div>
                       </div>
                     </div>
-                    
+                    <div id="staging-limit-viewer" class="staging-limit-viewer hidden" role="alert">
+                      <div class="staging-limit-viewer__inner">
+                        <p id="staging-limit-viewer-text" class="staging-limit-viewer__text"></p>
+                        <a href="stagify-plus.html" class="btn btn-primary staging-limit-viewer__cta" data-lang="errors.dailyLimitCta">View Stagify+</a>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

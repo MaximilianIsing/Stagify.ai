@@ -54,31 +54,17 @@
     </script>
 
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/auth.css">
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script src="scripts/language-loader.js" defer></script>
+    <script src="scripts/auth.js" defer></script>
+    <script src="scripts/profile-menu.js" defer></script>
     <style>
       /* Hide AI Designer link on mobile */
       @media (max-width: 768px) {
         .desktop-only {
           display: none !important;
         }
-      }
-      
-      /* Beta badge styling */
-      .beta-badge {
-        display: inline-block;
-        background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #5c1a1a 100%);
-        border-radius: 6px;
-        padding: 1px 8px;
-        margin-right: 6px;
-        box-shadow: 0 2px 4px rgba(153, 27, 27, 0.4);
-      }
-      
-      .beta-badge em {
-        font-style: italic;
-        color: white;
-        font-size: 0.85em;
-        font-weight: 600;
       }
     </style>
   </head>
@@ -93,15 +79,26 @@
         <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></div>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <a href="ai-designer.html" class="nav-link desktop-only" data-lang-html="navigation.pdfTo3d">AI Designer</a>
+          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
           <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
           <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
           <a href="#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
         </div>
-        <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
-          <div data-lang="hero.title.upload">Upload.</div>
-          <div data-lang="hero.title.stage">Stage.</div>
-          <div data-lang="hero.title.imagine">Imagine.</div>
+        <div class="nav-trailing">
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+          <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
+            <div data-lang="hero.title.upload">Upload.</div>
+            <div data-lang="hero.title.stage">Stage.</div>
+            <div data-lang="hero.title.imagine">Imagine.</div>
+          </div>
         </div>
       </nav>
     </header>
