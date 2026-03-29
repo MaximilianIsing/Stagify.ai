@@ -45,4 +45,13 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/ai-designer.html" />
     <xhtml:link rel="alternate" hreflang="zh" href="https://stagify.ai/ai-designer.html" />
   </url>
+  <url>
+    <loc>https://stagify.ai/stagify-plus.html</loc>
+    <lastmod>2025-03-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/stagify-plus.html" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://stagify.ai/stagify-plus.html" />
+  </url>
 </urlset>

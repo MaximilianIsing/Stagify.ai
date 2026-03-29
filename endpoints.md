@@ -319,6 +319,55 @@ The access key is stored in `endpointkey.txt` (local) or `process.env.endpoint_k
 
 ---
 
+### `POST /api/send-email?key=YOUR_KEY`
+**Description**: Sends an email using the Resend email service
+
+**Authentication**: Required via `key` query parameter (can be in query string or request body)
+
+**Request**:
+- Method: `POST`
+- Content-Type: `application/json`
+- Body:
+  ```json
+  {
+    "key": "string (optional, can also be in query parameter)",
+    "to": "string or array of strings (required)",
+    "subject": "string (required)",
+    "text": "string (required)"
+  }
+  ```
+
+**Response**:
+- Success (200): 
+  ```json
+  {
+    "success": true,
+    "message": "Email sent successfully",
+    "id": "resend_email_id"
+  }
+  ```
+- Error (400): Missing required fields
+- Error (403): Access denied
+- Error (500): Server error or email service not configured
+
+**Requirements**:
+- Resend API key must be configured (via `RESEND_API_KEY` environment variable or `resendkey.txt` file)
+- All fields (`to`, `subject`, `text`) are required
+- Only plain text emails are supported (no HTML)
+
+**Example Request**:
+```json
+{
+  "to": "[email protected]",
+  "subject": "Hello from Stagify",
+  "text": "Hello! This is a plain text email."
+}
+```
+
+**Note**: All emails are sent from `team@stagify.ai`. The sender address cannot be changed. Make sure this email address is verified in your Resend dashboard for the emails to send successfully.
+
+---
+
 ## Notes
 
 - All timestamps are in ISO 8601 format

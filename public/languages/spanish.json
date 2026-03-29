@@ -6,7 +6,7 @@
   },
   "navigation": {
     "home": "Inicio",
-    "pdfTo3d": "<span class=\"beta-badge\"><em>Beta</em></span> Diseñador IA",
+    "pdfTo3d": "Diseñador IA",
     "whyUs": "Nosotros",
     "faq": "PF",
     "contactUs": "Contáctanos",
@@ -74,6 +74,8 @@
       "additionalPrompt": "Prompt adicional",
       "additionalPromptPlaceholder": "Añade detalles específicos o solicitudes para tu escenificación...",
       "removeFurniture": "Eliminar muebles existentes",
+      "furniturePhotosLabel": "Fotos de muebles (opcional)",
+      "furniturePhotosHint": "Hasta 3 fotos de referencia de muebles o decoración para incluir en la habitación escenificada",
       "processButton": "Procesar foto",
       "uploadArea": "Sube una imagen o arrastra y suelta",
       "before": "Antes",
@@ -237,7 +239,10 @@
     "uploadFirst": "Por favor sube una imagen primero",
     "badPrompt": "Prompt incorrecto ingresado",
     "processingFailed": "El procesamiento falló",
-    "noImageData": "No se recibieron datos de imagen"
+    "noImageData": "No se recibieron datos de imagen",
+    "dailyLimitFree": "Has usado las {limit} generaciones gratuitas de hoy (se reinician a medianoche UTC). Pasa a Stagify+ para puesta en escena ilimitada.",
+    "dailyLimitAnonymous": "Has alcanzado el límite gratuito en esta red ({limit} al día, UTC). Inicia sesión para vincularlo a tu cuenta o vuelve mañana.",
+    "dailyLimitCta": "Ver Stagify+"
   },
   "pdf": {
     "meta": {
@@ -289,7 +294,7 @@
       "chooseModel": "Elige tu modelo",
       "fast": "Rápido",
       "fastDescription": "Calidad estándar, rápido",
-      "pro": "Pro",
+      "pro": "Stagify+",
       "proDescription": "Mayor calidad, más lento"
     },
     "messageTag": {

@@ -78,26 +78,12 @@
     </script>
     
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/auth.css">
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script src="scripts/language-loader.js" defer></script>
+    <script src="scripts/auth.js" defer></script>
+    <script src="scripts/profile-menu.js" defer></script>
     <style>
-      /* Beta badge styling */
-      .beta-badge {
-        display: inline-block;
-        background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #5c1a1a 100%);
-        border-radius: 6px;
-        padding: 1px 8px;
-        margin-right: 6px;
-        box-shadow: 0 2px 4px rgba(153, 27, 27, 0.4);
-      }
-      
-      .beta-badge em {
-        font-style: italic;
-        color: white;
-        font-size: 0.85em;
-        font-weight: 600;
-      }
-      
       /* Prevent horizontal scrolling */
       html, body {
         overflow-x: hidden;
@@ -112,6 +98,48 @@
         box-sizing: border-box;
       }
       
+      .ai-designer-pro-gate {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 300;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(30, 58, 138, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .ai-designer-pro-gate__card {
+        max-width: 480px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 32px 28px;
+        box-shadow: 0 24px 60px rgba(30, 58, 138, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        text-align: center;
+      }
+      .ai-designer-pro-gate__card h2 {
+        margin: 0 0 12px;
+        color: #1e3a8a;
+        font-size: 1.5rem;
+      }
+      .ai-designer-pro-gate__card p {
+        margin: 0 0 20px;
+        color: #4b5563;
+        line-height: 1.55;
+        font-size: 15px;
+      }
+      .ai-designer-pro-gate__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .ai-designer-pro-gate__actions a {
+        text-decoration: none;
+      }
+
       .chat-container {
         width: 100%;
         max-width: 1400px;
@@ -1655,18 +1683,40 @@
         <div class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong">stagify</span><span class="brand-light">.ai</span></div>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <a href="ai-designer.html" class="nav-link desktop-only" data-lang-html="navigation.pdfTo3d">AI Designer</a>
+          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
           <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
           <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
           <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
         </div>
-        <div class="mobile-test-text">
-          <div data-lang="hero.title.upload">Upload.</div>
-          <div data-lang="hero.title.stage">Stage.</div>
-          <div data-lang="hero.title.imagine">Imagine.</div>
+        <div class="nav-trailing">
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+          <div class="mobile-test-text">
+            <div data-lang="hero.title.upload">Upload.</div>
+            <div data-lang="hero.title.stage">Stage.</div>
+            <div data-lang="hero.title.imagine">Imagine.</div>
+          </div>
         </div>
       </nav>
     </header>
+
+    <div id="ai-designer-pro-gate" class="ai-designer-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ai-designer-pro-gate-title">
+      <div class="ai-designer-pro-gate__card">
+        <h2 id="ai-designer-pro-gate-title">AI Designer is a Stagify+ feature</h2>
+        <p>Sign in with a Stagify+ account to use the AI Designer chat, advanced models, and masking tools. Free accounts can use virtual staging on the home page.</p>
+        <div class="ai-designer-pro-gate__actions">
+          <a href="stagify-plus.html" class="btn btn-primary btn-lg"><strong>View Stagify+</strong></a>
+          <a href="index.html" class="btn btn-ghost btn-lg"><strong>Back to staging</strong></a>
+        </div>
+      </div>
+    </div>
 
     <main>
       <div class="language-picker-container">
@@ -1767,7 +1817,7 @@
                     </div>
                     <div class="model-option" data-model="pro">
                       <div class="model-option-content">
-                        <div class="model-option-name" data-lang="pdf.modelSelector.pro">Pro</div>
+                        <div class="model-option-name" data-lang="pdf.modelSelector.pro">Stagify+</div>
                         <div class="model-option-description" data-lang="pdf.modelSelector.proDescription">Higher quality, slower</div>
                       </div>
                     </div>
@@ -1833,6 +1883,23 @@
       let selectedFiles = [];
       let isProcessing = false; // Track if we're currently processing a message
       let dragCounter = 0; // Track drag enter/leave events to handle nested elements
+
+      function isDesignerProOk() {
+        return window.StagifyAuth && window.StagifyAuth.user && window.StagifyAuth.user.plan === 'pro';
+      }
+
+      async function ensureDesignerProAccess() {
+        if (!window.StagifyAuth) return false;
+        await window.StagifyAuth.fetchMe();
+        const u = window.StagifyAuth.user;
+        const gate = document.getElementById('ai-designer-pro-gate');
+        if (!u || u.plan !== 'pro') {
+          if (gate) gate.style.display = 'flex';
+          return false;
+        }
+        if (gate) gate.style.display = 'none';
+        return true;
+      }
       
       // Load welcome message on page load
       async function loadWelcomeMessage() {
@@ -1850,7 +1917,10 @@
           const userId = localStorage.getItem('userId') || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           localStorage.setItem('userId', userId);
           
-          const response = await fetch(`/api/welcome-message?userId=${encodeURIComponent(userId)}`);
+          const tok = window.StagifyAuth && window.StagifyAuth.getToken();
+          const q = new URLSearchParams({ userId: userId });
+          if (tok) q.set('authToken', tok);
+          const response = await fetch(`/api/welcome-message?${q}`);
           const data = await response.json();
           
           // Remove typing indicator
@@ -1874,8 +1944,10 @@
         }
       }
       
-      // Load welcome message when page loads
-      loadWelcomeMessage();
+      // Pro gate + welcome message when page loads
+      ensureDesignerProAccess().then((ok) => {
+        if (ok) loadWelcomeMessage();
+      });
       
       // Reload button functionality
       const reloadBtn = document.getElementById('reload-btn');
@@ -1898,7 +1970,9 @@
         updateSendButtonState();
         
         // Load welcome message (same as page load)
-        loadWelcomeMessage();
+        ensureDesignerProAccess().then((ok) => {
+          if (ok) loadWelcomeMessage();
+        });
       });
       
       // Format file size
@@ -2239,6 +2313,7 @@
       updateSendButtonState();
       
       function sendMessage() {
+        if (!isDesignerProOk()) return;
         const message = chatInput.value.trim();
         if (!message && selectedFiles.length === 0) return;
         
@@ -2343,6 +2418,8 @@
             if (userId) {
               formData.append('userId', userId);
             }
+            const authTok = window.StagifyAuth && window.StagifyAuth.getToken();
+            if (authTok) formData.append('authToken', authTok);
             
             // Add model to formData
             const selectedModel = window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini';
@@ -2697,16 +2774,19 @@
             // Get userId from localStorage
             const userId = localStorage.getItem('userId');
             
+            const chatAuthTok = window.StagifyAuth && window.StagifyAuth.getToken();
             fetch('/api/chat', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                ...(chatAuthTok ? { Authorization: 'Bearer ' + chatAuthTok } : {}),
               },
               body: JSON.stringify({
                 messages: conversationHistory,
                 userId: userId,
                 model: window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini',
-                messageTag: messageTagValue && messageTagValue !== 'auto' ? messageTagValue : undefined
+                messageTag: messageTagValue && messageTagValue !== 'auto' ? messageTagValue : undefined,
+                authToken: chatAuthTok || undefined,
               }),
             })
             .then(response => response.json())
@@ -3237,23 +3317,23 @@
         container.appendChild(img);
         container.appendChild(downloadBtn);
         
-        // Add mask button for all AI-generated images
-        // This includes staged images, generated images, CAD renders, recalled images, etc.
-        const maskBtn = document.createElement('button');
-        maskBtn.className = 'ai-image-mask-btn';
-        maskBtn.title = 'Edit with mask';
-        maskBtn.setAttribute('aria-label', 'Edit with mask');
-        
-        const maskIcon = document.createElement('img');
-        maskIcon.src = 'media-webp/Mask.webp';
-        maskIcon.alt = 'Mask';
-        maskBtn.appendChild(maskIcon);
-        
-        maskBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          openMaskEditor(imageSrc, imageType);
-        });
-        container.appendChild(maskBtn);
+        if (window.StagifyAuth && window.StagifyAuth.user && window.StagifyAuth.user.plan === 'pro') {
+          const maskBtn = document.createElement('button');
+          maskBtn.className = 'ai-image-mask-btn';
+          maskBtn.title = 'Edit with mask';
+          maskBtn.setAttribute('aria-label', 'Edit with mask');
+          
+          const maskIcon = document.createElement('img');
+          maskIcon.src = 'media-webp/Mask.webp';
+          maskIcon.alt = 'Mask';
+          maskBtn.appendChild(maskIcon);
+          
+          maskBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openMaskEditor(imageSrc, imageType);
+          });
+          container.appendChild(maskBtn);
+        }
         
         return container;
       }
@@ -4075,16 +4155,19 @@
           const selectedModel = window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini';
           
           // Send to backend
+          const maskAuthTok = window.StagifyAuth && window.StagifyAuth.getToken();
           const response = await fetch('/api/mask-edit', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              ...(maskAuthTok ? { Authorization: 'Bearer ' + maskAuthTok } : {}),
             },
             body: JSON.stringify({
               image: imageDataUrl,
               mask: maskDataUrl,
               prompt: prompt,
-              model: selectedModel
+              model: selectedModel,
+              authToken: maskAuthTok || undefined,
             })
           });
           
@@ -4262,9 +4345,9 @@
         function getModelText(modelKey) {
           if (window.LanguageSystem && window.LanguageSystem.isLoaded()) {
             const translationKey = modelKey === 'fast' ? 'pdf.modelSelector.fast' : 'pdf.modelSelector.pro';
-            return window.LanguageSystem.getText(translationKey) || (modelKey === 'fast' ? 'Fast' : 'Pro');
+            return window.LanguageSystem.getText(translationKey) || (modelKey === 'fast' ? 'Fast' : 'Stagify+');
           }
-          return modelKey === 'fast' ? 'Fast' : 'Pro';
+          return modelKey === 'fast' ? 'Fast' : 'Stagify+';
         }
         
         // Update the displayed model text

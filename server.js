@@ -10,11 +10,119 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from 'openai';
 import sharp from "sharp";
 import cors from 'cors';
+import { Resend } from 'resend';
 import { promptMatrix } from './promptMatrix.js';
 import { blueprintTo3D } from './cad-handling.js';
+import { createAuthStore } from './auth-store.js';
+import Stripe from 'stripe';
+import { handleStripeEvent } from './stripe-webhooks.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const authStore = createAuthStore(__dirname);
+setInterval(() => authStore.pruneSessions(), 6 * 60 * 60 * 1000).unref?.();
+
+/** Directory containing stripe_secret_key.txt and stripe_webhook_secret.txt (production default: same folder as server.js). */
+function stripeSecretsDir() {
+  const d = process.env.STRIPE_SECRETS_DIR;
+  if (d && String(d).trim()) {
+    return path.resolve(String(d).trim());
+  }
+  return __dirname;
+}
+
+function readStripeSecretKey() {
+  const dir = stripeSecretsDir();
+  try {
+    const filePath = path.join(dir, 'stripe_secret_key.txt');
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8').trim().replace(/^\uFEFF/, '');
+      if (raw.startsWith('sk_')) return raw;
+      if (raw) {
+        console.warn('[stripe] stripe_secret_key.txt must start with sk_ — ignored');
+      }
+    }
+  } catch (e) {
+    console.warn('[stripe] Could not read stripe_secret_key.txt:', e.message);
+  }
+  const fromEnv = process.env.STRIPE_SECRET_KEY;
+  if (fromEnv && String(fromEnv).trim().startsWith('sk_')) {
+    return String(fromEnv).trim();
+  }
+  return '';
+}
+
+const stripeSecretKey = readStripeSecretKey();
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
+
+function readStripeWebhookSecret() {
+  const dir = stripeSecretsDir();
+  try {
+    const filePath = path.join(dir, 'stripe_webhook_secret.txt');
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8').trim().replace(/^\uFEFF/, '');
+      if (raw.startsWith('whsec_')) return raw;
+      if (raw) {
+        console.warn('[stripe] stripe_webhook_secret.txt must start with whsec_ — ignored');
+      }
+    }
+  } catch (e) {
+    console.warn('[stripe] Could not read stripe_webhook_secret.txt:', e.message);
+  }
+  const fromEnv = process.env.STRIPE_WEBHOOK_SECRET;
+  if (fromEnv && String(fromEnv).trim()) {
+    return String(fromEnv).trim();
+  }
+  return '';
+}
+
+const stripeWebhookSecret = readStripeWebhookSecret();
+
+function getAuthUserFromRequest(req) {
+  let token = null;
+  const h = req.headers.authorization;
+  if (h && typeof h === 'string' && h.startsWith('Bearer ')) {
+    token = h.slice(7).trim();
+  }
+  if (!token && req.body && typeof req.body === 'object' && req.body.authToken) {
+    token = String(req.body.authToken).trim();
+  }
+  if (!token && req.query && req.query.authToken) {
+    token = String(req.query.authToken).trim();
+  }
+  return authStore.validateSession(token);
+}
+
+/** Client IP for rate limits (honors X-Forwarded-For when behind a proxy). */
+function getStagingClientIp(req) {
+  const xff = req.headers['x-forwarded-for'];
+  if (typeof xff === 'string' && xff.trim()) {
+    return xff.split(',')[0].trim().slice(0, 128);
+  }
+  const ip = req.ip || req.socket?.remoteAddress || '';
+  return String(ip).replace(/^::ffff:/, '').slice(0, 128) || 'unknown';
+}
+
+/** Heuristic: anonymous mobile browsers may use IP-based free tier instead of signing in. */
+function isLikelyMobileStagingRequest(req) {
+  const ua = req.headers['user-agent'];
+  if (!ua || typeof ua !== 'string') return false;
+  return /Mobile|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+}
+
+function requireProAccount(req, res) {
+  const user = getAuthUserFromRequest(req);
+  if (!user) {
+    res.status(401).json({ error: 'Sign in required', code: 'AUTH_REQUIRED' });
+    return null;
+  }
+  if (user.plan !== 'pro') {
+    res.status(403).json({ error: 'Stagify+ subscription required', code: 'PRO_REQUIRED' });
+    return null;
+  }
+  return user;
+}
 
 // Function to log prompts to CSV file
 function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, userReferralSource, userEmail, req) {
@@ -254,8 +362,42 @@ function initializeContactCount() {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', process.env.TRUST_PROXY === '0' ? false : 1);
+
 // Middleware
 app.use(cors());
+
+// Stripe webhooks must use the raw body for signature verification (register before express.json)
+app.post('/api/billing/stripe-webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  if (!stripe || !stripeWebhookSecret) {
+    console.warn(
+      '[stripe] Webhook ignored: add stripe_secret_key.txt + stripe_webhook_secret.txt next to server.js (or set STRIPE_SECRETS_DIR), or set STRIPE_* env vars',
+    );
+    return res.status(503).send('Stripe billing not configured');
+  }
+  const sig = req.headers['stripe-signature'];
+  if (!sig) {
+    return res.status(400).send('Missing stripe-signature');
+  }
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, stripeWebhookSecret);
+  } catch (err) {
+    console.error('[stripe] Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  try {
+    const out = handleStripeEvent(event, authStore);
+    if (!out.handled) {
+      console.log('[stripe] Unhandled event type (ok):', event.type);
+    }
+    res.json({ received: true });
+  } catch (e) {
+    console.error('[stripe] Webhook handler error:', e);
+    res.status(500).json({ error: 'Webhook handler failed' });
+  }
+});
+
 app.use(express.json({ limit: '50mb' })); // Increased limit to handle conversation history with images
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
@@ -286,20 +428,33 @@ app.get('/sitemap.xml', (req, res) => {
 
 // Configure multer for file uploads (images)
 const storage = multer.memoryStorage();
+const imageFileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only PNG, JPG, JPEG, and WebP files are allowed'));
+  }
+};
+
 const upload = multer({
   storage: storage,
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB limit
   },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PNG, JPG, JPEG, and WebP files are allowed'));
-    }
-  }
+  fileFilter: imageFileFilter
 });
+
+const stagingProcessUpload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024,
+  },
+  fileFilter: imageFileFilter
+}).fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'furnitureImage', maxCount: 3 }
+]);
 
 // Configure multer for PDF uploads
 const pdfUpload = multer({
@@ -352,6 +507,32 @@ try {
 } catch (error) {
   console.error('Error reading debug configuration:', error.message);
   DEBUG_MODE = false;
+}
+
+// Email debug mode - if true, redirect all outbound mail to DEBUG_EMAIL (for local/staging only).
+// Default false so password reset and other mail reach the real recipient.
+let EMAIL_DEBUG_MODE = false;
+const DEBUG_EMAIL = 'maximilianbising@gmail.com';
+try {
+  let emailDebugValue = process.env.EMAIL_DEBUG;
+  if (emailDebugValue === undefined) {
+    const emailDebugFile = path.join(__dirname, 'emaildebug.txt');
+    if (fs.existsSync(emailDebugFile)) {
+      emailDebugValue = fs.readFileSync(emailDebugFile, 'utf8').trim();
+    }
+  }
+  if (emailDebugValue !== undefined) {
+    EMAIL_DEBUG_MODE = emailDebugValue.toLowerCase() === 'true';
+  }
+  if (EMAIL_DEBUG_MODE) {
+    console.log(`Email debug mode: ENABLED - All emails will be sent to ${DEBUG_EMAIL}`);
+  } else {
+    console.log('Email debug mode: DISABLED - Emails go to actual recipients');
+  }
+} catch (error) {
+  console.error('Error reading email debug configuration:', error.message);
+  EMAIL_DEBUG_MODE = false;
+  console.log('Email debug mode: DISABLED (default after error)');
 }
 
 // Memory storage for AI chat - per user
@@ -626,6 +807,37 @@ try {
   console.error('Error initializing OpenAI:', error.message);
   console.log('Chat features will not be available');
 }
+
+// Initialize Resend (for email sending)
+let resend;
+try {
+  // Try environment variable first (Render), then fall back to local file
+  let resendApiKey = process.env.RESEND_API_KEY;
+  if (resendApiKey === undefined) {
+    if (DEBUG_MODE) {
+      console.log('RESEND_API_KEY is not set in an environment variable, using local file');
+    }
+    const resendKeyFile = path.join(__dirname, 'resendkey.txt');
+    if (fs.existsSync(resendKeyFile)) {
+      resendApiKey = fs.readFileSync(resendKeyFile, 'utf8').trim();
+    }
+  }
+  if (resendApiKey) {
+    resend = new Resend(resendApiKey);
+    if (DEBUG_MODE) {
+      console.log("Resend API key successfully loaded");
+    }
+  } else {
+    if (DEBUG_MODE) {
+      console.log("Warning: Resend key not found, email features will not be available");
+    }
+  }
+} catch (error) {
+  console.error('Error initializing Resend:', error.message);
+  console.log('Email features will not be available');
+}
+
+const RESEND_FROM_EMAIL = String(process.env.RESEND_FROM_EMAIL || 'team@stagify.ai').trim();
 
 /**
  * Downscales an image to fit within 1920x1080 while maintaining aspect ratio
@@ -1535,6 +1747,24 @@ async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-fla
   }
 }
 
+function normalizeFurnitureBuffers(furnitureImageInput) {
+  if (!furnitureImageInput) return [];
+  const raw = Array.isArray(furnitureImageInput) ? furnitureImageInput : [furnitureImageInput];
+  return raw.filter((b) => b && Buffer.isBuffer(b)).slice(0, 3);
+}
+
+function furnitureReferencePromptSuffix(count) {
+  if (count <= 0) return '';
+  const listText =
+    count === 1
+      ? 'The second image'
+      : count === 2
+        ? 'The second and third images'
+        : 'The second, third, and fourth images';
+  const pieceWord = count === 1 ? 'piece' : 'pieces';
+  return `\n\nIMPORTANT: ${listText} provided after the room photo ${count === 1 ? 'is' : 'are'} reference furniture ${pieceWord} that the user wants incorporated into the staged room. Match each item's style, color, and appearance as closely as possible. Use all reference images as guidance for what to place in the space.`;
+}
+
 async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer = null, geminiModel = 'gemini-2.5-flash-image') {
   try {
     if (!genAI) {
@@ -1559,9 +1789,9 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       },
     ];
     
-    // If furniture image is provided, add it to the prompt
-    if (furnitureImageBuffer) {
-      const processedFurnitureBuffer = await downscaleImage(furnitureImageBuffer);
+    const furnitureBuffers = normalizeFurnitureBuffers(furnitureImageBuffer);
+    for (const buf of furnitureBuffers) {
+      const processedFurnitureBuffer = await downscaleImage(buf);
       const base64Furniture = processedFurnitureBuffer.toString("base64");
       prompt.push({
         inlineData: {
@@ -1569,10 +1799,11 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
           data: base64Furniture,
         },
       });
-      // Update the prompt text to include furniture reference
-      prompt[0].text += '\n\nIMPORTANT: The second image provided is a specific piece of furniture that the user wants to add to the room. Please incorporate this exact furniture piece into the staged room design, matching its style, color, and appearance as closely as possible.';
+    }
+    if (furnitureBuffers.length > 0) {
+      prompt[0].text += furnitureReferencePromptSuffix(furnitureBuffers.length);
       if (DEBUG_MODE) {
-        console.log(`[Staging] Including furniture image in staging request`);
+        console.log(`[Staging] Including ${furnitureBuffers.length} furniture reference image(s) in staging request`);
       }
     }
     
@@ -1583,9 +1814,9 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       stagingParams.furnitureStyle,
       stagingParams.additionalPrompt,
       stagingParams.removeFurniture,
-      'unknown',
-      'unknown',
-      'unknown',
+      req?.body?.userRole || 'unknown',
+      req?.body?.userReferralSource || 'unknown',
+      req?.body?.authenticatedEmail || req?.body?.userEmail || 'unknown',
       req
     );
     
@@ -1639,77 +1870,318 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Image processing endpoint
-app.post('/api/process-image', upload.single('image'), async (req, res) => {
-  
+// Auth API (simple email + password; new accounts are Free tier)
+app.post('/api/auth/register', express.json(), (req, res) => {
   try {
-    if (!req.file) {
+    const { email, password } = req.body || {};
+    const result = authStore.register(email, password);
+    if (!result.ok) {
+      return res.status(400).json({ error: result.error });
+    }
+    res.json({ success: true, token: result.token, user: result.user });
+  } catch (e) {
+    console.error('register error', e);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+app.post('/api/auth/login', express.json(), (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    const result = authStore.login(email, password);
+    if (!result.ok) {
+      return res.status(401).json({ error: result.error });
+    }
+    res.json({ success: true, token: result.token, user: result.user });
+  } catch (e) {
+    console.error('login error', e);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+app.get('/api/auth/me', (req, res) => {
+  const user = getAuthUserFromRequest(req);
+  if (!user) {
+    return res.status(401).json({ error: 'Not signed in', code: 'AUTH_REQUIRED' });
+  }
+  res.json({ user: authStore.publicUser(user) });
+});
+
+app.post('/api/billing/customer-portal', express.json(), async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(503).json({ error: 'Billing not configured', code: 'STRIPE_DISABLED' });
+    }
+    const user = getAuthUserFromRequest(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Sign in required', code: 'AUTH_REQUIRED' });
+    }
+    if (!user.stripeCustomerId) {
+      return res.status(400).json({
+        error:
+          'No billing profile on this account. If you subscribed with another email, sign in with that address or contact support.',
+        code: 'NO_STRIPE_CUSTOMER',
+      });
+    }
+    const baseUrlRaw =
+      process.env.PUBLIC_APP_URL || process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+    const baseUrl = String(baseUrlRaw).replace(/\/$/, '');
+    const returnUrl = `${baseUrl}/stagify-plus.html`;
+    const session = await stripe.billingPortal.sessions.create({
+      customer: user.stripeCustomerId,
+      return_url: returnUrl,
+    });
+    return res.json({ url: session.url });
+  } catch (e) {
+    console.error('[stripe] customer portal error:', e.message);
+    return res.status(500).json({ error: 'Could not open billing portal' });
+  }
+});
+
+app.post('/api/auth/logout', express.json(), (req, res) => {
+  const token =
+    (req.body && req.body.authToken) ||
+    (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')
+      ? req.headers.authorization.slice(7).trim()
+      : null);
+  if (token) authStore.logout(token);
+  res.json({ success: true });
+});
+
+app.post('/api/auth/forgot-password', express.json(), async (req, res) => {
+  try {
+    const email = (req.body && req.body.email) || '';
+    const result = authStore.startPasswordReset(email);
+    const baseUrlRaw =
+      process.env.PUBLIC_APP_URL || process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+    const baseUrl = String(baseUrlRaw).replace(/\/$/, '');
+
+    if (!result.token) {
+      return res.json({
+        ok: true,
+        emailSent: false,
+        message:
+          'There is no Stagify account for that email address. Try signing up, or double-check for typos.',
+      });
+    }
+
+    if (!resend) {
+      console.error('[auth] Resend not configured; cannot send password reset email');
+      return res.status(503).json({
+        ok: false,
+        error:
+          'We could not send a reset email because email delivery is not configured on this server. Please contact support.',
+        code: 'EMAIL_NOT_CONFIGURED',
+      });
+    }
+
+    const resetUrl = `${baseUrl}/reset-password.html?token=${encodeURIComponent(result.token)}`;
+    const recipient = EMAIL_DEBUG_MODE ? DEBUG_EMAIL : result.toEmail;
+    const debugNote = EMAIL_DEBUG_MODE ? ` (intended recipient: ${result.toEmail})` : '';
+
+    const sendResult = await resend.emails.send({
+      from: RESEND_FROM_EMAIL,
+      to: recipient,
+      subject: 'Reset your Stagify password',
+      html:
+        `<p>Hi,</p><p>We received a request to reset your Stagify password${debugNote}.</p>` +
+        `<p><a href="${resetUrl}">Choose a new password</a></p>` +
+        `<p>This link expires in one hour. If you didn’t ask for this, you can ignore this email.</p>` +
+        `<p>— Stagify</p>`,
+      text: `Reset your Stagify password: ${resetUrl}\n\nExpires in one hour. If you didn't request this, ignore this email.`,
+    });
+
+    if (sendResult.error) {
+      const errMsg =
+        typeof sendResult.error?.message === 'string'
+          ? sendResult.error.message
+          : JSON.stringify(sendResult.error);
+      console.error('[auth] Resend password reset failed:', errMsg);
+      return res.status(502).json({
+        ok: false,
+        error:
+          'We could not send the reset email right now. Please try again in a few minutes. If it keeps failing, contact support.',
+        code: 'EMAIL_SEND_FAILED',
+      });
+    }
+
+    return res.json({
+      ok: true,
+      emailSent: true,
+      message:
+        'We sent a password reset link to your email. It expires in one hour. If you do not see it within a few minutes, check your spam or Promotions folder.',
+    });
+  } catch (e) {
+    console.error('forgot-password error', e);
+    res.status(500).json({ error: 'Could not process request' });
+  }
+});
+
+app.post('/api/auth/reset-password', express.json(), (req, res) => {
+  try {
+    const token = (req.body && req.body.token) || '';
+    const password = (req.body && req.body.password) || '';
+    const out = authStore.completePasswordReset(token, password);
+    if (!out.ok) {
+      return res.status(400).json({ error: out.error });
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('reset-password error', e);
+    res.status(500).json({ error: 'Could not reset password' });
+  }
+});
+
+// Image processing endpoint: signed-in users (account limits) OR mobile User-Agent without session (5/day per IP, UTC)
+app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
+  try {
+    const mainFile = req.files?.image?.[0];
+    if (!mainFile) {
       return res.status(400).json({ error: 'No image file provided' });
     }
+
+    const sessionUser = getAuthUserFromRequest(req);
+    const clientIp = getStagingClientIp(req);
+    const mobileAnonymous = !sessionUser && isLikelyMobileStagingRequest(req);
+
+    if (!sessionUser && !mobileAnonymous) {
+      return res.status(401).json({
+        error: 'Please sign in to stage images',
+        code: 'AUTH_REQUIRED',
+      });
+    }
+
+    if (sessionUser) {
+      const check = authStore.canFreeUserGenerate(sessionUser);
+      if (!check.ok) {
+        return res.status(429).json({
+          error: 'Daily free limit reached (5 generations). Upgrade to Stagify+ for unlimited staging.',
+          code: 'DAILY_LIMIT',
+          dailyGenerationsUsed: check.used,
+          dailyGenerationLimit: check.limit,
+        });
+      }
+    } else {
+      const ipCheck = authStore.canMobileIpGenerate(clientIp);
+      if (!ipCheck.ok) {
+        return res.status(429).json({
+          error:
+            'Daily free limit reached for this network (5 generations per day). Sign in to link runs to your account, or try again tomorrow.',
+          code: 'DAILY_LIMIT',
+          dailyGenerationsUsed: ipCheck.used,
+          dailyGenerationLimit: ipCheck.limit,
+        });
+      }
+    }
+
+    const user = sessionUser;
 
     if (!genAI) {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { roomType = 'Living room', furnitureStyle = 'standard', additionalPrompt = '', removeFurniture = false, userRole = 'unknown', userReferralSource = 'unknown', userEmail = 'unknown', model: gptModel } = req.body;
-    
-    // Get model from request or default to gpt-4o-mini
-    const selectedModel = gptModel || 'gpt-4o-mini';
+    const {
+      roomType = 'Living room',
+      furnitureStyle = 'standard',
+      additionalPrompt = '',
+      removeFurniture = false,
+      userRole = 'unknown',
+      userReferralSource = 'unknown',
+      userEmail = 'unknown',
+      model: gptModelRaw,
+      variationCount: variationRaw,
+    } = req.body;
+
+    req.body.userRole = userRole;
+    req.body.userReferralSource = userReferralSource;
+    req.body.userEmail = userEmail;
+    req.body.authenticatedEmail = user ? user.email : `mobile-ip:${clientIp}`;
+
+    const isPro = user && user.plan === 'pro';
+    let selectedModel = gptModelRaw || 'gpt-4o-mini';
+    if (!isPro) {
+      selectedModel = 'gpt-4o-mini';
+    } else if (selectedModel !== 'gpt-5-mini' && selectedModel !== 'gpt-4o-mini') {
+      selectedModel = 'gpt-4o-mini';
+    }
+
+    let variationCount = parseInt(String(variationRaw || '1'), 10);
+    if (Number.isNaN(variationCount)) variationCount = 1;
+    variationCount = Math.min(3, Math.max(1, variationCount));
+    if (!isPro) {
+      variationCount = 1;
+    }
+
+    const furnitureFiles = isPro ? req.files?.furnitureImage : null;
+    const furnitureBuffers =
+      Array.isArray(furnitureFiles) && furnitureFiles.length > 0
+        ? furnitureFiles.slice(0, 3).map((f) => f.buffer).filter(Boolean)
+        : null;
+
+    const removeBool =
+      removeFurniture === true ||
+      removeFurniture === 'true' ||
+      removeFurniture === 'on';
+
+    const stagingParamsBase = {
+      roomType,
+      furnitureStyle,
+      additionalPrompt,
+      removeFurniture: removeBool,
+    };
+
     const geminiModel = getGeminiImageModel(selectedModel);
-    
-    const processedImageBuffer = await downscaleImage(req.file.buffer);
-    const base64Image = processedImageBuffer.toString("base64");
+    const images = [];
 
-    // Generate prompt based on user preferences
-    const promptText = generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture);
-    
-    // Log prompt to file instead of console
-    logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, userReferralSource, userEmail, req);
-    
-    // Increment prompt count
-    promptCount++;
-
-    const prompt = [
-      { text: promptText },
-      {
-        inlineData: {
-          mimeType: "image/jpeg",
-          data: base64Image, 
-        },
-      },
-    ];
-
-    console.log(`[Image Processing] Using Gemini model: ${geminiModel}`);
-    const geminiModelInstance = genAI.getGenerativeModel({ model: geminiModel });
-    const result = await geminiModelInstance.generateContent(prompt);
-    const response = await result.response;
-
-    if (!response || !response.candidates || response.candidates.length === 0) {
-      console.error("No candidates in response");
-      return res.status(500).json({ error: 'AI processing failed - no results generated' });
-    }
-    
-    // Extract the generated image
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) {
-        const imageData = part.inlineData.data;
-
-        // Return the base64 image data
-        return res.json({
-          success: true,
-          image: `data:image/png;base64,${imageData}`,
-          promptUsed: promptText
-        });
+    for (let v = 0; v < variationCount; v++) {
+      let extra = additionalPrompt || '';
+      if (v > 0) {
+        extra += `\n\n(Subtle variation ${v + 1} of ${variationCount}: keep architecture identical to the source—same walls, windows, doors, ceiling, floor, and room geometry. Change only virtual staging: slightly different furniture arrangement, decor, accents, textiles, or art. Same overall furniture style and mood as the main request; do not redesign the room.)`;
       }
+      const stagingParams = {
+        ...stagingParamsBase,
+        additionalPrompt: extra.trim(),
+      };
+
+      const stagedImage = await processStaging(
+        mainFile.buffer,
+        stagingParams,
+        req,
+        furnitureBuffers && furnitureBuffers.length ? furnitureBuffers : null,
+        geminiModel
+      );
+      images.push(stagedImage);
+      promptCount++;
     }
-    
-    return res.status(500).json({ error: 'No image data in AI response' });
-    
+
+    if (mobileAnonymous) {
+      authStore.recordMobileIpGeneration(clientIp);
+    } else if (user.plan === 'free') {
+      authStore.recordFreeGeneration(user.id);
+    }
+
+    const updatedUser = user ? authStore.findUserByEmail(user.email) : null;
+    const responseUser =
+      user && updatedUser ? authStore.publicUser(updatedUser) : user ? authStore.publicUser(user) : null;
+
+    if (images.length === 1) {
+      return res.json({
+        success: true,
+        image: images[0],
+        user: responseUser,
+      });
+    }
+    return res.json({
+      success: true,
+      images,
+      image: images[0],
+      user: responseUser,
+    });
   } catch (error) {
-    console.error("Error processing image:", error);
-    return res.status(500).json({ 
-      error: 'Image processing failed', 
-      details: error.message 
+    console.error('Error processing image:', error);
+    return res.status(500).json({
+      error: 'Image processing failed',
+      details: error.message,
     });
   }
 });
@@ -1778,6 +2250,79 @@ app.post('/api/log-contact', (req, res) => {
   } catch (error) {
     console.error('Error in contact logging:', error);
     res.status(500).json({ success: false, message: 'Failed to log contact' });
+  }
+});
+
+// Email sending endpoint - protected with key
+app.post('/api/send-email', async (req, res) => {
+  try {
+    // Check access key
+    if (!LOGS_ACCESS_KEY) {
+      return res.status(500).json({ 
+        error: 'Server configuration error',
+        message: 'Endpoint access key not configured'
+      });
+    }
+    
+    const accessKey = req.query.key || req.body.key;
+    if (accessKey !== LOGS_ACCESS_KEY) {
+      return res.status(403).json({ 
+        error: 'Access denied',
+        message: 'Valid access key required'
+      });
+    }
+
+    // Check if Resend is initialized
+    if (!resend) {
+      return res.status(500).json({ 
+        error: 'Email service not configured',
+        message: 'Resend API key not found. Please set RESEND_API_KEY environment variable or create resendkey.txt file'
+      });
+    }
+
+    const { to, subject, text } = req.body;
+
+    // Validate required fields
+    if (!to || !subject || !text) {
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        message: 'All fields "to", "subject", and "text" are required'
+      });
+    }
+
+    const fromEmail = RESEND_FROM_EMAIL;
+
+    // Use debug email if email debug mode is enabled
+    let recipientEmails = Array.isArray(to) ? to : [to];
+    if (EMAIL_DEBUG_MODE) {
+      recipientEmails = [DEBUG_EMAIL];
+    }
+
+    // Send email
+    const emailData = {
+      from: fromEmail,
+      to: recipientEmails,
+      subject: subject,
+      text: text,
+    };
+
+    const result = await resend.emails.send(emailData);
+
+    if (DEBUG_MODE) {
+      console.log('Email sent successfully:', result);
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Email sent successfully',
+      id: result.id 
+    });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).json({ 
+      error: 'Failed to send email',
+      message: error.message || 'An error occurred while sending the email'
+    });
   }
 });
 
@@ -1886,6 +2431,8 @@ app.get('/api/pdf-health', async (req, res) => {
 // PDF processing proxy endpoint
 app.post('/api/process-pdf', pdfUpload.single('pdf'), async (req, res) => {
   try {
+    if (!requireProAccount(req, res)) return;
+
     if (!req.file) {
       return res.status(400).json({ error: 'No PDF file provided' });
     }
@@ -2116,6 +2663,8 @@ app.get('/promptlogs', protectLogs, (req, res) => {
 // Welcome message endpoint - returns personalized or generic welcome message
 app.get('/api/welcome-message', async (req, res) => {
   try {
+    if (!requireProAccount(req, res)) return;
+
     // Get user identifier from query or generate from IP
     const userId = req.query.userId || getUserIdentifier(req);
     
@@ -2201,6 +2750,8 @@ Just return the message text, no additional formatting.`;
 // Text chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
+    if (!requireProAccount(req, res)) return;
+
     if (!openai) {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
@@ -3227,6 +3778,8 @@ app.post('/api/chat', async (req, res) => {
 // Chat with file upload endpoint (multiple files)
 app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => {
   try {
+    if (!requireProAccount(req, res)) return;
+
     if (!openai) {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
@@ -4867,6 +5420,8 @@ app.post('/api/bug-report', async (req, res) => {
 // Mask editing endpoint - uses Gemini API for better image editing
 app.post('/api/mask-edit', async (req, res) => {
   try {
+    if (!requireProAccount(req, res)) return;
+
     if (!genAI) {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
