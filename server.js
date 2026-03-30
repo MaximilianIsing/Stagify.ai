@@ -23,29 +23,50 @@ const __dirname = dirname(__filename);
 const authStore = createAuthStore(__dirname);
 setInterval(() => authStore.pruneSessions(), 6 * 60 * 60 * 1000).unref?.();
 
-/** Directory containing stripe_secret_key.txt and stripe_webhook_secret.txt (production default: same folder as server.js). */
-function stripeSecretsDir() {
-  const d = process.env.STRIPE_SECRETS_DIR;
-  if (d && String(d).trim()) {
-    return path.resolve(String(d).trim());
+/**
+ * Directories to look for stripe_*.txt (first match wins).
+ * Many hosts mount secret files at /etc/secrets/ or the process cwd, not next to bundled server.js.
+ */
+function stripeSecretSearchDirs() {
+  const dirs = [];
+  const envDir = process.env.STRIPE_SECRETS_DIR;
+  if (envDir && String(envDir).trim()) {
+    dirs.push(path.resolve(String(envDir).trim()));
   }
-  return __dirname;
+  dirs.push(__dirname);
+  dirs.push(process.cwd());
+  dirs.push('/etc/secrets');
+  const seen = new Set();
+  return dirs.filter((p) => {
+    const n = path.resolve(p);
+    if (seen.has(n)) return false;
+    seen.add(n);
+    return true;
+  });
+}
+
+function readFirstStripeFile(name, validate) {
+  for (const dir of stripeSecretSearchDirs()) {
+    const filePath = path.join(dir, name);
+    try {
+      if (!fs.existsSync(filePath)) continue;
+      const raw = fs.readFileSync(filePath, 'utf8').trim().replace(/^\uFEFF/, '');
+      const v = validate(raw);
+      if (v) return v;
+    } catch (e) {
+      console.warn(`[stripe] Could not read ${name} in ${dir}:`, e.message);
+    }
+  }
+  return null;
 }
 
 function readStripeSecretKey() {
-  const dir = stripeSecretsDir();
-  try {
-    const filePath = path.join(dir, 'stripe_secret_key.txt');
-    if (fs.existsSync(filePath)) {
-      const raw = fs.readFileSync(filePath, 'utf8').trim().replace(/^\uFEFF/, '');
-      if (raw.startsWith('sk_')) return raw;
-      if (raw) {
-        console.warn('[stripe] stripe_secret_key.txt must start with sk_ — ignored');
-      }
-    }
-  } catch (e) {
-    console.warn('[stripe] Could not read stripe_secret_key.txt:', e.message);
-  }
+  const fromFile = readFirstStripeFile('stripe_secret_key.txt', (raw) => {
+    if (raw.startsWith('sk_')) return raw;
+    if (raw) console.warn('[stripe] stripe_secret_key.txt must start with sk_ — ignored');
+    return null;
+  });
+  if (fromFile) return fromFile;
   const fromEnv = process.env.STRIPE_SECRET_KEY;
   if (fromEnv && String(fromEnv).trim().startsWith('sk_')) {
     return String(fromEnv).trim();
@@ -57,19 +78,12 @@ const stripeSecretKey = readStripeSecretKey();
 const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
 
 function readStripeWebhookSecret() {
-  const dir = stripeSecretsDir();
-  try {
-    const filePath = path.join(dir, 'stripe_webhook_secret.txt');
-    if (fs.existsSync(filePath)) {
-      const raw = fs.readFileSync(filePath, 'utf8').trim().replace(/^\uFEFF/, '');
-      if (raw.startsWith('whsec_')) return raw;
-      if (raw) {
-        console.warn('[stripe] stripe_webhook_secret.txt must start with whsec_ — ignored');
-      }
-    }
-  } catch (e) {
-    console.warn('[stripe] Could not read stripe_webhook_secret.txt:', e.message);
-  }
+  const fromFile = readFirstStripeFile('stripe_webhook_secret.txt', (raw) => {
+    if (raw.startsWith('whsec_')) return raw;
+    if (raw) console.warn('[stripe] stripe_webhook_secret.txt must start with whsec_ — ignored');
+    return null;
+  });
+  if (fromFile) return fromFile;
   const fromEnv = process.env.STRIPE_WEBHOOK_SECRET;
   if (fromEnv && String(fromEnv).trim()) {
     return String(fromEnv).trim();
@@ -371,7 +385,7 @@ app.use(cors());
 app.post('/api/billing/stripe-webhook', express.raw({ type: 'application/json' }), (req, res) => {
   if (!stripe || !stripeWebhookSecret) {
     console.warn(
-      '[stripe] Webhook ignored: add stripe_secret_key.txt + stripe_webhook_secret.txt next to server.js (or set STRIPE_SECRETS_DIR), or set STRIPE_* env vars',
+      '[stripe] Webhook ignored: add stripe_secret_key.txt + stripe_webhook_secret.txt (searched: STRIPE_SECRETS_DIR, server dir, cwd, /etc/secrets) or set STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET',
     );
     return res.status(503).send('Stripe billing not configured');
   }
