@@ -465,12 +465,14 @@
     var tok = window.StagifyAuth.getToken();
 
     if (!tok || !u) {
+      dd.classList.add('profile-menu-dropdown--guest');
       dd.innerHTML =
         '<div class="profile-menu__section">' +
         '<button type="button" class="profile-menu__item" data-profile-action="signin">Sign in</button>' +
         '<button type="button" class="profile-menu__item" data-profile-action="signup">Create account</button>' +
         '</div>';
     } else {
+      dd.classList.remove('profile-menu-dropdown--guest');
       var planLine = '';
       if (u.plan === 'pro') {
         planLine =
