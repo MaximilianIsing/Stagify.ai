@@ -15,6 +15,7 @@ import { promptMatrix } from './promptMatrix.js';
 import { blueprintTo3D } from './cad-handling.js';
 import { createAuthStore } from './auth-store.js';
 import Stripe from 'stripe';
+import { OAuth2Client } from 'google-auth-library';
 import { handleStripeEvent } from './stripe-webhooks.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -92,6 +93,42 @@ function readStripeWebhookSecret() {
 }
 
 const stripeWebhookSecret = readStripeWebhookSecret();
+
+function readGoogleClientId() {
+  const fromFile = readFirstStripeFile('googleclientID.txt', (raw) => {
+    const s = String(raw).trim();
+    if (!s) return null;
+    if (s.includes('.apps.googleusercontent.com')) return s;
+    if (/^[0-9a-zA-Z._-]{20,}$/.test(s)) return s;
+    if (raw) console.warn('[google] googleclientID.txt does not look like a Google OAuth client id — ignored');
+    return null;
+  });
+  if (fromFile) return fromFile;
+  const fromEnv = process.env.GOOGLE_CLIENT_ID;
+  if (fromEnv && String(fromEnv).trim()) return String(fromEnv).trim();
+  return '';
+}
+
+/** Optional. Sign-In With Google (ID token) only needs the client id; secret is for other OAuth flows. */
+function readGoogleClientSecret() {
+  const fromFile = readFirstStripeFile('googlesecret.txt', (raw) => {
+    const s = String(raw).trim();
+    return s || null;
+  });
+  if (fromFile) return fromFile;
+  const fromEnv = process.env.GOOGLE_CLIENT_SECRET;
+  if (fromEnv && String(fromEnv).trim()) return String(fromEnv).trim();
+  return '';
+}
+
+const googleClientId = readGoogleClientId();
+const googleClientSecret = readGoogleClientSecret();
+const googleOAuthClient = googleClientId
+  ? new OAuth2Client(googleClientId, googleClientSecret || undefined)
+  : null;
+if (googleClientId) {
+  console.log('[google] OAuth client id loaded (Sign-In with Google enabled)');
+}
 
 function getAuthUserFromRequest(req) {
   let token = null;
@@ -1913,6 +1950,45 @@ app.post('/api/auth/login', express.json(), (req, res) => {
   }
 });
 
+/** Public client id for Google Identity Services (Sign In With Google button). */
+app.get('/api/auth/config', (req, res) => {
+  res.json({ googleClientId: googleClientId || null });
+});
+
+app.post('/api/auth/google', express.json(), async (req, res) => {
+  try {
+    if (!googleOAuthClient || !googleClientId) {
+      return res.status(503).json({ error: 'Google sign-in is not configured' });
+    }
+    const credential = req.body && req.body.credential;
+    if (!credential || typeof credential !== 'string') {
+      return res.status(400).json({ error: 'Missing credential' });
+    }
+    const ticket = await googleOAuthClient.verifyIdToken({
+      idToken: credential,
+      audience: googleClientId,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email || !payload.sub) {
+      return res.status(401).json({ error: 'Invalid Google sign-in' });
+    }
+    if (payload.email_verified === false) {
+      return res.status(401).json({ error: 'Google email not verified' });
+    }
+    const result = authStore.loginWithGoogle({
+      email: payload.email,
+      googleSub: payload.sub,
+    });
+    if (!result.ok) {
+      return res.status(400).json({ error: result.error });
+    }
+    res.json({ success: true, token: result.token, user: result.user });
+  } catch (e) {
+    console.error('google auth error', e.message || e);
+    res.status(401).json({ error: 'Google sign-in failed' });
+  }
+});
+
 app.get('/api/auth/me', (req, res) => {
   const user = getAuthUserFromRequest(req);
   if (!user) {
@@ -2046,7 +2122,7 @@ app.post('/api/auth/reset-password', express.json(), (req, res) => {
   }
 });
 
-// Image processing endpoint: signed-in users (account limits) OR mobile User-Agent without session (5/day per IP, UTC)
+// Image processing endpoint: signed-in users (account limits) OR mobile User-Agent without session (free daily cap per IP, UTC)
 app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
   try {
     const mainFile = req.files?.image?.[0];
@@ -2069,7 +2145,7 @@ app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
       const check = authStore.canFreeUserGenerate(sessionUser);
       if (!check.ok) {
         return res.status(429).json({
-          error: 'Daily free limit reached (5 generations). Upgrade to Stagify+ for unlimited staging.',
+          error: `Daily free limit reached (${check.limit} generations). Upgrade to Stagify+ for unlimited staging.`,
           code: 'DAILY_LIMIT',
           dailyGenerationsUsed: check.used,
           dailyGenerationLimit: check.limit,
@@ -2079,8 +2155,7 @@ app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
       const ipCheck = authStore.canMobileIpGenerate(clientIp);
       if (!ipCheck.ok) {
         return res.status(429).json({
-          error:
-            'Daily free limit reached for this network (5 generations per day). Sign in to link runs to your account, or try again tomorrow.',
+          error: `Daily free limit reached for this network (${ipCheck.limit} generations per day). Sign in to link runs to your account, or try again tomorrow.`,
           code: 'DAILY_LIMIT',
           dailyGenerationsUsed: ipCheck.used,
           dailyGenerationLimit: ipCheck.limit,
