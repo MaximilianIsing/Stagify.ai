@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-const FREE_DAILY_LIMIT = 5;
+const FREE_DAILY_LIMIT = 3;
 const SESSION_DAYS = 30;
 
 function getStorePath(baseDir) {
@@ -90,7 +90,14 @@ export function createAuthStore(baseDir) {
       return { ok: false, error: 'Password must be at least 8 characters' };
     }
     const store = read();
-    if (store.users.some((u) => u.email === e)) {
+    const dup = store.users.find((u) => u.email === e);
+    if (dup) {
+      if (dup.googleSub && !dup.passwordHash) {
+        return {
+          ok: false,
+          error: 'An account with this email already exists. Sign in with Google.',
+        };
+      }
       return { ok: false, error: 'An account with this email already exists' };
     }
     const salt = newSalt();
@@ -119,6 +126,12 @@ export function createAuthStore(baseDir) {
     if (!user) {
       return { ok: false, error: 'Invalid email or password' };
     }
+    if (!user.passwordHash || !user.passwordSalt) {
+      return {
+        ok: false,
+        error: 'This account uses Google sign-in. Use Continue with Google.',
+      };
+    }
     const tryHash = hashPassword(password, user.passwordSalt);
     const a = Buffer.from(tryHash, 'hex');
     const b = Buffer.from(user.passwordHash, 'hex');
@@ -131,6 +144,56 @@ export function createAuthStore(baseDir) {
     store.sessions[token] = { userId: user.id, exp };
     write(store);
     return { ok: true, token, user: publicUser(user) };
+  }
+
+  /** Create session after Google ID token verified server-side (email + sub from Google). */
+  function loginWithGoogle({ email, googleSub }) {
+    const e = String(email || '').trim().toLowerCase();
+    const sub = String(googleSub || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      return { ok: false, error: 'Invalid email address' };
+    }
+    if (!sub) {
+      return { ok: false, error: 'Invalid Google account' };
+    }
+    const store = read();
+    let user = store.users.find((u) => u.googleSub === sub);
+    if (user) {
+      const token = newToken();
+      const exp = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
+      store.sessions[token] = { userId: user.id, exp };
+      write(store);
+      return { ok: true, token, user: publicUser(user) };
+    }
+    user = store.users.find((u) => u.email === e);
+    if (user) {
+      if (user.googleSub && user.googleSub !== sub) {
+        return { ok: false, error: 'This email is linked to a different Google account.' };
+      }
+      if (!user.googleSub) {
+        user.googleSub = sub;
+      }
+      const token = newToken();
+      const exp = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
+      store.sessions[token] = { userId: user.id, exp };
+      write(store);
+      return { ok: true, token, user: publicUser(user) };
+    }
+    const newUser = {
+      id: `u_${crypto.randomBytes(12).toString('hex')}`,
+      email: e,
+      googleSub: sub,
+      plan: 'free',
+      usageDay: null,
+      usageCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+    store.users.push(newUser);
+    const token = newToken();
+    const exp = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
+    store.sessions[token] = { userId: newUser.id, exp };
+    write(store);
+    return { ok: true, token, user: publicUser(newUser) };
   }
 
   function publicUser(user) {
@@ -214,7 +277,7 @@ export function createAuthStore(baseDir) {
     }
   }
 
-  /** Anonymous mobile clients (no session): same 5/day cap keyed by IP (UTC day). */
+  /** Anonymous mobile clients (no session): same daily cap as free accounts, keyed by IP (UTC day). */
   function canMobileIpGenerate(ip) {
     const rawIp = String(ip || 'unknown').slice(0, 128);
     const store = read();
@@ -373,6 +436,7 @@ export function createAuthStore(baseDir) {
   return {
     register,
     login,
+    loginWithGoogle,
     validateSession,
     logout,
     publicUser,
