@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import https from 'https';
 import FormData from 'form-data';
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -128,6 +129,28 @@ const googleOAuthClient = googleClientId
   : null;
 if (googleClientId) {
   console.log('[google] OAuth client id loaded (Sign-In with Google enabled)');
+}
+
+function readProPassKey() {
+  const fromFile = readFirstStripeFile('propass.txt', (raw) => {
+    const s = String(raw).trim();
+    return s || null;
+  });
+  if (fromFile) return fromFile;
+  const fromEnv = process.env.STAGIFY_PRO_PASS_KEY;
+  if (fromEnv && String(fromEnv).trim()) return String(fromEnv).trim();
+  return '';
+}
+
+const proPassKey = readProPassKey();
+
+function proPassKeysMatch(received, expected) {
+  if (!received || !expected || typeof received !== 'string' || typeof expected !== 'string') {
+    return false;
+  }
+  const a = crypto.createHash('sha256').update(received, 'utf8').digest();
+  const b = crypto.createHash('sha256').update(expected, 'utf8').digest();
+  return crypto.timingSafeEqual(a, b);
 }
 
 function getAuthUserFromRequest(req) {
@@ -475,6 +498,48 @@ app.get('/robots.txt', (req, res) => {
 app.get('/sitemap.xml', (req, res) => {
   res.type('application/xml');
   res.sendFile(path.join(__dirname, 'public', 'sitemap.xml'));
+});
+
+/**
+ * Grant Stagify+ to the signed-in account when ?key= matches propass.txt (or STAGIFY_PRO_PASS_KEY).
+ * If the browser has no Authorization header, returns a tiny page that re-opens this URL with
+ * ?authToken= from localStorage (same pattern as other auth flows).
+ */
+app.get('/getpro', (req, res) => {
+  try {
+    if (!proPassKey) {
+      return res.status(503).type('text/plain').send('Not configured');
+    }
+    const keyParam = typeof req.query.key === 'string' ? req.query.key.trim() : '';
+    if (!keyParam || !proPassKeysMatch(keyParam, proPassKey)) {
+      return res.status(404).type('text/plain').send('Not found');
+    }
+    const user = getAuthUserFromRequest(req);
+    if (!user) {
+      const html =
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stagify+</title></head><body>' +
+        '<p id="m">Checking sign-in…</p><script>' +
+        '(function(){var k=' +
+        JSON.stringify(keyParam) +
+        ';try{var t=localStorage.getItem("stagifyAuthToken");if(t){var u=new URL(location.pathname,location.origin);u.searchParams.set("key",k);u.searchParams.set("authToken",t);location.replace(u.toString());return;}}catch(e){}' +
+        'document.getElementById("m").textContent="Sign in on this site first, then open this link again.";' +
+        '})();</script></body></html>';
+      return res.type('html').send(html);
+    }
+    const result = authStore.grantProWithPass(user.id);
+    if (!result.ok) {
+      return res.status(400).type('text/plain').send(result.error || 'Failed');
+    }
+    console.log('[getpro] granted pro for user', user.id);
+    const okHtml =
+      '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stagify+</title></head><body>' +
+      '<p>Your account now has <strong>Stagify+</strong>.</p><p><a href="/">Home</a> · <a href="/stagify-plus.html">Stagify+</a></p>' +
+      '<script>try{history.replaceState({}, "", "/");}catch(e){}</script></body></html>';
+    return res.type('html').send(okHtml);
+  } catch (e) {
+    console.error('[getpro]', e);
+    return res.status(500).type('text/plain').send('Error');
+  }
 });
 
 // Configure multer for file uploads (images)

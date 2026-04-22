@@ -433,6 +433,19 @@ export function createAuthStore(baseDir) {
     return { ok: true, userId: user.id, plan: user.plan };
   }
 
+  /** One-off pro grant via secret URL (see /getpro + propass.txt). Does not set Stripe ids. */
+  function grantProWithPass(userId) {
+    const store = read();
+    const user = store.users.find((u) => u.id === userId);
+    if (!user) {
+      return { ok: false, error: 'User not found' };
+    }
+    user.plan = 'pro';
+    user.proPassGrantedAt = new Date().toISOString();
+    write(store);
+    return { ok: true, user: publicUser(user) };
+  }
+
   return {
     register,
     login,
@@ -447,6 +460,7 @@ export function createAuthStore(baseDir) {
     findUserByEmail,
     pruneSessions,
     activateProFromStripeCheckout,
+    grantProWithPass,
     applyStripeSubscriptionState,
     startPasswordReset,
     completePasswordReset,
