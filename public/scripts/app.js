@@ -174,7 +174,7 @@
     }
 
     function messageForDailyLimitResponse(errorData) {
-      const lim = errorData.dailyGenerationLimit != null ? errorData.dailyGenerationLimit : 5;
+      const lim = errorData.dailyGenerationLimit != null ? errorData.dailyGenerationLimit : 3;
       const used = errorData.dailyGenerationsUsed != null ? errorData.dailyGenerationsUsed : lim;
       const hasAccount = !!(window.StagifyAuth && window.StagifyAuth.getToken());
       const key = hasAccount ? 'errors.dailyLimitFree' : 'errors.dailyLimitAnonymous';
@@ -647,7 +647,7 @@
       const uEarly = window.StagifyAuth && window.StagifyAuth.user;
       const tokEarly = window.StagifyAuth && window.StagifyAuth.getToken();
       if (tokEarly && uEarly && uEarly.plan === 'free') {
-        const limEarly = uEarly.dailyGenerationLimit != null ? uEarly.dailyGenerationLimit : 5;
+        const limEarly = uEarly.dailyGenerationLimit != null ? uEarly.dailyGenerationLimit : 3;
         const usedEarly = uEarly.dailyGenerationsUsed != null ? uEarly.dailyGenerationsUsed : 0;
         if (typeof limEarly === 'number' && usedEarly >= limEarly) {
           const msgEarly = messageForDailyLimitResponse({

@@ -3,6 +3,9 @@
   var authModeRegister = true;
   var authFlowForgot = false;
   var dropdownOpen = false;
+  var GOOGLE_AUTH_INITIALIZED = false;
+  var googleOAuthConfig = { loaded: false, clientId: '' };
+  var googleSignInFetchInFlight = false;
   /** Stripe Customer Portal login (Dashboard → Customer portal → link). */
   var STRIPE_CUSTOMER_PORTAL_LOGIN =
     'https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00';
@@ -29,6 +32,10 @@
       '<div class="auth-field" id="auth-password-confirm-row"><label for="auth-password-confirm">Confirm password</label>' +
       '<input type="password" id="auth-password-confirm" name="passwordConfirm" autocomplete="new-password" minlength="8" placeholder="Re-enter password"></div>' +
       '<div class="auth-actions"><button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label">Create account</strong></button></div>' +
+      '<div id="auth-google-panel" class="auth-google-panel hidden" aria-hidden="true">' +
+      '<p class="auth-divider"><span>or</span></p>' +
+      '<div id="auth-google-btn-container" class="auth-google-btn-container"></div>' +
+      '</div>' +
       '<button type="button" class="auth-forgot-link" id="auth-forgot-link">Forgot your password?</button>' +
       '</div>' +
       '<div id="auth-forgot-panel" class="hidden">' +
@@ -68,6 +75,149 @@
         fb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
       }
     }
+    updateGooglePanelVisibility();
+  }
+
+  function updateGooglePanelVisibility() {
+    var gp = document.getElementById('auth-google-panel');
+    if (!gp) return;
+    var show =
+      googleOAuthConfig.loaded &&
+      googleOAuthConfig.clientId &&
+      !(authFlowForgot && !authModeRegister);
+    if (show) {
+      gp.classList.remove('hidden');
+      gp.setAttribute('aria-hidden', 'false');
+    } else {
+      gp.classList.add('hidden');
+      gp.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function handleGoogleCredential(response) {
+    var errEl = document.getElementById('auth-error');
+    if (!response || !response.credential) {
+      if (errEl) errEl.textContent = 'Google sign-in was cancelled.';
+      return;
+    }
+    if (errEl) errEl.textContent = '';
+    fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential }),
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          return { ok: r.ok, data: data };
+        });
+      })
+      .then(function (result) {
+        if (!result.ok) {
+          if (errEl) errEl.textContent = (result.data && result.data.error) || 'Google sign-in failed';
+          return;
+        }
+        var data = result.data;
+        window.StagifyAuth.setToken(data.token);
+        window.StagifyAuth.user = data.user;
+        window.StagifyAuth.applyUserToUI();
+        closeAuthModal();
+        if (window.__stagifyPendingStaging) {
+          window.__stagifyPendingStaging = false;
+          var stageModal = document.getElementById('stage-modal');
+          if (stageModal) stageModal.classList.remove('hidden');
+        }
+        refresh();
+      })
+      .catch(function () {
+        if (errEl) errEl.textContent = 'Network error. Please try again.';
+      });
+  }
+
+  function initGoogleButtonWhenReady() {
+    var clientId = googleOAuthConfig.clientId;
+    if (!clientId || !window.google || !google.accounts || !google.accounts.id) return;
+    var container = document.getElementById('auth-google-btn-container');
+    if (!container) return;
+    google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleCredential,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+    });
+    container.innerHTML = '';
+    var dialog = document.querySelector('.auth-modal__dialog');
+    var maxW = dialog ? Math.min(320, dialog.clientWidth - 48) : 280;
+    var btnW = Math.max(240, maxW);
+    google.accounts.id.renderButton(container, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'large',
+      text: 'continue_with',
+      width: btnW,
+    });
+    GOOGLE_AUTH_INITIALIZED = true;
+    updateGooglePanelVisibility();
+  }
+
+  function tryInitGoogleSignIn() {
+    if (GOOGLE_AUTH_INITIALIZED) {
+      updateGooglePanelVisibility();
+      return;
+    }
+    if (googleOAuthConfig.loaded) {
+      if (
+        googleOAuthConfig.clientId &&
+        window.google &&
+        google.accounts &&
+        google.accounts.id &&
+        !GOOGLE_AUTH_INITIALIZED
+      ) {
+        initGoogleButtonWhenReady();
+      } else {
+        updateGooglePanelVisibility();
+      }
+      return;
+    }
+    if (googleSignInFetchInFlight) return;
+    googleSignInFetchInFlight = true;
+    fetch('/api/auth/config')
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (cfg) {
+        googleOAuthConfig.loaded = true;
+        googleOAuthConfig.clientId = (cfg && cfg.googleClientId) || '';
+        if (!googleOAuthConfig.clientId) {
+          updateGooglePanelVisibility();
+          return;
+        }
+        var existing = document.querySelector('script[data-stagify-google-gsi]');
+        if (existing) {
+          initGoogleButtonWhenReady();
+          return;
+        }
+        var s = document.createElement('script');
+        s.src = 'https://accounts.google.com/gsi/client';
+        s.async = true;
+        s.defer = true;
+        s.setAttribute('data-stagify-google-gsi', '1');
+        s.onload = function () {
+          initGoogleButtonWhenReady();
+        };
+        s.onerror = function () {
+          googleOAuthConfig.clientId = '';
+          updateGooglePanelVisibility();
+        };
+        document.head.appendChild(s);
+      })
+      .catch(function () {
+        googleOAuthConfig.loaded = true;
+        googleOAuthConfig.clientId = '';
+        updateGooglePanelVisibility();
+      })
+      .finally(function () {
+        googleSignInFetchInFlight = false;
+      });
   }
 
   function syncAuthFormMode() {
@@ -84,7 +234,7 @@
     var passInput = document.getElementById('auth-password');
     if (authModeRegister) {
       if (title) title.textContent = 'Create your free account';
-      if (sub) sub.textContent = 'Sign up to upload and stage images. Free plan includes 5 staging runs per day.';
+      if (sub) sub.textContent = 'Sign up to upload and stage images. Free plan includes 3 staging runs per day.';
       if (submitLabel) submitLabel.textContent = 'Create account';
       if (toggleLabel) toggleLabel.textContent = 'Already have an account?';
       if (toggleBtn) toggleBtn.textContent = 'Sign in';
@@ -132,6 +282,7 @@
     m.classList.remove('hidden');
     m.setAttribute('aria-hidden', 'false');
     syncAuthFormMode();
+    tryInitGoogleSignIn();
     closeDropdown();
   }
 
@@ -268,6 +419,7 @@
         }
       });
     }
+    tryInitGoogleSignIn();
   }
 
   function closeDropdown() {
@@ -332,7 +484,7 @@
           '</a>' +
           '</div>';
       } else {
-        var lim = u.dailyGenerationLimit != null ? u.dailyGenerationLimit : 5;
+        var lim = u.dailyGenerationLimit != null ? u.dailyGenerationLimit : 3;
         var used = u.dailyGenerationsUsed != null ? u.dailyGenerationsUsed : 0;
         planLine = '<div class="profile-menu__plan">Free · ' + used + '/' + lim + ' staging today</div>';
       }
