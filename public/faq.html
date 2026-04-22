@@ -66,6 +66,7 @@
     <link rel="stylesheet" href="styles/auth.css">
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script src="scripts/language-loader.js" defer></script>
+    <script src="scripts/nav-about.js" defer></script>
     <script src="scripts/auth.js" defer></script>
     <script src="scripts/profile-menu.js" defer></script>
     <script defer src="scripts/app.js"></script>
@@ -90,11 +91,14 @@
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
           <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
-          <a href="why.html#why" class="nav-link" data-lang="navigation.whyUs">Why Us?</a>
-          <a href="faq.html#faq" class="nav-link" data-lang="navigation.faq">FAQ</a>
-          <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
-        </div>
-        <div class="nav-trailing">
+          <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown__trigger" id="nav-about-trigger" aria-expanded="false" aria-haspopup="true" aria-controls="nav-about-panel" data-lang="navigation.about">About</button>
+            <div class="nav-dropdown__panel" id="nav-about-panel" role="menu">
+              <a href="why.html#why" class="nav-dropdown__link" role="menuitem" data-lang="navigation.whyUs">Why Us?</a>
+              <a href="faq.html#faq" class="nav-dropdown__link" role="menuitem" data-lang="navigation.faq">FAQ</a>
+              <a href="contact.html#contact" class="nav-dropdown__link" role="menuitem" data-lang="navigation.contactUs">Contact Us</a>
+            </div>
+          </div>
           <div class="profile-menu-wrap">
             <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
               <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -104,6 +108,8 @@
             </button>
             <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
           </div>
+        </div>
+        <div class="nav-trailing">
           <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
             <div data-lang="hero.title.upload">Upload.</div>
             <div data-lang="hero.title.stage">Stage.</div>
