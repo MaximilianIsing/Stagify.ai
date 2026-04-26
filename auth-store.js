@@ -465,5 +465,7 @@ export function createAuthStore(baseDir) {
     startPasswordReset,
     completePasswordReset,
     FREE_DAILY_LIMIT,
+    /** Absolute path to persisted JSON (for admin download endpoint). */
+    getStoreFilePath: () => filePath,
   };
 }

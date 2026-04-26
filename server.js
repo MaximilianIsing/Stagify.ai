@@ -2780,6 +2780,29 @@ function protectLogs(req, res, next) {
   }
 }
 
+// Auth store JSON (users, sessions, etc.) — same access key as log exports
+app.get('/authstore', protectLogs, (req, res) => {
+  try {
+    const storePath = authStore.getStoreFilePath();
+    if (fs.existsSync(storePath)) {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Content-Disposition', 'inline; filename="auth-store.json"');
+      res.sendFile(path.resolve(storePath));
+    } else {
+      res.status(404).json({
+        error: 'Auth store file not found',
+        message: 'The auth store has not been created yet on this server.',
+      });
+    }
+  } catch (error) {
+    console.error('Error serving auth store file:', error);
+    res.status(500).json({
+      error: 'Failed to retrieve auth store',
+      message: error.message,
+    });
+  }
+});
+
 // Prompt logs endpoint - serves the prompt logs CSV file (protected)
 app.get('/promptlogs', protectLogs, (req, res) => {
   try {

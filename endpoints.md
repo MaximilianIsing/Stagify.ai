@@ -1,380 +1,134 @@
-# API Endpoints Documentation
+# Stagify API & server routes
 
-This document describes all available endpoints in the Stagify.ai server.
+This document describes HTTP endpoints registered in `server.js`. Static files are also served from `public/` (not every path is listed here). Default port: **`process.env.PORT` or `3000`**.
 
-## Table of Contents
-- [Public Endpoints](#public-endpoints)
-- [API Endpoints](#api-endpoints)
-- [Protected Log Endpoints](#protected-log-endpoints)
+## Authentication helpers (used by several routes)
 
----
+- **Bearer session:** `Authorization: Bearer <token>` (JWT/session token from `authToken` in login/register responses).
+- **Token in body:** `authToken` in JSON or multipart field (e.g. staging).
+- **Token in query:** `?authToken=...` (used by some browser flows and `/getpro`).
 
-## Public Endpoints
+**`getAuthUserFromRequest`:** loads the user from a valid session token (header, body, or query).
 
-### `GET /`
-**Description**: Serves the main homepage (index.html)
-
-**Response**: HTML file
+**`requireProAccount`:** requires a signed-in user with `plan === 'pro'`; otherwise `401` (`AUTH_REQUIRED`) or `403` (`PRO_REQUIRED`).
 
 ---
 
-### `GET /robots.txt`
-**Description**: Serves the robots.txt file for search engine crawlers
+## Public pages & SEO (no API key)
 
-**Response**: Text file
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/` | Serves `public/index.html`. |
+| `GET` | `/robots.txt` | Serves `public/robots.txt`. |
+| `GET` | `/sitemap.xml` | Serves `public/sitemap.xml`. |
 
----
-
-### `GET /sitemap.xml`
-**Description**: Serves the sitemap.xml file for search engines
-
-**Response**: XML file
+Other `.html` and assets are served by **`express.static('public')`** (e.g. `/stagify-plus.html`, `/ai-designer.html`).
 
 ---
 
-## API Endpoints
+## Stagify+ pass link
 
-### `POST /api/process-image`
-**Description**: Processes an uploaded image for room staging using AI
-
-**Request**:
-- Method: `POST`
-- Content-Type: `multipart/form-data`
-- Body:
-  - `image` (file): Image file to process
-  - `roomType` (string, optional): Type of room (default: "Living room")
-  - `furnitureStyle` (string, optional): Style of furniture (default: "standard")
-  - `additionalPrompt` (string, optional): Additional styling instructions
-  - `removeFurniture` (boolean, optional): Whether to remove existing furniture (default: false)
-  - `userRole` (string, optional): User's role (default: "unknown")
-  - `userReferralSource` (string, optional): Referral source (default: "unknown")
-  - `userEmail` (string, optional): User's email (default: "unknown")
-  - `model` (string, optional): GPT model to use (default: "gpt-4o-mini")
-
-**Response**:
-- Success (200): JSON with processed image data
-- Error (400/500): JSON error object
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/getpro` | **Query:** `key` — must match the secret in `propass.txt` (or `STAGIFY_PRO_PASS_KEY`) using a constant-time hash compare. **If not configured:** `503` plain text. **If wrong key:** `404` plain text. **If no valid session:** HTML page that can retry with `authToken` from `localStorage`. **If valid session:** grants Stagify+ to that user and returns success HTML. Optional: `authToken` in query for the same client used elsewhere. |
 
 ---
 
-### `POST /api/log-contact`
-**Description**: Logs contact information to CSV file
+## Billing (Stripe)
 
-**Request**:
-- Method: `POST`
-- Content-Type: `application/json`
-- Body:
-  ```json
-  {
-    "userRole": "string (optional, default: 'unknown')",
-    "referralSource": "string (optional, default: 'unknown')",
-    "email": "string (optional, default: 'unknown')",
-    "userAgent": "string (optional, default: 'unknown')"
-  }
-  ```
-
-**Response**:
-- Success (200): `{ "success": true, "message": "Contact logged successfully" }`
-- Error (500): `{ "success": false, "message": "Failed to log contact" }`
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/billing/stripe-webhook` | **Body:** raw JSON (must **not** go through `express.json()`; uses `express.raw`). **Header:** `stripe-signature` for verification. If Stripe is not configured: `503`. Forwards to internal `handleStripeEvent` (subscription lifecycle, etc.). Responds `{ received: true }` on success. |
+| `POST` | `/api/billing/customer-portal` | **Auth:** signed-in user with a Stripe customer id. **Body:** JSON (can be empty). Returns `{ url }` to Stripe Billing Portal, or `503` if Stripe off, `401` if not signed in, `400` if no `stripeCustomerId` on the user. |
 
 ---
 
-### `GET /api/health`
-**Description**: Health check endpoint
+## Auth
 
-**Response**:
-```json
-{
-  "status": "healthy",
-  "timestamp": "ISO timestamp",
-  "aiConfigured": true/false
-}
-```
-
----
-
-### `GET /api/prompt-count`
-**Description**: Returns the current count of processed prompts
-
-**Response**:
-```json
-{
-  "promptCount": 1234
-}
-```
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/auth/register` | **Body:** `{ email, password }`. Creates a free-tier account. Returns `{ success, token, user }` or `400` with `error`. |
+| `POST` | `/api/auth/login` | **Body:** `{ email, password }`. Returns `{ success, token, user }` or `401`. |
+| `GET` | `/api/auth/config` | Public. Returns `{ googleClientId: string | null }` for Google Sign-In. |
+| `POST` | `/api/auth/google` | **Body:** `{ credential }` (Google ID token). Returns `{ success, token, user }` or `4xx/503` if not configured or invalid. |
+| `GET` | `/api/auth/me` | **Auth:** valid session. Returns `{ user }` (public user shape, including `dailyGenerationsUsed` / `dailyGenerationLimit` for free tier). `401` if not signed in (`AUTH_REQUIRED`). |
+| `POST` | `/api/auth/logout` | **Body (optional):** `authToken`. **Or** `Authorization: Bearer` token. Invalidates the session. Returns `{ success: true }`. |
+| `POST` | `/api/auth/forgot-password` | **Body:** `{ email }`. If account exists and email is configured, sends reset link; various `{ ok, emailSent, message }` or `503/502` if email not configured. |
+| `POST` | `/api/auth/reset-password` | **Body:** `{ token, password }`. Completes reset. Returns `{ ok: true }` or `400`. |
 
 ---
 
-### `GET /api/contact-count`
-**Description**: Returns the current count of logged contacts
+## Virtual staging (image)
 
-**Response**:
-```json
-{
-  "contactCount": 567
-}
-```
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/process-image` | **Multipart** staging upload (`stagingProcessUpload`). **File:** at least `image` (see multer field names in server). **Typical body fields** (strings): `roomType`, `furnitureStyle`, `additionalPrompt`, `removeFurniture`, `userRole`, `userReferralSource`, `userEmail`, and for pro: `model`, `variationCount`, `furnitureImage` (repeat), `authToken`. **Rules:** (1) Signed-in user: enforces per-account daily free limit for non-pro; on success, may return `user` with updated usage. (2) **Not signed in:** only **mobile** user-agents can use a per-**IP** daily cap (no session); desktop browsers get `401` with `AUTH_REQUIRED`. **Errors:** `429` with `DAILY_LIMIT` + `dailyGenerationsUsed` / `dailyGenerationLimit`, `500` if AI not configured, etc. **Success:** `image` or `images` plus `success: true` and often `user` after consumption. |
 
 ---
 
-### `GET /api/welcome-message`
-**Description**: Generates a personalized welcome message for users based on their stored memories
+## Contact, email, and public counters
 
-**Request**:
-- Query Parameters:
-  - `userId` (string, optional): User identifier
-
-**Response**:
-```json
-{
-  "message": "Welcome message text",
-  "isReturning": true/false
-}
-```
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/log-contact` | **Body:** JSON with `userRole`, `referralSource`, `email`, `userAgent` (and similar). Appends a row to `contact_logs.csv` and bumps an in-memory contact counter. Returns `{ success: true }`. |
+| `POST` | `/api/send-email` | **Protected by server access key:** query `?key=` or `body.key` must match `endpointkey.txt` or `process.env.endpoint_key` (`LOGS_ACCESS_KEY`). **Body:** `to`, `subject`, `text` (Resend). Returns `403` if key wrong, `500` if no Resend, etc. |
+| `GET` | `/api/health` | **Public.** `{ status, timestamp, aiConfigured: boolean }` (and similar). |
+| `GET` | `/api/prompt-count` | Returns `{ promptCount }` (server-side counter, used for hero “Rooms staged” type stats). |
+| `GET` | `/api/contact-count` | Returns `{ contactCount }` (in-memory + startup initialization). |
 
 ---
 
-### `POST /api/chat`
-**Description**: Main chat endpoint for AI conversations (text-only messages)
+## PDF (AI Designer proxy)
 
-**Request**:
-- Method: `POST`
-- Content-Type: `application/json`
-- Body:
-  ```json
-  {
-    "messages": [
-      {
-        "role": "user" | "assistant",
-        "content": "string or array of content objects"
-      }
-    ],
-    "model": "string (optional, default: 'gpt-4o-mini')",
-    "messageTag": "string (optional: 'auto' | 'generate' | 'stage' | 'cad-stage' | 'describe')"
-  }
-  ```
-
-**Response**:
-- Success (200): JSON with AI response and any actions (staging, generation, etc.)
-- Error (400/500): JSON error object
-
-**Note**: Supports conversation history, memory management, image context, and various AI actions (staging, generation, CAD-staging, image requests, recall).
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/pdf-health` | Proxies to external `PDF_PROCESSING_SERVER` `GET /health`, returns that JSON or `500` on failure. |
+| `POST` | `/api/process-pdf` | **Auth:** **`requireProAccount`** (Stagify+). **Body:** `multipart/form-data` with file field `pdf`. **Query:** e.g. `skip`, `concurrency`, `dpi`, `continue`, `merge`, `filename`. Proxies to the external PDF pipeline and streams the result (often a PDF download). |
 
 ---
 
-### `POST /api/chat-upload`
-**Description**: Chat endpoint for messages with file uploads
+## AI Designer (chat, welcome, files)
 
-**Request**:
-- Method: `POST`
-- Content-Type: `multipart/form-data`
-- Body:
-  - `files` (file[]): Array of files (up to 10 files)
-  - `message` (string, optional): Text message
-  - `conversationHistory` (string, optional): JSON string of conversation history
-  - `model` (string, optional): GPT model to use
-  - `messageTag` (string, optional): Message tag for context
-
-**Response**:
-- Success (200): JSON with AI response and any actions
-- Error (400/500): JSON error object
-
-**Supported File Types**: Images (JPEG, JPG, PNG, WebP, GIF), PDFs, text files
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/welcome-message` | **Auth:** **`requireProAccount`**. **Query (optional):** `userId`. Returns `{ message, isReturning }` for the AI Designer welcome, using optional stored “memories”. |
+| `POST` | `/api/chat` | **Auth:** **`requireProAccount`**. **Body:** JSON with `messages` (OpenAI-style array), optional `model`, `messageTag`. Long-running: staging/CAD/generation inside JSON tool contract. Respects user message limits (e.g. 20 user messages) and may return `contextLimitReached`. |
+| `POST` | `/api/chat-upload` | **Auth:** **`requireProAccount`**. **Multipart:** up to 10 files in field `files`, plus form fields (e.g. `conversationHistory`, `messageTag`). AI Designer flow with file attachments. Large implementation in `server.js`. |
 
 ---
 
-### `POST /api/bug-report`
-**Description**: Submits a bug report
+## Bug reports and mask edit
 
-**Request**:
-- Method: `POST`
-- Content-Type: `application/json`
-- Body:
-  ```json
-  {
-    "description": "string (required)",
-    "steps": "string (optional)",
-    "email": "string (optional)",
-    "userId": "string (optional)",
-    "userAgent": "string (optional)",
-    "url": "string (optional)",
-    "timestamp": "string (optional, ISO format)",
-    "conversationHistory": "array (optional)"
-  }
-  ```
-
-**Response**:
-- Success (200): `{ "success": true, "message": "Bug report submitted successfully" }`
-- Error (400/500): JSON error object
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/bug-report` | **Body:** `description` (required), and optional `steps`, `email`, `userId`, `userAgent`, `url`, `timestamp`, `conversationHistory`. Appends to `bug_reports.csv`. |
+| `POST` | `/api/mask-edit` | **Auth:** **`requireProAccount`**. **Body (JSON):** `image` and `mask` as data URLs, `prompt`, optional `model`. Uses Gemini for region edit; returns `{ success, editedImage }` (data URL) or `500` errors. |
 
 ---
 
-## Protected Log Endpoints
+## Log download / admin (query key)
 
-All protected endpoints require authentication via query parameter: `?key=YOUR_ACCESS_KEY`
+These routes use **`protectLogs`**: a shared secret `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`. **Query:** `?key=<LOGS_ACCESS_KEY>`. If missing/invalid: **`403`**.
 
-The access key is stored in `endpointkey.txt` (local) or `process.env.endpoint_key` (production).
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/authstore` | Download `auth-store.json` (users, session tokens, password hashes, Stripe ids, etc.). **Highly sensitive** — same `?key=` as other admin exports. `404` if the file has not been created yet. On disk: `data/auth-store.json` (or `/data/auth-store.json` on Render). |
+| `GET` | `/promptlogs` | Download `prompt_logs.csv` (or `404` if missing). |
+| `GET` | `/contactlogs` | Download `contact_logs.csv`. |
+| `GET` | `/chatlogs` | Download `chat_logs.csv`. |
+| `GET` | `/bugreports` | Download `bug_reports.csv`. |
+| `GET` | `/masklogs` | Download `mask_logs.csv`. |
+| `GET` | `/memories` | Download AI Designer `memories` JSON. |
+| `GET` | `/resetmemories` | **Clears** the memories file (all users). Returns JSON success. |
 
----
-
-### `GET /promptlogs?key=YOUR_KEY`
-**Description**: Retrieves the prompt logs CSV file
-
-**Authentication**: Required via `key` query parameter
-
-**Response**:
-- Success (200): CSV file (`prompt_logs.csv`)
-- Error (403): Access denied
-- Error (404): File not found
-
-**CSV Columns**: `timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress`
-
----
-
-### `GET /contactlogs?key=YOUR_KEY`
-**Description**: Retrieves the contact logs CSV file
-
-**Authentication**: Required via `key` query parameter
-
-**Response**:
-- Success (200): CSV file (`contact_logs.csv`)
-- Error (403): Access denied
-- Error (404): File not found
-
-**CSV Columns**: `timestamp,userRole,referralSource,email,userAgent,ipAddress`
-
----
-
-### `GET /memories?key=YOUR_KEY`
-**Description**: Retrieves the memories JSON file
-
-**Authentication**: Required via `key` query parameter
-
-**Response**:
-- Success (200): JSON file (`memories.json`)
-- Error (403): Access denied
-- Error (404): File not found
-
-**Format**: JSON object with user IDs as keys and arrays of memory objects as values
-
----
-
-### `GET /resetmemories?key=YOUR_KEY`
-**Description**: Resets all memories by emptying the memories JSON file
-
-**Authentication**: Required via `key` query parameter
-
-**Request**: 
-- Method: `GET`
-- No body required
-
-**Response**:
-- Success (200): `{ "success": true, "message": "All memories have been reset successfully" }`
-- Error (403): Access denied
-- Error (500): Server error
-
-**Note**: This endpoint permanently deletes all stored memories for all users. Use with caution.
-
----
-
-### `GET /chatlogs?key=YOUR_KEY`
-**Description**: Retrieves the chat logs CSV file
-
-**Authentication**: Required via `key` query parameter
-
-**Response**:
-- Success (200): CSV file (`chat_logs.csv`)
-- Error (403): Access denied
-- Error (404): File not found
-
-**CSV Columns**: `timestamp,userId,userMessage,aiResponse,fileNames,fileTypes,ipAddress,userAgent`
-
----
-
-### `GET /bugreports?key=YOUR_KEY` 
-**Description**: Retrieves the bug reports CSV file
-
-**Authentication**: Required via `key` query parameter
-
-**Response**:
-- Success (200): CSV file (`bug_reports.csv`)
-- Error (403): Access denied
-- Error (404): File not found
-
-**CSV Columns**: `timestamp,description,stepsToReproduce,email,userId,userAgent,url,ipAddress,conversationHistory`
-
----
-
-### `GET /masklogs?key=YOUR_KEY`
-**Description**: Retrieves the mask edit logs CSV file
-
-**Authentication**: Required via `key` query parameter
-
-**Response**:
-- Success (200): CSV file (`mask_logs.csv`)
-- Error (403): Access denied
-- Error (404): File not found
-
-**CSV Columns**: `timestamp,prompt,model,geminiModel,imageWidth,imageHeight,userId,ipAddress,userAgent`
-
----
-
-### `POST /api/send-email?key=YOUR_KEY`
-**Description**: Sends an email using the Resend email service
-
-**Authentication**: Required via `key` query parameter (can be in query string or request body)
-
-**Request**:
-- Method: `POST`
-- Content-Type: `application/json`
-- Body:
-  ```json
-  {
-    "key": "string (optional, can also be in query parameter)",
-    "to": "string or array of strings (required)",
-    "subject": "string (required)",
-    "text": "string (required)"
-  }
-  ```
-
-**Response**:
-- Success (200): 
-  ```json
-  {
-    "success": true,
-    "message": "Email sent successfully",
-    "id": "resend_email_id"
-  }
-  ```
-- Error (400): Missing required fields
-- Error (403): Access denied
-- Error (500): Server error or email service not configured
-
-**Requirements**:
-- Resend API key must be configured (via `RESEND_API_KEY` environment variable or `resendkey.txt` file)
-- All fields (`to`, `subject`, `text`) are required
-- Only plain text emails are supported (no HTML)
-
-**Example Request**:
-```json
-{
-  "to": "[email protected]",
-  "subject": "Hello from Stagify",
-  "text": "Hello! This is a plain text email."
-}
-```
-
-**Note**: All emails are sent from `team@stagify.ai`. The sender address cannot be changed. Make sure this email address is verified in your Resend dashboard for the emails to send successfully.
+`POST` `/api/send-email` uses the **same** `LOGS_ACCESS_KEY` (see above), not only for logs.
 
 ---
 
 ## Notes
 
-- All timestamps are in ISO 8601 format
-- File uploads use `multipart/form-data` encoding
-- Protected endpoints require the access key from `endpointkey.txt` or environment variable
-- CSV files are stored in `/data` directory (Render) or `./data` directory (local)
-- JSON files (memories) are stored in the same location
-- The server supports both local development and Render deployment
+- **CORS** is enabled globally.
+- **JSON body limit** is very large (e.g. 50mb) for chat/history; oversized bodies get `400` / `413` with JSON error where configured.
+- **Trust proxy** can be toggled with `TRUST_PROXY` (for real client IPs behind Render/nginx).
 
----
+If you add a route, append it to this file so operators can find auth and query requirements quickly.
