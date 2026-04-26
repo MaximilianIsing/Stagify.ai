@@ -101,6 +101,44 @@
           font-size: 24px !important;
         }
       }
+      /* “and counting…” — same as original inline (navy, 12px italic) */
+      .stats-counting-text {
+        text-align: center;
+        font-style: italic;
+        color: #1e3a8a;
+        font-size: 12px;
+      }
+      .stats-counting-text--under-pills {
+        margin-top: -14px;
+      }
+      /* Stack subtext under the CTA; wrap shrink-wraps to the button so only the line is centered to the button */
+      .hero-cta-button-wrap {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      /* Same color as “and counting”; slightly lighter weight for the hero line */
+      .hero-free-gens-today {
+        width: 100%;
+        box-sizing: border-box;
+        margin: 0.75rem 0 0;
+        text-align: center;
+        font-style: italic;
+        color: #1e3a8a;
+        font-size: 12px;
+        font-weight: 300;
+      }
+      .hero-free-gens-today .hero-free-gens-upgrade {
+        color: #1e3a8a;
+        font-style: italic;
+        font-size: 12px;
+        font-weight: 300;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .hero-free-gens-today .hero-free-gens-upgrade:hover {
+        color: #2563eb;
+      }
 
       .variation-slider-head {
         display: flex;
@@ -316,7 +354,10 @@
             <span class="w-click" data-lang="hero.title.click">click</span>
           </h1>
           <div class="hero-ctas">
-            <button id="hero-upload" class="btn btn-primary"><strong data-lang="hero.cta">Upload image for free</strong></button>
+            <div class="hero-cta-button-wrap">
+              <button id="hero-upload" class="btn btn-primary"><strong data-lang="hero.cta">Upload image for free</strong></button>
+              <p id="hero-free-gens-today" class="hero-free-gens-today hidden" aria-live="polite"></p>
+            </div>
           </div>
         </div>
         <div class="hero-media">
@@ -333,7 +374,7 @@
               <span class="stat-pill-text" data-lang="hero.stats.usersServed">Users Served</span>
             </div>
           </div>
-          <div class="stats-counting-text" style="text-align: center; font-style: italic; color: #1e3a8a; margin-top: -14px; font-size: 12px;" data-lang="hero.stats.andCounting">and counting...</div>
+          <div class="stats-counting-text stats-counting-text--under-pills" data-lang="hero.stats.andCounting">and counting...</div>
         </div>
       </section>
 

@@ -488,7 +488,7 @@
       } else {
         var lim = u.dailyGenerationLimit != null ? u.dailyGenerationLimit : 3;
         var used = u.dailyGenerationsUsed != null ? u.dailyGenerationsUsed : 0;
-        planLine = '<div class="profile-menu__plan">Free · ' + used + '/' + lim + ' staging today</div>';
+        planLine = '<div class="profile-menu__plan">Free · ' + used + '/' + lim + ' stagings today</div>';
       }
       var plusRow = '';
       if (u.plan !== 'pro') {

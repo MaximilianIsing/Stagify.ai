@@ -94,6 +94,9 @@
         if (window.StagifyProfileMenu && typeof window.StagifyProfileMenu.refresh === 'function') {
           window.StagifyProfileMenu.refresh();
         }
+        if (typeof window.__stagifyUpdateHeroFreeGensLine === 'function') {
+          window.__stagifyUpdateHeroFreeGensLine();
+        }
         return;
       }
 
@@ -104,6 +107,9 @@
 
       if (window.StagifyProfileMenu && typeof window.StagifyProfileMenu.refresh === 'function') {
         window.StagifyProfileMenu.refresh();
+      }
+      if (typeof window.__stagifyUpdateHeroFreeGensLine === 'function') {
+        window.__stagifyUpdateHeroFreeGensLine();
       }
     },
   };

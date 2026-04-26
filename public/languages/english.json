@@ -29,6 +29,8 @@
       "imagine": "Imagine."
     },
     "cta": "Upload image for free",
+    "freeGensLeft": "{n} free generations left today, ",
+    "freeGensLeftUpgrade": "Upgrade",
     "carouselNote": "Example preview — upload your photo to stage",
     "stats": {
       "roomsStaged": "Rooms Staged",
