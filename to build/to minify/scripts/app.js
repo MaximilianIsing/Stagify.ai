@@ -792,7 +792,49 @@
       };
     }
   })();
-  
+
+  /** Home hero: “{n} free generations left today” + Upgrade link for signed-in free users. */
+  window.__stagifyUpdateHeroFreeGensLine = function () {
+    var el = document.getElementById('hero-free-gens-today');
+    if (!el) return;
+    var auth = window.StagifyAuth;
+    if (!auth || !auth.getToken || !auth.getToken() || !auth.user) {
+      el.classList.add('hidden');
+      return;
+    }
+    var u = auth.user;
+    if (u.plan === 'pro') {
+      el.classList.add('hidden');
+      return;
+    }
+    var lim = u.dailyGenerationLimit != null ? u.dailyGenerationLimit : 3;
+    var used = u.dailyGenerationsUsed != null ? u.dailyGenerationsUsed : 0;
+    var n = Math.max(0, lim - used);
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+    var tpl = window.LanguageSystem && window.LanguageSystem.getText('hero.freeGensLeft');
+    var upLabel =
+      window.LanguageSystem && window.LanguageSystem.getText('hero.freeGensLeftUpgrade');
+    if (upLabel === 'Loading...' || !upLabel) upLabel = 'Upgrade';
+    if (tpl && tpl !== 'Loading...' && tpl.indexOf('{n}') !== -1) {
+      var before = escHtml(tpl.replace(/\{n\}/g, String(n)));
+      el.innerHTML =
+        before +
+        '<a class="hero-free-gens-upgrade" href="stagify-plus.html">' +
+        escHtml(upLabel) +
+        '</a>';
+    } else {
+      el.innerHTML =
+        escHtml(n + ' free generations left today, ') +
+        '<a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a>';
+    }
+    el.classList.remove('hidden');
+  };
   
   
   // Initialize on page load (all pages)
@@ -804,6 +846,19 @@
     
     // Initialize 3D tilt effect for advantages section and contact cards
     init3DTiltEffect();
+
+    if (window.LanguageSystem && typeof window.LanguageSystem.applyLanguageToElements === 'function') {
+      var _origStagifyApplyLang = window.LanguageSystem.applyLanguageToElements;
+      window.LanguageSystem.applyLanguageToElements = function () {
+        _origStagifyApplyLang.call(window.LanguageSystem);
+        if (typeof window.__stagifyUpdateHeroFreeGensLine === 'function') {
+          window.__stagifyUpdateHeroFreeGensLine();
+        }
+      };
+    }
+    if (typeof window.__stagifyUpdateHeroFreeGensLine === 'function') {
+      window.__stagifyUpdateHeroFreeGensLine();
+    }
   });
   
   // Load and display prompt count from server
