@@ -29,6 +29,8 @@
       "imagine": "Imagina."
     },
     "cta": "Suba su imagen gratiz",
+    "freeGensLeft": "{n} generaciones gratis restantes hoy, ",
+    "freeGensLeftUpgrade": "Mejorar",
     "carouselNote": "Ejemplo de vista previa: sube tu foto al scenario",
     "stats": {
       "roomsStaged": "Habitaciones Escenificadas",

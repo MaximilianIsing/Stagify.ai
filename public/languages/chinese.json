@@ -29,6 +29,8 @@
       "imagine": "想象。"
     },
     "cta": "免费上传图片",
+    "freeGensLeft": "今日还可免费生成 {n} 次，",
+    "freeGensLeftUpgrade": "升级",
     "carouselNote": "示例预览 — 上传您的照片进行装修",
     "stats": {
       "roomsStaged": "已装修房间",
