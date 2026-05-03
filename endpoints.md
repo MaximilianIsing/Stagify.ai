@@ -63,6 +63,20 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/api/process-image` | **Multipart** staging upload (`stagingProcessUpload`). **File:** at least `image` (see multer field names in server). **Typical body fields** (strings): `roomType`, `furnitureStyle`, `additionalPrompt`, `removeFurniture`, `userRole`, `userReferralSource`, `userEmail`, and for pro: `model`, `variationCount`, `furnitureImage` (repeat), `authToken`. **Rules:** (1) Signed-in user: enforces per-account daily free limit for non-pro; on success, may return `user` with updated usage. (2) **Not signed in:** only **mobile** user-agents can use a per-**IP** daily cap (no session); desktop browsers get `401` with `AUTH_REQUIRED`. **Errors:** `429` with `DAILY_LIMIT` + `dailyGenerationsUsed` / `dailyGenerationLimit`, `500` if AI not configured, etc. **Success:** `image` or `images` plus `success: true` and often `user` after consumption. |
+| `POST` | `/api/stage-by-endpoint-key` | **Server integration staging** — same multipart shape as `/api/process-image`, but **no user session**. **Auth:** `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`, passed as **`?key=`** on the request URL **or** header **`X-Stagify-Endpoint-Key`**. Same secret as log CSV exports and `/api/send-email` — **highly sensitive**; treat like a root credential. **Behavior:** Staging runs with **Stagify+-level options** (`model` `gpt-4o-mini` \| `gpt-5-mini`, `variationCount` 1–3, up to three `furnitureImage` files). **Does not** increment per-user or per-IP free-tier daily counters. **Success:** same JSON as process-image (`image` / `images`, `user` is `null`). **`403`** if key missing/wrong, **`500`** if key not configured on server. |
+
+**`POST /api/stage-by-endpoint-key` field reference (multipart):**
+
+| Field | Notes |
+|--------|--------|
+| `image` | **Required.** One JPEG/JPG/PNG/WebP, same as public staging. |
+| `roomType`, `furnitureStyle`, `additionalPrompt`, `removeFurniture` | Same defaults and meaning as `/api/process-image`. |
+| `userRole`, `userReferralSource`, `userEmail` | Optional analytics strings (default `unknown`). |
+| `model` | `gpt-4o-mini` or `gpt-5-mini` (invalid values fall back to `gpt-4o-mini`). |
+| `variationCount` | String or number `1`–`3`. |
+| `furnitureImage` | Up to **3** files (same as Stagify+). |
+
+Example URL: `POST https://your-host/api/stage-by-endpoint-key?key=YOUR_SECRET` with `multipart/form-data` body (do not put the secret in client-side browser code).
 
 ---
 
@@ -108,7 +122,7 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 
 ## Log download / admin (query key)
 
-These routes use **`protectLogs`**: a shared secret `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`. **Query:** `?key=<LOGS_ACCESS_KEY>`. If missing/invalid: **`403`**.
+These routes use **`protectLogs`**: a shared secret `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`. **Query:** `?key=<LOGS_ACCESS_KEY>`. If missing/invalid: **`403`**. The same secret authenticates **`POST /api/stage-by-endpoint-key`** (query `key` or header `X-Stagify-Endpoint-Key`) and **`POST /api/send-email`**.
 
 | Method | Path | Description |
 |--------|------|-------------|

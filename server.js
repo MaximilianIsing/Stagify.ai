@@ -2187,14 +2187,134 @@ app.post('/api/auth/reset-password', express.json(), (req, res) => {
   }
 });
 
+/**
+ * Virtual staging after `stagingProcessUpload` has filled `req.files` / `req.body`.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {{ user: object | null, mobileAnonymous: boolean, clientIp: string, recordUsage: boolean, treatAsPro: boolean }} meta
+ */
+async function handleVirtualStagingMultipart(req, res, meta) {
+  const mainFile = req.files?.image?.[0];
+  if (!mainFile) {
+    return res.status(400).json({ error: 'No image file provided' });
+  }
+
+  if (!genAI) {
+    return res.status(500).json({ error: 'AI service not properly configured' });
+  }
+
+  const user = meta.user;
+  const clientIp = meta.clientIp;
+  const mobileAnonymous = meta.mobileAnonymous;
+
+  const {
+    roomType = 'Living room',
+    furnitureStyle = 'standard',
+    additionalPrompt = '',
+    removeFurniture = false,
+    userRole = 'unknown',
+    userReferralSource = 'unknown',
+    userEmail = 'unknown',
+    model: gptModelRaw,
+    variationCount: variationRaw,
+  } = req.body;
+
+  req.body.userRole = userRole;
+  req.body.userReferralSource = userReferralSource;
+  req.body.userEmail = userEmail;
+  req.body.authenticatedEmail = user
+    ? user.email
+    : mobileAnonymous
+      ? `mobile-ip:${clientIp}`
+      : 'endpoint-key';
+
+  const isPro = meta.treatAsPro || (user && user.plan === 'pro');
+  let selectedModel = gptModelRaw || 'gpt-4o-mini';
+  if (!isPro) {
+    selectedModel = 'gpt-4o-mini';
+  } else if (selectedModel !== 'gpt-5-mini' && selectedModel !== 'gpt-4o-mini') {
+    selectedModel = 'gpt-4o-mini';
+  }
+
+  let variationCount = parseInt(String(variationRaw || '1'), 10);
+  if (Number.isNaN(variationCount)) variationCount = 1;
+  variationCount = Math.min(3, Math.max(1, variationCount));
+  if (!isPro) {
+    variationCount = 1;
+  }
+
+  const furnitureFiles = isPro ? req.files?.furnitureImage : null;
+  const furnitureBuffers =
+    Array.isArray(furnitureFiles) && furnitureFiles.length > 0
+      ? furnitureFiles.slice(0, 3).map((f) => f.buffer).filter(Boolean)
+      : null;
+
+  const removeBool =
+    removeFurniture === true ||
+    removeFurniture === 'true' ||
+    removeFurniture === 'on';
+
+  const stagingParamsBase = {
+    roomType,
+    furnitureStyle,
+    additionalPrompt,
+    removeFurniture: removeBool,
+  };
+
+  const geminiModel = getGeminiImageModel(selectedModel);
+  const images = [];
+
+  for (let v = 0; v < variationCount; v++) {
+    let extra = additionalPrompt || '';
+    if (v > 0) {
+      extra += `\n\n(Subtle variation ${v + 1} of ${variationCount}: keep architecture identical to the source—same walls, windows, doors, ceiling, floor, and room geometry. Change only virtual staging: slightly different furniture arrangement, decor, accents, textiles, or art. Same overall furniture style and mood as the main request; do not redesign the room.)`;
+    }
+    const stagingParams = {
+      ...stagingParamsBase,
+      additionalPrompt: extra.trim(),
+    };
+
+    const stagedImage = await processStaging(
+      mainFile.buffer,
+      stagingParams,
+      req,
+      furnitureBuffers && furnitureBuffers.length ? furnitureBuffers : null,
+      geminiModel
+    );
+    images.push(stagedImage);
+    promptCount++;
+  }
+
+  if (meta.recordUsage) {
+    if (mobileAnonymous) {
+      authStore.recordMobileIpGeneration(clientIp);
+    } else if (user && user.plan === 'free') {
+      authStore.recordFreeGeneration(user.id);
+    }
+  }
+
+  const updatedUser = user ? authStore.findUserByEmail(user.email) : null;
+  const responseUser =
+    user && updatedUser ? authStore.publicUser(updatedUser) : user ? authStore.publicUser(user) : null;
+
+  if (images.length === 1) {
+    return res.json({
+      success: true,
+      image: images[0],
+      user: responseUser,
+    });
+  }
+  return res.json({
+    success: true,
+    images,
+    image: images[0],
+    user: responseUser,
+  });
+}
+
 // Image processing endpoint: signed-in users (account limits) OR mobile User-Agent without session (free daily cap per IP, UTC)
 app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
   try {
-    const mainFile = req.files?.image?.[0];
-    if (!mainFile) {
-      return res.status(400).json({ error: 'No image file provided' });
-    }
-
     const sessionUser = getAuthUserFromRequest(req);
     const clientIp = getStagingClientIp(req);
     const mobileAnonymous = !sessionUser && isLikelyMobileStagingRequest(req);
@@ -2228,108 +2348,12 @@ app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
       }
     }
 
-    const user = sessionUser;
-
-    if (!genAI) {
-      return res.status(500).json({ error: 'AI service not properly configured' });
-    }
-
-    const {
-      roomType = 'Living room',
-      furnitureStyle = 'standard',
-      additionalPrompt = '',
-      removeFurniture = false,
-      userRole = 'unknown',
-      userReferralSource = 'unknown',
-      userEmail = 'unknown',
-      model: gptModelRaw,
-      variationCount: variationRaw,
-    } = req.body;
-
-    req.body.userRole = userRole;
-    req.body.userReferralSource = userReferralSource;
-    req.body.userEmail = userEmail;
-    req.body.authenticatedEmail = user ? user.email : `mobile-ip:${clientIp}`;
-
-    const isPro = user && user.plan === 'pro';
-    let selectedModel = gptModelRaw || 'gpt-4o-mini';
-    if (!isPro) {
-      selectedModel = 'gpt-4o-mini';
-    } else if (selectedModel !== 'gpt-5-mini' && selectedModel !== 'gpt-4o-mini') {
-      selectedModel = 'gpt-4o-mini';
-    }
-
-    let variationCount = parseInt(String(variationRaw || '1'), 10);
-    if (Number.isNaN(variationCount)) variationCount = 1;
-    variationCount = Math.min(3, Math.max(1, variationCount));
-    if (!isPro) {
-      variationCount = 1;
-    }
-
-    const furnitureFiles = isPro ? req.files?.furnitureImage : null;
-    const furnitureBuffers =
-      Array.isArray(furnitureFiles) && furnitureFiles.length > 0
-        ? furnitureFiles.slice(0, 3).map((f) => f.buffer).filter(Boolean)
-        : null;
-
-    const removeBool =
-      removeFurniture === true ||
-      removeFurniture === 'true' ||
-      removeFurniture === 'on';
-
-    const stagingParamsBase = {
-      roomType,
-      furnitureStyle,
-      additionalPrompt,
-      removeFurniture: removeBool,
-    };
-
-    const geminiModel = getGeminiImageModel(selectedModel);
-    const images = [];
-
-    for (let v = 0; v < variationCount; v++) {
-      let extra = additionalPrompt || '';
-      if (v > 0) {
-        extra += `\n\n(Subtle variation ${v + 1} of ${variationCount}: keep architecture identical to the source—same walls, windows, doors, ceiling, floor, and room geometry. Change only virtual staging: slightly different furniture arrangement, decor, accents, textiles, or art. Same overall furniture style and mood as the main request; do not redesign the room.)`;
-      }
-      const stagingParams = {
-        ...stagingParamsBase,
-        additionalPrompt: extra.trim(),
-      };
-
-      const stagedImage = await processStaging(
-        mainFile.buffer,
-        stagingParams,
-        req,
-        furnitureBuffers && furnitureBuffers.length ? furnitureBuffers : null,
-        geminiModel
-      );
-      images.push(stagedImage);
-      promptCount++;
-    }
-
-    if (mobileAnonymous) {
-      authStore.recordMobileIpGeneration(clientIp);
-    } else if (user.plan === 'free') {
-      authStore.recordFreeGeneration(user.id);
-    }
-
-    const updatedUser = user ? authStore.findUserByEmail(user.email) : null;
-    const responseUser =
-      user && updatedUser ? authStore.publicUser(updatedUser) : user ? authStore.publicUser(user) : null;
-
-    if (images.length === 1) {
-      return res.json({
-        success: true,
-        image: images[0],
-        user: responseUser,
-      });
-    }
-    return res.json({
-      success: true,
-      images,
-      image: images[0],
-      user: responseUser,
+    await handleVirtualStagingMultipart(req, res, {
+      user: sessionUser,
+      mobileAnonymous,
+      clientIp,
+      recordUsage: true,
+      treatAsPro: false,
     });
   } catch (error) {
     console.error('Error processing image:', error);
@@ -2779,6 +2803,48 @@ function protectLogs(req, res, next) {
     });
   }
 }
+
+/** Same `LOGS_ACCESS_KEY` as `/promptlogs`, `/api/send-email`, etc. */
+function stagingEndpointKeyGuard(req, res, next) {
+  if (!LOGS_ACCESS_KEY) {
+    return res.status(500).json({
+      error: 'Server configuration error',
+      message: 'Endpoint access key not configured',
+    });
+  }
+  const q = req.query && req.query.key;
+  const h = req.headers['x-stagify-endpoint-key'];
+  const k = (typeof q === 'string' && q) || (typeof h === 'string' && h.trim());
+  if (k && k === LOGS_ACCESS_KEY) {
+    return next();
+  }
+  return res.status(403).json({
+    error: 'Access denied',
+    message: 'Valid endpoint key required (?key= on URL or X-Stagify-Endpoint-Key header)',
+  });
+}
+
+// Virtual staging for server-side integrations (no user session; no daily cap on account)
+app.post('/api/stage-by-endpoint-key', stagingEndpointKeyGuard, stagingProcessUpload, async (req, res) => {
+  try {
+    const clientIp = getStagingClientIp(req);
+    await handleVirtualStagingMultipart(req, res, {
+      user: null,
+      mobileAnonymous: false,
+      clientIp,
+      recordUsage: false,
+      treatAsPro: true,
+    });
+  } catch (error) {
+    console.error('Error in stage-by-endpoint-key:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({
+        error: 'Image processing failed',
+        details: error.message,
+      });
+    }
+  }
+});
 
 // Auth store JSON (users, sessions, etc.) — same access key as log exports
 app.get('/authstore', protectLogs, (req, res) => {
