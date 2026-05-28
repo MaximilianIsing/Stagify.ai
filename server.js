@@ -236,7 +236,7 @@ function readEnterpriseMeterEventName() {
   if (fromFile) return fromFile;
   const fromEnv = process.env.ENTERPRISE_METER_EVENT_NAME;
   if (fromEnv && String(fromEnv).trim()) return String(fromEnv).trim();
-  return 'stagify_enterprise_generation';
+  return 'user_generation';
 }
 
 const enterpriseMeterEventName = readEnterpriseMeterEventName();
