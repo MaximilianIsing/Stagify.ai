@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo64x64.webp">
+    <title>Stagify Enterprise — Usage-Based Plans for Teams</title>
+    <meta name="description" content="Stagify Enterprise: give your entire team unlimited AI staging with usage-based billing at $0.08 per generation.">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <style>
+      body.page-enterprise main.ent-page {
+        flex: 0 0 auto;
+        overflow-x: hidden;
+        overflow-y: visible;
+        width: 100%;
+      }
+      .ent-page {
+        max-width: min(780px, 100%);
+        margin: 0 auto;
+        padding: 2rem clamp(1.25rem, 4vw, 2.5rem) 4.5rem;
+        box-sizing: border-box;
+      }
+      .ent-hero {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .ent-hero-logo {
+        width: clamp(72px, 18vw, 96px);
+        height: auto;
+        display: block;
+        margin: 0 auto 1rem;
+      }
+      .ent-hero h1 {
+        margin: 0 0 0.5rem;
+        font-size: clamp(1.75rem, 4vw, 2.125rem);
+        color: #1e3a8a;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+      }
+      .ent-hero p {
+        margin: 0 auto;
+        max-width: min(36rem, 100%);
+        color: #475569;
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+
+      .ent-highlights {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      @media (max-width: 600px) {
+        .ent-highlights { grid-template-columns: 1fr; }
+      }
+      .ent-highlight {
+        text-align: center;
+        padding: 1.15rem 1rem;
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+      }
+      .ent-highlight-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1e3a8a;
+        letter-spacing: -0.02em;
+      }
+      .ent-highlight-label {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.85rem;
+        color: #64748b;
+      }
+
+      .ent-card {
+        border-radius: 16px;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 8px 28px -8px rgba(30, 58, 138, 0.12);
+        box-sizing: border-box;
+      }
+      .ent-card h2 {
+        margin: 0 0 0.25rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        letter-spacing: -0.02em;
+      }
+      .ent-card > p {
+        margin: 0 0 1.5rem;
+        font-size: 0.875rem;
+        color: #64748b;
+        line-height: 1.5;
+      }
+
+      .ent-field {
+        margin-bottom: 1.15rem;
+      }
+      .ent-field label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #334155;
+      }
+      .ent-field label .ent-optional {
+        font-weight: 400;
+        color: #94a3b8;
+      }
+      .ent-input {
+        display: block;
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.9375rem;
+        font-family: inherit;
+        color: #0f172a;
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        box-sizing: border-box;
+        transition: border-color 0.18s, box-shadow 0.18s;
+      }
+      .ent-input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      }
+      .ent-input::placeholder {
+        color: #94a3b8;
+      }
+      .ent-input.ent-input--error {
+        border-color: #ef4444;
+      }
+      .ent-field-hint {
+        margin: 0.3rem 0 0;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        line-height: 1.4;
+      }
+      .ent-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      @media (max-width: 480px) {
+        .ent-row { grid-template-columns: 1fr; }
+      }
+
+      .ent-submit-btn {
+        display: block;
+        width: 100%;
+        text-align: center;
+        text-decoration: none;
+        color: #fff !important;
+        font-size: 17px;
+        font-weight: 700;
+        padding: 13px 16px;
+        border: none;
+        border-radius: 20px;
+        margin-top: 1.5rem;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        background-color: #2563eb;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        transition: all 0.18s ease;
+        font-family: inherit;
+      }
+      .ent-submit-btn:hover:not(:disabled) {
+        background-color: #1d4ed8;
+        transform: translateY(-1px);
+      }
+      .ent-submit-btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .ent-submit-btn::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(60deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.5s ease;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .ent-submit-btn:hover:not(:disabled)::before {
+        left: 100%;
+        opacity: 1;
+      }
+      @media (min-width: 769px) {
+        .ent-submit-btn {
+          background:
+            radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, #1d4ed8 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, #2563eb 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, #1e40af 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%, #60a5fa 0%, transparent 50%),
+            #1e3a8a;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .ent-submit-btn:hover:not(:disabled) {
+          background:
+            radial-gradient(circle at 30% 40%, #3b82f6 0%, transparent 60%),
+            radial-gradient(circle at 70% 30%, #1d4ed8 0%, transparent 60%),
+            radial-gradient(circle at 50% 70%, #2563eb 0%, transparent 60%),
+            radial-gradient(circle at 10% 90%, #1e40af 0%, transparent 60%),
+            radial-gradient(circle at 90% 10%, #60a5fa 0%, transparent 60%),
+            #1e3a8a;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+      }
+
+      .ent-error-msg {
+        margin: 0.75rem 0 0;
+        padding: 0.6rem 0.85rem;
+        font-size: 0.85rem;
+        color: #991b1b;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        line-height: 1.45;
+      }
+      .ent-error-msg.hidden { display: none; }
+
+      .ent-success {
+        text-align: center;
+        padding: 2.5rem 1.5rem;
+      }
+      .ent-success-icon {
+        display: block;
+        margin: 0 auto 1rem;
+        font-size: 3rem;
+        line-height: 1;
+      }
+      .ent-success h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+        color: #1e3a8a;
+        font-weight: 800;
+      }
+      .ent-success p {
+        margin: 0 0 0.5rem;
+        font-size: 0.95rem;
+        color: #475569;
+        line-height: 1.6;
+      }
+      .ent-success .ent-success-domain {
+        font-weight: 700;
+        color: #1e3a8a;
+      }
+
+      .ent-footnote {
+        margin: 1.5rem 0 0;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        color: #64748b;
+        text-align: center;
+      }
+      .ent-footnote a {
+        color: #2563eb;
+        font-weight: 500;
+        text-decoration: none;
+      }
+      .ent-footnote a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body class="page-enterprise">
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+      <source src="background.mp4" type="video/mp4">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <a href="index.html" class="brand">
+          <img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high">
+          <span class="brand-strong">stagify</span><span class="brand-light">.ai</span>
+        </a>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden">AI Designer</a>
+          <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown__trigger" id="nav-about-trigger" aria-expanded="false" aria-haspopup="true" aria-controls="nav-about-panel">About</button>
+            <div class="nav-dropdown__panel" id="nav-about-panel" role="menu">
+              <a href="why.html#why" class="nav-dropdown__link" role="menuitem">Why Us?</a>
+              <a href="faq.html#faq" class="nav-dropdown__link" role="menuitem">FAQ</a>
+              <a href="contact.html#contact" class="nav-dropdown__link" role="menuitem">Contact Us</a>
+            </div>
+          </div>
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="nav-trailing"></div>
+      </nav>
+    </header>
+
+    <main class="ent-page">
+      <header class="ent-hero">
+        <img src="media-webp/logo/Logo64x64.webp" alt="Stagify" class="ent-hero-logo" width="96" height="96">
+        <h1>Stagify Enterprise</h1>
+        <p>Give your entire team unlimited AI staging. Every employee with your company email gets Stagify+ automatically — you only pay for what they use.</p>
+      </header>
+
+      <div class="ent-highlights">
+        <div class="ent-highlight">
+          <span class="ent-highlight-value">$0.08</span>
+          <span class="ent-highlight-label">per generation</span>
+        </div>
+        <div class="ent-highlight">
+          <span class="ent-highlight-value">Unlimited</span>
+          <span class="ent-highlight-label">team members</span>
+        </div>
+        <div class="ent-highlight">
+          <span class="ent-highlight-value">Monthly</span>
+          <span class="ent-highlight-label">usage-based billing</span>
+        </div>
+      </div>
+
+      <!-- Success state (shown after Stripe checkout redirect) -->
+      <div class="ent-card ent-success hidden" id="ent-success">
+        <span class="ent-success-icon" aria-hidden="true">&#10003;</span>
+        <h2>Enterprise plan activated</h2>
+        <p>All accounts with emails ending in <span class="ent-success-domain" id="ent-success-domain">your domain</span> now have Stagify+ features.</p>
+        <p>You'll be billed at the end of each month based on total team usage at $0.08 per generation.</p>
+      </div>
+
+      <!-- Form (hidden after success) -->
+      <div class="ent-card" id="ent-form-card">
+        <h2>Get started</h2>
+        <p>Fill out your company details below. After checkout, every account with an email ending in your domain will automatically receive Stagify+ features.</p>
+
+        <form id="ent-form" novalidate>
+          <div class="ent-field">
+            <label for="ent-domain">Company domain</label>
+            <input type="text" id="ent-domain" class="ent-input" placeholder="company.com" autocomplete="off" required>
+            <p class="ent-field-hint">All emails ending in @<span id="ent-domain-preview">yourdomain.com</span> will get Stagify+</p>
+          </div>
+
+          <div class="ent-field">
+            <label for="ent-company">Company name</label>
+            <input type="text" id="ent-company" class="ent-input" placeholder="Company Inc." autocomplete="organization" required>
+          </div>
+
+          <div class="ent-row">
+            <div class="ent-field">
+              <label for="ent-email">Contact email</label>
+              <input type="email" id="ent-email" class="ent-input" placeholder="jane@company.com" autocomplete="email" required>
+            </div>
+            <div class="ent-field">
+              <label for="ent-phone">Phone number <span class="ent-optional">(optional)</span></label>
+              <input type="tel" id="ent-phone" class="ent-input" placeholder="+1 (555) 123-4567" autocomplete="tel">
+            </div>
+          </div>
+
+          <div class="ent-error-msg hidden" id="ent-error" role="alert"></div>
+
+          <button type="submit" class="ent-submit-btn" id="ent-submit-btn">
+            Continue to payment
+          </button>
+        </form>
+      </div>
+
+      <p class="ent-footnote">
+        Secure checkout powered by Stripe · Billed monthly based on usage · Cancel anytime<br>
+        Questions? <a href="mailto:team@stagify.ai">team@stagify.ai</a> · <a href="stagify-plus.html">Individual plans</a>
+      </p>
+    </main>
+
+    <script src="scripts/language-loader.js" defer></script>
+    <script src="scripts/nav-about.js" defer></script>
+    <script src="scripts/auth.js" defer></script>
+    <script src="scripts/profile-menu.js" defer></script>
+    <script>
+      (function () {
+        var domainInput = document.getElementById('ent-domain');
+        var preview = document.getElementById('ent-domain-preview');
+        var form = document.getElementById('ent-form');
+        var formCard = document.getElementById('ent-form-card');
+        var successCard = document.getElementById('ent-success');
+        var successDomain = document.getElementById('ent-success-domain');
+        var errorEl = document.getElementById('ent-error');
+        var submitBtn = document.getElementById('ent-submit-btn');
+
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('success') === '1') {
+          formCard.classList.add('hidden');
+          successCard.classList.remove('hidden');
+          var d = params.get('domain');
+          if (d) successDomain.textContent = '@' + decodeURIComponent(d);
+          return;
+        }
+
+        domainInput.addEventListener('input', function () {
+          var v = domainInput.value.trim().replace(/^@/, '').toLowerCase();
+          preview.textContent = v || 'yourdomain.com';
+        });
+
+        function showError(msg) {
+          errorEl.textContent = msg;
+          errorEl.classList.remove('hidden');
+        }
+        function hideError() {
+          errorEl.classList.add('hidden');
+        }
+
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          hideError();
+
+          var domain = domainInput.value.trim().replace(/^@/, '').toLowerCase();
+          var company = document.getElementById('ent-company').value.trim();
+          var email = document.getElementById('ent-email').value.trim();
+          var phone = document.getElementById('ent-phone').value.trim();
+
+          if (!domain || !domain.includes('.')) {
+            showError('Please enter a valid domain (e.g. company.com).');
+            return;
+          }
+          if (!company) {
+            showError('Please enter your company name.');
+            return;
+          }
+          if (!email || !email.includes('@')) {
+            showError('Please enter a valid contact email.');
+            return;
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Redirecting to Stripe…';
+
+          try {
+            var res = await fetch('/api/enterprise/create-checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                domain: domain,
+                companyName: company,
+                contactEmail: email,
+                contactPhone: phone,
+              }),
+            });
+            var data = await res.json();
+            if (!res.ok) {
+              showError(data.error || 'Something went wrong. Please try again.');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Continue to payment';
+              return;
+            }
+            if (data.url) {
+              window.location.href = data.url;
+            } else {
+              showError('Unexpected response. Please try again.');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Continue to payment';
+            }
+          } catch (err) {
+            showError('Network error. Please check your connection and try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Continue to payment';
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
