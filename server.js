@@ -5954,8 +5954,8 @@ app.listen(PORT, () => {
   console.log(`AI configured: ${!!genAI}`);
   
 
-  const fakeContactAdd = 135;
-  const fakePromptAdd = 1030;
+  const fakeContactAdd = 0;
+  const fakePromptAdd = 0;
   // Initialize prompt count on server startup
   initializePromptCount();
   promptCount += fakePromptAdd;
