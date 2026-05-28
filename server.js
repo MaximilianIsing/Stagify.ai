@@ -18,11 +18,13 @@ import { createAuthStore } from './auth-store.js';
 import Stripe from 'stripe';
 import { OAuth2Client } from 'google-auth-library';
 import { handleStripeEvent } from './stripe-webhooks.js';
+import { createEnterpriseStore } from './enterprise-store.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const authStore = createAuthStore(__dirname);
+const enterpriseStore = createEnterpriseStore(__dirname);
 setInterval(() => authStore.pruneSessions(), 6 * 60 * 60 * 1000).unref?.();
 
 /**
@@ -95,6 +97,36 @@ function readStripeWebhookSecret() {
 
 const stripeWebhookSecret = readStripeWebhookSecret();
 
+function readStripePublishableKey() {
+  const fromFile = readFirstStripeFile('stripe_publishable.txt', (raw) => {
+    if (raw.startsWith('pk_')) return raw;
+    if (raw) console.warn('[stripe] stripe_publishable.txt must start with pk_ — ignored');
+    return null;
+  });
+  if (fromFile) return fromFile;
+  const fromEnv = process.env.STRIPE_PUBLISHABLE_KEY;
+  if (fromEnv && String(fromEnv).trim().startsWith('pk_')) return String(fromEnv).trim();
+  return '';
+}
+
+const stripePublishableKey = readStripePublishableKey();
+
+function readEnterprisePriceId() {
+  const fromFile = readFirstStripeFile('priceid.txt', (raw) => {
+    const cleaned = raw.replace(/^["'\s]*"?id"?\s*:\s*"?/i, '').replace(/["'\s]+$/g, '').trim();
+    if (cleaned.startsWith('price_')) return cleaned;
+    if (raw.startsWith('price_')) return raw;
+    if (raw) console.warn('[stripe] priceid.txt must contain a price_ id — ignored');
+    return null;
+  });
+  if (fromFile) return fromFile;
+  const fromEnv = process.env.ENTERPRISE_PRICE_ID;
+  if (fromEnv && String(fromEnv).trim().startsWith('price_')) return String(fromEnv).trim();
+  return '';
+}
+
+const enterprisePriceId = readEnterprisePriceId();
+
 function readGoogleClientId() {
   const fromFile = readFirstStripeFile('googleclientID.txt', (raw) => {
     const s = String(raw).trim();
@@ -165,7 +197,18 @@ function getAuthUserFromRequest(req) {
   if (!token && req.query && req.query.authToken) {
     token = String(req.query.authToken).trim();
   }
-  return authStore.validateSession(token);
+  const user = authStore.validateSession(token);
+  return enhanceUserWithEnterprise(user);
+}
+
+function enhanceUserWithEnterprise(user) {
+  if (!user) return null;
+  if (user.plan === 'pro') return user;
+  const domain = user.email ? user.email.split('@')[1]?.toLowerCase() : null;
+  if (domain && enterpriseStore.isActiveDomain(domain)) {
+    return Object.assign({}, user, { plan: 'pro', enterpriseDomain: domain });
+  }
+  return user;
 }
 
 /** Client IP for rate limits (honors X-Forwarded-For when behind a proxy). */
@@ -183,6 +226,27 @@ function isLikelyMobileStagingRequest(req) {
   const ua = req.headers['user-agent'];
   if (!ua || typeof ua !== 'string') return false;
   return /Mobile|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+}
+
+function reportEnterpriseUsage(domain, quantity = 1) {
+  if (!stripe) return;
+  const entry = enterpriseStore.getDomainEntry(domain);
+  if (!entry || !entry.stripeSubscriptionItemId) {
+    console.warn('[enterprise] Cannot report usage — no subscription item for domain:', domain);
+    return;
+  }
+  stripe.subscriptionItems
+    .createUsageRecord(entry.stripeSubscriptionItemId, {
+      quantity,
+      action: 'increment',
+      timestamp: Math.floor(Date.now() / 1000),
+    })
+    .then(() => {
+      console.log('[enterprise] Usage reported:', quantity, 'generation(s) for', domain);
+    })
+    .catch((err) => {
+      console.error('[enterprise] Failed to report usage for', domain, ':', err.message);
+    });
 }
 
 function requireProAccount(req, res) {
@@ -442,7 +506,7 @@ app.set('trust proxy', process.env.TRUST_PROXY === '0' ? false : 1);
 app.use(cors());
 
 // Stripe webhooks must use the raw body for signature verification (register before express.json)
-app.post('/api/billing/stripe-webhook', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/api/billing/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   if (!stripe || !stripeWebhookSecret) {
     console.warn(
       '[stripe] Webhook ignored: add stripe_secret_key.txt + stripe_webhook_secret.txt (searched: STRIPE_SECRETS_DIR, server dir, cwd, /etc/secrets) or set STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET',
@@ -461,7 +525,7 @@ app.post('/api/billing/stripe-webhook', express.raw({ type: 'application/json' }
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
   try {
-    const out = handleStripeEvent(event, authStore);
+    const out = await handleStripeEvent(event, authStore, { stripe, enterpriseStore });
     if (!out.handled) {
       console.log('[stripe] Unhandled event type (ok):', event.type);
     }
@@ -2093,6 +2157,73 @@ app.post('/api/billing/customer-portal', express.json(), async (req, res) => {
   }
 });
 
+app.get('/api/enterprise/config', (req, res) => {
+  res.json({ publishableKey: stripePublishableKey || '' });
+});
+
+app.post('/api/enterprise/create-checkout', express.json(), async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(503).json({ error: 'Billing not configured', code: 'STRIPE_DISABLED' });
+    }
+    if (!enterprisePriceId) {
+      return res.status(503).json({ error: 'Enterprise pricing not configured' });
+    }
+    const { domain, companyName, contactEmail, contactPhone } = req.body || {};
+    if (!domain || typeof domain !== 'string' || !domain.includes('.')) {
+      return res.status(400).json({ error: 'A valid domain is required (e.g. company.com)' });
+    }
+    const cleanDomain = domain.trim().toLowerCase().replace(/^@/, '');
+    if (!contactEmail || typeof contactEmail !== 'string' || !contactEmail.includes('@')) {
+      return res.status(400).json({ error: 'A valid contact email is required' });
+    }
+    if (!companyName || typeof companyName !== 'string' || !companyName.trim()) {
+      return res.status(400).json({ error: 'Company name is required' });
+    }
+
+    const existing = enterpriseStore.getDomainEntry(cleanDomain);
+    if (existing && (existing.status === 'active' || existing.status === 'trialing')) {
+      return res.status(409).json({ error: 'This domain already has an active enterprise plan' });
+    }
+
+    const baseUrlRaw =
+      process.env.PUBLIC_APP_URL || process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+    const baseUrl = String(baseUrlRaw).replace(/\/$/, '');
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      customer_email: contactEmail.trim(),
+      line_items: [
+        {
+          price: enterprisePriceId,
+        },
+      ],
+      subscription_data: {
+        metadata: {
+          enterprise_domain: cleanDomain,
+          enterprise_company: companyName.trim(),
+          enterprise_contact_email: contactEmail.trim(),
+          enterprise_contact_phone: (contactPhone || '').trim(),
+        },
+      },
+      metadata: {
+        enterprise_domain: cleanDomain,
+        enterprise_company: companyName.trim(),
+        enterprise_contact_email: contactEmail.trim(),
+        enterprise_contact_phone: (contactPhone || '').trim(),
+      },
+      success_url: `${baseUrl}/enterprise.html?success=1&domain=${encodeURIComponent(cleanDomain)}`,
+      cancel_url: `${baseUrl}/enterprise.html?cancelled=1`,
+    });
+
+    return res.json({ url: session.url });
+  } catch (e) {
+    console.error('[enterprise] checkout session error:', e.message);
+    return res.status(500).json({ error: 'Could not create checkout session' });
+  }
+});
+
 app.post('/api/auth/logout', express.json(), (req, res) => {
   const token =
     (req.body && req.body.authToken) ||
@@ -2288,6 +2419,8 @@ async function handleVirtualStagingMultipart(req, res, meta) {
   if (meta.recordUsage) {
     if (mobileAnonymous) {
       authStore.recordMobileIpGeneration(clientIp);
+    } else if (user && user.enterpriseDomain) {
+      reportEnterpriseUsage(user.enterpriseDomain, images.length || 1);
     } else if (user && user.plan === 'free') {
       authStore.recordFreeGeneration(user.id);
     }
