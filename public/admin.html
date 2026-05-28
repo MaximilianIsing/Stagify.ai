@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+  <title>Stagify Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="styles/styles.css">
+  <style>
+    body.page-admin main { flex:0 0 auto; overflow-x:hidden; overflow-y:visible; width:100%; }
+    .adm { max-width:1280px; margin:0 auto; padding:1.5rem clamp(1rem,3vw,2rem) 4rem; box-sizing:border-box; }
+
+    /* login */
+    .adm-login { max-width:380px; margin:8vh auto 0; text-align:center; }
+    .adm-login-card { background:rgba(255,255,255,.92); border:1px solid #e2e8f0; border-radius:16px; padding:2rem 1.75rem; box-shadow:0 8px 28px -8px rgba(30,58,138,.12); }
+    .adm-login-card h1 { margin:0 0 .25rem; font-size:1.5rem; font-weight:800; color:#1e3a8a; }
+    .adm-login-card p { margin:0 0 1.25rem; font-size:.875rem; color:#64748b; }
+    .adm-key-input { display:block; width:100%; padding:.65rem .85rem; font-size:.9375rem; font-family:inherit; color:#0f172a; background:#fff; border:1px solid #cbd5e1; border-radius:10px; box-sizing:border-box; }
+    .adm-key-input:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+    .adm-login-btn { display:block; width:100%; margin-top:1rem; padding:.7rem; font-size:1rem; font-weight:700; color:#fff; background:#2563eb; border:none; border-radius:12px; cursor:pointer; transition:.18s; font-family:inherit; }
+    .adm-login-btn:hover { background:#1d4ed8; }
+    .adm-login-btn:disabled { opacity:.6; cursor:wait; }
+    .adm-login-err { margin:.75rem 0 0; padding:.5rem .75rem; font-size:.85rem; color:#991b1b; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; }
+    .adm-login-err.hidden { display:none; }
+
+    /* dashboard wrapper */
+    .adm-dash.hidden { display:none; }
+
+    /* tabs */
+    .adm-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1.25rem; }
+    .adm-tab { padding:8px 18px; font-size:.8125rem; font-weight:600; color:#475569; background:rgba(255,255,255,.7); border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; transition:.18s; font-family:inherit; }
+    .adm-tab:hover { background:#fff; border-color:#93c5fd; }
+    .adm-tab.active { background:#2563eb; color:#fff; border-color:#2563eb; }
+
+    /* panels */
+    .adm-panel { display:none; }
+    .adm-panel.active { display:block; }
+
+    /* cards */
+    .adm-card { background:rgba(255,255,255,.92); border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem; box-shadow:0 4px 16px rgba(15,23,42,.05); margin-bottom:1rem; }
+    .adm-card h2 { margin:0 0 .75rem; font-size:1.1rem; font-weight:700; color:#1e3a8a; letter-spacing:-.02em; }
+
+    /* stat grid */
+    .adm-stats { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:.75rem; margin-bottom:1.25rem; }
+    .adm-stat { background:rgba(255,255,255,.92); border:1px solid #e2e8f0; border-radius:12px; padding:1rem; text-align:center; }
+    .adm-stat-val { display:block; font-size:1.75rem; font-weight:800; color:#1e3a8a; letter-spacing:-.02em; }
+    .adm-stat-lbl { display:block; margin-top:.15rem; font-size:.75rem; color:#64748b; }
+
+    /* tables */
+    .adm-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .adm-table { width:100%; border-collapse:collapse; font-size:.8125rem; line-height:1.4; }
+    .adm-table th { text-align:left; padding:.6rem .5rem; font-weight:700; color:#1e3a8a; background:rgba(241,245,249,.98); border-bottom:1px solid #e2e8f0; white-space:nowrap; position:sticky; top:0; z-index:1; }
+    .adm-table td { padding:.55rem .5rem; border-bottom:1px solid #f1f5f9; color:#334155; vertical-align:top; }
+    .adm-table tbody tr:hover { background:rgba(37,99,235,.04); }
+    .adm-table tbody tr.adm-row-click { cursor:pointer; }
+
+    /* badges */
+    .adm-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+    .adm-badge-pro { background:#dbeafe; color:#1e40af; }
+    .adm-badge-free { background:#f1f5f9; color:#64748b; }
+    .adm-badge-active { background:#dcfce7; color:#166534; }
+    .adm-badge-cancelled { background:#fef2f2; color:#991b1b; }
+    .adm-badge-trialing { background:#fef9c3; color:#854d0e; }
+
+    /* search */
+    .adm-search { display:block; width:100%; max-width:360px; padding:.5rem .75rem; font-size:.85rem; font-family:inherit; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:.75rem; box-sizing:border-box; }
+    .adm-search:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+
+    /* detail drawer */
+    .adm-detail { margin-top:.5rem; padding:1rem; background:rgba(241,245,249,.6); border-radius:10px; border:1px solid #e2e8f0; }
+    .adm-detail h3 { margin:0 0 .5rem; font-size:.9rem; font-weight:700; color:#1e3a8a; }
+    .adm-detail-section { margin-bottom:1rem; }
+    .adm-detail-section:last-child { margin-bottom:0; }
+    .adm-detail-empty { font-size:.8rem; color:#94a3b8; font-style:italic; }
+
+    /* download grid */
+    .adm-dl-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:.75rem; }
+    .adm-dl-btn { display:flex; align-items:center; gap:.5rem; padding:.85rem 1rem; background:#fff; border:1px solid #e2e8f0; border-radius:12px; cursor:pointer; font-family:inherit; font-size:.85rem; font-weight:600; color:#334155; transition:.18s; text-decoration:none; }
+    .adm-dl-btn:hover { border-color:#93c5fd; background:#eff6ff; }
+    .adm-dl-btn svg { flex-shrink:0; }
+
+    /* loading */
+    .adm-loading { text-align:center; padding:3rem 1rem; color:#64748b; font-size:.9rem; }
+
+    /* signout */
+    .adm-signout { margin-left:auto; padding:6px 14px; font-size:.75rem; font-weight:600; color:#64748b; background:rgba(255,255,255,.7); border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-family:inherit; transition:.18s; }
+    .adm-signout:hover { color:#ef4444; border-color:#fecaca; }
+    .adm-topbar { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+    .adm-topbar h1 { margin:0; font-size:1.35rem; font-weight:800; color:#1e3a8a; letter-spacing:-.02em; }
+
+    @media(max-width:600px){
+      .adm-stats { grid-template-columns:1fr 1fr; }
+      .adm-dl-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body class="page-admin">
+  <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+    <source src="background.mp4" type="video/mp4">
+  </video>
+
+  <header class="site-header">
+    <nav class="nav">
+      <a href="index.html" class="brand">
+        <img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high">
+        <span class="brand-strong">stagify</span><span class="brand-light">.ai</span>
+      </a>
+      <div class="nav-center"></div>
+      <div class="nav-trailing"></div>
+    </nav>
+  </header>
+
+  <main class="adm">
+    <!-- LOGIN -->
+    <div class="adm-login" id="adm-login">
+      <div class="adm-login-card">
+        <h1>Admin</h1>
+        <p>Enter your access key to continue</p>
+        <form id="adm-login-form">
+          <input type="password" class="adm-key-input" id="adm-key" placeholder="Access key" autocomplete="off" required>
+          <button type="submit" class="adm-login-btn" id="adm-login-btn">Sign in</button>
+          <div class="adm-login-err hidden" id="adm-login-err"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="adm-dash hidden" id="adm-dash">
+      <div class="adm-topbar">
+        <h1>Stagify Admin</h1>
+        <button class="adm-signout" id="adm-signout">Sign out</button>
+      </div>
+
+      <div class="adm-tabs" id="adm-tabs">
+        <button class="adm-tab active" data-tab="overview">Overview</button>
+        <button class="adm-tab" data-tab="users">Users</button>
+        <button class="adm-tab" data-tab="enterprise">Enterprise</button>
+        <button class="adm-tab" data-tab="bugs">Bug Reports</button>
+        <button class="adm-tab" data-tab="downloads">Downloads</button>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div class="adm-panel active" id="panel-overview">
+        <div class="adm-stats" id="adm-stats"></div>
+        <div class="adm-card">
+          <h2>Recent Signups (last 30 days)</h2>
+          <div class="adm-table-wrap" id="adm-recent-signups"></div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="adm-panel" id="panel-users">
+        <input type="text" class="adm-search" id="adm-user-search" placeholder="Search by email...">
+        <div class="adm-card">
+          <h2>All Users</h2>
+          <div class="adm-table-wrap" id="adm-users-table"></div>
+        </div>
+      </div>
+
+      <!-- ENTERPRISE -->
+      <div class="adm-panel" id="panel-enterprise">
+        <div class="adm-card">
+          <h2>Enterprise Domains</h2>
+          <div class="adm-table-wrap" id="adm-ent-table"></div>
+        </div>
+      </div>
+
+      <!-- BUG REPORTS -->
+      <div class="adm-panel" id="panel-bugs">
+        <input type="text" class="adm-search" id="adm-bug-search" placeholder="Search bug reports...">
+        <div class="adm-card">
+          <h2>Bug Reports</h2>
+          <div class="adm-table-wrap" id="adm-bugs-table"></div>
+        </div>
+      </div>
+
+      <!-- DOWNLOADS -->
+      <div class="adm-panel" id="panel-downloads">
+        <div class="adm-card">
+          <h2>Export Data</h2>
+          <p style="margin:0 0 1rem;font-size:.85rem;color:#64748b;">Download raw data files from the server.</p>
+          <div class="adm-dl-grid" id="adm-dl-grid"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = sessionStorage.getItem('adm_key') || '';
+  var data = { users: [], promptRows: [], chatRows: [], bugRows: [], maskRows: [], contactRows: [], enterprise: [] };
+  var expandedUserId = null;
+
+  // ── helpers ──
+
+  function qs(sel) { return document.querySelector(sel); }
+  function qsa(sel) { return document.querySelectorAll(sel); }
+  function el(tag, attrs, children) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { if (k === 'className') e.className = attrs[k]; else if (k === 'textContent') e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]); });
+    if (children) children.forEach(function (c) { if (typeof c === 'string') e.appendChild(document.createTextNode(c)); else if (c) e.appendChild(c); });
+    return e;
+  }
+
+  var DL_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+
+  function parseCSV(text) {
+    if (!text || !text.trim()) return [];
+    var rows = []; var row = []; var field = ''; var inQ = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (inQ) {
+        if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+        else if (c === '"') { inQ = false; }
+        else { field += c; }
+      } else {
+        if (c === '"') { inQ = true; }
+        else if (c === ',') { row.push(field); field = ''; }
+        else if (c === '\n' || c === '\r') {
+          if (c === '\r' && text[i + 1] === '\n') i++;
+          row.push(field); field = '';
+          if (row.length > 1 || row[0] !== '') rows.push(row);
+          row = [];
+        } else { field += c; }
+      }
+    }
+    row.push(field);
+    if (row.length > 1 || row[0] !== '') rows.push(row);
+    return rows;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { var d = new Date(iso); return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); } catch(e) { return iso; }
+  }
+  function fmtDateTime(iso) {
+    if (!iso) return '—';
+    try { var d = new Date(iso); return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }); } catch(e) { return iso; }
+  }
+
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d; }
+
+  function badge(plan) {
+    var cls = plan === 'pro' ? 'adm-badge-pro' : 'adm-badge-free';
+    return el('span', { className: 'adm-badge ' + cls, textContent: plan });
+  }
+  function statusBadge(s) {
+    var cls = s === 'active' ? 'adm-badge-active' : s === 'trialing' ? 'adm-badge-trialing' : 'adm-badge-cancelled';
+    return el('span', { className: 'adm-badge ' + cls, textContent: s });
+  }
+
+  // ── fetch ──
+
+  function apiFetch(url) {
+    return fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 'key=' + encodeURIComponent(KEY))
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r; });
+  }
+
+  function loadAll() {
+    qs('#adm-dash').classList.remove('hidden');
+    qs('#adm-login').style.display = 'none';
+    showLoading();
+
+    Promise.all([
+      apiFetch('/authstore').then(function(r){return r.json();}),
+      apiFetch('/promptlogs').then(function(r){return r.text();}).catch(function(){return '';}),
+      apiFetch('/chatlogs').then(function(r){return r.text();}).catch(function(){return '';}),
+      apiFetch('/bugreports').then(function(r){return r.text();}).catch(function(){return '';}),
+      apiFetch('/masklogs').then(function(r){return r.text();}).catch(function(){return '';}),
+      apiFetch('/contactlogs').then(function(r){return r.text();}).catch(function(){return '';}),
+      apiFetch('/enterprise-domains').then(function(r){return r.json();}).catch(function(){return {domains:[]};})
+    ]).then(function (results) {
+      data.users = (results[0] && results[0].users) || [];
+      data.promptRows = parseCSV(results[1]);
+      data.chatRows = parseCSV(results[2]);
+      data.bugRows = parseCSV(results[3]);
+      data.maskRows = parseCSV(results[4]);
+      data.contactRows = parseCSV(results[5]);
+      data.enterprise = (results[6] && results[6].domains) || [];
+      renderAll();
+    }).catch(function (err) {
+      console.error('Load failed', err);
+    });
+  }
+
+  function showLoading() {
+    ['adm-stats','adm-recent-signups','adm-users-table','adm-ent-table','adm-bugs-table'].forEach(function(id){
+      var e = document.getElementById(id); if (e) e.innerHTML = '<div class="adm-loading">Loading data&hellip;</div>';
+    });
+  }
+
+  // ── prompt index by email ──
+
+  function buildPromptIndex() {
+    var idx = {};
+    data.promptRows.forEach(function (r) {
+      var email = (r[7] || '').trim().toLowerCase();
+      if (!email || email === 'unknown') return;
+      if (!idx[email]) idx[email] = [];
+      idx[email].push(r);
+    });
+    return idx;
+  }
+
+  // ── render ──
+
+  function renderAll() {
+    renderOverview();
+    renderUsers();
+    renderEnterprise();
+    renderBugs();
+    renderDownloads();
+  }
+
+  function renderOverview() {
+    var pIdx = buildPromptIndex();
+    var totalGens = data.promptRows.length;
+    var d7 = daysAgo(7); var d30 = daysAgo(30);
+    var gens7 = 0; var gens30 = 0;
+    data.promptRows.forEach(function (r) {
+      try { var t = new Date(r[0]); if (t >= d7) gens7++; if (t >= d30) gens30++; } catch(e){}
+    });
+    var proUsers = data.users.filter(function(u){return u.plan==='pro';}).length;
+    var freeUsers = data.users.filter(function(u){return u.plan==='free';}).length;
+    var signups7 = 0; var signups30 = 0;
+    data.users.forEach(function(u){
+      try { var t = new Date(u.createdAt); if (t >= d7) signups7++; if (t >= d30) signups30++; } catch(e){}
+    });
+    var activeEnt = data.enterprise.filter(function(e){return e.status==='active'||e.status==='trialing';}).length;
+
+    var stats = [
+      { val: data.users.length, lbl: 'Total Users' },
+      { val: proUsers, lbl: 'Pro Subscribers' },
+      { val: freeUsers, lbl: 'Free Users' },
+      { val: activeEnt, lbl: 'Enterprise Domains' },
+      { val: totalGens.toLocaleString(), lbl: 'Total Generations' },
+      { val: gens30.toLocaleString(), lbl: 'Generations (30d)' },
+      { val: gens7.toLocaleString(), lbl: 'Generations (7d)' },
+      { val: signups30, lbl: 'Signups (30d)' },
+    ];
+
+    var container = qs('#adm-stats');
+    container.innerHTML = '';
+    stats.forEach(function (s) {
+      var card = el('div', { className: 'adm-stat' }, [
+        el('span', { className: 'adm-stat-val', textContent: String(s.val) }),
+        el('span', { className: 'adm-stat-lbl', textContent: s.lbl })
+      ]);
+      container.appendChild(card);
+    });
+
+    var recent = data.users.slice().filter(function(u){ try{return new Date(u.createdAt)>=d30;}catch(e){return false;} })
+      .sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+
+    var wrap = qs('#adm-recent-signups');
+    if (!recent.length) { wrap.innerHTML = '<p style="color:#94a3b8;font-size:.85rem;">No signups in the last 30 days.</p>'; return; }
+
+    var tbl = el('table', { className: 'adm-table' });
+    var thead = el('thead', null, [el('tr', null, [
+      el('th', { textContent: 'Email' }), el('th', { textContent: 'Plan' }),
+      el('th', { textContent: 'Signed Up' }), el('th', { textContent: 'Gens (30d)' })
+    ])]);
+    tbl.appendChild(thead);
+    var tbody = el('tbody');
+    recent.slice(0, 20).forEach(function (u) {
+      var em = (u.email || '').toLowerCase();
+      var cnt = (pIdx[em] || []).filter(function(r){ try{return new Date(r[0])>=d30;}catch(e){return false;} }).length;
+      tbody.appendChild(el('tr', null, [
+        el('td', { textContent: u.email }), el('td', null, [badge(u.plan)]),
+        el('td', { textContent: fmtDate(u.createdAt) }), el('td', { textContent: String(cnt) })
+      ]));
+    });
+    tbl.appendChild(tbody);
+    wrap.innerHTML = '';
+    wrap.appendChild(tbl);
+  }
+
+  function renderUsers(filter) {
+    var pIdx = buildPromptIndex();
+    var d30 = daysAgo(30);
+    var q = (filter || '').toLowerCase();
+
+    var list = data.users.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+    if (q) list = list.filter(function(u){return (u.email||'').toLowerCase().indexOf(q)!==-1;});
+
+    var wrap = qs('#adm-users-table');
+    if (!list.length) { wrap.innerHTML = '<p style="color:#94a3b8;font-size:.85rem;">No users found.</p>'; return; }
+
+    var tbl = el('table', { className: 'adm-table' });
+    tbl.appendChild(el('thead', null, [el('tr', null, [
+      el('th', { textContent: 'Email' }), el('th', { textContent: 'Plan' }),
+      el('th', { textContent: 'Created' }), el('th', { textContent: 'Gens (30d)' }),
+      el('th', { textContent: 'Gens (all)' })
+    ])]));
+    var tbody = el('tbody');
+
+    list.forEach(function (u) {
+      var em = (u.email || '').toLowerCase();
+      var allRows = pIdx[em] || [];
+      var cnt30 = allRows.filter(function(r){ try{return new Date(r[0])>=d30;}catch(e){return false;} }).length;
+      var row = el('tr', { className: 'adm-row-click' }, [
+        el('td', { textContent: u.email }), el('td', null, [badge(u.plan)]),
+        el('td', { textContent: fmtDate(u.createdAt) }),
+        el('td', { textContent: String(cnt30) }),
+        el('td', { textContent: String(allRows.length) })
+      ]);
+
+      row.addEventListener('click', function () {
+        var existing = row.nextElementSibling;
+        if (existing && existing.classList.contains('adm-detail-row')) {
+          existing.remove();
+          expandedUserId = null;
+          return;
+        }
+        var old = tbody.querySelector('.adm-detail-row');
+        if (old) old.remove();
+
+        expandedUserId = u.id;
+        var detailTd = el('td', { colspan: '5' });
+        var detail = el('div', { className: 'adm-detail' });
+
+        // user info
+        var info = el('div', { className: 'adm-detail-section' });
+        info.appendChild(el('h3', { textContent: 'Account Info' }));
+        var infoLines = [
+          'ID: ' + u.id,
+          'Plan: ' + u.plan,
+          'Created: ' + fmtDateTime(u.createdAt),
+          u.stripeCustomerId ? 'Stripe Customer: ' + u.stripeCustomerId : null,
+          u.stripeSubscriptionId ? 'Stripe Sub: ' + u.stripeSubscriptionId : null,
+          u.googleSub ? 'Google linked' : 'Email/password account',
+        ].filter(Boolean);
+        infoLines.forEach(function(l){ info.appendChild(el('p', { textContent: l, style: 'margin:0 0 2px;font-size:.8rem;color:#475569;' })); });
+        detail.appendChild(info);
+
+        // prompt history
+        var ph = el('div', { className: 'adm-detail-section' });
+        ph.appendChild(el('h3', { textContent: 'Generation History (' + allRows.length + ' total)' }));
+        if (!allRows.length) {
+          ph.appendChild(el('p', { className: 'adm-detail-empty', textContent: 'No generations found.' }));
+        } else {
+          var ptbl = el('table', { className: 'adm-table' });
+          ptbl.appendChild(el('thead', null, [el('tr', null, [
+            el('th', { textContent: 'When' }), el('th', { textContent: 'Room' }),
+            el('th', { textContent: 'Style' }), el('th', { textContent: 'Prompt' })
+          ])]));
+          var ptbody = el('tbody');
+          allRows.slice().sort(function(a,b){return new Date(b[0])-new Date(a[0]);}).slice(0,50).forEach(function(r){
+            ptbody.appendChild(el('tr', null, [
+              el('td', { textContent: fmtDateTime(r[0]) }), el('td', { textContent: r[1]||'—' }),
+              el('td', { textContent: r[2]||'—' }), el('td', { textContent: (r[3]||'').slice(0,120) || '—' })
+            ]));
+          });
+          ptbl.appendChild(ptbody);
+          if (allRows.length > 50) ph.appendChild(el('p', { style: 'font-size:.75rem;color:#94a3b8;margin:0 0 .25rem;', textContent: 'Showing 50 of ' + allRows.length }));
+          ph.appendChild(ptbl);
+        }
+        detail.appendChild(ph);
+
+        // chat logs
+        var uid = u.id;
+        var chats = data.chatRows.filter(function(r){return (r[1]||'').trim()===uid;});
+        var ch = el('div', { className: 'adm-detail-section' });
+        ch.appendChild(el('h3', { textContent: 'Chat Messages (' + chats.length + ')' }));
+        if (!chats.length) {
+          ch.appendChild(el('p', { className: 'adm-detail-empty', textContent: 'No chat messages found.' }));
+        } else {
+          var ctbl = el('table', { className: 'adm-table' });
+          ctbl.appendChild(el('thead', null, [el('tr', null, [
+            el('th', { textContent: 'When' }), el('th', { textContent: 'Message' })
+          ])]));
+          var ctbody = el('tbody');
+          chats.slice().sort(function(a,b){return new Date(b[0])-new Date(a[0]);}).slice(0,30).forEach(function(r){
+            ctbody.appendChild(el('tr', null, [
+              el('td', { textContent: fmtDateTime(r[0]) }),
+              el('td', { textContent: (r[2]||'').slice(0,200) || '—' })
+            ]));
+          });
+          ctbl.appendChild(ctbody);
+          ch.appendChild(ctbl);
+        }
+        detail.appendChild(ch);
+
+        // mask edits
+        var masks = data.maskRows.filter(function(r){return (r[6]||'').trim()===uid;});
+        var mk = el('div', { className: 'adm-detail-section' });
+        mk.appendChild(el('h3', { textContent: 'Mask Edits (' + masks.length + ')' }));
+        if (!masks.length) {
+          mk.appendChild(el('p', { className: 'adm-detail-empty', textContent: 'No mask edits found.' }));
+        } else {
+          var mtbl = el('table', { className: 'adm-table' });
+          mtbl.appendChild(el('thead', null, [el('tr', null, [
+            el('th', { textContent: 'When' }), el('th', { textContent: 'Prompt' }), el('th', { textContent: 'Model' })
+          ])]));
+          var mtbody = el('tbody');
+          masks.slice().sort(function(a,b){return new Date(b[0])-new Date(a[0]);}).slice(0,30).forEach(function(r){
+            mtbody.appendChild(el('tr', null, [
+              el('td', { textContent: fmtDateTime(r[0]) }),
+              el('td', { textContent: (r[1]||'').slice(0,150) || '—' }),
+              el('td', { textContent: r[2]||'—' })
+            ]));
+          });
+          mtbl.appendChild(mtbody);
+          mk.appendChild(mtbl);
+        }
+        detail.appendChild(mk);
+
+        detailTd.appendChild(detail);
+        var detailRow = el('tr', { className: 'adm-detail-row' }, [detailTd]);
+        row.after(detailRow);
+      });
+
+      tbody.appendChild(row);
+    });
+
+    tbl.appendChild(tbody);
+    wrap.innerHTML = '';
+    wrap.appendChild(tbl);
+  }
+
+  function renderEnterprise() {
+    var wrap = qs('#adm-ent-table');
+    if (!data.enterprise.length) { wrap.innerHTML = '<p style="color:#94a3b8;font-size:.85rem;">No enterprise domains configured.</p>'; return; }
+    var tbl = el('table', { className: 'adm-table' });
+    tbl.appendChild(el('thead', null, [el('tr', null, [
+      el('th', { textContent: 'Domain' }), el('th', { textContent: 'Company' }),
+      el('th', { textContent: 'Contact' }), el('th', { textContent: 'Phone' }),
+      el('th', { textContent: 'Status' }), el('th', { textContent: 'Created' })
+    ])]));
+    var tbody = el('tbody');
+    data.enterprise.forEach(function (e) {
+      tbody.appendChild(el('tr', null, [
+        el('td', { textContent: e.domain }), el('td', { textContent: e.companyName || '—' }),
+        el('td', { textContent: e.contactEmail || '—' }), el('td', { textContent: e.contactPhone || '—' }),
+        el('td', null, [statusBadge(e.status || 'unknown')]),
+        el('td', { textContent: fmtDate(e.createdAt) })
+      ]));
+    });
+    tbl.appendChild(tbody);
+    wrap.innerHTML = '';
+    wrap.appendChild(tbl);
+  }
+
+  function renderBugs(filter) {
+    var q = (filter || '').toLowerCase();
+    var rows = data.bugRows.slice();
+    if (q) rows = rows.filter(function(r){ return r.join(' ').toLowerCase().indexOf(q)!==-1; });
+    rows.sort(function(a,b){return new Date(b[0])-new Date(a[0]);});
+
+    var wrap = qs('#adm-bugs-table');
+    if (!rows.length) { wrap.innerHTML = '<p style="color:#94a3b8;font-size:.85rem;">No bug reports found.</p>'; return; }
+
+    var tbl = el('table', { className: 'adm-table' });
+    tbl.appendChild(el('thead', null, [el('tr', null, [
+      el('th', { textContent: 'When' }), el('th', { textContent: 'Email' }),
+      el('th', { textContent: 'Description' }), el('th', { textContent: 'Steps' }),
+      el('th', { textContent: 'URL' })
+    ])]));
+    var tbody = el('tbody');
+    rows.slice(0, 100).forEach(function (r) {
+      tbody.appendChild(el('tr', null, [
+        el('td', { textContent: fmtDateTime(r[0]) }),
+        el('td', { textContent: r[3] || '—' }),
+        el('td', { textContent: (r[1]||'').slice(0,150) || '—' }),
+        el('td', { textContent: (r[2]||'').slice(0,120) || '—' }),
+        el('td', { textContent: r[6] || '—' })
+      ]));
+    });
+    tbl.appendChild(tbody);
+    wrap.innerHTML = '';
+    if (rows.length > 100) wrap.appendChild(el('p', { style:'font-size:.75rem;color:#94a3b8;margin:0 0 .5rem;', textContent:'Showing 100 of ' + rows.length }));
+    wrap.appendChild(tbl);
+  }
+
+  function renderDownloads() {
+    var files = [
+      { label: 'Prompt Logs', url: '/promptlogs', file: 'prompt_logs.csv' },
+      { label: 'Contact Logs', url: '/contactlogs', file: 'contact_logs.csv' },
+      { label: 'Chat Logs', url: '/chatlogs', file: 'chat_logs.csv' },
+      { label: 'Bug Reports', url: '/bugreports', file: 'bug_reports.csv' },
+      { label: 'Mask Logs', url: '/masklogs', file: 'mask_logs.csv' },
+      { label: 'Auth Store', url: '/authstore', file: 'auth-store.json' },
+      { label: 'Enterprise Domains', url: '/enterprise-domains', file: 'enterprise-domains.json' },
+    ];
+    var grid = qs('#adm-dl-grid');
+    grid.innerHTML = '';
+    files.forEach(function (f) {
+      var btn = el('a', {
+        className: 'adm-dl-btn',
+        href: f.url + '?key=' + encodeURIComponent(KEY),
+        download: f.file,
+        target: '_blank'
+      });
+      btn.innerHTML = DL_ICON + ' ' + f.label;
+      grid.appendChild(btn);
+    });
+  }
+
+  // ── tabs ──
+
+  qs('#adm-tabs').addEventListener('click', function (e) {
+    var btn = e.target.closest('.adm-tab');
+    if (!btn) return;
+    qsa('.adm-tab').forEach(function(t){t.classList.remove('active');});
+    btn.classList.add('active');
+    qsa('.adm-panel').forEach(function(p){p.classList.remove('active');});
+    var panel = qs('#panel-' + btn.dataset.tab);
+    if (panel) panel.classList.add('active');
+  });
+
+  // ── search ──
+
+  qs('#adm-user-search').addEventListener('input', function () { renderUsers(this.value); });
+  qs('#adm-bug-search').addEventListener('input', function () { renderBugs(this.value); });
+
+  // ── login ──
+
+  qs('#adm-login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var k = qs('#adm-key').value.trim();
+    if (!k) return;
+    var errEl = qs('#adm-login-err');
+    var btn = qs('#adm-login-btn');
+    errEl.classList.add('hidden');
+    btn.disabled = true; btn.textContent = 'Verifying\u2026';
+
+    fetch('/authstore?key=' + encodeURIComponent(k))
+      .then(function (r) {
+        if (r.ok) {
+          KEY = k;
+          sessionStorage.setItem('adm_key', k);
+          loadAll();
+        } else {
+          errEl.textContent = 'Invalid access key.';
+          errEl.classList.remove('hidden');
+        }
+      })
+      .catch(function () {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+      })
+      .finally(function () {
+        btn.disabled = false; btn.textContent = 'Sign in';
+      });
+  });
+
+  // ── signout ──
+
+  qs('#adm-signout').addEventListener('click', function () {
+    sessionStorage.removeItem('adm_key');
+    KEY = '';
+    qs('#adm-dash').classList.add('hidden');
+    qs('#adm-login').style.display = '';
+    qs('#adm-key').value = '';
+  });
+
+  // ── auto-login ──
+
+  if (KEY) loadAll();
+})();
+</script>
+</body>
+</html>

@@ -2046,6 +2046,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 // Error handling middleware for multer
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -5692,6 +5696,22 @@ app.get('/masklogs', protectLogs, (req, res) => {
       error: 'Failed to retrieve mask logs',
       message: error.message
     });
+  }
+});
+
+app.get('/enterprise-domains', protectLogs, (req, res) => {
+  try {
+    const storePath = enterpriseStore.getStoreFilePath();
+    if (fs.existsSync(storePath)) {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Content-Disposition', 'inline; filename="enterprise-domains.json"');
+      res.sendFile(path.resolve(storePath));
+    } else {
+      res.json({ domains: [] });
+    }
+  } catch (error) {
+    console.error('Error serving enterprise domains file:', error);
+    res.status(500).json({ error: 'Failed to retrieve enterprise domains', message: error.message });
   }
 });
 
