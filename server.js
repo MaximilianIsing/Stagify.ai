@@ -228,18 +228,33 @@ function isLikelyMobileStagingRequest(req) {
   return /Mobile|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
 }
 
+function readEnterpriseMeterEventName() {
+  const fromFile = readFirstStripeFile('enterprise_meter_event.txt', (raw) => {
+    const s = String(raw).trim();
+    return s || null;
+  });
+  if (fromFile) return fromFile;
+  const fromEnv = process.env.ENTERPRISE_METER_EVENT_NAME;
+  if (fromEnv && String(fromEnv).trim()) return String(fromEnv).trim();
+  return 'stagify_enterprise_generation';
+}
+
+const enterpriseMeterEventName = readEnterpriseMeterEventName();
+
 function reportEnterpriseUsage(domain, quantity = 1) {
   if (!stripe) return;
   const entry = enterpriseStore.getDomainEntry(domain);
-  if (!entry || !entry.stripeSubscriptionItemId) {
-    console.warn('[enterprise] Cannot report usage — no subscription item for domain:', domain);
+  if (!entry || !entry.stripeCustomerId) {
+    console.warn('[enterprise] Cannot report usage — no Stripe customer for domain:', domain);
     return;
   }
-  stripe.subscriptionItems
-    .createUsageRecord(entry.stripeSubscriptionItemId, {
-      quantity,
-      action: 'increment',
-      timestamp: Math.floor(Date.now() / 1000),
+  stripe.billing.meterEvents
+    .create({
+      event_name: enterpriseMeterEventName,
+      payload: {
+        stripe_customer_id: entry.stripeCustomerId,
+        value: String(quantity),
+      },
     })
     .then(() => {
       console.log('[enterprise] Usage reported:', quantity, 'generation(s) for', domain);
