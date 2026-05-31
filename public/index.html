@@ -190,6 +190,121 @@
         background: #e5e7eb;
         border-radius: 999px;
       }
+
+      #stagify-furniture-file {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .furniture-add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+        color: #2563eb;
+        background: rgba(37, 99, 235, 0.06);
+        border: 1px dashed #93c5fd;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+      .furniture-add-btn:hover {
+        background: rgba(37, 99, 235, 0.12);
+        border-color: #2563eb;
+      }
+      .furniture-add-btn.hidden {
+        display: none;
+      }
+      #stagify-furniture-list {
+        margin-top: 8px;
+      }
+      .furniture-file-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        font-size: 13px;
+        color: #334155;
+        background: rgba(241, 245, 249, 0.8);
+        border-radius: 8px;
+        margin-bottom: 4px;
+      }
+      .furniture-file-row span {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .furniture-file-remove {
+        background: none;
+        border: none;
+        color: #ef4444;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 0 4px;
+        line-height: 1;
+      }
+      .furniture-file-remove:hover {
+        color: #dc2626;
+      }
+      .furniture-preview-btn {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: inherit;
+        line-height: 1;
+        color: #64748b;
+        background: rgba(100, 116, 139, 0.12);
+        border: none;
+        border-radius: 50%;
+        cursor: help;
+        transition: color 0.15s ease, background 0.15s ease;
+      }
+      .furniture-preview-btn:hover {
+        color: #2563eb;
+        background: rgba(37, 99, 235, 0.14);
+      }
+      .furniture-image-preview {
+        position: fixed;
+        z-index: 10000;
+        pointer-events: none;
+        padding: 6px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+        max-width: min(280px, 90vw);
+        max-height: min(280px, 50vh);
+      }
+      .furniture-image-preview.hidden {
+        display: none;
+      }
+      .furniture-image-preview img {
+        display: block;
+        max-width: 260px;
+        max-height: 260px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 6px;
+      }
     </style>
     <script src="scripts/star-border.js" defer></script>
     <script src="scripts/sponsors-scroll.js" defer></script>
@@ -500,9 +615,11 @@
                     <input type="range" id="stagify-variation-count" class="variation-slider" min="1" max="3" step="1" value="1" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" aria-label="Image Generations">
                   </div>
                   <div class="tool-row">
-                    <label class="label" for="stagify-furniture-file" data-lang="modal.staging.furniturePhotosLabel">Furniture photos (optional)</label>
-                    <input type="file" id="stagify-furniture-file" class="text-input" accept="image/jpeg,image/png,image/webp,image/jpg" multiple style="padding: 8px;">
-                    <span class="microcopy" data-lang="modal.staging.furniturePhotosHint">Up to 3 reference photos of furniture or decor to feature in the staged room</span>
+                    <label class="label" data-lang="modal.staging.furniturePhotosLabel">Furniture photos (optional)</label>
+                    <input type="file" id="stagify-furniture-file" accept="image/jpeg,image/png,image/webp,image/jpg" multiple>
+                    <button type="button" id="stagify-furniture-add-btn" class="furniture-add-btn">+ Add photos</button>
+                    <div id="stagify-furniture-list"></div>
+                    <span class="microcopy" data-lang="modal.staging.furniturePhotosHint">Up to 5 reference photos of furniture or decor to feature in the staged room</span>
                   </div>
                 </div>
                 <div class="process-cta">
