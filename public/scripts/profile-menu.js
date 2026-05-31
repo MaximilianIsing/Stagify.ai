@@ -477,8 +477,8 @@
       if (u.plan === 'pro') {
         planLine =
           '<div class="profile-menu__plan-row">' +
-          '<div class="profile-menu__plan profile-menu__plan--plus">' +
-          '<img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18"> Stagify+</div>' +
+          '<a href="stagify-plus.html" class="profile-menu__plan profile-menu__plan--plus">' +
+          '<img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18"> Stagify+</a>' +
           '<a class="profile-menu__portal-help" href="' +
           STRIPE_CUSTOMER_PORTAL_LOGIN +
           '" target="_blank" rel="noopener noreferrer" aria-label="Manage billing and subscription">' +

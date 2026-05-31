@@ -648,7 +648,7 @@ const stagingProcessUpload = multer({
   fileFilter: imageFileFilter
 }).fields([
   { name: 'image', maxCount: 1 },
-  { name: 'furnitureImage', maxCount: 3 }
+  { name: 'furnitureImage', maxCount: 5 }
 ]);
 
 // Configure multer for PDF uploads
@@ -1253,6 +1253,11 @@ CRITICAL ARCHITECTURAL PRESERVATION RULES:
 - DO NOT change wall colors, textures, or materials unless explicitly requested by the user
 - DO NOT alter the room's structure, layout, or architectural integrity
 - PRESERVE all existing architectural features exactly as they appear in the original image
+
+CRITICAL IMAGE FORMAT RULES:
+- DO NOT change the image aspect ratio, canvas size, orientation, or framing
+- The output image MUST have the exact same width-to-height ratio and dimensions as the original input photo
+- Do not crop, stretch, squash, letterbox, pad, or zoom the image canvas
 
 The architecture must remain completely unchanged. Ensure the result looks realistic and professionally staged with high quality, sharp focus, detailed textures, professional photography lighting, and ultra-realistic rendering.`;
   
@@ -1945,7 +1950,7 @@ async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-fla
 function normalizeFurnitureBuffers(furnitureImageInput) {
   if (!furnitureImageInput) return [];
   const raw = Array.isArray(furnitureImageInput) ? furnitureImageInput : [furnitureImageInput];
-  return raw.filter((b) => b && Buffer.isBuffer(b)).slice(0, 3);
+  return raw.filter((b) => b && Buffer.isBuffer(b)).slice(0, 5);
 }
 
 function furnitureReferencePromptSuffix(count) {
@@ -2396,7 +2401,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
   const furnitureFiles = isPro ? req.files?.furnitureImage : null;
   const furnitureBuffers =
     Array.isArray(furnitureFiles) && furnitureFiles.length > 0
-      ? furnitureFiles.slice(0, 3).map((f) => f.buffer).filter(Boolean)
+      ? furnitureFiles.slice(0, 5).map((f) => f.buffer).filter(Boolean)
       : null;
 
   const removeBool =
@@ -5880,7 +5885,7 @@ app.post('/api/mask-edit', async (req, res) => {
     }
 
     // Enhance the prompt to ensure only the masked area is edited
-    const enhancedPrompt = `${prompt}. CRITICAL INSTRUCTIONS: Only modify the area indicated by the white mask in the second image. Do NOT change anything outside the masked region. Preserve the exact room layout, all furniture positions, wall colors, windows, doors, flooring, lighting, and every other detail exactly as they appear in the original image. The edit must only affect the masked area and must seamlessly blend with the unchanged surroundings.`;
+    const enhancedPrompt = `${prompt}. CRITICAL INSTRUCTIONS: Only modify the area indicated by the white mask in the second image. Do NOT change anything outside the masked region. Preserve the exact room layout, all furniture positions, wall colors, windows, doors, flooring, lighting, and every other detail exactly as they appear in the original image. The edit must only affect the masked area and must seamlessly blend with the unchanged surroundings. Do NOT change the image aspect ratio, canvas size, orientation, or framing — the output must match the original image dimensions exactly.`;
 
     // Use Gemini's image editing capabilities
     // Gemini can process images with masks for targeted editing

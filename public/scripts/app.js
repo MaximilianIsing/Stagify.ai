@@ -151,13 +151,169 @@
     const stagingLimitViewerText = $('#staging-limit-viewer-text');
 
     const furnitureFileInput = document.getElementById('stagify-furniture-file');
+    const furnitureList = document.getElementById('stagify-furniture-list');
+    const furnitureAddBtn = document.getElementById('stagify-furniture-add-btn');
+    let accumulatedFurnitureFiles = [];
+    let furniturePreviewUrls = [];
+    let furniturePreviewEl = null;
+    const FURNITURE_LIMIT = 5;
+    const FURNITURE_NAME_MAX = 40;
+
+    function getFurniturePreviewEl() {
+      if (furniturePreviewEl) return furniturePreviewEl;
+      furniturePreviewEl = document.createElement('div');
+      furniturePreviewEl.id = 'furniture-image-preview';
+      furniturePreviewEl.className = 'furniture-image-preview hidden';
+      furniturePreviewEl.setAttribute('aria-hidden', 'true');
+      var img = document.createElement('img');
+      img.alt = '';
+      furniturePreviewEl.appendChild(img);
+      document.body.appendChild(furniturePreviewEl);
+      return furniturePreviewEl;
+    }
+
+    function hideFurniturePreview() {
+      var pop = getFurniturePreviewEl();
+      pop.classList.add('hidden');
+      pop.setAttribute('aria-hidden', 'true');
+    }
+
+    function showFurniturePreview(previewUrl, anchorEl) {
+      if (!previewUrl || !anchorEl) return;
+      var pop = getFurniturePreviewEl();
+      var img = pop.querySelector('img');
+      img.src = previewUrl;
+      pop.classList.remove('hidden');
+      pop.setAttribute('aria-hidden', 'false');
+      var rect = anchorEl.getBoundingClientRect();
+      var popW = 280;
+      var popH = 280;
+      var left = rect.right + 10;
+      var top = rect.top + rect.height / 2 - popH / 2;
+      if (left + popW > window.innerWidth - 8) {
+        left = rect.left - popW - 10;
+      }
+      if (left < 8) left = 8;
+      if (top < 8) top = 8;
+      if (top + popH > window.innerHeight - 8) {
+        top = window.innerHeight - popH - 8;
+      }
+      pop.style.left = left + 'px';
+      pop.style.top = top + 'px';
+    }
+
+    function revokeFurniturePreviewUrls() {
+      furniturePreviewUrls.forEach(function (u) {
+        if (u) URL.revokeObjectURL(u);
+      });
+      furniturePreviewUrls = [];
+      hideFurniturePreview();
+    }
+
+    function syncFurniturePreviewUrls() {
+      revokeFurniturePreviewUrls();
+      furniturePreviewUrls = accumulatedFurnitureFiles.map(function (f) {
+        return URL.createObjectURL(f);
+      });
+    }
+
+    function abbreviateFileName(name, maxLen) {
+      var s = String(name || '');
+      if (s.length <= maxLen) return s;
+      return s.slice(0, maxLen) + '...';
+    }
+
+    function updateFurnitureAddBtn() {
+      if (!furnitureAddBtn) return;
+      if (accumulatedFurnitureFiles.length >= FURNITURE_LIMIT) {
+        furnitureAddBtn.classList.add('hidden');
+      } else {
+        furnitureAddBtn.classList.remove('hidden');
+      }
+    }
+
+    function renderFurnitureList() {
+      if (!furnitureList) return;
+      hideFurniturePreview();
+      furnitureList.innerHTML = '';
+      syncFurniturePreviewUrls();
+      if (!accumulatedFurnitureFiles.length) {
+        furnitureList.style.display = 'none';
+        updateFurnitureAddBtn();
+        return;
+      }
+      furnitureList.style.display = 'block';
+      accumulatedFurnitureFiles.forEach(function (f, idx) {
+        var row = document.createElement('div');
+        row.className = 'furniture-file-row';
+        var name = document.createElement('span');
+        var fullName = f.name || '';
+        name.textContent = abbreviateFileName(fullName, FURNITURE_NAME_MAX);
+        if (fullName.length > FURNITURE_NAME_MAX) name.title = fullName;
+
+        var previewBtn = document.createElement('button');
+        previewBtn.type = 'button';
+        previewBtn.className = 'furniture-preview-btn';
+        previewBtn.setAttribute('aria-label', 'Preview ' + fullName);
+        previewBtn.textContent = '?';
+        var previewUrl = furniturePreviewUrls[idx];
+        previewBtn.addEventListener('mouseenter', function () {
+          showFurniturePreview(previewUrl, previewBtn);
+        });
+        previewBtn.addEventListener('mouseleave', hideFurniturePreview);
+        previewBtn.addEventListener('focus', function () {
+          showFurniturePreview(previewUrl, previewBtn);
+        });
+        previewBtn.addEventListener('blur', hideFurniturePreview);
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'furniture-file-remove';
+        btn.title = 'Remove';
+        btn.textContent = '\u2715';
+        btn.addEventListener('click', function () {
+          accumulatedFurnitureFiles.splice(idx, 1);
+          syncFurnitureInput();
+          renderFurnitureList();
+        });
+        row.appendChild(name);
+        row.appendChild(previewBtn);
+        row.appendChild(btn);
+        furnitureList.appendChild(row);
+      });
+      updateFurnitureAddBtn();
+    }
+
+    function syncFurnitureInput() {
+      if (!furnitureFileInput) return;
+      var dt = new DataTransfer();
+      accumulatedFurnitureFiles.forEach(function (f) { dt.items.add(f); });
+      furnitureFileInput.files = dt.files;
+    }
+
+    function openFurniturePicker() {
+      if (!furnitureFileInput || accumulatedFurnitureFiles.length >= FURNITURE_LIMIT) return;
+      furnitureFileInput.click();
+    }
+
+    if (furnitureAddBtn) {
+      furnitureAddBtn.addEventListener('click', openFurniturePicker);
+    }
+
     if (furnitureFileInput) {
       furnitureFileInput.addEventListener('change', () => {
-        if (furnitureFileInput.files.length > 3) {
-          const dt = new DataTransfer();
-          for (let i = 0; i < 3; i++) dt.items.add(furnitureFileInput.files[i]);
-          furnitureFileInput.files = dt.files;
+        var newFiles = Array.from(furnitureFileInput.files);
+        newFiles.forEach(function (f) {
+          if (accumulatedFurnitureFiles.length < FURNITURE_LIMIT) {
+            accumulatedFurnitureFiles.push(f);
+          }
+        });
+        if (accumulatedFurnitureFiles.length > FURNITURE_LIMIT) {
+          accumulatedFurnitureFiles = accumulatedFurnitureFiles.slice(0, FURNITURE_LIMIT);
         }
+        furnitureFileInput.value = '';
+        syncFurnitureInput();
+        renderFurnitureList();
       });
     }
 
@@ -300,7 +456,6 @@
       reader.readAsDataURL(file);
     }
   
-      // Stagify+ (pro): full progress bar + rotating loading lines. Free: fetch immediately for fast daily-limit feedback.
     async function processWithAI(imageFile) {
       hideStagingLimitInViewer();
 
@@ -336,18 +491,18 @@
       if (u && u.plan === 'pro' && proPanelUsable) {
         const modelSel = document.getElementById('stagify-model-select');
         const varSel = document.getElementById('stagify-variation-count');
-        const furn = document.getElementById('stagify-furniture-file');
         if (modelSel) formData.append('model', modelSel.value || 'gpt-4o-mini');
         if (varSel) formData.append('variationCount', varSel.value || '1');
-        if (furn && furn.files && furn.files.length) {
-          const n = Math.min(3, furn.files.length);
+        if (accumulatedFurnitureFiles.length) {
+          const n = Math.min(FURNITURE_LIMIT, accumulatedFurnitureFiles.length);
           for (let i = 0; i < n; i++) {
-            formData.append('furnitureImage', furn.files[i]);
+            formData.append('furnitureImage', accumulatedFurnitureFiles[i]);
           }
         }
       }
 
-      const useRichGenerationUI = !!(u && u.plan === 'pro');
+      // Pro: upload/prepare animation before fetch. Free: progress bar during fetch (no delay) for fast limit errors.
+      const isProPlan = !!(u && u.plan === 'pro');
 
       const defaultLoadingLines = [
         'Finding the perfect furniture for you',
@@ -384,7 +539,7 @@
       }
 
       let response;
-      if (useRichGenerationUI) {
+      if (isProPlan) {
         progress.classList.remove('hidden');
         progressBar.style.width = '0%';
         progressText.textContent =
@@ -461,9 +616,31 @@
         progressText.textContent =
           window.LanguageSystem?.getText('modal.staging.progress.staging') || 'AI is staging your room…';
       } else {
+        progress.classList.remove('hidden');
+        progressBar.style.width = '0%';
+        progressText.textContent =
+          window.LanguageSystem?.getText('modal.staging.progress.staging') || 'AI is staging your room…';
+
         loadingMessage.classList.remove('hidden');
         loadingMessage.textContent =
           window.LanguageSystem?.getText('modal.staging.progress.staging') || 'AI is staging your room…';
+
+        currentProgress = 5;
+        progressBar.style.width = '5%';
+        isProcessingPhase = true;
+        messageInterval = setInterval(() => {
+          if (isProcessingPhase) {
+            loadingMessage.textContent =
+              messagesArray[Math.floor(Math.random() * messagesArray.length)];
+          }
+        }, 2000);
+
+        aiProgressInterval = setInterval(() => {
+          if (currentProgress < 70) {
+            currentProgress += Math.random() * 2;
+            progressBar.style.width = Math.min(currentProgress, 70) + '%';
+          }
+        }, 300);
 
         try {
           response = await fetch('/api/process-image', {
@@ -471,20 +648,27 @@
             body: formData,
           });
         } catch (e) {
+          clearStagingUiTimers();
           stagePreview.classList.remove('processing');
           loadingMessage.classList.add('hidden');
+          progress.classList.add('hidden');
           throw e;
         }
+
+        if (aiProgressInterval) {
+          clearInterval(aiProgressInterval);
+          aiProgressInterval = null;
+        }
+        currentProgress = Math.max(currentProgress, 75);
+        progressBar.style.width = '75%';
       }
 
       if (!response.ok) {
         clearStagingUiTimers();
         stagePreview.classList.remove('processing');
         loadingMessage.classList.add('hidden');
-        if (useRichGenerationUI) {
-          progress.classList.add('hidden');
-          progressBar.style.width = '0%';
-        }
+        progress.classList.add('hidden');
+        progressBar.style.width = '0%';
         const errorData = await response.json().catch(() => ({}));
         if (errorData.code === 'AUTH_REQUIRED') {
           const authErr = new Error(errorData.error || 'Please sign in to stage images.');
@@ -519,15 +703,12 @@
         throw new Error(errMsg);
       }
 
-      let finalProgressInterval = null;
-      if (useRichGenerationUI) {
-        finalProgressInterval = setInterval(() => {
-          if (currentProgress < 95) {
-            currentProgress += Math.random() * 3;
-            progressBar.style.width = Math.min(currentProgress, 95) + '%';
-          }
-        }, 150);
-      }
+      let finalProgressInterval = setInterval(() => {
+        if (currentProgress < 95) {
+          currentProgress += Math.random() * 3;
+          progressBar.style.width = Math.min(currentProgress, 95) + '%';
+        }
+      }, 150);
 
       const result = await response.json();
 
@@ -736,8 +917,9 @@
         vt.innerHTML = '';
         vt.classList.add('hidden');
       }
-      const ff = document.getElementById('stagify-furniture-file');
-      if (ff) ff.value = '';
+      accumulatedFurnitureFiles = [];
+      if (furnitureFileInput) furnitureFileInput.value = '';
+      renderFurnitureList();
       // Show upload zone, hide viewer
       stageDropzone.classList.remove('hidden');
       imageViewerContainer.classList.add('hidden');

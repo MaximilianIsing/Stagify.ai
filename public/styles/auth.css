@@ -464,6 +464,13 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   color: #fff;
   font-size: 13px;
   font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s ease, box-shadow 0.15s ease;
+}
+.profile-menu__plan--plus:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
 .profile-menu__portal-help {
   display: inline-flex;
