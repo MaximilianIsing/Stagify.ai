@@ -149,6 +149,21 @@
     const loadingMessage = $('#loading-message');
     const stagingLimitViewer = $('#staging-limit-viewer');
     const stagingLimitViewerText = $('#staging-limit-viewer-text');
+    const freeAdOverlay = $('#free-ad-overlay');
+    let freeAdInitialized = false;
+
+    function showFreeAd() {
+      if (!freeAdOverlay) return;
+      freeAdOverlay.classList.remove('hidden');
+      if (!freeAdInitialized) {
+        freeAdInitialized = true;
+        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+      }
+    }
+
+    function hideFreeAd() {
+      if (freeAdOverlay) freeAdOverlay.classList.add('hidden');
+    }
 
     const furnitureFileInput = document.getElementById('stagify-furniture-file');
     const furnitureList = document.getElementById('stagify-furniture-list');
@@ -625,6 +640,8 @@
         loadingMessage.textContent =
           window.LanguageSystem?.getText('modal.staging.progress.staging') || 'AI is staging your room…';
 
+        showFreeAd();
+
         currentProgress = 5;
         progressBar.style.width = '5%';
         isProcessingPhase = true;
@@ -649,6 +666,7 @@
           });
         } catch (e) {
           clearStagingUiTimers();
+          hideFreeAd();
           stagePreview.classList.remove('processing');
           loadingMessage.classList.add('hidden');
           progress.classList.add('hidden');
@@ -665,6 +683,7 @@
 
       if (!response.ok) {
         clearStagingUiTimers();
+        hideFreeAd();
         stagePreview.classList.remove('processing');
         loadingMessage.classList.add('hidden');
         progress.classList.add('hidden');
@@ -730,6 +749,7 @@
             ? [result.image]
             : [];
 
+      hideFreeAd();
       loadingMessage.classList.add('hidden');
       stagePreview.classList.remove('processing');
 
@@ -975,46 +995,17 @@
     }
   })();
 
-  /** Home hero: “{n} free generations left today” + Upgrade link for signed-in free users. */
+  /** Show upgrade nudge for free users below the hero upload button. */
   window.__stagifyUpdateHeroFreeGensLine = function () {
     var el = document.getElementById('hero-free-gens-today');
     if (!el) return;
     var auth = window.StagifyAuth;
-    if (!auth || !auth.getToken || !auth.getToken() || !auth.user) {
+    var isSignedInPro = auth && auth.getToken && auth.getToken() && auth.user && auth.user.plan === 'pro';
+    if (isSignedInPro) {
       el.classList.add('hidden');
       return;
     }
-    var u = auth.user;
-    if (u.plan === 'pro') {
-      el.classList.add('hidden');
-      return;
-    }
-    var lim = u.dailyGenerationLimit != null ? u.dailyGenerationLimit : 3;
-    var used = u.dailyGenerationsUsed != null ? u.dailyGenerationsUsed : 0;
-    var n = Math.max(0, lim - used);
-    function escHtml(s) {
-      return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
-    var tpl = window.LanguageSystem && window.LanguageSystem.getText('hero.freeGensLeft');
-    var upLabel =
-      window.LanguageSystem && window.LanguageSystem.getText('hero.freeGensLeftUpgrade');
-    if (upLabel === 'Loading...' || !upLabel) upLabel = 'Upgrade';
-    if (tpl && tpl !== 'Loading...' && tpl.indexOf('{n}') !== -1) {
-      var before = escHtml(tpl.replace(/\{n\}/g, String(n)));
-      el.innerHTML =
-        before +
-        '<a class="hero-free-gens-upgrade" href="stagify-plus.html">' +
-        escHtml(upLabel) +
-        '</a>';
-    } else {
-      el.innerHTML =
-        escHtml(n + ' free generations left today, ') +
-        '<a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a>';
-    }
+    el.innerHTML = 'Try Stagify+ today — <a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a>';
     el.classList.remove('hidden');
   };
   
