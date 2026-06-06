@@ -2,7 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-const FREE_DAILY_LIMIT = 3;
+// Free plan is unlimited (ad-supported). Set high so existing limit checks never fire.
+const FREE_DAILY_LIMIT = 99999;
 const SESSION_DAYS = 30;
 
 function getStorePath(baseDir) {

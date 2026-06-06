@@ -2483,28 +2483,6 @@ app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
       });
     }
 
-    if (sessionUser) {
-      const check = authStore.canFreeUserGenerate(sessionUser);
-      if (!check.ok) {
-        return res.status(429).json({
-          error: `Daily free limit reached (${check.limit} generations). Upgrade to Stagify+ for unlimited staging.`,
-          code: 'DAILY_LIMIT',
-          dailyGenerationsUsed: check.used,
-          dailyGenerationLimit: check.limit,
-        });
-      }
-    } else {
-      const ipCheck = authStore.canMobileIpGenerate(clientIp);
-      if (!ipCheck.ok) {
-        return res.status(429).json({
-          error: `Daily free limit reached for this network (${ipCheck.limit} generations per day). Sign in to link runs to your account, or try again tomorrow.`,
-          code: 'DAILY_LIMIT',
-          dailyGenerationsUsed: ipCheck.used,
-          dailyGenerationLimit: ipCheck.limit,
-        });
-      }
-    }
-
     await handleVirtualStagingMultipart(req, res, {
       user: sessionUser,
       mobileAnonymous,
