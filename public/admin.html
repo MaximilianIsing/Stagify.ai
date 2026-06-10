@@ -418,12 +418,9 @@
   // ── Render all ──
 
   function renderAll(){
-    renderOverview();
-    renderUsers();
-    renderEnterprise();
-    renderContacts();
-    renderBugs();
-    renderDownloads();
+    [renderOverview,renderUsers,renderEnterprise,renderContacts,renderBugs,renderDownloads].forEach(function(fn){
+      try{fn()}catch(e){console.error('Admin render error in '+fn.name+':',e)}
+    });
   }
 
   function renderOverview(){
@@ -656,7 +653,7 @@
     var totalRev=(totalUses*0.15).toFixed(2);
     var summary=el('div',{style:'display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem'});
     [[totalUses+' total uses','#1e3a8a'],['$'+totalRev+' total revenue','#065f46']].forEach(function(item){
-      summary.appendChild(el('div',{style:'background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:10px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;color:'+item[1]},item[0]));
+      summary.appendChild(el('div',{style:'background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:10px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;color:'+item[1],textContent:item[0]}));
     });
 
     var tbl=el('table',{className:'adm-table'});
