@@ -2459,8 +2459,10 @@ async function handleVirtualStagingMultipart(req, res, meta) {
   }
 
   const updatedUser = user ? authStore.findUserByEmail(user.email) : null;
-  const responseUser =
+  const baseResponseUser =
     user && updatedUser ? authStore.publicUser(updatedUser) : user ? authStore.publicUser(user) : null;
+  // Re-apply enterprise enhancement so the response always reflects the correct plan
+  const responseUser = baseResponseUser ? enhanceUserWithEnterprise(baseResponseUser) : null;
 
   if (images.length === 1) {
     return res.json({
