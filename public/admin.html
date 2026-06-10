@@ -650,21 +650,39 @@
   function renderEnterprise(){
     var wrap=qs('#adm-ent-table');
     if(!data.enterprise.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No enterprise domains configured.</p>';return}
+
+    // Summary bar
+    var totalUses=data.enterprise.reduce(function(s,e){return s+(e.usageCount||0)},0);
+    var totalRev=(totalUses*0.15).toFixed(2);
+    var summary=el('div',{style:'display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem'});
+    [[totalUses+' total uses','#1e3a8a'],['$'+totalRev+' total revenue','#065f46']].forEach(function(item){
+      summary.appendChild(el('div',{style:'background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:10px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;color:'+item[1]},item[0]));
+    });
+
     var tbl=el('table',{className:'adm-table'});
     tbl.appendChild(el('thead',null,[el('tr',null,[
       el('th',{textContent:'Domain'}),el('th',{textContent:'Company'}),el('th',{textContent:'Contact'}),
-      el('th',{textContent:'Phone'}),el('th',{textContent:'Status'}),el('th',{textContent:'Stripe Customer'}),el('th',{textContent:'Created'})
+      el('th',{textContent:'Status'}),el('th',{textContent:'Uses'}),el('th',{textContent:'Revenue ($0.15/use)'}),
+      el('th',{textContent:'Stripe Customer'}),el('th',{textContent:'Created'})
     ])]));
     var tb=el('tbody');
     data.enterprise.forEach(function(e){
+      var uses=e.usageCount||0;
+      var rev='$'+(uses*0.15).toFixed(2);
       tb.appendChild(el('tr',null,[
         el('td',{textContent:e.domain}),el('td',{textContent:e.companyName||'\u2014'}),
-        el('td',{textContent:e.contactEmail||'\u2014'}),el('td',{textContent:e.contactPhone||'\u2014'}),
-        el('td',null,[statusBadge(e.status)]),el('td',{textContent:e.stripeCustomerId||'\u2014'}),
+        el('td',{textContent:e.contactEmail||'\u2014'}),
+        el('td',null,[statusBadge(e.status)]),
+        el('td',{textContent:uses.toLocaleString(),style:'font-weight:600;color:#1e3a8a'}),
+        el('td',{textContent:rev,style:'font-weight:600;color:#065f46'}),
+        el('td',{textContent:e.stripeCustomerId||'\u2014'}),
         el('td',{textContent:fmtDate(e.createdAt)})
       ]));
     });
-    tbl.appendChild(tb);wrap.innerHTML='';wrap.appendChild(tbl);
+    tbl.appendChild(tb);
+    wrap.innerHTML='';
+    wrap.appendChild(summary);
+    wrap.appendChild(tbl);
   }
 
   // ── Contacts ──

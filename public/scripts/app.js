@@ -149,21 +149,44 @@
     const loadingMessage = $('#loading-message');
     const stagingLimitViewer = $('#staging-limit-viewer');
     const stagingLimitViewerText = $('#staging-limit-viewer-text');
-    const freeAdOverlay = $('#free-ad-overlay');
-    let freeAdInitialized = false;
+    const stagingErrorViewer = $('#staging-error-viewer');
+    const stagingErrorViewerText = $('#staging-error-viewer-text');
+    const stagingErrorRetryBtn = $('#staging-error-retry-btn');
 
-    function showFreeAd() {
-      if (!freeAdOverlay) return;
-      freeAdOverlay.classList.remove('hidden');
-      if (!freeAdInitialized) {
-        freeAdInitialized = true;
+    function showStagingError(message) {
+      if (stagingErrorViewerText) stagingErrorViewerText.textContent = message || '';
+      if (stagingErrorViewer) stagingErrorViewer.classList.remove('hidden');
+    }
+    function hideStagingError() {
+      if (stagingErrorViewer) stagingErrorViewer.classList.add('hidden');
+    }
+
+    if (stagingErrorRetryBtn) {
+      stagingErrorRetryBtn.addEventListener('click', () => {
+        hideStagingError();
+        // Trigger the file picker so the user can upload a new image
+        if (stageFileInput) stageFileInput.click();
+      });
+    }
+    const freeAdInline = $('#free-ad-inline');
+    let freeAdPushed = false;
+
+    function initFreeAdBanner() {
+      if (!freeAdInline) return;
+      const u = window.StagifyAuth && window.StagifyAuth.user;
+      if (u && u.plan === 'pro') {
+        freeAdInline.classList.add('hidden');
+        return;
+      }
+      freeAdInline.classList.remove('hidden');
+      if (!freeAdPushed) {
+        freeAdPushed = true;
         try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
       }
     }
 
-    function hideFreeAd() {
-      if (freeAdOverlay) freeAdOverlay.classList.add('hidden');
-    }
+    function showFreeAd() { /* no-op: ad is always visible for free users */ }
+    function hideFreeAd() { /* no-op: ad stays visible for the whole session */ }
 
     const furnitureFileInput = document.getElementById('stagify-furniture-file');
     const furnitureList = document.getElementById('stagify-furniture-list');
@@ -334,6 +357,7 @@
 
     function hideStagingLimitInViewer() {
       if (stagingLimitViewer) stagingLimitViewer.classList.add('hidden');
+      hideStagingError();
     }
 
     function showStagingLimitInViewer(message) {
@@ -707,6 +731,13 @@
               'File is too large. Please upload an image smaller than 100MB.'
           );
         }
+        if (errorData.code === 'NO_IMAGE_GENERATED' || response.status === 422) {
+          const msg = errorData.error || 'This image couldn\'t be staged. Please try a different photo of an interior room.';
+          showStagingError(msg);
+          const noImgErr = new Error(msg);
+          noImgErr.code = 'NO_IMAGE_GENERATED';
+          throw noImgErr;
+        }
         const errMsg =
           response.status === 500
             ? window.LanguageSystem?.getText('errors.badPrompt') || 'Bad prompt inputted'
@@ -740,6 +771,7 @@
       if (result.user && window.StagifyAuth) {
         window.StagifyAuth.user = result.user;
         window.StagifyAuth.applyUserToUI();
+        initFreeAdBanner();
       }
 
       const urls =
@@ -960,6 +992,8 @@
   
     function openModal() {
       modal.classList.remove('hidden');
+      // Ad container is now visible — safe to render
+      initFreeAdBanner();
     }
     function closeModal() {
       modal.classList.add('hidden');
@@ -1016,6 +1050,7 @@
     
     // Load and display contact count
     loadContactCount();
+
     
     // Initialize 3D tilt effect for advantages section and contact cards
     init3DTiltEffect();

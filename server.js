@@ -248,6 +248,8 @@ function reportEnterpriseUsage(domain, quantity = 1) {
     console.warn('[enterprise] Cannot report usage — no Stripe customer for domain:', domain);
     return;
   }
+  // Track usage locally so admin dashboard can show counts + revenue
+  enterpriseStore.recordUsage(domain, quantity);
   stripe.billing.meterEvents
     .create({
       event_name: enterpriseMeterEventName,
@@ -2039,7 +2041,9 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       }
     }
     
-    throw new Error('No image data in AI response');
+    const noImageErr = new Error('No image data in AI response');
+    noImageErr.code = 'NO_IMAGE_GENERATED';
+    throw noImageErr;
   } catch (error) {
     console.error('Error processing staging:', error);
     throw error;
@@ -2496,6 +2500,12 @@ app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
     });
   } catch (error) {
     console.error('Error processing image:', error);
+    if (error.code === 'NO_IMAGE_GENERATED') {
+      return res.status(422).json({
+        error: 'This image couldn\'t be staged. Please try a different photo of an interior room.',
+        code: 'NO_IMAGE_GENERATED',
+      });
+    }
     return res.status(500).json({
       error: 'Image processing failed',
       details: error.message,

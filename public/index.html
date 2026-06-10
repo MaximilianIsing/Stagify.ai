@@ -670,29 +670,32 @@
                         <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Please click "Process photo" first to generate an AI-staged version of your image</div>
                       </div>
                     </div>
-                    <!-- Free-plan ad overlay shown while AI is processing -->
-                    <div id="free-ad-overlay" class="free-ad-overlay hidden" aria-label="Advertisement">
-                      <div class="free-ad-inner">
-                        <span class="free-ad-label">Ad — processing your image…</span>
-                        <!-- Replace data-ad-slot with your AdSense ad slot ID -->
-                        <ins class="adsbygoogle free-ad-unit"
-                             style="display:block"
-                             data-ad-client="ca-pub-3963065765933801"
-                             data-ad-slot="6204905136"
-                             data-ad-format="auto"
-                             data-full-width-responsive="true"></ins>
-                      </div>
-                    </div>
-
                     <div id="staging-limit-viewer" class="staging-limit-viewer hidden" role="alert">
                       <div class="staging-limit-viewer__inner">
                         <p id="staging-limit-viewer-text" class="staging-limit-viewer__text"></p>
                         <a href="stagify-plus.html" class="btn btn-primary staging-limit-viewer__cta" data-lang="errors.dailyLimitCta">View Stagify+</a>
                       </div>
                     </div>
+                    <div id="staging-error-viewer" class="staging-limit-viewer hidden" role="alert">
+                      <div class="staging-limit-viewer__inner">
+                        <p id="staging-error-viewer-text" class="staging-limit-viewer__text"></p>
+                        <button id="staging-error-retry-btn" class="btn btn-primary staging-limit-viewer__cta">Try another image</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+            <!-- Full-width ad banner — visible for free users, hidden once pro is confirmed -->
+            <div id="free-ad-inline" class="free-ad-inline" aria-label="Advertisement">
+              <span class="free-ad-inline__label">Advertisement</span>
+              <span class="free-ad-inline__placeholder">Placeholder for Google AdSense</span>
+              <ins class="adsbygoogle"
+                   style="display:block"
+                   data-ad-client="ca-pub-3963065765933801"
+                   data-ad-slot="6204905136"
+                   data-ad-format="horizontal"
+                   data-full-width-responsive="true"></ins>
             </div>
           </section>
         </div>
