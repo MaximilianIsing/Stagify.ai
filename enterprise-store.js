@@ -150,6 +150,16 @@ export function createEnterpriseStore(baseDir) {
     return read().domains;
   }
 
+  function recordUsage(domain, quantity = 1) {
+    const d = String(domain).trim().toLowerCase();
+    const store = read();
+    const entry = store.domains.find((e) => e.domain === d);
+    if (!entry) return;
+    entry.usageCount = (entry.usageCount || 0) + quantity;
+    entry.updatedAt = new Date().toISOString();
+    write(store);
+  }
+
   return {
     isActiveDomain,
     getDomainEntry,
@@ -158,6 +168,7 @@ export function createEnterpriseStore(baseDir) {
     activateDomain,
     applySubscriptionState,
     getAllDomains,
+    recordUsage,
     getStoreFilePath: () => filePath,
   };
 }
