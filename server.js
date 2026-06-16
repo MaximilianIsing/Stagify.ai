@@ -2068,6 +2068,11 @@ app.get('/bimi-logo.svg', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));
 });
 
+app.get('/logo-full.png', (req, res) => {
+  res.setHeader('Content-Type', 'image/png');
+  res.sendFile(path.join(__dirname, 'public', 'Logo Full.png'));
+});
+
 // Error handling middleware for multer
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
