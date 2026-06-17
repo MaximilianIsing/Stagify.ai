@@ -2099,6 +2099,8 @@ function escapeCsvField(field) {
 
 function logEmailOpenToFile(email, req) {
   try {
+    if (hasEmailEverOpened(email)) return;
+
     const timestamp = new Date().toISOString();
     const ipAddress = req ? (req.ip || req.connection?.remoteAddress || 'unknown') : 'unknown';
     const userAgent = req ? (req.get('user-agent') || 'unknown') : 'unknown';
@@ -2119,75 +2121,99 @@ function logEmailOpenToFile(email, req) {
         if (err) console.error('Error writing to email open log:', err);
       });
     }
+    markEmailOpened(email, timestamp);
   } catch (error) {
     console.error('Error in logEmailOpenToFile:', error);
   }
 }
 
-// Debounce email-open logging so prefetch/scanner hits (often before the real open)
-// don't get counted. We wait for a short burst to finish, then log the best candidate.
-const pendingEmailOpens = new Map();
-const EMAIL_OPEN_DEBOUNCE_MS = 45000;
+// Binary open tracking: each email is either opened or not (once ever, no repeat counts).
+let emailOpenedAt = new Map();
+let emailOpenedLoaded = false;
 
-const EMAIL_OPEN_BOT_UA_PATTERNS = [
-  'curl/', 'wget/', 'python-', 'go-http-client', 'java/', 'httpclient',
-  'proofpoint', 'barracuda', 'mimecast', 'fireeye', 'messagelabs', 'symantec',
-  'cloudflare-health', 'cloudflare-ssl', 'cloudflaredev',
-  'headlesschrome', 'phantomjs', 'selenium', 'puppeteer', 'playwright',
-  'bot', 'crawler', 'spider', 'scanner', 'preview', 'fetch',
-  'facebookexternalhit', 'slackbot', 'twitterbot', 'linkedinbot',
-  'safelinks', 'urldefense', 'atp/', 'emailsecurity',
-];
+function getEmailOpenedFile() {
+  return path.join(getDataLogDir(), 'email_opened.json');
+}
 
-const EMAIL_CLIENT_UA_PATTERNS = [
-  'googleimageproxy',
-  'ggpht.com',        // Gmail image proxy (e.g. "via ggpht.com GoogleImageProxy")
-  'googleimage',
-  'yahoo! slurp',
-  'outlook',
-  'microsoft office',
-  'ms-office',
-  'apple mail',
-  'iphone', 'ipad', 'android',
-  'thunderbird',
-  'protonmail',
-];
+function isStrictEmailClientProxyUa(ua) {
+  const s = (ua || '').toLowerCase().trim();
+  if (!s || s === 'unknown') return false;
+
+  const botPatterns = [
+    'curl/', 'wget/', 'python-', 'go-http-client', 'java/', 'httpclient',
+    'proofpoint', 'barracuda', 'mimecast', 'fireeye', 'messagelabs', 'symantec',
+    'headlesschrome', 'phantomjs', 'selenium', 'puppeteer', 'playwright',
+    'bot', 'crawler', 'spider', 'scanner', 'preview', 'fetch',
+    'facebookexternalhit', 'slackbot', 'twitterbot', 'linkedinbot',
+    'safelinks', 'urldefense', 'atp/', 'emailsecurity', 'cloudflare',
+  ];
+  if (botPatterns.some((p) => s.includes(p))) return false;
+
+  // Only known email-provider image proxies — reject generic browser UAs.
+  if (s.includes('googleimageproxy') || s.includes('ggpht.com')) return true;
+  if (s.includes('yahoo! slurp') || s.includes('yahoomailproxy')) return true;
+  if (s.includes('microsoft office') || s.includes('ms-office') || s.includes('outlook')) return true;
+
+  return false;
+}
 
 function isConfirmedEmailClientOpen(req) {
-  const ua = (req.get('user-agent') || '').toLowerCase().trim();
-  if (!ua || ua === 'unknown') return false;
-  if (EMAIL_OPEN_BOT_UA_PATTERNS.some((p) => ua.includes(p))) return false;
-  return EMAIL_CLIENT_UA_PATTERNS.some((p) => ua.includes(p));
+  return isStrictEmailClientProxyUa(req.get('user-agent'));
 }
 
-function flushPendingEmailOpen(email) {
-  const entry = pendingEmailOpens.get(email);
-  if (!entry) return;
-  pendingEmailOpens.delete(email);
-  if (entry.timer) clearTimeout(entry.timer);
-
-  // Only log confirmed email-client image proxies (Gmail, Outlook, etc.)
-  if (entry.bestScore >= 10) {
-    logEmailOpenToFile(email, entry.bestReq);
+function loadEmailOpened() {
+  if (emailOpenedLoaded) return;
+  emailOpenedLoaded = true;
+  try {
+    const file = getEmailOpenedFile();
+    if (fs.existsSync(file)) {
+      const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+      emailOpenedAt = new Map(Object.entries(data));
+      return;
+    }
+    // Bootstrap from CSV using only strict proxy rows
+    const logFile = path.join(getDataLogDir(), 'email_open_logs.csv');
+    if (!fs.existsSync(logFile)) return;
+    const lines = fs.readFileSync(logFile, 'utf8').trim().split('\n');
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].match(/(?:^|,)("(?:[^"]|"")*"|[^,]*)/g);
+      if (!cols || cols.length < 4) continue;
+      const ts = cols[0].replace(/^,/, '');
+      const em = cols[1].slice(1).replace(/^"|"$/g, '').replace(/""/g, '"').toLowerCase();
+      const ua = cols[3].slice(1).replace(/^"|"$/g, '').replace(/""/g, '"');
+      if (!em || !isStrictEmailClientProxyUa(ua)) continue;
+      if (!emailOpenedAt.has(em)) emailOpenedAt.set(em, ts);
+    }
+    if (emailOpenedAt.size) saveEmailOpened();
+  } catch (error) {
+    console.error('Error loading email opened cache:', error);
+    emailOpenedAt = new Map();
   }
 }
 
-function scheduleEmailOpenLog(email, req) {
-  if (!isConfirmedEmailClientOpen(req)) return;
+function saveEmailOpened() {
+  try {
+    const obj = {};
+    emailOpenedAt.forEach((iso, email) => {
+      obj[email] = iso;
+    });
+    fs.writeFileSync(getEmailOpenedFile(), JSON.stringify(obj, null, 2));
+  } catch (error) {
+    console.error('Error saving email opened cache:', error);
+  }
+}
 
-  let entry = pendingEmailOpens.get(email);
-  const score = 10;
-  if (!entry) {
-    entry = { bestReq: req, bestScore: score, requestCount: 0, timer: null };
-    pendingEmailOpens.set(email, entry);
+function hasEmailEverOpened(email) {
+  loadEmailOpened();
+  return emailOpenedAt.has(email);
+}
+
+function markEmailOpened(email, isoTimestamp) {
+  loadEmailOpened();
+  if (!emailOpenedAt.has(email)) {
+    emailOpenedAt.set(email, isoTimestamp);
+    saveEmailOpened();
   }
-  entry.requestCount += 1;
-  if (score > entry.bestScore) {
-    entry.bestReq = req;
-    entry.bestScore = score;
-  }
-  if (entry.timer) clearTimeout(entry.timer);
-  entry.timer = setTimeout(() => flushPendingEmailOpen(email), EMAIL_OPEN_DEBOUNCE_MS);
 }
 
 // Tracked logo for broker outreach emails — ?email=broker@example.com
@@ -2195,8 +2221,8 @@ app.get('/email/logo.png', (req, res) => {
   const rawEmail = req.query.email;
   if (typeof rawEmail === 'string') {
     const email = decodeURIComponent(rawEmail.trim().toLowerCase());
-    if (email.includes('@') && email.length <= 254) {
-      scheduleEmailOpenLog(email, req);
+    if (email.includes('@') && email.length <= 254 && isConfirmedEmailClientOpen(req)) {
+      logEmailOpenToFile(email, req);
     }
   }
   res.setHeader('Content-Type', 'image/png');

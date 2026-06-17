@@ -245,7 +245,7 @@
         </div>
         <div class="adm-card">
           <h2>Broker Email Opens</h2>
-          <p class="adm-card-sub">Only confirmed email-client opens are counted (e.g. Gmail via ggpht.com / GoogleImageProxy). Generic browser prefetch hits are ignored. Use <code style="font-size:.8rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">https://stagify.ai/email/logo.png?email=broker@example.com</code> in outreach emails.</p>
+          <p class="adm-card-sub">Binary open tracking: each email is either opened or not. Only Gmail/Outlook/Yahoo image-proxy requests count — generic browser or bot hits are ignored. Use <code style="font-size:.8rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">https://stagify.ai/email/logo.png?email=broker@example.com</code> in outreach emails.</p>
           <div id="adm-email-open-summary" style="margin-bottom:1rem"></div>
           <div class="adm-table-wrap" id="adm-email-opens-table"></div>
         </div>
@@ -398,15 +398,7 @@
     qs('#tc-ent').textContent=data.enterprise.length;
     qs('#tc-bugs').textContent=data.bugRows.length;
     qs('#tc-contacts').textContent=data.contactRows.length;
-    qs('#tc-email-opens').textContent=(function(){
-      var seen={};
-      filterConfirmedEmailOpens(data.emailOpenRows).forEach(function(r){
-        if(!r[0]||r[0]==='timestamp')return;
-        var em=(r[1]||'').trim().toLowerCase();
-        if(em)seen[em]=true;
-      });
-      return Object.keys(seen).length;
-    })();
+    qs('#tc-email-opens').textContent=getOpenedEmails().length;
   }
 
   // ── Prompt index ──
@@ -736,95 +728,63 @@
     wrap.appendChild(tbl);
   }
 
-  function isConfirmedEmailClientUa(ua){
+  function isStrictEmailClientProxyUa(ua){
     var s=String(ua||'').toLowerCase().trim();
     if(!s||s==='unknown')return false;
-    var bots=['curl/','wget/','python-','go-http-client','bot','crawler','spider','scanner','preview','proofpoint','barracuda','mimecast'];
+    var bots=['curl/','wget/','python-','go-http-client','bot','crawler','spider','scanner','preview','proofpoint','barracuda','mimecast','cloudflare'];
     for(var i=0;i<bots.length;i++){if(s.indexOf(bots[i])!==-1)return false}
-    var clients=['googleimageproxy','ggpht.com','googleimage','yahoo! slurp','outlook','microsoft office','ms-office','apple mail','iphone','ipad','android','thunderbird','protonmail'];
-    for(var j=0;j<clients.length;j++){if(s.indexOf(clients[j])!==-1)return true}
+    if(s.indexOf('googleimageproxy')!==-1||s.indexOf('ggpht.com')!==-1)return true;
+    if(s.indexOf('yahoo! slurp')!==-1||s.indexOf('yahoomailproxy')!==-1)return true;
+    if(s.indexOf('microsoft office')!==-1||s.indexOf('ms-office')!==-1||s.indexOf('outlook')!==-1)return true;
     return false;
   }
 
-  function filterConfirmedEmailOpens(rows){
-    return rows.filter(function(r){return isConfirmedEmailClientUa(r[3])});
+  function getOpenedEmails(){
+    var byEmail={};
+    data.emailOpenRows.forEach(function(r){
+      if(!r[0]||r[0]==='timestamp')return;
+      if(!isStrictEmailClientProxyUa(r[3]))return;
+      var em=(r[1]||'').trim().toLowerCase();
+      if(!em)return;
+      if(!byEmail[em]||new Date(r[0])<new Date(byEmail[em].openedAt)){
+        byEmail[em]={email:em,openedAt:r[0],ua:r[3]||''};
+      }
+    });
+    return Object.keys(byEmail).map(function(k){return byEmail[k]}).sort(function(a,b){return new Date(b.openedAt)-new Date(a.openedAt)});
   }
 
   // ── Email Opens ──
 
   function renderEmailOpens(filter){
     var q=(filter||'').toLowerCase();
-    var rows=filterConfirmedEmailOpens(data.emailOpenRows.slice().filter(function(r){return r[0]&&r[0]!=='timestamp'}));
-    if(q)rows=rows.filter(function(r){return(r[1]||'').toLowerCase().indexOf(q)!==-1});
-    rows.sort(function(a,b){return new Date(b[0])-new Date(a[0])});
+    var rows=getOpenedEmails();
+    if(q)rows=rows.filter(function(r){return r.email.indexOf(q)!==-1});
 
-    var unique={};
-    rows.forEach(function(r){
-      var em=(r[1]||'').trim().toLowerCase();
-      if(!em)return;
-      if(!unique[em])unique[em]={count:0,first:r[0],last:r[0]};
-      unique[em].count++;
-      if(new Date(r[0])<new Date(unique[em].first))unique[em].first=r[0];
-      if(new Date(r[0])>new Date(unique[em].last))unique[em].last=r[0];
-    });
-    var uniqueCount=Object.keys(unique).length;
-
-    qs('#adm-email-open-count').textContent=rows.length+' open'+(rows.length!==1?'s':'')+' · '+uniqueCount+' unique';
+    qs('#adm-email-open-count').textContent=rows.length;
 
     var summaryWrap=qs('#adm-email-open-summary');
     summaryWrap.innerHTML='';
     if(rows.length){
-      var summary=el('div',{style:'display:flex;gap:1.5rem;flex-wrap:wrap'});
-      [
-        [rows.length+' total opens','#1e3a8a'],
-        [uniqueCount+' unique emails opened','#065f46'],
-      ].forEach(function(item){
-        summary.appendChild(el('div',{style:'background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:10px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;color:'+item[1],textContent:item[0]}));
-      });
-      summaryWrap.appendChild(summary);
-
-      if(uniqueCount){
-        var utbl=el('table',{className:'adm-table',style:'margin-bottom:1rem'});
-        utbl.appendChild(el('thead',null,[el('tr',null,[
-          el('th',{textContent:'Email'}),el('th',{textContent:'Opens'}),
-          el('th',{textContent:'First Open'}),el('th',{textContent:'Last Open'})
-        ])]));
-        var utb=el('tbody');
-        Object.keys(unique).sort(function(a,b){return unique[b].count-unique[a].count}).slice(0,50).forEach(function(em){
-          var u=unique[em];
-          utb.appendChild(el('tr',null,[
-            el('td',{textContent:em}),
-            el('td',{textContent:String(u.count),style:'font-weight:600;color:#1e3a8a'}),
-            el('td',{textContent:fmtDateTime(u.first)}),
-            el('td',{textContent:fmtDateTime(u.last)})
-          ]));
-        });
-        utbl.appendChild(utb);
-        summaryWrap.appendChild(el('h3',{textContent:'By Recipient',style:'font-size:.95rem;margin:1rem 0 .5rem;color:#334155'}));
-        summaryWrap.appendChild(utbl);
-      }
+      summaryWrap.appendChild(el('div',{style:'background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:10px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;color:#065f46',textContent:rows.length+' recipient'+(rows.length!==1?'s':'')+' opened your email'}));
     }
 
     var wrap=qs('#adm-email-opens-table');
-    if(!rows.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No email opens recorded yet.</p>';return}
+    if(!rows.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No confirmed opens yet.</p>';return}
     var tbl=el('table',{className:'adm-table'});
     tbl.appendChild(el('thead',null,[el('tr',null,[
-      el('th',{textContent:'When'}),el('th',{textContent:'Email'}),
-      el('th',{textContent:'IP'}),el('th',{textContent:'User Agent'})
+      el('th',{textContent:'Email'}),el('th',{textContent:'Opened'}),
+      el('th',{textContent:'Opened At'}),el('th',{textContent:'Client'})
     ])]));
     var tb=el('tbody');
-    rows.slice(0,200).forEach(function(r){
+    rows.forEach(function(r){
       tb.appendChild(el('tr',null,[
-        el('td',{textContent:fmtDateTime(r[0])}),
-        el('td',{textContent:r[1]||'\u2014'}),
-        el('td',{textContent:r[2]||'\u2014'}),
-        el('td',{textContent:(r[3]||'').slice(0,80)||'\u2014'})
+        el('td',{textContent:r.email}),
+        el('td',null,[el('span',{className:'adm-badge adm-badge-pro',textContent:'Yes'})]),
+        el('td',{textContent:fmtDateTime(r.openedAt)}),
+        el('td',{textContent:(r.ua||'').slice(0,70)||'\u2014'})
       ]));
     });
-    tbl.appendChild(tb);wrap.innerHTML='';
-    wrap.appendChild(el('h3',{textContent:'All Events',style:'font-size:.95rem;margin:0 0 .5rem;color:#334155'}));
-    if(rows.length>200)wrap.appendChild(el('p',{style:'font-size:.72rem;color:#94a3b8;margin:0 0 .5rem',textContent:'Showing 200 of '+rows.length}));
-    wrap.appendChild(tbl);
+    tbl.appendChild(tb);wrap.innerHTML='';wrap.appendChild(tbl);
   }
 
   // ── Bug Reports ──
