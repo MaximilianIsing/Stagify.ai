@@ -183,6 +183,7 @@
         <button class="adm-tab" data-tab="users">Users <span class="adm-tab-count" id="tc-users">0</span></button>
         <button class="adm-tab" data-tab="enterprise">Enterprise <span class="adm-tab-count" id="tc-ent">0</span></button>
         <button class="adm-tab" data-tab="contacts">Contacts <span class="adm-tab-count" id="tc-contacts">0</span></button>
+        <button class="adm-tab" data-tab="email-opens">Email Opens <span class="adm-tab-count" id="tc-email-opens">0</span></button>
         <button class="adm-tab" data-tab="bugs">Bugs <span class="adm-tab-count" id="tc-bugs">0</span></button>
         <button class="adm-tab" data-tab="downloads">Downloads</button>
       </div>
@@ -237,6 +238,19 @@
         </div>
       </div>
 
+      <div class="adm-panel" id="panel-email-opens">
+        <div class="adm-toolbar">
+          <input type="text" class="adm-search" id="adm-email-open-search" placeholder="Search by email...">
+          <span class="adm-result-count" id="adm-email-open-count"></span>
+        </div>
+        <div class="adm-card">
+          <h2>Broker Email Opens</h2>
+          <p class="adm-card-sub">Tracked when recipients load the footer logo. Use <code style="font-size:.8rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">https://stagify.ai/email/logo.png?email=broker@example.com</code> in outreach emails.</p>
+          <div id="adm-email-open-summary" style="margin-bottom:1rem"></div>
+          <div class="adm-table-wrap" id="adm-email-opens-table"></div>
+        </div>
+      </div>
+
       <div class="adm-panel" id="panel-bugs">
         <div class="adm-toolbar">
           <input type="text" class="adm-search" id="adm-bug-search" placeholder="Search bug reports...">
@@ -268,7 +282,7 @@
   var _sessionStart = 0;
   var _loginAttempts = 0;
   var _lockoutUntil = 0;
-  var data = { users:[], promptRows:[], chatRows:[], bugRows:[], maskRows:[], contactRows:[], enterprise:[] };
+  var data = { users:[], promptRows:[], chatRows:[], bugRows:[], maskRows:[], contactRows:[], emailOpenRows:[], enterprise:[] };
   var userFilter = 'all';
 
   function qs(s){return document.querySelector(s)}
@@ -353,6 +367,7 @@
       apiFetchQ('/bugreports').then(function(r){return r.text()}).catch(function(){return''}),
       apiFetchQ('/masklogs').then(function(r){return r.text()}).catch(function(){return''}),
       apiFetchQ('/contactlogs').then(function(r){return r.text()}).catch(function(){return''}),
+      apiFetchQ('/email-open-logs').then(function(r){return r.text()}).catch(function(){return''}),
       apiFetchQ('/enterprise-domains').then(function(r){return r.json()}).catch(function(){return{domains:[]}})
     ]).then(function(res){
       data.users=(res[0]&&res[0].users)||[];
@@ -361,7 +376,8 @@
       data.bugRows=parseCSV(res[3]);
       data.maskRows=parseCSV(res[4]);
       data.contactRows=parseCSV(res[5]);
-      data.enterprise=(res[6]&&res[6].domains)||[];
+      data.emailOpenRows=parseCSV(res[6]);
+      data.enterprise=(res[7]&&res[7].domains)||[];
       updateTabCounts();
       renderAll();
       qs('#adm-last-refresh').textContent='Updated '+new Date().toLocaleTimeString();
@@ -372,7 +388,7 @@
   }
 
   function showLoading(){
-    ['adm-stats','adm-recent-signups','adm-top-users','adm-users-table','adm-ent-table','adm-bugs-table','adm-contacts-table','adm-chart'].forEach(function(id){
+    ['adm-stats','adm-recent-signups','adm-top-users','adm-users-table','adm-ent-table','adm-bugs-table','adm-contacts-table','adm-email-opens-table','adm-email-open-summary','adm-chart'].forEach(function(id){
       var e=document.getElementById(id);if(e)e.innerHTML='<div class="adm-loading"><span class="adm-spinner"></span>Loading\u2026</div>';
     });
   }
@@ -382,6 +398,7 @@
     qs('#tc-ent').textContent=data.enterprise.length;
     qs('#tc-bugs').textContent=data.bugRows.length;
     qs('#tc-contacts').textContent=data.contactRows.length;
+    qs('#tc-email-opens').textContent=data.emailOpenRows.length;
   }
 
   // ── Prompt index ──
@@ -418,7 +435,7 @@
   // ── Render all ──
 
   function renderAll(){
-    [renderOverview,renderUsers,renderEnterprise,renderContacts,renderBugs,renderDownloads].forEach(function(fn){
+    [renderOverview,renderUsers,renderEnterprise,renderContacts,renderEmailOpens,renderBugs,renderDownloads].forEach(function(fn){
       try{fn()}catch(e){console.error('Admin render error in '+fn.name+':',e)}
     });
   }
@@ -711,6 +728,83 @@
     wrap.appendChild(tbl);
   }
 
+  // ── Email Opens ──
+
+  function renderEmailOpens(filter){
+    var q=(filter||'').toLowerCase();
+    var rows=data.emailOpenRows.slice().filter(function(r){return r[0]&&r[0]!=='timestamp'});
+    if(q)rows=rows.filter(function(r){return(r[1]||'').toLowerCase().indexOf(q)!==-1});
+    rows.sort(function(a,b){return new Date(b[0])-new Date(a[0])});
+
+    var unique={};
+    rows.forEach(function(r){
+      var em=(r[1]||'').trim().toLowerCase();
+      if(!em)return;
+      if(!unique[em])unique[em]={count:0,first:r[0],last:r[0]};
+      unique[em].count++;
+      if(new Date(r[0])<new Date(unique[em].first))unique[em].first=r[0];
+      if(new Date(r[0])>new Date(unique[em].last))unique[em].last=r[0];
+    });
+    var uniqueCount=Object.keys(unique).length;
+
+    qs('#adm-email-open-count').textContent=rows.length+' open'+(rows.length!==1?'s':'')+' · '+uniqueCount+' unique';
+
+    var summaryWrap=qs('#adm-email-open-summary');
+    summaryWrap.innerHTML='';
+    if(rows.length){
+      var summary=el('div',{style:'display:flex;gap:1.5rem;flex-wrap:wrap'});
+      [
+        [rows.length+' total opens','#1e3a8a'],
+        [uniqueCount+' unique emails opened','#065f46'],
+      ].forEach(function(item){
+        summary.appendChild(el('div',{style:'background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:10px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;color:'+item[1],textContent:item[0]}));
+      });
+      summaryWrap.appendChild(summary);
+
+      if(uniqueCount){
+        var utbl=el('table',{className:'adm-table',style:'margin-bottom:1rem'});
+        utbl.appendChild(el('thead',null,[el('tr',null,[
+          el('th',{textContent:'Email'}),el('th',{textContent:'Opens'}),
+          el('th',{textContent:'First Open'}),el('th',{textContent:'Last Open'})
+        ])]));
+        var utb=el('tbody');
+        Object.keys(unique).sort(function(a,b){return unique[b].count-unique[a].count}).slice(0,50).forEach(function(em){
+          var u=unique[em];
+          utb.appendChild(el('tr',null,[
+            el('td',{textContent:em}),
+            el('td',{textContent:String(u.count),style:'font-weight:600;color:#1e3a8a'}),
+            el('td',{textContent:fmtDateTime(u.first)}),
+            el('td',{textContent:fmtDateTime(u.last)})
+          ]));
+        });
+        utbl.appendChild(utb);
+        summaryWrap.appendChild(el('h3',{textContent:'By Recipient',style:'font-size:.95rem;margin:1rem 0 .5rem;color:#334155'}));
+        summaryWrap.appendChild(utbl);
+      }
+    }
+
+    var wrap=qs('#adm-email-opens-table');
+    if(!rows.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No email opens recorded yet.</p>';return}
+    var tbl=el('table',{className:'adm-table'});
+    tbl.appendChild(el('thead',null,[el('tr',null,[
+      el('th',{textContent:'When'}),el('th',{textContent:'Email'}),
+      el('th',{textContent:'IP'}),el('th',{textContent:'User Agent'})
+    ])]));
+    var tb=el('tbody');
+    rows.slice(0,200).forEach(function(r){
+      tb.appendChild(el('tr',null,[
+        el('td',{textContent:fmtDateTime(r[0])}),
+        el('td',{textContent:r[1]||'\u2014'}),
+        el('td',{textContent:r[2]||'\u2014'}),
+        el('td',{textContent:(r[3]||'').slice(0,80)||'\u2014'})
+      ]));
+    });
+    tbl.appendChild(tb);wrap.innerHTML='';
+    wrap.appendChild(el('h3',{textContent:'All Events',style:'font-size:.95rem;margin:0 0 .5rem;color:#334155'}));
+    if(rows.length>200)wrap.appendChild(el('p',{style:'font-size:.72rem;color:#94a3b8;margin:0 0 .5rem',textContent:'Showing 200 of '+rows.length}));
+    wrap.appendChild(tbl);
+  }
+
   // ── Bug Reports ──
 
   function renderBugs(filter){
@@ -747,6 +841,7 @@
     var files=[
       {label:'Prompt Logs',url:'/promptlogs',file:'prompt_logs.csv'},
       {label:'Contact Logs',url:'/contactlogs',file:'contact_logs.csv'},
+      {label:'Email Open Logs',url:'/email-open-logs',file:'email_open_logs.csv'},
       {label:'Chat Logs',url:'/chatlogs',file:'chat_logs.csv'},
       {label:'Bug Reports',url:'/bugreports',file:'bug_reports.csv'},
       {label:'Mask Logs',url:'/masklogs',file:'mask_logs.csv'},
@@ -799,6 +894,7 @@
   qs('#adm-user-search').addEventListener('input',function(){renderUsers(this.value)});
   qs('#adm-bug-search').addEventListener('input',function(){renderBugs(this.value)});
   qs('#adm-contact-search').addEventListener('input',function(){renderContacts(this.value)});
+  qs('#adm-email-open-search').addEventListener('input',function(){renderEmailOpens(this.value)});
 
   // ── Refresh ──
 
