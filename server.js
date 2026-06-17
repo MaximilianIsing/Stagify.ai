@@ -2124,13 +2124,87 @@ function logEmailOpenToFile(email, req) {
   }
 }
 
+// Debounce email-open logging so prefetch/scanner hits (often before the real open)
+// don't get counted. We wait for a short burst to finish, then log the best candidate.
+const pendingEmailOpens = new Map();
+const EMAIL_OPEN_DEBOUNCE_MS = 45000;
+
+const EMAIL_OPEN_BOT_UA_PATTERNS = [
+  'curl/', 'wget/', 'python-', 'go-http-client', 'java/', 'httpclient',
+  'proofpoint', 'barracuda', 'mimecast', 'fireeye', 'messagelabs', 'symantec',
+  'cloudflare-health', 'cloudflare-ssl', 'cloudflaredev',
+  'headlesschrome', 'phantomjs', 'selenium', 'puppeteer', 'playwright',
+  'bot', 'crawler', 'spider', 'scanner', 'preview', 'fetch',
+  'facebookexternalhit', 'slackbot', 'twitterbot', 'linkedinbot',
+  'safelinks', 'urldefense', 'atp/', 'emailsecurity',
+];
+
+const EMAIL_CLIENT_UA_PATTERNS = [
+  'googleimageproxy',
+  'yahoo! slurp',
+  'outlook',
+  'microsoft office',
+  'ms-office',
+  'apple mail',
+  'iphone', 'ipad', 'android',
+  'thunderbird',
+  'protonmail',
+];
+
+function scoreEmailOpenRequest(req) {
+  const ua = (req.get('user-agent') || '').toLowerCase().trim();
+  if (!ua || ua === 'unknown') return -1;
+  if (EMAIL_OPEN_BOT_UA_PATTERNS.some((p) => ua.includes(p))) return -1;
+  if (EMAIL_CLIENT_UA_PATTERNS.some((p) => ua.includes(p))) return 10;
+  // Generic browser UA — could be a scanner or a real client; treat as low confidence
+  return 3;
+}
+
+function flushPendingEmailOpen(email) {
+  const entry = pendingEmailOpens.get(email);
+  if (!entry) return;
+  pendingEmailOpens.delete(email);
+  if (entry.timer) clearTimeout(entry.timer);
+
+  const { bestReq, bestScore, requestCount } = entry;
+  // Confident signal from a real email-client image proxy (Gmail, Outlook, etc.)
+  if (bestScore >= 10) {
+    logEmailOpenToFile(email, bestReq);
+    return;
+  }
+  // Lone low-confidence hit — uncommon client, but no prefetch burst detected
+  if (bestScore >= 3 && requestCount === 1) {
+    logEmailOpenToFile(email, bestReq);
+    return;
+  }
+  // Multiple low-confidence hits in a burst = scanners/CDN prefetch — skip
+}
+
+function scheduleEmailOpenLog(email, req) {
+  const score = scoreEmailOpenRequest(req);
+  if (score < 0) return;
+
+  let entry = pendingEmailOpens.get(email);
+  if (!entry) {
+    entry = { bestReq: req, bestScore: score, requestCount: 0, timer: null };
+    pendingEmailOpens.set(email, entry);
+  }
+  entry.requestCount += 1;
+  if (score > entry.bestScore) {
+    entry.bestReq = req;
+    entry.bestScore = score;
+  }
+  if (entry.timer) clearTimeout(entry.timer);
+  entry.timer = setTimeout(() => flushPendingEmailOpen(email), EMAIL_OPEN_DEBOUNCE_MS);
+}
+
 // Tracked logo for broker outreach emails — ?email=broker@example.com
 app.get('/email/logo.png', (req, res) => {
   const rawEmail = req.query.email;
   if (typeof rawEmail === 'string') {
     const email = decodeURIComponent(rawEmail.trim().toLowerCase());
     if (email.includes('@') && email.length <= 254) {
-      logEmailOpenToFile(email, req);
+      scheduleEmailOpenLog(email, req);
     }
   }
   res.setHeader('Content-Type', 'image/png');
