@@ -245,7 +245,7 @@
         </div>
         <div class="adm-card">
           <h2>Broker Email Opens</h2>
-          <p class="adm-card-sub">Tracked when recipients load the footer logo. Prefetch/scanner hits are filtered — only likely real opens are logged (Gmail, Outlook, Apple Mail, etc.). Use <code style="font-size:.8rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">https://stagify.ai/email/logo.png?email=broker@example.com</code> in outreach emails.</p>
+          <p class="adm-card-sub">Only confirmed email-client opens are counted (e.g. Gmail via ggpht.com / GoogleImageProxy). Generic browser prefetch hits are ignored. Use <code style="font-size:.8rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">https://stagify.ai/email/logo.png?email=broker@example.com</code> in outreach emails.</p>
           <div id="adm-email-open-summary" style="margin-bottom:1rem"></div>
           <div class="adm-table-wrap" id="adm-email-opens-table"></div>
         </div>
@@ -400,7 +400,7 @@
     qs('#tc-contacts').textContent=data.contactRows.length;
     qs('#tc-email-opens').textContent=(function(){
       var seen={};
-      data.emailOpenRows.forEach(function(r){
+      filterConfirmedEmailOpens(data.emailOpenRows).forEach(function(r){
         if(!r[0]||r[0]==='timestamp')return;
         var em=(r[1]||'').trim().toLowerCase();
         if(em)seen[em]=true;
@@ -736,11 +736,25 @@
     wrap.appendChild(tbl);
   }
 
+  function isConfirmedEmailClientUa(ua){
+    var s=String(ua||'').toLowerCase().trim();
+    if(!s||s==='unknown')return false;
+    var bots=['curl/','wget/','python-','go-http-client','bot','crawler','spider','scanner','preview','proofpoint','barracuda','mimecast'];
+    for(var i=0;i<bots.length;i++){if(s.indexOf(bots[i])!==-1)return false}
+    var clients=['googleimageproxy','ggpht.com','googleimage','yahoo! slurp','outlook','microsoft office','ms-office','apple mail','iphone','ipad','android','thunderbird','protonmail'];
+    for(var j=0;j<clients.length;j++){if(s.indexOf(clients[j])!==-1)return true}
+    return false;
+  }
+
+  function filterConfirmedEmailOpens(rows){
+    return rows.filter(function(r){return isConfirmedEmailClientUa(r[3])});
+  }
+
   // ── Email Opens ──
 
   function renderEmailOpens(filter){
     var q=(filter||'').toLowerCase();
-    var rows=data.emailOpenRows.slice().filter(function(r){return r[0]&&r[0]!=='timestamp'});
+    var rows=filterConfirmedEmailOpens(data.emailOpenRows.slice().filter(function(r){return r[0]&&r[0]!=='timestamp'}));
     if(q)rows=rows.filter(function(r){return(r[1]||'').toLowerCase().indexOf(q)!==-1});
     rows.sort(function(a,b){return new Date(b[0])-new Date(a[0])});
 

@@ -2141,6 +2141,8 @@ const EMAIL_OPEN_BOT_UA_PATTERNS = [
 
 const EMAIL_CLIENT_UA_PATTERNS = [
   'googleimageproxy',
+  'ggpht.com',        // Gmail image proxy (e.g. "via ggpht.com GoogleImageProxy")
+  'googleimage',
   'yahoo! slurp',
   'outlook',
   'microsoft office',
@@ -2151,13 +2153,11 @@ const EMAIL_CLIENT_UA_PATTERNS = [
   'protonmail',
 ];
 
-function scoreEmailOpenRequest(req) {
+function isConfirmedEmailClientOpen(req) {
   const ua = (req.get('user-agent') || '').toLowerCase().trim();
-  if (!ua || ua === 'unknown') return -1;
-  if (EMAIL_OPEN_BOT_UA_PATTERNS.some((p) => ua.includes(p))) return -1;
-  if (EMAIL_CLIENT_UA_PATTERNS.some((p) => ua.includes(p))) return 10;
-  // Generic browser UA — could be a scanner or a real client; treat as low confidence
-  return 3;
+  if (!ua || ua === 'unknown') return false;
+  if (EMAIL_OPEN_BOT_UA_PATTERNS.some((p) => ua.includes(p))) return false;
+  return EMAIL_CLIENT_UA_PATTERNS.some((p) => ua.includes(p));
 }
 
 function flushPendingEmailOpen(email) {
@@ -2166,25 +2166,17 @@ function flushPendingEmailOpen(email) {
   pendingEmailOpens.delete(email);
   if (entry.timer) clearTimeout(entry.timer);
 
-  const { bestReq, bestScore, requestCount } = entry;
-  // Confident signal from a real email-client image proxy (Gmail, Outlook, etc.)
-  if (bestScore >= 10) {
-    logEmailOpenToFile(email, bestReq);
-    return;
+  // Only log confirmed email-client image proxies (Gmail, Outlook, etc.)
+  if (entry.bestScore >= 10) {
+    logEmailOpenToFile(email, entry.bestReq);
   }
-  // Lone low-confidence hit — uncommon client, but no prefetch burst detected
-  if (bestScore >= 3 && requestCount === 1) {
-    logEmailOpenToFile(email, bestReq);
-    return;
-  }
-  // Multiple low-confidence hits in a burst = scanners/CDN prefetch — skip
 }
 
 function scheduleEmailOpenLog(email, req) {
-  const score = scoreEmailOpenRequest(req);
-  if (score < 0) return;
+  if (!isConfirmedEmailClientOpen(req)) return;
 
   let entry = pendingEmailOpens.get(email);
+  const score = 10;
   if (!entry) {
     entry = { bestReq: req, bestScore: score, requestCount: 0, timer: null };
     pendingEmailOpens.set(email, entry);
