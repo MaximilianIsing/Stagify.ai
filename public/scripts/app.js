@@ -122,6 +122,7 @@
     const processingPlaceholder = $('#processing-placeholder');
     const toggleBeforeBtn = $('#toggle-before');
     const toggleAfterBtn = $('#toggle-after');
+    const maskEditBtn = $('#mask-edit-btn');
   
     const heroUpload = $('#hero-upload');
     const navUpload = $('#nav-upload');
@@ -168,26 +169,6 @@
         if (stageFileInput) stageFileInput.click();
       });
     }
-    const freeAdInline = $('#free-ad-inline');
-    let freeAdPushed = false;
-
-    function initFreeAdBanner() {
-      if (!freeAdInline) return;
-      const u = window.StagifyAuth && window.StagifyAuth.user;
-      if (u && u.plan === 'pro') {
-        freeAdInline.classList.add('hidden');
-        return;
-      }
-      freeAdInline.classList.remove('hidden');
-      if (!freeAdPushed) {
-        freeAdPushed = true;
-        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
-      }
-    }
-
-    function showFreeAd() { /* no-op: ad is always visible for free users */ }
-    function hideFreeAd() { /* no-op: ad stays visible for the whole session */ }
-
     const furnitureFileInput = document.getElementById('stagify-furniture-file');
     const furnitureList = document.getElementById('stagify-furniture-list');
     const furnitureAddBtn = document.getElementById('stagify-furniture-add-btn');
@@ -664,8 +645,6 @@
         loadingMessage.textContent =
           window.LanguageSystem?.getText('modal.staging.progress.staging') || 'AI is staging your room…';
 
-        showFreeAd();
-
         currentProgress = 5;
         progressBar.style.width = '5%';
         isProcessingPhase = true;
@@ -690,7 +669,6 @@
           });
         } catch (e) {
           clearStagingUiTimers();
-          hideFreeAd();
           stagePreview.classList.remove('processing');
           loadingMessage.classList.add('hidden');
           progress.classList.add('hidden');
@@ -707,7 +685,6 @@
 
       if (!response.ok) {
         clearStagingUiTimers();
-        hideFreeAd();
         stagePreview.classList.remove('processing');
         loadingMessage.classList.add('hidden');
         progress.classList.add('hidden');
@@ -771,7 +748,6 @@
       if (result.user && window.StagifyAuth) {
         window.StagifyAuth.user = result.user;
         window.StagifyAuth.applyUserToUI();
-        initFreeAdBanner();
       }
 
       const urls =
@@ -781,7 +757,6 @@
             ? [result.image]
             : [];
 
-      hideFreeAd();
       loadingMessage.classList.add('hidden');
       stagePreview.classList.remove('processing');
 
@@ -808,6 +783,35 @@
     }
   
     // Toggle between Before and After views
+    function isProUser() {
+      const u = window.StagifyAuth && window.StagifyAuth.user;
+      return !!(u && u.plan === 'pro');
+    }
+
+    function positionMaskFab() {
+      if (!maskEditBtn || maskEditBtn.classList.contains('hidden')) return;
+      if (!canvas1 || !canvas1.offsetHeight) return;
+      // Anchor the button to the bottom-right of the rendered image, not the viewer box
+      const imageBottom = canvas1.offsetTop + canvas1.offsetHeight;
+      const top = imageBottom - maskEditBtn.offsetHeight - 12;
+      maskEditBtn.style.top = Math.max(top, 12) + 'px';
+      maskEditBtn.style.bottom = 'auto';
+    }
+
+    function updateMaskButtonVisibility() {
+      if (!maskEditBtn) return;
+      const onAfter = toggleAfterBtn && toggleAfterBtn.classList.contains('active');
+      if (isProUser() && hasProcessedImage && onAfter) {
+        maskEditBtn.classList.remove('hidden');
+        positionMaskFab();
+        requestAnimationFrame(positionMaskFab);
+      } else {
+        maskEditBtn.classList.add('hidden');
+      }
+    }
+
+    window.addEventListener('resize', positionMaskFab);
+
     function showBeforeView() {
       stagePreview.classList.remove('hidden');
       canvas1.classList.add('hidden');
@@ -817,6 +821,7 @@
       if (stagePreview.src) {
         processingPlaceholder.style.display = 'none';
       }
+      updateMaskButtonVisibility();
     }
   
     function showAfterView() {
@@ -830,6 +835,7 @@
       } else {
         processingPlaceholder.style.display = 'none';
       }
+      updateMaskButtonVisibility();
     }
   
     // Add toggle event listeners
@@ -957,6 +963,318 @@
       link.href = canvas1.toDataURL('image/png');
       link.click();
     });
+
+    // ── Mask editor for staged "After" images (pro only) ──
+    (function setupStageMaskEditor() {
+      const maskModal = $('#stage-mask-modal');
+      if (!maskEditBtn || !maskModal) return;
+
+      const baseCanvas = $('#stage-mask-base-canvas');
+      const drawCanvas = $('#stage-mask-draw-canvas');
+      const brushSlider = $('#stage-mask-brush-slider');
+      const brushSizeLabel = $('#stage-mask-brush-size');
+      const promptInput = $('#stage-mask-prompt');
+      const cancelBtn = $('#stage-mask-cancel');
+      const clearBtn = $('#stage-mask-clear');
+      const submitBtn = $('#stage-mask-submit');
+      const canvasContainer = maskModal.querySelector('.stage-mask-canvas-container');
+
+      let brushSize = 50;
+      let drawing = false;
+      let lastX = null;
+      let lastY = null;
+      let scaleX = 1;
+      let scaleY = 1;
+
+      function isProcessing() {
+        return canvasContainer && canvasContainer.classList.contains('processing');
+      }
+
+      function openEditor() {
+        if (!canvas1.width) return;
+        const src = canvas1.toDataURL('image/png');
+        const img = new Image();
+        img.onload = () => {
+          const maxHeight = window.innerHeight * 0.6;
+          const maxWidth = Math.min(window.innerWidth * 0.85, 860);
+          let dispW = img.width;
+          let dispH = img.height;
+          if (dispH > maxHeight) { dispW = (maxHeight / dispH) * dispW; dispH = maxHeight; }
+          if (dispW > maxWidth) { dispH = (maxWidth / dispW) * dispH; dispW = maxWidth; }
+
+          baseCanvas.width = img.width;
+          baseCanvas.height = img.height;
+          baseCanvas.style.width = dispW + 'px';
+          baseCanvas.style.height = dispH + 'px';
+          baseCanvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+
+          drawCanvas.width = img.width;
+          drawCanvas.height = img.height;
+          drawCanvas.style.width = dispW + 'px';
+          drawCanvas.style.height = dispH + 'px';
+          drawCanvas.getContext('2d').clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+
+          scaleX = dispW / img.width;
+          scaleY = dispH / img.height;
+
+          if (promptInput) promptInput.value = '';
+          if (canvasContainer) canvasContainer.classList.remove('processing');
+          drawCanvas.style.pointerEvents = 'auto';
+          drawCanvas.style.cursor = 'crosshair';
+          updateSubmitState();
+          maskModal.classList.add('active');
+          maskModal.setAttribute('aria-hidden', 'false');
+        };
+        img.src = src;
+      }
+
+      function closeEditor() {
+        maskModal.classList.remove('active');
+        maskModal.setAttribute('aria-hidden', 'true');
+        clearDraw();
+        if (canvasContainer) canvasContainer.classList.remove('processing');
+      }
+
+      function clearDraw() {
+        const ctx = drawCanvas.getContext('2d');
+        ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        updateSubmitState();
+      }
+
+      function maskHasContent() {
+        if (!drawCanvas.width || !drawCanvas.height) return false;
+        const d = drawCanvas.getContext('2d').getImageData(0, 0, drawCanvas.width, drawCanvas.height).data;
+        for (let i = 3; i < d.length; i += 4) {
+          if (d[i] > 0) return true;
+        }
+        return false;
+      }
+
+      function updateSubmitState() {
+        if (!submitBtn) return;
+        const hasPrompt = promptInput && promptInput.value.trim().length > 0;
+        submitBtn.disabled = !maskHasContent() || !hasPrompt;
+      }
+
+      function paint(e) {
+        if (!drawing || isProcessing()) return;
+        const rect = drawCanvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / scaleX;
+        const y = (e.clientY - rect.top) / scaleY;
+        const ctx = drawCanvas.getContext('2d');
+        ctx.globalCompositeOperation = 'lighten';
+
+        function dab(px, py) {
+          const g = ctx.createRadialGradient(px, py, 0, px, py, brushSize / 2);
+          g.addColorStop(0, 'rgba(37, 99, 235, 0.5)');
+          g.addColorStop(0.7, 'rgba(37, 99, 235, 0.3)');
+          g.addColorStop(1, 'rgba(37, 99, 235, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(px, py, brushSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        if (lastX !== null && lastY !== null) {
+          const dx = x - lastX;
+          const dy = y - lastY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const steps = Math.max(1, Math.floor(dist / (brushSize / 4)));
+          for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            dab(lastX + dx * t, lastY + dy * t);
+          }
+        } else {
+          dab(x, y);
+        }
+        lastX = x;
+        lastY = y;
+        ctx.globalCompositeOperation = 'source-over';
+        updateSubmitState();
+      }
+
+      function startDraw(e) {
+        if (isProcessing()) return;
+        drawing = true;
+        lastX = null;
+        lastY = null;
+        paint(e);
+      }
+
+      function stopDraw() {
+        drawing = false;
+        lastX = null;
+        lastY = null;
+        updateSubmitState();
+      }
+
+      drawCanvas.addEventListener('mousedown', startDraw);
+      drawCanvas.addEventListener('mousemove', paint);
+      drawCanvas.addEventListener('mouseup', stopDraw);
+      drawCanvas.addEventListener('mouseleave', stopDraw);
+      drawCanvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const t = e.touches[0];
+        startDraw({ clientX: t.clientX, clientY: t.clientY });
+      });
+      drawCanvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const t = e.touches[0];
+        paint({ clientX: t.clientX, clientY: t.clientY });
+      });
+      drawCanvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDraw(); });
+
+      if (brushSlider) brushSlider.addEventListener('input', (e) => {
+        brushSize = parseInt(e.target.value, 10);
+        if (brushSizeLabel) brushSizeLabel.textContent = brushSize + ' px';
+      });
+      if (promptInput) promptInput.addEventListener('input', updateSubmitState);
+      if (clearBtn) clearBtn.addEventListener('click', clearDraw);
+      if (cancelBtn) cancelBtn.addEventListener('click', closeEditor);
+      if (maskEditBtn) maskEditBtn.addEventListener('click', openEditor);
+      maskModal.addEventListener('click', (e) => { if (e.target === maskModal) closeEditor(); });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && maskModal.classList.contains('active')) closeEditor();
+      });
+
+      function runMaskLoadingUI() {
+        // Mirror the main generation loading experience
+        const messages = [
+          'Applying your edit',
+          'Reworking the masked area',
+          'Blending in the new details',
+          'Refining textures and lighting',
+          'Adding finishing touches',
+        ];
+        let prog = 0;
+        progress.classList.remove('hidden');
+        progressBar.style.width = '0%';
+        progressText.textContent =
+          (window.LanguageSystem && window.LanguageSystem.getText('modal.staging.progress.staging')) ||
+          'AI is editing your room…';
+        loadingMessage.classList.remove('hidden');
+        loadingMessage.textContent = messages[0];
+        const barTimer = setInterval(() => {
+          if (prog < 90) {
+            prog += Math.random() * 4;
+            progressBar.style.width = Math.min(prog, 90) + '%';
+          }
+        }, 300);
+        const msgTimer = setInterval(() => {
+          loadingMessage.textContent = messages[Math.floor(Math.random() * messages.length)];
+        }, 2000);
+        function cleanup() {
+          clearInterval(barTimer);
+          clearInterval(msgTimer);
+        }
+        return {
+          finish() {
+            cleanup();
+            progressBar.style.width = '100%';
+            setTimeout(() => {
+              progress.classList.add('hidden');
+              loadingMessage.classList.add('hidden');
+              progressBar.style.width = '0%';
+            }, 300);
+          },
+          stop() {
+            cleanup();
+            progress.classList.add('hidden');
+            loadingMessage.classList.add('hidden');
+            progressBar.style.width = '0%';
+          },
+        };
+      }
+
+      async function submitEdit() {
+        const prompt = promptInput ? promptInput.value.trim() : '';
+        if (!prompt || !maskHasContent()) return;
+
+        // Build the white-on-transparent mask + source image while the modal canvases exist
+        const w = baseCanvas.width;
+        const h = baseCanvas.height;
+        const whiteMask = document.createElement('canvas');
+        whiteMask.width = w;
+        whiteMask.height = h;
+        const wmCtx = whiteMask.getContext('2d');
+        wmCtx.drawImage(drawCanvas, 0, 0, w, h);
+        const md = wmCtx.getImageData(0, 0, w, h);
+        const data = md.data;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] > 0) {
+            data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
+          } else {
+            data[i] = 0; data[i + 1] = 0; data[i + 2] = 0;
+          }
+        }
+        wmCtx.putImageData(md, 0, 0);
+        const maskDataUrl = whiteMask.toDataURL('image/png');
+        const imageDataUrl = baseCanvas.toDataURL('image/png');
+
+        let selectedModel = 'gpt-4o-mini';
+        const modelSel = document.getElementById('stagify-model-select');
+        if (modelSel && modelSel.value) selectedModel = modelSel.value;
+
+        // Close the editor and show the standard generation loading experience
+        closeEditor();
+        showAfterView();
+        if (maskEditBtn) maskEditBtn.classList.add('hidden');
+        canvas1.classList.add('processing');
+        const loader = runMaskLoadingUI();
+
+        try {
+          const tok = window.StagifyAuth && window.StagifyAuth.getToken();
+          const response = await fetch('/api/mask-edit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
+            },
+            body: JSON.stringify({
+              image: imageDataUrl,
+              mask: maskDataUrl,
+              prompt: prompt,
+              model: selectedModel,
+              authToken: tok || undefined,
+            }),
+          });
+
+          const result = await response.json();
+          if (!response.ok || !result.editedImage) {
+            throw new Error(result.error || 'Failed to process masked edit');
+          }
+
+          // Draw the edited image back onto the staging canvas
+          await new Promise((resolve, reject) => {
+            const edited = new Image();
+            edited.onload = () => {
+              const ctx1 = canvas1.getContext('2d');
+              ctx1.canvas.width = edited.width;
+              ctx1.canvas.height = edited.height;
+              ctx1.drawImage(edited, 0, 0, edited.width, edited.height);
+              const activeThumb = document.querySelector('#variation-thumbs .variation-thumb.active');
+              if (activeThumb) activeThumb.src = result.editedImage;
+              hasProcessedImage = true;
+              resolve();
+            };
+            edited.onerror = () => reject(new Error('Failed to load edited image'));
+            edited.src = result.editedImage;
+          });
+
+          loader.finish();
+          canvas1.classList.remove('processing');
+          updateMaskButtonVisibility();
+        } catch (err) {
+          console.error('Mask edit failed:', err);
+          loader.stop();
+          canvas1.classList.remove('processing');
+          updateMaskButtonVisibility();
+          alert(err.message || 'Mask edit failed. Please try again.');
+        }
+      }
+
+      if (submitBtn) submitBtn.addEventListener('click', submitEdit);
+    })();
   
     if (newUploadBtn) newUploadBtn.addEventListener('click', () => {
       hideStagingLimitInViewer();
@@ -992,8 +1310,6 @@
   
     function openModal() {
       modal.classList.remove('hidden');
-      // Ad container is now visible — safe to render
-      initFreeAdBanner();
     }
     function closeModal() {
       modal.classList.add('hidden');
@@ -1029,13 +1345,14 @@
     }
   })();
 
-  /** Show upgrade nudge for free users below the hero upload button. */
+  /** Show upgrade nudge only for users signed into a free account. */
   window.__stagifyUpdateHeroFreeGensLine = function () {
     var el = document.getElementById('hero-free-gens-today');
     if (!el) return;
     var auth = window.StagifyAuth;
-    var isSignedInPro = auth && auth.getToken && auth.getToken() && auth.user && auth.user.plan === 'pro';
-    if (isSignedInPro) {
+    var isSignedInFree =
+      auth && auth.getToken && auth.getToken() && auth.user && auth.user.plan === 'free';
+    if (!isSignedInFree) {
       el.classList.add('hidden');
       return;
     }

@@ -71,8 +71,6 @@
     <link rel="stylesheet" href="styles/carousel.css">
     <link rel="stylesheet" href="styles/star-border.css">
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3963065765933801" crossorigin="anonymous"></script>
     <script src="scripts/language-loader.js" defer></script>
     <script src="scripts/nav-about.js" defer></script>
     <script src="scripts/auth.js" defer></script>
@@ -660,6 +658,9 @@
                   <div class="image-viewer">
                     <img id="stage-preview" class="viewer-image" alt="Original image">
                     <canvas id="canvas1" class="viewer-image hidden"></canvas>
+                    <button id="mask-edit-btn" class="stage-mask-fab hidden" type="button" aria-label="Edit with mask" title="Edit with mask">
+                      <img src="media-webp/Mask.webp" alt="Edit with mask">
+                    </button>
                     <div id="variation-thumbs" class="variation-thumbs hidden" aria-label="Staging variations"></div>
                     <div id="processing-placeholder" class="processing-placeholder">
                       <div class="placeholder-content">
@@ -686,21 +687,40 @@
                 </div>
               </div>
             </div>
-            <!-- Full-width ad banner — visible for free users, hidden once pro is confirmed -->
-            <div id="free-ad-inline" class="free-ad-inline" aria-label="Advertisement">
-              <span class="free-ad-inline__label">Advertisement</span>
-              <span class="free-ad-inline__placeholder">Placeholder for Google AdSense</span>
-              <ins class="adsbygoogle"
-                   style="display:block"
-                   data-ad-client="ca-pub-3963065765933801"
-                   data-ad-slot="6204905136"
-                   data-ad-format="horizontal"
-                   data-full-width-responsive="true"></ins>
-            </div>
           </section>
         </div>
       </div>
     </main>
+
+    <!-- Mask editor modal for staged "After" images (pro only) -->
+    <div id="stage-mask-modal" class="stage-mask-modal" aria-hidden="true">
+      <div class="stage-mask-content">
+        <div class="stage-mask-header">
+          <h2 class="stage-mask-title">Edit with Mask</h2>
+          <button class="stage-mask-close" id="stage-mask-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="stage-mask-canvas-container">
+          <canvas id="stage-mask-base-canvas" class="stage-mask-canvas"></canvas>
+          <canvas id="stage-mask-draw-canvas" class="stage-mask-canvas" style="position:absolute;top:0;left:0;pointer-events:auto;mix-blend-mode:multiply;cursor:crosshair;"></canvas>
+        </div>
+        <div class="stage-mask-controls">
+          <div class="stage-mask-brush-controls">
+            <label class="stage-mask-brush-label" for="stage-mask-brush-slider">Brush Size:</label>
+            <input type="range" id="stage-mask-brush-slider" class="stage-mask-brush-slider" min="20" max="150" value="50">
+            <span id="stage-mask-brush-size" class="stage-mask-brush-size">50 px</span>
+          </div>
+          <div class="stage-mask-prompt-container">
+            <label class="stage-mask-prompt-label" for="stage-mask-prompt">What would you like to change in the masked area?</label>
+            <input type="text" id="stage-mask-prompt" class="stage-mask-prompt-input" placeholder="e.g., change the wall color to blue, replace the sofa with a modern chair...">
+          </div>
+          <div class="stage-mask-actions">
+            <button class="btn btn-ghost" id="stage-mask-cancel">Cancel</button>
+            <button class="btn btn-secondary" id="stage-mask-clear">Clear Mask</button>
+            <button class="btn btn-primary" id="stage-mask-submit"><strong>Apply Edit</strong></button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <footer style="text-align:center;padding:20px 16px 28px;font-size:13px;color:#6b7280;">
       <a href="privacy.html" style="color:#2563eb;text-decoration:none;">Privacy Policy</a>

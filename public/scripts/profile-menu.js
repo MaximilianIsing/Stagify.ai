@@ -234,7 +234,7 @@
     var passInput = document.getElementById('auth-password');
     if (authModeRegister) {
       if (title) title.textContent = 'Create your free account';
-      if (sub) sub.textContent = 'Sign up to upload and stage images. Free plan includes 3 staging runs per day.';
+      if (sub) sub.textContent = 'Sign up to upload and stage images.';
       if (submitLabel) submitLabel.textContent = 'Create account';
       if (toggleLabel) toggleLabel.textContent = 'Already have an account?';
       if (toggleBtn) toggleBtn.textContent = 'Sign in';

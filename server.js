@@ -2073,6 +2073,71 @@ app.get('/logo-full.png', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Logo Full.png'));
 });
 
+function getDataLogDir() {
+  if (process.env.RENDER && fs.existsSync('/data')) {
+    return '/data';
+  }
+  const logDir = path.join(__dirname, 'data');
+  if (!fs.existsSync(logDir)) {
+    try {
+      fs.mkdirSync(logDir, { recursive: true });
+    } catch {
+      return __dirname;
+    }
+  }
+  return logDir;
+}
+
+function escapeCsvField(field) {
+  if (field === null || field === undefined) return '';
+  const str = String(field);
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+function logEmailOpenToFile(email, req) {
+  try {
+    const timestamp = new Date().toISOString();
+    const ipAddress = req ? (req.ip || req.connection?.remoteAddress || 'unknown') : 'unknown';
+    const userAgent = req ? (req.get('user-agent') || 'unknown') : 'unknown';
+    const csvRow = [
+      escapeCsvField(timestamp),
+      escapeCsvField(email),
+      escapeCsvField(ipAddress),
+      escapeCsvField(userAgent),
+    ].join(',') + '\n';
+
+    const logDir = getDataLogDir();
+    const logFile = path.join(logDir, 'email_open_logs.csv');
+    const header = 'timestamp,email,ipAddress,userAgent\n';
+    if (!fs.existsSync(logFile)) {
+      fs.writeFileSync(logFile, header + csvRow);
+    } else {
+      fs.appendFile(logFile, csvRow, (err) => {
+        if (err) console.error('Error writing to email open log:', err);
+      });
+    }
+  } catch (error) {
+    console.error('Error in logEmailOpenToFile:', error);
+  }
+}
+
+// Tracked logo for broker outreach emails — ?email=broker@example.com
+app.get('/email/logo.png', (req, res) => {
+  const rawEmail = req.query.email;
+  if (typeof rawEmail === 'string') {
+    const email = decodeURIComponent(rawEmail.trim().toLowerCase());
+    if (email.includes('@') && email.length <= 254) {
+      logEmailOpenToFile(email, req);
+    }
+  }
+  res.setHeader('Content-Type', 'image/png');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'Logo Full.png'));
+});
+
 // Error handling middleware for multer
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -5547,6 +5612,30 @@ app.get('/contactlogs', protectLogs, (req, res) => {
     res.status(500).json({ 
       error: 'Failed to retrieve contact logs',
       message: error.message
+    });
+  }
+});
+
+// Email open logs endpoint - serves broker outreach open tracking CSV (protected)
+app.get('/email-open-logs', protectLogs, (req, res) => {
+  try {
+    const logFile = path.join(getDataLogDir(), 'email_open_logs.csv');
+
+    if (fs.existsSync(logFile)) {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'inline; filename="email_open_logs.csv"');
+      res.sendFile(logFile);
+    } else {
+      res.status(404).json({
+        error: 'Log file not found',
+        message: 'No email open logs are available yet',
+      });
+    }
+  } catch (error) {
+    console.error('Error serving email open log file:', error);
+    res.status(500).json({
+      error: 'Failed to retrieve email open logs',
+      message: error.message,
     });
   }
 });
