@@ -2900,10 +2900,13 @@ app.get('/api/prompt-count', (req, res) => {
   });
 });
 
-// Contact count endpoint
+// Contact count endpoint (Users Served = contact submissions + registered accounts)
 app.get('/api/contact-count', (req, res) => {
-  res.json({ 
-    contactCount: contactCount
+  const userCount = authStore.getUserCount();
+  res.json({
+    contactCount,
+    userCount,
+    usersServed: contactCount + userCount,
   });
 });
 

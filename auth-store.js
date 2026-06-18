@@ -468,5 +468,6 @@ export function createAuthStore(baseDir) {
     FREE_DAILY_LIMIT,
     /** Absolute path to persisted JSON (for admin download endpoint). */
     getStoreFilePath: () => filePath,
+    getUserCount: () => read().users.length,
   };
 }
