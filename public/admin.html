@@ -284,6 +284,8 @@
   var _lockoutUntil = 0;
   var data = { users:[], promptRows:[], chatRows:[], bugRows:[], maskRows:[], contactRows:[], emailOpenRows:[], enterprise:[] };
   var userFilter = 'all';
+  var userSortCol = 'created';
+  var userSortDir = 'desc';
 
   function qs(s){return document.querySelector(s)}
   function qsa(s){return document.querySelectorAll(s)}
@@ -535,15 +537,66 @@
 
   // ── Users ──
 
+  function userGens30(u, pIdx, d30){
+    var allR=pIdx[(u.email||'').toLowerCase()]||[];
+    return allR.filter(function(r){try{return new Date(r[0])>=d30}catch(e){return false}}).length;
+  }
+
+  function userGensAll(u, pIdx){
+    return (pIdx[(u.email||'').toLowerCase()]||[]).length;
+  }
+
+  function sortUserList(list, pIdx, d30){
+    var dir=userSortDir==='asc'?1:-1;
+    return list.sort(function(a,b){
+      var av,bv;
+      switch(userSortCol){
+        case 'email':
+          av=(a.email||'').toLowerCase(); bv=(b.email||'').toLowerCase();
+          return av.localeCompare(bv)*dir;
+        case 'plan':
+          av=a.plan||''; bv=b.plan||'';
+          return av.localeCompare(bv)*dir;
+        case 'auth':
+          av=a.googleSub?'google':'email'; bv=b.googleSub?'google':'email';
+          return av.localeCompare(bv)*dir;
+        case 'created':
+          av=new Date(a.createdAt||0).getTime(); bv=new Date(b.createdAt||0).getTime();
+          return (av-bv)*dir;
+        case 'gens30':
+          av=userGens30(a,pIdx,d30); bv=userGens30(b,pIdx,d30);
+          return (av-bv)*dir;
+        case 'gensAll':
+          av=userGensAll(a,pIdx); bv=userGensAll(b,pIdx);
+          return (av-bv)*dir;
+        default: return 0;
+      }
+    });
+  }
+
+  function userSortTh(label,colKey){
+    var th=el('th',{className:'adm-sortable'+(userSortCol===colKey?' adm-sorted':'')});
+    th.appendChild(document.createTextNode(label));
+    th.appendChild(el('span',{className:'adm-sort-arrow',textContent:userSortCol===colKey?(userSortDir==='asc'?'\u2191':'\u2193'):'\u2195'}));
+    th.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(userSortCol===colKey){userSortDir=userSortDir==='asc'?'desc':'asc'}
+      else{userSortCol=colKey;userSortDir=(colKey==='email'||colKey==='plan'||colKey==='auth')?'asc':'desc'}
+      renderUsers();
+    });
+    return th;
+  }
+
   function renderUsers(filter){
     var pIdx=buildPromptIndex();
     var d30=daysAgo(30);
     var q=(filter||qs('#adm-user-search').value||'').toLowerCase();
 
-    var list=data.users.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt)});
+    var list=data.users.slice();
     if(q)list=list.filter(function(u){return(u.email||'').toLowerCase().indexOf(q)!==-1});
     if(userFilter==='pro')list=list.filter(function(u){return u.plan==='pro'});
     if(userFilter==='free')list=list.filter(function(u){return u.plan==='free'});
+    list=sortUserList(list,pIdx,d30);
 
     qs('#adm-user-count').textContent=list.length+' user'+(list.length!==1?'s':'');
 
@@ -552,15 +605,15 @@
 
     var tbl=el('table',{className:'adm-table'});
     tbl.appendChild(el('thead',null,[el('tr',null,[
-      el('th',{textContent:'Email'}),el('th',{textContent:'Plan'}),el('th',{textContent:'Auth'}),
-      el('th',{textContent:'Created'}),el('th',{textContent:'Gens (30d)'}),el('th',{textContent:'Gens (all)'})
+      userSortTh('Email','email'),userSortTh('Plan','plan'),userSortTh('Auth','auth'),
+      userSortTh('Created','created'),userSortTh('Gens (30d)','gens30'),userSortTh('Gens (all)','gensAll')
     ])]));
     var tbody=el('tbody');
 
     list.forEach(function(u){
       var em=(u.email||'').toLowerCase();
       var allR=pIdx[em]||[];
-      var c30=allR.filter(function(r){try{return new Date(r[0])>=d30}catch(e){return false}}).length;
+      var c30=userGens30(u,pIdx,d30);
       var row=el('tr',{className:'adm-row-click'},[
         el('td',{textContent:u.email}),el('td',null,[badge(u.plan)]),el('td',null,[authBadge(u)]),
         el('td',{textContent:fmtDate(u.createdAt)}),

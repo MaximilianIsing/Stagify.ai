@@ -1417,10 +1417,10 @@
         const usersServedPill = document.querySelector('.stat-pill-text[data-lang="hero.stats.usersServed"]');
         const statPillNumber = usersServedPill ? usersServedPill.parentElement.querySelector('.stat-pill-number') : null;
         
-        if (statPillNumber && data.contactCount !== undefined) {
-          // Format the number nicely
-          const count = data.contactCount;
-          statPillNumber.textContent = count.toString();
+        if (statPillNumber && data.usersServed !== undefined) {
+          statPillNumber.textContent = String(data.usersServed);
+        } else if (statPillNumber && data.contactCount !== undefined) {
+          statPillNumber.textContent = String(data.contactCount);
         }
       })
       .catch(error => {
