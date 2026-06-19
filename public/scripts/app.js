@@ -508,7 +508,7 @@
         !proPanel.classList.contains('hidden') &&
         window.getComputedStyle(proPanel).display !== 'none' &&
         window.getComputedStyle(proPanel).visibility !== 'hidden';
-      if (u && u.plan === 'pro' && proPanelUsable) {
+      if (isProUser() && proPanelUsable) {
         const modelSel = document.getElementById('stagify-model-select');
         const varSel = document.getElementById('stagify-variation-count');
         if (modelSel) formData.append('model', modelSel.value || 'gpt-4o-mini');
@@ -522,7 +522,7 @@
       }
 
       // Pro: upload/prepare animation before fetch. Free: progress bar during fetch (no delay) for fast limit errors.
-      const isProPlan = !!(u && u.plan === 'pro');
+      const isProPlan = isProUser();
 
       const defaultLoadingLines = [
         'Finding the perfect furniture for you',
@@ -784,6 +784,9 @@
   
     // Toggle between Before and After views
     function isProUser() {
+      if (window.StagifyAuth && typeof window.StagifyAuth.isProUser === 'function') {
+        return window.StagifyAuth.isProUser();
+      }
       const u = window.StagifyAuth && window.StagifyAuth.user;
       return !!(u && u.plan === 'pro');
     }
@@ -883,9 +886,14 @@
       
       processBtn.disabled = true;
 
-      const uEarly = window.StagifyAuth && window.StagifyAuth.user;
       const tokEarly = window.StagifyAuth && window.StagifyAuth.getToken();
-      if (tokEarly && uEarly && uEarly.plan === 'free') {
+      if (tokEarly && window.StagifyAuth && typeof window.StagifyAuth.fetchMe === 'function') {
+        await window.StagifyAuth.fetchMe();
+        if (window.StagifyAuth.applyUserToUI) window.StagifyAuth.applyUserToUI();
+      }
+
+      const uEarly = window.StagifyAuth && window.StagifyAuth.user;
+      if (tokEarly && uEarly && !isProUser()) {
         const limEarly = uEarly.dailyGenerationLimit != null ? uEarly.dailyGenerationLimit : 3;
         const usedEarly = uEarly.dailyGenerationsUsed != null ? uEarly.dailyGenerationsUsed : 0;
         if (typeof limEarly === 'number' && usedEarly >= limEarly) {
@@ -1351,7 +1359,7 @@
     if (!el) return;
     var auth = window.StagifyAuth;
     var isSignedInFree =
-      auth && auth.getToken && auth.getToken() && auth.user && auth.user.plan === 'free';
+      auth && auth.getToken && auth.getToken() && auth.user && !(auth.isProUser && auth.isProUser());
     if (!isSignedInFree) {
       el.classList.add('hidden');
       return;

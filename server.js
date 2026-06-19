@@ -211,6 +211,28 @@ function enhanceUserWithEnterprise(user) {
   return user;
 }
 
+/** Public user payload for API responses — always reflects enterprise domain access. */
+function toPublicAuthUser(user) {
+  if (!user) return null;
+  return authStore.publicUser(enhanceUserWithEnterprise(user));
+}
+
+function enterpriseDomainForUser(user) {
+  if (!user) return null;
+
+  // Individual Stagify+ subscribers (own Stripe customer) are not billed to the enterprise domain
+  const stored = user.email ? authStore.findUserByEmail(user.email) : null;
+  const account = stored || user;
+  if (account.plan === 'pro' && account.stripeCustomerId) {
+    return null;
+  }
+
+  const domain =
+    user.enterpriseDomain ||
+    (user.email ? user.email.split('@')[1]?.toLowerCase() : null);
+  return domain && enterpriseStore.isActiveDomain(domain) ? domain : null;
+}
+
 /** Client IP for rate limits (honors X-Forwarded-For when behind a proxy). */
 function getStagingClientIp(req) {
   const xff = req.headers['x-forwarded-for'];
@@ -242,14 +264,14 @@ function readEnterpriseMeterEventName() {
 const enterpriseMeterEventName = readEnterpriseMeterEventName();
 
 function reportEnterpriseUsage(domain, quantity = 1) {
+  // Always track locally so admin dashboard counts stay accurate (even without Stripe)
+  enterpriseStore.recordUsage(domain, quantity);
   if (!stripe) return;
   const entry = enterpriseStore.getDomainEntry(domain);
   if (!entry || !entry.stripeCustomerId) {
-    console.warn('[enterprise] Cannot report usage — no Stripe customer for domain:', domain);
+    console.warn('[enterprise] Stripe meter skipped — no Stripe customer for domain:', domain);
     return;
   }
-  // Track usage locally so admin dashboard can show counts + revenue
-  enterpriseStore.recordUsage(domain, quantity);
   stripe.billing.meterEvents
     .create({
       event_name: enterpriseMeterEventName,
@@ -2257,7 +2279,8 @@ app.post('/api/auth/register', express.json(), (req, res) => {
     if (!result.ok) {
       return res.status(400).json({ error: result.error });
     }
-    res.json({ success: true, token: result.token, user: result.user });
+    const fullUser = authStore.findUserByEmail(email);
+    res.json({ success: true, token: result.token, user: toPublicAuthUser(fullUser) });
   } catch (e) {
     console.error('register error', e);
     res.status(500).json({ error: 'Registration failed' });
@@ -2271,7 +2294,8 @@ app.post('/api/auth/login', express.json(), (req, res) => {
     if (!result.ok) {
       return res.status(401).json({ error: result.error });
     }
-    res.json({ success: true, token: result.token, user: result.user });
+    const fullUser = authStore.findUserByEmail(email);
+    res.json({ success: true, token: result.token, user: toPublicAuthUser(fullUser) });
   } catch (e) {
     console.error('login error', e);
     res.status(500).json({ error: 'Login failed' });
@@ -2310,7 +2334,8 @@ app.post('/api/auth/google', express.json(), async (req, res) => {
     if (!result.ok) {
       return res.status(400).json({ error: result.error });
     }
-    res.json({ success: true, token: result.token, user: result.user });
+    const fullUser = authStore.findUserByEmail(payload.email);
+    res.json({ success: true, token: result.token, user: toPublicAuthUser(fullUser) });
   } catch (e) {
     console.error('google auth error', e.message || e);
     res.status(401).json({ error: 'Google sign-in failed' });
@@ -2322,7 +2347,7 @@ app.get('/api/auth/me', (req, res) => {
   if (!user) {
     return res.status(401).json({ error: 'Not signed in', code: 'AUTH_REQUIRED' });
   }
-  res.json({ user: authStore.publicUser(user) });
+  res.json({ user: toPublicAuthUser(user) });
 });
 
 app.post('/api/billing/customer-portal', express.json(), async (req, res) => {
@@ -2618,18 +2643,22 @@ async function handleVirtualStagingMultipart(req, res, meta) {
   if (meta.recordUsage) {
     if (mobileAnonymous) {
       authStore.recordMobileIpGeneration(clientIp);
-    } else if (user && user.enterpriseDomain) {
-      reportEnterpriseUsage(user.enterpriseDomain, images.length || 1);
-    } else if (user && user.plan === 'free') {
-      authStore.recordFreeGeneration(user.id);
+    } else if (user) {
+      const entDomain = enterpriseDomainForUser(user);
+      if (entDomain) {
+        reportEnterpriseUsage(entDomain, images.length || 1);
+      } else if (user.plan === 'free') {
+        authStore.recordFreeGeneration(user.id);
+      }
     }
   }
 
   const updatedUser = user ? authStore.findUserByEmail(user.email) : null;
-  const baseResponseUser =
-    user && updatedUser ? authStore.publicUser(updatedUser) : user ? authStore.publicUser(user) : null;
-  // Re-apply enterprise enhancement so the response always reflects the correct plan
-  const responseUser = baseResponseUser ? enhanceUserWithEnterprise(baseResponseUser) : null;
+  const responseUser = updatedUser
+    ? toPublicAuthUser(updatedUser)
+    : user
+      ? toPublicAuthUser(user)
+      : null;
 
   if (images.length === 1) {
     return res.json({
@@ -6024,7 +6053,8 @@ app.post('/api/bug-report', async (req, res) => {
 // Mask editing endpoint - uses Gemini API for better image editing
 app.post('/api/mask-edit', async (req, res) => {
   try {
-    if (!requireProAccount(req, res)) return;
+    const proUser = requireProAccount(req, res);
+    if (!proUser) return;
 
     if (!genAI) {
       return res.status(500).json({ error: 'AI service not properly configured' });
@@ -6123,6 +6153,11 @@ app.post('/api/mask-edit', async (req, res) => {
         // Log the mask edit request
         const userId = getUserIdentifier(req);
         logMaskEditToFile(prompt, selectedModel, geminiModel, imageMetadata.width, imageMetadata.height, userId, req);
+
+        const entDomain = enterpriseDomainForUser(proUser);
+        if (entDomain) {
+          reportEnterpriseUsage(entDomain, 1);
+        }
 
         return res.json({
           success: true,
