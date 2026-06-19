@@ -1,0 +1,138 @@
+/* ==========================================================================
+   Home text animations — below-the-fold only, varied effects
+   Inspired by React Bits: https://reactbits.dev/text-animations
+   Text stays visible until JS starts an animation (no pre-hidden titles).
+   ========================================================================== */
+
+.home-section__title[data-tx],
+.info-row__title[data-tx] {
+  white-space: normal;
+  word-spacing: normal;
+}
+
+/* Segments exist only briefly during play — hidden until their anim class lands */
+.tx-seg {
+  display: inline-block;
+  vertical-align: baseline;
+  will-change: transform, filter, opacity;
+}
+
+.tx-seg.tx-in-blur {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(-0.12em);
+  animation: txBlurIn 0.44s cubic-bezier(0.22, 0.84, 0.36, 1) forwards;
+  animation-delay: calc(var(--tx-i, 0) * var(--tx-stagger, 24ms));
+}
+@keyframes txBlurIn {
+  0% { opacity: 0; filter: blur(8px); transform: translateY(-0.12em); }
+  50% { opacity: 0.75; filter: blur(2px); transform: translateY(0.02em); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+.tx-seg.tx-in-rise {
+  opacity: 0;
+  transform: translateY(1.1em);
+  animation: txRiseIn 0.55s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+  animation-delay: calc(var(--tx-i, 0) * var(--tx-stagger, 55ms));
+}
+@keyframes txRiseIn {
+  0% { opacity: 0; transform: translateY(1.1em); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.tx-seg.tx-in-slide {
+  opacity: 0;
+  transform: translateX(-1.25em);
+  animation: txSlideIn 0.52s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+  animation-delay: calc(var(--tx-i, 0) * var(--tx-stagger, 50ms));
+}
+@keyframes txSlideIn {
+  0% { opacity: 0; transform: translateX(-1.25em); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Whole-line effects — hidden only once play() adds the pre-class */
+.tx-pre-shiny {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.tx-in-shiny {
+  position: relative;
+  animation: txShinyPop 0.45s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+}
+.tx-in-shiny::after {
+  content: "";
+  position: absolute;
+  inset: -2px -6px;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(96, 165, 250, 0.55) 50%,
+    transparent 65%
+  );
+  background-size: 220% 100%;
+  pointer-events: none;
+  animation: txShineOnce 0.9s ease-out 0.12s forwards;
+}
+@keyframes txShinyPop {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes txShineOnce {
+  0% { opacity: 0; background-position: 150% center; }
+  20% { opacity: 1; }
+  100% { opacity: 0; background-position: -50% center; }
+}
+
+.tx-pre-fade {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.tx-in-fade {
+  animation: txFadeIn 0.65s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+}
+@keyframes txFadeIn {
+  0% { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.tx-pre-clip {
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+}
+.tx-in-clip {
+  animation: txClipIn 0.72s cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+}
+@keyframes txClipIn {
+  0% { opacity: 0; clip-path: inset(0 100% 0 0); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* Safety net after animation or if JS bails out */
+.tx-done {
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  clip-path: none !important;
+}
+.tx-done .tx-seg {
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-seg,
+  [data-tx] {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    animation: none !important;
+    clip-path: none !important;
+  }
+  .tx-in-shiny::after {
+    display: none;
+  }
+}
