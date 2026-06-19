@@ -93,6 +93,15 @@
           "p1": "Agents: list sooner and close more",
           "p2": "Sellers & buyers: no software, no designer needed",
           "p3": "AI Designer: floor plans → 3D visualizations"
+        },
+        "team": {
+          "eyebrow": "Built for teams",
+          "caption": "Training a brokerage team on Stagify",
+          "title": "Easy enough for your whole office",
+          "body": "There's no software to install and nothing to learn. Anyone on the team can open Stagify in a browser, upload a listing photo, and have it staged in seconds, whether on a laptop at the office or a phone in the field.",
+          "p1": "No design skills or software needed",
+          "p2": "Works in any browser, on any device",
+          "p3": "Every agent can stage their own listings"
         }
       }
     },
@@ -152,6 +161,30 @@
       "stat2": "already use AI to generate listing content",
       "source": "Figures from the National Association of Realtors' 2025 Technology Survey of real estate agents.",
       "sourceCite": "Source: National Association of Realtors, 2025 Technology Survey"
+    },
+    "plus": {
+      "title": "Go further with Stagify+",
+      "subtitle": "Unlimited staging, higher-quality models, and pro tools — plus a usage-based plan built for whole teams.",
+      "pro": {
+        "name": "Stagify+",
+        "per": "/ month",
+        "f1": "Unlimited staging generations",
+        "f2": "Higher-quality image model",
+        "f3": "Multiple variations per generation",
+        "f4": "Masking tool to edit any area",
+        "f5": "AI Designer: floor plans → 3D renders",
+        "cta": "View Stagify+"
+      },
+      "ent": {
+        "name": "Enterprise",
+        "tag": "For teams",
+        "per": "/ generation",
+        "desc": "Give your whole team Stagify+ automatically and only pay for what they actually use.",
+        "f1": "Everyone with your company email included",
+        "f2": "Usage-based billing, no per-seat fees",
+        "f3": "One invoice, billed monthly by usage",
+        "cta": "Explore Enterprise"
+      }
     },
     "instagram": {
       "title": "See it in action on Instagram",

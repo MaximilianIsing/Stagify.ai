@@ -834,28 +834,33 @@
 /* ==========================================================================
    Instagram section
    ========================================================================== */
-.home-ig .ig-grid {
+.ig-embeds {
   display: grid;
-  grid-template-columns: 1fr minmax(300px, 360px);
-  gap: 48px;
-  align-items: center;
+  grid-template-columns: repeat(2, minmax(0, 320px));
+  gap: 24px;
+  justify-content: center;
+}
+.ig-cta {
+  text-align: center;
+  margin-top: 28px;
 }
 .ig-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   padding: 6px 13px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
-  color: #fff;
-  background: linear-gradient(45deg, #f09433, #dc2743 55%, #bc1888);
-  box-shadow: 0 6px 16px rgba(220, 39, 67, 0.3);
+  letter-spacing: 0.2px;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.2);
   margin-bottom: 16px;
 }
 .ig-badge svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 .ig-copy__sub {
   margin: 12px 0 26px;
@@ -867,7 +872,7 @@
 .ig-follow {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   font-family: inherit;
   font-size: 16px;
   font-weight: 800;
@@ -875,50 +880,184 @@
   text-decoration: none;
   padding: 13px 24px;
   border-radius: 12px;
-  background: linear-gradient(
-    45deg,
-    #f09433 0%,
-    #e6683c 25%,
-    #dc2743 50%,
-    #cc2366 75%,
-    #bc1888 100%
-  );
-  box-shadow: 0 10px 26px rgba(220, 39, 67, 0.32);
+  background: radial-gradient(circle at 20% 50%, #3b82f6 0, transparent 50%),
+    radial-gradient(circle at 80% 20%, #1d4ed8 0, transparent 50%),
+    radial-gradient(circle at 40% 80%, #2563eb 0, transparent 50%),
+    radial-gradient(circle at 0 100%, #1e40af 0, transparent 50%),
+    radial-gradient(circle at 100% 0, #60a5fa 0, transparent 50%), #1e3a8a;
+  box-shadow: 0 10px 26px rgba(30, 58, 138, 0.32);
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 .ig-follow:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 34px rgba(220, 39, 67, 0.42);
+  box-shadow: 0 14px 34px rgba(30, 58, 138, 0.42);
 }
 .ig-follow svg {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
 }
+/* Framed card that crops the Instagram embed to a tidier height */
 .ig-embed {
   justify-self: center;
   width: 100%;
-  max-width: 360px;
+  max-width: 330px;
+  height: 460px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 18px 46px rgba(30, 58, 138, 0.26);
+  border: 1px solid rgba(30, 58, 138, 0.08);
 }
 .ig-embed__frame {
   width: 100%;
-  height: 600px;
+  height: 620px;
   border: none;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 20px 50px rgba(30, 58, 138, 0.28);
   display: block;
 }
-@media (max-width: 900px) {
-  .home-ig .ig-grid {
+@media (max-width: 720px) {
+  .ig-embeds {
+    grid-template-columns: minmax(0, 330px);
+  }
+}
+
+/* ==========================================================================
+   Stagify+ / Enterprise plans
+   ========================================================================== */
+.plus-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+.plus-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 18px;
+  padding: 28px 28px 26px;
+  box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.plus-card--pro {
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  box-shadow: 0 18px 48px rgba(37, 99, 235, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  background: linear-gradient(
+    180deg,
+    rgba(37, 99, 235, 0.08),
+    rgba(255, 255, 255, 0.5) 40%
+  );
+}
+.plus-card__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.plus-card__logo {
+  width: 32px;
+  height: 32px;
+}
+.plus-card__enticon {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+}
+.plus-card__enticon svg {
+  width: 24px;
+  height: 24px;
+}
+.plus-card__name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1e3a8a;
+}
+.plus-card__badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.plus-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.plus-price__num {
+  font-size: 2.3rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.plus-price__per {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6477a6;
+}
+.plus-card__desc {
+  margin: 4px 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #41507a;
+}
+.plus-card .home-list {
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+.plus-cta {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 800;
+  text-decoration: none;
+  padding: 13px 22px;
+  border-radius: 11px;
+  color: #fff;
+  background: radial-gradient(circle at 20% 50%, #3b82f6 0, transparent 50%),
+    radial-gradient(circle at 80% 20%, #1d4ed8 0, transparent 50%),
+    radial-gradient(circle at 40% 80%, #2563eb 0, transparent 50%),
+    radial-gradient(circle at 0 100%, #1e40af 0, transparent 50%),
+    radial-gradient(circle at 100% 0, #60a5fa 0, transparent 50%), #1e3a8a;
+  box-shadow: 0 10px 24px rgba(30, 58, 138, 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.plus-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(30, 58, 138, 0.38);
+}
+.plus-cta--ghost {
+  color: #1e3a8a;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(30, 58, 138, 0.25);
+  box-shadow: none;
+}
+.plus-cta--ghost:hover {
+  border-color: #2563eb;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.16);
+}
+@media (max-width: 760px) {
+  .plus-grid {
     grid-template-columns: 1fr;
-    gap: 30px;
-    justify-items: center;
-    text-align: center;
-  }
-  .ig-copy {
-    order: 2;
-  }
-  .ig-copy__sub {
-    max-width: none;
   }
 }
