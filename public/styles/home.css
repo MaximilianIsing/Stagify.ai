@@ -1277,10 +1277,76 @@
   text-decoration: underline;
 }
 
-/* Guides page — section headings + walkthrough embeds */
+/* Guides page */
+.home-guides {
+  padding-bottom: 48px;
+}
+.home-guides [id] {
+  scroll-margin-top: 96px;
+}
+
+.guides-overview {
+  max-width: 980px;
+  margin: 0 auto 40px;
+}
+.guides-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.guides-overview-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 16px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  box-shadow: 0 10px 28px rgba(30, 58, 138, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.guides-overview-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37, 99, 235, 0.28);
+  box-shadow: 0 14px 34px rgba(30, 58, 138, 0.16);
+}
+.guides-overview-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.16);
+}
+.guides-overview-card__icon svg {
+  width: 20px;
+  height: 20px;
+}
+.guides-overview-card__title {
+  font-size: 14.5px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #1e3a8a;
+  letter-spacing: -0.15px;
+}
+
+.guides-walkthrough,
+.guides-troubleshooting {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
 .guides-heading {
-  max-width: 920px;
-  margin: 0 auto 18px;
+  max-width: none;
+  margin: 0 0 18px;
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: -0.2px;
@@ -1291,57 +1357,151 @@
   padding-top: 32px;
   border-top: 1px solid rgba(30, 58, 138, 0.12);
 }
-.guides-demos {
-  display: grid;
-  gap: 28px;
-  max-width: 920px;
+
+.guide-demo-picker {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(30, 58, 138, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.guide-demo-picker__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #41507a;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+.guide-demo-picker__btn:hover {
+  color: #1e3a8a;
+  background: rgba(255, 255, 255, 0.55);
+}
+.guide-demo-picker__btn--active {
+  color: #1e3a8a;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(30, 58, 138, 0.12);
+}
+.guide-demo-picker__btn--plus.guide-demo-picker__btn--active {
+  color: #1e3a8a;
+}
+.guide-demo-desc {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #41507a;
+  max-width: 640px;
+}
+.guide-demo-stage {
+  position: relative;
+  max-width: 720px;
   margin: 0 auto;
 }
-.guide-demo {
+.guide-demo-panel {
+  display: none;
+}
+.guide-demo-panel.is-active {
+  display: block;
+}
+.guide-demo-embed__inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: min(80vh, 80svh);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.guide-demo-embed__inner iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.guides-trouble-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.guides-trouble-card {
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(16px) saturate(170%);
   -webkit-backdrop-filter: blur(16px) saturate(170%);
   border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 18px;
-  padding: 22px 24px 8px;
-  box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  padding: 18px 18px 8px;
+  box-shadow: 0 12px 32px rgba(30, 58, 138, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
-.guide-demo__title {
-  margin: 0 0 4px;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #1e3a8a;
+.guides-trouble-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
 }
-.guide-demo__desc {
+.guides-trouble-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.14);
+}
+.guides-trouble-card__icon svg {
+  width: 19px;
+  height: 19px;
+}
+.guides-trouble-card__title {
   margin: 0;
-  font-size: 14.5px;
-  line-height: 1.55;
-  color: #41507a;
-}
-.guide-demo__embed {
-  margin-top: 4px;
-}
-
-/* Tech Help / Guides troubleshooting groups */
-.th-groups {
-  display: grid;
-  gap: 34px;
-  max-width: 820px;
-  margin: 0 auto;
-}
-.th-group__title {
-  margin: 0 0 14px;
-  font-size: 1.1rem;
+  font-size: 1.02rem;
   font-weight: 800;
   color: #1e3a8a;
   letter-spacing: -0.2px;
 }
-.th-group .faq-accordion {
+.guides-trouble-card .faq-accordion {
   max-width: none;
 }
+
+@media (max-width: 900px) {
+  .guides-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .guides-trouble-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .guides-overview-grid {
+    grid-template-columns: 1fr;
+  }
+  .guide-demo-picker {
+    display: flex;
+    width: 100%;
+  }
+  .guide-demo-picker__btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 .th-contact {
-  max-width: 820px;
+  max-width: 980px;
   margin: 32px auto 0;
   text-align: center;
 }
@@ -1351,8 +1511,8 @@
   color: #41507a;
 }
 .th-contact a {
-  display: inline-block;
-  margin-left: 6px;
+  display: inline;
+  margin-left: 0;
   color: #2563eb;
   font-weight: 700;
   text-decoration: none;

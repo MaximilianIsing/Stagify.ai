@@ -545,7 +545,7 @@
       "title": "Billing & Stagify+",
       "i1": {
         "q": "How do I manage or cancel Stagify+?",
-        "a": "Open your account menu and go to your plan settings to update or cancel. You keep access until the end of the current billing period."
+        "a": "Click the profile icon in the top right, then press the ? next to Stagify+ to open the Stripe billing dashboard, where you can update or cancel your subscription. You keep access until the end of the current billing period."
       },
       "i2": {
         "q": "I was charged but don't see Stagify+ features.",
@@ -568,8 +568,8 @@
       }
     },
     "contact": {
-      "text": "Still stuck? Our team is happy to help.",
-      "cta": "Email team@stagify.ai"
+      "text": "Still stuck? Our team is happy to help. Email ",
+      "email": "team@stagify.ai"
     }
   },
   "guides": {
@@ -581,6 +581,8 @@
     "demo1Desc": "Follow along to upload a photo and get your first staged room — no account needed.",
     "demo2Title": "Your first staging with Stagify+",
     "demo2Desc": "See how to stage with Stagify+ for unlimited generations, higher quality, and pro tools.",
+    "pickerFree": "Free",
+    "pickerPlus": "Stagify+",
     "troubleshootingTitle": "Troubleshooting & common issues"
   }
 }

@@ -546,7 +546,7 @@
       "title": "Facturación y Stagify+",
       "i1": {
         "q": "¿Cómo gestiono o cancelo Stagify+?",
-        "a": "Abre el menú de tu cuenta y ve a la configuración de tu plan para actualizarlo o cancelarlo. Mantienes el acceso hasta el final del período de facturación actual."
+        "a": "Haz clic en el icono de perfil arriba a la derecha y luego pulsa el ? junto a Stagify+ para abrir el panel de facturación de Stripe, donde puedes actualizar o cancelar tu suscripción. Mantienes el acceso hasta el final del período de facturación actual."
       },
       "i2": {
         "q": "Me cobraron pero no veo las funciones de Stagify+.",
@@ -569,8 +569,8 @@
       }
     },
     "contact": {
-      "text": "¿Sigues atascado? Nuestro equipo estará encantado de ayudarte.",
-      "cta": "Escribe a team@stagify.ai"
+      "text": "¿Sigues atascado? Nuestro equipo estará encantado de ayudarte. Escribe a ",
+      "email": "team@stagify.ai"
     }
   },
   "guides": {
@@ -582,6 +582,8 @@
     "demo1Desc": "Sigue los pasos para subir una foto y obtener tu primera habitación amueblada, sin necesidad de cuenta.",
     "demo2Title": "Tu primer staging con Stagify+",
     "demo2Desc": "Descubre cómo hacer staging con Stagify+ para generaciones ilimitadas, mayor calidad y herramientas profesionales.",
+    "pickerFree": "Gratis",
+    "pickerPlus": "Stagify+",
     "troubleshootingTitle": "Solución de problemas y dudas comunes"
   }
 }
