@@ -41,6 +41,124 @@
   "sponsors": {
     "title": "Officially Recognized By:"
   },
+  "home": {
+    "studio": {
+      "eyebrow": "Before & after",
+      "title": "Drag to see what staging does",
+      "subtitle": "The same listing photo, before and after Stagify. No movers, no rentals, no waiting.",
+      "beforeLabel": "Before",
+      "afterLabel": "After",
+      "kicker": "How it looks",
+      "panelTitle": "The same room, staged in seconds",
+      "panelBody": "Drag the handle. The left is the original photo; everything on the right was staged by Stagify in seconds.",
+      "points": {
+        "speed": "About 8 seconds per photo",
+        "restage": "Re-stage in any style, as often as you like",
+        "rights": "Every image is yours, with full copyright"
+      },
+      "examples": {
+        "bedroom": "Bedroom",
+        "living": "Living room"
+      }
+    },
+    "info": {
+      "eyebrow": "The short version",
+      "title": "What virtual staging is, and why it sells",
+      "subtitle": "A quick, honest rundown of how it works and who it's for — no jargon.",
+      "rows": {
+        "why": {
+          "eyebrow": "Why it works",
+          "caption": "Demoing Stagify at a Compass office in New York",
+          "title": "Buyers shop with their eyes first",
+          "body": "Almost every buyer starts online, so your listing photos are the real first showing. Empty or dated rooms are hard to read; people can't judge scale or picture living there. Staging gives each room a clear purpose and a pull, which is why agents have always relied on it.",
+          "p1": "Empty rooms photograph smaller and colder than they are",
+          "p2": "Staging shows the intended use of every space",
+          "p3": "Stronger photos earn more clicks, saves, and showings"
+        },
+        "how": {
+          "eyebrow": "How it works",
+          "caption": "Walking a room of agents through their first staged listing",
+          "title": "From empty photo to listing-ready in about 8 seconds",
+          "body": "Upload a photo, pick the room type and one of seven styles, and Stagify furnishes it in about eight seconds. Need changes? Remove the existing furniture, add a custom prompt, or mask one area to adjust it without starting over.",
+          "p1": "7 styles plus custom prompts and furniture removal",
+          "p2": "Mask-edit any part of a result without redoing it",
+          "p3": "Full copyright — use it on the MLS or in ads"
+        },
+        "who": {
+          "eyebrow": "Who it's for",
+          "caption": "Sitting down one-on-one to stage a client's photos",
+          "title": "Made for agents, sellers, and buyers",
+          "body": "Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn CAD floor-plan PDFs into photorealistic 3D room renders.",
+          "p1": "Agents: list sooner and close more",
+          "p2": "Sellers & buyers: no software, no designer needed",
+          "p3": "AI Designer: floor plans → 3D visualizations"
+        }
+      }
+    },
+    "compare": {
+      "eyebrow": "Virtual vs. traditional",
+      "title": "How it compares to traditional staging",
+      "subtitle": "Traditional staging works. It's just slow and expensive.",
+      "colTraditional": "Traditional staging",
+      "colStagify": "Stagify.ai",
+      "rows": {
+        "cost": {
+          "aspect": "Cost",
+          "trad": "$2,000–$5,000+ per home, often billed monthly until it sells",
+          "stag": "Free to start — stage at no cost"
+        },
+        "time": {
+          "aspect": "Turnaround",
+          "trad": "1–3 weeks to schedule, deliver, and install",
+          "stag": "About 8 seconds per photo"
+        },
+        "styles": {
+          "aspect": "Style options",
+          "trad": "One look, locked in once it's installed",
+          "stag": "7 styles plus custom prompts — switch anytime"
+        },
+        "changes": {
+          "aspect": "Changing your mind",
+          "trad": "New rental and install fees every time",
+          "stag": "Re-stage as many times as you like"
+        },
+        "logistics": {
+          "aspect": "Logistics",
+          "trad": "Movers, rentals, and access to the property",
+          "stag": "Just upload a photo from anywhere"
+        },
+        "rights": {
+          "aspect": "The images",
+          "trad": "Photos of borrowed furniture you return",
+          "stag": "Yours to keep, with full copyright"
+        }
+      },
+      "source": "According to the National Association of Realtors' Profile of Home Staging, most buyers' agents say staging makes it easier for buyers to picture a property as their future home.",
+      "sourceCite": "Source: National Association of Realtors, Profile of Home Staging"
+    },
+    "nar": {
+      "title": "Don't fall behind",
+      "subtitle": "Real estate is adopting AI fast, and clients are responding to it. Staging is one of the easiest places to start.",
+      "usageLabel": "How often agents use AI tools",
+      "legend": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "A few times a month",
+        "none": "Not yet"
+      },
+      "note": "of agents already use AI in their business.",
+      "stat1": "of agents say clients responded positively to technology in the buying and selling process",
+      "stat2": "already use AI to generate listing content",
+      "source": "Figures from the National Association of Realtors' 2025 Technology Survey of real estate agents.",
+      "sourceCite": "Source: National Association of Realtors, 2025 Technology Survey"
+    },
+    "finalCta": {
+      "title": "Try it on your own listing",
+      "subtitle": "Upload one empty room and see it staged in about eight seconds. Free to try.",
+      "button": "Upload a photo",
+      "note": "Recognized by Compass, Centennial, and more."
+    }
+  },
   "modal": {
     "rolePopup": {
       "title": "Let's tailor your experience!",

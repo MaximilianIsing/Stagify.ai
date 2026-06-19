@@ -37,6 +37,8 @@
     .adm-refresh{padding:5px 12px;font-size:.75rem;font-weight:600;color:#2563eb;background:rgba(255,255,255,.7);border:1px solid #dbeafe;border-radius:8px;cursor:pointer;font-family:inherit;transition:.18s}
     .adm-refresh:hover{background:#eff6ff;border-color:#93c5fd}
     .adm-refresh:disabled{opacity:.5;cursor:wait}
+    .adm-topbar-link{padding:5px 12px;font-size:.75rem;font-weight:600;color:#2563eb;background:rgba(255,255,255,.7);border:1px solid #dbeafe;border-radius:8px;font-family:inherit;transition:.18s;text-decoration:none;white-space:nowrap}
+    .adm-topbar-link:hover{background:#eff6ff;border-color:#93c5fd}
     .adm-signout{padding:5px 12px;font-size:.75rem;font-weight:600;color:#64748b;background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-family:inherit;transition:.18s}
     .adm-signout:hover{color:#ef4444;border-color:#fecaca}
     .adm-meta{font-size:.7rem;color:#94a3b8;white-space:nowrap}
@@ -172,6 +174,7 @@
       <div class="adm-topbar">
         <h1>Stagify Admin</h1>
         <div class="adm-topbar-right">
+          <a class="adm-topbar-link" href="https://stagify-agent-emailer.onrender.com/" target="_blank" rel="noopener noreferrer">Email Admin</a>
           <span class="adm-meta" id="adm-last-refresh"></span>
           <button class="adm-refresh" id="adm-refresh" title="Reload all data">Refresh</button>
           <button class="adm-signout" id="adm-signout">Sign out</button>
