@@ -43,6 +43,10 @@
         });
     },
 
+    isProUser: function () {
+      return !!(this.user && this.user.plan === 'pro');
+    },
+
     /** Opens Stripe Customer Portal (cancel plan, update card). Requires canManageSubscription. */
     openBillingPortal: function () {
       var tok = this.getToken();

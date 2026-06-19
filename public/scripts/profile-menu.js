@@ -114,11 +114,14 @@
       .then(function (result) {
         if (!result.ok) {
           if (errEl) errEl.textContent = (result.data && result.data.error) || 'Google sign-in failed';
-          return;
+          return null;
         }
         var data = result.data;
         window.StagifyAuth.setToken(data.token);
-        window.StagifyAuth.user = data.user;
+        return window.StagifyAuth.fetchMe();
+      })
+      .then(function (user) {
+        if (!user) return;
         window.StagifyAuth.applyUserToUI();
         closeAuthModal();
         if (window.__stagifyPendingStaging) {
@@ -405,7 +408,7 @@
             return;
           }
           window.StagifyAuth.setToken(data.token);
-          window.StagifyAuth.user = data.user;
+          await window.StagifyAuth.fetchMe();
           window.StagifyAuth.applyUserToUI();
           closeAuthModal();
           if (window.__stagifyPendingStaging) {
