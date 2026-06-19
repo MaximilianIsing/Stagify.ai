@@ -40,8 +40,14 @@
       Object.keys(panels).forEach(function (k) {
         var panel = panels[k];
         if (!panel) return;
-        panel.classList.toggle('is-active', k === key);
-        panel.hidden = k !== key;
+        var active = k === key;
+        panel.classList.toggle('is-active', active);
+        panel.hidden = !active;
+        if (active) {
+          panel.classList.remove('is-entering');
+          void panel.offsetWidth;
+          panel.classList.add('is-entering');
+        }
       });
       if (key === 'plus' && !loaded.plus) {
         ensureIframe(panels.plus, PLUS_EMBED, 'Your first Stagify+ staging');

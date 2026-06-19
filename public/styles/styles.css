@@ -17,3 +17,12 @@
 .site-header .nav-link::before,.site-header .nav-link::after{content:none!important;display:none!important;background:none!important}
 .site-header .nav-link:hover{color:#1d4ed8!important;background:rgba(37,99,235,.10)!important;background-color:rgba(37,99,235,.10)!important;box-shadow:none!important;transform:none!important;text-decoration:none!important}
 .site-header .nav-link:focus-visible{outline:none;border-color:rgba(37,99,235,.45)!important}
+
+/* === Animated nav pill — springy brand-gradient highlight that glides between links === */
+.site-header .nav-center{position:relative}
+.nav-pill{position:absolute;top:50%;left:0;height:var(--pill-h,36px);width:var(--pill-w,0);transform:translate(var(--pill-x,0),-50%);border-radius:11px;background:radial-gradient(circle at 20% 50%,#3b82f6 0,transparent 50%),radial-gradient(circle at 80% 20%,#1d4ed8 0,transparent 50%),radial-gradient(circle at 40% 80%,#2563eb 0,transparent 50%),radial-gradient(circle at 0 100%,#1e40af 0,transparent 50%),radial-gradient(circle at 100% 0,#60a5fa 0,transparent 50%),#1e3a8a;box-shadow:0 6px 18px rgba(30,58,138,.38);opacity:0;pointer-events:none;z-index:0;transition:transform .34s cubic-bezier(.34,1.56,.64,1),width .34s cubic-bezier(.34,1.56,.64,1),opacity .25s ease}
+.nav-pill.is-active{opacity:1}
+.site-header .nav-center .nav-link{position:relative;z-index:1}
+.nav--pill .nav-link:hover{background:transparent!important;background-color:transparent!important}
+.nav--pill .nav-link.is-lit{color:#fff!important}
+@media (prefers-reduced-motion:reduce){.nav-pill{transition:opacity .2s ease}}
