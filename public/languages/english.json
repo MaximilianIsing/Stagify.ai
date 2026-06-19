@@ -319,7 +319,7 @@
       },
       "privacy": {
         "question": "Is my data private and secure?",
-        "answer": "Yes, we take your privacy seriously. Your uploaded images are processed securely and are not stored permanently on our servers. We use industry-standard encryption and do not share your data with third parties."
+        "answer": "Yes. We use HTTPS encryption, do not permanently store uploaded images after processing, and do not sell your personal information. You retain ownership of your uploads and generated results. We share data only with service providers needed to run Stagify (such as AI and payment processors) as described in our Privacy Policy."
       }
     }
   },

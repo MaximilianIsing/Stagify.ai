@@ -489,7 +489,7 @@
           '</a>' +
           '</div>';
       } else {
-        planLine = '<div class="profile-menu__plan">Free · Ad-supported</div>';
+        planLine = '<div class="profile-menu__plan">Free Plan</div>';
       }
       var plusRow = '';
       if (u.plan !== 'pro') {
