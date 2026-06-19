@@ -13,13 +13,13 @@
       free: document.getElementById('guide-demo-free'),
       plus: document.getElementById('guide-demo-plus'),
     };
-    var descEl = document.getElementById('guide-demo-desc');
-    var descFree = descEl ? descEl.getAttribute('data-desc-free') || '' : '';
-    var descPlus = descEl ? descEl.getAttribute('data-desc-plus') || '' : '';
+    var descFree = document.getElementById('guide-demo-desc-free');
+    var descPlus = document.getElementById('guide-demo-desc-plus');
     var loaded = { free: true, plus: false };
 
     function ensureIframe(panel, src, title) {
-      if (!panel || panel.querySelector('iframe')) return;
+      if (!panel) return;
+      if (panel.querySelector('iframe')) return;
       var wrap = document.createElement('div');
       wrap.className = 'guide-demo-embed__inner';
       wrap.innerHTML =
@@ -47,9 +47,8 @@
         ensureIframe(panels.plus, PLUS_EMBED, 'Your first Stagify+ staging');
         loaded.plus = true;
       }
-      if (descEl) {
-        descEl.textContent = key === 'plus' ? descPlus : descFree;
-      }
+      if (descFree) descFree.classList.toggle('hidden', key !== 'free');
+      if (descPlus) descPlus.classList.toggle('hidden', key !== 'plus');
     }
 
     buttons.forEach(function (btn) {

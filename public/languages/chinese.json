@@ -546,7 +546,7 @@
       "title": "账单与 Stagify+",
       "i1": {
         "q": "如何管理或取消 Stagify+？",
-        "a": "打开账户菜单，进入方案设置即可更新或取消。在当前计费周期结束前你仍可继续使用。"
+        "a": "点击右上角的个人资料图标，然后按 Stagify+ 旁边的 ?，打开 Stripe 账单面板，即可更新或取消订阅。在当前计费周期结束前你仍可继续使用。"
       },
       "i2": {
         "q": "我已被扣款，但看不到 Stagify+ 的功能。",
@@ -569,8 +569,8 @@
       }
     },
     "contact": {
-      "text": "仍未解决？我们的团队很乐意为你提供帮助。",
-      "cta": "发送邮件至 team@stagify.ai"
+      "text": "仍未解决？我们的团队很乐意为你提供帮助。发送邮件至 ",
+      "email": "team@stagify.ai"
     }
   },
   "guides": {
@@ -582,6 +582,8 @@
     "demo1Desc": "跟着操作上传照片，无需账户即可完成你的第一间布置好的房间。",
     "demo2Title": "使用 Stagify+ 的第一次布置",
     "demo2Desc": "了解如何使用 Stagify+ 进行布置，享受无限生成、更高画质和专业工具。",
+    "pickerFree": "免费",
+    "pickerPlus": "Stagify+",
     "troubleshootingTitle": "故障排查与常见问题"
   }
 }
