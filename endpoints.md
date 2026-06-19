@@ -47,7 +47,9 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/auth/register` | **Body:** `{ email, password }`. Creates a free-tier account. Returns `{ success, token, user }` or `400` with `error`. |
+| `POST` | `/api/auth/register` | **Body:** `{ email, password }`. Sends a 6-digit verification code to email. Returns `{ ok, needsVerification, message }` or `400`/`502`/`503`. |
+| `POST` | `/api/auth/register/verify` | **Body:** `{ email, code }`. Verifies code and creates account. Returns `{ success, token, user }` or `400`. |
+| `POST` | `/api/auth/register/resend` | **Body:** `{ email }`. Resends verification code for pending sign-up. |
 | `POST` | `/api/auth/login` | **Body:** `{ email, password }`. Returns `{ success, token, user }` or `401`. |
 | `GET` | `/api/auth/config` | Public. Returns `{ googleClientId: string | null }` for Google Sign-In. |
 | `POST` | `/api/auth/google` | **Body:** `{ credential }` (Google ID token). Returns `{ success, token, user }` or `4xx/503` if not configured or invalid. |

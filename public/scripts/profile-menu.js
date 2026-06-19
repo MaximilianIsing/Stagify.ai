@@ -2,6 +2,8 @@
   var AUTH_BOUND = false;
   var authModeRegister = true;
   var authFlowForgot = false;
+  var authFlowVerify = false;
+  var authPendingEmail = '';
   var dropdownOpen = false;
   var GOOGLE_AUTH_INITIALIZED = false;
   var googleOAuthConfig = { loaded: false, clientId: '' };
@@ -31,13 +33,21 @@
       '<input type="password" id="auth-password" name="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters"></div>' +
       '<div class="auth-field" id="auth-password-confirm-row"><label for="auth-password-confirm">Confirm password</label>' +
       '<input type="password" id="auth-password-confirm" name="passwordConfirm" autocomplete="new-password" minlength="8" placeholder="Re-enter password"></div>' +
-      '<div class="auth-actions"><button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label">Create account</strong></button></div>' +
       '<div id="auth-google-panel" class="auth-google-panel hidden" aria-hidden="true">' +
       '<p class="auth-divider"><span>or</span></p>' +
       '<div id="auth-google-btn-container" class="auth-google-btn-container"></div>' +
       '</div>' +
       '<button type="button" class="auth-forgot-link" id="auth-forgot-link">Forgot your password?</button>' +
       '</div>' +
+      '<div id="auth-verify-panel" class="hidden">' +
+      '<p class="auth-modal__sub auth-forgot-copy" id="auth-verify-copy">Enter the 6-digit code we sent to your email.</p>' +
+      '<div class="auth-field"><label for="auth-verify-code">Verification code</label>' +
+      '<input type="text" id="auth-verify-code" name="verificationCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="123456"></div>' +
+      '<button type="button" class="auth-forgot-back" id="auth-verify-back">Back</button>' +
+      '<button type="button" class="auth-forgot-back" id="auth-verify-resend">Resend code</button>' +
+      '<div id="auth-verify-feedback" class="auth-error" role="status"></div>' +
+      '</div>' +
+      '<div id="auth-submit-row" class="auth-actions"><button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label">Create account</strong></button></div>' +
       '<div id="auth-forgot-panel" class="hidden">' +
       '<p class="auth-modal__sub auth-forgot-copy">We’ll email you a one-time link to set a new password. The link expires in one hour.</p>' +
       '<div class="auth-actions"><button type="button" class="btn btn-primary btn-lg" id="auth-forgot-send"><strong>Send reset link</strong></button></div>' +
@@ -54,25 +64,55 @@
   function refreshAuthModalLayout() {
     var std = document.getElementById('auth-standard-panel');
     var frg = document.getElementById('auth-forgot-panel');
+    var verify = document.getElementById('auth-verify-panel');
+    var submitRow = document.getElementById('auth-submit-row');
     var tgl = document.querySelector('#auth-modal .auth-toggle');
     var mainsub = document.getElementById('auth-modal-sub');
     var title = document.getElementById('auth-modal-title');
+    var emailEl = document.getElementById('auth-email');
+    var submitLabel = document.getElementById('auth-submit-label');
     if (!std || !frg) return;
-    if (authFlowForgot && !authModeRegister) {
+    if (authModeRegister && authFlowVerify) {
+      std.classList.add('hidden');
+      frg.classList.add('hidden');
+      if (verify) verify.classList.remove('hidden');
+      if (submitRow) submitRow.classList.remove('hidden');
+      if (tgl) tgl.classList.add('hidden');
+      if (mainsub) mainsub.classList.add('hidden');
+      if (title) title.textContent = 'Verify your email';
+      if (emailEl) emailEl.readOnly = true;
+      if (submitLabel) submitLabel.textContent = 'Create account';
+      var verifyCopy = document.getElementById('auth-verify-copy');
+      if (verifyCopy) {
+        verifyCopy.textContent =
+          'Enter the 6-digit code we sent to ' + (authPendingEmail || 'your email') + '.';
+      }
+    } else if (authFlowForgot && !authModeRegister) {
       std.classList.add('hidden');
       frg.classList.remove('hidden');
+      if (verify) verify.classList.add('hidden');
+      if (submitRow) submitRow.classList.add('hidden');
       if (tgl) tgl.classList.add('hidden');
       if (mainsub) mainsub.classList.add('hidden');
       if (title) title.textContent = 'Reset password';
+      if (emailEl) emailEl.readOnly = false;
     } else {
       frg.classList.add('hidden');
       std.classList.remove('hidden');
+      if (verify) verify.classList.add('hidden');
+      if (submitRow) submitRow.classList.remove('hidden');
       if (tgl) tgl.classList.remove('hidden');
       if (mainsub) mainsub.classList.remove('hidden');
+      if (emailEl) emailEl.readOnly = false;
       var fb = document.getElementById('auth-forgot-feedback');
       if (fb) {
         fb.textContent = '';
         fb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
+      }
+      var verifyFb = document.getElementById('auth-verify-feedback');
+      if (verifyFb) {
+        verifyFb.textContent = '';
+        verifyFb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
       }
     }
     updateGooglePanelVisibility();
@@ -84,7 +124,8 @@
     var show =
       googleOAuthConfig.loaded &&
       googleOAuthConfig.clientId &&
-      !(authFlowForgot && !authModeRegister);
+      !(authFlowForgot && !authModeRegister) &&
+      !(authModeRegister && authFlowVerify);
     if (show) {
       gp.classList.remove('hidden');
       gp.setAttribute('aria-hidden', 'false');
@@ -223,9 +264,23 @@
       });
   }
 
+  function resetAuthVerificationFlow() {
+    authFlowVerify = false;
+    authPendingEmail = '';
+    var codeEl = document.getElementById('auth-verify-code');
+    if (codeEl) codeEl.value = '';
+    var verifyFb = document.getElementById('auth-verify-feedback');
+    if (verifyFb) {
+      verifyFb.textContent = '';
+      verifyFb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
+    }
+  }
+
   function syncAuthFormMode() {
     if (authModeRegister) {
       authFlowForgot = false;
+    } else {
+      resetAuthVerificationFlow();
     }
     var title = document.getElementById('auth-modal-title');
     var sub = document.getElementById('auth-modal-sub');
@@ -238,7 +293,7 @@
     if (authModeRegister) {
       if (title) title.textContent = 'Create your free account';
       if (sub) sub.textContent = 'Sign up to upload and stage images.';
-      if (submitLabel) submitLabel.textContent = 'Create account';
+      if (submitLabel && !authFlowVerify) submitLabel.textContent = 'Continue';
       if (toggleLabel) toggleLabel.textContent = 'Already have an account?';
       if (toggleBtn) toggleBtn.textContent = 'Sign in';
       if (confirmRow) confirmRow.classList.remove('hidden');
@@ -271,12 +326,14 @@
     m.classList.add('hidden');
     m.setAttribute('aria-hidden', 'true');
     window.__stagifyPendingStaging = false;
+    resetAuthVerificationFlow();
   }
 
   function openAuthModal(forStaging) {
     ensureAuthModal();
     bindAuthOnce();
     authFlowForgot = false;
+    resetAuthVerificationFlow();
     if (forStaging) window.__stagifyPendingStaging = true;
     var m = document.getElementById('auth-modal');
     if (!m) return;
@@ -306,6 +363,7 @@
       toggle.addEventListener('click', function () {
         authModeRegister = !authModeRegister;
         authFlowForgot = false;
+        resetAuthVerificationFlow();
         syncAuthFormMode();
         var er = document.getElementById('auth-error');
         if (er) er.textContent = '';
@@ -318,6 +376,54 @@
         syncAuthFormMode();
         var er = document.getElementById('auth-error');
         if (er) er.textContent = '';
+      });
+    }
+    var verifyBack = document.getElementById('auth-verify-back');
+    if (verifyBack) {
+      verifyBack.addEventListener('click', function () {
+        resetAuthVerificationFlow();
+        syncAuthFormMode();
+        var er = document.getElementById('auth-error');
+        if (er) er.textContent = '';
+      });
+    }
+    var verifyResend = document.getElementById('auth-verify-resend');
+    if (verifyResend) {
+      verifyResend.addEventListener('click', async function () {
+        var fb = document.getElementById('auth-verify-feedback');
+        var emailEl = document.getElementById('auth-email');
+        var email = authPendingEmail || (emailEl ? emailEl.value.trim() : '');
+        if (fb) {
+          fb.textContent = '';
+          fb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
+        }
+        if (!email) {
+          if (fb) fb.textContent = 'Enter your email address.';
+          return;
+        }
+        verifyResend.disabled = true;
+        try {
+          var r = await fetch('/api/auth/register/resend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email }),
+          });
+          var data = await r.json().catch(function () {
+            return {};
+          });
+          if (fb) {
+            if (!r.ok) {
+              fb.textContent = data.error || 'Could not resend code. Try again.';
+              fb.classList.add('auth-forgot-feedback--warn');
+            } else {
+              fb.textContent = data.message || 'We sent a new verification code.';
+              fb.classList.add('auth-forgot-feedback--success');
+            }
+          }
+        } catch (err) {
+          if (fb) fb.textContent = 'Network error. Please try again.';
+        }
+        verifyResend.disabled = false;
       });
     }
     var forgotBack = document.getElementById('auth-forgot-back');
@@ -388,6 +494,39 @@
         var email = emailEl ? emailEl.value.trim() : '';
         var password = passEl ? passEl.value : '';
         if (errEl) errEl.textContent = '';
+        if (authModeRegister && authFlowVerify) {
+          var codeEl = document.getElementById('auth-verify-code');
+          var code = codeEl ? codeEl.value.trim() : '';
+          if (!/^\d{6}$/.test(code)) {
+            if (errEl) errEl.textContent = 'Enter the 6-digit verification code from your email.';
+            return;
+          }
+          try {
+            var vr = await fetch('/api/auth/register/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email, code: code }),
+            });
+            var vdata = await vr.json();
+            if (!vr.ok) {
+              if (errEl) errEl.textContent = vdata.error || 'Verification failed';
+              return;
+            }
+            window.StagifyAuth.setToken(vdata.token);
+            await window.StagifyAuth.fetchMe();
+            window.StagifyAuth.applyUserToUI();
+            closeAuthModal();
+            if (window.__stagifyPendingStaging) {
+              window.__stagifyPendingStaging = false;
+              var stageModal = document.getElementById('stage-modal');
+              if (stageModal) stageModal.classList.remove('hidden');
+            }
+            refresh();
+          } catch (verr) {
+            if (errEl) errEl.textContent = 'Network error. Please try again.';
+          }
+          return;
+        }
         if (authModeRegister) {
           var confirmPass = confirmEl ? confirmEl.value : '';
           if (password !== confirmPass) {
@@ -405,6 +544,17 @@
           var data = await r.json();
           if (!r.ok) {
             if (errEl) errEl.textContent = data.error || 'Something went wrong';
+            return;
+          }
+          if (authModeRegister && data.needsVerification) {
+            authFlowVerify = true;
+            authPendingEmail = email;
+            refreshAuthModalLayout();
+            var verifyFb = document.getElementById('auth-verify-feedback');
+            if (verifyFb) {
+              verifyFb.textContent = data.message || 'Check your email for a verification code.';
+              verifyFb.classList.add('auth-forgot-feedback--success');
+            }
             return;
           }
           window.StagifyAuth.setToken(data.token);

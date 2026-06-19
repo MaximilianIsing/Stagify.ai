@@ -2271,19 +2271,123 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Auth API (simple email + password; new accounts are Free tier)
-app.post('/api/auth/register', express.json(), (req, res) => {
+// Auth API (email + password; new accounts require email verification)
+async function sendRegistrationVerificationEmail({ toEmail, code }) {
+  if (!resend) {
+    console.error('[auth] Resend not configured; cannot send registration verification email');
+    return {
+      ok: false,
+      status: 503,
+      body: {
+        ok: false,
+        error:
+          'We could not send a verification email because email delivery is not configured on this server. Please contact support.',
+        code: 'EMAIL_NOT_CONFIGURED',
+      },
+    };
+  }
+
+  const recipient = EMAIL_DEBUG_MODE ? DEBUG_EMAIL : toEmail;
+  const debugNote = EMAIL_DEBUG_MODE ? ` (intended recipient: ${toEmail})` : '';
+
+  const sendResult = await resend.emails.send({
+    from: RESEND_FROM_EMAIL,
+    to: recipient,
+    subject: 'Your Stagify verification code',
+    html:
+      `<p>Hi,</p><p>Your Stagify verification code${debugNote} is:</p>` +
+      `<p style="font-size:28px;font-weight:700;letter-spacing:0.2em;margin:16px 0">${code}</p>` +
+      `<p>This code expires in 15 minutes. If you didn’t request this, you can ignore this email.</p>` +
+      `<p>— Stagify</p>`,
+    text: `Your Stagify verification code${debugNote}: ${code}\n\nExpires in 15 minutes. If you didn't request this, ignore this email.`,
+  });
+
+  if (sendResult.error) {
+    const errMsg =
+      typeof sendResult.error?.message === 'string'
+        ? sendResult.error.message
+        : JSON.stringify(sendResult.error);
+    console.error('[auth] Resend registration verification failed:', errMsg);
+    return {
+      ok: false,
+      status: 502,
+      body: {
+        ok: false,
+        error:
+          'We could not send the verification email right now. Please try again in a few minutes. If it keeps failing, contact support.',
+        code: 'EMAIL_SEND_FAILED',
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    body: {
+      ok: true,
+      needsVerification: true,
+      message:
+        'We sent a 6-digit verification code to your email. Enter it below to finish creating your account.',
+    },
+  };
+}
+
+app.post('/api/auth/register', express.json(), async (req, res) => {
   try {
     const { email, password } = req.body || {};
-    const result = authStore.register(email, password);
+    const result = authStore.startRegistration(email, password);
+    if (!result.ok) {
+      return res.status(400).json({ error: result.error });
+    }
+    const mail = await sendRegistrationVerificationEmail({
+      toEmail: result.toEmail,
+      code: result.code,
+    });
+    if (!mail.ok) {
+      return res.status(mail.status).json(mail.body);
+    }
+    res.json(mail.body);
+  } catch (e) {
+    console.error('register error', e);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+app.post('/api/auth/register/verify', express.json(), (req, res) => {
+  try {
+    const { email, code } = req.body || {};
+    const result = authStore.completeRegistration(email, code);
     if (!result.ok) {
       return res.status(400).json({ error: result.error });
     }
     const fullUser = authStore.findUserByEmail(email);
     res.json({ success: true, token: result.token, user: toPublicAuthUser(fullUser) });
   } catch (e) {
-    console.error('register error', e);
-    res.status(500).json({ error: 'Registration failed' });
+    console.error('register verify error', e);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+});
+
+app.post('/api/auth/register/resend', express.json(), async (req, res) => {
+  try {
+    const email = (req.body && req.body.email) || '';
+    const result = authStore.resendRegistrationCode(email);
+    if (!result.ok) {
+      return res.status(400).json({ error: result.error });
+    }
+    const mail = await sendRegistrationVerificationEmail({
+      toEmail: result.toEmail,
+      code: result.code,
+    });
+    if (!mail.ok) {
+      return res.status(mail.status).json(mail.body);
+    }
+    res.json({
+      ok: true,
+      message: 'We sent a new verification code to your email.',
+    });
+  } catch (e) {
+    console.error('register resend error', e);
+    res.status(500).json({ error: 'Could not resend verification code' });
   }
 });
 

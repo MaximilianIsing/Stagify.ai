@@ -385,14 +385,24 @@
               <label for="auth-password-confirm">Confirm password</label>
               <input type="password" id="auth-password-confirm" name="passwordConfirm" autocomplete="new-password" minlength="8" placeholder="Re-enter password">
             </div>
-            <div class="auth-actions">
-              <button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label">Create account</strong></button>
-            </div>
             <div id="auth-google-panel" class="auth-google-panel hidden" aria-hidden="true">
               <p class="auth-divider"><span>or</span></p>
               <div id="auth-google-btn-container" class="auth-google-btn-container"></div>
             </div>
             <button type="button" class="auth-forgot-link" id="auth-forgot-link">Forgot your password?</button>
+          </div>
+          <div id="auth-verify-panel" class="hidden">
+            <p class="auth-modal__sub auth-forgot-copy" id="auth-verify-copy">Enter the 6-digit code we sent to your email.</p>
+            <div class="auth-field">
+              <label for="auth-verify-code">Verification code</label>
+              <input type="text" id="auth-verify-code" name="verificationCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="123456">
+            </div>
+            <button type="button" class="auth-forgot-back" id="auth-verify-back">Back</button>
+            <button type="button" class="auth-forgot-back" id="auth-verify-resend">Resend code</button>
+            <div id="auth-verify-feedback" class="auth-error" role="status"></div>
+          </div>
+          <div id="auth-submit-row" class="auth-actions">
+            <button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label">Create account</strong></button>
           </div>
           <div id="auth-forgot-panel" class="hidden">
             <p class="auth-modal__sub auth-forgot-copy">We’ll email you a one-time link to set a new password. The link expires in one hour.</p>

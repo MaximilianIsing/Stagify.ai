@@ -234,7 +234,10 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
 #auth-forgot-feedback.auth-forgot-feedback--success {
   color: #15803d;
 }
-#auth-forgot-feedback.auth-forgot-feedback--warn {
+#auth-verify-feedback.auth-forgot-feedback--success {
+  color: #15803d;
+}
+#auth-verify-feedback.auth-forgot-feedback--warn {
   color: #b45309;
 }
 

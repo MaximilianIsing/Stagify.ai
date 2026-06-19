@@ -5,6 +5,8 @@ import crypto from 'crypto';
 // Free plan is unlimited (ad-supported). Set high so existing limit checks never fire.
 const FREE_DAILY_LIMIT = 99999;
 const SESSION_DAYS = 30;
+const REGISTRATION_CODE_EXPIRY_MS = 15 * 60 * 1000;
+const MAX_REGISTRATION_VERIFY_ATTEMPTS = 5;
 
 function getStorePath(baseDir) {
   const logDir =
@@ -22,10 +24,10 @@ function getStorePath(baseDir) {
 function loadStore(filePath) {
   try {
     if (!fs.existsSync(filePath)) {
-      return { users: [], sessions: {}, mobileIpUsage: {}, passwordResetTokens: {} };
+      return { users: [], sessions: {}, mobileIpUsage: {}, passwordResetTokens: {}, pendingRegistrations: {} };
     }
     const raw = fs.readFileSync(filePath, 'utf8').trim();
-    if (!raw) return { users: [], sessions: {}, mobileIpUsage: {}, passwordResetTokens: {} };
+    if (!raw) return { users: [], sessions: {}, mobileIpUsage: {}, passwordResetTokens: {}, pendingRegistrations: {} };
     const data = JSON.parse(raw);
     if (!Array.isArray(data.users)) data.users = [];
     if (!data.sessions || typeof data.sessions !== 'object') data.sessions = {};
@@ -33,9 +35,12 @@ function loadStore(filePath) {
     if (!data.passwordResetTokens || typeof data.passwordResetTokens !== 'object') {
       data.passwordResetTokens = {};
     }
+    if (!data.pendingRegistrations || typeof data.pendingRegistrations !== 'object') {
+      data.pendingRegistrations = {};
+    }
     return data;
   } catch {
-    return { users: [], sessions: {}, mobileIpUsage: {}, passwordResetTokens: {} };
+    return { users: [], sessions: {}, mobileIpUsage: {}, passwordResetTokens: {}, pendingRegistrations: {} };
   }
 }
 
@@ -54,6 +59,25 @@ function newSalt() {
 
 function newToken() {
   return crypto.randomBytes(32).toString('hex');
+}
+
+function newRegistrationCode() {
+  return String(crypto.randomInt(100000, 1000000));
+}
+
+function hashVerificationCode(code, salt) {
+  return crypto.createHmac('sha256', salt).update(String(code)).digest('hex');
+}
+
+function validateRegistrationInput(email, password) {
+  const e = String(email || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+    return { ok: false, error: 'Invalid email address' };
+  }
+  if (String(password || '').length < 8) {
+    return { ok: false, error: 'Password must be at least 8 characters' };
+  }
+  return { ok: true, email: e };
 }
 
 function utcDayString() {
@@ -82,15 +106,24 @@ export function createAuthStore(baseDir) {
     return store.users.find((u) => u.id === id) || null;
   }
 
-  function register(email, password) {
-    const e = String(email || '').trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
-      return { ok: false, error: 'Invalid email address' };
+  function prunePendingRegistrations(store) {
+    if (!store.pendingRegistrations) store.pendingRegistrations = {};
+    const now = Date.now();
+    for (const k of Object.keys(store.pendingRegistrations)) {
+      const entry = store.pendingRegistrations[k];
+      if (!entry || typeof entry.exp !== 'number' || entry.exp < now) {
+        delete store.pendingRegistrations[k];
+      }
     }
-    if (String(password || '').length < 8) {
-      return { ok: false, error: 'Password must be at least 8 characters' };
-    }
+  }
+
+  /** Stage email/password sign-up and return a one-time verification code to email. */
+  function startRegistration(email, password) {
+    const validated = validateRegistrationInput(email, password);
+    if (!validated.ok) return validated;
+    const e = validated.email;
     const store = read();
+    prunePendingRegistrations(store);
     const dup = store.users.find((u) => u.email === e);
     if (dup) {
       if (dup.googleSub && !dup.passwordHash) {
@@ -101,20 +134,112 @@ export function createAuthStore(baseDir) {
       }
       return { ok: false, error: 'An account with this email already exists' };
     }
-    const salt = newSalt();
-    const passwordHash = hashPassword(password, salt);
+    const passwordSalt = newSalt();
+    const passwordHash = hashPassword(password, passwordSalt);
+    const codeSalt = newSalt();
+    const code = newRegistrationCode();
+    const codeHash = hashVerificationCode(code, codeSalt);
+    store.pendingRegistrations[e] = {
+      passwordSalt,
+      passwordHash,
+      codeSalt,
+      codeHash,
+      attempts: 0,
+      exp: Date.now() + REGISTRATION_CODE_EXPIRY_MS,
+    };
+    write(store);
+    return { ok: true, code, toEmail: e };
+  }
+
+  /** Resend a verification code for a pending registration. */
+  function resendRegistrationCode(email) {
+    const e = String(email || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      return { ok: false, error: 'Invalid email address' };
+    }
+    const store = read();
+    prunePendingRegistrations(store);
+    const pending = store.pendingRegistrations[e];
+    if (!pending) {
+      return {
+        ok: false,
+        error: 'No pending sign-up for this email. Start registration again.',
+      };
+    }
+    const codeSalt = newSalt();
+    const code = newRegistrationCode();
+    pending.codeSalt = codeSalt;
+    pending.codeHash = hashVerificationCode(code, codeSalt);
+    pending.attempts = 0;
+    pending.exp = Date.now() + REGISTRATION_CODE_EXPIRY_MS;
+    write(store);
+    return { ok: true, code, toEmail: e };
+  }
+
+  /** Verify email code and create the account. */
+  function completeRegistration(email, code) {
+    const e = String(email || '').trim().toLowerCase();
+    const rawCode = String(code || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      return { ok: false, error: 'Invalid email address' };
+    }
+    if (!/^\d{6}$/.test(rawCode)) {
+      return { ok: false, error: 'Enter the 6-digit verification code from your email.' };
+    }
+    const store = read();
+    prunePendingRegistrations(store);
+    const pending = store.pendingRegistrations[e];
+    if (!pending) {
+      return {
+        ok: false,
+        error: 'Verification code expired or not found. Start registration again.',
+      };
+    }
+    if (pending.attempts >= MAX_REGISTRATION_VERIFY_ATTEMPTS) {
+      delete store.pendingRegistrations[e];
+      write(store);
+      return {
+        ok: false,
+        error: 'Too many incorrect attempts. Start registration again.',
+      };
+    }
+    const tryHash = hashVerificationCode(rawCode, pending.codeSalt);
+    const a = Buffer.from(tryHash, 'hex');
+    const b = Buffer.from(pending.codeHash, 'hex');
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      pending.attempts += 1;
+      write(store);
+      const remaining = MAX_REGISTRATION_VERIFY_ATTEMPTS - pending.attempts;
+      if (remaining <= 0) {
+        delete store.pendingRegistrations[e];
+        write(store);
+        return {
+          ok: false,
+          error: 'Too many incorrect attempts. Start registration again.',
+        };
+      }
+      return {
+        ok: false,
+        error: `Incorrect verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`,
+      };
+    }
+    if (store.users.find((u) => u.email === e)) {
+      delete store.pendingRegistrations[e];
+      write(store);
+      return { ok: false, error: 'An account with this email already exists' };
+    }
     const user = {
       id: `u_${crypto.randomBytes(12).toString('hex')}`,
       email: e,
-      passwordSalt: salt,
-      passwordHash,
+      passwordSalt: pending.passwordSalt,
+      passwordHash: pending.passwordHash,
       plan: 'free',
       usageDay: null,
       usageCount: 0,
       createdAt: new Date().toISOString(),
     };
     store.users.push(user);
-    write(store);
+    delete store.pendingRegistrations[e];
     const token = newToken();
     const exp = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
     store.sessions[token] = { userId: user.id, exp };
@@ -448,7 +573,9 @@ export function createAuthStore(baseDir) {
   }
 
   return {
-    register,
+    startRegistration,
+    resendRegistrationCode,
+    completeRegistration,
     login,
     loginWithGoogle,
     validateSession,
