@@ -12,7 +12,9 @@
     "faq": "PF",
     "contactUs": "Contáctanos",
     "brand": "stagify",
-    "brandSuffix": ".ai"
+    "brandSuffix": ".ai",
+    "techHelp": "Ayuda Técnica",
+    "guides": "Guías"
   },
   "hero": {
     "catchphrase": "Sube. Diseña. Imagina.",
@@ -196,6 +198,14 @@
       "subtitle": "Sube una habitación vacía y mírala diseñada en unos ocho segundos. Gratis para probar.",
       "button": "Sube una foto",
       "note": "Reconocido por Compass, Centennial y más."
+    },
+    "whyus": {
+      "subtitle": "Otras herramientas de staging virtual son lentas, caras y restrictivas. Stagify está hecho para ser todo lo contrario."
+    },
+    "faq": {
+      "subtitle": "Respuestas rápidas a las preguntas más frecuentes. ¿Sigues con dudas? Visita <a href=\"guides.html\">Guías</a> o escríbenos.",
+      "teamQ": "¿Ofrecen planes para equipos o empresas?",
+      "teamA": "Sí. Si tienes un equipo de agentes o una agencia, nuestro <a href=\"enterprise.html\">plan empresarial</a> da acceso a Stagify+ a todos los que tengan el correo de tu empresa y se factura solo por el uso real, sin cuotas por usuario."
     }
   },
   "modal": {
@@ -483,5 +493,95 @@
       "processingFailed": "El procesamiento falló. Por favor intenta de nuevo.",
       "noProcessedFile": "No hay PDF procesado disponible."
     }
+  },
+  "techHelp": {
+    "metaTitle": "Ayuda Técnica - Solución de problemas y soporte de Stagify.ai",
+    "metaDescription": "Resuelve problemas técnicos comunes de Stagify.ai. Soluciones para subir fotos, generar, iniciar sesión, facturación y problemas del navegador.",
+    "metaKeywords": "ayuda técnica stagify, solución de problemas, no se sube la foto, soporte, problemas comunes",
+    "badge": "Ayuda Técnica",
+    "title": "Solución de problemas y dudas comunes",
+    "subtitle": "La mayoría de los problemas tienen una solución rápida. Encuentra el tuyo abajo y, si sigues atascado, nuestro equipo está a un correo de distancia.",
+    "upload": {
+      "title": "Subir fotos y archivos",
+      "i1": {
+        "q": "Mi foto no se sube.",
+        "a": "Asegúrate de que el archivo sea JPG, PNG o WEBP y pese menos de 10 MB. Las fotos muy grandes del móvil a veces fallan: cambia el tamaño de la imagen o hazle una captura de pantalla y vuelve a subirla. Si sigue fallando, recarga la página e inténtalo de nuevo."
+      },
+      "i2": {
+        "q": "¿Qué fotos funcionan mejor?",
+        "a": "Usa una foto nítida y bien iluminada tomada de frente, con toda la habitación visible y poco desorden. Las fotos borrosas, oscuras o con gran angular extremo dan peores resultados."
+      }
+    },
+    "generate": {
+      "title": "Generación y resultados",
+      "i1": {
+        "q": "La generación se queda colgada o tarda demasiado.",
+        "a": "La mayoría de las imágenes terminan en unos 8 segundos. Si ha pasado más de un minuto, puede que se haya cortado la conexión: recarga la página e inténtalo otra vez. Evita cambiar de pestaña o bloquear el móvil mientras se procesa."
+      },
+      "i2": {
+        "q": "El resultado tiene muebles raros o defectos.",
+        "a": "El staging con IA no es perfecto en cada intento. Genera de nuevo para obtener otra variación, cambia de estilo o usa la herramienta de máscara para corregir solo la zona que se ve mal en lugar de rehacer toda la imagen."
+      },
+      "i3": {
+        "q": "No cambió nada o la habitación sigue vacía.",
+        "a": "Suele deberse a que no se seleccionó un tipo de habitación o un estilo, o a que la foto estaba demasiado oscura para el modelo. Elige un tipo de habitación y un estilo, y prueba con una foto más luminosa."
+      }
+    },
+    "account": {
+      "title": "Cuenta e inicio de sesión",
+      "i1": {
+        "q": "No me llegó el código de verificación.",
+        "a": "Revisa tu carpeta de spam o promociones: los códigos pueden tardar un minuto. Si aún no llega, usa \"Reenviar código\" y comprueba que tu correo esté bien escrito."
+      },
+      "i2": {
+        "q": "Olvidé mi contraseña.",
+        "a": "En la pantalla de inicio de sesión elige \"¿Olvidaste tu contraseña?\" y te enviaremos un enlace para restablecerla. El enlace caduca en una hora."
+      },
+      "i3": {
+        "q": "El inicio de sesión con Google no funciona.",
+        "a": "Permite las ventanas emergentes para stagify.ai y asegúrate de no bloquear por completo las cookies de terceros; luego inténtalo de nuevo. También puedes iniciar sesión con tu correo y contraseña."
+      }
+    },
+    "billing": {
+      "title": "Facturación y Stagify+",
+      "i1": {
+        "q": "¿Cómo gestiono o cancelo Stagify+?",
+        "a": "Abre el menú de tu cuenta y ve a la configuración de tu plan para actualizarlo o cancelarlo. Mantienes el acceso hasta el final del período de facturación actual."
+      },
+      "i2": {
+        "q": "Me cobraron pero no veo las funciones de Stagify+.",
+        "a": "Cierra sesión y vuelve a entrar para actualizar tu cuenta. Si las funciones siguen sin aparecer, escríbenos a <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> desde el correo que usaste."
+      }
+    },
+    "performance": {
+      "title": "Navegador y rendimiento",
+      "i1": {
+        "q": "¿Qué navegadores son compatibles?",
+        "a": "Usa una versión actualizada de Chrome, Safari, Edge o Firefox. Los navegadores antiguos pueden no admitir el editor ni las herramientas de comparación deslizable."
+      },
+      "i2": {
+        "q": "La página va lenta o los botones no responden.",
+        "a": "Recarga la página de forma forzada (Ctrl/Cmd + Mayús + R) para eliminar una versión antigua, cierra las pestañas que no uses y desactiva los bloqueadores de anuncios para stagify.ai, que pueden interferir con las subidas."
+      },
+      "i3": {
+        "q": "El sitio no carga en absoluto.",
+        "a": "Comprueba tu conexión a internet y prueba con una ventana privada o de incógnito. Si carga ahí, borra la caché del navegador para stagify.ai."
+      }
+    },
+    "contact": {
+      "text": "¿Sigues atascado? Nuestro equipo estará encantado de ayudarte.",
+      "cta": "Escribe a team@stagify.ai"
+    }
+  },
+  "guides": {
+    "badge": "Guías",
+    "title": "Guías y tutoriales",
+    "subtitle": "Tutoriales interactivos rápidos para que empieces a hacer staging en minutos, además de soluciones a problemas comunes.",
+    "walkthroughsTitle": "Tutoriales paso a paso",
+    "demo1Title": "Tu primer staging gratis",
+    "demo1Desc": "Sigue los pasos para subir una foto y obtener tu primera habitación amueblada, sin necesidad de cuenta.",
+    "demo2Title": "Tu primer staging con Stagify+",
+    "demo2Desc": "Descubre cómo hacer staging con Stagify+ para generaciones ilimitadas, mayor calidad y herramientas profesionales.",
+    "troubleshootingTitle": "Solución de problemas y dudas comunes"
   }
 }

@@ -12,7 +12,9 @@
     "faq": "FAQ",
     "contactUs": "Contact Us",
     "brand": "stagify",
-    "brandSuffix": ".ai"
+    "brandSuffix": ".ai",
+    "techHelp": "Tech Help",
+    "guides": "Guides"
   },
   "hero": {
     "catchphrase": "Upload. Stage. Imagine.",
@@ -196,6 +198,14 @@
       "subtitle": "Upload one empty room and see it staged in about eight seconds. Free to try.",
       "button": "Upload a photo",
       "note": "Recognized by Compass, Centennial, and more."
+    },
+    "whyus": {
+      "subtitle": "Other virtual staging tools are slow, costly, and locked down. Stagify is built to be the opposite."
+    },
+    "faq": {
+      "subtitle": "Quick answers to the questions we hear most. Still stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch.",
+      "teamQ": "Do you offer plans for teams or enterprises?",
+      "teamA": "Yes. If you have a team of agents or a brokerage, our <a href=\"enterprise.html\">enterprise plan</a> gives everyone on your company domain access to Stagify+ and bills only on actual usage — no per-seat fees."
     }
   },
   "modal": {
@@ -482,5 +492,95 @@
       "processingFailed": "Processing failed. Please try again.",
       "noProcessedFile": "No processed PDF available."
     }
+  },
+  "techHelp": {
+    "metaTitle": "Tech Help - Stagify.ai Troubleshooting & Support",
+    "metaDescription": "Fix common technical issues with Stagify.ai. Solutions for uploads, generation, sign-in, billing, and browser problems.",
+    "metaKeywords": "stagify tech help, troubleshooting, upload not working, staging help, support, common issues",
+    "badge": "Tech Help",
+    "title": "Troubleshooting & common issues",
+    "subtitle": "Most problems have a quick fix. Find your issue below — and if you're still stuck, our team is one email away.",
+    "upload": {
+      "title": "Uploading & files",
+      "i1": {
+        "q": "My photo won't upload.",
+        "a": "Make sure the file is a JPG, PNG, or WEBP under 10 MB. Very large phone photos sometimes fail — resize the image or take a screenshot of it, then upload again. If it still fails, refresh the page and retry."
+      },
+      "i2": {
+        "q": "Which photos work best?",
+        "a": "Use a clear, well-lit photo taken straight-on, with the whole room visible and minimal clutter. Blurry, dark, or extreme wide-angle shots produce weaker results."
+      }
+    },
+    "generate": {
+      "title": "Generating & results",
+      "i1": {
+        "q": "My generation is stuck or taking too long.",
+        "a": "Most images finish in about 8 seconds. If it's been more than a minute, your connection may have dropped — refresh the page and try again. Avoid switching tabs or locking your phone while it runs."
+      },
+      "i2": {
+        "q": "The result has odd furniture or artifacts.",
+        "a": "AI staging isn't perfect on every pass. Generate again for a new variation, switch to a different style, or use the masking tool to fix only the area that looks off instead of redoing the whole image."
+      },
+      "i3": {
+        "q": "Nothing changed or the room still looks empty.",
+        "a": "This usually means a room type or style wasn't selected, or the photo was too dark for the model to read. Pick a room type and style, then try a brighter photo."
+      }
+    },
+    "account": {
+      "title": "Account & sign-in",
+      "i1": {
+        "q": "My verification code didn't arrive.",
+        "a": "Check your spam or promotions folder — codes can take a minute. If it still hasn't come, use \"Resend code\" and make sure your email is typed correctly."
+      },
+      "i2": {
+        "q": "I forgot my password.",
+        "a": "On the sign-in screen choose \"Forgot your password?\" and we'll email you a reset link. The link expires after one hour."
+      },
+      "i3": {
+        "q": "Google sign-in isn't working.",
+        "a": "Allow pop-ups for stagify.ai and make sure third-party cookies aren't fully blocked, then try again. You can also sign in with your email and password instead."
+      }
+    },
+    "billing": {
+      "title": "Billing & Stagify+",
+      "i1": {
+        "q": "How do I manage or cancel Stagify+?",
+        "a": "Open your account menu and go to your plan settings to update or cancel. You keep access until the end of the current billing period."
+      },
+      "i2": {
+        "q": "I was charged but don't see Stagify+ features.",
+        "a": "Sign out and back in to refresh your account. If the features still don't appear, email us at <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> from the address you used."
+      }
+    },
+    "performance": {
+      "title": "Browser & performance",
+      "i1": {
+        "q": "Which browsers are supported?",
+        "a": "Use an up-to-date version of Chrome, Safari, Edge, or Firefox. Older browsers may not support the editor or the drag-to-compare tools."
+      },
+      "i2": {
+        "q": "The page is slow or buttons don't respond.",
+        "a": "Hard-refresh the page (Ctrl/Cmd + Shift + R) to clear a stale version, close unused tabs, and disable ad blockers for stagify.ai, which can interfere with uploads."
+      },
+      "i3": {
+        "q": "The site won't load at all.",
+        "a": "Check your internet connection, then try a private/incognito window. If it loads there, clear your browser cache for stagify.ai."
+      }
+    },
+    "contact": {
+      "text": "Still stuck? Our team is happy to help.",
+      "cta": "Email team@stagify.ai"
+    }
+  },
+  "guides": {
+    "badge": "Guides",
+    "title": "Guides & walkthroughs",
+    "subtitle": "Quick interactive walkthroughs to get you staging in minutes — plus fixes for common issues.",
+    "walkthroughsTitle": "Step-by-step walkthroughs",
+    "demo1Title": "Your first free staging",
+    "demo1Desc": "Follow along to upload a photo and get your first staged room — no account needed.",
+    "demo2Title": "Your first staging with Stagify+",
+    "demo2Desc": "See how to stage with Stagify+ for unlimited generations, higher quality, and pro tools.",
+    "troubleshootingTitle": "Troubleshooting & common issues"
   }
 }

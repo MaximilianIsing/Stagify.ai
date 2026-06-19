@@ -163,20 +163,25 @@ if (googleClientId) {
   console.log('[google] OAuth client id loaded (Sign-In with Google enabled)');
 }
 
-function readProPassKey() {
-  const fromFile = readFirstStripeFile('propass.txt', (raw) => {
+function readEndpointAccessKey() {
+  const fromFile = readFirstStripeFile('endpointkey.txt', (raw) => {
     const s = String(raw).trim();
     return s || null;
   });
   if (fromFile) return fromFile;
-  const fromEnv = process.env.STAGIFY_PRO_PASS_KEY;
+  const fromEnv = process.env.endpoint_key;
   if (fromEnv && String(fromEnv).trim()) return String(fromEnv).trim();
   return '';
 }
 
-const proPassKey = readProPassKey();
+const LOGS_ACCESS_KEY = readEndpointAccessKey();
+if (LOGS_ACCESS_KEY) {
+  console.log('Endpoint access key successfully loaded');
+} else {
+  console.error('Error: No endpoint access key found in file or environment variable');
+}
 
-function proPassKeysMatch(received, expected) {
+function endpointKeyMatches(received, expected) {
   if (!received || !expected || typeof received !== 'string' || typeof expected !== 'string') {
     return false;
   }
@@ -604,17 +609,17 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 /**
- * Grant Stagify+ to the signed-in account when ?key= matches propass.txt (or STAGIFY_PRO_PASS_KEY).
+ * Grant Stagify+ to the signed-in account when ?key= matches endpointkey.txt (or endpoint_key env).
  * If the browser has no Authorization header, returns a tiny page that re-opens this URL with
  * ?authToken= from localStorage (same pattern as other auth flows).
  */
 app.get('/getpro', (req, res) => {
   try {
-    if (!proPassKey) {
+    if (!LOGS_ACCESS_KEY) {
       return res.status(503).type('text/plain').send('Not configured');
     }
     const keyParam = typeof req.query.key === 'string' ? req.query.key.trim() : '';
-    if (!keyParam || !proPassKeysMatch(keyParam, proPassKey)) {
+    if (!keyParam || !endpointKeyMatches(keyParam, LOGS_ACCESS_KEY)) {
       return res.status(404).type('text/plain').send('Not found');
     }
     const user = getAuthUserFromRequest(req);
@@ -3221,21 +3226,6 @@ app.post('/api/process-pdf', pdfUpload.single('pdf'), async (req, res) => {
     }
   }
 });
-
-// Load endpoint access key from file, fall back to environment variable
-let LOGS_ACCESS_KEY;
-try {
-  LOGS_ACCESS_KEY = fs.readFileSync(path.join(__dirname, 'endpointkey.txt'), 'utf8').trim();
-  console.log('Endpoint access key successfully loaded from file');
-} catch (error) {
-  console.log('Endpoint key file not found, trying environment variable');
-  LOGS_ACCESS_KEY = process.env.endpoint_key;
-  if (LOGS_ACCESS_KEY) {
-    console.log('Endpoint access key successfully loaded from environment variable');
-  } else {
-    console.error('Error: No endpoint access key found in file or environment variable');
-  }
-}
 
 // Middleware to protect logs endpoints with password
 function protectLogs(req, res, next) {
