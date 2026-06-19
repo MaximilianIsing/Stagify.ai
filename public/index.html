@@ -61,7 +61,15 @@
     
     <!-- Preload critical carousel image -->
     <link rel="preload" as="image" href="media-webp/example/Original.webp" fetchpriority="high">
-    
+
+    <!-- Warm the cache for below-the-fold section images so they don't pop in on scroll -->
+    <link rel="preload" as="image" href="media-webp/Homepage/Meeting2.webp" fetchpriority="low">
+    <link rel="preload" as="image" href="media-webp/Homepage/Meeting1.webp" fetchpriority="low">
+    <link rel="preload" as="image" href="media-webp/Homepage/HelpingOld.webp" fetchpriority="low">
+    <link rel="preload" as="image" href="media-webp/Homepage/BoardRoom.webp" fetchpriority="low">
+    <link rel="preload" as="image" href="media-webp/Homepage/BeforeAfter/Before2.webp" fetchpriority="low">
+    <link rel="preload" as="image" href="media-webp/Homepage/BeforeAfter/After2.webp" fetchpriority="low">
+
     <!-- Preload background video -->
     <link rel="preload" as="video" href="background.mp4">
     
@@ -431,14 +439,8 @@
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
           <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
-          <div class="nav-dropdown">
-            <button type="button" class="nav-link nav-dropdown__trigger" id="nav-about-trigger" aria-expanded="false" aria-haspopup="true" aria-controls="nav-about-panel" data-lang="navigation.about">About</button>
-            <div class="nav-dropdown__panel" id="nav-about-panel" role="menu">
-              <a href="why.html#why" class="nav-dropdown__link" role="menuitem" data-lang="navigation.whyUs">Why Us?</a>
-              <a href="faq.html#faq" class="nav-dropdown__link" role="menuitem" data-lang="navigation.faq">FAQ</a>
-              <a href="contact.html#contact" class="nav-dropdown__link" role="menuitem" data-lang="navigation.contactUs">Contact Us</a>
-            </div>
-          </div>
+          <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
+          <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
           <div class="profile-menu-wrap">
             <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
               <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -600,7 +602,7 @@
         <div class="info-rows">
           <div class="info-row">
             <figure class="info-row__media reveal reveal--left">
-              <img src="media-webp/Homepage/Meeting2.webp" alt="Stagify.ai founder demonstrating the product at a Compass real estate office" loading="lazy" decoding="async">
+              <img src="media-webp/Homepage/Meeting2.webp" alt="Stagify.ai founder demonstrating the product at a Compass real estate office" loading="eager" fetchpriority="low" decoding="async">
               <figcaption data-lang="home.info.rows.why.caption">Demoing Stagify at a Compass office in New York</figcaption>
             </figure>
             <div class="info-row__text reveal reveal--right" style="--reveal-delay:90ms">
@@ -617,7 +619,7 @@
 
           <div class="info-row info-row--flip">
             <figure class="info-row__media reveal reveal--right">
-              <img src="media-webp/Homepage/Meeting1.webp" alt="Stagify.ai presentation to a room of real estate agents" loading="lazy" decoding="async">
+              <img src="media-webp/Homepage/Meeting1.webp" alt="Stagify.ai presentation to a room of real estate agents" loading="eager" fetchpriority="low" decoding="async">
               <figcaption data-lang="home.info.rows.how.caption">Walking a room of agents through their first staged listing</figcaption>
             </figure>
             <div class="info-row__text reveal reveal--left" style="--reveal-delay:90ms">
@@ -634,7 +636,7 @@
 
           <div class="info-row">
             <figure class="info-row__media reveal reveal--left">
-              <img src="media-webp/Homepage/HelpingOld.webp" alt="Stagify.ai team member staging a client's photos on a laptop" loading="lazy" decoding="async">
+              <img src="media-webp/Homepage/HelpingOld.webp" alt="Stagify.ai team member staging a client's photos on a laptop" loading="eager" fetchpriority="low" decoding="async">
               <figcaption data-lang="home.info.rows.who.caption">Sitting down one-on-one to stage a client's photos</figcaption>
             </figure>
             <div class="info-row__text reveal reveal--right" style="--reveal-delay:90ms">
@@ -651,7 +653,7 @@
 
           <div class="info-row info-row--flip">
             <figure class="info-row__media reveal reveal--right">
-              <img src="media-webp/Homepage/BoardRoom.webp" alt="Stagify.ai founder presenting to a full office of real estate agents" loading="lazy" decoding="async">
+              <img src="media-webp/Homepage/BoardRoom.webp" alt="Stagify.ai founder presenting to a full office of real estate agents" loading="eager" fetchpriority="low" decoding="async">
               <figcaption data-lang="home.info.rows.team.caption">Training a brokerage team on Stagify</figcaption>
             </figure>
             <div class="info-row__text reveal reveal--left" style="--reveal-delay:90ms">
@@ -805,6 +807,45 @@
         </div>
       </section>
 
+      <!-- ===================== WHY CHOOSE US ===================== -->
+      <section class="home-section home-whyus" id="why" aria-labelledby="whyus-title">
+        <div class="home-section__head reveal">
+          <h2 class="home-section__title" id="whyus-title" data-lang="whyUs.title">Why Choose Us?</h2>
+          <p class="home-section__sub" data-lang="home.whyus.subtitle">Other virtual staging tools are slow, costly, and locked down. Stagify is built to be the opposite.</p>
+        </div>
+        <div class="whyus-grid">
+          <article class="whyus-card whyus-card--us reveal reveal--left">
+            <div class="whyus-card__head">
+              <img src="media-webp/logo/Logo32x32.webp" alt="" class="whyus-card__logo" aria-hidden="true">
+              <span class="brand-strong">stagify</span><span class="brand-light">.ai</span>
+            </div>
+            <ul class="whyus-list whyus-list--yes">
+              <li data-lang-html="whyUs.stagify.features.instantResults"><strong>Instant results</strong>: ~8 seconds</li>
+              <li data-lang-html="whyUs.stagify.features.oneClickStaging"><strong>One‑click staging</strong>: No hassle</li>
+              <li data-lang-html="whyUs.stagify.features.free"><strong>Unlimited generations</strong>: Totally free</li>
+              <li data-lang-html="whyUs.stagify.features.noAds"><strong>Ad-free experience</strong>: No distractions</li>
+              <li data-lang-html="whyUs.stagify.features.noLogin"><strong>Easy sign up</strong>: Start instantly</li>
+              <li data-lang-html="whyUs.stagify.features.unlimited"><strong>Advanced image models</strong>: Higher quality</li>
+              <li data-lang-html="whyUs.stagify.features.copyright"><strong>Full copyright</strong>: Use anywhere</li>
+            </ul>
+          </article>
+          <article class="whyus-card whyus-card--them reveal reveal--right" style="--reveal-delay:90ms">
+            <div class="whyus-card__head whyus-card__head--them">
+              <span data-lang="whyUs.others.title">Others</span>
+            </div>
+            <ul class="whyus-list whyus-list--no">
+              <li data-lang-html="whyUs.others.features.slowResults"><strong>Slow results: </strong>Days of waiting</li>
+              <li data-lang-html="whyUs.others.features.longProcess"><strong>Long Process: </strong>Tedious back‑and‑forth</li>
+              <li data-lang-html="whyUs.others.features.expensive"><strong>Expensive: </strong>Costly, per‑image fees</li>
+              <li data-lang-html="whyUs.others.features.adsAndCookies"><strong>Ads and cookies: </strong>Instrusive experience</li>
+              <li data-lang-html="whyUs.others.features.accountRequired"><strong>Long Signup Process: </strong>Frustrating start</li>
+              <li data-lang-html="whyUs.others.features.limitedGenerations"><strong>Legacy, Cheaper models: </strong>Lower quality</li>
+              <li data-lang-html="whyUs.others.features.unclearCopyright"><strong>Unclear copyright: </strong>Legal liability</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
       <!-- ========================= INSTAGRAM ========================= -->
       <section class="home-section home-ig" id="instagram" aria-labelledby="ig-title">
         <div class="home-section__head reveal">
@@ -822,12 +863,49 @@
           <div class="ig-embed">
             <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DOkWXJEjbh_/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
           </div>
+          <div class="ig-embed">
+            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DO4KnB9EbBi/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
+          </div>
         </div>
         <div class="ig-cta reveal">
           <a class="ig-follow" href="https://www.instagram.com/stagify.ai/" target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.43.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.43.16-1.06.36-2.23.41-1.27.06-1.65.07-4.9.07s-3.63 0-4.9-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.43-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.43-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5 0-4.74.07-.9.04-1.38.19-1.7.32-.43.17-.74.37-1.06.69-.32.32-.52.63-.69 1.06-.13.32-.28.8-.32 1.7C3.42 8.5 3.4 8.86 3.4 12s0 3.5.07 4.74c.04.9.19 1.38.32 1.7.17.43.37.74.69 1.06.32.32.63.52 1.06.69.32.13.8.28 1.7.32 1.24.07 1.6.07 4.74.07s3.5 0 4.74-.07c.9-.04 1.38-.19 1.7-.32.43-.17.74-.37 1.06-.69.32-.32.52-.63.69-1.06.13-.32.28-.8.32-1.7.07-1.24.07-1.6.07-4.74s0-3.5-.07-4.74c-.04-.9-.19-1.38-.32-1.7a2.86 2.86 0 0 0-.69-1.06 2.86 2.86 0 0 0-1.06-.69c-.32-.13-.8-.28-1.7-.32C15.5 4 15.14 4 12 4zm0 3.06A4.94 4.94 0 1 1 12 17a4.94 4.94 0 0 1 0-9.94zm0 1.8a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28zM17.64 6.95a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3z"/></svg>
             <span data-lang="home.instagram.follow">Follow @stagify.ai</span>
           </a>
+        </div>
+      </section>
+
+      <!-- ========================= FAQ ========================= -->
+      <section class="home-section home-faq" id="faq" aria-labelledby="faq-title">
+        <div class="home-section__head reveal">
+          <h2 class="home-section__title" id="faq-title" data-lang="faq.title">Frequently Asked Questions</h2>
+          <p class="home-section__sub" data-lang-html="home.faq.subtitle">Quick answers to the questions we hear most. Still stuck? Visit <a href="guides.html">Guides</a> or get in touch.</p>
+        </div>
+        <div class="faq-accordion reveal">
+          <details class="faq-q">
+            <summary><span data-lang="faq.questions.whatIsVirtualStaging.question">What is virtual staging?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
+            <p data-lang="faq.questions.whatIsVirtualStaging.answer">Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled.</p>
+          </details>
+          <details class="faq-q">
+            <summary><span data-lang="faq.questions.howLong.question">How long does it take?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
+            <p data-lang="faq.questions.howLong.answer">On average, virtual staging takes around 8 seconds per photo to process.</p>
+          </details>
+          <details class="faq-q">
+            <summary><span data-lang="faq.questions.customTheme.question">How do I select a custom theme?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
+            <p data-lang="faq.questions.customTheme.answer">If you don't see the theme you want, you can select "Custom" and then add a specific prompt for the theme you want.</p>
+          </details>
+          <details class="faq-q">
+            <summary><span data-lang="faq.questions.idealRoom.question">What makes an ideal room for staging?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
+            <p data-lang="faq.questions.idealRoom.answer">An ideal room for staging should have good lighting, clear walls, and minimal clutter.</p>
+          </details>
+          <details class="faq-q">
+            <summary><span data-lang="faq.questions.privacy.question">Is my data private and secure?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
+            <p data-lang="faq.questions.privacy.answer">Yes, we take your privacy seriously. Your uploaded images are processed securely and are not stored permanently on our servers.</p>
+          </details>
+          <details class="faq-q">
+            <summary><span data-lang="home.faq.teamQ">Do you offer plans for teams or enterprises?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
+            <p data-lang-html="home.faq.teamA">Yes. If you have a team of agents or a brokerage, our <a href="enterprise.html">enterprise plan</a> gives everyone on your company domain access to Stagify+ and bills only on actual usage — no per-seat fees.</p>
+          </details>
         </div>
       </section>
 

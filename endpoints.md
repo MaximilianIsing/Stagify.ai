@@ -30,7 +30,7 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/getpro` | **Query:** `key` — must match the secret in `propass.txt` (or `STAGIFY_PRO_PASS_KEY`) using a constant-time hash compare. **If not configured:** `503` plain text. **If wrong key:** `404` plain text. **If no valid session:** HTML page that can retry with `authToken` from `localStorage`. **If valid session:** grants Stagify+ to that user and returns success HTML. Optional: `authToken` in query for the same client used elsewhere. |
+| `GET` | `/getpro` | **Query:** `key` — must match the secret in `endpointkey.txt` (or `process.env.endpoint_key`), same key as log exports and `/api/stage-by-endpoint-key`. Uses constant-time hash compare. **If not configured:** `503` plain text. **If wrong key:** `404` plain text. **If no valid session:** HTML page that can retry with `authToken` from `localStorage`. **If valid session:** grants Stagify+ to that user and returns success HTML. Optional: `authToken` in query for the same client used elsewhere. |
 
 ---
 

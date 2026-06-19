@@ -1,7 +1,7 @@
 /* Stagify.ai — count-up animation for the hero stat numbers.
-   Animates each .stat-pill-number from 0 to its target when it scrolls into
-   view, re-running each time it re-enters. Inspired by reactbits CountUp
-   (https://reactbits.dev/text-animations/count-up). */
+   Animates each .stat-pill-number from 0 to its target ONCE, when the page is
+   first opened. Scrolling away and back does not re-trigger it. Inspired by
+   reactbits CountUp (https://reactbits.dev/text-animations/count-up). */
 (() => {
   "use strict";
 
@@ -56,30 +56,32 @@
 
     els.forEach((el) => (el.textContent = "0"));
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            animate(entry.target, +entry.target.dataset.countTo, 1800);
-          } else {
-            running.delete(entry.target);
-            entry.target.textContent = "0";
-          }
-        });
-      },
-      { threshold: 0.6 }
-    );
-    els.forEach((el) => observer.observe(el));
+    // Run once when the page opens. The hero stats sit at the top of the page,
+    // so they're on screen at load — animate them immediately. If a stat
+    // happens to start off-screen, an observer fires it the first time it
+    // appears, then disconnects so scrolling away and back never re-runs it.
+    const pending = els.filter((el) => !inView(el));
 
-    // Safety net: if a stat is already on screen at load, don't wait on the
-    // observer's first callback (which some browsers defer) — start it now.
     requestAnimationFrame(() => {
       els.forEach((el) => {
-        if (el.textContent === "0" && inView(el)) {
-          animate(el, +el.dataset.countTo, 1800);
-        }
+        if (inView(el)) animate(el, +el.dataset.countTo, 1800);
       });
     });
+
+    if (pending.length && "IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              animate(entry.target, +entry.target.dataset.countTo, 1800);
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.6 }
+      );
+      pending.forEach((el) => observer.observe(el));
+    }
   }
 
   if (document.readyState === "loading") {
