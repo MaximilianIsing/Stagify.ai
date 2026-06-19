@@ -14,6 +14,10 @@
       before: "media-webp/Homepage/BeforeAfter/Before1.webp",
       after: "media-webp/Homepage/BeforeAfter/After1.webp",
     },
+    {
+      before: "media-webp/Homepage/BeforeAfter/Before3.webp",
+      after: "media-webp/Homepage/BeforeAfter/After3.webp",
+    },
   ];
 
   function init() {

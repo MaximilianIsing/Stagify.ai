@@ -58,7 +58,8 @@
       },
       "examples": {
         "bedroom": "Bedroom",
-        "living": "Living room"
+        "living": "Living Room",
+        "dining": "Dining Room"
       }
     },
     "info": {
@@ -151,6 +152,11 @@
       "stat2": "already use AI to generate listing content",
       "source": "Figures from the National Association of Realtors' 2025 Technology Survey of real estate agents.",
       "sourceCite": "Source: National Association of Realtors, 2025 Technology Survey"
+    },
+    "instagram": {
+      "title": "See it in action on Instagram",
+      "subtitle": "Real staging transformations, quick tips, and behind-the-scenes from the Stagify team.",
+      "follow": "Follow @stagify.ai"
     },
     "finalCta": {
       "title": "Try it on your own listing",

@@ -625,6 +625,7 @@
 /* example switcher (segmented control) */
 .studio-examples {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 4px;
   margin-top: 18px;
   padding: 4px;
@@ -669,14 +670,38 @@
 }
 
 /* ==========================================================================
-   Sponsors title — match the section-header styling
+   Sponsors / "Officially recognized by" — quiet trust strip
    ========================================================================== */
+.sponsors {
+  margin-top: 200px; /* clears the hero carousel overflow */
+  padding: 24px 0;
+  min-height: 200px; /* reserves space so logos don't overlap the next section */
+}
 .sponsors-title {
-  color: #1e3a8a;
-  font-weight: 800;
+  color: #5b6b94;
+  font-weight: 700;
   opacity: 1;
-  font-size: clamp(20px, 2.2vw, 27px);
-  letter-spacing: -0.4px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  margin: 0 0 20px;
+}
+/* drop the heavy frosted slab — let the logos sit on the page, edges faded */
+.sponsors-container {
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 6px 0;
+}
+.sponsor-logo {
+  filter: grayscale(1) opacity(0.65);
+}
+.sponsor-item:hover .sponsor-logo {
+  filter: grayscale(0) opacity(1);
 }
 
 /* ==========================================================================
@@ -803,5 +828,97 @@
 @media (max-width: 600px) {
   .nar-legend {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Instagram section
+   ========================================================================== */
+.home-ig .ig-grid {
+  display: grid;
+  grid-template-columns: 1fr minmax(300px, 360px);
+  gap: 48px;
+  align-items: center;
+}
+.ig-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(45deg, #f09433, #dc2743 55%, #bc1888);
+  box-shadow: 0 6px 16px rgba(220, 39, 67, 0.3);
+  margin-bottom: 16px;
+}
+.ig-badge svg {
+  width: 16px;
+  height: 16px;
+}
+.ig-copy__sub {
+  margin: 12px 0 26px;
+  font-size: clamp(15px, 1.6vw, 17px);
+  line-height: 1.6;
+  color: #41507a;
+  max-width: 460px;
+}
+.ig-follow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  padding: 13px 24px;
+  border-radius: 12px;
+  background: linear-gradient(
+    45deg,
+    #f09433 0%,
+    #e6683c 25%,
+    #dc2743 50%,
+    #cc2366 75%,
+    #bc1888 100%
+  );
+  box-shadow: 0 10px 26px rgba(220, 39, 67, 0.32);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.ig-follow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(220, 39, 67, 0.42);
+}
+.ig-follow svg {
+  width: 20px;
+  height: 20px;
+}
+.ig-embed {
+  justify-self: center;
+  width: 100%;
+  max-width: 360px;
+}
+.ig-embed__frame {
+  width: 100%;
+  height: 600px;
+  border: none;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(30, 58, 138, 0.28);
+  display: block;
+}
+@media (max-width: 900px) {
+  .home-ig .ig-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    justify-items: center;
+    text-align: center;
+  }
+  .ig-copy {
+    order: 2;
+  }
+  .ig-copy__sub {
+    max-width: none;
   }
 }
