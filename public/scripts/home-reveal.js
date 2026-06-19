@@ -1,5 +1,6 @@
 /* Stagify.ai — reveal homepage sections on scroll.
-   Adds .is-visible to .reveal elements as they enter the viewport.
+   Toggles .is-visible as elements enter/leave the viewport, so content
+   animates in on the way down AND out on the way up (and back again).
    Falls back to showing everything if IntersectionObserver is unavailable
    or the user prefers reduced motion. */
 (() => {
@@ -25,15 +26,12 @@
     }
 
     const observer = new IntersectionObserver(
-      (entries, obs) => {
+      (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            obs.unobserve(entry.target);
-          }
+          entry.target.classList.toggle("is-visible", entry.isIntersecting);
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+      { threshold: 0.12, rootMargin: "-6% 0px -6% 0px" }
     );
 
     els.forEach((el) => observer.observe(el));

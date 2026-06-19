@@ -93,6 +93,15 @@
           "p1": "Agentes: publica antes y cierra más",
           "p2": "Vendedores y compradores: sin software ni diseñador",
           "p3": "AI Designer: planos → visualizaciones 3D"
+        },
+        "team": {
+          "eyebrow": "Hecho para equipos",
+          "caption": "Capacitando a un equipo de una agencia con Stagify",
+          "title": "Tan fácil que lo usa toda la oficina",
+          "body": "No hay software que instalar ni nada que aprender. Cualquier persona del equipo puede abrir Stagify en el navegador, subir una foto de una propiedad y tenerla diseñada en segundos, ya sea en un portátil en la oficina o en el móvil sobre el terreno.",
+          "p1": "Sin conocimientos de diseño ni software",
+          "p2": "Funciona en cualquier navegador y dispositivo",
+          "p3": "Cada agente puede diseñar sus propias propiedades"
         }
       }
     },
@@ -152,6 +161,30 @@
       "stat2": "ya usan IA para generar contenido de sus anuncios",
       "source": "Datos de la Encuesta de Tecnología 2025 de la National Association of Realtors a agentes inmobiliarios.",
       "sourceCite": "Fuente: National Association of Realtors, Encuesta de Tecnología 2025"
+    },
+    "plus": {
+      "title": "Ve más lejos con Stagify+",
+      "subtitle": "Diseño ilimitado, modelos de mayor calidad y herramientas pro, además de un plan por uso pensado para equipos.",
+      "pro": {
+        "name": "Stagify+",
+        "per": "/ mes",
+        "f1": "Generaciones de diseño ilimitadas",
+        "f2": "Modelo de imagen de mayor calidad",
+        "f3": "Varias variaciones por generación",
+        "f4": "Herramienta de máscara para editar cualquier área",
+        "f5": "AI Designer: planos → renders 3D",
+        "cta": "Ver Stagify+"
+      },
+      "ent": {
+        "name": "Enterprise",
+        "tag": "Para equipos",
+        "per": "/ generación",
+        "desc": "Dale a todo tu equipo Stagify+ automáticamente y paga solo por lo que realmente usen.",
+        "f1": "Incluye a todos con el correo de tu empresa",
+        "f2": "Facturación por uso, sin tarifas por puesto",
+        "f3": "Una sola factura, mensual según el uso",
+        "cta": "Explorar Enterprise"
+      }
     },
     "instagram": {
       "title": "Míralo en acción en Instagram",
