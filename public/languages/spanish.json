@@ -58,7 +58,8 @@
       },
       "examples": {
         "bedroom": "Dormitorio",
-        "living": "Sala de estar"
+        "living": "Sala de estar",
+        "dining": "Comedor"
       }
     },
     "info": {
@@ -151,6 +152,11 @@
       "stat2": "ya usan IA para generar contenido de sus anuncios",
       "source": "Datos de la Encuesta de Tecnología 2025 de la National Association of Realtors a agentes inmobiliarios.",
       "sourceCite": "Fuente: National Association of Realtors, Encuesta de Tecnología 2025"
+    },
+    "instagram": {
+      "title": "Míralo en acción en Instagram",
+      "subtitle": "Transformaciones reales, consejos rápidos y el detrás de cámaras del equipo de Stagify.",
+      "follow": "Síguenos en @stagify.ai"
     },
     "finalCta": {
       "title": "Pruébalo en tu propia propiedad",

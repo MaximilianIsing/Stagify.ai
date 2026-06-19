@@ -58,7 +58,8 @@
       },
       "examples": {
         "bedroom": "卧室",
-        "living": "客厅"
+        "living": "客厅",
+        "dining": "餐厅"
       }
     },
     "info": {
@@ -151,6 +152,11 @@
       "stat2": "已使用 AI 生成房源内容",
       "source": "数据来自美国房地产经纪人协会（NAR）2025 年面向房地产经纪人的技术调查。",
       "sourceCite": "来源：美国房地产经纪人协会，2025 年技术调查"
+    },
+    "instagram": {
+      "title": "在 Instagram 上观看实际效果",
+      "subtitle": "真实的装修变身、实用小贴士，以及 Stagify 团队的幕后花絮。",
+      "follow": "关注 @stagify.ai"
     },
     "finalCta": {
       "title": "在您自己的房源上试试看",
