@@ -41,6 +41,124 @@
   "sponsors": {
     "title": "Reconocido Oficialmente Por:"
   },
+  "home": {
+    "studio": {
+      "eyebrow": "Antes y después",
+      "title": "Arrastra para ver lo que hace el diseño",
+      "subtitle": "La misma foto de la propiedad, antes y después de Stagify. Sin transportistas, sin alquileres, sin esperas.",
+      "beforeLabel": "Antes",
+      "afterLabel": "Después",
+      "kicker": "Cómo se ve",
+      "panelTitle": "La misma habitación, diseñada en segundos",
+      "panelBody": "Arrastra el control. La izquierda es la foto original; todo lo de la derecha lo diseñó Stagify en segundos.",
+      "points": {
+        "speed": "Unos 8 segundos por foto",
+        "restage": "Rediseña en cualquier estilo, las veces que quieras",
+        "rights": "Cada imagen es tuya, con derechos de autor completos"
+      },
+      "examples": {
+        "bedroom": "Dormitorio",
+        "living": "Sala de estar"
+      }
+    },
+    "info": {
+      "eyebrow": "En resumen",
+      "title": "Qué es el diseño virtual y por qué vende",
+      "subtitle": "Un repaso rápido y honesto de cómo funciona y para quién es — sin tecnicismos.",
+      "rows": {
+        "why": {
+          "eyebrow": "Por qué funciona",
+          "caption": "Mostrando Stagify en una oficina de Compass en Nueva York",
+          "title": "Los compradores compran con los ojos primero",
+          "body": "Casi todos los compradores empiezan en línea, así que las fotos de tu anuncio son la verdadera primera visita. Las habitaciones vacías o anticuadas cuestan de interpretar; la gente no puede juzgar la escala ni imaginarse viviendo allí. El diseño le da a cada habitación un propósito claro y un atractivo, por eso los agentes siempre han confiado en él.",
+          "p1": "Las habitaciones vacías se ven más pequeñas y frías de lo que son",
+          "p2": "El diseño muestra el uso previsto de cada espacio",
+          "p3": "Mejores fotos generan más clics, guardados y visitas"
+        },
+        "how": {
+          "eyebrow": "Cómo funciona",
+          "caption": "Guiando a una sala de agentes en su primera propiedad diseñada",
+          "title": "De foto vacía a lista para publicar en unos 8 segundos",
+          "body": "Sube una foto, elige el tipo de habitación y uno de los siete estilos, y Stagify la amuebla en unos ocho segundos. ¿Necesitas cambios? Quita los muebles existentes, añade un prompt personalizado o enmascara un área para ajustarla sin empezar de cero.",
+          "p1": "7 estilos más prompts personalizados y eliminación de muebles",
+          "p2": "Edita con máscara cualquier parte del resultado sin rehacerlo",
+          "p3": "Derechos de autor completos — úsala en el MLS o en anuncios"
+        },
+        "who": {
+          "eyebrow": "Para quién es",
+          "caption": "Sentándonos uno a uno para diseñar las fotos de un cliente",
+          "title": "Hecho para agentes, vendedores y compradores",
+          "body": "Los agentes promocionan cada propiedad en minutos en lugar de esperar a un equipo de diseño. Los vendedores diseñan sus propias fotos sin contratar a nadie. Los compradores previsualizan una reforma antes de comprometerse. Y con AI Designer, puedes convertir PDFs de planos CAD en renders 3D fotorrealistas.",
+          "p1": "Agentes: publica antes y cierra más",
+          "p2": "Vendedores y compradores: sin software ni diseñador",
+          "p3": "AI Designer: planos → visualizaciones 3D"
+        }
+      }
+    },
+    "compare": {
+      "eyebrow": "Virtual vs. tradicional",
+      "title": "Cómo se compara con el diseño tradicional",
+      "subtitle": "El diseño tradicional funciona. Solo que es lento y caro.",
+      "colTraditional": "Diseño tradicional",
+      "colStagify": "Stagify.ai",
+      "rows": {
+        "cost": {
+          "aspect": "Costo",
+          "trad": "2.000–5.000 $+ por vivienda, a menudo facturado mensualmente hasta que se vende",
+          "stag": "Gratis para empezar — diseña sin costo"
+        },
+        "time": {
+          "aspect": "Tiempo de entrega",
+          "trad": "1–3 semanas para programar, entregar e instalar",
+          "stag": "Unos 8 segundos por foto"
+        },
+        "styles": {
+          "aspect": "Opciones de estilo",
+          "trad": "Un solo look, fijo una vez instalado",
+          "stag": "7 estilos más prompts personalizados — cambia cuando quieras"
+        },
+        "changes": {
+          "aspect": "Cambiar de opinión",
+          "trad": "Nuevas tarifas de alquiler e instalación cada vez",
+          "stag": "Rediseña tantas veces como quieras"
+        },
+        "logistics": {
+          "aspect": "Logística",
+          "trad": "Transportistas, alquileres y acceso a la propiedad",
+          "stag": "Solo sube una foto desde cualquier lugar"
+        },
+        "rights": {
+          "aspect": "Las imágenes",
+          "trad": "Fotos de muebles prestados que devuelves",
+          "stag": "Tuyas para siempre, con derechos de autor completos"
+        }
+      },
+      "source": "Según el Perfil de Home Staging de la National Association of Realtors, la mayoría de los agentes de compradores afirman que el diseño facilita que los compradores imaginen una propiedad como su futuro hogar.",
+      "sourceCite": "Fuente: National Association of Realtors, Profile of Home Staging"
+    },
+    "nar": {
+      "title": "No te quedes atrás",
+      "subtitle": "El sector inmobiliario está adoptando la IA rápidamente, y los clientes responden a ello. El diseño es uno de los puntos de partida más fáciles.",
+      "usageLabel": "Con qué frecuencia los agentes usan herramientas de IA",
+      "legend": {
+        "daily": "A diario",
+        "weekly": "Semanalmente",
+        "monthly": "Algunas veces al mes",
+        "none": "Todavía no"
+      },
+      "note": "de los agentes ya usan IA en su negocio.",
+      "stat1": "de los agentes dicen que sus clientes respondieron positivamente a la tecnología en el proceso de compra y venta",
+      "stat2": "ya usan IA para generar contenido de sus anuncios",
+      "source": "Datos de la Encuesta de Tecnología 2025 de la National Association of Realtors a agentes inmobiliarios.",
+      "sourceCite": "Fuente: National Association of Realtors, Encuesta de Tecnología 2025"
+    },
+    "finalCta": {
+      "title": "Pruébalo en tu propia propiedad",
+      "subtitle": "Sube una habitación vacía y mírala diseñada en unos ocho segundos. Gratis para probar.",
+      "button": "Sube una foto",
+      "note": "Reconocido por Compass, Centennial y más."
+    }
+  },
   "modal": {
     "rolePopup": {
       "title": "¡Personalicemos tu experiencia!",
