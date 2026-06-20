@@ -47,3 +47,5 @@ build/
 # Text files (but allow specific ones)
 *.txt
 !public/robots.txt
+
+/claude/
