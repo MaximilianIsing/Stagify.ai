@@ -1364,7 +1364,8 @@
       el.classList.add('hidden');
       return;
     }
-    el.innerHTML = 'Try Stagify+ today — <a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a>';
+    el.innerHTML = window.LanguageSystem?.getText('hero.freeGensUpgrade') ||
+      'Try Stagify+ today — <a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a>';
     el.classList.remove('hidden');
   };
   

@@ -9,9 +9,9 @@
     const nav = document.querySelector(".site-header .nav-center");
     if (!nav) return;
 
-    const links = Array.from(nav.querySelectorAll(".nav-link")).filter(
-      (a) => !a.classList.contains("hidden")
-    );
+    // Include every link, even ones currently hidden (the pro-only AI Designer
+    // link starts hidden and is revealed later for Pro users).
+    const links = Array.from(nav.querySelectorAll(".nav-link"));
     if (!links.length) return;
 
     nav.classList.add("nav--pill");
@@ -21,30 +21,41 @@
     pill.setAttribute("aria-hidden", "true");
     nav.appendChild(pill);
 
-    // Which link points at the page we're on?
     const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-    const active =
-      links.find((a) => {
-        const href = (a.getAttribute("href") || "")
-          .split("#")[0]
-          .split("/")
-          .pop()
-          .toLowerCase();
-        return href === here || (here === "" && href === "index.html");
-      }) || null;
+
+    function matchesPage(a) {
+      const href = (a.getAttribute("href") || "")
+        .split("#")[0]
+        .split("/")
+        .pop()
+        .toLowerCase();
+      return href === here || (here === "" && href === "index.html");
+    }
+    // A link counts as usable only if it's actually laid out (not display:none
+    // via .hidden or the .desktop-only mobile rule).
+    function isVisible(el) {
+      return !!el && !el.classList.contains("hidden") && el.offsetParent !== null;
+    }
+    function pageActive() {
+      return links.find((a) => matchesPage(a) && isVisible(a)) || null;
+    }
+
+    let active = pageActive();
 
     function moveTo(el, lit) {
-      const navRect = nav.getBoundingClientRect();
-      const r = el.getBoundingClientRect();
-      pill.style.setProperty("--pill-x", r.left - navRect.left + "px");
-      pill.style.setProperty("--pill-w", r.width + "px");
-      pill.style.setProperty("--pill-h", r.height + "px");
+      // offset* is relative to the positioned nav-center and unaffected by
+      // scroll/transforms, so it stays correct across clicks and navigation.
+      pill.style.setProperty("--pill-x", el.offsetLeft + "px");
+      pill.style.setProperty("--pill-w", el.offsetWidth + "px");
+      pill.style.setProperty("--pill-h", el.offsetHeight + "px");
+      pill.style.setProperty("--pill-top", el.offsetTop + "px");
       pill.classList.add("is-active");
       links.forEach((l) => l.classList.toggle("is-lit", l === lit));
     }
 
     function rest() {
-      if (active) {
+      if (!active || !isVisible(active)) active = pageActive();
+      if (active && isVisible(active)) {
         moveTo(active, active);
       } else {
         pill.classList.remove("is-active");
@@ -52,7 +63,19 @@
       }
     }
 
-    links.forEach((a) => a.addEventListener("mouseenter", () => moveTo(a, a)));
+    links.forEach((a) => {
+      a.addEventListener("mouseenter", () => {
+        if (isVisible(a)) moveTo(a, a);
+      });
+      // On click, lock the pill to the clicked link so it doesn't snap back to
+      // the old active item (matters for same-page anchors and slow navigations).
+      a.addEventListener("click", () => {
+        if (isVisible(a)) {
+          active = a;
+          moveTo(a, a);
+        }
+      });
+    });
     nav.addEventListener("mouseleave", rest);
 
     // Re-settle when widths change (fonts, language switch, resize).
@@ -66,16 +89,31 @@
     }
     window.addEventListener("resize", rest);
     window.addEventListener("load", rest);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(rest);
 
-    // Place it once layout is ready, without an entrance glide.
-    pill.style.transition = "none";
-    requestAnimationFrame(() => {
+    // The AI Designer link is revealed later for Pro users — re-settle when it
+    // appears so the pill can land on it (and rest there on its own page).
+    const ai = nav.querySelector(".nav-ai-designer-pro");
+    if (ai && "MutationObserver" in window) {
+      let wasHidden = ai.classList.contains("hidden");
+      new MutationObserver(() => {
+        const h = ai.classList.contains("hidden");
+        if (h !== wasHidden) {
+          wasHidden = h;
+          rest();
+        }
+      }).observe(ai, { attributes: true, attributeFilter: ["class"] });
+    }
+
+    // Place it on the current page's link right away (transitions are off until
+    // .is-ready is added, so it's steady on Home from the first paint), then
+    // enable gliding for later moves. Uses a timeout, not rAF, so it still
+    // settles in a backgrounded tab.
+    rest();
+    setTimeout(() => {
+      pill.classList.add("is-ready");
       rest();
-      requestAnimationFrame(() => {
-        pill.style.transition = "";
-      });
-    });
-    setTimeout(rest, 400);
+    }, 60);
   }
 
   if (document.readyState === "loading") {

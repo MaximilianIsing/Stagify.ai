@@ -33,6 +33,7 @@
     "cta": "Upload image for free",
     "freeGensLeft": "{n} free generations left today, ",
     "freeGensLeftUpgrade": "Upgrade",
+    "freeGensUpgrade": "Try Stagify+ today — <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgrade</a>",
     "carouselNote": "Example preview — upload your photo to stage",
     "stats": {
       "roomsStaged": "Rooms Staged",
@@ -62,7 +63,10 @@
         "bedroom": "Bedroom",
         "living": "Living Room",
         "dining": "Dining Room"
-      }
+      },
+      "comparisonAria": "Before and after staging comparison",
+      "revealSliderAria": "Reveal slider",
+      "exampleRoomsAria": "Example rooms"
     },
     "info": {
       "eyebrow": "The short version",
@@ -162,7 +166,8 @@
       "stat1": "of agents say clients responded positively to technology in the buying and selling process",
       "stat2": "already use AI to generate listing content",
       "source": "Figures from the National Association of Realtors' 2025 Technology Survey of real estate agents.",
-      "sourceCite": "Source: National Association of Realtors, 2025 Technology Survey"
+      "sourceCite": "Source: National Association of Realtors, 2025 Technology Survey",
+      "usageAria": "AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet"
     },
     "plus": {
       "title": "Go further with Stagify+",
@@ -253,6 +258,17 @@
       "uploadAnother": "Upload Another",
       "noProcessedImage": "No processed image available yet",
       "noProcessedImageSubtext": "Please click \"Process photo\" first to generate an AI-staged version of your image",
+      "imageModel": "Image model",
+      "fastGeneration": "Fast Generation",
+      "qualityGeneration": "Stagify+ Quality Generation",
+      "imageGenerations": "Image Generations",
+      "addPhotos": "+ Add photos",
+      "tryAnotherImage": "Try another image",
+      "uploadAreaAria": "Upload area",
+      "editWithMask": "Edit with mask",
+      "stagingVariations": "Staging variations",
+      "originalImage": "Original image",
+      "warningAlt": "Warning",
       "progress": {
         "preparing": "Preparing…",
         "uploading": "Uploading image…",
@@ -369,7 +385,7 @@
   "contact": {
     "title": "Get in touch",
     "description": "We'd love to hear from you. Reach out individually or contact us at <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
-    "social": "Follow us on <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> or on <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> for updates and examples!",
+    "social": "Follow us on <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a>, or <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> for updates and examples!",
     "labels": {
       "name": "Name",
       "email": "Email",
@@ -412,6 +428,72 @@
     "dailyLimitFree": "You've used all {limit} free staging runs for today (resets at midnight UTC). Upgrade to Stagify+ for unlimited staging.",
     "dailyLimitAnonymous": "You've reached the free limit for this network ({limit} runs per day, UTC). Sign in to link staging to your account, or try again tomorrow.",
     "dailyLimitCta": "View Stagify+"
+  },
+  "common": {
+    "close": "Close"
+  },
+  "footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact",
+    "copyright": "Stagify.ai"
+  },
+  "auth": {
+    "yourEmail": "your email",
+    "welcomeTitle": "Welcome to Stagify",
+    "welcomeSub": "Create a free account to upload and stage your photos.",
+    "registerTitle": "Create your free account",
+    "registerSub": "Sign up to upload and stage images.",
+    "signInTitle": "Sign in",
+    "signInSub": "Use your email and password to continue.",
+    "verifyTitle": "Verify your email",
+    "verifyCopy": "Enter the 6-digit code we sent to {email}.",
+    "resetTitle": "Reset password",
+    "resetCopy": "We'll email you a one-time link to set a new password. The link expires in one hour.",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Re-enter password",
+    "or": "or",
+    "forgotPassword": "Forgot your password?",
+    "verificationCode": "Verification code",
+    "verificationCodePlaceholder": "123456",
+    "back": "Back",
+    "resendCode": "Resend code",
+    "createAccount": "Create account",
+    "continue": "Continue",
+    "signIn": "Sign in",
+    "sendResetLink": "Send reset link",
+    "backToSignIn": "Back to sign in",
+    "alreadyHaveAccount": "Already have an account?",
+    "newHere": "New here?",
+    "accountMenu": "Account menu",
+    "googleCancelled": "Google sign-in was cancelled.",
+    "googleFailed": "Google sign-in failed",
+    "networkError": "Network error. Please try again.",
+    "enterEmail": "Enter your email address.",
+    "resendFailed": "Could not resend code. Try again.",
+    "resendSuccess": "We sent a new verification code.",
+    "resetSomethingWrong": "Something went wrong. Please try again in a few minutes.",
+    "resetLinkSent": "We sent a password reset link. Check your email (and spam).",
+    "noAccountForEmail": "No account was found for that email.",
+    "resetTryLater": "Something went wrong. Try again later.",
+    "enterVerificationCode": "Enter the 6-digit verification code from your email.",
+    "verificationFailed": "Verification failed",
+    "passwordsNoMatch": "Passwords do not match.",
+    "somethingWrong": "Something went wrong",
+    "checkEmailForCode": "Check your email for a verification code."
+  },
+  "profile": {
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "freePlan": "Free Plan",
+    "upgradeToPlus": "Upgrade to Stagify+",
+    "manageSubscription": "Manage subscription",
+    "signOut": "Sign out",
+    "manageBillingAria": "Manage billing in Stripe"
   },
   "pdf": {
     "meta": {
@@ -545,7 +627,7 @@
       "title": "Billing & Stagify+",
       "i1": {
         "q": "How do I manage or cancel Stagify+?",
-        "a": "Click the profile icon in the top right, then press the ? next to Stagify+ to open the Stripe billing dashboard, where you can update or cancel your subscription. You keep access until the end of the current billing period."
+        "a": "Click the profile icon in the top right, then tap the Stripe icon next to Stagify+ to open your billing dashboard, where you can update or cancel your subscription. You can also open the <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">Stripe billing portal</a> directly. You keep access until the end of the current billing period."
       },
       "i2": {
         "q": "I was charged but don't see Stagify+ features.",
@@ -586,5 +668,23 @@
     "pickerFree": "Free",
     "pickerPlus": "Stagify+",
     "troubleshootingTitle": "Troubleshooting & common issues"
+  },
+  "pageMeta": {
+    "guides": {
+      "title": "Guides & Walkthroughs | Stagify.ai",
+      "description": "Step-by-step walkthroughs for Stagify.ai — your first free staging, staging with Stagify+, and fixes for common issues."
+    },
+    "contact": {
+      "title": "Contact Us | Stagify.ai",
+      "description": "Get in touch with the Stagify.ai team for support, partnerships, or questions about our free AI home staging tool."
+    },
+    "stagifyPlus": {
+      "title": "Stagify+ — Plans & Pricing | Stagify.ai",
+      "description": "Stagify+: unlimited AI staging, higher-quality models, AI Designer, and the masking tool. See plans and pricing."
+    },
+    "enterprise": {
+      "title": "Stagify Enterprise — Usage-Based AI Staging for Teams",
+      "description": "Give your whole team unlimited AI staging with usage-based billing at $0.15 per generation. One invoice, no per-seat fees."
+    }
   }
 }

@@ -1,5 +1,12 @@
 User-agent: *
 Allow: /
 
-# Sitemap location
+# Utility / auth pages — not for indexing
+Disallow: /admin.html
+Disallow: /reset-password.html
+Disallow: /pro.html
+
+# Internal legal (noindex on page; keep out of crawl budget)
+Disallow: /legal/
+
 Sitemap: https://stagify.ai/sitemap.xml
