@@ -655,7 +655,7 @@
         planLine =
           '<div class="profile-menu__plan-row">' +
           '<a href="stagify-plus.html" class="profile-menu__plan profile-menu__plan--plus">' +
-          '<img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18"> Stagify+</a>' +
+          '<img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18" aria-hidden="true"> Stagify+</a>' +
           '<a class="profile-menu__portal-help" href="' +
           STRIPE_CUSTOMER_PORTAL_LOGIN +
           '" target="_blank" rel="noopener noreferrer" aria-label="' +
@@ -671,7 +671,7 @@
       if (u.plan !== 'pro') {
         plusRow =
           '<a href="stagify-plus.html" class="profile-menu__link profile-menu__link--plus">' +
-          '<img src="media-webp/logo/Pro32x32.webp" alt="" width="20" height="20"> ' +
+          '<img src="media-webp/logo/Pro32x32.webp" alt="" width="20" height="20" aria-hidden="true"> ' +
           lang('profile.upgradeToPlus', 'Upgrade to Stagify+') +
           '</a>';
       }

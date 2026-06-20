@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "AI Staging | Stagify.ai - Free AI Home Staging Tool",
+    "title": "Stagify.ai - Free virtual staging with one click",
     "description": "Transform empty rooms with AI staging. Upload photos and get professionally staged results in seconds. Free AI home staging for real estate agents, sellers, and buyers.",
     "keywords": "AI staging, home staging, real estate staging, virtual staging, AI home staging, property staging, real estate photography, staging tool, virtual furniture"
   },
@@ -14,7 +14,8 @@
     "brand": "stagify",
     "brandSuffix": ".ai",
     "techHelp": "Tech Help",
-    "guides": "Guides"
+    "guides": "Guides",
+    "logoAlt": "Stagify.ai logo — go to homepage"
   },
   "hero": {
     "catchphrase": "Upload. Stage. Imagine.",
@@ -270,10 +271,18 @@
       "addPhotos": "+ Add photos",
       "tryAnotherImage": "Try another image",
       "uploadAreaAria": "Upload area",
-      "editWithMask": "Edit with mask",
+      "editWithMask": "Edit selected area with mask tool",
       "stagingVariations": "Staging variations",
-      "originalImage": "Original image",
-      "warningAlt": "Warning",
+      "originalImage": "Original room photo before virtual staging",
+      "stagedImage": "AI-staged room preview",
+      "warningAlt": "Important staging notice",
+      "downloadIcon": "Download image",
+      "maskIcon": "Mask editing tool icon",
+      "variationAlt": "Virtual staging variation {index} of {total}",
+      "furnitureReferenceAlt": "Furniture reference photo: {filename}",
+      "uploadedRoomAlt": "Your uploaded room photo{filenameSuffix}",
+      "sampleRoomAlt": "Sample room photo for trying virtual staging",
+      "stagedResultAlt": "AI-staged room result{suffix}",
       "progress": {
         "preparing": "Preparing…",
         "uploading": "Uploading image…",
@@ -322,7 +331,14 @@
     "luxury": "Luxury",
     "coastal": "Coastal",
     "midcentury": "Midcentury",
-    "farmhouse": "Farmhouse"
+    "farmhouse": "Farmhouse",
+    "originalPhotoAlt": "Example empty room before virtual staging",
+    "modernPhotoAlt": "Example room with modern virtual staging style",
+    "scandinavianPhotoAlt": "Example room with Scandinavian virtual staging style",
+    "luxuryPhotoAlt": "Example room with luxury virtual staging style",
+    "coastalPhotoAlt": "Example room with coastal virtual staging style",
+    "midcenturyPhotoAlt": "Example room with mid-century virtual staging style",
+    "farmhousePhotoAlt": "Example room with farmhouse virtual staging style"
   },
   "whyUs": {
     "title": "Why Choose Us?",
@@ -401,25 +417,29 @@
         "name": "Maximilian Ising",
         "email": "maximilianbising@gmail.com",
         "phone": "(917) 690-6253",
-        "title": "Co-Founder, Head of Development and AI"
+        "title": "Co-Founder, Head of Development and AI",
+        "photoAlt": "Portrait of Maximilian Ising, Co-Founder and Head of Development and AI at Stagify.ai"
       },
       "lucas": {
         "name": "Lucas Shtainer",
         "email": "lucasshtainer1@gmail.com",
         "phone": "(347) 491-9609",
-        "title": "Co-Founder, Head of Marketing"
+        "title": "Co-Founder, Head of Marketing",
+        "photoAlt": "Portrait of Lucas Shtainer, Co-Founder and Head of Marketing at Stagify.ai"
       },
       "ryan": {
         "name": "Ryan Croman",
         "email": "ryancroman10@gmail.com",
         "phone": "(646) 709-6715",
-        "title": "Co-Founder, Head of Outreach"
+        "title": "Co-Founder, Head of Outreach",
+        "photoAlt": "Portrait of Ryan Croman, Co-Founder and Head of Outreach at Stagify.ai"
       },
       "emil": {
         "name": "Emil Volvosky",
         "email": "emvolvovsky@gmail.com",
         "phone": "(917) 691-2013",
-        "title": "Stastical Marketing Analyst"
+        "title": "Stastical Marketing Analyst",
+        "photoAlt": "Portrait of Emil Volvosky, Statistical Marketing Analyst at Stagify.ai"
       }
     }
   },
@@ -560,6 +580,30 @@
       "stage": "Stage/Modify",
       "cadStage": "Stage (Floor Plan)",
       "describe": "Describe/Recall"
+    },
+    "thumbnailStrip": {
+      "label": "Base image for next message",
+      "help": "Select which image the AI should modify when you send your next message. Helpful when you have several uploads or staged versions.",
+      "helpAria": "What does base image mean?"
+    },
+    "alt": {
+      "uploadFile": "Attach a file to your message",
+      "reloadChat": "Start a new chat conversation",
+      "sendMessage": "Send message",
+      "reportBug": "Report a bug",
+      "userAvatar": "Your avatar",
+      "assistantAvatar": "Stagify AI Designer",
+      "uploadPreview": "Preview of uploaded file: {filename}",
+      "stagedRoom": "AI-staged room{suffix}",
+      "generatedImage": "AI-generated design image{suffix}",
+      "cadRender": "3D render from floor plan{suffix}",
+      "recalledImage": "Previously shared image from this conversation",
+      "requestedImage": "Image requested from conversation history",
+      "editedImage": "Mask-edited design image{suffix}",
+      "originalCarouselImage": "Original image before mask edits",
+      "enlargedImage": "Full-size view of design image",
+      "thumbnailSelected": "{label} — selected as base image for your next message",
+      "thumbnailOption": "{label} — image {index} in conversation"
     },
     "maskEditor": {
       "title": "Edit with Mask",

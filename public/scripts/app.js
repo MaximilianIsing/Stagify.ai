@@ -162,6 +162,20 @@
       if (stagingErrorViewer) stagingErrorViewer.classList.add('hidden');
     }
 
+    function getStagingAlt(key, replacements = {}) {
+      let text = window.LanguageSystem?.getText('modal.staging.' + key) || '';
+      Object.entries(replacements).forEach(([k, v]) => {
+        text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), v == null ? '' : String(v));
+      });
+      return text;
+    }
+
+    function updateStagedCanvasAria(suffix = '') {
+      if (!canvas1) return;
+      canvas1.setAttribute('role', 'img');
+      canvas1.setAttribute('aria-label', getStagingAlt('stagedResultAlt', { suffix }));
+    }
+
     if (stagingErrorRetryBtn) {
       stagingErrorRetryBtn.addEventListener('click', () => {
         hideStagingError();
@@ -197,11 +211,12 @@
       pop.setAttribute('aria-hidden', 'true');
     }
 
-    function showFurniturePreview(previewUrl, anchorEl) {
+    function showFurniturePreview(previewUrl, anchorEl, filename) {
       if (!previewUrl || !anchorEl) return;
       var pop = getFurniturePreviewEl();
       var img = pop.querySelector('img');
       img.src = previewUrl;
+      img.alt = getStagingAlt('furnitureReferenceAlt', { filename: filename || 'furniture photo' });
       pop.classList.remove('hidden');
       pop.setAttribute('aria-hidden', 'false');
       var rect = anchorEl.getBoundingClientRect();
@@ -277,11 +292,11 @@
         previewBtn.textContent = '?';
         var previewUrl = furniturePreviewUrls[idx];
         previewBtn.addEventListener('mouseenter', function () {
-          showFurniturePreview(previewUrl, previewBtn);
+          showFurniturePreview(previewUrl, previewBtn, fullName);
         });
         previewBtn.addEventListener('mouseleave', hideFurniturePreview);
         previewBtn.addEventListener('focus', function () {
-          showFurniturePreview(previewUrl, previewBtn);
+          showFurniturePreview(previewUrl, previewBtn, fullName);
         });
         previewBtn.addEventListener('blur', hideFurniturePreview);
 
@@ -403,6 +418,7 @@
           openModal();
           const src = btn.getAttribute('data-src');
           stagePreview.src = src;
+          stagePreview.alt = getStagingAlt('sampleRoomAlt');
           stagePreview.classList.remove('hidden');
           $('.stage-dz-inner').classList.add('hidden');
         });
@@ -464,6 +480,9 @@
       const reader = new FileReader();
       reader.onload = () => {
         stagePreview.src = reader.result;
+        stagePreview.alt = getStagingAlt('uploadedRoomAlt', {
+          filenameSuffix: file.name ? ': ' + file.name : '',
+        });
         // Show image viewer, hide upload zone
         stageDropzone.classList.add('hidden');
         imageViewerContainer.classList.remove('hidden');
@@ -861,7 +880,7 @@
         const t = document.createElement('img');
         t.src = url;
         t.className = 'variation-thumb' + (idx === 0 ? ' active' : '');
-        t.alt = 'Variation ' + (idx + 1);
+        t.alt = getStagingAlt('variationAlt', { index: idx + 1, total: urls.length });
         t.addEventListener('click', () => {
           wrap.querySelectorAll('.variation-thumb').forEach((el) => el.classList.remove('active'));
           t.classList.add('active');
@@ -871,6 +890,7 @@
             ctx1.canvas.width = im.width;
             ctx1.canvas.height = im.height;
             ctx1.drawImage(im, 0, 0, im.width, im.height);
+            updateStagedCanvasAria(urls.length > 1 ? ` (${idx + 1})` : '');
           };
           im.src = url;
         });
@@ -924,6 +944,7 @@
           
           // Mark that we have a processed image
           hasProcessedImage = true;
+          updateStagedCanvasAria(urls.length > 1 ? ' (1)' : '');
           
           // Remove blur effect from the before image
           stagePreview.classList.remove('processing');
@@ -1263,6 +1284,7 @@
               const activeThumb = document.querySelector('#variation-thumbs .variation-thumb.active');
               if (activeThumb) activeThumb.src = result.editedImage;
               hasProcessedImage = true;
+              updateStagedCanvasAria();
               resolve();
             };
             edited.onerror = () => reject(new Error('Failed to load edited image'));

@@ -20,13 +20,17 @@
     <meta property="og:description" content="Chat with AI Designer to get help with design questions, upload files for analysis, and get professional design advice instantly.">
     <meta property="og:url" content="https://stagify.ai/ai-designer.html">
     <meta property="og:site_name" content="Stagify.ai">
-    <meta property="og:image" content="https://stagify.ai/media-webp/logo/Logo180x180.webp">
+    <meta property="og:image" content="https://stagify.ai/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Stagify.ai — before and after AI virtual staging">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AI Designer | Stagify.ai - AI-Powered Design Assistant">
     <meta name="twitter:description" content="Chat with AI Designer to get help with design questions, upload files for analysis, and get professional design advice instantly.">
-    <meta name="twitter:image" content="https://stagify.ai/media-webp/logo/Logo180x180.webp">
+    <meta name="twitter:image" content="https://stagify.ai/og-image.png">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://stagify.ai/ai-designer.html">
@@ -1030,6 +1034,166 @@
         color: #6b7280;
         font-style: italic;
       }
+
+      .message-image-loading {
+        margin-top: 8px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+      }
+
+      .image-thumbnail-strip {
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px 12px 0;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .image-thumbnail-strip.visible {
+        display: flex;
+      }
+
+      .image-thumbnail-strip-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .image-thumbnail-strip-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .image-thumbnail-strip-help-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .image-thumbnail-strip-help {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1px solid #9ca3af;
+        background: #f9fafb;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0;
+        cursor: help;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .image-thumbnail-strip-help:hover,
+      .image-thumbnail-strip-help:focus-visible {
+        border-color: #2563eb;
+        color: #2563eb;
+        background: #eff6ff;
+        outline: none;
+      }
+
+      .image-thumbnail-strip-tooltip {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        transform: translateX(-50%);
+        z-index: 20;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease, visibility 0.15s ease;
+        width: max-content;
+        max-width: 260px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: #1e3a8a;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.45;
+        text-transform: none;
+        letter-spacing: normal;
+        text-align: left;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .image-thumbnail-strip-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #1e3a8a;
+      }
+
+      .image-thumbnail-strip-help-wrap:hover .image-thumbnail-strip-tooltip,
+      .image-thumbnail-strip-help-wrap:focus-within .image-thumbnail-strip-tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      .image-thumbnail-strip-scroll {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+      }
+
+      .image-thumbnail-item {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        font: inherit;
+      }
+
+      .image-thumbnail-preview {
+        width: 64px;
+        height: 64px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 2px solid transparent;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+
+      .image-thumbnail-item.selected .image-thumbnail-preview {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+      }
+
+      .image-thumbnail-item:hover .image-thumbnail-preview {
+        border-color: #93c5fd;
+      }
+
+      .image-thumbnail-caption {
+        max-width: 72px;
+        font-size: 10px;
+        color: #6b7280;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .image-thumbnail-item.selected .image-thumbnail-caption {
+        color: #1e3a8a;
+        font-weight: 600;
+      }
       
       .empty-state {
         text-align: center;
@@ -1681,7 +1845,7 @@
 
     <header class="site-header">
       <nav class="nav">
-        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong">stagify</span><span class="brand-light">.ai</span></a>
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong">stagify</span><span class="brand-light">.ai</span></a>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
           <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
@@ -1740,6 +1904,16 @@
           </div>
           
           <div class="chat-input-container">
+            <div class="image-thumbnail-strip" id="image-thumbnail-strip" aria-label="Select base image">
+              <div class="image-thumbnail-strip-header">
+                <div class="image-thumbnail-strip-label" data-lang="pdf.thumbnailStrip.label">Base image for next message</div>
+                <span class="image-thumbnail-strip-help-wrap">
+                  <button type="button" class="image-thumbnail-strip-help" aria-label="What does base image mean?" data-lang-attr="pdf.thumbnailStrip.helpAria|aria-label">?</button>
+                  <span class="image-thumbnail-strip-tooltip" role="tooltip" data-lang="pdf.thumbnailStrip.help">Select which image the AI should modify when you send your next message. Helpful when you have several uploads or staged versions.</span>
+                </span>
+              </div>
+              <div class="image-thumbnail-strip-scroll" id="image-thumbnail-strip-scroll"></div>
+            </div>
             <div class="file-preview-container" id="file-preview-container">
               <div class="file-preview-list" id="file-preview-list"></div>
             </div>
@@ -1747,12 +1921,12 @@
             <div class="chat-input-row">
               <div class="input-bottom-controls">
                 <label class="file-upload-btn" data-lang-attr="pdf.uploadFile|title" title="Upload file">
-                  <img src="media-webp/file.webp" alt="Upload file">
+                  <img src="media-webp/file.webp" data-lang-attr="pdf.alt.uploadFile|alt" alt="Attach a file to your message">
                   <input type="file" id="file-input" multiple accept="image/*,.pdf,.txt,.doc,.docx,.jpg,.jpeg">
                 </label>
                 
-                <button class="reload-btn" id="reload-btn" title="Reload chat">
-                  <img src="media-webp/Reload.webp" alt="Reload chat">
+                <button class="reload-btn" id="reload-btn" data-lang-attr="pdf.alt.reloadChat|title" title="Start a new chat conversation">
+                  <img src="media-webp/Reload.webp" data-lang-attr="pdf.alt.reloadChat|alt" alt="Start a new chat conversation">
                 </button>
                 
                 <div class="message-tag-selector">
@@ -1794,11 +1968,11 @@
               </div>
               
               <div class="send-controls">
-                <button id="send-btn" class="send-btn" title="Send message">
-                  <img src="media-webp/Send.webp" alt="Send">
+                <button id="send-btn" class="send-btn" data-lang-attr="pdf.alt.sendMessage|title" title="Send message">
+                  <img src="media-webp/Send.webp" data-lang-attr="pdf.alt.sendMessage|alt" alt="Send message">
                 </button>
-                <button class="bug-report-btn" id="bug-report-btn" title="Report a bug">
-                  <img src="media-webp/Bug.webp" alt="Report bug">
+                <button class="bug-report-btn" id="bug-report-btn" data-lang-attr="pdf.alt.reportBug|title" title="Report a bug">
+                  <img src="media-webp/Bug.webp" data-lang-attr="pdf.alt.reportBug|alt" alt="Report a bug">
                 </button>
                 <div class="model-selector">
                   <button class="model-selector-btn" id="model-selector-btn">
@@ -1881,8 +2055,45 @@
       
       let conversationHistory = [];
       let selectedFiles = [];
+      let selectedImageIndex = null;
       let isProcessing = false; // Track if we're currently processing a message
       let dragCounter = 0; // Track drag enter/leave events to handle nested elements
+
+      function getPdfAlt(key, replacements = {}) {
+        let text = (window.LanguageSystem && window.LanguageSystem.isLoaded())
+          ? window.LanguageSystem.getText('pdf.alt.' + key)
+          : '';
+        if (!text) {
+          const fallbacks = {
+            uploadFile: 'Attach a file to your message',
+            reloadChat: 'Start a new chat conversation',
+            sendMessage: 'Send message',
+            reportBug: 'Report a bug',
+            userAvatar: 'Your avatar',
+            assistantAvatar: 'Stagify AI Designer',
+            uploadPreview: 'Preview of uploaded file: {filename}',
+            stagedRoom: 'AI-staged room{suffix}',
+            generatedImage: 'AI-generated design image{suffix}',
+            cadRender: '3D render from floor plan{suffix}',
+            recalledImage: 'Previously shared image from this conversation',
+            requestedImage: 'Image requested from conversation history',
+            editedImage: 'Mask-edited design image{suffix}',
+            originalCarouselImage: 'Original image before mask edits',
+            enlargedImage: 'Full-size view of design image',
+            thumbnailSelected: '{label} — selected as base image for your next message',
+            thumbnailOption: '{label} — image {index} in conversation',
+          };
+          text = fallbacks[key] || '';
+        }
+        Object.entries(replacements).forEach(([k, v]) => {
+          text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), v == null ? '' : String(v));
+        });
+        return text;
+      }
+
+      function imageCountSuffix(index, total) {
+        return total > 1 ? ` (${index + 1})` : '';
+      }
 
       function isDesignerProOk() {
         return window.StagifyAuth && window.StagifyAuth.user && window.StagifyAuth.user.plan === 'pro';
@@ -1954,6 +2165,8 @@
       reloadBtn.addEventListener('click', function() {
         // Reset conversation history
         conversationHistory = [];
+        selectedImageIndex = null;
+        syncImageThumbnailStrip();
         
         // Clear chat messages
         chatMessages.innerHTML = '';
@@ -2005,7 +2218,7 @@
           if (file.type.startsWith('image/')) {
             const img = document.createElement('img');
             img.src = URL.createObjectURL(file);
-            img.alt = file.name;
+            img.alt = getPdfAlt('uploadPreview', { filename: file.name });
             item.appendChild(img);
           } else {
             const icon = document.createElement('div');
@@ -2311,6 +2524,518 @@
       
       // Initialize send button state
       updateSendButtonState();
+
+      function collectImagesFromConversationHistory() {
+        const imageMessages = [];
+        for (let i = conversationHistory.length - 1; i >= 0; i--) {
+          const msg = conversationHistory[i];
+          if (msg.role === 'user' && Array.isArray(msg.content)) {
+            const imageItems = msg.content.filter(
+              (item) => item.type === 'image_url' && item.image_url && item.image_url.url
+            );
+            for (let j = imageItems.length - 1; j >= 0; j--) {
+              const imageItem = imageItems[j];
+              imageMessages.push({
+                url: imageItem.image_url.url,
+                isStaged: false,
+                isGenerated: false,
+                filename: imageItem.filename || null,
+              });
+            }
+          } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
+            const imageItems = msg.content.filter(
+              (item) =>
+                item.type === 'image_url' &&
+                item.image_url &&
+                item.image_url.url &&
+                (item.isStaged || item.isGenerated)
+            );
+            for (let j = imageItems.length - 1; j >= 0; j--) {
+              const imageItem = imageItems[j];
+              imageMessages.push({
+                url: imageItem.image_url.url,
+                isStaged: Boolean(imageItem.isStaged),
+                isGenerated: Boolean(imageItem.isGenerated),
+                filename: imageItem.filename || null,
+              });
+            }
+          }
+        }
+        return imageMessages;
+      }
+
+      function getThumbnailLabel(img) {
+        if (img.isStaged) return 'Staged';
+        if (img.isGenerated) return 'Generated';
+        if (img.filename) {
+          const base = img.filename.replace(/\.[^.]+$/, '');
+          return base.length > 14 ? `${base.slice(0, 12)}…` : base;
+        }
+        return 'Upload';
+      }
+
+      function syncImageThumbnailStrip(options) {
+        const preferNewest = options && options.preferNewest === true;
+        const strip = document.getElementById('image-thumbnail-strip');
+        const scroll = document.getElementById('image-thumbnail-strip-scroll');
+        if (!strip || !scroll) return;
+
+        const images = collectImagesFromConversationHistory();
+        if (images.length === 0) {
+          strip.classList.remove('visible');
+          scroll.innerHTML = '';
+          selectedImageIndex = null;
+          return;
+        }
+
+        strip.classList.add('visible');
+        if (preferNewest || selectedImageIndex === null || selectedImageIndex >= images.length) {
+          selectedImageIndex = 0;
+        }
+
+        scroll.innerHTML = '';
+        images.forEach((img, index) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'image-thumbnail-item' + (index === selectedImageIndex ? ' selected' : '');
+          const label = getThumbnailLabel(img);
+          btn.setAttribute('aria-label', getPdfAlt('thumbnailOption', { label, index: index + 1 }));
+          btn.dataset.index = String(index);
+
+          const preview = document.createElement('img');
+          preview.className = 'image-thumbnail-preview';
+          preview.src = img.url;
+          preview.alt = index === selectedImageIndex
+            ? getPdfAlt('thumbnailSelected', { label })
+            : getPdfAlt('thumbnailOption', { label, index: index + 1 });
+          preview.loading = 'lazy';
+
+          const caption = document.createElement('span');
+          caption.className = 'image-thumbnail-caption';
+          caption.textContent = getThumbnailLabel(img);
+
+          btn.appendChild(preview);
+          btn.appendChild(caption);
+          btn.addEventListener('click', () => {
+            selectedImageIndex = index;
+            syncImageThumbnailStrip();
+          });
+
+          scroll.appendChild(btn);
+        });
+      }
+
+      function getBaseImageIndexForRequest() {
+        const images = collectImagesFromConversationHistory();
+        if (images.length === 0 || selectedImageIndex === null) return undefined;
+        if (selectedImageIndex >= images.length) return 0;
+        return selectedImageIndex;
+      }
+
+      function getLastAssistantContentEl() {
+        return document.querySelector('.message.assistant:last-child .message-content');
+      }
+
+      function updateLastAssistantText(text) {
+        const content = getLastAssistantContentEl();
+        if (!content || !text) return;
+        const textDiv = content.querySelector(':scope > div:first-child');
+        if (textDiv) {
+          textDiv.innerHTML = formatMarkdown(text);
+        }
+      }
+
+      function getTypingStatusMessages(messageType) {
+        if (messageType === 'generating') {
+          return [
+            'generating image...',
+            'creating your image...',
+            'bringing your vision to life...',
+            'crafting the details...',
+            'rendering...',
+            'almost there...',
+            'finalizing details...',
+            'polishing the result...',
+            'just a moment...',
+          ];
+        }
+        if (messageType === 'staging') {
+          return [
+            'staging your room...',
+            'adding furniture...',
+            'selecting decor...',
+            'arranging elements...',
+            'applying styles...',
+            'creating the design...',
+            'generating the layout...',
+            'refining details...',
+            'almost ready...',
+          ];
+        }
+        if (messageType === 'analyzing') {
+          return [
+            'analyzing image...',
+            'examining details...',
+            'identifying elements...',
+            'processing visual data...',
+            'understanding the space...',
+            'reviewing composition...',
+            'studying the layout...',
+            'almost done...',
+          ];
+        }
+        if (messageType === 'welcome') {
+          return [
+            'preparing your welcome...',
+            'getting ready for you...',
+            'setting things up...',
+            'preparing a warm welcome...',
+            'getting everything ready for you...',
+            'almost ready to greet you...',
+            'setting up your space...',
+            'preparing something special...',
+          ];
+        }
+        return [
+          'thinking...',
+          'processing your request...',
+          'analyzing...',
+          'considering options...',
+          'working on it...',
+          'almost there...',
+          'just a moment...',
+          'preparing response...',
+        ];
+      }
+
+      function attachRotatingStatusText(element, messageType) {
+        const messages = getTypingStatusMessages(messageType);
+        let currentIndex = Math.floor(Math.random() * messages.length);
+        element.textContent = messages[currentIndex];
+        const messageInterval = setInterval(() => {
+          let nextIndex;
+          do {
+            nextIndex = Math.floor(Math.random() * messages.length);
+          } while (nextIndex === currentIndex && messages.length > 1);
+          currentIndex = nextIndex;
+          element.textContent = messages[currentIndex];
+        }, 1500);
+        element.dataset.intervalId = messageInterval;
+        return messageInterval;
+      }
+
+      function clearRotatingStatusText(element) {
+        if (element && element.dataset.intervalId) {
+          clearInterval(parseInt(element.dataset.intervalId, 10));
+          delete element.dataset.intervalId;
+        }
+      }
+
+      function showMessageImageLoading(messageType) {
+        removeMessageImageLoading();
+        const content = getLastAssistantContentEl();
+        if (!content) return;
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message-image-loading typing-indicator';
+        loadingDiv.id = 'message-image-loading';
+        attachRotatingStatusText(loadingDiv, messageType);
+        content.appendChild(loadingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function removeMessageImageLoading() {
+        const el = document.getElementById('message-image-loading');
+        if (el) {
+          clearRotatingStatusText(el);
+          el.remove();
+        }
+      }
+
+      async function consumeChatSse(response, handlers) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let splitAt;
+          while ((splitAt = buffer.indexOf('\n\n')) !== -1) {
+            const block = buffer.slice(0, splitAt);
+            buffer = buffer.slice(splitAt + 2);
+            let eventName = 'message';
+            let dataLine = '';
+            for (const line of block.split('\n')) {
+              if (line.startsWith('event: ')) eventName = line.slice(7).trim();
+              else if (line.startsWith('data: ')) dataLine = line.slice(6);
+            }
+            if (!dataLine) continue;
+            const payload = JSON.parse(dataLine);
+            if (eventName === 'message' && handlers.onMessage) handlers.onMessage(payload);
+            else if (eventName === 'images' && handlers.onImages) handlers.onImages(payload);
+            else if (eventName === 'error' && handlers.onError) handlers.onError(payload);
+          }
+        }
+      }
+
+      async function handleChatFetchResponse(response, typingId, messageType) {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('text/event-stream')) {
+          let streamedText = '';
+          await consumeChatSse(response, {
+            onMessage(payload) {
+              removeTypingIndicator(typingId);
+              streamedText = payload.response || '';
+              addMessage('assistant', streamedText);
+              showMessageImageLoading(messageType);
+            },
+            onImages(payload) {
+              removeMessageImageLoading();
+              processAssistantChatData(
+                { ...payload, response: payload.response || streamedText },
+                typingId,
+                { imagesOnly: true }
+              );
+            },
+            onError() {
+              removeTypingIndicator(typingId);
+              removeMessageImageLoading();
+              addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+            },
+          });
+          return;
+        }
+        const data = await response.json();
+        removeTypingIndicator(typingId);
+        processAssistantChatData(data, typingId);
+      }
+
+      function processAssistantChatData(data, typingId, options) {
+        const imagesOnly = options && options.imagesOnly === true;
+        let addedAssistantImages = false;
+
+        if (data.error) {
+          if (!imagesOnly) {
+            addMessage('assistant', 'Sorry, I encountered an error: ' + data.error);
+          }
+          return;
+        }
+        if (data.contextLimitReached) {
+          if (!imagesOnly) {
+            addMessage('assistant', data.response);
+          }
+          return;
+        }
+
+        if (imagesOnly && data.response) {
+          updateLastAssistantText(data.response);
+        }
+
+        if (data.imageAnnotations && Object.keys(data.imageAnnotations).length > 0) {
+          for (let i = conversationHistory.length - 1; i >= 0; i--) {
+            const msg = conversationHistory[i];
+            if (msg.role === 'user' && Array.isArray(msg.content)) {
+              msg.content.forEach(item => {
+                if (item.type === 'image_url') {
+                  const filename = item.filename;
+                  if (filename && data.imageAnnotations[filename]) {
+                    item.annotation = data.imageAnnotations[filename];
+                  } else {
+                    const matchingKey = Object.keys(data.imageAnnotations).find(key =>
+                      filename && (filename.includes(key) || key.includes(filename))
+                    );
+                    if (matchingKey) {
+                      item.annotation = data.imageAnnotations[matchingKey];
+                    }
+                  }
+                }
+              });
+              break;
+            }
+          }
+        }
+
+        const stagedImages = data.stagedImages || (data.stagedImage ? [data.stagedImage] : []);
+        if (stagedImages.length > 0) {
+          addedAssistantImages = true;
+          if (!imagesOnly) {
+            addMessage('assistant', data.response);
+          }
+          const lastMessage = getLastAssistantContentEl();
+          if (lastMessage) {
+            stagedImages.forEach((stagedImage, index) => {
+              const stagedImageDiv = document.createElement('div');
+              stagedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+              const imageContainer = createAIImageWithDownload(
+                stagedImage,
+                getPdfAlt('stagedRoom', { suffix: imageCountSuffix(index, stagedImages.length) }),
+                `staged-room-${index}`
+              );
+              stagedImageDiv.appendChild(imageContainer);
+              lastMessage.appendChild(stagedImageDiv);
+            });
+          }
+          const contentItems = [{ type: 'text', text: data.response }];
+          stagedImages.forEach((stagedImage, index) => {
+            const annotationKey = stagedImages.length === 1 ? 'staged_0' : `staged_${index}`;
+            const annotation = data.stagedImageAnnotations && data.stagedImageAnnotations[annotationKey]
+              ? data.stagedImageAnnotations[annotationKey]
+              : null;
+            contentItems.push({
+              type: 'image_url',
+              image_url: { url: stagedImage },
+              isStaged: true,
+              _annotation: annotation,
+            });
+          });
+          const assistantMessage = { role: 'assistant', content: contentItems };
+          const lastMsg = conversationHistory[conversationHistory.length - 1];
+          const isDuplicate = lastMsg &&
+            lastMsg.role === 'assistant' &&
+            JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+          if (!isDuplicate) {
+            conversationHistory.push(assistantMessage);
+          }
+        } else if (data.generatedImages || data.generatedImage) {
+          const generatedImages = data.generatedImages || (data.generatedImage ? [data.generatedImage] : []);
+          addedAssistantImages = true;
+          if (!imagesOnly) {
+            addMessage('assistant', data.response);
+          }
+          const lastMessage = getLastAssistantContentEl();
+          if (lastMessage) {
+            generatedImages.forEach((generatedImage, index) => {
+              const generatedImageDiv = document.createElement('div');
+              generatedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+              const imageContainer = createAIImageWithDownload(
+                generatedImage,
+                getPdfAlt('generatedImage', { suffix: imageCountSuffix(index, generatedImages.length) }),
+                `generated-image-${index}`
+              );
+              generatedImageDiv.appendChild(imageContainer);
+              lastMessage.appendChild(generatedImageDiv);
+            });
+          }
+          const contentItems = [{ type: 'text', text: data.response }];
+          generatedImages.forEach((generatedImage, index) => {
+            const annotationKey = generatedImages.length === 1 ? 'generated_0' : `generated_${index}`;
+            const annotation = data.generatedImageAnnotations && data.generatedImageAnnotations[annotationKey]
+              ? data.generatedImageAnnotations[annotationKey]
+              : null;
+            contentItems.push({
+              type: 'image_url',
+              image_url: { url: generatedImage },
+              isGenerated: true,
+              _annotation: annotation,
+            });
+          });
+          const assistantMessage = { role: 'assistant', content: contentItems };
+          const lastMsg = conversationHistory[conversationHistory.length - 1];
+          const isDuplicate = lastMsg &&
+            lastMsg.role === 'assistant' &&
+            JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+          if (!isDuplicate) {
+            conversationHistory.push(assistantMessage);
+          }
+        } else if (data.cadImage || (data.cadImages && data.cadImages.length > 0)) {
+          addedAssistantImages = true;
+          if (!imagesOnly) {
+            addMessage('assistant', data.response);
+          }
+          const cadImages = data.cadImages || (data.cadImage ? [data.cadImage] : []);
+          if (cadImages.length > 0) {
+            const lastMessage = getLastAssistantContentEl();
+            if (lastMessage) {
+              cadImages.forEach((cadImage, index) => {
+                const cadImageDiv = document.createElement('div');
+                cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+                const imageContainer = createAIImageWithDownload(
+                  cadImage,
+                  getPdfAlt('cadRender', { suffix: imageCountSuffix(index, cadImages.length) }),
+                  `cad-render-${index}`
+                );
+                cadImageDiv.appendChild(imageContainer);
+                lastMessage.appendChild(cadImageDiv);
+              });
+            }
+            const cadAnnotation = data.cadImageAnnotation || null;
+            const cadAnnotations = data.cadImageAnnotations || {};
+            const cadAssistantMessage = {
+              role: 'assistant',
+              content: [
+                { type: 'text', text: data.response },
+                ...cadImages.map((cadImage, index) => ({
+                  type: 'image_url',
+                  image_url: { url: cadImage },
+                  isGenerated: true,
+                  _annotation: cadImages.length === 1 ? cadAnnotation : (cadAnnotations[`cad_${index}`] || null),
+                })),
+              ],
+            };
+            const lastMsg2 = conversationHistory[conversationHistory.length - 1];
+            const isDuplicate2 = lastMsg2 &&
+              lastMsg2.role === 'assistant' &&
+              JSON.stringify(lastMsg2.content) === JSON.stringify(cadAssistantMessage.content);
+            if (!isDuplicate2) {
+              conversationHistory.push(cadAssistantMessage);
+            }
+          }
+        } else if (data.recalledImage) {
+          addedAssistantImages = true;
+          if (!imagesOnly) {
+            addMessage('assistant', data.response);
+          }
+          const lastMessage = getLastAssistantContentEl();
+          if (lastMessage) {
+            const recalledImageDiv = document.createElement('div');
+            recalledImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+            const imageContainer = createAIImageWithDownload(data.recalledImage, getPdfAlt('recalledImage'), 'recalled-image');
+            recalledImageDiv.appendChild(imageContainer);
+            lastMessage.appendChild(recalledImageDiv);
+          }
+          const assistantMessage = { role: 'assistant', content: data.response };
+          const lastMsg = conversationHistory[conversationHistory.length - 1];
+          const isDuplicate = lastMsg &&
+            lastMsg.role === 'assistant' &&
+            JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+          if (!isDuplicate) {
+            conversationHistory.push(assistantMessage);
+          }
+        } else if (data.requestedImage) {
+          addedAssistantImages = true;
+          if (!imagesOnly) {
+            addMessage('assistant', data.response);
+          }
+          const lastMessage = getLastAssistantContentEl();
+          if (lastMessage) {
+            const requestedImageDiv = document.createElement('div');
+            requestedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
+            const imageContainer = createAIImageWithDownload(data.requestedImage, getPdfAlt('requestedImage'), 'requested-image');
+            requestedImageDiv.appendChild(imageContainer);
+            lastMessage.appendChild(requestedImageDiv);
+          }
+          const assistantMessage = { role: 'assistant', content: data.response };
+          const lastMsg = conversationHistory[conversationHistory.length - 1];
+          const isDuplicate = lastMsg &&
+            lastMsg.role === 'assistant' &&
+            JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+          if (!isDuplicate) {
+            conversationHistory.push(assistantMessage);
+          }
+        } else if (!imagesOnly) {
+          addMessage('assistant', data.response);
+          const assistantMessage = { role: 'assistant', content: data.response };
+          const lastMsg = conversationHistory[conversationHistory.length - 1];
+          const isDuplicate = lastMsg &&
+            lastMsg.role === 'assistant' &&
+            JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
+          if (!isDuplicate) {
+            conversationHistory.push(assistantMessage);
+          }
+        }
+
+        syncImageThumbnailStrip({ preferNewest: addedAssistantImages });
+      }
       
       function sendMessage() {
         if (!isDesignerProOk()) return;
@@ -2396,9 +3121,14 @@
             lastMessage.role === 'user' && 
             JSON.stringify(lastMessage.content) === JSON.stringify(userMessage.content);
           
+          // History for the API must NOT include this message — the server builds the
+          // current turn from multipart files. Including it here duplicates images.
+          const historyForRequest = [...conversationHistory];
+          
           if (!isDuplicate) {
             conversationHistory.push(userMessage);
           }
+          syncImageThumbnailStrip();
           
           // Send to backend
           if (filesToSend.length > 0) {
@@ -2410,8 +3140,8 @@
             if (message) {
               formData.append('message', message);
             }
-            // Send conversation history so backend can access previous images
-            formData.append('conversationHistory', JSON.stringify(conversationHistory));
+            // Prior messages only (current upload is sent as files above)
+            formData.append('conversationHistory', JSON.stringify(historyForRequest));
             
             // Get userId from localStorage
             const userId = localStorage.getItem('userId');
@@ -2430,306 +3160,21 @@
               formData.append('messageTag', messageTagValue);
             }
             
+            formData.append('streamResponse', 'true');
+            const baseImageIndex = getBaseImageIndexForRequest();
+            if (baseImageIndex !== undefined) {
+              formData.append('baseImageIndex', String(baseImageIndex));
+            }
+            
             fetch('/api/chat-upload', {
               method: 'POST',
+              headers: { 'X-Stream-Response': '1' },
               body: formData,
             })
-            .then(response => response.json())
-            .then(data => {
-              removeTypingIndicator(typingId);
-              
-              if (data.error) {
-                addMessage('assistant', 'Sorry, I encountered an error: ' + data.error);
-              } else if (data.contextLimitReached) {
-                // Context limit reached - show message and don't add to history
-                addMessage('assistant', data.response);
-              } else {
-                // Update user message in conversation history with annotations if available
-                if (data.imageAnnotations && Object.keys(data.imageAnnotations).length > 0) {
-                  // Find the last user message in conversation history
-                  for (let i = conversationHistory.length - 1; i >= 0; i--) {
-                    const msg = conversationHistory[i];
-                    if (msg.role === 'user' && Array.isArray(msg.content)) {
-                      // Update images with their annotations
-                      msg.content.forEach(item => {
-                        if (item.type === 'image_url') {
-                          // Try to match by filename
-                          const filename = item.filename;
-                          if (filename && data.imageAnnotations[filename]) {
-                            item.annotation = data.imageAnnotations[filename];
-                          } else {
-                            // Try matching by checking all annotation keys
-                            const matchingKey = Object.keys(data.imageAnnotations).find(key => 
-                              filename && (filename.includes(key) || key.includes(filename))
-                            );
-                            if (matchingKey) {
-                              item.annotation = data.imageAnnotations[matchingKey];
-                            }
-                          }
-                        }
-                      });
-                      break;
-                    }
-                  }
-                }
-                
-                // Handle staged images (single or array)
-                const stagedImages = data.stagedImages || (data.stagedImage ? [data.stagedImage] : []);
-                if (stagedImages.length > 0) {
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Then add the staged image(s) to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    stagedImages.forEach((stagedImage, index) => {
-                      const stagedImageDiv = document.createElement('div');
-                      stagedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                      
-                      const imageContainer = createAIImageWithDownload(stagedImage, `Staged Room ${stagedImages.length > 1 ? `(${index + 1})` : ''}`, `staged-room-${index}`);
-                      stagedImageDiv.appendChild(imageContainer);
-                      
-                      lastMessage.appendChild(stagedImageDiv);
-                    });
-                  }
-                  
-                  // Store staged image(s) in conversation history
-                  const contentItems = [{ type: 'text', text: data.response }];
-                  stagedImages.forEach((stagedImage, index) => {
-                    const annotationKey = stagedImages.length === 1 ? 'staged_0' : `staged_${index}`;
-                    const annotation = data.stagedImageAnnotations && data.stagedImageAnnotations[annotationKey] ? data.stagedImageAnnotations[annotationKey] : null;
-                    contentItems.push({ 
-                      type: 'image_url', 
-                      image_url: { url: stagedImage },
-                      isStaged: true,
-                      _annotation: annotation // Store annotation for backend context building
-                    });
-                  });
-                  
-                  const assistantMessage = { 
-                    role: 'assistant', 
-                    content: contentItems
-                  };
-                  
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                } else if (data.generatedImages || data.generatedImage) {
-                  // If image generation was processed, display the generated image(s)
-                  const generatedImages = data.generatedImages || (data.generatedImage ? [data.generatedImage] : []);
-                  
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Then add the generated image(s) to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    generatedImages.forEach((generatedImage, index) => {
-                      const generatedImageDiv = document.createElement('div');
-                      generatedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                      
-                      const imageContainer = createAIImageWithDownload(generatedImage, `Generated Image ${generatedImages.length > 1 ? `(${index + 1})` : ''}`, `generated-image-${index}`);
-                      generatedImageDiv.appendChild(imageContainer);
-                      
-                      lastMessage.appendChild(generatedImageDiv);
-                    });
-                  }
-                  
-                  // Store generated image(s) in conversation history so they can be accessed later
-                  const contentItems = [{ type: 'text', text: data.response }];
-                  generatedImages.forEach((generatedImage, index) => {
-                    const annotationKey = generatedImages.length === 1 ? 'generated_0' : `generated_${index}`;
-                    const annotation = data.generatedImageAnnotations && data.generatedImageAnnotations[annotationKey] ? data.generatedImageAnnotations[annotationKey] : null;
-                    contentItems.push({ 
-                      type: 'image_url', 
-                      image_url: { url: generatedImage },
-                      isGenerated: true, // Mark as generated image for backend
-                      _annotation: annotation // Store annotation for backend context building
-                    });
-                  });
-                  
-                  const assistantMessage = { 
-                    role: 'assistant', 
-                    content: contentItems
-                  };
-                  
-                  // Check for duplicates
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                } else if (data.cadImage || (data.cadImages && data.cadImages.length > 0)) {
-                  // If CAD processing was done, display the CAD image(s)
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Normalize to array
-                  const cadImages = data.cadImages || (data.cadImage ? [data.cadImage] : []);
-                  
-                  if (cadImages.length > 0) {
-                    // Then add the CAD image(s) to the last assistant message
-                    const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                    if (lastMessage) {
-                      cadImages.forEach((cadImage, index) => {
-                        const cadImageDiv = document.createElement('div');
-                        cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                        
-                        const imageTitle = cadImages.length > 1 ? `3D Render from Blueprint (${index + 1})` : '3D Render from Blueprint';
-                        const imageContainer = createAIImageWithDownload(cadImage, imageTitle, `cad-render-${index}`);
-                        cadImageDiv.appendChild(imageContainer);
-                        
-                        lastMessage.appendChild(cadImageDiv);
-                      });
-                    }
-                    
-                    // Store CAD image(s) in conversation history
-                    const cadAnnotation = data.cadImageAnnotation || null;
-                    const cadAnnotations = data.cadImageAnnotations || {};
-                    const cadAssistantMessage = { 
-                      role: 'assistant', 
-                      content: [
-                        { type: 'text', text: data.response },
-                        ...cadImages.map((cadImage, index) => ({
-                          type: 'image_url', 
-                          image_url: { url: cadImage },
-                          isGenerated: true, // Mark as generated image for backend
-                          _annotation: cadImages.length === 1 ? cadAnnotation : (cadAnnotations[`cad_${index}`] || null) // Store annotation for backend context building
-                        }))
-                      ]
-                    };
-                  
-                  const lastMsg2 = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate2 = lastMsg2 && 
-                    lastMsg2.role === 'assistant' && 
-                    JSON.stringify(lastMsg2.content) === JSON.stringify(cadAssistantMessage.content);
-                  
-                  if (!isDuplicate2) {
-                    conversationHistory.push(cadAssistantMessage);
-                  }
-                  }
-                } else if (data.recalledImage) {
-                  // If an image was recalled for display, show it
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Then add the recalled image to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    const recalledImageDiv = document.createElement('div');
-                    recalledImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                    
-                    const imageContainer = createAIImageWithDownload(data.recalledImage, 'Recalled Image', 'recalled-image');
-                    recalledImageDiv.appendChild(imageContainer);
-                    
-                    lastMessage.appendChild(recalledImageDiv);
-                  }
-                  
-                  // Store the message in conversation history (don't duplicate the image)
-                  const assistantMessage = { 
-                    role: 'assistant', 
-                    content: data.response
-                  };
-                  
-                  // Check for duplicates
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                } else if (data.recalledImage) {
-                  // If an image was recalled for display, show it
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Then add the recalled image to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    const recalledImageDiv = document.createElement('div');
-                    recalledImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                    
-                    const imageContainer = createAIImageWithDownload(data.recalledImage, 'Recalled Image', 'recalled-image');
-                    recalledImageDiv.appendChild(imageContainer);
-                    
-                    lastMessage.appendChild(recalledImageDiv);
-                  }
-                  
-                  // Store the message in conversation history (don't duplicate the image)
-                  const assistantMessage = { 
-                    role: 'assistant', 
-                    content: data.response
-                  };
-                  
-                  // Check for duplicates
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                } else if (data.requestedImage) {
-                  // If an image was requested for display, show it
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Then add the requested image to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    const requestedImageDiv = document.createElement('div');
-                    requestedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                    
-                    const imageContainer = createAIImageWithDownload(data.requestedImage, 'Requested Image', 'requested-image');
-                    requestedImageDiv.appendChild(imageContainer);
-                    
-                    lastMessage.appendChild(requestedImageDiv);
-                  }
-                  
-                  // Store the message in conversation history (don't duplicate the image)
-                  const assistantMessage = { 
-                    role: 'assistant', 
-                    content: data.response
-                  };
-                  
-                  // Check for duplicates
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                } else {
-                  addMessage('assistant', data.response);
-                  const assistantMessage = { role: 'assistant', content: data.response };
-                  
-                  // Check for duplicates
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                }
-              }
-            })
+            .then(response => handleChatFetchResponse(response, typingId, messageType))
             .catch(error => {
               removeTypingIndicator(typingId);
+              removeMessageImageLoading();
               addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
               console.error('Error:', error);
             })
@@ -2756,6 +3201,7 @@
             if (!isDuplicate) {
               conversationHistory.push(userMessage);
             }
+            syncImageThumbnailStrip();
             
         // Determine message type based on user input
         const messageLower = message.toLowerCase();
@@ -2775,10 +3221,12 @@
             const userId = localStorage.getItem('userId');
             
             const chatAuthTok = window.StagifyAuth && window.StagifyAuth.getToken();
+            const baseImageIndexChat = getBaseImageIndexForRequest();
             fetch('/api/chat', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                'X-Stream-Response': '1',
                 ...(chatAuthTok ? { Authorization: 'Bearer ' + chatAuthTok } : {}),
               },
               body: JSON.stringify({
@@ -2787,205 +3235,14 @@
                 model: window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini',
                 messageTag: messageTagValue && messageTagValue !== 'auto' ? messageTagValue : undefined,
                 authToken: chatAuthTok || undefined,
+                streamResponse: true,
+                ...(baseImageIndexChat !== undefined ? { baseImageIndex: baseImageIndexChat } : {}),
               }),
             })
-            .then(response => response.json())
-            .then(data => {
-              removeTypingIndicator(typingId);
-              
-              if (data.error) {
-                addMessage('assistant', 'Sorry, I encountered an error: ' + data.error);
-              } else if (data.contextLimitReached) {
-                // Context limit reached - show message and don't add to history
-                addMessage('assistant', data.response);
-              } else {
-                // If staging was processed, display the staged image
-                // Handle staged images (single or array)
-                const stagedImages = data.stagedImages || (data.stagedImage ? [data.stagedImage] : []);
-                if (stagedImages.length > 0) {
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Then add the staged image(s) to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    stagedImages.forEach((stagedImage, index) => {
-                      const stagedImageDiv = document.createElement('div');
-                      stagedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                      
-                      const imageContainer = createAIImageWithDownload(stagedImage, `Staged Room ${stagedImages.length > 1 ? `(${index + 1})` : ''}`, `staged-room-${index}`);
-                      stagedImageDiv.appendChild(imageContainer);
-                      
-                      lastMessage.appendChild(stagedImageDiv);
-                    });
-                  }
-                  
-                  // Store staged image(s) in conversation history
-                  const contentItems = [{ type: 'text', text: data.response }];
-                  stagedImages.forEach((stagedImage) => {
-                    contentItems.push({ 
-                      type: 'image_url', 
-                      image_url: { url: stagedImage },
-                      isStaged: true
-                    });
-                  });
-                  
-                  const assistantMessage = { 
-                    role: 'assistant', 
-                    content: contentItems
-                  };
-                  
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                } else if (data.generatedImages || data.generatedImage) {
-                  // Handle generated images (single or array)
-                  const generatedImages = data.generatedImages || (data.generatedImage ? [data.generatedImage] : []);
-                  
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Then add the generated image(s) to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    generatedImages.forEach((generatedImage, index) => {
-                      const generatedImageDiv = document.createElement('div');
-                      generatedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                      
-                      const imageContainer = createAIImageWithDownload(generatedImage, `Generated Image ${generatedImages.length > 1 ? `(${index + 1})` : ''}`, `generated-image-${index}`);
-                      generatedImageDiv.appendChild(imageContainer);
-                      
-                      lastMessage.appendChild(generatedImageDiv);
-                    });
-                  }
-                  
-                  // Store generated image(s) in conversation history
-                  const contentItems = [{ type: 'text', text: data.response }];
-                  generatedImages.forEach((generatedImage) => {
-                    contentItems.push({ 
-                      type: 'image_url', 
-                      image_url: { url: generatedImage },
-                      isGenerated: true
-                    });
-                  });
-                  
-                  const assistantMessage = { 
-                    role: 'assistant', 
-                    content: contentItems
-                  };
-                  
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                } else if (data.cadImage || (data.cadImages && data.cadImages.length > 0)) {
-                  // If CAD processing was done, display the CAD image(s)
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Normalize to array
-                  const cadImages = data.cadImages || (data.cadImage ? [data.cadImage] : []);
-                  
-                  if (cadImages.length > 0) {
-                    // Then add the CAD image(s) to the last assistant message
-                    const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                    if (lastMessage) {
-                      cadImages.forEach((cadImage, index) => {
-                        const cadImageDiv = document.createElement('div');
-                        cadImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                        
-                        const imageTitle = cadImages.length > 1 ? `3D Render from Blueprint (${index + 1})` : '3D Render from Blueprint';
-                        const imageContainer = createAIImageWithDownload(cadImage, imageTitle, `cad-render-${index}`);
-                        cadImageDiv.appendChild(imageContainer);
-                        
-                        lastMessage.appendChild(cadImageDiv);
-                      });
-                    }
-                    
-                    // Store CAD image(s) in conversation history
-                    const cadAnnotation2 = data.cadImageAnnotation || null;
-                    const cadAnnotations2 = data.cadImageAnnotations || {};
-                    const cadAssistantMessage = { 
-                      role: 'assistant', 
-                      content: [
-                        { type: 'text', text: data.response },
-                        ...cadImages.map((cadImage, index) => ({
-                          type: 'image_url', 
-                          image_url: { url: cadImage },
-                          isGenerated: true,
-                          _annotation: cadImages.length === 1 ? cadAnnotation2 : (cadAnnotations2[`cad_${index}`] || null) // Store annotation for backend context building
-                        }))
-                      ]
-                    };
-                  
-                  const lastMsg2 = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate2 = lastMsg2 && 
-                    lastMsg2.role === 'assistant' && 
-                    JSON.stringify(lastMsg2.content) === JSON.stringify(cadAssistantMessage.content);
-                  
-                  if (!isDuplicate2) {
-                    conversationHistory.push(cadAssistantMessage);
-                  }
-                  }
-                } else if (data.requestedImage) {
-                  // If an image was requested for display, show it
-                  // Add the AI response text first
-                  addMessage('assistant', data.response);
-                  
-                  // Then add the requested image to the last assistant message
-                  const lastMessage = document.querySelector('.message.assistant:last-child .message-content');
-                  if (lastMessage) {
-                    const requestedImageDiv = document.createElement('div');
-                    requestedImageDiv.style.cssText = 'margin-top: 12px; text-align: left;';
-                    
-                    const imageContainer = createAIImageWithDownload(data.requestedImage, 'Requested Image', 'requested-image');
-                    requestedImageDiv.appendChild(imageContainer);
-                    
-                    lastMessage.appendChild(requestedImageDiv);
-                  }
-                  
-                  // Store the message in conversation history (don't duplicate the image)
-                  const assistantMessage = { 
-                    role: 'assistant', 
-                    content: data.response
-                  };
-                  
-                  // Check for duplicates
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                } else {
-                  addMessage('assistant', data.response);
-                  const assistantMessage = { role: 'assistant', content: data.response };
-                  
-                  // Check for duplicates
-                  const lastMsg = conversationHistory[conversationHistory.length - 1];
-                  const isDuplicate = lastMsg && 
-                    lastMsg.role === 'assistant' && 
-                    JSON.stringify(lastMsg.content) === JSON.stringify(assistantMessage.content);
-                  
-                  if (!isDuplicate) {
-                    conversationHistory.push(assistantMessage);
-                  }
-                }
-              }
-            })
+            .then(response => handleChatFetchResponse(response, typingId, messageType))
             .catch(error => {
               removeTypingIndicator(typingId);
+              removeMessageImageLoading();
               addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
               console.error('Error:', error);
             })
@@ -3037,12 +3294,12 @@
         if (role === 'user') {
           const userImg = document.createElement('img');
           userImg.src = 'media-webp/User.webp';
-          userImg.alt = 'User';
+          userImg.alt = getPdfAlt('userAvatar');
           avatar.appendChild(userImg);
         } else {
           const logoImg = document.createElement('img');
           logoImg.src = 'media-webp/logo/Logo64x64.webp';
-          logoImg.alt = 'Stagify';
+          logoImg.alt = getPdfAlt('assistantAvatar');
           avatar.appendChild(logoImg);
         }
         
@@ -3082,8 +3339,8 @@
               const img = document.createElement('img');
               const imageSrc = URL.createObjectURL(file);
               img.src = imageSrc;
-              img.alt = file.name;
-              img.addEventListener('click', () => openImageModal(imageSrc));
+              img.alt = getPdfAlt('uploadPreview', { filename: file.name });
+              img.addEventListener('click', () => openImageModal(imageSrc, getPdfAlt('uploadPreview', { filename: file.name })));
               fileDiv.appendChild(img);
               
               filesContainer.appendChild(fileDiv);
@@ -3126,7 +3383,7 @@
         avatar.className = 'message-avatar';
         const logoImg = document.createElement('img');
         logoImg.src = 'media-webp/logo/Logo64x64.webp';
-        logoImg.alt = 'Stagify';
+        logoImg.alt = getPdfAlt('assistantAvatar');
         avatar.appendChild(logoImg);
         
         const contentDiv = document.createElement('div');
@@ -3134,84 +3391,7 @@
         
         const typing = document.createElement('div');
         typing.className = 'typing-indicator';
-        
-        // Messages based on type
-        let messages = [];
-        if (messageType === 'generating') {
-          messages = [
-            'generating image...',
-            'creating your image...',
-            'bringing your vision to life...',
-            'crafting the details...',
-            'rendering...',
-            'almost there...',
-            'finalizing details...',
-            'polishing the result...',
-            'just a moment...'
-          ];
-        } else if (messageType === 'staging') {
-          messages = [
-            'staging your room...',
-            'adding furniture...',
-            'selecting decor...',
-            'arranging elements...',
-            'applying styles...',
-            'creating the design...',
-            'generating the layout...',
-            'refining details...',
-            'almost ready...'
-          ];
-        } else if (messageType === 'analyzing') {
-          messages = [
-            'analyzing image...',
-            'examining details...',
-            'identifying elements...',
-            'processing visual data...',
-            'understanding the space...',
-            'reviewing composition...',
-            'studying the layout...',
-            'almost done...'
-          ];
-        } else if (messageType === 'welcome') {
-          messages = [
-            'preparing your welcome...',
-            'getting ready for you...',
-            'setting things up...',
-            'preparing a warm welcome...',
-            'getting everything ready for you...',
-            'almost ready to greet you...',
-            'setting up your space...',
-            'preparing something special...',
-          ];
-        } else {
-          messages = [
-            'thinking...',
-            'processing your request...',
-            'analyzing...',
-            'considering options...',
-            'working on it...',
-            'almost there...',
-            'just a moment...',
-            'preparing response...'
-          ];
-        }
-        
-        // Start with a random message
-        let currentIndex = Math.floor(Math.random() * messages.length);
-        typing.textContent = messages[currentIndex];
-        
-        // Rotate messages randomly every 1.5 seconds (avoiding immediate repetition)
-        const messageInterval = setInterval(() => {
-          let nextIndex;
-          do {
-            nextIndex = Math.floor(Math.random() * messages.length);
-          } while (nextIndex === currentIndex && messages.length > 1);
-          currentIndex = nextIndex;
-          typing.textContent = messages[currentIndex];
-        }, 1500);
-        
-        // Store interval ID so we can clear it later
-        typingDiv.dataset.intervalId = messageInterval;
+        attachRotatingStatusText(typing, messageType);
         
         contentDiv.appendChild(typing);
         typingDiv.appendChild(avatar);
@@ -3226,20 +3406,19 @@
       function removeTypingIndicator(id) {
         const indicator = document.getElementById(id);
         if (indicator) {
-          // Clear the message rotation interval
-          if (indicator.dataset.intervalId) {
-            clearInterval(parseInt(indicator.dataset.intervalId));
-          }
+          const typingEl = indicator.querySelector('.typing-indicator');
+          if (typingEl) clearRotatingStatusText(typingEl);
           indicator.remove();
         }
       }
       
       // Image modal functions
-      function openImageModal(imageSrc) {
+      function openImageModal(imageSrc, altText) {
         const modal = document.getElementById('image-modal');
         const modalImg = document.getElementById('image-modal-img');
         if (modal && modalImg) {
           modalImg.src = imageSrc;
+          modalImg.alt = altText || getPdfAlt('enlargedImage');
           modal.classList.add('active');
           document.body.style.overflow = 'hidden'; // Prevent background scrolling
         }
@@ -3293,16 +3472,20 @@
         img.src = imageSrc;
         img.alt = altText;
         img.className = 'ai-generated-image';
-        img.addEventListener('click', () => openImageModal(imageSrc));
+        img.addEventListener('click', () => openImageModal(imageSrc, altText));
         
         const downloadBtn = document.createElement('button');
         downloadBtn.className = 'ai-image-download-btn';
-        downloadBtn.title = 'Download image';
-        downloadBtn.setAttribute('aria-label', 'Download image');
+        const downloadLabel = (window.LanguageSystem && window.LanguageSystem.isLoaded())
+          ? window.LanguageSystem.getText('modal.staging.downloadIcon')
+          : 'Download image';
+        downloadBtn.title = downloadLabel;
+        downloadBtn.setAttribute('aria-label', downloadLabel);
         
         const downloadIcon = document.createElement('img');
         downloadIcon.src = 'media-webp/download.webp';
-        downloadIcon.alt = 'Download';
+        downloadIcon.alt = '';
+        downloadIcon.setAttribute('aria-hidden', 'true');
         downloadBtn.appendChild(downloadIcon);
         downloadBtn.addEventListener('click', (e) => {
           e.stopPropagation(); // Prevent opening modal when clicking download
@@ -3320,12 +3503,16 @@
         if (window.StagifyAuth && window.StagifyAuth.user && window.StagifyAuth.user.plan === 'pro') {
           const maskBtn = document.createElement('button');
           maskBtn.className = 'ai-image-mask-btn';
-          maskBtn.title = 'Edit with mask';
-          maskBtn.setAttribute('aria-label', 'Edit with mask');
+          const maskLabel = (window.LanguageSystem && window.LanguageSystem.isLoaded())
+            ? window.LanguageSystem.getText('modal.staging.editWithMask')
+            : 'Edit selected area with mask tool';
+          maskBtn.title = maskLabel;
+          maskBtn.setAttribute('aria-label', maskLabel);
           
           const maskIcon = document.createElement('img');
           maskIcon.src = 'media-webp/Mask.webp';
-          maskIcon.alt = 'Mask';
+          maskIcon.alt = '';
+          maskIcon.setAttribute('aria-hidden', 'true');
           maskBtn.appendChild(maskIcon);
           
           maskBtn.addEventListener('click', (e) => {
@@ -3363,7 +3550,11 @@
               }
               const maskedItem = document.createElement('div');
               maskedItem.className = 'masked-image-carousel-item';
-              const maskedImageContainer = createAIImageWithDownload(maskedImage, `Edited Image ${currentItemCount + index}`, 'masked-edit');
+              const maskedImageContainer = createAIImageWithDownload(
+                maskedImage,
+                getPdfAlt('editedImage', { suffix: imageCountSuffix(currentItemCount + index, maskedVersions.length) }),
+                'masked-edit'
+              );
               maskedItem.appendChild(maskedImageContainer);
               track.appendChild(maskedItem);
               
@@ -3483,7 +3674,7 @@
         // Add original image as first item
         const originalItem = document.createElement('div');
         originalItem.className = 'masked-image-carousel-item';
-        const originalImageContainer = createAIImageWithDownload(originalSrc, 'Original Image', 'original');
+        const originalImageContainer = createAIImageWithDownload(originalSrc, getPdfAlt('originalCarouselImage'), 'original');
         originalItem.appendChild(originalImageContainer);
         track.appendChild(originalItem);
         
@@ -3500,7 +3691,11 @@
             console.warn('Masked image is same as original for index', index, '- this might be an issue');
           }
           console.log('Adding masked version', index + 1, ':', maskedImage.substring(0, 50) + '...');
-          const maskedImageContainer = createAIImageWithDownload(maskedImage, `Edited Image ${index + 1}`, 'masked-edit');
+          const maskedImageContainer = createAIImageWithDownload(
+            maskedImage,
+            getPdfAlt('editedImage', { suffix: imageCountSuffix(index, maskedVersions.length) }),
+            'masked-edit'
+          );
           maskedItem.appendChild(maskedImageContainer);
           track.appendChild(maskedItem);
         });
@@ -3792,7 +3987,7 @@
                 <button class="mask-editor-btn mask-editor-btn-secondary" id="mask-editor-clear" data-i18n="pdf.maskEditor.clearMask">Clear Mask</button>
                 <button class="mask-editor-btn mask-editor-btn-primary" id="mask-editor-submit">
                   <span data-i18n="pdf.maskEditor.applyEdit">Apply Edit</span>
-                  <img src="media-webp/Mask.webp" alt="Mask">
+                  <img src="media-webp/Mask.webp" alt="" aria-hidden="true">
                 </button>
               </div>
             </div>
@@ -4097,7 +4292,7 @@
         
         submitBtn.disabled = true;
         const originalButtonContent = submitBtn.innerHTML;
-        submitBtn.innerHTML = 'Processing... <img src="media-webp/Mask.webp" alt="Mask">';
+        submitBtn.innerHTML = 'Processing... <img src="media-webp/Mask.webp" alt="" aria-hidden="true">';
         
         // Add blur effect to canvas container while processing and disable interaction
         const canvasContainer = document.querySelector('.mask-editor-canvas-container');
@@ -4302,7 +4497,7 @@
           const applyEditText = window.LanguageSystem && window.LanguageSystem.isLoaded() 
             ? window.LanguageSystem.getText('pdf.maskEditor.applyEdit') 
             : 'Apply Edit';
-          submitBtn.innerHTML = '<span>' + applyEditText + '</span> <img src="media-webp/Mask.webp" alt="Mask">';
+          submitBtn.innerHTML = '<span>' + applyEditText + '</span> <img src="media-webp/Mask.webp" alt="" aria-hidden="true">';
           updateApplyButtonState(); // Re-check state after restoring button
         }
       }
@@ -4311,7 +4506,7 @@
     <!-- Image Modal/Lightbox -->
     <div id="image-modal" class="image-modal">
       <span id="image-modal-close" class="image-modal-close">&times;</span>
-      <img id="image-modal-img" class="image-modal-content" src="" alt="Enlarged image">
+      <img id="image-modal-img" class="image-modal-content" src="" data-lang-attr="pdf.alt.enlargedImage|alt" alt="Full-size view of design image">
     </div>
     
     <script>

@@ -14,7 +14,8 @@
     "brand": "stagify",
     "brandSuffix": ".ai",
     "techHelp": "Ayuda Técnica",
-    "guides": "Guías"
+    "guides": "Guías",
+    "logoAlt": "Logo de Stagify.ai — ir al inicio"
   },
   "hero": {
     "catchphrase": "Sube. Diseña. Imagina.",
@@ -271,10 +272,18 @@
       "addPhotos": "+ Añadir fotos",
       "tryAnotherImage": "Probar otra imagen",
       "uploadAreaAria": "Área de carga",
-      "editWithMask": "Editar con máscara",
+      "editWithMask": "Editar área seleccionada con herramienta de máscara",
       "stagingVariations": "Variaciones de staging",
-      "originalImage": "Imagen original",
-      "warningAlt": "Advertencia",
+      "originalImage": "Foto original de la habitación antes del home staging virtual",
+      "stagedImage": "Vista previa de habitación escenificada con IA",
+      "warningAlt": "Aviso importante sobre el staging",
+      "downloadIcon": "Descargar imagen",
+      "maskIcon": "Icono de herramienta de edición con máscara",
+      "variationAlt": "Variación de home staging virtual {index} de {total}",
+      "furnitureReferenceAlt": "Foto de referencia de muebles: {filename}",
+      "uploadedRoomAlt": "Tu foto de habitación subida{filenameSuffix}",
+      "sampleRoomAlt": "Foto de habitación de ejemplo para probar el home staging virtual",
+      "stagedResultAlt": "Resultado de habitación escenificada con IA{suffix}",
       "progress": {
         "preparing": "Preparando…",
         "uploading": "Subiendo imagen…",
@@ -323,7 +332,14 @@
     "luxury": "Lujo",
     "coastal": "Costera",
     "midcentury": "Mediados de siglo",
-    "farmhouse": "Cortijo"
+    "farmhouse": "Cortijo",
+    "originalPhotoAlt": "Ejemplo de habitación vacía antes del home staging virtual",
+    "modernPhotoAlt": "Ejemplo de habitación con estilo de home staging moderno",
+    "scandinavianPhotoAlt": "Ejemplo de habitación con estilo de home staging escandinavo",
+    "luxuryPhotoAlt": "Ejemplo de habitación con estilo de home staging de lujo",
+    "coastalPhotoAlt": "Ejemplo de habitación con estilo de home staging costero",
+    "midcenturyPhotoAlt": "Ejemplo de habitación con estilo de home staging de mediados de siglo",
+    "farmhousePhotoAlt": "Ejemplo de habitación con estilo de home staging rústico"
   },
   "whyUs": {
     "title": "¿Por qué elegirnos?",
@@ -402,25 +418,29 @@
         "name": "Maximilian Ising",
         "email": "maximilianbising@gmail.com",
         "phone": "(917) 690-6253",
-        "title": "Co-Fundador, Jefe de Desarrollo e IA"
+        "title": "Co-Fundador, Jefe de Desarrollo e IA",
+        "photoAlt": "Retrato de Maximilian Ising, Co-Fundador y Jefe de Desarrollo e IA en Stagify.ai"
       },
       "lucas": {
         "name": "Lucas Shtainer",
         "email": "lucasshtainer1@gmail.com",
         "phone": "(347) 491-9609",
-        "title": "Co-Fundador, Jefe de Marketing"
+        "title": "Co-Fundador, Jefe de Marketing",
+        "photoAlt": "Retrato de Lucas Shtainer, Co-Fundador y Jefe de Marketing en Stagify.ai"
       },
       "ryan": {
         "name": "Ryan Croman",
         "email": "ryancroman10@gmail.com",
         "phone": "(646) 709-6715",
-        "title": "Co-Fundador, Jefe de Alcance"
+        "title": "Co-Fundador, Jefe de Alcance",
+        "photoAlt": "Retrato de Ryan Croman, Co-Fundador y Jefe de Alcance en Stagify.ai"
       },
       "emil": {
         "name": "Emil Volvosky",
         "email": "emvolvovsky@gmail.com",
         "phone": "(917) 691-2013",
-        "title": "Analista de Marketing Estadístico"
+        "title": "Analista de Marketing Estadístico",
+        "photoAlt": "Retrato de Emil Volvosky, Analista de Marketing Estadístico en Stagify.ai"
       }
     }
   },
@@ -561,6 +581,30 @@
       "stage": "Escenificar/Modificar",
       "cadStage": "Escenificar (Plano)",
       "describe": "Describir/Recordar"
+    },
+    "thumbnailStrip": {
+      "label": "Imagen base para el próximo mensaje",
+      "help": "Elige qué imagen debe modificar la IA cuando envíes tu próximo mensaje. Útil cuando tienes varias subidas o versiones escenificadas.",
+      "helpAria": "¿Qué significa imagen base?"
+    },
+    "alt": {
+      "uploadFile": "Adjuntar un archivo a tu mensaje",
+      "reloadChat": "Iniciar una nueva conversación",
+      "sendMessage": "Enviar mensaje",
+      "reportBug": "Reportar un error",
+      "userAvatar": "Tu avatar",
+      "assistantAvatar": "Diseñador IA de Stagify",
+      "uploadPreview": "Vista previa del archivo subido: {filename}",
+      "stagedRoom": "Habitación escenificada con IA{suffix}",
+      "generatedImage": "Imagen de diseño generada con IA{suffix}",
+      "cadRender": "Render 3D desde plano de planta{suffix}",
+      "recalledImage": "Imagen compartida previamente en esta conversación",
+      "requestedImage": "Imagen solicitada del historial de conversación",
+      "editedImage": "Imagen de diseño editada con máscara{suffix}",
+      "originalCarouselImage": "Imagen original antes de ediciones con máscara",
+      "enlargedImage": "Vista a tamaño completo de la imagen de diseño",
+      "thumbnailSelected": "{label} — seleccionada como imagen base para tu próximo mensaje",
+      "thumbnailOption": "{label} — imagen {index} en la conversación"
     },
     "maskEditor": {
       "title": "Editar con Máscara",
