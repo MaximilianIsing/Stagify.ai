@@ -211,6 +211,11 @@
       "subtitle": "Quick answers to the questions we hear most. Still stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch.",
       "teamQ": "Do you offer plans for teams or enterprises?",
       "teamA": "Yes. If you have a team of agents or a brokerage, our <a href=\"enterprise.html\">enterprise plan</a> gives everyone on your company domain access to Stagify+ and bills only on actual usage — no per-seat fees."
+    },
+    "contactCta": {
+      "title": "Our inbox is always open",
+      "subtitle": "Questions, feedback, or partnership ideas — we read every message and reply as soon as we can.",
+      "email": "team@stagify.ai"
     }
   },
   "modal": {
@@ -484,7 +489,8 @@
     "verificationFailed": "Verification failed",
     "passwordsNoMatch": "Passwords do not match.",
     "somethingWrong": "Something went wrong",
-    "checkEmailForCode": "Check your email for a verification code."
+    "checkEmailForCode": "Check your email for a verification code.",
+    "agreeTerms": "By creating an account, you agree to <a href=\"terms.html\">Terms</a> &amp; <a href=\"privacy.html\">Privacy</a>"
   },
   "profile": {
     "signIn": "Sign in",

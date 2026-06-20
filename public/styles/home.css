@@ -1284,6 +1284,25 @@
   text-decoration: underline;
 }
 
+/* Contact CTA (below FAQ) */
+.home-contact-cta .home-section__head {
+  margin-bottom: 0;
+}
+.contact-cta-email {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.contact-cta-email:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* Guides page */
 .home-guides {
   padding-bottom: 56px;

@@ -348,12 +348,7 @@
           "https://www.tiktok.com/@stagify.ai"
         ]
       },
-      "keywords": "AI staging, home staging, real estate staging, virtual staging, property staging, AI-powered staging, machine learning staging, computer vision, property marketing, 3D rendering, CAD staging, floor plan staging, blueprint staging, architectural visualization, home decor, furniture placement, room redesign, interior styling, property presentation, real estate agent tools, staging software, free staging, online staging, automated staging, smart staging, digital staging, photo staging, image editing, room transformation",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "1000"
-      }
+      "keywords": "AI staging, home staging, real estate staging, virtual staging, property staging, AI-powered staging, machine learning staging, computer vision, property marketing, 3D rendering, CAD staging, floor plan staging, blueprint staging, architectural visualization, home decor, furniture placement, room redesign, interior styling, property presentation, real estate agent tools, staging software, free staging, online staging, automated staging, smart staging, digital staging, photo staging, image editing, room transformation"
     }
     </script>
     <script type="application/ld+json">
@@ -368,6 +363,62 @@
       "sameAs": [
         "https://www.instagram.com/stagify.ai/",
         "https://www.tiktok.com/@stagify.ai"
+      ]
+    }
+    </script>
+    <script type="application/ld+json" id="faq-jsonld">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is virtual staging?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled. Unlike traditional staging, it's faster, more cost-effective, and allows for multiple design options tailored to different buyer preferences. With high-quality visuals, virtual staging highlights the property's best features, making it easier for buyers to connect emotionally and imagine themselves living there."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "On average, virtual staging takes around 8 seconds per photo to process, though the exact time can be a little shorter or longer depending on the complexity of the space and the design style chosen. The result is a quick, seamless transformation that makes your property photos stand out."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I select a custom theme?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If you don't see the theme you want, you can select \"Custom\" and then add a specific prompt for the theme you want. We'll use your prompt to generate the theme you want."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes an ideal room for staging?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An ideal room for staging should have good lighting, clear walls, and minimal clutter. Empty or sparsely furnished rooms work best, as they provide a clean canvas for the AI to add furniture and decor that matches your chosen style."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data private and secure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We use HTTPS encryption, do not permanently store uploaded images after processing, and do not sell your personal information. You retain ownership of your uploads and generated results. We share data only with service providers needed to run Stagify (such as AI and payment processors) as described in our Privacy Policy."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you offer plans for teams or enterprises?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. If you have a team of agents or a brokerage, our enterprise plan gives everyone on your company domain access to Stagify+ and bills only on actual usage — no per-seat fees."
+          }
+        }
       ]
     }
     </script>
@@ -414,6 +465,7 @@
           <div id="auth-submit-row" class="auth-actions">
             <button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label" data-lang="auth.createAccount">Create account</strong></button>
           </div>
+          <p id="auth-terms-notice" class="auth-terms-notice" data-lang-html="auth.agreeTerms">By creating an account, you agree to <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy</a></p>
           <div id="auth-forgot-panel" class="hidden">
             <p class="auth-modal__sub auth-forgot-copy" data-lang="auth.resetCopy">We’ll email you a one-time link to set a new password. The link expires in one hour.</p>
             <div class="auth-actions">
@@ -904,6 +956,15 @@
             <summary><span data-lang="home.faq.teamQ">Do you offer plans for teams or enterprises?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
             <p data-lang-html="home.faq.teamA">Yes. If you have a team of agents or a brokerage, our <a href="enterprise.html">enterprise plan</a> gives everyone on your company domain access to Stagify+ and bills only on actual usage — no per-seat fees.</p>
           </details>
+        </div>
+      </section>
+
+      <!-- ========================= CONTACT ========================= -->
+      <section class="home-section home-contact-cta" id="contact-cta" aria-labelledby="contact-cta-title">
+        <div class="home-section__head reveal">
+          <h2 class="home-section__title" id="contact-cta-title" data-tx="fade" data-lang="home.contactCta.title">Our inbox is always open</h2>
+          <p class="home-section__sub" data-lang="home.contactCta.subtitle">Questions, feedback, or partnership ideas — we read every message and reply as soon as we can.</p>
+          <a class="contact-cta-email" href="mailto:team@stagify.ai" data-lang="home.contactCta.email">team@stagify.ai</a>
         </div>
       </section>
 
