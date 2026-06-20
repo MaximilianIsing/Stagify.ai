@@ -13,6 +13,8 @@
   box-sizing: border-box;
   position: relative;
   z-index: 1;
+  /* keep anchored sections clear of the sticky header when jumped to */
+  scroll-margin-top: 90px;
 }
 .home-section__head {
   text-align: center;
@@ -48,8 +50,21 @@
   opacity: 1;
   transform: none;
 }
+/* Direction-aware exit: leave upward when scrolling down, downward when
+   scrolling up. Higher specificity so it overrides the directional --left/right
+   enter offsets. */
+.reveal.exit-up {
+  opacity: 0;
+  transform: translateY(-52px) scale(0.965);
+}
+.reveal.exit-down {
+  opacity: 0;
+  transform: translateY(52px) scale(0.965);
+}
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
+  .reveal,
+  .reveal.exit-up,
+  .reveal.exit-down {
     opacity: 1;
     transform: none;
     transition: none;
@@ -679,6 +694,16 @@
   padding: 24px 0;
   min-height: 200px; /* reserves space so logos don't overlap the next section */
 }
+/* On mobile the hero carousel sits in normal flow (no downward overflow), so
+   the large clearance above the sponsors becomes a huge empty gap — remove it.
+   Use min-height:auto (not 0) so this flex item still grows to fit the logos
+   instead of being shrunk by the column flexbox into the next section. */
+@media (max-width: 768px) {
+  .sponsors {
+    margin-top: 0;
+    min-height: auto;
+  }
+}
 .sponsors-title {
   color: #5b6b94;
   font-weight: 700;
@@ -845,24 +870,6 @@
 .ig-cta {
   text-align: center;
   margin-top: 28px;
-}
-.ig-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 13px;
-  border-radius: 999px;
-  font-size: 12.5px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  color: #2563eb;
-  background: rgba(37, 99, 235, 0.1);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  margin-bottom: 16px;
-}
-.ig-badge svg {
-  width: 15px;
-  height: 15px;
 }
 .ig-copy__sub {
   margin: 12px 0 26px;

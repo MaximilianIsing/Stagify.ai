@@ -82,7 +82,7 @@
     <link rel="stylesheet" href="styles/home-text-animate.css">
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script src="scripts/language-loader.js" defer></script>
-    <script src="scripts/nav-about.js" defer></script>
+    <script src="scripts/nav-pill.js" defer></script>
     <script src="scripts/auth.js" defer></script>
     <script src="scripts/profile-menu.js" defer></script>
     <script src="scripts/app.js" defer></script>
@@ -377,55 +377,55 @@
     <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
       <div class="auth-modal__backdrop" id="auth-modal-backdrop"></div>
       <div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-        <button type="button" class="auth-modal__close" id="auth-modal-close" aria-label="Close">×</button>
-        <h2 id="auth-modal-title">Welcome to Stagify</h2>
-        <p class="auth-modal__sub" id="auth-modal-sub">Create a free account to upload and stage your photos.</p>
+        <button type="button" class="auth-modal__close" id="auth-modal-close" data-lang-attr="common.close|aria-label" aria-label="Close">×</button>
+        <h2 id="auth-modal-title" data-lang="auth.welcomeTitle">Welcome to Stagify</h2>
+        <p class="auth-modal__sub" id="auth-modal-sub" data-lang="auth.welcomeSub">Create a free account to upload and stage your photos.</p>
         <div id="auth-error" class="auth-error" role="alert"></div>
         <form id="auth-form" novalidate>
           <div class="auth-field">
-            <label for="auth-email">Email</label>
-            <input type="email" id="auth-email" name="email" autocomplete="email" required placeholder="you@example.com">
+            <label for="auth-email" data-lang="auth.email">Email</label>
+            <input type="email" id="auth-email" name="email" autocomplete="email" required data-lang="auth.emailPlaceholder" placeholder="you@example.com">
           </div>
           <div id="auth-standard-panel">
             <div class="auth-field">
-              <label for="auth-password">Password</label>
-              <input type="password" id="auth-password" name="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
+              <label for="auth-password" data-lang="auth.password">Password</label>
+              <input type="password" id="auth-password" name="password" autocomplete="new-password" required minlength="8" data-lang="auth.passwordPlaceholder" placeholder="At least 8 characters">
             </div>
             <div class="auth-field" id="auth-password-confirm-row">
-              <label for="auth-password-confirm">Confirm password</label>
-              <input type="password" id="auth-password-confirm" name="passwordConfirm" autocomplete="new-password" minlength="8" placeholder="Re-enter password">
+              <label for="auth-password-confirm" data-lang="auth.confirmPassword">Confirm password</label>
+              <input type="password" id="auth-password-confirm" name="passwordConfirm" autocomplete="new-password" minlength="8" data-lang="auth.confirmPasswordPlaceholder" placeholder="Re-enter password">
             </div>
             <div id="auth-google-panel" class="auth-google-panel hidden" aria-hidden="true">
-              <p class="auth-divider"><span>or</span></p>
+              <p class="auth-divider"><span data-lang="auth.or">or</span></p>
               <div id="auth-google-btn-container" class="auth-google-btn-container"></div>
             </div>
-            <button type="button" class="auth-forgot-link" id="auth-forgot-link">Forgot your password?</button>
+            <button type="button" class="auth-forgot-link" id="auth-forgot-link" data-lang="auth.forgotPassword">Forgot your password?</button>
           </div>
           <div id="auth-verify-panel" class="hidden">
-            <p class="auth-modal__sub auth-forgot-copy" id="auth-verify-copy">Enter the 6-digit code we sent to your email.</p>
+            <p class="auth-modal__sub auth-forgot-copy" id="auth-verify-copy" data-lang="auth.verifyCopy">Enter the 6-digit code we sent to your email.</p>
             <div class="auth-field">
-              <label for="auth-verify-code">Verification code</label>
-              <input type="text" id="auth-verify-code" name="verificationCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="123456">
+              <label for="auth-verify-code" data-lang="auth.verificationCode">Verification code</label>
+              <input type="text" id="auth-verify-code" name="verificationCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" data-lang="auth.verificationCodePlaceholder" placeholder="123456">
             </div>
-            <button type="button" class="auth-forgot-back" id="auth-verify-back">Back</button>
-            <button type="button" class="auth-forgot-back" id="auth-verify-resend">Resend code</button>
+            <button type="button" class="auth-forgot-back" id="auth-verify-back" data-lang="auth.back">Back</button>
+            <button type="button" class="auth-forgot-back" id="auth-verify-resend" data-lang="auth.resendCode">Resend code</button>
             <div id="auth-verify-feedback" class="auth-error" role="status"></div>
           </div>
           <div id="auth-submit-row" class="auth-actions">
-            <button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label">Create account</strong></button>
+            <button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label" data-lang="auth.createAccount">Create account</strong></button>
           </div>
           <div id="auth-forgot-panel" class="hidden">
-            <p class="auth-modal__sub auth-forgot-copy">We’ll email you a one-time link to set a new password. The link expires in one hour.</p>
+            <p class="auth-modal__sub auth-forgot-copy" data-lang="auth.resetCopy">We’ll email you a one-time link to set a new password. The link expires in one hour.</p>
             <div class="auth-actions">
-              <button type="button" class="btn btn-primary btn-lg" id="auth-forgot-send"><strong>Send reset link</strong></button>
+              <button type="button" class="btn btn-primary btn-lg" id="auth-forgot-send"><strong data-lang="auth.sendResetLink">Send reset link</strong></button>
             </div>
-            <button type="button" class="auth-forgot-back" id="auth-forgot-back">Back to sign in</button>
+            <button type="button" class="auth-forgot-back" id="auth-forgot-back" data-lang="auth.backToSignIn">Back to sign in</button>
             <div id="auth-forgot-feedback" class="auth-error" role="status"></div>
           </div>
         </form>
         <div class="auth-toggle">
-          <span id="auth-toggle-label">Already have an account?</span>
-          <button type="button" id="auth-mode-toggle">Sign in</button>
+          <span id="auth-toggle-label" data-lang="auth.alreadyHaveAccount">Already have an account?</span>
+          <button type="button" id="auth-mode-toggle" data-lang="auth.signIn">Sign in</button>
         </div>
       </div>
     </div>
@@ -444,7 +444,7 @@
           <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
           <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
           <div class="profile-menu-wrap">
-            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" data-lang-attr="auth.accountMenu|aria-label" aria-label="Account menu">
               <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
@@ -572,12 +572,12 @@
           <p class="home-section__sub" data-lang="home.studio.subtitle">The same listing photo, before and after Stagify. No movers, no rentals, no waiting.</p>
         </div>
         <div class="studio-shell">
-          <div class="ba reveal reveal--left" aria-label="Before and after staging comparison">
+          <div class="ba reveal reveal--left" data-lang-attr="home.studio.comparisonAria|aria-label" aria-label="Before and after staging comparison">
             <img class="ba-after" src="media-webp/Homepage/BeforeAfter/After2.webp" alt="The room after Stagify.ai staging" decoding="async">
             <img class="ba-before" src="media-webp/Homepage/BeforeAfter/Before2.webp" alt="The room before staging" fetchpriority="high" decoding="async">
             <span class="ba-tag ba-tag--before" data-lang="home.studio.beforeLabel">Before</span>
             <span class="ba-tag ba-tag--after" data-lang="home.studio.afterLabel">After</span>
-            <div class="ba-handle" role="slider" tabindex="0" aria-label="Reveal slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+            <div class="ba-handle" role="slider" tabindex="0" data-lang-attr="home.studio.revealSliderAria|aria-label" aria-label="Reveal slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
               <span class="ba-handle__grip" aria-hidden="true">‹›</span>
             </div>
           </div>
@@ -590,7 +590,7 @@
               <li data-lang="home.studio.points.restage">Re-stage in any style, as often as you like</li>
               <li data-lang="home.studio.points.rights">Every image is yours, with full copyright</li>
             </ul>
-            <div class="studio-examples" role="tablist" aria-label="Example rooms">
+            <div class="studio-examples" role="tablist" data-lang-attr="home.studio.exampleRoomsAria|aria-label" aria-label="Example rooms">
               <button type="button" class="studio-ex is-active" role="tab" aria-selected="true" data-ex="0" data-lang="home.studio.examples.bedroom">Bedroom</button>
               <button type="button" class="studio-ex" role="tab" aria-selected="false" data-ex="1" data-lang="home.studio.examples.living">Living Room</button>
               <button type="button" class="studio-ex" role="tab" aria-selected="false" data-ex="2" data-lang="home.studio.examples.dining">Dining Room</button>
@@ -733,7 +733,7 @@
         <div class="nar-card reveal">
           <div class="nar-usage">
             <div class="nar-usage__label" data-lang="home.nar.usageLabel">How often agents use AI tools</div>
-            <div class="nar-bar" role="img" aria-label="AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet">
+            <div class="nar-bar" role="img" data-lang-attr="home.nar.usageAria|aria-label" aria-label="AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet">
               <span class="nar-seg--daily" style="width:20%"></span>
               <span class="nar-seg--weekly" style="width:22%"></span>
               <span class="nar-seg--monthly" style="width:27%"></span>
@@ -851,10 +851,6 @@
       <!-- ========================= INSTAGRAM ========================= -->
       <section class="home-section home-ig" id="instagram" aria-labelledby="ig-title">
         <div class="home-section__head reveal">
-          <span class="ig-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.43.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.43.16-1.06.36-2.23.41-1.27.06-1.65.07-4.9.07s-3.63 0-4.9-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.43-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.43-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5 0-4.74.07-.9.04-1.38.19-1.7.32-.43.17-.74.37-1.06.69-.32.32-.52.63-.69 1.06-.13.32-.28.8-.32 1.7C3.42 8.5 3.4 8.86 3.4 12s0 3.5.07 4.74c.04.9.19 1.38.32 1.7.17.43.37.74.69 1.06.32.32.63.52 1.06.69.32.13.8.28 1.7.32 1.24.07 1.6.07 4.74.07s3.5 0 4.74-.07c.9-.04 1.38-.19 1.7-.32.43-.17.74-.37 1.06-.69.32-.32.52-.63.69-1.06.13-.32.28-.8.32-1.7.07-1.24.07-1.6.07-4.74s0-3.5-.07-4.74c-.04-.9-.19-1.38-.32-1.7a2.86 2.86 0 0 0-.69-1.06 2.86 2.86 0 0 0-1.06-.69c-.32-.13-.8-.28-1.7-.32C15.5 4 15.14 4 12 4zm0 3.06A4.94 4.94 0 1 1 12 17a4.94 4.94 0 0 1 0-9.94zm0 1.8a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28zM17.64 6.95a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3z"/></svg>
-            @stagify.ai
-          </span>
           <h2 class="home-section__title" id="ig-title" data-tx="fade" data-lang="home.instagram.title">See it in action on Instagram</h2>
           <p class="home-section__sub" data-lang="home.instagram.subtitle">Real staging transformations, quick tips, and behind-the-scenes from the Stagify team.</p>
         </div>
@@ -914,7 +910,7 @@
       <div class="modal hidden" id="stage-modal">
         <div class="modal-backdrop" id="modal-backdrop"></div>
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="stage-title">
-          <button class="modal-close" id="modal-close" aria-label="Close" data-lang="modal.staging.close">✕</button>
+          <button class="modal-close" id="modal-close" data-lang-attr="common.close|aria-label" aria-label="Close" data-lang="modal.staging.close">✕</button>
           <section class="stage" id="stage">
             <div class="stage-inner">
               <div class="toolbar">
@@ -965,23 +961,23 @@
                 </div>
                 <div id="stagify-pro-panel" class="stagify-pro-panel hidden desktop-only">
                   <div class="tool-row">
-                    <label class="label" for="stagify-model-select">Image model</label>
+                    <label class="label" for="stagify-model-select" data-lang="modal.staging.imageModel">Image model</label>
                     <select id="stagify-model-select" class="text-input" style="min-height: 44px;">
-                      <option value="gpt-4o-mini">Fast Generation</option>
-                      <option value="gpt-5-mini">Stagify+ Quality Generation</option>
+                      <option value="gpt-4o-mini" data-lang="modal.staging.fastGeneration">Fast Generation</option>
+                      <option value="gpt-5-mini" data-lang="modal.staging.qualityGeneration">Stagify+ Quality Generation</option>
                     </select>
                   </div>
                   <div class="tool-row">
                     <div class="variation-slider-head">
-                      <label class="label" for="stagify-variation-count">Image Generations</label>
+                      <label class="label" for="stagify-variation-count" data-lang="modal.staging.imageGenerations">Image Generations</label>
                       <span id="stagify-variation-value" class="variation-slider-value" aria-hidden="true">1</span>
                     </div>
-                    <input type="range" id="stagify-variation-count" class="variation-slider" min="1" max="3" step="1" value="1" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" aria-label="Image Generations">
+                    <input type="range" id="stagify-variation-count" class="variation-slider" min="1" max="3" step="1" value="1" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" data-lang-attr="modal.staging.imageGenerations|aria-label" aria-label="Image Generations">
                   </div>
                   <div class="tool-row">
                     <label class="label" data-lang="modal.staging.furniturePhotosLabel">Furniture photos (optional)</label>
                     <input type="file" id="stagify-furniture-file" accept="image/jpeg,image/png,image/webp,image/jpg" multiple>
-                    <button type="button" id="stagify-furniture-add-btn" class="furniture-add-btn">+ Add photos</button>
+                    <button type="button" id="stagify-furniture-add-btn" class="furniture-add-btn" data-lang="modal.staging.addPhotos">+ Add photos</button>
                     <div id="stagify-furniture-list"></div>
                     <span class="microcopy" data-lang="modal.staging.furniturePhotosHint">Up to 5 reference photos of furniture or decor to feature in the staged room</span>
                   </div>
@@ -991,14 +987,14 @@
                 </div>
                 <div class="progress hidden" id="progress" aria-live="polite">
                   <div class="bar" id="progress-bar"></div>
-                  <span id="progress-text">Preparing…</span>
+                  <span id="progress-text" data-lang="modal.staging.progress.preparing">Preparing…</span>
                 </div>
                 <div id="loading-message" class="loading-message hidden" data-lang="modal.staging.progress.preparing">Preparing AI model</div>
               </div>
 
               <div class="stage-workspace">
                 <!-- Upload area when no image is uploaded -->
-                <div id="stage-dropzone" class="stage-dropzone" aria-label="Upload area" tabindex="0">
+                <div id="stage-dropzone" class="stage-dropzone" data-lang-attr="modal.staging.uploadAreaAria|aria-label" aria-label="Upload area" tabindex="0">
                   <input id="stage-file-input" type="file" accept="image/*" hidden>
                   <div class="stage-dz-inner">
                     <div class="dz-icon" aria-hidden="true">⬆︎</div>
@@ -1020,16 +1016,16 @@
                   </div>
                   
                   <div class="image-viewer">
-                    <img id="stage-preview" class="viewer-image" alt="Original image">
+                    <img id="stage-preview" class="viewer-image" data-lang-attr="modal.staging.originalImage|alt" alt="Original image">
                     <canvas id="canvas1" class="viewer-image hidden"></canvas>
-                    <button id="mask-edit-btn" class="stage-mask-fab hidden" type="button" aria-label="Edit with mask" title="Edit with mask">
-                      <img src="media-webp/Mask.webp" alt="Edit with mask">
+                    <button id="mask-edit-btn" class="stage-mask-fab hidden" type="button" data-lang-attr="modal.staging.editWithMask|aria-label" aria-label="Edit with mask" title="Edit with mask">
+                      <img src="media-webp/Mask.webp" data-lang-attr="modal.staging.editWithMask|alt" alt="Edit with mask">
                     </button>
-                    <div id="variation-thumbs" class="variation-thumbs hidden" aria-label="Staging variations"></div>
+                    <div id="variation-thumbs" class="variation-thumbs hidden" data-lang-attr="modal.staging.stagingVariations|aria-label" aria-label="Staging variations"></div>
                     <div id="processing-placeholder" class="processing-placeholder">
                       <div class="placeholder-content">
                         <div class="placeholder-icon">
-                          <img src="media-webp/Warning.webp" alt="Warning" class="warning-icon">
+                          <img src="media-webp/Warning.webp" data-lang-attr="modal.staging.warningAlt|alt" alt="Warning" class="warning-icon">
                         </div>
                         <div class="placeholder-text" data-lang="modal.staging.noProcessedImage">No processed image available yet</div>
                         <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Please click "Process photo" first to generate an AI-staged version of your image</div>
@@ -1044,7 +1040,7 @@
                     <div id="staging-error-viewer" class="staging-limit-viewer hidden" role="alert">
                       <div class="staging-limit-viewer__inner">
                         <p id="staging-error-viewer-text" class="staging-limit-viewer__text"></p>
-                        <button id="staging-error-retry-btn" class="btn btn-primary staging-limit-viewer__cta">Try another image</button>
+                        <button id="staging-error-retry-btn" class="btn btn-primary staging-limit-viewer__cta" data-lang="modal.staging.tryAnotherImage">Try another image</button>
                       </div>
                     </div>
                   </div>
@@ -1060,8 +1056,8 @@
     <div id="stage-mask-modal" class="stage-mask-modal" aria-hidden="true">
       <div class="stage-mask-content">
         <div class="stage-mask-header">
-          <h2 class="stage-mask-title">Edit with Mask</h2>
-          <button class="stage-mask-close" id="stage-mask-close" aria-label="Close">&times;</button>
+          <h2 class="stage-mask-title" data-lang="pdf.maskEditor.title">Edit with Mask</h2>
+          <button class="stage-mask-close" id="stage-mask-close" data-lang-attr="common.close|aria-label" aria-label="Close">&times;</button>
         </div>
         <div class="stage-mask-canvas-container">
           <canvas id="stage-mask-base-canvas" class="stage-mask-canvas"></canvas>
@@ -1069,31 +1065,31 @@
         </div>
         <div class="stage-mask-controls">
           <div class="stage-mask-brush-controls">
-            <label class="stage-mask-brush-label" for="stage-mask-brush-slider">Brush Size:</label>
+            <label class="stage-mask-brush-label" for="stage-mask-brush-slider" data-lang="pdf.maskEditor.brushSize">Brush Size:</label>
             <input type="range" id="stage-mask-brush-slider" class="stage-mask-brush-slider" min="20" max="150" value="50">
             <span id="stage-mask-brush-size" class="stage-mask-brush-size">50 px</span>
           </div>
           <div class="stage-mask-prompt-container">
-            <label class="stage-mask-prompt-label" for="stage-mask-prompt">What would you like to change in the masked area?</label>
-            <input type="text" id="stage-mask-prompt" class="stage-mask-prompt-input" placeholder="e.g., change the wall color to blue, replace the sofa with a modern chair...">
+            <label class="stage-mask-prompt-label" for="stage-mask-prompt" data-lang="pdf.maskEditor.promptLabel">What would you like to change in the masked area?</label>
+            <input type="text" id="stage-mask-prompt" class="stage-mask-prompt-input" data-lang="pdf.maskEditor.promptPlaceholder" placeholder="e.g., change the wall color to blue, replace the sofa with a modern chair...">
           </div>
           <div class="stage-mask-actions">
-            <button class="btn btn-ghost" id="stage-mask-cancel">Cancel</button>
-            <button class="btn btn-secondary" id="stage-mask-clear">Clear Mask</button>
-            <button class="btn btn-primary" id="stage-mask-submit"><strong>Apply Edit</strong></button>
+            <button class="btn btn-ghost" id="stage-mask-cancel" data-lang="pdf.maskEditor.cancel">Cancel</button>
+            <button class="btn btn-secondary" id="stage-mask-clear" data-lang="pdf.maskEditor.clearMask">Clear Mask</button>
+            <button class="btn btn-primary" id="stage-mask-submit"><strong data-lang="pdf.maskEditor.applyEdit">Apply Edit</strong></button>
           </div>
         </div>
       </div>
     </div>
 
     <footer style="text-align:center;padding:20px 16px 28px;font-size:13px;color:#6b7280;">
-      <a href="privacy.html" style="color:#2563eb;text-decoration:none;">Privacy Policy</a>
+      <a href="privacy.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.privacy">Privacy Policy</a>
       &nbsp;·&nbsp;
-      <a href="terms.html" style="color:#2563eb;text-decoration:none;">Terms of Service</a>
+      <a href="terms.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.terms">Terms of Service</a>
       &nbsp;·&nbsp;
-      <a href="contact.html" style="color:#2563eb;text-decoration:none;">Contact</a>
+      <a href="contact.html" style="color:#2563eb;text-decoration:none;" data-lang="footer.contact">Contact</a>
       &nbsp;·&nbsp;
-      © <span id="year"></span> Stagify.ai
+      © <span id="year"></span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>
 
   </body>

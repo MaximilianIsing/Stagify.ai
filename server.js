@@ -595,7 +595,24 @@ app.use((err, req, res, next) => {
   }
   next(err);
 });
-app.use(express.static('public'));
+app.use(
+  express.static('public', {
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+      if (/\.(html|css|js|json)$/i.test(filePath)) {
+        // Always revalidate code/markup/translations so returning visitors
+        // never get stale styling or scripts after a deploy (cheap 304s).
+        res.setHeader('Cache-Control', 'no-cache');
+      } else if (/\.(woff2?|ttf|otf|eot)$/i.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (/\.(png|jpe?g|webp|gif|svg|ico)$/i.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+      }
+      // Other assets (e.g. video) keep Express defaults — intentionally untouched.
+    },
+  })
+);
 
 // Explicit routes for SEO files to ensure they're always accessible
 app.get('/robots.txt', (req, res) => {

@@ -33,6 +33,7 @@
     "cta": "Suba su imagen gratiz",
     "freeGensLeft": "{n} generaciones gratis restantes hoy, ",
     "freeGensLeftUpgrade": "Mejorar",
+    "freeGensUpgrade": "Prueba Stagify+ hoy — <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mejorar</a>",
     "carouselNote": "Ejemplo de vista previa: sube tu foto al scenario",
     "stats": {
       "roomsStaged": "Habitaciones Escenificadas",
@@ -62,7 +63,10 @@
         "bedroom": "Dormitorio",
         "living": "Sala de estar",
         "dining": "Comedor"
-      }
+      },
+      "comparisonAria": "Comparación de antes y después del staging",
+      "revealSliderAria": "Control deslizante de comparación",
+      "exampleRoomsAria": "Habitaciones de ejemplo"
     },
     "info": {
       "eyebrow": "En resumen",
@@ -162,7 +166,8 @@
       "stat1": "de los agentes dicen que sus clientes respondieron positivamente a la tecnología en el proceso de compra y venta",
       "stat2": "ya usan IA para generar contenido de sus anuncios",
       "source": "Datos de la Encuesta de Tecnología 2025 de la National Association of Realtors a agentes inmobiliarios.",
-      "sourceCite": "Fuente: National Association of Realtors, Encuesta de Tecnología 2025"
+      "sourceCite": "Fuente: National Association of Realtors, Encuesta de Tecnología 2025",
+      "usageAria": "Uso de IA entre agentes: 20% diario, 22% semanal, 27% unas veces al mes, 32% aún no"
     },
     "plus": {
       "title": "Ve más lejos con Stagify+",
@@ -254,6 +259,17 @@
       "uploadAnother": "Subir Otra",
       "noProcessedImage": "Aún no hay imagen procesada disponible",
       "noProcessedImageSubtext": "Por favor cliquea en \"Procesar foto\" primero para generar una versión escenificada con IA de tu imagen",
+      "imageModel": "Modelo de imagen",
+      "fastGeneration": "Generación rápida",
+      "qualityGeneration": "Generación de calidad Stagify+",
+      "imageGenerations": "Generaciones de imagen",
+      "addPhotos": "+ Añadir fotos",
+      "tryAnotherImage": "Probar otra imagen",
+      "uploadAreaAria": "Área de carga",
+      "editWithMask": "Editar con máscara",
+      "stagingVariations": "Variaciones de staging",
+      "originalImage": "Imagen original",
+      "warningAlt": "Advertencia",
       "progress": {
         "preparing": "Preparando…",
         "uploading": "Subiendo imagen…",
@@ -313,8 +329,8 @@
         "oneClickStaging": "<strong>Crea un escenario con un solo clic</strong>: Sin complicaciones",
         "free": "<strong>Generaciones ilimitadas</strong>: Totalmente gratis",
         "noAds": "<strong>Sin anuncios</strong>: Sin distracciones",
-        "noLogin": "<strong>No es necesario iniciar sesión</strong>: comience de inmediato",
-        "unlimited": "<strong>Generaciones ilimitadas</strong>: Hasta que estés satisfecho",
+        "noLogin": "<strong>Registro fácil</strong>: Empieza al instante",
+        "unlimited": "<strong>Modelos de imagen avanzados</strong>: Mayor calidad",
         "copyright": "<strong>Derechos de autor completos</strong>: uso en cualquier lugar"
       }
     },
@@ -325,8 +341,8 @@
         "longProcess": "<strong style=\"color: #6d1c2c;\">Proceso largo: </strong>Ida y vuelta tediosa",
         "expensive": "<strong style=\"color: #6d1c2c;\">Caro: </strong>tarifas costosas por imagen",
         "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Anuncios y galletas: </strong>una experiencia intrusive",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">Cuenta requerida: </strong>Inicio frustrante",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Generaciones limitadas: </strong>Límites de velocidad estrictos",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">Registro largo: </strong>Inicio frustrante",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Modelos antiguos y baratos: </strong>Menor calidad",
         "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Derechos de autor poco claros: </strong>Responsabilidad legal"
       }
     },
@@ -370,7 +386,7 @@
   "contact": {
     "title": "Ponte en contacto",
     "description": "Nos encantaría saber de ti. Contáctanos individualmente o escríbenos a <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
-    "social": "¡Síguenos en <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> o en <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> para actualizaciones y ejemplos!",
+    "social": "¡Síguenos en <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> o en <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> para actualizaciones y ejemplos!",
     "labels": {
       "name": "Nombre",
       "email": "Correo electrónico",
@@ -413,6 +429,72 @@
     "dailyLimitFree": "Has usado las {limit} generaciones gratuitas de hoy (se reinician a medianoche UTC). Pasa a Stagify+ para puesta en escena ilimitada.",
     "dailyLimitAnonymous": "Has alcanzado el límite gratuito en esta red ({limit} al día, UTC). Inicia sesión para vincularlo a tu cuenta o vuelve mañana.",
     "dailyLimitCta": "Ver Stagify+"
+  },
+  "common": {
+    "close": "Cerrar"
+  },
+  "footer": {
+    "privacy": "Política de privacidad",
+    "terms": "Términos de servicio",
+    "contact": "Contacto",
+    "copyright": "Stagify.ai"
+  },
+  "auth": {
+    "yourEmail": "tu correo",
+    "welcomeTitle": "Bienvenido a Stagify",
+    "welcomeSub": "Crea una cuenta gratuita para subir y escenificar tus fotos.",
+    "registerTitle": "Crea tu cuenta gratuita",
+    "registerSub": "Regístrate para subir y escenificar imágenes.",
+    "signInTitle": "Iniciar sesión",
+    "signInSub": "Usa tu correo y contraseña para continuar.",
+    "verifyTitle": "Verifica tu correo",
+    "verifyCopy": "Introduce el código de 6 dígitos que enviamos a {email}.",
+    "resetTitle": "Restablecer contraseña",
+    "resetCopy": "Te enviaremos un enlace de un solo uso para establecer una nueva contraseña. El enlace caduca en una hora.",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Al menos 8 caracteres",
+    "confirmPassword": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "Vuelve a introducir la contraseña",
+    "or": "o",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "verificationCode": "Código de verificación",
+    "verificationCodePlaceholder": "123456",
+    "back": "Atrás",
+    "resendCode": "Reenviar código",
+    "createAccount": "Crear cuenta",
+    "continue": "Continuar",
+    "signIn": "Iniciar sesión",
+    "sendResetLink": "Enviar enlace de restablecimiento",
+    "backToSignIn": "Volver a iniciar sesión",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "newHere": "¿Eres nuevo?",
+    "accountMenu": "Menú de cuenta",
+    "googleCancelled": "Se canceló el inicio de sesión con Google.",
+    "googleFailed": "Error al iniciar sesión con Google",
+    "networkError": "Error de red. Inténtalo de nuevo.",
+    "enterEmail": "Introduce tu dirección de correo.",
+    "resendFailed": "No se pudo reenviar el código. Inténtalo de nuevo.",
+    "resendSuccess": "Enviamos un nuevo código de verificación.",
+    "resetSomethingWrong": "Algo salió mal. Inténtalo de nuevo en unos minutos.",
+    "resetLinkSent": "Enviamos un enlace para restablecer la contraseña. Revisa tu correo (y spam).",
+    "noAccountForEmail": "No se encontró ninguna cuenta con ese correo.",
+    "resetTryLater": "Algo salió mal. Inténtalo más tarde.",
+    "enterVerificationCode": "Introduce el código de verificación de 6 dígitos de tu correo.",
+    "verificationFailed": "Error de verificación",
+    "passwordsNoMatch": "Las contraseñas no coinciden.",
+    "somethingWrong": "Algo salió mal",
+    "checkEmailForCode": "Revisa tu correo para obtener un código de verificación."
+  },
+  "profile": {
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta",
+    "freePlan": "Plan gratuito",
+    "upgradeToPlus": "Mejorar a Stagify+",
+    "manageSubscription": "Administrar suscripción",
+    "signOut": "Cerrar sesión",
+    "manageBillingAria": "Administrar facturación en Stripe"
   },
   "pdf": {
     "meta": {
@@ -546,7 +628,7 @@
       "title": "Facturación y Stagify+",
       "i1": {
         "q": "¿Cómo gestiono o cancelo Stagify+?",
-        "a": "Haz clic en el icono de perfil arriba a la derecha y luego pulsa el ? junto a Stagify+ para abrir el panel de facturación de Stripe, donde puedes actualizar o cancelar tu suscripción. Mantienes el acceso hasta el final del período de facturación actual."
+        "a": "Haz clic en el icono de perfil arriba a la derecha y luego pulsa el icono de Stripe junto a Stagify+ para abrir tu panel de facturación, donde puedes actualizar o cancelar tu suscripción. También puedes abrir directamente el <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">portal de facturación de Stripe</a>. Mantienes el acceso hasta el final del período de facturación actual."
       },
       "i2": {
         "q": "Me cobraron pero no veo las funciones de Stagify+.",
@@ -587,5 +669,23 @@
     "pickerFree": "Gratis",
     "pickerPlus": "Stagify+",
     "troubleshootingTitle": "Solución de problemas y dudas comunes"
+  },
+  "pageMeta": {
+    "guides": {
+      "title": "Guías y Tutoriales | Stagify.ai",
+      "description": "Tutoriales paso a paso de Stagify.ai: tu primer staging gratis, staging con Stagify+ y soluciones a problemas comunes."
+    },
+    "contact": {
+      "title": "Contáctanos | Stagify.ai",
+      "description": "Ponte en contacto con el equipo de Stagify.ai para soporte, colaboraciones o dudas sobre nuestra herramienta gratuita de staging con IA."
+    },
+    "stagifyPlus": {
+      "title": "Stagify+ — Planes y Precios | Stagify.ai",
+      "description": "Stagify+: staging con IA ilimitado, modelos de mayor calidad, AI Designer y herramienta de máscara. Consulta planes y precios."
+    },
+    "enterprise": {
+      "title": "Stagify Enterprise — Staging con IA por Uso para Equipos",
+      "description": "Da a todo tu equipo staging con IA ilimitado con facturación por uso a $0.15 por generación. Una sola factura, sin cuotas por usuario."
+    }
   }
 }

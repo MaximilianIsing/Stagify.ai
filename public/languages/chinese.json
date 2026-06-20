@@ -33,6 +33,7 @@
     "cta": "免费上传图片",
     "freeGensLeft": "今日还可免费生成 {n} 次，",
     "freeGensLeftUpgrade": "升级",
+    "freeGensUpgrade": "今天就试试 Stagify+ — <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">升级</a>",
     "carouselNote": "示例预览 — 上传您的照片进行装修",
     "stats": {
       "roomsStaged": "已装修房间",
@@ -62,7 +63,10 @@
         "bedroom": "卧室",
         "living": "客厅",
         "dining": "餐厅"
-      }
+      },
+      "comparisonAria": "装修前后对比",
+      "revealSliderAria": "对比滑块",
+      "exampleRoomsAria": "示例房间"
     },
     "info": {
       "eyebrow": "简而言之",
@@ -162,7 +166,8 @@
       "stat1": "的经纪人表示，客户对购房和售房过程中引入技术反应积极",
       "stat2": "已使用 AI 生成房源内容",
       "source": "数据来自美国房地产经纪人协会（NAR）2025 年面向房地产经纪人的技术调查。",
-      "sourceCite": "来源：美国房地产经纪人协会，2025 年技术调查"
+      "sourceCite": "来源：美国房地产经纪人协会，2025 年技术调查",
+      "usageAria": "经纪人使用 AI 的频率：20% 每天，22% 每周，27% 每月几次，32% 尚未使用"
     },
     "plus": {
       "title": "用 Stagify+ 更进一步",
@@ -254,6 +259,17 @@
       "uploadAnother": "上传另一张",
       "noProcessedImage": "暂无处理后的图片",
       "noProcessedImageSubtext": "请先点击\"处理照片\"以生成AI装修版本的图片",
+      "imageModel": "图像模型",
+      "fastGeneration": "快速生成",
+      "qualityGeneration": "Stagify+ 高质量生成",
+      "imageGenerations": "图像生成数量",
+      "addPhotos": "+ 添加照片",
+      "tryAnotherImage": "尝试另一张图片",
+      "uploadAreaAria": "上传区域",
+      "editWithMask": "使用蒙版编辑",
+      "stagingVariations": "装修方案",
+      "originalImage": "原始图片",
+      "warningAlt": "警告",
       "progress": {
         "preparing": "准备中…",
         "uploading": "上传图片中…",
@@ -313,8 +329,8 @@
         "oneClickStaging": "<strong>一键装修</strong>：无麻烦",
         "free": "<strong>无限次生成</strong>：完全免费",
         "noAds": "<strong>无广告体验</strong>：无干扰",
-        "noLogin": "<strong>无需登录</strong>：立即开始",
-        "unlimited": "<strong>无限生成</strong>：直到您满意",
+        "noLogin": "<strong>轻松注册</strong>：立即开始",
+        "unlimited": "<strong>高级图像模型</strong>：更高质量",
         "copyright": "<strong>完整版权</strong>：随处使用"
       }
     },
@@ -325,8 +341,8 @@
         "longProcess": "<strong style=\"color: #6d1c2c;\">过程冗长：</strong>繁琐的来回沟通",
         "expensive": "<strong style=\"color: #6d1c2c;\">昂贵：</strong>按图片收费，成本高昂",
         "adsAndCookies": "<strong style=\"color: #6d1c2c;\">广告和Cookie：</strong>侵入式体验",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">需要账户：</strong>令人沮丧的开始",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">生成受限：</strong>严格的速率限制",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">冗长的注册流程：</strong>令人沮丧的开始",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">老旧、低价的模型：</strong>质量较低",
         "unclearCopyright": "<strong style=\"color: #6d1c2c;\">版权不明确：</strong>法律责任"
       }
     },
@@ -370,7 +386,7 @@
   "contact": {
     "title": "联系我们",
     "description": "我们很乐意听到您的声音。单独联系我们或发邮件至 <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>。",
-    "social": "在 <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> 或 <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> 关注我们，获取更新和示例！",
+    "social": "在 <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>、<a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> 或 <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> 关注我们，获取更新和示例！",
     "labels": {
       "name": "姓名",
       "email": "邮箱",
@@ -413,6 +429,72 @@
     "dailyLimitFree": "您已用完今日 {limit} 次免费虚拟布置（UTC 午夜重置）。升级 Stagify+ 可无限次使用。",
     "dailyLimitAnonymous": "本网络今日免费次数已用尽（每天 {limit} 次，按 UTC 计算）。请登录以关联账户，或明天再试。",
     "dailyLimitCta": "了解 Stagify+"
+  },
+  "common": {
+    "close": "关闭"
+  },
+  "footer": {
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "contact": "联系我们",
+    "copyright": "Stagify.ai"
+  },
+  "auth": {
+    "yourEmail": "您的邮箱",
+    "welcomeTitle": "欢迎使用 Stagify",
+    "welcomeSub": "创建免费账户以上传和装修您的照片。",
+    "registerTitle": "创建您的免费账户",
+    "registerSub": "注册以上传和装修图片。",
+    "signInTitle": "登录",
+    "signInSub": "使用您的邮箱和密码继续。",
+    "verifyTitle": "验证您的邮箱",
+    "verifyCopy": "请输入我们发送到 {email} 的 6 位验证码。",
+    "resetTitle": "重置密码",
+    "resetCopy": "我们将向您发送一次性链接以设置新密码。链接在一小时后失效。",
+    "email": "邮箱",
+    "emailPlaceholder": "you@example.com",
+    "password": "密码",
+    "passwordPlaceholder": "至少 8 个字符",
+    "confirmPassword": "确认密码",
+    "confirmPasswordPlaceholder": "再次输入密码",
+    "or": "或",
+    "forgotPassword": "忘记密码？",
+    "verificationCode": "验证码",
+    "verificationCodePlaceholder": "123456",
+    "back": "返回",
+    "resendCode": "重新发送验证码",
+    "createAccount": "创建账户",
+    "continue": "继续",
+    "signIn": "登录",
+    "sendResetLink": "发送重置链接",
+    "backToSignIn": "返回登录",
+    "alreadyHaveAccount": "已有账户？",
+    "newHere": "新用户？",
+    "accountMenu": "账户菜单",
+    "googleCancelled": "已取消 Google 登录。",
+    "googleFailed": "Google 登录失败",
+    "networkError": "网络错误，请重试。",
+    "enterEmail": "请输入您的邮箱地址。",
+    "resendFailed": "无法重新发送验证码，请重试。",
+    "resendSuccess": "我们已发送新的验证码。",
+    "resetSomethingWrong": "出了点问题，请几分钟后再试。",
+    "resetLinkSent": "我们已发送密码重置链接，请查收邮件（包括垃圾邮件）。",
+    "noAccountForEmail": "未找到该邮箱对应的账户。",
+    "resetTryLater": "出了点问题，请稍后再试。",
+    "enterVerificationCode": "请输入邮件中的 6 位验证码。",
+    "verificationFailed": "验证失败",
+    "passwordsNoMatch": "两次输入的密码不一致。",
+    "somethingWrong": "出了点问题",
+    "checkEmailForCode": "请查收邮件中的验证码。"
+  },
+  "profile": {
+    "signIn": "登录",
+    "createAccount": "创建账户",
+    "freePlan": "免费方案",
+    "upgradeToPlus": "升级到 Stagify+",
+    "manageSubscription": "管理订阅",
+    "signOut": "退出登录",
+    "manageBillingAria": "在 Stripe 中管理账单"
   },
   "pdf": {
     "meta": {
@@ -546,7 +628,7 @@
       "title": "账单与 Stagify+",
       "i1": {
         "q": "如何管理或取消 Stagify+？",
-        "a": "点击右上角的个人资料图标，然后按 Stagify+ 旁边的 ?，打开 Stripe 账单面板，即可更新或取消订阅。在当前计费周期结束前你仍可继续使用。"
+        "a": "点击右上角的个人资料图标，然后点按 Stagify+ 旁边的 Stripe 图标，打开账单面板，即可更新或取消订阅。你也可以直接打开 <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">Stripe 账单门户</a>。在当前计费周期结束前你仍可继续使用。"
       },
       "i2": {
         "q": "我已被扣款，但看不到 Stagify+ 的功能。",
@@ -587,5 +669,23 @@
     "pickerFree": "免费",
     "pickerPlus": "Stagify+",
     "troubleshootingTitle": "故障排查与常见问题"
+  },
+  "pageMeta": {
+    "guides": {
+      "title": "指南与教程 | Stagify.ai",
+      "description": "Stagify.ai 分步教程：你的第一次免费布置、使用 Stagify+ 布置，以及常见问题的解决方案。"
+    },
+    "contact": {
+      "title": "联系我们 | Stagify.ai",
+      "description": "联系 Stagify.ai 团队，获取支持、合作，或有关我们免费 AI 家居布置工具的咨询。"
+    },
+    "stagifyPlus": {
+      "title": "Stagify+ — 方案与定价 | Stagify.ai",
+      "description": "Stagify+：无限 AI 布置、更高质量的模型、AI Designer 和遮罩工具。查看方案与定价。"
+    },
+    "enterprise": {
+      "title": "Stagify Enterprise — 面向团队的按量计费 AI 布置",
+      "description": "让整个团队享受无限 AI 布置，按使用量计费，每次生成 $0.15。一张发票，无按席位收费。"
+    }
   }
 }

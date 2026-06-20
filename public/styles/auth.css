@@ -483,22 +483,27 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   width: 26px;
   height: 26px;
   border-radius: 50%;
+  overflow: hidden;
+  padding: 0;
   color: #64748b;
-  background: rgba(100, 116, 139, 0.14);
+  background: #fff;
   text-decoration: none;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 .profile-menu__portal-help:hover {
-  color: #1d4ed8;
-  background: rgba(37, 99, 235, 0.14);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+  transform: scale(1.04);
 }
 .profile-menu__portal-help:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
-.profile-menu__portal-help svg {
-  width: 14px;
-  height: 14px;
+.profile-menu__portal-help svg,
+.profile-menu__portal-help img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .profile-menu__divider {
   height: 1px;

@@ -11,8 +11,22 @@
   /** Stripe Customer Portal login (Dashboard → Customer portal → link). */
   var STRIPE_CUSTOMER_PORTAL_LOGIN =
     'https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00';
-  var PORTAL_HELP_SVG =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
+  var PORTAL_STRIPE_ICON =
+    '<img src="media-webp/Stripe.webp" alt="" aria-hidden="true">';
+
+  function lang(key, fallback, vars) {
+    var text = fallback;
+    if (window.LanguageSystem && typeof window.LanguageSystem.getText === 'function') {
+      var got = window.LanguageSystem.getText(key);
+      if (typeof got === 'string' && got !== 'Loading...') text = got;
+    }
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        text = text.split('{' + k + '}').join(vars[k]);
+      });
+    }
+    return text;
+  }
 
   function ensureAuthModal() {
     if (document.getElementById('auth-modal')) return;
@@ -79,13 +93,14 @@
       if (submitRow) submitRow.classList.remove('hidden');
       if (tgl) tgl.classList.add('hidden');
       if (mainsub) mainsub.classList.add('hidden');
-      if (title) title.textContent = 'Verify your email';
+      if (title) title.textContent = lang('auth.verifyTitle', 'Verify your email');
       if (emailEl) emailEl.readOnly = true;
-      if (submitLabel) submitLabel.textContent = 'Create account';
+      if (submitLabel) submitLabel.textContent = lang('auth.createAccount', 'Create account');
       var verifyCopy = document.getElementById('auth-verify-copy');
       if (verifyCopy) {
-        verifyCopy.textContent =
-          'Enter the 6-digit code we sent to ' + (authPendingEmail || 'your email') + '.';
+        verifyCopy.textContent = lang('auth.verifyCopy', 'Enter the 6-digit code we sent to {email}.', {
+          email: authPendingEmail || lang('auth.yourEmail', 'your email'),
+        });
       }
     } else if (authFlowForgot && !authModeRegister) {
       std.classList.add('hidden');
@@ -94,7 +109,7 @@
       if (submitRow) submitRow.classList.add('hidden');
       if (tgl) tgl.classList.add('hidden');
       if (mainsub) mainsub.classList.add('hidden');
-      if (title) title.textContent = 'Reset password';
+      if (title) title.textContent = lang('auth.resetTitle', 'Reset password');
       if (emailEl) emailEl.readOnly = false;
     } else {
       frg.classList.add('hidden');
@@ -138,7 +153,7 @@
   function handleGoogleCredential(response) {
     var errEl = document.getElementById('auth-error');
     if (!response || !response.credential) {
-      if (errEl) errEl.textContent = 'Google sign-in was cancelled.';
+      if (errEl) errEl.textContent = lang('auth.googleCancelled', 'Google sign-in was cancelled.');
       return;
     }
     if (errEl) errEl.textContent = '';
@@ -154,7 +169,7 @@
       })
       .then(function (result) {
         if (!result.ok) {
-          if (errEl) errEl.textContent = (result.data && result.data.error) || 'Google sign-in failed';
+          if (errEl) errEl.textContent = (result.data && result.data.error) || lang('auth.googleFailed', 'Google sign-in failed');
           return null;
         }
         var data = result.data;
@@ -173,7 +188,7 @@
         refresh();
       })
       .catch(function () {
-        if (errEl) errEl.textContent = 'Network error. Please try again.';
+        if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
       });
   }
 
@@ -291,20 +306,20 @@
     var confirmInput = document.getElementById('auth-password-confirm');
     var passInput = document.getElementById('auth-password');
     if (authModeRegister) {
-      if (title) title.textContent = 'Create your free account';
-      if (sub) sub.textContent = 'Sign up to upload and stage images.';
-      if (submitLabel && !authFlowVerify) submitLabel.textContent = 'Continue';
-      if (toggleLabel) toggleLabel.textContent = 'Already have an account?';
-      if (toggleBtn) toggleBtn.textContent = 'Sign in';
+      if (title) title.textContent = lang('auth.registerTitle', 'Create your free account');
+      if (sub) sub.textContent = lang('auth.registerSub', 'Sign up to upload and stage images.');
+      if (submitLabel && !authFlowVerify) submitLabel.textContent = lang('auth.continue', 'Continue');
+      if (toggleLabel) toggleLabel.textContent = lang('auth.alreadyHaveAccount', 'Already have an account?');
+      if (toggleBtn) toggleBtn.textContent = lang('auth.signIn', 'Sign in');
       if (confirmRow) confirmRow.classList.remove('hidden');
       if (confirmInput) confirmInput.required = true;
       if (passInput) passInput.setAttribute('autocomplete', 'new-password');
     } else {
-      if (title) title.textContent = 'Sign in';
-      if (sub) sub.textContent = 'Use your email and password to continue.';
-      if (submitLabel) submitLabel.textContent = 'Sign in';
-      if (toggleLabel) toggleLabel.textContent = 'New here?';
-      if (toggleBtn) toggleBtn.textContent = 'Create account';
+      if (title) title.textContent = lang('auth.signInTitle', 'Sign in');
+      if (sub) sub.textContent = lang('auth.signInSub', 'Use your email and password to continue.');
+      if (submitLabel) submitLabel.textContent = lang('auth.signIn', 'Sign in');
+      if (toggleLabel) toggleLabel.textContent = lang('auth.newHere', 'New here?');
+      if (toggleBtn) toggleBtn.textContent = lang('auth.createAccount', 'Create account');
       if (confirmRow) confirmRow.classList.add('hidden');
       if (confirmInput) {
         confirmInput.required = false;
@@ -398,7 +413,7 @@
           fb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
         }
         if (!email) {
-          if (fb) fb.textContent = 'Enter your email address.';
+          if (fb) fb.textContent = lang('auth.enterEmail', 'Enter your email address.');
           return;
         }
         verifyResend.disabled = true;
@@ -413,15 +428,15 @@
           });
           if (fb) {
             if (!r.ok) {
-              fb.textContent = data.error || 'Could not resend code. Try again.';
+              fb.textContent = data.error || lang('auth.resendFailed', 'Could not resend code. Try again.');
               fb.classList.add('auth-forgot-feedback--warn');
             } else {
-              fb.textContent = data.message || 'We sent a new verification code.';
+              fb.textContent = data.message || lang('auth.resendSuccess', 'We sent a new verification code.');
               fb.classList.add('auth-forgot-feedback--success');
             }
           }
         } catch (err) {
-          if (fb) fb.textContent = 'Network error. Please try again.';
+          if (fb) fb.textContent = lang('auth.networkError', 'Network error. Please try again.');
         }
         verifyResend.disabled = false;
       });
@@ -443,7 +458,7 @@
         var email = emailEl ? emailEl.value.trim() : '';
         if (fb) fb.textContent = '';
         if (!email) {
-          if (fb) fb.textContent = 'Enter your email address.';
+          if (fb) fb.textContent = lang('auth.enterEmail', 'Enter your email address.');
           return;
         }
         forgotSend.disabled = true;
@@ -462,21 +477,21 @@
               fb.textContent =
                 data.error ||
                 data.message ||
-                'Something went wrong. Please try again in a few minutes.';
+                lang('auth.resetSomethingWrong', 'Something went wrong. Please try again in a few minutes.');
               fb.classList.add('auth-forgot-feedback--warn');
             } else if (data.emailSent) {
               fb.textContent =
                 data.message ||
-                'We sent a password reset link. Check your email (and spam).';
+                lang('auth.resetLinkSent', 'We sent a password reset link. Check your email (and spam).');
               fb.classList.add('auth-forgot-feedback--success');
             } else {
               fb.textContent =
                 data.message ||
-                'No account was found for that email.';
+                lang('auth.noAccountForEmail', 'No account was found for that email.');
             }
           }
         } catch (err) {
-          if (fb) fb.textContent = 'Something went wrong. Try again later.';
+          if (fb) fb.textContent = lang('auth.resetTryLater', 'Something went wrong. Try again later.');
         }
         forgotSend.disabled = false;
       });
@@ -498,7 +513,7 @@
           var codeEl = document.getElementById('auth-verify-code');
           var code = codeEl ? codeEl.value.trim() : '';
           if (!/^\d{6}$/.test(code)) {
-            if (errEl) errEl.textContent = 'Enter the 6-digit verification code from your email.';
+            if (errEl) errEl.textContent = lang('auth.enterVerificationCode', 'Enter the 6-digit verification code from your email.');
             return;
           }
           try {
@@ -509,7 +524,7 @@
             });
             var vdata = await vr.json();
             if (!vr.ok) {
-              if (errEl) errEl.textContent = vdata.error || 'Verification failed';
+              if (errEl) errEl.textContent = vdata.error || lang('auth.verificationFailed', 'Verification failed');
               return;
             }
             window.StagifyAuth.setToken(vdata.token);
@@ -523,14 +538,14 @@
             }
             refresh();
           } catch (verr) {
-            if (errEl) errEl.textContent = 'Network error. Please try again.';
+            if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
           }
           return;
         }
         if (authModeRegister) {
           var confirmPass = confirmEl ? confirmEl.value : '';
           if (password !== confirmPass) {
-            if (errEl) errEl.textContent = 'Passwords do not match.';
+            if (errEl) errEl.textContent = lang('auth.passwordsNoMatch', 'Passwords do not match.');
             return;
           }
         }
@@ -543,7 +558,7 @@
           });
           var data = await r.json();
           if (!r.ok) {
-            if (errEl) errEl.textContent = data.error || 'Something went wrong';
+            if (errEl) errEl.textContent = data.error || lang('auth.somethingWrong', 'Something went wrong');
             return;
           }
           if (authModeRegister && data.needsVerification) {
@@ -552,7 +567,7 @@
             refreshAuthModalLayout();
             var verifyFb = document.getElementById('auth-verify-feedback');
             if (verifyFb) {
-              verifyFb.textContent = data.message || 'Check your email for a verification code.';
+              verifyFb.textContent = data.message || lang('auth.checkEmailForCode', 'Check your email for a verification code.');
               verifyFb.classList.add('auth-forgot-feedback--success');
             }
             return;
@@ -568,7 +583,7 @@
           }
           refresh();
         } catch (err) {
-          if (errEl) errEl.textContent = 'Network error. Please try again.';
+          if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
         }
       });
     }
@@ -621,8 +636,12 @@
       dd.classList.add('profile-menu-dropdown--guest');
       dd.innerHTML =
         '<div class="profile-menu__section">' +
-        '<button type="button" class="profile-menu__item" data-profile-action="signin">Sign in</button>' +
-        '<button type="button" class="profile-menu__item" data-profile-action="signup">Create account</button>' +
+        '<button type="button" class="profile-menu__item" data-profile-action="signin">' +
+        lang('profile.signIn', 'Sign in') +
+        '</button>' +
+        '<button type="button" class="profile-menu__item" data-profile-action="signup">' +
+        lang('profile.createAccount', 'Create account') +
+        '</button>' +
         '</div>';
     } else {
       dd.classList.remove('profile-menu-dropdown--guest');
@@ -634,23 +653,29 @@
           '<img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18"> Stagify+</a>' +
           '<a class="profile-menu__portal-help" href="' +
           STRIPE_CUSTOMER_PORTAL_LOGIN +
-          '" target="_blank" rel="noopener noreferrer" aria-label="Manage billing and subscription">' +
-          PORTAL_HELP_SVG +
+          '" target="_blank" rel="noopener noreferrer" aria-label="' +
+          esc(lang('profile.manageBillingAria', 'Manage billing in Stripe')) +
+          '">' +
+          PORTAL_STRIPE_ICON +
           '</a>' +
           '</div>';
       } else {
-        planLine = '<div class="profile-menu__plan">Free Plan</div>';
+        planLine = '<div class="profile-menu__plan">' + lang('profile.freePlan', 'Free Plan') + '</div>';
       }
       var plusRow = '';
       if (u.plan !== 'pro') {
         plusRow =
           '<a href="stagify-plus.html" class="profile-menu__link profile-menu__link--plus">' +
-          '<img src="media-webp/logo/Pro32x32.webp" alt="" width="20" height="20"> Upgrade to Stagify+</a>';
+          '<img src="media-webp/logo/Pro32x32.webp" alt="" width="20" height="20"> ' +
+          lang('profile.upgradeToPlus', 'Upgrade to Stagify+') +
+          '</a>';
       }
       var manageRow = '';
       if (u.plan === 'pro' && u.canManageSubscription) {
         manageRow =
-          '<button type="button" class="profile-menu__item" data-profile-action="manage-subscription">Manage subscription</button>';
+          '<button type="button" class="profile-menu__item" data-profile-action="manage-subscription">' +
+          lang('profile.manageSubscription', 'Manage subscription') +
+          '</button>';
       }
       dd.innerHTML =
         '<div class="profile-menu__header">' +
@@ -663,7 +688,9 @@
         '<div class="profile-menu__section">' +
         plusRow +
         manageRow +
-        '<button type="button" class="profile-menu__item profile-menu__item--danger" data-profile-action="signout">Sign out</button>' +
+        '<button type="button" class="profile-menu__item profile-menu__item--danger" data-profile-action="signout">' +
+        lang('profile.signOut', 'Sign out') +
+        '</button>' +
         '</div>';
     }
   }
@@ -764,4 +791,9 @@
   } else {
     init();
   }
+
+  window.addEventListener('languagechange', function () {
+    syncAuthFormMode();
+    refresh();
+  });
 })();
