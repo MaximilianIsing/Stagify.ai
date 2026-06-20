@@ -3430,14 +3430,16 @@ function logChatToFile(userId, userMessage, aiResponse, files, ipAddress, userAg
   }
 }
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
+// Health check endpoints
+const healthHandler = (req, res) => {
+  res.json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    aiConfigured: !!genAI
+    aiConfigured: !!genAI,
   });
-});
+};
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
 
 // Prompt count endpoint
 app.get('/api/prompt-count', (req, res) => {
