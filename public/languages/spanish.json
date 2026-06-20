@@ -209,9 +209,7 @@
       "subtitle": "Otras herramientas de staging virtual son lentas, caras y restrictivas. Stagify está hecho para ser todo lo contrario."
     },
     "faq": {
-      "subtitle": "Respuestas rápidas a las preguntas más frecuentes. ¿Sigues con dudas? Visita <a href=\"guides.html\">Guías</a> o escríbenos.",
-      "teamQ": "¿Ofrecen planes para equipos o empresas?",
-      "teamA": "Sí. Si tienes un equipo de agentes o una agencia, nuestro <a href=\"enterprise.html\">plan empresarial</a> da acceso a Stagify+ a todos los que tengan el correo de tu empresa y se factura solo por el uso real, sin cuotas por usuario."
+      "subtitle": "Respuestas rápidas a las preguntas más frecuentes. ¿Sigues con dudas? Visita <a href=\"guides.html\">Guías</a> o escríbenos."
     },
     "contactCta": {
       "title": "Nuestra bandeja de entrada siempre está abierta",
