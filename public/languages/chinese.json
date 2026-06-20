@@ -209,9 +209,7 @@
       "subtitle": "其他虚拟布置工具速度慢、价格高、限制多。Stagify 的设计恰恰相反。"
     },
     "faq": {
-      "subtitle": "最常见问题的快速解答。仍有疑问？请查看<a href=\"guides.html\">指南</a>或与我们联系。",
-      "teamQ": "你们有面向团队或企业的方案吗？",
-      "teamA": "有。如果你有一支经纪团队或一家经纪公司，我们的<a href=\"enterprise.html\">企业方案</a>可让所有使用公司邮箱的成员都能使用 Stagify+，并且仅按实际用量计费，没有按席位收费。"
+      "subtitle": "最常见问题的快速解答。仍有疑问？请查看<a href=\"guides.html\">指南</a>或与我们联系。"
     },
     "contactCta": {
       "title": "我们随时查收邮件",

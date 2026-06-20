@@ -209,9 +209,7 @@
       "subtitle": "Other virtual staging tools are slow, costly, and locked down. Stagify is built to be the opposite."
     },
     "faq": {
-      "subtitle": "Quick answers to the questions we hear most. Still stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch.",
-      "teamQ": "Do you offer plans for teams or enterprises?",
-      "teamA": "Yes. If you have a team of agents or a brokerage, our <a href=\"enterprise.html\">enterprise plan</a> gives everyone on your company domain access to Stagify+ and bills only on actual usage — no per-seat fees."
+      "subtitle": "Quick answers to the questions we hear most. Still stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch."
     },
     "contactCta": {
       "title": "Our inbox is always open",

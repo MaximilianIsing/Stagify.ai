@@ -11,6 +11,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from 'openai';
 import sharp from "sharp";
 import cors from 'cors';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
 import { Resend } from 'resend';
 import { promptMatrix } from './promptMatrix.js';
 import { blueprintTo3D } from './cad-handling.js';
@@ -547,7 +549,91 @@ const PORT = process.env.PORT || 3000;
 app.set('trust proxy', process.env.TRUST_PROXY === '0' ? false : 1);
 
 // Middleware
-app.use(cors());
+// --- Security headers (helmet) ---------------------------------------------
+// CSP is tuned for the inline scripts/handlers this app uses plus the third
+// parties it loads (Google sign-in, Stripe, Supademo + Instagram embeds).
+// Set DISABLE_CSP=1 to turn the policy off without a code change if a deploy
+// surfaces an unexpected blocked resource.
+const cspDirectives = {
+  defaultSrc: ["'self'"],
+  baseUri: ["'self'"],
+  objectSrc: ["'none'"],
+  frameAncestors: ["'self'"],
+  scriptSrc: [
+    "'self'",
+    "'unsafe-inline'",
+    'https://accounts.google.com',
+    'https://apis.google.com',
+    'https://www.gstatic.com',
+    'https://*.stripe.com',
+  ],
+  styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+  fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+  imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+  mediaSrc: ["'self'", 'data:', 'blob:'],
+  connectSrc: ["'self'", 'https:'],
+  frameSrc: [
+    "'self'",
+    'https://app.supademo.com',
+    'https://www.instagram.com',
+    'https://accounts.google.com',
+    'https://*.stripe.com',
+  ],
+  upgradeInsecureRequests: [],
+};
+app.use(
+  helmet({
+    contentSecurityPolicy:
+      process.env.DISABLE_CSP === '1' ? false : { directives: cspDirectives },
+    // Embeds + the Google sign-in popup need these relaxed from helmet defaults.
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
+// --- CORS: restrict to our own origins -------------------------------------
+const allowedOrigins = (
+  process.env.ALLOWED_ORIGINS ||
+  'https://stagify.ai,https://www.stagify.ai,http://localhost:3000'
+)
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow same-origin / non-browser requests (no Origin header) and our list.
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(null, false);
+    },
+    credentials: true,
+  })
+);
+
+// --- Rate limiters ----------------------------------------------------------
+const rlOpts = { standardHeaders: 'draft-7', legacyHeaders: false };
+// Sign-in / account actions: blunt brute-force protection.
+const authLimiter = rateLimit({
+  ...rlOpts,
+  windowMs: 15 * 60 * 1000,
+  limit: Number(process.env.RL_AUTH || 40),
+  message: { error: 'Too many attempts. Please wait a few minutes and try again.' },
+});
+// Anything that sends an email: keep tight to prevent spam/abuse.
+const emailLimiter = rateLimit({
+  ...rlOpts,
+  windowMs: 15 * 60 * 1000,
+  limit: Number(process.env.RL_EMAIL || 6),
+  message: { error: 'Too many requests. Please wait a few minutes and try again.' },
+});
+// Paid AI generation: a generous backstop against cost abuse (humans stay well under).
+const genLimiter = rateLimit({
+  ...rlOpts,
+  windowMs: 5 * 60 * 1000,
+  limit: Number(process.env.RL_GEN || 60),
+  message: { error: 'You are generating too quickly. Please wait a moment and try again.' },
+});
 
 // Stripe webhooks must use the raw body for signature verification (register before express.json)
 app.post('/api/billing/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -2658,7 +2744,7 @@ async function sendRegistrationVerificationEmail({ toEmail, code }) {
   };
 }
 
-app.post('/api/auth/register', express.json(), async (req, res) => {
+app.post('/api/auth/register', authLimiter, express.json(), async (req, res) => {
   try {
     const { email, password } = req.body || {};
     const result = authStore.startRegistration(email, password);
@@ -2679,7 +2765,7 @@ app.post('/api/auth/register', express.json(), async (req, res) => {
   }
 });
 
-app.post('/api/auth/register/verify', express.json(), (req, res) => {
+app.post('/api/auth/register/verify', authLimiter, express.json(), (req, res) => {
   try {
     const { email, code } = req.body || {};
     const result = authStore.completeRegistration(email, code);
@@ -2694,7 +2780,7 @@ app.post('/api/auth/register/verify', express.json(), (req, res) => {
   }
 });
 
-app.post('/api/auth/register/resend', express.json(), async (req, res) => {
+app.post('/api/auth/register/resend', emailLimiter, express.json(), async (req, res) => {
   try {
     const email = (req.body && req.body.email) || '';
     const result = authStore.resendRegistrationCode(email);
@@ -2718,7 +2804,7 @@ app.post('/api/auth/register/resend', express.json(), async (req, res) => {
   }
 });
 
-app.post('/api/auth/login', express.json(), (req, res) => {
+app.post('/api/auth/login', authLimiter, express.json(), (req, res) => {
   try {
     const { email, password } = req.body || {};
     const result = authStore.login(email, password);
@@ -2738,7 +2824,7 @@ app.get('/api/auth/config', (req, res) => {
   res.json({ googleClientId: googleClientId || null });
 });
 
-app.post('/api/auth/google', express.json(), async (req, res) => {
+app.post('/api/auth/google', authLimiter, express.json(), async (req, res) => {
   try {
     if (!googleOAuthClient || !googleClientId) {
       return res.status(503).json({ error: 'Google sign-in is not configured' });
@@ -2889,7 +2975,7 @@ app.post('/api/auth/logout', express.json(), (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/auth/forgot-password', express.json(), async (req, res) => {
+app.post('/api/auth/forgot-password', emailLimiter, express.json(), async (req, res) => {
   try {
     const email = (req.body && req.body.email) || '';
     const result = authStore.startPasswordReset(email);
@@ -2958,7 +3044,7 @@ app.post('/api/auth/forgot-password', express.json(), async (req, res) => {
   }
 });
 
-app.post('/api/auth/reset-password', express.json(), (req, res) => {
+app.post('/api/auth/reset-password', authLimiter, express.json(), (req, res) => {
   try {
     const token = (req.body && req.body.token) || '';
     const password = (req.body && req.body.password) || '';
@@ -3107,7 +3193,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
 }
 
 // Image processing endpoint: signed-in users (account limits) OR mobile User-Agent without session (free daily cap per IP, UTC)
-app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
+app.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, res) => {
   try {
     const sessionUser = getAuthUserFromRequest(req);
     const clientIp = getStagingClientIp(req);
@@ -3143,7 +3229,7 @@ app.post('/api/process-image', stagingProcessUpload, async (req, res) => {
 });
 
 // Contact logging endpoint
-app.post('/api/log-contact', (req, res) => {
+app.post('/api/log-contact', emailLimiter, (req, res) => {
   try {
     const { userRole = 'unknown', referralSource = 'unknown', email = 'unknown', userAgent = 'unknown' } = req.body;
     const timestamp = new Date().toISOString();
@@ -3210,7 +3296,7 @@ app.post('/api/log-contact', (req, res) => {
 });
 
 // Email sending endpoint - protected with key
-app.post('/api/send-email', async (req, res) => {
+app.post('/api/send-email', emailLimiter, async (req, res) => {
   try {
     // Check access key
     if (!LOGS_ACCESS_KEY) {
@@ -3388,7 +3474,7 @@ app.get('/api/pdf-health', async (req, res) => {
 });
 
 // PDF processing proxy endpoint
-app.post('/api/process-pdf', pdfUpload.single('pdf'), async (req, res) => {
+app.post('/api/process-pdf', genLimiter, pdfUpload.single('pdf'), async (req, res) => {
   try {
     if (!requireProAccount(req, res)) return;
 
@@ -3757,7 +3843,7 @@ Just return the message text, no additional formatting.`;
 
 // Chat endpoints
 // Text chat endpoint
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', genLimiter, async (req, res) => {
   try {
     if (!requireProAccount(req, res)) return;
 
@@ -4872,7 +4958,7 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // Chat with file upload endpoint (multiple files)
-app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => {
+app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 10), async (req, res) => {
   try {
     if (!requireProAccount(req, res)) return;
 
@@ -6531,7 +6617,7 @@ app.get('/enterprise-domains', protectLogs, (req, res) => {
 });
 
 // Bug report endpoint
-app.post('/api/bug-report', async (req, res) => {
+app.post('/api/bug-report', emailLimiter, async (req, res) => {
   try {
     const { description, steps, email, userId, userAgent, url, timestamp, conversationHistory } = req.body;
     
@@ -6644,7 +6730,7 @@ app.post('/api/bug-report', async (req, res) => {
 });
 
 // Mask editing endpoint - uses Gemini API for better image editing
-app.post('/api/mask-edit', async (req, res) => {
+app.post('/api/mask-edit', genLimiter, async (req, res) => {
   try {
     const proUser = requireProAccount(req, res);
     if (!proUser) return;
