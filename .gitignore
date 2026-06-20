@@ -48,4 +48,4 @@ build/
 *.txt
 !public/robots.txt
 
-/claude/
+.claude/
