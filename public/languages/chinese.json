@@ -211,6 +211,11 @@
       "subtitle": "最常见问题的快速解答。仍有疑问？请查看<a href=\"guides.html\">指南</a>或与我们联系。",
       "teamQ": "你们有面向团队或企业的方案吗？",
       "teamA": "有。如果你有一支经纪团队或一家经纪公司，我们的<a href=\"enterprise.html\">企业方案</a>可让所有使用公司邮箱的成员都能使用 Stagify+，并且仅按实际用量计费，没有按席位收费。"
+    },
+    "contactCta": {
+      "title": "我们随时查收邮件",
+      "subtitle": "有问题、反馈或合作想法 — 我们会阅读每一封邮件并尽快回复。",
+      "email": "team@stagify.ai"
     }
   },
   "modal": {
@@ -485,7 +490,8 @@
     "verificationFailed": "验证失败",
     "passwordsNoMatch": "两次输入的密码不一致。",
     "somethingWrong": "出了点问题",
-    "checkEmailForCode": "请查收邮件中的验证码。"
+    "checkEmailForCode": "请查收邮件中的验证码。",
+    "agreeTerms": "创建账户即表示您同意<a href=\"terms.html\">服务条款</a>和<a href=\"privacy.html\">隐私政策</a>"
   },
   "profile": {
     "signIn": "登录",

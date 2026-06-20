@@ -211,6 +211,11 @@
       "subtitle": "Respuestas rápidas a las preguntas más frecuentes. ¿Sigues con dudas? Visita <a href=\"guides.html\">Guías</a> o escríbenos.",
       "teamQ": "¿Ofrecen planes para equipos o empresas?",
       "teamA": "Sí. Si tienes un equipo de agentes o una agencia, nuestro <a href=\"enterprise.html\">plan empresarial</a> da acceso a Stagify+ a todos los que tengan el correo de tu empresa y se factura solo por el uso real, sin cuotas por usuario."
+    },
+    "contactCta": {
+      "title": "Nuestra bandeja de entrada siempre está abierta",
+      "subtitle": "Preguntas, comentarios o ideas de colaboración — leemos cada mensaje y respondemos lo antes posible.",
+      "email": "team@stagify.ai"
     }
   },
   "modal": {
@@ -485,7 +490,8 @@
     "verificationFailed": "Error de verificación",
     "passwordsNoMatch": "Las contraseñas no coinciden.",
     "somethingWrong": "Algo salió mal",
-    "checkEmailForCode": "Revisa tu correo para obtener un código de verificación."
+    "checkEmailForCode": "Revisa tu correo para obtener un código de verificación.",
+    "agreeTerms": "Al crear una cuenta, aceptas los <a href=\"terms.html\">Términos</a> y la <a href=\"privacy.html\">Privacidad</a>"
   },
   "profile": {
     "signIn": "Iniciar sesión",

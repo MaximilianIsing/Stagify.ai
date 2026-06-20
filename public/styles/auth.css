@@ -169,6 +169,24 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   width: 100%;
   justify-content: center;
 }
+.auth-terms-notice {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6b7280;
+}
+.auth-terms-notice a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.auth-terms-notice a:hover {
+  color: #1d4ed8;
+}
+.auth-terms-notice.hidden {
+  display: none;
+}
 .auth-toggle {
   margin-top: 16px;
   text-align: center;

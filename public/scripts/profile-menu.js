@@ -62,6 +62,7 @@
       '<div id="auth-verify-feedback" class="auth-error" role="status"></div>' +
       '</div>' +
       '<div id="auth-submit-row" class="auth-actions"><button type="submit" class="btn btn-primary btn-lg" id="auth-submit"><strong id="auth-submit-label">Create account</strong></button></div>' +
+      '<p id="auth-terms-notice" class="auth-terms-notice" data-lang-html="auth.agreeTerms">By creating an account, you agree to <a href="terms.html">Terms</a> &amp; <a href="privacy.html">Privacy</a></p>' +
       '<div id="auth-forgot-panel" class="hidden">' +
       '<p class="auth-modal__sub auth-forgot-copy">We’ll email you a one-time link to set a new password. The link expires in one hour.</p>' +
       '<div class="auth-actions"><button type="button" class="btn btn-primary btn-lg" id="auth-forgot-send"><strong>Send reset link</strong></button></div>' +
@@ -129,6 +130,10 @@
         verifyFb.textContent = '';
         verifyFb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
       }
+    }
+    var termsNotice = document.getElementById('auth-terms-notice');
+    if (termsNotice) {
+      termsNotice.classList.toggle('hidden', !authModeRegister);
     }
     updateGooglePanelVisibility();
   }
