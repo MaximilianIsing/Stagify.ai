@@ -213,7 +213,9 @@ CRITICAL REQUIREMENT - THE OUTPUT MUST BE TOP-DOWN:
   prompt += `\n- Make it look like a professional 3D architectural visualization
 - The output MUST be a top-down 3D render image - viewing the room from directly above
 - REMEMBER: The output must show the room from above, not from any side or angled perspective
-- REMEMBER: Dimensions and relative sizes from the blueprint are CRITICAL - they must be preserved accurately`;
+- REMEMBER: Dimensions and relative sizes from the blueprint are CRITICAL - they must be preserved accurately
+- Preserve the full blueprint/layout in frame — do not crop out rooms, walls, or edges of the plan unless the user explicitly asked for a tighter crop
+- Match the input image aspect ratio and show the complete floor plan area visible in the source image`;
 
   // Add additional prompt/instructions from the AI if provided
   if (additionalPrompt && additionalPrompt.trim()) {

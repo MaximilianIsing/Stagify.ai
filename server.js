@@ -1269,6 +1269,19 @@ async function downscaleImageForGPT(dataUrl) {
 }
 
 /**
+ * Appended to image-to-image staging/CAD prompts so outputs match input framing.
+ */
+const IMAGE_FRAMING_PRESERVATION_RULES = `
+CRITICAL FRAMING & ASPECT RATIO RULES:
+- Preserve the EXACT aspect ratio, orientation, and canvas dimensions of the input image
+- Show the FULL scene visible in the input photo — do not crop, cut off, or reframe any edges
+- Keep the entire ceiling line, floor line, and all walls/edges that appear in the original frame
+- Do NOT zoom in, zoom out, or change the camera field of view unless the user explicitly asked for a closer or different crop
+- Do NOT stretch, squash, letterbox, pad, or distort the image
+- Fit all staging changes WITHIN the existing frame; never remove parts of the room to fit new content
+- If adding furniture, scale and place it so nothing important from the original photo is cropped out or pushed out of frame`;
+
+/**
  * Generate styling prompt based on user preferences using a matrix system
  */
 function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture) {
@@ -1301,9 +1314,7 @@ CRITICAL ARCHITECTURAL PRESERVATION RULES:
 - PRESERVE all existing architectural features exactly as they appear in the original image
 
 CRITICAL IMAGE FORMAT RULES:
-- DO NOT change the image aspect ratio, canvas size, orientation, or framing
-- The output image MUST have the exact same width-to-height ratio and dimensions as the original input photo
-- Do not crop, stretch, squash, letterbox, pad, or zoom the image canvas
+${IMAGE_FRAMING_PRESERVATION_RULES}
 
 The architecture must remain completely unchanged. Ensure the result looks realistic and professionally staged with high quality, sharp focus, detailed textures, professional photography lighting, and ultra-realistic rendering.`;
   
@@ -1537,6 +1548,200 @@ function stripImagesFromHistory(messages, keepCurrentMessageImages = false) {
 }
 
 /**
+ * Collect all images from conversation history (index 0 = most recent).
+ */
+function collectImagesFromHistory(messages) {
+  const imageMessages = [];
+  if (!Array.isArray(messages)) return imageMessages;
+
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg.role === 'user' && Array.isArray(msg.content)) {
+      const imageItems = msg.content.filter(
+        (item) => item.type === 'image_url' && item.image_url && item.image_url.url
+      );
+      for (let j = imageItems.length - 1; j >= 0; j--) {
+        const imageItem = imageItems[j];
+        imageMessages.push({
+          url: imageItem.image_url.url,
+          isStaged: false,
+          isGenerated: false,
+          messageIndex: i,
+          filename: imageItem.filename || imageItem.originalname || null,
+          annotation: imageItem._annotation || imageItem.annotation || null,
+        });
+      }
+    } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
+      const imageItems = msg.content.filter(
+        (item) =>
+          item.type === 'image_url' &&
+          item.image_url &&
+          item.image_url.url &&
+          (item.isStaged || item.isGenerated)
+      );
+      for (let j = imageItems.length - 1; j >= 0; j--) {
+        const imageItem = imageItems[j];
+        imageMessages.push({
+          url: imageItem.image_url.url,
+          isStaged: imageItem.isStaged || false,
+          isGenerated: imageItem.isGenerated || false,
+          messageIndex: i,
+          filename: imageItem.filename || imageItem.originalname || null,
+          annotation: imageItem._annotation || imageItem.annotation || null,
+        });
+      }
+    }
+  }
+  return imageMessages;
+}
+
+/**
+ * When the client includes the current upload in conversationHistory, exclude that
+ * trailing user message so image context does not count the same file twice.
+ */
+function getPriorHistoryForImageContext(conversationHistory, currentUploadFilenames) {
+  if (!Array.isArray(conversationHistory) || conversationHistory.length === 0) {
+    return conversationHistory || [];
+  }
+  if (!currentUploadFilenames || currentUploadFilenames.length === 0) {
+    return conversationHistory;
+  }
+  const last = conversationHistory[conversationHistory.length - 1];
+  if (last.role !== 'user' || !Array.isArray(last.content)) {
+    return conversationHistory;
+  }
+  const lastImageNames = last.content
+    .filter((item) => item.type === 'image_url' && item.image_url && item.image_url.url)
+    .map((item) => item.filename || item.originalname)
+    .filter(Boolean);
+  if (lastImageNames.length === 0) {
+    return conversationHistory;
+  }
+  const currentSet = new Set(currentUploadFilenames);
+  const duplicatesCurrentUpload = lastImageNames.every((name) => currentSet.has(name));
+  if (duplicatesCurrentUpload) {
+    return conversationHistory.slice(0, -1);
+  }
+  return conversationHistory;
+}
+
+function parseBaseImageIndex(raw) {
+  if (raw === undefined || raw === null || raw === '') return null;
+  const n = parseInt(String(raw), 10);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function getBaseImageSelectionContext(baseImageIndex, messages) {
+  if (baseImageIndex === null) return '';
+  const images = collectImagesFromHistory(messages);
+  if (baseImageIndex >= images.length) return '';
+  const img = images[baseImageIndex];
+  const typeLabel = img.isStaged ? 'staged' : img.isGenerated ? 'generated/CAD' : 'uploaded';
+  const name = img.filename ? ` (${img.filename})` : '';
+  return (
+    `\n\nUSER UI SELECTION: The user selected image index ${baseImageIndex} in the thumbnail strip as the base for this request — ${typeLabel} image${name}. ` +
+    `For staging or CAD that modifies an existing image in this turn, use index ${baseImageIndex} for usePreviousImage or imageIndex unless they clearly meant a different image or are only doing text-to-image generation.`
+  );
+}
+
+function applyBaseImageIndexToStagingParams(stagingParams, baseImageIndex, messages, options = {}) {
+  if (baseImageIndex === null || !stagingParams) return stagingParams;
+  const images = collectImagesFromHistory(messages);
+  if (baseImageIndex >= images.length) return stagingParams;
+
+  const { userMessage = '', currentMessageHasImage = false } = options;
+  const addingFurniture = currentMessageHasImage && userWantsToAddFurnitureToRoom(userMessage);
+
+  if (currentMessageHasImage && !addingFurniture) {
+    return stagingParams;
+  }
+
+  if (addingFurniture) {
+    return { ...stagingParams, usePreviousImage: baseImageIndex, furnitureImageIndex: null };
+  }
+
+  return { ...stagingParams, usePreviousImage: baseImageIndex };
+}
+
+function resolveCadImageIndex(cadRequest, baseImageIndex, messages, currentMessageHasImage = false) {
+  const aiIndex = typeof cadRequest.imageIndex === 'number' ? cadRequest.imageIndex : 0;
+  if (baseImageIndex === null || currentMessageHasImage) return aiIndex;
+  const images = collectImagesFromHistory(messages);
+  if (baseImageIndex >= images.length) return aiIndex;
+  return baseImageIndex;
+}
+
+function getImageFromHistoryExact(messages, imageIndex = 0) {
+  const imageMessages = collectImagesFromHistory(messages);
+  if (imageIndex >= 0 && imageIndex < imageMessages.length) {
+    return imageMessages[imageIndex];
+  }
+  return null;
+}
+
+function findMostRecentStagedImageIndex(messages) {
+  const imageMessages = collectImagesFromHistory(messages);
+  const idx = imageMessages.findIndex((img) => img.isStaged);
+  return idx >= 0 ? idx : null;
+}
+
+function userWantsToAddFurnitureToRoom(messageText) {
+  if (!messageText || typeof messageText !== 'string') return false;
+  const m = messageText.toLowerCase();
+  if (/\b(this|that|the)\s+(chair|sofa|couch|table|desk|lamp|bed|ottoman|dresser|armchair)\b/.test(m)) {
+    return true;
+  }
+  if (/\badd (this|the|that|my|a)\b/.test(m) && /\b(chair|sofa|couch|table|desk|lamp|bed|furniture|piece|it)\b/.test(m)) {
+    return true;
+  }
+  return (
+    /\b(add|include|put|place|incorporate|insert|use)\b/.test(m) &&
+    /\b(chair|sofa|couch|table|desk|lamp|bed|furniture|piece|item|this|it|these|that)\b/.test(m)
+  );
+}
+
+const ADD_FURNITURE_PRESERVATION_SUFFIX =
+  ' CRITICAL: The base photo is an already-staged room. Preserve this EXACT room — same architecture, walls, windows, camera angle, lighting, and all existing furniture and decor already visible. ONLY add the referenced furniture piece(s). Do not redesign the room or replace existing contents. Preserve the exact aspect ratio and full frame — do not crop or zoom.';
+
+/**
+ * When the user uploads a furniture reference to add to an existing staged room,
+ * force the staged room as the base image and the upload as furniture reference.
+ */
+function applyAddFurnitureStagingFallback(stagingParams, userMessage, historyMessages, options = {}) {
+  const { currentMessageHasImage = false, currentImageBuffer = null } = options;
+  if (!userWantsToAddFurnitureToRoom(userMessage)) {
+    return { stagingParams, furnitureFromCurrentUpload: null };
+  }
+
+  const stagedIndex = findMostRecentStagedImageIndex(historyMessages);
+  if (stagedIndex === null) {
+    return { stagingParams, furnitureFromCurrentUpload: null };
+  }
+
+  const next = { ...stagingParams, preserveExistingStaging: true };
+  if (!next.additionalPrompt || !next.additionalPrompt.includes('already-staged room')) {
+    next.additionalPrompt = (next.additionalPrompt || '') + ADD_FURNITURE_PRESERVATION_SUFFIX;
+  }
+
+  if (currentMessageHasImage) {
+    next.usePreviousImage = stagedIndex;
+    next.furnitureImageIndex = null;
+    if (DEBUG_MODE) {
+      console.log(`[Staging] Add-furniture fallback: room index ${stagedIndex}, furniture from current upload`);
+    }
+    return { stagingParams: next, furnitureFromCurrentUpload: currentImageBuffer };
+  }
+
+  if (next.usePreviousImage === false || next.usePreviousImage === null) {
+    next.usePreviousImage = stagedIndex;
+  }
+  if (DEBUG_MODE) {
+    console.log(`[Staging] Add-furniture fallback: modifying staged room at index ${stagedIndex}`);
+  }
+  return { stagingParams: next, furnitureFromCurrentUpload: null };
+}
+
+/**
  * Extracts image from conversation history by index (0 = most recent, 1 = second most recent, etc.)
  * Returns the image data URL or null if not found
  */
@@ -1547,67 +1752,22 @@ function getImageFromHistory(messages, imageIndex = 0) {
     }
     return null;
   }
-  
-  const imageMessages = [];
-  
-  // Collect ALL images from all messages (both user and assistant)
-  // Process in reverse chronological order (most recent first)
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
-    if (msg.role === 'user' && Array.isArray(msg.content)) {
-      // Get ALL images from this message, not just the first one
-      const imageItems = msg.content.filter(item => item.type === 'image_url' && item.image_url && item.image_url.url);
-      // Process images in order (first image in message = most recent in that message)
-      for (let j = imageItems.length - 1; j >= 0; j--) {
-        const imageItem = imageItems[j];
-        imageMessages.push({
-          url: imageItem.image_url.url,
-          isStaged: false,
-          isGenerated: false,
-          messageIndex: i,
-          filename: imageItem.filename || imageItem.originalname || null,
-          annotation: imageItem._annotation || imageItem.annotation || null
-        });
-        if (DEBUG_MODE) {
-          console.log(`[getImageFromHistory] Found user-uploaded image at message index ${i}, image ${j + 1}/${imageItems.length}, filename: ${imageItem.filename || imageItem.originalname || 'unknown'}, total images found: ${imageMessages.length}`);
-        }
-      }
-    } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-      // Get ALL staged and generated images from this message
-      const imageItems = msg.content.filter(item => 
-        item.type === 'image_url' && 
-        item.image_url && 
-        item.image_url.url && 
-        (item.isStaged || item.isGenerated)
-      );
-      // Process images in order
-      for (let j = imageItems.length - 1; j >= 0; j--) {
-        const imageItem = imageItems[j];
-        imageMessages.push({
-          url: imageItem.image_url.url,
-          isStaged: imageItem.isStaged || false,
-          isGenerated: imageItem.isGenerated || false,
-          messageIndex: i,
-          filename: imageItem.filename || imageItem.originalname || null,
-          annotation: imageItem._annotation || imageItem.annotation || null
-        });
-        if (DEBUG_MODE) {
-          const imageType = imageItem.isStaged ? 'staged' : 'generated';
-          console.log(`[getImageFromHistory] Found ${imageType} image at message index ${i}, image ${j + 1}/${imageItems.length}, total images found: ${imageMessages.length}`);
-        }
-      }
-    }
-  }
-  
+
+  const imageMessages = collectImagesFromHistory(messages);
+
   if (DEBUG_MODE) {
     console.log(`[getImageFromHistory] Total images found: ${imageMessages.length}, requested index: ${imageIndex}`);
+    imageMessages.forEach((img, idx) => {
+      const kind = img.isStaged ? 'staged' : img.isGenerated ? 'generated' : 'user-uploaded';
+      console.log(`[getImageFromHistory] Found ${kind} image at index ${idx}, filename: ${img.filename || 'unknown'}`);
+    });
   }
-  
+
   // Return the image at the requested index (0 = most recent)
   if (imageIndex >= 0 && imageIndex < imageMessages.length) {
     return imageMessages[imageIndex];
   }
-  
+
   // If requested index doesn't exist but we have images, return the most recent (index 0) as fallback
   if (imageMessages.length > 0) {
     if (DEBUG_MODE) {
@@ -1615,7 +1775,7 @@ function getImageFromHistory(messages, imageIndex = 0) {
     }
     return imageMessages[0];
   }
-  
+
   return null;
 }
 
@@ -1790,6 +1950,140 @@ function getOriginalImageIndex(messages) {
   return null;
 }
 
+/** Shared prompt block: clarify ambiguity before acting; never ask and trigger image actions in the same turn. */
+const AI_DESIGNER_RESPONSE_ACTION_RULES =
+  '\n\nCLARIFICATION RULES (CRITICAL — read before staging/generating/CAD):' +
+  '\n- When ANY important detail is missing, unclear, or ambiguous, ask clarifying questions FIRST. Prefer asking over guessing or assuming.' +
+  '\n- Always ask when it is unclear: which image to use (multiple images in chat), style/theme/aesthetic, color palette, room type, furniture or decor preferences, what the user means by vague words ("better", "nicer", "fix it", "something different"), placement or layout, whether to remove existing furniture, target audience (rental vs luxury listing), or what should change vs stay the same.' +
+  '\n- Ask 1–3 focused questions per turn. Be friendly and specific — e.g. "Which style are you going for: modern, farmhouse, or something else?" not a long questionnaire.' +
+  '\n- If you cannot confidently choose staging vs generation vs CAD, or which previous image to modify, ask before acting.' +
+  '\n\nRESPONSE vs ACTION RULES (CRITICAL):' +
+  '\n- Never ask clarifying questions AND trigger staging/generation/CAD in the same response. These are mutually exclusive.' +
+  '\n- If you need more information, write ONLY your questions in "response" and set shouldStage/shouldGenerate/shouldProcessCAD to false (or omit staging/generate/cad).' +
+  '\n- EXCEPTION — proceed without asking ONLY when: (1) the user uploaded a room or blueprint photo AND clearly wants it processed ("stage this", "here\'s the room", "stage for my client", "process this blueprint"), OR (2) the user already gave enough specific detail that a professional designer would not need to ask (e.g. "stage this living room mid-century modern with warm wood and a green velvet sofa"). In case (1), use tasteful defaults (modern, broadly appealing, neutral palette) and briefly mention them in "response".' +
+  '\n- Pick ONE mode per turn: (A) QUESTIONS ONLY — no image actions, OR (B) ACTION — stage/generate with a short confirmation, not a list of questions.' +
+  '\n\nADD FURNITURE TO STAGED ROOM (CRITICAL):' +
+  '\n- When the user asks to add/include/place a chair, sofa, or other furniture item into an EXISTING staged room (especially when they upload a furniture photo with "add this chair"), you MUST use "staging" — NEVER "generate".' +
+  '\n- Set "usePreviousImage" to the index of the most recent STAGED room image (look for type "staged" in the image list — NOT the furniture upload).' +
+  '\n- The furniture photo in the CURRENT message is the reference piece; the system attaches it automatically. Set "furnitureImageIndex" to null when the user uploads the furniture in the same message.' +
+  '\n- In "additionalPrompt", emphasize preserving the exact existing staged room and only adding the referenced furniture.' +
+  '\n- If placement, scale, or which room image is ambiguous, ask questions first — do not stage until clarified.';
+
+const AI_DESIGNER_IMAGE_FRAMING_RULES =
+  '\n\nIMAGE FRAMING (CRITICAL — apply to every staging/CAD additionalPrompt):' +
+  '\n- Always tell the image model to preserve the input photo\'s exact aspect ratio, orientation, and full framing.' +
+  '\n- Do NOT crop, zoom, reframe, or cut off ceilings, floors, walls, or room edges unless the user explicitly asked for a closer crop or close-up.' +
+  '\n- All changes must fit INSIDE the existing frame — never drop content from the original photo or change the camera field of view.' +
+  '\n- When writing additionalPrompt text, explicitly include instructions to preserve full frame and aspect ratio.';
+
+/**
+ * True when the assistant response is asking the user for input before acting.
+ * Used to suppress staging/generate/cad if the model sets both questions and actions.
+ */
+function aiResponseDefersImageAction(responseText) {
+  if (!responseText || typeof responseText !== 'string') return false;
+  const t = responseText.trim().toLowerCase();
+  if (/\bhere('s| is)\b.*\b(staged|staging result|your room)\b/.test(t)) return false;
+  if (/\bi('ve| have) (staged|created|generated)\b/.test(t)) return false;
+  const deferPatterns = [
+    /\bcould you (please )?(provide|share|tell|describe|specify|clarify|let me know|confirm)\b/,
+    /\bcan you (please )?(provide|share|tell|describe|specify|clarify|let me know|confirm)\b/,
+    /\bplease (provide|share|tell|describe|specify|clarify|confirm)\b/,
+    /\bwhat (style|color|colour|type|kind|theme|furniture|decor|preference|look|vibe|aesthetic)s?\b/,
+    /\bwhich (style|color|colour|theme|look|aesthetic|image|room|option|one)\b/,
+    /\bmore (details|information|about|specifics|context)\b/,
+    /\bany (preferences|specific|details|requirements)\b/,
+    /\bdo you have (specific|any|particular)\b/,
+    /\bfor example,?\s*what\b/,
+    /\bwould you (like to|prefer to|want to) (share|tell|specify|describe|clarify)\b/,
+    /\blet me know (what|which|if|about|your|how)\b/,
+    /\bbefore i (stage|generate|create|proceed|start)\b/,
+    /\bi('d| would) like to (know|understand|clarify)\b/,
+    /\bto make sure\b/,
+    /\bnot sure (which|what|if)\b/,
+    /\ba few (quick )?questions\b/,
+    /\bquick question\b/,
+  ];
+  if (!deferPatterns.some((p) => p.test(t))) return false;
+  return t.includes('?');
+}
+
+function wantsStreamedChatResponse(req) {
+  const body = req.body || {};
+  return (
+    body.streamResponse === true ||
+    body.streamResponse === 'true' ||
+    req.query?.stream === '1' ||
+    req.headers['x-stream-response'] === '1'
+  );
+}
+
+function chatWillProcessSlowImages(stagingReq, generateReq, cadReq) {
+  if (stagingReq) {
+    const reqs = Array.isArray(stagingReq) ? stagingReq : [stagingReq];
+    if (reqs.some((s) => s && s.shouldStage)) return true;
+  }
+  if (generateReq) {
+    const reqs = Array.isArray(generateReq) ? generateReq : [generateReq];
+    if (reqs.some((g) => g && g.shouldGenerate && g.prompt)) return true;
+  }
+  if (cadReq) {
+    const reqs = Array.isArray(cadReq) ? cadReq : [cadReq];
+    if (reqs.some((c) => c && c.shouldProcessCAD)) return true;
+  }
+  return false;
+}
+
+function initChatSse(res) {
+  res.status(200);
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders();
+  }
+}
+
+function writeChatSseEvent(res, event, payload) {
+  res.write(`event: ${event}\n`);
+  res.write(`data: ${JSON.stringify(payload)}\n\n`);
+}
+
+function extractChatImagePayload(fullResponse) {
+  const payload = { response: fullResponse.response };
+  const keys = [
+    'stagedImage',
+    'stagedImages',
+    'stagingParams',
+    'stagedImageAnnotations',
+    'generatedImage',
+    'generatedImages',
+    'generatedImageAnnotations',
+    'cadImage',
+    'cadImages',
+    'cadParams',
+    'cadImageAnnotation',
+    'cadImageAnnotations',
+    'requestedImage',
+    'recalledImage',
+    'imageAnnotations',
+    'files',
+  ];
+  for (const key of keys) {
+    if (fullResponse[key] !== undefined) {
+      payload[key] = fullResponse[key];
+    }
+  }
+  return payload;
+}
+
+function finishStreamedChatResponse(res, fullResponse) {
+  writeChatSseEvent(res, 'images', extractChatImagePayload(fullResponse));
+  writeChatSseEvent(res, 'done', {});
+  res.end();
+}
+
 /**
  * Evaluates if staging should be performed and if an old image should be used
  * Similar to evaluateMemoryActions, but for staging requests
@@ -1889,7 +2183,7 @@ If the user wants to stage a room or modify an image, respond with a JSON object
 {
   "shouldStage": true,
   "roomType": "Living room" | "Bedroom" | "Kitchen" | "Bathroom" | "Dining room" | "Office" | "Other",
-  "additionalPrompt": "Create a detailed, comprehensive staging prompt based on the user's request. Include specific details about: furniture style, color scheme, mood/atmosphere, specific furniture pieces to add, decor elements, lighting preferences, and any other relevant details. Make it detailed and descriptive, as if you're instructing a professional interior designer. Base this on what the user asked for in their message. IMPORTANT: Emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what's already there.",
+  "additionalPrompt": "Create a detailed, comprehensive staging prompt based on the user's request. Include specific details about: furniture style, color scheme, mood/atmosphere, specific furniture pieces to add, decor elements, lighting preferences, and any other relevant details. Make it detailed and descriptive, as if you're instructing a professional interior designer. Base this on what the user asked for in their message. IMPORTANT: Emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what's already there. CRITICAL: Preserve the exact aspect ratio and full frame of the input photo — do not crop, zoom, or cut off any part of the room unless the user explicitly requested a tighter crop.",
   "removeFurniture": true/false,
   "usePreviousImage": false | 0 | 1 | 2 | ...
 }
@@ -1963,8 +2257,11 @@ async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-fla
     const model = genAI.getGenerativeModel({ model: geminiModel });
     
     // For text-to-image generation, we only send the text prompt
+    const fullPrompt = `${prompt}
+
+Composition: show the full scene with a natural, uncropped framing. Do not awkwardly crop ceilings, floors, walls, or key subject matter unless the user explicitly requested a tight crop or close-up.`;
     const generatePrompt = [
-      { text: prompt }
+      { text: fullPrompt }
     ];
     
     const result = await model.generateContent(generatePrompt);
@@ -1999,7 +2296,7 @@ function normalizeFurnitureBuffers(furnitureImageInput) {
   return raw.filter((b) => b && Buffer.isBuffer(b)).slice(0, 5);
 }
 
-function furnitureReferencePromptSuffix(count) {
+function furnitureReferencePromptSuffix(count, preserveExistingStaging = false) {
   if (count <= 0) return '';
   const listText =
     count === 1
@@ -2008,7 +2305,12 @@ function furnitureReferencePromptSuffix(count) {
         ? 'The second and third images'
         : 'The second, third, and fourth images';
   const pieceWord = count === 1 ? 'piece' : 'pieces';
-  return `\n\nIMPORTANT: ${listText} provided after the room photo ${count === 1 ? 'is' : 'are'} reference furniture ${pieceWord} that the user wants incorporated into the staged room. Match each item's style, color, and appearance as closely as possible. Use all reference images as guidance for what to place in the space.`;
+  let suffix = `\n\nIMPORTANT: ${listText} provided after the room photo ${count === 1 ? 'is' : 'are'} reference furniture ${pieceWord} that the user wants incorporated into the staged room. Match each item's style, color, and appearance as closely as possible. Use all reference images as guidance for what to place in the space.`;
+  if (preserveExistingStaging) {
+    suffix +=
+      '\n\nCRITICAL: The first image is an ALREADY-STAGED ROOM. Keep every existing element in that photo exactly as shown — same walls, windows, layout, camera angle, lighting, and all furniture/decor already present. ONLY add the reference furniture piece(s). Do not generate a different room. Preserve the exact aspect ratio and full frame — do not crop, zoom, or cut off any part of the original photo.';
+  }
+  return suffix;
 }
 
 async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer = null, geminiModel = 'gemini-2.5-flash-image') {
@@ -2047,7 +2349,10 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       });
     }
     if (furnitureBuffers.length > 0) {
-      prompt[0].text += furnitureReferencePromptSuffix(furnitureBuffers.length);
+      prompt[0].text += furnitureReferencePromptSuffix(
+        furnitureBuffers.length,
+        Boolean(stagingParams.preserveExistingStaging)
+      );
       if (DEBUG_MODE) {
         console.log(`[Staging] Including ${furnitureBuffers.length} furniture reference image(s) in staging request`);
       }
@@ -2748,7 +3053,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
   for (let v = 0; v < variationCount; v++) {
     let extra = additionalPrompt || '';
     if (v > 0) {
-      extra += `\n\n(Subtle variation ${v + 1} of ${variationCount}: keep architecture identical to the source—same walls, windows, doors, ceiling, floor, and room geometry. Change only virtual staging: slightly different furniture arrangement, decor, accents, textiles, or art. Same overall furniture style and mood as the main request; do not redesign the room.)`;
+      extra += `\n\n(Subtle variation ${v + 1} of ${variationCount}: keep architecture identical to the source—same walls, windows, doors, ceiling, floor, and room geometry. Preserve the exact aspect ratio and full frame — do not crop or zoom. Change only virtual staging: slightly different furniture arrangement, decor, accents, textiles, or art. Same overall furniture style and mood as the main request; do not redesign the room.)`;
     }
     const stagingParams = {
       ...stagingParamsBase,
@@ -3460,7 +3765,8 @@ app.post('/api/chat', async (req, res) => {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { messages, model, messageTag } = req.body;
+    const { messages, model, messageTag, baseImageIndex: baseImageIndexRaw } = req.body;
+    const baseImageIndex = parseBaseImageIndex(baseImageIndexRaw);
     
     // Get model from request or default to gpt-4o-mini
     const selectedModel = model || 'gpt-4o-mini';
@@ -3557,7 +3863,8 @@ app.post('/api/chat', async (req, res) => {
     systemInstruction += '\n- Set "usePreviousImage": false if using the current message\'s image, or the index (0 = most recent, 1 = second most recent, etc.) if modifying a previous image';
     systemInstruction += '\n- If user says "original image", "first image", or "initial image", use the original image index shown above';
     systemInstruction += '\n- Set "furnitureImageIndex" to the index of a furniture image from a previous message if the user wants to add a specific piece of furniture (e.g., "add that chair", "include the red sofa from before"). The furniture image will be sent to the staging system alongside the room image.';
-    systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested';
+    systemInstruction += '\n- IMPORTANT: When adding furniture to a staged room, set "usePreviousImage" to the index of the STAGED room image (not the furniture upload). If the user uploads the furniture in the CURRENT message, set "furnitureImageIndex" to null — the system attaches the upload automatically. NEVER use "generate" for this — use "staging" only.';
+    systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested. CRITICAL: Preserve the exact aspect ratio and full frame — do not crop, zoom, or cut off any part of the room unless the user explicitly asked for a tighter crop';
     systemInstruction += '\n- If "shouldStage" is false, you can omit the "staging" field or set it to null';
     systemInstruction += '\n\nIMAGE REQUEST RULES:';
     systemInstruction += '\n- Set "requestImage": true if the user asks to see, describe, analyze, or look at a previous image';
@@ -3579,6 +3886,9 @@ app.post('/api/chat', async (req, res) => {
     systemInstruction += '\n- CRITICAL: Regular staging ("staging" field) is ONLY for room photos (3D perspective interior views). If you see a blueprint/floor plan OR an image with "CAD: True", use CAD-staging instead.';
     systemInstruction += '\n- Set "furnitureImageIndex" to the index (or array of indices) of furniture images from previous messages if the user wants to include specific furniture in the 3D render';
     systemInstruction += '\n- If "shouldProcessCAD" is false, you can omit the "cad" field or set it to null';
+    systemInstruction += AI_DESIGNER_RESPONSE_ACTION_RULES;
+    systemInstruction += AI_DESIGNER_IMAGE_FRAMING_RULES;
+    systemInstruction += getBaseImageSelectionContext(baseImageIndex, deduplicatedMessages);
 
     // Get the last user message
     const lastUserMessage = messages.filter(m => m.role === 'user').pop();
@@ -3765,11 +4075,24 @@ app.post('/api/chat', async (req, res) => {
     }
     let text = aiResponseJson.response || completion.choices[0].message.content;
     const memoryActionsFromAI = aiResponseJson.memories || { stores: [], forgets: [] };
-    const stagingRequestFromAI = aiResponseJson.staging || null;
+    let stagingRequestFromAI = aiResponseJson.staging || null;
     const imageRequestFromAI = aiResponseJson.imageRequest || null;
     const recallRequestFromAI = aiResponseJson.recall || null;
-    const generateRequestFromAI = aiResponseJson.generate || null;
-    const cadRequestFromAI = aiResponseJson.cad || null;
+    let generateRequestFromAI = aiResponseJson.generate || null;
+    let cadRequestFromAI = aiResponseJson.cad || null;
+
+    if (aiResponseDefersImageAction(text)) {
+      if (DEBUG_MODE) {
+        console.log('[AI Designer] Suppressed staging/generate/cad: response asks clarifying questions');
+      }
+      stagingRequestFromAI = null;
+      generateRequestFromAI = null;
+      cadRequestFromAI = null;
+    }
+
+    if (userWantsToAddFurnitureToRoom(lastUserMessageText) && findMostRecentStagedImageIndex(messages) !== null) {
+      generateRequestFromAI = null;
+    }
     
     // Log chat to CSV file
     const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
@@ -3862,6 +4185,17 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
+    const streamMode =
+      wantsStreamedChatResponse(req) &&
+      chatWillProcessSlowImages(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI);
+    if (streamMode) {
+      initChatSse(res);
+      writeChatSseEvent(res, 'message', {
+        response: text,
+        memories: memoryActions,
+      });
+    }
+
     // Process image generation request(s) from AI response (supports single or array)
     let generatedImages = [];
     
@@ -3945,6 +4279,31 @@ app.post('/api/chat', async (req, res) => {
             usePreviousImage: stagingRequest.usePreviousImage !== undefined ? stagingRequest.usePreviousImage : false,
             furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null
           };
+
+          let currentMessageImageBuffer = null;
+          let currentMessageHasImageInChat = false;
+          if (lastUserMessage && Array.isArray(lastUserMessage.content)) {
+            const currentImageItem = lastUserMessage.content.find(
+              (item) => item.type === 'image_url' && item.image_url && item.image_url.url
+            );
+            if (currentImageItem) {
+              currentMessageHasImageInChat = true;
+              const b64 = currentImageItem.image_url.url.split(',')[1];
+              if (b64) currentMessageImageBuffer = Buffer.from(b64, 'base64');
+            }
+          }
+
+          const addFurnitureFallbackChat = applyAddFurnitureStagingFallback(
+            stagingParams,
+            lastUserMessageText,
+            messages,
+            {
+              currentMessageHasImage: currentMessageHasImageInChat,
+              currentImageBuffer: currentMessageImageBuffer,
+            }
+          );
+          stagingParams = addFurnitureFallbackChat.stagingParams;
+          const furnitureFromCurrentUpload = addFurnitureFallbackChat.furnitureFromCurrentUpload;
           
           // Fallback: If user mentions "original", "first", or "initial" image but AI didn't set usePreviousImage correctly
           const messageLower = lastUserMessageText.toLowerCase();
@@ -3970,6 +4329,16 @@ app.post('/api/chat', async (req, res) => {
               stagingParams.usePreviousImage = 0;
             }
           }
+
+          stagingParams = applyBaseImageIndexToStagingParams(
+            stagingParams,
+            baseImageIndex,
+            messages,
+            {
+              userMessage: lastUserMessageText,
+              currentMessageHasImage: currentMessageHasImageInChat,
+            }
+          );
           
           if (stagingParams) {
             try {
@@ -4034,8 +4403,8 @@ app.post('/api/chat', async (req, res) => {
             }
             
             // Retrieve furniture image if specified
-            let furnitureImageBuffer = null;
-            if (stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
+            let furnitureImageBuffer = furnitureFromCurrentUpload || null;
+            if (!furnitureImageBuffer && stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
               const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
               if (furnitureIndex !== null) {
                 if (DEBUG_MODE) {
@@ -4247,7 +4616,18 @@ app.post('/api/chat', async (req, res) => {
           }
           
           try {
-            const imageIndex = typeof cadRequest.imageIndex === 'number' ? cadRequest.imageIndex : 0;
+            const imageIndex = resolveCadImageIndex(
+              cadRequest,
+              baseImageIndex,
+              messages,
+              Boolean(
+                lastUserMessage &&
+                  Array.isArray(lastUserMessage.content) &&
+                  lastUserMessage.content.some(
+                    (item) => item.type === 'image_url' && item.image_url && item.image_url.url
+                  )
+              )
+            );
             if (DEBUG_MODE) {
               console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
             }
@@ -4469,13 +4849,25 @@ app.post('/api/chat', async (req, res) => {
       }
     }
     
-    res.json(response);
+    if (streamMode) {
+      finishStreamedChatResponse(res, response);
+    } else {
+      res.json(response);
+    }
   } catch (error) {
     console.error('Error in chat:', error);
-    res.status(500).json({ 
-      error: 'Chat processing failed', 
-      details: error.message 
-    });
+    if (res.headersSent) {
+      writeChatSseEvent(res, 'error', {
+        error: 'Chat processing failed',
+        details: error.message,
+      });
+      res.end();
+    } else {
+      res.status(500).json({ 
+        error: 'Chat processing failed', 
+        details: error.message 
+      });
+    }
   }
 });
 
@@ -4535,8 +4927,8 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     systemInstruction += '\n- CRITICAL: Before using regular staging, check the image context above. If the image you are modifying has "CAD: True" in its annotation, you MUST use CAD-staging ("cad" field) instead, NOT regular staging. This includes images you previously created with CAD-staging - if a user asks to modify a CAD-staged image, use CAD-staging again.';
     systemInstruction += '\n- Set "shouldStage": true if the user wants to stage a room photo, modify a room photo, change colors/walls/furniture, or apply any visual changes to a room photo (NOT a blueprint, and NOT a CAD-staged image with CAD: True)';
     systemInstruction += '\n- Set "usePreviousImage": false if using the current message\'s image, or the index (0 = most recent, 1 = second most recent, etc.) if modifying a previous image';
-    systemInstruction += '\n- IMPORTANT: When adding furniture to a staged room, set "usePreviousImage" to the index of the STAGED room image (not the furniture image). Set "furnitureImageIndex" to the index of the furniture image. Look at the image context above to find the correct indices.';
-    systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested';
+    systemInstruction += '\n- IMPORTANT: When adding furniture to a staged room, set "usePreviousImage" to the index of the STAGED room image (not the furniture upload). If the user uploads the furniture in the CURRENT message, set "furnitureImageIndex" to null — the system attaches the upload automatically. NEVER use "generate" for this — use "staging" only.';
+    systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested. CRITICAL: Preserve the exact aspect ratio and full frame — do not crop, zoom, or cut off any part of the room unless the user explicitly asked for a tighter crop';
     systemInstruction += '\n- If "shouldStage" is false, you can omit the "staging" field or set it to null';
     systemInstruction += '\n\nIMAGE REQUEST RULES:';
     systemInstruction += '\n- Set "requestImage": true if the user asks to see, describe, analyze, or look at a previous image';
@@ -4559,6 +4951,8 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     systemInstruction += '\n- CRITICAL: Regular staging ("staging" field) is ONLY for room photos (3D perspective interior views). If you see a blueprint/floor plan OR an image with "CAD: True", use CAD-staging instead.';
     systemInstruction += '\n- Set "furnitureImageIndex" to the index (or array of indices) of furniture images from previous messages if the user wants to include specific furniture in the 3D render';
     systemInstruction += '\n- If "shouldProcessCAD" is false, you can omit the "cad" field or set it to null';
+    systemInstruction += AI_DESIGNER_RESPONSE_ACTION_RULES;
+    systemInstruction += AI_DESIGNER_IMAGE_FRAMING_RULES;
 
     const { message = '', conversationHistory: conversationHistoryStr, model } = req.body;
     const files = Array.isArray(req.files) ? req.files : [req.files];
@@ -4614,7 +5008,9 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     }
     
     // Build context about available images in history with annotations (now that conversationHistory is parsed)
-    const { imageContext, imagesSentToGPT, originalImageIndex } = buildImageContext(conversationHistory);
+    const currentUploadFilenames = (files || []).map((f) => f.originalname).filter(Boolean);
+    const historyForImageContext = getPriorHistoryForImageContext(conversationHistory, currentUploadFilenames);
+    const { imageContext, imagesSentToGPT, originalImageIndex } = buildImageContext(historyForImageContext);
     
     // Log image context for debugging
     if (DEBUG_MODE) {
@@ -4630,6 +5026,8 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     if (imageContext) {
       systemInstruction += imageContext;
     }
+    const baseImageIndexUpload = parseBaseImageIndex(req.body.baseImageIndex);
+    systemInstruction += getBaseImageSelectionContext(baseImageIndexUpload, historyForImageContext);
 
     // Build user message content array
     const userContent = [];
@@ -4774,6 +5172,11 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         userContent[lastTextIndex].text += (userContent[lastTextIndex].text ? '\n\n' : '') + 
           `File: ${file.originalname}\n${fileContent}`;
       }
+    }
+    
+    if (hasImages && collectImagesFromHistory(historyForImageContext).length === 0) {
+      systemInstruction +=
+        '\n\nCURRENT UPLOAD NOTE: The image(s) in THIS user message are the only image(s) in the conversation so far. Do not ask whether the user meant a first or second image — proceed with this upload.';
     }
     
     // If there are unsupported files, ensure the AI acknowledges them
@@ -5052,6 +5455,19 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
         throw openaiError;
       }
     }
+
+    if (aiResponseDefersImageAction(text)) {
+      if (DEBUG_MODE) {
+        console.log('[AI Designer] Suppressed staging/generate/cad: response asks clarifying questions');
+      }
+      stagingRequestFromAI = null;
+      generateRequestFromAI = null;
+      cadRequestFromAI = null;
+    }
+
+    if (userWantsToAddFurnitureToRoom(message) && findMostRecentStagedImageIndex(conversationHistory) !== null) {
+      generateRequestFromAI = null;
+    }
     
     // Log chat to CSV file
     const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
@@ -5148,6 +5564,32 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
     
     // Check if current message has an image
     const currentMessageHasImage = firstImageFile !== null;
+
+    if (
+      !stagingRequestFromAI &&
+      userWantsToAddFurnitureToRoom(message) &&
+      findMostRecentStagedImageIndex(conversationHistory) !== null
+    ) {
+      stagingRequestFromAI = {
+        shouldStage: true,
+        roomType: 'Other',
+        additionalPrompt: message || 'Add the uploaded furniture to the existing staged room.',
+        removeFurniture: false,
+        usePreviousImage: false,
+        furnitureImageIndex: null,
+      };
+    }
+
+    const streamModeUpload =
+      wantsStreamedChatResponse(req) &&
+      chatWillProcessSlowImages(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI);
+    if (streamModeUpload) {
+      initChatSse(res);
+      writeChatSseEvent(res, 'message', {
+        response: text,
+        memories: memoryActions,
+      });
+    }
     
     if (stagingRequestFromAI) {
       // Normalize to array (max 3)
@@ -5175,6 +5617,18 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
             usePreviousImage: stagingRequest.usePreviousImage !== undefined ? stagingRequest.usePreviousImage : false,
             furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null
           };
+
+          const addFurnitureFallbackUpload = applyAddFurnitureStagingFallback(
+            stagingParams,
+            message,
+            conversationHistory,
+            {
+              currentMessageHasImage,
+              currentImageBuffer: firstImageFile ? firstImageFile.buffer : null,
+            }
+          );
+          stagingParams = addFurnitureFallbackUpload.stagingParams;
+          const furnitureFromCurrentUpload = addFurnitureFallbackUpload.furnitureFromCurrentUpload;
           
           // Fallback: If user mentions "original", "first", or "initial" image but AI didn't set usePreviousImage correctly
           if (!currentMessageHasImage) {
@@ -5202,6 +5656,16 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
               }
             }
           }
+
+          stagingParams = applyBaseImageIndexToStagingParams(
+            stagingParams,
+            baseImageIndexUpload,
+            conversationHistory,
+            {
+              userMessage: message,
+              currentMessageHasImage,
+            }
+          );
           
           if (stagingParams) {
             try {
@@ -5266,8 +5730,8 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
                 }
               }
             }
-          } else if (firstImageFile) {
-            // Use current message's image
+          } else if (firstImageFile && !userWantsToAddFurnitureToRoom(message)) {
+            // Use current message's image as the room (initial staging — not a furniture reference upload)
             imageBuffer = firstImageFile.buffer;
             imageSource = 'current message';
             if (DEBUG_MODE) {
@@ -5276,8 +5740,8 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
           }
           
           // Retrieve furniture image if specified
-          let furnitureImageBuffer = null;
-          if (stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
+          let furnitureImageBuffer = furnitureFromCurrentUpload || null;
+          if (!furnitureImageBuffer && stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
             const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
             if (furnitureIndex !== null) {
               if (DEBUG_MODE) {
@@ -5512,7 +5976,12 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
           }
           
           try {
-            const imageIndex = typeof cadRequest.imageIndex === 'number' ? cadRequest.imageIndex : 0;
+            const imageIndex = resolveCadImageIndex(
+              cadRequest,
+              baseImageIndexUpload,
+              conversationHistory,
+              currentMessageHasImage
+            );
             if (DEBUG_MODE) {
               console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
             }
@@ -5751,10 +6220,23 @@ app.post('/api/chat-upload', chatUpload.array('files', 10), async (req, res) => 
       response.imageAnnotations = imageAnnotations;
     }
     
-    res.json(response);
+    if (streamModeUpload) {
+      finishStreamedChatResponse(res, response);
+    } else {
+      res.json(response);
+    }
   } catch (error) {
     console.error('[Chat Upload] Fatal error in chat-upload endpoint:', error);
     console.error('[Chat Upload] Error stack:', error.stack);
+    
+    if (res.headersSent) {
+      writeChatSseEvent(res, 'error', {
+        error: 'Chat upload processing failed',
+        details: error.message,
+      });
+      res.end();
+      return;
+    }
     
     // Try to have the AI respond about the error, especially for unsupported file types
     try {

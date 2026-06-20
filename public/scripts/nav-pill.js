@@ -24,11 +24,10 @@
     const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
 
     function matchesPage(a) {
-      const href = (a.getAttribute("href") || "")
-        .split("#")[0]
-        .split("/")
-        .pop()
-        .toLowerCase();
+      const path = (a.getAttribute("href") || "").split("#")[0];
+      // A pure in-page anchor (e.g. href="#contact") points at the current page.
+      if (path === "") return true;
+      const href = path.split("/").pop().toLowerCase();
       return href === here || (here === "" && href === "index.html");
     }
     // A link counts as usable only if it's actually laid out (not display:none

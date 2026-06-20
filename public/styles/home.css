@@ -723,6 +723,8 @@
   box-shadow: none;
   border-radius: 0;
   padding: 6px 0;
+  overflow-x: clip;
+  max-width: 100%;
 }
 .sponsor-logo {
   filter: grayscale(1) opacity(0.65);
@@ -1712,4 +1714,76 @@
 }
 .th-contact a:hover {
   text-decoration: underline;
+}
+
+/* ==========================================================================
+   Mobile — prevent horizontal page scroll
+   ========================================================================== */
+@media (max-width: 768px) {
+  main {
+    overflow-x: clip;
+    max-width: 100%;
+  }
+
+  .site-header,
+  .site-header .nav {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .site-header .nav-center {
+    flex-wrap: wrap !important;
+    gap: 8px 10px !important;
+    padding: 0 6px !important;
+    max-width: 100% !important;
+  }
+
+  .site-header .nav-link {
+    white-space: normal !important;
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+    padding: 4px 8px !important;
+    font-size: 13px !important;
+  }
+
+  .hero,
+  .hero-content,
+  .hero-media,
+  .sponsors,
+  .sponsors-content {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .home-section,
+  .home-cta {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .cmp,
+  .cmp-row {
+    min-width: 0;
+  }
+
+  .cmp-cell {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .ig-embeds {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+
+  /* Off-screen reveal offsets can widen the scroll width before visible */
+  .reveal--left,
+  .reveal--right {
+    transform: translateY(20px);
+  }
+
+  .reveal--left.is-visible,
+  .reveal--right.is-visible {
+    transform: none;
+  }
 }

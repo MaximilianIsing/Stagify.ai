@@ -14,7 +14,8 @@
     "brand": "stagify",
     "brandSuffix": ".ai",
     "techHelp": "技术帮助",
-    "guides": "指南"
+    "guides": "指南",
+    "logoAlt": "Stagify.ai 标志 — 返回首页"
   },
   "hero": {
     "catchphrase": "上传。装修。想象。",
@@ -271,10 +272,18 @@
       "addPhotos": "+ 添加照片",
       "tryAnotherImage": "尝试另一张图片",
       "uploadAreaAria": "上传区域",
-      "editWithMask": "使用蒙版编辑",
+      "editWithMask": "使用蒙版工具编辑选定区域",
       "stagingVariations": "装修方案",
-      "originalImage": "原始图片",
-      "warningAlt": "警告",
+      "originalImage": "虚拟装修前的原始房间照片",
+      "stagedImage": "AI 虚拟装修预览",
+      "warningAlt": "重要装修提示",
+      "downloadIcon": "下载图片",
+      "maskIcon": "蒙版编辑工具图标",
+      "variationAlt": "虚拟装修方案 {index}，共 {total} 个",
+      "furnitureReferenceAlt": "家具参考照片：{filename}",
+      "uploadedRoomAlt": "您上传的房间照片{filenameSuffix}",
+      "sampleRoomAlt": "用于试用虚拟装修的房间示例照片",
+      "stagedResultAlt": "AI 虚拟装修结果{suffix}",
       "progress": {
         "preparing": "准备中…",
         "uploading": "上传图片中…",
@@ -323,7 +332,14 @@
     "luxury": "奢华",
     "coastal": "海岸",
     "midcentury": "中世纪",
-    "farmhouse": "农舍"
+    "farmhouse": "农舍",
+    "originalPhotoAlt": "虚拟装修前的空房间示例",
+    "modernPhotoAlt": "现代风格虚拟装修房间示例",
+    "scandinavianPhotoAlt": "斯堪的纳维亚风格虚拟装修房间示例",
+    "luxuryPhotoAlt": "奢华风格虚拟装修房间示例",
+    "coastalPhotoAlt": "海岸风格虚拟装修房间示例",
+    "midcenturyPhotoAlt": "中世纪风格虚拟装修房间示例",
+    "farmhousePhotoAlt": "农舍风格虚拟装修房间示例"
   },
   "whyUs": {
     "title": "为什么选择我们？",
@@ -402,25 +418,29 @@
         "name": "Maximilian Ising",
         "email": "maximilianbising@gmail.com",
         "phone": "(917) 690-6253",
-        "title": "联合创始人，开发与AI主管"
+        "title": "联合创始人，开发与AI主管",
+        "photoAlt": "Maximilian Ising 肖像，Stagify.ai 联合创始人兼开发与 AI 主管"
       },
       "lucas": {
         "name": "Lucas Shtainer",
         "email": "lucasshtainer1@gmail.com",
         "phone": "(347) 491-9609",
-        "title": "联合创始人，营销主管"
+        "title": "联合创始人，营销主管",
+        "photoAlt": "Lucas Shtainer 肖像，Stagify.ai 联合创始人兼营销主管"
       },
       "ryan": {
         "name": "Ryan Croman",
         "email": "ryancroman10@gmail.com",
         "phone": "(646) 709-6715",
-        "title": "联合创始人，外联主管"
+        "title": "联合创始人，外联主管",
+        "photoAlt": "Ryan Croman 肖像，Stagify.ai 联合创始人兼外联主管"
       },
       "emil": {
         "name": "Emil Volvosky",
         "email": "emvolvovsky@gmail.com",
         "phone": "(917) 691-2013",
-        "title": "统计营销分析师"
+        "title": "统计营销分析师",
+        "photoAlt": "Emil Volvosky 肖像，Stagify.ai 统计营销分析师"
       }
     }
   },
@@ -561,6 +581,30 @@
       "stage": "装修/修改",
       "cadStage": "装修（平面图）",
       "describe": "描述/回忆"
+    },
+    "thumbnailStrip": {
+      "label": "下一条消息的基础图片",
+      "help": "选择 AI 在下一条消息中应修改哪张图片。当您有多张上传或多个 staging 版本时很有用。",
+      "helpAria": "基础图片是什么意思？"
+    },
+    "alt": {
+      "uploadFile": "向消息附加文件",
+      "reloadChat": "开始新的对话",
+      "sendMessage": "发送消息",
+      "reportBug": "报告错误",
+      "userAvatar": "您的头像",
+      "assistantAvatar": "Stagify AI 设计师",
+      "uploadPreview": "已上传文件预览：{filename}",
+      "stagedRoom": "AI 虚拟装修房间{suffix}",
+      "generatedImage": "AI 生成的设计图片{suffix}",
+      "cadRender": "平面图 3D 渲染{suffix}",
+      "recalledImage": "此对话中先前分享的图片",
+      "requestedImage": "从对话历史请求的图片",
+      "editedImage": "蒙版编辑后的设计图片{suffix}",
+      "originalCarouselImage": "蒙版编辑前的原始图片",
+      "enlargedImage": "设计图片全尺寸视图",
+      "thumbnailSelected": "{label} — 已选为下一条消息的基础图片",
+      "thumbnailOption": "{label} — 对话中的第 {index} 张图片"
     },
     "maskEditor": {
       "title": "使用蒙版编辑",

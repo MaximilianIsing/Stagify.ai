@@ -7,7 +7,7 @@
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
     <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
     <link rel="manifest" href="manifest.json">
-    <title data-lang="meta.title">Stagify.ai - Free AI Virtual Staging Tool</title>
+    <title data-lang="meta.title">Stagify.ai - Free virtual staging with one click</title>
     <meta name="description" data-lang-attr="meta.description|content" content="Transform empty rooms with AI staging. Upload photos and get professionally staged results in seconds. Free AI home staging for real estate agents, sellers, and buyers.">
     
     <!-- SEO Keywords -->
@@ -27,23 +27,24 @@
     
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Stagify.ai - Free AI Virtual Staging Tool">
+    <meta property="og:title" content="Stagify.ai - Free virtual staging with one click">
     <meta property="og:description" content="Transform empty rooms with AI staging. Upload photos and get professionally staged results in seconds.">
     <meta property="og:url" content="https://stagify.ai">
     <meta property="og:site_name" content="Stagify.ai">
-    <meta property="og:image" content="https://stagify.ai/media-webp/logo/Logo180x180.webp">
-    <meta property="og:image:width" content="180">
-    <meta property="og:image:height" content="180">
-    <meta property="og:image:alt" content="Stagify.ai - AI Home Staging Tool Logo">
+    <meta property="og:image" content="https://stagify.ai/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Stagify.ai — before and after AI virtual staging">
     <meta property="og:locale" content="en_US">
     <meta property="og:locale:alternate" content="es_ES">
     <meta property="og:locale:alternate" content="zh_CN">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Stagify.ai - Free AI Virtual Staging Tool">
+    <meta name="twitter:title" content="Stagify.ai - Free virtual staging with one click">
     <meta name="twitter:description" content="Transform empty rooms with AI staging. Upload photos and get professionally staged results in seconds.">
-    <meta name="twitter:image" content="https://stagify.ai/media-webp/logo/Logo180x180.webp">
+    <meta name="twitter:image" content="https://stagify.ai/og-image.png">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://stagify.ai">
@@ -96,6 +97,12 @@
         /* Hero title: let “Free virtual staging with one click” wrap naturally (no forced break before “one click”) */
         .hero-content h1 br {
           display: none;
+        }
+        .hero-content .catchphrase {
+          white-space: normal !important;
+          display: block !important;
+          max-width: 100% !important;
+          font-size: clamp(1.25rem, 6vw, 2rem) !important;
         }
       }
       
@@ -328,6 +335,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
+      "@id": "https://stagify.ai/#webapp",
       "name": "Stagify.ai",
       "description": "Free AI home staging tool that transforms empty rooms with artificial intelligence. Upload photos and get professionally staged results in seconds.",
       "url": "https://stagify.ai",
@@ -348,6 +356,17 @@
           "https://www.tiktok.com/@stagify.ai"
         ]
       },
+      "mentions": {
+        "@type": "Article",
+        "headline": "10 Best Virtual Staging AI Free Tools for 2026",
+        "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
+        "datePublished": "2026-05-31",
+        "author": {
+          "@type": "Organization",
+          "name": "Armox Labs",
+          "url": "https://armox.ai"
+        }
+      },
       "keywords": "AI staging, home staging, real estate staging, virtual staging, property staging, AI-powered staging, machine learning staging, computer vision, property marketing, 3D rendering, CAD staging, floor plan staging, blueprint staging, architectural visualization, home decor, furniture placement, room redesign, interior styling, property presentation, real estate agent tools, staging software, free staging, online staging, automated staging, smart staging, digital staging, photo staging, image editing, room transformation"
     }
     </script>
@@ -355,6 +374,7 @@
     {
       "@context": "https://schema.org",
       "@type": "Organization",
+      "@id": "https://stagify.ai/#organization",
       "name": "Stagify.ai",
       "url": "https://stagify.ai",
       "logo": "https://stagify.ai/media-webp/logo/Logo180x180.webp",
@@ -363,6 +383,45 @@
       "sameAs": [
         "https://www.instagram.com/stagify.ai/",
         "https://www.tiktok.com/@stagify.ai"
+      ],
+      "subjectOf": {
+        "@type": "Article",
+        "headline": "10 Best Virtual Staging AI Free Tools for 2026",
+        "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
+        "datePublished": "2026-05-31",
+        "author": {
+          "@type": "Organization",
+          "name": "Armox Labs",
+          "url": "https://armox.ai"
+        }
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "10 Best Virtual Staging AI Free Tools for 2026",
+      "description": "Armox Labs editorial roundup of free AI virtual staging tools for 2026.",
+      "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
+      "numberOfItems": 10,
+      "author": {
+        "@type": "Organization",
+        "name": "Armox Labs",
+        "url": "https://armox.ai"
+      },
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "name": "Stagify.ai",
+          "item": {
+            "@type": "WebApplication",
+            "@id": "https://stagify.ai/#webapp",
+            "name": "Stagify.ai",
+            "url": "https://stagify.ai"
+          }
+        }
       ]
     }
     </script>
@@ -489,7 +548,7 @@
 
     <header class="site-header">
       <nav class="nav">
-        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai Logo" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
           <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
@@ -528,7 +587,7 @@
       </div>
       <section class="hero" id="home">
         <div class="hero-content">
-          <p class="catchphrase" style="color: #1e3a8a; font-size: 2.5rem; font-weight: 700; margin: 0 0 1.5rem 0; text-align: center; line-height: 1.2; white-space: nowrap; transition: all 0.3s ease; display: inline-block; transform-origin: center;" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'" data-lang="hero.catchphrase">Upload. Stage. Imagine.</p>
+          <p class="catchphrase" style="color: #1e3a8a; font-size: clamp(1.25rem, 5vw, 2.5rem); font-weight: 700; margin: 0 0 1.5rem 0; text-align: center; line-height: 1.2; transition: all 0.3s ease; display: inline-block; max-width: 100%; transform-origin: center;" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'" data-lang="hero.catchphrase">Upload. Stage. Imagine.</p>
           <div class="announcement" style="background: rgba(255, 255, 255, 0.4); color: #1e3a8a; backdrop-filter: blur(10px);" data-lang="hero.announcement">Built to make your dream space a reality</div>
           <h1 style="color: #1e3a8a;">
             <span class="w-free" data-lang="hero.title.free">Free</span>
@@ -570,47 +629,53 @@
             <div class="sponsors-track" id="sponsors-track">
               <!-- First set of sponsors -->
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Compass.webp" alt="Compass" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <!-- Duplicate set for seamless loop -->
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Compass.webp" alt="Compass" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
             </div>
           </div>
@@ -625,8 +690,8 @@
         </div>
         <div class="studio-shell">
           <div class="ba reveal reveal--left" data-lang-attr="home.studio.comparisonAria|aria-label" aria-label="Before and after staging comparison">
-            <img class="ba-after" src="media-webp/Homepage/BeforeAfter/After2.webp" alt="The room after Stagify.ai staging" decoding="async">
-            <img class="ba-before" src="media-webp/Homepage/BeforeAfter/Before2.webp" alt="The room before staging" fetchpriority="high" decoding="async">
+            <img class="ba-after" src="media-webp/Homepage/BeforeAfter/After2.webp" alt="Living room after AI virtual staging with Stagify.ai" decoding="async">
+            <img class="ba-before" src="media-webp/Homepage/BeforeAfter/Before2.webp" alt="Empty living room before virtual staging" fetchpriority="high" decoding="async">
             <span class="ba-tag ba-tag--before" data-lang="home.studio.beforeLabel">Before</span>
             <span class="ba-tag ba-tag--after" data-lang="home.studio.afterLabel">After</span>
             <div class="ba-handle" role="slider" tabindex="0" data-lang-attr="home.studio.revealSliderAria|aria-label" aria-label="Reveal slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
@@ -1077,16 +1142,16 @@
                   </div>
                   
                   <div class="image-viewer">
-                    <img id="stage-preview" class="viewer-image" data-lang-attr="modal.staging.originalImage|alt" alt="Original image">
+                    <img id="stage-preview" class="viewer-image" data-lang-attr="modal.staging.originalImage|alt" alt="Original room photo before virtual staging">
                     <canvas id="canvas1" class="viewer-image hidden"></canvas>
-                    <button id="mask-edit-btn" class="stage-mask-fab hidden" type="button" data-lang-attr="modal.staging.editWithMask|aria-label" aria-label="Edit with mask" title="Edit with mask">
-                      <img src="media-webp/Mask.webp" data-lang-attr="modal.staging.editWithMask|alt" alt="Edit with mask">
+                    <button id="mask-edit-btn" class="stage-mask-fab hidden" type="button" data-lang-attr="modal.staging.editWithMask|aria-label" aria-label="Edit selected area with mask tool" title="Edit with mask">
+                      <img src="media-webp/Mask.webp" data-lang-attr="modal.staging.maskIcon|alt" alt="" aria-hidden="true">
                     </button>
                     <div id="variation-thumbs" class="variation-thumbs hidden" data-lang-attr="modal.staging.stagingVariations|aria-label" aria-label="Staging variations"></div>
                     <div id="processing-placeholder" class="processing-placeholder">
                       <div class="placeholder-content">
                         <div class="placeholder-icon">
-                          <img src="media-webp/Warning.webp" data-lang-attr="modal.staging.warningAlt|alt" alt="Warning" class="warning-icon">
+                          <img src="media-webp/Warning.webp" data-lang-attr="modal.staging.warningAlt|alt" alt="Important staging notice" class="warning-icon" aria-hidden="true">
                         </div>
                         <div class="placeholder-text" data-lang="modal.staging.noProcessedImage">No processed image available yet</div>
                         <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Please click "Process photo" first to generate an AI-staged version of your image</div>
