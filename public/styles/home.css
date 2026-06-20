@@ -929,6 +929,9 @@
   .ig-embeds {
     grid-template-columns: minmax(0, 330px);
   }
+  .ig-embed:not(:first-child) {
+    display: none;
+  }
 }
 
 /* ==========================================================================

@@ -175,6 +175,7 @@
       "subtitle": "Unlimited staging, higher-quality models, and pro tools — plus a usage-based plan built for whole teams.",
       "pro": {
         "name": "Stagify+",
+        "tag": "For individuals",
         "per": "/ month",
         "f1": "Unlimited staging generations",
         "f2": "Higher-quality image model",
