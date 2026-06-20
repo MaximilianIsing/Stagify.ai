@@ -1370,12 +1370,54 @@
   };
   
   
+  // Load hero stat pills from server, then animate to live counts
+  function loadHeroStats() {
+    if (!document.querySelector('.stat-pill-number[data-stat]')) return;
+
+    Promise.all([
+      fetch('/api/prompt-count').then(function (r) {
+        return r.json();
+      }),
+      fetch('/api/contact-count').then(function (r) {
+        return r.json();
+      }),
+    ])
+      .then(function (results) {
+        var promptData = results[0];
+        var contactData = results[1];
+        var rooms =
+          promptData && promptData.promptCount !== undefined
+            ? Number(promptData.promptCount)
+            : null;
+        var users =
+          contactData && contactData.usersServed !== undefined
+            ? Number(contactData.usersServed)
+            : contactData && contactData.contactCount !== undefined
+              ? Number(contactData.contactCount) +
+                Number(contactData.userCount || 0)
+              : null;
+
+        if (window.StagifyHeroStats && typeof window.StagifyHeroStats.setCounts === 'function') {
+          window.StagifyHeroStats.setCounts({
+            roomsStaged: rooms,
+            usersServed: users,
+          });
+          return;
+        }
+
+        var roomsEl = document.querySelector('.stat-pill-number[data-stat="roomsStaged"]');
+        var usersEl = document.querySelector('.stat-pill-number[data-stat="usersServed"]');
+        if (roomsEl && rooms != null && !Number.isNaN(rooms)) roomsEl.textContent = String(rooms);
+        if (usersEl && users != null && !Number.isNaN(users)) usersEl.textContent = String(users);
+      })
+      .catch(function (error) {
+        console.error('Error loading hero stats:', error);
+      });
+  }
+
   // Initialize on page load (all pages)
   document.addEventListener('DOMContentLoaded', function() {
-    loadPromptCount();
-    
-    // Load and display contact count
-    loadContactCount();
+    loadHeroStats();
 
     
     // Initialize 3D tilt effect for advantages section and contact cards
@@ -1394,51 +1436,6 @@
       window.__stagifyUpdateHeroFreeGensLine();
     }
   });
-  
-  // Load and display prompt count from server
-  function loadPromptCount() {
-    fetch('/api/prompt-count')
-      .then(response => response.json())
-      .then(data => {
-        // Find the specific stat pill for "Rooms Staged" by looking for the one with the roomsStaged data-lang attribute
-        const roomsStagedPill = document.querySelector('.stat-pill-text[data-lang="hero.stats.roomsStaged"]');
-        const statPillNumber = roomsStagedPill ? roomsStagedPill.parentElement.querySelector('.stat-pill-number') : null;
-        
-        if (statPillNumber && data.promptCount !== undefined) {
-          // Format the number nicely
-          const count = data.promptCount;
-          statPillNumber.textContent = count.toString();
-
-        }
-      })
-      .catch(error => {
-        console.error('Error loading prompt count:', error);
-        // Keep the default "1000+" if there's an error
-      });
-  }
-
-  // Load and display contact count from server
-  function loadContactCount() {
-    fetch('/api/contact-count')
-      .then(response => response.json())
-      .then(data => {
-        // Find the specific stat pill for "Users Served" by looking for the one with the usersServed data-lang attribute
-        const usersServedPill = document.querySelector('.stat-pill-text[data-lang="hero.stats.usersServed"]');
-        const statPillNumber = usersServedPill ? usersServedPill.parentElement.querySelector('.stat-pill-number') : null;
-        
-        if (statPillNumber && data.usersServed !== undefined) {
-          statPillNumber.textContent = String(data.usersServed);
-        } else if (statPillNumber && data.contactCount !== undefined) {
-          statPillNumber.textContent = String(data.contactCount);
-        }
-      })
-      .catch(error => {
-        console.error('Error loading contact count:', error);
-        // Keep the default "200+" if there's an error
-      });
-  }
-
-  
   
   // 3D Tilt Effect for Advantages Section, Contact Cards, and FAQ
   function init3DTiltEffect() {
