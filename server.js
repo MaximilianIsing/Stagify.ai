@@ -567,7 +567,7 @@ const cspDirectives = {
     'https://www.gstatic.com',
     'https://*.stripe.com',
   ],
-  styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+  styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com'],
   fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
   imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
   mediaSrc: ["'self'", 'data:', 'blob:'],
@@ -681,6 +681,49 @@ app.use((err, req, res, next) => {
   }
   next(err);
 });
+
+// --- Bundled homepage CSS ---------------------------------------------------
+// Serves the homepage's six stylesheets as one render-blocking request instead
+// of six. The source files stay separate for development; this stitches them in
+// cascade order and rebuilds automatically whenever any of them changes (keyed
+// on combined mtimes), so there's no build step and edits show up on refresh.
+const CSS_BUNDLE_FILES = [
+  'styles/styles.css',
+  'styles/auth.css',
+  'styles/carousel.css',
+  'styles/star-border.css',
+  'styles/home.css',
+  'styles/home-text-animate.css',
+];
+let cssBundleCache = { body: null, sig: '' };
+app.get('/styles/app.css', (req, res) => {
+  try {
+    const sig = CSS_BUNDLE_FILES.map((f) => {
+      try {
+        return fs.statSync(path.join(__dirname, 'public', f)).mtimeMs;
+      } catch {
+        return 0;
+      }
+    }).join('-');
+    if (cssBundleCache.body === null || cssBundleCache.sig !== sig) {
+      const body = CSS_BUNDLE_FILES.map((f) => {
+        try {
+          return '/* ' + f + ' */\n' + fs.readFileSync(path.join(__dirname, 'public', f), 'utf8');
+        } catch {
+          return '';
+        }
+      }).join('\n');
+      cssBundleCache = { body, sig };
+    }
+    res.type('text/css');
+    // Same policy as the individual stylesheets: revalidate so deploys aren't stale.
+    res.setHeader('Cache-Control', 'no-cache');
+    res.send(cssBundleCache.body);
+  } catch (e) {
+    res.status(500).type('text/css').send('/* css bundle error */');
+  }
+});
+
 app.use(
   express.static('public', {
     etag: true,
@@ -692,10 +735,15 @@ app.use(
         res.setHeader('Cache-Control', 'no-cache');
       } else if (/\.(woff2?|ttf|otf|eot)$/i.test(filePath)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      } else if (/\.(png|jpe?g|webp|gif|svg|ico)$/i.test(filePath)) {
-        res.setHeader('Cache-Control', 'public, max-age=86400');
+      } else if (/\.(png|jpe?g|webp|gif|svg|ico|avif)$/i.test(filePath)) {
+        // Stable image assets — cache hard for a year. To update one in place,
+        // rename it or append a ?v= query so returning visitors re-fetch.
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (/\.(mp4|webm|mov|m4v|ogv|ogg|m4a|mp3)$/i.test(filePath)) {
+        // Large media (e.g. the background video) rarely changes — cache for a
+        // year so it isn't re-downloaded on every visit. Rename/?v= to bust.
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       }
-      // Other assets (e.g. video) keep Express defaults — intentionally untouched.
     },
   })
 );

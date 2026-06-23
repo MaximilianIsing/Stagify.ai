@@ -103,7 +103,7 @@
           "body": "经纪人几分钟内即可推广每套房源，而不必等待装修团队。卖家无需雇人即可自行装修照片。买家可在决定前预览翻新效果。借助 AI Designer，您还能把 CAD 平面图 PDF 转化为逼真的 3D 房间渲染图。",
           "p1": "经纪人：更快上架，成交更多",
           "p2": "卖家与买家：无需软件，无需设计师",
-          "p3": "AI Designer：平面图 → 3D 可视化"
+          "p3": "AI Designer：智能体化房间布置"
         },
         "team": {
           "eyebrow": "为团队打造",
@@ -523,7 +523,8 @@
     "upgradeToPlus": "升级到 Stagify+",
     "manageSubscription": "管理订阅",
     "signOut": "退出登录",
-    "manageBillingAria": "在 Stripe 中管理账单"
+    "manageBillingAria": "在 Stripe 中管理账单",
+    "stripeHelp": "Stripe 帮助中心"
   },
   "pdf": {
     "meta": {
@@ -722,6 +723,7 @@
     "pickerFree": "免费",
     "pickerPlus": "Stagify+",
     "pickerDesigner": "AI Designer",
+    "pickerPromptBar": "提示词栏",
     "demo3Desc": "观看 AI Designer 如何通过简单的对话自动布置和重新设计房间。",
     "troubleshootingTitle": "故障排查与常见问题"
   },

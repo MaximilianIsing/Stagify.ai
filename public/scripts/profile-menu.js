@@ -674,7 +674,9 @@
           '<img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18" aria-hidden="true"> Stagify+</a>' +
           '<a class="profile-menu__portal-help" href="' +
           STRIPE_CUSTOMER_PORTAL_LOGIN +
-          '" target="_blank" rel="noopener noreferrer" aria-label="' +
+          '" target="_blank" rel="noopener noreferrer" title="' +
+          esc(lang('profile.stripeHelp', 'Stripe help center')) +
+          '" aria-label="' +
           esc(lang('profile.manageBillingAria', 'Manage billing in Stripe')) +
           '">' +
           PORTAL_STRIPE_ICON +
