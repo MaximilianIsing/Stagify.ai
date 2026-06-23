@@ -5,7 +5,7 @@
 
   let ready = false;
   const observers = new WeakMap();
-  const played = new WeakSet();
+  let played = new WeakSet();
 
   const SEGMENT_TYPES = new Set(["blur", "rise", "slide", "wave"]);
   const WHOLE_TYPES = new Set(["fade", "clip", "shiny"]);
@@ -235,7 +235,7 @@
   }
 
   function refresh() {
-    played.clear();
+    played = new WeakSet();
     targets().forEach((el) => {
       resetClasses(el);
       unwrap(el);
