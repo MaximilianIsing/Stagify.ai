@@ -582,7 +582,7 @@
     },
     "thumbnailStrip": {
       "label": "Base image for next message",
-      "help": "Select which image the AI should modify when you send your next message. Helpful when you have several uploads or staged versions.",
+      "help": "Select which room image the AI should modify when you send your next message — especially when adding furniture. Helpful when you have several uploads or staged versions.",
       "helpAria": "What does base image mean?"
     },
     "alt": {

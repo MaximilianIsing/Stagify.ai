@@ -1181,11 +1181,14 @@
       }
 
       .image-thumbnail-caption {
-        max-width: 72px;
+        max-width: 88px;
         font-size: 10px;
         color: #6b7280;
         text-align: center;
-        white-space: nowrap;
+        line-height: 1.2;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
       }
@@ -2058,6 +2061,8 @@
       let selectedImageIndex = null;
       let isProcessing = false; // Track if we're currently processing a message
       let dragCounter = 0; // Track drag enter/leave events to handle nested elements
+      const MAX_UPLOAD_FILES = 5;
+      let pendingStagingRootBaseName = null;
 
       function getPdfAlt(key, replacements = {}) {
         let text = (window.LanguageSystem && window.LanguageSystem.isLoaded())
@@ -2368,8 +2373,8 @@
         });
         
         if (filteredFiles.length > 0) {
-          // Check how many files can still be added (max 3 total)
-          const remainingSlots = 3 - selectedFiles.length;
+          // Check how many files can still be added
+          const remainingSlots = MAX_UPLOAD_FILES - selectedFiles.length;
           if (remainingSlots > 0) {
             const filesToAdd = filteredFiles.slice(0, remainingSlots);
             selectedFiles.push(...filesToAdd);
@@ -2381,10 +2386,10 @@
             // Show message if user tried to add more than allowed
             if (filteredFiles.length > remainingSlots) {
               const excessCount = filteredFiles.length - remainingSlots;
-              alert(`Maximum of 3 files allowed. Only ${remainingSlots} file(s) added. ${excessCount} file(s) were not added.`);
+              alert(`Maximum of ${MAX_UPLOAD_FILES} files allowed. Only ${remainingSlots} file(s) added. ${excessCount} file(s) were not added.`);
             }
           } else {
-            alert('Maximum of 3 files allowed. Please remove some files before adding more.');
+            alert(`Maximum of ${MAX_UPLOAD_FILES} files allowed. Please remove some files before adding more.`);
           }
         }
       }
@@ -2525,53 +2530,142 @@
       // Initialize send button state
       updateSendButtonState();
 
-      function collectImagesFromConversationHistory() {
-        const imageMessages = [];
-        for (let i = conversationHistory.length - 1; i >= 0; i--) {
+      function getFileStem(filename) {
+        if (!filename || typeof filename !== 'string') return null;
+        const base = filename.replace(/\.[^.]+$/, '').trim();
+        return base || null;
+      }
+
+      function truncateThumbnailStem(stem) {
+        if (!stem) return 'Upload';
+        if (stem.length <= 22) return stem;
+        return `${stem.slice(0, 20)}…`;
+      }
+
+      function getRootBaseNameForImage(img) {
+        if (!img) return 'Upload';
+        if (img.rootBaseName) return img.rootBaseName;
+        const stem = getFileStem(img.filename);
+        return stem || 'Upload';
+      }
+
+      function resolveStagingRootBaseName(filesToSend) {
+        const images = collectImagesFromConversationHistory();
+        const baseIdx = getBaseImageIndexForRequest();
+        if (baseIdx !== undefined && images[baseIdx]) {
+          return getRootBaseNameForImage(images[baseIdx]);
+        }
+        const upload = filesToSend && filesToSend.find((f) => f.type.startsWith('image/'));
+        if (upload) return getFileStem(upload.name) || 'Upload';
+        if (images[0]) return getRootBaseNameForImage(images[0]);
+        return 'Upload';
+      }
+
+      function extractRawImagesChronological() {
+        const images = [];
+        for (let i = 0; i < conversationHistory.length; i++) {
           const msg = conversationHistory[i];
           if (msg.role === 'user' && Array.isArray(msg.content)) {
             const imageItems = msg.content.filter(
               (item) => item.type === 'image_url' && item.image_url && item.image_url.url
             );
-            for (let j = imageItems.length - 1; j >= 0; j--) {
-              const imageItem = imageItems[j];
-              imageMessages.push({
+            imageItems.forEach((imageItem) => {
+              images.push({
                 url: imageItem.image_url.url,
                 isStaged: false,
                 isGenerated: false,
+                isMasked: Boolean(imageItem.isMasked),
                 filename: imageItem.filename || null,
+                rootBaseName: imageItem.rootBaseName || null,
+                stagedNumber: imageItem.stagedNumber != null ? imageItem.stagedNumber : null,
+                maskNumber: imageItem.maskNumber != null ? imageItem.maskNumber : null,
               });
-            }
+            });
           } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
             const imageItems = msg.content.filter(
               (item) =>
                 item.type === 'image_url' &&
                 item.image_url &&
                 item.image_url.url &&
-                (item.isStaged || item.isGenerated)
+                (item.isStaged || item.isGenerated || item.isMasked)
             );
-            for (let j = imageItems.length - 1; j >= 0; j--) {
-              const imageItem = imageItems[j];
-              imageMessages.push({
+            imageItems.forEach((imageItem) => {
+              images.push({
                 url: imageItem.image_url.url,
                 isStaged: Boolean(imageItem.isStaged),
                 isGenerated: Boolean(imageItem.isGenerated),
+                isMasked: Boolean(imageItem.isMasked),
                 filename: imageItem.filename || null,
+                rootBaseName: imageItem.rootBaseName || null,
+                stagedNumber: imageItem.stagedNumber != null ? imageItem.stagedNumber : null,
+                maskNumber: imageItem.maskNumber != null ? imageItem.maskNumber : null,
               });
-            }
+            });
           }
         }
-        return imageMessages;
+        return images;
+      }
+
+      function applyThumbnailLabels(chronologicalImages) {
+        const stagedCounts = {};
+        const maskCounts = {};
+        let lastUploadRoot = 'Upload';
+
+        chronologicalImages.forEach((img) => {
+          if (!img.isStaged && !img.isGenerated && !img.isMasked) {
+            const stem = getFileStem(img.filename);
+            img.rootBaseName = img.rootBaseName || stem || lastUploadRoot;
+            lastUploadRoot = img.rootBaseName;
+            img.displayLabel = truncateThumbnailStem(img.rootBaseName);
+            return;
+          }
+
+          const root = img.rootBaseName || lastUploadRoot;
+          img.rootBaseName = root;
+
+          if (img.isMasked) {
+            if (img.maskNumber == null) {
+              maskCounts[root] = (maskCounts[root] || 0) + 1;
+              img.maskNumber = maskCounts[root];
+            } else {
+              maskCounts[root] = Math.max(maskCounts[root] || 0, img.maskNumber);
+            }
+            img.displayLabel = img.maskNumber <= 1
+              ? `${truncateThumbnailStem(root)} (Masked)`
+              : `${truncateThumbnailStem(root)} (Masked ${img.maskNumber})`;
+            return;
+          }
+
+          if (img.isStaged) {
+            if (img.stagedNumber == null) {
+              stagedCounts[root] = (stagedCounts[root] || 0) + 1;
+              img.stagedNumber = stagedCounts[root];
+            } else {
+              stagedCounts[root] = Math.max(stagedCounts[root] || 0, img.stagedNumber);
+            }
+            img.displayLabel = `${truncateThumbnailStem(root)} (Staged #${img.stagedNumber})`;
+            return;
+          }
+
+          if (img.isGenerated) {
+            const genStem = getFileStem(img.filename);
+            img.displayLabel = genStem
+              ? `${truncateThumbnailStem(genStem)} (Generated)`
+              : `${truncateThumbnailStem(root)} (Generated)`;
+          }
+        });
+
+        return chronologicalImages;
+      }
+
+      function collectImagesFromConversationHistory() {
+        const chronological = extractRawImagesChronological();
+        applyThumbnailLabels(chronological);
+        return chronological.reverse();
       }
 
       function getThumbnailLabel(img) {
-        if (img.isStaged) return 'Staged';
-        if (img.isGenerated) return 'Generated';
-        if (img.filename) {
-          const base = img.filename.replace(/\.[^.]+$/, '');
-          return base.length > 14 ? `${base.slice(0, 12)}…` : base;
-        }
-        return 'Upload';
+        return img.displayLabel || truncateThumbnailStem(getRootBaseNameForImage(img));
       }
 
       function syncImageThumbnailStrip(options) {
@@ -2858,6 +2952,10 @@
         const stagedImages = data.stagedImages || (data.stagedImage ? [data.stagedImage] : []);
         if (stagedImages.length > 0) {
           addedAssistantImages = true;
+          const rootBaseName = pendingStagingRootBaseName || 'Upload';
+          pendingStagingRootBaseName = null;
+          const priorStagedCount = collectImagesFromConversationHistory()
+            .filter((img) => img.isStaged && img.rootBaseName === rootBaseName).length;
           if (!imagesOnly) {
             addMessage('assistant', data.response);
           }
@@ -2885,6 +2983,8 @@
               type: 'image_url',
               image_url: { url: stagedImage },
               isStaged: true,
+              rootBaseName,
+              stagedNumber: priorStagedCount + index + 1,
               _annotation: annotation,
             });
           });
@@ -3035,6 +3135,7 @@
         }
 
         syncImageThumbnailStrip({ preferNewest: addedAssistantImages });
+        pendingStagingRootBaseName = null;
       }
       
       function sendMessage() {
@@ -3091,7 +3192,8 @@
                 userMessageContent.push({
                   type: 'image_url',
                   image_url: { url: e.target.result },
-                  filename: file.name // Store filename for annotation matching
+                  filename: file.name,
+                  rootBaseName: getFileStem(file.name) || 'Upload',
                 });
                 resolve();
               };
@@ -3161,6 +3263,7 @@
             }
             
             formData.append('streamResponse', 'true');
+            pendingStagingRootBaseName = resolveStagingRootBaseName(filesToSend);
             const baseImageIndex = getBaseImageIndexForRequest();
             if (baseImageIndex !== undefined) {
               formData.append('baseImageIndex', String(baseImageIndex));
@@ -3173,6 +3276,7 @@
             })
             .then(response => handleChatFetchResponse(response, typingId, messageType))
             .catch(error => {
+              pendingStagingRootBaseName = null;
               removeTypingIndicator(typingId);
               removeMessageImageLoading();
               addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
@@ -3222,6 +3326,7 @@
             
             const chatAuthTok = window.StagifyAuth && window.StagifyAuth.getToken();
             const baseImageIndexChat = getBaseImageIndexForRequest();
+            pendingStagingRootBaseName = resolveStagingRootBaseName([]);
             fetch('/api/chat', {
               method: 'POST',
               headers: {
@@ -3241,6 +3346,7 @@
             })
             .then(response => handleChatFetchResponse(response, typingId, messageType))
             .catch(error => {
+              pendingStagingRootBaseName = null;
               removeTypingIndicator(typingId);
               removeMessageImageLoading();
               addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
@@ -4469,12 +4575,25 @@
           }
           
           // Update conversation history (just the image, no text)
+          const sourceImg = collectImagesFromConversationHistory().find((img) => img.url === maskedImageSrc);
+          const rootBaseName = sourceImg ? getRootBaseNameForImage(sourceImg) : 'Upload';
+          const priorMaskCount = collectImagesFromConversationHistory()
+            .filter((img) => img.isMasked && img.rootBaseName === rootBaseName).length;
+          const maskNumber = priorMaskCount + 1;
+
           conversationHistory.push({
             role: 'assistant',
             content: [
-              { type: 'image_url', image_url: { url: data.editedImage } }
-            ]
+              {
+                type: 'image_url',
+                image_url: { url: data.editedImage },
+                isMasked: true,
+                rootBaseName,
+                maskNumber,
+              },
+            ],
           });
+          syncImageThumbnailStrip({ preferNewest: true });
           
           closeMaskEditor();
         } catch (error) {

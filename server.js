@@ -1726,7 +1726,8 @@ function getBaseImageSelectionContext(baseImageIndex, messages) {
   const name = img.filename ? ` (${img.filename})` : '';
   return (
     `\n\nUSER UI SELECTION: The user selected image index ${baseImageIndex} in the thumbnail strip as the base for this request — ${typeLabel} image${name}. ` +
-    `For staging or CAD that modifies an existing image in this turn, use index ${baseImageIndex} for usePreviousImage or imageIndex unless they clearly meant a different image or are only doing text-to-image generation.`
+    `For staging or CAD that modifies an existing image in this turn, use index ${baseImageIndex} for usePreviousImage or imageIndex unless they clearly meant a different image or are only doing text-to-image generation. ` +
+    `If they are adding, placing, or staging furniture, put it IN THIS selected room (index ${baseImageIndex}). The selected image is the room to modify — not the furniture reference, unless it is clearly only a product photo with no room context.`
   );
 }
 
@@ -1742,8 +1743,12 @@ function applyBaseImageIndexToStagingParams(stagingParams, baseImageIndex, messa
     return stagingParams;
   }
 
-  if (addingFurniture) {
+  if (addingFurniture && currentMessageHasImage) {
     return { ...stagingParams, usePreviousImage: baseImageIndex, furnitureImageIndex: null };
+  }
+
+  if (addingFurniture) {
+    return { ...stagingParams, usePreviousImage: baseImageIndex };
   }
 
   return { ...stagingParams, usePreviousImage: baseImageIndex };
@@ -1786,6 +1791,54 @@ function userWantsToAddFurnitureToRoom(messageText) {
   );
 }
 
+function isLikelyFurnitureReferenceImage(img) {
+  if (!img || img.isStaged || img.isGenerated) return false;
+  const hay = `${img.filename || ''} ${img.annotation || ''}`.toLowerCase();
+  const furnitureTerms = /\b(chair|sofa|couch|table|desk|lamp|bed|ottoman|dresser|armchair|furniture|stool|bench|nightstand|credenza|sideboard|recliner)\b/;
+  const roomTerms = /\b(room|living|bedroom|kitchen|bathroom|dining|office|interior|staging|staged|floor plan|blueprint|empty)\b/;
+  return furnitureTerms.test(hay) && !roomTerms.test(hay);
+}
+
+function isRoomImageForFurniturePlacement(img) {
+  if (!img) return false;
+  if (img.isStaged || img.isGenerated) return true;
+  return !isLikelyFurnitureReferenceImage(img);
+}
+
+function resolveTargetRoomImageIndex(messages, options = {}) {
+  const { baseImageIndex = null, userMessage = '' } = options;
+  const images = collectImagesFromHistory(messages);
+
+  if (baseImageIndex !== null && baseImageIndex < images.length) {
+    if (isRoomImageForFurniturePlacement(images[baseImageIndex])) {
+      return baseImageIndex;
+    }
+  }
+
+  const stagedIndex = findMostRecentStagedImageIndex(messages);
+  if (stagedIndex !== null) return stagedIndex;
+
+  const roomCandidates = images
+    .map((img, index) => ({ img, index }))
+    .filter(({ img }) => isRoomImageForFurniturePlacement(img));
+
+  if (roomCandidates.length === 1) {
+    return roomCandidates[0].index;
+  }
+
+  const m = (userMessage || '').toLowerCase();
+  if (/\b(original|first|initial)\b/.test(m) && /\b(room|image|photo)\b/.test(m)) {
+    const orig = getOriginalImageIndex(messages);
+    if (orig !== null) return orig;
+  }
+
+  if (/\b(that|this|the)\s+(room|space|listing|photo)\b/.test(m) || /\bstaged room\b/.test(m)) {
+    if (roomCandidates.length > 0) return roomCandidates[0].index;
+  }
+
+  return null;
+}
+
 const ADD_FURNITURE_PRESERVATION_SUFFIX =
   ' CRITICAL: The base photo is an already-staged room. Preserve this EXACT room — same architecture, walls, windows, camera angle, lighting, and all existing furniture and decor already visible. ONLY add the referenced furniture piece(s). Do not redesign the room or replace existing contents. Preserve the exact aspect ratio and full frame — do not crop or zoom.';
 
@@ -1794,13 +1847,13 @@ const ADD_FURNITURE_PRESERVATION_SUFFIX =
  * force the staged room as the base image and the upload as furniture reference.
  */
 function applyAddFurnitureStagingFallback(stagingParams, userMessage, historyMessages, options = {}) {
-  const { currentMessageHasImage = false, currentImageBuffer = null } = options;
+  const { currentMessageHasImage = false, currentImageBuffer = null, baseImageIndex = null } = options;
   if (!userWantsToAddFurnitureToRoom(userMessage)) {
     return { stagingParams, furnitureFromCurrentUpload: null };
   }
 
-  const stagedIndex = findMostRecentStagedImageIndex(historyMessages);
-  if (stagedIndex === null) {
+  const roomIndex = resolveTargetRoomImageIndex(historyMessages, { baseImageIndex, userMessage });
+  if (roomIndex === null) {
     return { stagingParams, furnitureFromCurrentUpload: null };
   }
 
@@ -1810,19 +1863,19 @@ function applyAddFurnitureStagingFallback(stagingParams, userMessage, historyMes
   }
 
   if (currentMessageHasImage) {
-    next.usePreviousImage = stagedIndex;
+    next.usePreviousImage = roomIndex;
     next.furnitureImageIndex = null;
     if (DEBUG_MODE) {
-      console.log(`[Staging] Add-furniture fallback: room index ${stagedIndex}, furniture from current upload`);
+      console.log(`[Staging] Add-furniture fallback: room index ${roomIndex}, furniture from current upload`);
     }
     return { stagingParams: next, furnitureFromCurrentUpload: currentImageBuffer };
   }
 
   if (next.usePreviousImage === false || next.usePreviousImage === null) {
-    next.usePreviousImage = stagedIndex;
+    next.usePreviousImage = roomIndex;
   }
   if (DEBUG_MODE) {
-    console.log(`[Staging] Add-furniture fallback: modifying staged room at index ${stagedIndex}`);
+    console.log(`[Staging] Add-furniture fallback: modifying room at index ${roomIndex}`);
   }
   return { stagingParams: next, furnitureFromCurrentUpload: null };
 }
@@ -2040,20 +2093,22 @@ function getOriginalImageIndex(messages) {
 const AI_DESIGNER_RESPONSE_ACTION_RULES =
   '\n\nCLARIFICATION RULES (CRITICAL — read before staging/generating/CAD):' +
   '\n- When ANY important detail is missing, unclear, or ambiguous, ask clarifying questions FIRST. Prefer asking over guessing or assuming.' +
-  '\n- Always ask when it is unclear: which image to use (multiple images in chat), style/theme/aesthetic, color palette, room type, furniture or decor preferences, what the user means by vague words ("better", "nicer", "fix it", "something different"), placement or layout, whether to remove existing furniture, target audience (rental vs luxury listing), or what should change vs stay the same.' +
+  '\n- Always ask when it is unclear: which image to use (only when multiple room images exist AND the user did not select a base image in the thumbnail strip AND conversation does not make the target room obvious), style/theme/aesthetic, color palette, room type, furniture or decor preferences, what the user means by vague words ("better", "nicer", "fix it", "something different"), placement or layout, whether to remove existing furniture, target audience (rental vs luxury listing), or what should change vs stay the same.' +
+  '\n- Do NOT ask which room to use if the user selected a base image in the thumbnail strip, if only one room image exists, or if they clearly mean the room they just staged or discussed.' +
   '\n- Ask 1–3 focused questions per turn. Be friendly and specific — e.g. "Which style are you going for: modern, farmhouse, or something else?" not a long questionnaire.' +
-  '\n- If you cannot confidently choose staging vs generation vs CAD, or which previous image to modify, ask before acting.' +
+  '\n- If you cannot confidently choose staging vs generation vs CAD, or which previous image to modify (and no thumbnail selection or obvious room context), ask before acting.' +
   '\n\nRESPONSE vs ACTION RULES (CRITICAL):' +
   '\n- Never ask clarifying questions AND trigger staging/generation/CAD in the same response. These are mutually exclusive.' +
   '\n- If you need more information, write ONLY your questions in "response" and set shouldStage/shouldGenerate/shouldProcessCAD to false (or omit staging/generate/cad).' +
   '\n- EXCEPTION — proceed without asking ONLY when: (1) the user uploaded a room or blueprint photo AND clearly wants it processed ("stage this", "here\'s the room", "stage for my client", "process this blueprint"), OR (2) the user already gave enough specific detail that a professional designer would not need to ask (e.g. "stage this living room mid-century modern with warm wood and a green velvet sofa"). In case (1), use tasteful defaults (modern, broadly appealing, neutral palette) and briefly mention them in "response".' +
   '\n- Pick ONE mode per turn: (A) QUESTIONS ONLY — no image actions, OR (B) ACTION — stage/generate with a short confirmation, not a list of questions.' +
-  '\n\nADD FURNITURE TO STAGED ROOM (CRITICAL):' +
-  '\n- When the user asks to add/include/place a chair, sofa, or other furniture item into an EXISTING staged room (especially when they upload a furniture photo with "add this chair"), you MUST use "staging" — NEVER "generate".' +
-  '\n- Set "usePreviousImage" to the index of the most recent STAGED room image (look for type "staged" in the image list — NOT the furniture upload).' +
-  '\n- The furniture photo in the CURRENT message is the reference piece; the system attaches it automatically. Set "furnitureImageIndex" to null when the user uploads the furniture in the same message.' +
-  '\n- In "additionalPrompt", emphasize preserving the exact existing staged room and only adding the referenced furniture.' +
-  '\n- If placement, scale, or which room image is ambiguous, ask questions first — do not stage until clarified.';
+  '\n\nADD FURNITURE TO ROOM (CRITICAL):' +
+  '\n- When the user asks to add/include/place a chair, sofa, or other furniture item into a room, you MUST use "staging" — NEVER "generate".' +
+  '\n- TARGET ROOM (use in this order): (1) the image the user selected in the thumbnail strip ("Base image for next message") — that IS the room to modify; (2) if obvious from conversation (they just staged or discussed one room, only one room image exists, or they say "that room"/"this staged room"), use that room\'s index; (3) the most recent staged room; (4) only if still unclear among multiple rooms AND no thumbnail selection, ask which room first — do not stage until clarified.' +
+  '\n- Set "usePreviousImage" to the TARGET ROOM index (staged or uploaded room photo — NOT the furniture product photo).' +
+  '\n- Furniture reference: if uploaded in the CURRENT message, set "furnitureImageIndex" to null (the system attaches the upload automatically). If referencing furniture from a prior message, set "furnitureImageIndex" to that piece\'s index.' +
+  '\n- In "additionalPrompt", emphasize preserving the exact existing room and only adding the referenced furniture.' +
+  '\n- If placement or scale is ambiguous, you may ask — but do not ask which room when the thumbnail strip or conversation already makes it clear.';
 
 const AI_DESIGNER_IMAGE_FRAMING_RULES =
   '\n\nIMAGE FRAMING (CRITICAL — apply to every staging/CAD additionalPrompt):' +
@@ -3951,7 +4006,7 @@ app.post('/api/chat', genLimiter, async (req, res) => {
     systemInstruction += '\n- Set "usePreviousImage": false if using the current message\'s image, or the index (0 = most recent, 1 = second most recent, etc.) if modifying a previous image';
     systemInstruction += '\n- If user says "original image", "first image", or "initial image", use the original image index shown above';
     systemInstruction += '\n- Set "furnitureImageIndex" to the index of a furniture image from a previous message if the user wants to add a specific piece of furniture (e.g., "add that chair", "include the red sofa from before"). The furniture image will be sent to the staging system alongside the room image.';
-    systemInstruction += '\n- IMPORTANT: When adding furniture to a staged room, set "usePreviousImage" to the index of the STAGED room image (not the furniture upload). If the user uploads the furniture in the CURRENT message, set "furnitureImageIndex" to null — the system attaches the upload automatically. NEVER use "generate" for this — use "staging" only.';
+    systemInstruction += '\n- IMPORTANT: When adding furniture to a room, set "usePreviousImage" to the TARGET ROOM index — the staged or uploaded room photo, NOT the furniture upload. Priority: (1) thumbnail strip base image if the user selected one, (2) the room obvious from conversation, (3) most recent staged room. If the user uploads furniture in the CURRENT message, set "furnitureImageIndex" to null — the system attaches it automatically. If furniture is from a prior message, set "furnitureImageIndex" to that index. NEVER use "generate" for this — use "staging" only.';
     systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested. CRITICAL: Preserve the exact aspect ratio and full frame — do not crop, zoom, or cut off any part of the room unless the user explicitly asked for a tighter crop';
     systemInstruction += '\n- If "shouldStage" is false, you can omit the "staging" field or set it to null';
     systemInstruction += '\n\nIMAGE REQUEST RULES:';
@@ -4388,6 +4443,7 @@ app.post('/api/chat', genLimiter, async (req, res) => {
             {
               currentMessageHasImage: currentMessageHasImageInChat,
               currentImageBuffer: currentMessageImageBuffer,
+              baseImageIndex,
             }
           );
           stagingParams = addFurnitureFallbackChat.stagingParams;
@@ -5015,7 +5071,7 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 10), async (r
     systemInstruction += '\n- CRITICAL: Before using regular staging, check the image context above. If the image you are modifying has "CAD: True" in its annotation, you MUST use CAD-staging ("cad" field) instead, NOT regular staging. This includes images you previously created with CAD-staging - if a user asks to modify a CAD-staged image, use CAD-staging again.';
     systemInstruction += '\n- Set "shouldStage": true if the user wants to stage a room photo, modify a room photo, change colors/walls/furniture, or apply any visual changes to a room photo (NOT a blueprint, and NOT a CAD-staged image with CAD: True)';
     systemInstruction += '\n- Set "usePreviousImage": false if using the current message\'s image, or the index (0 = most recent, 1 = second most recent, etc.) if modifying a previous image';
-    systemInstruction += '\n- IMPORTANT: When adding furniture to a staged room, set "usePreviousImage" to the index of the STAGED room image (not the furniture upload). If the user uploads the furniture in the CURRENT message, set "furnitureImageIndex" to null — the system attaches the upload automatically. NEVER use "generate" for this — use "staging" only.';
+    systemInstruction += '\n- IMPORTANT: When adding furniture to a room, set "usePreviousImage" to the TARGET ROOM index — the staged or uploaded room photo, NOT the furniture upload. Priority: (1) thumbnail strip base image if the user selected one, (2) the room obvious from conversation, (3) most recent staged room. If the user uploads furniture in the CURRENT message, set "furnitureImageIndex" to null — the system attaches it automatically. If furniture is from a prior message, set "furnitureImageIndex" to that index. NEVER use "generate" for this — use "staging" only.';
     systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested. CRITICAL: Preserve the exact aspect ratio and full frame — do not crop, zoom, or cut off any part of the room unless the user explicitly asked for a tighter crop';
     systemInstruction += '\n- If "shouldStage" is false, you can omit the "staging" field or set it to null';
     systemInstruction += '\n\nIMAGE REQUEST RULES:';
@@ -5713,6 +5769,7 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 10), async (r
             {
               currentMessageHasImage,
               currentImageBuffer: firstImageFile ? firstImageFile.buffer : null,
+              baseImageIndex: baseImageIndexUpload,
             }
           );
           stagingParams = addFurnitureFallbackUpload.stagingParams;
