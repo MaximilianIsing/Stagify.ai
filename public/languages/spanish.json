@@ -583,7 +583,7 @@
     },
     "thumbnailStrip": {
       "label": "Imagen base para el próximo mensaje",
-      "help": "Elige qué imagen debe modificar la IA cuando envíes tu próximo mensaje. Útil cuando tienes varias subidas o versiones escenificadas.",
+      "help": "Elige qué imagen de habitación debe modificar la IA en tu próximo mensaje — especialmente al añadir muebles. Útil cuando tienes varias subidas o versiones escenificadas.",
       "helpAria": "¿Qué significa imagen base?"
     },
     "alt": {
