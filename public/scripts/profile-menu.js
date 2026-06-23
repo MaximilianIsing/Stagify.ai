@@ -183,6 +183,7 @@
       })
       .then(function (user) {
         if (!user) return;
+        var goPlus = !!window.__stagifyPendingPlusRedirect;
         window.StagifyAuth.applyUserToUI();
         closeAuthModal();
         if (window.__stagifyPendingStaging) {
@@ -191,6 +192,10 @@
           if (stageModal) stageModal.classList.remove('hidden');
         }
         refresh();
+        if (goPlus) {
+          window.location.href = 'stagify-plus.html';
+          return;
+        }
       })
       .catch(function () {
         if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
@@ -346,6 +351,7 @@
     m.classList.add('hidden');
     m.setAttribute('aria-hidden', 'true');
     window.__stagifyPendingStaging = false;
+    window.__stagifyPendingPlusRedirect = false;
     resetAuthVerificationFlow();
   }
 
@@ -534,6 +540,7 @@
             }
             window.StagifyAuth.setToken(vdata.token);
             await window.StagifyAuth.fetchMe();
+            var goPlusVerify = !!window.__stagifyPendingPlusRedirect;
             window.StagifyAuth.applyUserToUI();
             closeAuthModal();
             if (window.__stagifyPendingStaging) {
@@ -542,6 +549,10 @@
               if (stageModal) stageModal.classList.remove('hidden');
             }
             refresh();
+            if (goPlusVerify) {
+              window.location.href = 'stagify-plus.html';
+              return;
+            }
           } catch (verr) {
             if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
           }
@@ -579,6 +590,7 @@
           }
           window.StagifyAuth.setToken(data.token);
           await window.StagifyAuth.fetchMe();
+          var goPlusLogin = !!window.__stagifyPendingPlusRedirect;
           window.StagifyAuth.applyUserToUI();
           closeAuthModal();
           if (window.__stagifyPendingStaging) {
@@ -587,6 +599,10 @@
             if (stageModal) stageModal.classList.remove('hidden');
           }
           refresh();
+          if (goPlusLogin) {
+            window.location.href = 'stagify-plus.html';
+            return;
+          }
         } catch (err) {
           if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
         }

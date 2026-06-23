@@ -34,8 +34,8 @@
     "cta": "Upload image for free",
     "freeGensLeft": "{n} free generations left today, ",
     "freeGensLeftUpgrade": "Upgrade",
-    "freeGensUpgrade": "Try Stagify+ today — <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgrade</a>",
-    "carouselNote": "Example preview — upload your photo to stage",
+    "freeGensUpgrade": "Try Stagify+ today. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgrade</a>",
+    "carouselNote": "Example preview. Upload your photo to stage",
     "stats": {
       "roomsStaged": "Rooms Staged",
       "usersServed": "Users Served",
@@ -71,12 +71,12 @@
     },
     "designer": {
       "title": "Let an AI stage your space",
-      "subtitle": "Chat with AI to stage, redesign, and iterate on any room until it looks listing-ready. <em>(Stagify+ Exclusive)</em>"
+      "subtitle": "With the AI Designer, chat to stage, redesign, and iterate on any room until it looks listing-ready. <em>(Stagify+ Exclusive)</em>"
     },
     "info": {
       "eyebrow": "The short version",
       "title": "What virtual staging is, and why it sells",
-      "subtitle": "A quick, honest rundown of how it works and who it's for — no jargon.",
+      "subtitle": "A quick, honest rundown of how it works and who it's for. No jargon.",
       "rows": {
         "why": {
           "eyebrow": "Why it works",
@@ -94,7 +94,7 @@
           "body": "Upload a photo, pick the room type and one of seven styles, and Stagify furnishes it in about eight seconds. Need changes? Remove the existing furniture, add a custom prompt, or mask one area to adjust it without starting over.",
           "p1": "7 styles plus custom prompts and furniture removal",
           "p2": "Mask-edit any part of a result without redoing it",
-          "p3": "Full copyright — use it on the MLS or in ads"
+          "p3": "Full copyright, yours to use on the MLS or in ads"
         },
         "who": {
           "eyebrow": "Who it's for",
@@ -126,7 +126,7 @@
         "cost": {
           "aspect": "Cost",
           "trad": "$2,000–$5,000+ per home, often billed monthly until it sells",
-          "stag": "Free to start — stage at no cost"
+          "stag": "Free to start, stage at no cost"
         },
         "time": {
           "aspect": "Turnaround",
@@ -136,7 +136,7 @@
         "styles": {
           "aspect": "Style options",
           "trad": "One look, locked in once it's installed",
-          "stag": "7 styles plus custom prompts — switch anytime"
+          "stag": "7 styles plus custom prompts, switch anytime"
         },
         "changes": {
           "aspect": "Changing your mind",
@@ -176,7 +176,7 @@
     },
     "plus": {
       "title": "Go further with Stagify+",
-      "subtitle": "Unlimited staging, higher-quality models, and pro tools — plus a usage-based plan built for whole teams.",
+      "subtitle": "Unlimited staging, higher-quality models, and pro tools, plus a usage-based plan built for whole teams.",
       "pro": {
         "name": "Stagify+",
         "tag": "For individuals",
@@ -218,7 +218,7 @@
     },
     "contactCta": {
       "title": "Our inbox is always open",
-      "subtitle": "Questions, feedback, or partnership ideas — we read every message and reply as soon as we can.",
+      "subtitle": "Questions, feedback, or partnership ideas? We read every message and reply as soon as we can.",
       "email": "team@stagify.ai"
     }
   },
