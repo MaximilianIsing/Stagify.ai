@@ -11,7 +11,7 @@
     "whyUs": "Why Us?",
     "faq": "FAQ",
     "contactUs": "Contact Us",
-    "brand": "stagify",
+    "brand": "Stagify",
     "brandSuffix": ".ai",
     "techHelp": "Tech Help",
     "guides": "Guides",
@@ -68,6 +68,10 @@
       "comparisonAria": "Before and after staging comparison",
       "revealSliderAria": "Reveal slider",
       "exampleRoomsAria": "Example rooms"
+    },
+    "designer": {
+      "title": "Let an AI stage your space",
+      "subtitle": "Chat with AI to stage, redesign, and iterate on any room until it looks listing-ready. <em>(Stagify+ Exclusive)</em>"
     },
     "info": {
       "eyebrow": "The short version",
@@ -181,7 +185,7 @@
         "f2": "Higher-quality image model",
         "f3": "Multiple variations per generation",
         "f4": "Masking tool to edit any area",
-        "f5": "AI Designer: floor plans → 3D renders",
+        "f5": "AI Designer: agentic staging process",
         "cta": "View Stagify+"
       },
       "ent": {
@@ -716,6 +720,8 @@
     "demo2Desc": "See how to stage with Stagify+ for unlimited generations, higher quality, and pro tools.",
     "pickerFree": "Free",
     "pickerPlus": "Stagify+",
+    "pickerDesigner": "AI Designer",
+    "demo3Desc": "Watch AI Designer agentically stage and redesign a room from a simple chat.",
     "troubleshootingTitle": "Troubleshooting & common issues"
   },
   "pageMeta": {

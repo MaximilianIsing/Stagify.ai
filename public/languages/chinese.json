@@ -11,7 +11,7 @@
     "whyUs": "我们",
     "faq": "常见问题",
     "contactUs": "联系我们",
-    "brand": "stagify",
+    "brand": "Stagify",
     "brandSuffix": ".ai",
     "techHelp": "技术帮助",
     "guides": "指南",
@@ -68,6 +68,10 @@
       "comparisonAria": "装修前后对比",
       "revealSliderAria": "对比滑块",
       "exampleRoomsAria": "示例房间"
+    },
+    "designer": {
+      "title": "让 AI 为你的空间布置",
+      "subtitle": "与 AI 对话，对任何房间进行布置、重新设计和反复调整，直到呈现出可挂牌出售的效果。<em>（Stagify+ 专属）</em>"
     },
     "info": {
       "eyebrow": "简而言之",
@@ -181,7 +185,7 @@
         "f2": "更高质量的图像模型",
         "f3": "每次生成多种方案",
         "f4": "蒙版工具，可编辑任意区域",
-        "f5": "AI Designer：平面图 → 3D 渲染",
+        "f5": "AI Designer：智能体化布置流程",
         "cta": "查看 Stagify+"
       },
       "ent": {
@@ -717,6 +721,8 @@
     "demo2Desc": "了解如何使用 Stagify+ 进行布置，享受无限生成、更高画质和专业工具。",
     "pickerFree": "免费",
     "pickerPlus": "Stagify+",
+    "pickerDesigner": "AI Designer",
+    "demo3Desc": "观看 AI Designer 如何通过简单的对话自动布置和重新设计房间。",
     "troubleshootingTitle": "故障排查与常见问题"
   },
   "pageMeta": {

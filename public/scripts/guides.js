@@ -1,35 +1,74 @@
 (function () {
-  var FREE_EMBED =
-    'https://app.supademo.com/embed/cmqldspgv0jrdqms4h4svk1dh?embed_v=2&utm_source=embed';
-  var PLUS_EMBED =
-    'https://app.supademo.com/embed/cmqleqav40k2pqms4hru96syf?embed_v=2&utm_source=embed';
+  // Optional label when you redeploy; each page load also appends a unique timestamp.
+  var SUPADEMO_CACHE_BUST = '4';
+
+  function withCacheBust(url) {
+    var sep = url.indexOf('?') >= 0 ? '&' : '?';
+    return url + sep + 'v=' + encodeURIComponent(SUPADEMO_CACHE_BUST + '-' + Date.now());
+  }
+
+  function mountFreshEmbed(panel) {
+    if (!panel) return;
+    var embedUrl = panel.getAttribute('data-supademo-embed');
+    if (!embedUrl) return;
+    var title = panel.getAttribute('data-supademo-title') || 'Supademo walkthrough';
+
+    panel.textContent = '';
+    var wrap = document.createElement('div');
+    wrap.className = 'guide-demo-embed__inner';
+
+    // Skeleton shown while the embed loads; the iframe fades in over it on load.
+    var placeholder = document.createElement('div');
+    placeholder.className = 'guide-demo-embed__placeholder';
+    placeholder.setAttribute('aria-hidden', 'true');
+    var spinner = document.createElement('span');
+    spinner.className = 'guide-demo-embed__spinner';
+    placeholder.appendChild(spinner);
+    wrap.appendChild(placeholder);
+
+    var iframe = document.createElement('iframe');
+    iframe.title = title;
+    iframe.setAttribute('loading', 'eager');
+    iframe.setAttribute('allow', 'clipboard-write');
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('webkitallowfullscreen', 'true');
+    iframe.setAttribute('mozallowfullscreen', 'true');
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.addEventListener(
+      'load',
+      function () {
+        wrap.classList.add('is-loaded');
+      },
+      { once: true }
+    );
+    iframe.src = withCacheBust(embedUrl);
+    wrap.appendChild(iframe);
+    panel.appendChild(wrap);
+  }
 
   function initDemoPicker() {
     var picker = document.querySelector('.guide-demo-picker');
     if (!picker) return;
 
     var buttons = picker.querySelectorAll('[data-demo]');
-    var panels = {
-      free: document.getElementById('guide-demo-free'),
-      plus: document.getElementById('guide-demo-plus'),
-    };
-    var descFree = document.getElementById('guide-demo-desc-free');
-    var descPlus = document.getElementById('guide-demo-desc-plus');
-    var loaded = { free: true, plus: false };
+    var panels = {};
+    var descs = {};
+    var loaded = {};
+    buttons.forEach(function (btn) {
+      var key = btn.getAttribute('data-demo');
+      panels[key] = document.getElementById('guide-demo-' + key);
+      descs[key] = document.getElementById('guide-demo-desc-' + key);
+      loaded[key] = false;
+    });
 
-    function ensureIframe(panel, src, title) {
-      if (!panel) return;
-      if (panel.querySelector('iframe')) return;
-      var wrap = document.createElement('div');
-      wrap.className = 'guide-demo-embed__inner';
-      wrap.innerHTML =
-        '<iframe src="' +
-        src +
-        '" loading="lazy" title="' +
-        title +
-        '" allow="clipboard-write" frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen></iframe>';
-      panel.appendChild(wrap);
+    function loadPanel(key) {
+      if (panels[key] && !loaded[key]) {
+        mountFreshEmbed(panels[key]);
+        loaded[key] = true;
+      }
     }
+
+    loadPanel('free');
 
     function setDemo(key) {
       buttons.forEach(function (btn) {
@@ -49,17 +88,25 @@
           panel.classList.add('is-entering');
         }
       });
-      if (key === 'plus' && !loaded.plus) {
-        ensureIframe(panels.plus, PLUS_EMBED, 'Your first Stagify+ staging');
-        loaded.plus = true;
-      }
-      if (descFree) descFree.classList.toggle('hidden', key !== 'free');
-      if (descPlus) descPlus.classList.toggle('hidden', key !== 'plus');
+      loadPanel(key);
+      Object.keys(descs).forEach(function (k) {
+        if (descs[k]) descs[k].classList.toggle('hidden', k !== key);
+      });
     }
 
     buttons.forEach(function (btn) {
       btn.addEventListener('click', function () {
         setDemo(btn.getAttribute('data-demo'));
+      });
+    });
+
+    window.addEventListener('pageshow', function (event) {
+      if (!event.persisted) return;
+      Object.keys(loaded).forEach(function (k) {
+        loaded[k] = false;
+      });
+      Object.keys(panels).forEach(function (k) {
+        if (panels[k] && !panels[k].hidden) loadPanel(k);
       });
     });
   }

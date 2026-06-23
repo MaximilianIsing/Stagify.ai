@@ -11,7 +11,7 @@
     "whyUs": "Nosotros",
     "faq": "PF",
     "contactUs": "Contáctanos",
-    "brand": "stagify",
+    "brand": "Stagify",
     "brandSuffix": ".ai",
     "techHelp": "Ayuda Técnica",
     "guides": "Guías",
@@ -68,6 +68,10 @@
       "comparisonAria": "Comparación de antes y después del staging",
       "revealSliderAria": "Control deslizante de comparación",
       "exampleRoomsAria": "Habitaciones de ejemplo"
+    },
+    "designer": {
+      "title": "Deja que una IA prepare tu espacio",
+      "subtitle": "Chatea con la IA para preparar, rediseñar e iterar sobre cualquier habitación hasta que quede lista para publicar. <em>(Exclusivo de Stagify+)</em>"
     },
     "info": {
       "eyebrow": "En resumen",
@@ -181,7 +185,7 @@
         "f2": "Modelo de imagen de mayor calidad",
         "f3": "Varias variaciones por generación",
         "f4": "Herramienta de máscara para editar cualquier área",
-        "f5": "AI Designer: planos → renders 3D",
+        "f5": "AI Designer: proceso de staging con agentes de IA",
         "cta": "Ver Stagify+"
       },
       "ent": {
@@ -717,6 +721,8 @@
     "demo2Desc": "Descubre cómo hacer staging con Stagify+ para generaciones ilimitadas, mayor calidad y herramientas profesionales.",
     "pickerFree": "Gratis",
     "pickerPlus": "Stagify+",
+    "pickerDesigner": "AI Designer",
+    "demo3Desc": "Mira cómo AI Designer prepara y rediseña una habitación de forma autónoma a partir de un simple chat.",
     "troubleshootingTitle": "Solución de problemas y dudas comunes"
   },
   "pageMeta": {
