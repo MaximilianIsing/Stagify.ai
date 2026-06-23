@@ -464,7 +464,7 @@
   font-weight: 800;
   font-size: 13.5px;
   letter-spacing: 0.3px;
-  text-transform: uppercase;
+  text-transform: none;
   color: #46557d;
 }
 .cmp-head .cmp-cell--stagify {

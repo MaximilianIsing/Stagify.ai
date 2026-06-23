@@ -103,7 +103,7 @@
           "body": "Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn CAD floor-plan PDFs into photorealistic 3D room renders.",
           "p1": "Agents: list sooner and close more",
           "p2": "Sellers & buyers: no software, no designer needed",
-          "p3": "AI Designer: floor plans → 3D visualizations"
+          "p3": "AI Designer: agentic room staging"
         },
         "team": {
           "eyebrow": "Built for teams",
@@ -522,7 +522,8 @@
     "upgradeToPlus": "Upgrade to Stagify+",
     "manageSubscription": "Manage subscription",
     "signOut": "Sign out",
-    "manageBillingAria": "Manage billing in Stripe"
+    "manageBillingAria": "Manage billing in Stripe",
+    "stripeHelp": "Stripe help center"
   },
   "pdf": {
     "meta": {
@@ -721,6 +722,7 @@
     "pickerFree": "Free",
     "pickerPlus": "Stagify+",
     "pickerDesigner": "AI Designer",
+    "pickerPromptBar": "Prompt Bar",
     "demo3Desc": "Watch AI Designer agentically stage and redesign a room from a simple chat.",
     "troubleshootingTitle": "Troubleshooting & common issues"
   },

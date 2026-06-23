@@ -103,7 +103,7 @@
           "body": "Los agentes promocionan cada propiedad en minutos en lugar de esperar a un equipo de diseño. Los vendedores diseñan sus propias fotos sin contratar a nadie. Los compradores previsualizan una reforma antes de comprometerse. Y con AI Designer, puedes convertir PDFs de planos CAD en renders 3D fotorrealistas.",
           "p1": "Agentes: publica antes y cierra más",
           "p2": "Vendedores y compradores: sin software ni diseñador",
-          "p3": "AI Designer: planos → visualizaciones 3D"
+          "p3": "AI Designer: staging de habitaciones con agentes de IA"
         },
         "team": {
           "eyebrow": "Hecho para equipos",
@@ -523,7 +523,8 @@
     "upgradeToPlus": "Mejorar a Stagify+",
     "manageSubscription": "Administrar suscripción",
     "signOut": "Cerrar sesión",
-    "manageBillingAria": "Administrar facturación en Stripe"
+    "manageBillingAria": "Administrar facturación en Stripe",
+    "stripeHelp": "Centro de ayuda de Stripe"
   },
   "pdf": {
     "meta": {
@@ -722,6 +723,7 @@
     "pickerFree": "Gratis",
     "pickerPlus": "Stagify+",
     "pickerDesigner": "AI Designer",
+    "pickerPromptBar": "Barra de prompts",
     "demo3Desc": "Mira cómo AI Designer prepara y rediseña una habitación de forma autónoma a partir de un simple chat.",
     "troubleshootingTitle": "Solución de problemas y dudas comunes"
   },
