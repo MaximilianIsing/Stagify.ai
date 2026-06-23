@@ -682,48 +682,6 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// --- Bundled homepage CSS ---------------------------------------------------
-// Serves the homepage's six stylesheets as one render-blocking request instead
-// of six. The source files stay separate for development; this stitches them in
-// cascade order and rebuilds automatically whenever any of them changes (keyed
-// on combined mtimes), so there's no build step and edits show up on refresh.
-const CSS_BUNDLE_FILES = [
-  'styles/styles.css',
-  'styles/auth.css',
-  'styles/carousel.css',
-  'styles/star-border.css',
-  'styles/home.css',
-  'styles/home-text-animate.css',
-];
-let cssBundleCache = { body: null, sig: '' };
-app.get('/styles/app.css', (req, res) => {
-  try {
-    const sig = CSS_BUNDLE_FILES.map((f) => {
-      try {
-        return fs.statSync(path.join(__dirname, 'public', f)).mtimeMs;
-      } catch {
-        return 0;
-      }
-    }).join('-');
-    if (cssBundleCache.body === null || cssBundleCache.sig !== sig) {
-      const body = CSS_BUNDLE_FILES.map((f) => {
-        try {
-          return '/* ' + f + ' */\n' + fs.readFileSync(path.join(__dirname, 'public', f), 'utf8');
-        } catch {
-          return '';
-        }
-      }).join('\n');
-      cssBundleCache = { body, sig };
-    }
-    res.type('text/css');
-    // Same policy as the individual stylesheets: revalidate so deploys aren't stale.
-    res.setHeader('Cache-Control', 'no-cache');
-    res.send(cssBundleCache.body);
-  } catch (e) {
-    res.status(500).type('text/css').send('/* css bundle error */');
-  }
-});
-
 app.use(
   express.static('public', {
     etag: true,
