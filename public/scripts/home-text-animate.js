@@ -7,13 +7,14 @@
   const observers = new WeakMap();
   const played = new WeakSet();
 
-  const SEGMENT_TYPES = new Set(["blur", "rise", "slide"]);
+  const SEGMENT_TYPES = new Set(["blur", "rise", "slide", "wave"]);
   const WHOLE_TYPES = new Set(["fade", "clip", "shiny"]);
 
   const SEGMENT_MODE = {
     blur: "letters",
     rise: "words",
     slide: "words",
+    wave: "letters",
   };
 
   const DEFAULT_STAGGER = {
@@ -55,6 +56,7 @@
       "tx-in-blur",
       "tx-in-rise",
       "tx-in-slide",
+      "tx-in-wave",
       "tx-in-fade",
       "tx-in-clip",
       "tx-in-shiny",
@@ -64,7 +66,7 @@
       "tx-done"
     );
     el.querySelectorAll(".tx-seg").forEach((seg) => {
-      seg.classList.remove("tx-in-blur", "tx-in-rise", "tx-in-slide");
+      seg.classList.remove("tx-in-blur", "tx-in-rise", "tx-in-slide", "tx-in-wave");
     });
   }
 
@@ -115,7 +117,8 @@
       getComputedStyle(el).getPropertyValue("--tx-stagger") || "60",
       10
     );
-    const base = type === "blur" ? 440 : type === "rise" ? 550 : 520;
+    const base =
+      type === "blur" ? 440 : type === "rise" ? 550 : type === "wave" ? 480 : 520;
     return base + segs.length * stagger + 100;
   }
 

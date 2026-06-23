@@ -73,6 +73,10 @@
 
     <!-- Preload background video -->
     <link rel="preload" as="video" href="background.mp4">
+
+    <!-- Warm the connection to Supademo so the AI Designer demo is ready by the time it scrolls into view -->
+    <link rel="preconnect" href="https://app.supademo.com" crossorigin>
+    <link rel="dns-prefetch" href="https://app.supademo.com">
     
 
     <link rel="stylesheet" href="styles/styles.css">
@@ -329,6 +333,7 @@
     <script src="scripts/home-text-animate.js" defer></script>
     <script src="scripts/staging-studio.js" defer></script>
     <script src="scripts/count-up.js" defer></script>
+    <script src="scripts/designer-demo.js" defer></script>
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -540,7 +545,7 @@
 
     <header class="site-header">
       <nav class="nav">
-        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
           <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
@@ -787,6 +792,21 @@
         </div>
       </section>
 
+      <!-- ===================== AI DESIGNER (STAGIFY+) ===================== -->
+      <section class="home-section home-designer" id="ai-designer-demo" aria-labelledby="designer-title">
+        <div class="home-section__head reveal">
+          <h2 class="home-section__title" id="designer-title" data-tx="wave" data-tx-stagger="22" data-lang="home.designer.title">Let an AI stage your space</h2>
+          <p class="home-section__sub" data-lang-html="home.designer.subtitle">Chat with AI to stage, redesign, and iterate on any room until it looks listing-ready. <em>(Stagify+ Exclusive)</em></p>
+        </div>
+        <div class="designer-shell">
+          <div class="designer-demo reveal reveal--left" data-supademo-embed="https://app.supademo.com/embed/cmqq4ivmb3pvzqms4q8o3kjja?embed_v=2&amp;utm_source=embed" data-supademo-title="Stagify AI Designer Demo">
+            <div class="designer-demo__placeholder" aria-hidden="true">
+              <span class="designer-demo__spinner"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= VIRTUAL VS TRADITIONAL STAGING ================= -->
       <section class="home-section home-compare" id="compare" aria-labelledby="compare-title">
         <div class="home-section__head reveal">
@@ -901,7 +921,7 @@
               <li data-lang="home.plus.pro.f2">Higher-quality image model</li>
               <li data-lang="home.plus.pro.f3">Multiple variations per generation</li>
               <li data-lang="home.plus.pro.f4">Masking tool to edit any area</li>
-              <li data-lang="home.plus.pro.f5">AI Designer: floor plans → 3D renders</li>
+              <li data-lang="home.plus.pro.f5">AI Designer: agentic staging process</li>
             </ul>
             <a class="plus-cta" href="stagify-plus.html" data-lang="home.plus.pro.cta">View Stagify+</a>
           </article>
@@ -935,7 +955,7 @@
           <article class="whyus-card whyus-card--us reveal reveal--left">
             <div class="whyus-card__head">
               <img src="media-webp/logo/Logo32x32.webp" alt="" class="whyus-card__logo" aria-hidden="true">
-              <span class="brand-strong">stagify</span><span class="brand-light">.ai</span>
+              <span class="whyus-brand"><span class="brand-strong">Stagify</span><span class="brand-light">.ai</span></span>
             </div>
             <ul class="whyus-list whyus-list--yes">
               <li data-lang-html="whyUs.stagify.features.instantResults"><strong>Instant results</strong>: ~8 seconds</li>

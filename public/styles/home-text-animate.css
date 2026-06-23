@@ -52,6 +52,20 @@
   100% { opacity: 1; transform: translateX(0); }
 }
 
+/* wave — letters spring up from below with a bouncy overshoot, rippling across */
+.tx-seg.tx-in-wave {
+  opacity: 0;
+  transform: translateY(0.9em) scale(0.42) rotate(-6deg);
+  transform-origin: 50% 100%;
+  animation: txWaveIn 0.42s cubic-bezier(0.22, 1.45, 0.4, 1) forwards;
+  animation-delay: calc(var(--tx-i, 0) * var(--tx-stagger, 22ms));
+}
+@keyframes txWaveIn {
+  0% { opacity: 0; transform: translateY(0.9em) scale(0.42) rotate(-6deg); }
+  55% { opacity: 1; transform: translateY(-0.14em) scale(1.07) rotate(1.5deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}
+
 /* Whole-line effects — hidden only once play() adds the pre-class */
 .tx-pre-shiny {
   opacity: 0;
