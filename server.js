@@ -2313,6 +2313,19 @@ function chatWillProcessSlowImages(stagingReq, generateReq, cadReq) {
   return false;
 }
 
+// Map the AI's decided intent to a loading-status category the client shows
+// during the (slow) image phase — language-independent, unlike keyword guessing.
+function chatIntentType(stagingReq, generateReq, cadReq) {
+  const some = (r, k) => {
+    const arr = Array.isArray(r) ? r : [r];
+    return arr.some((x) => x && x[k]);
+  };
+  if (some(cadReq, 'shouldProcessCAD')) return 'staging';
+  if (some(stagingReq, 'shouldStage')) return 'staging';
+  if (some(generateReq, 'shouldGenerate')) return 'generating';
+  return 'general';
+}
+
 function initChatSse(res) {
   res.status(200);
   res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -4471,6 +4484,9 @@ app.post('/api/chat', genLimiter, async (req, res) => {
       chatWillProcessSlowImages(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI);
     if (streamMode) {
       initChatSse(res);
+      writeChatSseEvent(res, 'status', {
+        type: chatIntentType(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI),
+      });
       writeChatSseEvent(res, 'message', {
         response: text,
         memories: memoryActions,
@@ -5880,6 +5896,9 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (re
       chatWillProcessSlowImages(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI);
     if (streamModeUpload) {
       initChatSse(res);
+      writeChatSseEvent(res, 'status', {
+        type: chatIntentType(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI),
+      });
       writeChatSseEvent(res, 'message', {
         response: text,
         memories: memoryActions,

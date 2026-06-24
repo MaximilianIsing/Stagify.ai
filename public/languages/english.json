@@ -533,6 +533,13 @@
     },
     "title": "AI Designer",
     "description": "Convert your CAD floorplan PDFs into photorealistic 3D interior visualizations",
+    "statusMessages": {
+      "generating": ["generating image...", "creating your image...", "bringing your vision to life...", "crafting the details...", "rendering...", "almost there...", "finalizing details...", "polishing the result...", "just a moment..."],
+      "staging": ["staging your room...", "adding furniture...", "selecting decor...", "arranging elements...", "applying styles...", "creating the design...", "generating the layout...", "refining details...", "almost ready..."],
+      "analyzing": ["analyzing image...", "examining details...", "identifying elements...", "processing visual data...", "understanding the space...", "reviewing composition...", "studying the layout...", "almost done..."],
+      "welcome": ["preparing your welcome...", "getting ready for you...", "setting things up...", "preparing a warm welcome...", "getting everything ready for you...", "almost ready to greet you...", "setting up your space...", "preparing something special..."],
+      "general": ["thinking...", "processing your request...", "analyzing...", "considering options...", "working on it...", "almost there...", "just a moment...", "preparing response..."]
+    },
     "emptyState": "Start a conversation by typing a message or uploading a file",
     "uploadFile": "Upload file",
     "inputPlaceholder": "Type your message...",
