@@ -958,10 +958,11 @@ function getTemperatureForModel(model) {
 
 // Helper function to map GPT model selection to Gemini image model
 // Fast (gpt-4o-mini) → gemini-2.5-flash-image
-// Pro (gpt-5-mini) → gemini-3-pro-image-preview
+// Pro/Stagify+ (gpt-5-mini) → gemini-3.1-flash-image (Nano Banana 2)
+// Note: CAD floor-plan staging uses gemini-3-pro-image directly (see cad-handling.js)
 function getGeminiImageModel(gptModel) {
   if (gptModel && gptModel.includes('gpt-5')) {
-    return 'gemini-3-pro-image-preview'; // Pro model
+    return 'gemini-3.1-flash-image'; // Stagify+ quality
   }
   return 'gemini-2.5-flash-image'; // Fast model (default)
 }
