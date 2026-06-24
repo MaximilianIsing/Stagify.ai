@@ -43,22 +43,36 @@
       return;
     }
 
+    // Hysteresis: show and hide use DIFFERENT trigger points with a wide dead
+    // zone between them. A single threshold makes rows parked near the edge
+    // flicker in/out on the tiniest scroll — and on mobile the address bar
+    // sliding in/out resizes the viewport (changing the ratio) with no scroll
+    // at all. Showing at 18% but only hiding once nearly gone (4%) means that
+    // jitter lands in the dead zone, where we hold the current state.
+    const SHOW_AT = 0.18;
+    const HIDE_AT = 0.04;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           const el = entry.target;
-          if (entry.isIntersecting) {
+          const ratio = entry.intersectionRatio;
+          const r = entry.boundingClientRect;
+          const root = entry.rootBounds;
+          // A row taller than the viewport can never reach SHOW_AT by ratio
+          // alone; if it spans the whole root, treat it as fully visible.
+          const spans = !!root && r.top <= root.top && r.bottom >= root.bottom;
+
+          if (ratio >= SHOW_AT || spans) {
             el.classList.add("is-visible");
             el.classList.remove("exit-up", "exit-down");
             el.dataset.seen = "1";
-          } else if (el.dataset.seen) {
+          } else if (ratio <= HIDE_AT && el.dataset.seen) {
             // Only animate OUT once it has been shown — that keeps the original
             // left/right entrance for the very first reveal. Which edge did it
             // leave through? Top => scrolled down (send it up); bottom =>
             // scrolled up (send it down).
             el.classList.remove("is-visible");
-            const r = entry.boundingClientRect;
-            const root = entry.rootBounds;
             const topEdge = root ? root.top : 0;
             if (r.bottom <= topEdge + 1) {
               el.classList.add("exit-up");
@@ -68,9 +82,11 @@
               el.classList.remove("exit-up");
             }
           }
+          // Between HIDE_AT and SHOW_AT: hold current state — this is the
+          // hysteresis band that kills the flicker.
         });
       },
-      { threshold: 0.12, rootMargin: "-6% 0px -6% 0px" }
+      { threshold: [0, HIDE_AT, SHOW_AT, 0.5, 1], rootMargin: "-6% 0px -6% 0px" }
     );
 
     els.forEach((el) => observer.observe(el));
