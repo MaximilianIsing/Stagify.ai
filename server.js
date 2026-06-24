@@ -1811,6 +1811,137 @@ function isRoomImageForFurniturePlacement(img) {
   return !isLikelyFurnitureReferenceImage(img);
 }
 
+function classifyUploadImageRole(img) {
+  if (!img) return 'unknown';
+  if (img.isStaged || img.isGenerated) return 'room';
+  const hay = `${img.filename || ''} ${img.annotation || ''}`.toLowerCase();
+  const furnitureTerms =
+    /\b(chair|sofa|couch|table|desk|lamp|bed|ottoman|dresser|armchair|furniture piece|product shot|isolated|white background|dining chair|sectional|nightstand|stool|bench|credenza|sideboard|recliner)\b/;
+  const roomTerms =
+    /\b(room|living room|bedroom|kitchen|bathroom|dining room|office|interior|empty room|unfurnished|listing photo|real estate|walls|windows|floor|space)\b/;
+  const furnitureHit = furnitureTerms.test(hay);
+  const roomHit = roomTerms.test(hay);
+  if (furnitureHit && !roomHit) return 'furniture';
+  if (roomHit && !furnitureHit) return 'room';
+  if (isLikelyFurnitureReferenceImage(img)) return 'furniture';
+  if (roomHit) return 'room';
+  return 'unknown';
+}
+
+function partitionDualUploadEntries(entries) {
+  const rooms = entries.filter((e) => e.role === 'room');
+  const furniture = entries.filter((e) => e.role === 'furniture');
+  const unknown = entries.filter((e) => e.role === 'unknown');
+
+  if (rooms.length >= 1 && furniture.length >= 1) {
+    return { room: rooms[0], furniture: [...furniture, ...unknown] };
+  }
+  if (rooms.length === 1 && unknown.length >= 1 && furniture.length === 0) {
+    return { room: rooms[0], furniture: unknown };
+  }
+  if (furniture.length === 1 && unknown.length >= 1 && rooms.length === 0) {
+    return { room: unknown[0], furniture };
+  }
+  if (entries.length === 2 && rooms.length === 0 && furniture.length === 0) {
+    // Common upload order: furniture first, room second
+    return { room: entries[entries.length - 1], furniture: [entries[0]] };
+  }
+  return null;
+}
+
+function resolveDualUploadStaging(files, annotatedUserContent, message) {
+  const imageFiles = (files || []).filter((f) => f.mimetype && f.mimetype.startsWith('image/'));
+  if (imageFiles.length < 2) return null;
+
+  const entries = imageFiles
+    .map((file) => {
+      const contentItem = (annotatedUserContent || []).find(
+        (item) =>
+          item.type === 'image_url' &&
+          (item._filename === file.originalname || item.filename === file.originalname)
+      );
+      const meta = {
+        filename: file.originalname,
+        annotation: contentItem?._annotation || contentItem?.annotation || null,
+      };
+      return {
+        buffer: file.buffer,
+        role: classifyUploadImageRole(meta),
+        filename: file.originalname,
+      };
+    })
+    .filter((e) => e.buffer);
+
+  if (entries.length < 2) return null;
+
+  let partition = partitionDualUploadEntries(entries);
+  const m = (message || '').toLowerCase();
+  if (!partition && /\bstage\s+(my|the|this)\s+room\b/.test(m) && entries.length === 2) {
+    partition = { room: entries[entries.length - 1], furniture: [entries[0]] };
+  }
+  if (!partition) return null;
+
+  const furnitureBuffers = partition.furniture.map((e) => e.buffer).filter(Boolean);
+  if (!partition.room?.buffer || furnitureBuffers.length === 0) return null;
+
+  if (DEBUG_MODE) {
+    console.log(
+      `[Staging] Dual upload split: room="${partition.room.filename}", furniture=[${partition.furniture.map((f) => f.filename).join(', ')}]`
+    );
+  }
+
+  return {
+    roomBuffer: partition.room.buffer,
+    furnitureBuffers,
+    source: 'current upload (room + furniture)',
+  };
+}
+
+function resolveDualUploadFromMessageContent(userMessageContent, message) {
+  if (!Array.isArray(userMessageContent)) return null;
+  const imageItems = userMessageContent.filter(
+    (item) => item.type === 'image_url' && item.image_url && item.image_url.url
+  );
+  if (imageItems.length < 2) return null;
+
+  const entries = imageItems
+    .map((item) => {
+      const meta = {
+        filename: item.filename || item.originalname,
+        annotation: item._annotation || item.annotation || null,
+      };
+      const b64 = item.image_url.url.split(',')[1];
+      if (!b64) return null;
+      return {
+        buffer: Buffer.from(b64, 'base64'),
+        role: classifyUploadImageRole(meta),
+        filename: meta.filename || 'upload',
+      };
+    })
+    .filter(Boolean);
+
+  if (entries.length < 2) return null;
+
+  let partition = partitionDualUploadEntries(entries);
+  const m = (message || '').toLowerCase();
+  if (!partition && /\bstage\s+(my|the|this)\s+room\b/.test(m) && entries.length === 2) {
+    partition = { room: entries[entries.length - 1], furniture: [entries[0]] };
+  }
+  if (!partition) return null;
+
+  const furnitureBuffers = partition.furniture.map((e) => e.buffer).filter(Boolean);
+  if (!partition.room?.buffer || furnitureBuffers.length === 0) return null;
+
+  return {
+    roomBuffer: partition.room.buffer,
+    furnitureBuffers,
+    source: 'message upload (room + furniture)',
+  };
+}
+
+const DUAL_UPLOAD_ROOM_PROMPT_SUFFIX =
+  ' CRITICAL: The first image is the user\'s actual room photo — preserve its exact architecture, walls, windows, doors, camera angle, lighting, and proportions. Place the furniture from the reference image(s) into THIS room only. Do not invent or substitute a different space. Preserve the full frame — do not crop or zoom.';
+
 function resolveTargetRoomImageIndex(messages, options = {}) {
   const { baseImageIndex = null, userMessage = '' } = options;
   const images = collectImagesFromHistory(messages);
@@ -4494,9 +4625,23 @@ app.post('/api/chat', genLimiter, async (req, res) => {
             try {
               let imageBuffer = null;
               let imageSource = '';
-              
-              // Determine which image to use based on usePreviousImage
-              if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
+              let furnitureImageBuffer = furnitureFromCurrentUpload || null;
+
+              const dualUploadStagingChat = resolveDualUploadFromMessageContent(
+                lastUserMessage && Array.isArray(lastUserMessage.content) ? lastUserMessage.content : null,
+                lastUserMessageText
+              );
+              if (dualUploadStagingChat) {
+                imageBuffer = dualUploadStagingChat.roomBuffer;
+                furnitureImageBuffer = dualUploadStagingChat.furnitureBuffers;
+                imageSource = dualUploadStagingChat.source;
+                if (!stagingParams.additionalPrompt || !stagingParams.additionalPrompt.includes('user\'s actual room photo')) {
+                  stagingParams = {
+                    ...stagingParams,
+                    additionalPrompt: (stagingParams.additionalPrompt || '') + DUAL_UPLOAD_ROOM_PROMPT_SUFFIX,
+                  };
+                }
+              } else if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
               // AI requested a previous image - use the AI's chosen index (AI should use context to determine the correct image)
               const imageIndex = typeof stagingParams.usePreviousImage === 'number' ? stagingParams.usePreviousImage : 0;
               if (DEBUG_MODE) {
@@ -4552,9 +4697,8 @@ app.post('/api/chat', genLimiter, async (req, res) => {
               }
             }
             
-            // Retrieve furniture image if specified
-            let furnitureImageBuffer = furnitureFromCurrentUpload || null;
-            if (!furnitureImageBuffer && stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
+            // Retrieve furniture image if specified (skip if dual upload already set furniture buffers)
+            if (!dualUploadStagingChat && !furnitureImageBuffer && stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
               const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
               if (furnitureIndex !== null) {
                 if (DEBUG_MODE) {
@@ -5822,9 +5966,20 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 10), async (r
             try {
             let imageBuffer = null;
             let imageSource = '';
-            
-            // Determine which image to use
-            if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
+            let furnitureImageBuffer = furnitureFromCurrentUpload || null;
+
+            const dualUploadStaging = resolveDualUploadStaging(files, cleanedUserContent, message);
+            if (dualUploadStaging) {
+              imageBuffer = dualUploadStaging.roomBuffer;
+              furnitureImageBuffer = dualUploadStaging.furnitureBuffers;
+              imageSource = dualUploadStaging.source;
+              if (!stagingParams.additionalPrompt || !stagingParams.additionalPrompt.includes('user\'s actual room photo')) {
+                stagingParams = {
+                  ...stagingParams,
+                  additionalPrompt: (stagingParams.additionalPrompt || '') + DUAL_UPLOAD_ROOM_PROMPT_SUFFIX,
+                };
+              }
+            } else if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
             // AI requested a previous image
             const imageIndex = typeof stagingParams.usePreviousImage === 'number' ? stagingParams.usePreviousImage : 0;
             
@@ -5890,9 +6045,8 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 10), async (r
             }
           }
           
-          // Retrieve furniture image if specified
-          let furnitureImageBuffer = furnitureFromCurrentUpload || null;
-          if (!furnitureImageBuffer && stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
+          // Retrieve furniture image if specified (skip if dual upload already set furniture buffers)
+          if (!dualUploadStaging && !furnitureImageBuffer && stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
             const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
             if (furnitureIndex !== null) {
               if (DEBUG_MODE) {

@@ -2719,6 +2719,28 @@
         });
       }
 
+      function pickPreferredRoomImageIndex(images) {
+        if (!images || images.length < 2) return 0;
+        function roleFor(img) {
+          const hay = `${img.filename || ''} ${img.displayLabel || ''}`.toLowerCase();
+          const furniture = /\b(chair|sofa|couch|table|desk|lamp|bed|ottoman|dresser|armchair|furniture|stool|bench|nightstand)\b/;
+          const room = /\b(room|living|bedroom|kitchen|bathroom|dining|office|interior|empty)\b/;
+          if (furniture.test(hay) && !room.test(hay)) return 'furniture';
+          if (room.test(hay)) return 'room';
+          return 'unknown';
+        }
+        const roles = images.map((img, index) => ({ index, role: roleFor(img) }));
+        const roomHit = roles.find((r) => r.role === 'room');
+        if (roomHit) return roomHit.index;
+        const furnitureHit = roles.find((r) => r.role === 'furniture');
+        if (furnitureHit) {
+          const unknown = roles.find((r) => r.role === 'unknown');
+          if (unknown) return unknown.index;
+        }
+        // Default: second file in upload order = index 1 (chronological); reversed list index 1
+        return Math.min(1, images.length - 1);
+      }
+
       function getBaseImageIndexForRequest() {
         const images = collectImagesFromConversationHistory();
         if (images.length === 0 || selectedImageIndex === null) return undefined;
@@ -3231,6 +3253,11 @@
             conversationHistory.push(userMessage);
           }
           syncImageThumbnailStrip();
+          if (filesToSend.length >= 2) {
+            const imagesForPick = collectImagesFromConversationHistory();
+            selectedImageIndex = pickPreferredRoomImageIndex(imagesForPick);
+            syncImageThumbnailStrip();
+          }
           
           // Send to backend
           if (filesToSend.length > 0) {
