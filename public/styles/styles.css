@@ -29,3 +29,23 @@
 @media (prefers-reduced-motion:reduce){.nav-pill.is-ready{transition:opacity .2s ease}}
 
 /* hero-content top spacing (desktop 2-col) */@media (min-width:901px){.hero-content{padding-top:44px}}
+
+/* === Empty-room viewer (two-stage "remove existing furniture") === */
+.empty-room-fab svg{width:24px;height:24px;display:block;fill:none;stroke:#fff;stroke-width:1.7;stroke-linejoin:round;stroke-linecap:round}
+/* Box hugs the image so a tall/narrow result doesn't leave wide side gutters. */
+.empty-room-content{width:auto;max-width:min(1000px,95vw)}
+.empty-room-content .stage-mask-header{gap:18px}
+.empty-room-header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+/* Hug the image (width:fit-content) and center it, so a narrow/tall result
+   doesn't show the elevated background as side "borders" under the wider header. */
+.empty-room-figure{width:fit-content;max-width:100%;margin:4px auto 0;border-radius:12px;overflow:hidden;background:var(--bg-elevated);display:block}
+.empty-room-figure img{display:block;max-width:min(1000px,90vw);max-height:78vh;width:auto;height:auto}
+
+/* === "Keep furniture" reveal under Remove existing furniture === */
+/* Inherits .label / .text-input so it matches the Additional prompting field.
+   The parent .tool-row is a grid with its own 8px gap, so no extra margin. */
+.keep-furniture-row{margin-top:0}
+
+/* Empty furniture-photos list shouldn't occupy a grid track (it added a stray
+   gap between "+ Add photos" and the hint text). */
+#stagify-furniture-list:empty{display:none}

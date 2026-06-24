@@ -2722,6 +2722,92 @@ function furnitureReferencePromptSuffix(count, preserveExistingStaging = false) 
   return suffix;
 }
 
+// Two-stage "remove existing furniture": before staging, physically empty the
+// room in a dedicated pass. This is intentionally cheap — always the fast
+// 2.5-flash model, a single attempt, no quality gate — because erasing is a
+// simpler task than staging. Returns { dataUrl, buffer } on success, or null so
+// callers can gracefully fall back to the original (single-pass) behavior.
+const FURNITURE_ERASE_PROMPT = `You are an expert real-estate photo editor. Remove ALL furniture, decor, rugs, curtains, wall art, plants, lamps, and every movable or staged object from this interior room photo, leaving a completely EMPTY, unfurnished room.
+
+CRITICAL RULES:
+- Keep the room itself perfectly intact: walls, floor, ceiling, windows, doors, door/window frames, moldings, baseboards, trim, built-in fixtures, and the exact room geometry must stay UNCHANGED.
+- Reconstruct the floor and wall areas that were hidden behind furniture so they look clean, continuous, and photorealistic — no ghosting, shadows, smudges, or leftover outlines of the removed items.
+- Preserve the exact camera angle, perspective, framing, lighting, and aspect ratio. Do not crop, zoom, or re-frame.
+- Do NOT add any new furniture, objects, or decor. The result must be a believable empty room ready to be staged.`;
+
+// Cheap GPT-vision pre-check: if the room is already essentially empty there's
+// nothing to erase, so we skip the (more expensive) Gemini removal pass entirely.
+// Fails open — on any error or when the reviewer is disabled we DON'T skip, so a
+// flaky check never silently turns off furniture removal.
+const EMPTY_ROOM_CHECK_PROMPT = `You are looking at a photo of an interior room. Decide whether the room is ALREADY essentially empty of furniture and decor — i.e. a vacant/unfurnished room with at most a few minor leftover items — versus a furnished or staged room containing furniture that would need to be removed.\nReply with EXACTLY "EMPTY: true" if the room is already basically empty, or "EMPTY: false" if it contains furniture/decor worth removing. Output nothing else.`;
+
+async function roomIsAlreadyEmpty(imageBuffer) {
+  if (!openai) return false;
+  try {
+    const processed = await downscaleImage(imageBuffer);
+    const dataUrl = `data:image/jpeg;base64,${processed.toString('base64')}`;
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: EMPTY_ROOM_CHECK_PROMPT },
+            { type: 'image_url', image_url: { url: dataUrl } },
+          ],
+        },
+      ],
+      temperature: 0,
+      max_tokens: 10,
+    });
+    const raw = (completion.choices[0].message.content || '').trim();
+    return /EMPTY:\s*true/i.test(raw);
+  } catch (error) {
+    console.error('[Erase] empty-room pre-check failed, proceeding with erase:', error.message);
+    return false;
+  }
+}
+
+async function eraseFurniture(imageBuffer, req, keepInstruction = '') {
+  if (!genAI) return null;
+  try {
+    const processedImageBuffer = await downscaleImage(imageBuffer);
+    const base64Image = processedImageBuffer.toString('base64');
+    let eraseText = FURNITURE_ERASE_PROMPT;
+    if (keepInstruction && keepInstruction.trim()) {
+      eraseText += `\n\nEXCEPTION — DO NOT remove the following existing items; keep them exactly where they are, unchanged: ${keepInstruction.trim()}. Remove everything else as instructed above.`;
+      if (DEBUG_MODE) {
+        console.log(`[Erase] keeping user-specified items: ${keepInstruction.trim()}`);
+      }
+    }
+    const prompt = [
+      { text: eraseText },
+      { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
+    ];
+    if (DEBUG_MODE) {
+      console.log('[Erase] running furniture-removal pass on gemini-2.5-flash-image (1 attempt, no gate)');
+    }
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    if (!response || !response.candidates || response.candidates.length === 0) {
+      throw new Error('no candidates in erase response');
+    }
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) {
+        return {
+          dataUrl: `data:image/png;base64,${part.inlineData.data}`,
+          buffer: Buffer.from(part.inlineData.data, 'base64'),
+        };
+      }
+    }
+    throw new Error('no image data in erase response');
+  } catch (error) {
+    console.error('[Erase] furniture removal failed, falling back to single-pass staging:', error.message);
+    return null;
+  }
+}
+
 async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer = null, geminiModel = 'gemini-2.5-flash-image') {
   try {
     if (!genAI) {
@@ -3413,6 +3499,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
     furnitureStyle = 'standard',
     additionalPrompt = '',
     removeFurniture = false,
+    keepFurniture = '',
     userRole = 'unknown',
     userReferralSource = 'unknown',
     userEmail = 'unknown',
@@ -3450,10 +3537,18 @@ async function handleVirtualStagingMultipart(req, res, meta) {
       ? furnitureFiles.slice(0, 5).map((f) => f.buffer).filter(Boolean)
       : null;
 
+  // "Remove existing furniture" is a Stagify+ / Enterprise feature (isPro already
+  // covers enterprise-domain users, who are treated as pro here).
   const removeBool =
-    removeFurniture === true ||
-    removeFurniture === 'true' ||
-    removeFurniture === 'on';
+    isPro &&
+    (removeFurniture === true ||
+      removeFurniture === 'true' ||
+      removeFurniture === 'on');
+
+  // Two-stage removal stages every variation from one shared empty room, so we
+  // cap output at a single image when furniture removal is on (matches the UI,
+  // which hides the variations slider and pins it to 1).
+  if (removeBool) variationCount = 1;
 
   const stagingParamsBase = {
     roomType,
@@ -3465,18 +3560,51 @@ async function handleVirtualStagingMultipart(req, res, meta) {
   const geminiModel = getGeminiImageModel(selectedModel);
   const images = [];
 
+  // Two-stage removal: erase the furniture ONCE up front (not per-variation, so
+  // a 3-variation job doesn't pay for 3 erases), then stage every variation from
+  // the same empty room. On failure we fall back to the original single-pass
+  // removal prompt by keeping removeFurniture true.
+  let stageBaseBuffer = mainFile.buffer;
+  let stageBaseParams = stagingParamsBase;
+  let emptyRoomDataUrl = null;
+  if (removeBool) {
+    // Cheap GPT-vision pass first: if the room is already basically empty there's
+    // no furniture to remove, so skip the erase entirely (saves a Gemini call).
+    const alreadyEmpty = await roomIsAlreadyEmpty(mainFile.buffer);
+    if (alreadyEmpty) {
+      if (DEBUG_MODE) {
+        console.log('[Erase] room already basically empty — skipping furniture-removal pass.');
+      }
+    } else {
+      const keepInstruction = typeof keepFurniture === 'string' ? keepFurniture.trim().slice(0, 500) : '';
+      const erased = await eraseFurniture(mainFile.buffer, req, keepInstruction);
+      if (erased) {
+        stageBaseBuffer = erased.buffer;
+        emptyRoomDataUrl = erased.dataUrl;
+        // The room is already empty — stage it cleanly instead of re-issuing the
+        // "remove all furniture" instruction on an already-empty room.
+        stageBaseParams = { ...stagingParamsBase, removeFurniture: false };
+        if (DEBUG_MODE) {
+          console.log('[Erase] furniture removed in pre-stage pass; staging from empty room.');
+        }
+      } else if (DEBUG_MODE) {
+        console.log('[Erase] pre-stage erase unavailable; staging with single-pass removal prompt.');
+      }
+    }
+  }
+
   for (let v = 0; v < variationCount; v++) {
     let extra = additionalPrompt || '';
     if (v > 0) {
       extra += `\n\n(Subtle variation ${v + 1} of ${variationCount}: keep architecture identical to the source—same walls, windows, doors, ceiling, floor, and room geometry. Preserve the exact aspect ratio and full frame — do not crop or zoom. Change only virtual staging: slightly different furniture arrangement, decor, accents, textiles, or art. Same overall furniture style and mood as the main request; do not redesign the room.)`;
     }
     const stagingParams = {
-      ...stagingParamsBase,
+      ...stageBaseParams,
       additionalPrompt: extra.trim(),
     };
 
     const stagedImage = await processStaging(
-      mainFile.buffer,
+      stageBaseBuffer,
       stagingParams,
       req,
       furnitureBuffers && furnitureBuffers.length ? furnitureBuffers : null,
@@ -3510,6 +3638,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
     return res.json({
       success: true,
       image: images[0],
+      emptyRoom: emptyRoomDataUrl || undefined,
       user: responseUser,
     });
   }
@@ -3517,6 +3646,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
     success: true,
     images,
     image: images[0],
+    emptyRoom: emptyRoomDataUrl || undefined,
     user: responseUser,
   });
 }

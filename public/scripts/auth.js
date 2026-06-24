@@ -85,6 +85,23 @@
       var u = this.user;
       var proPanel = document.getElementById('stagify-pro-panel');
 
+      // "Remove existing furniture" is Stagify+ / Enterprise only (enterprise
+      // users carry plan === 'pro'). Hide the control for everyone else and clear
+      // any checked state so a downgraded/anon user can't submit removeFurniture.
+      var removeRow = document.getElementById('remove-furniture-row');
+      if (removeRow) {
+        if (u && u.plan === 'pro') {
+          removeRow.classList.remove('hidden');
+        } else {
+          removeRow.classList.add('hidden');
+          var rfCb = document.getElementById('remove-furniture');
+          if (rfCb && rfCb.checked) {
+            rfCb.checked = false;
+            rfCb.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+      }
+
       document.querySelectorAll('.nav-ai-designer-pro').forEach(function (el) {
         if (u && u.plan === 'pro') {
           el.classList.remove('hidden');

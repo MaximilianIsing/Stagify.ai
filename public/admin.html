@@ -89,6 +89,7 @@
     /* badges */
     .adm-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
     .adm-badge-pro{background:#dbeafe;color:#1e40af}
+    .adm-badge-enterprise{background:#fef3c7;color:#92400e}
     .adm-badge-free{background:#f1f5f9;color:#64748b}
     .adm-badge-active{background:#dcfce7;color:#166534}
     .adm-badge-cancelled{background:#fef2f2;color:#991b1b}
@@ -319,7 +320,23 @@
   function daysAgo(n){var d=new Date();d.setDate(d.getDate()-n);d.setHours(0,0,0,0);return d}
   function dayKey(iso){try{return new Date(iso).toISOString().slice(0,10)}catch(e){return null}}
 
-  function badge(plan){return el('span',{className:'adm-badge adm-badge-'+(plan==='pro'?'pro':'free'),textContent:plan})}
+  function badge(plan){var cls=plan==='pro'?'pro':plan==='enterprise'?'enterprise':'free';return el('span',{className:'adm-badge adm-badge-'+cls,textContent:plan})}
+  // True if the user gets Stagify+ via an active enterprise domain (not their own sub).
+  function userEnterpriseActive(u){
+    var dom=(u&&u.email||'').split('@')[1];
+    if(!dom)return false;
+    dom=dom.toLowerCase();
+    return data.enterprise.some(function(e){
+      return e.domain&&e.domain.toLowerCase()===dom&&(e.status==='active'||e.status==='trialing');
+    });
+  }
+  // Plan shown in the admin UI: own Pro subscription wins; otherwise enterprise; else stored plan.
+  function effectivePlan(u){
+    if(!u)return'free';
+    if(u.plan==='pro')return'pro';
+    if(userEnterpriseActive(u))return'enterprise';
+    return u.plan||'free';
+  }
   function statusBadge(s){var c=s==='active'?'active':s==='trialing'?'trialing':'cancelled';return el('span',{className:'adm-badge adm-badge-'+c,textContent:s||'unknown'})}
   function authBadge(u){return el('span',{className:'adm-badge '+(u.googleSub?'adm-badge-google':'adm-badge-email'),textContent:u.googleSub?'Google':'Email'})}
 
@@ -505,7 +522,7 @@
     rtbl.appendChild(el('thead',null,[el('tr',null,[el('th',{textContent:'Email'}),el('th',{textContent:'Plan'}),el('th',{textContent:'Date'})])]));
     var rtb=el('tbody');
     recent.slice(0,15).forEach(function(u){
-      rtb.appendChild(el('tr',null,[el('td',{textContent:u.email}),el('td',null,[badge(u.plan)]),el('td',{textContent:fmtDate(u.createdAt)})]));
+      rtb.appendChild(el('tr',null,[el('td',{textContent:u.email}),el('td',null,[badge(effectivePlan(u))]),el('td',{textContent:fmtDate(u.createdAt)})]));
     });
     rtbl.appendChild(rtb);rw.appendChild(rtbl);
 
@@ -558,7 +575,7 @@
           av=(a.email||'').toLowerCase(); bv=(b.email||'').toLowerCase();
           return av.localeCompare(bv)*dir;
         case 'plan':
-          av=a.plan||''; bv=b.plan||'';
+          av=effectivePlan(a); bv=effectivePlan(b);
           return av.localeCompare(bv)*dir;
         case 'auth':
           av=a.googleSub?'google':'email'; bv=b.googleSub?'google':'email';
@@ -597,8 +614,8 @@
 
     var list=data.users.slice();
     if(q)list=list.filter(function(u){return(u.email||'').toLowerCase().indexOf(q)!==-1});
-    if(userFilter==='pro')list=list.filter(function(u){return u.plan==='pro'});
-    if(userFilter==='free')list=list.filter(function(u){return u.plan==='free'});
+    if(userFilter==='pro')list=list.filter(function(u){return effectivePlan(u)==='pro'});
+    if(userFilter==='free')list=list.filter(function(u){return effectivePlan(u)==='free'});
     list=sortUserList(list,pIdx,d30);
 
     qs('#adm-user-count').textContent=list.length+' user'+(list.length!==1?'s':'');
@@ -618,7 +635,7 @@
       var allR=pIdx[em]||[];
       var c30=userGens30(u,pIdx,d30);
       var row=el('tr',{className:'adm-row-click'},[
-        el('td',{textContent:u.email}),el('td',null,[badge(u.plan)]),el('td',null,[authBadge(u)]),
+        el('td',{textContent:u.email}),el('td',null,[badge(effectivePlan(u))]),el('td',null,[authBadge(u)]),
         el('td',{textContent:fmtDate(u.createdAt)}),
         el('td',{textContent:String(c30)}),el('td',{textContent:String(allR.length)})
       ]);
@@ -638,7 +655,7 @@
         ig.appendChild(el('h3',{textContent:'Account Details'}));
         var grid=el('div',{className:'adm-detail-info-grid'});
         var fields=[
-          ['User ID',u.id],['Plan',u.plan],['Created',fmtDateTime(u.createdAt)],
+          ['User ID',u.id],['Plan',effectivePlan(u)],['Created',fmtDateTime(u.createdAt)],
           ['Auth',u.googleSub?'Google ('+u.googleSub.slice(0,8)+'\u2026)':'Email/password'],
           u.stripeCustomerId?['Stripe Customer',u.stripeCustomerId]:null,
           u.stripeSubscriptionId?['Stripe Subscription',u.stripeSubscriptionId]:null,

@@ -186,6 +186,7 @@
         "f3": "Multiple variations per generation",
         "f4": "Masking tool to edit any area",
         "f5": "AI Designer: agentic staging process",
+        "f6": "Remove existing furniture from rooms",
         "cta": "View Stagify+"
       },
       "ent": {
@@ -196,6 +197,7 @@
         "f1": "Everyone with your company email included",
         "f2": "Usage-based billing, no per-seat fees",
         "f3": "One invoice, billed monthly by usage",
+        "f4": "Every Stagify+ feature included for the team",
         "cta": "Explore Enterprise"
       }
     },
@@ -257,6 +259,12 @@
       "additionalPrompt": "Additional prompting",
       "additionalPromptPlaceholder": "Add specific details or requests for your staging...",
       "removeFurniture": "Remove existing furniture",
+      "keepFurnitureLabel": "Existing furniture to keep (optional)",
+      "keepFurniturePlaceholder": "e.g. keep the dining table and the built-in shelves",
+      "emptyRoomView": "View the emptied room",
+      "emptyRoomTitle": "Empty room (furniture removed)",
+      "emptyRoomDownload": "Download empty room",
+      "emptyRoomAlt": "Room with existing furniture removed",
       "furniturePhotosLabel": "Furniture photos (optional)",
       "furniturePhotosHint": "Up to 5 reference photos of furniture or decor to feature in the staged room",
       "processButton": "Process photo",

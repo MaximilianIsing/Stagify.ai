@@ -123,7 +123,35 @@
     const toggleBeforeBtn = $('#toggle-before');
     const toggleAfterBtn = $('#toggle-after');
     const maskEditBtn = $('#mask-edit-btn');
-  
+    const emptyRoomBtn = $('#empty-room-btn');
+    const emptyRoomModal = $('#empty-room-modal');
+    const emptyRoomImage = $('#empty-room-image');
+    const emptyRoomClose = $('#empty-room-close');
+    const emptyRoomDownload = $('#empty-room-download');
+    // Set when a staging job used "remove existing furniture" and the server
+    // returned the intermediate emptied room. Null otherwise.
+    let lastEmptyRoomUrl = null;
+
+    // "Keep furniture" box only appears while remove-existing-furniture is checked.
+    const removeFurnitureCheckbox = $('#remove-furniture');
+    const keepFurnitureRow = $('#keep-furniture-row');
+    const keepFurnitureInput = $('#keep-furniture');
+    function syncRemoveFurnitureUI() {
+      const on = !!(removeFurnitureCheckbox && removeFurnitureCheckbox.checked);
+      if (keepFurnitureRow) keepFurnitureRow.classList.toggle('hidden', !on);
+      // Two-stage removal can't produce variations from a single empty room, so
+      // when it's on we hide the Image Generations slider and pin it to 1.
+      const variationRow = $('#variation-row');
+      const variationSlider = $('#stagify-variation-count');
+      if (variationRow) variationRow.classList.toggle('hidden', on);
+      if (on && variationSlider && variationSlider.value !== '1') {
+        variationSlider.value = '1';
+        variationSlider.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+    if (removeFurnitureCheckbox) removeFurnitureCheckbox.addEventListener('change', syncRemoveFurnitureUI);
+    syncRemoveFurnitureUI();
+
     const heroUpload = $('#hero-upload');
     const navUpload = $('#nav-upload');
     const pricingUpload = $('#pricing-upload');
@@ -508,7 +536,10 @@
       formData.append('additionalPrompt', additionalPrompt?.value || '');
 
       const removeFurnitureCheckbox = document.getElementById('remove-furniture');
-      formData.append('removeFurniture', removeFurnitureCheckbox?.checked || false);
+      const removeChecked = removeFurnitureCheckbox?.checked || false;
+      formData.append('removeFurniture', removeChecked);
+      const keepFurnitureEl = document.getElementById('keep-furniture');
+      formData.append('keepFurniture', (removeChecked && keepFurnitureEl?.value) ? keepFurnitureEl.value.trim() : '');
 
       const userRole = localStorage.getItem('userRole') || 'unknown';
       const userReferralSource = localStorage.getItem('userReferralSource') || '';
@@ -757,6 +788,7 @@
       }, 150);
 
       const result = await response.json();
+      lastEmptyRoomUrl = (result && typeof result.emptyRoom === 'string' && result.emptyRoom) ? result.emptyRoom : null;
 
       if (finalProgressInterval) {
         clearInterval(finalProgressInterval);
@@ -832,7 +864,32 @@
       }
     }
 
+    function positionEmptyRoomFab() {
+      if (!emptyRoomBtn || emptyRoomBtn.classList.contains('hidden')) return;
+      if (!canvas1 || !canvas1.offsetHeight) return;
+      const imageBottom = canvas1.offsetTop + canvas1.offsetHeight;
+      const top = imageBottom - emptyRoomBtn.offsetHeight - 12;
+      emptyRoomBtn.style.top = Math.max(top, 12) + 'px';
+      emptyRoomBtn.style.bottom = 'auto';
+      // Sit to the left of the mask FAB when both are showing so they don't overlap.
+      const maskShowing = maskEditBtn && !maskEditBtn.classList.contains('hidden');
+      emptyRoomBtn.style.right = (maskShowing ? 12 + 44 + 10 : 12) + 'px';
+    }
+
+    function updateEmptyRoomButtonVisibility() {
+      if (!emptyRoomBtn) return;
+      const onAfter = toggleAfterBtn && toggleAfterBtn.classList.contains('active');
+      if (lastEmptyRoomUrl && hasProcessedImage && onAfter) {
+        emptyRoomBtn.classList.remove('hidden');
+        positionEmptyRoomFab();
+        requestAnimationFrame(positionEmptyRoomFab);
+      } else {
+        emptyRoomBtn.classList.add('hidden');
+      }
+    }
+
     window.addEventListener('resize', positionMaskFab);
+    window.addEventListener('resize', positionEmptyRoomFab);
 
     function showBeforeView() {
       stagePreview.classList.remove('hidden');
@@ -844,8 +901,9 @@
         processingPlaceholder.style.display = 'none';
       }
       updateMaskButtonVisibility();
+      updateEmptyRoomButtonVisibility();
     }
-  
+
     function showAfterView() {
       stagePreview.classList.add('hidden');
       canvas1.classList.remove('hidden');
@@ -858,8 +916,9 @@
         processingPlaceholder.style.display = 'none';
       }
       updateMaskButtonVisibility();
+      updateEmptyRoomButtonVisibility();
     }
-  
+
     // Add toggle event listeners
     if (toggleBeforeBtn) toggleBeforeBtn.addEventListener('click', showBeforeView);
     if (toggleAfterBtn) toggleAfterBtn.addEventListener('click', () => {
@@ -990,6 +1049,36 @@
       const link = document.createElement('a');
       link.download = 'stagify-result.png';
       link.href = canvas1.toDataURL('image/png');
+      link.click();
+    });
+
+    // ── Empty-room viewer (intermediate result of two-stage furniture removal) ──
+    function openEmptyRoomModal() {
+      if (!emptyRoomModal || !lastEmptyRoomUrl) return;
+      if (emptyRoomImage) emptyRoomImage.src = lastEmptyRoomUrl;
+      emptyRoomModal.classList.add('active');
+      emptyRoomModal.setAttribute('aria-hidden', 'false');
+    }
+    function closeEmptyRoomModal() {
+      if (!emptyRoomModal) return;
+      emptyRoomModal.classList.remove('active');
+      emptyRoomModal.setAttribute('aria-hidden', 'true');
+    }
+    if (emptyRoomBtn) emptyRoomBtn.addEventListener('click', openEmptyRoomModal);
+    if (emptyRoomClose) emptyRoomClose.addEventListener('click', closeEmptyRoomModal);
+    if (emptyRoomModal) emptyRoomModal.addEventListener('click', (e) => {
+      if (e.target === emptyRoomModal) closeEmptyRoomModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && emptyRoomModal && emptyRoomModal.classList.contains('active')) {
+        closeEmptyRoomModal();
+      }
+    });
+    if (emptyRoomDownload) emptyRoomDownload.addEventListener('click', () => {
+      if (!lastEmptyRoomUrl) return;
+      const link = document.createElement('a');
+      link.download = 'stagify-empty-room.png';
+      link.href = lastEmptyRoomUrl;
       link.click();
     });
 
