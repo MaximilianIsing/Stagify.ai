@@ -5167,7 +5167,7 @@ app.post('/api/chat', genLimiter, async (req, res) => {
 });
 
 // Chat with file upload endpoint (multiple files)
-app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 10), async (req, res) => {
+app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (req, res) => {
   try {
     if (!requireProAccount(req, res)) return;
 

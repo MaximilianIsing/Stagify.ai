@@ -89,6 +89,72 @@
     <script src="scripts/auth.js" defer></script>
     <script src="scripts/profile-menu.js" defer></script>
     <style>
+      /* --- Toasts (non-blocking notifications, replace alert()) ----------- */
+      #toast-host {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%);
+        z-index: 10050;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        pointer-events: none;
+        max-width: min(92vw, 440px);
+      }
+      .toast {
+        pointer-events: auto;
+        background: #1e3a8a;
+        color: #fff;
+        padding: 11px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        line-height: 1.4;
+        box-shadow: 0 8px 24px rgba(30, 58, 138, 0.28);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        max-width: 100%;
+      }
+      .toast--show { opacity: 1; transform: translateY(0); }
+      .toast--error { background: #b91c1c; box-shadow: 0 8px 24px rgba(185, 28, 28, 0.28); }
+      .toast--success { background: #047857; box-shadow: 0 8px 24px rgba(4, 120, 87, 0.28); }
+      @media (prefers-reduced-motion: reduce) {
+        .toast { transition: opacity 0.2s ease; transform: none; }
+        .toast--show { transform: none; }
+      }
+
+      /* --- Retry button on failed assistant messages --------------------- */
+      .chat-retry-btn {
+        margin-top: 10px;
+        padding: 7px 14px;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .chat-retry-btn:hover { background: #1d4ed8; }
+
+      /* --- Send button "stop generating" state --------------------------- */
+      .send-btn.send-btn--stop img { display: none; }
+      .send-btn.send-btn--stop {
+        opacity: 1 !important;
+        cursor: pointer;
+      }
+      .send-btn.send-btn--stop::after {
+        content: '';
+        width: 15px;
+        height: 15px;
+        border-radius: 3px;
+        background: #2563eb;
+      }
+      .send-btn.send-btn--stop:hover { background: rgba(37, 99, 235, 0.12); }
+
       /* Prevent horizontal scrolling */
       html, body {
         overflow-x: hidden;
@@ -1903,7 +1969,7 @@
 
       <section class="hero" style="grid-template-columns: 1fr; padding: 20px; width: 100%; max-width: 100%; box-sizing: border-box;">
         <div class="chat-container">
-          <div class="chat-messages" id="chat-messages">
+          <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation">
             <div class="empty-state">
               <h3 data-lang="pdf.title">AI Designer</h3>
               <p data-lang="pdf.emptyState">Start a conversation by typing a message or uploading a file</p>
@@ -2064,6 +2130,7 @@
       let selectedFiles = [];
       let selectedImageIndex = null;
       let isProcessing = false; // Track if we're currently processing a message
+      let currentAbortController = null; // Lets the user stop an in-flight generation
       let dragCounter = 0; // Track drag enter/leave events to handle nested elements
       const MAX_UPLOAD_FILES = 5;
       let pendingStagingRootBaseName = null;
@@ -2265,59 +2332,157 @@
       }
       
       // Format markdown text to HTML
+      // Escape HTML so model/user text can never inject markup. Returns a string
+      // safe to drop into innerHTML BEFORE we add our own (bold/italic) tags.
+      function escapeHtml(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      // Apply inline **bold** / *italic* to text that is ALREADY html-escaped.
+      function applyInlineFormatting(escaped) {
+        return escaped
+          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+          .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+      }
+
       function formatMarkdown(text) {
         if (!text) return '';
-        
+
         // Split into lines for processing
         const lines = text.split('\n');
         let html = '';
         let inList = false;
-        
+
         lines.forEach((line, index) => {
           // Check for bullet points: * item, - item, or • item
           const bulletMatch = line.match(/^[\*\-\+•]\s+(.+)$/);
-          
+
           if (bulletMatch) {
             if (!inList) {
               html += '<ul>';
               inList = true;
             }
-            let itemText = bulletMatch[1];
-            // Process bold and italic within list items
-            itemText = itemText.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            itemText = itemText.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+            // Escape FIRST, then add our own formatting tags — without this,
+            // list items render raw HTML from the model/user (injection hole).
+            const itemText = applyInlineFormatting(escapeHtml(bulletMatch[1]));
             html += `<li>${itemText}</li>`;
           } else {
             if (inList) {
               html += '</ul>';
               inList = false;
             }
-            
+
             if (line.trim()) {
-              // Process bold and italic in regular lines
-              let processedLine = line
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
-              html += processedLine;
+              html += applyInlineFormatting(escapeHtml(line));
             }
-            
+
             // Add line break if not last line
             if (index < lines.length - 1) {
               html += '<br>';
             }
           }
         });
-        
+
         if (inList) {
           html += '</ul>';
         }
-        
+
         return html;
       }
-      
+
+      // Small translation helper with a safe fallback. getText() returns the
+      // placeholder "Loading..." (or echoes the key) for keys that aren't in the
+      // language files yet, so we ignore those and use the English fallback.
+      function lang(key, fallback) {
+        try {
+          if (window.LanguageSystem && window.LanguageSystem.isLoaded && window.LanguageSystem.isLoaded()) {
+            const v = window.LanguageSystem.getText(key);
+            if (v && v !== key && v !== 'Loading...') return v;
+          }
+        } catch (e) {}
+        return fallback;
+      }
+
+      // Non-blocking toast notification (replaces native alert()).
+      function showToast(message, type) {
+        let host = document.getElementById('toast-host');
+        if (!host) {
+          host = document.createElement('div');
+          host.id = 'toast-host';
+          host.setAttribute('aria-live', 'polite');
+          document.body.appendChild(host);
+        }
+        const toast = document.createElement('div');
+        toast.className = 'toast' + (type ? ' toast--' + type : '');
+        toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+        toast.textContent = message;
+        host.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('toast--show'));
+        setTimeout(() => {
+          toast.classList.remove('toast--show');
+          setTimeout(() => toast.remove(), 320);
+        }, 4200);
+      }
+
+      // Render an assistant-styled error bubble with an optional Retry button.
+      function addErrorMessage(text, onRetry) {
+        const emptyState = chatMessages.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        const logoImg = document.createElement('img');
+        logoImg.src = 'media-webp/logo/Logo64x64.webp';
+        logoImg.alt = getPdfAlt('assistantAvatar');
+        avatar.appendChild(logoImg);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        const textDiv = document.createElement('div');
+        textDiv.textContent = text;
+        contentDiv.appendChild(textDiv);
+
+        if (typeof onRetry === 'function') {
+          const retryBtn = document.createElement('button');
+          retryBtn.type = 'button';
+          retryBtn.className = 'chat-retry-btn';
+          retryBtn.textContent = lang('pdf.retry', 'Retry');
+          retryBtn.addEventListener('click', () => {
+            messageDiv.remove();
+            onRetry();
+          });
+          contentDiv.appendChild(retryBtn);
+        }
+
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      // Classify a failed chat request into a helpful, actionable message.
+      function describeSendError(error, response) {
+        if (response && response.status === 429) {
+          return lang('pdf.error.rateLimited', "You've hit the generation limit for now. Please wait a moment and try again.");
+        }
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+          return lang('pdf.error.offline', 'You appear to be offline. Check your connection and try again.');
+        }
+        if (error && error.name === 'TypeError') {
+          return lang('pdf.error.network', "Couldn't reach the server. Check your connection and try again.");
+        }
+        if (response && response.status >= 500) {
+          return lang('pdf.error.server', 'The server had a problem handling that. Please try again in a moment.');
+        }
+        return lang('pdf.error.generic', 'Sorry, I encountered an error. Please try again.');
+      }
+
       // Handle input (fixed height, no auto-resize)
       chatInput.addEventListener('input', function() {
         // Enforce character limit (maxlength should handle this, but just in case)
@@ -2363,38 +2528,72 @@
       });
       
       // Send button click
-      sendBtn.addEventListener('click', sendMessage);
-      
-      // Helper function to handle files (used by both file input and drag & drop)
-      function handleFiles(files) {
-        // Filter files to only accept the same types as the file input
-        const acceptedTypes = ['image/', '.pdf', '.txt', '.doc', '.docx', '.jpg', '.jpeg'];
-        const filteredFiles = Array.from(files).filter(file => {
-          return acceptedTypes.some(type => 
-            file.type.startsWith(type) || 
-            file.name.toLowerCase().endsWith(type.replace('.', '.'))
-          );
-        });
-        
-        if (filteredFiles.length > 0) {
-          // Check how many files can still be added
-          const remainingSlots = MAX_UPLOAD_FILES - selectedFiles.length;
-          if (remainingSlots > 0) {
-            const filesToAdd = filteredFiles.slice(0, remainingSlots);
-            selectedFiles.push(...filesToAdd);
-            updateFilePreview();
-            if (!isProcessing) {
-              updateSendButtonState();
-            }
-            
-            // Show message if user tried to add more than allowed
-            if (filteredFiles.length > remainingSlots) {
-              const excessCount = filteredFiles.length - remainingSlots;
-              alert(`Maximum of ${MAX_UPLOAD_FILES} files allowed. Only ${remainingSlots} file(s) added. ${excessCount} file(s) were not added.`);
-            }
-          } else {
-            alert(`Maximum of ${MAX_UPLOAD_FILES} files allowed. Please remove some files before adding more.`);
+      sendBtn.addEventListener('click', function() {
+        if (isProcessing) {
+          abortCurrentGeneration();
+        } else {
+          sendMessage();
+        }
+      });
+
+      // Ctrl+Q aborts an in-flight generation (only acts while generating, so it
+      // doesn't interfere with anything else when the chat is idle).
+      document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && (e.key === 'q' || e.key === 'Q')) {
+          if (isProcessing) {
+            e.preventDefault();
+            abortCurrentGeneration();
           }
+        }
+      });
+
+      // Per-file size cap (mirrors the server's 50MB chat-upload limit, kept a
+      // bit lower so we reject before a long upload that the server would drop).
+      const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
+      const ALLOWED_UPLOAD_EXTS = ['.pdf', '.txt', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.webp', '.gif'];
+
+      // Helper function to handle files (used by file input, drag & drop, paste)
+      function handleFiles(files) {
+        const accepted = [];
+        const rejected = [];
+
+        Array.from(files).forEach(file => {
+          if (!file || !file.name) return;
+          const name = file.name.toLowerCase();
+          const isImage = file.type && file.type.startsWith('image/');
+          const extOk = ALLOWED_UPLOAD_EXTS.some(ext => name.endsWith(ext));
+          if (!isImage && !extOk) {
+            rejected.push(`${file.name} (unsupported type)`);
+            return;
+          }
+          if (file.size > MAX_UPLOAD_BYTES) {
+            rejected.push(`${file.name} (over 25MB)`);
+            return;
+          }
+          accepted.push(file);
+        });
+
+        if (rejected.length) {
+          showToast(`Skipped: ${rejected.join(', ')}`, 'error');
+        }
+        if (!accepted.length) return;
+
+        const remainingSlots = MAX_UPLOAD_FILES - selectedFiles.length;
+        if (remainingSlots <= 0) {
+          showToast(`Maximum of ${MAX_UPLOAD_FILES} files allowed. Remove some before adding more.`, 'error');
+          return;
+        }
+
+        const filesToAdd = accepted.slice(0, remainingSlots);
+        selectedFiles.push(...filesToAdd);
+        updateFilePreview();
+        if (!isProcessing) {
+          updateSendButtonState();
+        }
+
+        if (accepted.length > remainingSlots) {
+          const excessCount = accepted.length - remainingSlots;
+          showToast(`Maximum of ${MAX_UPLOAD_FILES} files. Added ${remainingSlots}; ${excessCount} not added.`, 'error');
         }
       }
       
@@ -2404,7 +2603,7 @@
         handleFiles(files);
         e.target.value = ''; // Reset input
       });
-      
+
       // Drag and drop functionality
       chatMessages.addEventListener('dragenter', function(e) {
         e.preventDefault();
@@ -2898,7 +3097,7 @@
         }
       }
 
-      async function handleChatFetchResponse(response, typingId, messageType) {
+      async function handleChatFetchResponse(response, typingId, messageType, onRetry) {
         const contentType = response.headers.get('content-type') || '';
         if (contentType.includes('text/event-stream')) {
           let streamedText = '';
@@ -2920,7 +3119,7 @@
             onError() {
               removeTypingIndicator(typingId);
               removeMessageImageLoading();
-              addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+              addErrorMessage(lang('pdf.error.generic', 'Sorry, I encountered an error. Please try again.'), onRetry);
             },
           });
           return;
@@ -3185,10 +3384,9 @@
         selectedFiles = [];
         updateFilePreview();
         
-        // Disable send button while processing (but allow typing and file selection)
-        isProcessing = true;
-        updateSendButtonState();
-        
+        // Mark processing — the send button turns into a Stop button.
+        setProcessing(true);
+
         // Determine message type based on user input
         const messageLower = message.toLowerCase();
         let messageType = 'general';
@@ -3199,10 +3397,7 @@
         } else if (messageLower.includes('describe') || messageLower.includes('analyze') || messageLower.includes('look at') || messageLower.includes('show me') || (messageLower.includes('image') && (messageLower.includes('how') || messageLower.includes('what')))) {
           messageType = 'analyzing';
         }
-        
-        // Show typing indicator
-        const typingId = showTypingIndicator(messageType);
-        
+
         // Store images in conversation history and send
         const userMessageContent = [];
         if (message && message.trim()) {
@@ -3263,142 +3458,153 @@
             syncImageThumbnailStrip();
           }
           
-          // Send to backend
-          if (filesToSend.length > 0) {
-            // Send with files
-            const formData = new FormData();
-            filesToSend.forEach(file => {
-              formData.append('files', file);
-            });
-            if (message) {
-              formData.append('message', message);
+          // Snapshot of the full history (incl. this turn) so a Retry re-sends
+          // exactly the same text-only request.
+          const messagesSnapshot = [...conversationHistory];
+
+          // The actual network request, wrapped in a function so the Retry
+          // button can re-run the identical request after a failure.
+          function doSend() {
+            setProcessing(true);
+            const typingId = showTypingIndicator(messageType);
+            currentAbortController = new AbortController();
+            const signal = currentAbortController.signal;
+
+            let request;
+            if (filesToSend.length > 0) {
+              // Send with files
+              const formData = new FormData();
+              filesToSend.forEach(file => {
+                formData.append('files', file);
+              });
+              if (message) {
+                formData.append('message', message);
+              }
+              // Prior messages only (current upload is sent as files above)
+              formData.append('conversationHistory', JSON.stringify(historyForRequest));
+
+              const userId = localStorage.getItem('userId');
+              if (userId) {
+                formData.append('userId', userId);
+              }
+              const authTok = window.StagifyAuth && window.StagifyAuth.getToken();
+              if (authTok) formData.append('authToken', authTok);
+
+              const selectedModel = window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini';
+              formData.append('model', selectedModel);
+
+              if (messageTagValue && messageTagValue !== 'auto') {
+                formData.append('messageTag', messageTagValue);
+              }
+
+              formData.append('streamResponse', 'true');
+              pendingStagingRootBaseName = resolveStagingRootBaseName(filesToSend);
+              const baseImageIndex = getBaseImageIndexForRequest();
+              if (baseImageIndex !== undefined) {
+                formData.append('baseImageIndex', String(baseImageIndex));
+              }
+
+              request = fetch('/api/chat-upload', {
+                method: 'POST',
+                headers: { 'X-Stream-Response': '1' },
+                body: formData,
+                signal,
+              });
+            } else {
+              // Send text only — uses the snapshot taken above for context.
+              const userId = localStorage.getItem('userId');
+              const chatAuthTok = window.StagifyAuth && window.StagifyAuth.getToken();
+              const baseImageIndexChat = getBaseImageIndexForRequest();
+              pendingStagingRootBaseName = resolveStagingRootBaseName([]);
+              request = fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Stream-Response': '1',
+                  ...(chatAuthTok ? { Authorization: 'Bearer ' + chatAuthTok } : {}),
+                },
+                body: JSON.stringify({
+                  messages: messagesSnapshot,
+                  userId: userId,
+                  model: window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini',
+                  messageTag: messageTagValue && messageTagValue !== 'auto' ? messageTagValue : undefined,
+                  authToken: chatAuthTok || undefined,
+                  streamResponse: true,
+                  ...(baseImageIndexChat !== undefined ? { baseImageIndex: baseImageIndexChat } : {}),
+                }),
+                signal,
+              });
             }
-            // Prior messages only (current upload is sent as files above)
-            formData.append('conversationHistory', JSON.stringify(historyForRequest));
-            
-            // Get userId from localStorage
-            const userId = localStorage.getItem('userId');
-            if (userId) {
-              formData.append('userId', userId);
-            }
-            const authTok = window.StagifyAuth && window.StagifyAuth.getToken();
-            if (authTok) formData.append('authToken', authTok);
-            
-            // Add model to formData
-            const selectedModel = window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini';
-            formData.append('model', selectedModel);
-            
-            // Add message tag to formData
-            if (messageTagValue && messageTagValue !== 'auto') {
-              formData.append('messageTag', messageTagValue);
-            }
-            
-            formData.append('streamResponse', 'true');
-            pendingStagingRootBaseName = resolveStagingRootBaseName(filesToSend);
-            const baseImageIndex = getBaseImageIndexForRequest();
-            if (baseImageIndex !== undefined) {
-              formData.append('baseImageIndex', String(baseImageIndex));
-            }
-            
-            fetch('/api/chat-upload', {
-              method: 'POST',
-              headers: { 'X-Stream-Response': '1' },
-              body: formData,
-            })
-            .then(response => handleChatFetchResponse(response, typingId, messageType))
-            .catch(error => {
-              pendingStagingRootBaseName = null;
-              removeTypingIndicator(typingId);
-              removeMessageImageLoading();
-              addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
-              console.error('Error:', error);
-            })
-            .finally(() => {
-              isProcessing = false;
-              sendBtn.disabled = false;
-              chatInput.disabled = false;
-              fileInput.disabled = false;
-              updateSendButtonState();
-              chatInput.focus();
-            });
-          } else {
-            // Send text only - also include conversation history for context
-            // Check if the last message is the same (avoid duplicates)
-            const userMessage = { 
-              role: 'user', 
-              content: message 
-            };
-            const lastMessage = conversationHistory[conversationHistory.length - 1];
-            const isDuplicate = lastMessage && 
-              lastMessage.role === 'user' && 
-              JSON.stringify(lastMessage.content) === JSON.stringify(userMessage.content);
-            
-            if (!isDuplicate) {
-              conversationHistory.push(userMessage);
-            }
-            syncImageThumbnailStrip();
-            
-        // Determine message type based on user input
-        const messageLower = message.toLowerCase();
-        let messageType = 'general';
-        if (messageLower.includes('generate') || messageLower.includes('create an image') || messageLower.includes('make an image') || messageLower.includes('draw') || messageLower.includes('show me an image of')) {
-          messageType = 'generating';
-        } else if (messageLower.includes('stage') || messageLower.includes('design') || messageLower.includes('furniture') || messageLower.includes('decorate')) {
-          messageType = 'staging';
-        } else if (messageLower.includes('describe') || messageLower.includes('analyze') || messageLower.includes('look at') || messageLower.includes('show me') || (messageLower.includes('image') && (messageLower.includes('how') || messageLower.includes('what')))) {
-          messageType = 'analyzing';
-        }
-        
-        // Show typing indicator
-        const typingId = showTypingIndicator(messageType);
-            
-            // Get userId from localStorage
-            const userId = localStorage.getItem('userId');
-            
-            const chatAuthTok = window.StagifyAuth && window.StagifyAuth.getToken();
-            const baseImageIndexChat = getBaseImageIndexForRequest();
-            pendingStagingRootBaseName = resolveStagingRootBaseName([]);
-            fetch('/api/chat', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Stream-Response': '1',
-                ...(chatAuthTok ? { Authorization: 'Bearer ' + chatAuthTok } : {}),
-              },
-              body: JSON.stringify({
-                messages: conversationHistory,
-                userId: userId,
-                model: window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini',
-                messageTag: messageTagValue && messageTagValue !== 'auto' ? messageTagValue : undefined,
-                authToken: chatAuthTok || undefined,
-                streamResponse: true,
-                ...(baseImageIndexChat !== undefined ? { baseImageIndex: baseImageIndexChat } : {}),
-              }),
-            })
-            .then(response => handleChatFetchResponse(response, typingId, messageType))
-            .catch(error => {
-              pendingStagingRootBaseName = null;
-              removeTypingIndicator(typingId);
-              removeMessageImageLoading();
-              addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
-              console.error('Error:', error);
-            })
-            .finally(() => {
-              isProcessing = false;
-              sendBtn.disabled = false;
-              chatInput.disabled = false;
-              fileInput.disabled = false;
-              updateSendButtonState();
-              chatInput.focus();
-            });
+
+            request
+              .then(response => {
+                if (!response.ok) {
+                  const err = new Error('HTTP ' + response.status);
+                  err.response = response;
+                  throw err;
+                }
+                return handleChatFetchResponse(response, typingId, messageType, doSend);
+              })
+              .catch(error => {
+                pendingStagingRootBaseName = null;
+                removeTypingIndicator(typingId);
+                removeMessageImageLoading();
+                if (error && error.name === 'AbortError') {
+                  // User pressed Stop — quiet acknowledgement, no Retry.
+                  addMessage('assistant', lang('pdf.stopped', 'Generation stopped.'));
+                } else {
+                  console.error('Error:', error);
+                  addErrorMessage(describeSendError(error, error && error.response), doSend);
+                }
+              })
+              .finally(() => {
+                endProcessing();
+              });
           }
+
+          doSend();
         });
       }
       
-      // Update send button state based on input and whether we're processing
+      // Update send button state based on input. While processing, the button is
+      // a Stop control and must stay clickable (so this leaves it enabled).
       function updateSendButtonState() {
+        if (isProcessing) {
+          sendBtn.disabled = false;
+          return;
+        }
         const hasContent = chatInput.value.trim() || selectedFiles.length > 0;
-        sendBtn.disabled = !hasContent || isProcessing;
+        sendBtn.disabled = !hasContent;
+      }
+
+      // Toggle the processing state and swap the send button between Send/Stop.
+      function setProcessing(state) {
+        isProcessing = state;
+        if (state) {
+          sendBtn.classList.add('send-btn--stop');
+          sendBtn.disabled = false;
+          sendBtn.title = lang('pdf.stop', 'Stop generating');
+          sendBtn.setAttribute('aria-label', lang('pdf.stop', 'Stop generating'));
+        } else {
+          sendBtn.classList.remove('send-btn--stop');
+          sendBtn.title = lang('pdf.alt.sendMessage', 'Send message');
+          sendBtn.setAttribute('aria-label', lang('pdf.alt.sendMessage', 'Send message'));
+          updateSendButtonState();
+        }
+      }
+
+      // Called when a request settles (success, error, or abort).
+      function endProcessing() {
+        currentAbortController = null;
+        setProcessing(false);
+        chatInput.focus();
+      }
+
+      // Abort the in-flight generation, if any (drives the Stop button).
+      function abortCurrentGeneration() {
+        if (currentAbortController) {
+          try { currentAbortController.abort(); } catch (e) {}
+        }
       }
       
       // Update send button when input changes
@@ -4417,13 +4623,13 @@
         // Validation is already handled by button state, but double-check
         const prompt = promptInput.value.trim();
         if (!prompt) {
-          alert('Please describe what you want to change in the masked area.');
+          showToast(lang('pdf.mask.needPrompt', 'Please describe what you want to change in the masked area.'), 'error');
           return;
         }
         
         // Check if mask has any content
         if (!checkMaskHasContent()) {
-          alert('Please draw a mask over the area you want to edit.');
+          showToast(lang('pdf.mask.needMask', 'Please draw a mask over the area you want to edit.'), 'error');
           return;
         }
         
@@ -4629,7 +4835,7 @@
           closeMaskEditor();
         } catch (error) {
           console.error('Error submitting mask edit:', error);
-          alert('Failed to process masked edit. Please try again.');
+          showToast(lang('pdf.mask.failed', 'Failed to process masked edit. Please try again.'), 'error');
         } finally {
           // Remove blur effect and re-enable interaction
           const canvasContainer = document.querySelector('.mask-editor-canvas-container');
@@ -4948,7 +5154,7 @@
             const email = document.getElementById('bug-report-email').value.trim();
             
             if (!description) {
-              alert('Please provide a bug description.');
+              showToast(lang('pdf.bug.needDescription', 'Please provide a bug description.'), 'error');
               return;
             }
             
@@ -4977,14 +5183,14 @@
               const data = await response.json();
               
               if (response.ok) {
-                alert('Thank you for reporting this bug! We\'ll look into it.');
+                showToast(lang('pdf.bug.success', "Thank you for reporting this bug! We'll look into it."), 'success');
                 closeBugReport();
               } else {
                 throw new Error(data.error || 'Failed to submit bug report');
               }
             } catch (error) {
               console.error('Error submitting bug report:', error);
-              alert('Failed to submit bug report. Please try again later.');
+              showToast(lang('pdf.bug.failed', 'Failed to submit bug report. Please try again later.'), 'error');
             } finally {
               bugReportSubmit.disabled = false;
               bugReportSubmit.textContent = 'Submit';
