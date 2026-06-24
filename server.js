@@ -1409,6 +1409,9 @@ CRITICAL ARCHITECTURAL PRESERVATION RULES:
 CRITICAL IMAGE FORMAT RULES:
 ${IMAGE_FRAMING_PRESERVATION_RULES}
 
+TARGETED-EDIT RULE (when the user is refining an already-staged image):
+- If the request is a specific change (e.g. "make the sofa leather", "warmer lighting", "swap the rug"), apply ONLY that change and keep EVERYTHING else identical — same furniture, decor, placement, colors, camera angle, and lighting as the input image. Do not re-stage the room from scratch or move/replace items that were not mentioned.
+
 The architecture must remain completely unchanged. Ensure the result looks realistic and professionally staged with high quality, sharp focus, detailed textures, professional photography lighting, and ultra-realistic rendering.`;
   
   // If not custom or if custom but we want to emphasize the additional details
@@ -2246,7 +2249,17 @@ const AI_DESIGNER_RESPONSE_ACTION_RULES =
   '\n- Set "usePreviousImage" to the TARGET ROOM index (staged or uploaded room photo — NOT the furniture product photo).' +
   '\n- Furniture reference: if uploaded in the CURRENT message, set "furnitureImageIndex" to null (the system attaches the upload automatically). If referencing furniture from a prior message, set "furnitureImageIndex" to that piece\'s index.' +
   '\n- In "additionalPrompt", emphasize preserving the exact existing room and only adding the referenced furniture.' +
-  '\n- If placement or scale is ambiguous, you may ask — but do not ask which room when the thumbnail strip or conversation already makes it clear.';
+  '\n- If placement or scale is ambiguous, you may ask — but do not ask which room when the thumbnail strip or conversation already makes it clear.' +
+  '\n\nMODIFY / REMOVE / SWAP EXISTING ITEMS (CRITICAL):' +
+  '\n- When the user asks to change, remove, or swap something already in a staged or uploaded room (e.g. "remove the lamp", "make the sofa leather", "swap the rug for a darker one", "take out the plant in the corner"), use "staging" — NEVER "generate".' +
+  '\n- Set "usePreviousImage" to the room being edited (thumbnail selection first, otherwise the most recent staged room).' +
+  '\n- In "additionalPrompt", describe ONLY the specific change and explicitly say to keep everything else in the photo identical (same furniture, decor, layout, camera angle, and lighting). Do not re-stage the whole room.' +
+  '\n- These targeted edits usually do NOT need a furniture reference image — leave "furnitureImageIndex" null unless the user supplied a specific product photo.' +
+  '\n\nSTYLE REFERENCE IMAGE (CRITICAL):' +
+  '\n- If the user provides an image as an aesthetic/mood reference ("stage it like this", "match this style", "use this vibe") rather than a specific furniture product to place, set "styleReference" to true.' +
+  '\n- In that case "usePreviousImage" is still the ROOM to stage (the selected/most-recent room photo), and the reference image is the style guide — do NOT treat the reference as the room and do NOT copy its exact objects or layout.' +
+  '\n- In "additionalPrompt", say to match the overall style, palette, materials, and mood of the reference while keeping the target room\'s own architecture, dimensions, and camera angle.' +
+  '\n- If no separate room is available (the user only gave the reference), ask which room to stage before acting.';
 
 const AI_DESIGNER_IMAGE_FRAMING_RULES =
   '\n\nIMAGE FRAMING (CRITICAL — apply to every staging/CAD additionalPrompt):' +
@@ -2534,6 +2547,99 @@ Extract the parameters from the user's message and the AI's response.`;
  * Generate an image from a text prompt using Gemini
  * This is separate from the staging system - pure text-to-image generation
  */
+// ---------------------------------------------------------------------------
+// Self-check quality gate
+// After generating an image we ask a cheap vision model whether it is basically
+// perfect (no obvious issues). If so, we accept it immediately. If not, it also
+// returns a 0-100 score; we regenerate up to QUALITY_MAX_ATTEMPTS total and, if
+// none come back perfect, return the highest-scoring attempt so the user always
+// gets the best available image.
+const QUALITY_MAX_ATTEMPTS = 3;
+
+const QUALITY_REVIEW_PROMPT =
+  'You are a strict QA reviewer for AI-generated interior real-estate photos. ' +
+  'Inspect this image for obvious problems: warped or melted furniture, impossible ' +
+  'geometry, distorted perspective, extra/missing legs, duplicated or garbled ' +
+  'objects, unreadable text, smeared textures, or physically impossible lighting. ' +
+  'Decide if the image is BASICALLY PERFECT (no obvious issues a real-estate agent ' +
+  'would notice) or NOT (at least one clear issue).\n' +
+  'Reply on the FIRST line with exactly "PERFECT: true" or "PERFECT: false".\n' +
+  'If and only if it is NOT perfect, add a SECOND line "SCORE: <0-100>" rating how ' +
+  'close it is despite the issue(s) (higher = fewer/milder issues), then a short reason.';
+
+// Review a single generated image. Returns { perfect, score }.
+// Fails OPEN (perfect: true) on any error so a flaky reviewer never blocks
+// delivering an image to the user.
+async function reviewImageQuality(imageDataUrl) {
+  if (!openai) return { perfect: true, score: 100, reason: 'reviewer disabled' };
+  try {
+    const downscaledUrl = await downscaleImageForGPT(imageDataUrl);
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: QUALITY_REVIEW_PROMPT },
+            { type: 'image_url', image_url: { url: downscaledUrl } },
+          ],
+        },
+      ],
+      temperature: 0,
+      max_tokens: 80,
+    });
+    const raw = (completion.choices[0].message.content || '').trim();
+    const perfect = /PERFECT:\s*true/i.test(raw);
+    if (perfect) return { perfect: true, score: 100, reason: raw };
+    const m = raw.match(/SCORE:\s*(\d{1,3})/i);
+    // No score on a "not perfect" verdict → treat as a low score for ranking.
+    const score = m ? Math.max(0, Math.min(100, parseInt(m[1], 10))) : 0;
+    return { perfect: false, score, reason: raw };
+  } catch (error) {
+    console.error('[Quality] review failed, accepting image:', error.message);
+    return { perfect: true, score: 100, reason: 'reviewer error' };
+  }
+}
+
+// Run an image-producing function up to QUALITY_MAX_ATTEMPTS times, returning the
+// first "perfect" result or, failing that, the highest-scoring one.
+// `generateOnce(attempt)` must resolve to a data-URL string (or throw).
+async function generateWithQualityRetry(generateOnce, label = 'image') {
+  let best = null; // { url, score }
+  let lastError = null;
+  for (let attempt = 1; attempt <= QUALITY_MAX_ATTEMPTS; attempt++) {
+    let url;
+    try {
+      url = await generateOnce(attempt);
+    } catch (error) {
+      lastError = error;
+      if (DEBUG_MODE && attempt < QUALITY_MAX_ATTEMPTS) {
+        console.log(`[Quality] ${label}: regenerating — attempt ${attempt}/${QUALITY_MAX_ATTEMPTS} failed to produce an image (${error.message}).`);
+      }
+      continue; // try again; if all fail we rethrow below
+    }
+    if (!url) continue;
+    const { perfect, score } = await reviewImageQuality(url);
+    if (DEBUG_MODE) {
+      console.log(`[Quality] ${label} attempt ${attempt}/${QUALITY_MAX_ATTEMPTS}: ${perfect ? 'perfect — accepted' : `not perfect (score ${score})`}`);
+    }
+    if (perfect) return url;
+    if (!best || score > best.score) best = { url, score };
+    // A regeneration is about to happen (unless this was the last allowed attempt).
+    if (DEBUG_MODE && attempt < QUALITY_MAX_ATTEMPTS) {
+      console.log(`[Quality] ${label}: regenerating — attempt ${attempt} was not perfect (quality score ${score}).`);
+    }
+  }
+  if (best) {
+    if (DEBUG_MODE) {
+      console.log(`[Quality] ${label}: no attempt was perfect; returning best (score ${best.score}).`);
+    }
+    return best.url;
+  }
+  // Never produced an image at all — surface the last generation error.
+  throw lastError || new Error('Image generation failed');
+}
+
 async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-flash-image') {
   try {
     if (!genAI) {
@@ -2555,27 +2661,27 @@ Composition: show the full scene with a natural, uncropped framing. Do not awkwa
     const generatePrompt = [
       { text: fullPrompt }
     ];
-    
-    const result = await model.generateContent(generatePrompt);
-    const response = await result.response;
-    
-    if (!response || !response.candidates || response.candidates.length === 0) {
-      throw new Error('Image generation failed - no results generated');
-    }
-    
-    // Extract the generated image
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) {
-        const imageData = part.inlineData.data;
-        const generatedImage = `data:image/png;base64,${imageData}`;
-        if (DEBUG_MODE) {
-          console.log(`[Image Generation] Successfully generated image`);
-        }
-        return generatedImage;
+
+    // Generate, with the self-check quality gate retrying poor results.
+    return await generateWithQualityRetry(async () => {
+      const result = await model.generateContent(generatePrompt);
+      const response = await result.response;
+
+      if (!response || !response.candidates || response.candidates.length === 0) {
+        throw new Error('Image generation failed - no results generated');
       }
-    }
-    
-    throw new Error('No image data in AI response');
+
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          if (DEBUG_MODE) {
+            console.log(`[Image Generation] Successfully generated image`);
+          }
+          return `data:image/png;base64,${part.inlineData.data}`;
+        }
+      }
+
+      throw new Error('No image data in AI response');
+    }, 'generation');
   } catch (error) {
     console.error('Error generating image:', error);
     throw error;
@@ -2586,6 +2692,17 @@ function normalizeFurnitureBuffers(furnitureImageInput) {
   if (!furnitureImageInput) return [];
   const raw = Array.isArray(furnitureImageInput) ? furnitureImageInput : [furnitureImageInput];
   return raw.filter((b) => b && Buffer.isBuffer(b)).slice(0, 5);
+}
+
+// When the extra image(s) are an aesthetic/style reference rather than specific
+// furniture to place, instruct the model to emulate the look — not copy objects.
+function styleReferencePromptSuffix(count) {
+  if (count <= 0) return '';
+  const listText =
+    count === 1
+      ? 'The second image is'
+      : 'The additional images after the room photo are';
+  return `\n\nIMPORTANT: ${listText} a STYLE REFERENCE, not furniture to copy. Match its overall aesthetic — color palette, materials, mood, and design style — when staging the room. Do NOT copy its exact objects, layout, room, or camera angle. The first image is the room to stage; keep that room's architecture, dimensions, windows, and viewpoint unchanged.`;
 }
 
 function furnitureReferencePromptSuffix(count, preserveExistingStaging = false) {
@@ -2641,12 +2758,16 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       });
     }
     if (furnitureBuffers.length > 0) {
-      prompt[0].text += furnitureReferencePromptSuffix(
-        furnitureBuffers.length,
-        Boolean(stagingParams.preserveExistingStaging)
-      );
+      // Same extra-image plumbing serves both furniture references and style
+      // references — only the instruction differs.
+      prompt[0].text += stagingParams.styleReference
+        ? styleReferencePromptSuffix(furnitureBuffers.length)
+        : furnitureReferencePromptSuffix(
+            furnitureBuffers.length,
+            Boolean(stagingParams.preserveExistingStaging)
+          );
       if (DEBUG_MODE) {
-        console.log(`[Staging] Including ${furnitureBuffers.length} furniture reference image(s) in staging request`);
+        console.log(`[Staging] Including ${furnitureBuffers.length} ${stagingParams.styleReference ? 'style' : 'furniture'} reference image(s) in staging request`);
       }
     }
     
@@ -2667,24 +2788,26 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       console.log(`[Staging] Using Gemini model: ${geminiModel}`);
     }
     const model = genAI.getGenerativeModel({ model: geminiModel });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    
-    if (!response || !response.candidates || response.candidates.length === 0) {
-      throw new Error('AI processing failed - no results generated');
-    }
-    
-    // Extract the generated image
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) {
-        const imageData = part.inlineData.data;
-        return `data:image/png;base64,${imageData}`;
+
+    // Generate, with the self-check quality gate retrying poor results.
+    return await generateWithQualityRetry(async () => {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+
+      if (!response || !response.candidates || response.candidates.length === 0) {
+        throw new Error('AI processing failed - no results generated');
       }
-    }
-    
-    const noImageErr = new Error('No image data in AI response');
-    noImageErr.code = 'NO_IMAGE_GENERATED';
-    throw noImageErr;
+
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          return `data:image/png;base64,${part.inlineData.data}`;
+        }
+      }
+
+      const noImageErr = new Error('No image data in AI response');
+      noImageErr.code = 'NO_IMAGE_GENERATED';
+      throw noImageErr;
+    }, 'staging');
   } catch (error) {
     console.error('Error processing staging:', error);
     throw error;
@@ -4159,6 +4282,7 @@ app.post('/api/chat', genLimiter, async (req, res) => {
     systemInstruction += '\n- Set "furnitureImageIndex" to the index of a furniture image from a previous message if the user wants to add a specific piece of furniture (e.g., "add that chair", "include the red sofa from before"). The furniture image will be sent to the staging system alongside the room image.';
     systemInstruction += '\n- IMPORTANT: When adding furniture to a room, set "usePreviousImage" to the TARGET ROOM index — the staged or uploaded room photo, NOT the furniture upload. Priority: (1) thumbnail strip base image if the user selected one, (2) the room obvious from conversation, (3) most recent staged room. If the user uploads furniture in the CURRENT message, set "furnitureImageIndex" to null — the system attaches it automatically. If furniture is from a prior message, set "furnitureImageIndex" to that index. NEVER use "generate" for this — use "staging" only.';
     systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested. CRITICAL: Preserve the exact aspect ratio and full frame — do not crop, zoom, or cut off any part of the room unless the user explicitly asked for a tighter crop';
+    systemInstruction += '\n- Set "styleReference": true ONLY when the user provides an image to match an aesthetic/style ("stage it like this", "match this vibe") rather than a specific furniture piece to place. Then "usePreviousImage" is still the room to stage; the reference image guides the look only. Otherwise omit it or set false.';
     systemInstruction += '\n- If "shouldStage" is false, you can omit the "staging" field or set it to null';
     systemInstruction += '\n\nIMAGE REQUEST RULES:';
     systemInstruction += '\n- Set "requestImage": true if the user asks to see, describe, analyze, or look at a previous image';
@@ -4574,7 +4698,8 @@ app.post('/api/chat', genLimiter, async (req, res) => {
             additionalPrompt: stagingRequest.additionalPrompt || '',
             removeFurniture: stagingRequest.removeFurniture || false,
             usePreviousImage: stagingRequest.usePreviousImage !== undefined ? stagingRequest.usePreviousImage : false,
-            furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null
+            furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null,
+            styleReference: stagingRequest.styleReference === true
           };
 
           let currentMessageImageBuffer = null;
@@ -5240,6 +5365,7 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (re
     systemInstruction += '\n- Set "usePreviousImage": false if using the current message\'s image, or the index (0 = most recent, 1 = second most recent, etc.) if modifying a previous image';
     systemInstruction += '\n- IMPORTANT: When adding furniture to a room, set "usePreviousImage" to the TARGET ROOM index — the staged or uploaded room photo, NOT the furniture upload. Priority: (1) thumbnail strip base image if the user selected one, (2) the room obvious from conversation, (3) most recent staged room. If the user uploads furniture in the CURRENT message, set "furnitureImageIndex" to null — the system attaches it automatically. If furniture is from a prior message, set "furnitureImageIndex" to that index. NEVER use "generate" for this — use "staging" only.';
     systemInstruction += '\n- The "additionalPrompt" should be a detailed, comprehensive description of the staging request. IMPORTANT: Always emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what\'s already there unless explicitly requested. CRITICAL: Preserve the exact aspect ratio and full frame — do not crop, zoom, or cut off any part of the room unless the user explicitly asked for a tighter crop';
+    systemInstruction += '\n- Set "styleReference": true ONLY when the user provides an image to match an aesthetic/style ("stage it like this", "match this vibe") rather than a specific furniture piece to place. Then "usePreviousImage" is still the room to stage; the reference image guides the look only. Otherwise omit it or set false.';
     systemInstruction += '\n- If "shouldStage" is false, you can omit the "staging" field or set it to null';
     systemInstruction += '\n\nIMAGE REQUEST RULES:';
     systemInstruction += '\n- Set "requestImage": true if the user asks to see, describe, analyze, or look at a previous image';
@@ -5929,7 +6055,8 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (re
             additionalPrompt: stagingRequest.additionalPrompt || '',
             removeFurniture: stagingRequest.removeFurniture || false,
             usePreviousImage: stagingRequest.usePreviousImage !== undefined ? stagingRequest.usePreviousImage : false,
-            furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null
+            furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null,
+            styleReference: stagingRequest.styleReference === true
           };
 
           const addFurnitureFallbackUpload = applyAddFurnitureStagingFallback(
