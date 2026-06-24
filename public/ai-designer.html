@@ -2263,7 +2263,20 @@
           if (ok) loadWelcomeMessage();
         });
       });
-      
+
+      // Append the hotkey to the reload button's hover text. The language loader
+      // resets the title from the JSON on every language change, so re-apply the
+      // suffix after each change (and once now in case it already fired).
+      function decorateReloadTitle() {
+        if (!reloadBtn) return;
+        const t = reloadBtn.getAttribute('title') || '';
+        if (!t.includes('Control + Shift + Q')) {
+          reloadBtn.setAttribute('title', (t ? t + ' ' : '') + '(Control + Shift + Q)');
+        }
+      }
+      window.addEventListener('languagechange', decorateReloadTitle);
+      decorateReloadTitle();
+
       // Format file size
       function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
@@ -2468,6 +2481,9 @@
 
       // Classify a failed chat request into a helpful, actionable message.
       function describeSendError(error, response) {
+        if (response && (response.status === 401 || response.status === 403)) {
+          return lang('pdf.error.proRequired', 'The AI Designer is available to Stagify+ members. Please sign in with a Stagify+ account.');
+        }
         if (response && response.status === 429) {
           return lang('pdf.error.rateLimited', "You've hit the generation limit for now. Please wait a moment and try again.");
         }
@@ -2536,14 +2552,54 @@
         }
       });
 
-      // Ctrl+Q aborts an in-flight generation (only acts while generating, so it
-      // doesn't interfere with anything else when the chat is idle).
+      // Keyboard shortcuts on the Q key:
+      //   Ctrl+Q        → abort an in-flight generation (only while generating)
+      //   Ctrl+Shift+Q  → reset / start a new chat (same as the reload button)
       document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && (e.key === 'q' || e.key === 'Q')) {
-          if (isProcessing) {
-            e.preventDefault();
-            abortCurrentGeneration();
-          }
+        if (!e.ctrlKey || (e.key !== 'q' && e.key !== 'Q')) return;
+        if (e.shiftKey) {
+          e.preventDefault();
+          const rb = document.getElementById('reload-btn');
+          if (rb) rb.click();
+        } else if (isProcessing) {
+          e.preventDefault();
+          abortCurrentGeneration();
+        }
+      });
+
+      // Focus trap for open modals — Escape/click-outside already close them, but
+      // without this, Tab can walk focus to controls hidden behind the overlay.
+      function getOpenModal() {
+        // Topmost first (mask editor sits above bug report sits above image modal).
+        const ids = ['mask-editor-modal', 'bug-report-popup', 'image-modal'];
+        for (const id of ids) {
+          const m = document.getElementById(id);
+          if (m && m.classList.contains('active')) return m;
+        }
+        return null;
+      }
+      document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Tab') return;
+        const modal = getOpenModal();
+        if (!modal) return;
+        const focusables = Array.from(
+          modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')
+        ).filter((el) => el.offsetParent !== null || el === document.activeElement);
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        // If focus has drifted outside the modal, pull it back in.
+        if (!modal.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+          return;
+        }
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
         }
       });
 
@@ -2964,7 +3020,29 @@
         }
       }
 
+      // Map the user's selected message tag to a loading-status category. This
+      // replaces the old English-keyword guessing (which never worked for ES/ZH
+      // or paraphrased requests). "auto" stays generic until the server tells us.
+      function messageTypeFromTag(tag) {
+        switch (tag) {
+          case 'generate': return 'generating';
+          case 'stage':
+          case 'cad-stage': return 'staging';
+          case 'describe': return 'analyzing';
+          default: return 'general';
+        }
+      }
+
       function getTypingStatusMessages(messageType) {
+        // Prefer the localized list for the current language; fall back to the
+        // English defaults below if the key is missing or not yet loaded.
+        const category = ['generating', 'staging', 'analyzing', 'welcome'].includes(messageType)
+          ? messageType
+          : 'general';
+        if (window.LanguageSystem && window.LanguageSystem.isLoaded && window.LanguageSystem.isLoaded()) {
+          const localized = window.LanguageSystem.getText('pdf.statusMessages.' + category, null);
+          if (Array.isArray(localized) && localized.length) return localized;
+        }
         if (messageType === 'generating') {
           return [
             'generating image...',
@@ -3090,7 +3168,8 @@
             }
             if (!dataLine) continue;
             const payload = JSON.parse(dataLine);
-            if (eventName === 'message' && handlers.onMessage) handlers.onMessage(payload);
+            if (eventName === 'status' && handlers.onStatus) handlers.onStatus(payload);
+            else if (eventName === 'message' && handlers.onMessage) handlers.onMessage(payload);
             else if (eventName === 'images' && handlers.onImages) handlers.onImages(payload);
             else if (eventName === 'error' && handlers.onError) handlers.onError(payload);
           }
@@ -3101,12 +3180,18 @@
         const contentType = response.headers.get('content-type') || '';
         if (contentType.includes('text/event-stream')) {
           let streamedText = '';
+          // The server tells us the real intent (generating/staging/analyzing)
+          // once it decides — use it for the slow image phase instead of the tag.
+          let resolvedType = messageType;
           await consumeChatSse(response, {
+            onStatus(payload) {
+              if (payload && payload.type) resolvedType = payload.type;
+            },
             onMessage(payload) {
               removeTypingIndicator(typingId);
               streamedText = payload.response || '';
               addMessage('assistant', streamedText);
-              showMessageImageLoading(messageType);
+              showMessageImageLoading(resolvedType);
             },
             onImages(payload) {
               removeMessageImageLoading();
@@ -3192,7 +3277,8 @@
               const imageContainer = createAIImageWithDownload(
                 stagedImage,
                 getPdfAlt('stagedRoom', { suffix: imageCountSuffix(index, stagedImages.length) }),
-                `staged-room-${index}`
+                `staged-${index + 1}`,
+                rootBaseName
               );
               stagedImageDiv.appendChild(imageContainer);
               lastMessage.appendChild(stagedImageDiv);
@@ -3387,16 +3473,11 @@
         // Mark processing — the send button turns into a Stop button.
         setProcessing(true);
 
-        // Determine message type based on user input
-        const messageLower = message.toLowerCase();
-        let messageType = 'general';
-        if (messageLower.includes('generate') || messageLower.includes('create an image') || messageLower.includes('make an image') || messageLower.includes('draw') || messageLower.includes('show me an image of')) {
-          messageType = 'generating';
-        } else if (messageLower.includes('stage') || messageLower.includes('design') || messageLower.includes('furniture') || messageLower.includes('decorate')) {
-          messageType = 'staging';
-        } else if (messageLower.includes('describe') || messageLower.includes('analyze') || messageLower.includes('look at') || messageLower.includes('show me') || (messageLower.includes('image') && (messageLower.includes('how') || messageLower.includes('what')))) {
-          messageType = 'analyzing';
-        }
+        // Initial status from the chosen tag (works in any language). When the
+        // tag is "auto" we start generic; the server then sends a `status` event
+        // with the real intent once it decides, which we honor during the slow
+        // image phase — far more reliable than guessing from English keywords.
+        let messageType = messageTypeFromTag(messageTagValue);
 
         // Store images in conversation history and send
         const userMessageContent = [];
@@ -3554,7 +3635,10 @@
                   addMessage('assistant', lang('pdf.stopped', 'Generation stopped.'));
                 } else {
                   console.error('Error:', error);
-                  addErrorMessage(describeSendError(error, error && error.response), doSend);
+                  const status = error && error.response && error.response.status;
+                  // Retrying an auth failure (signed out / not Stagify+) won't help.
+                  const allowRetry = status !== 401 && status !== 403;
+                  addErrorMessage(describeSendError(error, error && error.response), allowRetry ? doSend : null);
                 }
               })
               .finally(() => {
@@ -3583,8 +3667,9 @@
         if (state) {
           sendBtn.classList.add('send-btn--stop');
           sendBtn.disabled = false;
-          sendBtn.title = lang('pdf.stop', 'Stop generating');
-          sendBtn.setAttribute('aria-label', lang('pdf.stop', 'Stop generating'));
+          const stopLabel = lang('pdf.stop', 'Stop generating') + ' (Control + Q)';
+          sendBtn.title = stopLabel;
+          sendBtn.setAttribute('aria-label', stopLabel);
         } else {
           sendBtn.classList.remove('send-btn--stop');
           sendBtn.title = lang('pdf.alt.sendMessage', 'Send message');
@@ -3806,17 +3891,39 @@
           });
       }
       
-      // Helper function to create AI image with download button
-      function createAIImageWithDownload(imageSrc, altText, imageType = 'image') {
+      // Turn an arbitrary label (e.g. a room/source name) into a safe filename part.
+      function slugifyName(s) {
+        return String(s || '')
+          .toLowerCase()
+          .replace(/\.[^.]+$/, '')          // drop any extension
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 60) || 'image';
+      }
+
+      // Helper function to create AI image with download button. `baseName` is an
+      // optional room/source label so downloads are named e.g.
+      // "123-main-living-staged-room-1.png" instead of "image.png".
+      function createAIImageWithDownload(imageSrc, altText, imageType = 'image', baseName) {
         const container = document.createElement('div');
         container.className = 'ai-image-container';
-        
+
         const img = document.createElement('img');
         img.src = imageSrc;
         img.alt = altText;
         img.className = 'ai-generated-image';
         img.addEventListener('click', () => openImageModal(imageSrc, altText));
-        
+
+        // Compute a stable, descriptive filename once and reuse it for both the
+        // per-image download button and the "Download all" action.
+        const extension = imageSrc.includes('data:image/png') ? 'png' :
+                        imageSrc.includes('data:image/jpeg') || imageSrc.includes('data:image/jpg') ? 'jpg' :
+                        imageSrc.includes('data:image/webp') ? 'webp' : 'png';
+        const stem = baseName
+          ? `${slugifyName(baseName)}-${imageType}`
+          : `${imageType}-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`;
+        const filename = `${stem}.${extension}`;
+
         const downloadBtn = document.createElement('button');
         downloadBtn.className = 'ai-image-download-btn';
         const downloadLabel = (window.LanguageSystem && window.LanguageSystem.isLoaded())
@@ -3824,7 +3931,7 @@
           : 'Download image';
         downloadBtn.title = downloadLabel;
         downloadBtn.setAttribute('aria-label', downloadLabel);
-        
+
         const downloadIcon = document.createElement('img');
         downloadIcon.src = 'media-webp/download.webp';
         downloadIcon.alt = '';
@@ -3832,14 +3939,9 @@
         downloadBtn.appendChild(downloadIcon);
         downloadBtn.addEventListener('click', (e) => {
           e.stopPropagation(); // Prevent opening modal when clicking download
-          const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-          const extension = imageSrc.includes('data:image/png') ? 'png' : 
-                          imageSrc.includes('data:image/jpeg') || imageSrc.includes('data:image/jpg') ? 'jpg' : 
-                          imageSrc.includes('data:image/webp') ? 'webp' : 'png';
-          const filename = `${imageType}-${timestamp}.${extension}`;
           downloadImage(imageSrc, filename);
         });
-        
+
         container.appendChild(img);
         container.appendChild(downloadBtn);
         

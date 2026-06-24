@@ -90,6 +90,15 @@
     window.addEventListener("load", rest);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(rest);
 
+    // Switching language rewrites the link labels, changing their widths — the
+    // ResizeObserver above won't fire if the centered nav container keeps the
+    // same size, so re-settle explicitly. The text is already applied when this
+    // event fires; the follow-up timeout catches any post-layout shift.
+    window.addEventListener("languagechange", () => {
+      rest();
+      setTimeout(rest, 60);
+    });
+
     // The AI Designer link is revealed later for Pro users — re-settle when it
     // appears so the pill can land on it (and rest there on its own page).
     const ai = nav.querySelector(".nav-ai-designer-pro");

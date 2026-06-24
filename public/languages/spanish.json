@@ -534,6 +534,13 @@
     },
     "title": "Diseñador IA",
     "description": "Convierte tus PDFs de planos CAD en visualizaciones 3D fotorrealistas de interiores",
+    "statusMessages": {
+      "generating": ["generando imagen...", "creando tu imagen...", "dando vida a tu visión...", "elaborando los detalles...", "renderizando...", "ya casi...", "finalizando detalles...", "puliendo el resultado...", "un momento..."],
+      "staging": ["amueblando tu sala...", "añadiendo muebles...", "seleccionando la decoración...", "organizando los elementos...", "aplicando estilos...", "creando el diseño...", "generando la distribución...", "refinando detalles...", "casi listo..."],
+      "analyzing": ["analizando la imagen...", "examinando detalles...", "identificando elementos...", "procesando datos visuales...", "entendiendo el espacio...", "revisando la composición...", "estudiando la distribución...", "casi terminado..."],
+      "welcome": ["preparando tu bienvenida...", "preparándonos para ti...", "configurando todo...", "preparando una cálida bienvenida...", "dejando todo listo para ti...", "casi listos para saludarte...", "preparando tu espacio...", "preparando algo especial..."],
+      "general": ["pensando...", "procesando tu solicitud...", "analizando...", "considerando opciones...", "trabajando en ello...", "ya casi...", "un momento...", "preparando la respuesta..."]
+    },
     "emptyState": "Comienza una conversación escribiendo un mensaje o subiendo un archivo",
     "uploadFile": "Subir archivo",
     "inputPlaceholder": "Escribe tu mensaje...",
