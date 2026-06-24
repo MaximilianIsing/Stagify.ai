@@ -186,6 +186,7 @@
         "f3": "Varias variaciones por generación",
         "f4": "Herramienta de máscara para editar cualquier área",
         "f5": "AI Designer: proceso de staging con agentes de IA",
+        "f6": "Elimina los muebles existentes de las habitaciones",
         "cta": "Ver Stagify+"
       },
       "ent": {
@@ -196,6 +197,7 @@
         "f1": "Incluye a todos con el correo de tu empresa",
         "f2": "Facturación por uso, sin tarifas por puesto",
         "f3": "Una sola factura, mensual según el uso",
+        "f4": "Todas las funciones de Stagify+ incluidas para el equipo",
         "cta": "Explorar Enterprise"
       }
     },
@@ -258,6 +260,12 @@
       "additionalPrompt": "Prompt adicional",
       "additionalPromptPlaceholder": "Añade detalles específicos o solicitudes para tu escenificación...",
       "removeFurniture": "Eliminar muebles existentes",
+      "keepFurnitureLabel": "Muebles existentes que conservar (opcional)",
+      "keepFurniturePlaceholder": "p. ej., conserva la mesa de comedor y las estanterías empotradas",
+      "emptyRoomView": "Ver la habitación vacía",
+      "emptyRoomTitle": "Habitación vacía (muebles eliminados)",
+      "emptyRoomDownload": "Descargar habitación vacía",
+      "emptyRoomAlt": "Habitación con los muebles existentes eliminados",
       "furniturePhotosLabel": "Fotos de muebles (opcional)",
       "furniturePhotosHint": "Hasta 5 fotos de referencia de muebles o decoración para incluir en la habitación escenificada",
       "processButton": "Procesar foto",

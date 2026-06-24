@@ -186,6 +186,7 @@
         "f3": "每次生成多种方案",
         "f4": "蒙版工具，可编辑任意区域",
         "f5": "AI Designer：智能体化布置流程",
+        "f6": "移除房间中的现有家具",
         "cta": "查看 Stagify+"
       },
       "ent": {
@@ -196,6 +197,7 @@
         "f1": "公司邮箱的每位成员都包含在内",
         "f2": "按用量计费，无按席位收费",
         "f3": "每月一张账单，按用量结算",
+        "f4": "团队成员均享 Stagify+ 全部功能",
         "cta": "了解企业版"
       }
     },
@@ -258,6 +260,12 @@
       "additionalPrompt": "额外提示",
       "additionalPromptPlaceholder": "为您的装修添加具体细节或要求...",
       "removeFurniture": "移除现有家具",
+      "keepFurnitureLabel": "需要保留的现有家具（可选）",
+      "keepFurniturePlaceholder": "例如：保留餐桌和嵌入式书架",
+      "emptyRoomView": "查看清空后的房间",
+      "emptyRoomTitle": "空房间（已移除家具）",
+      "emptyRoomDownload": "下载空房间",
+      "emptyRoomAlt": "已移除现有家具的房间",
       "furniturePhotosLabel": "家具参考图（可选）",
       "furniturePhotosHint": "最多5张家具或软装参考图，将尽量融入装修效果",
       "processButton": "处理照片",
