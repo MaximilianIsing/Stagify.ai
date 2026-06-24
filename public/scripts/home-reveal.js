@@ -52,6 +52,27 @@
     const SHOW_AT = 0.18;
     const HIDE_AT = 0.04;
 
+    // Only animate elements OUT on desktop. On phones/small screens the exit
+    // transform (translateY 52px) physically moves the very element the observer
+    // is watching, and the mobile address bar resizes the viewport during
+    // touch-scroll — both keep re-crossing the trigger and make rows flicker
+    // in/out near the edge. So on small screens we reveal once and leave it.
+    const exitMQ =
+      window.matchMedia && window.matchMedia("(min-width: 901px)");
+    const exitEnabled = () => !exitMQ || exitMQ.matches;
+
+    // If the viewport shrinks to mobile, clear any in-progress exit so nothing
+    // is left stuck mid-animation, and keep already-seen rows shown.
+    if (exitMQ && exitMQ.addEventListener) {
+      exitMQ.addEventListener("change", (e) => {
+        if (e.matches) return; // became desktop — nothing to undo
+        els.forEach((el) => {
+          el.classList.remove("exit-up", "exit-down");
+          if (el.dataset.seen) el.classList.add("is-visible");
+        });
+      });
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -68,6 +89,11 @@
             el.classList.remove("exit-up", "exit-down");
             el.dataset.seen = "1";
           } else if (ratio <= HIDE_AT && el.dataset.seen) {
+            // On small screens, don't animate out — leave the row revealed.
+            if (!exitEnabled()) {
+              el.classList.remove("exit-up", "exit-down");
+              return;
+            }
             // Only animate OUT once it has been shown — that keeps the original
             // left/right entrance for the very first reveal. Which edge did it
             // leave through? Top => scrolled down (send it up); bottom =>
