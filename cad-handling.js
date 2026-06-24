@@ -232,8 +232,10 @@ Please incorporate these requirements into the 3D render while maintaining the t
   }
   
   try {
-    // Use Gemini 3 Pro Image Preview for image understanding and generation
-    const model = genAI.getGenerativeModel({ model: "gemini-3-pro-image-preview" });
+    // Use Gemini 3 Pro Image (GA) — CAD floor-plan → top-down 3D render is a
+    // reasoning-heavy task where the Pro model's scene understanding earns its
+    // premium, so this stays on Pro even though chat staging uses 3.1-flash.
+    const model = genAI.getGenerativeModel({ model: "gemini-3-pro-image" });
     
     // Add the prompt text to the content array
     content.push({ text: prompt });

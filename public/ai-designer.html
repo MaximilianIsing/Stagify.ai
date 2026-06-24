@@ -523,7 +523,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.2s, color 0.2s;
+        transition: background 0.2s, color 0.2s, transform 0.2s;
         height: 40px;
         width: 40px;
         flex-shrink: 0;
@@ -532,6 +532,10 @@
         pointer-events: auto;
         margin-right: 8px;
         transform: translate(-60px, 42px);
+      }
+
+      .send-controls.send-controls--pro .bug-report-btn {
+        transform: translate(-84px, 42px);
       }
       
       .bug-report-btn img {
@@ -4697,6 +4701,10 @@
           const modelText = modelSelectorBtn?.querySelector('.model-selector-text');
           if (modelText) {
             modelText.textContent = getModelText(savedModelKey);
+          }
+          const sendControls = document.querySelector('.send-controls');
+          if (sendControls) {
+            sendControls.classList.toggle('send-controls--pro', savedModelKey === 'pro');
           }
         }
         
