@@ -167,6 +167,9 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
 }
 .auth-actions .btn {
   width: 100%;
+  /* Base .btn caps at max-width:280px, which leaves the button narrower than the
+     full-width inputs and pinned to the left (looks off-center). Match the inputs. */
+  max-width: none;
   justify-content: center;
 }
 .auth-terms-notice {
@@ -578,6 +581,15 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   }
   .nav .nav-center::-webkit-scrollbar {
     display: none;
+  }
+  /* Keep the nav links compact so they fit one row on every page (not just the
+     home page, where home.css used to be the only place this lived). */
+  .site-header .nav-link {
+    white-space: normal !important;
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+    padding: 4px 8px !important;
+    font-size: 13px !important;
   }
   .nav .nav-center .profile-menu-wrap {
     position: absolute;
