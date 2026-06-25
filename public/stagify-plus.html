@@ -217,123 +217,23 @@
         padding: 30px 0;
         display: flex;
         justify-content: center;
-        isolation: isolate;
       }
-      @media (min-width: 769px) {
-        .bh-stage {
-          width: calc(100% + 18rem);
-          max-width: 720px;
-          margin-left: 50%;
-          transform: translateX(-50%);
-        }
-      }
-      /* Soft ambient bloom + graceful fallback when WebGL is unavailable. The real
-         lensing lives in .bh-canvas (a WebGL shader); this just adds glow under it. */
-      .bh-aura {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: min(520px, 90vw);
-        height: min(520px, 90vw);
-        transform: translate(-50%, -50%) scale(calc(0.4 + var(--bh, 0) * 0.6));
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: -2;
-        opacity: calc(var(--bh, 0) * 0.72);
-        background:
-          radial-gradient(circle at center, rgba(191, 219, 254, 0.42) 0%, rgba(37, 99, 235, 0.22) 28%, rgba(37, 99, 235, 0.08) 48%, transparent 72%);
-        transition: opacity 0.25s ease, transform 0.25s ease;
-        filter: blur(2px);
-      }
-      .bh-aura::before {
-        content: '';
-        position: absolute;
-        inset: 20%;
-        border-radius: 50%;
-        border: 1.5px solid rgba(147, 197, 253, 0.55);
-        box-shadow:
-          0 0 28px rgba(96, 165, 250, 0.85),
-          0 0 56px rgba(37, 99, 235, 0.45),
-          inset 0 0 22px rgba(59, 130, 246, 0.35);
-        opacity: calc(var(--bh, 0) * 0.95);
-      }
-      .bh-glare {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: min(320px, 70vw);
-        height: min(320px, 70vw);
-        transform: translate(-50%, -50%);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: -1;
-        opacity: calc(var(--bh, 0) * 0.85);
-        background: radial-gradient(circle,
-          rgba(219, 234, 254, 0.65) 0%,
-          rgba(96, 165, 250, 0.35) 32%,
-          rgba(37, 99, 235, 0.12) 55%,
-          transparent 72%);
-        filter: blur(10px);
-        mix-blend-mode: screen;
-        transition: opacity 0.25s ease;
-      }
-      /* WebGL gravitational-lens canvas: bends a branded starfield around a dark
-         core with a photon ring + accretion disk; alpha/intensity driven by JS. */
-      .bh-canvas {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: min(820px, 95vw);
-        height: 560px;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        z-index: -1;
-      }
-      .bh-particles {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 0;
-        height: 0;
-        pointer-events: none;
-        z-index: -1;
-        opacity: var(--bh, 0);
-        transition: opacity 0.25s ease;
-      }
-      .bh-particle {
-        position: absolute;
-        left: 0;
+      /* Full-viewport WebGL gravitational lens. Fixed, just above the background
+         video (z-index -1) and below all page content, so the warp bends the live
+         background around the button and extends beyond the card with no clip. */
+      #bh-canvas {
+        position: fixed;
         top: 0;
-        width: 6px;
-        height: 6px;
-        margin: -3px;
-        border-radius: 50%;
-        background: radial-gradient(circle, #eff6ff 0%, #93c5fd 45%, #2563eb 100%);
-        box-shadow: 0 0 10px rgba(147, 197, 253, 0.95), 0 0 18px rgba(37, 99, 235, 0.65);
-        transform-origin: 0 0;
-        animation-name: bh-suck;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
-      }
-      .bh-particle--sm {
-        width: 4px;
-        height: 4px;
-        margin: -2px;
-        box-shadow: 0 0 6px rgba(147, 197, 253, 0.85), 0 0 12px rgba(37, 99, 235, 0.5);
-      }
-      .bh-particle--lg {
-        width: 9px;
-        height: 9px;
-        margin: -4.5px;
-        box-shadow: 0 0 14px rgba(219, 234, 254, 1), 0 0 26px rgba(59, 130, 246, 0.8);
-      }
-      @keyframes bh-suck {
-        0% { transform: rotate(var(--a)) translateX(var(--r)) scale(1); opacity: 0; }
-        8% { opacity: 1; }
-        100% { transform: rotate(calc(var(--a) + 240deg)) translateX(6px) scale(0.12); opacity: 0; }
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+        display: none;
       }
       @media (prefers-reduced-motion: reduce) {
-        .bh-aura::before, .bh-particle, .bh-stage .sp-gradient-checkout-btn,
+        #bh-canvas { display: none !important; }
+        .bh-stage .sp-gradient-checkout-btn,
         .sp-hero h1 .sp-grad { animation: none; }
         .sp-hero h1 .sp-grad {
           background-image: linear-gradient(100deg, #3b82f6, #1e3a8a 55%, #2563eb);
@@ -343,15 +243,8 @@
       @media (max-width: 768px) {
         .bh-stage {
           padding: 0;
-          width: auto;
-          max-width: none;
-          margin-left: 0;
-          transform: none;
         }
-        .bh-aura,
-        .bh-glare,
-        .bh-canvas,
-        .bh-particles {
+        #bh-canvas {
           display: none !important;
         }
         .bh-stage .sp-gradient-checkout-btn,
@@ -721,6 +614,10 @@
     <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
       <source src="background.mp4" type="video/mp4">
     </video>
+    <!-- Full-viewport WebGL gravitational lens: bends the live background video
+         around the subscribe button. Sits just above the video, below all content,
+         so the warp extends beyond the card with no clip edge. PC only. -->
+    <canvas id="bh-canvas" aria-hidden="true"></canvas>
 
     <header class="site-header">
       <nav class="nav">
@@ -772,10 +669,6 @@
           </span>
 
           <div class="bh-stage" id="bh-stage">
-            <div class="bh-aura" aria-hidden="true"></div>
-            <div class="bh-glare" aria-hidden="true"></div>
-            <canvas class="bh-canvas" id="bh-canvas" aria-hidden="true"></canvas>
-            <div class="bh-particles" id="bh-particles" aria-hidden="true"></div>
             <a
               id="stagify-plus-checkout-link"
               class="sp-gradient-checkout-btn"
@@ -1007,87 +900,91 @@
       })();
     </script>
     <script>
-      // Black-hole subscribe button: a WebGL gravitational-lens shader bends a
-      // branded starfield around a dark core (photon ring + accretion disk), and
-      // its intensity — plus the button's scale/glow/tremor (--bh) — ramps with
-      // cursor proximity. Falls back to a CSS glow if WebGL is unavailable.
-      // Disabled on touch, reduced-motion, and once subscribed.
+      // Black-hole subscribe button — REAL gravitational lensing. A full-viewport
+      // WebGL canvas (just above the background video, below all content) samples
+      // the live background video as a texture and bends it around the button:
+      // radial deflection + frame-dragging swirl + a dark event horizon, photon
+      // ring and accretion shimmer. Because the displacement fades to zero with
+      // distance and the canvas spans the whole viewport, the warp extends well
+      // beyond the card with no clip edge. PC only; off on touch/reduced-motion/
+      // subscribed. The canvas only renders while the cursor is near the button.
       (function () {
         var stage = document.getElementById('bh-stage');
         var btn = document.getElementById('stagify-plus-checkout-link');
         var canvas = document.getElementById('bh-canvas');
-        if (!stage || !btn) return;
+        var video = document.getElementById('background-video');
+        if (!stage || !btn || !canvas) return;
         var canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
         var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-        if (!canHover || reduce || isMobile) { if (canvas) canvas.style.display = 'none'; return; }
+        if (!canHover || reduce || isMobile) { canvas.style.display = 'none'; return; }
 
-        var MAX = 400; // px from button center where the effect begins
+        var MAX = 520;            // px from button center where the warp begins
+        var BASE_RS = 116;        // event-horizon radius in CSS px (large enough to wrap the card)
         var target = 0, cur = 0, running = false, lastPointer = null;
-
-        // ---- WebGL lensing ----
-        var gl = null, prog = null, uRes, uTime, uAmt;
-        var dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var t0 = performance.now();
+
+        var gl = null, prog = null, tex = null;
+        var uRes, uVid, uCenter, uRs, uAmt, uTime, uTex;
 
         var VERT = 'attribute vec2 a_pos; void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }';
         var FRAG = [
           'precision highp float;',
-          'uniform vec2 u_res; uniform float u_time; uniform float u_amt;',
-          'float hash(vec2 p){ p = fract(p*vec2(123.34,345.45)); p += dot(p,p+34.345); return fract(p.x*p.y); }',
-          'float vnoise(vec2 p){',
-          '  vec2 i=floor(p), f=fract(p);',
-          '  float a=hash(i), b=hash(i+vec2(1.0,0.0)), c=hash(i+vec2(0.0,1.0)), d=hash(i+vec2(1.0,1.0));',
-          '  vec2 u=f*f*(3.0-2.0*f);',
-          '  return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);',
+          'uniform vec2 u_res;',     // canvas device px
+          'uniform vec2 u_vid;',     // video intrinsic px
+          'uniform vec2 u_center;',  // hole center, device px, top-left origin
+          'uniform float u_rs;',     // event-horizon radius, device px
+          'uniform float u_amt;',
+          'uniform float u_time;',
+          'uniform sampler2D u_tex;',
+          'const vec3 BG = vec3(0.698, 0.769, 0.965);', // #b2c4f6, matches page bg
+          // object-fit:cover mapping from a top-left viewport pixel to video UV
+          'vec2 coverUV(vec2 fragTL){',
+          '  float s = max(u_res.x/u_vid.x, u_res.y/u_vid.y);',
+          '  vec2 disp = u_vid * s;',
+          '  vec2 off = (u_res - disp) * 0.5;',
+          '  return (fragTL - off) / disp;',
           '}',
-          'float fbm(vec2 p){ float v=0.0, a=0.5; for(int i=0;i<4;i++){ v+=a*vnoise(p); p*=2.03; a*=0.5; } return v; }',
-          'vec3 background(vec2 p){',
-          '  vec2 q = p*1.7 + vec2(u_time*0.03, -u_time*0.02);',
-          '  float n = fbm(q + fbm(q*0.6 + u_time*0.04)*1.5);',
-          '  vec3 neb = mix(vec3(0.015,0.03,0.10), vec3(0.10,0.30,0.85), smoothstep(0.30,0.95,n));',
-          '  neb += vec3(0.18,0.32,0.7)*pow(smoothstep(0.65,1.0,n), 2.0);',
-          '  float stars = 0.0;',
-          '  for(int i=0;i<4;i++){',
-          '    float sc = 88.0 + float(i)*78.0;',
-          '    vec2 g = floor(p*sc);',
-          '    float h = hash(g + float(i)*23.1);',
-          '    if(h > 0.958){ vec2 f=fract(p*sc)-0.5; float d=length(f); float tw=0.55+0.45*sin(u_time*3.2+h*40.0); stars += smoothstep(0.55,0.0,d*2.2)*((h-0.958)/0.042)*tw; }',
-          '  }',
-          '  return neb + stars*vec3(0.85,0.92,1.0);',
+          'vec3 bgAt(vec2 fragTL){',
+          '  vec2 uv = clamp(coverUV(fragTL), 0.0, 1.0);',
+          '  vec3 v = texture2D(u_tex, uv).rgb;',
+          '  return mix(BG, v, 0.8);',  // replicate video opacity:0.8 over #b2c4f6
           '}',
           'void main(){',
-          '  vec2 uv=(gl_FragCoord.xy-0.5*u_res)/u_res.y;',
-          '  float r=length(uv); float ang=atan(uv.y,uv.x);',
-          '  float amt=clamp(u_amt,0.0,1.0);',
-          '  float rs=0.05+0.045*amt;',
-          '  vec2 dir=uv/max(r,0.0001);',
-          '  vec2 tang=vec2(-dir.y, dir.x);',
-          '  float defl = (rs*rs)/max(r*r, 0.0004);',
-          '  float swirl = (rs)/max(r, 0.02) * 0.5;',
-          '  vec2 luv = uv + dir*defl*1.1 + tang*swirl;',
-          '  vec2 bg = luv + vec2(u_time*0.012, u_time*0.008);',
-          '  vec3 col = background(bg);',
-          '  col *= smoothstep(rs*0.8, rs*2.6, r);',
-          '  float horizon = smoothstep(rs, rs*1.05, r);',
-          '  col *= horizon;',
-          '  float ring = exp(-pow((r-rs*1.12)/(rs*0.065), 2.0));',
-          '  col += ring*vec3(0.72,0.88,1.0)*3.4*amt;',
-          '  float ringHalo = exp(-pow((r-rs*1.28)/(rs*0.14), 2.0));',
-          '  col += ringHalo*vec3(0.4,0.65,1.0)*1.8*amt;',
-          '  float disk = exp(-pow((r-rs*2.1)/(rs*0.95), 2.0));',
-          '  float sw = 0.5+0.5*sin(ang*3.0 + u_time*2.1 - r*28.0);',
-          '  col += disk*sw*vec3(0.35,0.62,1.0)*1.75*amt;',
-          '  float flare = exp(-pow((r-rs*0.55)/(rs*0.38), 2.0));',
-          '  col += flare*vec3(0.55,0.78,1.0)*0.65*amt;',
-          '  float coreA = 1.0-horizon;',
-          '  float glowA = clamp(max(col.r,max(col.g,col.b)), 0.0, 1.0);',
-          '  vec2 canvasUv = gl_FragCoord.xy / u_res;',
-          '  vec2 canvasEdge = abs(canvasUv - 0.5) * 2.0;',
-          '  float frameFade = 1.0 - smoothstep(0.5, 0.98, max(canvasEdge.x, canvasEdge.y));',
-          '  float radialFade = smoothstep(1.15, 0.28, r);',
-          '  float alpha = max(coreA*0.96, glowA) * min(frameFade, radialFade) * smoothstep(0.0,0.1,amt);',
-          '  gl_FragColor = vec4(col, alpha);',
+          '  vec2 fragTL = vec2(gl_FragCoord.x, u_res.y - gl_FragCoord.y);',
+          '  vec2 d = fragTL - u_center;',
+          '  float r = length(d);',
+          '  vec2 dir = d / max(r, 0.001);',
+          '  float rs = u_rs;',
+          '  float amt = clamp(u_amt, 0.0, 1.0);',
+          // gravitational deflection (px): sample farther out near the hole so the
+          // background appears pulled/curved inward — the lensing.
+          // Localize the warp: full strength near the hole, fading to the real
+          // background by ~6 radii so the canvas blends seamlessly (no flash/seam).
+          '  float ff = 1.0 - smoothstep(rs*2.6, rs*6.0, r);',
+          '  float bend = (rs*rs) / max(r, 1.0) * 2.3 * amt * ff;',
+          '  vec2 tang = vec2(-dir.y, dir.x);',
+          '  float swirl = (rs*rs) / max(r*r, 1.0) * 34.0 * amt * ff;',  // frame dragging
+          '  vec2 sampleP = fragTL + dir * bend + tang * swirl;',
+          '  vec3 col = bgAt(sampleP);',
+          // darken toward the hole, then the pure-black event horizon
+          '  float fall = smoothstep(rs*0.95, rs*3.2, r);',
+          '  col *= mix(1.0, fall, amt);',
+          '  float horizon = smoothstep(rs*0.92, rs*1.03, r);',
+          '  col *= mix(1.0, horizon, amt);',
+          // bright photon ring (Einstein ring) just outside the horizon
+          '  float ring = exp(-pow((r - rs*1.16)/(rs*0.10), 2.0));',
+          '  col += ring * vec3(0.6, 0.8, 1.0) * 2.7 * amt;',
+          // soft outer halo so the ring blooms around the card edge
+          '  float halo = exp(-pow((r - rs*1.42)/(rs*0.32), 2.0));',
+          '  col += halo * vec3(0.32, 0.58, 1.0) * 1.0 * amt;',
+          // swirling accretion disk that wraps beyond the card
+          '  float ang = atan(d.y, d.x);',
+          '  float disk = exp(-pow((r - rs*2.05)/(rs*0.85), 2.0));',
+          '  float sw = 0.55 + 0.45*sin(ang*3.0 + u_time*1.9 - r*0.02);',
+          '  col += disk * sw * vec3(0.34, 0.6, 1.0) * 1.5 * amt;',
+          '  gl_FragColor = vec4(col, ff * smoothstep(0.0, 0.05, amt));',  // localized; fades into the real video
           '}'
         ].join('\n');
 
@@ -1102,7 +999,6 @@
           return s;
         }
         function initGL() {
-          if (!canvas) return false;
           try {
             gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true })
               || canvas.getContext('experimental-webgl');
@@ -1124,64 +1020,73 @@
           gl.enableVertexAttribArray(loc);
           gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
           uRes = gl.getUniformLocation(prog, 'u_res');
-          uTime = gl.getUniformLocation(prog, 'u_time');
+          uVid = gl.getUniformLocation(prog, 'u_vid');
+          uCenter = gl.getUniformLocation(prog, 'u_center');
+          uRs = gl.getUniformLocation(prog, 'u_rs');
           uAmt = gl.getUniformLocation(prog, 'u_amt');
+          uTime = gl.getUniformLocation(prog, 'u_time');
+          uTex = gl.getUniformLocation(prog, 'u_tex');
+          // Video texture (NPOT → clamp + linear, no mipmaps). Seed 1x1 so it's
+          // valid before the first frame is available.
+          tex = gl.createTexture();
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([178, 196, 246, 255]));
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
           gl.enable(gl.BLEND);
           gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
           resize();
           return true;
         }
         function resize() {
-          if (!gl || !canvas) return;
-          var w = Math.max(1, Math.round(canvas.clientWidth * dpr));
-          var h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+          if (!gl) return;
+          var w = Math.max(1, Math.round(window.innerWidth * dpr));
+          var h = Math.max(1, Math.round(window.innerHeight * dpr));
           if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
           gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        function vidReady() {
+          return video && video.readyState >= 2 && video.videoWidth > 0;
         }
         function render(amt) {
           if (!gl) return;
           resize();
           gl.useProgram(prog);
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          if (vidReady()) {
+            try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video); } catch (e) {}
+          }
+          var rb = btn.getBoundingClientRect();
           gl.uniform2f(uRes, canvas.width, canvas.height);
-          gl.uniform1f(uTime, (performance.now() - t0) * 0.001);
+          gl.uniform2f(uVid, vidReady() ? video.videoWidth : 16, vidReady() ? video.videoHeight : 9);
+          gl.uniform2f(uCenter, (rb.left + rb.width / 2) * dpr, (rb.top + rb.height / 2) * dpr);
+          gl.uniform1f(uRs, BASE_RS * dpr);
           gl.uniform1f(uAmt, amt);
+          gl.uniform1f(uTime, (performance.now() - t0) * 0.001);
+          gl.uniform1i(uTex, 0);
           gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
           gl.drawArrays(gl.TRIANGLES, 0, 3);
         }
 
         var hasGL = initGL();
-        if (!hasGL && canvas) canvas.style.display = 'none';
-
-        var particlesEl = document.getElementById('bh-particles');
-        if (particlesEl) {
-          var PARTICLE_COUNT = 32;
-          for (var pi = 0; pi < PARTICLE_COUNT; pi++) {
-            var particle = document.createElement('span');
-            var sizeClass = pi % 5 === 0 ? ' bh-particle--lg' : pi % 2 === 0 ? ' bh-particle--sm' : '';
-            particle.className = 'bh-particle' + sizeClass;
-            var angle = (360 / PARTICLE_COUNT) * pi + Math.random() * 28;
-            var radius = 48 + Math.random() * 135;
-            var dur = 1.6 + Math.random() * 2.4;
-            particle.style.setProperty('--a', angle + 'deg');
-            particle.style.setProperty('--r', radius + 'px');
-            particle.style.animationDuration = dur + 's';
-            particle.style.animationDelay = (-Math.random() * dur) + 's';
-            particlesEl.appendChild(particle);
-          }
-        }
+        if (!hasGL) canvas.style.display = 'none';
 
         function tick() {
           cur += (target - cur) * 0.14;
           if (cur < 0.004 && target < 0.004) {
             cur = 0;
             stage.style.setProperty('--bh', '0');
-            if (hasGL) render(0);
+            canvas.style.display = 'none';
             running = false;
             return;
           }
           stage.style.setProperty('--bh', cur.toFixed(3));
-          if (hasGL) render(cur);
+          if (hasGL) { canvas.style.display = 'block'; render(cur); }
           requestAnimationFrame(tick);
         }
         function ensure() { if (!running) { running = true; requestAnimationFrame(tick); } }
@@ -1202,7 +1107,7 @@
           ensure();
         }, { passive: true });
         document.addEventListener('mouseleave', function () { lastPointer = null; target = 0; ensure(); });
-        window.addEventListener('resize', function () { if (hasGL) { resize(); if (cur > 0.004) render(cur); } });
+        window.addEventListener('resize', function () { if (hasGL && running) { resize(); render(cur); } });
       })();
     </script>
 
