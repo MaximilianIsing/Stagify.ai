@@ -111,9 +111,44 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initDemoPicker);
-  } else {
+  // When a topic card in the top grid is clicked, briefly highlight the matching
+  // troubleshooting card it scrolls down to, so it's obvious which one is relevant.
+  function initOverviewHighlight() {
+    var cards = document.querySelectorAll('.guides-overview-card');
+    if (!cards.length) return;
+
+    function highlight(id) {
+      var target = document.getElementById(id);
+      if (!target || target.className.indexOf('guides-trouble-card') === -1) return;
+      var all = document.querySelectorAll('.guides-trouble-card--highlight');
+      for (var i = 0; i < all.length; i++) all[i].classList.remove('guides-trouble-card--highlight');
+      // Force a reflow so re-clicking the same card restarts the pulse animation.
+      void target.offsetWidth;
+      target.classList.add('guides-trouble-card--highlight');
+    }
+
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        var href = card.getAttribute('href') || '';
+        if (href.charAt(0) === '#') highlight(href.slice(1));
+      });
+    });
+
+    function fromHash() {
+      if (location.hash && location.hash.length > 1) highlight(location.hash.slice(1));
+    }
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+  }
+
+  function init() {
     initDemoPicker();
+    initOverviewHighlight();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 })();

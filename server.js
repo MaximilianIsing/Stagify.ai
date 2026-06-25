@@ -7427,7 +7427,8 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
 
     // Get model from request or default to fast model
     const selectedModel = model || 'gpt-4o-mini';
-    const geminiModel = getGeminiImageModel(selectedModel);
+    // Masking always uses the 2.5-flash image model regardless of selected tier
+    const geminiModel = 'gemini-2.5-flash-image';
 
     // Convert base64 data URLs to buffers
     const imageDataUrl = image.split(',');
