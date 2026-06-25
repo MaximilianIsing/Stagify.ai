@@ -1264,8 +1264,8 @@
           progress.classList.add('hidden');
           processBtn.disabled = false;
           
-          // Refresh prompt count after successful processing
-          loadPromptCount();
+          // Refresh hero stat counts after successful processing
+          loadHeroStats();
           // The version carousel replaces the old variation thumbnails.
           updateCarouselUI();
         };
@@ -1750,7 +1750,7 @@
             updateMaskButtonVisibility();
           }
           if (processBtn) processBtn.disabled = false;
-          if (typeof loadPromptCount === 'function') loadPromptCount();
+          loadHeroStats();
         } catch (err) {
           console.error('Mask edit failed:', err);
           loader.stop();

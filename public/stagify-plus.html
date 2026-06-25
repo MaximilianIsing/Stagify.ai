@@ -33,14 +33,11 @@
     <link rel="stylesheet" href="styles/auth.css">
     <style>
       /*
-        Global styles.css sets main { flex: 1; overflow-y: auto }, so the page scrolls
-        inside <main> instead of the window. On this page, scroll the document on <body>.
+        Scroll inside <main> (the site-wide model) so the scrollbar starts below the
+        sticky header instead of running the full viewport.
       */
       body.page-stagify-plus main.sp-page {
-        flex: 0 0 auto;
         overflow-x: hidden;
-        overflow-y: visible;
-        width: 100%;
       }
       .sp-page {
         --sp-navy: #0f1f4b;
@@ -48,10 +45,14 @@
         --sp-blue-dark: #1d4ed8;
         --sp-ink: #0f172a;
         --sp-muted: #51607a;
+      }
+      /* main is the full-width scroll container (scrollbar hugs the viewport);
+         this inner wrapper holds the centered, max-width content column. */
+      .sp-page__inner {
         max-width: min(1060px, 100%);
         margin: 0 auto;
-        /* Top padding clears the sticky site header (~89px) without excess whitespace */
-        padding: clamp(5.25rem, 7vw, 5.75rem) clamp(1.25rem, 4vw, 2rem) 4.5rem;
+        /* main now sits below the sticky header, so only a small top gap is needed */
+        padding: 1.75rem clamp(1.25rem, 4vw, 2rem) 4.5rem;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -645,6 +646,7 @@
     </header>
 
     <main class="sp-page">
+      <div class="sp-page__inner">
       <header class="sp-hero">
         <h1>Everything in Stagify, <span class="sp-grad">unlocked</span>.</h1>
         <p>Unlimited high-quality staging, the AI Designer, furniture removal, and every professional tool. All for less than the cost of one traditional staging.</p>
@@ -811,6 +813,7 @@
           <li><a href="index.html#faq">Questions before you buy?</a></li>
         </ul>
         <p class="sp-footnote">Teams, invoicing, or custom terms: <a href="mailto:team@stagify.ai">team@stagify.ai</a></p>
+      </div>
       </div>
     </main>
     <script src="scripts/language-loader.js" defer></script>

@@ -640,6 +640,7 @@
       "title": "使用蒙版编辑",
       "brush": "画笔",
       "erase": "擦除",
+      "brushAllNote": "请确保涂抹所有想要遮罩的区域。",
       "toolsAria": "蒙版工具",
       "brushSize": "画笔大小：",
       "promptLabel": "您想在蒙版区域中更改什么？",

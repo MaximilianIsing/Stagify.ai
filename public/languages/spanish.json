@@ -640,6 +640,7 @@
       "title": "Editar con Máscara",
       "brush": "Pincel",
       "erase": "Borrar",
+      "brushAllNote": "Asegúrate de pintar toda el área que quieres enmascarar.",
       "toolsAria": "Herramienta de máscara",
       "brushSize": "Tamaño del Pincel:",
       "promptLabel": "¿Qué te gustaría cambiar en el área enmascarada?",

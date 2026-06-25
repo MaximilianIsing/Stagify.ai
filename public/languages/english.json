@@ -639,6 +639,7 @@
       "title": "Edit with Mask",
       "brush": "Brush",
       "erase": "Erase",
+      "brushAllNote": "Be sure to brush over all of the area you'd like masked.",
       "toolsAria": "Mask tool",
       "brushSize": "Brush Size:",
       "promptLabel": "What would you like to change in the masked area?",
