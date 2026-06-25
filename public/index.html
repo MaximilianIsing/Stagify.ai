@@ -140,7 +140,64 @@
         font-size: 12px;
       }
       .stats-counting-text--under-pills {
-        margin-top: -14px;
+        margin-top: -1px;
+      }
+      /* Hero stat pills — critical paint + hide until counts load (full rules in carousel.css) */
+      .hero-stats {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+        margin-top: 1px;
+      }
+      .hero-stats.is-ready {
+        opacity: 1;
+        visibility: visible;
+      }
+      .stats-pills {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 0;
+        flex-wrap: nowrap;
+        width: 100%;
+      }
+      .stat-pill {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(30, 58, 138, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        box-shadow: 0 2px 10px rgba(30, 58, 138, 0.25);
+      }
+      .stat-pill-number {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1;
+        margin-right: 4px;
+        font-variant-numeric: tabular-nums;
+        display: inline-block;
+        min-width: 1ch;
+        text-align: right;
+        transition: min-width 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+      .stat-pill-text {
+        font-size: 0.875rem;
+        color: #fff;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .hero-stats {
+          transition: none;
+        }
+        .stat-pill-number {
+          transition: none;
+        }
       }
       /* Stack subtext under the CTA; wrap shrink-wraps to the button so only the line is centered to the button */
       .hero-cta-button-wrap {
@@ -615,17 +672,19 @@
           <div class="carousel-container">
             <div class="carousel-note" data-lang="hero.carouselNote">Example preview. Upload your photo to stage</div>
           </div>
-          <div class="stats-pills">
-            <div class="stat-pill">
-              <span class="stat-pill-number" data-stat="roomsStaged">0</span>
-              <span class="stat-pill-text" data-lang="hero.stats.roomsStaged">Rooms Staged</span>
+          <div class="hero-stats" id="hero-stats">
+            <div class="stats-pills">
+              <div class="stat-pill">
+                <span class="stat-pill-number" data-stat="roomsStaged" aria-hidden="true">&nbsp;</span>
+                <span class="stat-pill-text" data-lang="hero.stats.roomsStaged">Rooms Staged</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-pill-number" data-stat="usersServed" aria-hidden="true">&nbsp;</span>
+                <span class="stat-pill-text" data-lang="hero.stats.usersServed">Users Served</span>
+              </div>
             </div>
-            <div class="stat-pill">
-              <span class="stat-pill-number" data-stat="usersServed">0</span>
-              <span class="stat-pill-text" data-lang="hero.stats.usersServed">Users Served</span>
-            </div>
+            <div class="stats-counting-text stats-counting-text--under-pills" data-lang="hero.stats.andCounting">and counting...</div>
           </div>
-          <div class="stats-counting-text stats-counting-text--under-pills" data-lang="hero.stats.andCounting">and counting...</div>
         </div>
       </section>
 

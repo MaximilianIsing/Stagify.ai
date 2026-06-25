@@ -1265,7 +1265,7 @@
           processBtn.disabled = false;
           
           // Refresh hero stat counts after successful processing
-          loadHeroStats();
+          loadHeroStats({ refresh: true });
           // The version carousel replaces the old variation thumbnails.
           updateCarouselUI();
         };
@@ -1750,7 +1750,7 @@
             updateMaskButtonVisibility();
           }
           if (processBtn) processBtn.disabled = false;
-          loadHeroStats();
+          loadHeroStats({ refresh: true });
         } catch (err) {
           console.error('Mask edit failed:', err);
           loader.stop();
@@ -1857,9 +1857,12 @@
   };
   
   
-  // Load hero stat pills from server, then animate to live counts
-  function loadHeroStats() {
+  // Load hero stat pills from server, then reveal and animate to live counts
+  function loadHeroStats(options) {
     if (!document.querySelector('.stat-pill-number[data-stat]')) return;
+
+    var opts = options || {};
+    var isRefresh = opts.refresh === true;
 
     Promise.all([
       fetch('/api/prompt-count').then(function (r) {
@@ -1885,20 +1888,28 @@
               : null;
 
         if (window.StagifyHeroStats && typeof window.StagifyHeroStats.setCounts === 'function') {
-          window.StagifyHeroStats.setCounts({
-            roomsStaged: rooms,
-            usersServed: users,
-          });
+          window.StagifyHeroStats.setCounts(
+            { roomsStaged: rooms, usersServed: users },
+            { refresh: isRefresh }
+          );
           return;
         }
 
+        var wrap = document.getElementById('hero-stats');
         var roomsEl = document.querySelector('.stat-pill-number[data-stat="roomsStaged"]');
         var usersEl = document.querySelector('.stat-pill-number[data-stat="usersServed"]');
         if (roomsEl && rooms != null && !Number.isNaN(rooms)) roomsEl.textContent = String(rooms);
         if (usersEl && users != null && !Number.isNaN(users)) usersEl.textContent = String(users);
+        if (wrap) wrap.classList.add('is-ready');
       })
       .catch(function (error) {
         console.error('Error loading hero stats:', error);
+        if (
+          window.StagifyHeroStats &&
+          typeof window.StagifyHeroStats.revealWithoutCounts === 'function'
+        ) {
+          window.StagifyHeroStats.revealWithoutCounts();
+        }
       });
   }
 
