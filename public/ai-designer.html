@@ -1636,6 +1636,8 @@
         flex-direction: column;
         gap: 12px;
         color: #1e3a8a;
+        /* Tighten the gap between the image and the brush/erase row */
+        margin-top: -8px;
       }
       
       .mask-editor-brush-controls {
@@ -1708,6 +1710,21 @@
         color: #2563eb;
       }
       
+      .mask-editor-toolrow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .mask-editor-note {
+        margin: 0;
+        text-align: right;
+        font-size: 12.5px;
+        font-style: italic;
+        color: #6b7280;
+      }
+
       .mask-editor-tools {
         display: inline-flex;
         gap: 6px;
@@ -1784,6 +1801,17 @@
         background: #f3f4f6;
         color: #1e3a8a;
         border: 1px solid #e5e7eb;
+      }
+      #mask-editor-clear {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .mask-editor-clear-icon {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
       }
       
       .mask-editor-btn-secondary:hover {
@@ -4456,6 +4484,7 @@
               <canvas id="mask-editor-mask-canvas" class="mask-editor-canvas" style="position: absolute; top: 0; left: 0; pointer-events: auto; mix-blend-mode: multiply; opacity: 0.5; cursor: crosshair;"></canvas>
             </div>
             <div class="mask-editor-controls">
+              <div class="mask-editor-toolrow">
               <div class="mask-editor-tools" role="group" aria-label="Mask tool">
                 <button type="button" id="mask-editor-brush-btn" class="mask-editor-tool-btn is-active" aria-pressed="true">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>
@@ -4465,6 +4494,8 @@
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20H7L3 16a2 2 0 0 1 0-3l9-9a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-7 8"/><path d="M6 11l7 7"/></svg>
                   <span data-i18n="pdf.maskEditor.erase">Erase</span>
                 </button>
+              </div>
+                <p class="mask-editor-note" data-i18n="pdf.maskEditor.brushAllNote">Be sure to brush over all of the area you'd like masked.</p>
               </div>
               <div class="mask-editor-brush-controls">
                 <label class="mask-editor-brush-label" data-i18n="pdf.maskEditor.brushSize">Brush Size:</label>
@@ -4477,7 +4508,7 @@
               </div>
               <div class="mask-editor-actions">
                 <button class="mask-editor-btn mask-editor-btn-secondary" id="mask-editor-cancel" data-i18n="pdf.maskEditor.cancel">Cancel</button>
-                <button class="mask-editor-btn mask-editor-btn-secondary" id="mask-editor-clear" data-i18n="pdf.maskEditor.clearMask">Clear Mask</button>
+                <button class="mask-editor-btn mask-editor-btn-secondary" id="mask-editor-clear"><span data-i18n="pdf.maskEditor.clearMask">Clear Mask</span><svg class="mask-editor-clear-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
                 <button class="mask-editor-btn mask-editor-btn-primary" id="mask-editor-submit">
                   <span data-i18n="pdf.maskEditor.applyEdit">Apply Edit</span>
                   <img src="media-webp/Mask.webp" alt="" aria-hidden="true">
@@ -4554,6 +4585,12 @@
           brushLabel.textContent = getText('pdf.maskEditor.brushSize');
         }
 
+        // Update the "brush over all" note
+        const note = document.querySelector('.mask-editor-note');
+        if (note) {
+          note.textContent = getText('pdf.maskEditor.brushAllNote');
+        }
+
         // Update tool toggle labels
         const brushToolText = document.querySelector('#mask-editor-brush-btn span');
         if (brushToolText) {
@@ -4584,7 +4621,8 @@
         
         const clearBtn = document.getElementById('mask-editor-clear');
         if (clearBtn) {
-          clearBtn.textContent = getText('pdf.maskEditor.clearMask');
+          const clearText = clearBtn.querySelector('span');
+          if (clearText) clearText.textContent = getText('pdf.maskEditor.clearMask');
         }
         
         const submitBtn = document.getElementById('mask-editor-submit');

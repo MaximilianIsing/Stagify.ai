@@ -55,12 +55,10 @@
       html {
         scroll-behavior: smooth;
       }
-      /* Let the page scroll naturally (main flex:1 was trapping content) */
+      /* Scroll inside <main> (like the rest of the site) so the scrollbar
+         starts below the sticky header instead of running the full viewport. */
       body:has(.home-guides) main {
-        flex: 0 0 auto;
         overflow-x: hidden;
-        overflow-y: visible;
-        width: 100%;
       }
       @media (max-width: 768px) {
         .desktop-only {
