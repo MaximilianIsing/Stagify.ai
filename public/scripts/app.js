@@ -416,10 +416,9 @@
     function openFilePicker() {
       const hasTok = window.StagifyAuth && window.StagifyAuth.getToken();
       if (!hasTok) {
-        if (isMobileStagingViewport()) {
-          openModal();
-          return;
-        }
+        // Not signed in: prompt sign-in immediately on every device. (Previously
+        // mobile fell through to openModal(), letting anonymous users upload and
+        // stage for free without ever being asked to create an account.)
         if (window.StagifyProfileMenu && window.StagifyProfileMenu.setAuthModeRegister) {
           window.StagifyProfileMenu.setAuthModeRegister(true);
         }
