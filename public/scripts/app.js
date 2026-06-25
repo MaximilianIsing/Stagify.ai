@@ -1345,6 +1345,8 @@
       const cancelBtn = $('#stage-mask-cancel');
       const clearBtn = $('#stage-mask-clear');
       const submitBtn = $('#stage-mask-submit');
+      const brushToolBtn = $('#stage-mask-brush-btn');
+      const eraseToolBtn = $('#stage-mask-erase-btn');
       const canvasContainer = maskModal.querySelector('.stage-mask-canvas-container');
 
       let brushSize = 50;
@@ -1353,6 +1355,8 @@
       let lastY = null;
       let scaleX = 1;
       let scaleY = 1;
+      // 'brush' adds to the selection, 'erase' removes from it.
+      let tool = 'brush';
       // Tracks whether anything has been painted this session, so the hot drawing
       // path never has to scan the whole canvas (getImageData) to enable Submit.
       let painted = false;
@@ -1420,6 +1424,7 @@
           drawCanvas.style.height = dispH + 'px';
           drawCanvas.getContext('2d').clearRect(0, 0, drawCanvas.width, drawCanvas.height);
           painted = false;
+          setTool('brush');
 
           scaleX = dispW / img.width;
           scaleY = dispH / img.height;
@@ -1473,10 +1478,33 @@
         return painted;
       }
 
+      // Accurate (but expensive) scan — only used on stroke end, never per-move,
+      // so erasing the last of the selection correctly disables Submit.
+      function scanHasContent() {
+        if (!drawCanvas.width || !drawCanvas.height) return false;
+        const d = drawCanvas.getContext('2d').getImageData(0, 0, drawCanvas.width, drawCanvas.height).data;
+        for (let i = 3; i < d.length; i += 4) {
+          if (d[i] > 10) return true;
+        }
+        return false;
+      }
+
       function updateSubmitState() {
         if (!submitBtn) return;
         const hasPrompt = promptInput && promptInput.value.trim().length > 0;
         submitBtn.disabled = !painted || !hasPrompt;
+      }
+
+      function setTool(t) {
+        tool = t === 'erase' ? 'erase' : 'brush';
+        if (brushToolBtn) {
+          brushToolBtn.classList.toggle('is-active', tool === 'brush');
+          brushToolBtn.setAttribute('aria-pressed', tool === 'brush' ? 'true' : 'false');
+        }
+        if (eraseToolBtn) {
+          eraseToolBtn.classList.toggle('is-active', tool === 'erase');
+          eraseToolBtn.setAttribute('aria-pressed', tool === 'erase' ? 'true' : 'false');
+        }
       }
 
       function paint(e) {
@@ -1485,11 +1513,11 @@
         const x = (e.clientX - rect.left) / scaleX;
         const y = (e.clientY - rect.top) / scaleY;
         const ctx = drawCanvas.getContext('2d');
-        // Paint one continuous, fully-opaque stroke with round caps/joins. Because
-        // every pixel is solid (no soft dabs), overlaps don't compound into blotchy
-        // circles — the stroke reads as a single clean shape. The translucent look
-        // comes from the canvas element's CSS opacity, not per-pixel alpha.
-        ctx.globalCompositeOperation = 'source-over';
+        // Paint one continuous, fully-opaque stroke with round caps/joins. Erase
+        // mode uses destination-out so the stroke removes from the selection
+        // instead of adding to it. Solid pixels keep the shape clean; the
+        // translucent look comes from the canvas element's CSS opacity.
+        ctx.globalCompositeOperation = tool === 'erase' ? 'destination-out' : 'source-over';
         ctx.strokeStyle = '#2563eb';
         ctx.fillStyle = '#2563eb';
         ctx.lineWidth = brushSize;
@@ -1506,10 +1534,11 @@
           ctx.lineTo(x, y);
           ctx.stroke();
         }
+        ctx.globalCompositeOperation = 'source-over';
         lastX = x;
         lastY = y;
-        if (!painted) {
-          // First mark of this session: flip the flag and refresh the button once.
+        if (tool === 'brush' && !painted) {
+          // First brush mark: flip the flag and refresh the button once (cheap).
           painted = true;
           updateSubmitState();
         }
@@ -1524,9 +1553,12 @@
       }
 
       function stopDraw() {
+        if (!drawing) return;
         drawing = false;
         lastX = null;
         lastY = null;
+        // Recompute accurately once per stroke (handles erasing the selection away).
+        painted = scanHasContent();
         updateSubmitState();
       }
 
@@ -1553,6 +1585,8 @@
       if (promptInput) promptInput.addEventListener('input', updateSubmitState);
       if (clearBtn) clearBtn.addEventListener('click', clearDraw);
       if (cancelBtn) cancelBtn.addEventListener('click', closeEditor);
+      if (brushToolBtn) brushToolBtn.addEventListener('click', () => setTool('brush'));
+      if (eraseToolBtn) eraseToolBtn.addEventListener('click', () => setTool('erase'));
       // Same paint-brush FAB on both views: edits the staged result on After,
       // or the original photo on Before.
       if (maskEditBtn) maskEditBtn.addEventListener('click', () => {

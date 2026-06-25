@@ -15,7 +15,7 @@
     const start = performance.now();
     const ease = (t) => 1 - Math.pow(1 - t, 4);
     function frame(now) {
-      const t = Math.min((now - start) / duration, 1);
+      const t = Math.min(Math.max((now - start) / duration, 0), 1);
       el.textContent = format(target * ease(t));
       if (t < 1) {
         requestAnimationFrame(frame);

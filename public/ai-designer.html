@@ -1708,6 +1708,42 @@
         color: #2563eb;
       }
       
+      .mask-editor-tools {
+        display: inline-flex;
+        gap: 6px;
+        padding: 4px;
+        border-radius: 10px;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        align-self: flex-start;
+      }
+      .mask-editor-tool-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 14px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: #1e3a8a;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+      }
+      .mask-editor-tool-btn:hover {
+        background: rgba(37, 99, 235, 0.1);
+      }
+      .mask-editor-tool-btn.is-active {
+        background: #2563eb;
+        color: #fff;
+      }
+      .mask-editor-tool-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
       .mask-editor-actions {
         display: flex;
         gap: 8px;
@@ -4381,7 +4417,9 @@
           canvas.dataset.originalHeight = img.height;
           
           existingModal.classList.add('active');
-          initMaskDrawing(maskCanvas, scaleX, scaleY);
+          maskPainted = false;
+          setMaskTool('brush');
+          initMaskDrawing(maskCanvas);
           
           // Clear prompt input and disable button initially
           if (promptInput) {
@@ -4415,9 +4453,19 @@
             </div>
             <div class="mask-editor-canvas-container">
               <canvas id="mask-editor-canvas" class="mask-editor-canvas"></canvas>
-              <canvas id="mask-editor-mask-canvas" class="mask-editor-canvas" style="position: absolute; top: 0; left: 0; pointer-events: auto; mix-blend-mode: multiply; cursor: crosshair;"></canvas>
+              <canvas id="mask-editor-mask-canvas" class="mask-editor-canvas" style="position: absolute; top: 0; left: 0; pointer-events: auto; mix-blend-mode: multiply; opacity: 0.5; cursor: crosshair;"></canvas>
             </div>
             <div class="mask-editor-controls">
+              <div class="mask-editor-tools" role="group" aria-label="Mask tool">
+                <button type="button" id="mask-editor-brush-btn" class="mask-editor-tool-btn is-active" aria-pressed="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>
+                  <span data-i18n="pdf.maskEditor.brush">Brush</span>
+                </button>
+                <button type="button" id="mask-editor-erase-btn" class="mask-editor-tool-btn" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20H7L3 16a2 2 0 0 1 0-3l9-9a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-7 8"/><path d="M6 11l7 7"/></svg>
+                  <span data-i18n="pdf.maskEditor.erase">Erase</span>
+                </button>
+              </div>
               <div class="mask-editor-brush-controls">
                 <label class="mask-editor-brush-label" data-i18n="pdf.maskEditor.brushSize">Brush Size:</label>
                 <input type="range" id="mask-editor-brush-slider" class="mask-editor-brush-slider" min="20" max="150" value="50">
@@ -4449,7 +4497,10 @@
         document.getElementById('mask-editor-cancel').addEventListener('click', closeMaskEditor);
         document.getElementById('mask-editor-clear').addEventListener('click', clearMask);
         document.getElementById('mask-editor-submit').addEventListener('click', submitMaskEdit);
+        document.getElementById('mask-editor-brush-btn').addEventListener('click', () => setMaskTool('brush'));
+        document.getElementById('mask-editor-erase-btn').addEventListener('click', () => setMaskTool('erase'));
         document.getElementById('mask-editor-brush-slider').addEventListener('input', (e) => {
+          brushSize = parseInt(e.target.value, 10);
           document.getElementById('mask-editor-brush-size').textContent = e.target.value + ' px';
         });
         
@@ -4502,6 +4553,16 @@
         if (brushLabel) {
           brushLabel.textContent = getText('pdf.maskEditor.brushSize');
         }
+
+        // Update tool toggle labels
+        const brushToolText = document.querySelector('#mask-editor-brush-btn span');
+        if (brushToolText) {
+          brushToolText.textContent = getText('pdf.maskEditor.brush');
+        }
+        const eraseToolText = document.querySelector('#mask-editor-erase-btn span');
+        if (eraseToolText) {
+          eraseToolText.textContent = getText('pdf.maskEditor.erase');
+        }
         
         // Update prompt label
         const promptLabel = document.querySelector('.mask-editor-prompt-label');
@@ -4537,135 +4598,193 @@
       
       let isDrawing = false;
       let brushSize = 50;
-      
-      function initMaskDrawing(maskCanvas, scaleX, scaleY) {
+      let maskTool = 'brush';     // 'brush' adds to the selection, 'erase' removes
+      let maskPainted = false;    // any selection present? (hot path avoids scanning)
+      let maskDrawingInited = false;
+
+      function setMaskTool(t) {
+        maskTool = t === 'erase' ? 'erase' : 'brush';
+        const b = document.getElementById('mask-editor-brush-btn');
+        const e = document.getElementById('mask-editor-erase-btn');
+        if (b) { b.classList.toggle('is-active', maskTool === 'brush'); b.setAttribute('aria-pressed', maskTool === 'brush' ? 'true' : 'false'); }
+        if (e) { e.classList.toggle('is-active', maskTool === 'erase'); e.setAttribute('aria-pressed', maskTool === 'erase' ? 'true' : 'false'); }
+      }
+
+      // ── Mask compositing helpers (mirror the main Stagify mask tool) ──
+      // Grow the brushed area outward by `grow` px (silent brush expansion).
+      function maskGrowBinary(drawSrc, w, h, grow) {
+        const bin = document.createElement('canvas');
+        bin.width = w; bin.height = h;
+        const bctx = bin.getContext('2d');
+        bctx.drawImage(drawSrc, 0, 0, w, h);
+        const id = bctx.getImageData(0, 0, w, h);
+        const d = id.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const on = d[i + 3] > 10;
+          d[i] = 255; d[i + 1] = 255; d[i + 2] = 255; d[i + 3] = on ? 255 : 0;
+        }
+        bctx.putImageData(id, 0, 0);
+        const grown = document.createElement('canvas');
+        grown.width = w; grown.height = h;
+        const gctx = grown.getContext('2d');
+        const steps = 28;
+        const ringStep = Math.max(2, grow / 5);
+        for (let r = grow; r > 0; r -= ringStep) {
+          for (let k = 0; k < steps; k++) {
+            const a = (k / steps) * Math.PI * 2;
+            gctx.drawImage(bin, Math.cos(a) * r, Math.sin(a) * r);
+          }
+        }
+        gctx.drawImage(bin, 0, 0);
+        return grown;
+      }
+      // White-on-black mask sent to the model (the grown editable region).
+      function maskBuildModelMask(drawSrc, w, h, grow) {
+        const grown = maskGrowBinary(drawSrc, w, h, grow);
+        const out = document.createElement('canvas');
+        out.width = w; out.height = h;
+        const octx = out.getContext('2d');
+        octx.fillStyle = '#000';
+        octx.fillRect(0, 0, w, h);
+        octx.drawImage(grown, 0, 0);
+        return out;
+      }
+      // Feathered alpha mask for compositing (grown core + soft falloff).
+      function maskBuildBlendMask(drawSrc, w, h, coreGrow, featherPx) {
+        const grown = maskGrowBinary(drawSrc, w, h, coreGrow + featherPx);
+        const out = document.createElement('canvas');
+        out.width = w; out.height = h;
+        const octx = out.getContext('2d');
+        let blurred = false;
+        try {
+          if (typeof octx.filter !== 'undefined') {
+            octx.filter = 'blur(' + featherPx + 'px)';
+            octx.drawImage(grown, 0, 0);
+            octx.filter = 'none';
+            blurred = true;
+          }
+        } catch (err) { blurred = false; }
+        if (!blurred) {
+          octx.drawImage(grown, 0, 0);
+          const steps = 28, rings = 8;
+          for (let i = 1; i <= rings; i++) {
+            octx.globalAlpha = 0.5 * (1 - i / (rings + 1));
+            const rr = featherPx * (i / rings);
+            for (let k = 0; k < steps; k++) {
+              const a = (k / steps) * Math.PI * 2;
+              octx.drawImage(grown, Math.cos(a) * rr, Math.sin(a) * rr);
+            }
+          }
+          octx.globalAlpha = 1;
+        }
+        return out;
+      }
+      // Hard-composite: keep the original everywhere, paste the edit only inside
+      // the feathered mask, so unbrushed areas can never change and there's no seam.
+      function maskCompositeEdit(origCanvas, keepMask, editedImg, w, h) {
+        const me = document.createElement('canvas');
+        me.width = w; me.height = h;
+        const mctx = me.getContext('2d');
+        mctx.drawImage(editedImg, 0, 0, w, h);
+        mctx.globalCompositeOperation = 'destination-in';
+        mctx.drawImage(keepMask, 0, 0, w, h);
+        const out = document.createElement('canvas');
+        out.width = w; out.height = h;
+        const octx = out.getContext('2d');
+        octx.drawImage(origCanvas, 0, 0);
+        octx.drawImage(me, 0, 0);
+        return out.toDataURL('image/png');
+      }
+
+      // Accurate (expensive) scan — only on stroke end, never per-move.
+      function maskScanHasContent() {
+        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+        if (!maskCanvas || !maskCanvas.width || !maskCanvas.height) return false;
+        const d = maskCanvas.getContext('2d').getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
+        for (let i = 3; i < d.length; i += 4) { if (d[i] > 10) return true; }
+        return false;
+      }
+
+      function initMaskDrawing(maskCanvas) {
+        if (maskDrawingInited) return; // attach listeners once
+        maskDrawingInited = true;
         const ctx = maskCanvas.getContext('2d');
-        ctx.globalCompositeOperation = 'source-over';
-        
-        const brushSlider = document.getElementById('mask-editor-brush-slider');
-        brushSlider.addEventListener('input', (e) => {
-          brushSize = parseInt(e.target.value);
-        });
-        
         let drawing = false;
         let lastX = null;
         let lastY = null;
-        
+
         function isProcessing() {
           const canvasContainer = document.querySelector('.mask-editor-canvas-container');
           return canvasContainer && canvasContainer.classList.contains('processing');
         }
-        
+        function pointFrom(e) {
+          const cv = document.getElementById('mask-editor-canvas');
+          const sx = parseFloat(cv.dataset.scaleX) || 1;
+          const sy = parseFloat(cv.dataset.scaleY) || 1;
+          const rect = maskCanvas.getBoundingClientRect();
+          return { x: (e.clientX - rect.left) / sx, y: (e.clientY - rect.top) / sy };
+        }
         function startDrawing(e) {
-          if (isProcessing()) return; // Prevent drawing while processing
+          if (isProcessing()) return;
           drawing = true;
           lastX = null;
           lastY = null;
           draw(e);
         }
-        
         function stopDrawing() {
+          if (!drawing) return;
           drawing = false;
           lastX = null;
           lastY = null;
-          updateApplyButtonState(); // Update button state after drawing stops
+          maskPainted = maskScanHasContent(); // recompute once (handles erasing it away)
+          updateApplyButtonState();
         }
-        
         function draw(e) {
-          if (!drawing || isProcessing()) return; // Prevent drawing while processing
-          
-          const rect = maskCanvas.getBoundingClientRect();
-          const x = (e.clientX - rect.left) / scaleX;
-          const y = (e.clientY - rect.top) / scaleY;
-          
-          // Use lighten composite to prevent darkening on overlap - gives consistent opacity
-          ctx.globalCompositeOperation = 'lighten';
-          
-          // Create a soft gradient brush for smoother, more professional look
-          const gradient = ctx.createRadialGradient(x, y, 0, x, y, brushSize / 2);
-          gradient.addColorStop(0, 'rgba(37, 99, 235, 0.5)'); // Center opacity
-          gradient.addColorStop(0.7, 'rgba(37, 99, 235, 0.3)'); // Mid opacity
-          gradient.addColorStop(1, 'rgba(37, 99, 235, 0)'); // Transparent at edges
-          
-          ctx.fillStyle = gradient;
-          
-          // Draw smooth connected strokes if we have a previous position
-          if (lastX !== null && lastY !== null) {
-            // Calculate distance between points
-            const dx = x - lastX;
-            const dy = y - lastY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            // Draw intermediate circles for smooth strokes
-            const steps = Math.max(1, Math.floor(distance / (brushSize / 4)));
-            for (let i = 0; i <= steps; i++) {
-              const t = i / steps;
-              const px = lastX + dx * t;
-              const py = lastY + dy * t;
-              
-              const stepGradient = ctx.createRadialGradient(px, py, 0, px, py, brushSize / 2);
-              stepGradient.addColorStop(0, 'rgba(37, 99, 235, 0.5)');
-              stepGradient.addColorStop(0.7, 'rgba(37, 99, 235, 0.3)');
-              stepGradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
-              
-              ctx.fillStyle = stepGradient;
-              ctx.beginPath();
-              ctx.arc(px, py, brushSize / 2, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          } else {
-            // First point - just draw a circle
+          if (!drawing || isProcessing()) return;
+          const { x, y } = pointFrom(e);
+          // One continuous, fully-opaque stroke; erase mode removes via
+          // destination-out. Translucency comes from the canvas CSS opacity.
+          ctx.globalCompositeOperation = maskTool === 'erase' ? 'destination-out' : 'source-over';
+          ctx.strokeStyle = '#2563eb';
+          ctx.fillStyle = '#2563eb';
+          ctx.lineWidth = brushSize;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          if (lastX === null || lastY === null) {
             ctx.beginPath();
             ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
             ctx.fill();
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
           }
-          
-          // Store current position for next draw
+          ctx.globalCompositeOperation = 'source-over';
           lastX = x;
           lastY = y;
-          
-          // Reset composite operation
-          ctx.globalCompositeOperation = 'source-over';
-          
-          // Update button state after drawing
-          updateApplyButtonState();
+          if (maskTool === 'brush' && !maskPainted) {
+            maskPainted = true;
+            updateApplyButtonState();
+          }
         }
-        
+
         maskCanvas.addEventListener('mousedown', startDrawing);
         maskCanvas.addEventListener('mousemove', draw);
         maskCanvas.addEventListener('mouseup', stopDrawing);
         maskCanvas.addEventListener('mouseleave', stopDrawing);
-        
-        // Touch support
         maskCanvas.addEventListener('touchstart', (e) => {
           e.preventDefault();
-          if (isProcessing()) return; // Prevent drawing while processing
-          drawing = true;
-          const touch = e.touches[0];
-          const mouseEvent = new MouseEvent('mousedown', {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-          });
-          startDrawing(mouseEvent);
+          const t = e.touches[0];
+          startDrawing({ clientX: t.clientX, clientY: t.clientY });
         });
-        
         maskCanvas.addEventListener('touchmove', (e) => {
           e.preventDefault();
-          if (isProcessing()) return; // Prevent drawing while processing
-          const touch = e.touches[0];
-          const mouseEvent = new MouseEvent('mousemove', {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-          });
-          draw(mouseEvent);
+          const t = e.touches[0];
+          draw({ clientX: t.clientX, clientY: t.clientY });
         });
-        
-        maskCanvas.addEventListener('touchend', (e) => {
-          e.preventDefault();
-          stopDrawing();
-        });
-        
-        // Make canvas interactive
+        maskCanvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); });
+
         maskCanvas.style.pointerEvents = 'auto';
         maskCanvas.style.cursor = 'crosshair';
       }
@@ -4674,6 +4793,7 @@
         const maskCanvas = document.getElementById('mask-editor-mask-canvas');
         const ctx = maskCanvas.getContext('2d');
         ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+        maskPainted = false;
         updateApplyButtonState();
       }
       
@@ -4695,11 +4815,9 @@
       function updateApplyButtonState() {
         const submitBtn = document.getElementById('mask-editor-submit');
         if (!submitBtn) return;
-        
-        const hasMask = checkMaskHasContent();
-        const hasPrompt = checkPromptHasContent();
-        
-        submitBtn.disabled = !hasMask || !hasPrompt;
+        // Use the cheap flag (set while drawing, recomputed on stroke end) so this
+        // never scans the whole canvas in the hot path.
+        submitBtn.disabled = !maskPainted || !checkPromptHasContent();
       }
       
       function closeMaskEditor() {
@@ -4752,43 +4870,17 @@
         }
         
         try {
-          // Convert mask to white/transparent format (OpenAI expects white areas to be edited)
-          // First, get the original image dimensions
           const originalWidth = parseInt(canvas.dataset.originalWidth);
           const originalHeight = parseInt(canvas.dataset.originalHeight);
-          
-          // Create a full-size mask canvas
-          const whiteMaskCanvas = document.createElement('canvas');
-          whiteMaskCanvas.width = originalWidth;
-          whiteMaskCanvas.height = originalHeight;
-          const whiteMaskCtx = whiteMaskCanvas.getContext('2d');
-          
-          // Create mask: white where we want to edit, transparent elsewhere
-          // Draw the mask canvas first (it has blue overlay where user drew)
-          whiteMaskCtx.drawImage(maskCanvas, 0, 0, originalWidth, originalHeight);
-          
-          // Convert the red mask areas to white (OpenAI edits white areas)
-          // Get image data and convert any non-transparent pixels to white
-          const whiteMaskImageData = whiteMaskCtx.getImageData(0, 0, originalWidth, originalHeight);
-          const whiteMaskData = whiteMaskImageData.data;
-          for (let i = 0; i < whiteMaskData.length; i += 4) {
-            const alpha = whiteMaskData[i + 3];
-            if (alpha > 0) {
-              // This pixel is part of the mask, make it white (keep alpha)
-              whiteMaskData[i] = 255;     // R -> white
-              whiteMaskData[i + 1] = 255;  // G -> white
-              whiteMaskData[i + 2] = 255;  // B -> white
-              // alpha stays the same
-            } else {
-              // Transparent areas stay transparent (already 0 alpha)
-              whiteMaskData[i] = 0;
-              whiteMaskData[i + 1] = 0;
-              whiteMaskData[i + 2] = 0;
-            }
-          }
-          whiteMaskCtx.putImageData(whiteMaskImageData, 0, 0);
-          
-          const maskDataUrl = whiteMaskCanvas.toDataURL('image/png');
+
+          // Secret brush expansion + feathered composite (mirrors main Stagify):
+          // grow the brushed area so the model edits a slightly larger region, and
+          // composite its output back through a feathered mask so unbrushed areas
+          // can't change and there's no seam.
+          const maxDim = Math.max(originalWidth, originalHeight);
+          const coreGrow = Math.max(23, Math.round(maxDim * 0.0455));
+          const featherPx = Math.max(20, Math.round(maxDim * 0.04));
+          const maskDataUrl = maskBuildModelMask(maskCanvas, originalWidth, originalHeight, coreGrow).toDataURL('image/png');
           const imageDataUrl = canvas.dataset.imageSrc;
           
           // Get selected model
@@ -4876,9 +4968,24 @@
             console.error('No edited image in response:', data);
             throw new Error('No edited image received from server');
           }
-          console.log('Adding masked version. Original:', imageData.originalSrc.substring(0, 50) + '...', 'Edited:', data.editedImage.substring(0, 50) + '...');
-          imageData.maskedVersions.push(data.editedImage);
-          console.log('Total masked versions:', imageData.maskedVersions.length, 'Versions:', imageData.maskedVersions.map(v => v.substring(0, 30) + '...'));
+          // Composite the AI output onto the original through the feathered mask so
+          // only the brushed (and slightly expanded) area changes — no drift, no seam.
+          let finalEdited = data.editedImage;
+          try {
+            const editedImg = await new Promise((resolve, reject) => {
+              const im = new Image();
+              im.crossOrigin = 'anonymous';
+              im.onload = () => resolve(im);
+              im.onerror = () => reject(new Error('Failed to load edited image'));
+              im.src = data.editedImage;
+            });
+            const keepMask = maskBuildBlendMask(maskCanvas, originalWidth, originalHeight, coreGrow, featherPx);
+            finalEdited = maskCompositeEdit(canvas, keepMask, editedImg, originalWidth, originalHeight);
+          } catch (compErr) {
+            console.error('Mask composite failed, using raw edit:', compErr);
+          }
+          imageData.maskedVersions.push(finalEdited);
+          console.log('Total masked versions:', imageData.maskedVersions.length);
           
           // Create or update the carousel
           const carousel = createOrUpdateMaskedImageCarousel(imageData.originalSrc, imageData.maskedVersions, imageData.container);
@@ -4925,7 +5032,7 @@
             content: [
               {
                 type: 'image_url',
-                image_url: { url: data.editedImage },
+                image_url: { url: finalEdited },
                 isMasked: true,
                 rootBaseName,
                 maskNumber,

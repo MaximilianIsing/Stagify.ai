@@ -638,6 +638,9 @@
     },
     "maskEditor": {
       "title": "Editar con Máscara",
+      "brush": "Pincel",
+      "erase": "Borrar",
+      "toolsAria": "Herramienta de máscara",
       "brushSize": "Tamaño del Pincel:",
       "promptLabel": "¿Qué te gustaría cambiar en el área enmascarada?",
       "promptPlaceholder": "ej., cambiar el color de la pared a azul, reemplazar el sofá con una silla moderna...",
