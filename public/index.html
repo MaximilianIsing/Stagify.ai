@@ -56,9 +56,9 @@
     <link rel="alternate" hreflang="x-default" href="https://stagify.ai">
     
     <!-- Preload critical fonts -->
-    <link rel="preload" href="fonts/inter-all-400-normal.woff" as="font" type="font/woff" crossorigin>
-    <link rel="preload" href="fonts/inter-all-600-normal.woff" as="font" type="font/woff" crossorigin>
-    <link rel="preload" href="fonts/inter-all-700-normal.woff" as="font" type="font/woff" crossorigin>
+    <link rel="preload" href="fonts/inter-all-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/inter-all-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/inter-all-700-normal.woff2" as="font" type="font/woff2" crossorigin>
     
     <!-- Preload critical carousel image -->
     <link rel="preload" as="image" href="media-webp/example/Original.webp" fetchpriority="high">
@@ -1168,6 +1168,9 @@
                       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="8.5" y="8.5" width="7" height="7"/><path d="M3 3l5.5 5.5M21 3l-5.5 5.5M3 21l5.5-5.5M21 21l-5.5-5.5"/></svg>
                     </button>
                     <div id="variation-thumbs" class="variation-thumbs hidden" data-lang-attr="modal.staging.stagingVariations|aria-label" aria-label="Staging variations"></div>
+                    <button id="carousel-prev" class="stage-carousel-nav prev hidden" type="button" data-lang-attr="modal.staging.prevVersion|aria-label" aria-label="Previous version">‹</button>
+                    <button id="carousel-next" class="stage-carousel-nav next hidden" type="button" data-lang-attr="modal.staging.nextVersion|aria-label" aria-label="Next version">›</button>
+                    <div id="carousel-dots" class="stage-carousel-dots hidden" role="tablist" data-lang-attr="modal.staging.imageVersions|aria-label" aria-label="Image versions"></div>
                     <div id="processing-placeholder" class="processing-placeholder">
                       <div class="placeholder-content">
                         <div class="placeholder-icon">

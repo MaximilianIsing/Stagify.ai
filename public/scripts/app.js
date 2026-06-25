@@ -123,6 +123,9 @@
     const toggleBeforeBtn = $('#toggle-before');
     const toggleAfterBtn = $('#toggle-after');
     const maskEditBtn = $('#mask-edit-btn');
+    const carouselPrev = $('#carousel-prev');
+    const carouselNext = $('#carousel-next');
+    const carouselDots = $('#carousel-dots');
     const emptyRoomBtn = $('#empty-room-btn');
     const emptyRoomModal = $('#empty-room-modal');
     const emptyRoomImage = $('#empty-room-image');
@@ -409,6 +412,26 @@
 
     let variationResultUrls = [];
 
+    // Version carousels: the before view holds the uploaded photo plus any
+    // masked edits of it; the after view holds the staged result(s) plus any
+    // masked refinements. Each is capped so the 6th mask attempt is blocked.
+    const MAX_MASK_VERSIONS = 6;
+    let beforeVersions = [];
+    let beforeIndex = 0;
+    let afterVersions = [];
+    let afterIndex = 0;
+
+    function dataURLToFile(dataUrl, filename) {
+      const arr = dataUrl.split(',');
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8 = new Uint8Array(n);
+      while (n--) u8[n] = bstr.charCodeAt(n);
+      return new File([u8], filename || 'photo.png', { type: mime });
+    }
+
     function isMobileStagingViewport() {
       return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
     }
@@ -429,7 +452,10 @@
         }
         return;
       }
-      window.StagifyAuth.fetchMe().then(() => window.StagifyAuth.applyUserToUI());
+      window.StagifyAuth.fetchMe().then(() => {
+        window.StagifyAuth.applyUserToUI();
+        updateMaskButtonVisibility();
+      });
       openModal();
     }
   
@@ -507,6 +533,11 @@
       const reader = new FileReader();
       reader.onload = () => {
         stagePreview.src = reader.result;
+        // Seed the before carousel with the original photo; reset the after carousel.
+        beforeVersions = [reader.result];
+        beforeIndex = 0;
+        afterVersions = [];
+        afterIndex = 0;
         stagePreview.alt = getStagingAlt('uploadedRoomAlt', {
           filenameSuffix: file.name ? ': ' + file.name : '',
         });
@@ -843,9 +874,10 @@
 
     function positionMaskFab() {
       if (!maskEditBtn || maskEditBtn.classList.contains('hidden')) return;
-      if (!canvas1 || !canvas1.offsetHeight) return;
-      // Anchor the button to the bottom-right of the rendered image, not the viewer box
-      const imageBottom = canvas1.offsetTop + canvas1.offsetHeight;
+      // Anchor to whichever image is showing (canvas on After, photo on Before)
+      const el = activeViewIsAfter() ? canvas1 : stagePreview;
+      if (!el || !el.offsetHeight) return;
+      const imageBottom = el.offsetTop + el.offsetHeight;
       const top = imageBottom - maskEditBtn.offsetHeight - 12;
       maskEditBtn.style.top = Math.max(top, 12) + 'px';
       maskEditBtn.style.bottom = 'auto';
@@ -853,8 +885,12 @@
 
     function updateMaskButtonVisibility() {
       if (!maskEditBtn) return;
-      const onAfter = toggleAfterBtn && toggleAfterBtn.classList.contains('active');
-      if (isProUser() && hasProcessedImage && onAfter) {
+      const onAfter = activeViewIsAfter();
+      const hasImage = !!(currentImageFile || (stagePreview && stagePreview.src));
+      // The paint-brush FAB edits the staged result (After) or the original
+      // photo (Before). Pro only.
+      const show = isProUser() && (onAfter ? hasProcessedImage : hasImage);
+      if (show) {
         maskEditBtn.classList.remove('hidden');
         positionMaskFab();
         requestAnimationFrame(positionMaskFab);
@@ -890,6 +926,109 @@
     window.addEventListener('resize', positionMaskFab);
     window.addEventListener('resize', positionEmptyRoomFab);
 
+    // ── Version carousel (before/after) ──
+    function activeViewIsAfter() {
+      return toggleAfterBtn && toggleAfterBtn.classList.contains('active');
+    }
+
+    function drawAfter(url, ariaSuffix) {
+      return new Promise((resolve) => {
+        const im = new Image();
+        im.onload = () => {
+          const ctx1 = canvas1.getContext('2d');
+          ctx1.canvas.width = im.width;
+          ctx1.canvas.height = im.height;
+          ctx1.drawImage(im, 0, 0, im.width, im.height);
+          updateStagedCanvasAria(ariaSuffix || '');
+          resolve();
+        };
+        im.src = url;
+      });
+    }
+
+    function showAfterVersion(i) {
+      if (!afterVersions.length) return;
+      afterIndex = Math.max(0, Math.min(i, afterVersions.length - 1));
+      drawAfter(afterVersions[afterIndex], afterVersions.length > 1 ? ` (${afterIndex + 1})` : '');
+      updateCarouselUI();
+    }
+
+    function showBeforeVersion(i) {
+      if (!beforeVersions.length) return;
+      beforeIndex = Math.max(0, Math.min(i, beforeVersions.length - 1));
+      stagePreview.src = beforeVersions[beforeIndex];
+      updateCarouselUI();
+    }
+
+    function carouselStep(delta) {
+      if (activeViewIsAfter()) showAfterVersion(afterIndex + delta);
+      else showBeforeVersion(beforeIndex + delta);
+    }
+
+    // Anchor the nav arrows + dots to the rendered image (not the viewer box),
+    // so dots sit at the photo's bottom edge and arrows are centered on it.
+    function positionCarousel() {
+      const el = activeViewIsAfter() ? canvas1 : stagePreview;
+      if (!el || !el.offsetHeight || !el.offsetWidth) return;
+      const top = el.offsetTop;
+      const left = el.offsetLeft;
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      const midY = top + h / 2;
+      if (carouselPrev && !carouselPrev.classList.contains('hidden')) {
+        carouselPrev.style.top = midY + 'px';
+        carouselPrev.style.left = (left + 12) + 'px';
+        carouselPrev.style.right = 'auto';
+      }
+      if (carouselNext && !carouselNext.classList.contains('hidden')) {
+        carouselNext.style.top = midY + 'px';
+        carouselNext.style.left = (left + w - 12 - carouselNext.offsetWidth) + 'px';
+        carouselNext.style.right = 'auto';
+      }
+      if (carouselDots && !carouselDots.classList.contains('hidden')) {
+        carouselDots.style.left = (left + w / 2) + 'px';
+        carouselDots.style.bottom = 'auto';
+        carouselDots.style.top = (top + h - carouselDots.offsetHeight - 12) + 'px';
+      }
+    }
+
+    window.addEventListener('resize', positionCarousel);
+    if (stagePreview) stagePreview.addEventListener('load', positionCarousel);
+
+    function updateCarouselUI() {
+      if (!carouselDots) return;
+      const isAfter = activeViewIsAfter();
+      const list = isAfter ? afterVersions : beforeVersions;
+      const idx = isAfter ? afterIndex : beforeIndex;
+      const viewerOpen = imageViewerContainer && !imageViewerContainer.classList.contains('hidden');
+      const show = viewerOpen && list.length > 1 && (!isAfter || hasProcessedImage);
+      [carouselPrev, carouselNext, carouselDots].forEach((el) => {
+        if (el) el.classList.toggle('hidden', !show);
+      });
+      if (!show) return;
+      if (carouselPrev) carouselPrev.disabled = idx <= 0;
+      if (carouselNext) carouselNext.disabled = idx >= list.length - 1;
+      carouselDots.innerHTML = '';
+      list.forEach((_, i) => {
+        const d = document.createElement('button');
+        d.type = 'button';
+        d.className = 'stage-carousel-dot' + (i === idx ? ' active' : '');
+        d.setAttribute('role', 'tab');
+        d.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+        d.setAttribute('aria-label', (getStagingAlt('versionLabel', { index: i + 1 }) || ('Version ' + (i + 1))));
+        d.addEventListener('click', () => {
+          if (isAfter) showAfterVersion(i);
+          else showBeforeVersion(i);
+        });
+        carouselDots.appendChild(d);
+      });
+      positionCarousel();
+      requestAnimationFrame(positionCarousel);
+    }
+
+    if (carouselPrev) carouselPrev.addEventListener('click', () => carouselStep(-1));
+    if (carouselNext) carouselNext.addEventListener('click', () => carouselStep(1));
+
     function showBeforeView() {
       stagePreview.classList.remove('hidden');
       canvas1.classList.add('hidden');
@@ -901,6 +1040,7 @@
       }
       updateMaskButtonVisibility();
       updateEmptyRoomButtonVisibility();
+      updateCarouselUI();
     }
 
     function showAfterView() {
@@ -916,6 +1056,7 @@
       }
       updateMaskButtonVisibility();
       updateEmptyRoomButtonVisibility();
+      updateCarouselUI();
     }
 
     // Add toggle event listeners
@@ -987,10 +1128,18 @@
       }
       
       try {
-        const processed = await processWithAI(currentImageFile);
+        // Stage whichever "before" version is currently showing (original or a masked edit).
+        let stageInput = currentImageFile;
+        if (beforeIndex > 0 && beforeVersions[beforeIndex]) {
+          stageInput = dataURLToFile(beforeVersions[beforeIndex], (currentImageFile && currentImageFile.name) || 'photo.png');
+        }
+        const processed = await processWithAI(stageInput);
         const urls = Array.isArray(processed) ? processed : [processed];
         variationResultUrls = urls;
-        
+        // Reset the after carousel to the fresh staging result(s).
+        afterVersions = urls.slice(0, MAX_MASK_VERSIONS);
+        afterIndex = 0;
+
         // Display the processed image
         const img = new Image();
         img.onload = () => {
@@ -1018,7 +1167,8 @@
           
           // Refresh prompt count after successful processing
           loadPromptCount();
-          renderVariationThumbs(urls);
+          // The version carousel replaces the old variation thumbnails.
+          updateCarouselUI();
         };
         img.src = urls[0];
         
@@ -1102,14 +1252,49 @@
       let lastY = null;
       let scaleX = 1;
       let scaleY = 1;
+      // 'after' = refine an already-staged image; 'before' = edit the original
+      // photo into a new unstaged variant. Both append to their carousel.
+      let editorMode = 'after';
 
       function isProcessing() {
         return canvasContainer && canvasContainer.classList.contains('processing');
       }
 
-      function openEditor() {
-        if (!canvas1.width) return;
-        const src = canvas1.toDataURL('image/png');
+      function tx(key, def) {
+        const v = window.LanguageSystem && window.LanguageSystem.getText(key);
+        return v && v !== 'Loading...' ? v : def;
+      }
+
+      // Swap the editor's title, prompt label/placeholder and submit label to
+      // match the current mode.
+      function applyEditorCopy() {
+        const titleEl = maskModal.querySelector('.stage-mask-title');
+        const labelEl = maskModal.querySelector('.stage-mask-prompt-label');
+        const submitStrong = submitBtn && submitBtn.querySelector('strong');
+        if (editorMode === 'before') {
+          if (titleEl) titleEl.textContent = tx('modal.staging.maskBeforeTitle', 'Mask & edit photo');
+          if (labelEl) labelEl.textContent = tx('modal.staging.maskBeforePromptLabel', 'What would you like to change in the painted area?');
+          if (promptInput) promptInput.placeholder = tx('modal.staging.maskBeforePromptPlaceholder', 'e.g., remove the old sofa, clear the clutter, repaint the wall white');
+          if (submitStrong) submitStrong.textContent = tx('modal.staging.maskBeforeApply', 'Apply edit');
+        } else {
+          if (titleEl) titleEl.textContent = tx('pdf.maskEditor.title', 'Edit with Mask');
+          if (labelEl) labelEl.textContent = tx('pdf.maskEditor.promptLabel', 'What would you like to change in the masked area?');
+          if (promptInput) promptInput.placeholder = tx('pdf.maskEditor.promptPlaceholder', '');
+          if (submitStrong) submitStrong.textContent = tx('pdf.maskEditor.applyEdit', 'Apply Edit');
+        }
+      }
+
+      // Tell the user they've hit the per-image mask cap.
+      function atVersionLimit(kind) {
+        const list = kind === 'before' ? beforeVersions : afterVersions;
+        if (list.length < MAX_MASK_VERSIONS) return false;
+        alert(tx('modal.staging.maskLimitReached',
+          "You've reached the limit of " + MAX_MASK_VERSIONS + ' versions for this image.'));
+        return true;
+      }
+
+      // Shared: load a source image into the base/draw canvases and open the modal.
+      function showInEditor(src) {
         const img = new Image();
         img.onload = () => {
           const maxHeight = window.innerHeight * 0.6;
@@ -1134,7 +1319,6 @@
           scaleX = dispW / img.width;
           scaleY = dispH / img.height;
 
-          if (promptInput) promptInput.value = '';
           if (canvasContainer) canvasContainer.classList.remove('processing');
           drawCanvas.style.pointerEvents = 'auto';
           drawCanvas.style.cursor = 'crosshair';
@@ -1143,6 +1327,27 @@
           maskModal.setAttribute('aria-hidden', 'false');
         };
         img.src = src;
+      }
+
+      // After-mode: refine the currently-shown staged result; append a new version.
+      function openEditor() {
+        if (!canvas1.width) return;
+        if (atVersionLimit('after')) return;
+        editorMode = 'after';
+        applyEditorCopy();
+        if (promptInput) promptInput.value = '';
+        showInEditor(canvas1.toDataURL('image/png'));
+      }
+
+      // Before-mode: edit the currently-shown original photo; append a new before variant.
+      function openBeforeEditor() {
+        const src = stagePreview && stagePreview.src;
+        if (!src) return;
+        if (atVersionLimit('before')) return;
+        editorMode = 'before';
+        applyEditorCopy();
+        if (promptInput) promptInput.value = '';
+        showInEditor(src);
       }
 
       function closeEditor() {
@@ -1248,7 +1453,12 @@
       if (promptInput) promptInput.addEventListener('input', updateSubmitState);
       if (clearBtn) clearBtn.addEventListener('click', clearDraw);
       if (cancelBtn) cancelBtn.addEventListener('click', closeEditor);
-      if (maskEditBtn) maskEditBtn.addEventListener('click', openEditor);
+      // Same paint-brush FAB on both views: edits the staged result on After,
+      // or the original photo on Before.
+      if (maskEditBtn) maskEditBtn.addEventListener('click', () => {
+        if (activeViewIsAfter()) openEditor();
+        else openBeforeEditor();
+      });
       maskModal.addEventListener('click', (e) => { if (e.target === maskModal) closeEditor(); });
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && maskModal.classList.contains('active')) closeEditor();
@@ -1332,11 +1542,21 @@
         const modelSel = document.getElementById('stagify-model-select');
         if (modelSel && modelSel.value) selectedModel = modelSel.value;
 
-        // Close the editor and show the standard generation loading experience
+        const isBefore = editorMode === 'before';
+
+        // Close the editor and show the standard generation loading experience on
+        // whichever view we're editing.
         closeEditor();
-        showAfterView();
+        // Block staging and starting another mask while this edit is in flight.
+        if (processBtn) processBtn.disabled = true;
+        if (isBefore) {
+          showBeforeView();
+          stagePreview.classList.add('processing');
+        } else {
+          showAfterView();
+          canvas1.classList.add('processing');
+        }
         if (maskEditBtn) maskEditBtn.classList.add('hidden');
-        canvas1.classList.add('processing');
         const loader = runMaskLoadingUI();
 
         try {
@@ -1361,31 +1581,35 @@
             throw new Error(result.error || 'Failed to process masked edit');
           }
 
-          // Draw the edited image back onto the staging canvas
-          await new Promise((resolve, reject) => {
-            const edited = new Image();
-            edited.onload = () => {
-              const ctx1 = canvas1.getContext('2d');
-              ctx1.canvas.width = edited.width;
-              ctx1.canvas.height = edited.height;
-              ctx1.drawImage(edited, 0, 0, edited.width, edited.height);
-              const activeThumb = document.querySelector('#variation-thumbs .variation-thumb.active');
-              if (activeThumb) activeThumb.src = result.editedImage;
-              hasProcessedImage = true;
-              updateStagedCanvasAria();
-              resolve();
-            };
-            edited.onerror = () => reject(new Error('Failed to load edited image'));
-            edited.src = result.editedImage;
-          });
-
           loader.finish();
-          canvas1.classList.remove('processing');
-          updateMaskButtonVisibility();
+          if (isBefore) {
+            // Append a new unstaged "before" variant and show it. Process will
+            // stage whichever before version is on screen.
+            beforeVersions.push(result.editedImage);
+            if (beforeVersions.length > MAX_MASK_VERSIONS) beforeVersions = beforeVersions.slice(-MAX_MASK_VERSIONS);
+            stagePreview.classList.remove('processing');
+            showBeforeVersion(beforeVersions.length - 1);
+            updateMaskButtonVisibility();
+          } else {
+            // Append a refined staged version and show it.
+            afterVersions.push(result.editedImage);
+            if (afterVersions.length > MAX_MASK_VERSIONS) afterVersions = afterVersions.slice(-MAX_MASK_VERSIONS);
+            hasProcessedImage = true;
+            await drawAfter(afterVersions[afterVersions.length - 1],
+              afterVersions.length > 1 ? ` (${afterVersions.length})` : '');
+            afterIndex = afterVersions.length - 1;
+            canvas1.classList.remove('processing');
+            updateCarouselUI();
+            updateMaskButtonVisibility();
+          }
+          if (processBtn) processBtn.disabled = false;
+          if (typeof loadPromptCount === 'function') loadPromptCount();
         } catch (err) {
           console.error('Mask edit failed:', err);
           loader.stop();
-          canvas1.classList.remove('processing');
+          if (isBefore) stagePreview.classList.remove('processing');
+          else canvas1.classList.remove('processing');
+          if (processBtn) processBtn.disabled = false;
           updateMaskButtonVisibility();
           alert(err.message || 'Mask edit failed. Please try again.');
         }
@@ -1400,6 +1624,12 @@
       hasProcessedImage = false; // Reset processing state
       stagePreview.src = '';
       variationResultUrls = [];
+      beforeVersions = [];
+      beforeIndex = 0;
+      afterVersions = [];
+      afterIndex = 0;
+      updateMaskButtonVisibility();
+      updateCarouselUI();
       const vt = document.getElementById('variation-thumbs');
       if (vt) {
         vt.innerHTML = '';

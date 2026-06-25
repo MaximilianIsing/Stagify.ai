@@ -268,6 +268,17 @@
       "furniturePhotosLabel": "Furniture photos (optional)",
       "furniturePhotosHint": "Up to 5 reference photos of furniture or decor to feature in the staged room",
       "processButton": "Process photo",
+      "maskBeforeButton": "Mask & edit photo",
+      "maskBeforeHint": "Paint an area of the original photo to edit (e.g. remove clutter). Everything else stays untouched. Then Process to stage the version you like.",
+      "maskBeforeTitle": "Mask & edit photo",
+      "maskBeforePromptLabel": "What would you like to change in the painted area?",
+      "maskBeforePromptPlaceholder": "e.g., remove the old sofa, clear the clutter, repaint the wall white",
+      "maskBeforeApply": "Apply edit",
+      "maskLimitReached": "You've reached the limit of 6 versions for this image.",
+      "prevVersion": "Previous version",
+      "nextVersion": "Next version",
+      "imageVersions": "Image versions",
+      "versionLabel": "Version {index}",
       "uploadArea": "Upload an image or drag and drop",
       "before": "Before",
       "after": "After",
@@ -659,7 +670,22 @@
       },
       "i2": {
         "q": "Which photos work best?",
-        "a": "Use a clear, well-lit photo taken straight-on, with the whole room visible and minimal clutter. Blurry, dark, or extreme wide-angle shots produce weaker results."
+        "a": "Use a clear, well-lit photo taken straight-on, with the whole room visible and minimal clutter. Blurry, dark, or extreme wide-angle shots produce weaker results. New here? Watch the <a href=\"#walkthrough\">step-by-step walkthrough</a> first."
+      }
+    },
+    "tips": {
+      "title": "Better results & pro tips",
+      "i1": {
+        "q": "How do I get the most realistic staging?",
+        "a": "Shoot the room straight-on in daylight with the whole space in frame and surfaces cleared. Pick the exact room type and style before you generate, then create two or three variations and keep the strongest. <a href=\"index.html#stage\">Open the staging studio</a> to try it."
+      },
+      "i2": {
+        "q": "Which plan or tool should I use?",
+        "a": "Free is perfect for quick one-off rooms. <a href=\"stagify-plus.html\">Stagify+</a> unlocks unlimited generations, higher-quality models, the masking tool and the Prompt Bar. <a href=\"ai-designer.html\">AI Designer</a> redesigns an entire room from a short chat — best when you want it to make the decisions for you."
+      },
+      "i3": {
+        "q": "Can I control the furniture and layout?",
+        "a": "Yes. With <a href=\"stagify-plus.html\">Stagify+</a> the Prompt Bar lets you describe specifics like \"add a sectional sofa and a large area rug,\" and the Furniture tool brings in your own pieces. If just one area looks off, mask it and regenerate only that spot instead of redoing the whole image."
       }
     },
     "generate": {
@@ -670,11 +696,11 @@
       },
       "i2": {
         "q": "The result has odd furniture or artifacts.",
-        "a": "AI staging isn't perfect on every pass. Generate again for a new variation, switch to a different style, or use the masking tool to fix only the area that looks off instead of redoing the whole image."
+        "a": "AI staging isn't perfect on every pass. Generate again for a new variation, switch to a different style, or use the <a href=\"ai-designer.html\">masking tool</a> to fix only the area that looks off instead of redoing the whole image."
       },
       "i3": {
         "q": "Nothing changed or the room still looks empty.",
-        "a": "This usually means a room type or style wasn't selected, or the photo was too dark for the model to read. Pick a room type and style, then try a brighter photo."
+        "a": "This usually means a room type or style wasn't selected, or the photo was too dark for the model to read. Pick a room type and style, then try a brighter photo. Want the AI to handle it end-to-end? Try <a href=\"ai-designer.html\">AI Designer</a>."
       }
     },
     "account": {

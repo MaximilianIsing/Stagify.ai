@@ -48,7 +48,7 @@
     <script src="scripts/nav-pill.js" defer></script>
     <script src="scripts/auth.js" defer></script>
     <script src="scripts/profile-menu.js" defer></script>
-    <script src="scripts/guides.js?v=4" defer></script>
+    <script src="scripts/guides.js?v=5" defer></script>
     <script src="scripts/home-reveal.js" defer></script>
     <script defer src="scripts/app.js"></script>
     <style>
@@ -131,11 +131,11 @@
         <!-- Quick navigation -->
         <nav class="guides-overview" aria-label="Guide topics">
           <div class="guides-overview-grid">
-            <a href="#walkthrough" class="guides-overview-card reveal" style="--guide-accent: #2563eb; --reveal-delay: 0ms">
+            <a href="#th-tips" class="guides-overview-card reveal" style="--guide-accent: #4f46e5; --reveal-delay: 0ms">
               <span class="guides-overview-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
               </span>
-              <span class="guides-overview-card__title" data-lang="guides.walkthroughsTitle">Step-by-step walkthroughs</span>
+              <span class="guides-overview-card__title" data-lang="techHelp.tips.title">Better results &amp; pro tips</span>
               <span class="guides-overview-card__arrow" aria-hidden="true">→</span>
             </a>
             <a href="#th-upload" class="guides-overview-card reveal" style="--guide-accent: #059669; --reveal-delay: 50ms">
@@ -254,6 +254,30 @@
         <section class="guides-troubleshooting reveal" id="troubleshooting" aria-labelledby="guides-trouble-title" style="--reveal-delay: 160ms">
           <h3 class="guides-heading guides-heading--spaced" id="guides-trouble-title" data-lang="guides.troubleshootingTitle">Troubleshooting &amp; common issues</h3>
           <div class="guides-trouble-grid">
+          <!-- Better results & pro tips -->
+          <article class="guides-trouble-card reveal" id="th-tips" style="--guide-accent: #4f46e5; --reveal-delay: 0ms">
+            <header class="guides-trouble-card__head">
+              <span class="guides-trouble-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+              </span>
+              <h4 class="guides-trouble-card__title" data-lang="techHelp.tips.title">Better results &amp; pro tips</h4>
+            </header>
+            <div class="faq-accordion">
+              <details class="faq-q">
+                <summary><span data-lang="techHelp.tips.i1.q">How do I get the most realistic staging?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
+                <p data-lang-html="techHelp.tips.i1.a">Shoot the room straight-on in daylight with the whole space in frame and surfaces cleared. Pick the exact room type and style before you generate, then create two or three variations and keep the strongest. <a href="index.html#stage">Open the staging studio</a> to try it.</p>
+              </details>
+              <details class="faq-q">
+                <summary><span data-lang="techHelp.tips.i2.q">Which plan or tool should I use?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
+                <p data-lang-html="techHelp.tips.i2.a">Free is perfect for quick one-off rooms. <a href="stagify-plus.html">Stagify+</a> unlocks unlimited generations, higher-quality models, the masking tool and the Prompt Bar. <a href="ai-designer.html">AI Designer</a> redesigns an entire room from a short chat — best when you want it to make the decisions for you.</p>
+              </details>
+              <details class="faq-q">
+                <summary><span data-lang="techHelp.tips.i3.q">Can I control the furniture and layout?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
+                <p data-lang-html="techHelp.tips.i3.a">Yes. With <a href="stagify-plus.html">Stagify+</a> the Prompt Bar lets you describe specifics like "add a sectional sofa and a large area rug," and the Furniture tool brings in your own pieces. If just one area looks off, mask it and regenerate only that spot instead of redoing the whole image.</p>
+              </details>
+            </div>
+          </article>
+
           <!-- Uploading & files -->
           <article class="guides-trouble-card reveal" id="th-upload" style="--guide-accent: #059669; --reveal-delay: 0ms">
             <header class="guides-trouble-card__head">
@@ -269,7 +293,7 @@
               </details>
               <details class="faq-q">
                 <summary><span data-lang="techHelp.upload.i2.q">Which photos work best?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-                <p data-lang="techHelp.upload.i2.a">Use a clear, well-lit photo taken straight-on, with the whole room visible and minimal clutter. Blurry, dark, or extreme wide-angle shots produce weaker results.</p>
+                <p data-lang-html="techHelp.upload.i2.a">Use a clear, well-lit photo taken straight-on, with the whole room visible and minimal clutter. Blurry, dark, or extreme wide-angle shots produce weaker results. New here? Watch the <a href="#walkthrough">step-by-step walkthrough</a> first.</p>
               </details>
             </div>
           </article>
@@ -289,11 +313,11 @@
               </details>
               <details class="faq-q">
                 <summary><span data-lang="techHelp.generate.i2.q">The result has odd furniture or artifacts.</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-                <p data-lang="techHelp.generate.i2.a">AI staging isn't perfect on every pass. Generate again for a new variation, switch to a different style, or use the masking tool to fix only the area that looks off instead of redoing the whole image.</p>
+                <p data-lang-html="techHelp.generate.i2.a">AI staging isn't perfect on every pass. Generate again for a new variation, switch to a different style, or use the <a href="ai-designer.html">masking tool</a> to fix only the area that looks off instead of redoing the whole image.</p>
               </details>
               <details class="faq-q">
                 <summary><span data-lang="techHelp.generate.i3.q">Nothing changed or the room still looks empty.</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-                <p data-lang="techHelp.generate.i3.a">This usually means a room type or style wasn't selected, or the photo was too dark for the model to read. Pick a room type and style, then try a brighter photo.</p>
+                <p data-lang-html="techHelp.generate.i3.a">This usually means a room type or style wasn't selected, or the photo was too dark for the model to read. Pick a room type and style, then try a brighter photo. Want the AI to handle it end-to-end? Try <a href="ai-designer.html">AI Designer</a>.</p>
               </details>
             </div>
           </article>

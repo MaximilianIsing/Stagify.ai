@@ -269,6 +269,17 @@
       "furniturePhotosLabel": "Fotos de muebles (opcional)",
       "furniturePhotosHint": "Hasta 5 fotos de referencia de muebles o decoración para incluir en la habitación escenificada",
       "processButton": "Procesar foto",
+      "maskBeforeButton": "Enmascarar y editar foto",
+      "maskBeforeHint": "Pinta una zona de la foto original para editarla (p. ej. quitar desorden). El resto queda intacto. Luego pulsa Procesar para amueblar la versión que prefieras.",
+      "maskBeforeTitle": "Enmascarar y editar foto",
+      "maskBeforePromptLabel": "¿Qué te gustaría cambiar en la zona pintada?",
+      "maskBeforePromptPlaceholder": "p. ej., quita el sofá viejo, despeja el desorden, pinta la pared de blanco",
+      "maskBeforeApply": "Aplicar edición",
+      "maskLimitReached": "Has alcanzado el límite de 6 versiones para esta imagen.",
+      "prevVersion": "Versión anterior",
+      "nextVersion": "Versión siguiente",
+      "imageVersions": "Versiones de la imagen",
+      "versionLabel": "Versión {index}",
       "uploadArea": "Sube una imagen o arrastra y suelta",
       "before": "Antes",
       "after": "Después",
@@ -660,7 +671,22 @@
       },
       "i2": {
         "q": "¿Qué fotos funcionan mejor?",
-        "a": "Usa una foto nítida y bien iluminada tomada de frente, con toda la habitación visible y poco desorden. Las fotos borrosas, oscuras o con gran angular extremo dan peores resultados."
+        "a": "Usa una foto nítida y bien iluminada tomada de frente, con toda la habitación visible y poco desorden. Las fotos borrosas, oscuras o con gran angular extremo dan peores resultados. ¿Eres nuevo? Mira primero el <a href=\"#walkthrough\">tutorial paso a paso</a>."
+      }
+    },
+    "tips": {
+      "title": "Mejores resultados y consejos pro",
+      "i1": {
+        "q": "¿Cómo consigo el staging más realista?",
+        "a": "Fotografía la habitación de frente con luz de día, con todo el espacio en el encuadre y las superficies despejadas. Elige el tipo de habitación y el estilo exactos antes de generar, luego crea dos o tres variaciones y quédate con la mejor. <a href=\"index.html#stage\">Abre el estudio de staging</a> para probarlo."
+      },
+      "i2": {
+        "q": "¿Qué plan o herramienta debería usar?",
+        "a": "Free es perfecto para habitaciones puntuales. <a href=\"stagify-plus.html\">Stagify+</a> desbloquea generaciones ilimitadas, modelos de mayor calidad, la herramienta de máscara y la barra de prompts. <a href=\"ai-designer.html\">AI Designer</a> rediseña una habitación entera a partir de un chat breve, ideal cuando quieres que él tome las decisiones."
+      },
+      "i3": {
+        "q": "¿Puedo controlar los muebles y la distribución?",
+        "a": "Sí. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra de prompts te permite describir detalles como \"añade un sofá seccional y una alfombra grande\", y la herramienta de Muebles incorpora tus propias piezas. Si solo una zona se ve mal, enmascárala y regenera solo ese punto en lugar de rehacer toda la imagen."
       }
     },
     "generate": {
@@ -671,11 +697,11 @@
       },
       "i2": {
         "q": "El resultado tiene muebles raros o defectos.",
-        "a": "El staging con IA no es perfecto en cada intento. Genera de nuevo para obtener otra variación, cambia de estilo o usa la herramienta de máscara para corregir solo la zona que se ve mal en lugar de rehacer toda la imagen."
+        "a": "El staging con IA no es perfecto en cada intento. Genera de nuevo para obtener otra variación, cambia de estilo o usa la <a href=\"ai-designer.html\">herramienta de máscara</a> para corregir solo la zona que se ve mal en lugar de rehacer toda la imagen."
       },
       "i3": {
         "q": "No cambió nada o la habitación sigue vacía.",
-        "a": "Suele deberse a que no se seleccionó un tipo de habitación o un estilo, o a que la foto estaba demasiado oscura para el modelo. Elige un tipo de habitación y un estilo, y prueba con una foto más luminosa."
+        "a": "Suele deberse a que no se seleccionó un tipo de habitación o un estilo, o a que la foto estaba demasiado oscura para el modelo. Elige un tipo de habitación y un estilo, y prueba con una foto más luminosa. ¿Quieres que la IA se encargue de todo? Prueba <a href=\"ai-designer.html\">AI Designer</a>."
       }
     },
     "account": {
