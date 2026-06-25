@@ -98,7 +98,7 @@
         },
         "who": {
           "eyebrow": "Para quién es",
-          "caption": "Sentándonos uno a uno para diseñar las fotos de un cliente",
+          "caption": "Sentándonos uno a uno para diseñar las fotos de un agente",
           "title": "Hecho para agentes, vendedores y compradores",
           "body": "Los agentes promocionan cada propiedad en minutos en lugar de esperar a un equipo de diseño. Los vendedores diseñan sus propias fotos sin contratar a nadie. Los compradores previsualizan una reforma antes de comprometerse. Y con AI Designer, puedes convertir PDFs de planos CAD en renders 3D fotorrealistas.",
           "p1": "Agentes: publica antes y cierra más",
@@ -407,7 +407,7 @@
       },
       "idealRoom": {
         "question": "¿Qué hace que una habitación sea ideal para el staging?",
-        "answer": "Una habitación ideal para el staging debe tener buena iluminación, paredes claras y desorden mínimo. Las habitaciones vacías o escasamente amuebladas funcionan mejor, ya que proporcionan un lienzo limpio para que la IA añada muebles y decoración que coincida con tu estilo elegido."
+        "answer": "Una habitación ideal para el staging debe tener buena iluminación, paredes claras y desorden mínimo. Las habitaciones vacías o escasamente amuebladas funcionan mejor, ya que proporcionan un lienzo limpio para que la IA añada muebles y decoración que coincida con tu estilo elegido. Las tomas más amplias que capturan más de la habitación son mucho mejores que los ángulos cerrados o recortados, ya que dan a la IA más contexto para diseñar el espacio de forma realista."
       },
       "privacy": {
         "question": "¿Mis datos son privados y seguros?",

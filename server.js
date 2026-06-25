@@ -1209,6 +1209,47 @@ async function downscaleImage(imageBuffer) {
   }
 }
 
+// Gemini image models don't strictly honor the input aspect ratio — they tend to
+// "square up" wide/short rooms and return an image that's slightly taller (or
+// wider) than the source. We correct this with a GENTLE non-uniform resize back
+// to the source ratio (keep width, nudge height) — NOT a crop, so no content is
+// lost and the result never looks zoomed-in. The correction is only applied when
+// the drift is small enough to be imperceptible; larger drifts are left untouched
+// (stretching them would distort the room more than the wrong ratio does, and
+// they're better handled by regeneration). Fails open on any error.
+const AR_NOOP_TOLERANCE = 0.01; // within 1% of source ratio — already fine, skip re-encode
+const AR_MAX_CORRECTION = 0.08; // correct drifts up to 8%; beyond that, leave as-is
+async function enforceAspectRatio(outputBuffer, targetWidth, targetHeight) {
+  try {
+    if (!targetWidth || !targetHeight) return outputBuffer;
+    const targetRatio = targetWidth / targetHeight;
+    const meta = await sharp(outputBuffer).metadata();
+    if (!meta.width || !meta.height) return outputBuffer;
+    const outRatio = meta.width / meta.height;
+    const drift = Math.abs(outRatio - targetRatio) / targetRatio;
+    if (drift < AR_NOOP_TOLERANCE) return outputBuffer; // close enough already
+    if (drift > AR_MAX_CORRECTION) {
+      if (DEBUG_MODE) {
+        console.log(`[AspectRatio] drift ${(drift * 100).toFixed(1)}% exceeds ${AR_MAX_CORRECTION * 100}% cap — leaving output as-is (no zoom/distortion).`);
+      }
+      return outputBuffer;
+    }
+    // Keep the full width, adjust only the height to hit the source ratio. This is
+    // a small stretch/squash — no cropping, no padding, all content preserved.
+    const newHeight = Math.max(1, Math.round(meta.width / targetRatio));
+    if (DEBUG_MODE) {
+      console.log(`[AspectRatio] correcting ${(drift * 100).toFixed(1)}% drift: ${meta.width}x${meta.height} -> ${meta.width}x${newHeight}.`);
+    }
+    return await sharp(outputBuffer)
+      .resize(meta.width, newHeight, { fit: 'fill' })
+      .png()
+      .toBuffer();
+  } catch (error) {
+    console.error('[AspectRatio] enforcement failed, returning model output as-is:', error.message);
+    return outputBuffer;
+  }
+}
+
 // Downscale base64 image data URL for GPT API (max 2048x2048, recommended 1024x1024)
 // Annotate an image with a short description using GPT
 async function annotateImage(imageDataUrl, isCAD = false, detectBlueprint = false) {
@@ -2604,7 +2645,10 @@ async function reviewImageQuality(imageDataUrl) {
 // Run an image-producing function up to QUALITY_MAX_ATTEMPTS times, returning the
 // first "perfect" result or, failing that, the highest-scoring one.
 // `generateOnce(attempt)` must resolve to a data-URL string (or throw).
-async function generateWithQualityRetry(generateOnce, label = 'image') {
+// `onImageProduced(attempt)` (optional) fires once for every attempt that
+// actually yields an image — used to meter billing per generation attempt
+// (including quality-gate retries).
+async function generateWithQualityRetry(generateOnce, label = 'image', onImageProduced = null) {
   let best = null; // { url, score }
   let lastError = null;
   for (let attempt = 1; attempt <= QUALITY_MAX_ATTEMPTS; attempt++) {
@@ -2619,6 +2663,7 @@ async function generateWithQualityRetry(generateOnce, label = 'image') {
       continue; // try again; if all fail we rethrow below
     }
     if (!url) continue;
+    if (typeof onImageProduced === 'function') onImageProduced(attempt);
     const { perfect, score } = await reviewImageQuality(url);
     if (DEBUG_MODE) {
       console.log(`[Quality] ${label} attempt ${attempt}/${QUALITY_MAX_ATTEMPTS}: ${perfect ? 'perfect — accepted' : `not perfect (score ${score})`}`);
@@ -2723,14 +2768,25 @@ function furnitureReferencePromptSuffix(count, preserveExistingStaging = false) 
 }
 
 // Two-stage "remove existing furniture": before staging, physically empty the
-// room in a dedicated pass. This is intentionally cheap — always the fast
-// 2.5-flash model, a single attempt, no quality gate — because erasing is a
-// simpler task than staging. Returns { dataUrl, buffer } on success, or null so
-// callers can gracefully fall back to the original (single-pass) behavior.
-const FURNITURE_ERASE_PROMPT = `You are an expert real-estate photo editor. Remove ALL furniture, decor, rugs, curtains, wall art, plants, lamps, and every movable or staged object from this interior room photo, leaving a completely EMPTY, unfurnished room.
+// room in a dedicated pass. Cost-conscious but reliable — it starts on the cheap
+// 2.5-flash model and only escalates (extra attempts, then the stronger model) if
+// a GPT-vision check finds leftover furniture. See eraseFurniture() below.
+const FURNITURE_ERASE_PROMPT = `You are an expert real-estate photo editor. Your ONLY job is to make this interior room completely EMPTY and unfurnished. Remove EVERY single piece of furniture and movable object — leave nothing behind.
+
+REMOVE ALL OF THESE (this list is illustrative, not exhaustive — remove anything like them too):
+- Seating: sofas, couches, armchairs, dining chairs, stools, benches, ottomans, bean bags.
+- Tables & surfaces: coffee tables, dining tables, side/end tables, desks, console tables, nightstands.
+- Storage & casegoods: cabinets, dressers, wardrobes, sideboards, bookshelves, shelving units, TV stands, freestanding shelves — INCLUDING large, heavy, or built-looking pieces that merely sit against a wall.
+- Beds and all bedding, headboards, footboards, mattresses.
+- Decor & textiles: rugs, curtains, drapes, blinds that aren't fixtures, throw pillows, blankets.
+- Wall items: wall art, paintings, posters, mirrors, clocks, shelves with objects.
+- Lighting & electronics: floor lamps, table lamps, freestanding TVs, monitors, speakers.
+- Plants, vases, books, boxes, clutter, and every other movable or staged object, large or small.
 
 CRITICAL RULES:
-- Keep the room itself perfectly intact: walls, floor, ceiling, windows, doors, door/window frames, moldings, baseboards, trim, built-in fixtures, and the exact room geometry must stay UNCHANGED.
+- Be thorough and complete. Do NOT leave any item behind because it looks large, expensive, heavy, or hard to remove. If it is furniture, decor, or a movable object, it goes — no exceptions unless explicitly told otherwise below.
+- FREESTANDING vs BUILT-IN: Remove every freestanding piece even if it is tall, bulky, or pushed flush against a wall (e.g. a standalone cabinet, wardrobe, bookshelf, or dresser). Keep ONLY true architectural built-ins that are permanently part of the structure — fixed kitchen counters and the cabinetry attached to them, bathroom vanities, fitted alcove shelving that is part of the wall. When unsure whether a cabinet is freestanding or built-in, treat it as freestanding and REMOVE it.
+- Keep the room itself perfectly intact: walls, floor, ceiling, windows, doors, door/window frames, moldings, baseboards, trim, and the exact room geometry must stay UNCHANGED.
 - Reconstruct the floor and wall areas that were hidden behind furniture so they look clean, continuous, and photorealistic — no ghosting, shadows, smudges, or leftover outlines of the removed items.
 - Preserve the exact camera angle, perspective, framing, lighting, and aspect ratio. Do not crop, zoom, or re-frame.
 - Do NOT add any new furniture, objects, or decor. The result must be a believable empty room ready to be staged.`;
@@ -2768,40 +2824,138 @@ async function roomIsAlreadyEmpty(imageBuffer) {
   }
 }
 
+// Build the keep-exception clause appended to the erase prompt. Deliberately
+// strict/anti-generalization: the model otherwise reads "keep the paintings" as
+// permission to keep nearby/similar furniture too.
+function buildKeepExceptionText(keepInstruction) {
+  if (!keepInstruction || !keepInstruction.trim()) return '';
+  return `\n\nNARROW EXCEPTION — keep ONLY these specific items, exactly where they are and unchanged: ${keepInstruction.trim()}.\nThis exception is strictly limited to the exact items named. Do NOT extend it to other items just because they are nearby, similar in type, look valuable, or seem related. For example, if told to keep paintings, you keep ONLY the paintings — you still remove every cabinet, sofa, table, chair, shelf, rug, and all other furniture and decor. Everything not explicitly named in this exception MUST still be removed in full, exactly as instructed above.`;
+}
+
+// GPT-vision verification of an erase result: is the room truly empty except for
+// the user's kept items? Returns { empty, remaining } where `remaining` lists the
+// leftover items so the retry can call them out by name. Fails OPEN (treats as
+// clean) on any error so a flaky reviewer never blocks the pipeline.
+async function verifyRoomEmptied(imageBuffer, keepInstruction = '') {
+  if (!openai) return { empty: true, remaining: '' };
+  try {
+    const processed = await downscaleImage(imageBuffer);
+    const dataUrl = `data:image/jpeg;base64,${processed.toString('base64')}`;
+    const keep = keepInstruction && keepInstruction.trim();
+    let instruction = `You are inspecting an interior room photo that was supposed to have ALL furniture, decor, rugs, curtains, wall art, plants, lamps, and movable objects removed, leaving an empty unfurnished room.`;
+    if (keep) {
+      instruction += `\nThe ONLY items allowed to remain are exactly these: ${keepInstruction.trim()}. Anything else (including chairs, cabinets, sofas, tables, shelves, rugs, and all other furniture/decor) is a leftover that should have been removed.`;
+    } else {
+      instruction += `\nNo furniture or decor at all should remain.`;
+    }
+    instruction += `\nIgnore the room's own walls, floor, ceiling, windows, doors, trim, and permanently built-in structural fixtures${keep ? ', and ignore the allowed items listed above' : ''}. List every other leftover furniture/decor/movable item you can still see.\nReply on ONE line in EXACTLY this format: "CLEAN: true" if nothing remains, or "CLEAN: false | <comma-separated leftover items>" if items remain. Output nothing else.`;
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: instruction },
+            { type: 'image_url', image_url: { url: dataUrl } },
+          ],
+        },
+      ],
+      temperature: 0,
+      max_tokens: 80,
+    });
+    const raw = (completion.choices[0].message.content || '').trim();
+    if (/CLEAN:\s*true/i.test(raw)) return { empty: true, remaining: '' };
+    const parts = raw.split('|');
+    const remaining = parts.length > 1 ? parts.slice(1).join('|').trim() : '';
+    return { empty: false, remaining };
+  } catch (error) {
+    console.error('[Erase] verification failed, accepting current erase:', error.message);
+    return { empty: true, remaining: '' };
+  }
+}
+
+// Two-stage removal — stage 1. Erase furniture with a verify-and-retry gate:
+// a cheap 2.5-flash attempt, a GPT-vision check that the room is truly empty
+// (only kept items remain), and up to 3 total attempts that call out whatever was
+// left behind. Every attempt stays on the cheap 2.5-flash model (no escalation).
+// Returns the best { dataUrl, buffer } or null so callers can fall back to
+// single-pass staging.
+const ERASE_MAX_ATTEMPTS = 3;
+const ERASE_MODEL = 'gemini-2.5-flash-image';
+
 async function eraseFurniture(imageBuffer, req, keepInstruction = '') {
   if (!genAI) return null;
   try {
     const processedImageBuffer = await downscaleImage(imageBuffer);
     const base64Image = processedImageBuffer.toString('base64');
-    let eraseText = FURNITURE_ERASE_PROMPT;
-    if (keepInstruction && keepInstruction.trim()) {
-      eraseText += `\n\nEXCEPTION — DO NOT remove the following existing items; keep them exactly where they are, unchanged: ${keepInstruction.trim()}. Remove everything else as instructed above.`;
+    const srcMeta = await sharp(imageBuffer).metadata().catch(() => null);
+    const keepText = buildKeepExceptionText(keepInstruction);
+    if (keepText && DEBUG_MODE) {
+      console.log(`[Erase] keeping user-specified items: ${keepInstruction.trim()}`);
+    }
+
+    const buildPrompt = (extraNote) => {
+      let eraseText = FURNITURE_ERASE_PROMPT + keepText;
+      if (extraNote) eraseText += `\n\n${extraNote}`;
+      return [
+        { text: eraseText },
+        { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
+      ];
+    };
+
+    let bestBuffer = null;
+    let extraNote = '';
+    for (let attempt = 1; attempt <= ERASE_MAX_ATTEMPTS; attempt++) {
+      const isFinal = attempt === ERASE_MAX_ATTEMPTS;
       if (DEBUG_MODE) {
-        console.log(`[Erase] keeping user-specified items: ${keepInstruction.trim()}`);
+        console.log(`[Erase] attempt ${attempt}/${ERASE_MAX_ATTEMPTS} on ${ERASE_MODEL}`);
+      }
+
+      let outBuffer;
+      try {
+        const model = genAI.getGenerativeModel({ model: ERASE_MODEL });
+        const result = await model.generateContent(buildPrompt(extraNote));
+        const response = await result.response;
+        if (!response || !response.candidates || response.candidates.length === 0) {
+          throw new Error('no candidates in erase response');
+        }
+        const part = response.candidates[0].content.parts.find((p) => p.inlineData);
+        if (!part) throw new Error('no image data in erase response');
+        outBuffer = Buffer.from(part.inlineData.data, 'base64');
+      } catch (genErr) {
+        console.error(`[Erase] attempt ${attempt} generation failed:`, genErr.message);
+        if (bestBuffer) break; // keep the best earlier result
+        if (isFinal) return null;
+        continue;
+      }
+
+      // Lock the emptied room to the source aspect ratio before staging/verification.
+      if (srcMeta && srcMeta.width && srcMeta.height) {
+        outBuffer = await enforceAspectRatio(outBuffer, srcMeta.width, srcMeta.height);
+      }
+      bestBuffer = outBuffer; // latest attempt is our current best
+
+      if (isFinal) break; // no retry after the last attempt — take it
+
+      const check = await verifyRoomEmptied(outBuffer, keepInstruction);
+      if (check.empty) {
+        if (DEBUG_MODE) console.log(`[Erase] verified clean on attempt ${attempt}`);
+        break;
+      }
+      if (DEBUG_MODE) {
+        console.log(`[Erase] attempt ${attempt} left items behind: ${check.remaining || 'unspecified'} — retrying`);
+      }
+      extraNote = `IMPORTANT: A previous removal attempt FAILED — it left these items in the room that you MUST now remove completely: ${check.remaining || 'all remaining furniture and decor'}. Erase them entirely and realistically reconstruct the floor and wall behind them.`;
+      if (keepInstruction && keepInstruction.trim()) {
+        extraNote += ` Still keep ONLY: ${keepInstruction.trim()} — remove everything else, including the leftover items just listed.`;
       }
     }
-    const prompt = [
-      { text: eraseText },
-      { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
-    ];
-    if (DEBUG_MODE) {
-      console.log('[Erase] running furniture-removal pass on gemini-2.5-flash-image (1 attempt, no gate)');
-    }
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    if (!response || !response.candidates || response.candidates.length === 0) {
-      throw new Error('no candidates in erase response');
-    }
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) {
-        return {
-          dataUrl: `data:image/png;base64,${part.inlineData.data}`,
-          buffer: Buffer.from(part.inlineData.data, 'base64'),
-        };
-      }
-    }
-    throw new Error('no image data in erase response');
+
+    if (!bestBuffer) return null;
+    return {
+      dataUrl: `data:image/png;base64,${bestBuffer.toString('base64')}`,
+      buffer: bestBuffer,
+    };
   } catch (error) {
     console.error('[Erase] furniture removal failed, falling back to single-pass staging:', error.message);
     return null;
@@ -2875,8 +3029,11 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
     }
     const model = genAI.getGenerativeModel({ model: geminiModel });
 
+    // Source aspect ratio, so we can lock the output back to it (Gemini drifts).
+    const srcMeta = await sharp(imageBuffer).metadata().catch(() => null);
+
     // Generate, with the self-check quality gate retrying poor results.
-    return await generateWithQualityRetry(async () => {
+    const resultDataUrl = await generateWithQualityRetry(async () => {
       const result = await model.generateContent(prompt);
       const response = await result.response;
 
@@ -2893,7 +3050,26 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       const noImageErr = new Error('No image data in AI response');
       noImageErr.code = 'NO_IMAGE_GENERATED';
       throw noImageErr;
-    }, 'staging');
+    }, 'staging', () => {
+      // Meter every staging generation attempt (initial + quality-gate retries)
+      // so enterprise usage is billed per generated image. Furniture erases run
+      // outside this path and are intentionally NOT counted.
+      if (req) req._stagingGenerations = (req._stagingGenerations || 0) + 1;
+    });
+
+    // Lock the result to the source aspect ratio (crop excess, centered).
+    if (srcMeta && srcMeta.width && srcMeta.height) {
+      const m = /^data:image\/\w+;base64,(.+)$/.exec(resultDataUrl);
+      if (m) {
+        const fixed = await enforceAspectRatio(
+          Buffer.from(m[1], 'base64'),
+          srcMeta.width,
+          srcMeta.height
+        );
+        return `data:image/png;base64,${fixed.toString('base64')}`;
+      }
+    }
+    return resultDataUrl;
   } catch (error) {
     console.error('Error processing staging:', error);
     throw error;
@@ -3572,6 +3748,11 @@ async function handleVirtualStagingMultipart(req, res, meta) {
     // no furniture to remove, so skip the erase entirely (saves a Gemini call).
     const alreadyEmpty = await roomIsAlreadyEmpty(mainFile.buffer);
     if (alreadyEmpty) {
+      // Nothing to remove — and since removal is handled by the dedicated erase
+      // stage (not here), tell the staging AI to ideally NOT remove furniture so
+      // it just stages cleanly instead of re-running a "remove all furniture"
+      // instruction on an already-empty room.
+      stageBaseParams = { ...stagingParamsBase, removeFurniture: false };
       if (DEBUG_MODE) {
         console.log('[Erase] room already basically empty — skipping furniture-removal pass.');
       }
@@ -3620,7 +3801,10 @@ async function handleVirtualStagingMultipart(req, res, meta) {
     } else if (user) {
       const entDomain = enterpriseDomainForUser(user);
       if (entDomain) {
-        reportEnterpriseUsage(entDomain, images.length || 1);
+        // Bill per staging generation attempt (initial + quality-gate retries),
+        // which req._stagingGenerations accumulates across all variations. The
+        // furniture-erase pass and its retries are deliberately excluded.
+        reportEnterpriseUsage(entDomain, req._stagingGenerations || images.length || 1);
       } else if (user.plan === 'free') {
         authStore.recordFreeGeneration(user.id);
       }

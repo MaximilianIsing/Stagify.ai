@@ -98,7 +98,7 @@
         },
         "who": {
           "eyebrow": "Who it's for",
-          "caption": "Sitting down one-on-one to stage a client's photos",
+          "caption": "Sitting down one-on-one to stage an agent's photos",
           "title": "Made for agents, sellers, and buyers",
           "body": "Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn CAD floor-plan PDFs into photorealistic 3D room renders.",
           "p1": "Agents: list sooner and close more",
@@ -406,7 +406,7 @@
       },
       "idealRoom": {
         "question": "What makes an ideal room for staging?",
-        "answer": "An ideal room for staging should have good lighting, clear walls, and minimal clutter. Empty or sparsely furnished rooms work best, as they provide a clean canvas for the AI to add furniture and decor that matches your chosen style."
+        "answer": "An ideal room for staging should have good lighting, clear walls, and minimal clutter. Empty or sparsely furnished rooms work best, as they provide a clean canvas for the AI to add furniture and decor that matches your chosen style. Wider shots that capture more of the room are much better than tight or cropped angles, since they give the AI more context to stage the space realistically."
       },
       "privacy": {
         "question": "Is my data private and secure?",
