@@ -919,8 +919,8 @@
         var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
         if (!canHover || reduce || isMobile) { canvas.style.display = 'none'; return; }
 
-        var MAX = 520;            // px from button center where the warp begins
-        var BASE_RS = 116;        // event-horizon radius in CSS px (large enough to wrap the card)
+        var MAX = 420;            // px from button center where the warp begins
+        var BASE_RS = 70;         // event-horizon radius in CSS px
         var target = 0, cur = 0, running = false, lastPointer = null;
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var t0 = performance.now();
@@ -962,10 +962,10 @@
           // background appears pulled/curved inward — the lensing.
           // Localize the warp: full strength near the hole, fading to the real
           // background by ~6 radii so the canvas blends seamlessly (no flash/seam).
-          '  float ff = 1.0 - smoothstep(rs*2.6, rs*6.0, r);',
-          '  float bend = (rs*rs) / max(r, 1.0) * 2.3 * amt * ff;',
+          '  float ff = 1.0 - smoothstep(rs*2.8, rs*7.5, r);',
+          '  float bend = (rs*rs) / max(r, 1.0) * 4.4 * amt * ff;',
           '  vec2 tang = vec2(-dir.y, dir.x);',
-          '  float swirl = (rs*rs) / max(r*r, 1.0) * 34.0 * amt * ff;',  // frame dragging
+          '  float swirl = (rs*rs) / max(r*r, 1.0) * 70.0 * amt * ff;',  // frame dragging
           '  vec2 sampleP = fragTL + dir * bend + tang * swirl;',
           '  vec3 col = bgAt(sampleP);',
           // darken toward the hole, then the pure-black event horizon
