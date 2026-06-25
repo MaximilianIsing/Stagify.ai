@@ -436,6 +436,105 @@
       return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
     }
 
+    // Turn the user's brush strokes into a solid white-on-transparent mask grown
+    // outward by `grow` px (the "secret brush size increase" — covers slightly
+    // more than the user actually painted so small under-brushing is forgiven).
+    function growBinaryMask(drawSrc, w, h, grow) {
+      const bin = document.createElement('canvas');
+      bin.width = w; bin.height = h;
+      const bctx = bin.getContext('2d');
+      bctx.drawImage(drawSrc, 0, 0, w, h);
+      const id = bctx.getImageData(0, 0, w, h);
+      const d = id.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const on = d[i + 3] > 10;
+        d[i] = 255; d[i + 1] = 255; d[i + 2] = 255; d[i + 3] = on ? 255 : 0;
+      }
+      bctx.putImageData(id, 0, 0);
+      const grown = document.createElement('canvas');
+      grown.width = w; grown.height = h;
+      const gctx = grown.getContext('2d');
+      const steps = 28;
+      const ringStep = Math.max(2, grow / 5);
+      for (let r = grow; r > 0; r -= ringStep) {
+        for (let k = 0; k < steps; k++) {
+          const a = (k / steps) * Math.PI * 2;
+          gctx.drawImage(bin, Math.cos(a) * r, Math.sin(a) * r);
+        }
+      }
+      gctx.drawImage(bin, 0, 0);
+      return grown;
+    }
+
+    // White-on-black opaque mask for the model: the grown brushed region the AI is
+    // allowed to edit. Sending the grown mask (not the raw brush) is what makes
+    // the secret brush increase actually enlarge the edit.
+    function buildModelMask(drawSrc, w, h, grow) {
+      const grown = growBinaryMask(drawSrc, w, h, grow);
+      const out = document.createElement('canvas');
+      out.width = w; out.height = h;
+      const octx = out.getContext('2d');
+      octx.fillStyle = '#000';
+      octx.fillRect(0, 0, w, h);
+      octx.drawImage(grown, 0, 0);
+      return out;
+    }
+
+    // Soft "keep" mask for compositing: a solid core grown by coreGrow, then a
+    // gradual alpha falloff over featherPx so the edited region fades into the
+    // original with no visible seam. The alpha channel is the blend weight
+    // (1 = fully edited, 0 = fully original).
+    function buildBlendMask(drawSrc, w, h, coreGrow, featherPx) {
+      const grown = growBinaryMask(drawSrc, w, h, coreGrow + featherPx);
+      const out = document.createElement('canvas');
+      out.width = w; out.height = h;
+      const octx = out.getContext('2d');
+      let blurred = false;
+      try {
+        if (typeof octx.filter !== 'undefined') {
+          octx.filter = 'blur(' + featherPx + 'px)';
+          octx.drawImage(grown, 0, 0);
+          octx.filter = 'none';
+          blurred = true;
+        }
+      } catch (e) { blurred = false; }
+      if (!blurred) {
+        // Fallback (no canvas filter): approximate the fade with decreasing-alpha
+        // ring stamps around the solid core.
+        octx.drawImage(grown, 0, 0);
+        const steps = 28;
+        const rings = 8;
+        for (let i = 1; i <= rings; i++) {
+          octx.globalAlpha = 0.5 * (1 - i / (rings + 1));
+          const rr = featherPx * (i / rings);
+          for (let k = 0; k < steps; k++) {
+            const a = (k / steps) * Math.PI * 2;
+            octx.drawImage(grown, Math.cos(a) * rr, Math.sin(a) * rr);
+          }
+        }
+        octx.globalAlpha = 1;
+      }
+      return out;
+    }
+
+    // Hard-composite the AI output onto the original: keep the original
+    // everywhere, paste the edited pixels only inside the (expanded) mask. This
+    // makes it physically impossible for unbrushed areas to change.
+    function compositeMaskedEdit(origCanvas, keepMask, editedImg, w, h) {
+      const me = document.createElement('canvas');
+      me.width = w; me.height = h;
+      const mctx = me.getContext('2d');
+      mctx.drawImage(editedImg, 0, 0, w, h);
+      mctx.globalCompositeOperation = 'destination-in';
+      mctx.drawImage(keepMask, 0, 0, w, h);
+      const out = document.createElement('canvas');
+      out.width = w; out.height = h;
+      const octx = out.getContext('2d');
+      octx.drawImage(origCanvas, 0, 0);
+      octx.drawImage(me, 0, 0);
+      return out.toDataURL('image/png');
+    }
+
     function openFilePicker() {
       const hasTok = window.StagifyAuth && window.StagifyAuth.getToken();
       if (!hasTok) {
@@ -1196,8 +1295,9 @@
     if (downloadBtn) downloadBtn.addEventListener('click', () => {
       if (!canvas1.width) return;
       const link = document.createElement('a');
-      link.download = 'stagify-result.png';
-      link.href = canvas1.toDataURL('image/png');
+      const roomSlug = (roomSelect?.value || 'room').toLowerCase().replace(/\s+/g, '-');
+      link.download = `stagify-${roomSlug}-${Date.now()}.jpg`;
+      link.href = canvas1.toDataURL('image/jpeg', 0.92);
       link.click();
     });
 
@@ -1226,7 +1326,8 @@
     if (emptyRoomDownload) emptyRoomDownload.addEventListener('click', () => {
       if (!lastEmptyRoomUrl) return;
       const link = document.createElement('a');
-      link.download = 'stagify-empty-room.png';
+      const roomSlug = (roomSelect?.value || 'room').toLowerCase().replace(/\s+/g, '-');
+      link.download = `stagify-${roomSlug}-empty-${Date.now()}.jpg`;
       link.href = lastEmptyRoomUrl;
       link.click();
     });
@@ -1252,6 +1353,9 @@
       let lastY = null;
       let scaleX = 1;
       let scaleY = 1;
+      // Tracks whether anything has been painted this session, so the hot drawing
+      // path never has to scan the whole canvas (getImageData) to enable Submit.
+      let painted = false;
       // 'after' = refine an already-staged image; 'before' = edit the original
       // photo into a new unstaged variant. Both append to their carousel.
       let editorMode = 'after';
@@ -1315,6 +1419,7 @@
           drawCanvas.style.width = dispW + 'px';
           drawCanvas.style.height = dispH + 'px';
           drawCanvas.getContext('2d').clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+          painted = false;
 
           scaleX = dispW / img.width;
           scaleY = dispH / img.height;
@@ -1360,22 +1465,18 @@
       function clearDraw() {
         const ctx = drawCanvas.getContext('2d');
         ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        painted = false;
         updateSubmitState();
       }
 
       function maskHasContent() {
-        if (!drawCanvas.width || !drawCanvas.height) return false;
-        const d = drawCanvas.getContext('2d').getImageData(0, 0, drawCanvas.width, drawCanvas.height).data;
-        for (let i = 3; i < d.length; i += 4) {
-          if (d[i] > 0) return true;
-        }
-        return false;
+        return painted;
       }
 
       function updateSubmitState() {
         if (!submitBtn) return;
         const hasPrompt = promptInput && promptInput.value.trim().length > 0;
-        submitBtn.disabled = !maskHasContent() || !hasPrompt;
+        submitBtn.disabled = !painted || !hasPrompt;
       }
 
       function paint(e) {
@@ -1384,35 +1485,34 @@
         const x = (e.clientX - rect.left) / scaleX;
         const y = (e.clientY - rect.top) / scaleY;
         const ctx = drawCanvas.getContext('2d');
-        ctx.globalCompositeOperation = 'lighten';
-
-        function dab(px, py) {
-          const g = ctx.createRadialGradient(px, py, 0, px, py, brushSize / 2);
-          g.addColorStop(0, 'rgba(37, 99, 235, 0.5)');
-          g.addColorStop(0.7, 'rgba(37, 99, 235, 0.3)');
-          g.addColorStop(1, 'rgba(37, 99, 235, 0)');
-          ctx.fillStyle = g;
+        // Paint one continuous, fully-opaque stroke with round caps/joins. Because
+        // every pixel is solid (no soft dabs), overlaps don't compound into blotchy
+        // circles — the stroke reads as a single clean shape. The translucent look
+        // comes from the canvas element's CSS opacity, not per-pixel alpha.
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = '#2563eb';
+        ctx.fillStyle = '#2563eb';
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        if (lastX === null || lastY === null) {
+          // Single tap/click: lay down a round dot.
           ctx.beginPath();
-          ctx.arc(px, py, brushSize / 2, 0, Math.PI * 2);
+          ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
           ctx.fill();
-        }
-
-        if (lastX !== null && lastY !== null) {
-          const dx = x - lastX;
-          const dy = y - lastY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const steps = Math.max(1, Math.floor(dist / (brushSize / 4)));
-          for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            dab(lastX + dx * t, lastY + dy * t);
-          }
         } else {
-          dab(x, y);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(x, y);
+          ctx.stroke();
         }
         lastX = x;
         lastY = y;
-        ctx.globalCompositeOperation = 'source-over';
-        updateSubmitState();
+        if (!painted) {
+          // First mark of this session: flip the flag and refresh the button once.
+          painted = true;
+          updateSubmitState();
+        }
       }
 
       function startDraw(e) {
@@ -1517,26 +1617,28 @@
         const prompt = promptInput ? promptInput.value.trim() : '';
         if (!prompt || !maskHasContent()) return;
 
-        // Build the white-on-transparent mask + source image while the modal canvases exist
+        // Source dimensions + a snapshot of the source, captured while the editor
+        // canvases still exist. After the AI responds we hard-composite its output
+        // onto this source through the mask, so only the brushed (and expanded)
+        // area can ever change.
         const w = baseCanvas.width;
         const h = baseCanvas.height;
-        const whiteMask = document.createElement('canvas');
-        whiteMask.width = w;
-        whiteMask.height = h;
-        const wmCtx = whiteMask.getContext('2d');
-        wmCtx.drawImage(drawCanvas, 0, 0, w, h);
-        const md = wmCtx.getImageData(0, 0, w, h);
-        const data = md.data;
-        for (let i = 0; i < data.length; i += 4) {
-          if (data[i + 3] > 0) {
-            data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
-          } else {
-            data[i] = 0; data[i + 1] = 0; data[i + 2] = 0;
-          }
-        }
-        wmCtx.putImageData(md, 0, 0);
-        const maskDataUrl = whiteMask.toDataURL('image/png');
         const imageDataUrl = baseCanvas.toDataURL('image/png');
+        const origCanvas = document.createElement('canvas');
+        origCanvas.width = w; origCanvas.height = h;
+        origCanvas.getContext('2d').drawImage(baseCanvas, 0, 0);
+
+        // Secret brush expansion: grow the brushed area a good bit so slightly
+        // under-brushed spots are still covered, with a feathered edge so the
+        // composite shows no visible seam.
+        const maxDim = Math.max(w, h);
+        const coreGrow = Math.max(23, Math.round(maxDim * 0.0455));
+        const featherPx = Math.max(20, Math.round(maxDim * 0.04));
+        // Mask sent to the model = the grown region, so the edit actually covers
+        // the expanded brush (not just the raw strokes).
+        const maskDataUrl = buildModelMask(drawCanvas, w, h, coreGrow).toDataURL('image/png');
+        // Mask used to composite the result = grown core + feathered edge.
+        const keepMask = buildBlendMask(drawCanvas, w, h, coreGrow, featherPx);
 
         let selectedModel = 'gpt-4o-mini';
         const modelSel = document.getElementById('stagify-model-select');
@@ -1581,18 +1683,29 @@
             throw new Error(result.error || 'Failed to process masked edit');
           }
 
+          // Load the AI output and hard-composite it onto the original through the
+          // expanded brush mask. Everything outside the brushed area stays exactly
+          // as the source — the model physically cannot alter it.
+          const editedImg = await new Promise((resolve, reject) => {
+            const im = new Image();
+            im.onload = () => resolve(im);
+            im.onerror = () => reject(new Error('Failed to load edited image'));
+            im.src = result.editedImage;
+          });
+          const finalUrl = compositeMaskedEdit(origCanvas, keepMask, editedImg, w, h);
+
           loader.finish();
           if (isBefore) {
             // Append a new unstaged "before" variant and show it. Process will
             // stage whichever before version is on screen.
-            beforeVersions.push(result.editedImage);
+            beforeVersions.push(finalUrl);
             if (beforeVersions.length > MAX_MASK_VERSIONS) beforeVersions = beforeVersions.slice(-MAX_MASK_VERSIONS);
             stagePreview.classList.remove('processing');
             showBeforeVersion(beforeVersions.length - 1);
             updateMaskButtonVisibility();
           } else {
             // Append a refined staged version and show it.
-            afterVersions.push(result.editedImage);
+            afterVersions.push(finalUrl);
             if (afterVersions.length > MAX_MASK_VERSIONS) afterVersions = afterVersions.slice(-MAX_MASK_VERSIONS);
             hasProcessedImage = true;
             await drawAfter(afterVersions[afterVersions.length - 1],
@@ -1760,7 +1873,7 @@
     loadHeroStats();
 
     
-    // Initialize 3D tilt effect for advantages section and contact cards
+    // Initialize 3D tilt effect for the contact cards
     init3DTiltEffect();
 
     if (window.LanguageSystem && typeof window.LanguageSystem.applyLanguageToElements === 'function') {
@@ -1777,57 +1890,46 @@
     }
   });
   
-  // 3D Tilt Effect for Advantages Section, Contact Cards, and FAQ
+  // 3D Tilt Effect for the contact cards
   function init3DTiltEffect() {
-    // Apply to advantages section
-    applyTiltEffect('.advantages');
-    
-    // Apply to FAQ section
-    applyTiltEffect('.faq');
-    
-    // Apply to all contact cards
+    // Tilt is only for the contact cards.
     const contactCards = document.querySelectorAll('.contact-card');
-    contactCards.forEach((card, index) => {
+    contactCards.forEach((card) => {
       applyTiltEffectToElement(card);
     });
   }
-  
-  function applyTiltEffect(selector) {
-    const element = document.querySelector(selector);
-    if (!element) return;
-    applyTiltEffectToElement(element);
-  }
-  
+
   function applyTiltEffectToElement(element) {
     let isHovering = false;
-    
+    let rect = null;        // cached on enter so we don't force a layout read per move
+    let rafId = null;
+    let lastX = 0, lastY = 0;
+
     element.addEventListener('mouseenter', function() {
       isHovering = true;
+      rect = element.getBoundingClientRect();
     });
-    
+
     element.addEventListener('mouseleave', function() {
       isHovering = false;
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
       // Reset to neutral position
       element.style.transform = 'rotateX(0deg) rotateY(0deg)';
     });
-    
+
     element.addEventListener('mousemove', function(e) {
-      if (!isHovering) return;
-      
-      const rect = element.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      // Calculate mouse position relative to center
-      const mouseX = e.clientX - centerX;
-      const mouseY = e.clientY - centerY;
-      
-      // Calculate rotation values (max 8 degrees)
-      const rotateY = (mouseX / (rect.width / 2)) * 8;
-      const rotateX = -(mouseY / (rect.height / 2)) * 8;
-      
-      // Apply 3D transformation
-      element.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      if (!isHovering || !rect) return;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      // Coalesce rapid moves into a single transform write per frame.
+      if (rafId) return;
+      rafId = requestAnimationFrame(function() {
+        rafId = null;
+        // Calculate rotation values (max 8 degrees) from the cached rect.
+        const rotateY = ((lastX - (rect.left + rect.width / 2)) / (rect.width / 2)) * 8;
+        const rotateX = -((lastY - (rect.top + rect.height / 2)) / (rect.height / 2)) * 8;
+        element.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      });
     });
   }
   

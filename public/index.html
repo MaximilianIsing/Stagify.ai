@@ -68,12 +68,32 @@
     <link rel="dns-prefetch" href="https://app.supademo.com">
     
 
+    <!-- Critical CSS — render-blocking on purpose (needed for first paint) -->
     <link rel="stylesheet" href="styles/styles.css">
-    <link rel="stylesheet" href="styles/auth.css">
     <link rel="stylesheet" href="styles/carousel.css">
-    <link rel="stylesheet" href="styles/star-border.css">
     <link rel="stylesheet" href="styles/home.css">
-    <link rel="stylesheet" href="styles/home-text-animate.css">
+    <!-- Non-critical CSS (auth modals, decorative star-border, below-fold text animations) -->
+    <!-- Loaded as print (non-render-blocking), then promoted to all once fetched. -->
+    <!-- Swap is done in JS (not an inline onload= handler) so it passes the CSP's script-src-attr 'none'. -->
+    <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
+    <link rel="stylesheet" href="styles/star-border.css" media="print" data-lazy-css>
+    <link rel="stylesheet" href="styles/home-text-animate.css" media="print" data-lazy-css>
+    <script>
+      (function () {
+        var links = document.querySelectorAll('link[data-lazy-css]');
+        for (var i = 0; i < links.length; i++) {
+          (function (link) {
+            if (link.sheet) { link.media = 'all'; }
+            else { link.addEventListener('load', function () { link.media = 'all'; }); }
+          })(links[i]);
+        }
+      })();
+    </script>
+    <noscript>
+      <link rel="stylesheet" href="styles/auth.css">
+      <link rel="stylesheet" href="styles/star-border.css">
+      <link rel="stylesheet" href="styles/home-text-animate.css">
+    </noscript>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script src="scripts/language-loader.js" defer></script>
     <script src="scripts/nav-pill.js" defer></script>
@@ -529,7 +549,7 @@
     </div>
 
     <!-- Background Video -->
-    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="background-poster.webp">
       <source src="background.mp4" type="video/mp4">
     </video>
 
@@ -737,7 +757,7 @@
 
           <div class="info-row info-row--flip">
             <figure class="info-row__media reveal reveal--right">
-              <img src="media-webp/Homepage/Meeting1.webp" alt="Stagify.ai presentation to a room of real estate agents" loading="eager" fetchpriority="low" decoding="async">
+              <img src="media-webp/Homepage/Meeting1.webp" alt="Stagify.ai presentation to a room of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
               <figcaption data-lang="home.info.rows.how.caption">Walking a room of agents through their first staged listing</figcaption>
             </figure>
             <div class="info-row__text reveal reveal--left" style="--reveal-delay:90ms">
@@ -754,7 +774,7 @@
 
           <div class="info-row">
             <figure class="info-row__media reveal reveal--left">
-              <img src="media-webp/Homepage/HelpingOld.webp" alt="Stagify.ai team member staging a client's photos on a laptop" loading="eager" fetchpriority="low" decoding="async">
+              <img src="media-webp/Homepage/HelpingOld.webp" alt="Stagify.ai team member staging a client's photos on a laptop" loading="lazy" fetchpriority="low" decoding="async">
               <figcaption data-lang="home.info.rows.who.caption">Sitting down one-on-one to stage an agent's photos</figcaption>
             </figure>
             <div class="info-row__text reveal reveal--right" style="--reveal-delay:90ms">
@@ -771,7 +791,7 @@
 
           <div class="info-row info-row--flip">
             <figure class="info-row__media reveal reveal--right">
-              <img src="media-webp/Homepage/BoardRoom.webp" alt="Stagify.ai founder presenting to a full office of real estate agents" loading="eager" fetchpriority="low" decoding="async">
+              <img src="media-webp/Homepage/BoardRoom.webp" alt="Stagify.ai founder presenting to a full office of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
               <figcaption data-lang="home.info.rows.team.caption">Training a brokerage team on Stagify</figcaption>
             </figure>
             <div class="info-row__text reveal reveal--left" style="--reveal-delay:90ms">
@@ -1084,7 +1104,7 @@
                       <div class="option" data-value="luxury" role="option" data-lang="furnitureStyles.luxury">Luxury</div>
                       <div class="option" data-value="coastal" role="option" data-lang="furnitureStyles.coastal">Coastal</div>
                       <div class="option" data-value="farmhouse" role="option" data-lang="furnitureStyles.farmhouse">Farmhouse</div>
-                      <div class="option" data-value="custom" role="option" data-lang="furnitureStyles.custom">Custom (Experimental)</div>
+                      <div class="option" data-value="custom" role="option" data-lang="furnitureStyles.custom">Custom</div>
                     </div>
                   </div>
                 </div>
@@ -1102,7 +1122,7 @@
                     <textarea id="keep-furniture" class="text-input" data-lang="modal.staging.keepFurniturePlaceholder" placeholder="e.g. keep the dining table and the built-in shelves" rows="3" maxlength="500"></textarea>
                   </div>
                 </div>
-                <div id="stagify-pro-panel" class="stagify-pro-panel hidden desktop-only">
+                <div id="stagify-pro-panel" class="stagify-pro-panel hidden">
                   <div class="tool-row">
                     <label class="label" for="stagify-model-select" data-lang="modal.staging.imageModel">Image model</label>
                     <select id="stagify-model-select" class="text-input" style="min-height: 44px;">
@@ -1174,10 +1194,10 @@
                     <div id="processing-placeholder" class="processing-placeholder">
                       <div class="placeholder-content">
                         <div class="placeholder-icon">
-                          <img src="media-webp/Warning.webp" data-lang-attr="modal.staging.warningAlt|alt" alt="Important staging notice" class="warning-icon" aria-hidden="true">
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;margin:0 auto;opacity:0.45;color:var(--muted,#6b7280)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                         </div>
-                        <div class="placeholder-text" data-lang="modal.staging.noProcessedImage">No processed image available yet</div>
-                        <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Please click "Process photo" first to generate an AI-staged version of your image</div>
+                        <div class="placeholder-text" data-lang="modal.staging.noProcessedImage">Your staged result will appear here</div>
+                        <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Click "Process photo" to generate an AI-staged version of your image</div>
                       </div>
                     </div>
                     <div id="staging-limit-viewer" class="staging-limit-viewer hidden" role="alert">
@@ -1210,7 +1230,7 @@
         </div>
         <div class="stage-mask-canvas-container">
           <canvas id="stage-mask-base-canvas" class="stage-mask-canvas"></canvas>
-          <canvas id="stage-mask-draw-canvas" class="stage-mask-canvas" style="position:absolute;top:0;left:0;pointer-events:auto;mix-blend-mode:multiply;cursor:crosshair;"></canvas>
+          <canvas id="stage-mask-draw-canvas" class="stage-mask-canvas" style="position:absolute;top:0;left:0;pointer-events:auto;mix-blend-mode:multiply;opacity:0.5;cursor:crosshair;"></canvas>
         </div>
         <div class="stage-mask-controls">
           <div class="stage-mask-brush-controls">
