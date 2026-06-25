@@ -49,3 +49,4 @@
 /* Empty furniture-photos list shouldn't occupy a grid track (it added a stray
    gap between "+ Add photos" and the hint text). */
 #stagify-furniture-list:empty{display:none}
+@media(max-width:768px){.desktop-only{display:none!important}}

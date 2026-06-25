@@ -285,8 +285,8 @@
       "after": "Después",
       "downloadResult": "Descargar Resultado",
       "uploadAnother": "Subir Otra",
-      "noProcessedImage": "Aún no hay imagen procesada disponible",
-      "noProcessedImageSubtext": "Por favor cliquea en \"Procesar foto\" primero para generar una versión escenificada con IA de tu imagen",
+      "noProcessedImage": "Tu resultado aparecerá aquí",
+      "noProcessedImageSubtext": "Cliquea en \"Procesar foto\" para generar una versión escenificada con IA de tu imagen",
       "imageModel": "Modelo de imagen",
       "fastGeneration": "Generación rápida",
       "qualityGeneration": "Generación de calidad Stagify+",
@@ -345,7 +345,7 @@
     "luxury": "Lujo",
     "coastal": "Costera",
     "farmhouse": "Cortijo",
-    "custom": "Personalizado (Experimental)"
+    "custom": "Personalizado"
   },
   "carouselItems": {
     "original": "Original",

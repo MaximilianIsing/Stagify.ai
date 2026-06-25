@@ -2642,13 +2642,100 @@ async function reviewImageQuality(imageDataUrl) {
   }
 }
 
+// Mask-edit QA: shows the reviewer BOTH the original and the edited image so it
+// can judge a localized edit — including whether it REMOVED TOO MUCH. Returns
+// { perfect, score }. Fails OPEN on any error so a flaky reviewer never blocks.
+const MASK_REVIEW_PROMPT =
+  'You are a strict QA reviewer for a LOCALIZED edit to an interior real-estate photo. ' +
+  'The FIRST image is the ORIGINAL; the SECOND is AFTER an AI edited one small area. ' +
+  'Mark it NOT perfect if the edited image shows obvious problems: warped or melted ' +
+  'furniture, impossible geometry, distorted perspective, extra/missing legs, duplicated ' +
+  'or garbled objects, smeared textures, or physically impossible lighting. ' +
+  'CRUCIALLY, also mark it NOT perfect if the edit REMOVED TOO MUCH compared with the ' +
+  'original — e.g. it deleted or erased furniture, fixtures, windows, decor, or ' +
+  'architectural detail that should still be there, or left blank walls/floor, a large ' +
+  'flat featureless patch, or an empty void where content used to be. A good edit changes ' +
+  'only what was intended and keeps the rest of the room intact; it must not strip the ' +
+  'space bare or wipe out existing content.\n' +
+  'Reply on the FIRST line with exactly "PERFECT: true" or "PERFECT: false".\n' +
+  'If and only if it is NOT perfect, add a SECOND line "SCORE: <0-100>" rating how close ' +
+  'it is despite the issue(s) (higher = fewer/milder issues), then a short reason.';
+
+async function reviewMaskEdit(originalDataUrl, editedDataUrl) {
+  if (!openai) return { perfect: true, score: 100, reason: 'reviewer disabled' };
+  try {
+    const origSmall = await downscaleImageForGPT(originalDataUrl);
+    const editSmall = await downscaleImageForGPT(editedDataUrl);
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: MASK_REVIEW_PROMPT },
+            { type: 'image_url', image_url: { url: origSmall } },
+            { type: 'image_url', image_url: { url: editSmall } },
+          ],
+        },
+      ],
+      temperature: 0,
+      max_tokens: 80,
+    });
+    const raw = (completion.choices[0].message.content || '').trim();
+    const perfect = /PERFECT:\s*true/i.test(raw);
+    if (perfect) return { perfect: true, score: 100, reason: raw };
+    const m = raw.match(/SCORE:\s*(\d{1,3})/i);
+    const score = m ? Math.max(0, Math.min(100, parseInt(m[1], 10))) : 0;
+    return { perfect: false, score, reason: raw };
+  } catch (error) {
+    console.error('[Mask QA] review failed, accepting image:', error.message);
+    return { perfect: true, score: 100, reason: 'reviewer error' };
+  }
+}
+
+// Composite the model's raw output onto the original through the mask — edited
+// pixels only inside the white mask region, original everywhere else — so the QA
+// reviewer judges the COMBINED result the user actually receives (not raw output
+// that may have drifted outside the mask). Falls back to the raw output on error.
+async function compositeForReview(originalBuf, maskBuf, editedDataUrl, width, height) {
+  try {
+    const editedBuf = Buffer.from(editedDataUrl.split(',')[1], 'base64');
+    // Mask's red channel = blend weight (white inside the brushed area).
+    const maskAlpha = await sharp(maskBuf)
+      .resize(width, height, { fit: 'fill' })
+      .extractChannel(0)
+      .raw()
+      .toBuffer();
+    const editedRaw = await sharp(editedBuf)
+      .resize(width, height, { fit: 'fill' })
+      .ensureAlpha()
+      .raw()
+      .toBuffer();
+    for (let i = 0; i < width * height; i++) {
+      editedRaw[i * 4 + 3] = maskAlpha[i]; // keep edited only where the mask is white
+    }
+    const editedPng = await sharp(editedRaw, { raw: { width, height, channels: 4 } })
+      .png()
+      .toBuffer();
+    const composite = await sharp(originalBuf)
+      .resize(width, height, { fit: 'fill' })
+      .composite([{ input: editedPng, blend: 'over' }])
+      .png()
+      .toBuffer();
+    return `data:image/png;base64,${composite.toString('base64')}`;
+  } catch (e) {
+    console.error('[Mask QA] composite for review failed, reviewing raw output:', e.message);
+    return editedDataUrl;
+  }
+}
+
 // Run an image-producing function up to QUALITY_MAX_ATTEMPTS times, returning the
 // first "perfect" result or, failing that, the highest-scoring one.
 // `generateOnce(attempt)` must resolve to a data-URL string (or throw).
 // `onImageProduced(attempt)` (optional) fires once for every attempt that
 // actually yields an image — used to meter billing per generation attempt
 // (including quality-gate retries).
-async function generateWithQualityRetry(generateOnce, label = 'image', onImageProduced = null) {
+async function generateWithQualityRetry(generateOnce, label = 'image', onImageProduced = null, reviewFn = null) {
   let best = null; // { url, score }
   let lastError = null;
   for (let attempt = 1; attempt <= QUALITY_MAX_ATTEMPTS; attempt++) {
@@ -2664,7 +2751,7 @@ async function generateWithQualityRetry(generateOnce, label = 'image', onImagePr
     }
     if (!url) continue;
     if (typeof onImageProduced === 'function') onImageProduced(attempt);
-    const { perfect, score } = await reviewImageQuality(url);
+    const { perfect, score } = await (reviewFn ? reviewFn(url) : reviewImageQuality(url));
     if (DEBUG_MODE) {
       console.log(`[Quality] ${label} attempt ${attempt}/${QUALITY_MAX_ATTEMPTS}: ${perfect ? 'perfect — accepted' : `not perfect (score ${score})`}`);
     }
@@ -7463,7 +7550,7 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
     }
 
     // Enhance the prompt to ensure only the masked area is edited
-    const enhancedPrompt = `${prompt}. CRITICAL INSTRUCTIONS: Only modify the area indicated by the white mask in the second image. Do NOT change anything outside the masked region. Preserve the exact room layout, all furniture positions, wall colors, windows, doors, flooring, lighting, and every other detail exactly as they appear in the original image. The edit must only affect the masked area and must seamlessly blend with the unchanged surroundings. Do NOT change the image aspect ratio, canvas size, orientation, or framing — the output must match the original image dimensions exactly.`;
+    const enhancedPrompt = `${prompt}. CRITICAL INSTRUCTIONS: Only modify the area indicated by the white mask in the second image. Do NOT change anything outside the masked region. Preserve the exact room layout, all furniture positions, wall colors, windows, doors, flooring, lighting, and every other detail exactly as they appear in the original image. Within the masked area, make ONLY the change described — do NOT erase, delete, or strip out existing furniture, fixtures, windows, decor, or architectural features unless the instruction explicitly asks you to remove them, and never leave a blank wall, empty floor, or featureless void where content existed. The edit must only affect the masked area and must seamlessly blend with the unchanged surroundings. Do NOT change the image aspect ratio, canvas size, orientation, or framing — the output must match the original image dimensions exactly.`;
 
     // Use Gemini's image editing capabilities
     // Gemini can process images with masks for targeted editing
@@ -7493,40 +7580,57 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
       console.log('[Mask Edit] Using Gemini model:', geminiModel, '(selected model:', selectedModel, ')');
     }
 
-    const result = await modelInstance.generateContent(geminiPrompt);
-    const response = await result.response;
+    // Generate with the same GPT-vision quality gate the main staging uses, but
+    // with a mask-aware reviewer that also rejects edits which removed too much.
+    // Review each result, regenerate on obvious mistakes, up to 3 attempts total,
+    // returning the first perfect result or the best-scoring one.
+    const originalForReview = `data:image/png;base64,${imageBase64}`;
+    let maskGenerations = 0;
+    const editedImageDataUrl = await generateWithQualityRetry(async () => {
+      const result = await modelInstance.generateContent(geminiPrompt);
+      const response = await result.response;
 
-    if (!response || !response.candidates || response.candidates.length === 0) {
-      throw new Error('Gemini processing failed - no results generated');
-    }
-
-    // Extract the generated image
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) {
-        const imageData = part.inlineData.data;
-        const editedImageDataUrl = `data:image/png;base64,${imageData}`;
-
-        if (DEBUG_MODE) {
-          console.log('[Mask Edit] Successfully generated edited image with Gemini');
-        }
-
-        // Log the mask edit request
-        const userId = getUserIdentifier(req);
-        logMaskEditToFile(prompt, selectedModel, geminiModel, imageMetadata.width, imageMetadata.height, userId, req);
-
-        const entDomain = enterpriseDomainForUser(proUser);
-        if (entDomain) {
-          reportEnterpriseUsage(entDomain, 1);
-        }
-
-        return res.json({
-          success: true,
-          editedImage: editedImageDataUrl
-        });
+      if (!response || !response.candidates || response.candidates.length === 0) {
+        throw new Error('Gemini processing failed - no results generated');
       }
+
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          return `data:image/png;base64,${part.inlineData.data}`;
+        }
+      }
+
+      throw new Error('No image data in Gemini response');
+    }, 'mask-edit', () => {
+      // Meter every attempt (initial + quality-gate retries) for enterprise usage.
+      maskGenerations += 1;
+    }, async (editedUrl) => {
+      // Review the COMBINED result (original + edit composited through the mask),
+      // i.e. what the user actually gets — so outside-mask drift never causes a
+      // false reject and the "removed too much" check reflects the real outcome.
+      const combined = await compositeForReview(
+        imageBuffer, resizedMaskBuffer, editedUrl, imageMetadata.width, imageMetadata.height
+      );
+      return reviewMaskEdit(originalForReview, combined);
+    });
+
+    if (DEBUG_MODE) {
+      console.log('[Mask Edit] Successfully generated edited image with Gemini');
     }
 
-    throw new Error('No image data in Gemini response');
+    // Log the mask edit request
+    const userId = getUserIdentifier(req);
+    logMaskEditToFile(prompt, selectedModel, geminiModel, imageMetadata.width, imageMetadata.height, userId, req);
+
+    const entDomain = enterpriseDomainForUser(proUser);
+    if (entDomain) {
+      reportEnterpriseUsage(entDomain, maskGenerations || 1);
+    }
+
+    return res.json({
+      success: true,
+      editedImage: editedImageDataUrl
+    });
 
   } catch (error) {
     console.error('Error processing mask edit:', error);

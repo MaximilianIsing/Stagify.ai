@@ -285,8 +285,8 @@
       "after": "之后",
       "downloadResult": "下载结果",
       "uploadAnother": "上传另一张",
-      "noProcessedImage": "暂无处理后的图片",
-      "noProcessedImageSubtext": "请先点击\"处理照片\"以生成AI装修版本的图片",
+      "noProcessedImage": "装修效果将在此处显示",
+      "noProcessedImageSubtext": "点击\"处理照片\"以生成AI装修版本的图片",
       "imageModel": "图像模型",
       "fastGeneration": "快速生成",
       "qualityGeneration": "Stagify+ 高质量生成",
@@ -345,7 +345,7 @@
     "luxury": "奢华",
     "coastal": "海岸",
     "farmhouse": "农舍",
-    "custom": "自定义（实验性）"
+    "custom": "自定义"
   },
   "carouselItems": {
     "original": "原始",
