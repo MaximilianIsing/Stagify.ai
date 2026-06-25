@@ -128,6 +128,7 @@
       .sp-plan-wrap {
         width: 100%;
         max-width: 430px;
+        overflow: visible;
       }
       .sp-hint {
         margin: 0 0 0.55rem;
@@ -146,17 +147,8 @@
         position: relative;
         border-radius: 24px;
         padding: 1.9rem 1.6rem 1.55rem;
-        overflow: hidden;
+        overflow: visible;
         text-align: center;
-      }
-      .sp-plan::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #60a5fa, #2563eb, #1e3a8a);
       }
       .sp-plan-head {
         display: flex;
@@ -227,24 +219,63 @@
         justify-content: center;
         isolation: isolate;
       }
+      @media (min-width: 769px) {
+        .bh-stage {
+          width: calc(100% + 18rem);
+          max-width: 720px;
+          margin-left: 50%;
+          transform: translateX(-50%);
+        }
+      }
       /* Soft ambient bloom + graceful fallback when WebGL is unavailable. The real
          lensing lives in .bh-canvas (a WebGL shader); this just adds glow under it. */
       .bh-aura {
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 420px;
-        height: 420px;
+        width: min(520px, 90vw);
+        height: min(520px, 90vw);
         transform: translate(-50%, -50%) scale(calc(0.4 + var(--bh, 0) * 0.6));
         border-radius: 50%;
         pointer-events: none;
         z-index: -2;
-        opacity: calc(var(--bh, 0) * 0.55);
-        background: radial-gradient(circle at center,
-          rgba(37, 99, 235, 0.28) 0%,
-          rgba(37, 99, 235, 0.1) 42%,
-          transparent 70%);
+        opacity: calc(var(--bh, 0) * 0.72);
+        background:
+          radial-gradient(circle at center, rgba(191, 219, 254, 0.42) 0%, rgba(37, 99, 235, 0.22) 28%, rgba(37, 99, 235, 0.08) 48%, transparent 72%);
         transition: opacity 0.25s ease, transform 0.25s ease;
+        filter: blur(2px);
+      }
+      .bh-aura::before {
+        content: '';
+        position: absolute;
+        inset: 20%;
+        border-radius: 50%;
+        border: 1.5px solid rgba(147, 197, 253, 0.55);
+        box-shadow:
+          0 0 28px rgba(96, 165, 250, 0.85),
+          0 0 56px rgba(37, 99, 235, 0.45),
+          inset 0 0 22px rgba(59, 130, 246, 0.35);
+        opacity: calc(var(--bh, 0) * 0.95);
+      }
+      .bh-glare {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: min(320px, 70vw);
+        height: min(320px, 70vw);
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: -1;
+        opacity: calc(var(--bh, 0) * 0.85);
+        background: radial-gradient(circle,
+          rgba(219, 234, 254, 0.65) 0%,
+          rgba(96, 165, 250, 0.35) 32%,
+          rgba(37, 99, 235, 0.12) 55%,
+          transparent 72%);
+        filter: blur(10px);
+        mix-blend-mode: screen;
+        transition: opacity 0.25s ease;
       }
       /* WebGL gravitational-lens canvas: bends a branded starfield around a dark
          core with a photon ring + accretion disk; alpha/intensity driven by JS. */
@@ -252,8 +283,8 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 680px;
-        height: 520px;
+        width: min(820px, 95vw);
+        height: 560px;
         transform: translate(-50%, -50%);
         pointer-events: none;
         z-index: -1;
@@ -277,17 +308,29 @@
         height: 6px;
         margin: -3px;
         border-radius: 50%;
-        background: radial-gradient(circle, #dbeafe, #2563eb);
-        box-shadow: 0 0 7px rgba(37, 99, 235, 0.9);
+        background: radial-gradient(circle, #eff6ff 0%, #93c5fd 45%, #2563eb 100%);
+        box-shadow: 0 0 10px rgba(147, 197, 253, 0.95), 0 0 18px rgba(37, 99, 235, 0.65);
         transform-origin: 0 0;
         animation-name: bh-suck;
         animation-timing-function: linear;
         animation-iteration-count: infinite;
       }
+      .bh-particle--sm {
+        width: 4px;
+        height: 4px;
+        margin: -2px;
+        box-shadow: 0 0 6px rgba(147, 197, 253, 0.85), 0 0 12px rgba(37, 99, 235, 0.5);
+      }
+      .bh-particle--lg {
+        width: 9px;
+        height: 9px;
+        margin: -4.5px;
+        box-shadow: 0 0 14px rgba(219, 234, 254, 1), 0 0 26px rgba(59, 130, 246, 0.8);
+      }
       @keyframes bh-suck {
         0% { transform: rotate(var(--a)) translateX(var(--r)) scale(1); opacity: 0; }
-        15% { opacity: 1; }
-        100% { transform: rotate(calc(var(--a) + 90deg)) translateX(2px) scale(0.2); opacity: 0; }
+        8% { opacity: 1; }
+        100% { transform: rotate(calc(var(--a) + 240deg)) translateX(6px) scale(0.12); opacity: 0; }
       }
       @media (prefers-reduced-motion: reduce) {
         .bh-aura::before, .bh-particle, .bh-stage .sp-gradient-checkout-btn,
@@ -300,8 +343,13 @@
       @media (max-width: 768px) {
         .bh-stage {
           padding: 0;
+          width: auto;
+          max-width: none;
+          margin-left: 0;
+          transform: none;
         }
         .bh-aura,
+        .bh-glare,
         .bh-canvas,
         .bh-particles {
           display: none !important;
@@ -381,7 +429,8 @@
         animation: bh-shake 0.22s ease-in-out infinite;
         box-shadow:
           0 4px 15px rgba(0, 0, 0, 0.2),
-          0 0 calc(var(--bh, 0) * 56px) calc(var(--bh, 0) * 12px) rgba(37, 99, 235, calc(var(--bh, 0) * 0.85));
+          0 0 calc(var(--bh, 0) * 80px) calc(var(--bh, 0) * 18px) rgba(59, 130, 246, calc(var(--bh, 0) * 0.98)),
+          0 0 calc(var(--bh, 0) * 130px) calc(var(--bh, 0) * 6px) rgba(191, 219, 254, calc(var(--bh, 0) * 0.5));
       }
       @keyframes bh-shake {
         0%   { transform: scale(calc(1 + var(--bh, 0) * 0.07)) translate(0, 0); }
@@ -724,7 +773,9 @@
 
           <div class="bh-stage" id="bh-stage">
             <div class="bh-aura" aria-hidden="true"></div>
+            <div class="bh-glare" aria-hidden="true"></div>
             <canvas class="bh-canvas" id="bh-canvas" aria-hidden="true"></canvas>
+            <div class="bh-particles" id="bh-particles" aria-hidden="true"></div>
             <a
               id="stagify-plus-checkout-link"
               class="sp-gradient-checkout-btn"
@@ -997,11 +1048,11 @@
           '  vec3 neb = mix(vec3(0.015,0.03,0.10), vec3(0.10,0.30,0.85), smoothstep(0.30,0.95,n));',
           '  neb += vec3(0.18,0.32,0.7)*pow(smoothstep(0.65,1.0,n), 2.0);',
           '  float stars = 0.0;',
-          '  for(int i=0;i<2;i++){',
-          '    float sc = 110.0 + float(i)*95.0;',
+          '  for(int i=0;i<4;i++){',
+          '    float sc = 88.0 + float(i)*78.0;',
           '    vec2 g = floor(p*sc);',
           '    float h = hash(g + float(i)*23.1);',
-          '    if(h > 0.972){ vec2 f=fract(p*sc)-0.5; float d=length(f); float tw=0.6+0.4*sin(u_time*3.0+h*40.0); stars += smoothstep(0.5,0.0,d*2.0)*((h-0.972)/0.028)*tw; }',
+          '    if(h > 0.958){ vec2 f=fract(p*sc)-0.5; float d=length(f); float tw=0.55+0.45*sin(u_time*3.2+h*40.0); stars += smoothstep(0.55,0.0,d*2.2)*((h-0.958)/0.042)*tw; }',
           '  }',
           '  return neb + stars*vec3(0.85,0.92,1.0);',
           '}',
@@ -1020,15 +1071,22 @@
           '  col *= smoothstep(rs*0.8, rs*2.6, r);',
           '  float horizon = smoothstep(rs, rs*1.05, r);',
           '  col *= horizon;',
-          '  float ring = exp(-pow((r-rs*1.12)/(rs*0.07), 2.0));',
-          '  col += ring*vec3(0.6,0.8,1.0)*2.4;',
-          '  float disk = exp(-pow((r-rs*2.1)/(rs*1.0), 2.0));',
-          '  float sw = 0.5+0.5*sin(ang*3.0 + u_time*1.8 - r*26.0);',
-          '  col += disk*sw*vec3(0.3,0.55,1.0)*1.2;',
+          '  float ring = exp(-pow((r-rs*1.12)/(rs*0.065), 2.0));',
+          '  col += ring*vec3(0.72,0.88,1.0)*3.4*amt;',
+          '  float ringHalo = exp(-pow((r-rs*1.28)/(rs*0.14), 2.0));',
+          '  col += ringHalo*vec3(0.4,0.65,1.0)*1.8*amt;',
+          '  float disk = exp(-pow((r-rs*2.1)/(rs*0.95), 2.0));',
+          '  float sw = 0.5+0.5*sin(ang*3.0 + u_time*2.1 - r*28.0);',
+          '  col += disk*sw*vec3(0.35,0.62,1.0)*1.75*amt;',
+          '  float flare = exp(-pow((r-rs*0.55)/(rs*0.38), 2.0));',
+          '  col += flare*vec3(0.55,0.78,1.0)*0.65*amt;',
           '  float coreA = 1.0-horizon;',
           '  float glowA = clamp(max(col.r,max(col.g,col.b)), 0.0, 1.0);',
-          '  float edge = smoothstep(0.95, 0.25, r);',
-          '  float alpha = max(coreA*0.96, glowA) * edge * smoothstep(0.0,0.1,amt);',
+          '  vec2 canvasUv = gl_FragCoord.xy / u_res;',
+          '  vec2 canvasEdge = abs(canvasUv - 0.5) * 2.0;',
+          '  float frameFade = 1.0 - smoothstep(0.5, 0.98, max(canvasEdge.x, canvasEdge.y));',
+          '  float radialFade = smoothstep(1.15, 0.28, r);',
+          '  float alpha = max(coreA*0.96, glowA) * min(frameFade, radialFade) * smoothstep(0.0,0.1,amt);',
           '  gl_FragColor = vec4(col, alpha);',
           '}'
         ].join('\n');
@@ -1094,6 +1152,24 @@
 
         var hasGL = initGL();
         if (!hasGL && canvas) canvas.style.display = 'none';
+
+        var particlesEl = document.getElementById('bh-particles');
+        if (particlesEl) {
+          var PARTICLE_COUNT = 32;
+          for (var pi = 0; pi < PARTICLE_COUNT; pi++) {
+            var particle = document.createElement('span');
+            var sizeClass = pi % 5 === 0 ? ' bh-particle--lg' : pi % 2 === 0 ? ' bh-particle--sm' : '';
+            particle.className = 'bh-particle' + sizeClass;
+            var angle = (360 / PARTICLE_COUNT) * pi + Math.random() * 28;
+            var radius = 48 + Math.random() * 135;
+            var dur = 1.6 + Math.random() * 2.4;
+            particle.style.setProperty('--a', angle + 'deg');
+            particle.style.setProperty('--r', radius + 'px');
+            particle.style.animationDuration = dur + 's';
+            particle.style.animationDelay = (-Math.random() * dur) + 's';
+            particlesEl.appendChild(particle);
+          }
+        }
 
         function tick() {
           cur += (target - cur) * 0.14;
