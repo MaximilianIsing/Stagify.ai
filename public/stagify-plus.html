@@ -34,8 +34,7 @@
     <style>
       /*
         Global styles.css sets main { flex: 1; overflow-y: auto }, so the page scrolls
-        inside <main> instead of the window — the scrollbar can look “floating” beside
-        narrow content. On this page, scroll the document on <body> instead.
+        inside <main> instead of the window. On this page, scroll the document on <body>.
       */
       body.page-stagify-plus main.sp-page {
         flex: 0 0 auto;
@@ -44,84 +43,242 @@
         width: 100%;
       }
       .sp-page {
-        max-width: min(1180px, 100%);
+        --sp-navy: #0f1f4b;
+        --sp-blue: #2563eb;
+        --sp-blue-dark: #1d4ed8;
+        --sp-ink: #0f172a;
+        --sp-muted: #51607a;
+        max-width: min(1060px, 100%);
         margin: 0 auto;
-        padding: 2rem clamp(1.25rem, 4vw, 2.5rem) 4.5rem;
+        /* Top padding clears the sticky site header (~89px) without excess whitespace */
+        padding: clamp(5.25rem, 7vw, 5.75rem) clamp(1.25rem, 4vw, 2rem) 4.5rem;
         box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: clamp(1.1rem, 2.5vw, 1.6rem);
       }
+
+      /* ---- Frosted glass primitive ---- */
+      .glass {
+        background: rgba(255, 255, 255, 0.62);
+        -webkit-backdrop-filter: blur(22px) saturate(170%);
+        backdrop-filter: blur(22px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        box-shadow: 0 18px 48px -18px rgba(15, 23, 42, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+      }
+
+      /* ---- Hero ---- */
       .sp-hero {
+        width: 100%;
+        max-width: 47rem;
         text-align: center;
-        margin-bottom: 2rem;
-      }
-      .sp-hero-logo {
-        width: clamp(88px, 22vw, 112px);
-        height: auto;
-        display: block;
-        margin: 0 auto 1rem;
       }
       .sp-hero h1 {
-        margin: 0 0 0.5rem;
-        font-size: clamp(1.75rem, 4vw, 2.125rem);
-        color: #1e3a8a;
+        margin: 0 0 0.45rem;
+        font-size: clamp(1.85rem, 4.6vw, 2.75rem);
+        color: var(--sp-navy);
         font-weight: 800;
-        letter-spacing: -0.03em;
-        line-height: 1.15;
+        letter-spacing: -0.035em;
+        line-height: 1.07;
+      }
+      .sp-hero h1 .sp-grad {
+        background: linear-gradient(100deg, #3b82f6, #1e3a8a 55%, #2563eb);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
       }
       .sp-hero p {
         margin: 0 auto;
-        max-width: min(40rem, 100%);
-        color: #475569;
-        font-size: 1.05rem;
-        line-height: 1.6;
+        max-width: 38rem;
+        color: var(--sp-muted);
+        font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+        line-height: 1.5;
       }
-      .sp-split {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: clamp(1.5rem, 3vw, 2.5rem);
-        align-items: start;
-        margin-top: 0.5rem;
+
+      /* ---- Section headings ---- */
+      .sp-h2 {
+        text-align: center;
+        margin: 0 0 1.4rem;
+        font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--sp-navy);
       }
-      @media (max-width: 900px) {
-        .sp-split {
-          grid-template-columns: 1fr;
-        }
+
+      /* ---- Pricing card ---- */
+      .sp-plan-wrap {
+        width: 100%;
+        max-width: 430px;
       }
       .sp-hint {
-        margin: 0 0 1rem;
-        font-size: 0.875rem;
+        margin: 0 0 0.55rem;
+        font-size: 0.82rem;
         line-height: 1.5;
-        color: #64748b;
-        padding: 0.65rem 0.85rem;
-        background: rgba(241, 245, 249, 0.9);
-        border-radius: 10px;
-        border: 1px solid rgba(226, 232, 240, 0.95);
+        color: #475569;
+        padding: 0.62rem 0.9rem;
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        text-align: center;
       }
-      .sp-checkout-aside {
-        position: sticky;
-        top: 88px;
-        width: min(340px, 100%);
-        max-width: 100%;
-        justify-self: start;
-        box-sizing: border-box;
+      .sp-plan {
+        position: relative;
+        border-radius: 24px;
+        padding: 1.9rem 1.6rem 1.55rem;
+        overflow: hidden;
+        text-align: center;
       }
-      @media (max-width: 900px) {
-        .sp-checkout-aside {
-          position: static;
-          width: min(360px, 100%);
-          justify-self: center;
-          margin-inline: auto;
-        }
+      .sp-plan::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #60a5fa, #2563eb, #1e3a8a);
       }
-      .sp-stripe {
-        border-radius: 14px;
-        padding: 1.15rem 1rem 1rem;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
-        box-sizing: border-box;
-        width: 100%;
+      .sp-plan-head {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.35rem;
       }
-      /* Same plasma gradient + glare as top nav (.nav-link), desktop; solid blue on small screens */
+      .sp-plan-head img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+      }
+      .sp-plan-name {
+        margin: 0.2rem 0 0;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--sp-ink);
+        letter-spacing: -0.02em;
+      }
+      .sp-plan-sub {
+        margin: 0;
+        font-size: 0.78rem;
+        color: var(--sp-muted);
+        font-weight: 600;
+      }
+      .sp-price-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 0.3rem;
+        margin: 1.05rem 0 0.1rem;
+      }
+      .sp-price-amt {
+        font-size: 2.9rem;
+        font-weight: 800;
+        color: var(--sp-ink);
+        letter-spacing: -0.045em;
+        line-height: 1;
+      }
+      .sp-price-per {
+        font-size: 0.95rem;
+        color: var(--sp-muted);
+        font-weight: 600;
+      }
+      .sp-trial-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.36rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.14);
+        color: #047857;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-top: 0.55rem;
+      }
+      .sp-trial-pill svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ---- Black-hole subscribe button ---- */
+      .bh-stage {
+        position: relative;
+        margin-top: 1.25rem;
+        padding: 30px 0;
+        display: flex;
+        justify-content: center;
+        isolation: isolate;
+      }
+      .bh-aura {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 480px;
+        height: 480px;
+        transform: translate(-50%, -50%) scale(calc(0.34 + var(--bh, 0) * 0.86));
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: -1;
+        opacity: calc(var(--bh, 0) * 0.92);
+        background: radial-gradient(circle at center,
+          rgba(4, 9, 30, 0.9) 0%,
+          rgba(30, 58, 138, 0.55) 19%,
+          rgba(37, 99, 235, 0.32) 34%,
+          rgba(96, 165, 250, 0.16) 50%,
+          transparent 70%);
+        filter: blur(3px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+      .bh-aura::before {
+        content: '';
+        position: absolute;
+        inset: 28%;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, transparent 0deg, rgba(96, 165, 250, 0.95) 70deg, rgba(37, 99, 235, 0.95) 150deg, transparent 220deg);
+        -webkit-mask: radial-gradient(circle, transparent 56%, #000 60%, #000 78%, transparent 82%);
+        mask: radial-gradient(circle, transparent 56%, #000 60%, #000 78%, transparent 82%);
+        animation: bh-spin 5s linear infinite;
+        mix-blend-mode: screen;
+      }
+      @keyframes bh-spin {
+        to { transform: rotate(360deg); }
+      }
+      .bh-particles {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+        z-index: -1;
+        opacity: var(--bh, 0);
+        transition: opacity 0.25s ease;
+      }
+      .bh-particle {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 6px;
+        height: 6px;
+        margin: -3px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #dbeafe, #2563eb);
+        box-shadow: 0 0 7px rgba(37, 99, 235, 0.9);
+        transform-origin: 0 0;
+        animation-name: bh-suck;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+      }
+      @keyframes bh-suck {
+        0% { transform: rotate(var(--a)) translateX(var(--r)) scale(1); opacity: 0; }
+        15% { opacity: 1; }
+        100% { transform: rotate(calc(var(--a) + 90deg)) translateX(2px) scale(0.2); opacity: 0; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .bh-aura::before, .bh-particle, .bh-stage .sp-gradient-checkout-btn { animation: none; }
+      }
+
+      /* Plasma gradient + glare CTA (same family as the top-nav pill); solid blue on small screens */
       .sp-gradient-checkout-btn {
         display: block;
         text-align: center;
@@ -129,20 +286,19 @@
         color: #fff !important;
         font-size: 17px;
         font-weight: 700;
-        padding: 12px 16px;
+        padding: 13px 18px;
         border-radius: 20px;
-        margin-top: 1rem;
         position: relative;
         overflow: hidden;
         background-color: #2563eb;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        transition: all 0.18s ease;
+        transition: background-color 0.18s ease, box-shadow 0.25s ease, transform 0.15s ease;
+        min-width: 230px;
       }
       .sp-gradient-checkout-btn:hover {
         color: #fff !important;
         text-decoration: none;
         background-color: #1d4ed8;
-        transform: translateY(-1px);
       }
       .sp-gradient-checkout-btn::before {
         content: '';
@@ -162,7 +318,7 @@
       }
       .sp-gradient-checkout-btn strong {
         position: relative;
-        z-index: 1;
+        z-index: 2;
       }
       @media (min-width: 769px) {
         .sp-gradient-checkout-btn {
@@ -175,26 +331,54 @@
             #1e3a8a;
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        .sp-gradient-checkout-btn:hover {
-          background:
-            radial-gradient(circle at 30% 40%, #3b82f6 0%, transparent 60%),
-            radial-gradient(circle at 70% 30%, #1d4ed8 0%, transparent 60%),
-            radial-gradient(circle at 50% 70%, #2563eb 0%, transparent 60%),
-            radial-gradient(circle at 10% 90%, #1e40af 0%, transparent 60%),
-            radial-gradient(circle at 90% 10%, #60a5fa 0%, transparent 60%),
-            #1e3a8a;
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
+      }
+      /* Proximity glow + darkening "event horizon" core + gravitational shake.
+         Shake amplitude is driven by --bh (0 when the cursor is far, so the
+         animation runs but stays perfectly still). No magnetic translate. */
+      .bh-stage .sp-gradient-checkout-btn,
+      .bh-stage .sp-gradient-checkout-btn:hover {
+        position: relative;
+        z-index: 1;
+        animation: bh-shake 0.13s linear infinite;
+        box-shadow:
+          0 4px 15px rgba(0, 0, 0, 0.2),
+          0 0 calc(var(--bh, 0) * 56px) calc(var(--bh, 0) * 12px) rgba(37, 99, 235, calc(var(--bh, 0) * 0.85));
+      }
+      @keyframes bh-shake {
+        0%   { transform: translate(0, 0) rotate(0deg); }
+        10%  { transform: translate(calc(var(--bh, 0) * -4px), calc(var(--bh, 0) * 2px)) rotate(calc(var(--bh, 0) * -0.7deg)); }
+        20%  { transform: translate(calc(var(--bh, 0) * 3.5px), calc(var(--bh, 0) * -2.5px)) rotate(calc(var(--bh, 0) * 0.7deg)); }
+        30%  { transform: translate(calc(var(--bh, 0) * -3px), calc(var(--bh, 0) * -1.5px)) rotate(calc(var(--bh, 0) * -0.6deg)); }
+        40%  { transform: translate(calc(var(--bh, 0) * 3px), calc(var(--bh, 0) * 2.5px)) rotate(calc(var(--bh, 0) * 0.6deg)); }
+        50%  { transform: translate(calc(var(--bh, 0) * -4px), calc(var(--bh, 0) * 1px)) rotate(calc(var(--bh, 0) * -0.7deg)); }
+        60%  { transform: translate(calc(var(--bh, 0) * 4px), calc(var(--bh, 0) * -2px)) rotate(calc(var(--bh, 0) * 0.7deg)); }
+        70%  { transform: translate(calc(var(--bh, 0) * -2.5px), calc(var(--bh, 0) * 2.5px)) rotate(calc(var(--bh, 0) * -0.5deg)); }
+        80%  { transform: translate(calc(var(--bh, 0) * 3px), calc(var(--bh, 0) * -1px)) rotate(calc(var(--bh, 0) * 0.6deg)); }
+        90%  { transform: translate(calc(var(--bh, 0) * -3px), calc(var(--bh, 0) * -2.5px)) rotate(calc(var(--bh, 0) * -0.6deg)); }
+        100% { transform: translate(0, 0) rotate(0deg); }
+      }
+      .bh-stage .sp-gradient-checkout-btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: radial-gradient(circle at center, rgba(2, 2, 10, 0.62), rgba(2, 2, 10, 0) 68%);
+        opacity: var(--bh, 0);
+        transition: opacity 0.2s ease;
+        z-index: 0;
       }
       .sp-gradient-checkout-btn--subscribed,
       .sp-gradient-checkout-btn--subscribed:hover {
         transform: none !important;
+        animation: none !important;
         cursor: not-allowed;
         pointer-events: none;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
         opacity: 0.95;
       }
-      .sp-gradient-checkout-btn--subscribed::before {
+      .sp-gradient-checkout-btn--subscribed::before,
+      .sp-gradient-checkout-btn--subscribed::after {
         display: none !important;
       }
       @media (min-width: 769px) {
@@ -209,44 +393,35 @@
             #1e3a8a !important;
         }
       }
-      .sp-stripe-offer {
-        text-align: center;
-      }
-      .sp-stripe-logo {
-        width: 56px;
-        height: 56px;
-        object-fit: contain;
-        display: block;
-        margin: 0 auto 0.35rem;
-      }
-      .sp-stripe-title {
-        margin: 0;
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: #0f172a;
-        letter-spacing: -0.02em;
-      }
-      .sp-stripe-trial {
-        margin: 0.4rem 0 0;
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: #0f172a;
-        line-height: 1.2;
-      }
-      .sp-stripe-price {
-        margin: 0.35rem 0 0;
-        font-size: 0.875rem;
-        color: #64748b;
-      }
+
       .sp-stripe-pay-note {
-        margin: 0.75rem 0 0;
+        margin: 0.8rem 0 0;
         font-size: 0.72rem;
         line-height: 1.4;
         color: #94a3b8;
         text-align: center;
       }
+      .sp-badges {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.35rem 0.9rem;
+        margin: 1.1rem 0 0;
+        font-size: 0.72rem;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+      .sp-badges span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.32rem;
+      }
+      .sp-badges svg {
+        width: 13px;
+        height: 13px;
+      }
       .sp-manage-sub {
-        margin: 0.65rem 0 0;
+        margin: 0.75rem 0 0;
         text-align: center;
       }
       .sp-manage-sub__btn {
@@ -268,73 +443,70 @@
         opacity: 0.6;
         cursor: wait;
       }
-      .sp-aside-note {
-        margin: 1rem 0 0;
-        font-size: 0.8125rem;
+
+      /* ---- Feature grid ---- */
+      .sp-features-section {
+        width: 100%;
+        max-width: 1000px;
+      }
+      .sp-feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+      @media (max-width: 840px) {
+        .sp-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 520px) {
+        .sp-feature-grid { grid-template-columns: 1fr; }
+      }
+      .sp-feature {
+        padding: 1.3rem 1.25rem;
+        border-radius: 17px;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      }
+      .sp-feature:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 40px -18px rgba(30, 58, 138, 0.4);
+        border-color: rgba(37, 99, 235, 0.4);
+      }
+      .sp-feature-ico {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+        color: #fff;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 6px 16px -6px rgba(37, 99, 235, 0.6);
+      }
+      .sp-feature-ico svg {
+        width: 21px;
+        height: 21px;
+      }
+      .sp-feature h3 {
+        margin: 0 0 0.3rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--sp-ink);
+        letter-spacing: -0.01em;
+      }
+      .sp-feature p {
+        margin: 0;
+        font-size: 0.84rem;
         line-height: 1.5;
-        color: #64748b;
+        color: var(--sp-muted);
       }
-      .sp-aside-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1.25rem;
-        margin: 1rem 0 0;
-        padding: 0;
-        list-style: none;
-        font-size: 0.8125rem;
-      }
-      .sp-aside-links a {
-        color: #2563eb;
-        text-decoration: none;
-        font-weight: 500;
-      }
-      .sp-aside-links a:hover {
-        text-decoration: underline;
-      }
-      .sp-footnote {
-        margin: 1.25rem 0 0;
-        padding-top: 1rem;
-        border-top: 1px solid #e2e8f0;
-        font-size: 0.8125rem;
-        line-height: 1.5;
-        color: #64748b;
-      }
-      .sp-footnote a {
-        color: #2563eb;
-        font-weight: 500;
-        text-decoration: none;
-      }
-      .sp-footnote a:hover {
-        text-decoration: underline;
-      }
-      .sp-enterprise-row {
-        margin-top: 2.5rem;
-        padding: 1.5rem 1.75rem;
-        text-align: center;
-        background: rgba(241, 245, 249, 0.85);
-        border: 1px solid rgba(226, 232, 240, 0.95);
-        border-radius: 14px;
-        font-size: 0.95rem;
-        color: #475569;
-        line-height: 1.6;
-      }
-      .sp-enterprise-row a {
-        color: #2563eb;
-        font-weight: 600;
-        text-decoration: none;
-      }
-      .sp-enterprise-row a:hover {
-        text-decoration: underline;
-      }
+
+      /* ---- Comparison table ---- */
       .sp-compare {
-        min-width: 0;
+        width: 100%;
+        max-width: 720px;
       }
       .sp-compare-table-wrap {
-        border-radius: 16px;
+        border-radius: 18px;
         overflow: hidden;
-        background: rgba(255, 255, 255, 0.94);
-        border: 1px solid rgba(37, 99, 235, 0.22);
-        box-shadow: 0 8px 28px -8px rgba(30, 58, 138, 0.12);
       }
       .sp-compare-scroll {
         overflow-x: auto;
@@ -342,31 +514,22 @@
       }
       .sp-feature-table {
         width: 100%;
-        min-width: 280px;
+        min-width: 300px;
         border-collapse: collapse;
-        font-size: 0.875rem;
+        font-size: 0.9rem;
         line-height: 1.45;
       }
-      .sp-feature-table caption {
-        padding: 1rem 1.25rem 0.65rem;
-        text-align: left;
-        font-weight: 700;
-        font-size: 1rem;
-        color: #1e3a8a;
-        letter-spacing: -0.02em;
-      }
       .sp-feature-table thead th {
-        background: rgba(241, 245, 249, 0.98);
-        padding: 0.7rem 0.75rem;
+        background: rgba(241, 245, 249, 0.55);
+        padding: 0.85rem 0.75rem;
         font-weight: 700;
-        color: #1e3a8a;
-        border-bottom: 1px solid #e2e8f0;
+        color: var(--sp-navy);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.1);
         vertical-align: middle;
       }
       .sp-feature-table thead th:first-child {
         text-align: left;
-        padding-left: 1.15rem;
-        width: auto;
+        padding-left: 1.25rem;
       }
       .sp-feature-table thead th:not(:first-child) {
         text-align: center;
@@ -379,23 +542,23 @@
         gap: 0.4rem;
       }
       .sp-th-plan img {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         object-fit: contain;
         display: block;
       }
       .sp-feature-table tbody th {
         font-weight: 500;
         text-align: left;
-        padding: 0.7rem 0.85rem 0.7rem 1.15rem;
+        padding: 0.78rem 0.85rem 0.78rem 1.25rem;
         color: #334155;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
         vertical-align: middle;
       }
       .sp-feature-table td {
         text-align: center;
-        padding: 0.65rem 0.5rem;
-        border-bottom: 1px solid #f1f5f9;
+        padding: 0.7rem 0.5rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
         vertical-align: middle;
       }
       .sp-mark {
@@ -414,22 +577,61 @@
       .sp-feature-table tbody tr:last-child td {
         border-bottom: none;
       }
-      .sp-table-foot {
-        padding: 0.75rem 1.15rem 1rem;
-        font-size: 0.8125rem;
-        line-height: 1.45;
-        color: #64748b;
-        background: rgba(248, 250, 252, 0.9);
-        border-top: 1px solid #e2e8f0;
+
+      /* ---- Enterprise + footer links ---- */
+      .sp-enterprise-row {
+        width: 100%;
+        max-width: 820px;
+        padding: 1.4rem 1.75rem;
+        text-align: center;
+        border-radius: 16px;
+        font-size: 0.95rem;
+        color: #475569;
+        line-height: 1.6;
       }
-      @media (min-width: 901px) {
-        .sp-feature-table {
-          font-size: 0.9375rem;
-        }
-        .sp-feature-table tbody th {
-          padding-top: 0.85rem;
-          padding-bottom: 0.85rem;
-        }
+      .sp-enterprise-row a {
+        color: var(--sp-blue);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .sp-enterprise-row a:hover {
+        text-decoration: underline;
+      }
+      .sp-foot-links {
+        width: 100%;
+        max-width: 720px;
+        text-align: center;
+      }
+      .sp-aside-links {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+        margin: 0 0 0.6rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.85rem;
+      }
+      .sp-aside-links a {
+        color: var(--sp-blue);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .sp-aside-links a:hover {
+        text-decoration: underline;
+      }
+      .sp-footnote {
+        margin: 0;
+        font-size: 0.83rem;
+        color: #64748b;
+      }
+      .sp-footnote a {
+        color: var(--sp-blue);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .sp-footnote a:hover {
+        text-decoration: underline;
       }
     </style>
   </head>
@@ -465,119 +667,172 @@
 
     <main class="sp-page">
       <header class="sp-hero">
-        <img src="media-webp/logo/Pro180x180.webp" alt="Stagify+ premium virtual staging plan" class="sp-hero-logo" width="112" height="112">
-        <h1>Stagify+</h1>
+        <h1>Everything in Stagify, <span class="sp-grad">unlocked</span>.</h1>
+        <p>Unlimited high-quality staging, the AI Designer, furniture removal, and every professional tool. All for less than the cost of one traditional staging.</p>
       </header>
 
-      <div class="sp-split">
-        <section class="sp-compare" aria-label="Free vs Stagify+ comparison">
-          <div class="sp-compare-table-wrap">
-            <div class="sp-compare-scroll">
-              <table class="sp-feature-table">
-                <caption>Plan comparison</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Feature</th>
-                    <th scope="col">
-                      <span class="sp-th-plan">
-                        <img src="media-webp/logo/Logo32x32.webp" width="24" height="24" alt="" aria-hidden="true">
-                        Free
-                      </span>
-                    </th>
-                    <th scope="col">
-                      <span class="sp-th-plan">
-                        <img src="media-webp/logo/Pro32x32.webp" width="24" height="24" alt="" aria-hidden="true">
-                        Stagify+
-                      </span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">Customizable staging</th>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Fast image model</th>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Unlimited staging generations</th>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">High quality image model</th>
-                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Remove existing furniture</th>
-                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">AI Designer</th>
-                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Masking tool</th>
-                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Multiple variations per generation</th>
-                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Furniture references</th>
-                    <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
-                    <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+      <section class="sp-plan-wrap" aria-label="Subscribe to Stagify+">
+        <p class="sp-hint" id="plus-checkout-hint" aria-live="polite">Sign in from the profile menu first so checkout can link your payment to your Stagify account.</p>
+        <div class="sp-plan glass">
+          <!-- Trial/price copy: keep in sync with your Stripe Payment Link -->
+          <div class="sp-plan-head">
+            <img src="media-webp/logo/Pro64x64.webp" width="48" height="48" alt="" aria-hidden="true">
+            <p class="sp-plan-name">Stagify+</p>
+            <p class="sp-plan-sub">Billed monthly · Cancel anytime</p>
           </div>
-        </section>
+          <div class="sp-price-row">
+            <span class="sp-price-amt">$11.99</span>
+            <span class="sp-price-per">/ month</span>
+          </div>
+          <span class="sp-trial-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Start with 7 days free
+          </span>
 
-        <aside class="sp-checkout-aside" aria-label="Subscribe with Stripe">
-          <p class="sp-hint" id="plus-checkout-hint" aria-live="polite">Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.</p>
-          <div class="sp-stripe">
-            <!-- Trial/price copy: keep in sync with your Stripe Payment Link -->
-            <div class="sp-stripe-offer">
-              <img class="sp-stripe-logo" src="media-webp/logo/Pro64x64.webp" width="56" height="56" alt="" aria-hidden="true">
-              <p class="sp-stripe-title">Stagify+</p>
-              <p class="sp-stripe-trial">7 days free</p>
-              <p class="sp-stripe-price">Then $11.99 per month</p>
-            </div>
+          <div class="bh-stage" id="bh-stage">
+            <div class="bh-aura" aria-hidden="true"></div>
             <a
               id="stagify-plus-checkout-link"
               class="sp-gradient-checkout-btn"
               href="https://buy.stripe.com/9B6cN5bC24w8aTG1Jf7EQ03"
               rel="noopener noreferrer"
               target="_blank"
-            ><strong>Start trial</strong></a>
-            <p class="sp-stripe-pay-note">Secure checkout with Stripe · Major cards and more</p>
-            <p class="sp-manage-sub hidden" id="sp-manage-subscription-wrap">
-              <button type="button" class="sp-manage-sub__btn" id="sp-manage-subscription-btn">
-                Manage or cancel subscription
-              </button>
-            </p>
+            ><strong>Start free trial</strong></a>
           </div>
-          <ul class="sp-aside-links">
-            <li><a href="index.html">Back to free staging</a></li>
-            <li><a href="index.html#faq">Questions before you buy?</a></li>
-          </ul>
-          <p class="sp-footnote">Teams, invoicing, or custom terms: <a href="mailto:team@stagify.ai">team@stagify.ai</a></p>
-        </aside>
+          <p class="sp-stripe-pay-note">You won't be charged until your trial ends. Cancel anytime.</p>
+
+          <div class="sp-badges">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Secured by Stripe</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>No commitment</span>
+          </div>
+          <p class="sp-manage-sub hidden" id="sp-manage-subscription-wrap">
+            <button type="button" class="sp-manage-sub__btn" id="sp-manage-subscription-btn">
+              Manage or cancel subscription
+            </button>
+          </p>
+        </div>
+      </section>
+
+      <section class="sp-features-section" aria-label="What's included with Stagify+">
+        <h2 class="sp-h2">Everything you need to stage like a pro</h2>
+        <div class="sp-feature-grid">
+          <div class="sp-feature glass">
+            <span class="sp-feature-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3 6 9l6 12 6-12-3-6"/></svg></span>
+            <h3>High-quality model</h3>
+            <p>Our most advanced model renders sharper, more realistic furniture, materials, and lighting.</p>
+          </div>
+          <div class="sp-feature glass">
+            <span class="sp-feature-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21 19 9l-4-4L3 17v4z"/><path d="M14 6l4 4"/><path d="M19 2.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg></span>
+            <h3>Remove existing furniture</h3>
+            <p>Erase furniture, clutter, and decor, then restage the emptied room from a clean slate.</p>
+          </div>
+          <div class="sp-feature glass">
+            <span class="sp-feature-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="m16.5 3.5 4 4L12 16l-4 1 1-4z"/></svg></span>
+            <h3>AI Designer</h3>
+            <p>Describe what you want in plain language and refine each result conversationally.</p>
+          </div>
+          <div class="sp-feature glass">
+            <span class="sp-feature-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 4 16a2 2 0 1 0 2.8 2.8L12 13.7"/><path d="m14 2 8 8-6 2-4-4z"/></svg></span>
+            <h3>Masking tool</h3>
+            <p>Paint over any area to change or restyle just that part of the photo.</p>
+          </div>
+          <div class="sp-feature glass">
+            <span class="sp-feature-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg></span>
+            <h3>Multiple variations</h3>
+            <p>Generate several staged options at once and pick the best look for each room.</p>
+          </div>
+          <div class="sp-feature glass">
+            <span class="sp-feature-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M3 13a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4H3z"/><path d="M5 17v2M19 17v2"/></svg></span>
+            <h3>Furniture references</h3>
+            <p>Upload product photos to stage rooms with specific furniture pieces you choose.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="sp-compare" aria-label="Free vs Stagify+ comparison">
+        <h2 class="sp-h2">Compare plans</h2>
+        <div class="sp-compare-table-wrap glass">
+          <div class="sp-compare-scroll">
+            <table class="sp-feature-table">
+              <thead>
+                <tr>
+                  <th scope="col">Feature</th>
+                  <th scope="col">
+                    <span class="sp-th-plan">
+                      <img src="media-webp/logo/Logo32x32.webp" width="22" height="22" alt="" aria-hidden="true">
+                      Free
+                    </span>
+                  </th>
+                  <th scope="col">
+                    <span class="sp-th-plan">
+                      <img src="media-webp/logo/Pro32x32.webp" width="22" height="22" alt="" aria-hidden="true">
+                      Stagify+
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Customizable staging</th>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Fast image model</th>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Unlimited staging generations</th>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">High quality image model</th>
+                  <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Remove existing furniture</th>
+                  <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">AI Designer</th>
+                  <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Masking tool</th>
+                  <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Multiple variations per generation</th>
+                  <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Furniture references</th>
+                  <td><span class="sp-mark sp-mark--no" aria-label="Not included">✗</span></td>
+                  <td><span class="sp-mark sp-mark--yes" aria-label="Included">✓</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <div class="sp-enterprise-row glass">
+        For teams or enterprises, <a href="enterprise.html">explore our enterprise plan</a> or contact <a href="mailto:team@stagify.ai">team@stagify.ai</a> for personalized subscription options.
       </div>
 
-      <div class="sp-enterprise-row">
-        For teams or enterprises, <a href="enterprise.html">explore our enterprise plan</a> or contact <a href="mailto:team@stagify.ai">team@stagify.ai</a> for personalized subscription options.
+      <div class="sp-foot-links">
+        <ul class="sp-aside-links">
+          <li><a href="index.html">Back to free staging</a></li>
+          <li><a href="index.html#faq">Questions before you buy?</a></li>
+        </ul>
+        <p class="sp-footnote">Teams, invoicing, or custom terms: <a href="mailto:team@stagify.ai">team@stagify.ai</a></p>
       </div>
     </main>
     <script src="scripts/language-loader.js" defer></script>
@@ -622,7 +877,7 @@
           link.classList.remove('sp-gradient-checkout-btn--subscribed');
           link.setAttribute('rel', 'noopener noreferrer');
           link.setAttribute('target', '_blank');
-          link.innerHTML = '<strong>Start trial</strong>';
+          link.innerHTML = '<strong>Start free trial</strong>';
 
           var url = PAYMENT_LINK;
           if (user && user.id) {
@@ -664,6 +919,68 @@
             applyStripeCheckout(window.StagifyAuth.user);
           });
         });
+      })();
+    </script>
+    <script>
+      // Black-hole subscribe button: as the cursor approaches, a dark vortex grows
+      // behind the button, particles get pulled in, and the button drifts toward
+      // the cursor (magnetic). Disabled on touch, reduced-motion, and once subscribed.
+      (function () {
+        var stage = document.getElementById('bh-stage');
+        var btn = document.getElementById('stagify-plus-checkout-link');
+        if (!stage || !btn) return;
+        var canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!canHover || reduce) return;
+
+        var field = document.createElement('div');
+        field.className = 'bh-particles';
+        field.setAttribute('aria-hidden', 'true');
+        for (var i = 0; i < 16; i++) {
+          var p = document.createElement('span');
+          p.className = 'bh-particle';
+          p.style.setProperty('--a', (Math.random() * 360).toFixed(1) + 'deg');
+          p.style.setProperty('--r', (62 + Math.random() * 90).toFixed(0) + 'px');
+          p.style.animationDuration = (2.4 + Math.random() * 2.6).toFixed(2) + 's';
+          p.style.animationDelay = (-Math.random() * 4).toFixed(2) + 's';
+          field.appendChild(p);
+        }
+        stage.insertBefore(field, stage.firstChild);
+
+        var MAX = 260; // px from button center where the pull begins
+        var raf = null;
+        var pending = null;
+        function reset() {
+          stage.style.setProperty('--bh', '0');
+          btn.style.setProperty('--tx', '0px');
+          btn.style.setProperty('--ty', '0px');
+        }
+        function frame() {
+          raf = null;
+          var ev = pending;
+          if (!ev) return;
+          if (btn.classList.contains('sp-gradient-checkout-btn--subscribed')) {
+            reset();
+            return;
+          }
+          var r = btn.getBoundingClientRect();
+          var cx = r.left + r.width / 2;
+          var cy = r.top + r.height / 2;
+          var dx = ev.clientX - cx;
+          var dy = ev.clientY - cy;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          var pr = Math.max(0, 1 - dist / MAX);
+          var eased = pr * pr; // ramp up sharply near the button
+          stage.style.setProperty('--bh', eased.toFixed(3));
+          var pull = eased * 0.32;
+          btn.style.setProperty('--tx', (dx * pull).toFixed(1) + 'px');
+          btn.style.setProperty('--ty', (dy * pull).toFixed(1) + 'px');
+        }
+        window.addEventListener('mousemove', function (e) {
+          pending = e;
+          if (!raf) raf = requestAnimationFrame(frame);
+        }, { passive: true });
+        document.addEventListener('mouseleave', reset);
       })();
     </script>
 
