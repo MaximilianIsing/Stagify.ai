@@ -770,6 +770,16 @@
 /* ==========================================================================
    Sponsors / "Officially recognized by" — quiet trust strip
    ========================================================================== */
+/* The hero's left column (CTA, the "Try Stagify+ today — Upgrade" line, and the
+   stat pills) overflows the hero's own box, while .sponsors below is positioned
+   (z-index:1) and pushed up by margin-top into that overflow zone. Because the
+   sponsors strip is transparent there, it invisibly intercepted clicks on the
+   upgrade link and CTA. Lift the hero into its own stacking context so its
+   interactive content always sits above the sponsors strip. */
+.hero {
+  position: relative;
+  z-index: 2;
+}
 .sponsors {
   margin-top: 200px; /* clears the hero carousel overflow */
   padding: 24px 0;
@@ -1398,51 +1408,6 @@
   scroll-margin-top: 96px;
 }
 
-.guides-ambient {
-  pointer-events: none;
-  position: absolute;
-  inset: -80px 0 auto;
-  height: 420px;
-  z-index: 0;
-  overflow: hidden;
-}
-.guides-ambient__orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(48px);
-  opacity: 0.45;
-  animation: guidesOrbFloat 14s ease-in-out infinite;
-}
-.guides-ambient__orb--1 {
-  width: 280px;
-  height: 280px;
-  top: -40px;
-  left: -60px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.35) 0%, transparent 70%);
-}
-.guides-ambient__orb--2 {
-  width: 220px;
-  height: 220px;
-  top: 20px;
-  right: -40px;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.28) 0%, transparent 70%);
-  animation-delay: -4s;
-}
-.guides-ambient__orb--3 {
-  width: 180px;
-  height: 180px;
-  top: 120px;
-  left: 42%;
-  background: radial-gradient(circle, rgba(5, 150, 105, 0.22) 0%, transparent 70%);
-  animation-delay: -8s;
-}
-@keyframes guidesOrbFloat {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(18px, -12px) scale(1.06); }
-  66% { transform: translate(-14px, 10px) scale(0.96); }
-}
-
-
 .guides-hero-title {
   background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #1e40af 100%);
   -webkit-background-clip: text;
@@ -1896,9 +1861,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .guides-ambient__orb {
-    animation: none;
-  }
   .guide-demo-panel.is-entering {
     animation: none;
   }
