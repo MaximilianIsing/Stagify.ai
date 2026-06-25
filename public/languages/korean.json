@@ -1,0 +1,793 @@
+{
+  "meta": {
+    "title": "Stagify.ai - 클릭 한 번으로 무료 가상 스테이징",
+    "description": "AI 스테이징으로 빈 방을 바꿔보세요. 사진을 업로드하면 몇 초 만에 전문적으로 스테이징된 결과를 얻을 수 있습니다. 부동산 중개인, 판매자, 구매자를 위한 무료 AI 홈 스테이징.",
+    "keywords": "AI 스테이징, 홈 스테이징, 부동산 스테이징, 가상 스테이징, AI 홈 스테이징, 매물 스테이징, 부동산 사진, 스테이징 도구, 가상 가구"
+  },
+  "navigation": {
+    "home": "홈",
+    "about": "소개",
+    "pdfTo3d": "AI 디자이너",
+    "whyUs": "왜 저희일까요?",
+    "faq": "자주 묻는 질문",
+    "contactUs": "문의하기",
+    "brand": "Stagify",
+    "brandSuffix": ".ai",
+    "techHelp": "기술 지원",
+    "guides": "가이드",
+    "logoAlt": "Stagify.ai 로고 — 홈페이지로 이동"
+  },
+  "hero": {
+    "catchphrase": "업로드. 스테이징. 상상.",
+    "announcement": "당신이 꿈꾸던 공간을 현실로",
+    "title": {
+      "free": "무료",
+      "virtual": "가상",
+      "staging": "스테이징",
+      "with": "—",
+      "one": "한 번의",
+      "click": "클릭",
+      "upload": "업로드.",
+      "stage": "스테이징.",
+      "imagine": "상상."
+    },
+    "cta": "무료로 이미지 업로드",
+    "freeGensLeft": "오늘 무료 생성 {n}회 남음, ",
+    "freeGensLeftUpgrade": "업그레이드",
+    "freeGensUpgrade": "오늘 Stagify+를 사용해 보세요. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">업그레이드</a>",
+    "carouselNote": "예시 미리보기. 스테이징하려면 사진을 업로드하세요",
+    "stats": {
+      "roomsStaged": "스테이징된 방",
+      "usersServed": "이용한 사용자",
+      "andCounting": "계속 늘어나는 중..."
+    }
+  },
+  "sponsors": {
+    "title": "공식 인정 기관:"
+  },
+  "home": {
+    "studio": {
+      "eyebrow": "비포 & 애프터",
+      "title": "스테이징의 효과를 드래그로 확인하세요",
+      "subtitle": "같은 매물 사진의 Stagify 적용 전후. 이삿짐도, 대여도, 기다림도 없습니다.",
+      "beforeLabel": "비포",
+      "afterLabel": "애프터",
+      "kicker": "어떻게 보이는지",
+      "panelTitle": "같은 방, 몇 초 만에 스테이징",
+      "panelBody": "핸들을 드래그하세요. 왼쪽은 원본 사진이고, 오른쪽은 모두 Stagify가 몇 초 만에 스테이징한 모습입니다.",
+      "points": {
+        "speed": "사진당 약 8초",
+        "restage": "원하는 스타일로, 원하는 만큼 다시 스테이징",
+        "rights": "모든 이미지는 완전한 저작권과 함께 당신의 것"
+      },
+      "examples": {
+        "bedroom": "침실",
+        "living": "거실",
+        "dining": "식당"
+      },
+      "comparisonAria": "스테이징 전후 비교",
+      "revealSliderAria": "공개 슬라이더",
+      "exampleRoomsAria": "예시 방"
+    },
+    "designer": {
+      "title": "AI가 당신의 공간을 스테이징하도록 하세요",
+      "subtitle": "AI 디자이너와 대화하며 어떤 방이든 매물 준비가 될 때까지 스테이징하고, 다시 디자인하고, 반복해 보세요. <em>(Stagify+ 전용)</em>"
+    },
+    "info": {
+      "eyebrow": "요약하자면",
+      "title": "가상 스테이징이란 무엇이며, 왜 잘 팔리는가",
+      "subtitle": "어떻게 작동하고 누구를 위한 것인지 빠르고 솔직하게 정리했습니다. 어려운 용어는 없습니다.",
+      "rows": {
+        "why": {
+          "eyebrow": "효과가 있는 이유",
+          "caption": "뉴욕의 한 Compass 사무실에서 Stagify를 시연하는 모습",
+          "title": "구매자는 먼저 눈으로 쇼핑합니다",
+          "body": "거의 모든 구매자가 온라인에서 시작하므로, 매물 사진이 사실상의 첫 방문입니다. 비어 있거나 낡은 방은 파악하기 어렵고, 사람들은 규모를 가늠하거나 그곳에 사는 모습을 그리기 어렵습니다. 스테이징은 각 방에 분명한 용도와 매력을 부여하며, 그래서 중개인들이 늘 이를 활용해 왔습니다.",
+          "p1": "빈 방은 실제보다 더 작고 차갑게 찍힙니다",
+          "p2": "스테이징은 각 공간의 의도된 용도를 보여줍니다",
+          "p3": "더 좋은 사진은 더 많은 클릭, 저장, 방문을 끌어냅니다"
+        },
+        "how": {
+          "eyebrow": "작동 방식",
+          "caption": "중개인들에게 첫 스테이징 매물을 안내하는 모습",
+          "title": "빈 사진에서 매물 준비 완료까지 약 8초",
+          "body": "사진을 업로드하고, 방 유형과 7가지 스타일 중 하나를 고르면 Stagify가 약 8초 만에 가구를 배치합니다. 변경이 필요하신가요? 기존 가구를 제거하거나, 맞춤 프롬프트를 추가하거나, 한 영역만 마스킹해 처음부터 다시 하지 않고 조정할 수 있습니다.",
+          "p1": "7가지 스타일과 맞춤 프롬프트, 가구 제거 기능",
+          "p2": "결과물의 어떤 부분이든 다시 만들지 않고 마스크 편집",
+          "p3": "완전한 저작권, MLS나 광고에 자유롭게 사용"
+        },
+        "who": {
+          "eyebrow": "누구를 위한 것인가",
+          "caption": "중개인의 사진을 일대일로 함께 스테이징하는 모습",
+          "title": "중개인, 판매자, 구매자를 위해 만들어졌습니다",
+          "body": "중개인은 스테이징 팀을 기다리는 대신 몇 분 만에 모든 매물을 마케팅합니다. 판매자는 누구도 고용하지 않고 직접 사진을 스테이징합니다. 구매자는 결정하기 전에 리모델링을 미리 봅니다. 그리고 AI 디자이너로 CAD 평면도 PDF를 사실적인 3D 방 렌더링으로 바꿀 수 있습니다.",
+          "p1": "중개인: 더 빨리 등록하고 더 많이 성사",
+          "p2": "판매자 & 구매자: 소프트웨어도, 디자이너도 필요 없음",
+          "p3": "AI 디자이너: 에이전트 방식의 방 스테이징"
+        },
+        "team": {
+          "eyebrow": "팀을 위해 설계",
+          "caption": "한 중개 법인 팀에게 Stagify를 교육하는 모습",
+          "title": "사무실 전체가 쓸 수 있을 만큼 쉽습니다",
+          "body": "설치할 소프트웨어도, 배울 것도 없습니다. 팀의 누구나 브라우저에서 Stagify를 열어 매물 사진을 업로드하면, 사무실의 노트북이든 현장의 휴대폰이든 몇 초 만에 스테이징됩니다.",
+          "p1": "디자인 기술이나 소프트웨어 불필요",
+          "p2": "모든 브라우저, 모든 기기에서 작동",
+          "p3": "모든 중개인이 자신의 매물을 직접 스테이징"
+        }
+      }
+    },
+    "compare": {
+      "eyebrow": "가상 vs. 전통 방식",
+      "title": "전통적인 스테이징과 비교하면",
+      "subtitle": "전통적인 스테이징도 효과는 있습니다. 단지 느리고 비쌀 뿐입니다.",
+      "colTraditional": "전통적인 스테이징",
+      "colStagify": "Stagify.ai",
+      "rows": {
+        "cost": {
+          "aspect": "비용",
+          "trad": "집 한 채당 $2,000~$5,000 이상, 판매될 때까지 매월 청구되는 경우가 많음",
+          "stag": "무료로 시작, 비용 없이 스테이징"
+        },
+        "time": {
+          "aspect": "소요 시간",
+          "trad": "일정 잡고 납품, 설치까지 1~3주",
+          "stag": "사진당 약 8초"
+        },
+        "styles": {
+          "aspect": "스타일 옵션",
+          "trad": "한 가지 연출, 설치되면 고정",
+          "stag": "7가지 스타일과 맞춤 프롬프트, 언제든 변경"
+        },
+        "changes": {
+          "aspect": "마음이 바뀌면",
+          "trad": "매번 새로운 대여비와 설치비",
+          "stag": "원하는 만큼 다시 스테이징"
+        },
+        "logistics": {
+          "aspect": "물류",
+          "trad": "이삿짐 인력, 대여, 매물 출입 필요",
+          "stag": "어디서든 사진만 업로드"
+        },
+        "rights": {
+          "aspect": "이미지",
+          "trad": "반납해야 하는 빌린 가구 사진",
+          "stag": "완전한 저작권과 함께 영구 소장"
+        }
+      },
+      "source": "전미부동산중개인협회(NAR)의 홈 스테이징 보고서에 따르면, 대부분의 구매자 측 중개인은 스테이징이 구매자가 매물을 미래의 집으로 그려보는 데 도움이 된다고 말합니다.",
+      "sourceCite": "출처: 전미부동산중개인협회, 홈 스테이징 보고서"
+    },
+    "nar": {
+      "title": "뒤처지지 마세요",
+      "subtitle": "부동산 업계는 AI를 빠르게 도입하고 있고, 고객들도 이에 반응하고 있습니다. 스테이징은 가장 시작하기 쉬운 분야 중 하나입니다.",
+      "usageLabel": "중개인의 AI 도구 사용 빈도",
+      "legend": {
+        "daily": "매일",
+        "weekly": "매주",
+        "monthly": "한 달에 몇 번",
+        "none": "아직 안 함"
+      },
+      "note": "의 중개인이 이미 업무에 AI를 사용합니다.",
+      "stat1": "의 중개인이 매매 과정에서 고객이 기술에 긍정적으로 반응했다고 말합니다",
+      "stat2": "가 이미 매물 콘텐츠 생성에 AI를 사용합니다",
+      "source": "전미부동산중개인협회의 2025년 부동산 중개인 기술 설문조사 수치.",
+      "sourceCite": "출처: 전미부동산중개인협회, 2025년 기술 설문조사",
+      "usageAria": "중개인의 AI 사용: 매일 20%, 매주 22%, 한 달에 몇 번 27%, 아직 안 함 32%"
+    },
+    "plus": {
+      "title": "Stagify+로 더 나아가세요",
+      "subtitle": "무제한 스테이징, 더 높은 품질의 모델, 전문 도구, 그리고 팀 전체를 위한 사용량 기반 요금제까지.",
+      "pro": {
+        "name": "Stagify+",
+        "tag": "개인용",
+        "per": "/ 월",
+        "f1": "무제한 스테이징 생성",
+        "f2": "더 높은 품질의 이미지 모델",
+        "f3": "생성당 여러 변형",
+        "f4": "어떤 영역이든 편집하는 마스킹 도구",
+        "f5": "AI 디자이너: 에이전트 방식 스테이징 과정",
+        "f6": "방에서 기존 가구 제거",
+        "cta": "Stagify+ 보기"
+      },
+      "ent": {
+        "name": "엔터프라이즈",
+        "tag": "팀용",
+        "per": "/ 생성",
+        "desc": "팀 전체에 Stagify+를 자동으로 제공하고, 실제 사용한 만큼만 결제하세요.",
+        "f1": "회사 이메일을 쓰는 모두 포함",
+        "f2": "사용량 기반 청구, 좌석당 요금 없음",
+        "f3": "사용량에 따라 매월 하나의 청구서",
+        "f4": "팀을 위한 모든 Stagify+ 기능 포함",
+        "cta": "엔터프라이즈 살펴보기"
+      }
+    },
+    "instagram": {
+      "title": "인스타그램에서 직접 확인하세요",
+      "subtitle": "실제 스테이징 변신 사례, 빠른 팁, 그리고 Stagify 팀의 비하인드 스토리.",
+      "follow": "@stagify.ai 팔로우"
+    },
+    "finalCta": {
+      "title": "직접 당신의 매물에 사용해 보세요",
+      "subtitle": "빈 방 하나를 업로드하고 약 8초 만에 스테이징되는 모습을 확인하세요. 무료로 체험.",
+      "button": "사진 업로드",
+      "note": "Compass, Centennial 등에서 인정받았습니다."
+    },
+    "whyus": {
+      "subtitle": "다른 가상 스테이징 도구는 느리고, 비싸고, 제약이 많습니다. Stagify는 그 반대가 되도록 만들어졌습니다."
+    },
+    "faq": {
+      "subtitle": "가장 많이 듣는 질문에 대한 빠른 답변. 여전히 막히셨나요? <a href=\"guides.html\">가이드</a>를 방문하거나 문의해 주세요."
+    },
+    "contactCta": {
+      "title": "저희 받은편지함은 항상 열려 있습니다",
+      "subtitle": "질문, 피드백, 또는 파트너십 아이디어가 있으신가요? 모든 메시지를 읽고 가능한 한 빨리 답변드립니다.",
+      "email": "team@stagify.ai"
+    }
+  },
+  "modal": {
+    "rolePopup": {
+      "title": "경험을 맞춤 설정해 드릴게요!",
+      "question": "어떤 역할이신가요?",
+      "options": {
+        "agent": "중개인",
+        "seller": "판매자",
+        "buyer": "구매자",
+        "other": "기타"
+      }
+    },
+    "referralPopup": {
+      "title": "경험을 맞춤 설정해 드릴게요!",
+      "question": "어떻게 저희를 알게 되셨나요?",
+      "options": {
+        "socials": "SNS",
+        "friend": "친구",
+        "email": "이메일",
+        "other": "기타"
+      }
+    },
+    "emailPopup": {
+      "title": "경험을 맞춤 설정해 드릴게요!",
+      "question": "이메일 업데이트를 받으시겠어요?",
+      "placeholder": "your@email.com",
+      "skip": "건너뛰기"
+    },
+    "staging": {
+      "title": "옵션",
+      "close": "x",
+      "roomType": "방 유형",
+      "furnitureStyle": "가구 스타일",
+      "additionalPrompt": "추가 프롬프트",
+      "additionalPromptPlaceholder": "스테이징에 대한 구체적인 세부 사항이나 요청을 추가하세요...",
+      "removeFurniture": "기존 가구 제거",
+      "keepFurnitureLabel": "유지할 기존 가구 (선택 사항)",
+      "keepFurniturePlaceholder": "예: 식탁과 붙박이 선반은 그대로 두기",
+      "emptyRoomView": "비워진 방 보기",
+      "emptyRoomTitle": "빈 방 (가구 제거됨)",
+      "emptyRoomDownload": "빈 방 다운로드",
+      "emptyRoomAlt": "기존 가구가 제거된 방",
+      "furniturePhotosLabel": "가구 사진 (선택 사항)",
+      "furniturePhotosHint": "스테이징된 방에 넣을 가구나 장식의 참고 사진 최대 5장",
+      "processButton": "사진 처리",
+      "maskBeforeButton": "사진 마스크 & 편집",
+      "maskBeforeHint": "편집할 원본 사진 영역을 칠하세요(예: 잡동사니 제거). 나머지는 그대로 유지됩니다. 그런 다음 처리하여 원하는 버전을 스테이징하세요.",
+      "maskBeforeTitle": "사진 마스크 & 편집",
+      "maskBeforePromptLabel": "칠한 영역에서 무엇을 바꾸고 싶으신가요?",
+      "maskBeforePromptPlaceholder": "예: 낡은 소파 제거, 잡동사니 정리, 벽을 흰색으로 다시 칠하기",
+      "maskBeforeApply": "편집 적용",
+      "maskLimitReached": "이 이미지에 대해 버전 6개 한도에 도달했습니다.",
+      "prevVersion": "이전 버전",
+      "nextVersion": "다음 버전",
+      "imageVersions": "이미지 버전",
+      "versionLabel": "버전 {index}",
+      "uploadArea": "이미지를 업로드하거나 끌어다 놓으세요",
+      "before": "비포",
+      "after": "애프터",
+      "downloadResult": "결과 다운로드",
+      "uploadAnother": "다른 이미지 업로드",
+      "noProcessedImage": "스테이징 결과가 여기에 표시됩니다",
+      "noProcessedImageSubtext": "\"사진 처리\"를 클릭하면 이미지의 AI 스테이징 버전이 생성됩니다",
+      "imageModel": "이미지 모델",
+      "fastGeneration": "빠른 생성",
+      "qualityGeneration": "Stagify+ 고품질 생성",
+      "imageGenerations": "이미지 생성",
+      "addPhotos": "+ 사진 추가",
+      "tryAnotherImage": "다른 이미지 시도",
+      "uploadAreaAria": "업로드 영역",
+      "editWithMask": "마스크 도구로 선택 영역 편집",
+      "stagingVariations": "스테이징 변형",
+      "originalImage": "가상 스테이징 전 원본 방 사진",
+      "stagedImage": "AI 스테이징된 방 미리보기",
+      "warningAlt": "중요 스테이징 안내",
+      "downloadIcon": "이미지 다운로드",
+      "maskIcon": "마스크 편집 도구 아이콘",
+      "variationAlt": "가상 스테이징 변형 {index} / {total}",
+      "furnitureReferenceAlt": "가구 참고 사진: {filename}",
+      "uploadedRoomAlt": "업로드한 방 사진{filenameSuffix}",
+      "sampleRoomAlt": "가상 스테이징 체험용 샘플 방 사진",
+      "stagedResultAlt": "AI 스테이징된 방 결과{suffix}",
+      "progress": {
+        "preparing": "준비 중…",
+        "uploading": "이미지 업로드 중…",
+        "preparingAI": "AI 모델 준비 중…",
+        "staging": "AI가 방을 스테이징하는 중…",
+        "complete": "완료!",
+        "error": "오류: ",
+        "loadingMessages": [
+          "당신에게 완벽한 가구를 찾는 중",
+          "이상적인 방을 스테이징하는 중",
+          "아름다운 장식 소품을 고르는 중",
+          "매력을 극대화하도록 가구를 배치하는 중",
+          "완벽한 분위기를 연출하는 중",
+          "스타일로 공간을 살리는 중",
+          "꿈꾸던 인테리어를 디자인하는 중",
+          "방 배치와 동선을 최적화하는 중",
+          "마무리 손질을 더하는 중",
+          "당신의 비전을 현실로 만드는 중"
+        ]
+      }
+    }
+  },
+  "roomTypes": {
+    "bedroom": "침실",
+    "livingRoom": "거실",
+    "diningRoom": "식당",
+    "kitchen": "주방",
+    "bathroom": "욕실",
+    "office": "사무실",
+    "outdoors": "야외"
+  },
+  "furnitureStyles": {
+    "standard": "스탠다드",
+    "modern": "모던",
+    "midcentury": "미드센추리",
+    "scandinavian": "스칸디나비아",
+    "luxury": "럭셔리",
+    "coastal": "코스탈",
+    "farmhouse": "팜하우스",
+    "custom": "사용자 지정"
+  },
+  "carouselItems": {
+    "original": "원본",
+    "modern": "모던",
+    "scandinavian": "스칸디나비아",
+    "luxury": "럭셔리",
+    "coastal": "코스탈",
+    "midcentury": "미드센추리",
+    "farmhouse": "팜하우스",
+    "originalPhotoAlt": "가상 스테이징 전 예시 빈 방",
+    "modernPhotoAlt": "모던 가상 스테이징 스타일의 예시 방",
+    "scandinavianPhotoAlt": "스칸디나비아 가상 스테이징 스타일의 예시 방",
+    "luxuryPhotoAlt": "럭셔리 가상 스테이징 스타일의 예시 방",
+    "coastalPhotoAlt": "코스탈 가상 스테이징 스타일의 예시 방",
+    "midcenturyPhotoAlt": "미드센추리 가상 스테이징 스타일의 예시 방",
+    "farmhousePhotoAlt": "팜하우스 가상 스테이징 스타일의 예시 방"
+  },
+  "whyUs": {
+    "title": "왜 저희를 선택해야 할까요?",
+    "stagify": {
+      "title": "stagify.ai",
+      "features": {
+        "instantResults": "<strong>즉각적인 결과</strong>: 약 8초",
+        "oneClickStaging": "<strong>원클릭 스테이징</strong>: 번거로움 없음",
+        "free": "<strong>무제한 생성</strong>: 완전 무료",
+        "noAds": "<strong>광고 없는 경험</strong>: 방해 요소 없음",
+        "noLogin": "<strong>간편한 가입</strong>: 즉시 시작",
+        "unlimited": "<strong>고급 이미지 모델</strong>: 더 높은 품질",
+        "copyright": "<strong>완전한 저작권</strong>: 어디에나 사용"
+      }
+    },
+    "others": {
+      "title": "다른 곳",
+      "features": {
+        "slowResults": "<strong style=\"color: #6d1c2c;\">느린 결과: </strong>며칠씩 기다림",
+        "longProcess": "<strong style=\"color: #6d1c2c;\">긴 과정: </strong>지루한 주고받기",
+        "expensive": "<strong style=\"color: #6d1c2c;\">비쌈: </strong>이미지당 높은 비용",
+        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">광고와 쿠키: </strong>방해되는 경험",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">긴 가입 절차: </strong>답답한 시작",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">구형, 저렴한 모델: </strong>낮은 품질",
+        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">불분명한 저작권: </strong>법적 책임"
+      }
+    },
+    "keyFeatures": {
+      "title": "주요 기능",
+      "unlimitedVariations": {
+        "title": "무제한 변형",
+        "description": "브랜드와 구매자 프로필에 맞을 때까지 다양한 스타일을 탐색하세요."
+      },
+      "fastTurnarounds": {
+        "title": "빠른 처리 속도",
+        "description": "약 8초 만에 사진을 스테이징해 더 빨리 등록하고 더 많은 거래를 마무리하세요."
+      }
+    }
+  },
+  "faq": {
+    "title": "자주 묻는 질문",
+    "questions": {
+      "whatIsVirtualStaging": {
+        "question": "가상 스테이징이란 무엇인가요?",
+        "answer": "가상 스테이징은 매물 사진을 디지털로 가구 배치하여 그 잠재력을 보여주는 과정으로, 구매자가 완전히 꾸며진 공간의 모습과 느낌을 그려볼 수 있도록 돕습니다. 전통적인 스테이징과 달리 더 빠르고, 더 비용 효율적이며, 다양한 구매자 취향에 맞춘 여러 디자인 옵션을 제공합니다. 고품질 비주얼로 가상 스테이징은 매물의 장점을 부각해, 구매자가 감정적으로 연결되고 그곳에 사는 모습을 상상하기 더 쉽게 만듭니다."
+      },
+      "howLong": {
+        "question": "얼마나 걸리나요?",
+        "answer": "평균적으로 가상 스테이징은 사진당 약 8초가 걸리지만, 정확한 시간은 공간의 복잡성과 선택한 디자인 스타일에 따라 조금 더 짧거나 길 수 있습니다. 결과는 매물 사진을 돋보이게 하는 빠르고 매끄러운 변신입니다."
+      },
+      "customTheme": {
+        "question": "맞춤 테마는 어떻게 선택하나요?",
+        "answer": "원하는 테마가 보이지 않으면 \"사용자 지정\"을 선택한 다음 원하는 테마에 대한 구체적인 프롬프트를 추가할 수 있습니다. 입력하신 프롬프트를 사용해 원하는 테마를 생성해 드립니다."
+      },
+      "idealRoom": {
+        "question": "스테이징에 이상적인 방은 어떤 방인가요?",
+        "answer": "스테이징에 이상적인 방은 조명이 좋고, 벽이 깔끔하며, 잡동사니가 적어야 합니다. 비어 있거나 가구가 거의 없는 방이 가장 좋은데, AI가 선택한 스타일에 맞는 가구와 장식을 추가할 깨끗한 캔버스를 제공하기 때문입니다. 좁거나 잘린 각도보다 방을 더 많이 담는 넓은 샷이 훨씬 좋으며, AI가 공간을 사실적으로 스테이징할 더 많은 맥락을 얻기 때문입니다."
+      },
+      "privacy": {
+        "question": "제 데이터는 비공개로 안전하게 보호되나요?",
+        "answer": "네. 저희는 HTTPS 암호화를 사용하고, 처리 후 업로드된 이미지를 영구 저장하지 않으며, 개인정보를 판매하지 않습니다. 업로드물과 생성된 결과물의 소유권은 사용자에게 있습니다. 데이터는 개인정보처리방침에 설명된 대로 Stagify 운영에 필요한 서비스 제공업체(예: AI 및 결제 처리업체)와만 공유합니다."
+      }
+    }
+  },
+  "contact": {
+    "title": "문의하기",
+    "description": "여러분의 의견을 듣고 싶습니다. 개별적으로 연락하시거나 <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>로 문의해 주세요.",
+    "social": "업데이트와 예시를 보시려면 <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a>, 또는 <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a>에서 저희를 팔로우하세요!",
+    "labels": {
+      "name": "이름",
+      "email": "이메일",
+      "phone": "전화번호"
+    },
+    "team": {
+      "maximilian": {
+        "name": "Maximilian Ising",
+        "email": "maximilianbising@gmail.com",
+        "phone": "(917) 690-6253",
+        "title": "공동 창업자, 개발 및 AI 총괄",
+        "photoAlt": "Stagify.ai 공동 창업자 겸 개발·AI 총괄 Maximilian Ising의 인물 사진"
+      },
+      "lucas": {
+        "name": "Lucas Shtainer",
+        "email": "lucasshtainer1@gmail.com",
+        "phone": "(347) 491-9609",
+        "title": "공동 창업자, 마케팅 총괄",
+        "photoAlt": "Stagify.ai 공동 창업자 겸 마케팅 총괄 Lucas Shtainer의 인물 사진"
+      },
+      "ryan": {
+        "name": "Ryan Croman",
+        "email": "ryancroman10@gmail.com",
+        "phone": "(646) 709-6715",
+        "title": "공동 창업자, 아웃리치 총괄",
+        "photoAlt": "Stagify.ai 공동 창업자 겸 아웃리치 총괄 Ryan Croman의 인물 사진"
+      },
+      "emil": {
+        "name": "Emil Volvosky",
+        "email": "emvolvovsky@gmail.com",
+        "phone": "(917) 691-2013",
+        "title": "통계 마케팅 분석가",
+        "photoAlt": "Stagify.ai 통계 마케팅 분석가 Emil Volvosky의 인물 사진"
+      }
+    }
+  },
+  "errors": {
+    "fileType": "PNG, JPG, JPEG, WebP 또는 GIF 이미지 파일을 업로드해 주세요.",
+    "fileTooLarge": "파일이 너무 큽니다. 100MB보다 작은 이미지를 업로드해 주세요.",
+    "uploadFirst": "먼저 이미지를 업로드해 주세요",
+    "badPrompt": "잘못된 프롬프트가 입력되었습니다",
+    "processingFailed": "처리 실패",
+    "noImageData": "이미지 데이터를 받지 못했습니다",
+    "dailyLimitFree": "오늘 무료 스테이징 {limit}회를 모두 사용했습니다 (UTC 자정에 초기화). 무제한 스테이징을 원하시면 Stagify+로 업그레이드하세요.",
+    "dailyLimitAnonymous": "이 네트워크의 무료 한도에 도달했습니다 (하루 {limit}회, UTC). 스테이징을 계정에 연결하려면 로그인하거나 내일 다시 시도하세요.",
+    "dailyLimitCta": "Stagify+ 보기"
+  },
+  "common": {
+    "close": "닫기"
+  },
+  "footer": {
+    "privacy": "개인정보처리방침",
+    "terms": "서비스 약관",
+    "contact": "문의",
+    "copyright": "Stagify.ai"
+  },
+  "auth": {
+    "yourEmail": "이메일",
+    "welcomeTitle": "Stagify에 오신 것을 환영합니다",
+    "welcomeSub": "무료 계정을 만들어 사진을 업로드하고 스테이징하세요.",
+    "registerTitle": "무료 계정 만들기",
+    "registerSub": "가입하여 이미지를 업로드하고 스테이징하세요.",
+    "signInTitle": "로그인",
+    "signInSub": "계속하려면 이메일과 비밀번호를 사용하세요.",
+    "verifyTitle": "이메일 인증",
+    "verifyCopy": "{email}로 보낸 6자리 코드를 입력하세요.",
+    "resetTitle": "비밀번호 재설정",
+    "resetCopy": "새 비밀번호를 설정할 수 있는 일회용 링크를 이메일로 보내드립니다. 링크는 1시간 후 만료됩니다.",
+    "email": "이메일",
+    "emailPlaceholder": "you@example.com",
+    "password": "비밀번호",
+    "passwordPlaceholder": "8자 이상",
+    "confirmPassword": "비밀번호 확인",
+    "confirmPasswordPlaceholder": "비밀번호 다시 입력",
+    "or": "또는",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "verificationCode": "인증 코드",
+    "verificationCodePlaceholder": "123456",
+    "back": "뒤로",
+    "resendCode": "코드 다시 보내기",
+    "createAccount": "계정 만들기",
+    "continue": "계속",
+    "signIn": "로그인",
+    "sendResetLink": "재설정 링크 보내기",
+    "backToSignIn": "로그인으로 돌아가기",
+    "alreadyHaveAccount": "이미 계정이 있으신가요?",
+    "newHere": "처음이신가요?",
+    "accountMenu": "계정 메뉴",
+    "googleCancelled": "Google 로그인이 취소되었습니다.",
+    "googleFailed": "Google 로그인 실패",
+    "networkError": "네트워크 오류. 다시 시도해 주세요.",
+    "enterEmail": "이메일 주소를 입력하세요.",
+    "resendFailed": "코드를 다시 보낼 수 없습니다. 다시 시도하세요.",
+    "resendSuccess": "새 인증 코드를 보냈습니다.",
+    "resetSomethingWrong": "문제가 발생했습니다. 몇 분 후 다시 시도해 주세요.",
+    "resetLinkSent": "비밀번호 재설정 링크를 보냈습니다. 이메일(및 스팸함)을 확인하세요.",
+    "noAccountForEmail": "해당 이메일로 등록된 계정을 찾을 수 없습니다.",
+    "resetTryLater": "문제가 발생했습니다. 나중에 다시 시도하세요.",
+    "enterVerificationCode": "이메일에서 받은 6자리 인증 코드를 입력하세요.",
+    "verificationFailed": "인증 실패",
+    "passwordsNoMatch": "비밀번호가 일치하지 않습니다.",
+    "somethingWrong": "문제가 발생했습니다",
+    "checkEmailForCode": "이메일에서 인증 코드를 확인하세요.",
+    "agreeTerms": "계정을 만들면 <a href=\"terms.html\">약관</a> &amp; <a href=\"privacy.html\">개인정보</a>에 동의하는 것입니다"
+  },
+  "profile": {
+    "signIn": "로그인",
+    "createAccount": "계정 만들기",
+    "freePlan": "무료 요금제",
+    "upgradeToPlus": "Stagify+로 업그레이드",
+    "manageSubscription": "구독 관리",
+    "signOut": "로그아웃",
+    "manageBillingAria": "Stripe에서 결제 관리",
+    "stripeHelp": "Stripe 고객센터"
+  },
+  "pdf": {
+    "meta": {
+      "title": "AI 디자이너 | Stagify.ai - AI 기반 디자인 어시스턴트",
+      "description": "AI 디자이너와 대화하며 디자인 질문에 대한 도움을 받고, 분석을 위한 파일을 업로드하고, 전문적인 디자인 조언을 즉시 받으세요.",
+      "keywords": "AI 디자이너, AI 디자인 어시스턴트, 디자인 상담, AI 채팅, 디자인 도움, 인테리어 디자인 AI"
+    },
+    "title": "AI 디자이너",
+    "description": "CAD 평면도 PDF를 사실적인 3D 인테리어 시각화로 변환하세요",
+    "statusMessages": {
+      "generating": ["이미지 생성 중...", "이미지를 만드는 중...", "비전을 현실로 만드는 중...", "디테일을 다듬는 중...", "렌더링 중...", "거의 다 됐어요...", "세부 사항 마무리 중...", "결과를 다듬는 중...", "잠시만요..."],
+      "staging": ["방을 스테이징하는 중...", "가구를 추가하는 중...", "장식을 고르는 중...", "요소를 배치하는 중...", "스타일을 적용하는 중...", "디자인을 만드는 중...", "레이아웃을 생성하는 중...", "디테일을 다듬는 중...", "거의 준비됐어요..."],
+      "analyzing": ["이미지 분석 중...", "디테일을 살펴보는 중...", "요소를 식별하는 중...", "시각 데이터를 처리하는 중...", "공간을 파악하는 중...", "구성을 검토하는 중...", "레이아웃을 살펴보는 중...", "거의 끝났어요..."],
+      "welcome": ["환영 준비 중...", "맞이할 준비 중...", "설정하는 중...", "따뜻한 환영을 준비하는 중...", "모든 것을 준비하는 중...", "곧 인사드릴게요...", "공간을 설정하는 중...", "특별한 것을 준비하는 중..."],
+      "general": ["생각 중...", "요청을 처리하는 중...", "분석 중...", "옵션을 검토하는 중...", "작업 중...", "거의 다 됐어요...", "잠시만요...", "응답을 준비하는 중..."]
+    },
+    "emptyState": "메시지를 입력하거나 파일을 업로드하여 대화를 시작하세요",
+    "uploadFile": "파일 업로드",
+    "inputPlaceholder": "메시지를 입력하세요...",
+    "sendButton": "보내기",
+    "uploadArea": "PDF를 업로드하거나 끌어다 놓으세요",
+    "uploadSubtext": "지원 형식: PDF 파일",
+    "options": {
+      "title": "처리 옵션",
+      "skip": "첫 페이지 건너뛰기",
+      "skipHint": "표지와 제목 페이지 건너뛰기",
+      "concurrency": "처리 속도",
+      "concurrencyHint": "속도가 높을수록 방당 처리 시간이 늘어날 수 있습니다",
+      "dpi": "이미지 품질 (DPI)",
+      "dpiHint": "DPI가 높을수록 품질은 좋아지지만 시간이 더 걸립니다"
+    },
+    "processButton": "PDF 처리",
+    "progress": {
+      "uploading": "PDF 업로드 중…",
+      "processing": "PDF 처리 중…",
+      "complete": "완료!"
+    },
+    "result": {
+      "title": "처리 완료!",
+      "description": "처리된 PDF를 다운로드할 준비가 되었습니다.",
+      "download": "처리된 PDF 다운로드",
+      "uploadAnother": "다른 PDF 업로드"
+    },
+    "info": {
+      "title": "작동 방식",
+      "step1": "CAD 평면도 PDF를 업로드하세요",
+      "step2": "AI가 방을 식별하고 평면도 세부 정보를 추출합니다",
+      "step3": "각 방이 사실적인 3D 시각화로 변환됩니다",
+      "step4": "3D 렌더링이 포함된 처리된 PDF를 다운로드하세요 (보통 2분 소요)",
+      "note": "참고: 처리에는 보통 약 2분이 걸립니다. AI가 3D 렌더링을 생성하는 동안 잠시 기다려 주세요."
+    },
+    "status": {
+      "fileReady": "파일 준비됨"
+    },
+    "modelSelector": {
+      "chooseModel": "모델을 선택하세요",
+      "fast": "빠름",
+      "fastDescription": "표준 품질, 더 빠름",
+      "pro": "Stagify+",
+      "proDescription": "더 높은 품질, 더 느림"
+    },
+    "messageTag": {
+      "auto": "자동",
+      "generate": "생성",
+      "stage": "스테이징/수정",
+      "cadStage": "스테이징 (평면도)",
+      "describe": "설명/불러오기"
+    },
+    "thumbnailStrip": {
+      "label": "다음 메시지의 기본 이미지",
+      "help": "다음 메시지를 보낼 때, 특히 가구를 추가할 때 AI가 수정할 방 이미지를 선택하세요. 업로드나 스테이징 버전이 여러 개일 때 유용합니다.",
+      "helpAria": "기본 이미지란 무엇인가요?"
+    },
+    "alt": {
+      "uploadFile": "메시지에 파일 첨부",
+      "reloadChat": "새 채팅 대화 시작",
+      "sendMessage": "메시지 보내기",
+      "reportBug": "버그 신고",
+      "userAvatar": "내 아바타",
+      "assistantAvatar": "Stagify AI 디자이너",
+      "uploadPreview": "업로드한 파일 미리보기: {filename}",
+      "stagedRoom": "AI 스테이징된 방{suffix}",
+      "generatedImage": "AI가 생성한 디자인 이미지{suffix}",
+      "cadRender": "평면도로 만든 3D 렌더링{suffix}",
+      "recalledImage": "이 대화에서 이전에 공유된 이미지",
+      "requestedImage": "대화 기록에서 요청된 이미지",
+      "editedImage": "마스크 편집된 디자인 이미지{suffix}",
+      "originalCarouselImage": "마스크 편집 전 원본 이미지",
+      "enlargedImage": "디자인 이미지 전체 보기",
+      "thumbnailSelected": "{label} — 다음 메시지의 기본 이미지로 선택됨",
+      "thumbnailOption": "{label} — 대화의 이미지 {index}"
+    },
+    "maskEditor": {
+      "title": "마스크로 편집",
+      "brush": "브러시",
+      "erase": "지우개",
+      "brushAllNote": "마스킹하려는 영역 전체를 빠짐없이 칠하세요.",
+      "toolsAria": "마스크 도구",
+      "brushSize": "브러시 크기:",
+      "promptLabel": "마스킹한 영역에서 무엇을 바꾸고 싶으신가요?",
+      "promptPlaceholder": "예: 벽 색을 파란색으로, 소파를 모던한 의자로 교체...",
+      "cancel": "취소",
+      "clearMask": "마스크 지우기",
+      "applyEdit": "편집 적용",
+      "processing": "처리 중...",
+      "pleaseDrawMask": "편집하려는 영역에 마스크를 그려 주세요.",
+      "pleaseDescribeChange": "마스킹한 영역에서 무엇을 바꾸고 싶은지 설명해 주세요."
+    },
+    "errors": {
+      "invalidFileType": "PDF 파일을 업로드해 주세요.",
+      "fileTooLarge": "파일이 너무 큽니다. 100MB보다 작은 PDF를 업로드해 주세요.",
+      "noFile": "먼저 PDF 파일을 업로드해 주세요",
+      "processingFailed": "처리에 실패했습니다. 다시 시도해 주세요.",
+      "noProcessedFile": "사용 가능한 처리된 PDF가 없습니다."
+    }
+  },
+  "techHelp": {
+    "metaTitle": "기술 지원 - Stagify.ai 문제 해결 및 지원",
+    "metaDescription": "Stagify.ai의 일반적인 기술 문제를 해결하세요. 업로드, 생성, 로그인, 결제, 브라우저 문제에 대한 해결책.",
+    "metaKeywords": "stagify 기술 지원, 문제 해결, 업로드 안 됨, 스테이징 도움, 지원, 일반적인 문제",
+    "badge": "기술 지원",
+    "title": "문제 해결 및 일반적인 문제",
+    "subtitle": "대부분의 문제는 빠르게 해결됩니다. 아래에서 문제를 찾아보세요 — 그래도 막히시면, 저희 팀에 이메일 한 통이면 됩니다.",
+    "upload": {
+      "title": "업로드 & 파일",
+      "i1": {
+        "q": "사진이 업로드되지 않아요.",
+        "a": "파일이 10MB 미만의 JPG, PNG 또는 WEBP인지 확인하세요. 아주 큰 휴대폰 사진은 가끔 실패합니다 — 이미지 크기를 줄이거나 스크린샷을 찍어 다시 업로드하세요. 그래도 실패하면 페이지를 새로고침하고 다시 시도하세요."
+      },
+      "i2": {
+        "q": "어떤 사진이 가장 좋나요?",
+        "a": "방 전체가 보이고 잡동사니가 적은, 정면에서 찍은 선명하고 밝은 사진을 사용하세요. 흐릿하거나, 어둡거나, 극단적인 광각 사진은 결과가 좋지 않습니다. 처음이신가요? 먼저 <a href=\"#walkthrough\">단계별 안내</a>를 시청하세요."
+      }
+    },
+    "tips": {
+      "title": "더 나은 결과 & 프로 팁",
+      "i1": {
+        "q": "어떻게 하면 가장 사실적인 스테이징을 얻나요?",
+        "a": "공간 전체가 화면에 들어오고 표면이 깨끗하게 정리된 상태로, 낮에 방을 정면에서 촬영하세요. 생성하기 전에 정확한 방 유형과 스타일을 고르고, 두세 가지 변형을 만들어 가장 좋은 것을 남기세요. <a href=\"index.html#stage\">스테이징 스튜디오 열기</a>로 사용해 보세요."
+      },
+      "i2": {
+        "q": "어떤 요금제나 도구를 사용해야 하나요?",
+        "a": "무료는 빠르게 한 번씩 쓰는 방에 적합합니다. <a href=\"stagify-plus.html\">Stagify+</a>는 무제한 생성, 더 높은 품질의 모델, 마스킹 도구, 프롬프트 바를 제공합니다. <a href=\"ai-designer.html\">AI 디자이너</a>는 짧은 대화로 방 전체를 다시 디자인합니다 — AI가 결정을 맡아주길 원할 때 가장 좋습니다."
+      },
+      "i3": {
+        "q": "가구와 배치를 제어할 수 있나요?",
+        "a": "네. <a href=\"stagify-plus.html\">Stagify+</a>의 프롬프트 바로 \"섹셔널 소파와 큰 러그 추가\"처럼 구체적으로 설명할 수 있고, 가구 도구로 직접 보유한 가구를 가져올 수 있습니다. 한 영역만 어색하면, 전체 이미지를 다시 만들지 말고 그 부분만 마스킹해 다시 생성하세요."
+      }
+    },
+    "generate": {
+      "title": "생성 & 결과",
+      "i1": {
+        "q": "생성이 멈추거나 너무 오래 걸려요.",
+        "a": "대부분의 이미지는 약 8초에 완료됩니다. 1분 이상 걸린다면 연결이 끊겼을 수 있습니다 — 페이지를 새로고침하고 다시 시도하세요. 실행 중에는 탭을 전환하거나 휴대폰을 잠그지 마세요."
+      },
+      "i2": {
+        "q": "결과에 이상한 가구나 오류가 있어요.",
+        "a": "AI 스테이징이 매번 완벽하지는 않습니다. 새로운 변형을 위해 다시 생성하거나, 다른 스타일로 바꾸거나, <a href=\"ai-designer.html\">마스킹 도구</a>로 전체를 다시 하지 말고 어색한 부분만 고치세요."
+      },
+      "i3": {
+        "q": "아무것도 바뀌지 않거나 방이 여전히 비어 보여요.",
+        "a": "보통 방 유형이나 스타일이 선택되지 않았거나, 사진이 너무 어두워 모델이 읽지 못한 경우입니다. 방 유형과 스타일을 고른 다음 더 밝은 사진으로 시도하세요. AI가 처음부터 끝까지 맡길 원하시나요? <a href=\"ai-designer.html\">AI 디자이너</a>를 사용해 보세요."
+      }
+    },
+    "account": {
+      "title": "계정 & 로그인",
+      "i1": {
+        "q": "인증 코드가 도착하지 않았어요.",
+        "a": "스팸함이나 프로모션 폴더를 확인하세요 — 코드는 1분 정도 걸릴 수 있습니다. 그래도 오지 않으면 \"코드 다시 보내기\"를 사용하고 이메일이 올바르게 입력되었는지 확인하세요."
+      },
+      "i2": {
+        "q": "비밀번호를 잊어버렸어요.",
+        "a": "로그인 화면에서 \"비밀번호를 잊으셨나요?\"를 선택하면 재설정 링크를 이메일로 보내드립니다. 링크는 1시간 후 만료됩니다."
+      },
+      "i3": {
+        "q": "Google 로그인이 작동하지 않아요.",
+        "a": "stagify.ai의 팝업을 허용하고 타사 쿠키가 완전히 차단되지 않았는지 확인한 다음 다시 시도하세요. 이메일과 비밀번호로 로그인할 수도 있습니다."
+      }
+    },
+    "billing": {
+      "title": "결제 & Stagify+",
+      "i1": {
+        "q": "Stagify+를 어떻게 관리하거나 해지하나요?",
+        "a": "오른쪽 상단의 프로필 아이콘을 클릭한 다음 Stagify+ 옆의 Stripe 아이콘을 눌러 결제 대시보드를 열면 구독을 변경하거나 해지할 수 있습니다. <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">Stripe 결제 포털</a>을 직접 열 수도 있습니다. 현재 결제 기간이 끝날 때까지 이용 권한이 유지됩니다."
+      },
+      "i2": {
+        "q": "결제했는데 Stagify+ 기능이 보이지 않아요.",
+        "a": "로그아웃했다가 다시 로그인해 계정을 새로고침하세요. 그래도 기능이 나타나지 않으면 사용하신 주소로 <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>에 이메일을 보내주세요."
+      }
+    },
+    "performance": {
+      "title": "브라우저 & 성능",
+      "i1": {
+        "q": "어떤 브라우저가 지원되나요?",
+        "a": "최신 버전의 Chrome, Safari, Edge 또는 Firefox를 사용하세요. 오래된 브라우저는 편집기나 드래그 비교 도구를 지원하지 않을 수 있습니다."
+      },
+      "i2": {
+        "q": "페이지가 느리거나 버튼이 반응하지 않아요.",
+        "a": "페이지를 강력 새로고침(Ctrl/Cmd + Shift + R)해 오래된 버전을 지우고, 사용하지 않는 탭을 닫고, 업로드를 방해할 수 있는 stagify.ai의 광고 차단기를 비활성화하세요."
+      },
+      "i3": {
+        "q": "사이트가 전혀 열리지 않아요.",
+        "a": "인터넷 연결을 확인한 다음 시크릿/비공개 창으로 시도하세요. 거기서 열린다면 stagify.ai의 브라우저 캐시를 지우세요."
+      }
+    },
+    "contact": {
+      "text": "여전히 막히셨나요? 저희 팀이 기꺼이 도와드립니다. 이메일 ",
+      "email": "team@stagify.ai"
+    }
+  },
+  "guides": {
+    "badge": "가이드",
+    "title": "가이드 & 안내",
+    "subtitle": "몇 분 만에 스테이징을 시작할 수 있는 빠른 인터랙티브 안내 — 그리고 일반적인 문제 해결까지.",
+    "heroBadge": "도움말 센터",
+    "liveBadge": "인터랙티브 데모",
+    "walkthroughsTitle": "단계별 안내",
+    "demo1Title": "첫 무료 스테이징",
+    "demo1Desc": "따라 하며 사진을 업로드하고 첫 스테이징된 방을 받아보세요.",
+    "demo2Title": "Stagify+로 하는 첫 스테이징",
+    "demo2Desc": "무제한 생성, 더 높은 품질, 프로 도구를 위해 Stagify+로 스테이징하는 방법을 확인하세요.",
+    "pickerFree": "무료",
+    "pickerPlus": "Stagify+",
+    "pickerDesigner": "AI 디자이너",
+    "pickerPromptBar": "프롬프트 바",
+    "pickerFurniture": "가구",
+    "demo3Desc": "AI 디자이너가 간단한 대화로 방을 에이전트 방식으로 스테이징하고 다시 디자인하는 모습을 보세요.",
+    "troubleshootingTitle": "문제 해결 및 일반적인 문제"
+  },
+  "pageMeta": {
+    "guides": {
+      "title": "가이드 & 안내 | Stagify.ai",
+      "description": "Stagify.ai 단계별 안내 — 첫 무료 스테이징, Stagify+로 하는 스테이징, 일반적인 문제 해결."
+    },
+    "contact": {
+      "title": "문의하기 | Stagify.ai",
+      "description": "지원, 파트너십, 또는 무료 AI 홈 스테이징 도구에 대한 질문은 Stagify.ai 팀에 문의하세요."
+    },
+    "stagifyPlus": {
+      "title": "Stagify+ — 요금제 & 가격 | Stagify.ai",
+      "description": "Stagify+: 무제한 AI 스테이징, 더 높은 품질의 모델, AI 디자이너, 마스킹 도구. 요금제와 가격을 확인하세요."
+    },
+    "enterprise": {
+      "title": "Stagify 엔터프라이즈 — 팀을 위한 사용량 기반 AI 스테이징",
+      "description": "생성당 $0.15의 사용량 기반 청구로 팀 전체에 무제한 AI 스테이징을 제공하세요. 하나의 청구서, 좌석당 요금 없음."
+    }
+  }
+}
