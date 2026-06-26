@@ -39,6 +39,13 @@
     <meta property="og:locale" content="en_US">
     <meta property="og:locale:alternate" content="es_ES">
     <meta property="og:locale:alternate" content="zh_CN">
+    <meta property="og:locale:alternate" content="fr_FR">
+    <meta property="og:locale:alternate" content="de_DE">
+    <meta property="og:locale:alternate" content="it_IT">
+    <meta property="og:locale:alternate" content="ja_JP">
+    <meta property="og:locale:alternate" content="ko_KR">
+    <meta property="og:locale:alternate" content="pt_PT">
+    <meta property="og:locale:alternate" content="ru_RU">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
@@ -49,10 +56,9 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://stagify.ai">
     
-    <!-- Hreflang Tags for Multi-language Support -->
-    <link rel="alternate" hreflang="en" href="https://stagify.ai">
-    <link rel="alternate" hreflang="es" href="https://stagify.ai">
-    <link rel="alternate" hreflang="zh" href="https://stagify.ai">
+    <!-- Single URL serves all languages (switched client-side), so there are no
+         distinct localized URLs to point hreflang at. Per Google's guidance we
+         expose only x-default rather than several identical self-referential tags. -->
     <link rel="alternate" hreflang="x-default" href="https://stagify.ai">
     
     <!-- Preload critical fonts -->
@@ -514,17 +520,51 @@
           "https://www.tiktok.com/@stagify.ai"
         ]
       },
-      "mentions": {
-        "@type": "Article",
-        "headline": "10 Best Virtual Staging AI Free Tools for 2026",
-        "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
-        "datePublished": "2026-05-31",
-        "author": {
-          "@type": "Organization",
-          "name": "Armox Labs",
-          "url": "https://armox.ai"
+      "mentions": [
+        {
+          "@type": "Article",
+          "headline": "10 Best Virtual Staging AI Free Tools for 2026",
+          "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
+          "datePublished": "2026-05-31",
+          "author": {
+            "@type": "Organization",
+            "name": "Armox Labs",
+            "url": "https://armox.ai"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://medium.com/@ryancroman10/i-never-meant-to-start-an-ai-company-9115f58c0a3e",
+          "datePublished": "2026-06-26",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://medium.com/@ryancroman10"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://activerain.com/blogsview/5938752/i-never-meant-to-start-an-ai-company",
+          "datePublished": "2026-06-26",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://stagify.substack.com/p/i-never-meant-to-start-an-ai-company",
+          "datePublished": "2026-06-26",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://stagify.substack.com"
+          }
         }
-      },
+      ],
       "keywords": "AI staging, home staging, real estate staging, virtual staging, property staging, AI-powered staging, machine learning staging, computer vision, property marketing, 3D rendering, CAD staging, floor plan staging, blueprint staging, architectural visualization, home decor, furniture placement, room redesign, interior styling, property presentation, real estate agent tools, staging software, free staging, online staging, automated staging, smart staging, digital staging, photo staging, image editing, room transformation"
     }
     </script>
@@ -542,17 +582,74 @@
         "https://www.instagram.com/stagify.ai/",
         "https://www.tiktok.com/@stagify.ai"
       ],
-      "subjectOf": {
-        "@type": "Article",
-        "headline": "10 Best Virtual Staging AI Free Tools for 2026",
-        "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
-        "datePublished": "2026-05-31",
-        "author": {
-          "@type": "Organization",
-          "name": "Armox Labs",
-          "url": "https://armox.ai"
+      "subjectOf": [
+        {
+          "@type": "Article",
+          "headline": "10 Best Virtual Staging AI Free Tools for 2026",
+          "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
+          "datePublished": "2026-05-31",
+          "author": {
+            "@type": "Organization",
+            "name": "Armox Labs",
+            "url": "https://armox.ai"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://medium.com/@ryancroman10/i-never-meant-to-start-an-ai-company-9115f58c0a3e",
+          "datePublished": "2026-06-26",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Medium",
+            "url": "https://medium.com"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://medium.com/@ryancroman10"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://activerain.com/blogsview/5938752/i-never-meant-to-start-an-ai-company",
+          "datePublished": "2026-06-26",
+          "publisher": {
+            "@type": "Organization",
+            "name": "ActiveRain",
+            "url": "https://activerain.com"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://stagify.substack.com/p/i-never-meant-to-start-an-ai-company",
+          "datePublished": "2026-06-26",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Substack",
+            "url": "https://substack.com"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
         }
-      }
+      ]
     }
     </script>
     <script type="application/ld+json">
@@ -735,6 +832,7 @@
             <option value="french">FR</option>
             <option value="italian">IT</option>
             <option value="portuguese">PT</option>
+            <option value="russian">RU</option>
             <option value="chinese">中文</option>
             <option value="japanese">日本語</option>
             <option value="korean">한국어</option>
@@ -752,6 +850,7 @@
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.webp" alt="" width="20" height="14" /><span>中文</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>

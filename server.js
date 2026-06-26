@@ -1420,13 +1420,11 @@ async function downscaleImageForGPT(dataUrl) {
  */
 const IMAGE_FRAMING_PRESERVATION_RULES = `
 CRITICAL FRAMING & ASPECT RATIO RULES:
-- Preserve the EXACT aspect ratio, orientation, and canvas dimensions of the input image
-- Show the FULL scene visible in the input photo — do not crop, cut off, or reframe any edges
-- Keep the entire ceiling line, floor line, and all walls/edges that appear in the original frame
-- Do NOT zoom in, zoom out, or change the camera field of view unless the user explicitly asked for a closer or different crop
-- Do NOT stretch, squash, letterbox, pad, or distort the image
-- Fit all staging changes WITHIN the existing frame; never remove parts of the room to fit new content
-- If adding furniture, scale and place it so nothing important from the original photo is cropped out or pushed out of frame`;
+- Output the image at the EXACT same aspect ratio, orientation, and canvas dimensions as the input photo
+- Keep the FULL scene from the input in frame — every edge and corner, and the entire ceiling line, floor line, and all walls that appear in the original must stay visible
+- Hold the camera exactly where it is: same field of view, same zoom, same framing (move it ONLY if the user explicitly asked for a closer or different crop)
+- Keep the image geometry undistorted — preserve true proportions with no stretching, squashing, letterboxing, or padding
+- Fit every staging change INSIDE the existing frame, scaling and placing new furniture so the entire original room stays visible and in frame`;
 
 /**
  * Generate styling prompt based on user preferences using a matrix system
@@ -2317,10 +2315,127 @@ const AI_DESIGNER_RESPONSE_ACTION_RULES =
 
 const AI_DESIGNER_IMAGE_FRAMING_RULES =
   '\n\nIMAGE FRAMING (CRITICAL — apply to every staging/CAD additionalPrompt):' +
-  '\n- Always tell the image model to preserve the input photo\'s exact aspect ratio, orientation, and full framing.' +
-  '\n- Do NOT crop, zoom, reframe, or cut off ceilings, floors, walls, or room edges unless the user explicitly asked for a closer crop or close-up.' +
-  '\n- All changes must fit INSIDE the existing frame — never drop content from the original photo or change the camera field of view.' +
-  '\n- When writing additionalPrompt text, explicitly include instructions to preserve full frame and aspect ratio.';
+  '\n- In every additionalPrompt, explicitly instruct the image model to keep the input photo\'s exact aspect ratio, orientation, and full framing.' +
+  '\n- Tell it to keep all four edges and every ceiling, floor, wall, and room edge fully in frame, holding the current zoom and field of view (a closer crop is allowed ONLY when the user explicitly asked for one).' +
+  '\n- Require every change to fit INSIDE the existing frame, keeping all of the original room visible.';
+
+// ---------------------------------------------------------------------------
+// Designer chat routing — strict Structured Outputs schema.
+// The conversational model returns ONE JSON object: its reply plus any image
+// actions (stage / generate / CAD / view / recall) and memory updates. Using
+// OpenAI's strict json_schema (constrained decoding) guarantees valid JSON,
+// every field present, and valid enums — removing the malformed-output and
+// invalid-roomType failure modes that plain json_object can't prevent.
+// staging/generate/cad are ALWAYS arrays here (null when unused); the downstream
+// consumers already accept arrays, so this needs no changes there.
+// ---------------------------------------------------------------------------
+const DESIGNER_ROUTING_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['response', 'memories', 'staging', 'generate', 'cad', 'imageRequest', 'recall'],
+  properties: {
+    response: { type: 'string', description: 'Natural-language reply shown to the user.' },
+    memories: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['stores', 'forgets'],
+      properties: {
+        stores: { type: 'array', items: { type: 'string' } },
+        forgets: { type: 'array', items: { type: 'string' } },
+      },
+    },
+    staging: {
+      type: ['array', 'null'],
+      description: 'One entry per room to stage/modify (max 3). null when not staging.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['shouldStage', 'roomType', 'additionalPrompt', 'removeFurniture', 'usePreviousImage', 'furnitureImageIndex', 'styleReference'],
+        properties: {
+          shouldStage: { type: 'boolean' },
+          roomType: { type: 'string', enum: ['Living room', 'Bedroom', 'Kitchen', 'Bathroom', 'Dining room', 'Office', 'Other'] },
+          additionalPrompt: { type: 'string' },
+          removeFurniture: { type: 'boolean' },
+          usePreviousImage: { anyOf: [{ type: 'boolean' }, { type: 'integer' }], description: 'false = current image; otherwise the history index.' },
+          furnitureImageIndex: { anyOf: [{ type: 'integer' }, { type: 'null' }] },
+          styleReference: { type: 'boolean' },
+        },
+      },
+    },
+    generate: {
+      type: ['array', 'null'],
+      description: 'One entry per new image to generate from text (max 3). null when not generating.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['shouldGenerate', 'prompt'],
+        properties: {
+          shouldGenerate: { type: 'boolean' },
+          prompt: { type: 'string' },
+        },
+      },
+    },
+    cad: {
+      type: ['array', 'null'],
+      description: 'One entry per blueprint/floor-plan to CAD-stage (max 3). null when not CAD-staging.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['shouldProcessCAD', 'imageIndex', 'furnitureImageIndex', 'additionalPrompt'],
+        properties: {
+          shouldProcessCAD: { type: 'boolean' },
+          imageIndex: { anyOf: [{ type: 'integer' }, { type: 'null' }] },
+          furnitureImageIndex: { anyOf: [{ type: 'integer' }, { type: 'array', items: { type: 'integer' } }, { type: 'null' }] },
+          additionalPrompt: { type: 'string' },
+        },
+      },
+    },
+    imageRequest: {
+      anyOf: [
+        {
+          type: 'object',
+          additionalProperties: false,
+          required: ['requestImage', 'imageIndex'],
+          properties: {
+            requestImage: { type: 'boolean' },
+            imageIndex: { anyOf: [{ type: 'integer' }, { type: 'null' }] },
+          },
+        },
+        { type: 'null' },
+      ],
+    },
+    recall: {
+      anyOf: [
+        {
+          type: 'object',
+          additionalProperties: false,
+          required: ['shouldRecall', 'imageIndex'],
+          properties: {
+            shouldRecall: { type: 'boolean' },
+            imageIndex: { anyOf: [{ type: 'integer' }, { type: 'null' }] },
+          },
+        },
+        { type: 'null' },
+      ],
+    },
+  },
+};
+
+const DESIGNER_ROUTING_RESPONSE_FORMAT = {
+  type: 'json_schema',
+  json_schema: { name: 'designer_routing', strict: true, schema: DESIGNER_ROUTING_SCHEMA },
+};
+
+// Parse a routing completion. Strict mode can return a `refusal` instead of
+// `content`; surface that as a plain (non-actionable) reply rather than throwing
+// on JSON.parse(null), so a rare refusal degrades gracefully.
+function parseDesignerRoutingCompletion(completion) {
+  const message = completion?.choices?.[0]?.message;
+  if (message && message.refusal) {
+    return { response: message.refusal };
+  }
+  return JSON.parse(message.content);
+}
 
 /**
  * True when the assistant response is asking the user for input before acting.
@@ -2808,7 +2923,7 @@ async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-fla
     // For text-to-image generation, we only send the text prompt
     const fullPrompt = `${prompt}
 
-Composition: show the full scene with a natural, uncropped framing. Do not awkwardly crop ceilings, floors, walls, or key subject matter unless the user explicitly requested a tight crop or close-up.`;
+Composition: frame the full scene naturally, keeping ceilings, floors, walls, and the key subject matter completely in view (use a tight crop or close-up ONLY if the user explicitly requested one).`;
     const generatePrompt = [
       { text: fullPrompt }
     ];
@@ -4904,10 +5019,10 @@ app.post('/api/chat', genLimiter, async (req, res) => {
         model: selectedModel,
         messages: openaiMessages,
         temperature: getTemperatureForModel(selectedModel),
-        response_format: { type: 'json_object' }
+        response_format: DESIGNER_ROUTING_RESPONSE_FORMAT
       });
 
-      aiResponseJson = JSON.parse(completion.choices[0].message.content);
+      aiResponseJson = parseDesignerRoutingCompletion(completion);
     } catch (gptError) {
       console.error('[GPT] Error calling OpenAI API:', gptError);
       console.error('[GPT] Error stack:', gptError.stack);
@@ -5431,10 +5546,10 @@ app.post('/api/chat', genLimiter, async (req, res) => {
               model: selectedModel,
               messages: imageAnalysisMessages,
               temperature: getTemperatureForModel(selectedModel),
-              response_format: { type: 'json_object' }
+              response_format: DESIGNER_ROUTING_RESPONSE_FORMAT
             });
             
-            const imageAnalysisJson = JSON.parse(imageAnalysisCompletion.choices[0].message.content);
+            const imageAnalysisJson = parseDesignerRoutingCompletion(imageAnalysisCompletion);
             text = imageAnalysisJson.response || imageAnalysisCompletion.choices[0].message.content;
             
             if (DEBUG_MODE) {
@@ -6239,10 +6354,10 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (re
         model: selectedModel,
         messages: finalMessages,
         temperature: getTemperatureForModel(selectedModel),
-        response_format: { type: 'json_object' }
+        response_format: DESIGNER_ROUTING_RESPONSE_FORMAT
       });
 
-      aiResponseJson = JSON.parse(completion.choices[0].message.content);
+      aiResponseJson = parseDesignerRoutingCompletion(completion);
       text = aiResponseJson.response || completion.choices[0].message.content;
       memoryActionsFromAI = aiResponseJson.memories || { stores: [], forgets: [] };
       stagingRequestFromAI = aiResponseJson.staging || null;
@@ -6303,10 +6418,10 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (re
           model: selectedModel,
           messages: errorMessages,
           temperature: getTemperatureForModel(selectedModel),
-          response_format: { type: 'json_object' }
+          response_format: DESIGNER_ROUTING_RESPONSE_FORMAT
         });
         
-        aiResponseJson = JSON.parse(errorCompletion.choices[0].message.content);
+        aiResponseJson = parseDesignerRoutingCompletion(errorCompletion);
         text = aiResponseJson.response || errorCompletion.choices[0].message.content;
         memoryActionsFromAI = aiResponseJson.memories || { stores: [], forgets: [] };
         stagingRequestFromAI = aiResponseJson.staging || null;
@@ -6813,10 +6928,10 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (re
               model: selectedModel,
               messages: imageAnalysisMessages,
               temperature: getTemperatureForModel(selectedModel),
-              response_format: { type: 'json_object' }
+              response_format: DESIGNER_ROUTING_RESPONSE_FORMAT
             });
             
-            const imageAnalysisJson = JSON.parse(imageAnalysisCompletion.choices[0].message.content);
+            const imageAnalysisJson = parseDesignerRoutingCompletion(imageAnalysisCompletion);
             text = imageAnalysisJson.response || imageAnalysisCompletion.choices[0].message.content;
             
             console.log(`[Image Request] Successfully analyzed image, response: ${text.substring(0, 100)}...`);

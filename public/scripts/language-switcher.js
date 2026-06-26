@@ -11,6 +11,7 @@
     german: "media-webp/flags/Germany.svg",
     italian: "media-webp/flags/Italy.svg",
     portuguese: "media-webp/flags/Brazil.svg",
+    russian: "media-webp/flags/Russia.svg",
     japanese: "media-webp/flags/Japan.svg",
   };
 
@@ -25,6 +26,7 @@
     german: "de",
     italian: "it",
     portuguese: "pt-BR",
+    russian: "ru",
     japanese: "ja",
   };
 
