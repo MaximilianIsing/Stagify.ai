@@ -1,0 +1,814 @@
+{
+  "meta": {
+    "title": "Stagify.ai – Home staging virtuale gratis con un clic",
+    "description": "Trasforma stanze vuote con lo staging IA. Carica le foto e ottieni risultati arredati professionalmente in pochi secondi. Home staging IA gratuito per agenti immobiliari, venditori e acquirenti.",
+    "keywords": "staging IA, home staging, staging immobiliare, staging virtuale, home staging IA, valorizzazione immobiliare, fotografia immobiliare, strumento di staging, arredamento virtuale"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "Chi siamo",
+    "pdfTo3d": "Designer IA",
+    "whyUs": "Perché noi?",
+    "faq": "FAQ",
+    "contactUs": "Contatti",
+    "brand": "Stagify",
+    "brandSuffix": ".ai",
+    "techHelp": "Aiuto tecnico",
+    "guides": "Guide",
+    "logoAlt": "Logo Stagify.ai – vai alla home"
+  },
+  "hero": {
+    "catchphrase": "Carica. Arreda. Immagina.",
+    "announcement": "Creato per rendere reale lo spazio dei tuoi sogni",
+    "title": {
+      "free": "Staging",
+      "virtual": "virtuale",
+      "staging": "gratis",
+      "with": "con",
+      "one": "un",
+      "click": "clic",
+      "upload": "Carica.",
+      "stage": "Arreda.",
+      "imagine": "Immagina."
+    },
+    "cta": "Carica un'immagine gratis",
+    "freeGensLeft": "{n} generazioni gratuite rimaste oggi, ",
+    "freeGensLeftUpgrade": "Esegui l'upgrade",
+    "freeGensUpgrade": "Prova Stagify+ oggi stesso. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Esegui l'upgrade</a>",
+    "carouselNote": "Anteprima di esempio. Carica la tua foto per arredarla",
+    "stats": {
+      "roomsStaged": "Stanze arredate",
+      "usersServed": "Utenti serviti",
+      "andCounting": "e cresce..."
+    }
+  },
+  "sponsors": {
+    "title": "Riconosciuto ufficialmente da:"
+  },
+  "home": {
+    "studio": {
+      "eyebrow": "Prima e dopo",
+      "title": "Trascina per vedere l'effetto dello staging",
+      "subtitle": "La stessa foto dell'annuncio, prima e dopo Stagify. Niente traslochi, niente noleggi, nessuna attesa.",
+      "beforeLabel": "Prima",
+      "afterLabel": "Dopo",
+      "kicker": "Com'è",
+      "panelTitle": "La stessa stanza, arredata in pochi secondi",
+      "panelBody": "Trascina la maniglia. A sinistra c'è la foto originale; tutto ciò che è a destra è stato arredato da Stagify in pochi secondi.",
+      "points": {
+        "speed": "Circa 8 secondi per foto",
+        "restage": "Riarreda in qualsiasi stile, quante volte vuoi",
+        "rights": "Ogni immagine è tua, con pieni diritti d'autore"
+      },
+      "examples": {
+        "bedroom": "Camera da letto",
+        "living": "Soggiorno",
+        "dining": "Sala da pranzo"
+      },
+      "comparisonAria": "Confronto prima e dopo lo staging",
+      "revealSliderAria": "Cursore di confronto",
+      "exampleRoomsAria": "Stanze di esempio"
+    },
+    "designer": {
+      "title": "Lascia che un'IA arredi il tuo spazio",
+      "subtitle": "Con il Designer IA, chatta per arredare, riprogettare e perfezionare qualsiasi stanza finché non è pronta per l'annuncio. <em>(Esclusiva Stagify+)</em>"
+    },
+    "info": {
+      "eyebrow": "In breve",
+      "title": "Cos'è il home staging virtuale e perché fa vendere",
+      "subtitle": "Una panoramica rapida e onesta su come funziona e a chi è rivolto. Senza tecnicismi.",
+      "rows": {
+        "why": {
+          "eyebrow": "Perché funziona",
+          "caption": "Demo di Stagify in un ufficio Compass a New York",
+          "title": "Gli acquirenti comprano prima con gli occhi",
+          "body": "Quasi tutti gli acquirenti iniziano online, quindi le foto del tuo annuncio sono la vera prima visita. Le stanze vuote o datate sono difficili da interpretare; non si riesce a valutare le proporzioni né a immaginarsi di viverci. Lo staging dà a ogni stanza uno scopo chiaro e un richiamo, ed è per questo che gli agenti vi si affidano da sempre.",
+          "p1": "Le stanze vuote in foto sembrano più piccole e fredde di quanto siano",
+          "p2": "Lo staging mostra l'uso previsto di ogni spazio",
+          "p3": "Foto migliori generano più clic, salvataggi e visite"
+        },
+        "how": {
+          "eyebrow": "Come funziona",
+          "caption": "Una sala di agenti viene guidata nel suo primo annuncio arredato",
+          "title": "Da foto vuota ad annuncio pronto in circa 8 secondi",
+          "body": "Carica una foto, scegli il tipo di stanza e uno dei sette stili, e Stagify la arreda in circa otto secondi. Servono modifiche? Rimuovi i mobili esistenti, aggiungi un'istruzione personalizzata o maschera un'area per regolarla senza ricominciare.",
+          "p1": "7 stili più istruzioni personalizzate e rimozione dei mobili",
+          "p2": "Modifica con maschera qualsiasi parte di un risultato senza rifarlo",
+          "p3": "Pieni diritti d'autore, tuoi da usare sull'MLS o nelle inserzioni"
+        },
+        "who": {
+          "eyebrow": "A chi è rivolto",
+          "caption": "Seduti uno a uno per arredare le foto di un agente",
+          "title": "Pensato per agenti, venditori e acquirenti",
+          "body": "Gli agenti promuovono ogni annuncio in pochi minuti invece di aspettare una squadra di staging. I venditori arredano le proprie foto senza assumere nessuno. Gli acquirenti vedono in anteprima una ristrutturazione prima di impegnarsi. E con il Designer IA puoi trasformare i PDF di planimetrie CAD in rendering 3D fotorealistici delle stanze.",
+          "p1": "Agenti: pubblica prima e concludi di più",
+          "p2": "Venditori e acquirenti: nessun software, nessun designer necessario",
+          "p3": "Designer IA: staging autonomo delle stanze"
+        },
+        "team": {
+          "eyebrow": "Pensato per i team",
+          "caption": "Un team di agenzia viene formato su Stagify",
+          "title": "Abbastanza semplice per tutto il tuo ufficio",
+          "body": "Non c'è alcun software da installare e niente da imparare. Chiunque nel team può aprire Stagify nel browser, caricare la foto di un annuncio e farla arredare in pochi secondi, sia da un laptop in ufficio sia da un telefono sul campo.",
+          "p1": "Nessuna competenza di design o software necessari",
+          "p2": "Funziona in qualsiasi browser, su qualsiasi dispositivo",
+          "p3": "Ogni agente può arredare i propri annunci"
+        }
+      }
+    },
+    "compare": {
+      "eyebrow": "Virtuale vs. tradizionale",
+      "title": "Come si confronta con lo staging tradizionale",
+      "subtitle": "Lo staging tradizionale funziona. È solo lento e costoso.",
+      "colTraditional": "Staging tradizionale",
+      "colStagify": "Stagify.ai",
+      "rows": {
+        "cost": {
+          "aspect": "Costo",
+          "trad": "2.000–5.000 $+ per immobile, spesso fatturato mensilmente fino alla vendita",
+          "stag": "Gratis per iniziare, arreda senza costi"
+        },
+        "time": {
+          "aspect": "Tempi",
+          "trad": "1–3 settimane per pianificare, consegnare e allestire",
+          "stag": "Circa 8 secondi per foto"
+        },
+        "styles": {
+          "aspect": "Opzioni di stile",
+          "trad": "Un solo look, fissato una volta allestito",
+          "stag": "7 stili più istruzioni personalizzate, cambia quando vuoi"
+        },
+        "changes": {
+          "aspect": "Se cambi idea",
+          "trad": "Nuove spese di noleggio e allestimento ogni volta",
+          "stag": "Riarreda tutte le volte che vuoi"
+        },
+        "logistics": {
+          "aspect": "Logistica",
+          "trad": "Traslocatori, noleggi e accesso all'immobile",
+          "stag": "Carica semplicemente una foto, da ovunque"
+        },
+        "rights": {
+          "aspect": "Le immagini",
+          "trad": "Foto di mobili presi in prestito che restituisci",
+          "stag": "Tue da tenere, con pieni diritti d'autore"
+        }
+      },
+      "source": "Secondo il Profile of Home Staging della National Association of Realtors, la maggior parte degli agenti degli acquirenti afferma che lo staging aiuta gli acquirenti a immaginare un immobile come la loro futura casa.",
+      "sourceCite": "Fonte: National Association of Realtors, Profile of Home Staging"
+    },
+    "nar": {
+      "title": "Non restare indietro",
+      "subtitle": "Il settore immobiliare adotta l'IA rapidamente e i clienti rispondono. Lo staging è uno dei punti di partenza più semplici.",
+      "usageLabel": "Con quale frequenza gli agenti usano strumenti di IA",
+      "legend": {
+        "daily": "Ogni giorno",
+        "weekly": "Ogni settimana",
+        "monthly": "Qualche volta al mese",
+        "none": "Non ancora"
+      },
+      "note": "degli agenti usa già l'IA nella propria attività.",
+      "stat1": "degli agenti afferma che i clienti hanno risposto positivamente alla tecnologia nel processo di acquisto e vendita",
+      "stat2": "usa già l'IA per generare i contenuti degli annunci",
+      "source": "Dati dal sondaggio tecnologico 2025 della National Association of Realtors tra gli agenti immobiliari.",
+      "sourceCite": "Fonte: National Association of Realtors, sondaggio tecnologico 2025",
+      "usageAria": "Uso dell'IA tra gli agenti: 20% ogni giorno, 22% ogni settimana, 27% qualche volta al mese, 32% non ancora"
+    },
+    "plus": {
+      "title": "Vai oltre con Stagify+",
+      "subtitle": "Staging illimitato, modelli di qualità superiore e strumenti pro, più un piano basato sul consumo pensato per interi team.",
+      "pro": {
+        "name": "Stagify+",
+        "tag": "Per privati",
+        "per": "/ mese",
+        "f1": "Generazioni di staging illimitate",
+        "f2": "Modello di immagine di qualità superiore",
+        "f3": "Più variazioni per generazione",
+        "f4": "Strumento di mascheratura per modificare qualsiasi area",
+        "f5": "Designer IA: processo di staging autonomo",
+        "f6": "Rimuovi i mobili esistenti dalle stanze",
+        "cta": "Vedi Stagify+"
+      },
+      "ent": {
+        "name": "Enterprise",
+        "tag": "Per team",
+        "per": "/ generazione",
+        "desc": "Dai automaticamente Stagify+ a tutto il tuo team e paga solo per ciò che usa davvero.",
+        "f1": "Tutti con la tua email aziendale inclusi",
+        "f2": "Fatturazione a consumo, senza costi per postazione",
+        "f3": "Una sola fattura, addebitata mensilmente in base al consumo",
+        "f4": "Tutte le funzioni di Stagify+ incluse per il team",
+        "cta": "Esplora Enterprise"
+      }
+    },
+    "instagram": {
+      "title": "Guardalo in azione su Instagram",
+      "subtitle": "Vere trasformazioni di staging, consigli rapidi e dietro le quinte dal team Stagify.",
+      "follow": "Segui @stagify.ai"
+    },
+    "finalCta": {
+      "title": "Provalo sul tuo annuncio",
+      "subtitle": "Carica una stanza vuota e guardala arredata in circa otto secondi. Prova gratis.",
+      "button": "Carica una foto",
+      "note": "Riconosciuto da Compass, Centennial e altri."
+    },
+    "whyus": {
+      "subtitle": "Gli altri strumenti di staging virtuale sono lenti, costosi e bloccati. Stagify è creato per essere l'opposto."
+    },
+    "faq": {
+      "subtitle": "Risposte rapide alle domande più frequenti. Ancora bloccato? Visita le <a href=\"guides.html\">Guide</a> o contattaci."
+    },
+    "contactCta": {
+      "title": "La nostra casella di posta è sempre aperta",
+      "subtitle": "Domande, feedback o idee di partnership? Leggiamo ogni messaggio e rispondiamo il prima possibile.",
+      "email": "team@stagify.ai"
+    },
+    "reviewCta": {
+      "title": "Ti piace Stagify?",
+      "subtitle": "Ti piace come appaiono i tuoi annunci? Lascia una breve recensione su Google e aiuta altri agenti a trovarci.",
+      "button": "Lascia una recensione su Google",
+      "aria": "Lascia una recensione su Google (si apre in una nuova scheda)"
+    }
+  },
+  "modal": {
+    "rolePopup": {
+      "title": "Personalizziamo la tua esperienza!",
+      "question": "Qual è il tuo ruolo?",
+      "options": {
+        "agent": "Agente",
+        "seller": "Venditore",
+        "buyer": "Acquirente",
+        "other": "altro"
+      }
+    },
+    "referralPopup": {
+      "title": "Personalizziamo la tua esperienza!",
+      "question": "Come ci hai trovato?",
+      "options": {
+        "socials": "Social",
+        "friend": "Un amico",
+        "email": "Email",
+        "other": "altro"
+      }
+    },
+    "emailPopup": {
+      "title": "Personalizziamo la tua esperienza!",
+      "question": "Vuoi aggiornamenti via email?",
+      "placeholder": "tua@email.com",
+      "skip": "Salta"
+    },
+    "staging": {
+      "title": "Opzioni",
+      "close": "x",
+      "roomType": "Tipo di stanza",
+      "furnitureStyle": "Stile dei mobili",
+      "additionalPrompt": "Istruzione aggiuntiva",
+      "additionalPromptPlaceholder": "Aggiungi dettagli o richieste specifiche per il tuo staging...",
+      "removeFurniture": "Rimuovi i mobili esistenti",
+      "keepFurnitureLabel": "Mobili esistenti da mantenere (facoltativo)",
+      "keepFurniturePlaceholder": "es. mantieni il tavolo da pranzo e le mensole a muro",
+      "emptyRoomView": "Vedi la stanza svuotata",
+      "emptyRoomTitle": "Stanza vuota (mobili rimossi)",
+      "emptyRoomDownload": "Scarica la stanza vuota",
+      "emptyRoomAlt": "Stanza con i mobili esistenti rimossi",
+      "furniturePhotosLabel": "Foto dei mobili (facoltativo)",
+      "furniturePhotosHint": "Fino a 5 foto di riferimento di mobili o decorazioni da includere nella stanza arredata",
+      "processButton": "Elabora foto",
+      "maskBeforeButton": "Maschera e modifica la foto",
+      "maskBeforeHint": "Dipingi un'area della foto originale da modificare (es. rimuovere il disordine). Tutto il resto rimane intatto. Poi elabora per arredare la versione che preferisci.",
+      "maskBeforeTitle": "Maschera e modifica la foto",
+      "maskBeforePromptLabel": "Cosa vorresti cambiare nell'area dipinta?",
+      "maskBeforePromptPlaceholder": "es. rimuovere il vecchio divano, eliminare il disordine, ridipingere la parete di bianco",
+      "maskBeforeApply": "Applica modifica",
+      "maskLimitReached": "Hai raggiunto il limite di 6 versioni per questa immagine.",
+      "prevVersion": "Versione precedente",
+      "nextVersion": "Versione successiva",
+      "imageVersions": "Versioni dell'immagine",
+      "versionLabel": "Versione {index}",
+      "uploadArea": "Carica un'immagine o trascinala qui",
+      "before": "Prima",
+      "after": "Dopo",
+      "downloadResult": "Scarica risultato",
+      "uploadAnother": "Carica un'altra",
+      "noProcessedImage": "Il tuo risultato arredato apparirà qui",
+      "noProcessedImageSubtext": "Clicca su «Elabora foto» per generare una versione arredata con IA della tua immagine",
+      "imageModel": "Modello di immagine",
+      "fastGeneration": "Generazione rapida",
+      "qualityGeneration": "Generazione di qualità Stagify+",
+      "imageGenerations": "Generazioni di immagini",
+      "addPhotos": "+ Aggiungi foto",
+      "tryAnotherImage": "Prova un'altra immagine",
+      "uploadAreaAria": "Area di caricamento",
+      "editWithMask": "Modifica l'area selezionata con lo strumento maschera",
+      "stagingVariations": "Variazioni di staging",
+      "originalImage": "Foto originale della stanza prima dello staging virtuale",
+      "stagedImage": "Anteprima della stanza arredata con IA",
+      "warningAlt": "Avviso importante sullo staging",
+      "downloadIcon": "Scarica immagine",
+      "maskIcon": "Icona dello strumento maschera",
+      "variationAlt": "Variazione di staging virtuale {index} di {total}",
+      "furnitureReferenceAlt": "Foto di riferimento dei mobili: {filename}",
+      "uploadedRoomAlt": "La tua foto della stanza caricata{filenameSuffix}",
+      "sampleRoomAlt": "Foto di stanza di esempio per provare lo staging virtuale",
+      "stagedResultAlt": "Risultato della stanza arredata con IA{suffix}",
+      "progress": {
+        "preparing": "Preparazione…",
+        "uploading": "Caricamento immagine…",
+        "preparingAI": "Preparazione del modello IA…",
+        "staging": "L'IA sta arredando la tua stanza…",
+        "complete": "Completato!",
+        "error": "Errore: ",
+        "loadingMessages": [
+          "Trovare i mobili perfetti per te",
+          "Allestire la tua stanza ideale",
+          "Selezionare bellissimi elementi d'arredo",
+          "Disporre i mobili per il massimo impatto",
+          "Creare l'atmosfera perfetta",
+          "Valorizzare il tuo spazio con stile",
+          "Progettare gli interni dei tuoi sogni",
+          "Ottimizzare disposizione e flusso della stanza",
+          "Aggiungere gli ultimi ritocchi",
+          "Dare vita alla tua visione"
+        ]
+      }
+    }
+  },
+  "roomTypes": {
+    "bedroom": "Camera da letto",
+    "livingRoom": "Soggiorno",
+    "diningRoom": "Sala da pranzo",
+    "kitchen": "Cucina",
+    "bathroom": "Bagno",
+    "office": "Ufficio",
+    "outdoors": "Esterni"
+  },
+  "furnitureStyles": {
+    "standard": "Standard",
+    "modern": "Moderno",
+    "midcentury": "Midcentury",
+    "scandinavian": "Scandinavo",
+    "luxury": "Lusso",
+    "coastal": "Costiero",
+    "farmhouse": "Rustico",
+    "custom": "Personalizzato"
+  },
+  "carouselItems": {
+    "original": "Originale",
+    "modern": "Moderno",
+    "scandinavian": "Scandinavo",
+    "luxury": "Lusso",
+    "coastal": "Costiero",
+    "midcentury": "Midcentury",
+    "farmhouse": "Rustico",
+    "originalPhotoAlt": "Esempio di stanza vuota prima dello staging virtuale",
+    "modernPhotoAlt": "Stanza di esempio con stile di staging virtuale moderno",
+    "scandinavianPhotoAlt": "Stanza di esempio con stile di staging virtuale scandinavo",
+    "luxuryPhotoAlt": "Stanza di esempio con stile di staging virtuale di lusso",
+    "coastalPhotoAlt": "Stanza di esempio con stile di staging virtuale costiero",
+    "midcenturyPhotoAlt": "Stanza di esempio con stile di staging virtuale midcentury",
+    "farmhousePhotoAlt": "Stanza di esempio con stile di staging virtuale rustico"
+  },
+  "whyUs": {
+    "title": "Perché scegliere noi?",
+    "stagify": {
+      "title": "stagify.ai",
+      "features": {
+        "instantResults": "<strong>Risultati istantanei</strong>: ~8 secondi",
+        "oneClickStaging": "<strong>Staging con un clic</strong>: senza sforzo",
+        "free": "<strong>Generazioni illimitate</strong>: completamente gratis",
+        "noAds": "<strong>Esperienza senza pubblicità</strong>: nessuna distrazione",
+        "noLogin": "<strong>Iscrizione facile</strong>: inizia subito",
+        "unlimited": "<strong>Modelli di immagine avanzati</strong>: qualità superiore",
+        "copyright": "<strong>Pieni diritti d'autore</strong>: usali ovunque"
+      }
+    },
+    "others": {
+      "title": "Gli altri",
+      "features": {
+        "slowResults": "<strong style=\"color: #6d1c2c;\">Risultati lenti: </strong>Giorni di attesa",
+        "longProcess": "<strong style=\"color: #6d1c2c;\">Processo lungo: </strong>Tedioso avanti e indietro",
+        "expensive": "<strong style=\"color: #6d1c2c;\">Costoso: </strong>Tariffe elevate per immagine",
+        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Pubblicità e cookie: </strong>Esperienza invadente",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">Lungo processo di iscrizione: </strong>Avvio frustrante",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Modelli datati ed economici: </strong>Qualità inferiore",
+        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Diritti d'autore poco chiari: </strong>Rischio legale"
+      }
+    },
+    "keyFeatures": {
+      "title": "Funzioni principali",
+      "unlimitedVariations": {
+        "title": "Variazioni illimitate",
+        "description": "Esplora più stili finché non si adatta al tuo brand e al profilo dei tuoi acquirenti."
+      },
+      "fastTurnarounds": {
+        "title": "Tempi rapidi",
+        "description": "Arreda le foto in circa 8 secondi così pubblichi prima e chiudi più trattative."
+      }
+    }
+  },
+  "faq": {
+    "title": "Domande frequenti",
+    "questions": {
+      "whatIsVirtualStaging": {
+        "question": "Cos'è lo staging virtuale?",
+        "answer": "Lo staging virtuale è il processo di arredare digitalmente la foto di un immobile per mostrarne il potenziale, aiutando gli acquirenti a immaginare come uno spazio può apparire e farsi percepire una volta completamente arredato. A differenza dello staging tradizionale, è più veloce, più conveniente e consente più opzioni di design adattate alle diverse preferenze degli acquirenti. Con immagini di alta qualità, lo staging virtuale mette in risalto le caratteristiche migliori dell'immobile, rendendo più facile per gli acquirenti creare un legame emotivo e immaginarsi di viverci."
+      },
+      "howLong": {
+        "question": "Quanto tempo richiede?",
+        "answer": "In media, lo staging virtuale richiede circa 8 secondi per foto, anche se il tempo esatto può essere un po' più breve o più lungo a seconda della complessità dello spazio e dello stile di design scelto. Il risultato è una trasformazione rapida e fluida che fa risaltare le foto del tuo immobile."
+      },
+      "customTheme": {
+        "question": "Come seleziono un tema personalizzato?",
+        "answer": "Se non vedi il tema che desideri, puoi selezionare «Personalizzato» e poi aggiungere un'istruzione specifica per il tema che vuoi. Useremo la tua istruzione per generare il tema desiderato."
+      },
+      "idealRoom": {
+        "question": "Cosa rende una stanza ideale per lo staging?",
+        "answer": "Una stanza ideale per lo staging dovrebbe avere una buona illuminazione, pareti libere e il minimo disordine. Le stanze vuote o scarsamente arredate funzionano meglio, perché offrono una tela pulita all'IA per aggiungere mobili e decorazioni adatti allo stile scelto. Le inquadrature più ampie che catturano più della stanza sono molto migliori degli angoli stretti o ritagliati, perché danno all'IA più contesto per arredare lo spazio in modo realistico."
+      },
+      "privacy": {
+        "question": "I miei dati sono privati e sicuri?",
+        "answer": "Sì. Usiamo la crittografia HTTPS, non conserviamo in modo permanente le immagini caricate dopo l'elaborazione e non vendiamo le tue informazioni personali. Mantieni la proprietà dei tuoi caricamenti e dei risultati generati. Condividiamo i dati solo con i fornitori di servizi necessari per far funzionare Stagify (come i servizi di IA e di pagamento), come descritto nella nostra Informativa sulla privacy."
+      }
+    }
+  },
+  "contact": {
+    "title": "Mettiti in contatto",
+    "description": "Ci farebbe piacere sentirti. Scrivici singolarmente o contattaci all'indirizzo <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
+    "social": "Seguici su <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> o <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> per aggiornamenti ed esempi!",
+    "labels": {
+      "name": "Nome",
+      "email": "Email",
+      "phone": "Telefono"
+    },
+    "team": {
+      "maximilian": {
+        "name": "Maximilian Ising",
+        "email": "maximilianbising@gmail.com",
+        "phone": "(917) 690-6253",
+        "title": "Cofondatore, Responsabile Sviluppo e IA",
+        "photoAlt": "Ritratto di Maximilian Ising, cofondatore e responsabile sviluppo e IA di Stagify.ai"
+      },
+      "lucas": {
+        "name": "Lucas Shtainer",
+        "email": "lucasshtainer1@gmail.com",
+        "phone": "(347) 491-9609",
+        "title": "Cofondatore, Responsabile Marketing",
+        "photoAlt": "Ritratto di Lucas Shtainer, cofondatore e responsabile marketing di Stagify.ai"
+      },
+      "ryan": {
+        "name": "Ryan Croman",
+        "email": "ryancroman10@gmail.com",
+        "phone": "(646) 709-6715",
+        "title": "Cofondatore, Responsabile Sviluppo Commerciale",
+        "photoAlt": "Ritratto di Ryan Croman, cofondatore e responsabile sviluppo commerciale di Stagify.ai"
+      },
+      "emil": {
+        "name": "Emil Volvosky",
+        "email": "emvolvovsky@gmail.com",
+        "phone": "(917) 691-2013",
+        "title": "Analista di Marketing Statistico",
+        "photoAlt": "Ritratto di Emil Volvosky, analista di marketing statistico di Stagify.ai"
+      }
+    }
+  },
+  "errors": {
+    "fileType": "Carica un file immagine PNG, JPG, JPEG, WebP o GIF.",
+    "fileTooLarge": "Il file è troppo grande. Carica un'immagine inferiore a 100 MB.",
+    "uploadFirst": "Carica prima un'immagine",
+    "badPrompt": "Istruzione non valida inserita",
+    "processingFailed": "Elaborazione non riuscita",
+    "noImageData": "Nessun dato immagine ricevuto",
+    "dailyLimitFree": "Hai usato tutte le {limit} elaborazioni di staging gratuite per oggi (azzeramento a mezzanotte UTC). Passa a Stagify+ per uno staging illimitato.",
+    "dailyLimitAnonymous": "Hai raggiunto il limite gratuito per questa rete ({limit} elaborazioni al giorno, UTC). Accedi per collegare lo staging al tuo account o riprova domani.",
+    "dailyLimitCta": "Vedi Stagify+"
+  },
+  "common": {
+    "close": "Chiudi",
+    "selectLanguage": "Seleziona lingua"
+  },
+  "footer": {
+    "privacy": "Informativa sulla privacy",
+    "terms": "Termini di servizio",
+    "contact": "Contatti",
+    "copyright": "Stagify.ai"
+  },
+  "auth": {
+    "yourEmail": "la tua email",
+    "welcomeTitle": "Benvenuto su Stagify",
+    "welcomeSub": "Crea un account gratuito per caricare e arredare le tue foto.",
+    "registerTitle": "Crea il tuo account gratuito",
+    "registerSub": "Iscriviti per caricare e arredare immagini.",
+    "signInTitle": "Accedi",
+    "signInSub": "Usa la tua email e la tua password per continuare.",
+    "verifyTitle": "Verifica la tua email",
+    "verifyCopy": "Inserisci il codice di 6 cifre che abbiamo inviato a {email}.",
+    "resetTitle": "Reimposta la password",
+    "resetCopy": "Ti invieremo via email un link monouso per impostare una nuova password. Il link scade tra un'ora.",
+    "email": "Email",
+    "emailPlaceholder": "tu@esempio.com",
+    "password": "Password",
+    "passwordPlaceholder": "Almeno 8 caratteri",
+    "confirmPassword": "Conferma password",
+    "confirmPasswordPlaceholder": "Reinserisci la password",
+    "or": "oppure",
+    "forgotPassword": "Password dimenticata?",
+    "verificationCode": "Codice di verifica",
+    "verificationCodePlaceholder": "123456",
+    "back": "Indietro",
+    "resendCode": "Invia di nuovo il codice",
+    "createAccount": "Crea account",
+    "continue": "Continua",
+    "signIn": "Accedi",
+    "sendResetLink": "Invia link di reimpostazione",
+    "backToSignIn": "Torna all'accesso",
+    "alreadyHaveAccount": "Hai già un account?",
+    "newHere": "Nuovo qui?",
+    "accountMenu": "Menu account",
+    "googleCancelled": "L'accesso con Google è stato annullato.",
+    "googleFailed": "Accesso con Google non riuscito",
+    "networkError": "Errore di rete. Riprova.",
+    "enterEmail": "Inserisci il tuo indirizzo email.",
+    "resendFailed": "Impossibile inviare di nuovo il codice. Riprova.",
+    "resendSuccess": "Abbiamo inviato un nuovo codice di verifica.",
+    "resetSomethingWrong": "Qualcosa è andato storto. Riprova tra qualche minuto.",
+    "resetLinkSent": "Abbiamo inviato un link per reimpostare la password. Controlla la tua email (e lo spam).",
+    "noAccountForEmail": "Nessun account trovato per quell'email.",
+    "resetTryLater": "Qualcosa è andato storto. Riprova più tardi.",
+    "enterVerificationCode": "Inserisci il codice di verifica di 6 cifre dalla tua email.",
+    "verificationFailed": "Verifica non riuscita",
+    "passwordsNoMatch": "Le password non corrispondono.",
+    "somethingWrong": "Qualcosa è andato storto",
+    "checkEmailForCode": "Controlla la tua email per un codice di verifica.",
+    "agreeTerms": "Creando un account, accetti i <a href=\"terms.html\">Termini</a> e la <a href=\"privacy.html\">Privacy</a>"
+  },
+  "profile": {
+    "signIn": "Accedi",
+    "createAccount": "Crea account",
+    "freePlan": "Piano gratuito",
+    "upgradeToPlus": "Passa a Stagify+",
+    "manageSubscription": "Gestisci abbonamento",
+    "signOut": "Esci",
+    "manageBillingAria": "Gestisci la fatturazione in Stripe",
+    "stripeHelp": "Centro assistenza Stripe"
+  },
+  "pdf": {
+    "meta": {
+      "title": "Designer IA | Stagify.ai – Assistente di design basato sull'IA",
+      "description": "Chatta con il Designer IA per ricevere aiuto su domande di design, caricare file da analizzare e ottenere consigli di design professionali all'istante.",
+      "keywords": "Designer IA, assistente di design IA, consulenza di design, chat IA, aiuto al design, IA per l'interior design"
+    },
+    "title": "Designer IA",
+    "description": "Converti i tuoi PDF di planimetrie CAD in visualizzazioni 3D fotorealistiche degli interni",
+    "statusMessages": {
+      "generating": ["generazione dell'immagine...", "creazione della tua immagine...", "diamo vita alla tua visione...", "elaborazione dei dettagli...", "rendering in corso...", "ci siamo quasi...", "finalizzazione dei dettagli...", "rifinitura del risultato...", "un attimo..."],
+      "staging": ["allestimento della tua stanza...", "aggiunta dei mobili...", "selezione dell'arredo...", "disposizione degli elementi...", "applicazione degli stili...", "creazione del design...", "generazione della disposizione...", "rifinitura dei dettagli...", "quasi pronto..."],
+      "analyzing": ["analisi dell'immagine...", "esame dei dettagli...", "identificazione degli elementi...", "elaborazione dei dati visivi...", "comprensione dello spazio...", "revisione della composizione...", "studio della disposizione...", "quasi fatto..."],
+      "welcome": ["preparazione del tuo benvenuto...", "ci prepariamo per te...", "stiamo configurando tutto...", "preparazione di un caloroso benvenuto...", "prepariamo tutto per te...", "quasi pronti ad accoglierti...", "configurazione del tuo spazio...", "preparazione di qualcosa di speciale..."],
+      "general": ["sto pensando...", "elaborazione della tua richiesta...", "analisi in corso...", "valutazione delle opzioni...", "ci sto lavorando...", "ci siamo quasi...", "un attimo...", "preparazione della risposta..."]
+    },
+    "emptyState": "Avvia una conversazione digitando un messaggio o caricando un file",
+    "uploadFile": "Carica file",
+    "inputPlaceholder": "Digita il tuo messaggio...",
+    "sendButton": "Invia",
+    "uploadArea": "Carica un PDF o trascinalo qui",
+    "uploadSubtext": "Supportato: file PDF",
+    "options": {
+      "title": "Opzioni di elaborazione",
+      "skip": "Salta le prime pagine",
+      "skipHint": "Salta le copertine e i frontespizi",
+      "concurrency": "Velocità di elaborazione",
+      "concurrencyHint": "Velocità maggiori possono aumentare il tempo di elaborazione per stanza",
+      "dpi": "Qualità immagine (DPI)",
+      "dpiHint": "Un DPI più alto produce una qualità migliore ma richiede più tempo"
+    },
+    "processButton": "Elabora PDF",
+    "progress": {
+      "uploading": "Caricamento del PDF…",
+      "processing": "Elaborazione del PDF…",
+      "complete": "Completato!"
+    },
+    "result": {
+      "title": "Elaborazione completata!",
+      "description": "Il tuo PDF elaborato è pronto per il download.",
+      "download": "Scarica il PDF elaborato",
+      "uploadAnother": "Carica un altro PDF"
+    },
+    "info": {
+      "title": "Come funziona",
+      "step1": "Carica il tuo PDF di planimetria CAD",
+      "step2": "La nostra IA identifica le stanze ed estrae i dettagli della planimetria",
+      "step3": "Ogni stanza viene convertita in una visualizzazione 3D fotorealistica",
+      "step4": "Scarica il tuo PDF elaborato con i rendering 3D (di solito richiede 2 minuti)",
+      "note": "Nota: l'elaborazione richiede di solito circa 2 minuti. Ti preghiamo di pazientare mentre la nostra IA genera i tuoi rendering 3D."
+    },
+    "status": {
+      "fileReady": "File pronto"
+    },
+    "modelSelector": {
+      "chooseModel": "Scegli il tuo modello",
+      "fast": "Rapido",
+      "fastDescription": "Qualità standard, più veloce",
+      "pro": "Stagify+",
+      "proDescription": "Qualità superiore, più lento"
+    },
+    "messageTag": {
+      "auto": "Auto",
+      "generate": "Genera",
+      "stage": "Arreda/Modifica",
+      "cadStage": "Arreda (planimetria)",
+      "describe": "Descrivi/Richiama"
+    },
+    "thumbnailStrip": {
+      "label": "Immagine di base per il prossimo messaggio",
+      "help": "Scegli quale immagine della stanza l'IA deve modificare quando invii il prossimo messaggio, specialmente quando aggiungi mobili. Utile quando hai più caricamenti o versioni arredate.",
+      "helpAria": "Cosa significa immagine di base?"
+    },
+    "alt": {
+      "uploadFile": "Allega un file al tuo messaggio",
+      "reloadChat": "Avvia una nuova conversazione",
+      "sendMessage": "Invia messaggio",
+      "reportBug": "Segnala un bug",
+      "userAvatar": "Il tuo avatar",
+      "assistantAvatar": "Designer IA di Stagify",
+      "uploadPreview": "Anteprima del file caricato: {filename}",
+      "stagedRoom": "Stanza arredata con IA{suffix}",
+      "generatedImage": "Immagine di design generata con IA{suffix}",
+      "cadRender": "Rendering 3D dalla planimetria{suffix}",
+      "recalledImage": "Immagine condivisa in precedenza in questa conversazione",
+      "requestedImage": "Immagine richiesta dalla cronologia della conversazione",
+      "editedImage": "Immagine di design modificata con maschera{suffix}",
+      "originalCarouselImage": "Immagine originale prima delle modifiche con maschera",
+      "enlargedImage": "Visualizzazione a grandezza naturale dell'immagine di design",
+      "thumbnailSelected": "{label} – selezionata come immagine di base per il tuo prossimo messaggio",
+      "thumbnailOption": "{label} – immagine {index} nella conversazione"
+    },
+    "maskEditor": {
+      "title": "Modifica con maschera",
+      "brush": "Pennello",
+      "erase": "Cancella",
+      "brushAllNote": "Assicurati di dipingere tutta l'area che vuoi mascherare.",
+      "toolsAria": "Strumento maschera",
+      "brushSize": "Dimensione pennello:",
+      "promptLabel": "Cosa vorresti cambiare nell'area mascherata?",
+      "promptPlaceholder": "es. cambia il colore della parete in blu, sostituisci il divano con una poltrona moderna...",
+      "cancel": "Annulla",
+      "clearMask": "Cancella maschera",
+      "applyEdit": "Applica modifica",
+      "rerun": "Rigenera",
+      "done": "Va bene così",
+      "refineTitle": "Perfeziona la modifica",
+      "refineNote": "Dipingi per rivelare di più della modifica, cancella per nasconderla: questo ritaglia soltanto, non riesegue l'IA.",
+      "refineHelp": "Questo passaggio regola soltanto dove appare la modifica dell'IA, non riesegue l'IA. Dipingi per rivelare di più della modifica, cancella per ridurla. È una rete di sicurezza, così la modifica tocca solo l'area che hai scelto e non può rovinare il resto della tua foto.",
+      "refineHelpAria": "Cosa fa il passaggio di perfezionamento",
+      "loadApplying": "Applicazione della tua modifica…",
+      "referenceLabel": "Foto di riferimento (facoltativo)",
+      "referenceAdd": "+ Aggiungi foto",
+      "referenceHint": "Facoltativo: una foto di mobili o decorazioni da inserire nell'area mascherata",
+      "referenceRemove": "Rimuovi foto di riferimento",
+      "referenceAlt": "Riferimento per la modifica mascherata",
+      "referenceTooLarge": "Questa immagine è troppo grande: scegline una sotto i 25 MB.",
+      "referenceInvalid": "Scegli un'immagine JPG, PNG o WebP valida.",
+      "processing": "Elaborazione...",
+      "pleaseDrawMask": "Disegna una maschera sull'area che vuoi modificare.",
+      "pleaseDescribeChange": "Descrivi cosa vuoi cambiare nell'area mascherata."
+    },
+    "errors": {
+      "invalidFileType": "Carica un file PDF.",
+      "fileTooLarge": "Il file è troppo grande. Carica un PDF inferiore a 100 MB.",
+      "noFile": "Carica prima un file PDF",
+      "processingFailed": "Elaborazione non riuscita. Riprova.",
+      "noProcessedFile": "Nessun PDF elaborato disponibile."
+    }
+  },
+  "techHelp": {
+    "metaTitle": "Aiuto tecnico – Risoluzione dei problemi e supporto Stagify.ai",
+    "metaDescription": "Risolvi i problemi tecnici comuni con Stagify.ai. Soluzioni per caricamenti, generazione, accesso, fatturazione e problemi del browser.",
+    "metaKeywords": "aiuto tecnico stagify, risoluzione problemi, caricamento non funziona, aiuto staging, supporto, problemi comuni",
+    "badge": "Aiuto tecnico",
+    "title": "Risoluzione dei problemi e problemi comuni",
+    "subtitle": "La maggior parte dei problemi ha una soluzione rapida. Trova il tuo qui sotto e, se sei ancora bloccato, il nostro team è a una email di distanza.",
+    "upload": {
+      "title": "Caricamento e file",
+      "i1": {
+        "q": "La mia foto non si carica.",
+        "a": "Assicurati che il file sia un JPG, PNG o WEBP sotto i 10 MB. Le foto da telefono molto grandi a volte falliscono: ridimensiona l'immagine o fanne uno screenshot, poi ricaricala. Se continua a fallire, aggiorna la pagina e riprova."
+      },
+      "i2": {
+        "q": "Quali foto funzionano meglio?",
+        "a": "Usa una foto nitida e ben illuminata, scattata frontalmente, con tutta la stanza visibile e il minimo disordine. Scatti sfocati, scuri o con grandangolo estremo danno risultati più deboli. Nuovo qui? Guarda prima la <a href=\"#walkthrough\">guida passo passo</a>."
+      }
+    },
+    "tips": {
+      "title": "Risultati migliori e consigli da pro",
+      "i1": {
+        "q": "Come ottengo lo staging più realistico?",
+        "a": "Fotografa la stanza frontalmente alla luce del giorno, con tutto lo spazio nell'inquadratura e le superfici sgombre. Scegli il tipo di stanza e lo stile esatti prima di generare, poi crea due o tre variazioni e tieni la migliore. <a href=\"index.html#stage\">Apri lo studio di staging</a> per provarlo."
+      },
+      "i2": {
+        "q": "Quale piano o strumento dovrei usare?",
+        "a": "La versione gratuita è perfetta per stanze singole occasionali. <a href=\"stagify-plus.html\">Stagify+</a> sblocca generazioni illimitate, modelli di qualità superiore, lo strumento di mascheratura e la barra delle istruzioni. <a href=\"ai-designer.html\">Designer IA</a> riprogetta un'intera stanza da una breve chat: ideale quando vuoi che sia lui a prendere le decisioni per te."
+      },
+      "i3": {
+        "q": "Posso controllare i mobili e la disposizione?",
+        "a": "Sì. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra delle istruzioni ti permette di descrivere dettagli come «aggiungi un divano ad angolo e un grande tappeto», e lo strumento Mobili inserisce i tuoi pezzi. Se solo un'area non va, mascherala e rigenera solo quel punto invece di rifare tutta l'immagine."
+      }
+    },
+    "generate": {
+      "title": "Generazione e risultati",
+      "i1": {
+        "q": "La mia generazione è bloccata o troppo lenta.",
+        "a": "La maggior parte delle immagini si completa in circa 8 secondi. Se ci vuole più di un minuto, la tua connessione potrebbe essersi interrotta: aggiorna la pagina e riprova. Evita di cambiare scheda o bloccare il telefono durante l'operazione."
+      },
+      "i2": {
+        "q": "Il risultato ha mobili strani o artefatti.",
+        "a": "Lo staging IA non è perfetto a ogni passaggio. Genera di nuovo per una nuova variazione, cambia stile o usa lo <a href=\"ai-designer.html\">strumento di mascheratura</a> per correggere solo l'area che non va invece di rifare tutta l'immagine."
+      },
+      "i3": {
+        "q": "Non è cambiato nulla o la stanza sembra ancora vuota.",
+        "a": "Di solito significa che non è stato selezionato un tipo di stanza o uno stile, o che la foto era troppo scura per il modello. Scegli un tipo di stanza e uno stile, poi prova una foto più luminosa. Vuoi che l'IA se ne occupi dall'inizio alla fine? Prova <a href=\"ai-designer.html\">Designer IA</a>."
+      }
+    },
+    "account": {
+      "title": "Account e accesso",
+      "i1": {
+        "q": "Il mio codice di verifica non è arrivato.",
+        "a": "Controlla la cartella spam o promozioni: i codici possono richiedere un minuto. Se ancora non arriva, usa «Invia di nuovo il codice» e assicurati che la tua email sia digitata correttamente."
+      },
+      "i2": {
+        "q": "Ho dimenticato la password.",
+        "a": "Nella schermata di accesso scegli «Password dimenticata?» e ti invieremo via email un link di reimpostazione. Il link scade dopo un'ora."
+      },
+      "i3": {
+        "q": "L'accesso con Google non funziona.",
+        "a": "Consenti i pop-up per stagify.ai e assicurati che i cookie di terze parti non siano completamente bloccati, poi riprova. Puoi anche accedere con la tua email e la tua password."
+      }
+    },
+    "billing": {
+      "title": "Fatturazione e Stagify+",
+      "i1": {
+        "q": "Come gestisco o annullo Stagify+?",
+        "a": "Clicca sull'icona del profilo in alto a destra, poi tocca l'icona Stripe accanto a Stagify+ per aprire la tua dashboard di fatturazione, dove puoi aggiornare o annullare il tuo abbonamento. Puoi anche aprire direttamente il <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">portale di fatturazione Stripe</a>. Mantieni l'accesso fino alla fine del periodo di fatturazione corrente."
+      },
+      "i2": {
+        "q": "Mi è stato addebitato ma non vedo le funzioni di Stagify+.",
+        "a": "Esci e accedi di nuovo per aggiornare il tuo account. Se le funzioni continuano a non comparire, scrivici a <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> dall'indirizzo che hai usato."
+      }
+    },
+    "performance": {
+      "title": "Browser e prestazioni",
+      "i1": {
+        "q": "Quali browser sono supportati?",
+        "a": "Usa una versione aggiornata di Chrome, Safari, Edge o Firefox. I browser più vecchi potrebbero non supportare l'editor o gli strumenti di confronto a trascinamento."
+      },
+      "i2": {
+        "q": "La pagina è lenta o i pulsanti non rispondono.",
+        "a": "Ricarica completamente la pagina (Ctrl/Cmd + Maiusc + R) per eliminare una versione obsoleta, chiudi le schede inutilizzate e disattiva i blocchi pubblicitari per stagify.ai, che possono interferire con i caricamenti."
+      },
+      "i3": {
+        "q": "Il sito non si carica affatto.",
+        "a": "Controlla la tua connessione a Internet, poi prova una finestra privata/in incognito. Se si carica lì, svuota la cache del browser per stagify.ai."
+      }
+    },
+    "contact": {
+      "text": "Ancora bloccato? Il nostro team è felice di aiutarti. Scrivi a ",
+      "email": "team@stagify.ai"
+    }
+  },
+  "guides": {
+    "badge": "Guide",
+    "title": "Guide e tutorial",
+    "subtitle": "Tutorial interattivi e veloci per iniziare ad arredare in pochi minuti, più soluzioni ai problemi comuni.",
+    "heroBadge": "Centro assistenza",
+    "liveBadge": "Demo interattiva",
+    "walkthroughsTitle": "Tutorial passo passo",
+    "demo1Title": "Il tuo primo staging gratuito",
+    "demo1Desc": "Segui i passaggi per caricare una foto e ottenere la tua prima stanza arredata.",
+    "demo2Title": "Il tuo primo staging con Stagify+",
+    "demo2Desc": "Scopri come arredare con Stagify+ per generazioni illimitate, qualità superiore e strumenti pro.",
+    "pickerFree": "Gratis",
+    "pickerPlus": "Stagify+",
+    "pickerDesigner": "Designer IA",
+    "pickerPromptBar": "Barra delle istruzioni",
+    "pickerFurniture": "Mobili",
+    "demo3Desc": "Guarda il Designer IA arredare e riprogettare una stanza in autonomia da una semplice chat.",
+    "troubleshootingTitle": "Risoluzione dei problemi e problemi comuni"
+  },
+  "pageMeta": {
+    "guides": {
+      "title": "Guide e tutorial | Stagify.ai",
+      "description": "Tutorial passo passo per Stagify.ai: il tuo primo staging gratuito, lo staging con Stagify+ e soluzioni ai problemi comuni."
+    },
+    "contact": {
+      "title": "Contatti | Stagify.ai",
+      "description": "Contatta il team di Stagify.ai per supporto, partnership o domande sul nostro strumento gratuito di home staging IA."
+    },
+    "stagifyPlus": {
+      "title": "Stagify+ – Piani e prezzi | Stagify.ai",
+      "description": "Stagify+: staging IA illimitato, modelli di qualità superiore, Designer IA e strumento di mascheratura. Scopri piani e prezzi."
+    },
+    "enterprise": {
+      "title": "Stagify Enterprise – Staging IA a consumo per i team",
+      "description": "Dai a tutto il tuo team uno staging IA illimitato con fatturazione a consumo a 0,15 $ per generazione. Una sola fattura, senza costi per postazione."
+    }
+  }
+}

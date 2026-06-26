@@ -222,6 +222,12 @@
       "title": "我们随时查收邮件",
       "subtitle": "有问题、反馈或合作想法 — 我们会阅读每一封邮件并尽快回复。",
       "email": "team@stagify.ai"
+    },
+    "reviewCta": {
+      "title": "喜欢 Stagify 吗？",
+      "subtitle": "喜欢你的房源呈现效果吗？留下一条 Google 评价，帮助更多经纪人找到我们。",
+      "button": "在 Google 上留下评价",
+      "aria": "在 Google 上留下评价（在新标签页中打开）"
     }
   },
   "modal": {
@@ -478,7 +484,8 @@
     "dailyLimitCta": "了解 Stagify+"
   },
   "common": {
-    "close": "关闭"
+    "close": "关闭",
+    "selectLanguage": "选择语言"
   },
   "footer": {
     "privacy": "隐私政策",
@@ -648,6 +655,20 @@
       "cancel": "取消",
       "clearMask": "清除蒙版",
       "applyEdit": "应用编辑",
+      "rerun": "重新生成",
+      "done": "看起来不错",
+      "refineTitle": "优化编辑",
+      "refineNote": "涂抹以显示更多编辑内容，擦除以隐藏——此操作仅重新裁剪，不会重新运行 AI。",
+      "refineHelp": "此步骤只是微调 AI 修改的显示范围，不会重新运行 AI。涂抹可显示更多编辑内容，擦除可收回。这是一项安全措施，让编辑只影响你选择的区域，不会破坏照片的其余部分。",
+      "refineHelpAria": "优化步骤的作用",
+      "loadApplying": "正在应用您的编辑…",
+      "referenceLabel": "参考照片（可选）",
+      "referenceAdd": "+ 添加照片",
+      "referenceHint": "可选：用于在蒙版区域放置的家具或装饰参考图",
+      "referenceRemove": "移除参考照片",
+      "referenceAlt": "蒙版编辑参考图",
+      "referenceTooLarge": "该图片过大——请选择小于 25 MB 的图片。",
+      "referenceInvalid": "请选择有效的 JPG、PNG 或 WebP 图片。",
       "processing": "处理中...",
       "pleaseDrawMask": "请在要编辑的区域上绘制蒙版。",
       "pleaseDescribeChange": "请描述您想在蒙版区域中更改的内容。"

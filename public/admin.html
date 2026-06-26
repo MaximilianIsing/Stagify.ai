@@ -347,12 +347,11 @@
     return fetch(url,{headers:{'X-Stagify-Endpoint-Key':_key}}).then(function(r){if(!r.ok)throw new Error(r.status);return r});
   }
 
-  // Security: the protectLogs middleware uses ?key= query param only.
-  // We must append the key as a query param since the middleware checks req.query.key.
-  // To avoid exposing it in browser history / referrer, we ONLY do this via JS fetch, never via <a href>.
+  // Kept as a named alias for the log/data endpoints; same header auth as apiFetch
+  // so the key never appears in the URL (no leak via logs/history/Referer).
   function apiFetchQ(url){
     checkSessionTimeout();
-    return fetch(url+(url.indexOf('?')===-1?'?':'&')+'key='+encodeURIComponent(_key))
+    return fetch(url,{headers:{'X-Stagify-Endpoint-Key':_key}})
       .then(function(r){if(!r.ok)throw new Error(r.status);return r});
   }
 
@@ -977,7 +976,7 @@
     errEl.classList.add('hidden');
     btn.disabled=true;btn.textContent='Verifying\u2026';
 
-    fetch('/authstore?key='+encodeURIComponent(k)).then(function(r){
+    fetch('/authstore',{headers:{'X-Stagify-Endpoint-Key':k}}).then(function(r){
       if(r.ok){
         _key=k;_sessionStart=Date.now();_loginAttempts=0;
         sessionStorage.setItem('adm_ts',String(_sessionStart));

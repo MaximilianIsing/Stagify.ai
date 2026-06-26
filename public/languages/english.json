@@ -222,6 +222,12 @@
       "title": "Our inbox is always open",
       "subtitle": "Questions, feedback, or partnership ideas? We read every message and reply as soon as we can.",
       "email": "team@stagify.ai"
+    },
+    "reviewCta": {
+      "title": "Enjoying Stagify?",
+      "subtitle": "Love how your listings look? Leave a quick Google review and help other agents find us.",
+      "button": "Leave a Google review",
+      "aria": "Leave a Google review (opens in a new tab)"
     }
   },
   "modal": {
@@ -477,7 +483,8 @@
     "dailyLimitCta": "View Stagify+"
   },
   "common": {
-    "close": "Close"
+    "close": "Close",
+    "selectLanguage": "Select language"
   },
   "footer": {
     "privacy": "Privacy Policy",
@@ -647,6 +654,20 @@
       "cancel": "Cancel",
       "clearMask": "Clear Mask",
       "applyEdit": "Apply Edit",
+      "rerun": "Regenerate",
+      "done": "Looks good",
+      "refineTitle": "Refine the edit",
+      "refineNote": "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI.",
+      "refineHelp": "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo.",
+      "refineHelpAria": "What the refine step does",
+      "loadApplying": "Applying your edit…",
+      "referenceLabel": "Reference photo (optional)",
+      "referenceAdd": "+ Add photo",
+      "referenceHint": "Optional: a photo of furniture or decor to place in the masked area",
+      "referenceRemove": "Remove reference photo",
+      "referenceAlt": "Reference for masked edit",
+      "referenceTooLarge": "That image is too large — please choose one under 25 MB.",
+      "referenceInvalid": "Please choose a valid JPG, PNG, or WebP image.",
       "processing": "Processing...",
       "pleaseDrawMask": "Please draw a mask over the area you want to edit.",
       "pleaseDescribeChange": "Please describe what you want to change in the masked area."

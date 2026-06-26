@@ -192,6 +192,15 @@ function endpointKeyMatches(received, expected) {
   return crypto.timingSafeEqual(a, b);
 }
 
+/**
+ * Headers for any response that carries secrets or PII: keep it out of shared
+ * caches and stop the URL/Referer from leaking onward to third parties.
+ */
+function setSensitiveHeaders(res) {
+  res.set('Cache-Control', 'no-store');
+  res.set('Referrer-Policy', 'no-referrer');
+}
+
 function getAuthUserFromRequest(req) {
   let token = null;
   const h = req.headers.authorization;
@@ -201,9 +210,9 @@ function getAuthUserFromRequest(req) {
   if (!token && req.body && typeof req.body === 'object' && req.body.authToken) {
     token = String(req.body.authToken).trim();
   }
-  if (!token && req.query && req.query.authToken) {
-    token = String(req.query.authToken).trim();
-  }
+  // Note: we intentionally do NOT read the session token from req.query — a token
+  // in a URL leaks via access logs, browser history, and Referer headers. Use the
+  // Authorization: Bearer header (or a POST body) instead.
   const user = authStore.validateSession(token);
   return enhanceUserWithEnterprise(user);
 }
@@ -722,40 +731,44 @@ app.get('/sitemap.xml', (req, res) => {
  * If the browser has no Authorization header, returns a tiny page that re-opens this URL with
  * ?authToken= from localStorage (same pattern as other auth flows).
  */
+// Static page that collects the admin key (from a #fragment or a field) and the
+// session token client-side, then POSTs them as headers. The page itself holds
+// no secrets, so it's safe to serve unconditionally.
 app.get('/getpro', (req, res) => {
+  setSensitiveHeaders(res);
+  res.sendFile(path.join(__dirname, 'public', 'getpro.html'));
+});
+
+/**
+ * Grant Stagify+ to the signed-in account. Both secrets ride in headers:
+ *   X-Stagify-Endpoint-Key: <admin key>   (constant-time compared)
+ *   Authorization: Bearer <session token>
+ * Nothing sensitive touches the URL, so it can't leak via access logs, browser
+ * history, or Referer headers.
+ */
+app.post('/api/getpro', (req, res) => {
+  setSensitiveHeaders(res);
   try {
     if (!LOGS_ACCESS_KEY) {
-      return res.status(503).type('text/plain').send('Not configured');
+      return res.status(503).json({ error: 'Not configured' });
     }
-    const keyParam = typeof req.query.key === 'string' ? req.query.key.trim() : '';
-    if (!keyParam || !endpointKeyMatches(keyParam, LOGS_ACCESS_KEY)) {
-      return res.status(404).type('text/plain').send('Not found');
+    const provided = req.get('X-Stagify-Endpoint-Key') || '';
+    if (!endpointKeyMatches(provided, LOGS_ACCESS_KEY)) {
+      return res.status(403).json({ error: 'Access denied' });
     }
     const user = getAuthUserFromRequest(req);
     if (!user) {
-      const html =
-        '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stagify+</title></head><body>' +
-        '<p id="m">Checking sign-in…</p><script>' +
-        '(function(){var k=' +
-        JSON.stringify(keyParam) +
-        ';try{var t=localStorage.getItem("stagifyAuthToken");if(t){var u=new URL(location.pathname,location.origin);u.searchParams.set("key",k);u.searchParams.set("authToken",t);location.replace(u.toString());return;}}catch(e){}' +
-        'document.getElementById("m").textContent="Sign in on this site first, then open this link again.";' +
-        '})();</script></body></html>';
-      return res.type('html').send(html);
+      return res.status(401).json({ error: 'Sign in on this site first, then try again.' });
     }
     const result = authStore.grantProWithPass(user.id);
     if (!result.ok) {
-      return res.status(400).type('text/plain').send(result.error || 'Failed');
+      return res.status(400).json({ error: result.error || 'Failed' });
     }
     console.log('[getpro] granted pro for user', user.id);
-    const okHtml =
-      '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stagify+</title></head><body>' +
-      '<p>Your account now has <strong>Stagify+</strong>.</p><p><a href="/">Home</a> · <a href="/stagify-plus.html">Stagify+</a></p>' +
-      '<script>try{history.replaceState({}, "", "/");}catch(e){}</script></body></html>';
-    return res.type('html').send(okHtml);
+    return res.json({ ok: true });
   } catch (e) {
     console.error('[getpro]', e);
-    return res.status(500).type('text/plain').send('Error');
+    return res.status(500).json({ error: 'Error' });
   }
 });
 
@@ -2651,6 +2664,12 @@ const MASK_REVIEW_PROMPT =
   'Mark it NOT perfect if the edited image shows obvious problems: warped or melted ' +
   'furniture, impossible geometry, distorted perspective, extra/missing legs, duplicated ' +
   'or garbled objects, smeared textures, or physically impossible lighting. ' +
+  'Also mark it NOT perfect if a newly added or placed object looks CUT OFF, ' +
+  'sliced, hard-cropped, or abruptly faded/ghosted at its edges in the middle of ' +
+  'the room (as if only part of it rendered or it ran past the editable area) — a ' +
+  'correctly placed object has complete, un-clipped, fully opaque edges and sits ' +
+  'naturally in the space; ignore furniture that is only partially in view because ' +
+  'it runs off the actual photo border. ' +
   'CRUCIALLY, also mark it NOT perfect if the edit REMOVED TOO MUCH compared with the ' +
   'original — e.g. it deleted or erased furniture, fixtures, windows, decor, or ' +
   'architectural detail that should still be there, or left blank walls/floor, a large ' +
@@ -2835,6 +2854,10 @@ function styleReferencePromptSuffix(count) {
       ? 'The second image is'
       : 'The additional images after the room photo are';
   return `\n\nIMPORTANT: ${listText} a STYLE REFERENCE, not furniture to copy. Match its overall aesthetic — color palette, materials, mood, and design style — when staging the room. Do NOT copy its exact objects, layout, room, or camera angle. The first image is the room to stage; keep that room's architecture, dimensions, windows, and viewpoint unchanged.`;
+}
+
+function maskReferencePromptSuffix() {
+  return '\n\nIMPORTANT — REFERENCE IMAGE: A final reference image is provided as the LAST image (after the room photo and the white mask). Treat it as the visual source for the user\'s instruction above — typically the specific furniture, decor, object, fixture, material, or finish they want applied inside the white masked region. Recreate the referenced subject so it is clearly the SAME item — keep its design, colors, materials, textures, proportions, and distinctive details. Its IDENTITY is what must stay faithful, NOT its camera angle or orientation: you SHOULD and MUST freely ROTATE, turn, and re-angle the subject — even showing it from a completely different side than the reference photo — whenever that is needed to fit the masked area and sit naturally in the room. Re-orient it to match the room\'s perspective and vanishing lines and to rest correctly on the floor, surface, or along the wall the user indicates (for example, turn a sofa shown head-on in the reference so it runs ALONG the wall in proper receding perspective, rather than facing the camera). Never refuse to rotate or re-angle the object just to keep the reference\'s original viewpoint — preserving the reference camera angle at the cost of a natural fit is WRONG. Then adapt it to the scene so it looks naturally photographed in place — match the masked area\'s perspective, scale, lighting direction, shadows, and reflections, ground it realistically with correct contact shadows and no floating, and render it as a fully opaque, solid object — never semi-transparent, see-through, or ghosted. Use ONLY the subject of the reference image; completely ignore the reference\'s own background, lighting, framing, watermarks, any surrounding objects, and any transparent or empty padding around the reference subject. Apply the result strictly within the white masked region and blend its edges seamlessly with the surroundings. Size the referenced subject so the WHOLE of it — including any legs, overhang, and contact shadow — fits completely inside the white masked region with a small margin from the edge; scale it down as needed and never let any part reach, touch, or cross the white boundary, or it will be cut off. Do not change anything outside the mask. The OUTPUT image MUST keep the EXACT same width, height, and aspect ratio as the FIRST (room) image — never resize, crop, stretch, or reshape the output to match the reference image\'s dimensions.';
 }
 
 function furnitureReferencePromptSuffix(count, preserveExistingStaging = false) {
@@ -3169,6 +3192,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
+  setSensitiveHeaders(res);
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
@@ -4369,23 +4393,24 @@ app.post('/api/process-pdf', genLimiter, pdfUpload.single('pdf'), async (req, re
 
 // Middleware to protect logs endpoints with password
 function protectLogs(req, res, next) {
+  setSensitiveHeaders(res);
   if (!LOGS_ACCESS_KEY) {
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Server configuration error',
       message: 'Logs access key not configured'
     });
   }
-  
-  const accessKey = req.query.key;
-  
-  if (accessKey === LOGS_ACCESS_KEY) {
-    next();
-  } else {
-    res.status(403).json({ 
-      error: 'Access denied',
-      message: 'Valid access key required. Use ?key=YOUR_KEY in the URL'
-    });
+
+  // Read the key from a header only — never the query string. A key in the URL
+  // leaks via access logs, reverse-proxy logs, browser history, and Referer.
+  const accessKey = req.get('X-Stagify-Endpoint-Key');
+  if (accessKey && endpointKeyMatches(accessKey, LOGS_ACCESS_KEY)) {
+    return next();
   }
+  return res.status(403).json({
+    error: 'Access denied',
+    message: 'Valid access key required in the X-Stagify-Endpoint-Key header'
+  });
 }
 
 /** Same `LOGS_ACCESS_KEY` as `/promptlogs`, `/api/send-email`, etc. */
@@ -7496,6 +7521,8 @@ app.post('/api/bug-report', emailLimiter, async (req, res) => {
   }
 });
 
+const MAX_MASK_PROMPT_LENGTH = 1000;
+
 // Mask editing endpoint - uses Gemini API for better image editing
 app.post('/api/mask-edit', genLimiter, async (req, res) => {
   try {
@@ -7506,10 +7533,16 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { image, mask, prompt, model } = req.body;
+    const { image, mask, prompt, model, referenceImage } = req.body;
 
-    if (!image || !mask || !prompt) {
+    const trimmedPrompt = typeof prompt === 'string' ? prompt.trim() : '';
+    if (!image || !mask || !trimmedPrompt) {
       return res.status(400).json({ error: 'Image, mask, and prompt are required' });
+    }
+    if (trimmedPrompt.length > MAX_MASK_PROMPT_LENGTH) {
+      return res.status(400).json({
+        error: `Prompt is too long (max ${MAX_MASK_PROMPT_LENGTH} characters)`,
+      });
     }
 
     // Get model from request or default to fast model
@@ -7544,13 +7577,64 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
 
     if (DEBUG_MODE) {
       console.log('[Mask Edit] Processing masked image edit with Gemini');
-      console.log('[Mask Edit] Prompt:', prompt);
+      console.log('[Mask Edit] Prompt:', trimmedPrompt);
       console.log('[Mask Edit] Image size:', imageMetadata.width, 'x', imageMetadata.height);
       console.log('[Mask Edit] Mask size:', maskMetadata.width, 'x', maskMetadata.height, '(resized to match image)');
     }
 
     // Enhance the prompt to ensure only the masked area is edited
-    const enhancedPrompt = `${prompt}. CRITICAL INSTRUCTIONS: Only modify the area indicated by the white mask in the second image. Do NOT change anything outside the masked region. Preserve the exact room layout, all furniture positions, wall colors, windows, doors, flooring, lighting, and every other detail exactly as they appear in the original image. Within the masked area, make ONLY the change described — do NOT erase, delete, or strip out existing furniture, fixtures, windows, decor, or architectural features unless the instruction explicitly asks you to remove them, and never leave a blank wall, empty floor, or featureless void where content existed. The edit must only affect the masked area and must seamlessly blend with the unchanged surroundings. Do NOT change the image aspect ratio, canvas size, orientation, or framing — the output must match the original image dimensions exactly.`;
+    let enhancedPrompt = `${trimmedPrompt}. CRITICAL INSTRUCTIONS: Only modify the area indicated by the white mask in the second image. Do NOT change anything outside the masked region. Preserve the exact room layout, all furniture positions, wall colors, windows, doors, flooring, lighting, and every other detail exactly as they appear in the original image. Within the masked area, make ONLY the change described — do NOT erase, delete, or strip out existing furniture, fixtures, windows, decor, or architectural features unless the instruction explicitly asks you to remove them, and never leave a blank wall, empty floor, or featureless void where content existed. The edit must only affect the masked area and must seamlessly blend with the unchanged surroundings. Do NOT change the image aspect ratio, canvas size, orientation, or framing — the output must match the original image dimensions exactly. WHEN THE INSTRUCTION ADDS OR PLACES A NEW OBJECT (furniture, decor, a fixture, a plant, lighting, etc.): the ENTIRE object — including its legs, arms, back, any overhang, and its contact shadow — MUST fit COMPLETELY INSIDE the white masked region, leaving a small margin of empty space between the object and the edge of the white area. SCALE THE OBJECT DOWN as much as needed so it sits fully within the white region — a smaller, fully-contained object is REQUIRED. NEVER let any part of the object reach, touch, or cross the white boundary: anything outside the white region is discarded, so an object that extends past the mask will look cut off, sliced, or faded. Center and size the object so none of it is clipped by the mask edge and it reads as a complete, naturally placed item.`;
+
+    let referenceInline = null;
+    if (referenceImage && typeof referenceImage === 'string' && referenceImage.includes(',')) {
+      console.log('[Mask Edit] Reference photo received from client');
+      try {
+        const refB64 = referenceImage.slice(referenceImage.indexOf(',') + 1);
+        let refBuffer = Buffer.from(refB64, 'base64');
+        if (!refBuffer || refBuffer.length === 0) throw new Error('empty reference buffer');
+        refBuffer = await downscaleImage(refBuffer);
+        // Normalize to PNG so the bytes ALWAYS match the declared MIME (downscaleImage
+        // may have re-encoded to JPEG) and the format is one Gemini reliably accepts.
+        // PNG preserves any transparency — a cut-out furniture reference is the cleanest
+        // possible subject. This sharp pass also validates the payload is a real,
+        // decodable image — if it isn't, it throws and we continue without a reference.
+        refBuffer = await sharp(refBuffer).png().toBuffer();
+        let refMeta = await sharp(refBuffer).metadata();
+        // Letterbox the reference to the ROOM's aspect ratio with transparent
+        // padding, so EVERY image sent to Gemini (room, mask, reference) shares one
+        // aspect ratio. Mixed input aspect ratios make the model emit its output at
+        // a different aspect ratio; that output can't be composited back onto the
+        // original, so the inserted furniture ends up mis-scaled and "doesn't fit".
+        try {
+          const roomAR = imageMetadata.width / imageMetadata.height;
+          const rw = refMeta.width || imageMetadata.width;
+          const rh = refMeta.height || imageMetadata.height;
+          const refAR = rw / rh;
+          let targetW = rw, targetH = rh;
+          if (refAR > roomAR) targetH = Math.round(rw / roomAR);       // too wide -> grow height
+          else if (refAR < roomAR) targetW = Math.round(rh * roomAR);  // too tall -> grow width
+          if (targetW !== rw || targetH !== rh) {
+            refBuffer = await sharp(refBuffer)
+              .resize(targetW, targetH, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+              .png()
+              .toBuffer();
+            refMeta = await sharp(refBuffer).metadata();
+          }
+        } catch (padErr) {
+          console.warn('[Mask Edit] Reference aspect-ratio match failed; sending reference as-is:', padErr.message);
+        }
+        referenceInline = { mimeType: 'image/png', data: refBuffer.toString('base64') };
+        enhancedPrompt += maskReferencePromptSuffix();
+        console.log(
+          `[Mask Edit] Reference photo attached for Gemini — ${refMeta.width || '?'}×${refMeta.height || '?'} png, matched to room AR ${imageMetadata.width}×${imageMetadata.height} (${Math.round(refBuffer.length / 1024)} KB)`
+        );
+      } catch (refErr) {
+        referenceInline = null;
+        console.warn('[Mask Edit] Reference photo received but failed to process; continuing without it:', refErr.message);
+      }
+    } else if (referenceImage) {
+      console.warn('[Mask Edit] referenceImage field present but invalid (expected data URL string)');
+    }
 
     // Use Gemini's image editing capabilities
     // Gemini can process images with masks for targeted editing
@@ -7575,9 +7659,13 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
         },
       },
     ];
+    if (referenceInline) {
+      geminiPrompt.push({ inlineData: referenceInline });
+    }
 
     if (DEBUG_MODE) {
       console.log('[Mask Edit] Using Gemini model:', geminiModel, '(selected model:', selectedModel, ')');
+      console.log('[Mask Edit] Gemini input parts:', geminiPrompt.length, referenceInline ? '(text + room + mask + reference)' : '(text + room + mask)');
     }
 
     // Generate with the same GPT-vision quality gate the main staging uses, but
@@ -7616,11 +7704,15 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
 
     if (DEBUG_MODE) {
       console.log('[Mask Edit] Successfully generated edited image with Gemini');
+      try {
+        const outMeta = await sharp(Buffer.from(editedImageDataUrl.split(',')[1], 'base64')).metadata();
+        console.log(`[Mask Edit] Model output ${outMeta.width}×${outMeta.height} vs room ${imageMetadata.width}×${imageMetadata.height}${referenceInline ? ' (reference used)' : ''}`);
+      } catch (_) {}
     }
 
     // Log the mask edit request
     const userId = getUserIdentifier(req);
-    logMaskEditToFile(prompt, selectedModel, geminiModel, imageMetadata.width, imageMetadata.height, userId, req);
+    logMaskEditToFile(trimmedPrompt, selectedModel, geminiModel, imageMetadata.width, imageMetadata.height, userId, req);
 
     const entDomain = enterpriseDomainForUser(proUser);
     if (entDomain) {
@@ -7629,7 +7721,8 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
 
     return res.json({
       success: true,
-      editedImage: editedImageDataUrl
+      editedImage: editedImageDataUrl,
+      referenceUsed: Boolean(referenceInline),
     });
 
   } catch (error) {
