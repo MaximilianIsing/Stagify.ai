@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24" width="36" height="24">
+  <rect width="36" height="24" fill="#fff"/>
+  <!-- Taegeuk -->
+  <g transform="rotate(-33.69 18 12)">
+    <circle cx="18" cy="12" r="6" fill="#0047a0"/>
+    <path d="M18,6 a6,6 0 0,1 0,12 a3,3 0 0,1 0,-6 a3,3 0 0,0 0,-6 z" fill="#cd2e3a"/>
+  </g>
+  <!-- Trigrams -->
+  <g fill="#000">
+    <!-- Top-left: Geon (3 solid) -->
+    <rect x="3" y="3.3" width="8" height="1"/>
+    <rect x="3" y="5.5" width="8" height="1"/>
+    <rect x="3" y="7.7" width="8" height="1"/>
+    <!-- Top-right: Gam (broken, solid, broken) -->
+    <rect x="25" y="3.3" width="3.2" height="1"/><rect x="29.8" y="3.3" width="3.2" height="1"/>
+    <rect x="25" y="5.5" width="8" height="1"/>
+    <rect x="25" y="7.7" width="3.2" height="1"/><rect x="29.8" y="7.7" width="3.2" height="1"/>
+    <!-- Bottom-left: Ri (solid, broken, solid) -->
+    <rect x="3" y="15.3" width="8" height="1"/>
+    <rect x="3" y="17.5" width="3.2" height="1"/><rect x="7.8" y="17.5" width="3.2" height="1"/>
+    <rect x="3" y="19.7" width="8" height="1"/>
+    <!-- Bottom-right: Gon (3 broken) -->
+    <rect x="25" y="15.3" width="3.2" height="1"/><rect x="29.8" y="15.3" width="3.2" height="1"/>
+    <rect x="25" y="17.5" width="3.2" height="1"/><rect x="29.8" y="17.5" width="3.2" height="1"/>
+    <rect x="25" y="19.7" width="3.2" height="1"/><rect x="29.8" y="19.7" width="3.2" height="1"/>
+  </g>
+</svg>

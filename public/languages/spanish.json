@@ -222,6 +222,12 @@
       "title": "Nuestra bandeja de entrada siempre está abierta",
       "subtitle": "Preguntas, comentarios o ideas de colaboración — leemos cada mensaje y respondemos lo antes posible.",
       "email": "team@stagify.ai"
+    },
+    "reviewCta": {
+      "title": "¿Te gusta Stagify?",
+      "subtitle": "¿Te encanta cómo quedan tus anuncios? Deja una breve reseña en Google y ayuda a otros agentes a encontrarnos.",
+      "button": "Deja una reseña en Google",
+      "aria": "Deja una reseña en Google (se abre en una pestaña nueva)"
     }
   },
   "modal": {
@@ -478,7 +484,8 @@
     "dailyLimitCta": "Ver Stagify+"
   },
   "common": {
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "selectLanguage": "Seleccionar idioma"
   },
   "footer": {
     "privacy": "Política de privacidad",
@@ -648,6 +655,20 @@
       "cancel": "Cancelar",
       "clearMask": "Limpiar Máscara",
       "applyEdit": "Aplicar Edición",
+      "rerun": "Regenerar",
+      "done": "Se ve bien",
+      "refineTitle": "Refina la edición",
+      "refineNote": "Pinta para mostrar más de la edición, borra para ocultarla — esto solo recorta, no vuelve a ejecutar la IA.",
+      "refineHelp": "Este paso solo ajusta dónde se ve el cambio de la IA, sin volver a ejecutarla. Pinta para mostrar más de la edición, borra para retirarla. Es una red de seguridad para que la edición solo afecte el área que elegiste y no estropee el resto de tu foto.",
+      "refineHelpAria": "Qué hace el paso de refinar",
+      "loadApplying": "Aplicando tu edición…",
+      "referenceLabel": "Foto de referencia (opcional)",
+      "referenceAdd": "+ Añadir foto",
+      "referenceHint": "Opcional: una foto de muebles o decoración para colocar en el área enmascarada",
+      "referenceRemove": "Quitar foto de referencia",
+      "referenceAlt": "Referencia para edición con máscara",
+      "referenceTooLarge": "Esa imagen es demasiado grande — elige una de menos de 25 MB.",
+      "referenceInvalid": "Elige una imagen JPG, PNG o WebP válida.",
       "processing": "Procesando...",
       "pleaseDrawMask": "Por favor dibuja una máscara sobre el área que quieres editar.",
       "pleaseDescribeChange": "Por favor describe lo que quieres cambiar en el área enmascarada."

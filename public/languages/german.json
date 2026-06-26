@@ -1,0 +1,814 @@
+{
+  "meta": {
+    "title": "Stagify.ai – Virtuelles Home Staging gratis mit einem Klick",
+    "description": "Verwandeln Sie leere Räume mit KI-Staging. Laden Sie Fotos hoch und erhalten Sie in Sekunden professionell eingerichtete Ergebnisse. Kostenloses KI-Home-Staging für Immobilienmakler, Verkäufer und Käufer.",
+    "keywords": "KI-Staging, Home Staging, Immobilien-Staging, virtuelles Staging, KI-Home-Staging, Immobilienaufbereitung, Immobilienfotografie, Staging-Tool, virtuelle Möbel"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "about": "Über uns",
+    "pdfTo3d": "KI-Designer",
+    "whyUs": "Warum wir?",
+    "faq": "FAQ",
+    "contactUs": "Kontakt",
+    "brand": "Stagify",
+    "brandSuffix": ".ai",
+    "techHelp": "Technische Hilfe",
+    "guides": "Anleitungen",
+    "logoAlt": "Stagify.ai-Logo – zur Startseite"
+  },
+  "hero": {
+    "catchphrase": "Hochladen. Einrichten. Vorstellen.",
+    "announcement": "Entwickelt, um Ihren Traumraum Wirklichkeit werden zu lassen",
+    "title": {
+      "free": "Virtuelles",
+      "virtual": "Staging",
+      "staging": "gratis",
+      "with": "mit",
+      "one": "einem",
+      "click": "Klick",
+      "upload": "Hochladen.",
+      "stage": "Einrichten.",
+      "imagine": "Vorstellen."
+    },
+    "cta": "Bild kostenlos hochladen",
+    "freeGensLeft": "{n} kostenlose Generierungen heute übrig, ",
+    "freeGensLeftUpgrade": "Upgrade",
+    "freeGensUpgrade": "Testen Sie Stagify+ noch heute. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgrade</a>",
+    "carouselNote": "Beispielvorschau. Laden Sie Ihr Foto hoch, um es einzurichten",
+    "stats": {
+      "roomsStaged": "Eingerichtete Räume",
+      "usersServed": "Bediente Nutzer",
+      "andCounting": "und es werden mehr..."
+    }
+  },
+  "sponsors": {
+    "title": "Offiziell anerkannt von:"
+  },
+  "home": {
+    "studio": {
+      "eyebrow": "Vorher & nachher",
+      "title": "Ziehen Sie, um die Wirkung des Stagings zu sehen",
+      "subtitle": "Dasselbe Angebotsfoto, vor und nach Stagify. Keine Möbelpacker, keine Miete, kein Warten.",
+      "beforeLabel": "Vorher",
+      "afterLabel": "Nachher",
+      "kicker": "So sieht es aus",
+      "panelTitle": "Derselbe Raum, in Sekunden eingerichtet",
+      "panelBody": "Ziehen Sie am Griff. Links ist das Originalfoto; alles rechts wurde von Stagify in Sekunden eingerichtet.",
+      "points": {
+        "speed": "Etwa 8 Sekunden pro Foto",
+        "restage": "Richten Sie in jedem Stil neu ein, so oft Sie möchten",
+        "rights": "Jedes Bild gehört Ihnen, mit vollem Urheberrecht"
+      },
+      "examples": {
+        "bedroom": "Schlafzimmer",
+        "living": "Wohnzimmer",
+        "dining": "Esszimmer"
+      },
+      "comparisonAria": "Vergleich vor und nach dem Staging",
+      "revealSliderAria": "Vergleichsregler",
+      "exampleRoomsAria": "Beispielräume"
+    },
+    "designer": {
+      "title": "Lassen Sie eine KI Ihren Raum einrichten",
+      "subtitle": "Mit dem KI-Designer richten Sie per Chat jeden Raum ein, gestalten ihn um und verfeinern ihn, bis er angebotsbereit ist. <em>(Stagify+ exklusiv)</em>"
+    },
+    "info": {
+      "eyebrow": "Die Kurzfassung",
+      "title": "Was virtuelles Home Staging ist und warum es verkauft",
+      "subtitle": "Ein schneller, ehrlicher Überblick, wie es funktioniert und für wen es gedacht ist. Ohne Fachjargon.",
+      "rows": {
+        "why": {
+          "eyebrow": "Warum es funktioniert",
+          "caption": "Stagify-Demo in einem Compass-Büro in New York",
+          "title": "Käufer kaufen zuerst mit den Augen",
+          "body": "Fast jeder Käufer beginnt online, daher sind Ihre Angebotsfotos die eigentliche erste Besichtigung. Leere oder veraltete Räume sind schwer zu erfassen; man kann weder Größenverhältnisse einschätzen noch sich das Wohnen dort vorstellen. Staging gibt jedem Raum einen klaren Zweck und Anziehungskraft – deshalb verlassen sich Makler seit jeher darauf.",
+          "p1": "Leere Räume wirken auf Fotos kleiner und kühler, als sie sind",
+          "p2": "Staging zeigt den vorgesehenen Zweck jedes Raums",
+          "p3": "Bessere Fotos bringen mehr Klicks, Speicherungen und Besichtigungen"
+        },
+        "how": {
+          "eyebrow": "Wie es funktioniert",
+          "caption": "Ein Raum voller Makler wird durch sein erstes eingerichtetes Angebot geführt",
+          "title": "Vom leeren Foto zum angebotsbereiten Raum in etwa 8 Sekunden",
+          "body": "Laden Sie ein Foto hoch, wählen Sie den Raumtyp und einen von sieben Stilen, und Stagify richtet ihn in etwa acht Sekunden ein. Änderungen nötig? Entfernen Sie vorhandene Möbel, fügen Sie eine eigene Anweisung hinzu oder maskieren Sie einen Bereich, um ihn anzupassen, ohne neu zu beginnen.",
+          "p1": "7 Stile plus eigene Anweisungen und Möbelentfernung",
+          "p2": "Bearbeiten Sie per Maske jeden Teil eines Ergebnisses, ohne es neu zu erstellen",
+          "p3": "Volles Urheberrecht, Ihres zur Nutzung im MLS oder in Anzeigen"
+        },
+        "who": {
+          "eyebrow": "Für wen es ist",
+          "caption": "Im persönlichen Gespräch werden die Fotos eines Maklers eingerichtet",
+          "title": "Gemacht für Makler, Verkäufer und Käufer",
+          "body": "Makler vermarkten jedes Angebot in Minuten, statt auf ein Staging-Team zu warten. Verkäufer richten ihre eigenen Fotos ein, ohne jemanden zu beauftragen. Käufer sehen eine Renovierung in der Vorschau, bevor sie sich festlegen. Und mit dem KI-Designer verwandeln Sie CAD-Grundriss-PDFs in fotorealistische 3D-Raumrenderings.",
+          "p1": "Makler: früher inserieren und mehr abschließen",
+          "p2": "Verkäufer & Käufer: keine Software, kein Designer nötig",
+          "p3": "KI-Designer: agentenbasiertes Raum-Staging"
+        },
+        "team": {
+          "eyebrow": "Für Teams entwickelt",
+          "caption": "Ein Maklerteam wird in Stagify geschult",
+          "title": "Einfach genug für Ihr ganzes Büro",
+          "body": "Es gibt keine Software zu installieren und nichts zu lernen. Jeder im Team kann Stagify im Browser öffnen, ein Angebotsfoto hochladen und es in Sekunden einrichten lassen – ob am Laptop im Büro oder am Handy unterwegs.",
+          "p1": "Keine Designkenntnisse oder Software erforderlich",
+          "p2": "Funktioniert in jedem Browser, auf jedem Gerät",
+          "p3": "Jeder Makler kann seine eigenen Angebote einrichten"
+        }
+      }
+    },
+    "compare": {
+      "eyebrow": "Virtuell vs. traditionell",
+      "title": "Wie es im Vergleich zum traditionellen Staging abschneidet",
+      "subtitle": "Traditionelles Staging funktioniert. Es ist nur langsam und teuer.",
+      "colTraditional": "Traditionelles Staging",
+      "colStagify": "Stagify.ai",
+      "rows": {
+        "cost": {
+          "aspect": "Kosten",
+          "trad": "2.000–5.000 $+ pro Objekt, oft monatlich abgerechnet bis zum Verkauf",
+          "stag": "Kostenlos starten, ohne Kosten einrichten"
+        },
+        "time": {
+          "aspect": "Bearbeitungszeit",
+          "trad": "1–3 Wochen zum Planen, Liefern und Aufbauen",
+          "stag": "Etwa 8 Sekunden pro Foto"
+        },
+        "styles": {
+          "aspect": "Stiloptionen",
+          "trad": "Ein Look, fixiert sobald aufgebaut",
+          "stag": "7 Stile plus eigene Anweisungen, jederzeit wechseln"
+        },
+        "changes": {
+          "aspect": "Wenn Sie es sich anders überlegen",
+          "trad": "Jedes Mal neue Miet- und Aufbaukosten",
+          "stag": "So oft neu einrichten, wie Sie möchten"
+        },
+        "logistics": {
+          "aspect": "Logistik",
+          "trad": "Möbelpacker, Mietmöbel und Zugang zum Objekt",
+          "stag": "Laden Sie einfach ein Foto hoch, von überall"
+        },
+        "rights": {
+          "aspect": "Die Bilder",
+          "trad": "Fotos von geliehenen Möbeln, die Sie zurückgeben",
+          "stag": "Ihres zum Behalten, mit vollem Urheberrecht"
+        }
+      },
+      "source": "Laut dem Profile of Home Staging der National Association of Realtors sagen die meisten Käufermakler, dass Staging es Käufern erleichtert, sich ein Objekt als ihr zukünftiges Zuhause vorzustellen.",
+      "sourceCite": "Quelle: National Association of Realtors, Profile of Home Staging"
+    },
+    "nar": {
+      "title": "Bleiben Sie nicht zurück",
+      "subtitle": "Die Immobilienbranche setzt KI schnell ein, und Kunden reagieren darauf. Staging ist einer der einfachsten Einstiegspunkte.",
+      "usageLabel": "Wie oft Makler KI-Tools nutzen",
+      "legend": {
+        "daily": "Täglich",
+        "weekly": "Wöchentlich",
+        "monthly": "Ein paar Mal im Monat",
+        "none": "Noch nicht"
+      },
+      "note": "der Makler nutzen KI bereits in ihrem Geschäft.",
+      "stat1": "der Makler sagen, dass Kunden positiv auf Technologie im Kauf- und Verkaufsprozess reagiert haben",
+      "stat2": "nutzen KI bereits, um Angebotsinhalte zu erstellen",
+      "source": "Zahlen aus der Technologieumfrage 2025 der National Association of Realtors unter Immobilienmaklern.",
+      "sourceCite": "Quelle: National Association of Realtors, Technologieumfrage 2025",
+      "usageAria": "KI-Nutzung unter Maklern: 20 % täglich, 22 % wöchentlich, 27 % ein paar Mal im Monat, 32 % noch nicht"
+    },
+    "plus": {
+      "title": "Gehen Sie weiter mit Stagify+",
+      "subtitle": "Unbegrenztes Staging, hochwertigere Modelle und Profi-Tools, plus ein nutzungsbasierter Tarif für ganze Teams.",
+      "pro": {
+        "name": "Stagify+",
+        "tag": "Für Einzelpersonen",
+        "per": "/ Monat",
+        "f1": "Unbegrenzte Staging-Generierungen",
+        "f2": "Hochwertigeres Bildmodell",
+        "f3": "Mehrere Variationen pro Generierung",
+        "f4": "Maskierungstool zum Bearbeiten beliebiger Bereiche",
+        "f5": "KI-Designer: agentenbasierter Staging-Prozess",
+        "f6": "Vorhandene Möbel aus Räumen entfernen",
+        "cta": "Stagify+ ansehen"
+      },
+      "ent": {
+        "name": "Enterprise",
+        "tag": "Für Teams",
+        "per": "/ Generierung",
+        "desc": "Geben Sie Ihrem gesamten Team automatisch Stagify+ und zahlen Sie nur für die tatsächliche Nutzung.",
+        "f1": "Alle mit Ihrer Firmen-E-Mail inbegriffen",
+        "f2": "Nutzungsbasierte Abrechnung, keine Gebühren pro Platz",
+        "f3": "Eine Rechnung, monatlich nach Nutzung abgerechnet",
+        "f4": "Alle Stagify+-Funktionen für das Team inbegriffen",
+        "cta": "Enterprise entdecken"
+      }
+    },
+    "instagram": {
+      "title": "Sehen Sie es in Aktion auf Instagram",
+      "subtitle": "Echte Staging-Verwandlungen, schnelle Tipps und Einblicke hinter die Kulissen vom Stagify-Team.",
+      "follow": "@stagify.ai folgen"
+    },
+    "finalCta": {
+      "title": "Testen Sie es an Ihrem eigenen Angebot",
+      "subtitle": "Laden Sie einen leeren Raum hoch und sehen Sie ihn in etwa acht Sekunden eingerichtet. Kostenlos testen.",
+      "button": "Foto hochladen",
+      "note": "Anerkannt von Compass, Centennial und mehr."
+    },
+    "whyus": {
+      "subtitle": "Andere Tools für virtuelles Staging sind langsam, teuer und eingeschränkt. Stagify ist dafür gemacht, das Gegenteil zu sein."
+    },
+    "faq": {
+      "subtitle": "Schnelle Antworten auf die häufigsten Fragen. Immer noch unklar? Besuchen Sie die <a href=\"guides.html\">Anleitungen</a> oder melden Sie sich."
+    },
+    "contactCta": {
+      "title": "Unser Postfach ist immer offen",
+      "subtitle": "Fragen, Feedback oder Ideen für Partnerschaften? Wir lesen jede Nachricht und antworten so schnell wie möglich.",
+      "email": "team@stagify.ai"
+    },
+    "reviewCta": {
+      "title": "Gefällt dir Stagify?",
+      "subtitle": "Gefällt dir, wie deine Inserate aussehen? Hinterlasse eine kurze Google-Bewertung und hilf anderen Maklern, uns zu finden.",
+      "button": "Google-Bewertung abgeben",
+      "aria": "Google-Bewertung abgeben (öffnet in neuem Tab)"
+    }
+  },
+  "modal": {
+    "rolePopup": {
+      "title": "Passen wir Ihr Erlebnis an!",
+      "question": "Was ist Ihre Rolle?",
+      "options": {
+        "agent": "Makler",
+        "seller": "Verkäufer",
+        "buyer": "Käufer",
+        "other": "andere"
+      }
+    },
+    "referralPopup": {
+      "title": "Passen wir Ihr Erlebnis an!",
+      "question": "Wie haben Sie uns gefunden?",
+      "options": {
+        "socials": "Soziale Medien",
+        "friend": "Freund",
+        "email": "E-Mail",
+        "other": "andere"
+      }
+    },
+    "emailPopup": {
+      "title": "Passen wir Ihr Erlebnis an!",
+      "question": "Möchten Sie E-Mail-Updates?",
+      "placeholder": "ihre@email.com",
+      "skip": "Überspringen"
+    },
+    "staging": {
+      "title": "Optionen",
+      "close": "x",
+      "roomType": "Raumtyp",
+      "furnitureStyle": "Möbelstil",
+      "additionalPrompt": "Zusätzliche Anweisung",
+      "additionalPromptPlaceholder": "Fügen Sie spezifische Details oder Wünsche für Ihr Staging hinzu...",
+      "removeFurniture": "Vorhandene Möbel entfernen",
+      "keepFurnitureLabel": "Vorhandene Möbel, die behalten werden sollen (optional)",
+      "keepFurniturePlaceholder": "z. B. den Esstisch und die Einbauregale behalten",
+      "emptyRoomView": "Den geleerten Raum ansehen",
+      "emptyRoomTitle": "Leerer Raum (Möbel entfernt)",
+      "emptyRoomDownload": "Leeren Raum herunterladen",
+      "emptyRoomAlt": "Raum mit entfernten vorhandenen Möbeln",
+      "furniturePhotosLabel": "Möbelfotos (optional)",
+      "furniturePhotosHint": "Bis zu 5 Referenzfotos von Möbeln oder Dekor, die im eingerichteten Raum vorkommen sollen",
+      "processButton": "Foto verarbeiten",
+      "maskBeforeButton": "Foto maskieren & bearbeiten",
+      "maskBeforeHint": "Übermalen Sie einen Bereich des Originalfotos, um ihn zu bearbeiten (z. B. Unordnung entfernen). Alles andere bleibt unberührt. Verarbeiten Sie dann, um die gewünschte Version einzurichten.",
+      "maskBeforeTitle": "Foto maskieren & bearbeiten",
+      "maskBeforePromptLabel": "Was möchten Sie im übermalten Bereich ändern?",
+      "maskBeforePromptPlaceholder": "z. B. das alte Sofa entfernen, die Unordnung beseitigen, die Wand weiß streichen",
+      "maskBeforeApply": "Bearbeitung anwenden",
+      "maskLimitReached": "Sie haben das Limit von 6 Versionen für dieses Bild erreicht.",
+      "prevVersion": "Vorherige Version",
+      "nextVersion": "Nächste Version",
+      "imageVersions": "Bildversionen",
+      "versionLabel": "Version {index}",
+      "uploadArea": "Bild hochladen oder per Drag & Drop ablegen",
+      "before": "Vorher",
+      "after": "Nachher",
+      "downloadResult": "Ergebnis herunterladen",
+      "uploadAnother": "Weiteres hochladen",
+      "noProcessedImage": "Ihr eingerichtetes Ergebnis erscheint hier",
+      "noProcessedImageSubtext": "Klicken Sie auf „Foto verarbeiten“, um eine KI-eingerichtete Version Ihres Bildes zu erzeugen",
+      "imageModel": "Bildmodell",
+      "fastGeneration": "Schnelle Generierung",
+      "qualityGeneration": "Stagify+ Qualitätsgenerierung",
+      "imageGenerations": "Bildgenerierungen",
+      "addPhotos": "+ Fotos hinzufügen",
+      "tryAnotherImage": "Anderes Bild versuchen",
+      "uploadAreaAria": "Upload-Bereich",
+      "editWithMask": "Ausgewählten Bereich mit dem Maskierungstool bearbeiten",
+      "stagingVariations": "Staging-Variationen",
+      "originalImage": "Originalfoto des Raums vor dem virtuellen Staging",
+      "stagedImage": "Vorschau des KI-eingerichteten Raums",
+      "warningAlt": "Wichtiger Staging-Hinweis",
+      "downloadIcon": "Bild herunterladen",
+      "maskIcon": "Symbol des Maskierungstools",
+      "variationAlt": "Virtuelle Staging-Variation {index} von {total}",
+      "furnitureReferenceAlt": "Möbel-Referenzfoto: {filename}",
+      "uploadedRoomAlt": "Ihr hochgeladenes Raumfoto{filenameSuffix}",
+      "sampleRoomAlt": "Beispiel-Raumfoto zum Ausprobieren des virtuellen Stagings",
+      "stagedResultAlt": "KI-eingerichtetes Raumergebnis{suffix}",
+      "progress": {
+        "preparing": "Vorbereitung…",
+        "uploading": "Bild wird hochgeladen…",
+        "preparingAI": "KI-Modell wird vorbereitet…",
+        "staging": "Die KI richtet Ihren Raum ein…",
+        "complete": "Fertig!",
+        "error": "Fehler: ",
+        "loadingMessages": [
+          "Die perfekten Möbel für Sie finden",
+          "Ihren idealen Raum einrichten",
+          "Schöne Dekorationsstücke auswählen",
+          "Möbel für maximale Wirkung anordnen",
+          "Die perfekte Atmosphäre schaffen",
+          "Ihren Raum mit Stil aufwerten",
+          "Ihr Trauminterieur gestalten",
+          "Raumaufteilung und Fluss optimieren",
+          "Letzte Feinheiten hinzufügen",
+          "Ihre Vision zum Leben erwecken"
+        ]
+      }
+    }
+  },
+  "roomTypes": {
+    "bedroom": "Schlafzimmer",
+    "livingRoom": "Wohnzimmer",
+    "diningRoom": "Esszimmer",
+    "kitchen": "Küche",
+    "bathroom": "Badezimmer",
+    "office": "Büro",
+    "outdoors": "Außenbereich"
+  },
+  "furnitureStyles": {
+    "standard": "Standard",
+    "modern": "Modern",
+    "midcentury": "Midcentury",
+    "scandinavian": "Skandinavisch",
+    "luxury": "Luxus",
+    "coastal": "Maritim",
+    "farmhouse": "Landhaus",
+    "custom": "Benutzerdefiniert"
+  },
+  "carouselItems": {
+    "original": "Original",
+    "modern": "Modern",
+    "scandinavian": "Skandinavisch",
+    "luxury": "Luxus",
+    "coastal": "Maritim",
+    "midcentury": "Midcentury",
+    "farmhouse": "Landhaus",
+    "originalPhotoAlt": "Beispiel eines leeren Raums vor dem virtuellen Staging",
+    "modernPhotoAlt": "Beispielraum mit modernem virtuellem Staging-Stil",
+    "scandinavianPhotoAlt": "Beispielraum mit skandinavischem virtuellem Staging-Stil",
+    "luxuryPhotoAlt": "Beispielraum mit luxuriösem virtuellem Staging-Stil",
+    "coastalPhotoAlt": "Beispielraum mit maritimem virtuellem Staging-Stil",
+    "midcenturyPhotoAlt": "Beispielraum mit virtuellem Staging-Stil im Midcentury-Look",
+    "farmhousePhotoAlt": "Beispielraum mit virtuellem Staging-Stil im Landhaus-Look"
+  },
+  "whyUs": {
+    "title": "Warum uns wählen?",
+    "stagify": {
+      "title": "stagify.ai",
+      "features": {
+        "instantResults": "<strong>Sofortige Ergebnisse</strong>: ~8 Sekunden",
+        "oneClickStaging": "<strong>Staging mit einem Klick</strong>: Kein Aufwand",
+        "free": "<strong>Unbegrenzte Generierungen</strong>: Völlig kostenlos",
+        "noAds": "<strong>Werbefreies Erlebnis</strong>: Keine Ablenkungen",
+        "noLogin": "<strong>Einfache Anmeldung</strong>: Sofort loslegen",
+        "unlimited": "<strong>Fortschrittliche Bildmodelle</strong>: Höhere Qualität",
+        "copyright": "<strong>Volles Urheberrecht</strong>: Überall nutzbar"
+      }
+    },
+    "others": {
+      "title": "Andere",
+      "features": {
+        "slowResults": "<strong style=\"color: #6d1c2c;\">Langsame Ergebnisse: </strong>Tagelanges Warten",
+        "longProcess": "<strong style=\"color: #6d1c2c;\">Langer Prozess: </strong>Mühsames Hin und Her",
+        "expensive": "<strong style=\"color: #6d1c2c;\">Teuer: </strong>Hohe Gebühren pro Bild",
+        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Werbung und Cookies: </strong>Aufdringliches Erlebnis",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">Langer Anmeldeprozess: </strong>Frustrierender Start",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Veraltete, günstigere Modelle: </strong>Geringere Qualität",
+        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Unklares Urheberrecht: </strong>Rechtliches Risiko"
+      }
+    },
+    "keyFeatures": {
+      "title": "Hauptfunktionen",
+      "unlimitedVariations": {
+        "title": "Unbegrenzte Variationen",
+        "description": "Erkunden Sie mehrere Stile, bis es zu Ihrer Marke und Ihrem Käuferprofil passt."
+      },
+      "fastTurnarounds": {
+        "title": "Schnelle Bearbeitung",
+        "description": "Richten Sie Fotos in etwa 8 Sekunden ein, um früher zu inserieren und mehr Abschlüsse zu erzielen."
+      }
+    }
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "questions": {
+      "whatIsVirtualStaging": {
+        "question": "Was ist virtuelles Staging?",
+        "answer": "Virtuelles Staging ist das digitale Einrichten eines Immobilienfotos, um sein Potenzial zu zeigen, und hilft Käufern, sich vorzustellen, wie ein Raum vollständig gestaltet aussehen und wirken kann. Anders als traditionelles Staging ist es schneller, kostengünstiger und ermöglicht mehrere Designoptionen, die auf unterschiedliche Käuferpräferenzen zugeschnitten sind. Mit hochwertigen Visualisierungen hebt virtuelles Staging die besten Eigenschaften der Immobilie hervor und macht es Käufern leichter, eine emotionale Verbindung aufzubauen und sich vorzustellen, dort zu wohnen."
+      },
+      "howLong": {
+        "question": "Wie lange dauert es?",
+        "answer": "Im Durchschnitt dauert virtuelles Staging etwa 8 Sekunden pro Foto, wobei die genaue Zeit je nach Komplexität des Raums und gewähltem Designstil etwas kürzer oder länger sein kann. Das Ergebnis ist eine schnelle, nahtlose Verwandlung, die Ihre Immobilienfotos hervorstechen lässt."
+      },
+      "customTheme": {
+        "question": "Wie wähle ich ein benutzerdefiniertes Thema?",
+        "answer": "Wenn Sie das gewünschte Thema nicht sehen, können Sie „Benutzerdefiniert“ auswählen und dann eine spezifische Anweisung für das gewünschte Thema hinzufügen. Wir verwenden Ihre Anweisung, um das gewünschte Thema zu erzeugen."
+      },
+      "idealRoom": {
+        "question": "Was macht einen idealen Raum für das Staging aus?",
+        "answer": "Ein idealer Raum für das Staging sollte gute Beleuchtung, freie Wände und möglichst wenig Unordnung haben. Leere oder spärlich möblierte Räume eignen sich am besten, da sie der KI eine saubere Leinwand bieten, um Möbel und Dekor passend zu Ihrem gewählten Stil hinzuzufügen. Weitwinkligere Aufnahmen, die mehr vom Raum zeigen, sind viel besser als enge oder beschnittene Blickwinkel, da sie der KI mehr Kontext geben, um den Raum realistisch einzurichten."
+      },
+      "privacy": {
+        "question": "Sind meine Daten privat und sicher?",
+        "answer": "Ja. Wir verwenden HTTPS-Verschlüsselung, speichern hochgeladene Bilder nach der Verarbeitung nicht dauerhaft und verkaufen Ihre persönlichen Daten nicht. Sie behalten das Eigentum an Ihren Uploads und erzeugten Ergebnissen. Wir geben Daten nur an Dienstleister weiter, die für den Betrieb von Stagify nötig sind (etwa KI- und Zahlungsdienstleister), wie in unserer Datenschutzrichtlinie beschrieben."
+      }
+    }
+  },
+  "contact": {
+    "title": "Kontakt aufnehmen",
+    "description": "Wir freuen uns, von Ihnen zu hören. Wenden Sie sich einzeln an uns oder kontaktieren Sie uns unter <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
+    "social": "Folgen Sie uns auf <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> oder <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> für Updates und Beispiele!",
+    "labels": {
+      "name": "Name",
+      "email": "E-Mail",
+      "phone": "Telefon"
+    },
+    "team": {
+      "maximilian": {
+        "name": "Maximilian Ising",
+        "email": "maximilianbising@gmail.com",
+        "phone": "(917) 690-6253",
+        "title": "Mitgründer, Leiter Entwicklung und KI",
+        "photoAlt": "Porträt von Maximilian Ising, Mitgründer und Leiter Entwicklung und KI bei Stagify.ai"
+      },
+      "lucas": {
+        "name": "Lucas Shtainer",
+        "email": "lucasshtainer1@gmail.com",
+        "phone": "(347) 491-9609",
+        "title": "Mitgründer, Leiter Marketing",
+        "photoAlt": "Porträt von Lucas Shtainer, Mitgründer und Leiter Marketing bei Stagify.ai"
+      },
+      "ryan": {
+        "name": "Ryan Croman",
+        "email": "ryancroman10@gmail.com",
+        "phone": "(646) 709-6715",
+        "title": "Mitgründer, Leiter Outreach",
+        "photoAlt": "Porträt von Ryan Croman, Mitgründer und Leiter Outreach bei Stagify.ai"
+      },
+      "emil": {
+        "name": "Emil Volvosky",
+        "email": "emvolvovsky@gmail.com",
+        "phone": "(917) 691-2013",
+        "title": "Statistischer Marketinganalyst",
+        "photoAlt": "Porträt von Emil Volvosky, statistischer Marketinganalyst bei Stagify.ai"
+      }
+    }
+  },
+  "errors": {
+    "fileType": "Bitte laden Sie eine PNG-, JPG-, JPEG-, WebP- oder GIF-Bilddatei hoch.",
+    "fileTooLarge": "Die Datei ist zu groß. Bitte laden Sie ein Bild mit weniger als 100 MB hoch.",
+    "uploadFirst": "Bitte laden Sie zuerst ein Bild hoch",
+    "badPrompt": "Ungültige Anweisung eingegeben",
+    "processingFailed": "Verarbeitung fehlgeschlagen",
+    "noImageData": "Keine Bilddaten empfangen",
+    "dailyLimitFree": "Sie haben alle {limit} kostenlosen Staging-Durchläufe für heute genutzt (Zurücksetzung um Mitternacht UTC). Wechseln Sie zu Stagify+ für unbegrenztes Staging.",
+    "dailyLimitAnonymous": "Sie haben das kostenlose Limit für dieses Netzwerk erreicht ({limit} Durchläufe pro Tag, UTC). Melden Sie sich an, um Staging mit Ihrem Konto zu verknüpfen, oder versuchen Sie es morgen erneut.",
+    "dailyLimitCta": "Stagify+ ansehen"
+  },
+  "common": {
+    "close": "Schließen",
+    "selectLanguage": "Sprache auswählen"
+  },
+  "footer": {
+    "privacy": "Datenschutzrichtlinie",
+    "terms": "Nutzungsbedingungen",
+    "contact": "Kontakt",
+    "copyright": "Stagify.ai"
+  },
+  "auth": {
+    "yourEmail": "Ihre E-Mail",
+    "welcomeTitle": "Willkommen bei Stagify",
+    "welcomeSub": "Erstellen Sie ein kostenloses Konto, um Ihre Fotos hochzuladen und einzurichten.",
+    "registerTitle": "Erstellen Sie Ihr kostenloses Konto",
+    "registerSub": "Registrieren Sie sich, um Bilder hochzuladen und einzurichten.",
+    "signInTitle": "Anmelden",
+    "signInSub": "Verwenden Sie Ihre E-Mail und Ihr Passwort, um fortzufahren.",
+    "verifyTitle": "Bestätigen Sie Ihre E-Mail",
+    "verifyCopy": "Geben Sie den 6-stelligen Code ein, den wir an {email} gesendet haben.",
+    "resetTitle": "Passwort zurücksetzen",
+    "resetCopy": "Wir senden Ihnen per E-Mail einen einmaligen Link, um ein neues Passwort festzulegen. Der Link läuft in einer Stunde ab.",
+    "email": "E-Mail",
+    "emailPlaceholder": "sie@beispiel.com",
+    "password": "Passwort",
+    "passwordPlaceholder": "Mindestens 8 Zeichen",
+    "confirmPassword": "Passwort bestätigen",
+    "confirmPasswordPlaceholder": "Passwort erneut eingeben",
+    "or": "oder",
+    "forgotPassword": "Passwort vergessen?",
+    "verificationCode": "Bestätigungscode",
+    "verificationCodePlaceholder": "123456",
+    "back": "Zurück",
+    "resendCode": "Code erneut senden",
+    "createAccount": "Konto erstellen",
+    "continue": "Weiter",
+    "signIn": "Anmelden",
+    "sendResetLink": "Zurücksetzungslink senden",
+    "backToSignIn": "Zurück zur Anmeldung",
+    "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
+    "newHere": "Neu hier?",
+    "accountMenu": "Kontomenü",
+    "googleCancelled": "Die Google-Anmeldung wurde abgebrochen.",
+    "googleFailed": "Google-Anmeldung fehlgeschlagen",
+    "networkError": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
+    "enterEmail": "Geben Sie Ihre E-Mail-Adresse ein.",
+    "resendFailed": "Code konnte nicht erneut gesendet werden. Versuchen Sie es erneut.",
+    "resendSuccess": "Wir haben einen neuen Bestätigungscode gesendet.",
+    "resetSomethingWrong": "Etwas ist schiefgelaufen. Bitte versuchen Sie es in ein paar Minuten erneut.",
+    "resetLinkSent": "Wir haben einen Link zum Zurücksetzen des Passworts gesendet. Prüfen Sie Ihre E-Mails (und den Spam).",
+    "noAccountForEmail": "Für diese E-Mail wurde kein Konto gefunden.",
+    "resetTryLater": "Etwas ist schiefgelaufen. Versuchen Sie es später erneut.",
+    "enterVerificationCode": "Geben Sie den 6-stelligen Bestätigungscode aus Ihrer E-Mail ein.",
+    "verificationFailed": "Bestätigung fehlgeschlagen",
+    "passwordsNoMatch": "Die Passwörter stimmen nicht überein.",
+    "somethingWrong": "Etwas ist schiefgelaufen",
+    "checkEmailForCode": "Prüfen Sie Ihre E-Mails auf einen Bestätigungscode.",
+    "agreeTerms": "Mit der Erstellung eines Kontos akzeptieren Sie die <a href=\"terms.html\">Bedingungen</a> &amp; den <a href=\"privacy.html\">Datenschutz</a>"
+  },
+  "profile": {
+    "signIn": "Anmelden",
+    "createAccount": "Konto erstellen",
+    "freePlan": "Kostenloser Tarif",
+    "upgradeToPlus": "Auf Stagify+ upgraden",
+    "manageSubscription": "Abo verwalten",
+    "signOut": "Abmelden",
+    "manageBillingAria": "Abrechnung in Stripe verwalten",
+    "stripeHelp": "Stripe-Hilfecenter"
+  },
+  "pdf": {
+    "meta": {
+      "title": "KI-Designer | Stagify.ai – KI-gestützter Design-Assistent",
+      "description": "Chatten Sie mit dem KI-Designer, um Hilfe bei Designfragen zu erhalten, Dateien zur Analyse hochzuladen und sofort professionelle Designberatung zu bekommen.",
+      "keywords": "KI-Designer, KI-Design-Assistent, Designberatung, KI-Chat, Designhilfe, KI für Innenarchitektur"
+    },
+    "title": "KI-Designer",
+    "description": "Wandeln Sie Ihre CAD-Grundriss-PDFs in fotorealistische 3D-Innenraumvisualisierungen um",
+    "statusMessages": {
+      "generating": ["Bild wird erzeugt...", "Ihr Bild wird erstellt...", "Ihre Vision wird zum Leben erweckt...", "Details werden ausgearbeitet...", "Rendering läuft...", "fast fertig...", "Details werden finalisiert...", "Ergebnis wird verfeinert...", "einen Moment..."],
+      "staging": ["Ihr Raum wird eingerichtet...", "Möbel werden hinzugefügt...", "Dekor wird ausgewählt...", "Elemente werden angeordnet...", "Stile werden angewendet...", "Design wird erstellt...", "Layout wird erzeugt...", "Details werden verfeinert...", "fast bereit..."],
+      "analyzing": ["Bild wird analysiert...", "Details werden geprüft...", "Elemente werden identifiziert...", "Bilddaten werden verarbeitet...", "Raum wird erfasst...", "Komposition wird überprüft...", "Layout wird studiert...", "fast fertig..."],
+      "welcome": ["Ihr Willkommen wird vorbereitet...", "wir machen uns für Sie bereit...", "alles wird eingerichtet...", "ein herzliches Willkommen wird vorbereitet...", "alles wird für Sie bereitgemacht...", "fast bereit, Sie zu begrüßen...", "Ihr Bereich wird eingerichtet...", "etwas Besonderes wird vorbereitet..."],
+      "general": ["denke nach...", "Ihre Anfrage wird verarbeitet...", "analysiere...", "Optionen werden abgewogen...", "wird bearbeitet...", "fast fertig...", "einen Moment...", "Antwort wird vorbereitet..."]
+    },
+    "emptyState": "Starten Sie ein Gespräch, indem Sie eine Nachricht eingeben oder eine Datei hochladen",
+    "uploadFile": "Datei hochladen",
+    "inputPlaceholder": "Geben Sie Ihre Nachricht ein...",
+    "sendButton": "Senden",
+    "uploadArea": "PDF hochladen oder per Drag & Drop ablegen",
+    "uploadSubtext": "Unterstützt: PDF-Dateien",
+    "options": {
+      "title": "Verarbeitungsoptionen",
+      "skip": "Erste Seiten überspringen",
+      "skipHint": "Deckblätter und Titelseiten überspringen",
+      "concurrency": "Verarbeitungsgeschwindigkeit",
+      "concurrencyHint": "Höhere Geschwindigkeiten können die Verarbeitungszeit pro Raum erhöhen",
+      "dpi": "Bildqualität (DPI)",
+      "dpiHint": "Höhere DPI liefern bessere Qualität, dauern aber länger"
+    },
+    "processButton": "PDF verarbeiten",
+    "progress": {
+      "uploading": "PDF wird hochgeladen…",
+      "processing": "PDF wird verarbeitet…",
+      "complete": "Fertig!"
+    },
+    "result": {
+      "title": "Verarbeitung abgeschlossen!",
+      "description": "Ihr verarbeitetes PDF steht zum Download bereit.",
+      "download": "Verarbeitetes PDF herunterladen",
+      "uploadAnother": "Weiteres PDF hochladen"
+    },
+    "info": {
+      "title": "So funktioniert es",
+      "step1": "Laden Sie Ihr CAD-Grundriss-PDF hoch",
+      "step2": "Unsere KI erkennt Räume und extrahiert Grundrissdetails",
+      "step3": "Jeder Raum wird in eine fotorealistische 3D-Visualisierung umgewandelt",
+      "step4": "Laden Sie Ihr verarbeitetes PDF mit 3D-Renderings herunter (dauert in der Regel 2 Minuten)",
+      "note": "Hinweis: Die Verarbeitung dauert in der Regel etwa 2 Minuten. Bitte haben Sie Geduld, während unsere KI Ihre 3D-Renderings erzeugt."
+    },
+    "status": {
+      "fileReady": "Datei bereit"
+    },
+    "modelSelector": {
+      "chooseModel": "Wählen Sie Ihr Modell",
+      "fast": "Schnell",
+      "fastDescription": "Standardqualität, schneller",
+      "pro": "Stagify+",
+      "proDescription": "Höhere Qualität, langsamer"
+    },
+    "messageTag": {
+      "auto": "Auto",
+      "generate": "Erzeugen",
+      "stage": "Einrichten/Ändern",
+      "cadStage": "Einrichten (Grundriss)",
+      "describe": "Beschreiben/Abrufen"
+    },
+    "thumbnailStrip": {
+      "label": "Basisbild für die nächste Nachricht",
+      "help": "Wählen Sie, welches Raumbild die KI ändern soll, wenn Sie Ihre nächste Nachricht senden – besonders beim Hinzufügen von Möbeln. Hilfreich, wenn Sie mehrere Uploads oder eingerichtete Versionen haben.",
+      "helpAria": "Was bedeutet Basisbild?"
+    },
+    "alt": {
+      "uploadFile": "Eine Datei an Ihre Nachricht anhängen",
+      "reloadChat": "Ein neues Chat-Gespräch starten",
+      "sendMessage": "Nachricht senden",
+      "reportBug": "Einen Fehler melden",
+      "userAvatar": "Ihr Avatar",
+      "assistantAvatar": "Stagify KI-Designer",
+      "uploadPreview": "Vorschau der hochgeladenen Datei: {filename}",
+      "stagedRoom": "KI-eingerichteter Raum{suffix}",
+      "generatedImage": "KI-generiertes Designbild{suffix}",
+      "cadRender": "3D-Rendering aus Grundriss{suffix}",
+      "recalledImage": "Zuvor in diesem Gespräch geteiltes Bild",
+      "requestedImage": "Aus dem Gesprächsverlauf angefordertes Bild",
+      "editedImage": "Per Maske bearbeitetes Designbild{suffix}",
+      "originalCarouselImage": "Originalbild vor den Maskenbearbeitungen",
+      "enlargedImage": "Vollbildansicht des Designbildes",
+      "thumbnailSelected": "{label} – als Basisbild für Ihre nächste Nachricht ausgewählt",
+      "thumbnailOption": "{label} – Bild {index} im Gespräch"
+    },
+    "maskEditor": {
+      "title": "Mit Maske bearbeiten",
+      "brush": "Pinsel",
+      "erase": "Radieren",
+      "brushAllNote": "Achten Sie darauf, den gesamten Bereich zu übermalen, den Sie maskieren möchten.",
+      "toolsAria": "Maskenwerkzeug",
+      "brushSize": "Pinselgröße:",
+      "promptLabel": "Was möchten Sie im maskierten Bereich ändern?",
+      "promptPlaceholder": "z. B. die Wandfarbe in Blau ändern, das Sofa durch einen modernen Sessel ersetzen...",
+      "cancel": "Abbrechen",
+      "clearMask": "Maske löschen",
+      "applyEdit": "Bearbeitung anwenden",
+      "rerun": "Neu erzeugen",
+      "done": "Sieht gut aus",
+      "refineTitle": "Bearbeitung verfeinern",
+      "refineNote": "Übermalen, um mehr von der Bearbeitung zu zeigen, radieren, um sie zu verbergen – dies schneidet nur neu zu, die KI wird nicht erneut ausgeführt.",
+      "refineHelp": "Dieser Schritt stimmt nur fein ab, wo die Änderung der KI sichtbar ist – die KI wird dabei nicht erneut ausgeführt. Übermalen, um mehr von der Bearbeitung zu zeigen, radieren, um sie zurückzunehmen. Es ist ein Sicherheitsnetz, damit die Bearbeitung nur den von Ihnen gewählten Bereich betrifft und den Rest Ihres Fotos nicht beeinträchtigen kann.",
+      "refineHelpAria": "Was der Verfeinerungsschritt bewirkt",
+      "loadApplying": "Ihre Bearbeitung wird angewendet…",
+      "referenceLabel": "Referenzfoto (optional)",
+      "referenceAdd": "+ Foto hinzufügen",
+      "referenceHint": "Optional: ein Foto von Möbeln oder Dekor, das im maskierten Bereich platziert werden soll",
+      "referenceRemove": "Referenzfoto entfernen",
+      "referenceAlt": "Referenz für maskierte Bearbeitung",
+      "referenceTooLarge": "Dieses Bild ist zu groß – bitte wählen Sie eines unter 25 MB.",
+      "referenceInvalid": "Bitte wählen Sie ein gültiges JPG-, PNG- oder WebP-Bild.",
+      "processing": "Verarbeitung...",
+      "pleaseDrawMask": "Bitte zeichnen Sie eine Maske über den Bereich, den Sie bearbeiten möchten.",
+      "pleaseDescribeChange": "Bitte beschreiben Sie, was Sie im maskierten Bereich ändern möchten."
+    },
+    "errors": {
+      "invalidFileType": "Bitte laden Sie eine PDF-Datei hoch.",
+      "fileTooLarge": "Die Datei ist zu groß. Bitte laden Sie ein PDF mit weniger als 100 MB hoch.",
+      "noFile": "Bitte laden Sie zuerst eine PDF-Datei hoch",
+      "processingFailed": "Verarbeitung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "noProcessedFile": "Kein verarbeitetes PDF verfügbar."
+    }
+  },
+  "techHelp": {
+    "metaTitle": "Technische Hilfe – Stagify.ai Fehlerbehebung & Support",
+    "metaDescription": "Beheben Sie häufige technische Probleme mit Stagify.ai. Lösungen für Uploads, Generierung, Anmeldung, Abrechnung und Browserprobleme.",
+    "metaKeywords": "stagify technische hilfe, fehlerbehebung, upload funktioniert nicht, staging-hilfe, support, häufige probleme",
+    "badge": "Technische Hilfe",
+    "title": "Fehlerbehebung & häufige Probleme",
+    "subtitle": "Die meisten Probleme lassen sich schnell beheben. Finden Sie Ihr Problem unten – und falls Sie nicht weiterkommen, ist unser Team nur eine E-Mail entfernt.",
+    "upload": {
+      "title": "Upload & Dateien",
+      "i1": {
+        "q": "Mein Foto lässt sich nicht hochladen.",
+        "a": "Stellen Sie sicher, dass die Datei ein JPG, PNG oder WEBP unter 10 MB ist. Sehr große Handyfotos schlagen manchmal fehl – verkleinern Sie das Bild oder machen Sie einen Screenshot davon und laden Sie es erneut hoch. Falls es weiterhin fehlschlägt, aktualisieren Sie die Seite und versuchen Sie es erneut."
+      },
+      "i2": {
+        "q": "Welche Fotos funktionieren am besten?",
+        "a": "Verwenden Sie ein scharfes, gut beleuchtetes Foto, frontal aufgenommen, mit dem ganzen Raum sichtbar und möglichst wenig Unordnung. Unscharfe, dunkle oder extreme Weitwinkelaufnahmen liefern schwächere Ergebnisse. Neu hier? Sehen Sie sich zuerst die <a href=\"#walkthrough\">Schritt-für-Schritt-Anleitung</a> an."
+      }
+    },
+    "tips": {
+      "title": "Bessere Ergebnisse & Profi-Tipps",
+      "i1": {
+        "q": "Wie erhalte ich das realistischste Staging?",
+        "a": "Fotografieren Sie den Raum frontal bei Tageslicht, mit dem ganzen Raum im Bild und freigeräumten Flächen. Wählen Sie den genauen Raumtyp und Stil vor dem Generieren, erstellen Sie dann zwei oder drei Variationen und behalten Sie die beste. <a href=\"index.html#stage\">Öffnen Sie das Staging-Studio</a>, um es auszuprobieren."
+      },
+      "i2": {
+        "q": "Welchen Tarif oder welches Tool sollte ich verwenden?",
+        "a": "Die kostenlose Version ist perfekt für schnelle einzelne Räume. <a href=\"stagify-plus.html\">Stagify+</a> schaltet unbegrenzte Generierungen, hochwertigere Modelle, das Maskierungstool und die Prompt-Leiste frei. <a href=\"ai-designer.html\">KI-Designer</a> gestaltet einen ganzen Raum aus einem kurzen Chat neu – am besten, wenn die KI die Entscheidungen für Sie treffen soll."
+      },
+      "i3": {
+        "q": "Kann ich Möbel und Layout steuern?",
+        "a": "Ja. Mit <a href=\"stagify-plus.html\">Stagify+</a> können Sie über die Prompt-Leiste Details beschreiben wie „ein Ecksofa und einen großen Teppich hinzufügen“, und das Möbel-Tool bringt Ihre eigenen Stücke ein. Wenn nur ein Bereich nicht stimmt, maskieren Sie ihn und erzeugen Sie nur diese Stelle neu, statt das ganze Bild zu wiederholen."
+      }
+    },
+    "generate": {
+      "title": "Generierung & Ergebnisse",
+      "i1": {
+        "q": "Meine Generierung hängt oder dauert zu lange.",
+        "a": "Die meisten Bilder sind in etwa 8 Sekunden fertig. Wenn es länger als eine Minute dauert, ist möglicherweise Ihre Verbindung abgebrochen – aktualisieren Sie die Seite und versuchen Sie es erneut. Vermeiden Sie es, während des Vorgangs Tabs zu wechseln oder Ihr Handy zu sperren."
+      },
+      "i2": {
+        "q": "Das Ergebnis hat seltsame Möbel oder Artefakte.",
+        "a": "KI-Staging ist nicht bei jedem Durchlauf perfekt. Generieren Sie erneut für eine neue Variation, wechseln Sie den Stil oder verwenden Sie das <a href=\"ai-designer.html\">Maskierungstool</a>, um nur den problematischen Bereich zu korrigieren, statt das ganze Bild zu wiederholen."
+      },
+      "i3": {
+        "q": "Nichts hat sich geändert oder der Raum wirkt immer noch leer.",
+        "a": "Das bedeutet meist, dass kein Raumtyp oder Stil ausgewählt war oder das Foto zu dunkel für das Modell war. Wählen Sie einen Raumtyp und Stil und versuchen Sie dann ein helleres Foto. Möchten Sie, dass die KI das von Anfang bis Ende übernimmt? Probieren Sie <a href=\"ai-designer.html\">KI-Designer</a>."
+      }
+    },
+    "account": {
+      "title": "Konto & Anmeldung",
+      "i1": {
+        "q": "Mein Bestätigungscode ist nicht angekommen.",
+        "a": "Prüfen Sie Ihren Spam- oder Werbeordner – Codes können eine Minute dauern. Falls er immer noch nicht da ist, nutzen Sie „Code erneut senden“ und stellen Sie sicher, dass Ihre E-Mail korrekt eingegeben ist."
+      },
+      "i2": {
+        "q": "Ich habe mein Passwort vergessen.",
+        "a": "Wählen Sie auf dem Anmeldebildschirm „Passwort vergessen?“ und wir senden Ihnen per E-Mail einen Link zum Zurücksetzen. Der Link läuft nach einer Stunde ab."
+      },
+      "i3": {
+        "q": "Die Google-Anmeldung funktioniert nicht.",
+        "a": "Erlauben Sie Pop-ups für stagify.ai und stellen Sie sicher, dass Drittanbieter-Cookies nicht vollständig blockiert sind, und versuchen Sie es erneut. Sie können sich auch mit Ihrer E-Mail und Ihrem Passwort anmelden."
+      }
+    },
+    "billing": {
+      "title": "Abrechnung & Stagify+",
+      "i1": {
+        "q": "Wie verwalte oder kündige ich Stagify+?",
+        "a": "Klicken Sie oben rechts auf das Profilsymbol und tippen Sie dann auf das Stripe-Symbol neben Stagify+, um Ihr Abrechnungs-Dashboard zu öffnen, wo Sie Ihr Abo aktualisieren oder kündigen können. Sie können auch direkt das <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">Stripe-Abrechnungsportal</a> öffnen. Sie behalten den Zugang bis zum Ende des aktuellen Abrechnungszeitraums."
+      },
+      "i2": {
+        "q": "Ich wurde belastet, sehe aber keine Stagify+-Funktionen.",
+        "a": "Melden Sie sich ab und wieder an, um Ihr Konto zu aktualisieren. Falls die Funktionen weiterhin nicht erscheinen, schreiben Sie uns an <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> von der verwendeten Adresse."
+      }
+    },
+    "performance": {
+      "title": "Browser & Leistung",
+      "i1": {
+        "q": "Welche Browser werden unterstützt?",
+        "a": "Verwenden Sie eine aktuelle Version von Chrome, Safari, Edge oder Firefox. Ältere Browser unterstützen den Editor oder die Drag-zum-Vergleichen-Tools möglicherweise nicht."
+      },
+      "i2": {
+        "q": "Die Seite ist langsam oder Schaltflächen reagieren nicht.",
+        "a": "Aktualisieren Sie die Seite vollständig (Strg/Cmd + Umschalt + R), um eine veraltete Version zu löschen, schließen Sie ungenutzte Tabs und deaktivieren Sie Werbeblocker für stagify.ai, die Uploads stören können."
+      },
+      "i3": {
+        "q": "Die Seite lädt gar nicht.",
+        "a": "Prüfen Sie Ihre Internetverbindung und versuchen Sie dann ein privates/Inkognito-Fenster. Wenn sie dort lädt, leeren Sie den Browser-Cache für stagify.ai."
+      }
+    },
+    "contact": {
+      "text": "Immer noch nicht weiter? Unser Team hilft Ihnen gerne. Schreiben Sie an ",
+      "email": "team@stagify.ai"
+    }
+  },
+  "guides": {
+    "badge": "Anleitungen",
+    "title": "Anleitungen & Walkthroughs",
+    "subtitle": "Schnelle interaktive Walkthroughs, mit denen Sie in Minuten loslegen – plus Lösungen für häufige Probleme.",
+    "heroBadge": "Hilfecenter",
+    "liveBadge": "Interaktive Demo",
+    "walkthroughsTitle": "Schritt-für-Schritt-Anleitungen",
+    "demo1Title": "Ihr erstes kostenloses Staging",
+    "demo1Desc": "Folgen Sie mit, um ein Foto hochzuladen und Ihren ersten eingerichteten Raum zu erhalten.",
+    "demo2Title": "Ihr erstes Staging mit Stagify+",
+    "demo2Desc": "Sehen Sie, wie Sie mit Stagify+ für unbegrenzte Generierungen, höhere Qualität und Profi-Tools einrichten.",
+    "pickerFree": "Kostenlos",
+    "pickerPlus": "Stagify+",
+    "pickerDesigner": "KI-Designer",
+    "pickerPromptBar": "Prompt-Leiste",
+    "pickerFurniture": "Möbel",
+    "demo3Desc": "Sehen Sie zu, wie der KI-Designer einen Raum aus einem einfachen Chat eigenständig einrichtet und umgestaltet.",
+    "troubleshootingTitle": "Fehlerbehebung & häufige Probleme"
+  },
+  "pageMeta": {
+    "guides": {
+      "title": "Anleitungen & Walkthroughs | Stagify.ai",
+      "description": "Schritt-für-Schritt-Anleitungen für Stagify.ai – Ihr erstes kostenloses Staging, Staging mit Stagify+ und Lösungen für häufige Probleme."
+    },
+    "contact": {
+      "title": "Kontakt | Stagify.ai",
+      "description": "Kontaktieren Sie das Stagify.ai-Team für Support, Partnerschaften oder Fragen zu unserem kostenlosen KI-Home-Staging-Tool."
+    },
+    "stagifyPlus": {
+      "title": "Stagify+ – Tarife & Preise | Stagify.ai",
+      "description": "Stagify+: unbegrenztes KI-Staging, hochwertigere Modelle, KI-Designer und das Maskierungstool. Tarife und Preise ansehen."
+    },
+    "enterprise": {
+      "title": "Stagify Enterprise – Nutzungsbasiertes KI-Staging für Teams",
+      "description": "Geben Sie Ihrem ganzen Team unbegrenztes KI-Staging mit nutzungsbasierter Abrechnung für 0,15 $ pro Generierung. Eine Rechnung, keine Gebühren pro Platz."
+    }
+  }
+}

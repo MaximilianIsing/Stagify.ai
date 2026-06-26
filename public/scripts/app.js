@@ -520,7 +520,7 @@
     // Hard-composite the AI output onto the original: keep the original
     // everywhere, paste the edited pixels only inside the (expanded) mask. This
     // makes it physically impossible for unbrushed areas to change.
-    function compositeMaskedEdit(origCanvas, keepMask, editedImg, w, h) {
+    function compositeMaskedEditCanvas(origCanvas, keepMask, editedImg, w, h) {
       const me = document.createElement('canvas');
       me.width = w; me.height = h;
       const mctx = me.getContext('2d');
@@ -532,7 +532,11 @@
       const octx = out.getContext('2d');
       octx.drawImage(origCanvas, 0, 0);
       octx.drawImage(me, 0, 0);
-      return out.toDataURL('image/png');
+      return out;
+    }
+    // Same composite, returned as a PNG data URL (used when committing a version).
+    function compositeMaskedEdit(origCanvas, keepMask, editedImg, w, h) {
+      return compositeMaskedEditCanvas(origCanvas, keepMask, editedImg, w, h).toDataURL('image/png');
     }
 
     function openFilePicker() {
@@ -1348,6 +1352,13 @@
       const brushToolBtn = $('#stage-mask-brush-btn');
       const eraseToolBtn = $('#stage-mask-erase-btn');
       const canvasContainer = maskModal.querySelector('.stage-mask-canvas-container');
+      const refFileInput = $('#stage-mask-ref-file');
+      const refAddBtn = $('#stage-mask-ref-add');
+      const refPreview = $('#stage-mask-ref-preview');
+      const refImg = $('#stage-mask-ref-img');
+      const refRemoveBtn = $('#stage-mask-ref-remove');
+      const noteEl = maskModal.querySelector('.stage-mask-note');
+      const actionsRow = maskModal.querySelector('.stage-mask-actions');
 
       let brushSize = 50;
       let drawing = false;
@@ -1355,6 +1366,7 @@
       let lastY = null;
       let scaleX = 1;
       let scaleY = 1;
+      let maskReferenceDataUrl = null;
       // 'brush' adds to the selection, 'erase' removes from it.
       let tool = 'brush';
       // Tracks whether anything has been painted this session, so the hot drawing
@@ -1363,6 +1375,161 @@
       // 'after' = refine an already-staged image; 'before' = edit the original
       // photo into a new unstaged variant. Both append to their carousel.
       let editorMode = 'after';
+
+      // ---- In-modal generate → refine flow ---------------------------------
+      // "Apply Edit" no longer closes the modal. We blur the canvas while the AI
+      // runs, then show the result here so the user can repaint the outline.
+      // Repainting only re-crops the already-generated image (instant, free) — it
+      // never re-calls the API unless they press "Regenerate".
+      let phase = 'draw';        // 'draw' | 'loading' | 'refine'
+      let refineState = null;    // { origCanvas, w, h, coreGrow, featherPx, editedImg, isBefore }
+      let loadMsgTimer = null;
+      let loadingOverlay = null;
+
+      // Refine-phase action buttons, created once and toggled by phase.
+      const rerunBtn = document.createElement('button');
+      rerunBtn.type = 'button';
+      rerunBtn.id = 'stage-mask-rerun';
+      rerunBtn.className = 'btn btn-secondary hidden';
+      const doneBtn = document.createElement('button');
+      doneBtn.type = 'button';
+      doneBtn.id = 'stage-mask-done';
+      doneBtn.className = 'btn btn-primary hidden';
+      if (actionsRow) { actionsRow.appendChild(rerunBtn); actionsRow.appendChild(doneBtn); }
+
+      // "?" help icon shown next to the title during the refine phase.
+      const helpIcon = document.createElement('span');
+      helpIcon.className = 'smask-help hidden';
+      helpIcon.tabIndex = 0;
+      helpIcon.setAttribute('role', 'button');
+      helpIcon.textContent = '?';
+      const helpTip = document.createElement('span');
+      helpTip.className = 'smask-help__tip';
+      helpIcon.appendChild(helpTip);
+      const maskHeader = maskModal.querySelector('.stage-mask-header');
+      if (maskHeader) maskHeader.insertBefore(helpIcon, maskHeader.querySelector('.stage-mask-close'));
+
+      // One-time styles for the in-modal blur + spinner overlay (self-contained
+      // so the whole feature mirrors cleanly into the AI Designer).
+      if (!document.getElementById('smask-refine-styles')) {
+        const st = document.createElement('style');
+        st.id = 'smask-refine-styles';
+        st.textContent =
+          '.stage-mask-canvas-container.smask-busy .stage-mask-canvas{filter:blur(6px) brightness(.98);}' +
+          '.smask-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(255,255,255,.4);z-index:6;border-radius:inherit;}' +
+          '.smask-overlay__spin{width:46px;height:46px;border-radius:50%;border:4px solid rgba(37,99,235,.25);border-top-color:#2563eb;animation:smask-spin .9s linear infinite;}' +
+          '.smask-overlay__msg{font-weight:600;color:#1f2937;font-size:14px;text-align:center;max-width:80%;padding:0 12px;}' +
+          '.smask-help{position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid #94a3b8;color:#64748b;font-size:11px;font-weight:700;cursor:help;margin-left:6px;margin-right:auto;line-height:1;user-select:none;flex:0 0 auto;}' +
+          '.smask-help.hidden{display:none;}' +
+          '.smask-help__tip{position:absolute;top:140%;left:0;width:min(290px,72vw);background:#1f2937;color:#fff;font-size:12px;font-weight:400;line-height:1.45;padding:10px 12px;border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);opacity:0;visibility:hidden;transition:opacity .15s ease;z-index:30;text-align:left;pointer-events:none;white-space:normal;}' +
+          '.smask-help:hover .smask-help__tip,.smask-help:focus .smask-help__tip,.smask-help:focus-within .smask-help__tip{opacity:1;visibility:visible;}' +
+          '@keyframes smask-spin{to{transform:rotate(360deg);}}';
+        document.head.appendChild(st);
+      }
+
+      const LOAD_MESSAGES = [
+        'Applying your edit…',
+        'Reworking the masked area…',
+        'Blending in the new details…',
+        'Refining textures and lighting…',
+        'Adding finishing touches…',
+      ];
+
+      function ensureOverlay() {
+        if (loadingOverlay || !canvasContainer) return;
+        if (getComputedStyle(canvasContainer).position === 'static') {
+          canvasContainer.style.position = 'relative';
+        }
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'smask-overlay hidden';
+        const spin = document.createElement('div');
+        spin.className = 'smask-overlay__spin';
+        const msg = document.createElement('div');
+        msg.className = 'smask-overlay__msg';
+        loadingOverlay.appendChild(spin);
+        loadingOverlay.appendChild(msg);
+        canvasContainer.appendChild(loadingOverlay);
+      }
+
+      function startOverlay() {
+        ensureOverlay();
+        if (canvasContainer) canvasContainer.classList.add('smask-busy');
+        if (!loadingOverlay) return;
+        loadingOverlay.classList.remove('hidden');
+        const msgEl = loadingOverlay.querySelector('.smask-overlay__msg');
+        let i = 0;
+        if (msgEl) msgEl.textContent = tx('pdf.maskEditor.loadApplying', LOAD_MESSAGES[0]);
+        if (loadMsgTimer) clearInterval(loadMsgTimer);
+        loadMsgTimer = setInterval(() => {
+          i = (i + 1) % LOAD_MESSAGES.length;
+          if (msgEl) msgEl.textContent = LOAD_MESSAGES[i];
+        }, 2000);
+      }
+
+      function stopOverlay() {
+        if (loadMsgTimer) { clearInterval(loadMsgTimer); loadMsgTimer = null; }
+        if (canvasContainer) canvasContainer.classList.remove('smask-busy');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+      }
+
+      function setControlsDisabled(dis) {
+        [cancelBtn, clearBtn, submitBtn, rerunBtn, doneBtn, brushToolBtn, eraseToolBtn, brushSlider, promptInput, refAddBtn, refRemoveBtn]
+          .forEach((el) => { if (el) el.disabled = dis; });
+      }
+
+      // Recolor every painted stroke to `color` (keeps alpha, swaps hue). Used to
+      // switch the selection to the refine-phase color. Mask logic reads alpha, so
+      // this is purely cosmetic.
+      function recolorMask(color) {
+        if (!drawCanvas.width || !drawCanvas.height) return;
+        const ctx = drawCanvas.getContext('2d');
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-in';
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+        ctx.restore();
+      }
+
+      // Switch the editor between drawing, loading and refine phases.
+      function setPhase(p) {
+        phase = p;
+        const titleEl = maskModal.querySelector('.stage-mask-title');
+        if (p === 'loading') {
+          if (canvasContainer) canvasContainer.classList.add('processing');
+          setControlsDisabled(true);
+          startOverlay();
+          drawCanvas.style.pointerEvents = 'none';
+          return;
+        }
+        stopOverlay();
+        if (canvasContainer) canvasContainer.classList.remove('processing');
+        setControlsDisabled(false);
+        drawCanvas.style.pointerEvents = 'auto';
+        drawCanvas.style.cursor = 'crosshair';
+        if (p === 'refine') {
+          if (submitBtn) submitBtn.classList.add('hidden');
+          if (clearBtn) clearBtn.classList.add('hidden');
+          rerunBtn.classList.remove('hidden');
+          doneBtn.classList.remove('hidden');
+          rerunBtn.textContent = tx('pdf.maskEditor.rerun', 'Regenerate');
+          doneBtn.textContent = tx('pdf.maskEditor.done', 'Looks good');
+          if (titleEl) titleEl.textContent = tx('pdf.maskEditor.refineTitle', 'Refine the edit');
+          helpIcon.classList.remove('hidden');
+          helpIcon.setAttribute('aria-label', tx('pdf.maskEditor.refineHelpAria', 'What the refine step does'));
+          helpTip.textContent = tx('pdf.maskEditor.refineHelp', "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo.");
+          recolorMask('#16a34a');
+          if (noteEl) noteEl.textContent = tx('pdf.maskEditor.refineNote', "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI.");
+          updateSubmitState();
+        } else { // draw
+          if (submitBtn) submitBtn.classList.remove('hidden');
+          if (clearBtn) clearBtn.classList.remove('hidden');
+          rerunBtn.classList.add('hidden');
+          doneBtn.classList.add('hidden');
+          helpIcon.classList.add('hidden');
+          applyEditorCopy();
+          if (noteEl) noteEl.textContent = tx('pdf.maskEditor.brushAllNote', "Be sure to brush over all of the area you'd like masked.");
+        }
+      }
 
       function isProcessing() {
         return canvasContainer && canvasContainer.classList.contains('processing');
@@ -1433,6 +1600,8 @@
           drawCanvas.style.pointerEvents = 'auto';
           drawCanvas.style.cursor = 'crosshair';
           updateSubmitState();
+          refineState = null;
+          setPhase('draw');
           maskModal.classList.add('active');
           maskModal.setAttribute('aria-hidden', 'false');
         };
@@ -1445,6 +1614,7 @@
         if (atVersionLimit('after')) return;
         editorMode = 'after';
         applyEditorCopy();
+        clearMaskReference();
         if (promptInput) promptInput.value = '';
         showInEditor(canvas1.toDataURL('image/png'));
       }
@@ -1456,15 +1626,79 @@
         if (atVersionLimit('before')) return;
         editorMode = 'before';
         applyEditorCopy();
+        clearMaskReference();
         if (promptInput) promptInput.value = '';
         showInEditor(src);
+      }
+
+      function clearMaskReference() {
+        maskReferenceDataUrl = null;
+        if (refFileInput) refFileInput.value = '';
+        if (refPreview) refPreview.classList.add('hidden');
+        if (refImg) refImg.removeAttribute('src');
+        if (refAddBtn) refAddBtn.classList.remove('hidden');
+      }
+
+      function setMaskReference(dataUrl) {
+        maskReferenceDataUrl = dataUrl;
+        if (refImg) refImg.src = dataUrl;
+        if (refPreview) refPreview.classList.remove('hidden');
+        if (refAddBtn) refAddBtn.classList.add('hidden');
+      }
+
+      // Validate, downscale (max 1536px), and PNG-encode a chosen reference file so
+      // the payload is always small, clean, and a format the backend accepts.
+      // Resolves to a data URL; rejects with 'type' | 'size' | 'read' | 'decode'.
+      function prepareReferenceFile(file) {
+        return new Promise((resolve, reject) => {
+          if (!file || !/^image\/(jpeg|jpg|png|webp)$/i.test(file.type || '')) { reject(new Error('type')); return; }
+          if (file.size > 25 * 1024 * 1024) { reject(new Error('size')); return; }
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error('read'));
+          reader.onload = () => {
+            const img = new Image();
+            img.onerror = () => reject(new Error('decode'));
+            img.onload = () => {
+              const maxDim = 1536;
+              const scale = Math.min(1, maxDim / Math.max(img.width || 1, img.height || 1));
+              const w = Math.max(1, Math.round((img.width || 1) * scale));
+              const h = Math.max(1, Math.round((img.height || 1) * scale));
+              const c = document.createElement('canvas');
+              c.width = w; c.height = h;
+              c.getContext('2d').drawImage(img, 0, 0, w, h);
+              try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
+            };
+            img.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function refErrorMessage(err) {
+        const key = err && err.message === 'size' ? 'pdf.maskEditor.referenceTooLarge' : 'pdf.maskEditor.referenceInvalid';
+        const fallback = err && err.message === 'size'
+          ? 'That image is too large — please choose one under 25 MB.'
+          : 'Please choose a valid JPG, PNG, or WebP image.';
+        const t = window.LanguageSystem && window.LanguageSystem.getText(key);
+        return (t && t !== 'Loading...') ? t : fallback;
       }
 
       function closeEditor() {
         maskModal.classList.remove('active');
         maskModal.setAttribute('aria-hidden', 'true');
+        stopOverlay();
         clearDraw();
-        if (canvasContainer) canvasContainer.classList.remove('processing');
+        clearMaskReference();
+        refineState = null;
+        phase = 'draw';
+        if (submitBtn) submitBtn.classList.remove('hidden');
+        if (clearBtn) clearBtn.classList.remove('hidden');
+        rerunBtn.classList.add('hidden');
+        doneBtn.classList.add('hidden');
+        setControlsDisabled(false);
+        if (canvasContainer) canvasContainer.classList.remove('processing', 'smask-busy');
+        if (processBtn) processBtn.disabled = false;
+        if (typeof updateMaskButtonVisibility === 'function') updateMaskButtonVisibility();
       }
 
       function clearDraw() {
@@ -1490,9 +1724,10 @@
       }
 
       function updateSubmitState() {
-        if (!submitBtn) return;
         const hasPrompt = promptInput && promptInput.value.trim().length > 0;
-        submitBtn.disabled = !painted || !hasPrompt;
+        const ready = painted && hasPrompt;
+        if (submitBtn) submitBtn.disabled = !ready;
+        if (rerunBtn) rerunBtn.disabled = !ready;
       }
 
       function setTool(t) {
@@ -1518,8 +1753,11 @@
         // instead of adding to it. Solid pixels keep the shape clean; the
         // translucent look comes from the canvas element's CSS opacity.
         ctx.globalCompositeOperation = tool === 'erase' ? 'destination-out' : 'source-over';
-        ctx.strokeStyle = '#2563eb';
-        ctx.fillStyle = '#2563eb';
+        // Refine phase uses a distinct color so it's clear you're adjusting the
+        // crop, not selecting a fresh area.
+        const brushColor = phase === 'refine' ? '#16a34a' : '#2563eb';
+        ctx.strokeStyle = brushColor;
+        ctx.fillStyle = brushColor;
         ctx.lineWidth = brushSize;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
@@ -1560,6 +1798,9 @@
         // Recompute accurately once per stroke (handles erasing the selection away).
         painted = scanHasContent();
         updateSubmitState();
+        // In refine mode, re-crop the existing AI output through the new strokes —
+        // instant and free, no API call.
+        if (phase === 'refine') renderRefinePreview();
       }
 
       drawCanvas.addEventListener('mousedown', startDraw);
@@ -1587,15 +1828,27 @@
       if (cancelBtn) cancelBtn.addEventListener('click', closeEditor);
       if (brushToolBtn) brushToolBtn.addEventListener('click', () => setTool('brush'));
       if (eraseToolBtn) eraseToolBtn.addEventListener('click', () => setTool('erase'));
+      if (refAddBtn && refFileInput) {
+        refAddBtn.addEventListener('click', () => refFileInput.click());
+        refFileInput.addEventListener('change', () => {
+          const file = refFileInput.files && refFileInput.files[0];
+          refFileInput.value = ''; // allow re-selecting the same file later
+          if (!file) return;
+          prepareReferenceFile(file)
+            .then(setMaskReference)
+            .catch((err) => { clearMaskReference(); alert(refErrorMessage(err)); });
+        });
+      }
+      if (refRemoveBtn) refRemoveBtn.addEventListener('click', clearMaskReference);
       // Same paint-brush FAB on both views: edits the staged result on After,
       // or the original photo on Before.
       if (maskEditBtn) maskEditBtn.addEventListener('click', () => {
         if (activeViewIsAfter()) openEditor();
         else openBeforeEditor();
       });
-      maskModal.addEventListener('click', (e) => { if (e.target === maskModal) closeEditor(); });
+      maskModal.addEventListener('click', (e) => { if (e.target === maskModal && phase !== 'loading') closeEditor(); });
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && maskModal.classList.contains('active')) closeEditor();
+        if (e.key === 'Escape' && maskModal.classList.contains('active') && phase !== 'loading') closeEditor();
       });
 
       function runMaskLoadingUI() {
@@ -1647,122 +1900,157 @@
         };
       }
 
-      async function submitEdit() {
-        const prompt = promptInput ? promptInput.value.trim() : '';
-        if (!prompt || !maskHasContent()) return;
+      function loadImage(src) {
+        return new Promise((resolve, reject) => {
+          const im = new Image();
+          im.onload = () => resolve(im);
+          im.onerror = () => reject(new Error('Failed to load edited image'));
+          im.src = src;
+        });
+      }
 
-        // Source dimensions + a snapshot of the source, captured while the editor
-        // canvases still exist. After the AI responds we hard-composite its output
-        // onto this source through the mask, so only the brushed (and expanded)
-        // area can ever change.
-        const w = baseCanvas.width;
-        const h = baseCanvas.height;
-        const imageDataUrl = baseCanvas.toDataURL('image/png');
-        const origCanvas = document.createElement('canvas');
-        origCanvas.width = w; origCanvas.height = h;
-        origCanvas.getContext('2d').drawImage(baseCanvas, 0, 0);
+      function snapshotCanvas(src, w, h) {
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(src, 0, 0);
+        return c;
+      }
 
-        // Secret brush expansion: grow the brushed area a good bit so slightly
-        // under-brushed spots are still covered, with a feathered edge so the
-        // composite shows no visible seam.
-        const maxDim = Math.max(w, h);
-        const coreGrow = Math.max(23, Math.round(maxDim * 0.0455));
-        const featherPx = Math.max(20, Math.round(maxDim * 0.04));
-        // Mask sent to the model = the grown region, so the edit actually covers
-        // the expanded brush (not just the raw strokes).
+      // Re-composite the (already generated) AI output through the CURRENT brush
+      // strokes onto the pristine original, and show it in the editor. This is the
+      // instant, free "refine the crop" step — no API call.
+      function renderRefinePreview() {
+        if (!refineState) return;
+        const { origCanvas, w, h, coreGrow, featherPx, editedImg } = refineState;
+        const keep = buildBlendMask(drawCanvas, w, h, coreGrow, featherPx);
+        const composed = compositeMaskedEditCanvas(origCanvas, keep, editedImg, w, h);
+        const bctx = baseCanvas.getContext('2d');
+        bctx.clearRect(0, 0, w, h);
+        bctx.drawImage(composed, 0, 0);
+      }
+
+      // POST the current strokes + prompt (+ optional reference) to the model and
+      // resolve to the raw edited Image. Throws on failure.
+      async function runGenerate(origCanvas, w, h, prompt, coreGrow) {
+        const imageDataUrl = origCanvas.toDataURL('image/png');
         const maskDataUrl = buildModelMask(drawCanvas, w, h, coreGrow).toDataURL('image/png');
-        // Mask used to composite the result = grown core + feathered edge.
-        const keepMask = buildBlendMask(drawCanvas, w, h, coreGrow, featherPx);
-
         let selectedModel = 'gpt-4o-mini';
         const modelSel = document.getElementById('stagify-model-select');
         if (modelSel && modelSel.value) selectedModel = modelSel.value;
-
-        const isBefore = editorMode === 'before';
-
-        // Close the editor and show the standard generation loading experience on
-        // whichever view we're editing.
-        closeEditor();
-        // Block staging and starting another mask while this edit is in flight.
-        if (processBtn) processBtn.disabled = true;
-        if (isBefore) {
-          showBeforeView();
-          stagePreview.classList.add('processing');
-        } else {
-          showAfterView();
-          canvas1.classList.add('processing');
+        const referenceImageForRequest = maskReferenceDataUrl;
+        const tok = window.StagifyAuth && window.StagifyAuth.getToken();
+        const response = await fetch('/api/mask-edit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
+          },
+          body: JSON.stringify({
+            image: imageDataUrl,
+            mask: maskDataUrl,
+            prompt: prompt,
+            model: selectedModel,
+            authToken: tok || undefined,
+            ...(referenceImageForRequest ? { referenceImage: referenceImageForRequest } : {}),
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.editedImage) {
+          throw new Error(result.error || 'Failed to process masked edit');
         }
-        if (maskEditBtn) maskEditBtn.classList.add('hidden');
-        const loader = runMaskLoadingUI();
+        return loadImage(result.editedImage);
+      }
 
+      // "Apply Edit" (draw phase): generate, then enter refine mode in-modal.
+      async function submitEdit() {
+        if (phase !== 'draw') return;
+        const prompt = promptInput ? promptInput.value.trim() : '';
+        if (!prompt || !maskHasContent()) return;
+        // Snapshot the pristine source while it's still on the base canvas; in
+        // refine mode the base canvas gets overwritten with the composite.
+        const w = baseCanvas.width;
+        const h = baseCanvas.height;
+        const origCanvas = snapshotCanvas(baseCanvas, w, h);
+        // Secret brush expansion: grow a good bit so slight under-brushing is still
+        // covered, with a feathered edge so the composite shows no seam.
+        const maxDim = Math.max(w, h);
+        const coreGrow = Math.max(23, Math.round(maxDim * 0.0455));
+        const featherPx = Math.max(20, Math.round(maxDim * 0.04));
+        const isBefore = editorMode === 'before';
+        if (processBtn) processBtn.disabled = true;
+        setPhase('loading');
         try {
-          const tok = window.StagifyAuth && window.StagifyAuth.getToken();
-          const response = await fetch('/api/mask-edit', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
-            },
-            body: JSON.stringify({
-              image: imageDataUrl,
-              mask: maskDataUrl,
-              prompt: prompt,
-              model: selectedModel,
-              authToken: tok || undefined,
-            }),
-          });
-
-          const result = await response.json();
-          if (!response.ok || !result.editedImage) {
-            throw new Error(result.error || 'Failed to process masked edit');
-          }
-
-          // Load the AI output and hard-composite it onto the original through the
-          // expanded brush mask. Everything outside the brushed area stays exactly
-          // as the source — the model physically cannot alter it.
-          const editedImg = await new Promise((resolve, reject) => {
-            const im = new Image();
-            im.onload = () => resolve(im);
-            im.onerror = () => reject(new Error('Failed to load edited image'));
-            im.src = result.editedImage;
-          });
-          const finalUrl = compositeMaskedEdit(origCanvas, keepMask, editedImg, w, h);
-
-          loader.finish();
-          if (isBefore) {
-            // Append a new unstaged "before" variant and show it. Process will
-            // stage whichever before version is on screen.
-            beforeVersions.push(finalUrl);
-            if (beforeVersions.length > MAX_MASK_VERSIONS) beforeVersions = beforeVersions.slice(-MAX_MASK_VERSIONS);
-            stagePreview.classList.remove('processing');
-            showBeforeVersion(beforeVersions.length - 1);
-            updateMaskButtonVisibility();
-          } else {
-            // Append a refined staged version and show it.
-            afterVersions.push(finalUrl);
-            if (afterVersions.length > MAX_MASK_VERSIONS) afterVersions = afterVersions.slice(-MAX_MASK_VERSIONS);
-            hasProcessedImage = true;
-            await drawAfter(afterVersions[afterVersions.length - 1],
-              afterVersions.length > 1 ? ` (${afterVersions.length})` : '');
-            afterIndex = afterVersions.length - 1;
-            canvas1.classList.remove('processing');
-            updateCarouselUI();
-            updateMaskButtonVisibility();
-          }
-          if (processBtn) processBtn.disabled = false;
-          loadHeroStats({ refresh: true });
+          const editedImg = await runGenerate(origCanvas, w, h, prompt, coreGrow);
+          if (!maskModal.classList.contains('active')) return; // closed mid-flight
+          refineState = { origCanvas, w, h, coreGrow, featherPx, editedImg, isBefore };
+          setPhase('refine');
+          renderRefinePreview();
         } catch (err) {
           console.error('Mask edit failed:', err);
-          loader.stop();
-          if (isBefore) stagePreview.classList.remove('processing');
-          else canvas1.classList.remove('processing');
+          setPhase('draw');
           if (processBtn) processBtn.disabled = false;
-          updateMaskButtonVisibility();
           alert(err.message || 'Mask edit failed. Please try again.');
         }
       }
 
+      // "Regenerate" (refine phase): run the AI again with the refined strokes.
+      async function rerunAI() {
+        if (phase !== 'refine' || !refineState) return;
+        const prompt = promptInput ? promptInput.value.trim() : '';
+        if (!prompt || !maskHasContent()) return;
+        const { origCanvas, w, h, coreGrow } = refineState;
+        if (processBtn) processBtn.disabled = true;
+        setPhase('loading');
+        try {
+          const editedImg = await runGenerate(origCanvas, w, h, prompt, coreGrow);
+          if (!maskModal.classList.contains('active')) return;
+          refineState.editedImg = editedImg;
+          setPhase('refine');
+          renderRefinePreview();
+        } catch (err) {
+          console.error('Mask re-run failed:', err);
+          setPhase('refine'); // keep the previous result intact
+          renderRefinePreview();
+          alert(err.message || 'Mask edit failed. Please try again.');
+        }
+      }
+
+      // "Looks good" (refine phase): commit the current composite as a new version.
+      async function commitRefine() {
+        if (!refineState) { closeEditor(); return; }
+        const { origCanvas, w, h, coreGrow, featherPx, editedImg, isBefore } = refineState;
+        const keep = buildBlendMask(drawCanvas, w, h, coreGrow, featherPx);
+        const finalUrl = compositeMaskedEdit(origCanvas, keep, editedImg, w, h);
+        closeEditor();
+        if (isBefore) {
+          // Append a new unstaged "before" variant; Process stages whichever
+          // before version is on screen.
+          beforeVersions.push(finalUrl);
+          if (beforeVersions.length > MAX_MASK_VERSIONS) beforeVersions = beforeVersions.slice(-MAX_MASK_VERSIONS);
+          showBeforeView();
+          stagePreview.classList.remove('processing');
+          showBeforeVersion(beforeVersions.length - 1);
+          updateMaskButtonVisibility();
+        } else {
+          // Append a refined staged version and show it.
+          afterVersions.push(finalUrl);
+          if (afterVersions.length > MAX_MASK_VERSIONS) afterVersions = afterVersions.slice(-MAX_MASK_VERSIONS);
+          hasProcessedImage = true;
+          showAfterView();
+          await drawAfter(afterVersions[afterVersions.length - 1],
+            afterVersions.length > 1 ? ` (${afterVersions.length})` : '');
+          afterIndex = afterVersions.length - 1;
+          canvas1.classList.remove('processing');
+          updateCarouselUI();
+          updateMaskButtonVisibility();
+        }
+        if (processBtn) processBtn.disabled = false;
+        loadHeroStats({ refresh: true });
+      }
+
       if (submitBtn) submitBtn.addEventListener('click', submitEdit);
+      rerunBtn.addEventListener('click', rerunAI);
+      doneBtn.addEventListener('click', commitRefine);
     })();
   
     if (newUploadBtn) newUploadBtn.addEventListener('click', () => {

@@ -1,0 +1,814 @@
+{
+  "meta": {
+    "title": "Stagify.ai – 無料のバーチャルホームステージングをワンクリックで",
+    "description": "AIステージングで空室を変身させましょう。写真をアップロードするだけで、数秒でプロ仕様のステージング結果が手に入ります。不動産エージェント、売主、買主のための無料のAIホームステージング。",
+    "keywords": "AIステージング, ホームステージング, 不動産ステージング, バーチャルステージング, AIホームステージング, 物件演出, 不動産写真, ステージングツール, バーチャル家具"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "about": "私たちについて",
+    "pdfTo3d": "AIデザイナー",
+    "whyUs": "選ばれる理由",
+    "faq": "よくある質問",
+    "contactUs": "お問い合わせ",
+    "brand": "Stagify",
+    "brandSuffix": ".ai",
+    "techHelp": "技術サポート",
+    "guides": "ガイド",
+    "logoAlt": "Stagify.aiのロゴ – ホームページへ"
+  },
+  "hero": {
+    "catchphrase": "アップロード。ステージング。想像。",
+    "announcement": "理想の空間を現実にするために作られました",
+    "title": {
+      "free": "無料の",
+      "virtual": "バーチャル",
+      "staging": "ステージング",
+      "with": "を",
+      "one": "ワン",
+      "click": "クリックで",
+      "upload": "アップロード。",
+      "stage": "ステージング。",
+      "imagine": "想像。"
+    },
+    "cta": "画像を無料でアップロード",
+    "freeGensLeft": "本日の無料生成回数は残り{n}回です、",
+    "freeGensLeftUpgrade": "アップグレード",
+    "freeGensUpgrade": "今すぐStagify+をお試しください。<a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">アップグレード</a>",
+    "carouselNote": "サンプルプレビュー。写真をアップロードしてステージングしましょう",
+    "stats": {
+      "roomsStaged": "ステージングした部屋",
+      "usersServed": "利用ユーザー数",
+      "andCounting": "さらに増加中..."
+    }
+  },
+  "sponsors": {
+    "title": "公式に認められています:"
+  },
+  "home": {
+    "studio": {
+      "eyebrow": "ビフォー＆アフター",
+      "title": "ドラッグしてステージングの効果を確認",
+      "subtitle": "同じ物件写真の、Stagify適用前と適用後。引っ越し業者も、レンタルも、待ち時間も不要です。",
+      "beforeLabel": "ビフォー",
+      "afterLabel": "アフター",
+      "kicker": "仕上がりイメージ",
+      "panelTitle": "同じ部屋を、数秒でステージング",
+      "panelBody": "ハンドルをドラッグしてください。左側が元の写真で、右側はすべてStagifyが数秒でステージングしたものです。",
+      "points": {
+        "speed": "1枚あたり約8秒",
+        "restage": "好きなスタイルで、何度でもステージングし直せます",
+        "rights": "すべての画像はあなたのもので、完全な著作権付きです"
+      },
+      "examples": {
+        "bedroom": "寝室",
+        "living": "リビング",
+        "dining": "ダイニング"
+      },
+      "comparisonAria": "ステージング前後の比較",
+      "revealSliderAria": "比較スライダー",
+      "exampleRoomsAria": "部屋の例"
+    },
+    "designer": {
+      "title": "AIにあなたの空間をステージングさせましょう",
+      "subtitle": "AIデザイナーを使えば、チャットしながら、どんな部屋でも掲載準備が整うまでステージング・再デザイン・調整できます。<em>（Stagify+限定）</em>"
+    },
+    "info": {
+      "eyebrow": "ひとことで言うと",
+      "title": "バーチャルホームステージングとは何か、なぜ売れるのか",
+      "subtitle": "仕組みと対象者を、専門用語なしで手短かに正直にご紹介します。",
+      "rows": {
+        "why": {
+          "eyebrow": "効果がある理由",
+          "caption": "ニューヨークのCompassオフィスでStagifyをデモ",
+          "title": "買主はまず目で買う",
+          "body": "ほとんどの買主はオンラインから探し始めるため、物件写真こそが実質的な最初の内見です。空室や古びた部屋は把握しづらく、広さも、そこで暮らすイメージもつかめません。ステージングは各部屋に明確な目的と魅力を与えます。だからこそエージェントは昔から頼りにしてきました。",
+          "p1": "空室は写真では実際よりも狭く冷たく見えます",
+          "p2": "ステージングは各空間の本来の用途を示します",
+          "p3": "優れた写真はより多くのクリック・保存・内見を生みます"
+        },
+        "how": {
+          "eyebrow": "仕組み",
+          "caption": "初めてのステージング物件についてエージェントの一団に説明",
+          "title": "空室写真から掲載準備完了まで約8秒",
+          "body": "写真をアップロードし、部屋のタイプと7つのスタイルから1つを選ぶと、Stagifyが約8秒で家具を配置します。変更が必要ですか？既存の家具を取り除いたり、カスタム指示を追加したり、一部のエリアをマスクして最初からやり直さずに調整したりできます。",
+          "p1": "7つのスタイルに加え、カスタム指示と家具の除去",
+          "p2": "結果の任意の部分を、やり直さずにマスクで編集",
+          "p3": "完全な著作権付きで、MLSや広告に自由に使用可能"
+        },
+        "who": {
+          "eyebrow": "対象となる方",
+          "caption": "エージェントの写真をステージングするためにマンツーマンで対応",
+          "title": "エージェント、売主、買主のために",
+          "body": "エージェントはステージングチームを待つことなく、各物件を数分でマーケティングできます。売主は誰も雇わずに自分の写真をステージングできます。買主は決断する前にリフォーム後をプレビューできます。さらにAIデザイナーを使えば、CAD間取り図のPDFをフォトリアルな3Dルームレンダリングに変換できます。",
+          "p1": "エージェント：より早く掲載し、より多く成約",
+          "p2": "売主・買主：ソフトもデザイナーも不要",
+          "p3": "AIデザイナー：エージェント型の部屋ステージング"
+        },
+        "team": {
+          "eyebrow": "チームのために設計",
+          "caption": "不動産チームにStagifyの研修を実施",
+          "title": "オフィス全員が使えるシンプルさ",
+          "body": "インストールするソフトも、覚えることもありません。チームの誰もがブラウザでStagifyを開き、物件写真をアップロードして数秒でステージングできます。オフィスのノートパソコンでも、現場のスマートフォンでも。",
+          "p1": "デザインスキルもソフトも不要",
+          "p2": "あらゆるブラウザ、あらゆるデバイスで動作",
+          "p3": "どのエージェントも自分の物件をステージング可能"
+        }
+      }
+    },
+    "compare": {
+      "eyebrow": "バーチャル vs 従来型",
+      "title": "従来型ステージングとの比較",
+      "subtitle": "従来型ステージングは効果があります。ただ、遅くて高額なだけです。",
+      "colTraditional": "従来型ステージング",
+      "colStagify": "Stagify.ai",
+      "rows": {
+        "cost": {
+          "aspect": "費用",
+          "trad": "1物件あたり$2,000～$5,000以上、多くの場合売却まで毎月課金",
+          "stag": "無料で開始、費用なしでステージング"
+        },
+        "time": {
+          "aspect": "所要期間",
+          "trad": "手配・納品・設置に1～3週間",
+          "stag": "1枚あたり約8秒"
+        },
+        "styles": {
+          "aspect": "スタイルの選択肢",
+          "trad": "1つの仕上がりのみ、設置後は固定",
+          "stag": "7つのスタイルとカスタム指示、いつでも切り替え可能"
+        },
+        "changes": {
+          "aspect": "気が変わったとき",
+          "trad": "その都度、新たなレンタル・設置費用",
+          "stag": "好きなだけ何度でもステージングし直し"
+        },
+        "logistics": {
+          "aspect": "ロジスティクス",
+          "trad": "運送業者、レンタル、物件へのアクセス",
+          "stag": "どこからでも写真をアップロードするだけ"
+        },
+        "rights": {
+          "aspect": "画像について",
+          "trad": "返却する借り物の家具の写真",
+          "stag": "完全な著作権付きで、あなたが保有"
+        }
+      },
+      "source": "全米リアルター協会（NAR）の「Profile of Home Staging」によると、買主側エージェントの大多数が、ステージングは買主が物件を将来の住まいとしてイメージしやすくすると述べています。",
+      "sourceCite": "出典：全米リアルター協会、Profile of Home Staging"
+    },
+    "nar": {
+      "title": "取り残されないために",
+      "subtitle": "不動産業界は急速にAIを導入しており、顧客もそれに反応しています。ステージングは最も始めやすい取り組みの1つです。",
+      "usageLabel": "エージェントがAIツールを使う頻度",
+      "legend": {
+        "daily": "毎日",
+        "weekly": "毎週",
+        "monthly": "月に数回",
+        "none": "まだ未使用"
+      },
+      "note": "のエージェントがすでに業務でAIを使用しています。",
+      "stat1": "のエージェントが、顧客は売買プロセスにおけるテクノロジーに好意的に反応したと回答",
+      "stat2": "がすでに掲載コンテンツの生成にAIを使用",
+      "source": "数値は全米リアルター協会による2025年の不動産エージェント向けテクノロジー調査に基づきます。",
+      "sourceCite": "出典：全米リアルター協会、2025年テクノロジー調査",
+      "usageAria": "エージェントのAI利用：毎日20%、毎週22%、月に数回27%、まだ未使用32%"
+    },
+    "plus": {
+      "title": "Stagify+でさらに先へ",
+      "subtitle": "無制限のステージング、より高品質なモデル、プロ向けツールに加え、チーム全体向けの従量制プラン。",
+      "pro": {
+        "name": "Stagify+",
+        "tag": "個人向け",
+        "per": "/ 月",
+        "f1": "無制限のステージング生成",
+        "f2": "より高品質な画像モデル",
+        "f3": "1回の生成で複数のバリエーション",
+        "f4": "任意のエリアを編集できるマスクツール",
+        "f5": "AIデザイナー：エージェント型のステージングプロセス",
+        "f6": "部屋から既存の家具を除去",
+        "cta": "Stagify+を見る"
+      },
+      "ent": {
+        "name": "Enterprise",
+        "tag": "チーム向け",
+        "per": "/ 生成",
+        "desc": "チーム全員に自動でStagify+を付与し、実際に使った分だけお支払いいただけます。",
+        "f1": "会社のメールアドレスを持つ全員が対象",
+        "f2": "従量課金制、席数あたりの料金なし",
+        "f3": "1枚の請求書、利用量に応じて毎月課金",
+        "f4": "チーム向けにStagify+の全機能を含む",
+        "cta": "Enterpriseを見る"
+      }
+    },
+    "instagram": {
+      "title": "Instagramで実際の様子をチェック",
+      "subtitle": "本物のステージング変身例、手軽なコツ、Stagifyチームの舞台裏。",
+      "follow": "@stagify.aiをフォロー"
+    },
+    "finalCta": {
+      "title": "あなたの物件で試してみましょう",
+      "subtitle": "空室を1枚アップロードすれば、約8秒でステージングされた様子が見られます。無料でお試しください。",
+      "button": "写真をアップロード",
+      "note": "Compass、Centennialほか多数に認められています。"
+    },
+    "whyus": {
+      "subtitle": "他のバーチャルステージングツールは遅く、高額で、制約だらけです。Stagifyはその真逆になるよう作られています。"
+    },
+    "faq": {
+      "subtitle": "よく寄せられる質問への手早い回答です。まだ解決しませんか？<a href=\"guides.html\">ガイド</a>をご覧いただくか、お問い合わせください。"
+    },
+    "contactCta": {
+      "title": "私たちの受信箱はいつでも開いています",
+      "subtitle": "ご質問、ご感想、提携のアイデアはありますか？すべてのメッセージに目を通し、できるだけ早くお返事します。",
+      "email": "team@stagify.ai"
+    },
+    "reviewCta": {
+      "title": "Stagifyを気に入っていただけましたか？",
+      "subtitle": "Stagifyで時間を節約できたなら、手早いGoogleレビューが他のエージェントの発見に役立ちます。",
+      "button": "Googleレビューを書く",
+      "aria": "Googleレビューを書く（新しいタブで開きます）"
+    }
+  },
+  "modal": {
+    "rolePopup": {
+      "title": "あなたに合わせて体験をカスタマイズしましょう！",
+      "question": "あなたの役割は？",
+      "options": {
+        "agent": "エージェント",
+        "seller": "売主",
+        "buyer": "買主",
+        "other": "その他"
+      }
+    },
+    "referralPopup": {
+      "title": "あなたに合わせて体験をカスタマイズしましょう！",
+      "question": "どこで私たちを知りましたか？",
+      "options": {
+        "socials": "SNS",
+        "friend": "友人",
+        "email": "メール",
+        "other": "その他"
+      }
+    },
+    "emailPopup": {
+      "title": "あなたに合わせて体験をカスタマイズしましょう！",
+      "question": "メールで最新情報を受け取りますか？",
+      "placeholder": "your@email.com",
+      "skip": "スキップ"
+    },
+    "staging": {
+      "title": "オプション",
+      "close": "x",
+      "roomType": "部屋のタイプ",
+      "furnitureStyle": "家具のスタイル",
+      "additionalPrompt": "追加の指示",
+      "additionalPromptPlaceholder": "ステージングに関する具体的な詳細やご要望を追加してください...",
+      "removeFurniture": "既存の家具を除去",
+      "keepFurnitureLabel": "残したい既存の家具（任意）",
+      "keepFurniturePlaceholder": "例：ダイニングテーブルと作り付けの棚を残す",
+      "emptyRoomView": "空にした部屋を見る",
+      "emptyRoomTitle": "空室（家具を除去）",
+      "emptyRoomDownload": "空室をダウンロード",
+      "emptyRoomAlt": "既存の家具を除去した部屋",
+      "furniturePhotosLabel": "家具の写真（任意）",
+      "furniturePhotosHint": "ステージングした部屋に登場させたい家具やインテリアの参考写真を最大5枚",
+      "processButton": "写真を処理",
+      "maskBeforeButton": "写真をマスクして編集",
+      "maskBeforeHint": "編集したい元写真のエリアを塗ってください（例：散らかりを除去）。それ以外はそのまま残ります。その後、気に入ったバージョンを処理してステージングします。",
+      "maskBeforeTitle": "写真をマスクして編集",
+      "maskBeforePromptLabel": "塗ったエリアで何を変更しますか？",
+      "maskBeforePromptPlaceholder": "例：古いソファを除去、散らかりを片付け、壁を白く塗り直す",
+      "maskBeforeApply": "編集を適用",
+      "maskLimitReached": "この画像のバージョンは上限の6つに達しました。",
+      "prevVersion": "前のバージョン",
+      "nextVersion": "次のバージョン",
+      "imageVersions": "画像のバージョン",
+      "versionLabel": "バージョン{index}",
+      "uploadArea": "画像をアップロードまたはドラッグ＆ドロップ",
+      "before": "ビフォー",
+      "after": "アフター",
+      "downloadResult": "結果をダウンロード",
+      "uploadAnother": "別の画像をアップロード",
+      "noProcessedImage": "ステージング結果はここに表示されます",
+      "noProcessedImageSubtext": "「写真を処理」をクリックして、画像のAIステージング版を生成してください",
+      "imageModel": "画像モデル",
+      "fastGeneration": "高速生成",
+      "qualityGeneration": "Stagify+高品質生成",
+      "imageGenerations": "画像生成",
+      "addPhotos": "+ 写真を追加",
+      "tryAnotherImage": "別の画像を試す",
+      "uploadAreaAria": "アップロードエリア",
+      "editWithMask": "マスクツールで選択したエリアを編集",
+      "stagingVariations": "ステージングのバリエーション",
+      "originalImage": "バーチャルステージング前の元の部屋の写真",
+      "stagedImage": "AIステージングされた部屋のプレビュー",
+      "warningAlt": "重要なステージングに関する注意",
+      "downloadIcon": "画像をダウンロード",
+      "maskIcon": "マスク編集ツールのアイコン",
+      "variationAlt": "バーチャルステージングのバリエーション {index}/{total}",
+      "furnitureReferenceAlt": "家具の参考写真：{filename}",
+      "uploadedRoomAlt": "アップロードした部屋の写真{filenameSuffix}",
+      "sampleRoomAlt": "バーチャルステージングを試すためのサンプル部屋写真",
+      "stagedResultAlt": "AIステージングされた部屋の結果{suffix}",
+      "progress": {
+        "preparing": "準備中…",
+        "uploading": "画像をアップロード中…",
+        "preparingAI": "AIモデルを準備中…",
+        "staging": "AIがあなたの部屋をステージング中…",
+        "complete": "完了！",
+        "error": "エラー：",
+        "loadingMessages": [
+          "あなたにぴったりの家具を探しています",
+          "理想の部屋をステージングしています",
+          "美しいインテリアを選んでいます",
+          "魅力が最大になるよう家具を配置しています",
+          "完璧な雰囲気を作り出しています",
+          "あなたの空間をスタイリッシュに演出しています",
+          "夢のインテリアをデザインしています",
+          "部屋のレイアウトと動線を最適化しています",
+          "仕上げのタッチを加えています",
+          "あなたのビジョンを形にしています"
+        ]
+      }
+    }
+  },
+  "roomTypes": {
+    "bedroom": "寝室",
+    "livingRoom": "リビング",
+    "diningRoom": "ダイニング",
+    "kitchen": "キッチン",
+    "bathroom": "バスルーム",
+    "office": "書斎",
+    "outdoors": "屋外"
+  },
+  "furnitureStyles": {
+    "standard": "スタンダード",
+    "modern": "モダン",
+    "midcentury": "ミッドセンチュリー",
+    "scandinavian": "スカンジナビア",
+    "luxury": "ラグジュアリー",
+    "coastal": "コースタル",
+    "farmhouse": "ファームハウス",
+    "custom": "カスタム"
+  },
+  "carouselItems": {
+    "original": "オリジナル",
+    "modern": "モダン",
+    "scandinavian": "スカンジナビア",
+    "luxury": "ラグジュアリー",
+    "coastal": "コースタル",
+    "midcentury": "ミッドセンチュリー",
+    "farmhouse": "ファームハウス",
+    "originalPhotoAlt": "バーチャルステージング前の空室の例",
+    "modernPhotoAlt": "モダンなバーチャルステージングスタイルの部屋の例",
+    "scandinavianPhotoAlt": "スカンジナビア風バーチャルステージングスタイルの部屋の例",
+    "luxuryPhotoAlt": "ラグジュアリーなバーチャルステージングスタイルの部屋の例",
+    "coastalPhotoAlt": "コースタル風バーチャルステージングスタイルの部屋の例",
+    "midcenturyPhotoAlt": "ミッドセンチュリー風バーチャルステージングスタイルの部屋の例",
+    "farmhousePhotoAlt": "ファームハウス風バーチャルステージングスタイルの部屋の例"
+  },
+  "whyUs": {
+    "title": "選ばれる理由",
+    "stagify": {
+      "title": "stagify.ai",
+      "features": {
+        "instantResults": "<strong>即座に結果</strong>：約8秒",
+        "oneClickStaging": "<strong>ワンクリックステージング</strong>：手間いらず",
+        "free": "<strong>無制限の生成</strong>：完全無料",
+        "noAds": "<strong>広告なしの体験</strong>：気を散らすものなし",
+        "noLogin": "<strong>簡単な登録</strong>：すぐに開始",
+        "unlimited": "<strong>先進的な画像モデル</strong>：より高品質",
+        "copyright": "<strong>完全な著作権</strong>：どこでも使用可能"
+      }
+    },
+    "others": {
+      "title": "他社",
+      "features": {
+        "slowResults": "<strong style=\"color: #6d1c2c;\">遅い結果：</strong>何日も待つ",
+        "longProcess": "<strong style=\"color: #6d1c2c;\">長いプロセス：</strong>面倒なやり取り",
+        "expensive": "<strong style=\"color: #6d1c2c;\">高額：</strong>画像ごとに高い料金",
+        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">広告とクッキー：</strong>煩わしい体験",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">長い登録手続き：</strong>もどかしいスタート",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">旧式で安価なモデル：</strong>低品質",
+        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">不明確な著作権：</strong>法的リスク"
+      }
+    },
+    "keyFeatures": {
+      "title": "主な機能",
+      "unlimitedVariations": {
+        "title": "無制限のバリエーション",
+        "description": "あなたのブランドと買主層に合うまで、複数のスタイルを試せます。"
+      },
+      "fastTurnarounds": {
+        "title": "スピーディな仕上がり",
+        "description": "写真を約8秒でステージングし、より早く掲載してより多くの取引を成立させましょう。"
+      }
+    }
+  },
+  "faq": {
+    "title": "よくある質問",
+    "questions": {
+      "whatIsVirtualStaging": {
+        "question": "バーチャルステージングとは？",
+        "answer": "バーチャルステージングとは、物件写真をデジタルで家具配置し、その可能性を見せるプロセスです。空間が完全にスタイリングされたときの見た目や雰囲気を買主がイメージしやすくなります。従来型ステージングと異なり、より速く、より費用対効果が高く、さまざまな買主の好みに合わせた複数のデザイン案が可能です。高品質なビジュアルにより、バーチャルステージングは物件の最も良い特徴を引き立て、買主が感情的なつながりを感じ、そこで暮らす自分を想像しやすくします。"
+      },
+      "howLong": {
+        "question": "どのくらい時間がかかりますか？",
+        "answer": "平均すると、バーチャルステージングは1枚あたり約8秒で処理されますが、正確な時間は空間の複雑さや選んだデザインスタイルによって多少前後します。結果は、物件写真を際立たせる、素早くシームレスな変身です。"
+      },
+      "customTheme": {
+        "question": "カスタムテーマはどう選びますか？",
+        "answer": "ご希望のテーマが見当たらない場合は、「カスタム」を選択し、希望するテーマの具体的な指示を追加できます。その指示をもとに、ご希望のテーマを生成します。"
+      },
+      "idealRoom": {
+        "question": "ステージングに理想的な部屋とは？",
+        "answer": "ステージングに理想的な部屋は、十分な明るさ、すっきりとした壁、散らかりが最小限であることが望まれます。空室や家具の少ない部屋が最適です。AIが選んだスタイルに合う家具やインテリアを加えるための、きれいなキャンバスになるからです。部屋がより広く写る広角の写真は、狭い角度や見切れた構図よりもはるかに優れています。AIが空間をリアルにステージングするための文脈をより多く得られるためです。"
+      },
+      "privacy": {
+        "question": "私のデータはプライベートかつ安全ですか？",
+        "answer": "はい。HTTPS暗号化を使用し、処理後にアップロードされた画像を恒久的に保存することはなく、お客様の個人情報を販売することもありません。アップロードと生成結果の所有権はお客様が保持します。データは、Stagifyの運営に必要なサービスプロバイダー（AIや決済処理など）とのみ、プライバシーポリシーに記載のとおり共有します。"
+      }
+    }
+  },
+  "contact": {
+    "title": "お問い合わせ",
+    "description": "ぜひご連絡ください。個別にご連絡いただくか、<a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>までお問い合わせください。",
+    "social": "<a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>、<a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a>、<a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a>でフォローして、最新情報や事例をチェック！",
+    "labels": {
+      "name": "お名前",
+      "email": "メール",
+      "phone": "電話番号"
+    },
+    "team": {
+      "maximilian": {
+        "name": "Maximilian Ising",
+        "email": "maximilianbising@gmail.com",
+        "phone": "(917) 690-6253",
+        "title": "共同創業者、開発・AI責任者",
+        "photoAlt": "Stagify.aiの共同創業者で開発・AI責任者のMaximilian Isingのポートレート"
+      },
+      "lucas": {
+        "name": "Lucas Shtainer",
+        "email": "lucasshtainer1@gmail.com",
+        "phone": "(347) 491-9609",
+        "title": "共同創業者、マーケティング責任者",
+        "photoAlt": "Stagify.aiの共同創業者でマーケティング責任者のLucas Shtainerのポートレート"
+      },
+      "ryan": {
+        "name": "Ryan Croman",
+        "email": "ryancroman10@gmail.com",
+        "phone": "(646) 709-6715",
+        "title": "共同創業者、アウトリーチ責任者",
+        "photoAlt": "Stagify.aiの共同創業者でアウトリーチ責任者のRyan Cromanのポートレート"
+      },
+      "emil": {
+        "name": "Emil Volvosky",
+        "email": "emvolvovsky@gmail.com",
+        "phone": "(917) 691-2013",
+        "title": "統計マーケティングアナリスト",
+        "photoAlt": "Stagify.aiの統計マーケティングアナリストのEmil Volvoskyのポートレート"
+      }
+    }
+  },
+  "errors": {
+    "fileType": "PNG、JPG、JPEG、WebP、またはGIFの画像ファイルをアップロードしてください。",
+    "fileTooLarge": "ファイルが大きすぎます。100MB未満の画像をアップロードしてください。",
+    "uploadFirst": "まず画像をアップロードしてください",
+    "badPrompt": "無効な指示が入力されました",
+    "processingFailed": "処理に失敗しました",
+    "noImageData": "画像データを受信できませんでした",
+    "dailyLimitFree": "本日の無料ステージング{limit}回をすべて使い切りました（UTC午前0時にリセット）。無制限のステージングはStagify+へ。",
+    "dailyLimitAnonymous": "このネットワークの無料利用上限に達しました（1日{limit}回、UTC）。ステージングをアカウントに紐付けるにはログインするか、明日もう一度お試しください。",
+    "dailyLimitCta": "Stagify+を見る"
+  },
+  "common": {
+    "close": "閉じる",
+    "selectLanguage": "言語を選択"
+  },
+  "footer": {
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "contact": "お問い合わせ",
+    "copyright": "Stagify.ai"
+  },
+  "auth": {
+    "yourEmail": "あなたのメール",
+    "welcomeTitle": "Stagifyへようこそ",
+    "welcomeSub": "無料アカウントを作成して、写真をアップロード・ステージングしましょう。",
+    "registerTitle": "無料アカウントを作成",
+    "registerSub": "登録して画像をアップロード・ステージングしましょう。",
+    "signInTitle": "ログイン",
+    "signInSub": "メールアドレスとパスワードを入力して続行してください。",
+    "verifyTitle": "メールを確認",
+    "verifyCopy": "{email}に送信した6桁のコードを入力してください。",
+    "resetTitle": "パスワードをリセット",
+    "resetCopy": "新しいパスワードを設定するための一度限りのリンクをメールでお送りします。リンクは1時間で期限切れになります。",
+    "email": "メール",
+    "emailPlaceholder": "you@example.com",
+    "password": "パスワード",
+    "passwordPlaceholder": "8文字以上",
+    "confirmPassword": "パスワードの確認",
+    "confirmPasswordPlaceholder": "パスワードを再入力",
+    "or": "または",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "verificationCode": "確認コード",
+    "verificationCodePlaceholder": "123456",
+    "back": "戻る",
+    "resendCode": "コードを再送信",
+    "createAccount": "アカウントを作成",
+    "continue": "続行",
+    "signIn": "ログイン",
+    "sendResetLink": "リセットリンクを送信",
+    "backToSignIn": "ログインに戻る",
+    "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
+    "newHere": "初めてですか？",
+    "accountMenu": "アカウントメニュー",
+    "googleCancelled": "Googleログインがキャンセルされました。",
+    "googleFailed": "Googleログインに失敗しました",
+    "networkError": "ネットワークエラー。もう一度お試しください。",
+    "enterEmail": "メールアドレスを入力してください。",
+    "resendFailed": "コードを再送信できませんでした。もう一度お試しください。",
+    "resendSuccess": "新しい確認コードを送信しました。",
+    "resetSomethingWrong": "問題が発生しました。数分後にもう一度お試しください。",
+    "resetLinkSent": "パスワードリセットリンクを送信しました。メール（および迷惑メール）をご確認ください。",
+    "noAccountForEmail": "そのメールアドレスのアカウントは見つかりませんでした。",
+    "resetTryLater": "問題が発生しました。後でもう一度お試しください。",
+    "enterVerificationCode": "メールに記載の6桁の確認コードを入力してください。",
+    "verificationFailed": "確認に失敗しました",
+    "passwordsNoMatch": "パスワードが一致しません。",
+    "somethingWrong": "問題が発生しました",
+    "checkEmailForCode": "確認コードについてメールをご確認ください。",
+    "agreeTerms": "アカウントを作成すると、<a href=\"terms.html\">利用規約</a>および<a href=\"privacy.html\">プライバシー</a>に同意したものとみなされます"
+  },
+  "profile": {
+    "signIn": "ログイン",
+    "createAccount": "アカウントを作成",
+    "freePlan": "無料プラン",
+    "upgradeToPlus": "Stagify+にアップグレード",
+    "manageSubscription": "サブスクリプションを管理",
+    "signOut": "ログアウト",
+    "manageBillingAria": "Stripeで請求を管理",
+    "stripeHelp": "Stripeヘルプセンター"
+  },
+  "pdf": {
+    "meta": {
+      "title": "AIデザイナー | Stagify.ai – AI搭載デザインアシスタント",
+      "description": "AIデザイナーとチャットして、デザインの疑問へのサポートを受け、分析用のファイルをアップロードし、プロのデザインアドバイスを即座に得られます。",
+      "keywords": "AIデザイナー, AIデザインアシスタント, デザイン相談, AIチャット, デザインヘルプ, インテリアデザインAI"
+    },
+    "title": "AIデザイナー",
+    "description": "CAD間取り図のPDFをフォトリアルな3Dインテリアビジュアライゼーションに変換",
+    "statusMessages": {
+      "generating": ["画像を生成中...", "あなたの画像を作成中...", "ビジョンを形にしています...", "ディテールを作り込み中...", "レンダリング中...", "もうすぐ完了...", "ディテールを仕上げ中...", "結果を磨き上げ中...", "少々お待ちください..."],
+      "staging": ["部屋をステージング中...", "家具を追加中...", "インテリアを選定中...", "要素を配置中...", "スタイルを適用中...", "デザインを作成中...", "レイアウトを生成中...", "ディテールを調整中...", "もうすぐ完成..."],
+      "analyzing": ["画像を分析中...", "ディテールを確認中...", "要素を識別中...", "視覚データを処理中...", "空間を把握中...", "構図を確認中...", "レイアウトを検討中...", "もうすぐ完了..."],
+      "welcome": ["お迎えの準備中...", "あなたのために準備中...", "セットアップ中...", "温かいお迎えを準備中...", "すべてを準備中...", "もうすぐお迎えできます...", "あなたのスペースを設定中...", "特別なものを準備中..."],
+      "general": ["考え中...", "リクエストを処理中...", "分析中...", "オプションを検討中...", "作業中...", "もうすぐ完了...", "少々お待ちください...", "回答を準備中..."]
+    },
+    "emptyState": "メッセージを入力するかファイルをアップロードして会話を始めましょう",
+    "uploadFile": "ファイルをアップロード",
+    "inputPlaceholder": "メッセージを入力...",
+    "sendButton": "送信",
+    "uploadArea": "PDFをアップロードまたはドラッグ＆ドロップ",
+    "uploadSubtext": "対応形式：PDFファイル",
+    "options": {
+      "title": "処理オプション",
+      "skip": "最初のページをスキップ",
+      "skipHint": "表紙やタイトルページをスキップ",
+      "concurrency": "処理速度",
+      "concurrencyHint": "速度を上げると部屋ごとの処理時間が増える場合があります",
+      "dpi": "画質（DPI）",
+      "dpiHint": "DPIが高いほど高品質になりますが時間がかかります"
+    },
+    "processButton": "PDFを処理",
+    "progress": {
+      "uploading": "PDFをアップロード中…",
+      "processing": "PDFを処理中…",
+      "complete": "完了！"
+    },
+    "result": {
+      "title": "処理が完了しました！",
+      "description": "処理済みのPDFをダウンロードできます。",
+      "download": "処理済みPDFをダウンロード",
+      "uploadAnother": "別のPDFをアップロード"
+    },
+    "info": {
+      "title": "仕組み",
+      "step1": "CAD間取り図のPDFをアップロード",
+      "step2": "AIが部屋を識別し、間取りの詳細を抽出",
+      "step3": "各部屋がフォトリアルな3Dビジュアライゼーションに変換されます",
+      "step4": "3Dレンダリング付きの処理済みPDFをダウンロード（通常2分ほど）",
+      "note": "注：処理には通常2分ほどかかります。AIが3Dレンダリングを生成する間、少々お待ちください。"
+    },
+    "status": {
+      "fileReady": "ファイル準備完了"
+    },
+    "modelSelector": {
+      "chooseModel": "モデルを選択",
+      "fast": "高速",
+      "fastDescription": "標準品質、より高速",
+      "pro": "Stagify+",
+      "proDescription": "より高品質、より低速"
+    },
+    "messageTag": {
+      "auto": "自動",
+      "generate": "生成",
+      "stage": "ステージング/変更",
+      "cadStage": "ステージング（間取り図）",
+      "describe": "説明/呼び出し"
+    },
+    "thumbnailStrip": {
+      "label": "次のメッセージの基準画像",
+      "help": "次のメッセージを送信する際にAIが変更すべき部屋の画像を選択してください。特に家具を追加するときに役立ちます。複数のアップロードやステージング版がある場合に便利です。",
+      "helpAria": "基準画像とは？"
+    },
+    "alt": {
+      "uploadFile": "メッセージにファイルを添付",
+      "reloadChat": "新しいチャットを開始",
+      "sendMessage": "メッセージを送信",
+      "reportBug": "バグを報告",
+      "userAvatar": "あなたのアバター",
+      "assistantAvatar": "Stagify AIデザイナー",
+      "uploadPreview": "アップロードしたファイルのプレビュー：{filename}",
+      "stagedRoom": "AIステージングされた部屋{suffix}",
+      "generatedImage": "AI生成のデザイン画像{suffix}",
+      "cadRender": "間取り図からの3Dレンダリング{suffix}",
+      "recalledImage": "この会話で以前共有された画像",
+      "requestedImage": "会話履歴からリクエストされた画像",
+      "editedImage": "マスク編集されたデザイン画像{suffix}",
+      "originalCarouselImage": "マスク編集前の元の画像",
+      "enlargedImage": "デザイン画像のフルサイズ表示",
+      "thumbnailSelected": "{label} – 次のメッセージの基準画像として選択",
+      "thumbnailOption": "{label} – 会話内の画像{index}"
+    },
+    "maskEditor": {
+      "title": "マスクで編集",
+      "brush": "ブラシ",
+      "erase": "消去",
+      "brushAllNote": "マスクしたいエリア全体を必ず塗ってください。",
+      "toolsAria": "マスクツール",
+      "brushSize": "ブラシサイズ：",
+      "promptLabel": "マスクしたエリアで何を変更しますか？",
+      "promptPlaceholder": "例：壁の色を青に変更、ソファをモダンなチェアに置き換え...",
+      "cancel": "キャンセル",
+      "clearMask": "マスクをクリア",
+      "applyEdit": "編集を適用",
+      "rerun": "再生成",
+      "done": "これでOK",
+      "refineTitle": "編集を微調整",
+      "refineNote": "塗ると編集がより表示され、消すと隠れます。これは切り抜きを調整するだけで、AIを再実行しません。",
+      "refineHelp": "このステップはAIの変更が表示される範囲を微調整するだけで、AIを再実行しません。塗ると編集がより表示され、消すと控えめになります。編集が選んだエリアだけに作用し、写真の他の部分を損なわないようにする安全策です。",
+      "refineHelpAria": "微調整ステップの役割",
+      "loadApplying": "編集を適用中…",
+      "referenceLabel": "参考写真（任意）",
+      "referenceAdd": "+ 写真を追加",
+      "referenceHint": "任意：マスクしたエリアに配置する家具やインテリアの写真",
+      "referenceRemove": "参考写真を削除",
+      "referenceAlt": "マスク編集の参考",
+      "referenceTooLarge": "この画像は大きすぎます。25MB未満のものを選んでください。",
+      "referenceInvalid": "有効なJPG、PNG、またはWebP画像を選んでください。",
+      "processing": "処理中...",
+      "pleaseDrawMask": "編集したいエリアにマスクを描いてください。",
+      "pleaseDescribeChange": "マスクしたエリアで何を変更したいか説明してください。"
+    },
+    "errors": {
+      "invalidFileType": "PDFファイルをアップロードしてください。",
+      "fileTooLarge": "ファイルが大きすぎます。100MB未満のPDFをアップロードしてください。",
+      "noFile": "まずPDFファイルをアップロードしてください",
+      "processingFailed": "処理に失敗しました。もう一度お試しください。",
+      "noProcessedFile": "処理済みのPDFがありません。"
+    }
+  },
+  "techHelp": {
+    "metaTitle": "技術サポート - Stagify.aiのトラブルシューティングとサポート",
+    "metaDescription": "Stagify.aiのよくある技術的な問題を解決します。アップロード、生成、ログイン、請求、ブラウザの問題の解決策。",
+    "metaKeywords": "stagify 技術サポート, トラブルシューティング, アップロードできない, ステージングヘルプ, サポート, よくある問題",
+    "badge": "技術サポート",
+    "title": "トラブルシューティングとよくある問題",
+    "subtitle": "ほとんどの問題はすぐに解決できます。以下からあなたの問題を見つけてください。それでも解決しない場合は、メール1通でチームがお手伝いします。",
+    "upload": {
+      "title": "アップロードとファイル",
+      "i1": {
+        "q": "写真がアップロードできません。",
+        "a": "ファイルが10MB未満のJPG、PNG、またはWEBPであることを確認してください。非常に大きなスマホ写真は失敗することがあります。画像を縮小するかスクリーンショットを撮ってから、もう一度アップロードしてください。それでも失敗する場合は、ページを更新して再試行してください。"
+      },
+      "i2": {
+        "q": "どんな写真が最適ですか？",
+        "a": "正面から撮影した、鮮明で明るく、部屋全体が写り、散らかりが最小限の写真を使ってください。ぼやけた写真、暗い写真、極端な広角の写真は結果が劣ります。初めてですか？まず<a href=\"#walkthrough\">ステップバイステップのチュートリアル</a>をご覧ください。"
+      }
+    },
+    "tips": {
+      "title": "より良い結果とプロのコツ",
+      "i1": {
+        "q": "最もリアルなステージングを得るには？",
+        "a": "日中の自然光の下、部屋全体をフレームに収め、表面を片付けて正面から撮影してください。生成前に部屋のタイプとスタイルを正確に選び、2〜3パターンを作成して最も良いものを残しましょう。<a href=\"index.html#stage\">ステージングスタジオを開く</a>から試せます。"
+      },
+      "i2": {
+        "q": "どのプランやツールを使うべき？",
+        "a": "無料版は単発の部屋に最適です。<a href=\"stagify-plus.html\">Stagify+</a>では無制限の生成、より高品質なモデル、マスクツール、プロンプトバーが使えます。<a href=\"ai-designer.html\">AIデザイナー</a>は短いチャットから部屋全体を再デザインします。AIに判断を任せたいときに最適です。"
+      },
+      "i3": {
+        "q": "家具やレイアウトを制御できますか？",
+        "a": "はい。<a href=\"stagify-plus.html\">Stagify+</a>のプロンプトバーでは「コーナーソファと大きなラグを追加」などの具体的な指示ができ、家具ツールではあなた自身の家具を取り込めます。1か所だけうまくいかない場合は、その部分をマスクして、画像全体をやり直さずにその箇所だけ再生成してください。"
+      }
+    },
+    "generate": {
+      "title": "生成と結果",
+      "i1": {
+        "q": "生成が止まっている、または時間がかかりすぎます。",
+        "a": "ほとんどの画像は約8秒で完了します。1分以上かかる場合は接続が切れた可能性があります。ページを更新して再試行してください。処理中はタブの切り替えやスマホのロックを避けてください。"
+      },
+      "i2": {
+        "q": "結果に変な家具やノイズがあります。",
+        "a": "AIステージングは毎回完璧とは限りません。もう一度生成して新しいパターンを試すか、スタイルを変えるか、<a href=\"ai-designer.html\">マスクツール</a>で問題のある箇所だけを修正し、画像全体をやり直さないようにしてください。"
+      },
+      "i3": {
+        "q": "何も変わらない、または部屋がまだ空に見えます。",
+        "a": "これは通常、部屋のタイプやスタイルが選択されていないか、写真が暗すぎてモデルが読み取れない場合に起こります。部屋のタイプとスタイルを選び、より明るい写真でお試しください。AIに最初から最後まで任せたいですか？<a href=\"ai-designer.html\">AIデザイナー</a>をお試しください。"
+      }
+    },
+    "account": {
+      "title": "アカウントとログイン",
+      "i1": {
+        "q": "確認コードが届きません。",
+        "a": "迷惑メールやプロモーションフォルダをご確認ください。コードは届くまで1分ほどかかることがあります。それでも届かない場合は「コードを再送信」を使い、メールアドレスが正しく入力されているか確認してください。"
+      },
+      "i2": {
+        "q": "パスワードを忘れました。",
+        "a": "ログイン画面で「パスワードをお忘れですか？」を選ぶと、リセットリンクをメールでお送りします。リンクは1時間で期限切れになります。"
+      },
+      "i3": {
+        "q": "Googleログインが機能しません。",
+        "a": "stagify.aiのポップアップを許可し、サードパーティCookieが完全にブロックされていないことを確認してから再試行してください。メールアドレスとパスワードでログインすることもできます。"
+      }
+    },
+    "billing": {
+      "title": "請求とStagify+",
+      "i1": {
+        "q": "Stagify+の管理や解約はどうすればいいですか？",
+        "a": "右上のプロフィールアイコンをクリックし、Stagify+の横のStripeアイコンをタップすると請求ダッシュボードが開き、サブスクリプションの更新や解約ができます。<a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">Stripe請求ポータル</a>を直接開くこともできます。現在の請求期間の終了までアクセスは維持されます。"
+      },
+      "i2": {
+        "q": "請求されたのにStagify+の機能が見当たりません。",
+        "a": "一度ログアウトして再度ログインし、アカウントを更新してください。それでも機能が表示されない場合は、ご利用のアドレスから<a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>までメールしてください。"
+      }
+    },
+    "performance": {
+      "title": "ブラウザとパフォーマンス",
+      "i1": {
+        "q": "どのブラウザに対応していますか？",
+        "a": "Chrome、Safari、Edge、Firefoxの最新版をご利用ください。古いブラウザではエディターやドラッグ比較ツールに対応していない場合があります。"
+      },
+      "i2": {
+        "q": "ページが遅い、またはボタンが反応しません。",
+        "a": "ページを完全に再読み込み（Ctrl/Cmd + Shift + R）して古いバージョンを消去し、使っていないタブを閉じ、アップロードを妨げることがあるstagify.aiの広告ブロッカーを無効にしてください。"
+      },
+      "i3": {
+        "q": "サイトがまったく読み込まれません。",
+        "a": "インターネット接続を確認し、プライベート/シークレットウィンドウをお試しください。そこで読み込める場合は、stagify.aiのブラウザキャッシュをクリアしてください。"
+      }
+    },
+    "contact": {
+      "text": "まだ解決しませんか？チームが喜んでお手伝いします。メールはこちら：",
+      "email": "team@stagify.ai"
+    }
+  },
+  "guides": {
+    "badge": "ガイド",
+    "title": "ガイドとチュートリアル",
+    "subtitle": "数分でステージングを始められるインタラクティブなチュートリアルと、よくある問題の解決策。",
+    "heroBadge": "ヘルプセンター",
+    "liveBadge": "インタラクティブデモ",
+    "walkthroughsTitle": "ステップバイステップのチュートリアル",
+    "demo1Title": "初めての無料ステージング",
+    "demo1Desc": "写真をアップロードして最初のステージング済みの部屋を手に入れる手順を一緒に進めましょう。",
+    "demo2Title": "Stagify+での初めてのステージング",
+    "demo2Desc": "無制限の生成、より高い品質、プロ向けツールが使えるStagify+でのステージング方法をご紹介します。",
+    "pickerFree": "無料",
+    "pickerPlus": "Stagify+",
+    "pickerDesigner": "AIデザイナー",
+    "pickerPromptBar": "プロンプトバー",
+    "pickerFurniture": "家具",
+    "demo3Desc": "AIデザイナーが簡単なチャットから部屋を自律的にステージング・再デザインする様子をご覧ください。",
+    "troubleshootingTitle": "トラブルシューティングとよくある問題"
+  },
+  "pageMeta": {
+    "guides": {
+      "title": "ガイドとチュートリアル | Stagify.ai",
+      "description": "Stagify.aiのステップバイステップチュートリアル – 初めての無料ステージング、Stagify+でのステージング、よくある問題の解決策。"
+    },
+    "contact": {
+      "title": "お問い合わせ | Stagify.ai",
+      "description": "サポート、提携、または無料のAIホームステージングツールに関するご質問は、Stagify.aiチームまでお問い合わせください。"
+    },
+    "stagifyPlus": {
+      "title": "Stagify+ – プランと料金 | Stagify.ai",
+      "description": "Stagify+：無制限のAIステージング、より高品質なモデル、AIデザイナー、マスクツール。プランと料金をご覧ください。"
+    },
+    "enterprise": {
+      "title": "Stagify Enterprise – チーム向け従量制AIステージング",
+      "description": "チーム全員に無制限のAIステージングを、1生成あたり$0.15の従量課金で。1枚の請求書、席数あたりの料金なし。"
+    }
+  }
+}

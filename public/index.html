@@ -95,7 +95,9 @@
       <link rel="stylesheet" href="styles/home-text-animate.css">
     </noscript>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script src="scripts/language-detect.js" defer></script>
     <script src="scripts/language-loader.js" defer></script>
+    <script src="scripts/language-switcher.js" defer></script>
     <script src="scripts/nav-pill.js" defer></script>
     <script src="scripts/auth.js" defer></script>
     <script src="scripts/profile-menu.js" defer></script>
@@ -393,6 +395,90 @@
         object-fit: contain;
         border-radius: 6px;
       }
+
+      #stage-mask-ref-file {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .stage-mask-ref-container {
+        margin-top: 12px;
+      }
+      .stage-mask-ref-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-heading, #1e3a8a);
+        margin-bottom: 6px;
+      }
+      .stage-mask-ref-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .stage-mask-ref-add {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 1px dashed #93c5fd;
+        background: rgba(37, 99, 235, 0.06);
+        color: #2563eb;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.18s ease, border-color 0.18s ease;
+      }
+      .stage-mask-ref-add:hover {
+        background: rgba(37, 99, 235, 0.12);
+        border-color: #2563eb;
+      }
+      .stage-mask-ref-add.hidden {
+        display: none;
+      }
+      .stage-mask-ref-preview {
+        position: relative;
+        display: inline-flex;
+      }
+      .stage-mask-ref-preview.hidden {
+        display: none;
+      }
+      .stage-mask-ref-preview img {
+        display: block;
+        width: 72px;
+        height: 72px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid rgba(37, 99, 235, 0.25);
+      }
+      .stage-mask-ref-remove {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 22px;
+        height: 22px;
+        border: none;
+        border-radius: 999px;
+        background: #1e3a8a;
+        color: #fff;
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      .stage-mask-ref-hint {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        color: #64748b;
+      }
     </style>
     <script src="scripts/star-border.js" defer></script>
     <script src="scripts/sponsors-scroll.js" defer></script>
@@ -641,12 +727,36 @@
     <main>
       <div class="language-picker-container">
         <div class="language-selector">
-          <label for="language-select" class="sr-only">Select language</label>
-          <select id="language-select" class="language-dropdown">
+          <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
+          <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
             <option value="english" selected>EN</option>
+            <option value="german">DE</option>
             <option value="spanish">ES</option>
+            <option value="french">FR</option>
+            <option value="italian">IT</option>
+            <option value="portuguese">PT</option>
             <option value="chinese">中文</option>
+            <option value="japanese">日本語</option>
+            <option value="korean">한국어</option>
           </select>
+          <div class="lang-switch" data-lang-switch>
+            <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <img class="lang-switch__flag" src="media-webp/flags/US.webp" alt="" width="20" height="14" />
+              <span class="lang-switch__label">English</span>
+              <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.webp" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.webp" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.webp" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+            </ul>
+          </div>
         </div>
       </div>
       <section class="hero" id="home">
@@ -720,11 +830,7 @@
               </div>
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
-              </div>
-              <div class="sponsor-item">
-                <img src="media-webp/sponsors/TrustMRR.webp" alt="TrustMRR logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
-              </div>
-              <!-- Duplicate set for seamless loop -->
+              </div>              <!-- Duplicate set for seamless loop -->
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>
@@ -751,11 +857,7 @@
               </div>
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
-              </div>
-              <div class="sponsor-item">
-                <img src="media-webp/sponsors/TrustMRR.webp" alt="TrustMRR logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
-              </div>
-            </div>
+              </div>            </div>
           </div>
         </div>
       </section>
@@ -1125,6 +1227,32 @@
         </div>
       </section>
 
+      <section class="home-section home-review-cta" id="review-cta" aria-labelledby="review-cta-title">
+        <div class="home-section__head reveal">
+          <style>
+            #review-cta .review-cta-stars{display:inline-flex;gap:7px;margin-bottom:14px}
+            #review-cta .review-star{width:34px;height:34px;display:block;filter:drop-shadow(0 2px 5px rgba(245,158,11,.45));animation:reviewStarGlow 3.6s ease-in-out infinite}
+            #review-cta .review-star:nth-child(2){animation-delay:.45s}
+            #review-cta .review-star:nth-child(3){animation-delay:.9s}
+            #review-cta .review-star:nth-child(4){animation-delay:1.35s}
+            #review-cta .review-star:nth-child(5){animation-delay:1.8s}
+            @keyframes reviewStarGlow{0%,100%{filter:drop-shadow(0 2px 5px rgba(245,158,11,.4));transform:translateY(0)}50%{filter:drop-shadow(0 5px 13px rgba(245,158,11,.9));transform:translateY(-3px)}}
+            @media (prefers-reduced-motion:reduce){#review-cta .review-star{animation:none}}
+          </style>
+          <svg width="0" height="0" aria-hidden="true" style="position:absolute;width:0;height:0"><defs><linearGradient id="reviewStarGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient></defs></svg>
+          <div class="review-cta-stars" aria-hidden="true">
+            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <h2 class="home-section__title" id="review-cta-title" data-tx="fade" data-lang="home.reviewCta.title">Enjoying Stagify?</h2>
+          <p class="home-section__sub" data-lang="home.reviewCta.subtitle">Love how your listings look? Leave a quick Google review and help other agents find us.</p>
+          <a class="btn btn-primary review-cta-btn" style="margin-top:18px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;padding:12px 26px;border-radius:10px;text-decoration:none;font-weight:600;width:auto;max-width:none;" href="https://g.page/r/Cd6NiqfUAJ7bEAE/review" target="_blank" rel="noopener noreferrer" data-lang-attr="home.reviewCta.aria|aria-label" aria-label="Leave a Google review (opens in a new tab)" data-lang="home.reviewCta.button">Leave a Google review</a>
+        </div>
+      </section>
+
       <div class="modal hidden" id="stage-modal">
         <div class="modal-backdrop" id="modal-backdrop"></div>
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="stage-title">
@@ -1312,7 +1440,19 @@
           </div>
           <div class="stage-mask-prompt-container">
             <label class="stage-mask-prompt-label" for="stage-mask-prompt" data-lang="pdf.maskEditor.promptLabel">What would you like to change in the masked area?</label>
-            <input type="text" id="stage-mask-prompt" class="stage-mask-prompt-input" data-lang="pdf.maskEditor.promptPlaceholder" placeholder="e.g., change the wall color to blue, replace the sofa with a modern chair...">
+            <input type="text" id="stage-mask-prompt" class="stage-mask-prompt-input" maxlength="1000" data-lang="pdf.maskEditor.promptPlaceholder" placeholder="e.g., change the wall color to blue, replace the sofa with a modern chair...">
+          </div>
+          <div class="stage-mask-ref-container">
+            <label class="stage-mask-ref-label" for="stage-mask-ref-file" data-lang="pdf.maskEditor.referenceLabel">Reference photo (optional)</label>
+            <input type="file" id="stage-mask-ref-file" accept="image/jpeg,image/png,image/webp,image/jpg">
+            <div class="stage-mask-ref-row">
+              <button type="button" id="stage-mask-ref-add" class="stage-mask-ref-add" data-lang="pdf.maskEditor.referenceAdd">+ Add photo</button>
+              <div id="stage-mask-ref-preview" class="stage-mask-ref-preview hidden">
+                <img id="stage-mask-ref-img" data-lang-attr="pdf.maskEditor.referenceAlt|alt" alt="Reference for masked edit">
+                <button type="button" id="stage-mask-ref-remove" class="stage-mask-ref-remove" data-lang-attr="pdf.maskEditor.referenceRemove|aria-label" aria-label="Remove reference photo">&times;</button>
+              </div>
+            </div>
+            <span class="stage-mask-ref-hint" data-lang="pdf.maskEditor.referenceHint">Optional: a photo of furniture or decor to place in the masked area</span>
           </div>
           <div class="stage-mask-actions">
             <button class="btn btn-ghost" id="stage-mask-cancel" data-lang="pdf.maskEditor.cancel">Cancel</button>
