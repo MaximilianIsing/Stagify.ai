@@ -12,6 +12,7 @@
     german: "de",
     italian: "it",
     portuguese: "pt-BR",
+    russian: "ru",
     japanese: "ja",
   };
 
@@ -26,6 +27,7 @@
       case "de": return "german";
       case "it": return "italian";
       case "pt": return "portuguese";
+      case "ru": return "russian";
       case "ja": return "japanese";
       case "en": return "english";
       default: return null;
