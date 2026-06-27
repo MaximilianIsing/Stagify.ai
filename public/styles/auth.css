@@ -369,6 +369,15 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
     padding-top: 46px;
   }
 }
+/* MOBILE ONLY: keep the main staging mask editor within the visible area so its
+   top/bottom don't hide behind the mobile browser's URL bar / toolbar. The modal
+   is pinned to the visual viewport in JS (setupStageMaskEditor); this caps the
+   content to the dynamic viewport height as a fallback. */
+@media (max-width: 768px) {
+  .stage-mask-content {
+    max-height: calc(100dvh - 28px);
+  }
+}
 .profile-menu-wrap {
   position: relative;
   flex-shrink: 0;

@@ -1968,10 +1968,11 @@
       }
 
       /* MOBILE ONLY: the mask editor's top (header) and bottom (action buttons)
-         were getting hidden behind the mobile browser's URL bar / toolbar because
-         the modal centers content sized in vh across the full layout viewport.
-         Use the dynamic viewport height, allow scrolling, and add generous top/
-         bottom padding (plus safe-area insets for notched devices). */
+         were getting hidden behind the mobile browser's URL bar / toolbar. The
+         modal is positioned to the VISUAL viewport in JS (syncMaskEditorToViewport)
+         so it never sits behind the browser chrome; this block is the styling +
+         a 100dvh fallback for browsers without the visualViewport API. The modal
+         scrolls, with breathing room top/bottom (safe-area insets for notches). */
       @media (max-width: 768px) {
         .mask-editor-modal {
           height: 100dvh;
@@ -1980,8 +1981,8 @@
           justify-content: flex-start;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
-          padding-top: calc(env(safe-area-inset-top, 0px) + 48px);
-          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 48px);
+          padding-top: calc(env(safe-area-inset-top, 0px) + 28px);
+          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
           padding-left: 14px;
           padding-right: 14px;
         }
@@ -1990,9 +1991,6 @@
           max-width: 100%;
           width: 100%;
           margin: auto 0;
-        }
-        .mask-editor-canvas {
-          max-height: 45dvh;
         }
       }
 
@@ -4539,6 +4537,49 @@
       // Track original image containers and their masked versions
       const maskedImageData = new Map(); // Map<originalImageSrc, {container, originalSrc, maskedVersions: []}>
       
+      // Keep the mask editor pinned to the VISUAL viewport (the area not covered
+      // by the mobile browser's URL bar / toolbar, and above the on-screen
+      // keyboard). Without this, the fixed top:0 modal sits behind the URL bar on
+      // iOS Safari and its header/buttons get clipped. Desktop is left untouched.
+      let maskViewportSyncHandler = null;
+      function syncMaskEditorToViewport() {
+        const modal = document.getElementById('mask-editor-modal');
+        if (!modal || !modal.classList.contains('active')) return;
+        const vv = window.visualViewport;
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        if (!vv || !isMobile) {
+          modal.style.top = '';
+          modal.style.left = '';
+          modal.style.width = '';
+          modal.style.height = '';
+          return;
+        }
+        modal.style.top = vv.offsetTop + 'px';
+        modal.style.left = vv.offsetLeft + 'px';
+        modal.style.width = vv.width + 'px';
+        modal.style.height = vv.height + 'px';
+      }
+      function bindMaskViewportSync() {
+        if (maskViewportSyncHandler || !window.visualViewport) return;
+        maskViewportSyncHandler = () => syncMaskEditorToViewport();
+        window.visualViewport.addEventListener('resize', maskViewportSyncHandler);
+        window.visualViewport.addEventListener('scroll', maskViewportSyncHandler);
+      }
+      function unbindMaskViewportSync() {
+        if (maskViewportSyncHandler && window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', maskViewportSyncHandler);
+          window.visualViewport.removeEventListener('scroll', maskViewportSyncHandler);
+        }
+        maskViewportSyncHandler = null;
+        const modal = document.getElementById('mask-editor-modal');
+        if (modal) {
+          modal.style.top = '';
+          modal.style.left = '';
+          modal.style.width = '';
+          modal.style.height = '';
+        }
+      }
+
       function openMaskEditor(imageSrc, imageType) {
         const modal = document.getElementById('mask-editor-modal');
         if (!modal) {
@@ -4592,9 +4633,14 @@
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-          // Calculate display size (max 70vh height, maintain aspect ratio)
-          const maxHeight = window.innerHeight * 0.7;
-          const maxWidth = window.innerWidth * 0.9;
+          // Calculate display size (maintain aspect ratio). On mobile, use the
+          // visual viewport height and a smaller fraction so the image leaves room
+          // for the header + controls + action buttons without excessive scrolling.
+          const isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
+          const viewportH = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+          const viewportW = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
+          const maxHeight = viewportH * (isMobileViewport ? 0.5 : 0.7);
+          const maxWidth = viewportW * 0.9;
           let displayWidth = img.width;
           let displayHeight = img.height;
           
@@ -4638,6 +4684,8 @@
           canvas.dataset.originalHeight = img.height;
           
           existingModal.classList.add('active');
+          bindMaskViewportSync();
+          syncMaskEditorToViewport();
           maskPainted = false;
           setMaskTool('brush');
           initMaskDrawing(maskCanvas);
@@ -5335,6 +5383,7 @@
         const modal = document.getElementById('mask-editor-modal');
         if (modal) {
           modal.classList.remove('active');
+          unbindMaskViewportSync();
           maskStopOverlay();
           clearMask();
           clearMaskReference();

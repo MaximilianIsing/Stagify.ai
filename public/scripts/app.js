@@ -1619,12 +1619,55 @@
         return true;
       }
 
+      // Pin the editor to the VISUAL viewport on mobile so its top/bottom never
+      // hide behind the browser's URL bar / toolbar (and it stays above the
+      // on-screen keyboard). Mirrors the AI Designer mask editor. Desktop untouched.
+      let viewportSyncHandler = null;
+      function syncEditorToViewport() {
+        if (!maskModal.classList.contains('active')) return;
+        const vv = window.visualViewport;
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        if (!vv || !isMobile) {
+          maskModal.style.top = '';
+          maskModal.style.left = '';
+          maskModal.style.width = '';
+          maskModal.style.height = '';
+          return;
+        }
+        maskModal.style.top = vv.offsetTop + 'px';
+        maskModal.style.left = vv.offsetLeft + 'px';
+        maskModal.style.width = vv.width + 'px';
+        maskModal.style.height = vv.height + 'px';
+      }
+      function bindViewportSync() {
+        if (viewportSyncHandler || !window.visualViewport) return;
+        viewportSyncHandler = () => syncEditorToViewport();
+        window.visualViewport.addEventListener('resize', viewportSyncHandler);
+        window.visualViewport.addEventListener('scroll', viewportSyncHandler);
+      }
+      function unbindViewportSync() {
+        if (viewportSyncHandler && window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', viewportSyncHandler);
+          window.visualViewport.removeEventListener('scroll', viewportSyncHandler);
+        }
+        viewportSyncHandler = null;
+        maskModal.style.top = '';
+        maskModal.style.left = '';
+        maskModal.style.width = '';
+        maskModal.style.height = '';
+      }
+
       // Shared: load a source image into the base/draw canvases and open the modal.
       function showInEditor(src) {
         const img = new Image();
         img.onload = () => {
-          const maxHeight = window.innerHeight * 0.6;
-          const maxWidth = Math.min(window.innerWidth * 0.85, 860);
+          // On mobile use the visual viewport height and a smaller fraction so the
+          // image leaves room for the header + controls + buttons without clipping.
+          const isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
+          const viewportH = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+          const viewportW = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
+          const maxHeight = viewportH * (isMobileViewport ? 0.5 : 0.6);
+          const maxWidth = Math.min(viewportW * 0.85, 860);
           let dispW = img.width;
           let dispH = img.height;
           if (dispH > maxHeight) { dispW = (maxHeight / dispH) * dispW; dispH = maxHeight; }
@@ -1655,6 +1698,8 @@
           setPhase('draw');
           maskModal.classList.add('active');
           maskModal.setAttribute('aria-hidden', 'false');
+          bindViewportSync();
+          syncEditorToViewport();
         };
         img.src = src;
       }
@@ -1737,6 +1782,7 @@
       function closeEditor() {
         maskModal.classList.remove('active');
         maskModal.setAttribute('aria-hidden', 'true');
+        unbindViewportSync();
         stopOverlay();
         clearDraw();
         clearMaskReference();
