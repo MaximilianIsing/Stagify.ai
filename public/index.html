@@ -345,6 +345,12 @@
         background: rgba(37, 99, 235, 0.12);
         border-color: #2563eb;
       }
+      .furniture-add-btn.is-drag-over {
+        background: rgba(37, 99, 235, 0.16);
+        border-color: #2563eb;
+        border-style: solid;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+      }
       .furniture-add-btn.hidden {
         display: none;
       }
@@ -473,6 +479,12 @@
       .stage-mask-ref-add:hover {
         background: rgba(37, 99, 235, 0.12);
         border-color: #2563eb;
+      }
+      .stage-mask-ref-add.is-drag-over {
+        background: rgba(37, 99, 235, 0.16);
+        border-color: #2563eb;
+        border-style: solid;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
       }
       .stage-mask-ref-add.hidden {
         display: none;
@@ -757,7 +769,7 @@
     }
     </script>
   </head>
-  <body>
+  <body class="page-home">
     <!-- Sign in / Create account -->
     <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
       <div class="auth-modal__backdrop" id="auth-modal-backdrop"></div>

@@ -1966,7 +1966,36 @@
         color: #64748b;
         line-height: 1.4;
       }
-      
+
+      /* MOBILE ONLY: the mask editor's top (header) and bottom (action buttons)
+         were getting hidden behind the mobile browser's URL bar / toolbar because
+         the modal centers content sized in vh across the full layout viewport.
+         Use the dynamic viewport height, allow scrolling, and add generous top/
+         bottom padding (plus safe-area insets for notched devices). */
+      @media (max-width: 768px) {
+        .mask-editor-modal {
+          height: 100dvh;
+        }
+        .mask-editor-modal.active {
+          justify-content: flex-start;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          padding-top: calc(env(safe-area-inset-top, 0px) + 48px);
+          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 48px);
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+        .mask-editor-content {
+          max-height: none;
+          max-width: 100%;
+          width: 100%;
+          margin: auto 0;
+        }
+        .mask-editor-canvas {
+          max-height: 45dvh;
+        }
+      }
+
       /* Image modal/lightbox */
       .image-modal {
         display: none;

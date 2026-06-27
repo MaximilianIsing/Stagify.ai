@@ -363,6 +363,12 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
     display: none !important;
   }
 }
+/* Mobile home: extra breathing room above the "Upload. Stage. Imagine." hero catchphrase */
+@media (max-width: 768px) {
+  body.page-home .hero {
+    padding-top: 46px;
+  }
+}
 .profile-menu-wrap {
   position: relative;
   flex-shrink: 0;
