@@ -215,6 +215,22 @@
     "whyus": {
       "subtitle": "Other virtual staging tools are slow, costly, and locked down. Stagify is built to be the opposite."
     },
+    "testimonials": {
+      "title": "What agents are saying",
+      "subtitle": "Straight from brokers who made the switch.",
+      "items": {
+        "justin": {
+          "quote": "When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings—and the price is amazing!",
+          "author": "Justin S. (Broker)",
+          "role": "Tahari Realty"
+        },
+        "andy": {
+          "quote": "Wow! Stagify completely shifted how I approach staging. It’s so fast, and my clients love it. This is a total game-changer for my listings.",
+          "author": "Andy E. (Broker)",
+          "role": "Centennial Properties"
+        }
+      }
+    },
     "faq": {
       "subtitle": "Quick answers to the questions we hear most. Still stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch."
     },
@@ -567,6 +583,7 @@
       "general": ["thinking...", "processing your request...", "analyzing...", "considering options...", "working on it...", "almost there...", "just a moment...", "preparing response..."]
     },
     "emptyState": "Start a conversation by typing a message or uploading a file",
+    "welcomeFallback": "Hi! I'm your Stagify AI Designer. Tell me what you'd like, or upload a room photo or floor-plan PDF, and I can:\n• **Stage & redesign** empty or existing rooms in any style\n• **Turn floor-plan PDFs** into photorealistic 3D renders\n• **Refine instantly** — tweak any result just by chatting with me\nWhat would you like to create?",
     "uploadFile": "Upload file",
     "inputPlaceholder": "Type your message...",
     "sendButton": "Send",
@@ -658,7 +675,9 @@
       "done": "Looks good",
       "refineTitle": "Refine the edit",
       "refineNote": "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI.",
-      "refineHelp": "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo.",
+      "refineHelp": "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining — it won't be in the final image.",
+      "promptHint": "Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”",
+
       "refineHelpAria": "What the refine step does",
       "loadApplying": "Applying your edit…",
       "referenceLabel": "Reference photo (optional)",

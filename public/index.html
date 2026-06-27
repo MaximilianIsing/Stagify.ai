@@ -110,6 +110,34 @@
     <script src="scripts/plus-cta-auth.js" defer></script>
     <script src="scripts/app.js" defer></script>
     <script src="scripts/carousel.js" defer></script>
+    <script>
+      // When arriving with #ai-designer-demo (e.g. bounced from the Stagify+ AI
+      // Designer page), scroll to that row reliably. Native anchor scrolling can
+      // land short while below-the-fold content settles, so re-assert once after
+      // load — unless the visitor has already taken over scrolling.
+      (function () {
+        if (location.hash !== '#ai-designer-demo') return;
+        function scrollToDemo() {
+          var el = document.getElementById('ai-designer-demo');
+          if (el) el.scrollIntoView({ block: 'start' });
+        }
+        window.addEventListener('load', function () {
+          scrollToDemo();
+          // Re-assert once after late content (images/fonts) settles, but bail
+          // if the visitor has already started scrolling themselves.
+          var cancelled = false;
+          var evs = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
+          function cancel() { cancelled = true; }
+          evs.forEach(function (ev) {
+            window.addEventListener(ev, cancel, { once: true, passive: true });
+          });
+          setTimeout(function () {
+            if (!cancelled) scrollToDemo();
+            evs.forEach(function (ev) { window.removeEventListener(ev, cancel); });
+          }, 350);
+        });
+      })();
+    </script>
     <style>
       /* Hide AI Designer link on mobile */
       @media (max-width: 768px) {
@@ -1068,6 +1096,53 @@
         </div>
       </section>
 
+      <!-- ===================== TESTIMONIALS ===================== -->
+      <section class="home-section home-testimonials" id="testimonials" aria-labelledby="testimonials-title">
+        <div class="home-section__head reveal">
+          <h2 class="home-section__title" id="testimonials-title" data-tx="rise" data-lang="home.testimonials.title">What agents are saying</h2>
+          <p class="home-section__sub" data-lang="home.testimonials.subtitle">Straight from brokers who made the switch.</p>
+        </div>
+        <div class="tw-grid">
+          <figure class="tw-card reveal reveal--left">
+            <blockquote class="tw-text" data-lang="home.testimonials.items.justin.quote">When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings—and the price is amazing!</blockquote>
+            <figcaption class="tw-by">
+              <span class="tw-name" data-lang="home.testimonials.items.justin.author">Justin S. (Broker)</span>
+              <span class="tw-org" data-lang="home.testimonials.items.justin.role">Tahari Realty</span>
+            </figcaption>
+          </figure>
+          <figure class="tw-card reveal reveal--right" style="--reveal-delay:90ms">
+            <blockquote class="tw-text" data-lang="home.testimonials.items.andy.quote">Wow! Stagify completely shifted how I approach staging. It’s so fast, and my clients love it. This is a total game-changer for my listings.</blockquote>
+            <figcaption class="tw-by">
+              <span class="tw-name" data-lang="home.testimonials.items.andy.author">Andy E. (Broker)</span>
+              <span class="tw-org" data-lang="home.testimonials.items.andy.role">Centennial Properties</span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+      <script>
+        // Spotlight glass: point a soft light at the cursor for each testimonial
+        // card by tracking pointer position into --mx/--my (rAF-throttled).
+        (function () {
+          var cards = document.querySelectorAll('#testimonials .tw-card');
+          if (!cards.length || !window.matchMedia || !matchMedia('(hover: hover)').matches) return;
+          cards.forEach(function (card) {
+            var queued = false, lx = 0, ly = 0;
+            card.addEventListener('pointermove', function (e) {
+              var r = card.getBoundingClientRect();
+              lx = e.clientX - r.left;
+              ly = e.clientY - r.top;
+              if (queued) return;
+              queued = true;
+              requestAnimationFrame(function () {
+                queued = false;
+                card.style.setProperty('--mx', lx + 'px');
+                card.style.setProperty('--my', ly + 'px');
+              });
+            });
+          });
+        })();
+      </script>
+
       <!-- ===================== AI DESIGNER (STAGIFY+) ===================== -->
       <section class="home-section home-designer" id="ai-designer-demo" aria-labelledby="designer-title">
         <div class="home-section__head reveal">
@@ -1530,7 +1605,7 @@
               <span data-lang="pdf.maskEditor.erase">Erase</span>
             </button>
           </div>
-            <p class="stage-mask-note" data-lang="pdf.maskEditor.brushAllNote">Be sure to brush over all of the area you'd like masked.</p>
+            <p class="stage-mask-note" style="display:none"></p>
           </div>
           <div class="stage-mask-brush-controls">
             <label class="stage-mask-brush-label" for="stage-mask-brush-slider" data-lang="pdf.maskEditor.brushSize">Brush Size:</label>
@@ -1540,6 +1615,7 @@
           <div class="stage-mask-prompt-container">
             <label class="stage-mask-prompt-label" for="stage-mask-prompt" data-lang="pdf.maskEditor.promptLabel">What would you like to change in the masked area?</label>
             <input type="text" id="stage-mask-prompt" class="stage-mask-prompt-input" maxlength="1000" data-lang="pdf.maskEditor.promptPlaceholder" placeholder="e.g., change the wall color to blue, replace the sofa with a modern chair...">
+            <p class="stage-mask-prompt-hint" data-lang="pdf.maskEditor.promptHint" style="margin:6px 0 0;font-size:12px;font-style:italic;opacity:0.7;line-height:1.4;">Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”</p>
           </div>
           <div class="stage-mask-ref-container">
             <label class="stage-mask-ref-label" for="stage-mask-ref-file" data-lang="pdf.maskEditor.referenceLabel">Reference photo (optional)</label>
@@ -1588,7 +1664,9 @@
       © <span id="year"></span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>
 
-  </body>
+      <script src="scripts/aurora-scrollbar.js" defer></script>
+    <script src="scripts/card-spotlight.js" defer></script>
+</body>
   </html>
 
 
