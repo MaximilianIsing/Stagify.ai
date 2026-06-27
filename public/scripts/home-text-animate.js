@@ -40,6 +40,22 @@
   }
 
   function unwrap(el) {
+    // Children mode animates existing child elements (e.g. the hero <h1>'s
+    // per-word data-lang spans). Never collapse those to text — just strip the
+    // animation classes so the original markup (and i18n) stays intact.
+    if (el.hasAttribute("data-tx-children")) {
+      el.querySelectorAll(":scope > .tx-seg").forEach((s) => {
+        s.classList.remove(
+          "tx-seg",
+          "tx-in-blur",
+          "tx-in-rise",
+          "tx-in-slide",
+          "tx-in-wave"
+        );
+        s.style.removeProperty("--tx-i");
+      });
+      return;
+    }
     if (!el.querySelector(".tx-seg")) return;
 
     el.textContent = Array.from(el.childNodes)
@@ -136,18 +152,36 @@
   function play(el, type) {
     if (played.has(el)) return;
 
+    if (type === "decrypt") {
+      playDecrypt(el);
+      return;
+    }
+
     resetClasses(el);
 
     if (SEGMENT_TYPES.has(type)) {
+      const useChildren = el.hasAttribute("data-tx-children");
       const mode = el.dataset.txBy || SEGMENT_MODE[type] || "words";
       const stagger = parseInt(
         el.dataset.txStagger || String(DEFAULT_STAGGER[mode]),
         10
       );
       el.style.setProperty("--tx-stagger", `${stagger}ms`);
-      wrapSegments(el, mode);
 
-      const segs = el.querySelectorAll(".tx-seg");
+      let segs;
+      if (useChildren) {
+        // Animate existing child elements in place (preserves their markup/i18n).
+        // Skip structural nodes like <br>.
+        segs = Array.from(el.children).filter((c) => c.tagName !== "BR");
+        segs.forEach((seg, i) => {
+          seg.classList.add("tx-seg");
+          seg.style.setProperty("--tx-i", String(i));
+        });
+      } else {
+        wrapSegments(el, mode);
+        segs = Array.from(el.querySelectorAll(".tx-seg"));
+      }
+
       if (!segs.length) {
         markDone(el);
         return;
@@ -169,6 +203,47 @@
         scheduleDone(el, type);
       });
     }
+  }
+
+  // Decrypted text — characters scramble, then resolve left-to-right into the
+  // final string. Used sparingly as a signature moment.
+  function playDecrypt(el) {
+    if (played.has(el)) return;
+    const finalText = (el.textContent || "").replace(/\s+/g, " ").trim();
+    if (!finalText) {
+      markDone(el);
+      return;
+    }
+
+    const glyphs = "!<>-_\\/[]{}=+*^?#@%&".split("");
+    const total = finalText.length;
+    // Reserve current width so swapping glyphs doesn't reflow / re-center.
+    el.style.minWidth = el.offsetWidth + "px";
+    el.classList.add("tx-decrypting");
+
+    let revealed = 0;
+    const interval = setInterval(() => {
+      let out = "";
+      for (let i = 0; i < total; i++) {
+        const ch = finalText[i];
+        if (ch === " ") {
+          out += " ";
+        } else if (i < revealed) {
+          out += ch;
+        } else {
+          out += glyphs[Math.floor(Math.random() * glyphs.length)];
+        }
+      }
+      el.textContent = out;
+      revealed += 1;
+      if (revealed > total) {
+        clearInterval(interval);
+        el.textContent = finalText;
+        el.classList.remove("tx-decrypting");
+        el.style.removeProperty("min-width");
+        markDone(el);
+      }
+    }, 45);
   }
 
   function showPlain(el) {
@@ -196,7 +271,9 @@
     if (prev) prev.disconnect();
 
     const run = () => {
-      play(el, type);
+      const delay = parseInt(el.dataset.txDelay || "0", 10);
+      if (delay > 0) setTimeout(() => play(el, type), delay);
+      else play(el, type);
       const obs = observers.get(el);
       if (obs) obs.disconnect();
     };
@@ -226,7 +303,7 @@
 
   function targets() {
     return document.querySelectorAll(
-      ".home-section [data-tx], .home-info [data-tx]"
+      ".hero-content [data-tx], .home-section [data-tx], .home-info [data-tx]"
     );
   }
 

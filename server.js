@@ -1287,6 +1287,89 @@ async function padBufferToAspectRatio(buffer, targetAR, tol = 0) {
   return { buffer: out, padded: true };
 }
 
+// Build a "locator" image for mask editing: the room with the brushed region's
+// BORDER drawn as a bright magenta outline (NOT a fill — a fill tempts the model
+// to reproduce it as a colored splotch in the output). The model generates from
+// the CLEAN room and reads this copy only to see WHERE to edit, so the magenta
+// never needs to appear in the result. Magenta is used because it is almost never
+// a real room/furniture color, so "ignore it" is unambiguous. Throws on failure so
+// the caller can fall back to the plain mask.
+async function buildMarkedRoomImage(roomBuffer, maskBuffer, width, height) {
+  const W = width, H = height;
+  const THICK = Math.max(3, Math.round(Math.min(W, H) * 0.006)); // outline thickness, px
+  const maskAlpha = await sharp(maskBuffer)
+    .resize(W, H, { fit: 'fill' })
+    .extractChannel(0) // white (255) inside the brushed area, 0 outside
+    .raw()
+    .toBuffer();
+  const inside = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i++) inside[i] = maskAlpha[i] >= 128 ? 1 : 0;
+  // Erode `inside` by THICK with a separable min-filter (O(W*H*THICK)); the outline
+  // is the band that is inside but NOT in the eroded core — a clean border, no fill.
+  const horiz = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) {
+    const row = y * W;
+    for (let x = 0; x < W; x++) {
+      let keep = 1;
+      for (let dx = -THICK; dx <= THICK; dx++) {
+        const nx = x + dx;
+        if (nx < 0 || nx >= W || !inside[row + nx]) { keep = 0; break; }
+      }
+      horiz[row + x] = keep;
+    }
+  }
+  const rgba = Buffer.alloc(W * H * 4); // zero-filled → fully transparent by default
+  for (let x = 0; x < W; x++) {
+    for (let y = 0; y < H; y++) {
+      const idx = y * W + x;
+      if (!inside[idx]) continue;
+      let eroded = 1;
+      for (let dy = -THICK; dy <= THICK; dy++) {
+        const ny = y + dy;
+        if (ny < 0 || ny >= H || !horiz[ny * W + x]) { eroded = 0; break; }
+      }
+      if (!eroded) { // inside but on the border band → magenta outline
+        rgba[idx * 4] = 255;     // R
+        rgba[idx * 4 + 1] = 0;   // G
+        rgba[idx * 4 + 2] = 255; // B
+        rgba[idx * 4 + 3] = 255; // A (opaque)
+      }
+    }
+  }
+  const overlay = await sharp(rgba, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer();
+  return await sharp(roomBuffer)
+    .resize(W, H, { fit: 'fill' })
+    .composite([{ input: overlay, blend: 'over' }])
+    .png()
+    .toBuffer();
+}
+
+// Lock a mask-edit output back to the room's aspect ratio. Gemini "squares up" the
+// AR, and the client composites by stretching the result onto the original canvas
+// — so a drifted AR would warp the edit out of alignment with the untouched
+// surroundings. A centered cover-crop restores the room ratio WITHOUT stretching
+// (Gemini usually just adds ceiling/floor bands, so cropping them re-aligns the
+// real content). Only acts when the AR actually drifted; fails open to the raw
+// output. Returns a PNG data URL.
+async function normalizeMaskOutputToRoom(base64Png, roomW, roomH) {
+  try {
+    const buf = Buffer.from(base64Png, 'base64');
+    const meta = await sharp(buf).metadata();
+    if (meta.width && meta.height && roomW && roomH) {
+      const roomAR = roomW / roomH;
+      const outAR = meta.width / meta.height;
+      if (Math.abs(outAR - roomAR) / roomAR > 0.01) {
+        const fixed = await sharp(buf).resize(roomW, roomH, { fit: 'cover' }).png().toBuffer();
+        if (DEBUG_MODE) console.log(`[Mask Edit] AR drift corrected ${meta.width}×${meta.height} → ${roomW}×${roomH} (cover crop)`);
+        return `data:image/png;base64,${fixed.toString('base64')}`;
+      }
+    }
+  } catch (e) {
+    console.warn('[Mask Edit] output AR normalization failed; returning raw output:', e.message);
+  }
+  return `data:image/png;base64,${base64Png}`;
+}
+
 // Downscale base64 image data URL for GPT API (max 2048x2048, recommended 1024x1024)
 // Annotate an image with a short description using GPT
 async function annotateImage(imageDataUrl, isCAD = false, detectBlueprint = false) {
@@ -2343,6 +2426,56 @@ const AI_DESIGNER_IMAGE_FRAMING_RULES =
   '\n- Tell it to keep all four edges and every ceiling, floor, wall, and room edge fully in frame, holding the current zoom and field of view (a closer crop is allowed ONLY when the user explicitly asked for one).' +
   '\n- Require every change to fit INSIDE the existing frame, keeping all of the original room visible.';
 
+// Self-knowledge: facts about Stagify the AI Designer can draw on when a user
+// asks about the product, company, team, pricing, or features. Keep this as the
+// single source of truth — update here if any fact changes.
+const STAGIFY_SELF_KNOWLEDGE =
+  '\n\nABOUT STAGIFY (SELF-KNOWLEDGE — use these facts ONLY when the user asks about Stagify, the company, the team, pricing, or features. Never volunteer pricing unprompted. Do not invent anything beyond what is listed here; for anything not covered (including individual phone numbers or emails), point users to the Contact page or team@stagify.ai):' +
+  '\n- What it is: Stagify.ai is an AI virtual staging tool for real estate. It furnishes and restyles room photos in seconds so agents, sellers, and buyers get listing-ready images without a photographer or physical staging.' +
+  '\n- Launched: August 22, 2025.' +
+  '\n- Founders: Stagify was founded by three co-founders — Maximilian Ising (Co-Founder, Head of Development & AI), Lucas Shtainer (Co-Founder, Head of Marketing), and Ryan Croman (Co-Founder, Head of Outreach). General contact: team@stagify.ai; send users to the Contact page for individual details.' +
+  '\n- Core capabilities: stage empty rooms or restyle existing ones in about 8 seconds; 7 design styles plus custom prompts; you keep full copyright of every image; runs in any browser with nothing to install; and it can turn CAD floor-plan PDFs into photorealistic 3D room renders.' +
+  '\n- Free plan: free to start — anyone can stage photos for free (a limited number of free generations per day).' +
+  '\n- Stagify+: $11.99/month, billed monthly, with a 7-day free trial and cancel-anytime (payments handled securely by Stripe).' +
+  '\n- Stagify+ unlocks: the highest-quality image model (sharper, more realistic results); Remove Existing Furniture (erase furniture, clutter, and decor, then restage a clean room); the AI Designer (this chat assistant); the Masking tool; Multiple Variations (several staged options at once); and Furniture References (upload product photos to stage rooms with specific pieces).' +
+  '\n- Masking tool (Stagify+): lets you change or restyle just one part of a result without redoing the whole image.' +
+  '\n- Where the download button is: every image the Designer creates has a download button — the dark icon in the TOP-RIGHT corner of that image. Click it to save the image.' +
+  '\n- Where the masking icon is (Stagify+): on any staged or generated image, the mask button is the dark icon in the top-right corner, immediately to the LEFT of the download button (its tooltip reads "Edit selected area with mask tool"). It only appears for Stagify+ users; free users will not see it.' +
+  '\n- How masking works: click the mask icon on a result to open the mask editor, brush over only the area you want to change, describe what to change, then apply. The Designer regenerates just that painted area and keeps the rest of the image identical — ideal for small fixes like swapping a rug, recoloring a wall, or removing a single item.';
+
+// The model has no idea what today's date is, so left alone it guesses (e.g.
+// "today is 2023, so Stagify launches in the future"). Give it the real current
+// date plus the already-computed age so it never has to do date math itself.
+const STAGIFY_LAUNCH_DATE = new Date(Date.UTC(2025, 7, 22)); // August 22, 2025
+function getStagifyDateContext() {
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+    'August', 'September', 'October', 'November', 'December'];
+  const now = new Date();
+  const todayStr = `${MONTHS[now.getUTCMonth()]} ${now.getUTCDate()}, ${now.getUTCFullYear()}`;
+
+  let ageStr;
+  if (now < STAGIFY_LAUNCH_DATE) {
+    ageStr = 'Stagify has not launched yet';
+  } else {
+    let months = (now.getUTCFullYear() - STAGIFY_LAUNCH_DATE.getUTCFullYear()) * 12 +
+      (now.getUTCMonth() - STAGIFY_LAUNCH_DATE.getUTCMonth());
+    if (now.getUTCDate() < STAGIFY_LAUNCH_DATE.getUTCDate()) months -= 1;
+    if (months < 1) {
+      ageStr = 'Stagify is less than a month old';
+    } else if (months < 12) {
+      ageStr = `Stagify is about ${months} month${months === 1 ? '' : 's'} old`;
+    } else {
+      const years = Math.floor(months / 12);
+      const rem = months % 12;
+      ageStr = `Stagify is about ${years} year${years === 1 ? '' : 's'}` +
+        (rem ? ` and ${rem} month${rem === 1 ? '' : 's'}` : '') + ' old';
+    }
+  }
+  return `\n\nCURRENT DATE (authoritative — use this and do NOT assume any other date): Today is ${todayStr}. ` +
+    `Stagify launched on August 22, 2025, so as of today, ${ageStr}. ` +
+    `When asked how old Stagify is, state that age; never say it launches in the future.`;
+}
+
 // ---------------------------------------------------------------------------
 // Designer chat routing — strict Structured Outputs schema.
 // The conversational model returns ONE JSON object: its reply plus any image
@@ -2750,36 +2883,58 @@ Extract the parameters from the user's message and the AI's response.`;
 const QUALITY_MAX_ATTEMPTS = 3;
 
 const QUALITY_REVIEW_PROMPT =
-  'You are a strict QA reviewer for AI-generated interior real-estate photos. ' +
-  'Inspect this image for obvious problems: warped or melted furniture, impossible ' +
-  'geometry, distorted perspective, extra/missing legs, duplicated or garbled ' +
-  'objects, unreadable text, smeared textures, or physically impossible lighting. ' +
-  'Decide if the image is BASICALLY PERFECT (no obvious issues a real-estate agent ' +
-  'would notice) or NOT (at least one clear issue).\n' +
-  'Reply on the FIRST line with exactly "PERFECT: true" or "PERFECT: false".\n' +
+  'You are a LENIENT QA reviewer for AI-generated interior real-estate photos. ' +
+  'Your ONLY job is to catch GLARING, obvious defects — the kind anyone would notice ' +
+  'at a glance and that make the photo look broken or fake: badly warped or melted ' +
+  'furniture, clearly impossible geometry, grossly distorted perspective, obviously ' +
+  'extra or missing legs, duplicated or garbled objects, unreadable garbled text, ' +
+  'heavily smeared textures, or blatantly impossible lighting. ' +
+  'Be lenient with everything else: minor imperfections, subtle oddities, small style ' +
+  'quirks, soft details, or anything only noticeable on close inspection are FINE and ' +
+  'must PASS. Do NOT nitpick. When in doubt, ACCEPT.\n' +
+  'Reply on the FIRST line with exactly "PERFECT: true" (no glaring defect) or ' +
+  '"PERFECT: false" (at least one glaring, obvious defect).\n' +
   'If and only if it is NOT perfect, add a SECOND line "SCORE: <0-100>" rating how ' +
-  'close it is despite the issue(s) (higher = fewer/milder issues), then a short reason.';
+  'close it is despite the issue(s) (higher = fewer/milder issues).';
+
+// When DEBUG is on, ask the reviewer to also name the specific defect(s) so we can
+// log them; kept out of the prompt in production to avoid the extra output tokens.
+const REVIEW_WHY_SUFFIX = ' Then add a final line "WHY: <one concise sentence naming the specific problem(s) you see>".';
 
 // Review a single generated image. Returns { perfect, score }.
 // Fails OPEN (perfect: true) on any error so a flaky reviewer never blocks
 // delivering an image to the user.
-async function reviewImageQuality(imageDataUrl) {
+// opts: { instruction, furnitureDataUrls } — instruction is what the user asked for
+// (so the reviewer judges against intent, not its own taste); furnitureDataUrls are
+// any uploaded furniture references to also show it.
+async function reviewImageQuality(imageDataUrl, opts = {}) {
   if (!openai) return { perfect: true, score: 100, reason: 'reviewer disabled' };
   try {
-    const downscaledUrl = await downscaleImageForGPT(imageDataUrl);
+    const { instruction = '', furnitureDataUrls = [] } = opts;
+    const mainUrl = await downscaleImageForGPT(imageDataUrl);
+    const extraUrls = [];
+    if (Array.isArray(furnitureDataUrls)) {
+      for (const u of furnitureDataUrls) {
+        try { extraUrls.push(await downscaleImageForGPT(u)); } catch (e) {}
+      }
+    }
+    let guide = ' Image 1 is the photo to review.';
+    if (extraUrls.length) {
+      guide += ` The remaining ${extraUrls.length === 1 ? 'image is the furniture piece' : 'images are the furniture pieces'} the user uploaded to be included — check it was incorporated in a reasonable way (an exact match is NOT required; do not flag minor differences in shape, color, or angle).`;
+    }
+    const instr = (instruction && instruction.trim())
+      ? ` The user's request was: "${instruction.trim()}". A result that reasonably fulfills this request is GOOD even if it differs from what you might have chosen — judge against the request, not your own taste.`
+      : '';
+    const content = [
+      { type: 'text', text: QUALITY_REVIEW_PROMPT + instr + guide + (DEBUG_MODE ? REVIEW_WHY_SUFFIX : '') },
+      { type: 'image_url', image_url: { url: mainUrl } },
+    ];
+    for (const u of extraUrls) content.push({ type: 'image_url', image_url: { url: u } });
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: QUALITY_REVIEW_PROMPT },
-            { type: 'image_url', image_url: { url: downscaledUrl } },
-          ],
-        },
-      ],
+      messages: [{ role: 'user', content }],
       temperature: 0,
-      max_tokens: 80,
+      max_tokens: DEBUG_MODE ? 220 : 80,
     });
     const raw = (completion.choices[0].message.content || '').trim();
     const perfect = /PERFECT:\s*true/i.test(raw);
@@ -2787,6 +2942,7 @@ async function reviewImageQuality(imageDataUrl) {
     const m = raw.match(/SCORE:\s*(\d{1,3})/i);
     // No score on a "not perfect" verdict → treat as a low score for ranking.
     const score = m ? Math.max(0, Math.min(100, parseInt(m[1], 10))) : 0;
+    if (DEBUG_MODE) console.log(`[Quality] reviewer flagged NOT perfect (score ${score}): ${raw.replace(/\s+/g, ' ')}`);
     return { perfect: false, score, reason: raw };
   } catch (error) {
     console.error('[Quality] review failed, accepting image:', error.message);
@@ -2798,52 +2954,69 @@ async function reviewImageQuality(imageDataUrl) {
 // can judge a localized edit — including whether it REMOVED TOO MUCH. Returns
 // { perfect, score }. Fails OPEN on any error so a flaky reviewer never blocks.
 const MASK_REVIEW_PROMPT =
-  'You are a strict QA reviewer for a LOCALIZED edit to an interior real-estate photo. ' +
-  'The FIRST image is the ORIGINAL; the SECOND is AFTER an AI edited one small area. ' +
-  'Mark it NOT perfect if the edited image shows obvious problems: warped or melted ' +
-  'furniture, impossible geometry, distorted perspective, extra/missing legs, duplicated ' +
-  'or garbled objects, smeared textures, or physically impossible lighting. ' +
-  'Also mark it NOT perfect if a newly added or placed object looks CUT OFF, ' +
-  'sliced, hard-cropped, or abruptly faded/ghosted at its edges in the middle of ' +
-  'the room (as if only part of it rendered or it ran past the editable area) — a ' +
-  'correctly placed object has complete, un-clipped, fully opaque edges and sits ' +
-  'naturally in the space; ignore furniture that is only partially in view because ' +
-  'it runs off the actual photo border. ' +
-  'CRUCIALLY, also mark it NOT perfect if the edit REMOVED TOO MUCH compared with the ' +
-  'original — e.g. it deleted or erased furniture, fixtures, windows, decor, or ' +
-  'architectural detail that should still be there, or left blank walls/floor, a large ' +
-  'flat featureless patch, or an empty void where content used to be. A good edit changes ' +
-  'only what was intended and keeps the rest of the room intact; it must not strip the ' +
-  'space bare or wipe out existing content.\n' +
+  'You are a LENIENT QA reviewer for a LOCALIZED edit to an interior real-estate photo. ' +
+  'Only flag GLARING, obvious problems; accept anything with merely minor or subtle ' +
+  'issues. Mark it NOT perfect ONLY if the edited image has a clearly visible, serious ' +
+  'defect: badly warped or melted furniture, obviously impossible geometry, grossly ' +
+  'distorted perspective, clearly extra/missing legs, duplicated or garbled objects, ' +
+  'heavily smeared textures, or blatantly impossible lighting. ' +
+  'Also mark it NOT perfect if a newly added object is OBVIOUSLY cut off, sliced, or ' +
+  'abruptly faded mid-room (clearly only part of it rendered) — but ignore minor edge ' +
+  'softness, and ignore furniture that is only partially in view because it runs off ' +
+  'the actual photo border. ' +
+  'Also mark it NOT perfect if the edit CLEARLY removed too much — e.g. it obviously ' +
+  'deleted furniture, fixtures, windows, or decor that should still be there, or left a ' +
+  'big blank wall, empty floor, or obvious void where content used to be. ' +
+  'Be lenient with everything else: small imperfections, subtle blending, slightly-off ' +
+  'details, or anything a normal viewer would not notice at a glance are FINE and must ' +
+  'PASS. Do NOT nitpick. When in doubt, ACCEPT.\n' +
   'Reply on the FIRST line with exactly "PERFECT: true" or "PERFECT: false".\n' +
   'If and only if it is NOT perfect, add a SECOND line "SCORE: <0-100>" rating how close ' +
-  'it is despite the issue(s) (higher = fewer/milder issues), then a short reason.';
+  'it is despite the issue(s) (higher = fewer/milder issues).';
 
-async function reviewMaskEdit(originalDataUrl, editedDataUrl) {
+// opts: { instruction, locatorDataUrl, locatorMarked, referenceDataUrl } — instruction
+// is what the user asked for (so the reviewer judges against intent, e.g. an intended
+// removal is not "removed too much"); locatorDataUrl shows which area was editable (the
+// magenta-outlined room when locatorMarked, else a B/W mask); referenceDataUrl is the
+// furniture/look they wanted placed.
+async function reviewMaskEdit(originalDataUrl, editedDataUrl, opts = {}) {
   if (!openai) return { perfect: true, score: 100, reason: 'reviewer disabled' };
   try {
+    const { instruction = '', locatorDataUrl = null, locatorMarked = false, referenceDataUrl = null } = opts;
     const origSmall = await downscaleImageForGPT(originalDataUrl);
     const editSmall = await downscaleImageForGPT(editedDataUrl);
+    let guide = ' Image 1 is the ORIGINAL room; image 2 is AFTER the edit.';
+    const extras = [];
+    if (locatorDataUrl) { try { extras.push({ desc: locatorMarked ? 'outline' : 'mask', url: await downscaleImageForGPT(locatorDataUrl) }); } catch (e) {} }
+    if (referenceDataUrl) { try { extras.push({ desc: 'reference', url: await downscaleImageForGPT(referenceDataUrl) }); } catch (e) {} }
+    let idx = 3;
+    for (const e of extras) {
+      if (e.desc === 'outline') guide += ` Image ${idx} is the SAME room with the editable area outlined in magenta — judge ONLY inside that outline and ignore everything outside it. The magenta line is just a location guide, NOT part of the photo, so never count it as a defect.`;
+      else if (e.desc === 'mask') guide += ` Image ${idx} is the MASK: only the WHITE area was editable — judge ONLY inside it and ignore everything outside it.`;
+      else guide += ` Image ${idx} is the REFERENCE the user wanted placed inside the masked area — the edit should resemble its identity (its exact angle and background do not matter).`;
+      idx++;
+    }
+    const instr = (instruction && instruction.trim())
+      ? ` The user's instruction was: "${instruction.trim()}". Judge whether the edit reflects THIS instruction. If it asked to REMOVE, clear, delete, or empty something, then a now-empty or barer masked area is CORRECT and expected — do NOT flag that as "removed too much".`
+      : '';
+    const content = [
+      { type: 'text', text: MASK_REVIEW_PROMPT + instr + guide + (DEBUG_MODE ? REVIEW_WHY_SUFFIX : '') },
+      { type: 'image_url', image_url: { url: origSmall } },
+      { type: 'image_url', image_url: { url: editSmall } },
+    ];
+    for (const e of extras) content.push({ type: 'image_url', image_url: { url: e.url } });
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: MASK_REVIEW_PROMPT },
-            { type: 'image_url', image_url: { url: origSmall } },
-            { type: 'image_url', image_url: { url: editSmall } },
-          ],
-        },
-      ],
+      messages: [{ role: 'user', content }],
       temperature: 0,
-      max_tokens: 80,
+      max_tokens: DEBUG_MODE ? 220 : 80,
     });
     const raw = (completion.choices[0].message.content || '').trim();
     const perfect = /PERFECT:\s*true/i.test(raw);
     if (perfect) return { perfect: true, score: 100, reason: raw };
     const m = raw.match(/SCORE:\s*(\d{1,3})/i);
     const score = m ? Math.max(0, Math.min(100, parseInt(m[1], 10))) : 0;
+    if (DEBUG_MODE) console.log(`[Mask QA] reviewer flagged NOT perfect (score ${score}): ${raw.replace(/\s+/g, ' ')}`);
     return { perfect: false, score, reason: raw };
   } catch (error) {
     console.error('[Mask QA] review failed, accepting image:', error.message);
@@ -2971,7 +3144,7 @@ Composition: frame the full scene naturally, keeping ceilings, floors, walls, an
       }
 
       throw new Error('No image data in AI response');
-    }, 'generation');
+    }, 'generation', null, (url) => reviewImageQuality(url, { instruction: prompt }));
   } catch (error) {
     console.error('Error generating image:', error);
     throw error;
@@ -2996,7 +3169,7 @@ function styleReferencePromptSuffix(count) {
 }
 
 function maskReferencePromptSuffix() {
-  return '\n\nIMPORTANT — REFERENCE IMAGE: A final reference image is provided as the LAST image (after the room photo and the white mask). Treat it as the visual source for the user\'s instruction above — typically the specific furniture, decor, object, fixture, material, or finish they want applied inside the white masked region. Recreate the referenced subject so it is clearly the SAME item — keep its design, colors, materials, textures, proportions, and distinctive details. Its IDENTITY is what must stay faithful, NOT its camera angle or orientation: you SHOULD and MUST freely ROTATE, turn, and re-angle the subject — even showing it from a completely different side than the reference photo — whenever that is needed to fit the masked area and sit naturally in the room. Re-orient it to match the room\'s perspective and vanishing lines and to rest correctly on the floor, surface, or along the wall the user indicates (for example, turn a sofa shown head-on in the reference so it runs ALONG the wall in proper receding perspective, rather than facing the camera). Never refuse to rotate or re-angle the object just to keep the reference\'s original viewpoint — preserving the reference camera angle at the cost of a natural fit is WRONG. Then adapt it to the scene so it looks naturally photographed in place — match the masked area\'s perspective, scale, lighting direction, shadows, and reflections, ground it realistically with correct contact shadows and no floating, and render it as a fully opaque, solid object — never semi-transparent, see-through, or ghosted. Use ONLY the physical object/subject from the reference image — treat it as a clean cut-out and extract just that object. COMPLETELY DISCARD everything in the reference that is not the object itself: its background and backdrop (including any plain white, grey, gradient, or studio backdrop), the floor or surface it stands on in the reference, its own lighting, framing, watermarks, surrounding objects, and any transparent or empty padding. NEVER copy, paint, extend, or bleed the reference\'s background or backdrop into the room — do NOT add a white, pale, or colored patch, panel, slab, rug, or floor area taken from the reference, and do NOT mistake the reference\'s backdrop for floor, wall, or surface. The object must sit directly on the room\'s OWN existing floor or surface, surrounded only by the room\'s existing content, with fresh contact shadows that match the room\'s lighting. Apply the result strictly within the white masked region and blend its edges seamlessly with the surroundings. Size the referenced subject so the WHOLE of it — including any legs, overhang, and contact shadow — fits completely inside the white masked region with a small margin from the edge; scale it down as needed and never let any part reach, touch, or cross the white boundary, or it will be cut off. Do not change anything outside the mask. The OUTPUT image MUST keep the EXACT same width, height, and aspect ratio as the FIRST (room) image — never resize, crop, stretch, or reshape the output to match the reference image\'s dimensions.';
+  return '\n\nIMPORTANT — REFERENCE IMAGE: A final reference image is provided as the LAST image (after the room photo and the highlighted room). Treat it as the visual source for the user\'s instruction above — typically the specific furniture, decor, object, fixture, material, or finish they want applied inside the white masked region. Recreate the referenced subject so it is clearly the SAME item — keep its design, colors, materials, textures, proportions, and distinctive details. Its IDENTITY is what must stay faithful, NOT its camera angle or orientation: you SHOULD and MUST freely ROTATE, turn, and re-angle the subject — even showing it from a completely different side than the reference photo — whenever that is needed to fit the masked area and sit naturally in the room. Re-orient it to match the room\'s perspective and vanishing lines and to rest correctly on the floor, surface, or along the wall the user indicates (for example, turn a sofa shown head-on in the reference so it runs ALONG the wall in proper receding perspective, rather than facing the camera). Never refuse to rotate or re-angle the object just to keep the reference\'s original viewpoint — preserving the reference camera angle at the cost of a natural fit is WRONG. Then adapt it to the scene so it looks naturally photographed in place — match the masked area\'s perspective, scale, lighting direction, shadows, and reflections, ground it realistically with correct contact shadows and no floating, and render it as a fully opaque, solid object — never semi-transparent, see-through, or ghosted. Use ONLY the physical object/subject from the reference image — treat it as a clean cut-out and extract just that object. COMPLETELY DISCARD everything in the reference that is not the object itself: its background and backdrop (including any plain white, grey, gradient, or studio backdrop), the floor or surface it stands on in the reference, its own lighting, framing, watermarks, surrounding objects, and any transparent or empty padding. NEVER copy, paint, extend, or bleed the reference\'s background or backdrop into the room — do NOT add a white, pale, or colored patch, panel, slab, rug, or floor area taken from the reference, and do NOT mistake the reference\'s backdrop for floor, wall, or surface. The object must sit directly on the room\'s OWN existing floor or surface, surrounded only by the room\'s existing content, with fresh contact shadows that match the room\'s lighting. Apply the result strictly within the white masked region and blend its edges seamlessly with the surroundings. Size the referenced subject so the WHOLE of it — including any legs, overhang, and contact shadow — fits completely inside the white masked region with a small margin from the edge; scale it down as needed and never let any part reach, touch, or cross the white boundary, or it will be cut off. Do not change anything outside the mask. The OUTPUT image MUST keep the EXACT same width, height, and aspect ratio as the FIRST (room) image — never resize, crop, stretch, or reshape the output to match the reference image\'s dimensions.';
 }
 
 function furnitureReferencePromptSuffix(count, preserveExistingStaging = false) {
@@ -3304,6 +3477,13 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
     }
     const model = genAI.getGenerativeModel({ model: geminiModel });
 
+    // Furniture references to also show the QA reviewer (so it knows what was meant
+    // to be added). Re-encode to JPEG so the data-URL MIME is always correct.
+    const furnitureReviewUrls = [];
+    for (const fb of furnitureBuffers) {
+      try { furnitureReviewUrls.push(`data:image/jpeg;base64,${(await sharp(fb).jpeg().toBuffer()).toString('base64')}`); } catch (e) {}
+    }
+
     // Generate, with the self-check quality gate retrying poor results.
     const resultDataUrl = await generateWithQualityRetry(async () => {
       const result = await model.generateContent(prompt);
@@ -3327,7 +3507,12 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       // so enterprise usage is billed per generated image. Furniture erases run
       // outside this path and are intentionally NOT counted.
       if (req) req._stagingGenerations = (req._stagingGenerations || 0) + 1;
-    });
+    }, (url) => reviewImageQuality(url, {
+      instruction: (stagingParams.additionalPrompt && stagingParams.additionalPrompt.trim())
+        ? stagingParams.additionalPrompt.trim()
+        : `Stage this ${stagingParams.roomType || 'room'} professionally`,
+      furnitureDataUrls: furnitureReviewUrls,
+    }));
 
     // Lock the result to the source aspect ratio (crop excess, centered).
     if (srcMeta && srcMeta.width && srcMeta.height) {
@@ -4894,6 +5079,8 @@ app.post('/api/chat', genLimiter, async (req, res) => {
     systemInstruction += '\n- If "shouldProcessCAD" is false, you can omit the "cad" field or set it to null';
     systemInstruction += AI_DESIGNER_RESPONSE_ACTION_RULES;
     systemInstruction += AI_DESIGNER_IMAGE_FRAMING_RULES;
+    systemInstruction += STAGIFY_SELF_KNOWLEDGE;
+    systemInstruction += getStagifyDateContext();
     systemInstruction += getBaseImageSelectionContext(baseImageIndex, deduplicatedMessages);
 
     // Get the last user message
@@ -5978,6 +6165,8 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (re
     systemInstruction += '\n- If "shouldProcessCAD" is false, you can omit the "cad" field or set it to null';
     systemInstruction += AI_DESIGNER_RESPONSE_ACTION_RULES;
     systemInstruction += AI_DESIGNER_IMAGE_FRAMING_RULES;
+    systemInstruction += STAGIFY_SELF_KNOWLEDGE;
+    systemInstruction += getStagifyDateContext();
 
     const { message = '', conversationHistory: conversationHistoryStr, model } = req.body;
     const files = Array.isArray(req.files) ? req.files : [req.files];
@@ -7744,8 +7933,26 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
       console.log('[Mask Edit] Mask size:', maskMetadata.width, 'x', maskMetadata.height, '(resized to match image)');
     }
 
+    // LOCATION CUE: instead of a separate B/W mask (which Gemini aligns to the room
+    // poorly), hand it the SAME room with the target area highlighted in translucent
+    // magenta. Gemini generates from the clean room (image 1) and uses the highlighted
+    // copy (image 2) only to see WHERE to apply the edit — much stronger spatial
+    // grounding. Falls back to the plain B/W mask if the overlay can't be built.
+    let locatorBase64 = maskBase64;
+    let locatorMarked = false;
+    try {
+      const markedRoom = await buildMarkedRoomImage(imageBuffer, resizedMaskBuffer, imageMetadata.width, imageMetadata.height);
+      locatorBase64 = markedRoom.toString('base64');
+      locatorMarked = true;
+    } catch (markErr) {
+      console.warn('[Mask Edit] Could not build highlighted room; falling back to B/W mask:', markErr.message);
+    }
+    const loc = locatorMarked
+      ? { second: 'the SAME room with the target area OUTLINED by a bright magenta line', region: 'the area inside the magenta outline', boundary: 'the magenta outline', guide: ' The magenta outline ONLY marks the boundary of where to edit — it is NOT part of the room. Do NOT draw the magenta line, and NEVER fill any area with magenta or paint a magenta patch, anywhere in your output.' }
+      : { second: 'a white mask marking the area to change', region: 'the white masked region', boundary: 'the white boundary', guide: '' };
+
     // Enhance the prompt to ensure only the masked area is edited
-    let enhancedPrompt = `${trimmedPrompt}. CRITICAL INSTRUCTIONS: Only modify the area indicated by the white mask in the second image. Do NOT change anything outside the masked region. Preserve the exact room layout, all furniture positions, wall colors, windows, doors, flooring, lighting, and every other detail exactly as they appear in the original image. Within the masked area, make ONLY the change described — do NOT erase, delete, or strip out existing furniture, fixtures, windows, decor, or architectural features unless the instruction explicitly asks you to remove them, and never leave a blank wall, empty floor, or featureless void where content existed. The edit must only affect the masked area and must seamlessly blend with the unchanged surroundings. Do NOT change the image aspect ratio, canvas size, orientation, or framing — the output must match the original image dimensions exactly. WHEN THE INSTRUCTION ADDS OR PLACES A NEW OBJECT (furniture, decor, a fixture, a plant, lighting, etc.): the ENTIRE object — including its legs, arms, back, any overhang, and its contact shadow — MUST fit COMPLETELY INSIDE the white masked region, leaving a small margin of empty space between the object and the edge of the white area. SCALE THE OBJECT DOWN as much as needed so it sits fully within the white region — a smaller, fully-contained object is REQUIRED. NEVER let any part of the object reach, touch, or cross the white boundary: anything outside the white region is discarded, so an object that extends past the mask will look cut off, sliced, or faded. Center and size the object so none of it is clipped by the mask edge and it reads as a complete, naturally placed item.`;
+    let enhancedPrompt = `${trimmedPrompt}. CRITICAL INSTRUCTIONS: The FIRST image is the room to edit — produce your result as an edited version of that exact photo. The SECOND image is ${loc.second}, showing you EXACTLY where to apply the change.${loc.guide} Make the requested change ONLY inside ${loc.region}, and do NOT change anything outside it. Preserve the exact room layout, all furniture positions, wall colors, windows, doors, flooring, lighting, and every other detail exactly as they appear in the first image. Within ${loc.region}, make ONLY the change described — do NOT erase, delete, or strip out existing furniture, fixtures, windows, decor, or architectural features unless the instruction explicitly asks you to remove them, and never leave a blank wall, empty floor, or featureless void where content existed. The edit must blend seamlessly with the unchanged surroundings. Do NOT change the image aspect ratio, canvas size, orientation, or framing — the output must match the first image's dimensions exactly. WHEN THE INSTRUCTION ADDS OR PLACES A NEW OBJECT (furniture, decor, a fixture, a plant, lighting, etc.): the ENTIRE object — including its legs, arms, back, any overhang, and its contact shadow — MUST fit COMPLETELY INSIDE ${loc.region}, leaving a small margin between the object and ${loc.boundary}. SCALE THE OBJECT DOWN as much as needed so it sits fully within ${loc.region} — a smaller, fully-contained object is REQUIRED. NEVER let any part of the object reach, touch, or cross ${loc.boundary}: anything outside that area is discarded, so an object that extends past it will look cut off, sliced, or faded. Center and size the object so none of it is clipped and it reads as a complete, naturally placed item placed in the exact spot you were shown.`;
 
     let referenceInline = null;
     if (referenceImage && typeof referenceImage === 'string' && referenceImage.includes(',')) {
@@ -7763,7 +7970,7 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
         refBuffer = await sharp(refBuffer).png().toBuffer();
         let refMeta = await sharp(refBuffer).metadata();
         // Letterbox the reference to the ROOM's aspect ratio with transparent
-        // padding, so EVERY image sent to Gemini (room, mask, reference) shares one
+        // padding, so EVERY image sent to Gemini (room, highlighted room, reference) shares one
         // aspect ratio. Mixed input aspect ratios make the model emit its output at
         // a different aspect ratio; that output can't be composited back onto the
         // original, so the inserted furniture ends up mis-scaled and "doesn't fit".
@@ -7809,7 +8016,7 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
       {
         inlineData: {
           mimeType: "image/png",
-          data: maskBase64,
+          data: locatorBase64,
         },
       },
     ];
@@ -7819,7 +8026,7 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
 
     if (DEBUG_MODE) {
       console.log('[Mask Edit] Using Gemini model:', geminiModel, '(selected model:', selectedModel, ')');
-      console.log('[Mask Edit] Gemini input parts:', geminiPrompt.length, referenceInline ? '(text + room + mask + reference)' : '(text + room + mask)');
+      console.log('[Mask Edit] Gemini input parts:', geminiPrompt.length, '(text + room + ' + (locatorMarked ? 'highlighted-room' : 'mask') + (referenceInline ? ' + reference)' : ')'));
     }
 
     // Generate with the same GPT-vision quality gate the main staging uses, but
@@ -7838,7 +8045,10 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
 
       for (const part of response.candidates[0].content.parts) {
         if (part.inlineData) {
-          return `data:image/png;base64,${part.inlineData.data}`;
+          // Lock the output to the room's aspect ratio before it reaches the client
+          // composite (which stretches it onto the original canvas) — otherwise a
+          // drifted AR warps the edit out of alignment with the surroundings.
+          return await normalizeMaskOutputToRoom(part.inlineData.data, imageMetadata.width, imageMetadata.height);
         }
       }
 
@@ -7853,7 +8063,12 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
       const combined = await compositeForReview(
         imageBuffer, resizedMaskBuffer, editedUrl, imageMetadata.width, imageMetadata.height
       );
-      return reviewMaskEdit(originalForReview, combined);
+      return reviewMaskEdit(originalForReview, combined, {
+        instruction: trimmedPrompt,
+        locatorDataUrl: `data:image/png;base64,${locatorBase64}`,
+        locatorMarked,
+        referenceDataUrl: referenceInline ? `data:${referenceInline.mimeType};base64,${referenceInline.data}` : null,
+      });
     });
 
     if (DEBUG_MODE) {
