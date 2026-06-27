@@ -67,49 +67,97 @@
       exitMQ.addEventListener("change", (e) => {
         if (e.matches) return; // became desktop — nothing to undo
         els.forEach((el) => {
+          clearTimeout(el._revTimer);
+          el._revLock = false;
           el.classList.remove("exit-up", "exit-down");
           if (el.dataset.seen) el.classList.add("is-visible");
         });
       });
     }
 
+    // A compact signature of the element's current visual state, so we can tell
+    // whether a decision actually changed anything.
+    const stateKey = (el) =>
+      (el.classList.contains("is-visible") ? "V" : "") +
+      (el.classList.contains("exit-up") ? "U" : "") +
+      (el.classList.contains("exit-down") ? "D" : "");
+
+    // Apply the show/exit decision from a given geometry. `root` is the
+    // margin-adjusted viewport box (top/bottom). Mutates classes only.
+    function decide(el, ratio, r, root) {
+      // A row taller than the viewport can never reach SHOW_AT by ratio alone;
+      // if it spans the whole root, treat it as fully visible.
+      const spans = !!root && r.top <= root.top && r.bottom >= root.bottom;
+
+      if (ratio >= SHOW_AT || spans) {
+        el.classList.add("is-visible");
+        el.classList.remove("exit-up", "exit-down");
+        el.dataset.seen = "1";
+      } else if (ratio <= HIDE_AT && el.dataset.seen) {
+        // On small screens, don't animate out — leave the row revealed.
+        if (!exitEnabled()) {
+          el.classList.remove("exit-up", "exit-down");
+          return;
+        }
+        // Which edge did it leave through? Top => scrolled down (send it up);
+        // bottom => scrolled up (send it down).
+        el.classList.remove("is-visible");
+        const topEdge = root ? root.top : 0;
+        if (r.bottom <= topEdge + 1) {
+          el.classList.add("exit-up");
+          el.classList.remove("exit-down");
+        } else {
+          el.classList.add("exit-down");
+          el.classList.remove("exit-up");
+        }
+      }
+      // Between HIDE_AT and SHOW_AT: hold current state (hysteresis band).
+    }
+
+    // The reveal/exit transition is 0.6s plus an optional --reveal-delay. While
+    // it plays, the element physically moves (translateY ±52px), which makes the
+    // observer re-fire and — near a trigger point — flip the state back, moving
+    // it again: an endless in/out loop. So once we change an element's state we
+    // LOCK it for the duration of the transition, ignoring further callbacks,
+    // then re-check its real (settled) position exactly once.
+    const SETTLE_MS = 760;
+
+    function commit(el, ratio, r, root) {
+      if (el._revLock) return;
+      const before = stateKey(el);
+      decide(el, ratio, r, root);
+      if (stateKey(el) === before) return; // dead-zone hold: nothing changed
+      el._revLock = true;
+      clearTimeout(el._revTimer);
+      el._revTimer = setTimeout(() => {
+        el._revLock = false;
+        settle(el);
+      }, SETTLE_MS);
+    }
+
+    // Recompute geometry from the live layout (the observer won't fire again on
+    // its own unless a threshold is re-crossed) and apply the correct state.
+    function settle(el) {
+      const vh =
+        window.innerHeight || document.documentElement.clientHeight || 0;
+      const margin = vh * 0.06; // matches the rootMargin below
+      const root = { top: margin, bottom: vh - margin };
+      const r = el.getBoundingClientRect();
+      const overlap =
+        Math.min(r.bottom, root.bottom) - Math.max(r.top, root.top);
+      const ratio = Math.max(0, Math.min(overlap, r.height)) / (r.height || 1);
+      commit(el, ratio, r, root);
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          const el = entry.target;
-          const ratio = entry.intersectionRatio;
-          const r = entry.boundingClientRect;
-          const root = entry.rootBounds;
-          // A row taller than the viewport can never reach SHOW_AT by ratio
-          // alone; if it spans the whole root, treat it as fully visible.
-          const spans = !!root && r.top <= root.top && r.bottom >= root.bottom;
-
-          if (ratio >= SHOW_AT || spans) {
-            el.classList.add("is-visible");
-            el.classList.remove("exit-up", "exit-down");
-            el.dataset.seen = "1";
-          } else if (ratio <= HIDE_AT && el.dataset.seen) {
-            // On small screens, don't animate out — leave the row revealed.
-            if (!exitEnabled()) {
-              el.classList.remove("exit-up", "exit-down");
-              return;
-            }
-            // Only animate OUT once it has been shown — that keeps the original
-            // left/right entrance for the very first reveal. Which edge did it
-            // leave through? Top => scrolled down (send it up); bottom =>
-            // scrolled up (send it down).
-            el.classList.remove("is-visible");
-            const topEdge = root ? root.top : 0;
-            if (r.bottom <= topEdge + 1) {
-              el.classList.add("exit-up");
-              el.classList.remove("exit-down");
-            } else {
-              el.classList.add("exit-down");
-              el.classList.remove("exit-up");
-            }
-          }
-          // Between HIDE_AT and SHOW_AT: hold current state — this is the
-          // hysteresis band that kills the flicker.
+          commit(
+            entry.target,
+            entry.intersectionRatio,
+            entry.boundingClientRect,
+            entry.rootBounds
+          );
         });
       },
       { threshold: [0, HIDE_AT, SHOW_AT, 0.5, 1], rootMargin: "-6% 0px -6% 0px" }

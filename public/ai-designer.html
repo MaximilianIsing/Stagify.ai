@@ -2401,11 +2401,12 @@
       
       function defaultWelcomeMessage() {
         const fallback =
-          "Hi! I'm your Stagify AI Designer. Tell me what you'd like, or upload a room photo or floor-plan PDF, and I can:\n" +
-          "• **Stage & redesign** empty or existing rooms in any style\n" +
-          "• **Turn floor-plan PDFs** into photorealistic 3D renders\n" +
-          "• **Refine instantly** — tweak any result just by chatting with me\n" +
-          "What would you like to create?";
+          "Hi! I'm your Stagify AI Designer. Tell me what you're picturing, or upload a room photo, and we'll design it together. A few things I can do:\n" +
+          "• **Stage empty rooms**: furnish a bare space in any style\n" +
+          "• **Redesign existing rooms**: restyle, swap furniture, or change the whole mood\n" +
+          "• **Floor plan → room**: turn a floor plan into a photorealistic, furnished render\n" +
+          "• **Refine as we chat**: adjust the colors, pieces, and layout until it feels right\n" +
+          "Where would you like to start?";
         if (window.LanguageSystem && typeof LanguageSystem.getText === 'function') {
           return LanguageSystem.getText('pdf.welcomeFallback', fallback);
         }
