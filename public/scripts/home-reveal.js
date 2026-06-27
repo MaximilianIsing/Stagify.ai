@@ -68,19 +68,11 @@
         if (e.matches) return; // became desktop — nothing to undo
         els.forEach((el) => {
           clearTimeout(el._revTimer);
-          el._revLock = false;
           el.classList.remove("exit-up", "exit-down");
           if (el.dataset.seen) el.classList.add("is-visible");
         });
       });
     }
-
-    // A compact signature of the element's current visual state, so we can tell
-    // whether a decision actually changed anything.
-    const stateKey = (el) =>
-      (el.classList.contains("is-visible") ? "V" : "") +
-      (el.classList.contains("exit-up") ? "U" : "") +
-      (el.classList.contains("exit-down") ? "D" : "");
 
     // Apply the show/exit decision from a given geometry. `root` is the
     // margin-adjusted viewport box (top/bottom). Mutates classes only.
@@ -114,30 +106,28 @@
       // Between HIDE_AT and SHOW_AT: hold current state (hysteresis band).
     }
 
-    // The reveal/exit transition is 0.6s plus an optional --reveal-delay. While
-    // it plays, the element physically moves (translateY ±52px), which makes the
-    // observer re-fire and — near a trigger point — flip the state back, moving
-    // it again: an endless in/out loop. So once we change an element's state we
-    // LOCK it for the duration of the transition, ignoring further callbacks,
-    // then re-check its real (settled) position exactly once.
-    const SETTLE_MS = 760;
+    // Reveal INSTANTLY, hide on a short debounce. Asymmetry is the whole trick:
+    // a late reveal is the one thing you actually feel (content arriving a beat
+    // after it should), so showing happens the moment a row crosses SHOW_AT. The
+    // exit is what causes flicker — its ±52px transform moves the very element
+    // the observer watches, re-firing it and flipping state in an endless loop.
+    // So the hide decision waits for the callbacks to go quiet (DEBOUNCE_MS) and
+    // then reads the element's real, settled geometry once. A near-boundary
+    // wobble just keeps resetting that timer (no transform applied, nothing
+    // re-fires the observer) and never strobes. You never notice content leaving
+    // 90ms late.
+    const DEBOUNCE_MS = 90;
 
-    function commit(el, ratio, r, root) {
-      if (el._revLock) return;
-      const before = stateKey(el);
-      decide(el, ratio, r, root);
-      if (stateKey(el) === before) return; // dead-zone hold: nothing changed
-      el._revLock = true;
+    // Instant path — show now, cancel any pending hide.
+    function revealNow(el) {
       clearTimeout(el._revTimer);
-      el._revTimer = setTimeout(() => {
-        el._revLock = false;
-        settle(el);
-      }, SETTLE_MS);
+      el.classList.add("is-visible");
+      el.classList.remove("exit-up", "exit-down");
+      el.dataset.seen = "1";
     }
 
-    // Recompute geometry from the live layout (the observer won't fire again on
-    // its own unless a threshold is re-crossed) and apply the correct state.
-    function settle(el) {
+    // Debounced path — re-read live geometry, then decide (handles the exit).
+    function evaluate(el) {
       const vh =
         window.innerHeight || document.documentElement.clientHeight || 0;
       const margin = vh * 0.06; // matches the rootMargin below
@@ -146,18 +136,29 @@
       const overlap =
         Math.min(r.bottom, root.bottom) - Math.max(r.top, root.top);
       const ratio = Math.max(0, Math.min(overlap, r.height)) / (r.height || 1);
-      commit(el, ratio, r, root);
+      decide(el, ratio, r, root);
+    }
+
+    function schedule(el) {
+      clearTimeout(el._revTimer);
+      el._revTimer = setTimeout(() => evaluate(el), DEBOUNCE_MS);
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          commit(
-            entry.target,
-            entry.intersectionRatio,
-            entry.boundingClientRect,
-            entry.rootBounds
-          );
+          const el = entry.target;
+          const r = entry.boundingClientRect;
+          const root = entry.rootBounds;
+          // A row taller than the viewport never reaches SHOW_AT by ratio alone;
+          // treat it as visible if it spans the whole root.
+          const spans =
+            !!root && r.top <= root.top && r.bottom >= root.bottom;
+          if (entry.intersectionRatio >= SHOW_AT || spans) {
+            revealNow(el); // instant
+          } else {
+            schedule(el); // debounced hide / re-check
+          }
         });
       },
       { threshold: [0, HIDE_AT, SHOW_AT, 0.5, 1], rootMargin: "-6% 0px -6% 0px" }
