@@ -1263,6 +1263,30 @@ async function enforceAspectRatio(outputBuffer, targetWidth, targetHeight) {
   }
 }
 
+// Pad a reference/extra image with TRANSPARENT margins so its aspect ratio matches
+// `targetAR` (room width / height). This stops Gemini from leaking the reference's
+// own aspect ratio into the generated output. Only the short side grows — the
+// subject is never scaled, stretched, or cropped, just framed in a room-shaped
+// canvas. Returns { buffer, padded }; when padded the buffer is PNG (transparent
+// alpha needs PNG). Pads only when the AR differs by more than `tol` (0 = any diff).
+async function padBufferToAspectRatio(buffer, targetAR, tol = 0) {
+  if (!targetAR || !isFinite(targetAR)) return { buffer, padded: false };
+  const meta = await sharp(buffer).metadata();
+  const w = meta.width, h = meta.height;
+  if (!w || !h) return { buffer, padded: false };
+  const ar = w / h;
+  if (Math.abs(ar - targetAR) / targetAR <= tol) return { buffer, padded: false };
+  let tw = w, th = h;
+  if (ar > targetAR) th = Math.round(w / targetAR);       // too wide → grow height
+  else if (ar < targetAR) tw = Math.round(h * targetAR);  // too tall → grow width
+  if (tw === w && th === h) return { buffer, padded: false };
+  const out = await sharp(buffer)
+    .resize(tw, th, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer();
+  return { buffer: out, padded: true };
+}
+
 // Downscale base64 image data URL for GPT API (max 2048x2048, recommended 1024x1024)
 // Annotate an image with a short description using GPT
 async function annotateImage(imageDataUrl, isCAD = false, detectBlueprint = false) {
@@ -2972,7 +2996,7 @@ function styleReferencePromptSuffix(count) {
 }
 
 function maskReferencePromptSuffix() {
-  return '\n\nIMPORTANT — REFERENCE IMAGE: A final reference image is provided as the LAST image (after the room photo and the white mask). Treat it as the visual source for the user\'s instruction above — typically the specific furniture, decor, object, fixture, material, or finish they want applied inside the white masked region. Recreate the referenced subject so it is clearly the SAME item — keep its design, colors, materials, textures, proportions, and distinctive details. Its IDENTITY is what must stay faithful, NOT its camera angle or orientation: you SHOULD and MUST freely ROTATE, turn, and re-angle the subject — even showing it from a completely different side than the reference photo — whenever that is needed to fit the masked area and sit naturally in the room. Re-orient it to match the room\'s perspective and vanishing lines and to rest correctly on the floor, surface, or along the wall the user indicates (for example, turn a sofa shown head-on in the reference so it runs ALONG the wall in proper receding perspective, rather than facing the camera). Never refuse to rotate or re-angle the object just to keep the reference\'s original viewpoint — preserving the reference camera angle at the cost of a natural fit is WRONG. Then adapt it to the scene so it looks naturally photographed in place — match the masked area\'s perspective, scale, lighting direction, shadows, and reflections, ground it realistically with correct contact shadows and no floating, and render it as a fully opaque, solid object — never semi-transparent, see-through, or ghosted. Use ONLY the subject of the reference image; completely ignore the reference\'s own background, lighting, framing, watermarks, any surrounding objects, and any transparent or empty padding around the reference subject. Apply the result strictly within the white masked region and blend its edges seamlessly with the surroundings. Size the referenced subject so the WHOLE of it — including any legs, overhang, and contact shadow — fits completely inside the white masked region with a small margin from the edge; scale it down as needed and never let any part reach, touch, or cross the white boundary, or it will be cut off. Do not change anything outside the mask. The OUTPUT image MUST keep the EXACT same width, height, and aspect ratio as the FIRST (room) image — never resize, crop, stretch, or reshape the output to match the reference image\'s dimensions.';
+  return '\n\nIMPORTANT — REFERENCE IMAGE: A final reference image is provided as the LAST image (after the room photo and the white mask). Treat it as the visual source for the user\'s instruction above — typically the specific furniture, decor, object, fixture, material, or finish they want applied inside the white masked region. Recreate the referenced subject so it is clearly the SAME item — keep its design, colors, materials, textures, proportions, and distinctive details. Its IDENTITY is what must stay faithful, NOT its camera angle or orientation: you SHOULD and MUST freely ROTATE, turn, and re-angle the subject — even showing it from a completely different side than the reference photo — whenever that is needed to fit the masked area and sit naturally in the room. Re-orient it to match the room\'s perspective and vanishing lines and to rest correctly on the floor, surface, or along the wall the user indicates (for example, turn a sofa shown head-on in the reference so it runs ALONG the wall in proper receding perspective, rather than facing the camera). Never refuse to rotate or re-angle the object just to keep the reference\'s original viewpoint — preserving the reference camera angle at the cost of a natural fit is WRONG. Then adapt it to the scene so it looks naturally photographed in place — match the masked area\'s perspective, scale, lighting direction, shadows, and reflections, ground it realistically with correct contact shadows and no floating, and render it as a fully opaque, solid object — never semi-transparent, see-through, or ghosted. Use ONLY the physical object/subject from the reference image — treat it as a clean cut-out and extract just that object. COMPLETELY DISCARD everything in the reference that is not the object itself: its background and backdrop (including any plain white, grey, gradient, or studio backdrop), the floor or surface it stands on in the reference, its own lighting, framing, watermarks, surrounding objects, and any transparent or empty padding. NEVER copy, paint, extend, or bleed the reference\'s background or backdrop into the room — do NOT add a white, pale, or colored patch, panel, slab, rug, or floor area taken from the reference, and do NOT mistake the reference\'s backdrop for floor, wall, or surface. The object must sit directly on the room\'s OWN existing floor or surface, surrounded only by the room\'s existing content, with fresh contact shadows that match the room\'s lighting. Apply the result strictly within the white masked region and blend its edges seamlessly with the surroundings. Size the referenced subject so the WHOLE of it — including any legs, overhang, and contact shadow — fits completely inside the white masked region with a small margin from the edge; scale it down as needed and never let any part reach, touch, or cross the white boundary, or it will be cut off. Do not change anything outside the mask. The OUTPUT image MUST keep the EXACT same width, height, and aspect ratio as the FIRST (room) image — never resize, crop, stretch, or reshape the output to match the reference image\'s dimensions.';
 }
 
 function furnitureReferencePromptSuffix(count, preserveExistingStaging = false) {
@@ -2984,7 +3008,7 @@ function furnitureReferencePromptSuffix(count, preserveExistingStaging = false) 
         ? 'The second and third images'
         : 'The second, third, and fourth images';
   const pieceWord = count === 1 ? 'piece' : 'pieces';
-  let suffix = `\n\nIMPORTANT: ${listText} provided after the room photo ${count === 1 ? 'is' : 'are'} reference furniture ${pieceWord} that the user wants incorporated into the staged room. Match each item's style, color, and appearance as closely as possible. Use all reference images as guidance for what to place in the space.`;
+  let suffix = `\n\nIMPORTANT: ${listText} provided after the room photo ${count === 1 ? 'is' : 'are'} reference furniture ${pieceWord} that the user wants incorporated into the staged room. Match each item's style, color, and appearance as closely as possible. Use all reference images as guidance for what to place in the space. Use ONLY the furniture object(s) themselves — treat each reference as a clean cut-out. COMPLETELY DISCARD everything in the reference photos that is not the furniture: any plain white, grey, gradient, or studio backdrop, the floor or surface the item sits on in the reference, its own lighting, framing, watermarks, and surrounding objects. NEVER copy, paint, or bleed a reference's background into the room — do NOT add a white, pale, or colored patch, panel, slab, rug, or floor area from it, and do NOT mistake a reference's backdrop for floor, wall, or surface. Place each piece directly onto the room's own existing floor or surface, with fresh contact shadows that match the room's lighting.`;
   if (preserveExistingStaging) {
     suffix +=
       '\n\nCRITICAL: The first image is an ALREADY-STAGED ROOM. Keep every existing element in that photo exactly as shown — same walls, windows, layout, camera angle, lighting, and all furniture/decor already present. ONLY add the reference furniture piece(s). Do not generate a different room. Preserve the exact aspect ratio and full frame — do not crop, zoom, or cut off any part of the original photo.';
@@ -3195,6 +3219,11 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
     
     const processedImageBuffer = await downscaleImage(imageBuffer);
     const base64Image = processedImageBuffer.toString("base64");
+
+    // Source aspect ratio: used to letterbox furniture refs to the room's shape
+    // (below) and to lock the output back to it after generation (Gemini drifts).
+    const srcMeta = await sharp(imageBuffer).metadata().catch(() => null);
+    const roomAR = srcMeta && srcMeta.width && srcMeta.height ? srcMeta.width / srcMeta.height : null;
     
     const prompt = [
       { text: generatePrompt(
@@ -3212,13 +3241,31 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
     ];
     
     const furnitureBuffers = normalizeFurnitureBuffers(furnitureImageBuffer);
+    let anyReferencePadded = false;
     for (const buf of furnitureBuffers) {
       const processedFurnitureBuffer = await downscaleImage(buf);
-      const base64Furniture = processedFurnitureBuffer.toString("base64");
+      // Letterbox the reference to the room's aspect ratio (transparent margins) so
+      // its shape can't pull Gemini's output off the room's AR — same technique the
+      // mask editor uses. No-op when the shapes already match; falls back to the
+      // plain JPEG on any error so staging never breaks.
+      let refBuf = processedFurnitureBuffer;
+      let refMime = "image/jpeg";
+      if (roomAR) {
+        try {
+          const padded = await padBufferToAspectRatio(processedFurnitureBuffer, roomAR, 0.02);
+          if (padded.padded) {
+            refBuf = padded.buffer;
+            refMime = "image/png";
+            anyReferencePadded = true;
+          }
+        } catch (padErr) {
+          if (DEBUG_MODE) console.warn('[Staging] Furniture aspect-ratio match failed; sending as-is:', padErr.message);
+        }
+      }
       prompt.push({
         inlineData: {
-          mimeType: "image/jpeg",
-          data: base64Furniture,
+          mimeType: refMime,
+          data: refBuf.toString("base64"),
         },
       });
     }
@@ -3233,6 +3280,9 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
           );
       if (DEBUG_MODE) {
         console.log(`[Staging] Including ${furnitureBuffers.length} ${stagingParams.styleReference ? 'style' : 'furniture'} reference image(s) in staging request`);
+      }
+      if (anyReferencePadded) {
+        prompt[0].text += '\n\nNOTE ON REFERENCE IMAGES: One or more reference images have transparent/empty padding added around them to match the room\'s shape. Ignore that empty padding entirely — use only the actual furniture/subject shown, and scale it naturally within the room.';
       }
     }
     
@@ -3253,9 +3303,6 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
       console.log(`[Staging] Using Gemini model: ${geminiModel}`);
     }
     const model = genAI.getGenerativeModel({ model: geminiModel });
-
-    // Source aspect ratio, so we can lock the output back to it (Gemini drifts).
-    const srcMeta = await sharp(imageBuffer).metadata().catch(() => null);
 
     // Generate, with the self-check quality gate retrying poor results.
     const resultDataUrl = await generateWithQualityRetry(async () => {
@@ -7722,17 +7769,9 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
         // original, so the inserted furniture ends up mis-scaled and "doesn't fit".
         try {
           const roomAR = imageMetadata.width / imageMetadata.height;
-          const rw = refMeta.width || imageMetadata.width;
-          const rh = refMeta.height || imageMetadata.height;
-          const refAR = rw / rh;
-          let targetW = rw, targetH = rh;
-          if (refAR > roomAR) targetH = Math.round(rw / roomAR);       // too wide -> grow height
-          else if (refAR < roomAR) targetW = Math.round(rh * roomAR);  // too tall -> grow width
-          if (targetW !== rw || targetH !== rh) {
-            refBuffer = await sharp(refBuffer)
-              .resize(targetW, targetH, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-              .png()
-              .toBuffer();
+          const padded = await padBufferToAspectRatio(refBuffer, roomAR);
+          if (padded.padded) {
+            refBuffer = padded.buffer;
             refMeta = await sharp(refBuffer).metadata();
           }
         } catch (padErr) {

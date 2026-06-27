@@ -659,7 +659,9 @@
       "done": "Se ve bien",
       "refineTitle": "Refina la edición",
       "refineNote": "Pinta para mostrar más de la edición, borra para ocultarla — esto solo recorta, no vuelve a ejecutar la IA.",
-      "refineHelp": "Este paso solo ajusta dónde se ve el cambio de la IA, sin volver a ejecutarla. Pinta para mostrar más de la edición, borra para retirarla. Es una red de seguridad para que la edición solo afecte el área que elegiste y no estropee el resto de tu foto.",
+      "refineHelp": "Este paso solo ajusta dónde se ve el cambio de la IA, sin volver a ejecutarla. Pinta para mostrar más de la edición, borra para retirarla. Es una red de seguridad para que la edición solo afecte el área que elegiste y no estropee el resto de tu foto. La vista previa atenuada que se muestra encima solo está ahí para que veas la edición completa mientras la ajustas; no aparecerá en la imagen final.",
+      "promptHint": "Sé muy específico con la ubicación y la colocación; por ejemplo: “coloca el sofá pegado al centro de la pared del fondo.”",
+
       "refineHelpAria": "Qué hace el paso de refinar",
       "loadApplying": "Aplicando tu edición…",
       "referenceLabel": "Foto de referencia (opcional)",

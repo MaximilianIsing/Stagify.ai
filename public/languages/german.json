@@ -658,7 +658,9 @@
       "done": "Sieht gut aus",
       "refineTitle": "Bearbeitung verfeinern",
       "refineNote": "Übermalen, um mehr von der Bearbeitung zu zeigen, radieren, um sie zu verbergen – dies schneidet nur neu zu, die KI wird nicht erneut ausgeführt.",
-      "refineHelp": "Dieser Schritt stimmt nur fein ab, wo die Änderung der KI sichtbar ist – die KI wird dabei nicht erneut ausgeführt. Übermalen, um mehr von der Bearbeitung zu zeigen, radieren, um sie zurückzunehmen. Es ist ein Sicherheitsnetz, damit die Bearbeitung nur den von Ihnen gewählten Bereich betrifft und den Rest Ihres Fotos nicht beeinträchtigen kann.",
+      "refineHelp": "Dieser Schritt stimmt nur fein ab, wo die Änderung der KI sichtbar ist – die KI wird dabei nicht erneut ausgeführt. Übermalen, um mehr von der Bearbeitung zu zeigen, radieren, um sie zurückzunehmen. Es ist ein Sicherheitsnetz, damit die Bearbeitung nur den von Ihnen gewählten Bereich betrifft und den Rest Ihres Fotos nicht beeinträchtigen kann. Die abgeblendete Vorschau darüber dient nur dazu, dass Sie die gesamte Bearbeitung beim Verfeinern sehen – im endgültigen Bild erscheint sie nicht.",
+      "promptHint": "Sei sehr genau bei Position und Platzierung – zum Beispiel: „Stelle das Sofa bündig an die Mitte der Rückwand.“",
+
       "refineHelpAria": "Was der Verfeinerungsschritt bewirkt",
       "loadApplying": "Ihre Bearbeitung wird angewendet…",
       "referenceLabel": "Referenzfoto (optional)",

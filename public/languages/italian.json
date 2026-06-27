@@ -658,7 +658,9 @@
       "done": "Va bene così",
       "refineTitle": "Perfeziona la modifica",
       "refineNote": "Dipingi per rivelare di più della modifica, cancella per nasconderla: questo ritaglia soltanto, non riesegue l'IA.",
-      "refineHelp": "Questo passaggio regola soltanto dove appare la modifica dell'IA, non riesegue l'IA. Dipingi per rivelare di più della modifica, cancella per ridurla. È una rete di sicurezza, così la modifica tocca solo l'area che hai scelto e non può rovinare il resto della tua foto.",
+      "refineHelp": "Questo passaggio regola soltanto dove appare la modifica dell'IA, non riesegue l'IA. Dipingi per rivelare di più della modifica, cancella per ridurla. È una rete di sicurezza, così la modifica tocca solo l'area che hai scelto e non può rovinare il resto della tua foto. L'anteprima sfumata mostrata sopra serve solo a farti vedere l'intera modifica mentre la perfezioni; non comparirà nell'immagine finale.",
+      "promptHint": "Sii molto specifico su posizione e collocazione — per esempio: “metti il divano a filo contro il centro della parete di fondo.”",
+
       "refineHelpAria": "Cosa fa il passaggio di perfezionamento",
       "loadApplying": "Applicazione della tua modifica…",
       "referenceLabel": "Foto di riferimento (facoltativo)",

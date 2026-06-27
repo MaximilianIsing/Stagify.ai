@@ -658,7 +658,9 @@
       "done": "Ça me convient",
       "refineTitle": "Affiner la modification",
       "refineNote": "Peignez pour révéler davantage la modification, gommez pour la masquer — cela ne fait que recadrer, l'IA n'est pas relancée.",
-      "refineHelp": "Cette étape ajuste simplement l'endroit où la modification de l'IA apparaît — elle ne relance pas l'IA. Peignez pour révéler davantage la modification, gommez pour la réduire. C'est un filet de sécurité : la modification ne touche que la zone que vous avez choisie et ne peut pas abîmer le reste de votre photo.",
+      "refineHelp": "Cette étape ajuste simplement l'endroit où la modification de l'IA apparaît — elle ne relance pas l'IA. Peignez pour révéler davantage la modification, gommez pour la réduire. C'est un filet de sécurité : la modification ne touche que la zone que vous avez choisie et ne peut pas abîmer le reste de votre photo. L'aperçu atténué affiché par-dessus sert uniquement à voir toute la modification pendant que vous l'affinez ; il n'apparaîtra pas dans l'image finale.",
+      "promptHint": "Soyez très précis sur l’emplacement et la disposition — par exemple : « placez le canapé contre le milieu du mur du fond ».",
+
       "refineHelpAria": "Ce que fait l'étape d'affinage",
       "loadApplying": "Application de votre modification…",
       "referenceLabel": "Photo de référence (facultatif)",

@@ -1516,9 +1516,9 @@
           if (titleEl) titleEl.textContent = tx('pdf.maskEditor.refineTitle', 'Refine the edit');
           helpIcon.classList.remove('hidden');
           helpIcon.setAttribute('aria-label', tx('pdf.maskEditor.refineHelpAria', 'What the refine step does'));
-          helpTip.textContent = tx('pdf.maskEditor.refineHelp', "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo.");
+          helpTip.textContent = tx('pdf.maskEditor.refineHelp', "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining — it won't be in the final image.");
           recolorMask('#16a34a');
-          if (noteEl) noteEl.textContent = tx('pdf.maskEditor.refineNote', "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI.");
+          if (noteEl) { noteEl.style.display = ''; noteEl.textContent = tx('pdf.maskEditor.refineNote', "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI."); }
           updateSubmitState();
         } else { // draw
           if (submitBtn) submitBtn.classList.remove('hidden');
@@ -1527,7 +1527,7 @@
           doneBtn.classList.add('hidden');
           helpIcon.classList.add('hidden');
           applyEditorCopy();
-          if (noteEl) noteEl.textContent = tx('pdf.maskEditor.brushAllNote', "Be sure to brush over all of the area you'd like masked.");
+          if (noteEl) { noteEl.style.display = 'none'; noteEl.textContent = ''; }
         }
       }
 
@@ -1927,6 +1927,14 @@
         const bctx = baseCanvas.getContext('2d');
         bctx.clearRect(0, 0, w, h);
         bctx.drawImage(composed, 0, 0);
+        // Ghost the FULL raw AI output on top at 55% so the user can see the entire
+        // generated region — including parts outside the current brush — and judge
+        // where to extend or trim the mask. Visual only: the committed result is
+        // re-composited cleanly from refineState (see commitRefine), never the canvas.
+        bctx.save();
+        bctx.globalAlpha = 0.55;
+        bctx.drawImage(editedImg, 0, 0, w, h);
+        bctx.restore();
       }
 
       // POST the current strokes + prompt (+ optional reference) to the model and
@@ -1971,10 +1979,12 @@
         const w = baseCanvas.width;
         const h = baseCanvas.height;
         const origCanvas = snapshotCanvas(baseCanvas, w, h);
-        // Secret brush expansion: grow a good bit so slight under-brushing is still
-        // covered, with a feathered edge so the composite shows no seam.
+        // Secret brush expansion: grow a little so slight under-brushing is still
+        // covered, with a feathered edge so the composite shows no seam. Kept modest
+        // (~half what it used to be) now that the refine step lets users extend the
+        // mask themselves.
         const maxDim = Math.max(w, h);
-        const coreGrow = Math.max(23, Math.round(maxDim * 0.0455));
+        const coreGrow = Math.max(12, Math.round(maxDim * 0.02275));
         const featherPx = Math.max(20, Math.round(maxDim * 0.04));
         const isBefore = editorMode === 'before';
         if (processBtn) processBtn.disabled = true;

@@ -1982,3 +1982,152 @@
     transform: none;
   }
 }
+
+/* ==========================================================================
+   Testimonials — compact glass quotes with a living edge: a glow continuously
+   orbits each card's border (::before, animated conic ring), and a soft light
+   follows the cursor on hover (::after, --mx/--my set by the inline script).
+   Equal-height via grid stretch + a footer pinned with margin-top:auto.
+   ========================================================================== */
+@property --tw-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.tw-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 22px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.tw-card {
+  --mx: 50%;
+  --my: -40%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 28px 22px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 10px 26px rgba(30, 58, 138, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+/* animated orbiting glow border — faint blue ring all around, bright arc circling */
+.tw-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(96, 165, 250, 0.55),
+    rgba(37, 99, 235, 0.16) 42%,
+    rgba(37, 99, 235, 0.1)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+@keyframes tw-orbit {
+  to {
+    --tw-angle: 360deg;
+  }
+}
+/* cursor spotlight — white core + blue halo, hidden until hover */
+.tw-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+      260px circle at var(--mx) var(--my),
+      rgba(255, 255, 255, 0.5),
+      transparent 60%
+    ),
+    radial-gradient(
+      400px circle at var(--mx) var(--my),
+      rgba(37, 99, 235, 0.18),
+      transparent 72%
+    );
+}
+.tw-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 44px rgba(30, 58, 138, 0.18);
+}
+.tw-card:hover::after {
+  opacity: 1;
+}
+/* content rides above the spotlight */
+.tw-text,
+.tw-by {
+  position: relative;
+  z-index: 1;
+}
+.tw-text {
+  margin: 0 0 18px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--fg);
+}
+.tw-text::before {
+  content: "\201C";
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 46px;
+  line-height: 1;
+  color: rgba(37, 99, 235, 0.22);
+  margin: 0 0 2px;
+}
+.tw-by {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(30, 58, 138, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.tw-name {
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--text-heading);
+}
+.tw-org {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+/* No cursor to follow on touch — keep the spotlight off. */
+@media (hover: none) {
+  .tw-card::after {
+    display: none;
+  }
+}
+/* Respect reduced-motion: hold the glow still. */
+@media (prefers-reduced-motion: reduce) {
+  .tw-card::before {
+    animation: none;
+  }
+}
+@media (max-width: 768px) {
+  .tw-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .tw-card:hover {
+    transform: none;
+  }
+}
