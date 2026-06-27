@@ -361,26 +361,77 @@
       furnitureFileInput.click();
     }
 
+    var FURNITURE_ACCEPT = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+    // Add files from either the file picker or a drag-and-drop, keeping the
+    // accept filter (the OS picker honors `accept`, but dropped files don't) and
+    // the 5-photo cap in one place.
+    function addFurnitureFiles(fileList) {
+      var incoming = Array.from(fileList || []).filter(function (f) {
+        return f && (FURNITURE_ACCEPT.indexOf(f.type) !== -1 || /\.(jpe?g|png|webp)$/i.test(f.name || ''));
+      });
+      if (!incoming.length) return;
+      incoming.forEach(function (f) {
+        if (accumulatedFurnitureFiles.length < FURNITURE_LIMIT) {
+          accumulatedFurnitureFiles.push(f);
+        }
+      });
+      if (accumulatedFurnitureFiles.length > FURNITURE_LIMIT) {
+        accumulatedFurnitureFiles = accumulatedFurnitureFiles.slice(0, FURNITURE_LIMIT);
+      }
+      syncFurnitureInput();
+      renderFurnitureList();
+    }
+
     if (furnitureAddBtn) {
       furnitureAddBtn.addEventListener('click', openFurniturePicker);
     }
 
     if (furnitureFileInput) {
       furnitureFileInput.addEventListener('change', () => {
-        var newFiles = Array.from(furnitureFileInput.files);
-        newFiles.forEach(function (f) {
-          if (accumulatedFurnitureFiles.length < FURNITURE_LIMIT) {
-            accumulatedFurnitureFiles.push(f);
-          }
-        });
-        if (accumulatedFurnitureFiles.length > FURNITURE_LIMIT) {
-          accumulatedFurnitureFiles = accumulatedFurnitureFiles.slice(0, FURNITURE_LIMIT);
-        }
-        furnitureFileInput.value = '';
-        syncFurnitureInput();
-        renderFurnitureList();
+        addFurnitureFiles(furnitureFileInput.files);
       });
     }
+
+    // Drag-and-drop: drop image files onto the "+ Add photos" button (or the
+    // list of already-added photos) to add reference photos, same as picking
+    // them. Highlights the button while a valid drag is over it.
+    (function wireFurnitureDrop() {
+      var zones = [furnitureAddBtn, furnitureList].filter(Boolean);
+      if (!zones.length) return;
+      var dragDepth = 0;
+      function atLimit() {
+        return accumulatedFurnitureFiles.length >= FURNITURE_LIMIT;
+      }
+      function hasFiles(e) {
+        var dt = e.dataTransfer;
+        return !!dt && Array.prototype.indexOf.call(dt.types || [], 'Files') !== -1;
+      }
+      zones.forEach(function (zone) {
+        zone.addEventListener('dragenter', function (e) {
+          if (!hasFiles(e) || atLimit()) return;
+          e.preventDefault();
+          dragDepth++;
+          if (furnitureAddBtn) furnitureAddBtn.classList.add('is-drag-over');
+        });
+        zone.addEventListener('dragover', function (e) {
+          if (!hasFiles(e) || atLimit()) return;
+          e.preventDefault();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+        });
+        zone.addEventListener('dragleave', function () {
+          dragDepth = Math.max(0, dragDepth - 1);
+          if (dragDepth === 0 && furnitureAddBtn) furnitureAddBtn.classList.remove('is-drag-over');
+        });
+        zone.addEventListener('drop', function (e) {
+          if (!hasFiles(e)) return;
+          e.preventDefault();
+          dragDepth = 0;
+          if (furnitureAddBtn) furnitureAddBtn.classList.remove('is-drag-over');
+          if (e.dataTransfer) addFurnitureFiles(e.dataTransfer.files);
+        });
+      });
+    })();
 
     function hideStagingLimitInViewer() {
       if (stagingLimitViewer) stagingLimitViewer.classList.add('hidden');
@@ -1828,18 +1879,59 @@
       if (cancelBtn) cancelBtn.addEventListener('click', closeEditor);
       if (brushToolBtn) brushToolBtn.addEventListener('click', () => setTool('brush'));
       if (eraseToolBtn) eraseToolBtn.addEventListener('click', () => setTool('erase'));
+      // Accept a single reference file from either the picker or a drop: validate
+      // + downscale, then show it (or surface the error). Shared so both paths
+      // behave identically.
+      function acceptReferenceFile(file) {
+        if (!file) return;
+        prepareReferenceFile(file)
+          .then(setMaskReference)
+          .catch((err) => { clearMaskReference(); alert(refErrorMessage(err)); });
+      }
       if (refAddBtn && refFileInput) {
         refAddBtn.addEventListener('click', () => refFileInput.click());
         refFileInput.addEventListener('change', () => {
           const file = refFileInput.files && refFileInput.files[0];
           refFileInput.value = ''; // allow re-selecting the same file later
-          if (!file) return;
-          prepareReferenceFile(file)
-            .then(setMaskReference)
-            .catch((err) => { clearMaskReference(); alert(refErrorMessage(err)); });
+          acceptReferenceFile(file);
         });
       }
       if (refRemoveBtn) refRemoveBtn.addEventListener('click', clearMaskReference);
+
+      // Drag-and-drop: drop an image onto the "+ Add photo" button (or, once one
+      // is set, onto its preview to replace it) — same path as picking a file.
+      // Highlights the button while a valid file-drag hovers a drop zone.
+      (function wireMaskRefDrop() {
+        const zones = [refAddBtn, refPreview].filter(Boolean);
+        if (!zones.length) return;
+        let dragDepth = 0;
+        const hasFiles = (e) =>
+          !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
+        zones.forEach((zone) => {
+          zone.addEventListener('dragenter', (e) => {
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            dragDepth++;
+            if (refAddBtn) refAddBtn.classList.add('is-drag-over');
+          });
+          zone.addEventListener('dragover', (e) => {
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+          });
+          zone.addEventListener('dragleave', () => {
+            dragDepth = Math.max(0, dragDepth - 1);
+            if (dragDepth === 0 && refAddBtn) refAddBtn.classList.remove('is-drag-over');
+          });
+          zone.addEventListener('drop', (e) => {
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            dragDepth = 0;
+            if (refAddBtn) refAddBtn.classList.remove('is-drag-over');
+            acceptReferenceFile(e.dataTransfer.files && e.dataTransfer.files[0]);
+          });
+        });
+      })();
       // Same paint-brush FAB on both views: edits the staged result on After,
       // or the original photo on Before.
       if (maskEditBtn) maskEditBtn.addEventListener('click', () => {
