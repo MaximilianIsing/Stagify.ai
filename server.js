@@ -3572,6 +3572,162 @@ function getDataLogDir() {
   return logDir;
 }
 
+// ── Public image hosting (admin-managed) ───────────────────────────────────
+// Admins upload an image from the dashboard; it's stored on the persistent disk
+// and served publicly at /i/<id> behind an unguessable random id. A manifest
+// (index.json) records the metadata so the dashboard can list and unhost them.
+const HOSTED_IMAGE_MIME_EXT = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
+
+function getHostedImagesDir() {
+  const dir = path.join(getDataLogDir(), 'hosted-images');
+  if (!fs.existsSync(dir)) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch (e) {
+      console.error('[host-image] failed to create dir', e);
+    }
+  }
+  return dir;
+}
+
+function getHostedImagesManifestPath() {
+  return path.join(getHostedImagesDir(), 'index.json');
+}
+
+function readHostedImagesManifest() {
+  try {
+    const p = getHostedImagesManifestPath();
+    if (!fs.existsSync(p)) return [];
+    const arr = JSON.parse(fs.readFileSync(p, 'utf8'));
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    console.error('[host-image] manifest read failed', e);
+    return [];
+  }
+}
+
+function writeHostedImagesManifest(arr) {
+  try {
+    fs.writeFileSync(getHostedImagesManifestPath(), JSON.stringify(arr, null, 2));
+    return true;
+  } catch (e) {
+    console.error('[host-image] manifest write failed', e);
+    return false;
+  }
+}
+
+// Dedicated multer instance: safe raster types only (deliberately no SVG — it
+// can carry script and would execute on our own origin), 25 MB cap to protect
+// the persistent disk.
+const hostImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (HOSTED_IMAGE_MIME_EXT[file.mimetype]) cb(null, true);
+    else cb(new Error('Only PNG, JPG, WebP, and GIF images can be hosted'));
+  },
+}).single('image');
+
+// Public: serve a hosted image by its random id. No auth — the id is the
+// capability. nosniff + a fixed content type keep it from being treated as an
+// active document; long immutable cache since ids never point at new bytes.
+app.get('/i/:id', (req, res) => {
+  const id = String(req.params.id || '');
+  if (!/^[a-f0-9]{16,64}$/.test(id)) {
+    return res.status(404).type('text/plain').send('Not found');
+  }
+  const entry = readHostedImagesManifest().find((e) => e && e.id === id);
+  if (!entry) {
+    return res.status(404).type('text/plain').send('Not found');
+  }
+  const filePath = path.join(getHostedImagesDir(), entry.file);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).type('text/plain').send('Not found');
+  }
+  res.setHeader('Content-Type', entry.mime || 'application/octet-stream');
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Disposition', 'inline');
+  return res.sendFile(path.resolve(filePath));
+});
+
+// Admin: upload + host an image. Returns the public id/path/url.
+app.post('/api/host-image', protectLogs, (req, res) => {
+  hostImageUpload(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || 'Upload failed' });
+    }
+    if (!req.file || !req.file.buffer || !req.file.buffer.length) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+    try {
+      const ext = HOSTED_IMAGE_MIME_EXT[req.file.mimetype] || 'bin';
+      const id = crypto.randomBytes(16).toString('hex'); // 32 hex chars, unguessable
+      const file = id + '.' + ext;
+      fs.writeFileSync(path.join(getHostedImagesDir(), file), req.file.buffer);
+      const entry = {
+        id,
+        file,
+        mime: req.file.mimetype,
+        ext,
+        originalName: req.file.originalname || file,
+        size: req.file.size || req.file.buffer.length,
+        uploadedAt: new Date().toISOString(),
+      };
+      const manifest = readHostedImagesManifest();
+      manifest.push(entry);
+      writeHostedImagesManifest(manifest);
+      const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'https')
+        .split(',')[0]
+        .trim();
+      const url = proto + '://' + req.get('host') + '/i/' + id;
+      console.log('[host-image] hosted', file, '(' + entry.size + ' bytes)');
+      return res.json({ ok: true, id, path: '/i/' + id, url, entry });
+    } catch (e) {
+      console.error('[host-image] save failed', e);
+      return res.status(500).json({ error: 'Failed to save image' });
+    }
+  });
+});
+
+// Admin: list all hosted images (newest first).
+app.get('/api/hosted-images', protectLogs, (req, res) => {
+  const images = readHostedImagesManifest()
+    .slice()
+    .sort((a, b) => new Date(b.uploadedAt || 0) - new Date(a.uploadedAt || 0))
+    .map((e) => Object.assign({}, e, { path: '/i/' + e.id }));
+  return res.json({ images });
+});
+
+// Admin: delete (unhost) an image by id — removes the file and manifest entry.
+app.delete('/api/hosted-images/:id', protectLogs, (req, res) => {
+  const id = String(req.params.id || '');
+  if (!/^[a-f0-9]{16,64}$/.test(id)) {
+    return res.status(400).json({ error: 'Invalid id' });
+  }
+  const manifest = readHostedImagesManifest();
+  const idx = manifest.findIndex((e) => e && e.id === id);
+  if (idx === -1) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  const [entry] = manifest.splice(idx, 1);
+  try {
+    const filePath = path.join(getHostedImagesDir(), entry.file);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  } catch (e) {
+    console.error('[host-image] file delete failed', e);
+  }
+  writeHostedImagesManifest(manifest);
+  console.log('[host-image] unhosted', entry.file);
+  return res.json({ ok: true });
+});
+
 function escapeCsvField(field) {
   if (field === null || field === undefined) return '';
   const str = String(field);
