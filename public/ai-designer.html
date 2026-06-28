@@ -5023,93 +5023,25 @@
         if (e) { e.classList.toggle('is-active', maskTool === 'erase'); e.setAttribute('aria-pressed', maskTool === 'erase' ? 'true' : 'false'); }
       }
 
-      // ── Mask compositing helpers (mirror the main Stagify mask tool) ──
-      // Grow the brushed area outward by `grow` px (silent brush expansion).
-      function maskGrowBinary(drawSrc, w, h, grow) {
-        const bin = document.createElement('canvas');
-        bin.width = w; bin.height = h;
-        const bctx = bin.getContext('2d');
-        bctx.drawImage(drawSrc, 0, 0, w, h);
-        const id = bctx.getImageData(0, 0, w, h);
-        const d = id.data;
-        for (let i = 0; i < d.length; i += 4) {
-          const on = d[i + 3] > 10;
-          d[i] = 255; d[i + 1] = 255; d[i + 2] = 255; d[i + 3] = on ? 255 : 0;
-        }
-        bctx.putImageData(id, 0, 0);
-        const grown = document.createElement('canvas');
-        grown.width = w; grown.height = h;
-        const gctx = grown.getContext('2d');
-        const steps = 28;
-        const ringStep = Math.max(2, grow / 5);
-        for (let r = grow; r > 0; r -= ringStep) {
-          for (let k = 0; k < steps; k++) {
-            const a = (k / steps) * Math.PI * 2;
-            gctx.drawImage(bin, Math.cos(a) * r, Math.sin(a) * r);
-          }
-        }
-        gctx.drawImage(bin, 0, 0);
-        return grown;
-      }
-      // White-on-black mask sent to the model (the grown editable region).
+      // ── Mask image-processing core (shared) ──────────────────────────────────
+      // The canvas math lives once in the ES module /scripts/mask-core.js and is
+      // shared with the main Stagify tool. These thin wrappers keep the call sites
+      // below unchanged; the module loads eagerly and is awaited in
+      // runMaskGenerate before its first use.
+      let _maskCore = null;
+      const _maskCoreReady = import('/scripts/mask-core.js').then((m) => (_maskCore = m, m));
+      _maskCoreReady.catch((e) => console.error('[mask] failed to load mask-core.js', e));
       function maskBuildModelMask(drawSrc, w, h, grow) {
-        const grown = maskGrowBinary(drawSrc, w, h, grow);
-        const out = document.createElement('canvas');
-        out.width = w; out.height = h;
-        const octx = out.getContext('2d');
-        octx.fillStyle = '#000';
-        octx.fillRect(0, 0, w, h);
-        octx.drawImage(grown, 0, 0);
-        return out;
+        return _maskCore.buildModelMask(drawSrc, w, h, grow);
       }
-      // Feathered alpha mask for compositing (grown core + soft falloff).
       function maskBuildBlendMask(drawSrc, w, h, coreGrow, featherPx) {
-        const grown = maskGrowBinary(drawSrc, w, h, coreGrow + featherPx);
-        const out = document.createElement('canvas');
-        out.width = w; out.height = h;
-        const octx = out.getContext('2d');
-        let blurred = false;
-        try {
-          if (typeof octx.filter !== 'undefined') {
-            octx.filter = 'blur(' + featherPx + 'px)';
-            octx.drawImage(grown, 0, 0);
-            octx.filter = 'none';
-            blurred = true;
-          }
-        } catch (err) { blurred = false; }
-        if (!blurred) {
-          octx.drawImage(grown, 0, 0);
-          const steps = 28, rings = 8;
-          for (let i = 1; i <= rings; i++) {
-            octx.globalAlpha = 0.5 * (1 - i / (rings + 1));
-            const rr = featherPx * (i / rings);
-            for (let k = 0; k < steps; k++) {
-              const a = (k / steps) * Math.PI * 2;
-              octx.drawImage(grown, Math.cos(a) * rr, Math.sin(a) * rr);
-            }
-          }
-          octx.globalAlpha = 1;
-        }
-        return out;
+        return _maskCore.buildBlendMask(drawSrc, w, h, coreGrow, featherPx);
       }
-      // Hard-composite: keep the original everywhere, paste the edit only inside
-      // the feathered mask, so unbrushed areas can never change and there's no seam.
       function maskCompositeEditCanvas(origCanvas, keepMask, editedImg, w, h) {
-        const me = document.createElement('canvas');
-        me.width = w; me.height = h;
-        const mctx = me.getContext('2d');
-        mctx.drawImage(editedImg, 0, 0, w, h);
-        mctx.globalCompositeOperation = 'destination-in';
-        mctx.drawImage(keepMask, 0, 0, w, h);
-        const out = document.createElement('canvas');
-        out.width = w; out.height = h;
-        const octx = out.getContext('2d');
-        octx.drawImage(origCanvas, 0, 0);
-        octx.drawImage(me, 0, 0);
-        return out;
+        return _maskCore.compositeMaskedEditCanvas(origCanvas, keepMask, editedImg, w, h);
       }
       function maskCompositeEdit(origCanvas, keepMask, editedImg, w, h) {
-        return maskCompositeEditCanvas(origCanvas, keepMask, editedImg, w, h).toDataURL('image/png');
+        return _maskCore.compositeMaskedEdit(origCanvas, keepMask, editedImg, w, h);
       }
 
       // ---- In-modal generate → refine flow (mirrors main Stagify) ----------
@@ -5415,6 +5347,7 @@
       // POST the current strokes + prompt (+ optional reference) to the model and
       // resolve to the raw edited Image. Throws on failure.
       async function runMaskGenerate(imageSrc, w, h, prompt, coreGrow) {
+        await _maskCoreReady; // ensure the shared mask-core module is loaded before use
         const maskCanvas = document.getElementById('mask-editor-mask-canvas');
         const maskDataUrl = maskBuildModelMask(maskCanvas, w, h, coreGrow).toDataURL('image/png');
         const selectedModel = window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini';
