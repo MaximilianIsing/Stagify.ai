@@ -1,0 +1,8 @@
+{
+  "projectId": "2f3dba42-9eae-4cb2-ac1d-bdfe05597973",
+  "projectName": "Stagify",
+  "shape": "tokens-only",
+  "readmeHeader": ".design-sync/conventions.md",
+  "localDir": "./ds-bundle",
+  "notes": "Vanilla HTML/CSS repo (Express server). No React components, no Storybook, no dist bundle. Outside the converter envelope: layout is hand-authored from design-system/tokens.{css,json} + public/fonts (Inter) + public/styles. Tokens-only brand foundation; no components/, _ds_bundle.js, or _vendor/. Re-add component sync once a React component library exists."
+}
