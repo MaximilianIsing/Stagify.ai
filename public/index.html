@@ -108,6 +108,7 @@
     <script src="scripts/auth.js" defer></script>
     <script src="scripts/profile-menu.js" defer></script>
     <script src="scripts/plus-cta-auth.js" defer></script>
+    <script src="scripts/heic-convert.js" defer></script>
     <script src="scripts/app.js" defer></script>
     <script src="scripts/carousel.js" defer></script>
     <script>
@@ -969,6 +970,9 @@
               </div>
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>              <!-- Duplicate set for seamless loop -->
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
@@ -996,6 +1000,9 @@
               </div>
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
               </div>            </div>
           </div>
         </div>
@@ -1512,7 +1519,7 @@
                   </div>
                   <div class="tool-row">
                     <label class="label" data-lang="modal.staging.furniturePhotosLabel">Furniture photos (optional)</label>
-                    <input type="file" id="stagify-furniture-file" accept="image/jpeg,image/png,image/webp,image/jpg" multiple>
+                    <input type="file" id="stagify-furniture-file" accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/heif,.heic,.heif" multiple>
                     <button type="button" id="stagify-furniture-add-btn" class="furniture-add-btn" data-lang="modal.staging.addPhotos">+ Add photos</button>
                     <div id="stagify-furniture-list"></div>
                     <span class="microcopy" data-lang="modal.staging.furniturePhotosHint">Up to 5 reference photos of furniture or decor to feature in the staged room</span>
@@ -1531,7 +1538,7 @@
               <div class="stage-workspace">
                 <!-- Upload area when no image is uploaded -->
                 <div id="stage-dropzone" class="stage-dropzone" data-lang-attr="modal.staging.uploadAreaAria|aria-label" aria-label="Upload area" tabindex="0">
-                  <input id="stage-file-input" type="file" accept="image/*" hidden>
+                  <input id="stage-file-input" type="file" accept="image/*,.heic,.heif" hidden>
                   <div class="stage-dz-inner">
                     <div class="dz-icon" aria-hidden="true">⬆︎</div>
                     <div class="dz-text" data-lang="modal.staging.uploadArea">Upload an image or drag and drop</div>
@@ -1603,7 +1610,7 @@
         </div>
         <div class="stage-mask-canvas-container">
           <canvas id="stage-mask-base-canvas" class="stage-mask-canvas"></canvas>
-          <canvas id="stage-mask-draw-canvas" class="stage-mask-canvas" style="position:absolute;top:0;left:0;pointer-events:auto;mix-blend-mode:multiply;opacity:0.5;cursor:crosshair;"></canvas>
+          <canvas id="stage-mask-draw-canvas" class="stage-mask-canvas" style="position:absolute;top:0;left:50%;transform:translateX(-50%);pointer-events:auto;mix-blend-mode:multiply;opacity:0.5;cursor:crosshair;"></canvas>
         </div>
         <div class="stage-mask-controls">
           <div class="stage-mask-toolrow">
@@ -1631,7 +1638,7 @@
           </div>
           <div class="stage-mask-ref-container">
             <label class="stage-mask-ref-label" for="stage-mask-ref-file" data-lang="pdf.maskEditor.referenceLabel">Reference photo (optional)</label>
-            <input type="file" id="stage-mask-ref-file" accept="image/jpeg,image/png,image/webp,image/jpg">
+            <input type="file" id="stage-mask-ref-file" accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/heif,.heic,.heif">
             <div class="stage-mask-ref-row">
               <button type="button" id="stage-mask-ref-add" class="stage-mask-ref-add" data-lang="pdf.maskEditor.referenceAdd">+ Add photo</button>
               <div id="stage-mask-ref-preview" class="stage-mask-ref-preview hidden">

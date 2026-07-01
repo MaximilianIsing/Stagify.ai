@@ -571,16 +571,25 @@ const cspDirectives = {
   scriptSrc: [
     "'self'",
     "'unsafe-inline'",
+    // HEIC upload conversion (heic2any/libheif) runs a WebAssembly module in a
+    // Web Worker spawned from a blob: URL. 'wasm-unsafe-eval' permits ONLY WASM
+    // compilation (not general eval); blob: lets the worker script load.
+    "'wasm-unsafe-eval'",
+    'blob:',
     'https://accounts.google.com',
     'https://apis.google.com',
     'https://www.gstatic.com',
     'https://*.stripe.com',
   ],
+  // Allow the heic2any conversion worker (created from a blob: URL).
+  workerSrc: ["'self'", 'blob:'],
+  childSrc: ["'self'", 'blob:'],
   styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com'],
   fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
   imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
   mediaSrc: ["'self'", 'data:', 'blob:'],
-  connectSrc: ["'self'", 'https:'],
+  // blob:/data: let the WASM worker load its embedded binary.
+  connectSrc: ["'self'", 'https:', 'blob:', 'data:'],
   frameSrc: [
     "'self'",
     'https://app.supademo.com',

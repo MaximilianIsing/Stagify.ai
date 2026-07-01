@@ -490,6 +490,7 @@
   "errors": {
     "fileType": "Please upload a PNG, JPG, JPEG, WebP, or GIF image file.",
     "fileTooLarge": "File is too large. Please upload an image smaller than 100MB.",
+    "heicConvert": "We couldn't read that HEIC photo. Please try a JPG or PNG.",
     "uploadFirst": "Please upload an image first",
     "badPrompt": "Bad prompt inputted",
     "processingFailed": "Processing failed",

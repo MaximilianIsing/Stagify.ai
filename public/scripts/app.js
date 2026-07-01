@@ -366,8 +366,21 @@
     // Add files from either the file picker or a drag-and-drop, keeping the
     // accept filter (the OS picker honors `accept`, but dropped files don't) and
     // the 5-photo cap in one place.
-    function addFurnitureFiles(fileList) {
-      var incoming = Array.from(fileList || []).filter(function (f) {
+    async function addFurnitureFiles(fileList) {
+      // Convert any HEIC/HEIF picks to JPEG up front so they pass the filter and
+      // render like any other reference photo.
+      var raw = Array.from(fileList || []);
+      if (window.StagifyHeic) {
+        try {
+          raw = await Promise.all(raw.map(function (f) {
+            return window.StagifyHeic.isHeic(f) ? window.StagifyHeic.toDisplayableFile(f) : f;
+          }));
+        } catch (e) {
+          alert(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn't read that HEIC photo. Please try a JPG or PNG.");
+          return;
+        }
+      }
+      var incoming = raw.filter(function (f) {
         return f && (FURNITURE_ACCEPT.indexOf(f.type) !== -1 || /\.(jpe?g|png|webp)$/i.test(f.name || ''));
       });
       if (!incoming.length) return;
@@ -585,7 +598,17 @@
     let currentImageFile = null;
     let hasProcessedImage = false;
   
-    function handleStageFile(file) {
+    async function handleStageFile(file) {
+      // iPhone HEIC/HEIF photos aren't decodable by most browsers; convert to
+      // JPEG first so the preview and on-canvas editing work everywhere.
+      if (window.StagifyHeic && window.StagifyHeic.isHeic(file)) {
+        try {
+          file = await window.StagifyHeic.toDisplayableFile(file);
+        } catch (e) {
+          alert(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn't read that HEIC photo. Please try a JPG or PNG.");
+          return;
+        }
+      }
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
         alert(window.LanguageSystem?.getText('errors.fileType') || 'Please upload a PNG, JPG, JPEG, WebP, or GIF image file.');
@@ -1333,8 +1356,6 @@
       let drawing = false;
       let lastX = null;
       let lastY = null;
-      let scaleX = 1;
-      let scaleY = 1;
       let maskReferenceDataUrl = null;
       // 'brush' adds to the selection, 'erase' removes from it.
       let tool = 'brush';
@@ -1605,9 +1626,6 @@
           painted = false;
           setTool('brush');
 
-          scaleX = dispW / img.width;
-          scaleY = dispH / img.height;
-
           if (canvasContainer) canvasContainer.classList.remove('processing');
           drawCanvas.style.pointerEvents = 'auto';
           drawCanvas.style.cursor = 'crosshair';
@@ -1759,9 +1777,15 @@
 
       function paint(e) {
         if (!drawing || isProcessing()) return;
+        // Map the pointer into canvas (image-pixel) space using the LIVE rendered
+        // size. The canvas's on-screen size is governed by CSS, which can differ
+        // from the dispW/dispH we requested (e.g. a tall image gets width-clamped
+        // by the container). Deriving the scale from getBoundingClientRect every
+        // stroke keeps drawing aligned no matter how the layout sized the canvas.
         const rect = drawCanvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / scaleX;
-        const y = (e.clientY - rect.top) / scaleY;
+        if (!rect.width || !rect.height) return;
+        const x = (e.clientX - rect.left) * (drawCanvas.width / rect.width);
+        const y = (e.clientY - rect.top) * (drawCanvas.height / rect.height);
         const ctx = drawCanvas.getContext('2d');
         // Paint one continuous, fully-opaque stroke with round caps/joins. Erase
         // mode uses destination-out so the stroke removes from the selection
@@ -1848,7 +1872,12 @@
       // behave identically.
       function acceptReferenceFile(file) {
         if (!file) return;
-        prepareReferenceFile(file)
+        // Convert HEIC/HEIF to JPEG first so it decodes and passes validation.
+        const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
+          ? window.StagifyHeic.toDisplayableFile(file)
+          : Promise.resolve(file);
+        prep
+          .then(prepareReferenceFile)
           .then(setMaskReference)
           .catch((err) => { clearMaskReference(); alert(refErrorMessage(err)); });
       }

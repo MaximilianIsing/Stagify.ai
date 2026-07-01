@@ -114,6 +114,7 @@
     <script src="scripts/language-switcher.js" defer></script>
     <script src="scripts/nav-pill.js" defer></script>
     <script src="scripts/auth.js" defer></script>
+    <script src="scripts/heic-convert.js" defer></script>
     <script src="scripts/profile-menu.js" defer></script>
     <style>
       /* --- Toasts (non-blocking notifications, replace alert()) ----------- */
@@ -2221,7 +2222,7 @@
               <div class="input-bottom-controls">
                 <label class="file-upload-btn" data-lang-attr="pdf.uploadFile|title" title="Upload file">
                   <img src="media-webp/file.webp" data-lang-attr="pdf.alt.uploadFile|alt" alt="Attach a file to your message">
-                  <input type="file" id="file-input" multiple accept="image/*,.pdf,.txt,.doc,.docx,.jpg,.jpeg">
+                  <input type="file" id="file-input" multiple accept="image/*,.pdf,.txt,.doc,.docx,.jpg,.jpeg,.heic,.heif">
                 </label>
                 
                 <button class="reload-btn" id="reload-btn" data-lang-attr="pdf.alt.reloadChat|title" title="Start a new chat conversation">
@@ -2864,11 +2865,25 @@
       const ALLOWED_UPLOAD_EXTS = ['.pdf', '.txt', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
       // Helper function to handle files (used by file input, drag & drop, paste)
-      function handleFiles(files) {
+      async function handleFiles(files) {
+        // iPhone HEIC/HEIF photos can't be decoded/previewed by most browsers;
+        // convert them to JPEG before they enter the upload list.
+        let incoming = Array.from(files);
+        if (window.StagifyHeic) {
+          try {
+            incoming = await Promise.all(incoming.map(f =>
+              (f && window.StagifyHeic.isHeic(f)) ? window.StagifyHeic.toDisplayableFile(f) : f
+            ));
+          } catch (e) {
+            showToast("We couldn't read that HEIC photo. Please try a JPG or PNG.", 'error');
+            return;
+          }
+        }
+
         const accepted = [];
         const rejected = [];
 
-        Array.from(files).forEach(file => {
+        incoming.forEach(file => {
           if (!file || !file.name) return;
           const name = file.name.toLowerCase();
           const isImage = file.type && file.type.startsWith('image/');
@@ -4658,8 +4673,6 @@
           canvas.style.height = displayHeight + 'px';
           
           // Set canvas actual size (for drawing)
-          const scaleX = displayWidth / img.width;
-          const scaleY = displayHeight / img.height;
           canvas.width = img.width;
           canvas.height = img.height;
           
@@ -4678,8 +4691,6 @@
           // Store image source and scale for later use
           canvas.dataset.imageSrc = imageSrc;
           canvas.dataset.imageType = imageType;
-          canvas.dataset.scaleX = scaleX;
-          canvas.dataset.scaleY = scaleY;
           canvas.dataset.originalWidth = img.width;
           canvas.dataset.originalHeight = img.height;
           
@@ -4753,7 +4764,7 @@
               </div>
               <div class="mask-editor-ref-container">
                 <label class="mask-editor-ref-label" for="mask-editor-ref-file" data-i18n="pdf.maskEditor.referenceLabel">Reference photo (optional)</label>
-                <input type="file" id="mask-editor-ref-file" accept="image/jpeg,image/png,image/webp,image/jpg">
+                <input type="file" id="mask-editor-ref-file" accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/heif,.heic,.heif">
                 <div class="mask-editor-ref-row">
                   <button type="button" id="mask-editor-ref-add" class="mask-editor-ref-add" data-i18n="pdf.maskEditor.referenceAdd">+ Add photo</button>
                   <div id="mask-editor-ref-preview" class="mask-editor-ref-preview hidden">
@@ -4831,7 +4842,12 @@
             const file = refFileInput.files && refFileInput.files[0];
             refFileInput.value = ''; // allow re-selecting the same file later
             if (!file) return;
-            prepareReferenceFile(file)
+            // Convert HEIC/HEIF to JPEG first so it decodes and passes validation.
+            const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
+              ? window.StagifyHeic.toDisplayableFile(file)
+              : Promise.resolve(file);
+            prep
+              .then(prepareReferenceFile)
               .then(setMaskReference)
               .catch((err) => {
                 clearMaskReference();
@@ -5202,11 +5218,17 @@
           return canvasContainer && canvasContainer.classList.contains('processing');
         }
         function pointFrom(e) {
-          const cv = document.getElementById('mask-editor-canvas');
-          const sx = parseFloat(cv.dataset.scaleX) || 1;
-          const sy = parseFloat(cv.dataset.scaleY) || 1;
+          // Derive the scale from the LIVE rendered size every time. The canvas's
+          // on-screen size is set by CSS and can differ from the display size we
+          // computed at load (e.g. a tall image gets width-clamped by the
+          // container). Using a stale stored scale shifts drawing sideways —
+          // reading getBoundingClientRect here keeps the brush under the cursor.
           const rect = maskCanvas.getBoundingClientRect();
-          return { x: (e.clientX - rect.left) / sx, y: (e.clientY - rect.top) / sy };
+          if (!rect.width || !rect.height) return { x: 0, y: 0 };
+          return {
+            x: (e.clientX - rect.left) * (maskCanvas.width / rect.width),
+            y: (e.clientY - rect.top) * (maskCanvas.height / rect.height)
+          };
         }
         function startDrawing(e) {
           if (isProcessing()) return;
