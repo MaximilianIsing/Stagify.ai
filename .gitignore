@@ -49,3 +49,5 @@ build/
 !public/robots.txt
 
 .claude/
+# design-sync generated bundle (regenerable from design-system/ + public/fonts)
+ds-bundle/
