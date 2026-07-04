@@ -1,0 +1,1908 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Masking Studio is Stagify+ only. Gate access before anything renders:
+         anonymous visitors bounce to the Stagify+ page (which explains the
+         feature), and signed-in users see a hidden page until their plan is
+         verified (ensureStudioProAccess reveals it for Pro, or shows the
+         upgrade dialog for signed-in free users). -->
+    <script>
+      (function () {
+        var hasToken = false;
+        try { hasToken = !!localStorage.getItem('stagifyAuthToken'); } catch (e) {}
+        if (!hasToken) {
+          window.location.replace('stagify-plus.html');
+          return;
+        }
+        document.documentElement.className += ' ms-gate-pending';
+        // Safety net: never strand a signed-in user on a hidden page if the
+        // plan check stalls (e.g. a hung request).
+        setTimeout(function () {
+          if (document.documentElement.classList.contains('ms-gate-pending')) {
+            window.location.replace('stagify-plus.html');
+          }
+        }, 6000);
+      })();
+    </script>
+    <style>html.ms-gate-pending body{visibility:hidden!important}</style>
+
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
+    <link rel="manifest" href="manifest.json">
+    <title data-lang="pageMeta.maskingStudio.title">Masking Studio | Stagify.ai - Multi-Area Precision Virtual Staging</title>
+    <meta name="description" data-lang-attr="pageMeta.maskingStudio.description|content" content="Highlight multiple areas of one room photo in different colors, attach a furniture photo to each, and stage them all at once. Only the highlighted areas can change — the rest of your photo stays pixel-perfect.">
+
+    <!-- SEO Meta Tags -->
+    <meta name="keywords" data-lang-attr="pageMeta.maskingStudio.keywords|content" content="masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement, masked photo editing, region editing, real estate photo staging, Stagify">
+    <meta name="author" content="Stagify.ai">
+    <meta name="publisher" content="Stagify.ai">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Stagify.ai Masking Studio">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Masking Studio | Stagify.ai - Multi-Area Precision Virtual Staging">
+    <meta property="og:description" content="Highlight multiple areas of one room photo in different colors, attach a furniture photo to each, and stage them all at once. Only the highlighted areas can change.">
+    <meta property="og:url" content="https://stagify.ai/masking-studio.html">
+    <meta property="og:site_name" content="Stagify.ai">
+    <meta property="og:image" content="https://stagify.ai/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Stagify.ai — before and after AI virtual staging">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Masking Studio | Stagify.ai - Multi-Area Precision Virtual Staging">
+    <meta name="twitter:description" content="Highlight multiple areas of one room photo in different colors, attach a furniture photo to each, and stage them all at once. Only the highlighted areas can change.">
+    <meta name="twitter:image" content="https://stagify.ai/og-image.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://stagify.ai/masking-studio.html">
+
+    <!-- One URL serves all languages (switched client-side), so only x-default. -->
+    <link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Masking Studio - Stagify.ai",
+      "description": "Precision virtual staging tool: highlight multiple areas of a room photo in different colors, attach a furniture reference photo to each area, and stage them all in parallel. Only highlighted areas can change — the rest of the photo is preserved pixel-for-pixel.",
+      "url": "https://stagify.ai/masking-studio.html",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Stagify.ai"
+      },
+      "featureList": [
+        "Multi-area color-coded masking",
+        "One furniture photo per highlighted area",
+        "Parallel AI staging of every area at once",
+        "Pixel-perfect preservation outside highlights",
+        "Before and after comparison and download"
+      ],
+      "keywords": "masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement"
+    }
+    </script>
+
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script src="scripts/language-detect.js" defer></script>
+    <script src="scripts/language-loader.js" defer></script>
+    <script src="scripts/language-switcher.js" defer></script>
+    <script src="scripts/nav-pill.js" defer></script>
+    <script src="scripts/auth.js" defer></script>
+    <script src="scripts/heic-convert.js" defer></script>
+    <script src="scripts/profile-menu.js" defer></script>
+    <style>
+      /* Defensive: the studio never causes sideways scroll. */
+      html, body { overflow-x: hidden; max-width: 100vw; }
+
+      /* --- Toasts (non-blocking notifications, replace alert()) ----------- */
+      #toast-host {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%);
+        z-index: 10050;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        pointer-events: none;
+        max-width: min(92vw, 440px);
+      }
+      .toast {
+        pointer-events: auto;
+        background: #1e3a8a;
+        color: #fff;
+        padding: 11px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        line-height: 1.4;
+        box-shadow: 0 8px 24px rgba(30, 58, 138, 0.28);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        max-width: 100%;
+      }
+      .toast--show { opacity: 1; transform: translateY(0); }
+      .toast--error { background: #b91c1c; box-shadow: 0 8px 24px rgba(185, 28, 28, 0.28); }
+      .toast--success { background: #047857; box-shadow: 0 8px 24px rgba(4, 120, 87, 0.28); }
+      @media (prefers-reduced-motion: reduce) {
+        .toast { transition: opacity 0.2s ease; transform: none; }
+        .toast--show { transform: none; }
+      }
+
+      /* --- Stagify+ gate dialog (signed-in free users) --------------------- */
+      .ms-pro-gate {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 300;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(30, 58, 138, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .ms-pro-gate.active { display: flex; }
+      .ms-pro-gate__card {
+        max-width: 480px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 32px 28px;
+        box-shadow: 0 24px 60px rgba(30, 58, 138, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        text-align: center;
+      }
+      .ms-pro-gate__card h2 { margin: 0 0 12px; color: #1e3a8a; font-size: 1.5rem; }
+      .ms-pro-gate__card p { margin: 0 0 20px; color: #4b5563; line-height: 1.55; font-size: 15px; }
+      .ms-pro-gate__actions { display: flex; flex-direction: column; gap: 10px; }
+      .ms-pro-gate__actions a { text-decoration: none; }
+
+      /* --- Studio layout ---------------------------------------------------- */
+      .ms-shell { width: 100%; max-width: 1400px; margin: 0 auto; }
+      .ms-intro { text-align: center; margin: 4px auto 18px; max-width: 760px; }
+      .ms-intro h1 {
+        margin: 0 0 8px;
+        font-size: clamp(26px, 3.2vw, 38px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        color: #1e3a8a;
+      }
+      .ms-intro p { margin: 0; color: #374151; font-size: 15px; line-height: 1.55; }
+
+      .ms-grid {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+
+      /* Frosted glass panel recipe used across the site. */
+      .ms-panel {
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(16px) saturate(170%);
+        -webkit-backdrop-filter: blur(16px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        border-radius: 16px;
+        box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+
+      .ms-toolbar { padding: 20px; display: flex; flex-direction: column; }
+      .ms-toolbar button, .ms-workspace button { font-family: inherit; }
+      .ms-block { padding: 16px 0; border-top: 1px dashed rgba(37, 99, 235, 0.22); }
+      .ms-block:first-child { padding-top: 0; border-top: none; }
+      .ms-block-head { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
+      .ms-block-head h2 { margin: 0; font-size: 15px; font-weight: 700; color: #111827; }
+      .ms-step {
+        flex: 0 0 auto;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        background: #2563eb;
+        color: #fff;
+        font-size: 12px; font-weight: 700;
+        display: inline-flex; align-items: center; justify-content: center;
+      }
+      .ms-hint { margin: 10px 0 0; font-size: 12px; color: #6b7280; line-height: 1.5; }
+
+      .ms-photo-meta { display: flex; align-items: center; gap: 12px; }
+      .ms-photo-meta img {
+        width: 72px; height: 54px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #fff;
+      }
+
+      /* --- Layer cards ------------------------------------------------------ */
+      .ms-layer-list { display: flex; flex-direction: column; gap: 10px; }
+      .ms-layer {
+        border: 1.5px solid var(--border);
+        border-left: 5px solid var(--layer-color, #2563eb);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.72);
+        padding: 10px 12px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      .ms-layer:hover { border-color: color-mix(in srgb, var(--layer-color, #2563eb) 45%, #e5e7eb); }
+      .ms-layer.is-active {
+        border-color: var(--layer-color, #2563eb);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--layer-color, #2563eb) 18%, transparent);
+      }
+      .ms-layer-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .ms-layer-dot {
+        flex: 0 0 auto;
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: var(--layer-color, #2563eb);
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+      }
+      .ms-layer-name { font-weight: 700; font-size: 14px; color: #111827; margin-right: auto; }
+      .ms-layer-status {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4b5563;
+        white-space: nowrap;
+      }
+      .ms-layer-status--ready { background: #dcfce7; color: #047857; }
+      .ms-layer-status--generating { background: #dbeafe; color: #1d4ed8; }
+      .ms-layer-status--done { background: #047857; color: #fff; }
+      .ms-layer-status--failed { background: #fee2e2; color: #b91c1c; }
+      .ms-layer-remove {
+        flex: 0 0 auto;
+        width: 24px; height: 24px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: #6b7280;
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .ms-layer-remove:hover { background: rgba(185, 28, 28, 0.1); color: #b91c1c; }
+      .ms-layer-body { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+      .ms-layer-prompt { resize: vertical; min-height: 44px; font-size: 13px; }
+      .ms-furniture-add {
+        align-self: flex-start;
+        padding: 6px 12px;
+        border: 1.5px dashed #93c5fd;
+        border-radius: 8px;
+        background: rgba(219, 234, 254, 0.4);
+        color: #1d4ed8;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .ms-furniture-add:hover, .ms-furniture-add.is-drag-over { background: rgba(191, 219, 254, 0.7); }
+      .ms-furniture-preview { position: relative; display: inline-flex; align-self: flex-start; }
+      .ms-furniture-preview img {
+        width: 84px; height: 64px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #fff;
+      }
+      .ms-furniture-remove {
+        position: absolute;
+        top: -7px; right: -7px;
+        width: 20px; height: 20px;
+        border: none;
+        border-radius: 50%;
+        background: #1f2937;
+        color: #fff;
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .ms-layer-error { font-size: 12px; color: #b91c1c; }
+      .ms-layer-retry {
+        align-self: flex-start;
+        padding: 6px 12px;
+        border: 1px solid #b91c1c;
+        border-radius: 8px;
+        background: #fff;
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .ms-layer-retry:hover { background: #fee2e2; }
+      .ms-add-layer { width: 100%; margin-top: 10px; }
+
+      /* --- Brush controls ---------------------------------------------------- */
+      .ms-tools { display: inline-flex; gap: 6px; }
+      .ms-tool-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: 999px;
+        background: #fff;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .ms-tool-btn.is-active { border-color: #2563eb; background: #2563eb; color: #fff; }
+      .ms-brush-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+      .ms-brush-row label { font-size: 13px; color: #374151; white-space: nowrap; }
+      .ms-brush-row input[type="range"] { flex: 1; accent-color: #2563eb; }
+      .ms-brush-size { font-size: 12px; color: #6b7280; min-width: 46px; text-align: right; }
+
+      /* --- Generate CTA ------------------------------------------------------ */
+      .ms-cta {
+        display: flex; flex-direction: column; gap: 10px; align-items: stretch; text-align: center;
+        padding-top: 16px;
+        border-top: 1px dashed rgba(37, 99, 235, 0.22);
+      }
+      .ms-cta .btn { width: 100%; }
+      .ms-progress-text { font-size: 13px; color: #374151; font-style: italic; min-height: 18px; }
+
+      /* --- Keyboard shortcut hint --------------------------------------------- */
+      .ms-kbd-hint { margin: 10px 0 0; font-size: 11.5px; color: #6b7280; line-height: 1.9; }
+      .ms-kbd-hint kbd {
+        font-family: inherit;
+        background: #eef2ff;
+        border: 1px solid #c7d2fe;
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        padding: 1px 6px;
+        font-size: 11px;
+        color: #1e3a8a;
+      }
+
+      /* --- Area quick-switch chips over the canvas ----------------------------- */
+      .ms-chipbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .ms-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1.5px solid var(--border);
+        background: rgba(255, 255, 255, 0.75);
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      .ms-chip:hover { transform: translateY(-1px); }
+      .ms-chip .ms-layer-dot { width: 12px; height: 12px; }
+      .ms-chip.is-active {
+        border-color: var(--layer-color, #2563eb);
+        color: #111827;
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--layer-color, #2563eb) 20%, transparent);
+      }
+      .ms-chip--add { border-style: dashed; border-color: #93c5fd; background: rgba(219, 234, 254, 0.4); color: #1d4ed8; }
+      @media (prefers-reduced-motion: reduce) {
+        .ms-chip { transition: none; }
+        .ms-chip:hover { transform: none; }
+      }
+
+      /* --- Brush cursor preview -------------------------------------------------- */
+      .ms-cursor {
+        position: absolute;
+        border: 2px solid var(--cursor-color, #2563eb);
+        background: color-mix(in srgb, var(--cursor-color, #2563eb) 14%, transparent);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 5;
+        display: none;
+      }
+      .ms-cursor.is-erase { border-style: dashed; border-color: #6b7280; background: rgba(107, 114, 128, 0.12); }
+
+      /* --- Workspace ---------------------------------------------------------- */
+      .ms-workspace { padding: 18px; display: flex; flex-direction: column; gap: 14px; min-height: 480px; }
+      .ms-viewer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        min-height: 40px;
+      }
+      .ms-draw-hint { margin: 0; font-size: 13px; color: #374151; }
+      .ms-viewer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .ms-viewer { flex: 1; display: flex; align-items: center; justify-content: center; }
+
+      .ms-dropzone {
+        width: 100%;
+        min-height: 380px;
+        border: 2px dashed #93c5fd;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.35);
+        padding: 24px;
+      }
+      .ms-dropzone:hover, .ms-dropzone.is-drag-over { border-color: #2563eb; background: rgba(219, 234, 254, 0.45); }
+      .ms-dropzone:focus-visible { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+      .ms-dz-icon { color: #2563eb; margin-bottom: 10px; }
+      .ms-dz-text { font-weight: 700; color: #111827; font-size: 16px; }
+      .ms-dz-sub { color: #6b7280; font-size: 13px; margin-top: 6px; }
+      .ms-dz-dots { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+      .ms-dz-dots span {
+        width: 13px; height: 13px;
+        border-radius: 50%;
+        opacity: 0.85;
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+      }
+
+      .ms-stack { position: relative; display: inline-block; max-width: 100%; line-height: 0; }
+      .ms-stack canvas { border-radius: 12px; }
+      #ms-base-canvas {
+        display: block;
+        max-width: 100%;
+        max-height: 72vh;
+        width: auto;
+        height: auto;
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(30, 58, 138, 0.15);
+      }
+      .ms-layer-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.5;
+        mix-blend-mode: multiply;
+        pointer-events: none;
+      }
+      #ms-result-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .ms-stack.can-draw { cursor: crosshair; touch-action: none; }
+      .ms-stack.is-busy canvas { filter: blur(5px) brightness(0.98); }
+
+      .ms-busy-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: rgba(255, 255, 255, 0.4);
+        z-index: 6;
+        border-radius: 12px;
+      }
+      .ms-busy-overlay.hidden { display: none; }
+      .ms-busy-spin {
+        width: 46px; height: 46px;
+        border-radius: 50%;
+        border: 4px solid rgba(37, 99, 235, 0.25);
+        border-top-color: #2563eb;
+        animation: ms-spin 0.9s linear infinite;
+      }
+      .ms-busy-msg {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 14px;
+        text-align: center;
+        max-width: 80%;
+        padding: 0 12px;
+        line-height: 1.4;
+      }
+      @keyframes ms-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) {
+        .ms-busy-spin { animation-duration: 2.4s; }
+      }
+
+      .ms-visually-hidden {
+        position: absolute !important;
+        width: 1px; height: 1px;
+        margin: -1px; padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* --- Narrow desktop windows: stack the panels --------------------------- */
+      @media (max-width: 900px) {
+        .ms-grid { grid-template-columns: 1fr; }
+        .ms-workspace { order: 1; min-height: 0; }
+        .ms-toolbar { order: 2; }
+        #ms-base-canvas { max-height: 58vh; }
+        .ms-dropzone { min-height: 260px; }
+      }
+
+      /* --- Phones/tablets: the studio is a desktop tool ------------------------ */
+      .ms-mobile-notice { display: none; }
+      @media (max-width: 768px) {
+        .ms-grid { display: none !important; }
+        .ms-mobile-notice {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+          text-align: center;
+          padding: 40px 24px;
+          margin: 24px auto;
+          max-width: 460px;
+        }
+        .ms-mobile-notice svg { color: #2563eb; }
+        .ms-mobile-notice h2 { margin: 0; color: #1e3a8a; font-size: 1.3rem; }
+        .ms-mobile-notice p { margin: 0; color: #4b5563; font-size: 14.5px; line-height: 1.55; }
+        .ms-mobile-notice a { text-decoration: none; margin-top: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Background Video -->
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+      <source src="background.mp4" type="video/mp4">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong">Stagify</span><span class="brand-light">.ai</span></a>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
+          <a href="masking-studio.html" class="nav-link desktop-only nav-masking-studio-pro hidden" data-lang="navigation.maskingStudio">Masking Studio</a>
+          <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
+          <a href="contact.html#contact" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="nav-trailing">
+          <div class="mobile-test-text">
+            <div data-lang="hero.title.upload">Upload.</div>
+            <div data-lang="hero.title.stage">Stage.</div>
+            <div data-lang="hero.title.imagine">Imagine.</div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Shown to signed-in free users instead of the tool. -->
+    <div id="ms-pro-gate" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-pro-gate-title">
+      <div class="ms-pro-gate__card">
+        <h2 id="ms-pro-gate-title" data-lang="maskingStudio.gateTitle">Masking Studio is a Stagify+ feature</h2>
+        <p data-lang="maskingStudio.gateBody">Sign in with a Stagify+ account to highlight multiple areas of a photo, give each one its own furniture, and stage them all at once — with pixel-perfect masking that can't touch the rest of your photo.</p>
+        <div class="ms-pro-gate__actions">
+          <a href="stagify-plus.html" class="btn btn-primary btn-lg"><strong data-lang="maskingStudio.gateCta">View Stagify+</strong></a>
+          <a href="index.html" class="btn btn-ghost btn-lg"><strong data-lang="maskingStudio.gateBack">Back to Home</strong></a>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <div class="language-picker-container">
+        <div class="language-selector">
+          <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
+          <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
+            <option value="english" selected>EN</option>
+            <option value="german">DE</option>
+            <option value="spanish">ES</option>
+            <option value="french">FR</option>
+            <option value="italian">IT</option>
+            <option value="portuguese">PT</option>
+            <option value="russian">RU</option>
+            <option value="chinese">中文</option>
+            <option value="japanese">日本語</option>
+            <option value="korean">한국어</option>
+          </select>
+          <div class="lang-switch" data-lang-switch>
+            <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <img class="lang-switch__flag" src="media-webp/flags/US.webp" alt="" width="20" height="14" />
+              <span class="lang-switch__label">English</span>
+              <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.webp" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.webp" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.webp" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <section class="hero" style="grid-template-columns: 1fr; padding: 20px; width: 100%; max-width: 100%; box-sizing: border-box;">
+        <div class="ms-shell">
+          <div class="ms-intro">
+            <h1 data-lang="maskingStudio.title">Masking Studio</h1>
+            <p data-lang="maskingStudio.subtitle">Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only highlighted areas can change — the rest of your photo stays pixel-perfect.</p>
+          </div>
+
+          <!-- Shown instead of the tool on phones/tablets: precise masking needs a desktop. -->
+          <div class="ms-mobile-notice ms-panel">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <h2 data-lang="maskingStudio.mobileTitle">Masking Studio is a desktop tool</h2>
+            <p data-lang="maskingStudio.mobileBody">Precise masking needs a bigger screen and a mouse. Open this page on your computer to use it.</p>
+            <a href="index.html" class="btn btn-primary" data-lang="maskingStudio.gateBack">Back to Home</a>
+          </div>
+
+          <div class="ms-grid">
+            <aside class="ms-toolbar ms-panel" aria-label="Masking Studio controls">
+              <!-- Step 1: room photo -->
+              <div class="ms-block">
+                <div class="ms-block-head"><span class="ms-step" aria-hidden="true">1</span><h2 data-lang="maskingStudio.stepPhoto">Room photo</h2></div>
+                <p class="ms-hint" id="ms-photo-empty-hint" data-lang="maskingStudio.stepPhotoHint">Upload a photo of your room in the workspace on the right.</p>
+                <div class="ms-photo-meta hidden" id="ms-photo-meta">
+                  <img id="ms-photo-thumb" alt="" data-lang-attr="modal.staging.uploadedRoomAlt|alt">
+                  <button type="button" id="ms-replace-btn" class="btn btn-ghost" data-lang="maskingStudio.replacePhoto">Replace photo</button>
+                </div>
+              </div>
+
+              <!-- Step 2: furniture areas (one colored mask each) -->
+              <div class="ms-block">
+                <div class="ms-block-head"><span class="ms-step" aria-hidden="true">2</span><h2 data-lang="maskingStudio.stepAreas">Furniture areas</h2></div>
+                <div id="ms-layer-list" class="ms-layer-list" role="list"></div>
+                <button type="button" id="ms-add-layer" class="btn btn-secondary ms-add-layer" disabled data-lang="maskingStudio.addArea">+ Add area</button>
+                <p class="ms-hint" data-lang="maskingStudio.areasHint">Each area is staged separately, at the same time — give every color a furniture photo, a short prompt, or both.</p>
+              </div>
+
+              <!-- Step 3: highlight tools -->
+              <div class="ms-block">
+                <div class="ms-block-head"><span class="ms-step" aria-hidden="true">3</span><h2 data-lang="maskingStudio.stepBrush">Highlight</h2></div>
+                <div class="ms-tools" role="group" data-lang-attr="pdf.maskEditor.toolsAria|aria-label" aria-label="Mask tool">
+                  <button type="button" id="ms-brush-btn" class="ms-tool-btn is-active" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>
+                    <span data-lang="pdf.maskEditor.brush">Brush</span>
+                  </button>
+                  <button type="button" id="ms-erase-btn" class="ms-tool-btn" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20H7L3 16a2 2 0 0 1 0-3l9-9a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-7 8"/><path d="M6 11l7 7"/></svg>
+                    <span data-lang="pdf.maskEditor.erase">Erase</span>
+                  </button>
+                </div>
+                <div class="ms-brush-row">
+                  <label for="ms-brush-slider" data-lang="pdf.maskEditor.brushSize">Brush Size:</label>
+                  <input type="range" id="ms-brush-slider" min="20" max="150" value="50">
+                  <span id="ms-brush-size" class="ms-brush-size">50 px</span>
+                </div>
+                <p class="ms-hint" data-lang="maskingStudio.overlapHint">Paint over an area with a different color to reassign it — every spot belongs to one area only.</p>
+                <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area</p>
+              </div>
+
+              <!-- Generate -->
+              <div class="ms-cta">
+                <button type="button" id="ms-generate" class="btn btn-primary btn-lg" disabled><strong>Stage highlighted areas</strong></button>
+                <div id="ms-progress" class="progress hidden"><div class="bar" id="ms-progress-bar" style="width:0%"></div></div>
+                <div id="ms-progress-text" class="ms-progress-text hidden" aria-live="polite"></div>
+              </div>
+            </aside>
+
+            <section class="ms-workspace ms-panel" aria-label="Masking Studio workspace">
+              <div class="ms-viewer-header">
+                <div class="toggle-container hidden" id="ms-view-toggle">
+                  <button type="button" id="ms-toggle-before" class="toggle-btn" data-lang="modal.staging.before">Before</button>
+                  <button type="button" id="ms-toggle-after" class="toggle-btn active" data-lang="modal.staging.after">After</button>
+                </div>
+                <p class="ms-draw-hint hidden" id="ms-draw-hint" data-lang="maskingStudio.drawHint">Highlight where each piece of furniture should go — one color per area.</p>
+                <div class="ms-viewer-actions hidden" id="ms-viewer-actions">
+                  <button type="button" id="ms-edit-highlights" class="btn btn-ghost" data-lang="maskingStudio.editHighlights">Edit highlights</button>
+                  <button type="button" id="ms-view-result" class="btn btn-secondary hidden" data-lang="maskingStudio.viewResult">View result</button>
+                  <button type="button" id="ms-download" class="btn btn-secondary" data-lang="modal.staging.downloadResult">Download Result</button>
+                  <button type="button" id="ms-new-photo" class="btn btn-ghost" data-lang="modal.staging.uploadAnother">Upload Another</button>
+                </div>
+              </div>
+
+              <div id="ms-chipbar" class="ms-chipbar hidden" data-lang-attr="maskingStudio.stepAreas|aria-label" aria-label="Furniture areas"></div>
+
+              <div class="ms-viewer">
+                <div id="ms-dropzone" class="ms-dropzone" role="button" tabindex="0" data-lang-attr="modal.staging.uploadAreaAria|aria-label" aria-label="Upload a room photo">
+                  <div>
+                    <div class="ms-dz-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    </div>
+                    <div class="ms-dz-text" data-lang="maskingStudio.uploadHint">Upload a photo of your room</div>
+                    <div class="ms-dz-sub" data-lang="maskingStudio.uploadSub">JPG, PNG, WebP, or HEIC — click or drop it here</div>
+                    <div class="ms-dz-dots" aria-hidden="true">
+                      <span style="background:#2563eb"></span>
+                      <span style="background:#16a34a"></span>
+                      <span style="background:#f59e0b"></span>
+                      <span style="background:#8b5cf6"></span>
+                    </div>
+                  </div>
+                </div>
+                <div id="ms-stack" class="ms-stack hidden">
+                  <canvas id="ms-base-canvas"></canvas>
+                  <!-- One transparent canvas per area is inserted here. -->
+                  <canvas id="ms-result-canvas" class="hidden"></canvas>
+                </div>
+              </div>
+
+              <input type="file" id="ms-file-input" class="ms-visually-hidden" accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/heif,.heic,.heif" tabindex="-1" aria-hidden="true">
+              <input type="file" id="ms-furniture-input" class="ms-visually-hidden" accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/heif,.heic,.heif" tabindex="-1" aria-hidden="true">
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast-host" aria-live="polite" aria-atomic="false"></div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        // ---------------------------------------------------------------------
+        // Access gate: Masking Studio is Stagify+ only. Anonymous visitors were
+        // already redirected by the pre-paint head script; here we verify the
+        // plan. Pro users get the page revealed; signed-in free users get the
+        // page revealed *behind* the upgrade dialog.
+        // ---------------------------------------------------------------------
+        async function ensureStudioProAccess() {
+          // auth.js loads with `defer`, so wait for it before deciding.
+          let waited = 0;
+          while (!window.StagifyAuth && waited < 5000) {
+            await new Promise((r) => setTimeout(r, 50));
+            waited += 50;
+          }
+          if (!window.StagifyAuth) {
+            window.location.replace('stagify-plus.html');
+            return false;
+          }
+          await window.StagifyAuth.fetchMe();
+          const u = window.StagifyAuth.user;
+          if (!u) {
+            // Token was present but invalid/expired.
+            window.location.replace('stagify-plus.html');
+            return false;
+          }
+          document.documentElement.classList.remove('ms-gate-pending');
+          if (u.plan !== 'pro') {
+            showProGate();
+            return false;
+          }
+          return true;
+        }
+
+        function showProGate() {
+          const gate = document.getElementById('ms-pro-gate');
+          if (gate) gate.classList.add('active');
+        }
+
+        // ---------------------------------------------------------------------
+        // Small helpers
+        // ---------------------------------------------------------------------
+        const $ = (sel) => document.querySelector(sel);
+
+        function tx(key, def) {
+          const v = window.LanguageSystem && window.LanguageSystem.getText(key);
+          return v && v !== 'Loading...' ? v : def;
+        }
+
+        function showToast(message, type) {
+          const host = document.getElementById('toast-host');
+          if (!host) return;
+          const el = document.createElement('div');
+          el.className = 'toast' + (type === 'error' ? ' toast--error' : type === 'success' ? ' toast--success' : '');
+          el.setAttribute('role', type === 'error' ? 'alert' : 'status');
+          el.textContent = message;
+          host.appendChild(el);
+          requestAnimationFrame(() => el.classList.add('toast--show'));
+          setTimeout(() => {
+            el.classList.remove('toast--show');
+            setTimeout(() => el.remove(), 300);
+          }, 4200);
+        }
+
+        function loadImage(src) {
+          return new Promise((resolve, reject) => {
+            const im = new Image();
+            im.onload = () => resolve(im);
+            im.onerror = () => reject(new Error('Failed to load image'));
+            im.src = src;
+          });
+        }
+
+        // Shared mask math (growBinaryMask/buildModelMask/buildBlendMask/
+        // compositeMaskedEditCanvas) — same module the main tool and the AI
+        // Designer use, so the pixel-preservation guarantee is identical.
+        let buildModelMask, buildBlendMask, compositeMaskedEditCanvas;
+        const maskCoreReady = import('/scripts/mask-core.js').then((m) => {
+          buildModelMask = m.buildModelMask;
+          buildBlendMask = m.buildBlendMask;
+          compositeMaskedEditCanvas = m.compositeMaskedEditCanvas;
+        });
+
+        // ---------------------------------------------------------------------
+        // State
+        // ---------------------------------------------------------------------
+        // Distinct, high-contrast highlight colors. Purely cosmetic: the mask
+        // sent to the server is always white-on-black; only stroke alpha counts.
+        const PALETTE = [
+          { hex: '#2563eb', name: 'Blue' },
+          { hex: '#16a34a', name: 'Green' },
+          { hex: '#f59e0b', name: 'Orange' },
+          { hex: '#8b5cf6', name: 'Purple' },
+          { hex: '#ef4444', name: 'Red' },
+          { hex: '#0d9488', name: 'Teal' },
+        ];
+        const MAX_LAYERS = PALETTE.length;
+
+        let base = null;          // { w, h, canvas } — working-resolution room photo
+        let layers = [];          // area objects, in z-order
+        let activeId = null;      // selected area (receives brush strokes)
+        let phase = 'empty';      // 'empty' | 'draw' | 'generating' | 'review'
+        let view = 'after';       // review-phase viewer toggle
+        let tool = 'brush';
+        let brushSize = 50;
+        let layerSeq = 0;
+        let genRun = 0;           // ignore async completions from stale runs
+        let genMeta = null;       // { coreGrow, featherPx } of the last run
+        let busyMsgTimer = null;
+
+        // ---------------------------------------------------------------------
+        // DOM refs
+        // ---------------------------------------------------------------------
+        const dropzone = $('#ms-dropzone');
+        const fileInput = $('#ms-file-input');
+        const furnitureInput = $('#ms-furniture-input');
+        const stack = $('#ms-stack');
+        const baseCanvas = $('#ms-base-canvas');
+        const resultCanvas = $('#ms-result-canvas');
+        const photoEmptyHint = $('#ms-photo-empty-hint');
+        const photoMeta = $('#ms-photo-meta');
+        const photoThumb = $('#ms-photo-thumb');
+        const replaceBtn = $('#ms-replace-btn');
+        const layerList = $('#ms-layer-list');
+        const addLayerBtn = $('#ms-add-layer');
+        const brushBtn = $('#ms-brush-btn');
+        const eraseBtn = $('#ms-erase-btn');
+        const brushSlider = $('#ms-brush-slider');
+        const brushSizeLabel = $('#ms-brush-size');
+        const generateBtn = $('#ms-generate');
+        const progressEl = $('#ms-progress');
+        const progressBar = $('#ms-progress-bar');
+        const progressText = $('#ms-progress-text');
+        const chipbar = $('#ms-chipbar');
+        const viewToggle = $('#ms-view-toggle');
+        const toggleBeforeBtn = $('#ms-toggle-before');
+        const toggleAfterBtn = $('#ms-toggle-after');
+        const drawHint = $('#ms-draw-hint');
+        const viewerActions = $('#ms-viewer-actions');
+        const editHighlightsBtn = $('#ms-edit-highlights');
+        const viewResultBtn = $('#ms-view-result');
+        const downloadBtn = $('#ms-download');
+        const newPhotoBtn = $('#ms-new-photo');
+
+        let busyOverlay = null;
+        let pendingFurnitureLayerId = null;
+
+        // ---------------------------------------------------------------------
+        // Room photo upload
+        // ---------------------------------------------------------------------
+        const ROOM_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+        async function handleRoomFile(file) {
+          if (!file) return;
+          try {
+            if (window.StagifyHeic && window.StagifyHeic.isHeic(file)) {
+              file = await window.StagifyHeic.toDisplayableFile(file);
+            }
+          } catch (e) {
+            showToast(tx('errors.heicConvert', "We couldn't read that HEIC photo. Please try a JPG or PNG."), 'error');
+            return;
+          }
+          if (ROOM_TYPES.indexOf((file.type || '').toLowerCase()) === -1) {
+            showToast(tx('errors.fileType', 'Please upload a JPG, PNG, or WebP image.'), 'error');
+            return;
+          }
+          if (file.size > 100 * 1024 * 1024) {
+            showToast(tx('errors.fileTooLarge', 'That image is too large — please choose one under 100 MB.'), 'error');
+            return;
+          }
+          const dataUrl = await new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onerror = () => reject(new Error('read'));
+            r.onload = () => resolve(r.result);
+            r.readAsDataURL(file);
+          }).catch(() => null);
+          if (!dataUrl) {
+            showToast(tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
+            return;
+          }
+          let img;
+          try {
+            img = await loadImage(dataUrl);
+          } catch (e) {
+            showToast(tx('errors.fileType', 'Please upload a JPG, PNG, or WebP image.'), 'error');
+            return;
+          }
+          setBaseImage(img);
+        }
+
+        // Work at the same resolution the server generates at (fits inside
+        // 1920×1080, mirroring its downscale step) so every returned edit maps
+        // 1:1 onto our canvases and huge photos don't exhaust canvas memory
+        // across up to 6 stacked area layers.
+        function setBaseImage(img) {
+          const scale = Math.min(1, 1920 / img.width, 1080 / img.height);
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          base = { w: w, h: h, canvas: c };
+
+          baseCanvas.width = w;
+          baseCanvas.height = h;
+          baseCanvas.getContext('2d').drawImage(c, 0, 0);
+          resultCanvas.width = w;
+          resultCanvas.height = h;
+
+          // Fresh session for the new photo.
+          layers.forEach((l) => l.el && l.canvasEl && l.canvasEl.remove());
+          layers = [];
+          layerSeq = 0;
+          genRun++;
+          genMeta = null;
+          addLayer();
+
+          photoThumb.src = baseCanvas.toDataURL('image/jpeg', 0.7);
+          photoEmptyHint.classList.add('hidden');
+          photoMeta.classList.remove('hidden');
+          dropzone.classList.add('hidden');
+          stack.classList.remove('hidden');
+          setPhase('draw');
+        }
+
+        // ---------------------------------------------------------------------
+        // Area layers
+        // ---------------------------------------------------------------------
+        function nextColorIdx() {
+          for (let i = 0; i < PALETTE.length; i++) {
+            if (!layers.some((l) => l.colorIdx === i)) return i;
+          }
+          return -1;
+        }
+
+        function addLayer() {
+          if (!base || layers.length >= MAX_LAYERS) return;
+          const colorIdx = nextColorIdx();
+          if (colorIdx === -1) return;
+          const c = document.createElement('canvas');
+          c.width = base.w;
+          c.height = base.h;
+          c.className = 'ms-layer-canvas';
+          // Insert below the result canvas so results always cover highlights.
+          stack.insertBefore(c, resultCanvas);
+          const layer = {
+            id: 'L' + (++layerSeq),
+            colorIdx: colorIdx,
+            canvasEl: c,
+            painted: false,
+            prompt: '',
+            furniture: null,
+            status: 'idle',      // idle | generating | done | failed
+            editedImg: null,
+            blendMask: null,
+            errorMsg: '',
+            el: null,
+          };
+          layers.push(layer);
+          activeId = layer.id;
+          renderLayers();
+          updateControls();
+        }
+
+        function removeLayer(id) {
+          const idx = layers.findIndex((l) => l.id === id);
+          if (idx === -1) return;
+          const layer = layers[idx];
+          if (layer.canvasEl) layer.canvasEl.remove();
+          layers.splice(idx, 1);
+          if (activeId === id) activeId = layers.length ? layers[layers.length - 1].id : null;
+          if (!layers.length && base) addLayer();
+          if (phase === 'review') compositeAll();
+          renderLayers();
+          updateControls();
+        }
+
+        function getLayer(id) {
+          return layers.find((l) => l.id === id) || null;
+        }
+
+        function activeLayer() {
+          return getLayer(activeId);
+        }
+
+        function layerColor(layer) {
+          return PALETTE[layer.colorIdx].hex;
+        }
+
+        function layerTitle(layer) {
+          const template = tx('maskingStudio.areaName', 'Area {n}');
+          const n = layers.indexOf(layer) + 1;
+          return template.replace('{n}', String(n));
+        }
+
+        function statusChip(layer) {
+          if (layer.status === 'generating') return { cls: 'ms-layer-status--generating', text: tx('maskingStudio.statusGenerating', 'Staging…') };
+          if (layer.status === 'done') return { cls: 'ms-layer-status--done', text: tx('maskingStudio.statusDone', 'Done') };
+          if (layer.status === 'failed') return { cls: 'ms-layer-status--failed', text: tx('maskingStudio.statusFailed', 'Failed') };
+          if (!layer.painted) return { cls: '', text: tx('maskingStudio.statusEmpty', 'Not highlighted yet') };
+          if (layer.prompt.trim() || layer.furniture) return { cls: 'ms-layer-status--ready', text: tx('maskingStudio.statusReady', 'Ready') };
+          return { cls: '', text: tx('maskingStudio.statusNeedsDetails', 'Needs a prompt or photo') };
+        }
+
+        // Rebuild the layer cards. Prompt edits mutate state directly (no
+        // re-render on keystroke), so rebuilding here never loses typed text.
+        function renderLayers() {
+          layerList.textContent = '';
+          layers.forEach((layer) => {
+            const card = document.createElement('div');
+            card.className = 'ms-layer' + (layer.id === activeId ? ' is-active' : '');
+            card.style.setProperty('--layer-color', layerColor(layer));
+            card.setAttribute('role', 'listitem');
+
+            const head = document.createElement('div');
+            head.className = 'ms-layer-head';
+            const dot = document.createElement('span');
+            dot.className = 'ms-layer-dot';
+            const name = document.createElement('span');
+            name.className = 'ms-layer-name';
+            name.textContent = layerTitle(layer);
+            const chip = statusChip(layer);
+            const status = document.createElement('span');
+            status.className = 'ms-layer-status ' + chip.cls;
+            status.textContent = chip.text;
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'ms-layer-remove';
+            removeBtn.setAttribute('aria-label', tx('maskingStudio.removeAreaAria', 'Remove this area'));
+            removeBtn.innerHTML = '&times;';
+            removeBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              if (phase === 'generating') return;
+              removeLayer(layer.id);
+            });
+            head.appendChild(dot);
+            head.appendChild(name);
+            head.appendChild(status);
+            head.appendChild(removeBtn);
+            head.addEventListener('click', () => {
+              if (phase === 'generating') return;
+              activeId = layer.id;
+              renderLayers();
+            });
+
+            const body = document.createElement('div');
+            body.className = 'ms-layer-body';
+
+            const promptEl = document.createElement('textarea');
+            promptEl.className = 'text-input ms-layer-prompt';
+            promptEl.rows = 2;
+            promptEl.maxLength = 1000;
+            promptEl.placeholder = tx('maskingStudio.promptPlaceholder', 'Describe what to add here (optional if you add a furniture photo)…');
+            promptEl.value = layer.prompt;
+            promptEl.addEventListener('input', () => {
+              layer.prompt = promptEl.value;
+              // Refresh this card's status chip in place (a full re-render here
+              // would steal focus from the textarea mid-typing).
+              const liveChip = statusChip(layer);
+              status.className = 'ms-layer-status ' + liveChip.cls;
+              status.textContent = liveChip.text;
+              updateControls();
+            });
+            promptEl.addEventListener('focus', () => {
+              if (activeId !== layer.id && phase !== 'generating') {
+                activeId = layer.id;
+                // Highlight without a full re-render so the textarea keeps focus.
+                layerList.querySelectorAll('.ms-layer').forEach((el) => el.classList.remove('is-active'));
+                card.classList.add('is-active');
+              }
+            });
+            body.appendChild(promptEl);
+
+            if (layer.furniture) {
+              const prev = document.createElement('div');
+              prev.className = 'ms-furniture-preview';
+              const img = document.createElement('img');
+              img.src = layer.furniture;
+              img.alt = tx('pdf.maskEditor.referenceAlt', 'Reference for masked edit');
+              const rm = document.createElement('button');
+              rm.type = 'button';
+              rm.className = 'ms-furniture-remove';
+              rm.setAttribute('aria-label', tx('pdf.maskEditor.referenceRemove', 'Remove reference photo'));
+              rm.innerHTML = '&times;';
+              rm.addEventListener('click', () => {
+                if (phase === 'generating') return;
+                layer.furniture = null;
+                renderLayers();
+                updateControls();
+              });
+              prev.appendChild(img);
+              prev.appendChild(rm);
+              body.appendChild(prev);
+            } else {
+              const add = document.createElement('button');
+              add.type = 'button';
+              add.className = 'ms-furniture-add';
+              add.textContent = tx('maskingStudio.addFurniture', '+ Furniture photo');
+              add.addEventListener('click', () => {
+                if (phase === 'generating') return;
+                pendingFurnitureLayerId = layer.id;
+                furnitureInput.click();
+              });
+              wireFurnitureDrop(add, layer);
+              body.appendChild(add);
+            }
+
+            if (layer.status === 'failed') {
+              const err = document.createElement('div');
+              err.className = 'ms-layer-error';
+              err.textContent = layer.errorMsg || tx('maskingStudio.statusFailed', 'Failed');
+              body.appendChild(err);
+              const retry = document.createElement('button');
+              retry.type = 'button';
+              retry.className = 'ms-layer-retry';
+              retry.textContent = tx('maskingStudio.retry', 'Retry');
+              retry.addEventListener('click', () => retryLayer(layer.id));
+              body.appendChild(retry);
+            } else if (layer.status === 'done' && phase === 'review') {
+              const retry = document.createElement('button');
+              retry.type = 'button';
+              retry.className = 'ms-layer-retry';
+              retry.style.borderColor = '#2563eb';
+              retry.style.color = '#2563eb';
+              retry.textContent = tx('maskingStudio.regenerate', 'Regenerate this area');
+              retry.addEventListener('click', () => retryLayer(layer.id));
+              body.appendChild(retry);
+            }
+
+            card.appendChild(head);
+            card.appendChild(body);
+            layer.el = card;
+            layerList.appendChild(card);
+          });
+          renderChips();
+        }
+
+        // Compact quick-switch chips above the canvas mirroring the layer list,
+        // so switching colors doesn't require leaving the photo.
+        function renderChips() {
+          chipbar.textContent = '';
+          layers.forEach((layer) => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'ms-chip' + (layer.id === activeId ? ' is-active' : '');
+            chip.style.setProperty('--layer-color', layerColor(layer));
+            const dot = document.createElement('span');
+            dot.className = 'ms-layer-dot';
+            dot.style.background = layerColor(layer);
+            const label = document.createElement('span');
+            label.textContent = layerTitle(layer);
+            chip.appendChild(dot);
+            chip.appendChild(label);
+            chip.addEventListener('click', () => {
+              if (phase === 'generating') return;
+              activeId = layer.id;
+              renderLayers();
+            });
+            chipbar.appendChild(chip);
+          });
+          if (base && layers.length < MAX_LAYERS) {
+            const add = document.createElement('button');
+            add.type = 'button';
+            add.className = 'ms-chip ms-chip--add';
+            add.textContent = tx('maskingStudio.addArea', '+ Add area');
+            add.addEventListener('click', () => {
+              if (phase === 'generating') return;
+              addLayer();
+            });
+            chipbar.appendChild(add);
+          }
+          updateChipbarVisibility();
+        }
+
+        function updateChipbarVisibility() {
+          const visible = !!base && phase !== 'empty' && !(phase === 'review' && view === 'after');
+          chipbar.classList.toggle('hidden', !visible);
+        }
+
+        // ---------------------------------------------------------------------
+        // Furniture reference photos (per area)
+        // ---------------------------------------------------------------------
+        // Validate, downscale (max 1536px) and PNG-encode — identical rules to
+        // the single-mask editor so the backend sees the same payloads.
+        function prepareReferenceFile(file) {
+          return new Promise((resolve, reject) => {
+            if (!file || !/^image\/(jpeg|jpg|png|webp)$/i.test(file.type || '')) { reject(new Error('type')); return; }
+            if (file.size > 25 * 1024 * 1024) { reject(new Error('size')); return; }
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('read'));
+            reader.onload = () => {
+              const img = new Image();
+              img.onerror = () => reject(new Error('decode'));
+              img.onload = () => {
+                const maxDim = 1536;
+                const scale = Math.min(1, maxDim / Math.max(img.width || 1, img.height || 1));
+                const w = Math.max(1, Math.round((img.width || 1) * scale));
+                const h = Math.max(1, Math.round((img.height || 1) * scale));
+                const c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                c.getContext('2d').drawImage(img, 0, 0, w, h);
+                try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
+              };
+              img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        function refErrorMessage(err) {
+          return err && err.message === 'size'
+            ? tx('pdf.maskEditor.referenceTooLarge', 'That image is too large — please choose one under 25 MB.')
+            : tx('pdf.maskEditor.referenceInvalid', 'Please choose a valid JPG, PNG, or WebP image.');
+        }
+
+        function acceptFurnitureFile(layer, file) {
+          if (!layer || !file) return;
+          const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
+            ? window.StagifyHeic.toDisplayableFile(file)
+            : Promise.resolve(file);
+          prep
+            .then(prepareReferenceFile)
+            .then((dataUrl) => {
+              layer.furniture = dataUrl;
+              renderLayers();
+              updateControls();
+            })
+            .catch((err) => showToast(refErrorMessage(err), 'error'));
+        }
+
+        function wireFurnitureDrop(zone, layer) {
+          const hasFiles = (e) =>
+            !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
+          zone.addEventListener('dragenter', (e) => { if (hasFiles(e)) { e.preventDefault(); zone.classList.add('is-drag-over'); } });
+          zone.addEventListener('dragover', (e) => { if (hasFiles(e)) { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; } });
+          zone.addEventListener('dragleave', () => zone.classList.remove('is-drag-over'));
+          zone.addEventListener('drop', (e) => {
+            if (!hasFiles(e)) return;
+            e.preventDefault();
+            zone.classList.remove('is-drag-over');
+            acceptFurnitureFile(layer, e.dataTransfer.files && e.dataTransfer.files[0]);
+          });
+        }
+
+        furnitureInput.addEventListener('change', () => {
+          const file = furnitureInput.files && furnitureInput.files[0];
+          furnitureInput.value = '';
+          acceptFurnitureFile(getLayer(pendingFurnitureLayerId), file);
+          pendingFurnitureLayerId = null;
+        });
+
+        // ---------------------------------------------------------------------
+        // Drawing
+        // ---------------------------------------------------------------------
+        let drawing = false;
+        let lastX = null;
+        let lastY = null;
+
+        // Drawing is only allowed in the draw phase: review keeps the strokes
+        // frozen so they still match the composited results ("Edit highlights"
+        // returns to the draw phase).
+        function canDraw() {
+          return base && phase === 'draw' && activeLayer();
+        }
+
+        function canvasPoint(e) {
+          const rect = baseCanvas.getBoundingClientRect();
+          if (!rect.width || !rect.height) return null;
+          return {
+            x: (e.clientX - rect.left) * (base.w / rect.width),
+            y: (e.clientY - rect.top) * (base.h / rect.height),
+          };
+        }
+
+        // Apply one stroke segment to a canvas context (dot for taps, line for
+        // moves). Solid pixels; the translucent look comes from CSS opacity.
+        function strokeSegment(ctx, x, y, composite, color) {
+          ctx.globalCompositeOperation = composite;
+          ctx.strokeStyle = color;
+          ctx.fillStyle = color;
+          ctx.lineWidth = brushSize;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          if (lastX === null || lastY === null) {
+            ctx.beginPath();
+            ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+          }
+          ctx.globalCompositeOperation = 'source-over';
+        }
+
+        function paint(e) {
+          if (!drawing || !canDraw()) return;
+          const p = canvasPoint(e);
+          if (!p) return;
+          const layer = activeLayer();
+          const color = layerColor(layer);
+          if (tool === 'erase') {
+            strokeSegment(layer.canvasEl.getContext('2d'), p.x, p.y, 'destination-out', color);
+          } else {
+            strokeSegment(layer.canvasEl.getContext('2d'), p.x, p.y, 'source-over', color);
+            // Claim these pixels: erase the same stroke from every other area so
+            // masks never overlap — each spot belongs to exactly one area.
+            layers.forEach((other) => {
+              if (other !== layer) {
+                strokeSegment(other.canvasEl.getContext('2d'), p.x, p.y, 'destination-out', color);
+              }
+            });
+            if (!layer.painted) {
+              layer.painted = true;
+              updateControls();
+            }
+          }
+          lastX = p.x;
+          lastY = p.y;
+        }
+
+        function scanHasContent(canvas) {
+          const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+          for (let i = 3; i < d.length; i += 4) {
+            if (d[i] > 10) return true;
+          }
+          return false;
+        }
+
+        function startDraw(e) {
+          if (!canDraw()) return;
+          drawing = true;
+          lastX = null;
+          lastY = null;
+          paint(e);
+        }
+
+        function stopDraw() {
+          if (!drawing) return;
+          drawing = false;
+          lastX = null;
+          lastY = null;
+          // Accurate once-per-stroke rescan: erasing (or another area claiming
+          // pixels) may have emptied any layer.
+          layers.forEach((l) => {
+            l.painted = scanHasContent(l.canvasEl);
+            l.blendMask = null; // strokes changed → cached masks are stale
+          });
+          renderLayers();
+          updateControls();
+        }
+
+        stack.addEventListener('pointerdown', (e) => {
+          if (!canDraw()) return;
+          e.preventDefault();
+          try { stack.setPointerCapture(e.pointerId); } catch (err) {}
+          startDraw(e);
+        });
+        stack.addEventListener('pointermove', (e) => {
+          updateCursorPreview(e);
+          if (!drawing) return;
+          e.preventDefault();
+          paint(e);
+        });
+        stack.addEventListener('pointerup', stopDraw);
+        stack.addEventListener('pointercancel', stopDraw);
+        stack.addEventListener('pointerleave', () => { if (cursorEl) cursorEl.style.display = 'none'; });
+
+        // Brush-size circle that follows the pointer over the photo, tinted with
+        // the active area's color (dashed gray while erasing).
+        let cursorEl = null;
+        function ensureCursor() {
+          if (cursorEl) return;
+          cursorEl = document.createElement('div');
+          cursorEl.className = 'ms-cursor';
+          cursorEl.setAttribute('aria-hidden', 'true');
+          stack.appendChild(cursorEl);
+        }
+        function updateCursorPreview(e) {
+          ensureCursor();
+          const layer = activeLayer();
+          if (!canDraw() || !layer || e.pointerType === 'touch') {
+            cursorEl.style.display = 'none';
+            return;
+          }
+          const rect = baseCanvas.getBoundingClientRect();
+          if (!rect.width) return;
+          const stackRect = stack.getBoundingClientRect();
+          const size = brushSize * (rect.width / base.w);
+          cursorEl.style.display = 'block';
+          cursorEl.style.width = size + 'px';
+          cursorEl.style.height = size + 'px';
+          cursorEl.style.left = (e.clientX - stackRect.left) + 'px';
+          cursorEl.style.top = (e.clientY - stackRect.top) + 'px';
+          cursorEl.style.setProperty('--cursor-color', layerColor(layer));
+          cursorEl.classList.toggle('is-erase', tool === 'erase');
+        }
+
+        function setTool(t) {
+          tool = t === 'erase' ? 'erase' : 'brush';
+          brushBtn.classList.toggle('is-active', tool === 'brush');
+          brushBtn.setAttribute('aria-pressed', tool === 'brush' ? 'true' : 'false');
+          eraseBtn.classList.toggle('is-active', tool === 'erase');
+          eraseBtn.setAttribute('aria-pressed', tool === 'erase' ? 'true' : 'false');
+          if (cursorEl) cursorEl.classList.toggle('is-erase', tool === 'erase');
+        }
+        brushBtn.addEventListener('click', () => setTool('brush'));
+        eraseBtn.addEventListener('click', () => setTool('erase'));
+
+        function setBrushSize(v) {
+          brushSize = Math.min(150, Math.max(20, v));
+          brushSlider.value = String(brushSize);
+          brushSizeLabel.textContent = brushSize + ' px';
+        }
+        brushSlider.addEventListener('input', () => setBrushSize(parseInt(brushSlider.value, 10)));
+
+        // Desktop shortcuts: B brush, E erase, [ / ] brush size, 1-6 pick area.
+        document.addEventListener('keydown', (e) => {
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          const t = e.target;
+          if (t && (t.closest && t.closest('input, textarea, select, [contenteditable]'))) return;
+          if (!base || phase === 'generating') return;
+          const k = e.key.toLowerCase();
+          if (k === 'b') { setTool('brush'); }
+          else if (k === 'e') { setTool('erase'); }
+          else if (e.key === '[') { setBrushSize(brushSize - 10); }
+          else if (e.key === ']') { setBrushSize(brushSize + 10); }
+          else if (/^[1-6]$/.test(e.key)) {
+            const layer = layers[parseInt(e.key, 10) - 1];
+            if (layer) {
+              activeId = layer.id;
+              renderLayers();
+            }
+          }
+        });
+
+        // ---------------------------------------------------------------------
+        // Phases & viewer
+        // ---------------------------------------------------------------------
+        function setPhase(p) {
+          phase = p;
+          const inReview = p === 'review';
+          // "Edit highlights" must not strand the user away from their results:
+          // in the draw phase, existing results stay reachable via "View result".
+          const hasResults = layers.some((l) => l.status === 'done' && l.editedImg);
+          viewToggle.classList.toggle('hidden', !inReview);
+          viewerActions.classList.toggle('hidden', !(inReview || (p === 'draw' && hasResults)));
+          editHighlightsBtn.classList.toggle('hidden', !inReview);
+          viewResultBtn.classList.toggle('hidden', !(p === 'draw' && hasResults));
+          drawHint.classList.toggle('hidden', p !== 'draw');
+          stack.classList.toggle('can-draw', p === 'draw');
+          stack.classList.toggle('is-busy', p === 'generating');
+          if (cursorEl && p !== 'draw') cursorEl.style.display = 'none';
+          if (busyOverlay) busyOverlay.classList.toggle('hidden', p !== 'generating');
+          if (p === 'generating') startBusyMessages(); else stopBusyMessages();
+          if (inReview) {
+            setView(view);
+          } else {
+            resultCanvas.classList.add('hidden');
+            layers.forEach((l) => l.canvasEl.classList.remove('hidden'));
+          }
+          renderLayers();
+          updateControls();
+        }
+
+        function setView(v) {
+          view = v === 'before' ? 'before' : 'after';
+          toggleBeforeBtn.classList.toggle('active', view === 'before');
+          toggleAfterBtn.classList.toggle('active', view === 'after');
+          const showResult = view === 'after' && phase === 'review';
+          resultCanvas.classList.toggle('hidden', !showResult);
+          layers.forEach((l) => l.canvasEl.classList.toggle('hidden', showResult));
+          updateChipbarVisibility();
+        }
+        toggleBeforeBtn.addEventListener('click', () => setView('before'));
+        toggleAfterBtn.addEventListener('click', () => setView('after'));
+
+        function ensureBusyOverlay() {
+          if (busyOverlay) return;
+          busyOverlay = document.createElement('div');
+          busyOverlay.className = 'ms-busy-overlay hidden';
+          const spin = document.createElement('div');
+          spin.className = 'ms-busy-spin';
+          const msg = document.createElement('div');
+          msg.className = 'ms-busy-msg';
+          busyOverlay.appendChild(spin);
+          busyOverlay.appendChild(msg);
+          stack.appendChild(busyOverlay);
+        }
+
+        function loadingMessages() {
+          const fromLang = window.LanguageSystem && window.LanguageSystem.getText('maskingStudio.loadingMessages');
+          if (Array.isArray(fromLang) && fromLang.length) return fromLang;
+          return [
+            'Placing your furniture…',
+            'Matching light and shadows…',
+            'Blending each area in…',
+            'Keeping the rest of the photo untouched…',
+            'Adding finishing touches…',
+          ];
+        }
+
+        function startBusyMessages() {
+          ensureBusyOverlay();
+          busyOverlay.classList.remove('hidden');
+          const msgEl = busyOverlay.querySelector('.ms-busy-msg');
+          const msgs = loadingMessages();
+          let i = 0;
+          msgEl.textContent = msgs[0];
+          if (busyMsgTimer) clearInterval(busyMsgTimer);
+          busyMsgTimer = setInterval(() => {
+            i = (i + 1) % msgs.length;
+            msgEl.textContent = msgs[i];
+          }, 2200);
+        }
+
+        function stopBusyMessages() {
+          if (busyMsgTimer) { clearInterval(busyMsgTimer); busyMsgTimer = null; }
+          if (busyOverlay) busyOverlay.classList.add('hidden');
+        }
+
+        function updateControls() {
+          const generating = phase === 'generating';
+          addLayerBtn.disabled = !base || generating || layers.length >= MAX_LAYERS;
+          replaceBtn.disabled = generating;
+          brushSlider.disabled = generating;
+          brushBtn.disabled = generating;
+          eraseBtn.disabled = generating;
+          newPhotoBtn.disabled = generating;
+          editHighlightsBtn.disabled = generating;
+          downloadBtn.disabled = generating || !layers.some((l) => l.status === 'done');
+          layerList.querySelectorAll('textarea, button').forEach((el) => { el.disabled = generating; });
+
+          const painted = layers.filter((l) => l.painted);
+          const allDetailed = painted.length > 0 && painted.every((l) => l.prompt.trim() || l.furniture);
+          generateBtn.disabled = !base || generating || !allDetailed;
+          const strong = generateBtn.querySelector('strong');
+          if (strong) {
+            const template = painted.length > 1
+              ? tx('maskingStudio.generateCount', 'Stage {n} areas')
+              : tx('maskingStudio.generate', 'Stage highlighted areas');
+            strong.textContent = template.replace('{n}', String(painted.length));
+          }
+        }
+
+        // ---------------------------------------------------------------------
+        // Generation: every painted area runs as its own parallel mask edit.
+        // ---------------------------------------------------------------------
+        function requestError(status, result) {
+          if (status === 401 || status === 403) {
+            showProGate();
+            return tx('maskingStudio.gateTitle', 'Masking Studio is a Stagify+ feature');
+          }
+          if (status === 429) return tx('maskingStudio.rateLimited', "You're generating too quickly — wait a minute and try again.");
+          if (status === 413) return tx('errors.fileTooLarge', 'That image is too large.');
+          return (result && result.error) || tx('errors.processingFailed', 'Something went wrong. Please try again.');
+        }
+
+        async function runLayer(layer, imageDataUrl, coreGrow, run) {
+          await maskCoreReady;
+          const maskDataUrl = buildModelMask(layer.canvasEl, base.w, base.h, coreGrow).toDataURL('image/png');
+          const prompt = layer.prompt.trim() || tx(
+            'maskingStudio.defaultFurniturePrompt',
+            'Add the furniture from the reference photo into the highlighted area. Place it naturally on the floor with correct perspective, scale, and lighting for the room.'
+          );
+          const tok = window.StagifyAuth && window.StagifyAuth.getToken();
+          const response = await fetch('/api/mask-edit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
+            },
+            body: JSON.stringify({
+              image: imageDataUrl,
+              mask: maskDataUrl,
+              prompt: prompt,
+              model: 'gpt-4o-mini',
+              authToken: tok || undefined,
+              ...(layer.furniture ? { referenceImage: layer.furniture } : {}),
+            }),
+          });
+          let result = null;
+          try { result = await response.json(); } catch (e) {}
+          if (run !== genRun) return; // a newer run/reset superseded this one
+          if (!response.ok || !result || !result.editedImage) {
+            throw new Error(requestError(response.status, result));
+          }
+          const img = await loadImage(result.editedImage);
+          if (run !== genRun) return;
+          layer.editedImg = img;
+        }
+
+        function updateRunProgress(doneCount, total) {
+          progressBar.style.width = Math.round((doneCount / total) * 100) + '%';
+          const template = tx('maskingStudio.progressCount', '{done} of {total} areas staged');
+          progressText.textContent = template.replace('{done}', String(doneCount)).replace('{total}', String(total));
+        }
+
+        async function generate() {
+          if (generateBtn.disabled || !base) return;
+          const participating = layers.filter((l) => l.painted);
+          if (!participating.length) {
+            showToast(tx('maskingStudio.needHighlight', 'Paint at least one area on the photo first.'), 'error');
+            return;
+          }
+          const missing = participating.find((l) => !l.prompt.trim() && !l.furniture);
+          if (missing) {
+            activeId = missing.id;
+            renderLayers();
+            showToast(tx('maskingStudio.needPromptOrFurniture', 'Each highlighted area needs a short prompt or a furniture photo.'), 'error');
+            return;
+          }
+
+          const run = ++genRun;
+          const maxDim = Math.max(base.w, base.h);
+          // Same "secret brush expansion" numbers as the single-mask editor.
+          const coreGrow = Math.max(12, Math.round(maxDim * 0.02275));
+          const featherPx = Math.max(20, Math.round(maxDim * 0.04));
+          genMeta = { coreGrow: coreGrow, featherPx: featherPx };
+          const imageDataUrl = base.canvas.toDataURL('image/png');
+
+          await maskCoreReady;
+          participating.forEach((l) => {
+            l.status = 'generating';
+            l.editedImg = null;
+            l.errorMsg = '';
+            // Freeze the compositing mask now — strokes can't change mid-run.
+            l.blendMask = buildBlendMask(l.canvasEl, base.w, base.h, coreGrow, featherPx);
+          });
+          setPhase('generating');
+          progressEl.classList.remove('hidden');
+          progressText.classList.remove('hidden');
+          updateRunProgress(0, participating.length);
+
+          let settled = 0;
+          await Promise.all(participating.map((layer) =>
+            runLayer(layer, imageDataUrl, coreGrow, run)
+              .then(() => { if (run === genRun) layer.status = 'done'; })
+              .catch((err) => {
+                if (run !== genRun) return;
+                layer.status = 'failed';
+                layer.errorMsg = err && err.message ? err.message : '';
+              })
+              .then(() => {
+                if (run !== genRun) return;
+                settled++;
+                updateRunProgress(settled, participating.length);
+                renderLayers();
+                updateControls(); // keep layer controls disabled through the run
+              })
+          ));
+          if (run !== genRun) return;
+
+          progressEl.classList.add('hidden');
+          progressText.classList.add('hidden');
+          compositeAll();
+          const done = participating.filter((l) => l.status === 'done').length;
+          setPhase('review');
+          setView(done ? 'after' : 'before');
+          if (done === participating.length) {
+            showToast(tx('maskingStudio.doneToast', 'All areas staged!'), 'success');
+          } else if (done > 0) {
+            const t = tx('maskingStudio.partialToast', '{done} of {total} areas staged — retry the failed ones.');
+            showToast(t.replace('{done}', String(done)).replace('{total}', String(participating.length)), 'error');
+          } else {
+            showToast(tx('maskingStudio.failedToast', 'Staging failed. Please try again.'), 'error');
+          }
+        }
+        generateBtn.addEventListener('click', generate);
+
+        // Re-run a single failed/done area, then rebuild the composite.
+        async function retryLayer(id) {
+          const layer = getLayer(id);
+          if (!layer || !base || phase === 'generating' || !genMeta) return;
+          if (!layer.painted) return;
+          const run = genRun;
+          layer.status = 'generating';
+          layer.errorMsg = '';
+          if (!layer.blendMask) {
+            await maskCoreReady;
+            layer.blendMask = buildBlendMask(layer.canvasEl, base.w, base.h, genMeta.coreGrow, genMeta.featherPx);
+          }
+          renderLayers();
+          updateControls();
+          try {
+            await runLayer(layer, base.canvas.toDataURL('image/png'), genMeta.coreGrow, run);
+            if (run !== genRun) return;
+            layer.status = 'done';
+          } catch (err) {
+            if (run !== genRun) return;
+            layer.status = 'failed';
+            layer.errorMsg = err && err.message ? err.message : '';
+          }
+          compositeAll();
+          setView(view);
+          renderLayers();
+          updateControls();
+        }
+
+        // Chain the per-area composites over the pristine original, in layer
+        // order. compositeMaskedEditCanvas keeps its input untouched outside
+        // each area's feathered mask, so anything never highlighted is the
+        // original image, pixel for pixel.
+        function compositeAll() {
+          if (!base) return;
+          let acc = document.createElement('canvas');
+          acc.width = base.w;
+          acc.height = base.h;
+          acc.getContext('2d').drawImage(base.canvas, 0, 0);
+          layers.forEach((layer) => {
+            if (layer.status !== 'done' || !layer.editedImg) return;
+            // Strokes edited since the run invalidate the cached mask; rebuild
+            // from the current strokes — same "re-crop, don't re-generate"
+            // semantics as the single-mask editor's refine step.
+            if (!layer.blendMask && genMeta && buildBlendMask) {
+              layer.blendMask = buildBlendMask(layer.canvasEl, base.w, base.h, genMeta.coreGrow, genMeta.featherPx);
+            }
+            if (layer.blendMask) {
+              acc = compositeMaskedEditCanvas(acc, layer.blendMask, layer.editedImg, base.w, base.h);
+            }
+          });
+          const ctx = resultCanvas.getContext('2d');
+          ctx.clearRect(0, 0, base.w, base.h);
+          ctx.drawImage(acc, 0, 0);
+        }
+
+        // ---------------------------------------------------------------------
+        // Review actions
+        // ---------------------------------------------------------------------
+        editHighlightsBtn.addEventListener('click', () => {
+          if (phase !== 'review') return;
+          setPhase('draw');
+        });
+
+        viewResultBtn.addEventListener('click', () => {
+          if (phase !== 'draw' || !layers.some((l) => l.status === 'done' && l.editedImg)) return;
+          compositeAll();
+          setPhase('review');
+          setView('after');
+        });
+
+        downloadBtn.addEventListener('click', () => {
+          if (!layers.some((l) => l.status === 'done')) return;
+          compositeAll(); // strokes may have changed since the last composite
+          const link = document.createElement('a');
+          link.download = 'stagify-masking-studio-' + Date.now() + '.jpg';
+          link.href = resultCanvas.toDataURL('image/jpeg', 0.92);
+          link.click();
+        });
+
+        function resetStudio() {
+          genRun++;
+          genMeta = null;
+          layers.forEach((l) => l.canvasEl && l.canvasEl.remove());
+          layers = [];
+          layerSeq = 0;
+          activeId = null;
+          base = null;
+          stack.classList.add('hidden');
+          dropzone.classList.remove('hidden');
+          photoMeta.classList.add('hidden');
+          photoEmptyHint.classList.remove('hidden');
+          photoThumb.removeAttribute('src');
+          resultCanvas.classList.add('hidden');
+          progressEl.classList.add('hidden');
+          progressText.classList.add('hidden');
+          renderLayers();
+          setPhase('empty');
+        }
+        newPhotoBtn.addEventListener('click', resetStudio);
+
+        // ---------------------------------------------------------------------
+        // Upload wiring (dropzone click/keyboard/drop + toolbar replace)
+        // ---------------------------------------------------------------------
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInput.click();
+          }
+        });
+        replaceBtn.addEventListener('click', () => {
+          if (phase === 'generating') return;
+          fileInput.click();
+        });
+        fileInput.addEventListener('change', () => {
+          const file = fileInput.files && fileInput.files[0];
+          fileInput.value = '';
+          handleRoomFile(file);
+        });
+        (function wireRoomDrop() {
+          const hasFiles = (e) =>
+            !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
+          [dropzone, stack].forEach((zone) => {
+            zone.addEventListener('dragover', (e) => {
+              if (!hasFiles(e)) return;
+              e.preventDefault();
+              if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+              if (zone === dropzone) dropzone.classList.add('is-drag-over');
+            });
+            zone.addEventListener('dragleave', () => dropzone.classList.remove('is-drag-over'));
+            zone.addEventListener('drop', (e) => {
+              if (!hasFiles(e)) return;
+              e.preventDefault();
+              dropzone.classList.remove('is-drag-over');
+              if (phase === 'generating') return;
+              handleRoomFile(e.dataTransfer.files && e.dataTransfer.files[0]);
+            });
+          });
+        })();
+
+        addLayerBtn.addEventListener('click', () => {
+          if (layers.length >= MAX_LAYERS) {
+            const t = tx('maskingStudio.areaLimit', 'You can highlight up to {n} areas.');
+            showToast(t.replace('{n}', String(MAX_LAYERS)));
+            return;
+          }
+          addLayer();
+        });
+
+        // Re-render translated card copy when the language changes.
+        window.addEventListener('languagechange', () => {
+          renderLayers();
+          updateControls();
+        });
+
+        // ---------------------------------------------------------------------
+        // Boot
+        // ---------------------------------------------------------------------
+        setPhase('empty');
+        ensureStudioProAccess();
+      })();
+    </script>
+    <script src="scripts/aurora-scrollbar.js" defer></script>
+  </body>
+</html>

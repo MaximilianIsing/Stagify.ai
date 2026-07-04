@@ -99,19 +99,20 @@
       setTimeout(rest, 60);
     });
 
-    // The AI Designer link is revealed later for Pro users — re-settle when it
-    // appears so the pill can land on it (and rest there on its own page).
-    const ai = nav.querySelector(".nav-ai-designer-pro");
-    if (ai && "MutationObserver" in window) {
-      let wasHidden = ai.classList.contains("hidden");
+    // The AI Designer / Masking Studio links are revealed later for Pro users —
+    // re-settle when one appears so the pill can land on it (and rest there on
+    // its own page).
+    nav.querySelectorAll(".nav-ai-designer-pro, .nav-masking-studio-pro").forEach((proLink) => {
+      if (!("MutationObserver" in window)) return;
+      let wasHidden = proLink.classList.contains("hidden");
       new MutationObserver(() => {
-        const h = ai.classList.contains("hidden");
+        const h = proLink.classList.contains("hidden");
         if (h !== wasHidden) {
           wasHidden = h;
           rest();
         }
-      }).observe(ai, { attributes: true, attributeFilter: ["class"] });
-    }
+      }).observe(proLink, { attributes: true, attributeFilter: ["class"] });
+    });
 
     // Place it on the current page's link right away (transitions are off until
     // .is-ready is added, so it's steady on Home from the first paint), then
