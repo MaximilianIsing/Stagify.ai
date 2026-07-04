@@ -547,6 +547,20 @@
       }
       .ms-dz-text { font-weight: 700; color: #111827; font-size: 16px; }
       .ms-dz-sub { color: #6b7280; font-size: 13px; margin-top: 6px; }
+      .ms-dz-sample {
+        margin-top: 14px;
+        border: none;
+        background: none;
+        padding: 4px 6px;
+        color: #1d4ed8;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
+      }
+      .ms-dz-sample:hover { color: #1e3a8a; }
+      .ms-dz-sample:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 6px; }
       .ms-dz-dots { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
       .ms-dz-dots span {
         width: 13px; height: 13px;
@@ -574,6 +588,12 @@
         opacity: 0.5;
         mix-blend-mode: multiply;
         pointer-events: none;
+        transition: opacity 0.12s ease;
+      }
+      /* Hold H to peek at the photo under the highlights. */
+      .ms-stack.is-peek .ms-layer-canvas { opacity: 0; }
+      @media (prefers-reduced-motion: reduce) {
+        .ms-layer-canvas { transition: none; }
       }
       #ms-result-canvas {
         position: absolute;
@@ -774,8 +794,20 @@
           <li data-lang="maskingStudio.helpStep4">Click Apply Edit. Every area is staged at the same time, and only the highlighted spots can change. The rest of your photo stays pixel-perfect.</li>
         </ol>
         <h3 data-lang="maskingStudio.helpShortcuts">Keyboard shortcuts</h3>
-        <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</p>
+        <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo</p>
         <button type="button" id="ms-help-done" class="btn btn-primary ms-help-done"><strong data-lang="maskingStudio.helpClose">Got it</strong></button>
+      </div>
+    </div>
+
+    <!-- Confirm before a new photo wipes staged results. -->
+    <div id="ms-confirm" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-confirm-title">
+      <div class="ms-pro-gate__card">
+        <h2 id="ms-confirm-title" data-lang="maskingStudio.confirmTitle">Discard staged results?</h2>
+        <p data-lang="maskingStudio.confirmBody">Starting over with a new photo clears your highlighted areas and staged results.</p>
+        <div class="ms-pro-gate__actions">
+          <button type="button" id="ms-confirm-discard" class="btn btn-primary btn-lg"><strong data-lang="maskingStudio.confirmDiscard">Discard and continue</strong></button>
+          <button type="button" id="ms-confirm-keep" class="btn btn-ghost btn-lg"><strong data-lang="maskingStudio.confirmKeep">Keep my results</strong></button>
+        </div>
       </div>
     </div>
 
@@ -872,15 +904,15 @@
               <div class="ms-block">
                 <div class="ms-block-head"><span class="ms-step" aria-hidden="true">3</span><h2 data-lang="maskingStudio.stepBrush">Highlight</h2></div>
                 <div class="ms-tools" role="group" data-lang-attr="pdf.maskEditor.toolsAria|aria-label" aria-label="Mask tool">
-                  <button type="button" id="ms-brush-btn" class="ms-tool-btn is-active" aria-pressed="true">
+                  <button type="button" id="ms-brush-btn" class="ms-tool-btn is-active" aria-pressed="true" title="B">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>
                     <span data-lang="pdf.maskEditor.brush">Brush</span>
                   </button>
-                  <button type="button" id="ms-erase-btn" class="ms-tool-btn" aria-pressed="false">
+                  <button type="button" id="ms-erase-btn" class="ms-tool-btn" aria-pressed="false" title="E">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20H7L3 16a2 2 0 0 1 0-3l9-9a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-7 8"/><path d="M6 11l7 7"/></svg>
                     <span data-lang="pdf.maskEditor.erase">Erase</span>
                   </button>
-                  <button type="button" id="ms-undo-btn" class="ms-tool-btn" disabled>
+                  <button type="button" id="ms-undo-btn" class="ms-tool-btn" disabled title="Ctrl+Z">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
                     <span data-lang="maskingStudio.undo">Undo</span>
                   </button>
@@ -927,6 +959,7 @@
                     </div>
                     <div class="ms-dz-text" data-lang="maskingStudio.uploadHint">Upload a photo of your room</div>
                     <div class="ms-dz-sub" data-lang="maskingStudio.uploadSub">JPG, PNG, WebP, or HEIC — click or drop it here</div>
+                    <button type="button" id="ms-sample-btn" class="ms-dz-sample" data-lang="maskingStudio.trySample">or try a sample room</button>
                     <div class="ms-dz-dots" aria-hidden="true">
                       <span style="background:#2563eb"></span>
                       <span style="background:#16a34a"></span>
@@ -1102,6 +1135,10 @@
         const helpEl = $('#ms-help');
         const helpCloseBtn = $('#ms-help-close');
         const helpDoneBtn = $('#ms-help-done');
+        const confirmEl = $('#ms-confirm');
+        const confirmDiscardBtn = $('#ms-confirm-discard');
+        const confirmKeepBtn = $('#ms-confirm-keep');
+        const sampleBtn = $('#ms-sample-btn');
         const layerList = $('#ms-layer-list');
         const addLayerBtn = $('#ms-add-layer');
         const brushBtn = $('#ms-brush-btn');
@@ -1558,6 +1595,46 @@
         });
 
         // ---------------------------------------------------------------------
+        // Discard confirmation: replacing the photo (or starting over) wipes
+        // highlights and staged results, so ask first when results exist.
+        // ---------------------------------------------------------------------
+        let pendingConfirmAction = null;
+
+        function hasAnyResults() {
+          return layers.some((l) => l.status === 'done' && l.editedImg);
+        }
+
+        function requestDiscard(action) {
+          if (!hasAnyResults()) { action(); return; }
+          pendingConfirmAction = action;
+          confirmEl.classList.add('active');
+          confirmKeepBtn.focus();
+        }
+
+        function closeConfirm() {
+          confirmEl.classList.remove('active');
+          pendingConfirmAction = null;
+        }
+
+        confirmDiscardBtn.addEventListener('click', () => {
+          const action = pendingConfirmAction;
+          closeConfirm();
+          if (action) action();
+        });
+        confirmKeepBtn.addEventListener('click', closeConfirm);
+        confirmEl.addEventListener('click', (e) => {
+          if (e.target === confirmEl) closeConfirm();
+        });
+
+        // Leaving the page loses staged results — let the browser warn.
+        window.addEventListener('beforeunload', (e) => {
+          if (hasAnyResults()) {
+            e.preventDefault();
+            e.returnValue = '';
+          }
+        });
+
+        // ---------------------------------------------------------------------
         // Drawing
         // ---------------------------------------------------------------------
         let drawing = false;
@@ -1775,10 +1852,9 @@
         // Desktop shortcuts: B brush, E erase, [ / ] brush size, 1-6 pick area,
         // Ctrl+Z undo stroke.
         document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && helpEl.classList.contains('active')) {
-            e.preventDefault();
-            setHelpOpen(false);
-            return;
+          if (e.key === 'Escape') {
+            if (confirmEl.classList.contains('active')) { e.preventDefault(); closeConfirm(); return; }
+            if (helpEl.classList.contains('active')) { e.preventDefault(); setHelpOpen(false); return; }
           }
           const t = e.target;
           const typing = t && t.closest && t.closest('input, textarea, select, [contenteditable]');
@@ -1795,6 +1871,7 @@
           const k = e.key.toLowerCase();
           if (k === 'b') { setTool('brush'); }
           else if (k === 'e') { setTool('erase'); }
+          else if (k === 'h') { if (!e.repeat && phase === 'draw') stack.classList.add('is-peek'); }
           else if (e.key === '[') { setBrushSize(brushSize - 10); }
           else if (e.key === ']') { setBrushSize(brushSize + 10); }
           else if (/^[1-6]$/.test(e.key)) {
@@ -1805,6 +1882,10 @@
             }
           }
         });
+        document.addEventListener('keyup', (e) => {
+          if (e.key.toLowerCase() === 'h') stack.classList.remove('is-peek');
+        });
+        window.addEventListener('blur', () => stack.classList.remove('is-peek'));
 
         // ---------------------------------------------------------------------
         // Phases & viewer
@@ -2196,7 +2277,7 @@
           renderLayers();
           setPhase('empty');
         }
-        newPhotoBtn.addEventListener('click', resetStudio);
+        newPhotoBtn.addEventListener('click', () => requestDiscard(resetStudio));
 
         // ---------------------------------------------------------------------
         // Upload wiring (dropzone click/keyboard/drop + toolbar replace)
@@ -2210,12 +2291,24 @@
         });
         replaceBtn.addEventListener('click', () => {
           if (phase === 'generating') return;
-          fileInput.click();
+          requestDiscard(() => fileInput.click());
         });
         fileInput.addEventListener('change', () => {
           const file = fileInput.files && fileInput.files[0];
           fileInput.value = '';
           handleRoomFile(file);
+        });
+        sampleBtn.addEventListener('click', async (e) => {
+          e.stopPropagation(); // the dropzone click would open the file picker
+          sampleBtn.disabled = true;
+          try {
+            const resp = await fetch('media-webp/Homepage/BeforeAfter/Before1.webp');
+            const blob = await resp.blob();
+            await handleRoomFile(new File([blob], 'sample-room.webp', { type: 'image/webp' }));
+          } catch (err) {
+            showToast(tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
+          }
+          sampleBtn.disabled = false;
         });
         (function wireRoomDrop() {
           const hasFiles = (e) =>
@@ -2233,7 +2326,8 @@
               e.preventDefault();
               dropzone.classList.remove('is-drag-over');
               if (phase === 'generating') return;
-              handleRoomFile(e.dataTransfer.files && e.dataTransfer.files[0]);
+              const file = e.dataTransfer.files && e.dataTransfer.files[0];
+              requestDiscard(() => handleRoomFile(file));
             });
           });
         })();
@@ -2264,7 +2358,16 @@
         // Boot
         // ---------------------------------------------------------------------
         setPhase('empty');
-        ensureStudioProAccess();
+        ensureStudioProAccess().then((isPro) => {
+          if (!isPro) return;
+          // First visit: open the "how it works" dialog once.
+          let seen = null;
+          try { seen = localStorage.getItem('msHelpSeen'); } catch (e) {}
+          if (!seen) {
+            try { localStorage.setItem('msHelpSeen', '1'); } catch (e) {}
+            setHelpOpen(true);
+          }
+        });
       })();
     </script>
     <script src="scripts/aurora-scrollbar.js" defer></script>
