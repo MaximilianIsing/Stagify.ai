@@ -865,8 +865,12 @@
     "openStudioHint": "Evidenzia più aree con colori diversi e arredale tutte in una volta",
     "mobileTitle": "Lo Studio Maschere è uno strumento per desktop",
     "mobileBody": "La mascheratura precisa richiede uno schermo più grande e un mouse. Apri questa pagina sul tuo computer per usarla.",
-    "shortcutsHint": "<kbd>B</kbd> pennello&nbsp;· <kbd>E</kbd> gomma&nbsp;· <kbd>[</kbd> <kbd>]</kbd> dimensione pennello&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> scegli area",
+    "shortcutsHint": "<kbd>B</kbd> pennello&nbsp;· <kbd>E</kbd> gomma&nbsp;· <kbd>[</kbd> <kbd>]</kbd> dimensione pennello&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> scegli area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> annulla",
     "viewResult": "Vedi risultato",
+    "compare": "Confronta",
+    "undo": "Annulla",
+    "furniturePasted": "Foto del mobile aggiunta a {area}",
+    "compareHandleAria": "Trascina per confrontare prima e dopo",
     "loadingMessages": [
       "Posizioniamo i tuoi mobili…",
       "Abbiniamo luci e ombre…",

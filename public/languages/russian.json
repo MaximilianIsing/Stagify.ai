@@ -864,8 +864,12 @@
     "openStudioHint": "Выделите несколько участков разными цветами и обставьте их все сразу",
     "mobileTitle": "Студия масок — инструмент для компьютера",
     "mobileBody": "Для точного маскирования нужны большой экран и мышь. Откройте эту страницу на компьютере.",
-    "shortcutsHint": "<kbd>B</kbd> кисть&nbsp;· <kbd>E</kbd> ластик&nbsp;· <kbd>[</kbd> <kbd>]</kbd> размер кисти&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> выбор участка",
+    "shortcutsHint": "<kbd>B</kbd> кисть&nbsp;· <kbd>E</kbd> ластик&nbsp;· <kbd>[</kbd> <kbd>]</kbd> размер кисти&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> выбор участка&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> отменить",
     "viewResult": "Посмотреть результат",
+    "compare": "Сравнить",
+    "undo": "Отменить",
+    "furniturePasted": "Фото мебели добавлено в {area}",
+    "compareHandleAria": "Перетащите, чтобы сравнить до и после",
     "loadingMessages": [
       "Расставляем вашу мебель…",
       "Подбираем свет и тени…",
