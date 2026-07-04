@@ -473,6 +473,7 @@
     }
   },
   "errors": {
+    "heicConvert": "Non siamo riusciti a leggere quella foto HEIC. Prova con un JPG o PNG.",
     "fileType": "Carica un file immagine PNG, JPG, JPEG, WebP o GIF.",
     "fileTooLarge": "Il file è troppo grande. Carica un'immagine inferiore a 100 MB.",
     "uploadFirst": "Carica prima un'immagine",
@@ -871,6 +872,7 @@
     "undo": "Annulla",
     "furniturePasted": "Foto del mobile aggiunta a {area}",
     "compareHandleAria": "Trascina per confrontare prima e dopo",
+    "badge": "Esclusiva Stagify+",
     "loadingMessages": [
       "Posizioniamo i tuoi mobili…",
       "Abbiniamo luci e ombre…",

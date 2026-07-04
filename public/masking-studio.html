@@ -191,6 +191,31 @@
         color: #1e3a8a;
       }
       .ms-intro p { margin: 0; color: #374151; font-size: 15px; line-height: 1.55; }
+      .ms-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.25);
+        color: #1d4ed8;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        margin-bottom: 10px;
+      }
+
+      /* The site's default buttons shout in uppercase; inside the studio (and
+         its gate) they read as tool controls, so use sentence case. */
+      .ms-shell .btn, .ms-pro-gate .btn {
+        text-transform: none;
+        letter-spacing: normal;
+        font-weight: 600;
+        border-radius: 10px;
+      }
+      .ms-viewer-actions .btn { padding: 9px 14px; font-size: 13px; }
+      #ms-generate { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 
       .ms-grid {
         display: grid;
@@ -452,9 +477,16 @@
         background: rgba(255, 255, 255, 0.35);
         padding: 24px;
       }
+      .ms-dropzone { transition: border-color 0.15s ease, background 0.15s ease; }
       .ms-dropzone:hover, .ms-dropzone.is-drag-over { border-color: #2563eb; background: rgba(219, 234, 254, 0.45); }
       .ms-dropzone:focus-visible { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
       .ms-dz-icon { color: #2563eb; margin-bottom: 10px; }
+      .ms-dz-icon svg { transition: transform 0.2s ease; }
+      .ms-dropzone:hover .ms-dz-icon svg, .ms-dropzone.is-drag-over .ms-dz-icon svg { transform: translateY(-3px) scale(1.06); }
+      @media (prefers-reduced-motion: reduce) {
+        .ms-dropzone, .ms-dz-icon svg { transition: none; }
+        .ms-dropzone:hover .ms-dz-icon svg { transform: none; }
+      }
       .ms-dz-text { font-weight: 700; color: #111827; font-size: 16px; }
       .ms-dz-sub { color: #6b7280; font-size: 13px; margin-top: 6px; }
       .ms-dz-dots { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
@@ -602,11 +634,16 @@
         border: 0;
       }
 
+      /* Tall windows: keep the controls in view while the photo scrolls. */
+      @media (min-height: 900px) {
+        .ms-toolbar { position: sticky; top: 16px; }
+      }
+
       /* --- Narrow desktop windows: stack the panels --------------------------- */
       @media (max-width: 900px) {
         .ms-grid { grid-template-columns: 1fr; }
         .ms-workspace { order: 1; min-height: 0; }
-        .ms-toolbar { order: 2; }
+        .ms-toolbar { order: 2; position: static; }
         #ms-base-canvas { max-height: 58vh; }
         .ms-dropzone { min-height: 260px; }
       }
@@ -720,6 +757,10 @@
       <section class="hero" style="grid-template-columns: 1fr; padding: 20px; width: 100%; max-width: 100%; box-sizing: border-box;">
         <div class="ms-shell">
           <div class="ms-intro">
+            <span class="ms-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+              <span data-lang="maskingStudio.badge">Stagify+ exclusive</span>
+            </span>
             <h1 data-lang="maskingStudio.title">Masking Studio</h1>
             <p data-lang="maskingStudio.subtitle">Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only highlighted areas can change — the rest of your photo stays pixel-perfect.</p>
           </div>
@@ -780,7 +821,10 @@
 
               <!-- Generate -->
               <div class="ms-cta">
-                <button type="button" id="ms-generate" class="btn btn-primary btn-lg" disabled><strong>Stage highlighted areas</strong></button>
+                <button type="button" id="ms-generate" class="btn btn-primary btn-lg" disabled>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+                  <strong>Stage highlighted areas</strong>
+                </button>
                 <div id="ms-progress" class="progress hidden"><div class="bar" id="ms-progress-bar" style="width:0%"></div></div>
                 <div id="ms-progress-text" class="ms-progress-text hidden" aria-live="polite"></div>
               </div>

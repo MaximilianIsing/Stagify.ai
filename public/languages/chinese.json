@@ -474,6 +474,7 @@
     }
   },
   "errors": {
+    "heicConvert": "无法读取该 HEIC 照片。请尝试 JPG 或 PNG。",
     "fileType": "请上传PNG、JPG、JPEG、WebP或GIF图片文件。",
     "fileTooLarge": "文件过大。请上传小于100MB的图片。",
     "uploadFirst": "请先上传图片",
@@ -872,6 +873,7 @@
     "undo": "撤销",
     "furniturePasted": "家具照片已添加到{area}",
     "compareHandleAria": "拖动以对比前后效果",
+    "badge": "Stagify+ 专属",
     "loadingMessages": [
       "正在摆放您的家具…",
       "正在匹配光线与阴影…",

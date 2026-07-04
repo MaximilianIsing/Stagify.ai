@@ -473,6 +473,7 @@
     }
   },
   "errors": {
+    "heicConvert": "そのHEIC写真を読み込めませんでした。JPGまたはPNGをお試しください。",
     "fileType": "PNG、JPG、JPEG、WebP、またはGIFの画像ファイルをアップロードしてください。",
     "fileTooLarge": "ファイルが大きすぎます。100MB未満の画像をアップロードしてください。",
     "uploadFirst": "まず画像をアップロードしてください",
@@ -871,6 +872,7 @@
     "undo": "元に戻す",
     "furniturePasted": "{area}に家具の写真を追加しました",
     "compareHandleAria": "ドラッグしてビフォーアフターを比較",
+    "badge": "Stagify+限定",
     "loadingMessages": [
       "家具を配置中…",
       "光と影を調整中…",

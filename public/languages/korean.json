@@ -473,6 +473,7 @@
     }
   },
   "errors": {
+    "heicConvert": "해당 HEIC 사진을 읽을 수 없습니다. JPG 또는 PNG를 사용해 보세요.",
     "fileType": "PNG, JPG, JPEG, WebP 또는 GIF 이미지 파일을 업로드해 주세요.",
     "fileTooLarge": "파일이 너무 큽니다. 100MB보다 작은 이미지를 업로드해 주세요.",
     "uploadFirst": "먼저 이미지를 업로드해 주세요",
@@ -871,6 +872,7 @@
     "undo": "실행 취소",
     "furniturePasted": "{area}에 가구 사진이 추가되었습니다",
     "compareHandleAria": "드래그하여 전후를 비교하세요",
+    "badge": "Stagify+ 전용",
     "loadingMessages": [
       "가구를 배치하는 중…",
       "빛과 그림자를 맞추는 중…",

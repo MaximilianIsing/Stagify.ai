@@ -473,6 +473,7 @@
     }
   },
   "errors": {
+    "heicConvert": "Wir konnten dieses HEIC-Foto nicht lesen. Bitte versuchen Sie es mit JPG oder PNG.",
     "fileType": "Bitte laden Sie eine PNG-, JPG-, JPEG-, WebP- oder GIF-Bilddatei hoch.",
     "fileTooLarge": "Die Datei ist zu groß. Bitte laden Sie ein Bild mit weniger als 100 MB hoch.",
     "uploadFirst": "Bitte laden Sie zuerst ein Bild hoch",
@@ -871,6 +872,7 @@
     "undo": "Rückgängig",
     "furniturePasted": "Möbelfoto zu {area} hinzugefügt",
     "compareHandleAria": "Ziehen, um Vorher und Nachher zu vergleichen",
+    "badge": "Exklusiv für Stagify+",
     "loadingMessages": [
       "Ihre Möbel werden platziert…",
       "Licht und Schatten werden abgestimmt…",
