@@ -885,6 +885,10 @@
     "confirmBody": "새 사진으로 다시 시작하면 표시한 영역과 생성된 결과가 지워집니다.",
     "confirmDiscard": "삭제하고 계속",
     "confirmKeep": "결과 유지",
+    "zoomIn": "확대",
+    "zoomOut": "축소",
+    "zoomFit": "화면에 맞추기",
+    "zoomHint": "Ctrl+스크롤로 확대/축소, 스페이스(또는 휠 버튼)를 누른 채 드래그하여 이동",
     "loadingMessages": [
       "가구를 배치하는 중…",
       "빛과 그림자를 맞추는 중…",

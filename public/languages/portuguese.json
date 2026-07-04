@@ -885,6 +885,10 @@
     "confirmBody": "Começar com uma nova foto apaga suas áreas destacadas e os resultados gerados.",
     "confirmDiscard": "Descartar e continuar",
     "confirmKeep": "Manter meus resultados",
+    "zoomIn": "Aproximar",
+    "zoomOut": "Afastar",
+    "zoomFit": "Ajustar à tela",
+    "zoomHint": "Ctrl+rolagem para dar zoom, segure Espaço (ou o botão do meio) para mover",
     "loadingMessages": [
       "Posicionando seus móveis…",
       "Ajustando luz e sombras…",

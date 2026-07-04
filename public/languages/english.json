@@ -902,6 +902,10 @@
     "confirmBody": "Starting over with a new photo clears your highlighted areas and staged results.",
     "confirmDiscard": "Discard and continue",
     "confirmKeep": "Keep my results",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomFit": "Fit to view",
+    "zoomHint": "Ctrl+scroll to zoom, hold Space (or the middle mouse button) to pan",
     "loadingMessages": [
       "Placing your furniture…",
       "Matching light and shadows…",

@@ -885,6 +885,10 @@
     "confirmBody": "Ricominciare con una nuova foto cancella le aree evidenziate e i risultati generati.",
     "confirmDiscard": "Scarta e continua",
     "confirmKeep": "Mantieni i risultati",
+    "zoomIn": "Ingrandisci",
+    "zoomOut": "Riduci",
+    "zoomFit": "Adatta alla vista",
+    "zoomHint": "Ctrl+rotellina per lo zoom, tieni premuto Spazio (o il tasto centrale) per spostarti",
     "loadingMessages": [
       "Posizioniamo i tuoi mobili…",
       "Abbiniamo luci e ombre…",

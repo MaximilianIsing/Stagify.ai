@@ -886,6 +886,10 @@
     "confirmBody": "Empezar con una foto nueva borra tus zonas resaltadas y los resultados generados.",
     "confirmDiscard": "Descartar y continuar",
     "confirmKeep": "Conservar mis resultados",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "zoomFit": "Ajustar a la vista",
+    "zoomHint": "Ctrl+rueda para hacer zoom; mantén Espacio (o el botón central del ratón) para desplazarte",
     "loadingMessages": [
       "Colocando tus muebles…",
       "Igualando luz y sombras…",

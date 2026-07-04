@@ -885,6 +885,10 @@
     "confirmBody": "新しい写真でやり直すと、ハイライトしたエリアと生成結果が消去されます。",
     "confirmDiscard": "破棄して続行",
     "confirmKeep": "結果を保持",
+    "zoomIn": "拡大",
+    "zoomOut": "縮小",
+    "zoomFit": "画面に合わせる",
+    "zoomHint": "Ctrl+スクロールでズーム、スペース（またはホイールクリック）を押しながらドラッグで移動",
     "loadingMessages": [
       "家具を配置中…",
       "光と影を調整中…",
