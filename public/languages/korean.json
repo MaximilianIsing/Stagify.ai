@@ -865,8 +865,12 @@
     "openStudioHint": "여러 영역을 서로 다른 색으로 표시하고 한 번에 모두 스테이징하세요",
     "mobileTitle": "마스킹 스튜디오는 데스크톱 전용 도구입니다",
     "mobileBody": "정밀한 마스킹에는 더 큰 화면과 마우스가 필요합니다. 컴퓨터에서 이 페이지를 열어 사용해 주세요.",
-    "shortcutsHint": "<kbd>B</kbd> 브러시&nbsp;· <kbd>E</kbd> 지우개&nbsp;· <kbd>[</kbd> <kbd>]</kbd> 브러시 크기&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> 영역 선택",
+    "shortcutsHint": "<kbd>B</kbd> 브러시&nbsp;· <kbd>E</kbd> 지우개&nbsp;· <kbd>[</kbd> <kbd>]</kbd> 브러시 크기&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> 영역 선택&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> 실행 취소",
     "viewResult": "결과 보기",
+    "compare": "비교",
+    "undo": "실행 취소",
+    "furniturePasted": "{area}에 가구 사진이 추가되었습니다",
+    "compareHandleAria": "드래그하여 전후를 비교하세요",
     "loadingMessages": [
       "가구를 배치하는 중…",
       "빛과 그림자를 맞추는 중…",

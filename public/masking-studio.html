@@ -355,6 +355,8 @@
         cursor: pointer;
       }
       .ms-tool-btn.is-active { border-color: #2563eb; background: #2563eb; color: #fff; }
+      .ms-tool-btn:disabled { opacity: 0.45; cursor: default; }
+      .ms-tool-btn:focus-visible, .ms-chip:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
       .ms-brush-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
       .ms-brush-row label { font-size: 13px; color: #374151; white-space: nowrap; }
       .ms-brush-row input[type="range"] { flex: 1; accent-color: #2563eb; }
@@ -491,7 +493,51 @@
         pointer-events: none;
       }
       .ms-stack.can-draw { cursor: crosshair; touch-action: none; }
+      .ms-stack.is-compare { cursor: ew-resize; touch-action: none; }
       .ms-stack.is-busy canvas { filter: blur(5px) brightness(0.98); }
+
+      /* --- Before/After compare slider (review phase) -------------------------- */
+      .ms-compare { position: absolute; top: 0; bottom: 0; width: 0; z-index: 7; }
+      .ms-compare-line {
+        position: absolute;
+        top: 0; bottom: 0; left: -1.5px;
+        width: 3px;
+        background: #fff;
+        box-shadow: 0 0 8px rgba(17, 24, 39, 0.4);
+        pointer-events: none;
+      }
+      .ms-compare-grip {
+        position: absolute;
+        top: 50%; left: 0;
+        transform: translate(-50%, -50%);
+        width: 38px; height: 38px;
+        border: none;
+        border-radius: 50%;
+        background: #fff;
+        color: #1e3a8a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(30, 58, 138, 0.35);
+        cursor: ew-resize;
+        touch-action: none;
+      }
+      .ms-compare-grip:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.5); outline-offset: 2px; }
+      .ms-compare-label {
+        position: absolute;
+        top: 10px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(17, 24, 39, 0.62);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+        z-index: 7;
+        pointer-events: none;
+      }
+      .ms-compare-label--before { left: 10px; }
+      .ms-compare-label--after { right: 10px; }
 
       .ms-busy-overlay {
         position: absolute;
@@ -523,8 +569,27 @@
         line-height: 1.4;
       }
       @keyframes ms-spin { to { transform: rotate(360deg); } }
+      .ms-busy-dots { display: flex; gap: 10px; }
+      .ms-busy-dot {
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1;
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+      }
+      .ms-busy-dot--running { animation: ms-dot-pulse 1.1s ease-in-out infinite; }
+      @keyframes ms-dot-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.6; }
+        50% { transform: scale(1.25); opacity: 1; }
+      }
       @media (prefers-reduced-motion: reduce) {
         .ms-busy-spin { animation-duration: 2.4s; }
+        .ms-busy-dot--running { animation: none; opacity: 0.75; }
       }
 
       .ms-visually-hidden {
@@ -699,6 +764,10 @@
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20H7L3 16a2 2 0 0 1 0-3l9-9a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-7 8"/><path d="M6 11l7 7"/></svg>
                     <span data-lang="pdf.maskEditor.erase">Erase</span>
                   </button>
+                  <button type="button" id="ms-undo-btn" class="ms-tool-btn" disabled>
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+                    <span data-lang="maskingStudio.undo">Undo</span>
+                  </button>
                 </div>
                 <div class="ms-brush-row">
                   <label for="ms-brush-slider" data-lang="pdf.maskEditor.brushSize">Brush Size:</label>
@@ -706,7 +775,7 @@
                   <span id="ms-brush-size" class="ms-brush-size">50 px</span>
                 </div>
                 <p class="ms-hint" data-lang="maskingStudio.overlapHint">Paint over an area with a different color to reassign it — every spot belongs to one area only.</p>
-                <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area</p>
+                <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</p>
               </div>
 
               <!-- Generate -->
@@ -721,6 +790,7 @@
               <div class="ms-viewer-header">
                 <div class="toggle-container hidden" id="ms-view-toggle">
                   <button type="button" id="ms-toggle-before" class="toggle-btn" data-lang="modal.staging.before">Before</button>
+                  <button type="button" id="ms-toggle-compare" class="toggle-btn" data-lang="maskingStudio.compare">Compare</button>
                   <button type="button" id="ms-toggle-after" class="toggle-btn active" data-lang="modal.staging.after">After</button>
                 </div>
                 <p class="ms-draw-hint hidden" id="ms-draw-hint" data-lang="maskingStudio.drawHint">Highlight where each piece of furniture should go — one color per area.</p>
@@ -754,6 +824,16 @@
                   <canvas id="ms-base-canvas"></canvas>
                   <!-- One transparent canvas per area is inserted here. -->
                   <canvas id="ms-result-canvas" class="hidden"></canvas>
+                  <!-- Compare view: the result canvas is clipped at the handle,
+                       revealing the original underneath on the left. -->
+                  <span id="ms-compare-label-before" class="ms-compare-label ms-compare-label--before hidden" data-lang="modal.staging.before">Before</span>
+                  <span id="ms-compare-label-after" class="ms-compare-label ms-compare-label--after hidden" data-lang="modal.staging.after">After</span>
+                  <div id="ms-compare" class="ms-compare hidden">
+                    <span class="ms-compare-line"></span>
+                    <button type="button" id="ms-compare-grip" class="ms-compare-grip" data-lang-attr="maskingStudio.compareHandleAria|aria-label" aria-label="Drag to compare before and after">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 3 12 9 6"/><polyline points="15 6 21 12 15 18"/></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -878,6 +958,9 @@
         let genRun = 0;           // ignore async completions from stale runs
         let genMeta = null;       // { coreGrow, featherPx } of the last run
         let busyMsgTimer = null;
+        let undoStack = [];       // pre-stroke canvas snapshots (LIFO, capped)
+        let comparePos = 0.5;     // compare-view divider, 0..1 of photo width
+        let comparing = false;    // dragging the compare divider
 
         // ---------------------------------------------------------------------
         // DOM refs
@@ -896,6 +979,7 @@
         const addLayerBtn = $('#ms-add-layer');
         const brushBtn = $('#ms-brush-btn');
         const eraseBtn = $('#ms-erase-btn');
+        const undoBtn = $('#ms-undo-btn');
         const brushSlider = $('#ms-brush-slider');
         const brushSizeLabel = $('#ms-brush-size');
         const generateBtn = $('#ms-generate');
@@ -905,7 +989,12 @@
         const chipbar = $('#ms-chipbar');
         const viewToggle = $('#ms-view-toggle');
         const toggleBeforeBtn = $('#ms-toggle-before');
+        const toggleCompareBtn = $('#ms-toggle-compare');
         const toggleAfterBtn = $('#ms-toggle-after');
+        const compareEl = $('#ms-compare');
+        const compareGrip = $('#ms-compare-grip');
+        const compareLabelBefore = $('#ms-compare-label-before');
+        const compareLabelAfter = $('#ms-compare-label-after');
         const drawHint = $('#ms-draw-hint');
         const viewerActions = $('#ms-viewer-actions');
         const editHighlightsBtn = $('#ms-edit-highlights');
@@ -984,6 +1073,7 @@
           layerSeq = 0;
           genRun++;
           genMeta = null;
+          undoStack = [];
           addLayer();
 
           photoThumb.src = baseCanvas.toDataURL('image/jpeg', 0.7);
@@ -1244,7 +1334,7 @@
         }
 
         function updateChipbarVisibility() {
-          const visible = !!base && phase !== 'empty' && !(phase === 'review' && view === 'after');
+          const visible = !!base && phase !== 'empty' && !(phase === 'review' && view !== 'before');
           chipbar.classList.toggle('hidden', !visible);
         }
 
@@ -1284,7 +1374,7 @@
             : tx('pdf.maskEditor.referenceInvalid', 'Please choose a valid JPG, PNG, or WebP image.');
         }
 
-        function acceptFurnitureFile(layer, file) {
+        function acceptFurnitureFile(layer, file, announce) {
           if (!layer || !file) return;
           const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
             ? window.StagifyHeic.toDisplayableFile(file)
@@ -1295,6 +1385,10 @@
               layer.furniture = dataUrl;
               renderLayers();
               updateControls();
+              if (announce && getLayer(layer.id)) {
+                const t = tx('maskingStudio.furniturePasted', 'Furniture photo added to {area}');
+                showToast(t.replace('{area}', layerTitle(layer)), 'success');
+              }
             })
             .catch((err) => showToast(refErrorMessage(err), 'error'));
         }
@@ -1318,6 +1412,23 @@
           furnitureInput.value = '';
           acceptFurnitureFile(getLayer(pendingFurnitureLayerId), file);
           pendingFurnitureLayerId = null;
+        });
+
+        // Paste an image from the clipboard: before a photo is loaded it becomes
+        // the room photo; afterwards it becomes the active area's furniture.
+        document.addEventListener('paste', (e) => {
+          if (phase === 'generating') return;
+          const t = e.target;
+          if (t && t.closest && t.closest('input, textarea, [contenteditable]')) return;
+          const files = (e.clipboardData && e.clipboardData.files) || [];
+          const file = Array.prototype.find.call(files, (f) => /^image\//i.test(f.type || ''));
+          if (!file) return;
+          e.preventDefault();
+          if (!base) {
+            handleRoomFile(file);
+            return;
+          }
+          if (phase === 'draw') acceptFurnitureFile(activeLayer(), file, true);
         });
 
         // ---------------------------------------------------------------------
@@ -1399,8 +1510,44 @@
           return false;
         }
 
+        // One snapshot per stroke, taken at pointerdown. A brush stroke can only
+        // touch the active layer and layers that already have paint (pixel
+        // claiming is a no-op on empty canvases), so that's all we store.
+        const UNDO_LIMIT = 5;
+        function snapshotForUndo() {
+          if (!base) return;
+          const entries = [];
+          layers.forEach((l) => {
+            if (l.painted || l.id === activeId) {
+              entries.push({ id: l.id, data: l.canvasEl.getContext('2d').getImageData(0, 0, base.w, base.h) });
+            }
+          });
+          undoStack.push(entries);
+          if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+        }
+
+        function undoStroke() {
+          if (!undoStack.length || phase !== 'draw' || !base) return;
+          const entries = undoStack.pop();
+          entries.forEach((en) => {
+            const l = getLayer(en.id);
+            if (!l) return; // area was removed since this stroke
+            const ctx = l.canvasEl.getContext('2d');
+            ctx.clearRect(0, 0, base.w, base.h);
+            ctx.putImageData(en.data, 0, 0);
+          });
+          layers.forEach((l) => {
+            l.painted = scanHasContent(l.canvasEl);
+            l.blendMask = null;
+          });
+          renderLayers();
+          updateControls();
+        }
+        undoBtn.addEventListener('click', undoStroke);
+
         function startDraw(e) {
           if (!canDraw()) return;
+          snapshotForUndo();
           drawing = true;
           lastX = null;
           lastY = null;
@@ -1423,19 +1570,32 @@
         }
 
         stack.addEventListener('pointerdown', (e) => {
+          if (phase === 'review' && view === 'compare') {
+            // Click anywhere in compare view to move the divider, then drag it.
+            e.preventDefault();
+            try { stack.setPointerCapture(e.pointerId); } catch (err) {}
+            comparing = true;
+            moveCompare(e);
+            return;
+          }
           if (!canDraw()) return;
           e.preventDefault();
           try { stack.setPointerCapture(e.pointerId); } catch (err) {}
           startDraw(e);
         });
         stack.addEventListener('pointermove', (e) => {
+          if (comparing) {
+            e.preventDefault();
+            moveCompare(e);
+            return;
+          }
           updateCursorPreview(e);
           if (!drawing) return;
           e.preventDefault();
           paint(e);
         });
-        stack.addEventListener('pointerup', stopDraw);
-        stack.addEventListener('pointercancel', stopDraw);
+        stack.addEventListener('pointerup', (e) => { comparing = false; stopDraw(e); });
+        stack.addEventListener('pointercancel', (e) => { comparing = false; stopDraw(e); });
         stack.addEventListener('pointerleave', () => { if (cursorEl) cursorEl.style.display = 'none'; });
 
         // Brush-size circle that follows the pointer over the photo, tinted with
@@ -1486,11 +1646,20 @@
         }
         brushSlider.addEventListener('input', () => setBrushSize(parseInt(brushSlider.value, 10)));
 
-        // Desktop shortcuts: B brush, E erase, [ / ] brush size, 1-6 pick area.
+        // Desktop shortcuts: B brush, E erase, [ / ] brush size, 1-6 pick area,
+        // Ctrl+Z undo stroke.
         document.addEventListener('keydown', (e) => {
-          if (e.ctrlKey || e.metaKey || e.altKey) return;
           const t = e.target;
-          if (t && (t.closest && t.closest('input, textarea, select, [contenteditable]'))) return;
+          const typing = t && t.closest && t.closest('input, textarea, select, [contenteditable]');
+          if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+            if (!typing && phase === 'draw' && undoStack.length) {
+              e.preventDefault();
+              undoStroke();
+            }
+            return;
+          }
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          if (typing) return;
           if (!base || phase === 'generating') return;
           const k = e.key.toLowerCase();
           if (k === 'b') { setTool('brush'); }
@@ -1529,23 +1698,66 @@
             setView(view);
           } else {
             resultCanvas.classList.add('hidden');
+            resultCanvas.style.clipPath = '';
             layers.forEach((l) => l.canvasEl.classList.remove('hidden'));
+            compareEl.classList.add('hidden');
+            compareLabelBefore.classList.add('hidden');
+            compareLabelAfter.classList.add('hidden');
+            stack.classList.remove('is-compare');
+            comparing = false;
           }
           renderLayers();
           updateControls();
         }
 
         function setView(v) {
-          view = v === 'before' ? 'before' : 'after';
+          view = v === 'before' ? 'before' : v === 'compare' ? 'compare' : 'after';
           toggleBeforeBtn.classList.toggle('active', view === 'before');
+          toggleCompareBtn.classList.toggle('active', view === 'compare');
           toggleAfterBtn.classList.toggle('active', view === 'after');
-          const showResult = view === 'after' && phase === 'review';
+          const inReview = phase === 'review';
+          const showResult = inReview && view !== 'before';
           resultCanvas.classList.toggle('hidden', !showResult);
           layers.forEach((l) => l.canvasEl.classList.toggle('hidden', showResult));
+          const compareOn = inReview && view === 'compare';
+          compareEl.classList.toggle('hidden', !compareOn);
+          compareLabelBefore.classList.toggle('hidden', !compareOn);
+          compareLabelAfter.classList.toggle('hidden', !compareOn);
+          stack.classList.toggle('is-compare', compareOn);
+          if (compareOn) {
+            setComparePos(comparePos);
+          } else {
+            comparing = false;
+            resultCanvas.style.clipPath = '';
+          }
           updateChipbarVisibility();
         }
         toggleBeforeBtn.addEventListener('click', () => setView('before'));
+        toggleCompareBtn.addEventListener('click', () => setView('compare'));
         toggleAfterBtn.addEventListener('click', () => setView('after'));
+
+        // The result canvas sits on top of the original: clipping its left side
+        // at the divider shows Before on the left, After on the right.
+        function setComparePos(f) {
+          comparePos = Math.min(1, Math.max(0, f));
+          const pct = (comparePos * 100).toFixed(2) + '%';
+          compareEl.style.left = pct;
+          resultCanvas.style.clipPath = 'inset(0 0 0 ' + pct + ')';
+        }
+
+        function moveCompare(e) {
+          const rect = baseCanvas.getBoundingClientRect();
+          if (!rect.width) return;
+          setComparePos((e.clientX - rect.left) / rect.width);
+        }
+
+        compareGrip.addEventListener('keydown', (e) => {
+          const step = 0.03;
+          if (e.key === 'ArrowLeft') { e.preventDefault(); setComparePos(comparePos - step); }
+          else if (e.key === 'ArrowRight') { e.preventDefault(); setComparePos(comparePos + step); }
+          else if (e.key === 'Home') { e.preventDefault(); setComparePos(0); }
+          else if (e.key === 'End') { e.preventDefault(); setComparePos(1); }
+        });
 
         function ensureBusyOverlay() {
           if (busyOverlay) return;
@@ -1553,11 +1765,29 @@
           busyOverlay.className = 'ms-busy-overlay hidden';
           const spin = document.createElement('div');
           spin.className = 'ms-busy-spin';
+          const dots = document.createElement('div');
+          dots.className = 'ms-busy-dots';
           const msg = document.createElement('div');
           msg.className = 'ms-busy-msg';
           busyOverlay.appendChild(spin);
+          busyOverlay.appendChild(dots);
           busyOverlay.appendChild(msg);
           stack.appendChild(busyOverlay);
+        }
+
+        // One dot per running area, in its highlight color: pulsing while it
+        // stages, a check when done, an exclamation mark if it failed.
+        function renderBusyDots(participating) {
+          ensureBusyOverlay();
+          const host = busyOverlay.querySelector('.ms-busy-dots');
+          host.textContent = '';
+          participating.forEach((l) => {
+            const d = document.createElement('span');
+            d.className = 'ms-busy-dot' + (l.status === 'generating' ? ' ms-busy-dot--running' : '');
+            d.style.background = l.status === 'failed' ? '#b91c1c' : layerColor(l);
+            d.textContent = l.status === 'done' ? '✓' : l.status === 'failed' ? '!' : '';
+            host.appendChild(d);
+          });
         }
 
         function loadingMessages() {
@@ -1598,6 +1828,7 @@
           brushSlider.disabled = generating;
           brushBtn.disabled = generating;
           eraseBtn.disabled = generating;
+          undoBtn.disabled = generating || phase !== 'draw' || !undoStack.length;
           newPhotoBtn.disabled = generating;
           editHighlightsBtn.disabled = generating;
           downloadBtn.disabled = generating || !layers.some((l) => l.status === 'done');
@@ -1700,6 +1931,7 @@
             l.blendMask = buildBlendMask(l.canvasEl, base.w, base.h, coreGrow, featherPx);
           });
           setPhase('generating');
+          renderBusyDots(participating);
           progressEl.classList.remove('hidden');
           progressText.classList.remove('hidden');
           updateRunProgress(0, participating.length);
@@ -1717,6 +1949,7 @@
                 if (run !== genRun) return;
                 settled++;
                 updateRunProgress(settled, participating.length);
+                renderBusyDots(participating);
                 renderLayers();
                 updateControls(); // keep layer controls disabled through the run
               })
@@ -1823,6 +2056,7 @@
         function resetStudio() {
           genRun++;
           genMeta = null;
+          undoStack = [];
           layers.forEach((l) => l.canvasEl && l.canvasEl.remove());
           layers = [];
           layerSeq = 0;

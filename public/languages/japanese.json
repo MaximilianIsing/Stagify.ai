@@ -865,8 +865,12 @@
     "openStudioHint": "複数のエリアを色分けしてハイライトし、まとめてステージングできます",
     "mobileTitle": "マスクスタジオはデスクトップ向けツールです",
     "mobileBody": "正確なマスク作業には大きな画面とマウスが必要です。このページはパソコンでご利用ください。",
-    "shortcutsHint": "<kbd>B</kbd> ブラシ&nbsp;· <kbd>E</kbd> 消しゴム&nbsp;· <kbd>[</kbd> <kbd>]</kbd> ブラシサイズ&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> エリア選択",
+    "shortcutsHint": "<kbd>B</kbd> ブラシ&nbsp;· <kbd>E</kbd> 消しゴム&nbsp;· <kbd>[</kbd> <kbd>]</kbd> ブラシサイズ&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> エリア選択&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> 元に戻す",
     "viewResult": "結果を見る",
+    "compare": "比較",
+    "undo": "元に戻す",
+    "furniturePasted": "{area}に家具の写真を追加しました",
+    "compareHandleAria": "ドラッグしてビフォーアフターを比較",
     "loadingMessages": [
       "家具を配置中…",
       "光と影を調整中…",

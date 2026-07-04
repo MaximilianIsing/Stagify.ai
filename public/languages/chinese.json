@@ -866,8 +866,12 @@
     "openStudioHint": "用不同颜色标记多个区域，一次性完成全部布置",
     "mobileTitle": "遮罩工作室是桌面端工具",
     "mobileBody": "精确的遮罩操作需要更大的屏幕和鼠标。请在电脑上打开此页面使用。",
-    "shortcutsHint": "<kbd>B</kbd> 画笔&nbsp;· <kbd>E</kbd> 擦除&nbsp;· <kbd>[</kbd> <kbd>]</kbd> 画笔大小&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> 选择区域",
+    "shortcutsHint": "<kbd>B</kbd> 画笔&nbsp;· <kbd>E</kbd> 擦除&nbsp;· <kbd>[</kbd> <kbd>]</kbd> 画笔大小&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> 选择区域&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> 撤销",
     "viewResult": "查看结果",
+    "compare": "对比",
+    "undo": "撤销",
+    "furniturePasted": "家具照片已添加到{area}",
+    "compareHandleAria": "拖动以对比前后效果",
     "loadingMessages": [
       "正在摆放您的家具…",
       "正在匹配光线与阴影…",
