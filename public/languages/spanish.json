@@ -474,6 +474,7 @@
     }
   },
   "errors": {
+    "heicConvert": "No pudimos leer esa foto HEIC. Prueba con un JPG o PNG.",
     "fileType": "Por favor sube un archivo de imagen PNG, JPG, JPEG, WebP o GIF.",
     "fileTooLarge": "El archivo es demasiado grande. Por favor sube una imagen menor a 100MB.",
     "uploadFirst": "Por favor sube una imagen primero",
@@ -872,6 +873,7 @@
     "undo": "Deshacer",
     "furniturePasted": "Foto de mueble añadida a {area}",
     "compareHandleAria": "Arrastra para comparar el antes y el después",
+    "badge": "Exclusivo de Stagify+",
     "loadingMessages": [
       "Colocando tus muebles…",
       "Igualando luz y sombras…",
