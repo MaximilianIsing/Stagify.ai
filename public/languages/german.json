@@ -885,6 +885,10 @@
     "confirmBody": "Mit einem neuen Foto zu beginnen löscht Ihre markierten Bereiche und die fertigen Ergebnisse.",
     "confirmDiscard": "Verwerfen und fortfahren",
     "confirmKeep": "Ergebnisse behalten",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "zoomFit": "Einpassen",
+    "zoomHint": "Strg+Mausrad zum Zoomen, Leertaste (oder mittlere Maustaste) halten zum Verschieben",
     "loadingMessages": [
       "Ihre Möbel werden platziert…",
       "Licht und Schatten werden abgestimmt…",

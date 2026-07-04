@@ -885,6 +885,10 @@
     "confirmBody": "Recommencer avec une nouvelle photo efface vos zones surlignées et les résultats générés.",
     "confirmDiscard": "Abandonner et continuer",
     "confirmKeep": "Garder mes résultats",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "zoomFit": "Ajuster à la vue",
+    "zoomHint": "Ctrl+molette pour zoomer, maintenez Espace (ou le bouton central) pour vous déplacer",
     "loadingMessages": [
       "Placement de vos meubles…",
       "Harmonisation de la lumière et des ombres…",

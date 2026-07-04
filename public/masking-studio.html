@@ -510,7 +510,9 @@
       .ms-cursor.is-erase { border-style: dashed; border-color: #6b7280; background: rgba(107, 114, 128, 0.12); }
 
       /* --- Workspace ---------------------------------------------------------- */
-      .ms-workspace { padding: 18px; display: flex; flex-direction: column; gap: 14px; min-height: 480px; }
+      /* min-width:0 stops the grid item from growing to fit a zoomed canvas —
+         the viewer scrolls instead. */
+      .ms-workspace { padding: 18px; display: flex; flex-direction: column; gap: 14px; min-height: 480px; min-width: 0; }
       .ms-viewer-header {
         display: flex;
         align-items: center;
@@ -521,7 +523,38 @@
       }
       .ms-draw-hint { margin: 0; font-size: 13px; color: #374151; }
       .ms-viewer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-      .ms-viewer { flex: 1; display: flex; align-items: center; justify-content: center; }
+      /* margin:auto (not flex centering) keeps zoomed content scrollable. */
+      .ms-viewer { flex: 1; display: flex; overflow: auto; max-height: 76vh; }
+      .ms-stack { margin: auto; }
+
+      /* --- Zoom controls -------------------------------------------------------- */
+      .ms-zoom { display: inline-flex; align-items: center; gap: 4px; }
+      .ms-zoom-btn {
+        width: 28px; height: 28px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        background: #fff;
+        color: #374151;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ms-zoom-btn:hover { border-color: #2563eb; color: #1d4ed8; }
+      .ms-zoom-btn:disabled { opacity: 0.4; cursor: default; }
+      .ms-zoom-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+      .ms-zoom-label {
+        font-size: 12px;
+        color: #6b7280;
+        min-width: 42px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      .ms-stack.is-pan { cursor: grab; }
+      .ms-stack.is-pan:active { cursor: grabbing; }
 
       .ms-dropzone {
         width: 100%;
@@ -795,6 +828,7 @@
         </ol>
         <h3 data-lang="maskingStudio.helpShortcuts">Keyboard shortcuts</h3>
         <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo</p>
+        <p class="ms-kbd-hint" data-lang="maskingStudio.zoomHint">Ctrl+scroll to zoom, hold Space (or the middle mouse button) to pan</p>
         <button type="button" id="ms-help-done" class="btn btn-primary ms-help-done"><strong data-lang="maskingStudio.helpClose">Got it</strong></button>
       </div>
     </div>
@@ -936,6 +970,14 @@
 
             <section class="ms-workspace ms-panel" aria-label="Masking Studio workspace">
               <div class="ms-viewer-header">
+                <div id="ms-zoom" class="ms-zoom hidden">
+                  <button type="button" id="ms-zoom-out" class="ms-zoom-btn" data-lang-attr="maskingStudio.zoomOut|aria-label" aria-label="Zoom out" disabled>&minus;</button>
+                  <span id="ms-zoom-label" class="ms-zoom-label" aria-hidden="true">100%</span>
+                  <button type="button" id="ms-zoom-in" class="ms-zoom-btn" data-lang-attr="maskingStudio.zoomIn|aria-label" aria-label="Zoom in">+</button>
+                  <button type="button" id="ms-zoom-fit" class="ms-zoom-btn" data-lang-attr="maskingStudio.zoomFit|aria-label" aria-label="Fit to view" disabled>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                  </button>
+                </div>
                 <div class="toggle-container hidden" id="ms-view-toggle">
                   <button type="button" id="ms-toggle-before" class="toggle-btn" data-lang="modal.staging.before">Before</button>
                   <button type="button" id="ms-toggle-compare" class="toggle-btn" data-lang="maskingStudio.compare">Compare</button>
@@ -951,7 +993,7 @@
 
               <div id="ms-chipbar" class="ms-chipbar hidden" data-lang-attr="maskingStudio.stepAreas|aria-label" aria-label="Furniture areas"></div>
 
-              <div class="ms-viewer">
+              <div class="ms-viewer" id="ms-viewer">
                 <div id="ms-dropzone" class="ms-dropzone" role="button" tabindex="0" data-lang-attr="modal.staging.uploadAreaAria|aria-label" aria-label="Upload a room photo">
                   <div>
                     <div class="ms-dz-icon">
@@ -1118,6 +1160,10 @@
         let undoStack = [];       // pre-stroke canvas snapshots (LIFO, capped)
         let comparePos = 0.5;     // compare-view divider, 0..1 of photo width
         let comparing = false;    // dragging the compare divider
+        let zoom = 1;             // 1 = fit to view, up to 4x
+        let spaceDown = false;    // Space held → pan mode
+        let panning = false;
+        let panStart = null;      // { x, y, sl, st } at pan pointerdown
 
         // ---------------------------------------------------------------------
         // DOM refs
@@ -1139,6 +1185,12 @@
         const confirmDiscardBtn = $('#ms-confirm-discard');
         const confirmKeepBtn = $('#ms-confirm-keep');
         const sampleBtn = $('#ms-sample-btn');
+        const viewerEl = $('#ms-viewer');
+        const zoomEl = $('#ms-zoom');
+        const zoomInBtn = $('#ms-zoom-in');
+        const zoomOutBtn = $('#ms-zoom-out');
+        const zoomFitBtn = $('#ms-zoom-fit');
+        const zoomLabel = $('#ms-zoom-label');
         const layerList = $('#ms-layer-list');
         const addLayerBtn = $('#ms-add-layer');
         const brushBtn = $('#ms-brush-btn');
@@ -1237,6 +1289,7 @@
           genRun++;
           genMeta = null;
           undoStack = [];
+          resetZoom();
           addLayer();
 
           photoThumb.src = baseCanvas.toDataURL('image/jpeg', 0.7);
@@ -1595,6 +1648,70 @@
         });
 
         // ---------------------------------------------------------------------
+        // Zoom & pan. Zoom works by setting an explicit CSS width on the base
+        // canvas (the overlay canvases are inset:0/100%, so they follow), which
+        // keeps all pointer math valid: it already reads getBoundingClientRect.
+        // ---------------------------------------------------------------------
+        const ZOOM_MIN = 1;
+        const ZOOM_MAX = 4;
+
+        function setZoom(nz, focal) {
+          if (!base) return;
+          nz = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, nz));
+          const rect = baseCanvas.getBoundingClientRect();
+          if (!rect.width) return;
+          const fitW = rect.width / zoom; // current width always equals fit × zoom
+          const prev = zoom;
+          zoom = nz;
+          if (zoom === 1) {
+            baseCanvas.style.width = '';
+            baseCanvas.style.maxWidth = '';
+            baseCanvas.style.maxHeight = '';
+          } else {
+            baseCanvas.style.width = (fitW * zoom) + 'px';
+            baseCanvas.style.maxWidth = 'none';
+            baseCanvas.style.maxHeight = 'none';
+          }
+          // Keep the focal point (viewport coords) stationary while scaling.
+          if (focal && prev !== zoom) {
+            const vr = viewerEl.getBoundingClientRect();
+            const ratio = zoom / prev;
+            viewerEl.scrollLeft = (viewerEl.scrollLeft + (focal.x - vr.left)) * ratio - (focal.x - vr.left);
+            viewerEl.scrollTop = (viewerEl.scrollTop + (focal.y - vr.top)) * ratio - (focal.y - vr.top);
+          }
+          zoomLabel.textContent = Math.round(zoom * 100) + '%';
+          zoomInBtn.disabled = zoom >= ZOOM_MAX;
+          zoomOutBtn.disabled = zoom <= ZOOM_MIN;
+          zoomFitBtn.disabled = zoom <= ZOOM_MIN;
+        }
+
+        function resetZoom() {
+          zoom = 1;
+          baseCanvas.style.width = '';
+          baseCanvas.style.maxWidth = '';
+          baseCanvas.style.maxHeight = '';
+          zoomLabel.textContent = '100%';
+          zoomInBtn.disabled = false;
+          zoomOutBtn.disabled = true;
+          zoomFitBtn.disabled = true;
+        }
+
+        function viewerCenter() {
+          const vr = viewerEl.getBoundingClientRect();
+          return { x: vr.left + vr.width / 2, y: vr.top + vr.height / 2 };
+        }
+
+        zoomInBtn.addEventListener('click', () => setZoom(zoom + 0.5, viewerCenter()));
+        zoomOutBtn.addEventListener('click', () => setZoom(zoom - 0.5, viewerCenter()));
+        zoomFitBtn.addEventListener('click', () => setZoom(1));
+
+        viewerEl.addEventListener('wheel', (e) => {
+          if (!base || !e.ctrlKey) return; // plain scroll stays plain scroll
+          e.preventDefault();
+          setZoom(zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), { x: e.clientX, y: e.clientY });
+        }, { passive: false });
+
+        // ---------------------------------------------------------------------
         // Discard confirmation: replacing the photo (or starting over) wipes
         // highlights and staged results, so ask first when results exist.
         // ---------------------------------------------------------------------
@@ -1773,6 +1890,14 @@
         }
 
         stack.addEventListener('pointerdown', (e) => {
+          if ((spaceDown || e.button === 1) && base) {
+            // Pan the zoomed view: drag with Space held or the middle button.
+            e.preventDefault();
+            try { stack.setPointerCapture(e.pointerId); } catch (err) {}
+            panning = true;
+            panStart = { x: e.clientX, y: e.clientY, sl: viewerEl.scrollLeft, st: viewerEl.scrollTop };
+            return;
+          }
           if (phase === 'review' && view === 'compare') {
             // Click anywhere in compare view to move the divider, then drag it.
             e.preventDefault();
@@ -1787,6 +1912,12 @@
           startDraw(e);
         });
         stack.addEventListener('pointermove', (e) => {
+          if (panning) {
+            e.preventDefault();
+            viewerEl.scrollLeft = panStart.sl - (e.clientX - panStart.x);
+            viewerEl.scrollTop = panStart.st - (e.clientY - panStart.y);
+            return;
+          }
           if (comparing) {
             e.preventDefault();
             moveCompare(e);
@@ -1797,8 +1928,8 @@
           e.preventDefault();
           paint(e);
         });
-        stack.addEventListener('pointerup', (e) => { comparing = false; stopDraw(e); });
-        stack.addEventListener('pointercancel', (e) => { comparing = false; stopDraw(e); });
+        stack.addEventListener('pointerup', (e) => { panning = false; comparing = false; stopDraw(e); });
+        stack.addEventListener('pointercancel', (e) => { panning = false; comparing = false; stopDraw(e); });
         stack.addEventListener('pointerleave', () => { if (cursorEl) cursorEl.style.display = 'none'; });
 
         // Brush-size circle that follows the pointer over the photo, tinted with
@@ -1814,7 +1945,7 @@
         function updateCursorPreview(e) {
           ensureCursor();
           const layer = activeLayer();
-          if (!canDraw() || !layer || e.pointerType === 'touch') {
+          if (!canDraw() || !layer || e.pointerType === 'touch' || spaceDown) {
             cursorEl.style.display = 'none';
             return;
           }
@@ -1868,6 +1999,17 @@
           if (e.ctrlKey || e.metaKey || e.altKey) return;
           if (typing) return;
           if (!base || phase === 'generating') return;
+          if (e.code === 'Space') {
+            // Don't hijack Space when a button/link has focus (it activates it).
+            if (t && t.closest && t.closest('button, a, [role="button"]')) return;
+            e.preventDefault();
+            if (!e.repeat) {
+              spaceDown = true;
+              stack.classList.add('is-pan');
+              if (cursorEl) cursorEl.style.display = 'none';
+            }
+            return;
+          }
           const k = e.key.toLowerCase();
           if (k === 'b') { setTool('brush'); }
           else if (k === 'e') { setTool('erase'); }
@@ -1884,8 +2026,18 @@
         });
         document.addEventListener('keyup', (e) => {
           if (e.key.toLowerCase() === 'h') stack.classList.remove('is-peek');
+          if (e.code === 'Space') {
+            spaceDown = false;
+            panning = false;
+            stack.classList.remove('is-pan');
+          }
         });
-        window.addEventListener('blur', () => stack.classList.remove('is-peek'));
+        window.addEventListener('blur', () => {
+          stack.classList.remove('is-peek');
+          spaceDown = false;
+          panning = false;
+          stack.classList.remove('is-pan');
+        });
 
         // ---------------------------------------------------------------------
         // Phases & viewer
@@ -1897,6 +2049,7 @@
           // in the draw phase, existing results stay reachable via "View result".
           const hasResults = layers.some((l) => l.status === 'done' && l.editedImg);
           viewToggle.classList.toggle('hidden', !inReview);
+          zoomEl.classList.toggle('hidden', p === 'empty');
           viewerActions.classList.toggle('hidden', !(inReview || (p === 'draw' && hasResults)));
           editHighlightsBtn.classList.toggle('hidden', !inReview);
           viewResultBtn.classList.toggle('hidden', !(p === 'draw' && hasResults));
@@ -2261,6 +2414,7 @@
           genRun++;
           genMeta = null;
           undoStack = [];
+          resetZoom();
           layers.forEach((l) => l.canvasEl && l.canvasEl.remove());
           layers = [];
           layerSeq = 0;

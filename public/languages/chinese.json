@@ -886,6 +886,10 @@
     "confirmBody": "使用新照片重新开始会清除已标记的区域和生成的结果。",
     "confirmDiscard": "放弃并继续",
     "confirmKeep": "保留我的结果",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "zoomFit": "适应窗口",
+    "zoomHint": "Ctrl+滚轮缩放，按住空格键（或鼠标中键）拖动画面",
     "loadingMessages": [
       "正在摆放您的家具…",
       "正在匹配光线与阴影…",
