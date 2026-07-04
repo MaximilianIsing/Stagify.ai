@@ -102,7 +102,7 @@
         }
       }
 
-      document.querySelectorAll('.nav-ai-designer-pro').forEach(function (el) {
+      document.querySelectorAll('.nav-ai-designer-pro, .nav-masking-studio-pro').forEach(function (el) {
         if (u && u.plan === 'pro') {
           el.classList.remove('hidden');
         } else {
