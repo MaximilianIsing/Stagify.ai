@@ -191,20 +191,6 @@
         color: #1e3a8a;
       }
       .ms-intro p { margin: 0; color: #374151; font-size: 15px; line-height: 1.55; }
-      .ms-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 5px 12px;
-        border-radius: 999px;
-        background: rgba(37, 99, 235, 0.1);
-        border: 1px solid rgba(37, 99, 235, 0.25);
-        color: #1d4ed8;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-        margin-bottom: 10px;
-      }
 
       /* The site's default buttons shout in uppercase; inside the studio (and
          its gate) they read as tool controls, so use sentence case. */
@@ -234,7 +220,25 @@
         box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
       }
 
-      .ms-toolbar { padding: 20px; display: flex; flex-direction: column; }
+      .ms-toolbar { padding: 20px; display: flex; flex-direction: column; position: relative; }
+      .ms-help-btn {
+        position: absolute;
+        top: 14px; right: 14px;
+        width: 26px; height: 26px;
+        border: 1.5px solid var(--border);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.8);
+        color: #1d4ed8;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ms-help-btn:hover { border-color: #2563eb; background: #eff6ff; }
+      .ms-help-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
       .ms-toolbar button, .ms-workspace button { font-family: inherit; }
       .ms-block { padding: 16px 0; border-top: 1px dashed rgba(37, 99, 235, 0.22); }
       .ms-block:first-child { padding-top: 0; border-top: none; }
@@ -251,14 +255,38 @@
       }
       .ms-hint { margin: 10px 0 0; font-size: 12px; color: #6b7280; line-height: 1.5; }
 
-      .ms-photo-meta { display: flex; align-items: center; gap: 12px; }
-      .ms-photo-meta img {
-        width: 72px; height: 54px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid var(--border);
+      /* Uploaded-photo card: the whole thumbnail is the replace button. */
+      .ms-photo-card {
+        position: relative;
+        display: block;
+        width: 100%;
+        padding: 0;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
         background: #fff;
+        cursor: pointer;
+        line-height: 0;
       }
+      .ms-photo-card img { width: 100%; height: 92px; object-fit: cover; display: block; }
+      .ms-photo-card__overlay {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 8px;
+        background: linear-gradient(to top, rgba(17, 24, 39, 0.72), rgba(17, 24, 39, 0.25));
+        color: #fff;
+        font-size: 12.5px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .ms-photo-card:hover { border-color: #93c5fd; }
+      .ms-photo-card:hover .ms-photo-card__overlay { background: linear-gradient(to top, rgba(30, 58, 138, 0.82), rgba(30, 58, 138, 0.35)); }
+      .ms-photo-card:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+      .ms-photo-card:disabled { opacity: 0.6; cursor: default; }
 
       /* --- Layer cards ------------------------------------------------------ */
       .ms-layer-list { display: flex; flex-direction: column; gap: 10px; }
@@ -396,8 +424,38 @@
       .ms-cta .btn { width: 100%; }
       .ms-progress-text { font-size: 13px; color: #374151; font-style: italic; min-height: 18px; }
 
-      /* --- Keyboard shortcut hint --------------------------------------------- */
+      /* --- Help dialog -------------------------------------------------------- */
+      .ms-help-card { text-align: left; max-width: 540px; position: relative; }
+      .ms-help-card h2 { font-size: 1.25rem; padding-right: 30px; }
+      .ms-help-steps {
+        margin: 0 0 18px;
+        padding-left: 22px;
+        color: #374151;
+        font-size: 14px;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .ms-help-card h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #111827; }
+      .ms-help-close {
+        position: absolute;
+        top: 10px; right: 10px;
+        width: 28px; height: 28px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: #6b7280;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .ms-help-close:hover { background: rgba(17, 24, 39, 0.06); color: #111827; }
+      .ms-help-done { margin-top: 18px; width: 100%; }
+
+      /* --- Keyboard shortcut hint (inside the help dialog) --------------------- */
       .ms-kbd-hint { margin: 10px 0 0; font-size: 11.5px; color: #6b7280; line-height: 1.9; }
+      .ms-help-card .ms-kbd-hint { margin: 0; font-size: 13px; }
       .ms-kbd-hint kbd {
         font-family: inherit;
         background: #eef2ff;
@@ -704,6 +762,23 @@
       </nav>
     </header>
 
+    <!-- "How it works" dialog, opened from the ? button in the toolbar. -->
+    <div id="ms-help" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-help-title">
+      <div class="ms-pro-gate__card ms-help-card">
+        <button type="button" id="ms-help-close" class="ms-help-close" data-lang-attr="common.close|aria-label" aria-label="Close">&times;</button>
+        <h2 id="ms-help-title" data-lang="maskingStudio.helpTitle">How the Masking Studio works</h2>
+        <ol class="ms-help-steps">
+          <li data-lang="maskingStudio.helpStep1">Upload a photo of your room.</li>
+          <li data-lang="maskingStudio.helpStep2">Highlight where each piece of furniture should go. Use one color per area, and add more areas for more pieces.</li>
+          <li data-lang="maskingStudio.helpStep3">Give every area a furniture photo, a short prompt, or both.</li>
+          <li data-lang="maskingStudio.helpStep4">Click Apply Edit. Every area is staged at the same time, and only the highlighted spots can change. The rest of your photo stays pixel-perfect.</li>
+        </ol>
+        <h3 data-lang="maskingStudio.helpShortcuts">Keyboard shortcuts</h3>
+        <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</p>
+        <button type="button" id="ms-help-done" class="btn btn-primary ms-help-done"><strong data-lang="maskingStudio.helpClose">Got it</strong></button>
+      </div>
+    </div>
+
     <!-- Shown to signed-in free users instead of the tool. -->
     <div id="ms-pro-gate" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-pro-gate-title">
       <div class="ms-pro-gate__card">
@@ -757,12 +832,8 @@
       <section class="hero" style="grid-template-columns: 1fr; padding: 20px; width: 100%; max-width: 100%; box-sizing: border-box;">
         <div class="ms-shell">
           <div class="ms-intro">
-            <span class="ms-badge">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-              <span data-lang="maskingStudio.badge">Stagify+ exclusive</span>
-            </span>
             <h1 data-lang="maskingStudio.title">Masking Studio</h1>
-            <p data-lang="maskingStudio.subtitle">Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only highlighted areas can change — the rest of your photo stays pixel-perfect.</p>
+            <p data-lang="maskingStudio.subtitle">Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only the highlighted areas can change, so the rest of your photo stays pixel-perfect.</p>
           </div>
 
           <!-- Shown instead of the tool on phones/tablets: precise masking needs a desktop. -->
@@ -775,14 +846,18 @@
 
           <div class="ms-grid">
             <aside class="ms-toolbar ms-panel" aria-label="Masking Studio controls">
+              <button type="button" id="ms-help-btn" class="ms-help-btn" data-lang-attr="maskingStudio.helpTitle|aria-label" aria-label="How the Masking Studio works">?</button>
               <!-- Step 1: room photo -->
               <div class="ms-block">
                 <div class="ms-block-head"><span class="ms-step" aria-hidden="true">1</span><h2 data-lang="maskingStudio.stepPhoto">Room photo</h2></div>
                 <p class="ms-hint" id="ms-photo-empty-hint" data-lang="maskingStudio.stepPhotoHint">Upload a photo of your room in the workspace on the right.</p>
-                <div class="ms-photo-meta hidden" id="ms-photo-meta">
+                <button type="button" id="ms-replace-btn" class="ms-photo-card hidden">
                   <img id="ms-photo-thumb" alt="" data-lang-attr="modal.staging.uploadedRoomAlt|alt">
-                  <button type="button" id="ms-replace-btn" class="btn btn-ghost" data-lang="maskingStudio.replacePhoto">Replace photo</button>
-                </div>
+                  <span class="ms-photo-card__overlay">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.36-6.36L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.36 6.36L3 16"/><path d="M3 21v-5h5"/></svg>
+                    <span data-lang="maskingStudio.replacePhoto">Replace photo</span>
+                  </span>
+                </button>
               </div>
 
               <!-- Step 2: furniture areas (one colored mask each) -->
@@ -816,15 +891,12 @@
                   <span id="ms-brush-size" class="ms-brush-size">50 px</span>
                 </div>
                 <p class="ms-hint" data-lang="maskingStudio.overlapHint">Paint over an area with a different color to reassign it — every spot belongs to one area only.</p>
-                <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo</p>
               </div>
 
               <!-- Generate -->
               <div class="ms-cta">
-                <button type="button" id="ms-generate" class="btn btn-primary btn-lg" disabled>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-                  <strong>Stage highlighted areas</strong>
-                </button>
+                <!-- Same control as the main staging tool's mask editor. -->
+                <button type="button" id="ms-generate" class="btn btn-primary btn-lg" disabled><strong data-lang="pdf.maskEditor.applyEdit">Apply Edit</strong><img src="media-webp/Mask.webp" class="stage-mask-submit__icon" alt="" aria-hidden="true"></button>
                 <div id="ms-progress" class="progress hidden"><div class="bar" id="ms-progress-bar" style="width:0%"></div></div>
                 <div id="ms-progress-text" class="ms-progress-text hidden" aria-live="polite"></div>
               </div>
@@ -837,9 +909,8 @@
                   <button type="button" id="ms-toggle-compare" class="toggle-btn" data-lang="maskingStudio.compare">Compare</button>
                   <button type="button" id="ms-toggle-after" class="toggle-btn active" data-lang="modal.staging.after">After</button>
                 </div>
-                <p class="ms-draw-hint hidden" id="ms-draw-hint" data-lang="maskingStudio.drawHint">Highlight where each piece of furniture should go — one color per area.</p>
                 <div class="ms-viewer-actions hidden" id="ms-viewer-actions">
-                  <button type="button" id="ms-edit-highlights" class="btn btn-ghost" data-lang="maskingStudio.editHighlights">Edit highlights</button>
+                  <button type="button" id="ms-edit-highlights" class="btn btn-ghost" data-lang="maskingStudio.editHighlights">Refine Mask</button>
                   <button type="button" id="ms-view-result" class="btn btn-secondary hidden" data-lang="maskingStudio.viewResult">View result</button>
                   <button type="button" id="ms-download" class="btn btn-secondary" data-lang="modal.staging.downloadResult">Download Result</button>
                   <button type="button" id="ms-new-photo" class="btn btn-ghost" data-lang="modal.staging.uploadAnother">Upload Another</button>
@@ -933,6 +1004,15 @@
         }
 
         // ---------------------------------------------------------------------
+        // "How it works" dialog
+        // ---------------------------------------------------------------------
+        function setHelpOpen(open) {
+          helpEl.classList.toggle('active', open);
+          if (open) helpCloseBtn.focus();
+          else helpBtn.focus();
+        }
+
+        // ---------------------------------------------------------------------
         // Small helpers
         // ---------------------------------------------------------------------
         const $ = (sel) => document.querySelector(sel);
@@ -1016,9 +1096,12 @@
         const baseCanvas = $('#ms-base-canvas');
         const resultCanvas = $('#ms-result-canvas');
         const photoEmptyHint = $('#ms-photo-empty-hint');
-        const photoMeta = $('#ms-photo-meta');
         const photoThumb = $('#ms-photo-thumb');
         const replaceBtn = $('#ms-replace-btn');
+        const helpBtn = $('#ms-help-btn');
+        const helpEl = $('#ms-help');
+        const helpCloseBtn = $('#ms-help-close');
+        const helpDoneBtn = $('#ms-help-done');
         const layerList = $('#ms-layer-list');
         const addLayerBtn = $('#ms-add-layer');
         const brushBtn = $('#ms-brush-btn');
@@ -1039,7 +1122,6 @@
         const compareGrip = $('#ms-compare-grip');
         const compareLabelBefore = $('#ms-compare-label-before');
         const compareLabelAfter = $('#ms-compare-label-after');
-        const drawHint = $('#ms-draw-hint');
         const viewerActions = $('#ms-viewer-actions');
         const editHighlightsBtn = $('#ms-edit-highlights');
         const viewResultBtn = $('#ms-view-result');
@@ -1122,7 +1204,7 @@
 
           photoThumb.src = baseCanvas.toDataURL('image/jpeg', 0.7);
           photoEmptyHint.classList.add('hidden');
-          photoMeta.classList.remove('hidden');
+          replaceBtn.classList.remove('hidden');
           dropzone.classList.add('hidden');
           stack.classList.remove('hidden');
           setPhase('draw');
@@ -1693,6 +1775,11 @@
         // Desktop shortcuts: B brush, E erase, [ / ] brush size, 1-6 pick area,
         // Ctrl+Z undo stroke.
         document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && helpEl.classList.contains('active')) {
+            e.preventDefault();
+            setHelpOpen(false);
+            return;
+          }
           const t = e.target;
           const typing = t && t.closest && t.closest('input, textarea, select, [contenteditable]');
           if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
@@ -1732,7 +1819,6 @@
           viewerActions.classList.toggle('hidden', !(inReview || (p === 'draw' && hasResults)));
           editHighlightsBtn.classList.toggle('hidden', !inReview);
           viewResultBtn.classList.toggle('hidden', !(p === 'draw' && hasResults));
-          drawHint.classList.toggle('hidden', p !== 'draw');
           stack.classList.toggle('can-draw', p === 'draw');
           stack.classList.toggle('is-busy', p === 'generating');
           if (cursorEl && p !== 'draw') cursorEl.style.display = 'none';
@@ -1881,13 +1967,6 @@
           const painted = layers.filter((l) => l.painted);
           const allDetailed = painted.length > 0 && painted.every((l) => l.prompt.trim() || l.furniture);
           generateBtn.disabled = !base || generating || !allDetailed;
-          const strong = generateBtn.querySelector('strong');
-          if (strong) {
-            const template = painted.length > 1
-              ? tx('maskingStudio.generateCount', 'Stage {n} areas')
-              : tx('maskingStudio.generate', 'Stage highlighted areas');
-            strong.textContent = template.replace('{n}', String(painted.length));
-          }
         }
 
         // ---------------------------------------------------------------------
@@ -2108,7 +2187,7 @@
           base = null;
           stack.classList.add('hidden');
           dropzone.classList.remove('hidden');
-          photoMeta.classList.add('hidden');
+          replaceBtn.classList.add('hidden');
           photoEmptyHint.classList.remove('hidden');
           photoThumb.removeAttribute('src');
           resultCanvas.classList.add('hidden');
@@ -2158,6 +2237,13 @@
             });
           });
         })();
+
+        helpBtn.addEventListener('click', () => setHelpOpen(true));
+        helpCloseBtn.addEventListener('click', () => setHelpOpen(false));
+        helpDoneBtn.addEventListener('click', () => setHelpOpen(false));
+        helpEl.addEventListener('click', (e) => {
+          if (e.target === helpEl) setHelpOpen(false);
+        });
 
         addLayerBtn.addEventListener('click', () => {
           if (layers.length >= MAX_LAYERS) {
