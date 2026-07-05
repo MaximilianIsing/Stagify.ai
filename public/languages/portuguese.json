@@ -880,9 +880,6 @@
     "confirmBody": "Começar com uma nova foto apaga suas áreas destacadas e os resultados gerados.",
     "confirmDiscard": "Descartar e continuar",
     "confirmKeep": "Manter meus resultados",
-    "zoomIn": "Aproximar",
-    "zoomOut": "Afastar",
-    "zoomFit": "Ajustar à tela",
     "zoomHint": "Ctrl+rolagem para dar zoom, segure Espaço (ou o botão do meio) para mover",
     "presetSofa": "Sofá|Adicione um sofá moderno e confortável que combine com o estilo do ambiente.",
     "presetArmchair": "Poltrona|Adicione uma poltrona aconchegante que combine com o ambiente.",
@@ -903,6 +900,7 @@
     "resumeNo": "Começar do zero",
     "downloadComparison": "Baixar comparação",
     "helpStep5": "Não gostou de uma área? Use Tentar outra versão para gerar mais opções e alternar entre elas.",
+    "promptIdeas": "Mostrar ideias",
     "loadingMessages": [
       "Posicionando seus móveis…",
       "Ajustando luz e sombras…",

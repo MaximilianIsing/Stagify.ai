@@ -881,9 +881,6 @@
     "confirmBody": "使用新照片重新开始会清除已标记的区域和生成的结果。",
     "confirmDiscard": "放弃并继续",
     "confirmKeep": "保留我的结果",
-    "zoomIn": "放大",
-    "zoomOut": "缩小",
-    "zoomFit": "适应窗口",
     "zoomHint": "Ctrl+滚轮缩放，按住空格键（或鼠标中键）拖动画面",
     "presetSofa": "沙发|添加一张舒适的现代沙发，与房间风格相配。",
     "presetArmchair": "扶手椅|添加一把与房间相配的舒适扶手椅。",
@@ -904,6 +901,7 @@
     "resumeNo": "重新开始",
     "downloadComparison": "下载对比图",
     "helpStep5": "对某个区域不满意？使用\"再试一个版本\"生成更多选项并随时切换。",
+    "promptIdeas": "显示提示建议",
     "loadingMessages": [
       "正在摆放您的家具…",
       "正在匹配光线与阴影…",

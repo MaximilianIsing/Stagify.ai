@@ -880,9 +880,6 @@
     "confirmBody": "Ricominciare con una nuova foto cancella le aree evidenziate e i risultati generati.",
     "confirmDiscard": "Scarta e continua",
     "confirmKeep": "Mantieni i risultati",
-    "zoomIn": "Ingrandisci",
-    "zoomOut": "Riduci",
-    "zoomFit": "Adatta alla vista",
     "zoomHint": "Ctrl+rotellina per lo zoom, tieni premuto Spazio (o il tasto centrale) per spostarti",
     "presetSofa": "Divano|Aggiungi un divano moderno e confortevole adatto allo stile della stanza.",
     "presetArmchair": "Poltrona|Aggiungi una poltrona accogliente in armonia con la stanza.",
@@ -903,6 +900,7 @@
     "resumeNo": "Ricomincia",
     "downloadComparison": "Scarica confronto",
     "helpStep5": "Un'area non ti convince? Usa Prova un'altra versione per generare più opzioni e passare dall'una all'altra.",
+    "promptIdeas": "Mostra idee",
     "loadingMessages": [
       "Posizioniamo i tuoi mobili…",
       "Abbiniamo luci e ombre…",
