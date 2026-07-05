@@ -715,6 +715,10 @@
       "i3": {
         "q": "Posso controlar os móveis e o layout?",
         "a": "Sim. Com o <a href=\"stagify-plus.html\">Stagify+</a>, a barra de instruções permite descrever detalhes como «adicionar um sofá de canto e um tapete grande», e a ferramenta Móveis insere suas próprias peças. Se apenas uma área não ficou boa, mascare-a e gere novamente só aquele ponto em vez de refazer a imagem inteira."
+      },
+      "i4": {
+        "q": "Como mobílio várias áreas de uma vez?",
+        "a": "Com o Stagify+, o <a href=\"masking-studio.html\">Estúdio de Máscaras</a> permite destacar até seis áreas em cores diferentes, dar a cada uma sua própria foto de móvel ou descrição e mobiliá-las todas em paralelo. Apenas os pontos destacados podem mudar, e cada área pode gerar várias versões para você ficar com a melhor. É uma ferramenta para desktop."
       }
     },
     "generate": {

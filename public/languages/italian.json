@@ -715,6 +715,10 @@
       "i3": {
         "q": "Posso controllare i mobili e la disposizione?",
         "a": "Sì. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra delle istruzioni ti permette di descrivere dettagli come «aggiungi un divano ad angolo e un grande tappeto», e lo strumento Mobili inserisce i tuoi pezzi. Se solo un'area non va, mascherala e rigenera solo quel punto invece di rifare tutta l'immagine."
+      },
+      "i4": {
+        "q": "Come arredo più aree contemporaneamente?",
+        "a": "Con Stagify+, lo <a href=\"masking-studio.html\">Studio Maschere</a> ti permette di evidenziare fino a sei aree con colori diversi, assegnare a ciascuna la propria foto del mobile o descrizione e arredarle tutte in parallelo. Solo i punti evidenziati possono cambiare, e ogni area può generare più versioni per tenere la migliore. È uno strumento per desktop."
       }
     },
     "generate": {

@@ -732,6 +732,10 @@
       "i3": {
         "q": "Can I control the furniture and layout?",
         "a": "Yes. With <a href=\"stagify-plus.html\">Stagify+</a> the Prompt Bar lets you describe specifics like \"add a sectional sofa and a large area rug,\" and the Furniture tool brings in your own pieces. If just one area looks off, mask it and regenerate only that spot instead of redoing the whole image."
+      },
+      "i4": {
+        "q": "How do I stage several areas at once?",
+        "a": "With Stagify+ the <a href=\"masking-studio.html\">Masking Studio</a> lets you highlight up to six areas in different colors, give each one its own furniture photo or prompt, and stage them all in parallel. Only the highlighted spots can change, and every area can generate several versions so you keep the best one. It is a desktop tool."
       }
     },
     "generate": {

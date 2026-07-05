@@ -715,6 +715,10 @@
       "i3": {
         "q": "Puis-je contrôler le mobilier et l'agencement ?",
         "a": "Oui. Avec <a href=\"stagify-plus.html\">Stagify+</a>, la barre de consignes vous permet de décrire des détails comme « ajouter un canapé d'angle et un grand tapis », et l'outil Mobilier intègre vos propres pièces. Si une seule zone semble incorrecte, masquez-la et régénérez uniquement cet endroit au lieu de refaire toute l'image."
+      },
+      "i4": {
+        "q": "Comment meubler plusieurs zones à la fois ?",
+        "a": "Avec Stagify+, le <a href=\"masking-studio.html\">Studio de masquage</a> vous permet de surligner jusqu'à six zones de couleurs différentes, de donner à chacune sa photo de meuble ou sa description, et de les meubler toutes en parallèle. Seuls les endroits surlignés peuvent changer, et chaque zone peut générer plusieurs versions pour garder la meilleure. C'est un outil pour ordinateur."
       }
     },
     "generate": {
