@@ -19,12 +19,13 @@
         }
         document.documentElement.className += ' ms-gate-pending';
         // Safety net: never strand a signed-in user on a hidden page if the
-        // plan check stalls (e.g. a hung request).
+        // plan check stalls (e.g. a hung request). Generous enough that a
+        // slow-but-working connection can still finish the check.
         setTimeout(function () {
           if (document.documentElement.classList.contains('ms-gate-pending')) {
             window.location.replace('stagify-plus.html');
           }
-        }, 6000);
+        }, 9000);
       })();
     </script>
     <style>html.ms-gate-pending body{visibility:hidden!important}</style>
@@ -1165,7 +1166,13 @@
             window.location.replace('stagify-plus.html');
             return false;
           }
-          await window.StagifyAuth.fetchMe();
+          try {
+            await window.StagifyAuth.fetchMe();
+          } catch (e) {
+            // Network failure verifying the plan — same treatment as no user.
+            window.location.replace('stagify-plus.html');
+            return false;
+          }
           const u = window.StagifyAuth.user;
           if (!u) {
             // Token was present but invalid/expired.
@@ -2246,13 +2253,19 @@
         // One snapshot per stroke, taken at pointerdown. A brush stroke can only
         // touch the active layer and layers that already have paint (pixel
         // claiming is a no-op on empty canvases), so that's all we store.
+        // Snapshots are canvas-to-canvas copies: unlike getImageData they don't
+        // force a GPU readback, so starting a stroke stays stutter-free.
         const UNDO_LIMIT = 5;
         function snapshotForUndo() {
           if (!base) return;
           const entries = [];
           layers.forEach((l) => {
             if (l.painted || l.id === activeId) {
-              entries.push({ id: l.id, data: l.canvasEl.getContext('2d').getImageData(0, 0, base.w, base.h) });
+              const copy = document.createElement('canvas');
+              copy.width = base.w;
+              copy.height = base.h;
+              copy.getContext('2d').drawImage(l.canvasEl, 0, 0);
+              entries.push({ id: l.id, canvas: copy });
             }
           });
           undoStack.push(entries);
@@ -2267,7 +2280,7 @@
             if (!l) return; // area was removed since this stroke
             const ctx = l.canvasEl.getContext('2d');
             ctx.clearRect(0, 0, base.w, base.h);
-            ctx.putImageData(en.data, 0, 0);
+            ctx.drawImage(en.canvas, 0, 0);
           });
           layers.forEach((l) => {
             l.painted = scanHasContent(l.canvasEl);
