@@ -326,6 +326,16 @@
         box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
       }
       .ms-layer-name { font-weight: 700; font-size: 14px; color: #111827; margin-right: auto; }
+      .ms-layer-caret {
+        flex: 0 0 auto;
+        display: inline-flex;
+        color: #9ca3af;
+        transition: transform 0.15s ease;
+      }
+      .ms-layer.is-active .ms-layer-caret { transform: rotate(90deg); color: #6b7280; }
+      @media (prefers-reduced-motion: reduce) {
+        .ms-layer-caret { transition: none; }
+      }
       .ms-layer-rename {
         flex: 0 0 auto;
         width: 22px; height: 22px;
@@ -1552,6 +1562,10 @@
             const status = document.createElement('span');
             status.className = 'ms-layer-status ' + chip.cls;
             status.textContent = chip.text;
+            const caret = document.createElement('span');
+            caret.className = 'ms-layer-caret';
+            caret.setAttribute('aria-hidden', 'true');
+            caret.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.className = 'ms-layer-remove';
@@ -1566,6 +1580,7 @@
             head.appendChild(name);
             head.appendChild(renameBtn);
             head.appendChild(status);
+            head.appendChild(caret);
             head.appendChild(removeBtn);
             head.addEventListener('click', () => {
               if (phase === 'generating') return;
