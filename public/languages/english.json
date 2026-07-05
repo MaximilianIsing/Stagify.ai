@@ -883,7 +883,7 @@
     "openStudioHint": "Highlight several areas in different colors and stage them all at once",
     "mobileTitle": "Masking Studio is a desktop tool",
     "mobileBody": "Precise masking needs a bigger screen and a mouse. Open this page on your computer to use it.",
-    "shortcutsHint": "<kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo",
+    "shortcutsHint": "<kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo",
     "viewResult": "View result",
     "compare": "Compare",
     "undo": "Undo",
@@ -917,6 +917,8 @@
     "versionPrev": "Previous version",
     "versionNext": "Next version",
     "clearHighlight": "Clear highlight",
+    "toolRect": "Rectangle",
+    "renameAria": "Rename this area",
     "loadingMessages": [
       "Placing your furniture…",
       "Matching light and shadows…",

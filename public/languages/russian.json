@@ -865,7 +865,7 @@
     "openStudioHint": "Выделите несколько участков разными цветами и обставьте их все сразу",
     "mobileTitle": "Студия масок — инструмент для компьютера",
     "mobileBody": "Для точного маскирования нужны большой экран и мышь. Откройте эту страницу на компьютере.",
-    "shortcutsHint": "<kbd>B</kbd> кисть&nbsp;· <kbd>E</kbd> ластик&nbsp;· <kbd>[</kbd> <kbd>]</kbd> размер кисти&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> выбор участка&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> отменить&nbsp;· удерживайте <kbd>H</kbd> показать фото",
+    "shortcutsHint": "<kbd>B</kbd> кисть&nbsp;· <kbd>E</kbd> ластик&nbsp;· <kbd>R</kbd> прямоугольник&nbsp;· <kbd>[</kbd> <kbd>]</kbd> размер кисти&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> выбор участка&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> отменить&nbsp;· удерживайте <kbd>H</kbd> показать фото",
     "viewResult": "Посмотреть результат",
     "compare": "Сравнить",
     "undo": "Отменить",
@@ -899,6 +899,8 @@
     "versionPrev": "Предыдущая версия",
     "versionNext": "Следующая версия",
     "clearHighlight": "Стереть выделение",
+    "toolRect": "Прямоугольник",
+    "renameAria": "Переименовать участок",
     "loadingMessages": [
       "Расставляем вашу мебель…",
       "Подбираем свет и тени…",

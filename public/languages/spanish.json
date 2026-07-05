@@ -867,7 +867,7 @@
     "openStudioHint": "Resalta varias zonas en distintos colores y amúeblalas todas a la vez",
     "mobileTitle": "El Estudio de Máscaras es una herramienta de escritorio",
     "mobileBody": "El enmascarado preciso necesita una pantalla más grande y un ratón. Abre esta página en tu ordenador para usarla.",
-    "shortcutsHint": "<kbd>B</kbd> pincel&nbsp;· <kbd>E</kbd> borrar&nbsp;· <kbd>[</kbd> <kbd>]</kbd> tamaño del pincel&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> elegir zona&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> deshacer&nbsp;· mantén <kbd>H</kbd> ver foto",
+    "shortcutsHint": "<kbd>B</kbd> pincel&nbsp;· <kbd>E</kbd> borrar&nbsp;· <kbd>R</kbd> rectángulo&nbsp;· <kbd>[</kbd> <kbd>]</kbd> tamaño del pincel&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> elegir zona&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> deshacer&nbsp;· mantén <kbd>H</kbd> ver foto",
     "viewResult": "Ver resultado",
     "compare": "Comparar",
     "undo": "Deshacer",
@@ -901,6 +901,8 @@
     "versionPrev": "Versión anterior",
     "versionNext": "Versión siguiente",
     "clearHighlight": "Borrar resaltado",
+    "toolRect": "Rectángulo",
+    "renameAria": "Renombrar esta zona",
     "loadingMessages": [
       "Colocando tus muebles…",
       "Igualando luz y sombras…",
