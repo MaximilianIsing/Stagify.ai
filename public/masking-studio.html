@@ -916,6 +916,18 @@
       </div>
     </div>
 
+    <!-- Offer to restore a saved session (photo + highlights) on return. -->
+    <div id="ms-resume" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-resume-title">
+      <div class="ms-pro-gate__card">
+        <h2 id="ms-resume-title" data-lang="maskingStudio.resumeTitle">Resume your last session?</h2>
+        <p data-lang="maskingStudio.resumeBody">We saved the photo and highlighted areas from your last visit. Pick up where you left off, or start fresh.</p>
+        <div class="ms-pro-gate__actions">
+          <button type="button" id="ms-resume-yes" class="btn btn-primary btn-lg"><strong data-lang="maskingStudio.resumeYes">Resume</strong></button>
+          <button type="button" id="ms-resume-no" class="btn btn-ghost btn-lg"><strong data-lang="maskingStudio.resumeNo">Start fresh</strong></button>
+        </div>
+      </div>
+    </div>
+
     <!-- Confirm before a new photo wipes staged results. -->
     <div id="ms-confirm" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-confirm-title">
       <div class="ms-pro-gate__card">
@@ -1050,6 +1062,7 @@
               <div class="ms-cta">
                 <!-- Same control as the main staging tool's mask editor. -->
                 <button type="button" id="ms-generate" class="btn btn-primary btn-lg" disabled><strong data-lang="pdf.maskEditor.applyEdit">Apply Edit</strong><img src="media-webp/Mask.webp" class="stage-mask-submit__icon" alt="" aria-hidden="true"></button>
+                <p id="ms-cta-hint" class="ms-hint hidden" style="margin: 0; text-align: center;"></p>
                 <div id="ms-progress" class="progress hidden"><div class="bar" id="ms-progress-bar" style="width:0%"></div></div>
                 <div id="ms-progress-text" class="ms-progress-text hidden" aria-live="polite"></div>
               </div>
@@ -1074,6 +1087,7 @@
                   <button type="button" id="ms-edit-highlights" class="btn btn-ghost" data-lang="maskingStudio.editHighlights">Refine Mask</button>
                   <button type="button" id="ms-view-result" class="btn btn-secondary hidden" data-lang="maskingStudio.viewResult">View result</button>
                   <button type="button" id="ms-download" class="btn btn-secondary" data-lang="modal.staging.downloadResult">Download Result</button>
+                  <button type="button" id="ms-download-compare" class="btn btn-ghost" data-lang="maskingStudio.downloadComparison">Download comparison</button>
                   <button type="button" id="ms-new-photo" class="btn btn-ghost" data-lang="modal.staging.uploadAnother">Upload Another</button>
                 </div>
               </div>
@@ -1272,6 +1286,11 @@
         const confirmDiscardBtn = $('#ms-confirm-discard');
         const confirmKeepBtn = $('#ms-confirm-keep');
         const sampleBtn = $('#ms-sample-btn');
+        const resumeEl = $('#ms-resume');
+        const resumeYesBtn = $('#ms-resume-yes');
+        const resumeNoBtn = $('#ms-resume-no');
+        const downloadCompareBtn = $('#ms-download-compare');
+        const ctaHint = $('#ms-cta-hint');
         const viewerEl = $('#ms-viewer');
         const zoomEl = $('#ms-zoom');
         const zoomInBtn = $('#ms-zoom-in');
@@ -1355,7 +1374,7 @@
         // 1920×1080, mirroring its downscale step) so every returned edit maps
         // 1:1 onto our canvases and huge photos don't exhaust canvas memory
         // across up to 6 stacked area layers.
-        function setBaseImage(img) {
+        function setBaseImage(img, opts) {
           const scale = Math.min(1, 1920 / img.width, 1080 / img.height);
           const w = Math.max(1, Math.round(img.width * scale));
           const h = Math.max(1, Math.round(img.height * scale));
@@ -1378,7 +1397,7 @@
           genMeta = null;
           undoStack = [];
           resetZoom();
-          addLayer();
+          if (!(opts && opts.noLayer)) addLayer();
 
           photoThumb.src = baseCanvas.toDataURL('image/jpeg', 0.7);
           photoEmptyHint.classList.add('hidden');
@@ -1386,6 +1405,7 @@
           dropzone.classList.add('hidden');
           stack.classList.remove('hidden');
           setPhase('draw');
+          scheduleSessionSave();
         }
 
         // ---------------------------------------------------------------------
@@ -1428,6 +1448,7 @@
           activeId = layer.id;
           renderLayers();
           updateControls();
+          scheduleSessionSave();
         }
 
         function removeLayer(id) {
@@ -1441,6 +1462,7 @@
           if (phase === 'review') compositeAll();
           renderLayers();
           updateControls();
+          scheduleSessionSave();
         }
 
         function getLayer(id) {
@@ -1514,6 +1536,7 @@
                 settled = true;
                 layer.name = input.value.trim();
                 renderLayers();
+                scheduleSessionSave();
               };
               input.addEventListener('keydown', (ev) => {
                 ev.stopPropagation();
@@ -1564,6 +1587,7 @@
               status.className = 'ms-layer-status ' + liveChip.cls;
               status.textContent = liveChip.text;
               updateControls();
+              scheduleSessionSave();
             });
             promptEl.addEventListener('focus', () => {
               if (activeId !== layer.id && phase !== 'generating') {
@@ -1625,6 +1649,7 @@
                 layer.furniture = null;
                 renderLayers();
                 updateControls();
+                scheduleSessionSave();
               });
               prev.appendChild(img);
               prev.appendChild(rm);
@@ -1657,6 +1682,7 @@
                 layer.blendMask = null;
                 renderLayers();
                 updateControls();
+                scheduleSessionSave();
               });
               body.appendChild(clearBtn);
             }
@@ -1806,6 +1832,7 @@
               layer.furniture = dataUrl;
               renderLayers();
               updateControls();
+              scheduleSessionSave();
               if (announce && getLayer(layer.id)) {
                 const t = tx('maskingStudio.furniturePasted', 'Furniture photo added to {area}');
                 showToast(t.replace('{area}', layerTitle(layer)), 'success');
@@ -1850,6 +1877,158 @@
             return;
           }
           if (phase === 'draw') acceptFurnitureFile(activeLayer(), file, true);
+        });
+
+        // ---------------------------------------------------------------------
+        // Session persistence: the photo, strokes, prompts, and furniture refs
+        // are saved to IndexedDB (debounced) so a crash or closed tab doesn't
+        // lose the work. Generated results are deliberately not persisted —
+        // restore returns to the draw phase with everything ready to re-run.
+        // All storage calls fail silently (private mode, quota, old browsers).
+        // ---------------------------------------------------------------------
+        let idbPromise = null;
+        let saveTimer = null;
+
+        function idb() {
+          if (!idbPromise) {
+            idbPromise = new Promise((resolve) => {
+              try {
+                const req = indexedDB.open('stagify-masking-studio', 1);
+                req.onupgradeneeded = () => { req.result.createObjectStore('session'); };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => resolve(null);
+              } catch (e) { resolve(null); }
+            });
+          }
+          return idbPromise;
+        }
+
+        function idbOp(mode, fn) {
+          return idb().then((db) => new Promise((resolve) => {
+            if (!db) { resolve(null); return; }
+            try {
+              const tr = db.transaction('session', mode);
+              const out = fn(tr.objectStore('session'));
+              tr.oncomplete = () => resolve(out && 'result' in out ? out.result : null);
+              tr.onerror = () => resolve(null);
+            } catch (e) { resolve(null); }
+          }));
+        }
+
+        const sessionSave = (value) => idbOp('readwrite', (s) => s.put(value, 'current'));
+        const sessionLoad = () => idbOp('readonly', (s) => s.get('current'));
+        const sessionClear = () => idbOp('readwrite', (s) => s.delete('current'));
+
+        function toBlob(canvas, type, q) {
+          return new Promise((resolve) => {
+            try { canvas.toBlob(resolve, type, q); } catch (e) { resolve(null); }
+          });
+        }
+
+        function scheduleSessionSave() {
+          if (!base) return;
+          if (saveTimer) clearTimeout(saveTimer);
+          saveTimer = setTimeout(saveSessionNow, 1500);
+        }
+
+        async function saveSessionNow() {
+          if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+          if (!base || phase === 'generating') return;
+          try {
+            const baseBlob = await toBlob(base.canvas, 'image/jpeg', 0.9);
+            if (!baseBlob) return;
+            const layerData = [];
+            for (const l of layers) {
+              layerData.push({
+                colorIdx: l.colorIdx,
+                name: l.name,
+                prompt: l.prompt,
+                furniture: l.furniture,
+                painted: l.painted,
+                mask: l.painted ? await toBlob(l.canvasEl, 'image/png') : null,
+              });
+            }
+            await sessionSave({ savedAt: Date.now(), baseBlob: baseBlob, layers: layerData });
+          } catch (e) {}
+        }
+
+        function blobToImage(blob) {
+          return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(blob);
+            const im = new Image();
+            im.onload = () => { URL.revokeObjectURL(url); resolve(im); };
+            im.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode')); };
+            im.src = url;
+          });
+        }
+
+        async function restoreSession(saved) {
+          const img = await blobToImage(saved.baseBlob);
+          setBaseImage(img, { noLayer: true });
+          for (const ld of saved.layers || []) {
+            if (layers.length >= MAX_LAYERS) break;
+            const c = document.createElement('canvas');
+            c.width = base.w;
+            c.height = base.h;
+            c.className = 'ms-layer-canvas';
+            stack.insertBefore(c, resultCanvas);
+            let painted = false;
+            if (ld.mask) {
+              try {
+                const maskImg = await blobToImage(ld.mask);
+                c.getContext('2d').drawImage(maskImg, 0, 0, base.w, base.h);
+                painted = true;
+              } catch (e) {}
+            }
+            layers.push({
+              id: 'L' + (++layerSeq),
+              colorIdx: Math.min(PALETTE.length - 1, Math.max(0, ld.colorIdx || 0)),
+              canvasEl: c,
+              painted: painted,
+              name: ld.name || '',
+              prompt: ld.prompt || '',
+              furniture: ld.furniture || null,
+              status: 'idle',
+              editedImg: null,
+              candidates: [],
+              candIdx: 0,
+              blendMask: null,
+              errorMsg: '',
+              el: null,
+            });
+          }
+          if (!layers.length) addLayer();
+          activeId = layers[0].id;
+          renderLayers();
+          updateControls();
+        }
+
+        // Returns true if the resume dialog was shown (suppresses first-visit help).
+        async function maybeOfferResume() {
+          let saved = null;
+          try { saved = await sessionLoad(); } catch (e) {}
+          if (!saved || !saved.baseBlob || base) return false;
+          resumeEl.classList.add('active');
+          resumeYesBtn.focus();
+          resumeYesBtn.addEventListener('click', async () => {
+            resumeEl.classList.remove('active');
+            try {
+              await restoreSession(saved);
+            } catch (e) {
+              showToast(tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
+              sessionClear();
+            }
+          }, { once: true });
+          resumeNoBtn.addEventListener('click', () => {
+            resumeEl.classList.remove('active');
+            sessionClear();
+          }, { once: true });
+          return true;
+        }
+
+        // Flush the pending save when the tab goes to the background.
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden' && saveTimer) saveSessionNow();
         });
 
         // ---------------------------------------------------------------------
@@ -2027,10 +2206,20 @@
           lastY = p.y;
         }
 
+        // Downsampled alpha scan: reading a 256px-wide sample instead of the
+        // full canvas is ~50x less data per stroke-end. drawImage's area
+        // averaging keeps even a minimum-size brush dot well above threshold.
+        const scanScratch = document.createElement('canvas');
         function scanHasContent(canvas) {
-          const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+          const sw = Math.min(256, canvas.width);
+          const sh = Math.max(1, Math.round(canvas.height * (sw / canvas.width)));
+          scanScratch.width = sw;  // resizing also clears the scratch canvas
+          scanScratch.height = sh;
+          const sctx = scanScratch.getContext('2d', { willReadFrequently: true });
+          sctx.drawImage(canvas, 0, 0, sw, sh);
+          const d = sctx.getImageData(0, 0, sw, sh).data;
           for (let i = 3; i < d.length; i += 4) {
-            if (d[i] > 10) return true;
+            if (d[i] > 8) return true;
           }
           return false;
         }
@@ -2067,6 +2256,7 @@
           });
           renderLayers();
           updateControls();
+          scheduleSessionSave();
         }
         undoBtn.addEventListener('click', undoStroke);
 
@@ -2149,6 +2339,7 @@
           });
           renderLayers();
           updateControls();
+          scheduleSessionSave();
         }
 
         function cancelRect() {
@@ -2173,6 +2364,7 @@
           });
           renderLayers();
           updateControls();
+          scheduleSessionSave();
         }
 
         stack.addEventListener('pointerdown', (e) => {
@@ -2283,6 +2475,7 @@
           if (e.key === 'Escape') {
             if (confirmEl.classList.contains('active')) { e.preventDefault(); closeConfirm(); return; }
             if (helpEl.classList.contains('active')) { e.preventDefault(); setHelpOpen(false); return; }
+            if (rectDragging) { e.preventDefault(); cancelRect(); return; }
           }
           const t = e.target;
           const typing = t && t.closest && t.closest('input, textarea, select, [contenteditable]');
@@ -2448,6 +2641,7 @@
             d.className = 'ms-busy-dot' + (l.status === 'generating' ? ' ms-busy-dot--running' : '');
             d.style.background = l.status === 'failed' ? '#b91c1c' : layerColor(l);
             d.textContent = l.status === 'done' ? '✓' : l.status === 'failed' ? '!' : '';
+            d.title = layerTitle(l);
             host.appendChild(d);
           });
         }
@@ -2500,6 +2694,17 @@
           const painted = layers.filter((l) => l.painted);
           const allDetailed = painted.length > 0 && painted.every((l) => l.prompt.trim() || l.furniture);
           generateBtn.disabled = !base || generating || !allDetailed;
+          downloadCompareBtn.disabled = downloadBtn.disabled;
+
+          // Explain a disabled Apply Edit instead of leaving it a mystery.
+          let hint = '';
+          if (!generating) {
+            if (!base) hint = tx('errors.uploadFirst', 'Please upload an image first');
+            else if (!painted.length) hint = tx('maskingStudio.needHighlight', 'Paint at least one area on the photo first.');
+            else if (!allDetailed) hint = tx('maskingStudio.needPromptOrFurniture', 'Each highlighted area needs a short prompt or a furniture photo.');
+          }
+          ctaHint.textContent = hint;
+          ctaHint.classList.toggle('hidden', !hint);
         }
 
         // ---------------------------------------------------------------------
@@ -2554,6 +2759,22 @@
           layer.editedImg = img;
         }
 
+        // The room payload goes up as JPEG (~10x smaller than PNG across N
+        // parallel requests). This never touches the pixel-preservation
+        // guarantee: compositing happens client-side from the pristine canvas,
+        // so the upload encoding only affects what the model sees inside the
+        // masked areas. Flattened onto white in case the source had alpha.
+        function roomPayload() {
+          const c = document.createElement('canvas');
+          c.width = base.w;
+          c.height = base.h;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, base.w, base.h);
+          ctx.drawImage(base.canvas, 0, 0);
+          return c.toDataURL('image/jpeg', 0.92);
+        }
+
         function updateRunProgress(doneCount, total) {
           progressBar.style.width = Math.round((doneCount / total) * 100) + '%';
           const template = tx('maskingStudio.progressCount', '{done} of {total} areas staged');
@@ -2581,7 +2802,7 @@
           const coreGrow = Math.max(12, Math.round(maxDim * 0.02275));
           const featherPx = Math.max(20, Math.round(maxDim * 0.04));
           genMeta = { coreGrow: coreGrow, featherPx: featherPx };
-          const imageDataUrl = base.canvas.toDataURL('image/png');
+          const imageDataUrl = roomPayload();
 
           await maskCoreReady;
           participating.forEach((l) => {
@@ -2661,7 +2882,7 @@
           renderLayers();
           updateControls();
           try {
-            await runLayer(layer, base.canvas.toDataURL('image/png'), genMeta.coreGrow, run);
+            await runLayer(layer, roomPayload(), genMeta.coreGrow, run);
             if (run !== genRun) return;
             layer.status = 'done';
           } catch (err) {
@@ -2733,11 +2954,55 @@
           link.click();
         });
 
+        // Side-by-side before/after with corner labels — listing-ready.
+        downloadCompareBtn.addEventListener('click', () => {
+          if (!layers.some((l) => l.status === 'done')) return;
+          compositeAll();
+          const gap = Math.max(8, Math.round(base.w * 0.015));
+          const c = document.createElement('canvas');
+          c.width = base.w * 2 + gap;
+          c.height = base.h;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.drawImage(base.canvas, 0, 0);
+          ctx.drawImage(resultCanvas, base.w + gap, 0);
+          const fs = Math.max(18, Math.round(base.h * 0.035));
+          const pad = Math.round(fs * 0.5);
+          ctx.font = '700 ' + fs + 'px Inter, Arial, sans-serif';
+          ctx.textBaseline = 'middle';
+          const drawLabel = (text, x) => {
+            const w = ctx.measureText(text).width;
+            const bx = x + pad;
+            const by = pad;
+            const bw = w + pad * 2;
+            const bh = fs + pad;
+            ctx.fillStyle = 'rgba(17, 24, 39, 0.62)';
+            if (ctx.roundRect) {
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, Math.round(bh / 2));
+              ctx.fill();
+            } else {
+              ctx.fillRect(bx, by, bw, bh);
+            }
+            ctx.fillStyle = '#fff';
+            ctx.fillText(text, bx + pad, by + bh / 2);
+          };
+          drawLabel(tx('modal.staging.before', 'Before'), 0);
+          drawLabel(tx('modal.staging.after', 'After'), base.w + gap);
+          const link = document.createElement('a');
+          link.download = 'stagify-before-after-' + Date.now() + '.jpg';
+          link.href = c.toDataURL('image/jpeg', 0.92);
+          link.click();
+        });
+
         function resetStudio() {
           genRun++;
           genMeta = null;
           undoStack = [];
           resetZoom();
+          if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+          sessionClear();
           layers.forEach((l) => l.canvasEl && l.canvasEl.remove());
           layers = [];
           layerSeq = 0;
@@ -2835,9 +3100,11 @@
         // Boot
         // ---------------------------------------------------------------------
         setPhase('empty');
-        ensureStudioProAccess().then((isPro) => {
+        ensureStudioProAccess().then(async (isPro) => {
           if (!isPro) return;
-          // First visit: open the "how it works" dialog once.
+          // A saved session takes priority over the first-visit walkthrough.
+          const offeredResume = await maybeOfferResume();
+          if (offeredResume) return;
           let seen = null;
           try { seen = localStorage.getItem('msHelpSeen'); } catch (e) {}
           if (!seen) {

@@ -902,6 +902,11 @@
     "clearHighlight": "Effacer le surlignage",
     "toolRect": "Rectangle",
     "renameAria": "Renommer cette zone",
+    "resumeTitle": "Reprendre votre dernière session ?",
+    "resumeBody": "Nous avons enregistré la photo et les zones surlignées de votre dernière visite. Reprenez où vous en étiez ou repartez de zéro.",
+    "resumeYes": "Reprendre",
+    "resumeNo": "Repartir de zéro",
+    "downloadComparison": "Télécharger la comparaison",
     "loadingMessages": [
       "Placement de vos meubles…",
       "Harmonisation de la lumière et des ombres…",

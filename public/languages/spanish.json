@@ -903,6 +903,11 @@
     "clearHighlight": "Borrar resaltado",
     "toolRect": "Rectángulo",
     "renameAria": "Renombrar esta zona",
+    "resumeTitle": "¿Reanudar tu última sesión?",
+    "resumeBody": "Guardamos la foto y las zonas resaltadas de tu última visita. Continúa donde lo dejaste o empieza de nuevo.",
+    "resumeYes": "Reanudar",
+    "resumeNo": "Empezar de nuevo",
+    "downloadComparison": "Descargar comparación",
     "loadingMessages": [
       "Colocando tus muebles…",
       "Igualando luz y sombras…",

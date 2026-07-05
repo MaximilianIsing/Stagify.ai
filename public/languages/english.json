@@ -919,6 +919,11 @@
     "clearHighlight": "Clear highlight",
     "toolRect": "Rectangle",
     "renameAria": "Rename this area",
+    "resumeTitle": "Resume your last session?",
+    "resumeBody": "We saved the photo and highlighted areas from your last visit. Pick up where you left off, or start fresh.",
+    "resumeYes": "Resume",
+    "resumeNo": "Start fresh",
+    "downloadComparison": "Download comparison",
     "loadingMessages": [
       "Placing your furniture…",
       "Matching light and shadows…",

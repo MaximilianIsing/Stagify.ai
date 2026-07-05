@@ -902,6 +902,11 @@
     "clearHighlight": "하이라이트 지우기",
     "toolRect": "사각형",
     "renameAria": "이 영역 이름 바꾸기",
+    "resumeTitle": "지난 세션을 이어서 할까요?",
+    "resumeBody": "지난번 사진과 표시한 영역을 저장해 두었습니다. 이어서 계속하거나 새로 시작하세요.",
+    "resumeYes": "이어서 하기",
+    "resumeNo": "새로 시작",
+    "downloadComparison": "비교 이미지 다운로드",
     "loadingMessages": [
       "가구를 배치하는 중…",
       "빛과 그림자를 맞추는 중…",
