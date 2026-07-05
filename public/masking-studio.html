@@ -2557,6 +2557,12 @@
           if (e.key === 'Escape') {
             if (confirmEl.classList.contains('active')) { e.preventDefault(); closeConfirm(); return; }
             if (helpEl.classList.contains('active')) { e.preventDefault(); setHelpOpen(false); return; }
+            if (resumeEl.classList.contains('active')) {
+              // Dismiss without deciding: the stored session stays for later.
+              e.preventDefault();
+              resumeEl.classList.remove('active');
+              return;
+            }
             if (rectDragging) { e.preventDefault(); cancelRect(); return; }
           }
           const t = e.target;
