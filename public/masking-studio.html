@@ -318,6 +318,36 @@
         box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
       }
       .ms-layer-name { font-weight: 700; font-size: 14px; color: #111827; margin-right: auto; }
+      .ms-layer-rename {
+        flex: 0 0 auto;
+        width: 22px; height: 22px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: #9ca3af;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.12s ease;
+      }
+      .ms-layer:hover .ms-layer-rename, .ms-layer-rename:focus-visible { opacity: 1; }
+      .ms-layer-rename:hover { color: #1d4ed8; background: rgba(37, 99, 235, 0.08); }
+      .ms-layer-name-input {
+        flex: 1;
+        min-width: 0;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 14px;
+        color: #111827;
+        border: 1px solid #93c5fd;
+        border-radius: 6px;
+        padding: 2px 6px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .ms-layer-rename { transition: none; }
+      }
       .ms-layer-status {
         font-size: 11px;
         font-weight: 600;
@@ -436,7 +466,7 @@
       .ms-add-layer { width: 100%; margin-top: 10px; }
 
       /* --- Brush controls ---------------------------------------------------- */
-      .ms-tools { display: inline-flex; gap: 6px; }
+      .ms-tools { display: inline-flex; gap: 6px; flex-wrap: wrap; }
       .ms-tool-btn {
         display: inline-flex;
         align-items: center;
@@ -551,6 +581,16 @@
         display: none;
       }
       .ms-cursor.is-erase { border-style: dashed; border-color: #6b7280; background: rgba(107, 114, 128, 0.12); }
+
+      /* Marquee preview while dragging out a rectangle highlight. */
+      .ms-rect-preview {
+        position: absolute;
+        display: none;
+        border: 2px dashed var(--cursor-color, #2563eb);
+        background: color-mix(in srgb, var(--cursor-color, #2563eb) 18%, transparent);
+        pointer-events: none;
+        z-index: 6;
+      }
 
       /* --- Workspace ---------------------------------------------------------- */
       /* min-width:0 stops the grid item from growing to fit a zoomed canvas —
@@ -870,7 +910,7 @@
           <li data-lang="maskingStudio.helpStep4">Click Apply Edit. Every area is staged at the same time, and only the highlighted spots can change. The rest of your photo stays pixel-perfect.</li>
         </ol>
         <h3 data-lang="maskingStudio.helpShortcuts">Keyboard shortcuts</h3>
-        <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo</p>
+        <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo</p>
         <p class="ms-kbd-hint" data-lang="maskingStudio.zoomHint">Ctrl+scroll to zoom, hold Space (or the middle mouse button) to pan</p>
         <button type="button" id="ms-help-done" class="btn btn-primary ms-help-done"><strong data-lang="maskingStudio.helpClose">Got it</strong></button>
       </div>
@@ -988,6 +1028,10 @@
                   <button type="button" id="ms-erase-btn" class="ms-tool-btn" aria-pressed="false" title="E">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20H7L3 16a2 2 0 0 1 0-3l9-9a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-7 8"/><path d="M6 11l7 7"/></svg>
                     <span data-lang="pdf.maskEditor.erase">Erase</span>
+                  </button>
+                  <button type="button" id="ms-rect-btn" class="ms-tool-btn" aria-pressed="false" title="R">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="16" height="13" rx="1.5"/></svg>
+                    <span data-lang="maskingStudio.toolRect">Rectangle</span>
                   </button>
                   <button type="button" id="ms-undo-btn" class="ms-tool-btn" disabled title="Ctrl+Z">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
@@ -1238,6 +1282,7 @@
         const addLayerBtn = $('#ms-add-layer');
         const brushBtn = $('#ms-brush-btn');
         const eraseBtn = $('#ms-erase-btn');
+        const rectBtn = $('#ms-rect-btn');
         const undoBtn = $('#ms-undo-btn');
         const brushSlider = $('#ms-brush-slider');
         const brushSizeLabel = $('#ms-brush-size');
@@ -1368,6 +1413,7 @@
             colorIdx: colorIdx,
             canvasEl: c,
             painted: false,
+            name: '',            // user-given name; empty → "Area {n}"
             prompt: '',
             furniture: null,
             status: 'idle',      // idle | generating | done | failed
@@ -1410,6 +1456,7 @@
         }
 
         function layerTitle(layer) {
+          if (layer.name) return layer.name;
           const template = tx('maskingStudio.areaName', 'Area {n}');
           const n = layers.indexOf(layer) + 1;
           return template.replace('{n}', String(n));
@@ -1441,6 +1488,40 @@
             const name = document.createElement('span');
             name.className = 'ms-layer-name';
             name.textContent = layerTitle(layer);
+            name.style.marginRight = '0';
+            const renameBtn = document.createElement('button');
+            renameBtn.type = 'button';
+            renameBtn.className = 'ms-layer-rename';
+            renameBtn.style.marginRight = 'auto';
+            renameBtn.setAttribute('aria-label', tx('maskingStudio.renameAria', 'Rename this area'));
+            renameBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
+            renameBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              if (phase === 'generating') return;
+              let settled = false;
+              const input = document.createElement('input');
+              input.type = 'text';
+              input.className = 'ms-layer-name-input';
+              input.maxLength = 24;
+              input.value = layer.name || layerTitle(layer);
+              head.replaceChild(input, name);
+              renameBtn.classList.add('hidden');
+              input.focus();
+              input.select();
+              input.addEventListener('click', (ev) => ev.stopPropagation());
+              const commit = () => {
+                if (settled) return;
+                settled = true;
+                layer.name = input.value.trim();
+                renderLayers();
+              };
+              input.addEventListener('keydown', (ev) => {
+                ev.stopPropagation();
+                if (ev.key === 'Enter') commit();
+                else if (ev.key === 'Escape') { settled = true; renderLayers(); }
+              });
+              input.addEventListener('blur', commit);
+            });
             const chip = statusChip(layer);
             const status = document.createElement('span');
             status.className = 'ms-layer-status ' + chip.cls;
@@ -1457,6 +1538,7 @@
             });
             head.appendChild(dot);
             head.appendChild(name);
+            head.appendChild(renameBtn);
             head.appendChild(status);
             head.appendChild(removeBtn);
             head.addEventListener('click', () => {
@@ -1997,6 +2079,87 @@
           paint(e);
         }
 
+        // --- Rectangle tool: drag out a marquee, fill it on release ------------
+        let rectDragging = false;
+        let rectStartPt = null;
+        let rectPreviewEl = null;
+
+        function beginRect(e) {
+          const p = canvasPoint(e);
+          if (!p) return;
+          snapshotForUndo();
+          rectDragging = true;
+          rectStartPt = p;
+          if (!rectPreviewEl) {
+            rectPreviewEl = document.createElement('div');
+            rectPreviewEl.className = 'ms-rect-preview';
+            rectPreviewEl.setAttribute('aria-hidden', 'true');
+            stack.appendChild(rectPreviewEl);
+          }
+          updateRectPreview(p);
+        }
+
+        function updateRectPreview(p) {
+          const rect = baseCanvas.getBoundingClientRect();
+          if (!rect.width) return;
+          const sx = rect.width / base.w;
+          const sy = rect.height / base.h;
+          rectPreviewEl.style.display = 'block';
+          rectPreviewEl.style.left = (Math.min(rectStartPt.x, p.x) * sx) + 'px';
+          rectPreviewEl.style.top = (Math.min(rectStartPt.y, p.y) * sy) + 'px';
+          rectPreviewEl.style.width = (Math.abs(p.x - rectStartPt.x) * sx) + 'px';
+          rectPreviewEl.style.height = (Math.abs(p.y - rectStartPt.y) * sy) + 'px';
+          const layer = activeLayer();
+          if (layer) rectPreviewEl.style.setProperty('--cursor-color', layerColor(layer));
+        }
+
+        function endRect(e) {
+          if (!rectDragging) return;
+          rectDragging = false;
+          if (rectPreviewEl) rectPreviewEl.style.display = 'none';
+          const p = canvasPoint(e);
+          const layer = activeLayer();
+          const start = rectStartPt;
+          rectStartPt = null;
+          if (!p || !layer || !start) return;
+          const x0 = Math.min(start.x, p.x);
+          const y0 = Math.min(start.y, p.y);
+          const w = Math.abs(p.x - start.x);
+          const h = Math.abs(p.y - start.y);
+          if (w < 3 || h < 3) {
+            undoStack.pop(); // nothing was drawn — drop the pre-stroke snapshot
+            updateControls();
+            return;
+          }
+          const ctx = layer.canvasEl.getContext('2d');
+          ctx.fillStyle = layerColor(layer);
+          ctx.fillRect(x0, y0, w, h);
+          // Claim these pixels from every other area, same as brush strokes.
+          layers.forEach((other) => {
+            if (other !== layer) {
+              const octx = other.canvasEl.getContext('2d');
+              octx.globalCompositeOperation = 'destination-out';
+              octx.fillRect(x0, y0, w, h);
+              octx.globalCompositeOperation = 'source-over';
+            }
+          });
+          layers.forEach((l) => {
+            l.painted = scanHasContent(l.canvasEl);
+            l.blendMask = null;
+          });
+          renderLayers();
+          updateControls();
+        }
+
+        function cancelRect() {
+          if (!rectDragging) return;
+          rectDragging = false;
+          rectStartPt = null;
+          if (rectPreviewEl) rectPreviewEl.style.display = 'none';
+          undoStack.pop();
+          updateControls();
+        }
+
         function stopDraw() {
           if (!drawing) return;
           drawing = false;
@@ -2032,6 +2195,7 @@
           if (!canDraw()) return;
           e.preventDefault();
           try { stack.setPointerCapture(e.pointerId); } catch (err) {}
+          if (tool === 'rect') { beginRect(e); return; }
           startDraw(e);
         });
         stack.addEventListener('pointermove', (e) => {
@@ -2046,13 +2210,19 @@
             moveCompare(e);
             return;
           }
+          if (rectDragging) {
+            e.preventDefault();
+            const p = canvasPoint(e);
+            if (p) updateRectPreview(p);
+            return;
+          }
           updateCursorPreview(e);
           if (!drawing) return;
           e.preventDefault();
           paint(e);
         });
-        stack.addEventListener('pointerup', (e) => { panning = false; comparing = false; stopDraw(e); });
-        stack.addEventListener('pointercancel', (e) => { panning = false; comparing = false; stopDraw(e); });
+        stack.addEventListener('pointerup', (e) => { panning = false; comparing = false; endRect(e); stopDraw(e); });
+        stack.addEventListener('pointercancel', (e) => { panning = false; comparing = false; cancelRect(); stopDraw(e); });
         stack.addEventListener('pointerleave', () => { if (cursorEl) cursorEl.style.display = 'none'; });
 
         // Brush-size circle that follows the pointer over the photo, tinted with
@@ -2068,7 +2238,7 @@
         function updateCursorPreview(e) {
           ensureCursor();
           const layer = activeLayer();
-          if (!canDraw() || !layer || e.pointerType === 'touch' || spaceDown) {
+          if (!canDraw() || !layer || e.pointerType === 'touch' || spaceDown || tool === 'rect') {
             cursorEl.style.display = 'none';
             return;
           }
@@ -2086,15 +2256,19 @@
         }
 
         function setTool(t) {
-          tool = t === 'erase' ? 'erase' : 'brush';
-          brushBtn.classList.toggle('is-active', tool === 'brush');
-          brushBtn.setAttribute('aria-pressed', tool === 'brush' ? 'true' : 'false');
-          eraseBtn.classList.toggle('is-active', tool === 'erase');
-          eraseBtn.setAttribute('aria-pressed', tool === 'erase' ? 'true' : 'false');
-          if (cursorEl) cursorEl.classList.toggle('is-erase', tool === 'erase');
+          tool = t === 'erase' ? 'erase' : t === 'rect' ? 'rect' : 'brush';
+          [[brushBtn, 'brush'], [eraseBtn, 'erase'], [rectBtn, 'rect']].forEach(([btn, name]) => {
+            btn.classList.toggle('is-active', tool === name);
+            btn.setAttribute('aria-pressed', tool === name ? 'true' : 'false');
+          });
+          if (cursorEl) {
+            cursorEl.classList.toggle('is-erase', tool === 'erase');
+            if (tool === 'rect') cursorEl.style.display = 'none';
+          }
         }
         brushBtn.addEventListener('click', () => setTool('brush'));
         eraseBtn.addEventListener('click', () => setTool('erase'));
+        rectBtn.addEventListener('click', () => setTool('rect'));
 
         function setBrushSize(v) {
           brushSize = Math.min(150, Math.max(20, v));
@@ -2136,6 +2310,7 @@
           const k = e.key.toLowerCase();
           if (k === 'b') { setTool('brush'); }
           else if (k === 'e') { setTool('erase'); }
+          else if (k === 'r') { setTool('rect'); }
           else if (k === 'h') { if (!e.repeat && phase === 'draw') stack.classList.add('is-peek'); }
           else if (e.key === '[') { setBrushSize(brushSize - 10); }
           else if (e.key === ']') { setBrushSize(brushSize + 10); }
@@ -2315,6 +2490,7 @@
           brushSlider.disabled = generating;
           brushBtn.disabled = generating;
           eraseBtn.disabled = generating;
+          rectBtn.disabled = generating;
           undoBtn.disabled = generating || phase !== 'draw' || !undoStack.length;
           newPhotoBtn.disabled = generating;
           editHighlightsBtn.disabled = generating;

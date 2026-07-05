@@ -866,7 +866,7 @@
     "openStudioHint": "Destaque várias áreas em cores diferentes e mobílie todas de uma vez",
     "mobileTitle": "O Estúdio de Máscaras é uma ferramenta para desktop",
     "mobileBody": "O mascaramento preciso exige uma tela maior e um mouse. Abra esta página no seu computador para usá-la.",
-    "shortcutsHint": "<kbd>B</kbd> pincel&nbsp;· <kbd>E</kbd> apagar&nbsp;· <kbd>[</kbd> <kbd>]</kbd> tamanho do pincel&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> escolher área&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfazer&nbsp;· segure <kbd>H</kbd> ver foto",
+    "shortcutsHint": "<kbd>B</kbd> pincel&nbsp;· <kbd>E</kbd> apagar&nbsp;· <kbd>R</kbd> retângulo&nbsp;· <kbd>[</kbd> <kbd>]</kbd> tamanho do pincel&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> escolher área&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfazer&nbsp;· segure <kbd>H</kbd> ver foto",
     "viewResult": "Ver resultado",
     "compare": "Comparar",
     "undo": "Desfazer",
@@ -900,6 +900,8 @@
     "versionPrev": "Versão anterior",
     "versionNext": "Próxima versão",
     "clearHighlight": "Limpar destaque",
+    "toolRect": "Retângulo",
+    "renameAria": "Renomear esta área",
     "loadingMessages": [
       "Posicionando seus móveis…",
       "Ajustando luz e sombras…",

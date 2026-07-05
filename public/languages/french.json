@@ -866,7 +866,7 @@
     "openStudioHint": "Surlignez plusieurs zones de couleurs différentes et meublez-les toutes à la fois",
     "mobileTitle": "Le Studio de masquage est un outil pour ordinateur",
     "mobileBody": "Un masquage précis demande un grand écran et une souris. Ouvrez cette page sur votre ordinateur pour l'utiliser.",
-    "shortcutsHint": "<kbd>B</kbd> pinceau&nbsp;· <kbd>E</kbd> gomme&nbsp;· <kbd>[</kbd> <kbd>]</kbd> taille du pinceau&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> choisir la zone&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler&nbsp;· maintenir <kbd>H</kbd> voir la photo",
+    "shortcutsHint": "<kbd>B</kbd> pinceau&nbsp;· <kbd>E</kbd> gomme&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>[</kbd> <kbd>]</kbd> taille du pinceau&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> choisir la zone&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler&nbsp;· maintenir <kbd>H</kbd> voir la photo",
     "viewResult": "Voir le résultat",
     "compare": "Comparer",
     "undo": "Annuler",
@@ -900,6 +900,8 @@
     "versionPrev": "Version précédente",
     "versionNext": "Version suivante",
     "clearHighlight": "Effacer le surlignage",
+    "toolRect": "Rectangle",
+    "renameAria": "Renommer cette zone",
     "loadingMessages": [
       "Placement de vos meubles…",
       "Harmonisation de la lumière et des ombres…",

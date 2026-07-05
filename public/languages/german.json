@@ -866,7 +866,7 @@
     "openStudioHint": "Markieren Sie mehrere Bereiche in verschiedenen Farben und richten Sie alle auf einmal ein",
     "mobileTitle": "Das Masken-Studio ist ein Desktop-Tool",
     "mobileBody": "Präzises Maskieren braucht einen größeren Bildschirm und eine Maus. Öffnen Sie diese Seite auf Ihrem Computer.",
-    "shortcutsHint": "<kbd>B</kbd> Pinsel&nbsp;· <kbd>E</kbd> Radierer&nbsp;· <kbd>[</kbd> <kbd>]</kbd> Pinselgröße&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> Bereich wählen&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> rückgängig&nbsp;· <kbd>H</kbd> halten: Foto zeigen",
+    "shortcutsHint": "<kbd>B</kbd> Pinsel&nbsp;· <kbd>E</kbd> Radierer&nbsp;· <kbd>R</kbd> Rechteck&nbsp;· <kbd>[</kbd> <kbd>]</kbd> Pinselgröße&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> Bereich wählen&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> rückgängig&nbsp;· <kbd>H</kbd> halten: Foto zeigen",
     "viewResult": "Ergebnis ansehen",
     "compare": "Vergleichen",
     "undo": "Rückgängig",
@@ -900,6 +900,8 @@
     "versionPrev": "Vorherige Version",
     "versionNext": "Nächste Version",
     "clearHighlight": "Markierung löschen",
+    "toolRect": "Rechteck",
+    "renameAria": "Diesen Bereich umbenennen",
     "loadingMessages": [
       "Ihre Möbel werden platziert…",
       "Licht und Schatten werden abgestimmt…",
