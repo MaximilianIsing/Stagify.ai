@@ -902,6 +902,11 @@
     "clearHighlight": "Markierung löschen",
     "toolRect": "Rechteck",
     "renameAria": "Diesen Bereich umbenennen",
+    "resumeTitle": "Letzte Sitzung fortsetzen?",
+    "resumeBody": "Wir haben das Foto und die markierten Bereiche Ihres letzten Besuchs gespeichert. Machen Sie dort weiter oder beginnen Sie neu.",
+    "resumeYes": "Fortsetzen",
+    "resumeNo": "Neu beginnen",
+    "downloadComparison": "Vergleich herunterladen",
     "loadingMessages": [
       "Ihre Möbel werden platziert…",
       "Licht und Schatten werden abgestimmt…",

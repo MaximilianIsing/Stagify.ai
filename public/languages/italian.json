@@ -902,6 +902,11 @@
     "clearHighlight": "Cancella evidenziazione",
     "toolRect": "Rettangolo",
     "renameAria": "Rinomina questa area",
+    "resumeTitle": "Riprendere l'ultima sessione?",
+    "resumeBody": "Abbiamo salvato la foto e le aree evidenziate della tua ultima visita. Riprendi da dove eri o ricomincia da capo.",
+    "resumeYes": "Riprendi",
+    "resumeNo": "Ricomincia",
+    "downloadComparison": "Scarica confronto",
     "loadingMessages": [
       "Posizioniamo i tuoi mobili…",
       "Abbiniamo luci e ombre…",

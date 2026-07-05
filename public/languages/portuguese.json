@@ -902,6 +902,11 @@
     "clearHighlight": "Limpar destaque",
     "toolRect": "Retângulo",
     "renameAria": "Renomear esta área",
+    "resumeTitle": "Retomar sua última sessão?",
+    "resumeBody": "Salvamos a foto e as áreas destacadas da sua última visita. Continue de onde parou ou comece do zero.",
+    "resumeYes": "Retomar",
+    "resumeNo": "Começar do zero",
+    "downloadComparison": "Baixar comparação",
     "loadingMessages": [
       "Posicionando seus móveis…",
       "Ajustando luz e sombras…",

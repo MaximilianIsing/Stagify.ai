@@ -903,6 +903,11 @@
     "clearHighlight": "清除标记",
     "toolRect": "矩形",
     "renameAria": "重命名此区域",
+    "resumeTitle": "继续上次的会话？",
+    "resumeBody": "我们保存了你上次的照片和标记区域。可以继续上次的进度，也可以重新开始。",
+    "resumeYes": "继续",
+    "resumeNo": "重新开始",
+    "downloadComparison": "下载对比图",
     "loadingMessages": [
       "正在摆放您的家具…",
       "正在匹配光线与阴影…",

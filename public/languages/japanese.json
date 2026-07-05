@@ -902,6 +902,11 @@
     "clearHighlight": "ハイライトを消去",
     "toolRect": "長方形",
     "renameAria": "このエリアの名前を変更",
+    "resumeTitle": "前回の続きから再開しますか？",
+    "resumeBody": "前回の写真とハイライトしたエリアを保存しています。続きから再開するか、最初からやり直せます。",
+    "resumeYes": "再開",
+    "resumeNo": "最初から",
+    "downloadComparison": "比較画像をダウンロード",
     "loadingMessages": [
       "家具を配置中…",
       "光と影を調整中…",
