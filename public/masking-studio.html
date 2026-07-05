@@ -646,8 +646,12 @@
       }
       .ms-draw-hint { margin: 0; font-size: 13px; color: #374151; }
       .ms-viewer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-      /* margin:auto (not flex centering) keeps zoomed content scrollable. */
-      .ms-viewer { flex: 1; display: flex; overflow: auto; max-height: 76vh; }
+      /* margin:auto (not flex centering) keeps zoomed content scrollable.
+         Scrollbars only exist while zoomed — at 100% the photo always fits,
+         and overlays that poke past its edge (compare grip, brush cursor)
+         must not spawn them. */
+      .ms-viewer { flex: 1; display: flex; overflow: hidden; max-height: 76vh; }
+      .ms-viewer.is-zoomed { overflow: auto; }
       .ms-stack { margin: auto; }
 
       .ms-stack.is-pan { cursor: grab; }
@@ -910,9 +914,13 @@
           <li data-lang="maskingStudio.helpStep4">Click Apply Edit. Every area is staged at the same time, and only the highlighted spots can change. The rest of your photo stays pixel-perfect.</li>
           <li data-lang="maskingStudio.helpStep5">Not happy with an area? Use Try another version to generate more options and flip between them.</li>
         </ol>
-        <h3 data-lang="maskingStudio.helpShortcuts">Keyboard shortcuts</h3>
-        <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo</p>
-        <p class="ms-kbd-hint" data-lang="maskingStudio.zoomHint">Ctrl+scroll to zoom, hold Space (or the middle mouse button) to pan</p>
+        <!-- Shown when the dialog is opened from the ? button, hidden during
+             the first-visit walkthrough to keep the intro light. -->
+        <div id="ms-help-shortcuts">
+          <h3 data-lang="maskingStudio.helpShortcuts">Keyboard shortcuts</h3>
+          <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo</p>
+          <p class="ms-kbd-hint" data-lang="maskingStudio.zoomHint">Ctrl+scroll to zoom, hold Space (or the middle mouse button) to pan</p>
+        </div>
         <button type="button" id="ms-help-done" class="btn btn-primary ms-help-done"><strong data-lang="maskingStudio.helpClose">Got it</strong></button>
       </div>
     </div>
@@ -1182,10 +1190,14 @@
         // ---------------------------------------------------------------------
         // "How it works" dialog
         // ---------------------------------------------------------------------
-        function setHelpOpen(open) {
+        function setHelpOpen(open, opts) {
           helpEl.classList.toggle('active', open);
-          if (open) helpCloseBtn.focus();
-          else helpBtn.focus();
+          if (open) {
+            helpShortcutsEl.classList.toggle('hidden', !!(opts && opts.hideShortcuts));
+            helpCloseBtn.focus();
+          } else {
+            helpBtn.focus();
+          }
         }
 
         // ---------------------------------------------------------------------
@@ -1282,6 +1294,7 @@
         const helpEl = $('#ms-help');
         const helpCloseBtn = $('#ms-help-close');
         const helpDoneBtn = $('#ms-help-done');
+        const helpShortcutsEl = $('#ms-help-shortcuts');
         const confirmEl = $('#ms-confirm');
         const confirmDiscardBtn = $('#ms-confirm-discard');
         const confirmKeepBtn = $('#ms-confirm-keep');
@@ -2146,6 +2159,7 @@
             baseCanvas.style.maxWidth = 'none';
             baseCanvas.style.maxHeight = 'none';
           }
+          viewerEl.classList.toggle('is-zoomed', zoom > 1);
           // Keep the focal point (viewport coords) stationary while scaling.
           if (focal && prev !== zoom) {
             const vr = viewerEl.getBoundingClientRect();
@@ -2160,6 +2174,7 @@
           baseCanvas.style.width = '';
           baseCanvas.style.maxWidth = '';
           baseCanvas.style.maxHeight = '';
+          viewerEl.classList.remove('is-zoomed');
         }
 
         viewerEl.addEventListener('wheel', (e) => {
@@ -3148,7 +3163,7 @@
           try { seen = localStorage.getItem('msHelpSeen'); } catch (e) {}
           if (!seen) {
             try { localStorage.setItem('msHelpSeen', '1'); } catch (e) {}
-            setHelpOpen(true);
+            setHelpOpen(true, { hideShortcuts: true });
           }
         });
       })();
