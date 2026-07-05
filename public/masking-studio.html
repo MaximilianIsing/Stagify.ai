@@ -1076,12 +1076,14 @@
                   <button type="button" id="ms-toggle-compare" class="toggle-btn" data-lang="maskingStudio.compare">Compare</button>
                   <button type="button" id="ms-toggle-after" class="toggle-btn active" data-lang="modal.staging.after">After</button>
                 </div>
-                <!-- Same button hierarchy as the main staging tool's result row. -->
+                <!-- Same button hierarchy as the main staging tool's result row.
+                     Refine phase shows only Looks Good; Download appears once
+                     the user accepts the result. Replacing the photo lives on
+                     the photo card in the toolbar. -->
                 <div class="ms-viewer-actions hidden" id="ms-viewer-actions">
                   <button type="button" id="ms-edit-highlights" class="btn btn-secondary hidden"><strong data-lang="maskingStudio.editHighlights">Refine Edit</strong></button>
                   <button type="button" id="ms-view-result" class="btn btn-primary hidden"><strong data-lang="maskingStudio.looksGood">Looks Good</strong></button>
-                  <button type="button" id="ms-download" class="btn btn-primary"><strong data-lang="modal.staging.downloadResult">Download Result</strong></button>
-                  <button type="button" id="ms-new-photo" class="btn btn-ghost"><strong data-lang="modal.staging.uploadAnother">Upload Another</strong></button>
+                  <button type="button" id="ms-download" class="btn btn-primary hidden"><strong data-lang="modal.staging.downloadResult">Download Result</strong></button>
                 </div>
               </div>
 
@@ -1314,7 +1316,6 @@
         const editHighlightsBtn = $('#ms-edit-highlights');
         const viewResultBtn = $('#ms-view-result');
         const downloadBtn = $('#ms-download');
-        const newPhotoBtn = $('#ms-new-photo');
 
         let busyOverlay = null;
         let pendingFurnitureLayerId = null;
@@ -2633,6 +2634,7 @@
           viewerActions.classList.toggle('hidden', !(inReview || (p === 'draw' && hasResults)));
           editHighlightsBtn.classList.toggle('hidden', !inReview);
           viewResultBtn.classList.toggle('hidden', !(p === 'draw' && hasResults));
+          downloadBtn.classList.toggle('hidden', !inReview);
           stack.classList.toggle('can-draw', p === 'draw');
           stack.classList.toggle('is-busy', p === 'generating');
           if (cursorEl && p !== 'draw') cursorEl.style.display = 'none';
@@ -2777,7 +2779,6 @@
           eraseBtn.disabled = generating;
           rectBtn.disabled = generating;
           undoBtn.disabled = generating || phase !== 'draw' || !undoStack.length;
-          newPhotoBtn.disabled = generating;
           editHighlightsBtn.disabled = generating;
           downloadBtn.disabled = generating || !layers.some((l) => l.status === 'done');
           layerList.querySelectorAll('textarea, button').forEach((el) => { el.disabled = generating; });
@@ -3070,30 +3071,6 @@
           link.click();
         });
 
-
-        function resetStudio() {
-          genRun++;
-          genMeta = null;
-          undoStack = [];
-          resetZoom();
-          clearStoredSession();
-          layers.forEach((l) => l.canvasEl && l.canvasEl.remove());
-          layers = [];
-          layerSeq = 0;
-          activeId = null;
-          base = null;
-          stack.classList.add('hidden');
-          dropzone.classList.remove('hidden');
-          replaceBtn.classList.add('hidden');
-          photoEmptyHint.classList.remove('hidden');
-          photoThumb.removeAttribute('src');
-          resultCanvas.classList.add('hidden');
-          progressEl.classList.add('hidden');
-          progressText.classList.add('hidden');
-          renderLayers();
-          setPhase('empty');
-        }
-        newPhotoBtn.addEventListener('click', () => requestDiscard(resetStudio));
 
         // ---------------------------------------------------------------------
         // Upload wiring (dropzone click/keyboard/drop + toolbar replace)
