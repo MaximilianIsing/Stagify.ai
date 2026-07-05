@@ -377,6 +377,49 @@
         line-height: 1;
         cursor: pointer;
       }
+      /* One-click prompt ideas, shown while an area's prompt is empty. */
+      .ms-preset-row { display: flex; flex-wrap: wrap; gap: 5px; }
+      .ms-preset {
+        padding: 3px 10px;
+        border: 1px dashed #93c5fd;
+        border-radius: 999px;
+        background: rgba(219, 234, 254, 0.35);
+        color: #1d4ed8;
+        font-size: 11.5px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .ms-preset:hover { background: rgba(191, 219, 254, 0.7); }
+      .ms-clear-btn {
+        align-self: flex-start;
+        border: none;
+        background: none;
+        padding: 2px 0;
+        color: #6b7280;
+        font-size: 12px;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        cursor: pointer;
+      }
+      .ms-clear-btn:hover { color: #b91c1c; }
+
+      /* Version picker for areas with more than one generated result. */
+      .ms-version-row { display: flex; align-items: center; gap: 6px; }
+      .ms-version-btn {
+        width: 24px; height: 24px;
+        border: 1.5px solid var(--border);
+        border-radius: 6px;
+        background: #fff;
+        color: #374151;
+        font-size: 13px;
+        line-height: 1;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ms-version-btn:hover { border-color: #2563eb; color: #1d4ed8; }
+      .ms-version-label { font-size: 12px; color: #374151; font-weight: 600; }
       .ms-layer-error { font-size: 12px; color: #b91c1c; }
       .ms-layer-retry {
         align-self: flex-start;
@@ -1328,7 +1371,9 @@
             prompt: '',
             furniture: null,
             status: 'idle',      // idle | generating | done | failed
-            editedImg: null,
+            editedImg: null,     // the selected candidate (what compositeAll uses)
+            candidates: [],      // every generated version of this area (capped)
+            candIdx: 0,
             blendMask: null,
             errorMsg: '',
             el: null,
@@ -1448,6 +1493,40 @@
             });
             body.appendChild(promptEl);
 
+            // One-click prompt ideas while the prompt is empty. Each value is
+            // "Chip label|Full prompt sentence" in the language files.
+            if (!layer.prompt.trim()) {
+              const PRESET_DEFAULTS = {
+                presetSofa: "Sofa|Add a comfortable modern sofa that fits the room's style.",
+                presetArmchair: 'Armchair|Add a cozy armchair that matches the room.',
+                presetRug: 'Rug|Add a large area rug under the furniture.',
+                presetPlant: 'Plant|Add a tall potted plant.',
+                presetLamp: 'Floor lamp|Add a stylish floor lamp.',
+                presetArt: 'Wall art|Add framed wall art that suits the room.',
+              };
+              const presetRow = document.createElement('div');
+              presetRow.className = 'ms-preset-row';
+              Object.keys(PRESET_DEFAULTS).forEach((key) => {
+                const raw = tx('maskingStudio.' + key, PRESET_DEFAULTS[key]);
+                const bar = raw.indexOf('|');
+                const label = bar === -1 ? raw : raw.slice(0, bar);
+                const sentence = bar === -1 ? raw : raw.slice(bar + 1);
+                const chipBtn = document.createElement('button');
+                chipBtn.type = 'button';
+                chipBtn.className = 'ms-preset';
+                chipBtn.textContent = label;
+                chipBtn.title = sentence;
+                chipBtn.addEventListener('click', () => {
+                  if (phase === 'generating') return;
+                  layer.prompt = sentence;
+                  renderLayers();
+                  updateControls();
+                });
+                presetRow.appendChild(chipBtn);
+              });
+              body.appendChild(presetRow);
+            }
+
             if (layer.furniture) {
               const prev = document.createElement('div');
               prev.className = 'ms-furniture-preview';
@@ -1482,6 +1561,24 @@
               body.appendChild(add);
             }
 
+            // Quick way to clear one area's strokes (undoable via Ctrl+Z).
+            if (layer.painted && phase === 'draw') {
+              const clearBtn = document.createElement('button');
+              clearBtn.type = 'button';
+              clearBtn.className = 'ms-clear-btn';
+              clearBtn.textContent = tx('maskingStudio.clearHighlight', 'Clear highlight');
+              clearBtn.addEventListener('click', () => {
+                if (phase !== 'draw') return;
+                snapshotForUndo();
+                layer.canvasEl.getContext('2d').clearRect(0, 0, base.w, base.h);
+                layer.painted = false;
+                layer.blendMask = null;
+                renderLayers();
+                updateControls();
+              });
+              body.appendChild(clearBtn);
+            }
+
             if (layer.status === 'failed') {
               const err = document.createElement('div');
               err.className = 'ms-layer-error';
@@ -1494,12 +1591,38 @@
               retry.addEventListener('click', () => retryLayer(layer.id));
               body.appendChild(retry);
             } else if (layer.status === 'done' && phase === 'review') {
+              // Version picker: flip between every generated result of this area.
+              if (layer.candidates.length > 1) {
+                const row = document.createElement('div');
+                row.className = 'ms-version-row';
+                const prev = document.createElement('button');
+                prev.type = 'button';
+                prev.className = 'ms-version-btn';
+                prev.textContent = '‹';
+                prev.setAttribute('aria-label', tx('maskingStudio.versionPrev', 'Previous version'));
+                prev.addEventListener('click', () => selectCandidate(layer, layer.candIdx - 1));
+                const label = document.createElement('span');
+                label.className = 'ms-version-label';
+                label.textContent = tx('maskingStudio.versionLabel', 'Version {i} of {n}')
+                  .replace('{i}', String(layer.candIdx + 1))
+                  .replace('{n}', String(layer.candidates.length));
+                const next = document.createElement('button');
+                next.type = 'button';
+                next.className = 'ms-version-btn';
+                next.textContent = '›';
+                next.setAttribute('aria-label', tx('maskingStudio.versionNext', 'Next version'));
+                next.addEventListener('click', () => selectCandidate(layer, layer.candIdx + 1));
+                row.appendChild(prev);
+                row.appendChild(label);
+                row.appendChild(next);
+                body.appendChild(row);
+              }
               const retry = document.createElement('button');
               retry.type = 'button';
               retry.className = 'ms-layer-retry';
               retry.style.borderColor = '#2563eb';
               retry.style.color = '#2563eb';
-              retry.textContent = tx('maskingStudio.regenerate', 'Regenerate this area');
+              retry.textContent = tx('maskingStudio.tryAnother', 'Try another version');
               retry.addEventListener('click', () => retryLayer(layer.id));
               body.appendChild(retry);
             }
@@ -2247,6 +2370,11 @@
           }
           const img = await loadImage(result.editedImage);
           if (run !== genRun) return;
+          // Keep every version so the user can flip between them (capped to
+          // bound memory: each is a full-resolution image).
+          layer.candidates.push(img);
+          if (layer.candidates.length > 4) layer.candidates.shift();
+          layer.candIdx = layer.candidates.length - 1;
           layer.editedImg = img;
         }
 
@@ -2283,6 +2411,8 @@
           participating.forEach((l) => {
             l.status = 'generating';
             l.editedImg = null;
+            l.candidates = [];
+            l.candIdx = 0;
             l.errorMsg = '';
             // Freeze the compositing mask now — strokes can't change mid-run.
             l.blendMask = buildBlendMask(l.canvasEl, base.w, base.h, coreGrow, featherPx);
@@ -2330,6 +2460,16 @@
         }
         generateBtn.addEventListener('click', generate);
 
+        // Pick a different generated version of an area and recomposite.
+        function selectCandidate(layer, idx) {
+          if (!layer.candidates.length || phase === 'generating') return;
+          layer.candIdx = ((idx % layer.candidates.length) + layer.candidates.length) % layer.candidates.length;
+          layer.editedImg = layer.candidates[layer.candIdx];
+          compositeAll();
+          setView(view);
+          renderLayers();
+        }
+
         // Re-run a single failed/done area, then rebuild the composite.
         async function retryLayer(id) {
           const layer = getLayer(id);
@@ -2350,8 +2490,15 @@
             layer.status = 'done';
           } catch (err) {
             if (run !== genRun) return;
-            layer.status = 'failed';
-            layer.errorMsg = err && err.message ? err.message : '';
+            if (layer.candidates.length) {
+              // "Try another version" failed but earlier versions survive.
+              layer.status = 'done';
+              layer.editedImg = layer.candidates[layer.candIdx];
+              showToast(err && err.message ? err.message : tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
+            } else {
+              layer.status = 'failed';
+              layer.errorMsg = err && err.message ? err.message : '';
+            }
           }
           compositeAll();
           setView(view);
