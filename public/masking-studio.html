@@ -667,6 +667,11 @@
          must not spawn them. */
       .ms-viewer { flex: 1; display: flex; overflow: hidden; max-height: 76vh; }
       .ms-viewer.is-zoomed { overflow: auto; }
+      /* While zoomed the stack must grow with the widened canvas — if it
+         stayed clamped to the viewer width, every inset:0 overlay (highlights,
+         result, compare divider) would render squeezed while the photo
+         overflowed, misaligning strokes from the cursor. */
+      .ms-viewer.is-zoomed .ms-stack { max-width: none; }
       .ms-stack { margin: auto; }
 
       .ms-stack.is-pan { cursor: grab; }
@@ -1483,8 +1488,10 @@
           if (activeId === id) activeId = layers.length ? layers[layers.length - 1].id : null;
           if (!layers.length && base) addLayer();
           if (phase === 'review') compositeAll();
-          renderLayers();
-          updateControls();
+          // Re-derive the whole phase UI: in refine, removing an area must
+          // refresh the ghost backdrop and may retire the Looks Good button
+          // (when the last staged area went away).
+          setPhase(phase);
           scheduleSessionSave();
         }
 
@@ -2016,7 +2023,12 @@
 
         async function saveSessionNow() {
           if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-          if (!base || restoring || phase === 'generating') return;
+          if (!base || restoring) return;
+          if (phase === 'generating') {
+            // Don't drop edits made just before Apply Edit — retry after the run.
+            scheduleSessionSave();
+            return;
+          }
           const seq = saveSeq;
           try {
             const baseBlob = await toBlob(base.canvas, 'image/jpeg', 0.9);
@@ -2220,8 +2232,11 @@
           return layers.some((l) => l.status === 'done' && l.editedImg);
         }
 
-        function requestDiscard(action) {
-          if (!hasAnyResults()) { action(); return; }
+        // strict also protects unstaged work (strokes/prompts/furniture) — used
+        // for accident-prone paths like dropping a file onto the photo itself.
+        function requestDiscard(action, strict) {
+          const hasWork = strict && layers.some((l) => l.painted || l.prompt.trim() || l.furniture);
+          if (!hasAnyResults() && !hasWork) { action(); return; }
           pendingConfirmAction = action;
           confirmEl.classList.add('active');
           confirmKeepBtn.focus();
@@ -3150,7 +3165,9 @@
               dropzone.classList.remove('is-drag-over');
               if (phase === 'generating') return;
               const file = e.dataTransfer.files && e.dataTransfer.files[0];
-              requestDiscard(() => handleRoomFile(file));
+              // Dropping on the photo itself is easy to do by accident when
+              // aiming for the furniture button, so also guard unstaged work.
+              requestDiscard(() => handleRoomFile(file), zone === stack);
             });
           });
         })();
