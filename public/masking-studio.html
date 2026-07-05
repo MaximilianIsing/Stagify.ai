@@ -324,7 +324,17 @@
         background: var(--layer-color, #2563eb);
         box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
       }
-      .ms-layer-name { font-weight: 700; font-size: 14px; color: #111827; margin-right: auto; }
+      .ms-layer-name { font-weight: 700; font-size: 14px; color: #111827; }
+      /* One-line peek at the area's prompt (or furniture file) in the header. */
+      .ms-layer-preview {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        color: #6b7280;
+      }
       .ms-layer-caret {
         flex: 0 0 auto;
         display: inline-flex;
@@ -373,6 +383,11 @@
         background: #eef2ff;
         color: #4b5563;
         white-space: nowrap;
+        /* Long statuses ellipsize so the header's prompt peek keeps room. */
+        flex-shrink: 0;
+        max-width: 88px;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .ms-layer-status--ready { background: #dcfce7; color: #047857; }
       .ms-layer-status--generating { background: #dbeafe; color: #1d4ed8; }
@@ -1443,6 +1458,7 @@
             prompt: '',
             presetsOpen: false,  // prompt-idea chips revealed via the + button
             furniture: null,
+            furnitureName: '',   // original file name, shown in the header peek
             status: 'idle',      // idle | generating | done | failed
             editedImg: null,     // the selected candidate (what compositeAll uses)
             candidates: [],      // every generated version of this area (capped)
@@ -1520,11 +1536,9 @@
             const name = document.createElement('span');
             name.className = 'ms-layer-name';
             name.textContent = layerTitle(layer);
-            name.style.marginRight = '0';
             const renameBtn = document.createElement('button');
             renameBtn.type = 'button';
             renameBtn.className = 'ms-layer-rename';
-            renameBtn.style.marginRight = 'auto';
             renameBtn.setAttribute('aria-label', tx('maskingStudio.renameAria', 'Rename this area'));
             renameBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
             renameBtn.addEventListener('click', (e) => {
@@ -1555,6 +1569,11 @@
               });
               input.addEventListener('blur', commit);
             });
+            const previewFallback = () => layer.prompt.trim() || (layer.furniture ? (layer.furnitureName || '') : '');
+            const preview = document.createElement('span');
+            preview.className = 'ms-layer-preview';
+            preview.textContent = previewFallback();
+            preview.title = previewFallback();
             const chip = statusChip(layer);
             const status = document.createElement('span');
             status.className = 'ms-layer-status ' + chip.cls;
@@ -1576,6 +1595,7 @@
             head.appendChild(dot);
             head.appendChild(name);
             head.appendChild(renameBtn);
+            head.appendChild(preview);
             head.appendChild(status);
             head.appendChild(caret);
             head.appendChild(removeBtn);
@@ -1610,6 +1630,8 @@
               const liveChip = statusChip(layer);
               status.className = 'ms-layer-status ' + liveChip.cls;
               status.textContent = liveChip.text;
+              preview.textContent = previewFallback();
+              preview.title = preview.textContent;
               updateControls();
               scheduleSessionSave();
             });
@@ -1702,6 +1724,7 @@
               rm.addEventListener('click', () => {
                 if (phase === 'generating') return;
                 layer.furniture = null;
+                layer.furnitureName = '';
                 renderLayers();
                 updateControls();
                 scheduleSessionSave();
@@ -1879,6 +1902,7 @@
 
         function acceptFurnitureFile(layer, file, announce) {
           if (!layer || !file) return;
+          const fileName = file.name || '';
           const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
             ? window.StagifyHeic.toDisplayableFile(file)
             : Promise.resolve(file);
@@ -1886,6 +1910,7 @@
             .then(prepareReferenceFile)
             .then((dataUrl) => {
               layer.furniture = dataUrl;
+              layer.furnitureName = fileName;
               renderLayers();
               updateControls();
               scheduleSessionSave();
@@ -2003,6 +2028,7 @@
                 name: l.name,
                 prompt: l.prompt,
                 furniture: l.furniture,
+                furnitureName: l.furnitureName,
                 painted: l.painted,
                 mask: l.painted ? await toBlob(l.canvasEl, 'image/png') : null,
               });
@@ -2069,6 +2095,7 @@
               prompt: ld.prompt || '',
               presetsOpen: false,
               furniture: ld.furniture || null,
+              furnitureName: ld.furnitureName || '',
               status: 'idle',
               editedImg: null,
               candidates: [],
