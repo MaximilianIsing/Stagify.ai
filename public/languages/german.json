@@ -715,6 +715,10 @@
       "i3": {
         "q": "Kann ich Möbel und Layout steuern?",
         "a": "Ja. Mit <a href=\"stagify-plus.html\">Stagify+</a> können Sie über die Prompt-Leiste Details beschreiben wie „ein Ecksofa und einen großen Teppich hinzufügen“, und das Möbel-Tool bringt Ihre eigenen Stücke ein. Wenn nur ein Bereich nicht stimmt, maskieren Sie ihn und erzeugen Sie nur diese Stelle neu, statt das ganze Bild zu wiederholen."
+      },
+      "i4": {
+        "q": "Wie richte ich mehrere Bereiche gleichzeitig ein?",
+        "a": "Mit Stagify+ können Sie im <a href=\"masking-studio.html\">Masken-Studio</a> bis zu sechs Bereiche in verschiedenen Farben markieren, jedem ein eigenes Möbelfoto oder eine Beschreibung geben und alle parallel einrichten. Nur die markierten Stellen können sich ändern, und jeder Bereich kann mehrere Versionen erzeugen, von denen Sie die beste behalten. Das Tool ist für den Desktop."
       }
     },
     "generate": {
