@@ -457,7 +457,7 @@
       }
       .ms-preset:hover { background: rgba(191, 219, 254, 0.7); }
       .ms-preset:focus-visible, .ms-clear-btn:focus-visible, .ms-version-btn:focus-visible,
-      .ms-layer-retry:focus-visible, .ms-furniture-add:focus-visible, .ms-dz-sample:focus-visible {
+      .ms-layer-retry:focus-visible, .ms-furniture-add:focus-visible {
         outline: 2px solid #2563eb;
         outline-offset: 2px;
       }
@@ -678,20 +678,6 @@
       }
       .ms-dz-text { font-weight: 700; color: #111827; font-size: 16px; }
       .ms-dz-sub { color: #6b7280; font-size: 13px; margin-top: 6px; }
-      .ms-dz-sample {
-        margin-top: 14px;
-        border: none;
-        background: none;
-        padding: 4px 6px;
-        color: #1d4ed8;
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        cursor: pointer;
-      }
-      .ms-dz-sample:hover { color: #1e3a8a; }
-      .ms-dz-sample:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 6px; }
       .ms-dz-dots { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
       .ms-dz-dots span {
         width: 13px; height: 13px;
@@ -1085,14 +1071,14 @@
             </aside>
 
             <section class="ms-workspace ms-panel" aria-label="Masking Studio workspace">
-              <div class="ms-viewer-header">
+              <div class="ms-viewer-header" id="ms-viewer-header">
                 <div class="toggle-container hidden" id="ms-view-toggle">
                   <button type="button" id="ms-toggle-before" class="toggle-btn" data-lang="modal.staging.before">Before</button>
                   <button type="button" id="ms-toggle-compare" class="toggle-btn" data-lang="maskingStudio.compare">Compare</button>
                   <button type="button" id="ms-toggle-after" class="toggle-btn active" data-lang="modal.staging.after">After</button>
                 </div>
                 <div class="ms-viewer-actions hidden" id="ms-viewer-actions">
-                  <button type="button" id="ms-edit-highlights" class="btn btn-ghost" data-lang="maskingStudio.editHighlights">Refine Mask</button>
+                  <button type="button" id="ms-edit-highlights" class="btn btn-ghost" data-lang="maskingStudio.editHighlights">Refine Edit</button>
                   <button type="button" id="ms-view-result" class="btn btn-secondary hidden" data-lang="maskingStudio.viewResult">View result</button>
                   <button type="button" id="ms-download" class="btn btn-secondary" data-lang="modal.staging.downloadResult">Download Result</button>
                   <button type="button" id="ms-download-compare" class="btn btn-ghost" data-lang="maskingStudio.downloadComparison">Download comparison</button>
@@ -1110,7 +1096,6 @@
                     </div>
                     <div class="ms-dz-text" data-lang="maskingStudio.uploadHint">Upload a photo of your room</div>
                     <div class="ms-dz-sub" data-lang="maskingStudio.uploadSub">JPG, PNG, WebP, or HEIC — click or drop it here</div>
-                    <button type="button" id="ms-sample-btn" class="ms-dz-sample" data-lang="maskingStudio.trySample">or try a sample room</button>
                     <div class="ms-dz-dots" aria-hidden="true">
                       <span style="background:#2563eb"></span>
                       <span style="background:#16a34a"></span>
@@ -1299,7 +1284,6 @@
         const confirmEl = $('#ms-confirm');
         const confirmDiscardBtn = $('#ms-confirm-discard');
         const confirmKeepBtn = $('#ms-confirm-keep');
-        const sampleBtn = $('#ms-sample-btn');
         const resumeEl = $('#ms-resume');
         const resumeYesBtn = $('#ms-resume-yes');
         const resumeNoBtn = $('#ms-resume-no');
@@ -1319,6 +1303,7 @@
         const progressBar = $('#ms-progress-bar');
         const progressText = $('#ms-progress-text');
         const chipbar = $('#ms-chipbar');
+        const viewerHeader = $('#ms-viewer-header');
         const viewToggle = $('#ms-view-toggle');
         const toggleBeforeBtn = $('#ms-toggle-before');
         const toggleCompareBtn = $('#ms-toggle-compare');
@@ -1675,6 +1660,18 @@
                   });
                   presetRow.appendChild(chipBtn);
                 });
+                // Trailing "−" tucks the chips back away.
+                const closeChip = document.createElement('button');
+                closeChip.type = 'button';
+                closeChip.className = 'ms-preset';
+                closeChip.textContent = '−';
+                closeChip.setAttribute('aria-label', tx('common.close', 'Close'));
+                closeChip.title = tx('common.close', 'Close');
+                closeChip.addEventListener('click', () => {
+                  layer.presetsOpen = false;
+                  renderLayers();
+                });
+                presetRow.appendChild(closeChip);
                 body.appendChild(presetRow);
               }
             }
@@ -1728,6 +1725,7 @@
                 layer.blendMask = null;
                 renderLayers();
                 updateControls();
+                updateStageBackdrop();
                 scheduleSessionSave();
               });
               body.appendChild(clearBtn);
@@ -2338,6 +2336,7 @@
           });
           renderLayers();
           updateControls();
+          updateStageBackdrop();
           scheduleSessionSave();
         }
         undoBtn.addEventListener('click', undoStroke);
@@ -2421,6 +2420,7 @@
           });
           renderLayers();
           updateControls();
+          updateStageBackdrop();
           scheduleSessionSave();
         }
 
@@ -2446,6 +2446,7 @@
           });
           renderLayers();
           updateControls();
+          updateStageBackdrop(); // refine ghost re-crops as strokes change
           scheduleSessionSave();
         }
 
@@ -2628,6 +2629,9 @@
           // in the draw phase, existing results stay reachable via "View result".
           const hasResults = layers.some((l) => l.status === 'done' && l.editedImg);
           viewToggle.classList.toggle('hidden', !inReview);
+          // The header only ever holds the view toggle and the review actions;
+          // collapse it entirely when neither shows so the photo sits higher.
+          viewerHeader.classList.toggle('hidden', !(inReview || (p === 'draw' && hasResults)));
           viewerActions.classList.toggle('hidden', !(inReview || (p === 'draw' && hasResults)));
           editHighlightsBtn.classList.toggle('hidden', !inReview);
           viewResultBtn.classList.toggle('hidden', !(p === 'draw' && hasResults));
@@ -2636,6 +2640,7 @@
           if (cursorEl && p !== 'draw') cursorEl.style.display = 'none';
           if (busyOverlay) busyOverlay.classList.toggle('hidden', p !== 'generating');
           if (p === 'generating') startBusyMessages(); else stopBusyMessages();
+          updateStageBackdrop();
           if (inReview) {
             setView(view);
           } else {
@@ -3018,6 +3023,25 @@
           ctx.drawImage(acc, 0, 0);
         }
 
+        // What the display canvas shows underneath the highlights. Normally the
+        // original photo; while refining after a run it shows the staged result
+        // with the original ghosted on top, so re-highlighting happens against
+        // the After (mirroring the main masking tool's refine step).
+        function updateStageBackdrop() {
+          if (!base) return;
+          const ctx = baseCanvas.getContext('2d');
+          ctx.clearRect(0, 0, base.w, base.h);
+          if (phase === 'draw' && hasAnyResults()) {
+            compositeAll();
+            ctx.drawImage(resultCanvas, 0, 0);
+            ctx.globalAlpha = 0.45;
+            ctx.drawImage(base.canvas, 0, 0);
+            ctx.globalAlpha = 1;
+          } else {
+            ctx.drawImage(base.canvas, 0, 0);
+          }
+        }
+
         // ---------------------------------------------------------------------
         // Review actions
         // ---------------------------------------------------------------------
@@ -3126,18 +3150,6 @@
           const file = fileInput.files && fileInput.files[0];
           fileInput.value = '';
           handleRoomFile(file);
-        });
-        sampleBtn.addEventListener('click', async (e) => {
-          e.stopPropagation(); // the dropzone click would open the file picker
-          sampleBtn.disabled = true;
-          try {
-            const resp = await fetch('media-webp/Homepage/BeforeAfter/Before1.webp');
-            const blob = await resp.blob();
-            await handleRoomFile(new File([blob], 'sample-room.webp', { type: 'image/webp' }));
-          } catch (err) {
-            showToast(tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
-          }
-          sampleBtn.disabled = false;
         });
         (function wireRoomDrop() {
           const hasFiles = (e) =>
