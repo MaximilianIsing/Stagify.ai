@@ -897,9 +897,6 @@
     "confirmBody": "Starting over with a new photo clears your highlighted areas and staged results.",
     "confirmDiscard": "Discard and continue",
     "confirmKeep": "Keep my results",
-    "zoomIn": "Zoom in",
-    "zoomOut": "Zoom out",
-    "zoomFit": "Fit to view",
     "zoomHint": "Ctrl+scroll to zoom, hold Space (or the middle mouse button) to pan",
     "presetSofa": "Sofa|Add a comfortable modern sofa that fits the room's style.",
     "presetArmchair": "Armchair|Add a cozy armchair that matches the room.",
@@ -920,6 +917,7 @@
     "resumeNo": "Start fresh",
     "downloadComparison": "Download comparison",
     "helpStep5": "Not happy with an area? Use Try another version to generate more options and flip between them.",
+    "promptIdeas": "Show prompt ideas",
     "loadingMessages": [
       "Placing your furniture…",
       "Matching light and shadows…",

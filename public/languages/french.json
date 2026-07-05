@@ -880,9 +880,6 @@
     "confirmBody": "Recommencer avec une nouvelle photo efface vos zones surlignées et les résultats générés.",
     "confirmDiscard": "Abandonner et continuer",
     "confirmKeep": "Garder mes résultats",
-    "zoomIn": "Zoom avant",
-    "zoomOut": "Zoom arrière",
-    "zoomFit": "Ajuster à la vue",
     "zoomHint": "Ctrl+molette pour zoomer, maintenez Espace (ou le bouton central) pour vous déplacer",
     "presetSofa": "Canapé|Ajoutez un canapé moderne et confortable qui s'accorde au style de la pièce.",
     "presetArmchair": "Fauteuil|Ajoutez un fauteuil confortable assorti à la pièce.",
@@ -903,6 +900,7 @@
     "resumeNo": "Repartir de zéro",
     "downloadComparison": "Télécharger la comparaison",
     "helpStep5": "Une zone ne vous plaît pas ? Utilisez Essayer une autre version pour générer d'autres options et passer de l'une à l'autre.",
+    "promptIdeas": "Afficher des idées",
     "loadingMessages": [
       "Placement de vos meubles…",
       "Harmonisation de la lumière et des ombres…",

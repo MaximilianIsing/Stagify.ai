@@ -415,7 +415,25 @@
         line-height: 1;
         cursor: pointer;
       }
-      /* One-click prompt ideas, shown while an area's prompt is empty. */
+      /* One-click prompt ideas: a little + reveals the chips on demand. */
+      .ms-preset-toggle {
+        align-self: flex-start;
+        width: 22px; height: 22px;
+        border: 1.5px dashed #93c5fd;
+        border-radius: 50%;
+        background: rgba(219, 234, 254, 0.35);
+        color: #1d4ed8;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+      .ms-preset-toggle:hover { background: rgba(191, 219, 254, 0.7); }
+      .ms-preset-toggle:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
       .ms-preset-row { display: flex; flex-wrap: wrap; gap: 5px; }
       .ms-preset {
         padding: 3px 10px;
@@ -623,32 +641,6 @@
       .ms-viewer { flex: 1; display: flex; overflow: auto; max-height: 76vh; }
       .ms-stack { margin: auto; }
 
-      /* --- Zoom controls -------------------------------------------------------- */
-      .ms-zoom { display: inline-flex; align-items: center; gap: 4px; }
-      .ms-zoom-btn {
-        width: 28px; height: 28px;
-        border: 1.5px solid var(--border);
-        border-radius: 8px;
-        background: #fff;
-        color: #374151;
-        font-size: 15px;
-        font-weight: 700;
-        line-height: 1;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .ms-zoom-btn:hover { border-color: #2563eb; color: #1d4ed8; }
-      .ms-zoom-btn:disabled { opacity: 0.4; cursor: default; }
-      .ms-zoom-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-      .ms-zoom-label {
-        font-size: 12px;
-        color: #6b7280;
-        min-width: 42px;
-        text-align: center;
-        font-variant-numeric: tabular-nums;
-      }
       .ms-stack.is-pan { cursor: grab; }
       .ms-stack.is-pan:active { cursor: grabbing; }
 
@@ -1084,14 +1076,6 @@
 
             <section class="ms-workspace ms-panel" aria-label="Masking Studio workspace">
               <div class="ms-viewer-header">
-                <div id="ms-zoom" class="ms-zoom hidden">
-                  <button type="button" id="ms-zoom-out" class="ms-zoom-btn" data-lang-attr="maskingStudio.zoomOut|aria-label" aria-label="Zoom out" disabled>&minus;</button>
-                  <span id="ms-zoom-label" class="ms-zoom-label" aria-hidden="true">100%</span>
-                  <button type="button" id="ms-zoom-in" class="ms-zoom-btn" data-lang-attr="maskingStudio.zoomIn|aria-label" aria-label="Zoom in">+</button>
-                  <button type="button" id="ms-zoom-fit" class="ms-zoom-btn" data-lang-attr="maskingStudio.zoomFit|aria-label" aria-label="Fit to view" disabled>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-                  </button>
-                </div>
                 <div class="toggle-container hidden" id="ms-view-toggle">
                   <button type="button" id="ms-toggle-before" class="toggle-btn" data-lang="modal.staging.before">Before</button>
                   <button type="button" id="ms-toggle-compare" class="toggle-btn" data-lang="maskingStudio.compare">Compare</button>
@@ -1312,11 +1296,6 @@
         const downloadCompareBtn = $('#ms-download-compare');
         const ctaHint = $('#ms-cta-hint');
         const viewerEl = $('#ms-viewer');
-        const zoomEl = $('#ms-zoom');
-        const zoomInBtn = $('#ms-zoom-in');
-        const zoomOutBtn = $('#ms-zoom-out');
-        const zoomFitBtn = $('#ms-zoom-fit');
-        const zoomLabel = $('#ms-zoom-label');
         const layerList = $('#ms-layer-list');
         const addLayerBtn = $('#ms-add-layer');
         const brushBtn = $('#ms-brush-btn');
@@ -1455,6 +1434,7 @@
             painted: false,
             name: '',            // user-given name; empty → "Area {n}"
             prompt: '',
+            presetsOpen: false,  // prompt-idea chips revealed via the + button
             furniture: null,
             status: 'idle',      // idle | generating | done | failed
             editedImg: null,     // the selected candidate (what compositeAll uses)
@@ -1515,11 +1495,14 @@
 
         // Rebuild the layer cards. Prompt edits mutate state directly (no
         // re-render on keystroke), so rebuilding here never loses typed text.
+        // Only the active card shows its full body — inactive areas collapse
+        // to their header row so six areas don't make the toolbar a tower.
         function renderLayers() {
           layerList.textContent = '';
           layers.forEach((layer) => {
+            const isActive = layer.id === activeId;
             const card = document.createElement('div');
-            card.className = 'ms-layer' + (layer.id === activeId ? ' is-active' : '');
+            card.className = 'ms-layer' + (isActive ? ' is-active' : '');
             card.style.setProperty('--layer-color', layerColor(layer));
             card.setAttribute('role', 'listitem');
 
@@ -1590,6 +1573,15 @@
               renderLayers();
             });
 
+            if (!isActive) {
+              // Collapsed: header only. Clicking the head (below) activates
+              // and expands it.
+              card.appendChild(head);
+              layer.el = card;
+              layerList.appendChild(card);
+              return;
+            }
+
             const body = document.createElement('div');
             body.className = 'ms-layer-body';
 
@@ -1619,38 +1611,57 @@
             });
             body.appendChild(promptEl);
 
-            // One-click prompt ideas while the prompt is empty. Each value is
+            // One-click prompt ideas while the prompt is empty, tucked behind a
+            // little + so the card stays quiet until asked. Each value is
             // "Chip label|Full prompt sentence" in the language files.
             if (!layer.prompt.trim()) {
-              const PRESET_DEFAULTS = {
-                presetSofa: "Sofa|Add a comfortable modern sofa that fits the room's style.",
-                presetArmchair: 'Armchair|Add a cozy armchair that matches the room.',
-                presetRug: 'Rug|Add a large area rug under the furniture.',
-                presetPlant: 'Plant|Add a tall potted plant.',
-                presetLamp: 'Floor lamp|Add a stylish floor lamp.',
-                presetArt: 'Wall art|Add framed wall art that suits the room.',
-              };
-              const presetRow = document.createElement('div');
-              presetRow.className = 'ms-preset-row';
-              Object.keys(PRESET_DEFAULTS).forEach((key) => {
-                const raw = tx('maskingStudio.' + key, PRESET_DEFAULTS[key]);
-                const bar = raw.indexOf('|');
-                const label = bar === -1 ? raw : raw.slice(0, bar);
-                const sentence = bar === -1 ? raw : raw.slice(bar + 1);
-                const chipBtn = document.createElement('button');
-                chipBtn.type = 'button';
-                chipBtn.className = 'ms-preset';
-                chipBtn.textContent = label;
-                chipBtn.title = sentence;
-                chipBtn.addEventListener('click', () => {
+              if (!layer.presetsOpen) {
+                const toggle = document.createElement('button');
+                toggle.type = 'button';
+                toggle.className = 'ms-preset-toggle';
+                toggle.textContent = '+';
+                const ideasLabel = tx('maskingStudio.promptIdeas', 'Show prompt ideas');
+                toggle.setAttribute('aria-label', ideasLabel);
+                toggle.title = ideasLabel;
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.addEventListener('click', () => {
                   if (phase === 'generating') return;
-                  layer.prompt = sentence;
+                  layer.presetsOpen = true;
                   renderLayers();
-                  updateControls();
                 });
-                presetRow.appendChild(chipBtn);
-              });
-              body.appendChild(presetRow);
+                body.appendChild(toggle);
+              } else {
+                const PRESET_DEFAULTS = {
+                  presetSofa: "Sofa|Add a comfortable modern sofa that fits the room's style.",
+                  presetArmchair: 'Armchair|Add a cozy armchair that matches the room.',
+                  presetRug: 'Rug|Add a large area rug under the furniture.',
+                  presetPlant: 'Plant|Add a tall potted plant.',
+                  presetLamp: 'Floor lamp|Add a stylish floor lamp.',
+                  presetArt: 'Wall art|Add framed wall art that suits the room.',
+                };
+                const presetRow = document.createElement('div');
+                presetRow.className = 'ms-preset-row';
+                Object.keys(PRESET_DEFAULTS).forEach((key) => {
+                  const raw = tx('maskingStudio.' + key, PRESET_DEFAULTS[key]);
+                  const bar = raw.indexOf('|');
+                  const label = bar === -1 ? raw : raw.slice(0, bar);
+                  const sentence = bar === -1 ? raw : raw.slice(bar + 1);
+                  const chipBtn = document.createElement('button');
+                  chipBtn.type = 'button';
+                  chipBtn.className = 'ms-preset';
+                  chipBtn.textContent = label;
+                  chipBtn.title = sentence;
+                  chipBtn.addEventListener('click', () => {
+                    if (phase === 'generating') return;
+                    layer.prompt = sentence;
+                    layer.presetsOpen = false; // next time takes a + click again
+                    renderLayers();
+                    updateControls();
+                  });
+                  presetRow.appendChild(chipBtn);
+                });
+                body.appendChild(presetRow);
+              }
             }
 
             if (layer.furniture) {
@@ -1909,6 +1920,7 @@
         let idbPromise = null;
         let saveTimer = null;
         let restoring = false; // block saves while a restore is rebuilding state
+        let saveSeq = 0;       // bumped on clear so in-flight saves abort
 
         function idb() {
           if (!idbPromise) {
@@ -1955,6 +1967,7 @@
         async function saveSessionNow() {
           if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
           if (!base || restoring || phase === 'generating') return;
+          const seq = saveSeq;
           try {
             const baseBlob = await toBlob(base.canvas, 'image/jpeg', 0.9);
             if (!baseBlob) return;
@@ -1969,8 +1982,17 @@
                 mask: l.painted ? await toBlob(l.canvasEl, 'image/png') : null,
               });
             }
+            // A clear/reset while we were encoding wins — never resurrect a
+            // session the user just discarded.
+            if (seq !== saveSeq) return;
             await sessionSave({ savedAt: Date.now(), baseBlob: baseBlob, layers: layerData });
           } catch (e) {}
+        }
+
+        function clearStoredSession() {
+          saveSeq++;
+          if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+          sessionClear();
         }
 
         function blobToImage(blob) {
@@ -2020,6 +2042,7 @@
               painted: painted,
               name: ld.name || '',
               prompt: ld.prompt || '',
+              presetsOpen: false,
               furniture: ld.furniture || null,
               status: 'idle',
               editedImg: null,
@@ -2054,7 +2077,7 @@
           }, { once: true });
           resumeNoBtn.addEventListener('click', () => {
             resumeEl.classList.remove('active');
-            sessionClear();
+            clearStoredSession();
           }, { once: true });
           return true;
         }
@@ -2118,10 +2141,6 @@
             viewerEl.scrollLeft = (viewerEl.scrollLeft + (focal.x - vr.left)) * ratio - (focal.x - vr.left);
             viewerEl.scrollTop = (viewerEl.scrollTop + (focal.y - vr.top)) * ratio - (focal.y - vr.top);
           }
-          zoomLabel.textContent = Math.round(zoom * 100) + '%';
-          zoomInBtn.disabled = zoom >= ZOOM_MAX;
-          zoomOutBtn.disabled = zoom <= ZOOM_MIN;
-          zoomFitBtn.disabled = zoom <= ZOOM_MIN;
         }
 
         function resetZoom() {
@@ -2129,20 +2148,7 @@
           baseCanvas.style.width = '';
           baseCanvas.style.maxWidth = '';
           baseCanvas.style.maxHeight = '';
-          zoomLabel.textContent = '100%';
-          zoomInBtn.disabled = false;
-          zoomOutBtn.disabled = true;
-          zoomFitBtn.disabled = true;
         }
-
-        function viewerCenter() {
-          const vr = viewerEl.getBoundingClientRect();
-          return { x: vr.left + vr.width / 2, y: vr.top + vr.height / 2 };
-        }
-
-        zoomInBtn.addEventListener('click', () => setZoom(zoom + 0.5, viewerCenter()));
-        zoomOutBtn.addEventListener('click', () => setZoom(zoom - 0.5, viewerCenter()));
-        zoomFitBtn.addEventListener('click', () => setZoom(1));
 
         viewerEl.addEventListener('wheel', (e) => {
           if (!base || !e.ctrlKey) return; // plain scroll stays plain scroll
@@ -2601,7 +2607,6 @@
           // in the draw phase, existing results stay reachable via "View result".
           const hasResults = layers.some((l) => l.status === 'done' && l.editedImg);
           viewToggle.classList.toggle('hidden', !inReview);
-          zoomEl.classList.toggle('hidden', p === 'empty');
           viewerActions.classList.toggle('hidden', !(inReview || (p === 'draw' && hasResults)));
           editHighlightsBtn.classList.toggle('hidden', !inReview);
           viewResultBtn.classList.toggle('hidden', !(p === 'draw' && hasResults));
@@ -3063,8 +3068,7 @@
           genMeta = null;
           undoStack = [];
           resetZoom();
-          if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-          sessionClear();
+          clearStoredSession();
           layers.forEach((l) => l.canvasEl && l.canvasEl.remove());
           layers = [];
           layerSeq = 0;

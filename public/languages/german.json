@@ -880,9 +880,6 @@
     "confirmBody": "Mit einem neuen Foto zu beginnen löscht Ihre markierten Bereiche und die fertigen Ergebnisse.",
     "confirmDiscard": "Verwerfen und fortfahren",
     "confirmKeep": "Ergebnisse behalten",
-    "zoomIn": "Vergrößern",
-    "zoomOut": "Verkleinern",
-    "zoomFit": "Einpassen",
     "zoomHint": "Strg+Mausrad zum Zoomen, Leertaste (oder mittlere Maustaste) halten zum Verschieben",
     "presetSofa": "Sofa|Fügen Sie ein bequemes modernes Sofa hinzu, das zum Stil des Raums passt.",
     "presetArmchair": "Sessel|Fügen Sie einen gemütlichen Sessel hinzu, der zum Raum passt.",
@@ -903,6 +900,7 @@
     "resumeNo": "Neu beginnen",
     "downloadComparison": "Vergleich herunterladen",
     "helpStep5": "Mit einem Bereich nicht zufrieden? Erzeugen Sie mit Weitere Version erzeugen mehr Optionen und wechseln Sie zwischen ihnen.",
+    "promptIdeas": "Vorschläge anzeigen",
     "loadingMessages": [
       "Ihre Möbel werden platziert…",
       "Licht und Schatten werden abgestimmt…",

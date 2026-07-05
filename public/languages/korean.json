@@ -880,9 +880,6 @@
     "confirmBody": "새 사진으로 다시 시작하면 표시한 영역과 생성된 결과가 지워집니다.",
     "confirmDiscard": "삭제하고 계속",
     "confirmKeep": "결과 유지",
-    "zoomIn": "확대",
-    "zoomOut": "축소",
-    "zoomFit": "화면에 맞추기",
     "zoomHint": "Ctrl+스크롤로 확대/축소, 스페이스(또는 휠 버튼)를 누른 채 드래그하여 이동",
     "presetSofa": "소파|방 분위기에 어울리는 편안한 모던 소파를 추가하세요.",
     "presetArmchair": "안락의자|방과 어울리는 아늑한 안락의자를 추가하세요.",
@@ -903,6 +900,7 @@
     "resumeNo": "새로 시작",
     "downloadComparison": "비교 이미지 다운로드",
     "helpStep5": "어떤 영역이 마음에 들지 않나요? 다른 버전 시도로 여러 옵션을 만들어 서로 전환해 보세요.",
+    "promptIdeas": "프롬프트 아이디어 보기",
     "loadingMessages": [
       "가구를 배치하는 중…",
       "빛과 그림자를 맞추는 중…",
