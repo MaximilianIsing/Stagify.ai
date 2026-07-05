@@ -38,7 +38,7 @@
     <meta name="description" data-lang-attr="pageMeta.maskingStudio.description|content" content="Highlight multiple areas of one room photo in different colors, attach a furniture photo to each, and stage them all at once. Only the highlighted areas can change — the rest of your photo stays pixel-perfect.">
 
     <!-- SEO Meta Tags -->
-    <meta name="keywords" data-lang-attr="pageMeta.maskingStudio.keywords|content" content="masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement, masked photo editing, region editing, real estate photo staging, Stagify">
+    <meta name="keywords" data-lang-attr="pageMeta.maskingStudio.keywords|content" content="masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement, masked photo editing, region editing, real estate photo staging, before after comparison, Stagify">
     <meta name="author" content="Stagify.ai">
     <meta name="publisher" content="Stagify.ai">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -93,12 +93,17 @@
       },
       "featureList": [
         "Multi-area color-coded masking",
+        "Brush and rectangle highlight tools with undo",
         "One furniture photo per highlighted area",
         "Parallel AI staging of every area at once",
+        "Multiple generated versions per area",
         "Pixel-perfect preservation outside highlights",
-        "Before and after comparison and download"
+        "Zoom and pan for precision masking",
+        "Before and after compare slider",
+        "Side-by-side before and after export",
+        "Automatic session restore"
       ],
-      "keywords": "masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement"
+      "keywords": "masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement, before after comparison, virtual staging editor"
     }
     </script>
 
@@ -169,6 +174,8 @@
       .ms-pro-gate__card {
         max-width: 480px;
         width: 100%;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
         background: rgba(255, 255, 255, 0.95);
         border-radius: 16px;
         padding: 32px 28px;
