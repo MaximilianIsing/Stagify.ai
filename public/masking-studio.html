@@ -208,7 +208,6 @@
         font-weight: 600;
         border-radius: 10px;
       }
-      .ms-viewer-actions .btn { padding: 9px 14px; font-size: 13px; }
       #ms-generate { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 
       .ms-grid {
@@ -1077,12 +1076,12 @@
                   <button type="button" id="ms-toggle-compare" class="toggle-btn" data-lang="maskingStudio.compare">Compare</button>
                   <button type="button" id="ms-toggle-after" class="toggle-btn active" data-lang="modal.staging.after">After</button>
                 </div>
+                <!-- Same button hierarchy as the main staging tool's result row. -->
                 <div class="ms-viewer-actions hidden" id="ms-viewer-actions">
-                  <button type="button" id="ms-edit-highlights" class="btn btn-ghost" data-lang="maskingStudio.editHighlights">Refine Edit</button>
-                  <button type="button" id="ms-view-result" class="btn btn-secondary hidden" data-lang="maskingStudio.viewResult">View result</button>
-                  <button type="button" id="ms-download" class="btn btn-secondary" data-lang="modal.staging.downloadResult">Download Result</button>
-                  <button type="button" id="ms-download-compare" class="btn btn-ghost" data-lang="maskingStudio.downloadComparison">Download comparison</button>
-                  <button type="button" id="ms-new-photo" class="btn btn-ghost" data-lang="modal.staging.uploadAnother">Upload Another</button>
+                  <button type="button" id="ms-edit-highlights" class="btn btn-secondary hidden"><strong data-lang="maskingStudio.editHighlights">Refine Edit</strong></button>
+                  <button type="button" id="ms-view-result" class="btn btn-primary hidden"><strong data-lang="maskingStudio.looksGood">Looks Good</strong></button>
+                  <button type="button" id="ms-download" class="btn btn-primary"><strong data-lang="modal.staging.downloadResult">Download Result</strong></button>
+                  <button type="button" id="ms-new-photo" class="btn btn-ghost"><strong data-lang="modal.staging.uploadAnother">Upload Another</strong></button>
                 </div>
               </div>
 
@@ -1287,7 +1286,6 @@
         const resumeEl = $('#ms-resume');
         const resumeYesBtn = $('#ms-resume-yes');
         const resumeNoBtn = $('#ms-resume-no');
-        const downloadCompareBtn = $('#ms-download-compare');
         const ctaHint = $('#ms-cta-hint');
         const viewerEl = $('#ms-viewer');
         const layerList = $('#ms-layer-list');
@@ -2787,7 +2785,6 @@
           const painted = layers.filter((l) => l.painted);
           const allDetailed = painted.length > 0 && painted.every((l) => l.prompt.trim() || l.furniture);
           generateBtn.disabled = !base || generating || !allDetailed;
-          downloadCompareBtn.disabled = downloadBtn.disabled;
 
           // Explain a disabled Apply Edit instead of leaving it a mystery.
           let hint = '';
@@ -2937,8 +2934,14 @@
           progressText.classList.add('hidden');
           compositeAll();
           const done = participating.filter((l) => l.status === 'done').length;
-          setPhase('review');
-          setView(done ? 'after' : 'before');
+          if (done > 0) {
+            // Land in Refine Edit: highlights over the result with the
+            // original ghosted, and Looks Good waiting in the header.
+            setPhase('draw');
+          } else {
+            setPhase('review');
+            setView('before');
+          }
           if (done === participating.length) {
             showToast(tx('maskingStudio.doneToast', 'All areas staged!'), 'success');
           } else if (done > 0) {
@@ -2994,6 +2997,7 @@
           setView(view);
           renderLayers();
           updateControls();
+          updateStageBackdrop(); // retries can happen from the refine phase too
         }
 
         // Chain the per-area composites over the pristine original, in layer
@@ -3066,47 +3070,6 @@
           link.click();
         });
 
-        // Side-by-side before/after with corner labels — listing-ready.
-        downloadCompareBtn.addEventListener('click', () => {
-          if (!layers.some((l) => l.status === 'done')) return;
-          compositeAll();
-          const gap = Math.max(8, Math.round(base.w * 0.015));
-          const c = document.createElement('canvas');
-          c.width = base.w * 2 + gap;
-          c.height = base.h;
-          const ctx = c.getContext('2d');
-          ctx.fillStyle = '#fff';
-          ctx.fillRect(0, 0, c.width, c.height);
-          ctx.drawImage(base.canvas, 0, 0);
-          ctx.drawImage(resultCanvas, base.w + gap, 0);
-          const fs = Math.max(18, Math.round(base.h * 0.035));
-          const pad = Math.round(fs * 0.5);
-          ctx.font = '700 ' + fs + 'px Inter, Arial, sans-serif';
-          ctx.textBaseline = 'middle';
-          const drawLabel = (text, x) => {
-            const w = ctx.measureText(text).width;
-            const bx = x + pad;
-            const by = pad;
-            const bw = w + pad * 2;
-            const bh = fs + pad;
-            ctx.fillStyle = 'rgba(17, 24, 39, 0.62)';
-            if (ctx.roundRect) {
-              ctx.beginPath();
-              ctx.roundRect(bx, by, bw, bh, Math.round(bh / 2));
-              ctx.fill();
-            } else {
-              ctx.fillRect(bx, by, bw, bh);
-            }
-            ctx.fillStyle = '#fff';
-            ctx.fillText(text, bx + pad, by + bh / 2);
-          };
-          drawLabel(tx('modal.staging.before', 'Before'), 0);
-          drawLabel(tx('modal.staging.after', 'After'), base.w + gap);
-          const link = document.createElement('a');
-          link.download = 'stagify-before-after-' + Date.now() + '.jpg';
-          link.href = c.toDataURL('image/jpeg', 0.92);
-          link.click();
-        });
 
         function resetStudio() {
           genRun++;
