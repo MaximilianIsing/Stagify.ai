@@ -420,6 +420,11 @@
         cursor: pointer;
       }
       .ms-preset:hover { background: rgba(191, 219, 254, 0.7); }
+      .ms-preset:focus-visible, .ms-clear-btn:focus-visible, .ms-version-btn:focus-visible,
+      .ms-layer-retry:focus-visible, .ms-furniture-add:focus-visible, .ms-dz-sample:focus-visible {
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
+      }
       .ms-clear-btn {
         align-self: flex-start;
         border: none;
@@ -908,6 +913,7 @@
           <li data-lang="maskingStudio.helpStep2">Highlight where each piece of furniture should go. Use one color per area, and add more areas for more pieces.</li>
           <li data-lang="maskingStudio.helpStep3">Give every area a furniture photo, a short prompt, or both.</li>
           <li data-lang="maskingStudio.helpStep4">Click Apply Edit. Every area is staged at the same time, and only the highlighted spots can change. The rest of your photo stays pixel-perfect.</li>
+          <li data-lang="maskingStudio.helpStep5">Not happy with an area? Use Try another version to generate more options and flip between them.</li>
         </ol>
         <h3 data-lang="maskingStudio.helpShortcuts">Keyboard shortcuts</h3>
         <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo</p>
@@ -1888,6 +1894,7 @@
         // ---------------------------------------------------------------------
         let idbPromise = null;
         let saveTimer = null;
+        let restoring = false; // block saves while a restore is rebuilding state
 
         function idb() {
           if (!idbPromise) {
@@ -1926,14 +1933,14 @@
         }
 
         function scheduleSessionSave() {
-          if (!base) return;
+          if (!base || restoring) return;
           if (saveTimer) clearTimeout(saveTimer);
           saveTimer = setTimeout(saveSessionNow, 1500);
         }
 
         async function saveSessionNow() {
           if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-          if (!base || phase === 'generating') return;
+          if (!base || restoring || phase === 'generating') return;
           try {
             const baseBlob = await toBlob(base.canvas, 'image/jpeg', 0.9);
             if (!baseBlob) return;
@@ -1963,6 +1970,18 @@
         }
 
         async function restoreSession(saved) {
+          // A half-finished restore must never overwrite the stored session
+          // (the debounced save could fire while masks are still decoding).
+          restoring = true;
+          try {
+            await restoreSessionInner(saved);
+          } finally {
+            restoring = false;
+          }
+          scheduleSessionSave();
+        }
+
+        async function restoreSessionInner(saved) {
           const img = await blobToImage(saved.baseBlob);
           setBaseImage(img, { noLayer: true });
           for (const ld of saved.layers || []) {
