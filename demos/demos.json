@@ -1,0 +1,2442 @@
+{
+  "demos": [
+    {
+      "key": "free",
+      "id": "cmqldspgv0jrdqms4h4svk1dh",
+      "title": "Your first free staging",
+      "aspect": 1.7778,
+      "steps": [
+        {
+          "n": 1,
+          "img": "assets/free/step-01.webp",
+          "zoom": null,
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Welcome to the Stagify.ai free plan guide, here we'll guide you through staging your first room!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 48.58561545967861,
+              "cy": 51.00916961836733,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 2,
+          "img": "assets/free/step-02.webp",
+          "zoom": {
+            "x": 0,
+            "y": 14.88872168670888,
+            "w": 77.90205322143363,
+            "h": 77.90160480751521
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "First off, click the Upload Image for Free button to begin staging your space.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 28.480083993495775,
+              "cy": 57.200899343735976,
+              "bw": 25.91027808371593,
+              "bh": 6.942242419352719,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 3,
+          "img": "assets/free/step-03.webp",
+          "zoom": {
+            "x": 14.74934036939315,
+            "y": 4.784520668425683,
+            "w": 70.89709762532978,
+            "h": 70.89709762532979
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "After that, click the upload area to select or drag and drop your image you would like to stage.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 35.24678724042111,
+              "cy": 56.98664351286321,
+              "bw": null,
+              "bh": null,
+              "tip": "left",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 4,
+          "img": "assets/free/step-04.webp",
+          "zoom": {
+            "x": 5.013192612137203,
+            "y": 4.784520668425682,
+            "w": 53.61477572559367,
+            "h": 53.61477572559367
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "From here, select a room type from the dropdown to customize the staging options.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 21.678506670854954,
+              "cy": 24.038855335127696,
+              "bw": 6.279680431694901,
+              "bh": 3.095864862684321,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 5,
+          "img": "assets/free/step-05.webp",
+          "zoom": {
+            "x": 6.06860158311346,
+            "y": 9.152741131632963,
+            "w": 53.66754617414251,
+            "h": 53.66754617414251
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Afterwards, select your desired room type.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 34.182991526348395,
+              "cy": 39.62055806435594,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 6,
+          "img": "assets/free/step-06.webp",
+          "zoom": {
+            "x": 8.918205804749341,
+            "y": 10.33714453239519,
+            "w": 61.68865435356199,
+            "h": 61.688654353562
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Then, click the Furniture style dropdown to select the desired style for your image.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 21.64994828683195,
+              "cy": 31.927183917714608,
+              "bw": 6.174139584103388,
+              "bh": 3.564935296424369,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 7,
+          "img": "assets/free/step-07.webp",
+          "zoom": {
+            "x": 10.36818111066525,
+            "y": 17.73982132922691,
+            "w": 59.61128667391943,
+            "h": 59.61094354393076
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Then, click on your desired style.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 36.260382053177594,
+              "cy": 48.2553538135739,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 8,
+          "img": "assets/free/step-08.webp",
+          "zoom": {
+            "x": 4.538258575197889,
+            "y": 12.27616534740545,
+            "w": 60,
+            "h": 60
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Afterwards, enter any specific details or requests for staging in the text field.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 29.59316852856358,
+              "cy": 42.04162885437782,
+              "bw": 22.00526672283003,
+              "bh": 8.724710067564905,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 9,
+          "img": "assets/free/step-09.webp",
+          "zoom": {
+            "x": 9.815303430079156,
+            "y": 12.168279097038992,
+            "w": 70.71240105540898,
+            "h": 70.71240105540898
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Following that, click the Process Photo button to begin the AI virtual staging process.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 29.5,
+              "cy": 54.70126071539286,
+              "bw": 12.03165662543225,
+              "bh": 5.816473378376603,
+              "tip": "top",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 10,
+          "img": "assets/free/step-10.webp",
+          "zoom": {
+            "x": 30.08164433771099,
+            "y": 6.609498680738795,
+            "w": 59.15318415833119,
+            "h": 59.15284366523763
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "And with that, your staging is done!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 41.26592429422507,
+              "cy": 53.947023909747195,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 11,
+          "img": "assets/free/step-11.webp",
+          "zoom": {
+            "x": 31.85141820580475,
+            "y": 3.189680445617121,
+            "w": 60,
+            "h": 60
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Finally, you may click the Download Result button to save your redesigned living room image.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 62.5374338141618,
+              "cy": 11.871591864525787,
+              "bw": 12.45382001579829,
+              "bh": 4.878332510896506,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "plus",
+      "id": "cmqleqav40k2pqms4hru96syf",
+      "title": "Your first Stagify+ staging",
+      "aspect": 1.7778,
+      "steps": [
+        {
+          "n": 1,
+          "img": "assets/plus/step-01.webp",
+          "zoom": null,
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Welcome to the Stagify+ staging guide, here we'll guide you through staging your first room with the extra tools offered by Stagify+.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 49.986135754220065,
+              "cy": 50.5889695318141,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 2,
+          "img": "assets/plus/step-02.webp",
+          "zoom": {
+            "x": 0,
+            "y": 7.105564975702269,
+            "w": 86.30143846379667,
+            "h": 86.30094170197091
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "First off, click the Upload Image for Free button to begin staging your space.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 30.13604860226392,
+              "cy": 54.5752301995004,
+              "bw": 24.11608367466026,
+              "bh": 6.7546142458567,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 3,
+          "img": "assets/plus/step-03.webp",
+          "zoom": {
+            "x": 6.921404877466161,
+            "y": 7.692758721782468,
+            "w": 83.91663137778647,
+            "h": 83.91663137778647
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "After that, click the upload area to select or drag and drop your image you would like to stage.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 61.563627484622664,
+              "cy": 47.82017738243981,
+              "bw": 34.98679097658588,
+              "bh": 78.1471342610921,
+              "tip": "left",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 4,
+          "img": "assets/plus/step-04.webp",
+          "zoom": {
+            "x": 8.54881266490765,
+            "y": 7.370272647317503,
+            "w": 49.81530343007915,
+            "h": 49.81530343007915
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "From here, select a room type from the dropdown to customize the staging options.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 23.766978872998173,
+              "cy": 22.279770022217416,
+              "bw": 5.435353650962814,
+              "bh": 3.002050775936311,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 5,
+          "img": "assets/plus/step-05.webp",
+          "zoom": {
+            "x": 9.393139841688654,
+            "y": 10.31955438287892,
+            "w": 51.76781002638522,
+            "h": 51.76781002638521
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Afterwards, select your desired room type.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 38.020765795877374,
+              "cy": 37.77924023515231,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 6,
+          "img": "assets/plus/step-06.webp",
+          "zoom": {
+            "x": 6.649076517150395,
+            "y": 7.692758721782468,
+            "w": 60,
+            "h": 60
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Then, click the Furniture style dropdown to select the desired style for your image.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 23.843478071617394,
+              "cy": 29.432934884445405,
+              "bw": 5.857517041328857,
+              "bh": 3.189678949432331,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 7,
+          "img": "assets/plus/step-07.webp",
+          "zoom": {
+            "x": 13.87862796833773,
+            "y": 21.29244166476651,
+            "w": 58.10026385224274,
+            "h": 58.10026385224272
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Then, click on your desired style.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 38.859779702460635,
+              "cy": 45.865883443355635,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 8,
+          "img": "assets/plus/step-08.webp",
+          "zoom": {
+            "x": 8.021108179419526,
+            "y": 13.40369393139842,
+            "w": 67.44063324538259,
+            "h": 67.44063324538259
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Afterwards, enter any specific details or requests for staging in the text field.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 31.15951229583014,
+              "cy": 39.15534637562247,
+              "bw": 20.42215400895737,
+              "bh": 7.692755113336798,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 9,
+          "img": "assets/plus/step-09.webp",
+          "zoom": {
+            "x": 5.525911343659881,
+            "y": 16.77313270373175,
+            "w": 64.47408865634013,
+            "h": 64.47371753545774
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Then, choose either the fast image generation model for quicker stagings or quality image model.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 31.06795995378927,
+              "cy": 54.53782829901851,
+              "bw": 20.36938358516161,
+              "bh": 4.878332510896506,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 10,
+          "img": "assets/plus/step-10.webp",
+          "zoom": {
+            "x": 7.320106594319512,
+            "y": 25.40403273304867,
+            "w": 63.31313878826624,
+            "h": 63.31313878826624
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Circle",
+              "text": "You may now choose how many different staging variations you would like.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 31.01518952999352,
+              "cy": 62.981096106339386,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Ping",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 11,
+          "img": "assets/plus/step-11.webp",
+          "zoom": {
+            "x": 10.18469656992084,
+            "y": 35.5907358545881,
+            "w": 54.45910290237467,
+            "h": 54.45910290237467
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Optionally, add photos of furniture to be included in the staged photo.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 31.137801175358476,
+              "cy": 70.04202106675234,
+              "bw": 20.47492443275312,
+              "bh": 4.034005730164418,
+              "tip": "top",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 12,
+          "img": "assets/plus/step-12.webp",
+          "zoom": {
+            "x": 7.440633245382585,
+            "y": 43.55027851070067,
+            "w": 52.32189973614776,
+            "h": 52.32189973614776
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Following that, click the Process Photo button to begin the AI virtual staging process.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 31.040689262866582,
+              "cy": 83.17290487490195,
+              "bw": 11.29287069229167,
+              "bh": 5.628845204880584,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 13,
+          "img": "assets/plus/step-13.webp",
+          "zoom": {
+            "x": 25.49482684094438,
+            "y": 5.343909325279067,
+            "w": 70,
+            "h": 70
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Check out the first staged photo!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 49.552404414216845,
+              "cy": 62.1537068219604,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 14,
+          "img": "assets/plus/step-14.webp",
+          "zoom": {
+            "x": 25.24482678588879,
+            "y": 5.002931691586046,
+            "w": 70,
+            "h": 70
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Check out the second staged photo!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 74.54561136225489,
+              "cy": 62.42450832558325,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 15,
+          "img": "assets/plus/step-15.webp",
+          "zoom": {
+            "x": 31.80555555555556,
+            "y": 0,
+            "w": 60,
+            "h": 60
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Finally, you may click the Download Result button to save your redesigned living room image.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 61.67362949606618,
+              "cy": 11.232124912923734,
+              "bw": 11.76780450645347,
+              "bh": 4.503076163904467,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "designer",
+      "id": "cmqq4ivmb3pvzqms4q8o3kjja",
+      "title": "Staging with AI Designer",
+      "aspect": 2.0016,
+      "steps": [
+        {
+          "n": 1,
+          "img": "assets/designer/step-01.webp",
+          "zoom": null,
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Welcome to the AI Designer Demo!",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 50.22161683477427,
+              "cy": 49.49900070525198,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 2,
+          "img": "assets/designer/step-02.webp",
+          "zoom": {
+            "x": 15.28759199070914,
+            "y": 30,
+            "w": 70,
+            "h": 70
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Type a design request or question to start a conversation with the AI Designer.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 50.06067633285303,
+              "cy": 93.61067236275943,
+              "bw": 35.01440922190201,
+              "bh": 8.267746400698792,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 3,
+          "img": "assets/designer/step-03.webp",
+          "zoom": {
+            "x": 0,
+            "y": 20,
+            "w": 80,
+            "h": 80
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Press the Upload Image icon to upload any images of furniture or rooms that might be relevant to your chat.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 33.82628632324688,
+              "cy": 95.00465286055166,
+              "bw": 1.681075888568673,
+              "bh": 3.364780511912299,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 4,
+          "img": "assets/designer/step-04.webp",
+          "zoom": {
+            "x": 23.92084684197887,
+            "y": 40,
+            "w": 60,
+            "h": 60
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Next, click the Send button to send your first message to the AI designer.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 66.07262397934677,
+              "cy": 92.3620984513748,
+              "bw": 1.921229586935639,
+              "bh": 3.845463442185485,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 5,
+          "img": "assets/designer/step-05.webp",
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 99.99857297255078,
+            "h": 100
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Here's your first message!",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 61.80456742315082,
+              "cy": 44.21299060640405,
+              "bw": 23.29490874159462,
+              "bh": 64.50764924266151,
+              "tip": "left",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 6,
+          "img": "assets/designer/step-06.webp",
+          "zoom": {
+            "x": 1.914154466743867,
+            "y": 10.49564003454926,
+            "w": 86.41802459211296,
+            "h": 86.41744580819578
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "The AI Designer is able to view all your uploaded photos and analyze them however you like. It also has a good understanding of interior design best practices and what looks good!",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 37.92375870557155,
+              "cy": 55.76665547576716,
+              "bw": 23.77521613832853,
+              "bh": 42.30009786404034,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 7,
+          "img": "assets/designer/step-07.webp",
+          "zoom": {
+            "x": 13.56965160982246,
+            "y": 12.72027603255283,
+            "w": 82.3683827081911,
+            "h": 82.36783104671287
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "You may send as many follow up messages as desired. The AI Designer keeps track of everything for you!",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 61.77240934197885,
+              "cy": 66.80644024998517,
+              "bw": 23.3909702209414,
+              "bh": 6.152741507496776,
+              "tip": "top",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 8,
+          "img": "assets/designer/step-08.webp",
+          "zoom": {
+            "x": 8.768513029251627,
+            "y": 21.47529876940612,
+            "w": 71.24842190158705,
+            "h": 71.249438650634
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "The AI Designer is able to stage any uploaded photos for you.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 37.870323626517234,
+              "cy": 61.47941836122178,
+              "bw": 23.58309317963497,
+              "bh": 31.43666363986634,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 9,
+          "img": "assets/designer/step-09.webp",
+          "zoom": {
+            "x": 14.1102939484804,
+            "y": 15.43182302219561,
+            "w": 79.16562497603475,
+            "h": 79.16509476499664
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "The AI Designer can apply any (even the most specific) changes you like and refer to any previous context in the chat.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 61.79848853266089,
+              "cy": 67.00427131847573,
+              "bw": 23.24687800192123,
+              "bh": 5.960468335387501,
+              "tip": "top",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 10,
+          "img": "assets/designer/step-10.webp",
+          "zoom": {
+            "x": 3.999072262180062,
+            "y": 17.21296524611676,
+            "w": 79.61985321748199,
+            "h": 79.61931996425446
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Woah, look at that!",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 37.87021193563881,
+              "cy": 62.51995021927404,
+              "bw": 23.53506243996158,
+              "bh": 28.93711240244577,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 11,
+          "img": "assets/designer/step-11.webp",
+          "zoom": {
+            "x": 14.07455420253061,
+            "y": 27.30240123042783,
+            "w": 64.20845571600573,
+            "h": 64.20802568046985
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "If you would like to apply more specific edits to a staged room, use the masking tool.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 46.424186479346794,
+              "cy": 55.92099976040957,
+              "bw": 1.921229586935639,
+              "bh": 3.845463442185485,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 12,
+          "img": "assets/designer/step-12.webp",
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 99.99857297255078,
+            "h": 100
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "First, choose a brush size to mask with.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 30.0870932396734,
+              "cy": 75.04647227548539,
+              "bw": 18.25168107588857,
+              "bh": 2.01886830714738,
+              "tip": "top",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 13,
+          "img": "assets/designer/step-13.webp",
+          "zoom": {
+            "x": 2.257444764649375,
+            "y": 10.75743347685163,
+            "w": 80,
+            "h": 80
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Then, select the area by brushing over it.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 44.690839637367915,
+              "cy": 48.73869550163394,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 14,
+          "img": "assets/designer/step-14.webp",
+          "zoom": null,
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Lastly, type your desired change in the prompt box and press Apply Edit.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 32.392418647934676,
+              "cy": 85.35802241033954,
+              "bw": 5.187319884726225,
+              "bh": 2.884097581639114,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 15,
+          "img": "assets/designer/step-15.webp",
+          "zoom": {
+            "x": 2.01606069889147,
+            "y": 10.62458512628204,
+            "w": 87.03106666564415,
+            "h": 87.03048377588337
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "And there you go!",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 37.75227395533142,
+              "cy": 62.753306760580095,
+              "bw": 23.29490874159462,
+              "bh": 29.32165874666433,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 16,
+          "img": "assets/designer/step-16.webp",
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 99.99857297255078,
+            "h": 100
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Thanks for checking out the Stagify AI Designer demo.",
+              "bg": "#3f60e0",
+              "fg": "#fff",
+              "cx": 48.931803854466864,
+              "cy": 49.956175235966505,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "masking",
+      "id": "cmr8z1jz41mn9qm3ar3ydo4bp",
+      "title": "Masking Studio Demo",
+      "aspect": 1.6243,
+      "steps": [
+        {
+          "n": 1,
+          "img": "assets/masking/step-01.webp",
+          "zoom": null,
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Welcome to the Masking Studio demo! We're going to walk you through an example staging using this feature.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 49.78744321598786,
+              "cy": 48.714814829885555,
+              "bw": null,
+              "bh": null,
+              "tip": "top",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 2,
+          "img": "assets/masking/step-02.webp",
+          "zoom": {
+            "x": 6.65286952248651,
+            "y": 3.14361146926997,
+            "w": 87.23858664323042,
+            "h": 87.2385523766781
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Begin by uploading the room photo.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 59.952691415388855,
+              "cy": 38.30145120085648,
+              "bw": 48.40044313123887,
+              "bh": 35.6493529642437,
+              "tip": "left",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 3,
+          "img": "assets/masking/step-03.webp",
+          "zoom": {
+            "x": 2.253118048007578,
+            "y": 3.158714351988427,
+            "w": 91.98866507833368,
+            "h": 91.98795873508027
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "If you want, you can change the photo by pressing here.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 24.339859856177195,
+              "cy": 28.18117118921901,
+              "bw": 16.74955669219483,
+              "bh": 7.692755113336798,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 4,
+          "img": "assets/masking/step-04.webp",
+          "zoom": {
+            "x": 1.790484441556566,
+            "y": 12.09176194664321,
+            "w": 85,
+            "h": 85
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Let's begin with the first change I want to make in my room. I want to replace this sofa with a new, red one.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 24.538149697019048,
+              "cy": 46.160564456376655,
+              "bw": 16.81806592357205,
+              "bh": 17.61824083974676,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 5,
+          "img": "assets/masking/step-05.webp",
+          "zoom": {
+            "x": 2.084718393494347,
+            "y": 12.95820776173043,
+            "w": 85,
+            "h": 85.00000000000001
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "To select the area I want to edit, for this first area, I may manually brush, use a rectangle, or have it auto select for me.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 24.422635512934942,
+              "cy": 70.83366927110322,
+              "bw": 17.85769358032897,
+              "bh": 12.36465198185821,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 6,
+          "img": "assets/masking/step-06.webp",
+          "zoom": {
+            "x": 12.97152599417983,
+            "y": 15.11998902276173,
+            "w": 80.96769011236165,
+            "h": 80.96765830896254
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "I used the magic select tool and clicked on the couch!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 59.377601837551786,
+              "cy": 36.81206885211406,
+              "bw": null,
+              "bh": null,
+              "tip": "top",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 7,
+          "img": "assets/masking/step-07.webp",
+          "zoom": {
+            "x": 3.468091741558695,
+            "y": 6.168723521827241,
+            "w": 90,
+            "h": 89.99999999999999
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "I'm now going to add my new couch photo.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 20.144889205737712,
+              "cy": 52.72788541520836,
+              "bw": 6.873093953004086,
+              "bh": 3.28349303618034,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 8,
+          "img": "assets/masking/step-08.webp",
+          "zoom": {
+            "x": 6.064544076239983,
+            "y": 14.53703559055934,
+            "w": 81.61721175366398,
+            "h": 81.61658504854942
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Now that we've finished up the first area, let's move onto the next one.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 24.435524335173106,
+              "cy": 62.3879380603097,
+              "bw": 16.95935775213247,
+              "bh": 3.504482477587612,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 9,
+          "img": "assets/masking/step-09.webp",
+          "zoom": {
+            "x": 2.830120568911992,
+            "y": 7.33975509981729,
+            "w": 90,
+            "h": 90
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "For my next change, I want to add an art piece onto the wall.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 24.478118472433614,
+              "cy": 50.82115317214336,
+              "bw": 16.95577370568741,
+              "bh": 17.44113605308338,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 10,
+          "img": "assets/masking/step-10.webp",
+          "zoom": {
+            "x": 4.216302072052559,
+            "y": 17.74846086191733,
+            "w": 80,
+            "h": 80
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "I'm going to use the Rectangle too, but the Brush would work well too.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 23.69743299343446,
+              "cy": 74.41147888797013,
+              "bw": 16.68628608084481,
+              "bh": 9.64404346616593,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 11,
+          "img": "assets/masking/step-11.webp",
+          "zoom": {
+            "x": 7.851602452269482,
+            "y": 3.712781097356205,
+            "w": 86.99505759835189,
+            "h": 86.99502342745565
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "There's the area I highlighted!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 59.544256890508365,
+              "cy": 52.95727056748576,
+              "bw": null,
+              "bh": null,
+              "tip": "left",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 12,
+          "img": "assets/masking/step-12.webp",
+          "zoom": {
+            "x": 1.097393689986282,
+            "y": 9.249486953972443,
+            "w": 90,
+            "h": 90
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Next, I will add the photo of the art piece.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 20.195684897139994,
+              "cy": 57.29421352893236,
+              "bw": 6.77370797792273,
+              "bh": 2.444987775061125,
+              "tip": "right",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 13,
+          "img": "assets/masking/step-13.webp",
+          "zoom": {
+            "x": 1.039636127355426,
+            "y": 20,
+            "w": 80,
+            "h": 80
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "I could add many more layers if I wanted to, but I'm satisfied for now. So, I press apply edit to stage.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 24.435524335173106,
+              "cy": 94.62102689486552,
+              "bw": 16.95935775213247,
+              "bh": 4.237978810105949,
+              "tip": "top",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 14,
+          "img": "assets/masking/step-14.webp",
+          "zoom": {
+            "x": 8.374846581474262,
+            "y": 10.61858692465553,
+            "w": 86.58436213991769,
+            "h": 86.58369729409132
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "This next step is the refining step. Here, I can optionally redefine my masking areas to get more precise results. For example, erasing off unused masking space will reduce the area generated by the AI (reducing possible error).",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 26.897988916601385,
+              "cy": 56.63415764659514,
+              "bw": null,
+              "bh": null,
+              "tip": "top",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 15,
+          "img": "assets/masking/step-15.webp",
+          "zoom": {
+            "x": 16.33353804343169,
+            "y": 4.236344739980936,
+            "w": 78.1648853230516,
+            "h": 78.16485462056966
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Once you're satisfied, click the Looks Good button to see your result and download it.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 39.237330657300554,
+              "cy": 22.12713936430318,
+              "bw": 6.623181133968892,
+              "bh": 3.504482477587612,
+              "tip": "bottom",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 16,
+          "img": "assets/masking/step-16.webp",
+          "zoom": {
+            "x": 7.701735983141019,
+            "y": 2.259470743537791,
+            "w": 92.29826401685898,
+            "h": 92.29822776290973
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "You may now click the Download Result button to download your output file.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 79.93513020915579,
+              "cy": 22.12680363679307,
+              "bw": 8.201507069971264,
+              "bh": 3.47112120967636,
+              "tip": "left",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 17,
+          "img": "assets/masking/step-17.webp",
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 100,
+            "h": 99.99923214098952
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Thanks for checking out the Masking Studio demo!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 50.34047871659302,
+              "cy": 45.98300979026224,
+              "bw": null,
+              "bh": null,
+              "tip": "left",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "prompt",
+      "id": "cmqqaev8f3z93qms491pbobaz",
+      "title": "AI Designer Prompt Bar Guide",
+      "aspect": 2.001,
+      "steps": [
+        {
+          "n": 1,
+          "img": "assets/prompt/step-01.webp",
+          "zoom": null,
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Welcome to the Prompt Bar demo for the AI Designer, here we'll explain how to properly use every button and its functionality.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 49.41425012007684,
+              "cy": 50.40278505705873,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 2,
+          "img": "assets/prompt/step-02.webp",
+          "zoom": {
+            "x": 0,
+            "y": 29.99999999999999,
+            "w": 70,
+            "h": 70
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "This is the file upload button, press this button to upload images of furniture or rooms. Please note that only 5 images can be uploaded per message.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 29.769677593659942,
+              "cy": 93.69703540959281,
+              "bw": 1.921229586935639,
+              "bh": 3.844461497567928,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 3,
+          "img": "assets/prompt/step-03.webp",
+          "zoom": {
+            "x": 2.160122120540338,
+            "y": 33.17623342555925,
+            "w": 66.43127267706328,
+            "h": 66.430815140782
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "This is the chat refresh button. Pressing this button resets the chat context and clears all previous messages.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 32.01503962536023,
+              "cy": 93.70048941796954,
+              "bw": 1.921229586935639,
+              "bh": 3.844461497567928,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 4,
+          "img": "assets/prompt/step-04.webp",
+          "zoom": {
+            "x": 6.253383780610046,
+            "y": 38.67489288811628,
+            "w": 61.32552948305885,
+            "h": 61.32510711188372
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "This is the mode selection button, use it to help specify to the AI Designer what you're trying to accomplish.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 35.242179995196935,
+              "cy": 93.58635696726051,
+              "bw": 3.890489913544669,
+              "bh": 3.74834996012873,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 5,
+          "img": "assets/prompt/step-05.webp",
+          "zoom": {
+            "x": 1.865560013193928,
+            "y": 21.12969795695958,
+            "w": 78.8708452551721,
+            "h": 78.87030204304043
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "It is recommended to keep the mode set to Auto, but in certain moments, you might want to specify instructions to the AI. This is also useful if the AI Designer is ever confused on something or language is ambiguous.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 35.26859690201729,
+              "cy": 80.05955911835686,
+              "bw": 7.973102785782901,
+              "bh": 22.49009976077237,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 6,
+          "img": "assets/prompt/step-06.webp",
+          "zoom": {
+            "x": 24.59969469864916,
+            "y": 24.84568074007132,
+            "w": 75.15483687856216,
+            "h": 75.15431925992867
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "This is the bug report button. Use it to report any mistakes by the AI Designer. We really appreciate your feedback!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 66.82291666666667,
+              "cy": 94.39414440458152,
+              "bw": 1.921229586935639,
+              "bh": 3.844461497567928,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 7,
+          "img": "assets/prompt/step-07.webp",
+          "zoom": {
+            "x": 27.87109972086145,
+            "y": 27.48632688045111,
+            "w": 72.12890027913855,
+            "h": 72.12922523776662
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "This is the model selection button. Use it to switch which AI model you are using.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 69.3685458693564,
+              "cy": 94.29803286714233,
+              "bw": 3.170028818443804,
+              "bh": 3.652238422689531,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 8,
+          "img": "assets/prompt/step-08.webp",
+          "zoom": {
+            "x": 27.29984734932457,
+            "y": 25.8755153730097,
+            "w": 71.96374738230944,
+            "h": 71.96325174186723
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Selecting the Fast model will give you faster results at a standard quality. Stagify+ mode will take longer but generate more accurate and higher quality results.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 66.36294728626322,
+              "cy": 82.9487620383455,
+              "bw": 9.510086455331413,
+              "bh": 18.64563826320445,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 9,
+          "img": "assets/prompt/step-09.webp",
+          "zoom": {
+            "x": 30.73640526836604,
+            "y": 29.95097944455959,
+            "w": 69.26359473163396,
+            "h": 69.26311768812292
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "This is the Send Message button. Put simply, pressing this button sends out your currently typed out message. If the AI Designer is in the middle of responding, an abort button can be pressed here to cancel its response.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 70.13703770413065,
+              "cy": 90.45357136957442,
+              "bw": 2.305475504322767,
+              "bh": 4.22890764732472,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 10,
+          "img": "assets/prompt/step-10.webp",
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 99.99954947716823,
+            "h": 100
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Thanks for checking out the Prompt Bar guide, we hope you like the AI Designer!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 48.404779058597505,
+              "cy": 49.350270989483306,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Large",
+              "nextButton": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "furniture",
+      "id": "cmqspr9f80j68qmjagxjlqtqy",
+      "title": "Working with Furniture",
+      "aspect": 2.0016,
+      "steps": [
+        {
+          "n": 1,
+          "img": "assets/furniture/step-01.webp",
+          "zoom": null,
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "Welcome to the furniture guide, here we'll guide you through using custom furniture photos!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 50.00015009606148,
+              "cy": 49.51770227550793,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 2,
+          "img": "assets/furniture/step-02.webp",
+          "zoom": {
+            "x": 3.340952786422344,
+            "y": 2.269468480347112,
+            "w": 86.1476107579162,
+            "h": 86.14703378509317
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Begin by pressing the Upload Image For Free button.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 34.918497838616716,
+              "cy": 45.624170540295125,
+              "bw": 18.059558117195,
+              "bh": 6.248878093551413,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Center",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 3,
+          "img": "assets/furniture/step-03.webp",
+          "zoom": {
+            "x": 12.02883734672177,
+            "y": 1.640644986819671,
+            "w": 80.36916181268133,
+            "h": 80.37030871904783
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Now, upload the image of the room you would like to stage.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 58.510521733909684,
+              "cy": 39.51469049652294,
+              "bw": 26.0806916426513,
+              "bh": 64.2192394844976,
+              "tip": "left",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 4,
+          "img": "assets/furniture/step-04.webp",
+          "zoom": {
+            "x": 5.202573678842304,
+            "y": 2.161232885123105,
+            "w": 77.75477963450079,
+            "h": 77.75425887258626
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Then, select your desired room type.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 30.568301212776177,
+              "cy": 18.439748272357953,
+              "bw": 4.178674351585014,
+              "bh": 2.595687823475203,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 5,
+          "img": "assets/furniture/step-05.webp",
+          "zoom": {
+            "x": 3.170028818443804,
+            "y": 7.787174595544606,
+            "w": 77.50240153698367,
+            "h": 77.50350753331028
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "From here, select your preferred furniture style from the dropdown menu.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 30.462671109510087,
+              "cy": 24.85618943113428,
+              "bw": 4.274735830931797,
+              "bh": 2.980234167693751,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 6,
+          "img": "assets/furniture/step-06.webp",
+          "zoom": {
+            "x": 2.641690682036503,
+            "y": 11.92131449443086,
+            "w": 70,
+            "h": 70
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "If the room already has furniture in it that you would like to be removed and replaced, check this box.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 28.961072586455327,
+              "cy": 37.78821260305579,
+              "bw": 0.9606147934678195,
+              "bh": 1.538185376874194,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 7,
+          "img": "assets/furniture/step-07.webp",
+          "zoom": {
+            "x": 5.445222442363113,
+            "y": 20.99336938655525,
+            "w": 66.24399615754083,
+            "h": 66.24494149103964
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "You may choose to leave certain pieces of furniture in the room.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 36.11765279779059,
+              "cy": 44.984712029616084,
+              "bw": 15.17771373679155,
+              "bh": 6.441151265660687,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 8,
+          "img": "assets/furniture/step-08.webp",
+          "zoom": {
+            "x": 6.148210566627179,
+            "y": 16.54215373291658,
+            "w": 75.29298751200768,
+            "h": 75.29406197893977
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "You can also change your image model according to your goals for this staging.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 36.0250810518732,
+              "cy": 55.771837838609194,
+              "bw": 15.22574447646494,
+              "bh": 4.422282958513308,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 9,
+          "img": "assets/furniture/step-09.webp",
+          "zoom": {
+            "x": 2.017291066282421,
+            "y": 20.47774556488563,
+            "w": 77.69452449567723,
+            "h": 77.69563323369033
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Now, to add your own furniture, either drag and drop the files here or click to upload.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 35.97705031219981,
+              "cy": 62.50139886243381,
+              "bw": 15.12968299711815,
+              "bh": 3.076370753748388,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 10,
+          "img": "assets/furniture/step-10.webp",
+          "zoom": null,
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "Now that all the settings are set and your furniture is uploaded, press Process Photo to stage!",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 35.97138418587896,
+              "cy": 86.3469524326687,
+              "bw": 8.357348703170029,
+              "bh": 4.422282958513308,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 11,
+          "img": "assets/furniture/step-11.webp",
+          "zoom": {
+            "x": 8.342829973082205,
+            "y": 1.670043593049671,
+            "w": 91.6571700269178,
+            "h": 91.65655615387274
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Tooltip",
+              "text": "And there you go! Here is the room staged completely with new furniture (the exact pieces of furniture uploaded). As well, all the old furniture (except the paintings) is removed.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 29.16178854466859,
+              "cy": 43.00903007948543,
+              "bw": null,
+              "bh": null,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        },
+        {
+          "n": 12,
+          "img": "assets/furniture/step-12.webp",
+          "zoom": {
+            "x": 15.83562536213119,
+            "y": 2.24687134086779,
+            "w": 83.53997502211473,
+            "h": 83.54116717750176
+          },
+          "transition": null,
+          "duration": null,
+          "callouts": [
+            {
+              "style": "Area",
+              "text": "You may now click Download Result to download your staged room.",
+              "bg": "#3853d3",
+              "fg": "#fff",
+              "cx": 58.604631964457255,
+              "cy": 9.265088374307794,
+              "bw": 8.741594620557157,
+              "bh": 3.653190270076211,
+              "tip": "autostart",
+              "anchor": "BottomCenter",
+              "align": "Left",
+              "anim": "Pulse",
+              "size": "Medium",
+              "nextButton": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

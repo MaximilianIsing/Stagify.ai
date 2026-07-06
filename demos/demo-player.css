@@ -1,0 +1,242 @@
+/* ==========================================================================
+   Stagify local walkthrough player — faithful self-hosted rebuild of the
+   Supademo embed. Reproduces: animated camera (pan + zoom to each step's crop),
+   "Area" callouts (rounded highlight over a UI element), "Tooltip" callouts
+   (pointless text card), the occasional "Circle" hotspot dot, and the exact
+   per-step callout colours. No watermark, no "check out Supademo" CTA slide.
+   ========================================================================== */
+
+.sdp {
+  --accent: #3853d3;
+  --accent-ink: #ffffff;
+  --frame-bg: #0b1020;
+  --radius: 16px;
+  --zoom-ms: 750ms;
+  --zoom-ease: cubic-bezier(0.5, 0.05, 0.2, 1);
+  position: relative;
+  width: 100%;
+  font-family: inherit;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---- Frame -------------------------------------------------------------- */
+.sdp__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--ar, 1.7778);
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--frame-bg);
+  box-shadow: 0 18px 48px rgba(30, 58, 138, 0.18);
+  border: 1px solid rgba(30, 58, 138, 0.08);
+  outline: none;
+  cursor: pointer;
+}
+.sdp__frame:focus-visible {
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.55), 0 18px 48px rgba(30, 58, 138, 0.18);
+}
+
+/* ---- Camera stage (pans + zooms) ---------------------------------------- */
+.sdp__stage {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  transform: translate(0, 0) scale(1);
+  transition: transform var(--zoom-ms) var(--zoom-ease);
+  will-change: transform;
+}
+.sdp__stage.no-anim { transition: none; }
+
+.sdp__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.sdp__img.is-shown { opacity: 1; }
+
+/* ---- "Area" callout: rounded highlight over a UI element ----------------- */
+/* Lives inside the scaled stage, so sizes are counter-scaled by --s to stay
+   visually constant regardless of the current zoom level. */
+.sdp__area {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  border: calc(2.5px / var(--s, 1)) solid var(--accent);
+  border-radius: calc(10px / var(--s, 1));
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: 0 0 calc(16px / var(--s, 1)) calc(1px / var(--s, 1))
+    color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+/* fade in once the camera has mostly arrived, so it never flashes mid-pan */
+.sdp__area.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease calc(var(--zoom-ms) * 0.55), visibility 0s;
+}
+.sdp__area::after {
+  content: "";
+  position: absolute;
+  inset: calc(-4px / var(--s, 1));
+  border: calc(2px / var(--s, 1)) solid var(--accent);
+  border-radius: calc(13px / var(--s, 1));
+  opacity: 0;
+  animation: sdpAreaPulse 1.8s ease-out infinite;
+}
+@keyframes sdpAreaPulse {
+  0% { opacity: 0.85; transform: scale(0.99); }
+  100% { opacity: 0; transform: scale(1.06); }
+}
+
+/* ---- "Circle" hotspot dot (rare) ---------------------------------------- */
+.sdp__dot-hs {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  width: calc(22px / var(--s, 1));
+  height: calc(22px / var(--s, 1));
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 calc(4px / var(--s, 1)) rgba(255, 255, 255, 0.9);
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+.sdp__dot-hs.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease calc(var(--zoom-ms) * 0.55), visibility 0s;
+}
+.sdp__dot-hs::before {
+  content: "";
+  position: absolute;
+  inset: calc(-6px / var(--s, 1));
+  border-radius: 50%;
+  border: calc(2px / var(--s, 1)) solid var(--accent);
+  animation: sdpDotPulse 1.8s ease-out infinite;
+}
+@keyframes sdpDotPulse {
+  0% { transform: scale(0.7); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* ---- Callout card (frame level — never scaled) -------------------------- */
+.sdp__tip {
+  position: absolute;
+  z-index: 4;
+  width: min(330px, 82%);
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: 14px;
+  padding: 14px 16px 12px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.42);
+  transition: left var(--zoom-ms) var(--zoom-ease), top var(--zoom-ms) var(--zoom-ease);
+}
+.sdp__tip.no-anim { transition: none; }
+.sdp__text {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  font-weight: 500;
+}
+.sdp__tip[data-align="Center"] .sdp__text { text-align: center; }
+.sdp__tip[data-align="Left"] .sdp__text { text-align: left; }
+.sdp__foot { display: flex; align-items: center; gap: 10px; }
+.sdp__count {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.82;
+  letter-spacing: 0.02em;
+}
+.sdp__spacer { flex: 1; }
+.sdp__btn {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 7px 16px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.12s ease, background 0.2s ease;
+}
+.sdp__btn:active { transform: translateY(1px); }
+.sdp__btn--next {
+  background: #fff;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sdp__btn--next:hover { background: #eef0ff; }
+.sdp__btn-ic {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin-left: -2px;
+}
+.sdp__btn--back {
+  background: transparent;
+  color: var(--accent-ink);
+  border-color: rgba(255, 255, 255, 0.45);
+  padding: 7px 14px;
+}
+.sdp__btn--back:hover { background: rgba(255, 255, 255, 0.14); }
+.sdp__btn[hidden] { display: none; }
+
+/* Beak — points toward the anchor; side + offset set by JS */
+.sdp__tip::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  transform: rotate(45deg);
+}
+.sdp__tip[data-place="bottom"]::after { top: -6px; left: var(--beak-x, 50%); margin-left: -7px; }
+.sdp__tip[data-place="top"]::after { bottom: -6px; left: var(--beak-x, 50%); margin-left: -7px; }
+.sdp__tip[data-place="right"]::after { left: -6px; top: var(--beak-y, 50%); margin-top: -7px; }
+.sdp__tip[data-place="left"]::after { right: -6px; top: var(--beak-y, 50%); margin-top: -7px; }
+.sdp__tip[data-place="center"]::after { display: none; }
+
+/* ---- Progress bar ------------------------------------------------------- */
+.sdp__bar {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.22);
+  z-index: 5;
+}
+.sdp__bar span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.35s ease;
+}
+
+/* ---- Dot navigation (under the frame) ----------------------------------- */
+.sdp__dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 12px;
+}
+.sdp__dot {
+  width: 9px; height: 9px; padding: 0;
+  border: none; border-radius: 50%;
+  background: rgba(56, 83, 211, 0.25);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.sdp__dot:hover { background: rgba(56, 83, 211, 0.55); }
+.sdp__dot.is-active { background: var(--accent); transform: scale(1.25); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sdp__stage, .sdp__img, .sdp__tip, .sdp__bar span { transition: none; }
+  .sdp__area::after, .sdp__dot-hs::before { animation: none; }
+}

@@ -11,35 +11,63 @@
     return Math.max(String(text).length, 1) + "ch";
   }
 
+  // Characters in 10^exp when grouped (exp 5 -> "100,000" -> 7). Commas count as a
+  // full char to match widthForText, so the reserved width is always a hair
+  // generous (commas render narrower than a digit) and never clips.
+  function lenAtDecade(exp) {
+    return Math.pow(10, exp).toLocaleString("en-US").length;
+  }
+
+  // A continuous, monotonic pill width (in ch) for the current value: it eases
+  // across digit AND comma boundaries instead of snapping a whole ch at each one,
+  // always stays wide enough for the number (no clipping), and is clamped so it
+  // lands exactly on the final width with no end-of-count overshoot. We round the
+  // value first so the width tracks the *displayed* digits (e.g. 9.8 shows "10").
+  function smoothWidthCh(value, finalLen) {
+    const v = Math.max(Math.round(value), 1);
+    const lg = Math.log10(v);
+    const k = Math.floor(lg);
+    const frac = lg - k;
+    const lead = lenAtDecade(k) + (lenAtDecade(k + 1) - lenAtDecade(k)) * frac;
+    return Math.min(lead, finalLen);
+  }
+
+  // Ease-out ramp: the number rockets up fast at the start then decelerates as it
+  // settles into its final value. The pill widens quickly alongside it (width is
+  // tied to the digit count), but smoothWidthCh keeps that widening continuous so
+  // there are no janky per-digit steps like the original had.
+  function rampValue(target, t) {
+    return target * (1 - Math.pow(1 - t, 4));
+  }
+
   const running = new WeakSet();
 
   function animate(el, target, duration) {
     if (running.has(el)) return;
     running.add(el);
     const start = performance.now();
-    const ease = (t) => 1 - Math.pow(1 - t, 4);
-    let lastLen = 0;
+    const finalText = format(target);
+    const finalLen = Math.max(finalText.length, 1);
 
-    el.style.minWidth = "1ch";
-    lastLen = 1;
+    // We drive min-width ourselves every frame (via smoothWidthCh) so the pill
+    // grows smoothly with the number instead of snapping a whole ch at each new
+    // digit. Suppress the CSS min-width transition while we do — it would lag and
+    // fight the per-frame updates — then restore it so later stat refreshes ease.
+    const prevTransition = el.style.transition;
+    el.style.transition = "none";
 
     function frame(now) {
       const t = Math.min(Math.max((now - start) / duration, 0), 1);
-      const text = format(target * ease(t));
-      el.textContent = text;
-
-      const len = text.length;
-      if (len !== lastLen) {
-        el.style.minWidth = widthForText(text);
-        lastLen = len;
-      }
+      const value = rampValue(target, t);
+      el.textContent = format(value);
+      el.style.minWidth = smoothWidthCh(value, finalLen).toFixed(3) + "ch";
 
       if (t < 1) {
         requestAnimationFrame(frame);
       } else {
-        const finalText = format(target);
         el.textContent = finalText;
-        el.style.minWidth = widthForText(finalText);
+        el.style.minWidth = finalLen + "ch";
+        el.style.transition = prevTransition;
         el.removeAttribute("aria-hidden");
         running.delete(el);
       }
@@ -86,7 +114,7 @@
 
       el.setAttribute("aria-hidden", "true");
       el.textContent = "0";
-      animate(el, target, 1200);
+      animate(el, target, 1400);
     });
 
     if (!updated) return;

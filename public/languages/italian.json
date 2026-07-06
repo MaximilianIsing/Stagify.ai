@@ -216,6 +216,22 @@
     "whyus": {
       "subtitle": "Gli altri strumenti di staging virtuale sono lenti, costosi e bloccati. Stagify è creato per essere l'opposto."
     },
+    "testimonials": {
+      "title": "Cosa dicono gli agenti",
+      "subtitle": "Direttamente dagli agenti che hanno fatto il salto.",
+      "items": {
+        "justin": {
+          "quote": "La prima volta che ho provato Stagify sono rimasto sinceramente sbalordito. Ho capito che potevo semplicemente usare il telefono, evitare il fotografo costoso e ottenere comunque risultati straordinari. È una svolta per i miei annunci — e il prezzo è fantastico!",
+          "author": "Justin S. (Agente)",
+          "role": "Tahari Realty"
+        },
+        "andy": {
+          "quote": "Wow! Stagify ha cambiato completamente il mio approccio all'home staging. È così veloce e i miei clienti lo adorano. È una svolta totale per i miei annunci.",
+          "author": "Andy E. (Agente)",
+          "role": "Centennial Properties"
+        }
+      }
+    },
     "faq": {
       "subtitle": "Risposte rapide alle domande più frequenti. Ancora bloccato? Visita le <a href=\"guides.html\">Guide</a> o contattaci."
     },
@@ -569,6 +585,7 @@
       "general": ["sto pensando...", "elaborazione della tua richiesta...", "analisi in corso...", "valutazione delle opzioni...", "ci sto lavorando...", "ci siamo quasi...", "un attimo...", "preparazione della risposta..."]
     },
     "emptyState": "Avvia una conversazione digitando un messaggio o caricando un file",
+    "welcomeFallback": "Ciao! Sono il tuo Designer IA di Stagify. Dimmi cosa immagini, o carica la foto di una stanza, e la progetteremo insieme. Alcune cose che posso fare:\n• **Arredare stanze vuote**: arreda uno spazio spoglio in qualsiasi stile\n• **Riprogettare stanze esistenti**: cambia stile, sostituisci i mobili o modifica l'intera atmosfera\n• **Piantina → stanza**: trasforma una piantina in un render arredato e fotorealistico\n• **Perfezionare mentre chattiamo**: regola i colori, gli elementi e la disposizione finché non è perfetto\nDa dove vuoi iniziare?",
     "uploadFile": "Carica file",
     "inputPlaceholder": "Digita il tuo messaggio...",
     "sendButton": "Invia",

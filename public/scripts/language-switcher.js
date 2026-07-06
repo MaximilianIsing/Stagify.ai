@@ -3,12 +3,13 @@
 
   // Maps language value -> flag asset (paths are relative to the page in /public).
   const FLAGS = {
-    english: "media-webp/flags/US.webp",
-    spanish: "media-webp/flags/Spain.webp",
-    chinese: "media-webp/flags/China.webp",
+    english: "media-webp/flags/US.svg",
+    spanish: "media-webp/flags/Spain.svg",
+    chinese: "media-webp/flags/China.svg",
     korean: "media-webp/flags/Korea.svg",
     french: "media-webp/flags/France.svg",
     german: "media-webp/flags/Germany.svg",
+    dutch: "media-webp/flags/Netherlands.svg",
     italian: "media-webp/flags/Italy.svg",
     portuguese: "media-webp/flags/Brazil.svg",
     russian: "media-webp/flags/Russia.svg",
@@ -24,6 +25,7 @@
     korean: "ko",
     french: "fr",
     german: "de",
+    dutch: "nl",
     italian: "it",
     portuguese: "pt-BR",
     russian: "ru",

@@ -1042,6 +1042,7 @@
           <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
             <option value="english" selected>EN</option>
             <option value="german">DE</option>
+            <option value="dutch">NL</option>
             <option value="spanish">ES</option>
             <option value="french">FR</option>
             <option value="italian">IT</option>
@@ -1053,19 +1054,20 @@
           </select>
           <div class="lang-switch" data-lang-switch>
             <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
-              <img class="lang-switch__flag" src="media-webp/flags/US.webp" alt="" width="20" height="14" />
+              <img class="lang-switch__flag" src="media-webp/flags/US.svg" alt="" width="20" height="14" />
               <span class="lang-switch__label">English</span>
               <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.webp" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.webp" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.webp" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
             </ul>
@@ -1312,6 +1314,41 @@
           });
         }
 
+        const DEFAULT_UNSTAGEABLE_MESSAGE =
+          "This doesn't look like a room or property space. Please upload a photo of an interior room or exterior space you'd like to stage.";
+
+        // Cheap server-side pre-check: is this actually a stageable room/property
+        // photo (not a selfie, a product shot, a document…)? Downscales the
+        // already-decoded image to a small JPEG first (keeps the POST tiny), then
+        // asks the server. Always resolves to { valid, reason }; fails OPEN so our
+        // own hiccup never blocks a legitimate upload.
+        async function validateStageableRoom(img) {
+          try {
+            const max = 1024;
+            const scale = Math.min(1, max / Math.max(img.width, img.height));
+            const c = document.createElement('canvas');
+            c.width = Math.max(1, Math.round(img.width * scale));
+            c.height = Math.max(1, Math.round(img.height * scale));
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            const payload = c.toDataURL('image/jpeg', 0.9);
+            const tok = window.StagifyAuth && window.StagifyAuth.getToken();
+            const resp = await fetch('/api/validate-image', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
+              },
+              body: JSON.stringify({ image: payload, authToken: tok || undefined }),
+            });
+            if (!resp.ok) return { valid: true, reason: '' };
+            const r = await resp.json().catch(() => null);
+            if (!r || typeof r.valid !== 'boolean') return { valid: true, reason: '' };
+            return r;
+          } catch (e) {
+            return { valid: true, reason: '' };
+          }
+        }
+
         // Shared mask math (growBinaryMask/buildModelMask/buildBlendMask/
         // compositeMaskedEditCanvas) — same module the main tool and the AI
         // Designer use, so the pixel-preservation guarantee is identical.
@@ -1459,6 +1496,14 @@
             img = await loadImage(dataUrl);
           } catch (e) {
             showToast(tx('errors.fileType', 'Please upload a JPG, PNG, or WebP image.'), 'error');
+            return;
+          }
+          // Pre-flight: only stageable room/property photos may enter the studio.
+          // A non-room (a selfie, a product shot, a document…) is rejected here
+          // with a friendly reason instead of wasting a masking generation.
+          const stageable = await validateStageableRoom(img);
+          if (stageable && stageable.valid === false) {
+            showToast(stageable.reason || DEFAULT_UNSTAGEABLE_MESSAGE, 'error');
             return;
           }
           setBaseImage(img);
