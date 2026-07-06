@@ -28,26 +28,26 @@
   }
 
   function init() {
-    var host = document.querySelector('[data-supademo-embed]');
-    if (!host) return;
+    // Every section that features a Supademo walkthrough (AI Designer, Masking
+    // Studio, …) — mount them all, not just the first.
+    var hosts = document.querySelectorAll('[data-supademo-embed]');
+    if (!hosts.length) return;
 
-    // Load the embed in the background as soon as the page has painted and the
-    // browser is idle — so it's already loaded by the time the user scrolls to
-    // it, without blocking first paint or interactivity.
+    // Load each embed in the background as soon as the page has painted and the
+    // browser is idle — so they're already loaded by the time the user scrolls
+    // to them, without blocking first paint or interactivity.
+    var mountAll = function () {
+      hosts.forEach(function (host) {
+        buildIframe(host);
+      });
+    };
     if ('requestIdleCallback' in window) {
-      requestIdleCallback(
-        function () {
-          buildIframe(host);
-        },
-        { timeout: 2500 }
-      );
+      requestIdleCallback(mountAll, { timeout: 2500 });
     } else {
       // No requestIdleCallback — wait until the page is fully loaded, then load
       // on the next tick so it never competes with the initial render.
       var load = function () {
-        setTimeout(function () {
-          buildIframe(host);
-        }, 200);
+        setTimeout(mountAll, 200);
       };
       if (document.readyState === 'complete') {
         load();

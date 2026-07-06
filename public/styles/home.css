@@ -251,6 +251,14 @@
   overflow: hidden;
   background: transparent;
 }
+/* The Masking Studio walkthrough is recorded at ~1.62:1 (not 2:1 like the AI
+   Designer demo). Match its frame to that shape so Supademo fills it edge-to-
+   edge instead of letterboxing it — which made the demo look narrower than the
+   AI Designer one even though both frames are the same width. Scoped by id so
+   the AI Designer frame is untouched. */
+#masking-studio-demo .designer-demo {
+  aspect-ratio: 1.62;
+}
 .designer-demo__frame {
   position: absolute;
   inset: 0;

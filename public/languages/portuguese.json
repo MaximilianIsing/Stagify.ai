@@ -716,6 +716,10 @@
         "q": "Posso controlar os móveis e o layout?",
         "a": "Sim. Com o <a href=\"stagify-plus.html\">Stagify+</a>, a barra de instruções permite descrever detalhes como «adicionar um sofá de canto e um tapete grande», e a ferramenta Móveis insere suas próprias peças. Se apenas uma área não ficou boa, mascare-a e gere novamente só aquele ponto em vez de refazer a imagem inteira."
       },
+    "masking": {
+      "title": "Decore com precisão exata",
+      "subtitle": "Mascare as áreas a refazer, adicione seus próprios móveis e todo o resto fica idêntico ao pixel. <em>(Exclusivo do Stagify+)</em>"
+    },
       "i4": {
         "q": "Como mobílio várias áreas de uma vez?",
         "a": "Com o Stagify+, o <a href=\"masking-studio.html\">Estúdio de Máscaras</a> permite destacar até seis áreas em cores diferentes, dar a cada uma sua própria foto de móvel ou descrição e mobiliá-las todas em paralelo. Apenas os pontos destacados podem mudar, e cada área pode gerar várias versões para você ficar com a melhor."
@@ -796,6 +800,7 @@
     "pickerFree": "Grátis",
     "pickerPlus": "Stagify+",
     "pickerDesigner": "Designer IA",
+    "pickerMasking": "Estúdio de máscaras",
     "pickerPromptBar": "Barra de instruções",
     "pickerFurniture": "Móveis",
     "demo3Desc": "Veja o Designer IA decorar e redesenhar um cômodo de forma autônoma a partir de uma simples conversa.",

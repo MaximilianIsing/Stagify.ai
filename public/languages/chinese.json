@@ -717,6 +717,10 @@
         "q": "我能控制家具和布局吗？",
         "a": "可以。使用 <a href=\"stagify-plus.html\">Stagify+</a> 的提示词栏，你可以描述具体细节，例如“添加一张组合沙发和一块大地毯”，而家具工具可导入你自己的家具。如果只有某个区域看起来不对，遮罩该处并仅重新生成那一部分，无需重做整张图片。"
       },
+    "masking": {
+      "title": "精准布置，分毫不差",
+      "subtitle": "遮罩需要重新布置的区域，放入你自己的家具，其余部分保持像素级不变。<em>（Stagify+ 专属）</em>"
+    },
       "i4": {
         "q": "如何一次布置多个区域？",
         "a": "使用 Stagify+ 的<a href=\"masking-studio.html\">遮罩工作室</a>，你可以用不同颜色标记最多六个区域，为每个区域指定各自的家具照片或描述，并并行完成布置。只有标记的位置会发生变化，每个区域还可以生成多个版本供你挑选。"
@@ -797,6 +801,7 @@
     "pickerFree": "免费",
     "pickerPlus": "Stagify+",
     "pickerDesigner": "AI Designer",
+    "pickerMasking": "遮罩工作室",
     "pickerPromptBar": "提示词栏",
     "pickerFurniture": "家具",
     "demo3Desc": "观看 AI Designer 如何通过简单的对话自动布置和重新设计房间。",
