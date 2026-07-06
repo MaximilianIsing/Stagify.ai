@@ -862,8 +862,6 @@
     "partialToast": "{total}エリア中{done}エリアをステージング済み — 失敗したエリアを再試行してください。",
     "failedToast": "ステージングに失敗しました。もう一度お試しください。",
     "rateLimited": "生成の間隔が短すぎます。1分ほど待ってからもう一度お試しください。",
-    "openStudio": "マスクスタジオを開く",
-    "openStudioHint": "複数のエリアを色分けしてハイライトし、まとめてステージングできます",
     "shortcutsHint": "<kbd>B</kbd> ブラシ&nbsp;· <kbd>E</kbd> 消しゴム&nbsp;· <kbd>R</kbd> 長方形&nbsp;· <kbd>W</kbd> 自動選択&nbsp;· <kbd>[</kbd> <kbd>]</kbd> ブラシサイズ&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> エリア選択&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> 元に戻す&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> やり直す&nbsp;· <kbd>H</kbd> 長押しで写真を表示",
     "compare": "比較",
     "undo": "元に戻す",

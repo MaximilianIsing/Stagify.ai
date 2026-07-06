@@ -862,8 +862,6 @@
     "partialToast": "{done} di {total} aree arredate — riprova quelle non riuscite.",
     "failedToast": "Staging non riuscito. Riprova.",
     "rateLimited": "Stai generando troppo in fretta: aspetta un minuto e riprova.",
-    "openStudio": "Apri lo Studio Maschere",
-    "openStudioHint": "Evidenzia più aree con colori diversi e arredale tutte in una volta",
     "shortcutsHint": "<kbd>B</kbd> pennello&nbsp;· <kbd>E</kbd> gomma&nbsp;· <kbd>R</kbd> rettangolo&nbsp;· <kbd>W</kbd> bacchetta&nbsp;· <kbd>[</kbd> <kbd>]</kbd> dimensione pennello&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> scegli area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> annulla&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> ripeti&nbsp;· tieni premuto <kbd>H</kbd> vedi foto",
     "compare": "Confronta",
     "undo": "Annulla",

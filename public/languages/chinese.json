@@ -863,8 +863,6 @@
     "partialToast": "已布置 {done} / {total} 个区域——请重试失败的区域。",
     "failedToast": "布置失败。请重试。",
     "rateLimited": "您的生成速度过快——请稍等一分钟后再试。",
-    "openStudio": "打开遮罩工作室",
-    "openStudioHint": "用不同颜色标记多个区域，一次性完成全部布置",
     "shortcutsHint": "<kbd>B</kbd> 画笔&nbsp;· <kbd>E</kbd> 擦除&nbsp;· <kbd>R</kbd> 矩形&nbsp;· <kbd>W</kbd> 魔棒&nbsp;· <kbd>[</kbd> <kbd>]</kbd> 画笔大小&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> 选择区域&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> 撤销&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> 重做&nbsp;· 按住 <kbd>H</kbd> 查看原图",
     "compare": "对比",
     "undo": "撤销",

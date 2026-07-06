@@ -862,8 +862,6 @@
     "partialToast": "{done} zones sur {total} meublées — réessayez celles qui ont échoué.",
     "failedToast": "Le staging a échoué. Veuillez réessayer.",
     "rateLimited": "Vous générez trop vite — attendez une minute et réessayez.",
-    "openStudio": "Ouvrir le Studio de masquage",
-    "openStudioHint": "Surlignez plusieurs zones de couleurs différentes et meublez-les toutes à la fois",
     "shortcutsHint": "<kbd>B</kbd> pinceau&nbsp;· <kbd>E</kbd> gomme&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>W</kbd> baguette&nbsp;· <kbd>[</kbd> <kbd>]</kbd> taille du pinceau&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> choisir la zone&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir&nbsp;· maintenir <kbd>H</kbd> voir la photo",
     "compare": "Comparer",
     "undo": "Annuler",
