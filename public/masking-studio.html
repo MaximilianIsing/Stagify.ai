@@ -93,17 +93,20 @@
       },
       "featureList": [
         "Multi-area color-coded masking",
-        "Brush and rectangle highlight tools with undo",
+        "One-click AI object and area selection",
+        "Brush and rectangle highlight tools with undo and redo",
+        "Object removal and decluttering mode",
         "One furniture photo per highlighted area",
         "Parallel AI staging of every area at once",
         "Multiple generated versions per area",
         "Pixel-perfect preservation outside highlights",
-        "Zoom and pan for precision masking",
+        "Zoom, pan, and pinch-to-zoom for precision masking",
         "Before and after compare slider",
         "Side-by-side before and after export",
-        "Automatic session restore"
+        "Automatic session restore",
+        "Works on desktop, tablet, and phone"
       ],
-      "keywords": "masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement, before after comparison, virtual staging editor"
+      "keywords": "masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement, AI object selection, object removal, declutter photo, before after comparison, virtual staging editor"
     }
     </script>
 
@@ -470,6 +473,31 @@
         cursor: pointer;
       }
       .ms-preset:hover { background: rgba(191, 219, 254, 0.7); }
+
+      /* Per-area mode: stage furniture vs. remove what's there. */
+      .ms-mode-row {
+        display: inline-flex;
+        align-self: flex-start;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .ms-mode-btn {
+        padding: 4px 12px;
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+        cursor: pointer;
+      }
+      .ms-mode-btn + .ms-mode-btn { border-left: 1px solid var(--border); }
+      .ms-mode-btn.is-on { background: #1d4ed8; color: #fff; cursor: default; }
+      .ms-mode-btn:not(.is-on):hover { background: rgba(219, 234, 254, 0.5); color: #1d4ed8; }
+      .ms-mode-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
+      .ms-mode-hint { color: #6b7280; font-size: 12px; line-height: 1.45; margin: 0; }
       .ms-preset:focus-visible, .ms-clear-btn:focus-visible, .ms-version-btn:focus-visible,
       .ms-layer-retry:focus-visible, .ms-furniture-add:focus-visible {
         outline: 2px solid #2563eb;
@@ -542,6 +570,38 @@
       .ms-brush-row label { font-size: 13px; color: #374151; white-space: nowrap; }
       .ms-brush-row input[type="range"] { flex: 1; accent-color: #2563eb; }
       .ms-brush-size { font-size: 12px; color: #6b7280; min-width: 46px; text-align: right; }
+
+      /* --- Magic select (Gemini segmentation) -------------------------------- */
+      .ms-wand-row { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+      .ms-wand-row.hidden { display: none; }
+      .ms-wand-hint { font-size: 12.5px; color: #374151; margin: 0; line-height: 1.45; }
+      .ms-wand-query { display: flex; gap: 6px; }
+      .ms-wand-query input { flex: 1; min-width: 0; font-size: 13px; padding: 7px 10px; }
+      .ms-wand-go {
+        padding: 7px 14px;
+        border: none;
+        border-radius: 8px;
+        background: #2563eb;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .ms-wand-go:hover { background: #1d4ed8; }
+      .ms-wand-go:disabled { opacity: 0.45; cursor: default; }
+      .ms-wand-go:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+      .ms-wand-busy { font-size: 12px; color: #2563eb; margin: 0; display: flex; align-items: center; gap: 7px; }
+      .ms-wand-busy::before {
+        content: '';
+        width: 12px; height: 12px;
+        border-radius: 50%;
+        border: 2px solid rgba(37, 99, 235, 0.25);
+        border-top-color: #2563eb;
+        animation: ms-spin 0.9s linear infinite;
+        flex-shrink: 0;
+      }
+      .ms-wand-busy.hidden { display: none; }
+      .ms-stack.is-analyzing { cursor: progress; }
 
       /* --- Generate CTA ------------------------------------------------------ */
       .ms-cta {
@@ -744,7 +804,11 @@
       }
       .ms-stack.can-draw { cursor: crosshair; touch-action: none; }
       .ms-stack.is-compare { cursor: ew-resize; touch-action: none; }
-      .ms-stack.is-busy canvas { filter: blur(5px) brightness(0.98); }
+      /* Soft enough that progressively composited areas visibly land mid-run. */
+      .ms-stack.is-busy canvas { filter: blur(2.5px) brightness(0.98); }
+      /* An area that already finished mid-run: drop its highlight so the
+         freshly composited result underneath is what the user sees. */
+      .ms-stack.is-busy .ms-layer-canvas.is-landed { opacity: 0.12; }
 
       /* --- Before/After compare slider (review phase) -------------------------- */
       .ms-compare { position: absolute; top: 0; bottom: 0; width: 0; z-index: 7; }
@@ -797,7 +861,7 @@
         align-items: center;
         justify-content: center;
         gap: 14px;
-        background: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.28);
         z-index: 6;
         border-radius: 12px;
       }
@@ -866,24 +930,15 @@
         .ms-dropzone { min-height: 260px; }
       }
 
-      /* --- Phones/tablets: the studio is a desktop tool ------------------------ */
-      .ms-mobile-notice { display: none; }
+      /* --- Phones: same tool, compact spacing (single column via ≤900px) ------- */
       @media (max-width: 768px) {
-        .ms-grid { display: none !important; }
-        .ms-mobile-notice {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 12px;
-          text-align: center;
-          padding: 40px 24px;
-          margin: 24px auto;
-          max-width: 460px;
-        }
-        .ms-mobile-notice svg { color: #2563eb; }
-        .ms-mobile-notice h2 { margin: 0; color: #1e3a8a; font-size: 1.3rem; }
-        .ms-mobile-notice p { margin: 0; color: #4b5563; font-size: 14.5px; line-height: 1.55; }
-        .ms-mobile-notice a { text-decoration: none; margin-top: 8px; }
+        .ms-toolbar { padding: 14px; }
+        .ms-workspace { padding: 12px; min-height: 0; }
+        #ms-base-canvas { max-height: 52vh; }
+        .ms-viewer { max-height: 62vh; }
+        .ms-dropzone { min-height: 220px; }
+        .ms-viewer-header { flex-wrap: wrap; row-gap: 8px; }
+        .ms-tools { flex-wrap: wrap; }
       }
     </style>
   </head>
@@ -929,8 +984,8 @@
         <h2 id="ms-help-title" data-lang="maskingStudio.helpTitle">How the Masking Studio works</h2>
         <ol class="ms-help-steps">
           <li data-lang="maskingStudio.helpStep1">Upload a photo of your room.</li>
-          <li data-lang="maskingStudio.helpStep2">Highlight where each piece of furniture should go. Use one color per area, and add more areas for more pieces.</li>
-          <li data-lang="maskingStudio.helpStep3">Give every area a furniture photo, a short prompt, or both.</li>
+          <li data-lang="maskingStudio.helpStep2">Highlight where each piece of furniture should go: paint it, drag a rectangle, or use the Magic tool to select an object or area with one click. Use one color per area.</li>
+          <li data-lang="maskingStudio.helpStep3">Give every area a furniture photo, a short prompt, or both. Or switch an area to Remove object to clear out whatever it covers.</li>
           <li data-lang="maskingStudio.helpStep4">Click Apply Edit. Every area is staged at the same time, and only the highlighted spots can change. The rest of your photo stays pixel-perfect.</li>
           <li data-lang="maskingStudio.helpStep5">Not happy with an area? Use Try another version to generate more options and flip between them.</li>
         </ol>
@@ -938,8 +993,8 @@
              the first-visit walkthrough to keep the intro light. -->
         <div id="ms-help-shortcuts">
           <h3 data-lang="maskingStudio.helpShortcuts">Keyboard shortcuts</h3>
-          <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· hold <kbd>H</kbd> view photo</p>
-          <p class="ms-kbd-hint" data-lang="maskingStudio.zoomHint">Ctrl+scroll to zoom, hold Space (or the middle mouse button) to pan</p>
+          <p class="ms-kbd-hint" data-lang-html="maskingStudio.shortcutsHint"><kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>W</kbd> magic select&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> redo&nbsp;· hold <kbd>H</kbd> view photo</p>
+          <p class="ms-kbd-hint" data-lang="maskingStudio.zoomHint">Ctrl+scroll or pinch to zoom, hold Space (or the middle mouse button) to pan</p>
         </div>
         <button type="button" id="ms-help-done" class="btn btn-primary ms-help-done"><strong data-lang="maskingStudio.helpClose">Got it</strong></button>
       </div>
@@ -1026,14 +1081,6 @@
             <p data-lang="maskingStudio.subtitle">Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only the highlighted areas can change, so the rest of your photo stays pixel-perfect.</p>
           </div>
 
-          <!-- Shown instead of the tool on phones/tablets: precise masking needs a desktop. -->
-          <div class="ms-mobile-notice ms-panel">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            <h2 data-lang="maskingStudio.mobileTitle">Masking Studio is a desktop tool</h2>
-            <p data-lang="maskingStudio.mobileBody">Precise masking needs a bigger screen and a mouse. Open this page on your computer to use it.</p>
-            <a href="index.html" class="btn btn-primary" data-lang="maskingStudio.gateBack">Back to Home</a>
-          </div>
-
           <div class="ms-grid">
             <aside class="ms-toolbar ms-panel" aria-label="Masking Studio controls">
               <button type="button" id="ms-help-btn" class="ms-help-btn" data-lang-attr="maskingStudio.helpTitle|aria-label" aria-label="How the Masking Studio works">?</button>
@@ -1074,15 +1121,31 @@
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="16" height="13" rx="1.5"/></svg>
                     <span data-lang="maskingStudio.toolRect">Rectangle</span>
                   </button>
+                  <button type="button" id="ms-wand-btn" class="ms-tool-btn" aria-pressed="false" title="W">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="m17.8 11.8 1.2 1.2"/><path d="M15 9h.01"/><path d="m17.8 6.2 1.2-1.2"/><path d="m3 21 9-9"/><path d="m12.2 6.2-1.2-1.2"/></svg>
+                    <span data-lang="maskingStudio.toolWand">Magic</span>
+                  </button>
                   <button type="button" id="ms-undo-btn" class="ms-tool-btn" disabled title="Ctrl+Z">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
                     <span data-lang="maskingStudio.undo">Undo</span>
                   </button>
+                  <button type="button" id="ms-redo-btn" class="ms-tool-btn" disabled title="Ctrl+Y">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"/></svg>
+                    <span data-lang="maskingStudio.redo">Redo</span>
+                  </button>
                 </div>
-                <div class="ms-brush-row">
+                <div class="ms-brush-row" id="ms-brush-row">
                   <label for="ms-brush-slider" data-lang="pdf.maskEditor.brushSize">Brush Size:</label>
                   <input type="range" id="ms-brush-slider" min="20" max="150" value="50">
                   <span id="ms-brush-size" class="ms-brush-size">50 px</span>
+                </div>
+                <div class="ms-wand-row hidden" id="ms-wand-row">
+                  <p class="ms-wand-hint" data-lang="maskingStudio.wandHint">Click an object in the photo to select it, or describe an area:</p>
+                  <div class="ms-wand-query">
+                    <input type="text" id="ms-wand-input" class="text-input" maxlength="120" placeholder="e.g. the empty floor" data-lang-attr="maskingStudio.wandPlaceholder|placeholder">
+                    <button type="button" id="ms-wand-go" class="ms-wand-go" data-lang="maskingStudio.wandGo">Select</button>
+                  </div>
+                  <p class="ms-wand-busy hidden" id="ms-wand-busy" data-lang="maskingStudio.wandBusy">Analyzing your photo…</p>
                 </div>
                 <p class="ms-hint" data-lang="maskingStudio.overlapHint">Paint over an area with a different color to reassign it — every spot belongs to one area only.</p>
               </div>
@@ -1291,6 +1354,10 @@
         let genMeta = null;       // { coreGrow, featherPx } of the last run
         let busyMsgTimer = null;
         let undoStack = [];       // pre-stroke canvas snapshots (LIFO, capped)
+        let redoStack = [];       // undone states, restored by Ctrl+Y (same cap)
+        let segCache = null;      // decoded all-object masks for wand hit-testing
+        let segToken = 0;         // bumped on photo change → drops in-flight results
+        let segBusy = false;      // one segmentation request at a time
         let comparePos = 0.5;     // compare-view divider, 0..1 of photo width
         let comparing = false;    // dragging the compare divider
         let zoom = 1;             // 1 = fit to view, up to 4x
@@ -1328,7 +1395,14 @@
         const brushBtn = $('#ms-brush-btn');
         const eraseBtn = $('#ms-erase-btn');
         const rectBtn = $('#ms-rect-btn');
+        const wandBtn = $('#ms-wand-btn');
+        const wandRow = $('#ms-wand-row');
+        const wandInput = $('#ms-wand-input');
+        const wandGoBtn = $('#ms-wand-go');
+        const wandBusyEl = $('#ms-wand-busy');
+        const brushRow = $('#ms-brush-row');
         const undoBtn = $('#ms-undo-btn');
+        const redoBtn = $('#ms-redo-btn');
         const brushSlider = $('#ms-brush-slider');
         const brushSizeLabel = $('#ms-brush-size');
         const generateBtn = $('#ms-generate');
@@ -1422,6 +1496,9 @@
           genRun++;
           genMeta = null;
           undoStack = [];
+          redoStack = [];
+          segCache = null;
+          segToken++;
           resetZoom();
           if (!(opts && opts.noLayer)) addLayer();
 
@@ -1461,6 +1538,7 @@
             painted: false,
             name: '',            // user-given name; empty → "Area {n}"
             prompt: '',
+            mode: 'stage',       // 'stage' adds furniture; 'remove' clears the area
             presetsOpen: false,  // prompt-idea chips revealed via the + button
             furniture: null,
             furnitureName: '',   // original file name, shown in the header peek
@@ -1519,7 +1597,7 @@
           if (layer.status === 'done') return { cls: 'ms-layer-status--done', text: tx('maskingStudio.statusDone', 'Done') };
           if (layer.status === 'failed') return { cls: 'ms-layer-status--failed', text: tx('maskingStudio.statusFailed', 'Failed') };
           if (!layer.painted) return { cls: '', text: tx('maskingStudio.statusEmpty', 'Not highlighted yet') };
-          if (layer.prompt.trim() || layer.furniture) return { cls: 'ms-layer-status--ready', text: tx('maskingStudio.statusReady', 'Ready') };
+          if (layer.mode === 'remove' || layer.prompt.trim() || layer.furniture) return { cls: 'ms-layer-status--ready', text: tx('maskingStudio.statusReady', 'Ready') };
           return { cls: '', text: tx('maskingStudio.statusNeedsDetails', 'Needs a prompt or photo') };
         }
 
@@ -1576,7 +1654,11 @@
               });
               input.addEventListener('blur', commit);
             });
-            const previewFallback = () => layer.prompt.trim() || (layer.furniture ? (layer.furnitureName || '') : '');
+            const previewFallback = () => {
+              if (layer.prompt.trim()) return layer.prompt.trim();
+              if (layer.mode === 'remove') return tx('maskingStudio.modeRemove', 'Remove object');
+              return layer.furniture ? (layer.furnitureName || '') : '';
+            };
             const preview = document.createElement('span');
             preview.className = 'ms-layer-preview';
             preview.textContent = previewFallback();
@@ -1624,11 +1706,46 @@
             const body = document.createElement('div');
             body.className = 'ms-layer-body';
 
+            // Stage vs. remove: declutter is a first-class mode, not a prompt trick.
+            const modeRow = document.createElement('div');
+            modeRow.className = 'ms-mode-row';
+            modeRow.setAttribute('role', 'group');
+            modeRow.setAttribute('aria-label', tx('maskingStudio.modeAria', 'What happens in this area'));
+            [
+              ['stage', tx('maskingStudio.modeStage', 'Add furniture')],
+              ['remove', tx('maskingStudio.modeRemove', 'Remove object')],
+            ].forEach(([val, label]) => {
+              const b = document.createElement('button');
+              b.type = 'button';
+              b.className = 'ms-mode-btn' + (layer.mode === val ? ' is-on' : '');
+              b.setAttribute('aria-pressed', layer.mode === val ? 'true' : 'false');
+              b.textContent = label;
+              b.addEventListener('click', () => {
+                if (phase === 'generating' || layer.mode === val) return;
+                layer.mode = val;
+                renderLayers();
+                updateControls();
+                scheduleSessionSave();
+              });
+              modeRow.appendChild(b);
+            });
+            body.appendChild(modeRow);
+
+            const isRemove = layer.mode === 'remove';
+            if (isRemove) {
+              const hint = document.createElement('p');
+              hint.className = 'ms-mode-hint';
+              hint.textContent = tx('maskingStudio.removeHint', 'Everything highlighted is removed and the empty room is rebuilt behind it.');
+              body.appendChild(hint);
+            }
+
             const promptEl = document.createElement('textarea');
             promptEl.className = 'text-input ms-layer-prompt';
             promptEl.rows = 2;
             promptEl.maxLength = 1000;
-            promptEl.placeholder = tx('maskingStudio.promptPlaceholder', 'Describe what to add here (optional if you add a furniture photo)…');
+            promptEl.placeholder = isRemove
+              ? tx('maskingStudio.removePlaceholder', 'Optional: anything to keep or details to match (e.g. keep the rug)…')
+              : tx('maskingStudio.promptPlaceholder', 'Describe what to add here (optional if you add a furniture photo)…');
             promptEl.value = layer.prompt;
             promptEl.addEventListener('input', () => {
               layer.prompt = promptEl.value;
@@ -1655,7 +1772,7 @@
             // One-click prompt ideas while the prompt is empty, tucked behind a
             // little + so the card stays quiet until asked. Each value is
             // "Chip label|Full prompt sentence" in the language files.
-            if (!layer.prompt.trim()) {
+            if (!layer.prompt.trim() && !isRemove) {
               if (!layer.presetsOpen) {
                 const toggle = document.createElement('button');
                 toggle.type = 'button';
@@ -1717,7 +1834,9 @@
               }
             }
 
-            if (layer.furniture) {
+            if (isRemove) {
+              // No furniture reference in remove mode — nothing is being added.
+            } else if (layer.furniture) {
               const prev = document.createElement('div');
               prev.className = 'ms-furniture-preview';
               const img = document.createElement('img');
@@ -1762,6 +1881,7 @@
               clearBtn.addEventListener('click', () => {
                 if (phase !== 'draw') return;
                 snapshotForUndo();
+                redoStack = []; // committed clear forks history
                 layer.canvasEl.getContext('2d').clearRect(0, 0, base.w, base.h);
                 layer.painted = false;
                 layer.blendMask = null;
@@ -2039,6 +2159,7 @@
                 colorIdx: l.colorIdx,
                 name: l.name,
                 prompt: l.prompt,
+                mode: l.mode,
                 furniture: l.furniture,
                 furnitureName: l.furnitureName,
                 painted: l.painted,
@@ -2105,6 +2226,7 @@
               painted: painted,
               name: ld.name || '',
               prompt: ld.prompt || '',
+              mode: ld.mode === 'remove' ? 'remove' : 'stage',
               presetsOpen: false,
               furniture: ld.furniture || null,
               furnitureName: ld.furnitureName || '',
@@ -2376,9 +2498,23 @@
           if (undoStack.length > UNDO_LIMIT) undoStack.shift();
         }
 
-        function undoStroke() {
-          if (!undoStack.length || phase !== 'draw' || !base) return;
-          const entries = undoStack.pop();
+        // Current state of the given layers, in undo-entry form — pushed to the
+        // opposite stack so undo and redo are exact inverses of each other.
+        function captureLayers(ids) {
+          const entries = [];
+          ids.forEach((id) => {
+            const l = getLayer(id);
+            if (!l) return;
+            const copy = document.createElement('canvas');
+            copy.width = base.w;
+            copy.height = base.h;
+            copy.getContext('2d').drawImage(l.canvasEl, 0, 0);
+            entries.push({ id: id, canvas: copy });
+          });
+          return entries;
+        }
+
+        function restoreEntries(entries) {
           entries.forEach((en) => {
             const l = getLayer(en.id);
             if (!l) return; // area was removed since this stroke
@@ -2395,11 +2531,29 @@
           updateStageBackdrop();
           scheduleSessionSave();
         }
+
+        function undoStroke() {
+          if (!undoStack.length || phase !== 'draw' || !base) return;
+          const entries = undoStack.pop();
+          redoStack.push(captureLayers(entries.map((en) => en.id)));
+          if (redoStack.length > UNDO_LIMIT) redoStack.shift();
+          restoreEntries(entries);
+        }
         undoBtn.addEventListener('click', undoStroke);
+
+        function redoStroke() {
+          if (!redoStack.length || phase !== 'draw' || !base) return;
+          const entries = redoStack.pop();
+          undoStack.push(captureLayers(entries.map((en) => en.id)));
+          if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+          restoreEntries(entries);
+        }
+        redoBtn.addEventListener('click', redoStroke);
 
         function startDraw(e) {
           if (!canDraw()) return;
           snapshotForUndo();
+          redoStack = []; // a new stroke forks history — redo targets are gone
           drawing = true;
           lastX = null;
           lastY = null;
@@ -2458,6 +2612,7 @@
             updateControls();
             return;
           }
+          redoStack = []; // committed rectangle forks history
           const ctx = layer.canvasEl.getContext('2d');
           ctx.fillStyle = layerColor(layer);
           ctx.fillRect(x0, y0, w, h);
@@ -2506,7 +2661,216 @@
           scheduleSessionSave();
         }
 
+        // ---------------------------------------------------------------------
+        // Magic select: Gemini segmentation. The first wand click fetches masks
+        // for every object in the photo and caches them, so every later click
+        // resolves instantly by hit-testing the cache. Typed queries ("the
+        // empty floor") fetch a targeted mask. Either way the result is painted
+        // into the active area exactly like brush strokes — the wand is just a
+        // faster brush, and undo/pixel-claiming behave identically.
+        // ---------------------------------------------------------------------
+        function segPayload() {
+          // ~1024px is what Google's own segmentation samples send; coordinates
+          // come back normalized, so full resolution would only cost tokens.
+          const scale = Math.min(1, 1024 / Math.max(base.w, base.h));
+          const c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(base.w * scale));
+          c.height = Math.max(1, Math.round(base.h * scale));
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.drawImage(base.canvas, 0, 0, c.width, c.height);
+          return c.toDataURL('image/jpeg', 0.9);
+        }
+
+        async function fetchSegmentation(query) {
+          const tok = window.StagifyAuth && window.StagifyAuth.getToken();
+          const response = await fetch('/api/segment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
+            },
+            body: JSON.stringify({ image: segPayload(), query: query || '', authToken: tok || undefined }),
+          });
+          let result = null;
+          try { result = await response.json(); } catch (e) {}
+          if (!response.ok || !result || !result.success) {
+            throw new Error(requestError(response.status, result));
+          }
+          return decodeSegItems(result.items || []);
+        }
+
+        // box_2d is [y0, x0, y1, x1] normalized to 0-1000; the mask PNG is a
+        // probability map covering just that box. Upscale onto a full-size
+        // canvas and binarize at the documented midpoint (>127 keeps).
+        async function decodeSegItems(items) {
+          const out = [];
+          for (const it of items) {
+            try {
+              const y0 = it.box_2d[0], x0 = it.box_2d[1], y1 = it.box_2d[2], x1 = it.box_2d[3];
+              if (y1 <= y0 || x1 <= x0) continue;
+              const img = await loadImage(it.mask);
+              const bx = Math.round((x0 / 1000) * base.w);
+              const by = Math.round((y0 / 1000) * base.h);
+              const bw = Math.max(1, Math.round(((x1 - x0) / 1000) * base.w));
+              const bh = Math.max(1, Math.round(((y1 - y0) / 1000) * base.h));
+              const c = document.createElement('canvas');
+              c.width = base.w;
+              c.height = base.h;
+              const ctx = c.getContext('2d');
+              ctx.drawImage(img, bx, by, bw, bh);
+              const id = ctx.getImageData(bx, by, bw, bh);
+              const d = id.data;
+              let area = 0;
+              for (let i = 0; i < d.length; i += 4) {
+                if (d[i] > 127) { d[i + 3] = 255; area++; }
+                else d[i + 3] = 0;
+              }
+              if (!area) continue;
+              ctx.putImageData(id, bx, by);
+              out.push({ canvas: c, area: area, label: it.label || '' });
+            } catch (e) { /* one undecodable mask never sinks the batch */ }
+          }
+          return out;
+        }
+
+        function setSegBusy(b) {
+          segBusy = b;
+          wandBusyEl.classList.toggle('hidden', !b);
+          wandGoBtn.disabled = b || phase === 'generating';
+          stack.classList.toggle('is-analyzing', b);
+        }
+
+        // Paint a decoded mask into the active area exactly as if it had been
+        // brushed: undo snapshot, tint in the layer color, claim the pixels
+        // from every other area, rescan painted flags.
+        function paintMaskIntoLayer(layer, maskCanvas) {
+          snapshotForUndo();
+          redoStack = []; // committed selection forks history
+          const tint = document.createElement('canvas');
+          tint.width = base.w;
+          tint.height = base.h;
+          const tctx = tint.getContext('2d');
+          tctx.drawImage(maskCanvas, 0, 0);
+          tctx.globalCompositeOperation = 'source-in';
+          tctx.fillStyle = layerColor(layer);
+          tctx.fillRect(0, 0, base.w, base.h);
+          layer.canvasEl.getContext('2d').drawImage(tint, 0, 0);
+          layers.forEach((other) => {
+            if (other === layer) return;
+            const octx = other.canvasEl.getContext('2d');
+            octx.globalCompositeOperation = 'destination-out';
+            octx.drawImage(maskCanvas, 0, 0);
+            octx.globalCompositeOperation = 'source-over';
+          });
+          layers.forEach((l) => {
+            l.painted = scanHasContent(l.canvasEl);
+            l.blendMask = null;
+          });
+          renderLayers();
+          updateControls();
+          updateStageBackdrop();
+          scheduleSessionSave();
+        }
+
+        async function ensureSegCache() {
+          if (segCache) return segCache;
+          const token = segToken;
+          setSegBusy(true);
+          try {
+            const items = await fetchSegmentation('');
+            if (token !== segToken) return null; // photo changed mid-flight
+            segCache = items;
+            return segCache;
+          } finally {
+            setSegBusy(false);
+          }
+        }
+
+        async function wandClick(e) {
+          const p = canvasPoint(e);
+          const layer = activeLayer();
+          if (!p || !layer || segBusy) return;
+          let cache;
+          try {
+            cache = await ensureSegCache();
+          } catch (err) {
+            showToast(err && err.message ? err.message : tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
+            return;
+          }
+          if (!cache || phase !== 'draw') return; // superseded while analyzing
+          const px = Math.max(0, Math.min(base.w - 1, Math.round(p.x)));
+          const py = Math.max(0, Math.min(base.h - 1, Math.round(p.y)));
+          let hit = null;
+          cache.forEach((it) => {
+            const a = it.canvas.getContext('2d').getImageData(px, py, 1, 1).data[3];
+            if (a > 0 && (!hit || it.area < hit.area)) hit = it; // smallest = most specific
+          });
+          if (!hit) {
+            showToast(tx('maskingStudio.wandMiss', 'No object found there. Click the middle of an object, or describe the area in the box instead.'), 'error');
+            return;
+          }
+          paintMaskIntoLayer(layer, hit.canvas);
+        }
+
+        async function wandQuery() {
+          const q = wandInput.value.trim();
+          const layer = activeLayer();
+          if (!q || segBusy || !base || phase !== 'draw' || !layer) return;
+          const token = segToken;
+          setSegBusy(true);
+          try {
+            const items = await fetchSegmentation(q);
+            if (token !== segToken || phase !== 'draw') return;
+            if (!items.length) {
+              showToast(tx('maskingStudio.wandNoMatch', 'Nothing matched that description. Try different words.'), 'error');
+              return;
+            }
+            // Everything that matched lands in the active area as one selection.
+            const union = document.createElement('canvas');
+            union.width = base.w;
+            union.height = base.h;
+            const uctx = union.getContext('2d');
+            items.forEach((it) => uctx.drawImage(it.canvas, 0, 0));
+            paintMaskIntoLayer(layer, union);
+            wandInput.value = '';
+          } catch (err) {
+            showToast(err && err.message ? err.message : tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
+          } finally {
+            setSegBusy(false);
+          }
+        }
+        wandGoBtn.addEventListener('click', wandQuery);
+        wandInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); wandQuery(); }
+        });
+
+        // Touch: two-finger pinch zooms (phones have no Ctrl+wheel). A second
+        // finger aborts whatever the first one started so a pinch never leaves
+        // a half-stroke behind.
+        const touchPts = new Map();
+        let pinch = null; // { d0, zoom0 }
+
         stack.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'touch') {
+            touchPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (touchPts.size === 2 && base) {
+              if (drawing) {
+                drawing = false;
+                lastX = null;
+                lastY = null;
+                if (undoStack.length) restoreEntries(undoStack.pop());
+              }
+              if (rectDragging) cancelRect();
+              comparing = false;
+              panning = false;
+              const pts = Array.from(touchPts.values());
+              pinch = { d0: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1, zoom0: zoom };
+              e.preventDefault();
+              return;
+            }
+          }
           if ((spaceDown || e.button === 1) && base) {
             // Pan the zoomed view: drag with Space held or the middle button.
             e.preventDefault();
@@ -2525,11 +2889,25 @@
           }
           if (!canDraw()) return;
           e.preventDefault();
+          if (tool === 'wand') { wandClick(e); return; }
           try { stack.setPointerCapture(e.pointerId); } catch (err) {}
           if (tool === 'rect') { beginRect(e); return; }
           startDraw(e);
         });
         stack.addEventListener('pointermove', (e) => {
+          if (e.pointerType === 'touch' && touchPts.has(e.pointerId)) {
+            touchPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (pinch && touchPts.size >= 2) {
+              e.preventDefault();
+              const pts = Array.from(touchPts.values());
+              const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+              setZoom(pinch.zoom0 * (d / pinch.d0), {
+                x: (pts[0].x + pts[1].x) / 2,
+                y: (pts[0].y + pts[1].y) / 2,
+              });
+              return;
+            }
+          }
           if (panning) {
             e.preventDefault();
             viewerEl.scrollLeft = panStart.sl - (e.clientX - panStart.x);
@@ -2552,8 +2930,22 @@
           e.preventDefault();
           paint(e);
         });
-        stack.addEventListener('pointerup', (e) => { panning = false; comparing = false; endRect(e); stopDraw(e); });
-        stack.addEventListener('pointercancel', (e) => { panning = false; comparing = false; cancelRect(); stopDraw(e); });
+        stack.addEventListener('pointerup', (e) => {
+          touchPts.delete(e.pointerId);
+          if (touchPts.size < 2) pinch = null;
+          panning = false;
+          comparing = false;
+          endRect(e);
+          stopDraw(e);
+        });
+        stack.addEventListener('pointercancel', (e) => {
+          touchPts.delete(e.pointerId);
+          if (touchPts.size < 2) pinch = null;
+          panning = false;
+          comparing = false;
+          cancelRect();
+          stopDraw(e);
+        });
         stack.addEventListener('pointerleave', () => { if (cursorEl) cursorEl.style.display = 'none'; });
 
         // Brush-size circle that follows the pointer over the photo, tinted with
@@ -2569,7 +2961,7 @@
         function updateCursorPreview(e) {
           ensureCursor();
           const layer = activeLayer();
-          if (!canDraw() || !layer || e.pointerType === 'touch' || spaceDown || tool === 'rect') {
+          if (!canDraw() || !layer || e.pointerType === 'touch' || spaceDown || tool === 'rect' || tool === 'wand') {
             cursorEl.style.display = 'none';
             return;
           }
@@ -2587,19 +2979,22 @@
         }
 
         function setTool(t) {
-          tool = t === 'erase' ? 'erase' : t === 'rect' ? 'rect' : 'brush';
-          [[brushBtn, 'brush'], [eraseBtn, 'erase'], [rectBtn, 'rect']].forEach(([btn, name]) => {
+          tool = t === 'erase' ? 'erase' : t === 'rect' ? 'rect' : t === 'wand' ? 'wand' : 'brush';
+          [[brushBtn, 'brush'], [eraseBtn, 'erase'], [rectBtn, 'rect'], [wandBtn, 'wand']].forEach(([btn, name]) => {
             btn.classList.toggle('is-active', tool === name);
             btn.setAttribute('aria-pressed', tool === name ? 'true' : 'false');
           });
+          brushRow.classList.toggle('hidden', tool === 'wand');
+          wandRow.classList.toggle('hidden', tool !== 'wand');
           if (cursorEl) {
             cursorEl.classList.toggle('is-erase', tool === 'erase');
-            if (tool === 'rect') cursorEl.style.display = 'none';
+            if (tool === 'rect' || tool === 'wand') cursorEl.style.display = 'none';
           }
         }
         brushBtn.addEventListener('click', () => setTool('brush'));
         eraseBtn.addEventListener('click', () => setTool('erase'));
         rectBtn.addEventListener('click', () => setTool('rect'));
+        wandBtn.addEventListener('click', () => setTool('wand'));
 
         function setBrushSize(v) {
           brushSize = Math.min(150, Math.max(20, v));
@@ -2624,10 +3019,18 @@
           }
           const t = e.target;
           const typing = t && t.closest && t.closest('input, textarea, select, [contenteditable]');
-          if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
-            if (!typing && phase === 'draw' && undoStack.length) {
+          if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'z') {
+            if (!typing && phase === 'draw') {
               e.preventDefault();
-              undoStroke();
+              if (e.shiftKey) redoStroke();
+              else undoStroke();
+            }
+            return;
+          }
+          if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'y') {
+            if (!typing && phase === 'draw' && redoStack.length) {
+              e.preventDefault();
+              redoStroke();
             }
             return;
           }
@@ -2649,6 +3052,7 @@
           if (k === 'b') { setTool('brush'); }
           else if (k === 'e') { setTool('erase'); }
           else if (k === 'r') { setTool('rect'); }
+          else if (k === 'w') { setTool('wand'); }
           else if (k === 'h') { if (!e.repeat && phase === 'draw') stack.classList.add('is-peek'); }
           else if (e.key === '[') { setBrushSize(brushSize - 10); }
           else if (e.key === ']') { setBrushSize(brushSize + 10); }
@@ -2835,13 +3239,17 @@
           brushBtn.disabled = generating;
           eraseBtn.disabled = generating;
           rectBtn.disabled = generating;
+          wandBtn.disabled = generating;
+          wandInput.disabled = generating;
+          wandGoBtn.disabled = generating || segBusy;
           undoBtn.disabled = generating || phase !== 'draw' || !undoStack.length;
+          redoBtn.disabled = generating || phase !== 'draw' || !redoStack.length;
           editHighlightsBtn.disabled = generating;
           downloadBtn.disabled = generating || !layers.some((l) => l.status === 'done');
           layerList.querySelectorAll('textarea, button').forEach((el) => { el.disabled = generating; });
 
           const painted = layers.filter((l) => l.painted);
-          const allDetailed = painted.length > 0 && painted.every((l) => l.prompt.trim() || l.furniture);
+          const allDetailed = painted.length > 0 && painted.every((l) => l.mode === 'remove' || l.prompt.trim() || l.furniture);
           generateBtn.disabled = !base || generating || !allDetailed;
 
           // Explain a disabled Apply Edit instead of leaving it a mystery.
@@ -2868,32 +3276,131 @@
           return (result && result.error) || tx('errors.processingFailed', 'Something went wrong. Please try again.');
         }
 
-        async function runLayer(layer, imageDataUrl, coreGrow, run) {
+        // Rough position of a mask inside the photo ("lower left", "center"…)
+        // from its bounding box on a small alpha scan — feeds the cross-area
+        // context so parallel generations know what lands where.
+        function maskRegionName(canvasEl) {
+          const s = 48;
+          const c = document.createElement('canvas');
+          c.width = s; c.height = s;
+          const sctx = c.getContext('2d');
+          sctx.drawImage(canvasEl, 0, 0, s, s);
+          const d = sctx.getImageData(0, 0, s, s).data;
+          let minX = s, minY = s, maxX = -1, maxY = -1;
+          for (let y = 0; y < s; y++) {
+            for (let x = 0; x < s; x++) {
+              if (d[(y * s + x) * 4 + 3] > 8) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+              }
+            }
+          }
+          if (maxX < 0) return '';
+          const cx = (minX + maxX) / 2 / s;
+          const cy = (minY + maxY) / 2 / s;
+          const col = cx < 1 / 3 ? 'left' : (cx > 2 / 3 ? 'right' : 'center');
+          const row = cy < 1 / 3 ? 'upper' : (cy > 2 / 3 ? 'lower' : 'middle');
+          if (row === 'middle' && col === 'center') return 'center';
+          if (row === 'middle') return 'center ' + col;
+          if (col === 'center') return row + ' middle';
+          return row + ' ' + col;
+        }
+
+        // Areas generate in parallel and never see each other's output, so each
+        // prompt carries a sketch of the neighbors' plans — enough for the model
+        // to keep lighting, perspective, and style coherent across areas.
+        function buildAreaContext(layer, participants) {
+          const others = participants.filter((l) => l !== layer && l.painted);
+          if (!others.length) return '';
+          const plans = others.map((l) => {
+            let plan;
+            if (l.mode === 'remove') plan = 'the existing contents are being removed';
+            else if (l.prompt.trim()) plan = l.prompt.trim();
+            else plan = 'furniture from a reference photo is being added';
+            if (plan.length > 90) plan = plan.slice(0, 87) + '…';
+            const region = maskRegionName(l.canvasEl);
+            return (region ? 'in the ' + region + ' of the photo: ' : '') + plan;
+          });
+          return ' For context, other parts of this photo are being edited separately (' +
+            plans.join('; ') +
+            '). Only edit the masked area, but keep lighting, shadows, perspective, and furnishing style consistent with those planned changes.';
+        }
+
+        // At most 3 mask edits in flight at once: smoother on the server's rate
+        // limiter and Gemini quotas than firing all 6 areas simultaneously,
+        // while progressive compositing keeps the wait feeling short.
+        function createPool(size) {
+          let active = 0;
+          const queue = [];
+          const next = () => {
+            if (!queue.length || active >= size) return;
+            active++;
+            const job = queue.shift();
+            job.fn().then(job.resolve, job.reject).then(() => { active--; next(); });
+          };
+          return (fn) => new Promise((resolve, reject) => {
+            queue.push({ fn: fn, resolve: resolve, reject: reject });
+            next();
+          });
+        }
+        const enqueueRun = createPool(3);
+
+        async function runLayer(layer, imageDataUrl, coreGrow, run, context, batchSize) {
           await maskCoreReady;
           const maskDataUrl = buildModelMask(layer.canvasEl, base.w, base.h, coreGrow).toDataURL('image/png');
-          const prompt = layer.prompt.trim() || tx(
-            'maskingStudio.defaultFurniturePrompt',
-            'Add the furniture from the reference photo into the highlighted area. Place it naturally on the floor with correct perspective, scale, and lighting for the room.'
-          );
+          let prompt;
+          if (layer.mode === 'remove') {
+            prompt = tx(
+              'maskingStudio.removePrompt',
+              'Remove everything inside the highlighted area. Reconstruct what belongs behind it — floor, walls, baseboards, and trim — continuing the room’s existing surfaces, textures, and lighting seamlessly. Do not add any new furniture or objects.'
+            );
+            if (layer.prompt.trim()) prompt = (prompt + ' ' + layer.prompt.trim()).slice(0, 1000);
+          } else {
+            prompt = layer.prompt.trim() || tx(
+              'maskingStudio.defaultFurniturePrompt',
+              'Add the furniture from the reference photo into the highlighted area. Place it naturally on the floor with correct perspective, scale, and lighting for the room.'
+            );
+          }
+          // Server caps prompts at 1000 chars — own prompt wins, context yields.
+          if (context) prompt = (prompt + context).slice(0, 1000);
           const tok = window.StagifyAuth && window.StagifyAuth.getToken();
-          const response = await fetch('/api/mask-edit', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
-            },
-            body: JSON.stringify({
-              image: imageDataUrl,
-              mask: maskDataUrl,
-              prompt: prompt,
-              model: 'gpt-4o-mini',
-              authToken: tok || undefined,
-              ...(layer.furniture ? { referenceImage: layer.furniture } : {}),
-            }),
+          const body = JSON.stringify({
+            image: imageDataUrl,
+            mask: maskDataUrl,
+            prompt: prompt,
+            authToken: tok || undefined,
+            // Best-effort reproducibility passthrough + retry-budget hint for
+            // multi-area batches (the server trims its quality retries).
+            seed: (Math.random() * 0x7fffffff) | 0,
+            batch: batchSize || 1,
+            ...(layer.furniture && layer.mode !== 'remove' ? { referenceImage: layer.furniture } : {}),
           });
+          let response = null;
           let result = null;
-          try { result = await response.json(); } catch (e) {}
-          if (run !== genRun) return; // a newer run/reset superseded this one
+          // Rate-limit pressure (429) and transient overload (503) get two
+          // jittered retries before the area is declared failed.
+          for (let attempt = 0; ; attempt++) {
+            response = await fetch('/api/mask-edit', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
+              },
+              body: body,
+            });
+            result = null;
+            try { result = await response.json(); } catch (e) {}
+            if (run !== genRun) return; // a newer run/reset superseded this one
+            if ((response.status !== 429 && response.status !== 503) || attempt >= 2) break;
+            const retryAfter = Number(response.headers.get('retry-after'));
+            const waitMs = retryAfter > 0 && retryAfter <= 120
+              ? retryAfter * 1000
+              : 1500 * Math.pow(2, attempt) + Math.random() * 1000;
+            await new Promise((r) => setTimeout(r, waitMs));
+            if (run !== genRun) return;
+          }
           if (!response.ok || !result || !result.editedImage) {
             throw new Error(requestError(response.status, result));
           }
@@ -2936,7 +3443,7 @@
             showToast(tx('maskingStudio.needHighlight', 'Paint at least one area on the photo first.'), 'error');
             return;
           }
-          const missing = participating.find((l) => !l.prompt.trim() && !l.furniture);
+          const missing = participating.find((l) => l.mode !== 'remove' && !l.prompt.trim() && !l.furniture);
           if (missing) {
             activeId = missing.id;
             renderLayers();
@@ -2961,6 +3468,7 @@
             l.candidates = [];
             l.candIdx = 0;
             l.errorMsg = '';
+            l.canvasEl.classList.remove('is-landed');
             // Freeze the compositing mask now — strokes can't change mid-run.
             l.blendMask = buildBlendMask(l.canvasEl, base.w, base.h, coreGrow, featherPx);
           });
@@ -2972,7 +3480,7 @@
 
           let settled = 0;
           await Promise.all(participating.map((layer) =>
-            runLayer(layer, imageDataUrl, coreGrow, run)
+            enqueueRun(() => runLayer(layer, imageDataUrl, coreGrow, run, buildAreaContext(layer, participating), participating.length))
               .then(() => { if (run === genRun) layer.status = 'done'; })
               .catch((err) => {
                 if (run !== genRun) return;
@@ -2986,10 +3494,15 @@
                 renderBusyDots(participating);
                 renderLayers();
                 updateControls(); // keep layer controls disabled through the run
+                if (layer.status === 'done') {
+                  layer.canvasEl.classList.add('is-landed');
+                  updateStageBackdrop();
+                }
               })
           ));
           if (run !== genRun) return;
 
+          layers.forEach((l) => l.canvasEl && l.canvasEl.classList.remove('is-landed'));
           progressEl.classList.add('hidden');
           progressText.classList.add('hidden');
           compositeAll();
@@ -3038,7 +3551,7 @@
           renderLayers();
           updateControls();
           try {
-            await runLayer(layer, roomPayload(), genMeta.coreGrow, run);
+            await enqueueRun(() => runLayer(layer, roomPayload(), genMeta.coreGrow, run, buildAreaContext(layer, layers.filter((l) => l.painted)), 1));
             if (run !== genRun) return;
             layer.status = 'done';
           } catch (err) {
@@ -3095,7 +3608,12 @@
           if (!base) return;
           const ctx = baseCanvas.getContext('2d');
           ctx.clearRect(0, 0, base.w, base.h);
-          if (phase === 'draw' && hasAnyResults()) {
+          if (phase === 'generating' && hasAnyResults()) {
+            // Progressive composite: each finished area lands in the backdrop
+            // while the rest of the run is still generating.
+            compositeAll();
+            ctx.drawImage(resultCanvas, 0, 0);
+          } else if (phase === 'draw' && hasAnyResults()) {
             compositeAll();
             ctx.drawImage(resultCanvas, 0, 0);
             ctx.globalAlpha = 0.45;

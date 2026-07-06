@@ -3075,17 +3075,17 @@ async function compositeForReview(originalBuf, maskBuf, editedDataUrl, width, he
 // `onImageProduced(attempt)` (optional) fires once for every attempt that
 // actually yields an image — used to meter billing per generation attempt
 // (including quality-gate retries).
-async function generateWithQualityRetry(generateOnce, label = 'image', onImageProduced = null, reviewFn = null) {
+async function generateWithQualityRetry(generateOnce, label = 'image', onImageProduced = null, reviewFn = null, maxAttempts = QUALITY_MAX_ATTEMPTS) {
   let best = null; // { url, score }
   let lastError = null;
-  for (let attempt = 1; attempt <= QUALITY_MAX_ATTEMPTS; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     let url;
     try {
       url = await generateOnce(attempt);
     } catch (error) {
       lastError = error;
-      if (DEBUG_MODE && attempt < QUALITY_MAX_ATTEMPTS) {
-        console.log(`[Quality] ${label}: regenerating — attempt ${attempt}/${QUALITY_MAX_ATTEMPTS} failed to produce an image (${error.message}).`);
+      if (DEBUG_MODE && attempt < maxAttempts) {
+        console.log(`[Quality] ${label}: regenerating — attempt ${attempt}/${maxAttempts} failed to produce an image (${error.message}).`);
       }
       continue; // try again; if all fail we rethrow below
     }
@@ -3093,12 +3093,12 @@ async function generateWithQualityRetry(generateOnce, label = 'image', onImagePr
     if (typeof onImageProduced === 'function') onImageProduced(attempt);
     const { perfect, score } = await (reviewFn ? reviewFn(url) : reviewImageQuality(url));
     if (DEBUG_MODE) {
-      console.log(`[Quality] ${label} attempt ${attempt}/${QUALITY_MAX_ATTEMPTS}: ${perfect ? 'perfect — accepted' : `not perfect (score ${score})`}`);
+      console.log(`[Quality] ${label} attempt ${attempt}/${maxAttempts}: ${perfect ? 'perfect — accepted' : `not perfect (score ${score})`}`);
     }
     if (perfect) return url;
     if (!best || score > best.score) best = { url, score };
     // A regeneration is about to happen (unless this was the last allowed attempt).
-    if (DEBUG_MODE && attempt < QUALITY_MAX_ATTEMPTS) {
+    if (DEBUG_MODE && attempt < maxAttempts) {
       console.log(`[Quality] ${label}: regenerating — attempt ${attempt} was not perfect (quality score ${score}).`);
     }
   }
@@ -8049,7 +8049,7 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
       return res.status(500).json({ error: 'AI service not properly configured' });
     }
 
-    const { image, mask, prompt, model, referenceImage } = req.body;
+    const { image, mask, prompt, model, referenceImage, seed, batch } = req.body;
 
     const trimmedPrompt = typeof prompt === 'string' ? prompt.trim() : '';
     if (!image || !mask || !trimmedPrompt) {
@@ -8060,6 +8060,15 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
         error: `Prompt is too long (max ${MAX_MASK_PROMPT_LENGTH} characters)`,
       });
     }
+
+    // Optional reproducibility seed — passed through to Gemini best-effort (the
+    // image models make no determinism promise, but the request accepts it).
+    // `batch` is the multi-area client's hint of how many sibling requests this
+    // click fanned out into; big batches get a trimmed quality-retry budget so
+    // one click can't cascade into batch × 3 Gemini generations.
+    const seedBase = Number.isInteger(seed) ? seed : null;
+    const batchSize = Number.isInteger(batch) ? Math.max(1, Math.min(6, batch)) : 1;
+    const maxQualityAttempts = batchSize >= 3 ? 2 : QUALITY_MAX_ATTEMPTS;
 
     // Get model from request or default to fast model
     const selectedModel = model || 'gpt-4o-mini';
@@ -8162,11 +8171,6 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
       console.warn('[Mask Edit] referenceImage field present but invalid (expected data URL string)');
     }
 
-    // Use Gemini's image editing capabilities
-    // Gemini can process images with masks for targeted editing
-    // Use the appropriate Gemini model based on user's selection (pro vs fast)
-    const modelInstance = genAI.getGenerativeModel({ model: geminiModel });
-    
     // Build the prompt with image and mask
     const geminiPrompt = [
       { 
@@ -8200,7 +8204,13 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
     // returning the first perfect result or the best-scoring one.
     const originalForReview = `data:image/png;base64,${imageBase64}`;
     let maskGenerations = 0;
-    const editedImageDataUrl = await generateWithQualityRetry(async () => {
+    const editedImageDataUrl = await generateWithQualityRetry(async (attempt) => {
+      // Seed shifts per attempt: if a quality retry fires, an identical seed
+      // would just re-court the same rejected output.
+      const modelInstance = genAI.getGenerativeModel({
+        model: geminiModel,
+        ...(seedBase !== null ? { generationConfig: { seed: seedBase + attempt - 1 } } : {}),
+      });
       const result = await modelInstance.generateContent(geminiPrompt);
       const response = await result.response;
 
@@ -8234,7 +8244,7 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
         locatorMarked,
         referenceDataUrl: referenceInline ? `data:${referenceInline.mimeType};base64,${referenceInline.data}` : null,
       });
-    });
+    }, maxQualityAttempts);
 
     if (DEBUG_MODE) {
       console.log('[Mask Edit] Successfully generated edited image with Gemini');
@@ -8261,10 +8271,98 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
 
   } catch (error) {
     console.error('Error processing mask edit:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process masked edit', 
-      details: error.message 
+    return res.status(500).json({
+      error: 'Failed to process masked edit',
+      details: error.message
     });
+  }
+});
+
+// --- AI-assisted selection (Masking Studio) ----------------------------------
+// Gemini 2.5 Flash segmentation: given a room photo and an optional natural-
+// language target ("the sofa", "the empty floor area"), returns box-cropped
+// probability masks. With no target it segments every distinct object, which
+// the client caches and hit-tests so each wand click is instant. box_2d is
+// [y0, x0, y1, x1] normalized to 0-1000 of the image sent here, so the client
+// maps masks onto its full-resolution canvas without knowing our dimensions.
+const MAX_SEGMENT_QUERY_LENGTH = 200;
+
+app.post('/api/segment', genLimiter, async (req, res) => {
+  try {
+    const proUser = requireProAccount(req, res);
+    if (!proUser) return;
+
+    if (!genAI) {
+      return res.status(500).json({ error: 'AI service not properly configured' });
+    }
+
+    const { image, query } = req.body;
+    if (!image || typeof image !== 'string' || !image.includes(',')) {
+      return res.status(400).json({ error: 'Image is required' });
+    }
+    const trimmedQuery = typeof query === 'string' ? query.trim().slice(0, MAX_SEGMENT_QUERY_LENGTH) : '';
+
+    // Google's own segmentation sample sends ~1024px — plenty for masks, and
+    // normalized coordinates map back onto any resolution. The sharp pass also
+    // validates the payload is a real, decodable image.
+    const rawBuffer = Buffer.from(image.slice(image.indexOf(',') + 1), 'base64');
+    const imageBuffer = await sharp(rawBuffer)
+      .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 90 })
+      .toBuffer();
+
+    const target = trimmedQuery
+      ? `Give the segmentation masks for: ${trimmedQuery}.`
+      : 'Give the segmentation masks for every distinct movable object in the room (furniture, decor, plants, lamps, rugs, appliances, clutter). Do not segment the floor, walls, ceiling, windows, or doors.';
+    const prompt = target +
+      ' Output a JSON list of segmentation masks where each entry contains the 2D bounding box in the key "box_2d", the segmentation mask in key "mask", and the text label in the key "label". Use descriptive labels.';
+
+    // Per Google's segmentation guidance: thinking off for 2.5 models.
+    const modelInstance = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      generationConfig: { thinkingConfig: { thinkingBudget: 0 }, temperature: 0.5 },
+    });
+    const result = await modelInstance.generateContent([
+      { inlineData: { mimeType: 'image/jpeg', data: imageBuffer.toString('base64') } },
+      { text: prompt },
+    ]);
+    const response = await result.response;
+    let text = '';
+    try { text = response.text(); } catch (e) {
+      const parts = (response && response.candidates && response.candidates[0] &&
+        response.candidates[0].content && response.candidates[0].content.parts) || [];
+      text = parts.map((p) => p.text || '').join('');
+    }
+
+    // The list arrives as text, often inside ```json fences, sometimes with prose.
+    const fenced = text.match(/```json\s*([\s\S]*?)```/i) || text.match(/```\s*([\s\S]*?)```/);
+    const jsonText = fenced ? fenced[1] : text;
+    let items;
+    try {
+      items = JSON.parse(jsonText);
+    } catch (e) {
+      const arr = jsonText.match(/\[[\s\S]*\]/);
+      items = arr ? JSON.parse(arr[0]) : [];
+    }
+    if (!Array.isArray(items)) items = [];
+
+    const cleaned = items
+      .filter((it) => it && Array.isArray(it.box_2d) && it.box_2d.length === 4 &&
+        typeof it.mask === 'string' && it.mask.length > 0)
+      .slice(0, 24)
+      .map((it) => ({
+        box_2d: it.box_2d.map((v) => Math.max(0, Math.min(1000, Math.round(Number(v) || 0)))),
+        mask: it.mask.startsWith('data:') ? it.mask : 'data:image/png;base64,' + it.mask,
+        label: typeof it.label === 'string' ? it.label.slice(0, 80) : '',
+      }));
+
+    if (DEBUG_MODE) {
+      console.log('[Segment] query:', trimmedQuery || '(all objects)', '→', cleaned.length, 'masks');
+    }
+    return res.json({ success: true, items: cleaned });
+  } catch (error) {
+    console.error('Error processing segmentation:', error);
+    return res.status(500).json({ error: 'Failed to analyze the photo', details: error.message });
   }
 });
 
