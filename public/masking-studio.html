@@ -2728,10 +2728,30 @@
           return out;
         }
 
+        let wandMsgTimer = null;
         function setSegBusy(b) {
           segBusy = b;
           wandBusyEl.classList.toggle('hidden', !b);
           stack.classList.toggle('is-analyzing', b);
+          if (wandMsgTimer) { clearInterval(wandMsgTimer); wandMsgTimer = null; }
+          if (b) {
+            // Cycle through progress lines while Gemini works; hold the last
+            // one rather than looping back to "Analyzing…".
+            const raw = window.LanguageSystem && window.LanguageSystem.getText('maskingStudio.wandBusyMessages');
+            const msgs = Array.isArray(raw) && raw.length ? raw : [
+              'Analyzing your photo…',
+              'Finding the objects in the room…',
+              'Outlining what it found…',
+              'Almost there…',
+            ];
+            let i = 0;
+            wandBusyEl.textContent = msgs[0];
+            wandMsgTimer = setInterval(() => {
+              i++;
+              if (i >= msgs.length) { clearInterval(wandMsgTimer); wandMsgTimer = null; return; }
+              wandBusyEl.textContent = msgs[i];
+            }, 2200);
+          }
         }
 
         // Paint a decoded mask into the active area exactly as if it had been
@@ -2766,24 +2786,36 @@
           scheduleSessionSave();
         }
 
-        async function ensureSegCache() {
-          if (segCache) return segCache;
+        // One shared in-flight request: clicks made while the analysis runs
+        // await the same promise and land as soon as it resolves, instead of
+        // being dropped. Prefetch (on tool select) uses the same path.
+        let segPromise = null;
+        function ensureSegCache() {
+          if (segCache) return Promise.resolve(segCache);
+          if (segPromise) return segPromise;
           const token = segToken;
           setSegBusy(true);
-          try {
-            const items = await fetchSegmentation('');
-            if (token !== segToken) return null; // photo changed mid-flight
-            segCache = items;
-            return segCache;
-          } finally {
-            setSegBusy(false);
-          }
+          segPromise = (async () => {
+            try {
+              const items = await fetchSegmentation('');
+              if (token !== segToken) return null; // photo changed mid-flight
+              // Never cache an empty list: Gemini occasionally returns zero
+              // items for a full room, and caching that would make every
+              // later click insta-miss until the photo changes.
+              segCache = items.length ? items : null;
+              return items;
+            } finally {
+              segPromise = null;
+              setSegBusy(false);
+            }
+          })();
+          return segPromise;
         }
 
         async function wandClick(e) {
           const p = canvasPoint(e);
           const layer = activeLayer();
-          if (!p || !layer || segBusy) return;
+          if (!p || !layer) return;
           let cache;
           try {
             cache = await ensureSegCache();
@@ -2949,6 +2981,12 @@
           if (cursorEl) {
             cursorEl.classList.toggle('is-erase', tool === 'erase');
             if (tool === 'rect' || tool === 'wand') cursorEl.style.display = 'none';
+          }
+          // Start analyzing the moment the wand is picked, so the photo is
+          // usually mapped before the first click lands. Errors stay silent
+          // here — the click path retries and surfaces them.
+          if (tool === 'wand' && base && phase === 'draw' && !segCache) {
+            ensureSegCache().catch(() => {});
           }
         }
         brushBtn.addEventListener('click', () => setTool('brush'));

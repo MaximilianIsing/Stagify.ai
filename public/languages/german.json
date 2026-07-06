@@ -905,6 +905,7 @@
     "toolWand": "Zauberstab",
     "wandHint": "Klicken Sie auf ein Objekt im Foto, um es auszuwählen.",
     "wandBusy": "Ihr Foto wird analysiert…",
+    "wandBusyMessages": ["Ihr Foto wird analysiert…","Objekte im Raum werden gesucht…","Gefundenes wird umrissen…","Fast fertig…"],
     "wandMiss": "Dort wurde kein Objekt gefunden. Klicken Sie in die Mitte des Objekts oder markieren Sie es mit dem Pinsel.",
     "modeAria": "Was in diesem Bereich passiert",
     "modeStage": "Möbel hinzufügen",

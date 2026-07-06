@@ -905,6 +905,7 @@
     "toolWand": "Varinha",
     "wandHint": "Clique em um objeto na foto para selecioná-lo.",
     "wandBusy": "Analisando sua foto…",
+    "wandBusyMessages": ["Analisando sua foto…","Procurando os objetos do ambiente…","Delimitando o que foi encontrado…","Quase pronto…"],
     "wandMiss": "Nenhum objeto encontrado aí. Tente clicar no centro do objeto ou destaque-o com o pincel.",
     "modeAria": "O que acontece nesta área",
     "modeStage": "Adicionar móvel",
