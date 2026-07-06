@@ -862,8 +862,6 @@
     "partialToast": "{total}개 중 {done}개 영역이 스테이징되었습니다 — 실패한 영역을 다시 시도하세요.",
     "failedToast": "스테이징에 실패했습니다. 다시 시도해 주세요.",
     "rateLimited": "생성 속도가 너무 빠릅니다 — 잠시 후 다시 시도해 주세요.",
-    "openStudio": "마스킹 스튜디오 열기",
-    "openStudioHint": "여러 영역을 서로 다른 색으로 표시하고 한 번에 모두 스테이징하세요",
     "shortcutsHint": "<kbd>B</kbd> 브러시&nbsp;· <kbd>E</kbd> 지우개&nbsp;· <kbd>R</kbd> 사각형&nbsp;· <kbd>W</kbd> 자동 선택&nbsp;· <kbd>[</kbd> <kbd>]</kbd> 브러시 크기&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> 영역 선택&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> 실행 취소&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> 다시 실행&nbsp;· <kbd>H</kbd> 누르고 있으면 사진 보기",
     "compare": "비교",
     "undo": "실행 취소",

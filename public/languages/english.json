@@ -879,8 +879,6 @@
     "partialToast": "{done} of {total} areas staged — retry the failed ones.",
     "failedToast": "Staging failed. Please try again.",
     "rateLimited": "You're generating too quickly — wait a minute and try again.",
-    "openStudio": "Open Masking Studio",
-    "openStudioHint": "Highlight several areas in different colors and stage them all at once",
     "shortcutsHint": "<kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>W</kbd> magic select&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> redo&nbsp;· hold <kbd>H</kbd> view photo",
     "compare": "Compare",
     "undo": "Undo",

@@ -862,8 +862,6 @@
     "partialToast": "{done} von {total} Bereichen eingerichtet – versuchen Sie die fehlgeschlagenen erneut.",
     "failedToast": "Das Staging ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "rateLimited": "Sie generieren zu schnell – warten Sie eine Minute und versuchen Sie es erneut.",
-    "openStudio": "Masken-Studio öffnen",
-    "openStudioHint": "Markieren Sie mehrere Bereiche in verschiedenen Farben und richten Sie alle auf einmal ein",
     "shortcutsHint": "<kbd>B</kbd> Pinsel&nbsp;· <kbd>E</kbd> Radierer&nbsp;· <kbd>R</kbd> Rechteck&nbsp;· <kbd>W</kbd> Zauberstab&nbsp;· <kbd>[</kbd> <kbd>]</kbd> Pinselgröße&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> Bereich wählen&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> rückgängig&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> wiederholen&nbsp;· <kbd>H</kbd> halten: Foto zeigen",
     "compare": "Vergleichen",
     "undo": "Rückgängig",

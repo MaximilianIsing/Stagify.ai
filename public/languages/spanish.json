@@ -863,8 +863,6 @@
     "partialToast": "{done} de {total} zonas escenificadas — reintenta las que fallaron.",
     "failedToast": "El staging falló. Por favor, inténtalo de nuevo.",
     "rateLimited": "Estás generando demasiado rápido — espera un minuto e inténtalo de nuevo.",
-    "openStudio": "Abrir el Estudio de Máscaras",
-    "openStudioHint": "Resalta varias zonas en distintos colores y amúeblalas todas a la vez",
     "shortcutsHint": "<kbd>B</kbd> pincel&nbsp;· <kbd>E</kbd> borrar&nbsp;· <kbd>R</kbd> rectángulo&nbsp;· <kbd>W</kbd> varita&nbsp;· <kbd>[</kbd> <kbd>]</kbd> tamaño del pincel&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> elegir zona&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> deshacer&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> rehacer&nbsp;· mantén <kbd>H</kbd> ver foto",
     "compare": "Comparar",
     "undo": "Deshacer",

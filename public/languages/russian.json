@@ -861,8 +861,6 @@
     "partialToast": "Оформлено участков: {done} из {total} — повторите неудавшиеся.",
     "failedToast": "Стейджинг не удался. Попробуйте ещё раз.",
     "rateLimited": "Вы генерируете слишком быстро — подождите минуту и попробуйте снова.",
-    "openStudio": "Открыть Студию масок",
-    "openStudioHint": "Выделите несколько участков разными цветами и обставьте их все сразу",
     "shortcutsHint": "<kbd>B</kbd> кисть&nbsp;· <kbd>E</kbd> ластик&nbsp;· <kbd>R</kbd> прямоугольник&nbsp;· <kbd>W</kbd> магия&nbsp;· <kbd>[</kbd> <kbd>]</kbd> размер кисти&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> выбор участка&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> отменить&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> повторить&nbsp;· удерживайте <kbd>H</kbd> показать фото",
     "compare": "Сравнить",
     "undo": "Отменить",
