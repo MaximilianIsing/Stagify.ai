@@ -3566,8 +3566,8 @@
           compositeAll();
           const done = participating.filter((l) => l.status === 'done').length;
           if (done > 0) {
-            // Land in Refine Edit: highlights over the result with the
-            // original ghosted, and Looks Good waiting in the header.
+            // Land in Refine Edit: highlights over the pure After (raw output
+            // ghosted outside them), and Looks Good waiting in the header.
             setPhase('draw');
           } else {
             setPhase('review');
@@ -3659,9 +3659,10 @@
         }
 
         // What the display canvas shows underneath the highlights. Normally the
-        // original photo; while refining after a run it shows the staged result
-        // with the original ghosted on top, so re-highlighting happens against
-        // the After (mirroring the main masking tool's refine step).
+        // original photo; while refining after a run it mirrors the main tool's
+        // renderRefinePreview: highlighted areas show exactly the composited
+        // After, and each area's raw AI output is ghosted on top so content the
+        // model painted just past the strokes stays visible and brushable-in.
         function updateStageBackdrop() {
           if (!base) return;
           const ctx = baseCanvas.getContext('2d');
@@ -3674,8 +3675,26 @@
           } else if (phase === 'draw' && hasAnyResults()) {
             compositeAll();
             ctx.drawImage(resultCanvas, 0, 0);
-            ctx.globalAlpha = 0.45;
-            ctx.drawImage(base.canvas, 0, 0);
+            // Ghost each area's raw output only OUTSIDE the highlights. A raw
+            // frame holds original-looking pixels where OTHER areas' edits sit,
+            // so an unclipped ghost would wash a neighbor's pure After back
+            // toward the Before — clip it out per layer.
+            ctx.globalAlpha = 0.55;
+            layers.forEach((layer) => {
+              if (layer.status !== 'done' || !layer.editedImg) return;
+              const g = document.createElement('canvas');
+              g.width = base.w;
+              g.height = base.h;
+              const gctx = g.getContext('2d');
+              gctx.drawImage(layer.editedImg, 0, 0, base.w, base.h);
+              const stamp = othersStamp(layer);
+              if (stamp) {
+                gctx.globalCompositeOperation = 'destination-out';
+                gctx.drawImage(stamp, 0, 0);
+                gctx.globalCompositeOperation = 'source-over';
+              }
+              ctx.drawImage(g, 0, 0);
+            });
             ctx.globalAlpha = 1;
           } else {
             ctx.drawImage(base.canvas, 0, 0);
