@@ -575,21 +575,6 @@
       .ms-wand-row { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
       .ms-wand-row.hidden { display: none; }
       .ms-wand-hint { font-size: 12.5px; color: #374151; margin: 0; line-height: 1.45; }
-      .ms-wand-query { display: flex; gap: 6px; }
-      .ms-wand-query input { flex: 1; min-width: 0; font-size: 13px; padding: 7px 10px; }
-      .ms-wand-go {
-        padding: 7px 14px;
-        border: none;
-        border-radius: 8px;
-        background: #2563eb;
-        color: #fff;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .ms-wand-go:hover { background: #1d4ed8; }
-      .ms-wand-go:disabled { opacity: 0.45; cursor: default; }
-      .ms-wand-go:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
       .ms-wand-busy { font-size: 12px; color: #2563eb; margin: 0; display: flex; align-items: center; gap: 7px; }
       .ms-wand-busy::before {
         content: '';
@@ -1140,11 +1125,7 @@
                   <span id="ms-brush-size" class="ms-brush-size">50 px</span>
                 </div>
                 <div class="ms-wand-row hidden" id="ms-wand-row">
-                  <p class="ms-wand-hint" data-lang="maskingStudio.wandHint">Click an object in the photo to select it, or describe an area:</p>
-                  <div class="ms-wand-query">
-                    <input type="text" id="ms-wand-input" class="text-input" maxlength="120" placeholder="e.g. the empty floor" data-lang-attr="maskingStudio.wandPlaceholder|placeholder">
-                    <button type="button" id="ms-wand-go" class="ms-wand-go" data-lang="maskingStudio.wandGo">Select</button>
-                  </div>
+                  <p class="ms-wand-hint" data-lang="maskingStudio.wandHint">Click an object in the photo to select it.</p>
                   <p class="ms-wand-busy hidden" id="ms-wand-busy" data-lang="maskingStudio.wandBusy">Analyzing your photo…</p>
                 </div>
                 <p class="ms-hint" data-lang="maskingStudio.overlapHint">Paint over an area with a different color to reassign it — every spot belongs to one area only.</p>
@@ -1398,8 +1379,6 @@
         const rectBtn = $('#ms-rect-btn');
         const wandBtn = $('#ms-wand-btn');
         const wandRow = $('#ms-wand-row');
-        const wandInput = $('#ms-wand-input');
-        const wandGoBtn = $('#ms-wand-go');
         const wandBusyEl = $('#ms-wand-busy');
         const brushRow = $('#ms-brush-row');
         const undoBtn = $('#ms-undo-btn');
@@ -2752,7 +2731,6 @@
         function setSegBusy(b) {
           segBusy = b;
           wandBusyEl.classList.toggle('hidden', !b);
-          wandGoBtn.disabled = b || phase === 'generating';
           stack.classList.toggle('is-analyzing', b);
         }
 
@@ -2822,43 +2800,11 @@
             if (a > 0 && (!hit || it.area < hit.area)) hit = it; // smallest = most specific
           });
           if (!hit) {
-            showToast(tx('maskingStudio.wandMiss', 'No object found there. Click the middle of an object, or describe the area in the box instead.'), 'error');
+            showToast(tx('maskingStudio.wandMiss', 'No object found there. Try clicking the middle of the object, or highlight it with the brush.'), 'error');
             return;
           }
           paintMaskIntoLayer(layer, hit.canvas);
         }
-
-        async function wandQuery() {
-          const q = wandInput.value.trim();
-          const layer = activeLayer();
-          if (!q || segBusy || !base || phase !== 'draw' || !layer) return;
-          const token = segToken;
-          setSegBusy(true);
-          try {
-            const items = await fetchSegmentation(q);
-            if (token !== segToken || phase !== 'draw') return;
-            if (!items.length) {
-              showToast(tx('maskingStudio.wandNoMatch', 'Nothing matched that description. Try different words.'), 'error');
-              return;
-            }
-            // Everything that matched lands in the active area as one selection.
-            const union = document.createElement('canvas');
-            union.width = base.w;
-            union.height = base.h;
-            const uctx = union.getContext('2d');
-            items.forEach((it) => uctx.drawImage(it.canvas, 0, 0));
-            paintMaskIntoLayer(layer, union);
-            wandInput.value = '';
-          } catch (err) {
-            showToast(err && err.message ? err.message : tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
-          } finally {
-            setSegBusy(false);
-          }
-        }
-        wandGoBtn.addEventListener('click', wandQuery);
-        wandInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') { e.preventDefault(); wandQuery(); }
-        });
 
         // Touch: two-finger pinch zooms (phones have no Ctrl+wheel). A second
         // finger aborts whatever the first one started so a pinch never leaves
@@ -3254,8 +3200,6 @@
           eraseBtn.disabled = generating;
           rectBtn.disabled = generating;
           wandBtn.disabled = generating;
-          wandInput.disabled = generating;
-          wandGoBtn.disabled = generating || segBusy;
           undoBtn.disabled = generating || phase !== 'draw' || !undoStack.length;
           redoBtn.disabled = generating || phase !== 'draw' || !redoStack.length;
           editHighlightsBtn.disabled = generating;
