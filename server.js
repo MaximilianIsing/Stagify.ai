@@ -1,3 +1,4 @@
+import './load-env.js'; // must be first: populates process.env from .env before any secret is read
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
@@ -1547,11 +1548,12 @@ CRITICAL FRAMING & ASPECT RATIO RULES:
  */
 function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture) {
 
-  // Add furniture removal instruction if requested
-  removeFurniture = removeFurniture === 'true' ? true : false;
-  const furnitureRemovalText = removeFurniture 
-    ? "First, remove all existing furniture and decor from the room. Then, " 
-    : "Try not to remove existing furniture, if there is any. ";
+  // Add furniture removal instruction if requested. Callers pass a real boolean
+  // (removeBool) in the live flow; older/string callers pass 'true' — accept both.
+  removeFurniture = removeFurniture === true || removeFurniture === 'true';
+  const furnitureRemovalText = removeFurniture
+    ? "First, remove all existing furniture and decor from the room. Then, "
+    : "CRITICAL — KEEP EXISTING FURNITURE: If the room already contains furniture or decor, you MUST preserve every existing piece exactly as it appears — do NOT remove, replace, delete, or relocate any furniture, decor, or belongings already in the photo. Keep their position, style, and appearance unchanged, and only add or rearrange NEW furnishings around what is already there to complete a professional staging. (If, and only if, the room is completely empty, stage it from scratch as normal.) ";
   
   // Build the base prompt
   let basePrompt = `Stage this ${roomType} professionally.`;
