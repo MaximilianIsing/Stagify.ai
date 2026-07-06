@@ -216,6 +216,22 @@
     "whyus": {
       "subtitle": "Outras ferramentas de staging virtual são lentas, caras e limitadas. O Stagify foi feito para ser o oposto."
     },
+    "testimonials": {
+      "title": "O que os corretores dizem",
+      "subtitle": "Direto de corretores que fizeram a mudança.",
+      "items": {
+        "justin": {
+          "quote": "Quando experimentei o Stagify pela primeira vez, fiquei honestamente impressionado. Percebi que podia simplesmente usar meu celular, dispensar o fotógrafo caro e ainda ter resultados incríveis. É uma virada de jogo para meus anúncios — e o preço é sensacional!",
+          "author": "Justin S. (Corretor)",
+          "role": "Tahari Realty"
+        },
+        "andy": {
+          "quote": "Uau! O Stagify mudou completamente a forma como faço o home staging. É tão rápido, e meus clientes adoram. Isso é uma virada de jogo total para meus anúncios.",
+          "author": "Andy E. (Corretor)",
+          "role": "Centennial Properties"
+        }
+      }
+    },
     "faq": {
       "subtitle": "Respostas rápidas para as perguntas mais frequentes. Ainda com dúvidas? Acesse os <a href=\"guides.html\">Guias</a> ou entre em contato."
     },
@@ -569,6 +585,7 @@
       "general": ["pensando...", "processando sua solicitação...", "analisando...", "considerando as opções...", "trabalhando nisso...", "quase lá...", "um momento...", "preparando a resposta..."]
     },
     "emptyState": "Inicie uma conversa digitando uma mensagem ou enviando um arquivo",
+    "welcomeFallback": "Oi! Eu sou o seu Designer IA da Stagify. Me diga o que você está imaginando, ou envie a foto de um cômodo, e vamos projetá-lo juntos. Algumas coisas que posso fazer:\n• **Mobiliar cômodos vazios**: mobilie um espaço vazio em qualquer estilo\n• **Redesenhar cômodos existentes**: mude o estilo, troque os móveis ou altere todo o clima\n• **Planta → cômodo**: transforme uma planta em um render mobiliado e fotorrealista\n• **Refinar enquanto conversamos**: ajuste as cores, as peças e o layout até ficar do jeito certo\nPor onde você quer começar?",
     "uploadFile": "Enviar arquivo",
     "inputPlaceholder": "Digite sua mensagem...",
     "sendButton": "Enviar",

@@ -216,6 +216,22 @@
     "whyus": {
       "subtitle": "Les autres outils de staging virtuel sont lents, coûteux et verrouillés. Stagify est conçu pour être tout le contraire."
     },
+    "testimonials": {
+      "title": "Ce que disent les agents",
+      "subtitle": "Directement des agents qui ont franchi le pas.",
+      "items": {
+        "justin": {
+          "quote": "La première fois que j'ai essayé Stagify, j'ai été honnêtement bluffé. J'ai réalisé que je pouvais simplement utiliser mon téléphone, me passer du photographe coûteux et obtenir malgré tout des résultats époustouflants. C'est un vrai changement pour mes annonces — et le prix est incroyable !",
+          "author": "Justin S. (Courtier)",
+          "role": "Tahari Realty"
+        },
+        "andy": {
+          "quote": "Waouh ! Stagify a complètement transformé ma façon d'aborder le home staging. C'est si rapide, et mes clients adorent. C'est un changement total pour mes annonces.",
+          "author": "Andy E. (Courtier)",
+          "role": "Centennial Properties"
+        }
+      }
+    },
     "faq": {
       "subtitle": "Des réponses rapides aux questions les plus fréquentes. Toujours bloqué ? Consultez les <a href=\"guides.html\">Guides</a> ou contactez-nous."
     },
@@ -569,6 +585,7 @@
       "general": ["réflexion...", "traitement de votre demande...", "analyse...", "examen des options...", "en cours...", "presque terminé...", "un instant...", "préparation de la réponse..."]
     },
     "emptyState": "Démarrez une conversation en saisissant un message ou en important un fichier",
+    "welcomeFallback": "Bonjour ! Je suis votre Designer IA Stagify. Dites-moi ce que vous imaginez, ou téléchargez la photo d'une pièce, et nous la concevrons ensemble. Quelques choses que je peux faire :\n• **Aménager des pièces vides** : meublez un espace nu dans n'importe quel style\n• **Réaménager des pièces existantes** : changez le style, les meubles ou toute l'ambiance\n• **Plan → pièce** : transformez un plan en un rendu meublé et photoréaliste\n• **Affiner au fil de la discussion** : ajustez les couleurs, les éléments et l'agencement jusqu'à ce que ce soit parfait\nPar où souhaitez-vous commencer ?",
     "uploadFile": "Importer un fichier",
     "inputPlaceholder": "Saisissez votre message...",
     "sendButton": "Envoyer",

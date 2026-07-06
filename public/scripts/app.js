@@ -597,7 +597,62 @@
   
     let currentImageFile = null;
     let hasProcessedImage = false;
-  
+
+    // Stageability pre-check: the moment a room photo is chosen we ask the server
+    // (a cheap GPT-vision pass) whether it's actually a stageable room/property.
+    // The in-flight promise is stored so stageImage() can hard-block on a
+    // rejection, and a rejection is also surfaced immediately over the preview.
+    // Fails OPEN so our own hiccup never blocks a legitimate upload.
+    let stageValidation = null;
+    // Synchronously-readable result once the pre-check resolves (null while it is
+    // still in flight). Lets processWithAI() gate WITHOUT awaiting in the common
+    // case — the check starts at upload, so it is almost always done by click.
+    let stageValidationResult = null;
+    const DEFAULT_UNSTAGEABLE_MESSAGE =
+      "This doesn't look like a room or property space. Please upload a photo of an interior room or exterior space you'd like to stage.";
+
+    // Downscale a data URL to a small JPEG (keeps the POST body well under the
+    // server's 50MB JSON cap and saves tokens), then ask the server whether it is
+    // a stageable space. Always resolves to { valid, reason }; never rejects.
+    function validateStageableUpload(dataUrl) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = async () => {
+          let payload = dataUrl;
+          try {
+            // 512px matches the server's low-detail vision tile — bigger would
+            // only be downsampled away, so this keeps the upload small and fast.
+            const max = 512;
+            const scale = Math.min(1, max / Math.max(img.width, img.height));
+            const c = document.createElement('canvas');
+            c.width = Math.max(1, Math.round(img.width * scale));
+            c.height = Math.max(1, Math.round(img.height * scale));
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            payload = c.toDataURL('image/jpeg', 0.9);
+          } catch (e) { /* fall back to the original data URL */ }
+          try {
+            const tok = window.StagifyAuth && window.StagifyAuth.getToken();
+            const resp = await fetch('/api/validate-image', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
+              },
+              body: JSON.stringify({ image: payload, authToken: tok || undefined }),
+            });
+            if (!resp.ok) return resolve({ valid: true, reason: '' });
+            const r = await resp.json().catch(() => null);
+            if (!r || typeof r.valid !== 'boolean') return resolve({ valid: true, reason: '' });
+            resolve(r);
+          } catch (e) {
+            resolve({ valid: true, reason: '' });
+          }
+        };
+        img.onerror = () => resolve({ valid: true, reason: '' });
+        img.src = dataUrl;
+      });
+    }
+
     async function handleStageFile(file) {
       // iPhone HEIC/HEIF photos aren't decodable by most browsers; convert to
       // JPEG first so the preview and on-canvas editing work everywhere.
@@ -644,12 +699,33 @@
         canvas1.classList.add('hidden');
         // Reset to "Before" view
         showBeforeView();
+
+        // Kick off the stageability pre-check for this upload. It runs while the
+        // user reviews the photo and picks options, so it's normally done long
+        // before Process — and it runs concurrently with the generation anyway
+        // (see processWithAI), so it adds no wait. If it comes back invalid,
+        // surface the reason over the preview right away. Guard on the captured
+        // file so a fast re-upload can't show a stale rejection.
+        hideStagingError();
+        const checkForFile = file;
+        stageValidationResult = null;
+        stageValidation = validateStageableUpload(reader.result);
+        stageValidation.then((r) => {
+          const result = r || { valid: true, reason: '' };
+          if (currentImageFile === checkForFile) {
+            stageValidationResult = result;
+            if (result.valid === false) {
+              showStagingError(result.reason || DEFAULT_UNSTAGEABLE_MESSAGE);
+            }
+          }
+        });
       };
       reader.readAsDataURL(file);
     }
   
     async function processWithAI(imageFile) {
       hideStagingLimitInViewer();
+      hideStagingError();
 
       stagePreview.classList.add('processing');
       showBeforeView();
@@ -733,6 +809,44 @@
         isProcessingPhase = false;
       }
 
+      // Stageability pre-check came back invalid → tear the loading UI back down
+      // and surface the reason. Thrown so stageImage()'s catch re-enables the
+      // button; the message is already on screen via showStagingError.
+      function rejectUnstageable(reason) {
+        clearStagingUiTimers();
+        stagePreview.classList.remove('processing');
+        loadingMessage.classList.add('hidden');
+        progress.classList.add('hidden');
+        progressBar.style.width = '0%';
+        showStagingError(reason || DEFAULT_UNSTAGEABLE_MESSAGE);
+        const err = new Error(reason || DEFAULT_UNSTAGEABLE_MESSAGE);
+        err.code = 'NOT_STAGEABLE';
+        throw err;
+      }
+
+      // Fast path: if the pre-check already finished (the usual case — it starts
+      // at upload), honor a rejection NOW, before spending a generation. If it's
+      // still in flight we don't wait: staging runs below while the check finishes
+      // concurrently. Net cost of the check on a valid photo: zero added wait.
+      if (stageValidationResult && stageValidationResult.valid === false) {
+        rejectUnstageable(stageValidationResult.reason);
+      }
+
+      // If the check is still running, watch it: the moment it rejects the photo,
+      // ABORT the in-flight generation and stop the loading bar — don't wait for
+      // the generation to finish. The fetch below is wired to this signal, and its
+      // catch turns the abort into the friendly "not stageable" rejection.
+      const genAbort = new AbortController();
+      let validationRejection = null;
+      if (stageValidation && !stageValidationResult) {
+        stageValidation.then((r) => {
+          if (r && r.valid === false) {
+            validationRejection = r;
+            genAbort.abort();
+          }
+        });
+      }
+
       let response;
       if (isProPlan) {
         progress.classList.remove('hidden');
@@ -793,8 +907,12 @@
           response = await fetch('/api/process-image', {
             method: 'POST',
             body: formData,
+            signal: genAbort.signal,
           });
         } catch (e) {
+          // Aborted because the pre-check rejected the photo mid-generation →
+          // stop the bar and show the reason instead of a generic network error.
+          if (validationRejection) rejectUnstageable(validationRejection.reason);
           clearStagingUiTimers();
           stagePreview.classList.remove('processing');
           loadingMessage.classList.add('hidden');
@@ -841,8 +959,12 @@
           response = await fetch('/api/process-image', {
             method: 'POST',
             body: formData,
+            signal: genAbort.signal,
           });
         } catch (e) {
+          // Aborted because the pre-check rejected the photo mid-generation →
+          // stop the bar and show the reason instead of a generic network error.
+          if (validationRejection) rejectUnstageable(validationRejection.reason);
           clearStagingUiTimers();
           stagePreview.classList.remove('processing');
           loadingMessage.classList.add('hidden');
@@ -903,6 +1025,18 @@
           (window.LanguageSystem?.getText('modal.staging.progress.error') || 'Error: ') + errMsg;
         setTimeout(() => progress.classList.add('hidden'), 3000);
         throw new Error(errMsg);
+      }
+
+      // Result gate: the pre-check ran concurrently with the (much longer)
+      // generation, so it has finished by the time the image comes back. If it
+      // rejected the photo, discard the freshly-staged image instead of showing
+      // it. Normally stageValidationResult is already set, so the await is just a
+      // safety net for a sub-second click and adds no real time.
+      if (stageValidation) {
+        const finalCheck = stageValidationResult || (await stageValidation.catch(() => null));
+        if (finalCheck && finalCheck.valid === false) {
+          rejectUnstageable(finalCheck.reason);
+        }
       }
 
       let finalProgressInterval = setInterval(() => {
@@ -1197,7 +1331,7 @@
         alert(window.LanguageSystem?.getText('errors.uploadFirst') || 'Please upload an image first');
         return;
       }
-      
+
       processBtn.disabled = true;
 
       const tokEarly = window.StagifyAuth && window.StagifyAuth.getToken();

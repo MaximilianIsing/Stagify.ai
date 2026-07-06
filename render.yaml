@@ -3,7 +3,7 @@ services:
     name: stagify-ai
     env: node
     plan: starter
-    buildCommand: npm install
+    buildCommand: npm install && npm test
     startCommand: npm start
     envVars:
       - key: NODE_ENV

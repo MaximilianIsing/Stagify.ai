@@ -10,6 +10,7 @@
     korean: "ko",
     french: "fr",
     german: "de",
+    dutch: "nl",
     italian: "it",
     portuguese: "pt-BR",
     russian: "ru",
@@ -25,6 +26,7 @@
       case "ko": return "korean";
       case "fr": return "french";
       case "de": return "german";
+      case "nl": return "dutch";
       case "it": return "italian";
       case "pt": return "portuguese";
       case "ru": return "russian";

@@ -870,6 +870,7 @@
           <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
             <option value="english" selected>EN</option>
             <option value="german">DE</option>
+            <option value="dutch">NL</option>
             <option value="spanish">ES</option>
             <option value="french">FR</option>
             <option value="italian">IT</option>
@@ -881,19 +882,20 @@
           </select>
           <div class="lang-switch" data-lang-switch>
             <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
-              <img class="lang-switch__flag" src="media-webp/flags/US.webp" alt="" width="20" height="14" />
+              <img class="lang-switch__flag" src="media-webp/flags/US.svg" alt="" width="20" height="14" />
               <span class="lang-switch__label">English</span>
               <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.webp" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.webp" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.webp" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
               <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
             </ul>
@@ -903,7 +905,7 @@
       <section class="hero" id="home">
         <div class="hero-content">
           <p class="catchphrase" style="color: #1e3a8a; font-size: clamp(1.25rem, 5vw, 2.5rem); font-weight: 700; margin: 0 0 1.5rem 0; text-align: center; line-height: 1.2; transition: all 0.3s ease; display: inline-block; max-width: 100%; transform-origin: center;" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'" data-lang="hero.catchphrase">Upload. Stage. Imagine.</p>
-          <div class="announcement" style="background: rgba(255, 255, 255, 0.4); color: #1e3a8a; backdrop-filter: blur(10px);" data-lang="hero.announcement" data-tx="fade" data-tx-delay="150">Built to make your dream space a reality</div>
+          <div class="announcement" style="background: rgba(255, 255, 255, 0.4); color: #1e3a8a; backdrop-filter: blur(10px);" data-lang="hero.announcement">Built to make your dream space a reality</div>
           <h1 style="color: #1e3a8a;">
             <span class="w-free" data-lang="hero.title.free">Free</span>
             <span class="w-virtual" data-lang="hero.title.virtual">virtual</span>

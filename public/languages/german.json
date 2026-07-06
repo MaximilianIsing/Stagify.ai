@@ -216,6 +216,22 @@
     "whyus": {
       "subtitle": "Andere Tools für virtuelles Staging sind langsam, teuer und eingeschränkt. Stagify ist dafür gemacht, das Gegenteil zu sein."
     },
+    "testimonials": {
+      "title": "Was Makler sagen",
+      "subtitle": "Direkt von Maklern, die umgestiegen sind.",
+      "items": {
+        "justin": {
+          "quote": "Als ich Stagify zum ersten Mal ausprobierte, war ich ehrlich gesagt begeistert. Mir wurde klar, dass ich einfach mein Handy nutzen, den teuren Fotografen weglassen und trotzdem beeindruckende Ergebnisse erzielen konnte. Es ist ein Wendepunkt für meine Objekte – und der Preis ist fantastisch!",
+          "author": "Justin S. (Makler)",
+          "role": "Tahari Realty"
+        },
+        "andy": {
+          "quote": "Wow! Stagify hat meine Herangehensweise an das Home Staging komplett verändert. Es ist so schnell, und meine Kunden lieben es. Das ist ein absoluter Wendepunkt für meine Objekte.",
+          "author": "Andy E. (Makler)",
+          "role": "Centennial Properties"
+        }
+      }
+    },
     "faq": {
       "subtitle": "Schnelle Antworten auf die häufigsten Fragen. Immer noch unklar? Besuchen Sie die <a href=\"guides.html\">Anleitungen</a> oder melden Sie sich."
     },
@@ -569,6 +585,7 @@
       "general": ["denke nach...", "Ihre Anfrage wird verarbeitet...", "analysiere...", "Optionen werden abgewogen...", "wird bearbeitet...", "fast fertig...", "einen Moment...", "Antwort wird vorbereitet..."]
     },
     "emptyState": "Starten Sie ein Gespräch, indem Sie eine Nachricht eingeben oder eine Datei hochladen",
+    "welcomeFallback": "Hallo! Ich bin Ihr KI-Designer von Stagify. Sagen Sie mir, was Ihnen vorschwebt, oder laden Sie ein Foto eines Raums hoch, und wir gestalten ihn gemeinsam. Ein paar Dinge, die ich kann:\n• **Leere Räume einrichten**: einen kahlen Raum in jedem Stil möblieren\n• **Bestehende Räume neu gestalten**: umgestalten, Möbel tauschen oder die ganze Stimmung ändern\n• **Grundriss → Raum**: einen Grundriss in ein fotorealistisches, möbliertes Rendering verwandeln\n• **Im Chat verfeinern**: Farben, Stücke und Anordnung anpassen, bis es sich richtig anfühlt\nWomit möchten Sie beginnen?",
     "uploadFile": "Datei hochladen",
     "inputPlaceholder": "Geben Sie Ihre Nachricht ein...",
     "sendButton": "Senden",

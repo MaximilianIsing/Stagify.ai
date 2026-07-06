@@ -1,0 +1,944 @@
+{
+  "meta": {
+    "title": "Stagify.ai – Gratis virtuele styling met één klik",
+    "description": "Transformeer lege kamers met AI-styling. Upload foto's en krijg in seconden professioneel gestylede resultaten. Gratis AI-woningstyling voor makelaars, verkopers en kopers.",
+    "keywords": "AI-styling, home staging, woningstyling, virtuele styling, AI-woningstyling, vastgoedstyling, vastgoedfotografie, styling-tool, virtueel meubilair"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "Over ons",
+    "pdfTo3d": "AI-Designer",
+    "maskingStudio": "Maskeerstudio",
+    "whyUs": "Waarom wij?",
+    "faq": "FAQ",
+    "contactUs": "Contact",
+    "brand": "Stagify",
+    "brandSuffix": ".ai",
+    "techHelp": "Technische hulp",
+    "guides": "Handleidingen",
+    "logoAlt": "Stagify.ai-logo — ga naar de startpagina"
+  },
+  "hero": {
+    "catchphrase": "Upload. Style. Verbeeld.",
+    "announcement": "Gemaakt om jouw droomruimte werkelijkheid te maken",
+    "title": {
+      "free": "Gratis",
+      "virtual": "virtuele",
+      "staging": "styling",
+      "with": "met",
+      "one": "één",
+      "click": "klik",
+      "upload": "Upload.",
+      "stage": "Style.",
+      "imagine": "Verbeeld."
+    },
+    "cta": "Upload je foto gratis",
+    "freeGensLeft": "{n} gratis generaties over vandaag, ",
+    "freeGensLeftUpgrade": "Upgraden",
+    "freeGensUpgrade": "Probeer Stagify+ vandaag nog. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgraden</a>",
+    "carouselNote": "Voorbeeldweergave. Upload je foto om te stylen",
+    "stats": {
+      "roomsStaged": "Gestylede kamers",
+      "usersServed": "Geholpen gebruikers",
+      "andCounting": "en het worden er meer..."
+    }
+  },
+  "sponsors": {
+    "title": "Officieel erkend door:"
+  },
+  "home": {
+    "studio": {
+      "eyebrow": "Voor & na",
+      "title": "Sleep om te zien wat styling doet",
+      "subtitle": "Dezelfde advertentiefoto, voor en na Stagify. Geen verhuizers, geen huur, geen wachten.",
+      "beforeLabel": "Voor",
+      "afterLabel": "Na",
+      "kicker": "Zo ziet het eruit",
+      "panelTitle": "Dezelfde kamer, in seconden gestyled",
+      "panelBody": "Sleep de hendel. Links is de originele foto; alles rechts is in seconden gestyled door Stagify.",
+      "points": {
+        "speed": "Ongeveer 8 seconden per foto",
+        "restage": "Herstyle in elke stijl, zo vaak je wilt",
+        "rights": "Elke afbeelding is van jou, met volledig auteursrecht"
+      },
+      "examples": {
+        "bedroom": "Slaapkamer",
+        "living": "Woonkamer",
+        "dining": "Eetkamer"
+      },
+      "comparisonAria": "Vergelijking voor en na styling",
+      "revealSliderAria": "Onthulschuif",
+      "exampleRoomsAria": "Voorbeeldkamers"
+    },
+    "designer": {
+      "title": "Laat een AI je ruimte stylen",
+      "subtitle": "Met de AI-Designer chat je om elke kamer te stylen, opnieuw te ontwerpen en te verfijnen tot hij advertentieklaar is. <em>(Stagify+ Exclusief)</em>"
+    },
+    "info": {
+      "eyebrow": "De korte versie",
+      "title": "Wat virtuele styling is, en waarom het verkoopt",
+      "subtitle": "Een korte, eerlijke uitleg over hoe het werkt en voor wie het is. Geen jargon.",
+      "rows": {
+        "why": {
+          "eyebrow": "Waarom het werkt",
+          "caption": "Stagify demonstreren op een Compass-kantoor in New York",
+          "title": "Kopers kijken eerst met hun ogen",
+          "body": "Bijna elke koper begint online, dus je advertentiefoto's zijn de echte eerste bezichtiging. Lege of gedateerde kamers zijn lastig in te schatten; mensen kunnen de schaal niet beoordelen of zich voorstellen er te wonen. Styling geeft elke kamer een duidelijk doel en aantrekkingskracht, en daarom vertrouwen makelaars er altijd al op.",
+          "p1": "Lege kamers ogen op foto's kleiner en kouder dan ze zijn",
+          "p2": "Styling toont het bedoelde gebruik van elke ruimte",
+          "p3": "Sterkere foto's leveren meer klikken, opslagen en bezichtigingen op"
+        },
+        "how": {
+          "eyebrow": "Hoe het werkt",
+          "caption": "Een zaal vol makelaars door hun eerste gestylede advertentie leiden",
+          "title": "Van lege foto tot advertentieklaar in ongeveer 8 seconden",
+          "body": "Upload een foto, kies het kamertype en een van de zeven stijlen, en Stagify richt hem in ongeveer acht seconden in. Aanpassingen nodig? Verwijder het bestaande meubilair, voeg een eigen prompt toe, of maskeer één gebied om het aan te passen zonder opnieuw te beginnen.",
+          "p1": "7 stijlen plus eigen prompts en meubelverwijdering",
+          "p2": "Bewerk met een masker elk deel van een resultaat zonder het over te doen",
+          "p3": "Volledig auteursrecht, van jou om te gebruiken op de MLS of in advertenties"
+        },
+        "who": {
+          "eyebrow": "Voor wie het is",
+          "caption": "Eén-op-één de foto's van een makelaar stylen",
+          "title": "Gemaakt voor makelaars, verkopers en kopers",
+          "body": "Makelaars promoten elke advertentie in minuten in plaats van te wachten op een stylingteam. Verkopers stylen hun eigen foto's zonder iemand in te huren. Kopers bekijken een verbouwing voordat ze zich vastleggen. En met AI-Designer verander je CAD-plattegrond-PDF's in fotorealistische 3D-kamerrenders.",
+          "p1": "Makelaars: sneller adverteren en meer deals sluiten",
+          "p2": "Verkopers & kopers: geen software, geen ontwerper nodig",
+          "p3": "AI-Designer: agentische kamerstyling"
+        },
+        "team": {
+          "eyebrow": "Gemaakt voor teams",
+          "caption": "Een makelaarsteam trainen op Stagify",
+          "title": "Makkelijk genoeg voor je hele kantoor",
+          "body": "Er is geen software om te installeren en niets om te leren. Iedereen in het team kan Stagify in een browser openen, een advertentiefoto uploaden en die in seconden laten stylen, of het nu op een laptop op kantoor is of een telefoon in het veld.",
+          "p1": "Geen ontwerpvaardigheden of software nodig",
+          "p2": "Werkt in elke browser, op elk apparaat",
+          "p3": "Elke makelaar kan zijn eigen advertenties stylen"
+        }
+      }
+    },
+    "compare": {
+      "eyebrow": "Virtueel vs. traditioneel",
+      "title": "Hoe het zich verhoudt tot traditionele styling",
+      "subtitle": "Traditionele styling werkt. Het is alleen traag en duur.",
+      "colTraditional": "Traditionele styling",
+      "colStagify": "Stagify.ai",
+      "rows": {
+        "cost": {
+          "aspect": "Kosten",
+          "trad": "$2.000–$5.000+ per woning, vaak maandelijks gefactureerd tot de verkoop",
+          "stag": "Gratis om te starten, style zonder kosten"
+        },
+        "time": {
+          "aspect": "Doorlooptijd",
+          "trad": "1–3 weken om te plannen, leveren en installeren",
+          "stag": "Ongeveer 8 seconden per foto"
+        },
+        "styles": {
+          "aspect": "Stijlopties",
+          "trad": "Eén look, vastgelegd zodra het is geïnstalleerd",
+          "stag": "7 stijlen plus eigen prompts, wissel wanneer je wilt"
+        },
+        "changes": {
+          "aspect": "Van gedachten veranderen",
+          "trad": "Elke keer nieuwe huur- en installatiekosten",
+          "stag": "Herstyle zo vaak als je wilt"
+        },
+        "logistics": {
+          "aspect": "Logistiek",
+          "trad": "Verhuizers, huur en toegang tot het pand",
+          "stag": "Upload gewoon een foto vanaf overal"
+        },
+        "rights": {
+          "aspect": "De afbeeldingen",
+          "trad": "Foto's van geleend meubilair dat je teruggeeft",
+          "stag": "Van jou om te houden, met volledig auteursrecht"
+        }
+      },
+      "source": "Volgens het Profile of Home Staging van de National Association of Realtors zeggen de meeste aankoopmakelaars dat styling het voor kopers makkelijker maakt om een pand als hun toekomstige thuis voor te stellen.",
+      "sourceCite": "Bron: National Association of Realtors, Profile of Home Staging"
+    },
+    "nar": {
+      "title": "Blijf niet achter",
+      "subtitle": "De vastgoedsector adopteert AI razendsnel, en klanten reageren erop. Styling is een van de makkelijkste plekken om te beginnen.",
+      "usageLabel": "Hoe vaak makelaars AI-tools gebruiken",
+      "legend": {
+        "daily": "Dagelijks",
+        "weekly": "Wekelijks",
+        "monthly": "Een paar keer per maand",
+        "none": "Nog niet"
+      },
+      "note": "van de makelaars gebruikt al AI in hun werk.",
+      "stat1": "van de makelaars zegt dat klanten positief reageerden op technologie in het koop- en verkoopproces",
+      "stat2": "gebruikt al AI om advertentie-inhoud te maken",
+      "source": "Cijfers uit de 2025 Technology Survey van de National Association of Realtors onder makelaars.",
+      "sourceCite": "Bron: National Association of Realtors, 2025 Technology Survey",
+      "usageAria": "AI-gebruik onder makelaars: 20% dagelijks, 22% wekelijks, 27% een paar keer per maand, 32% nog niet"
+    },
+    "plus": {
+      "title": "Ga verder met Stagify+",
+      "subtitle": "Onbeperkte styling, hogere-kwaliteitsmodellen en pro-tools, plus een verbruiksgebaseerd plan gemaakt voor hele teams.",
+      "pro": {
+        "name": "Stagify+",
+        "tag": "Voor individuen",
+        "per": "/ maand",
+        "f1": "Onbeperkte styling-generaties",
+        "f2": "Hogere-kwaliteit afbeeldingsmodel",
+        "f3": "Meerdere variaties per generatie",
+        "f4": "Maskeertool om elk gebied te bewerken",
+        "f5": "AI-Designer: agentisch stylingproces",
+        "f6": "Verwijder bestaand meubilair uit kamers",
+        "cta": "Bekijk Stagify+"
+      },
+      "ent": {
+        "name": "Enterprise",
+        "tag": "Voor teams",
+        "per": "/ generatie",
+        "desc": "Geef je hele team automatisch Stagify+ en betaal alleen voor wat ze daadwerkelijk gebruiken.",
+        "f1": "Iedereen met jullie bedrijfs-e-mail inbegrepen",
+        "f2": "Verbruiksgebaseerde facturering, geen kosten per gebruiker",
+        "f3": "Eén factuur, maandelijks gefactureerd op verbruik",
+        "f4": "Elke Stagify+-functie inbegrepen voor het team",
+        "cta": "Ontdek Enterprise"
+      }
+    },
+    "instagram": {
+      "title": "Zie het in actie op Instagram",
+      "subtitle": "Echte styling-transformaties, snelle tips en behind-the-scenes van het Stagify-team.",
+      "follow": "Volg @stagify.ai"
+    },
+    "finalCta": {
+      "title": "Probeer het op je eigen advertentie",
+      "subtitle": "Upload één lege kamer en zie hem in ongeveer acht seconden gestyled. Gratis te proberen.",
+      "button": "Upload een foto",
+      "note": "Erkend door Compass, Centennial en meer."
+    },
+    "whyus": {
+      "subtitle": "Andere virtuele styling-tools zijn traag, duur en dichtgetimmerd. Stagify is gebouwd om het tegenovergestelde te zijn."
+    },
+    "testimonials": {
+      "title": "Wat makelaars zeggen",
+      "subtitle": "Rechtstreeks van makelaars die de overstap maakten.",
+      "items": {
+        "justin": {
+          "quote": "Toen ik Stagify voor het eerst probeerde, was ik oprecht verbluft. Ik besefte dat ik gewoon mijn telefoon kon gebruiken, de dure fotograaf kon overslaan en toch prachtige resultaten had. Het is een gamechanger voor mijn advertenties — en de prijs is geweldig!",
+          "author": "Justin S. (Makelaar)",
+          "role": "Tahari Realty"
+        },
+        "andy": {
+          "quote": "Wow! Stagify heeft mijn aanpak van styling compleet veranderd. Het is zo snel, en mijn klanten zijn er dol op. Dit is een totale gamechanger voor mijn advertenties.",
+          "author": "Andy E. (Makelaar)",
+          "role": "Centennial Properties"
+        }
+      }
+    },
+    "faq": {
+      "subtitle": "Snelle antwoorden op de vragen die we het vaakst horen. Nog vastgelopen? Bezoek <a href=\"guides.html\">Handleidingen</a> of neem contact op."
+    },
+    "contactCta": {
+      "title": "Onze inbox staat altijd open",
+      "subtitle": "Vragen, feedback of ideeën voor samenwerking? We lezen elk bericht en reageren zo snel als we kunnen.",
+      "email": "team@stagify.ai"
+    },
+    "reviewCta": {
+      "title": "Geniet je van Stagify?",
+      "subtitle": "Blij met hoe je advertenties eruitzien? Laat een korte Google-review achter en help andere makelaars ons te vinden.",
+      "button": "Laat een Google-review achter",
+      "aria": "Laat een Google-review achter (opent in een nieuw tabblad)"
+    }
+  },
+  "modal": {
+    "rolePopup": {
+      "title": "Laten we je ervaring afstemmen!",
+      "question": "Wat is je rol?",
+      "options": {
+        "agent": "Makelaar",
+        "seller": "Verkoper",
+        "buyer": "Koper",
+        "other": "anders"
+      }
+    },
+    "referralPopup": {
+      "title": "Laten we je ervaring afstemmen!",
+      "question": "Hoe heb je ons gevonden?",
+      "options": {
+        "socials": "Social media",
+        "friend": "Vriend",
+        "email": "E-mail",
+        "other": "anders"
+      }
+    },
+    "emailPopup": {
+      "title": "Laten we je ervaring afstemmen!",
+      "question": "Wil je e-mailupdates?",
+      "placeholder": "jouw@email.com",
+      "skip": "Overslaan"
+    },
+    "staging": {
+      "title": "Opties",
+      "close": "x",
+      "roomType": "Kamertype",
+      "furnitureStyle": "Meubelstijl",
+      "additionalPrompt": "Extra prompting",
+      "additionalPromptPlaceholder": "Voeg specifieke details of verzoeken voor je styling toe...",
+      "removeFurniture": "Verwijder bestaand meubilair",
+      "keepFurnitureLabel": "Bestaand meubilair om te behouden (optioneel)",
+      "keepFurniturePlaceholder": "bijv. behoud de eettafel en de inbouwkasten",
+      "emptyRoomView": "Bekijk de leeggemaakte kamer",
+      "emptyRoomTitle": "Lege kamer (meubilair verwijderd)",
+      "emptyRoomDownload": "Download lege kamer",
+      "emptyRoomAlt": "Kamer met bestaand meubilair verwijderd",
+      "furniturePhotosLabel": "Meubelfoto's (optioneel)",
+      "furniturePhotosHint": "Tot 5 referentiefoto's van meubilair of decor om in de gestylede kamer te tonen",
+      "processButton": "Foto verwerken",
+      "maskBeforeButton": "Foto maskeren & bewerken",
+      "maskBeforeHint": "Schilder een deel van de originele foto om te bewerken (bijv. rommel verwijderen). Al het andere blijft onaangeroerd. Verwerk daarna om de versie te stylen die je bevalt.",
+      "maskBeforeTitle": "Foto maskeren & bewerken",
+      "maskBeforePromptLabel": "Wat wil je veranderen in het geschilderde gebied?",
+      "maskBeforePromptPlaceholder": "bijv. verwijder de oude bank, ruim de rommel op, schilder de muur wit",
+      "maskBeforeApply": "Bewerking toepassen",
+      "maskLimitReached": "Je hebt de limiet van 6 versies voor deze afbeelding bereikt.",
+      "prevVersion": "Vorige versie",
+      "nextVersion": "Volgende versie",
+      "imageVersions": "Afbeeldingsversies",
+      "versionLabel": "Versie {index}",
+      "uploadArea": "Upload een afbeelding of sleep en zet neer",
+      "before": "Voor",
+      "after": "Na",
+      "downloadResult": "Resultaat downloaden",
+      "uploadAnother": "Nog een uploaden",
+      "noProcessedImage": "Je gestylede resultaat verschijnt hier",
+      "noProcessedImageSubtext": "Klik op \"Foto verwerken\" om een AI-gestylede versie van je afbeelding te genereren",
+      "imageModel": "Afbeeldingsmodel",
+      "fastGeneration": "Snelle generatie",
+      "qualityGeneration": "Stagify+ kwaliteitsgeneratie",
+      "imageGenerations": "Afbeeldingsgeneraties",
+      "addPhotos": "+ Foto's toevoegen",
+      "tryAnotherImage": "Probeer een andere afbeelding",
+      "uploadAreaAria": "Uploadgebied",
+      "editWithMask": "Bewerk geselecteerd gebied met maskeertool",
+      "stagingVariations": "Styling-variaties",
+      "originalImage": "Originele kamerfoto vóór virtuele styling",
+      "stagedImage": "AI-gestylede kamervoorbeeld",
+      "warningAlt": "Belangrijke styling-melding",
+      "downloadIcon": "Afbeelding downloaden",
+      "maskIcon": "Pictogram maskeerbewerkingstool",
+      "variationAlt": "Virtuele styling-variatie {index} van {total}",
+      "furnitureReferenceAlt": "Referentiefoto meubilair: {filename}",
+      "uploadedRoomAlt": "Je geüploade kamerfoto{filenameSuffix}",
+      "sampleRoomAlt": "Voorbeeldkamerfoto om virtuele styling te proberen",
+      "stagedResultAlt": "AI-gestyled kamerresultaat{suffix}",
+      "progress": {
+        "preparing": "Voorbereiden…",
+        "uploading": "Afbeelding uploaden…",
+        "preparingAI": "AI-model voorbereiden…",
+        "staging": "AI style je kamer…",
+        "complete": "Klaar!",
+        "error": "Fout: ",
+        "loadingMessages": [
+          "De perfecte meubels voor je zoeken",
+          "Je ideale kamer stylen",
+          "Mooie decorstukken selecteren",
+          "Meubilair schikken voor maximale aantrekkingskracht",
+          "De perfecte sfeer creëren",
+          "Je ruimte met stijl verfraaien",
+          "Je droominterieur ontwerpen",
+          "Indeling en doorloop van de kamer optimaliseren",
+          "De laatste hand aanleggen",
+          "Je visie tot leven brengen"
+        ]
+      }
+    }
+  },
+  "roomTypes": {
+    "bedroom": "Slaapkamer",
+    "livingRoom": "Woonkamer",
+    "diningRoom": "Eetkamer",
+    "kitchen": "Keuken",
+    "bathroom": "Badkamer",
+    "office": "Kantoor",
+    "outdoors": "Buiten"
+  },
+  "furnitureStyles": {
+    "standard": "Standaard",
+    "modern": "Modern",
+    "midcentury": "Midcentury",
+    "scandinavian": "Scandinavisch",
+    "luxury": "Luxe",
+    "coastal": "Kust",
+    "farmhouse": "Boerderij",
+    "custom": "Aangepast"
+  },
+  "carouselItems": {
+    "original": "Origineel",
+    "modern": "Modern",
+    "scandinavian": "Scandinavisch",
+    "luxury": "Luxe",
+    "coastal": "Kust",
+    "midcentury": "Midcentury",
+    "farmhouse": "Boerderij",
+    "originalPhotoAlt": "Voorbeeld lege kamer vóór virtuele styling",
+    "modernPhotoAlt": "Voorbeeldkamer met moderne virtuele styling-stijl",
+    "scandinavianPhotoAlt": "Voorbeeldkamer met Scandinavische virtuele styling-stijl",
+    "luxuryPhotoAlt": "Voorbeeldkamer met luxe virtuele styling-stijl",
+    "coastalPhotoAlt": "Voorbeeldkamer met kust virtuele styling-stijl",
+    "midcenturyPhotoAlt": "Voorbeeldkamer met mid-century virtuele styling-stijl",
+    "farmhousePhotoAlt": "Voorbeeldkamer met boerderij virtuele styling-stijl"
+  },
+  "whyUs": {
+    "title": "Waarom voor ons kiezen?",
+    "stagify": {
+      "title": "stagify.ai",
+      "features": {
+        "instantResults": "<strong>Directe resultaten</strong>: ~8 seconden",
+        "oneClickStaging": "<strong>Styling met één klik</strong>: Geen gedoe",
+        "free": "<strong>Onbeperkte generaties</strong>: Volledig gratis",
+        "noAds": "<strong>Advertentievrije ervaring</strong>: Geen afleiding",
+        "noLogin": "<strong>Eenvoudig aanmelden</strong>: Begin direct",
+        "unlimited": "<strong>Geavanceerde afbeeldingsmodellen</strong>: Hogere kwaliteit",
+        "copyright": "<strong>Volledig auteursrecht</strong>: Overal te gebruiken"
+      }
+    },
+    "others": {
+      "title": "Anderen",
+      "features": {
+        "slowResults": "<strong style=\"color: #6d1c2c;\">Trage resultaten: </strong>Dagen wachten",
+        "longProcess": "<strong style=\"color: #6d1c2c;\">Lang proces: </strong>Vervelend heen-en-weer",
+        "expensive": "<strong style=\"color: #6d1c2c;\">Duur: </strong>Kostbare kosten per afbeelding",
+        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Advertenties en cookies: </strong>Opdringerige ervaring",
+        "accountRequired": "<strong style=\"color: #6d1c2c;\">Lang aanmeldproces: </strong>Frustrerende start",
+        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Verouderde, goedkopere modellen: </strong>Lagere kwaliteit",
+        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Onduidelijk auteursrecht: </strong>Juridische aansprakelijkheid"
+      }
+    },
+    "keyFeatures": {
+      "title": "Belangrijkste functies",
+      "unlimitedVariations": {
+        "title": "Onbeperkte variaties",
+        "description": "Ontdek meerdere stijlen tot het past bij je merk en kopersprofiel."
+      },
+      "fastTurnarounds": {
+        "title": "Snelle doorlooptijden",
+        "description": "Style foto's in ongeveer 8 seconden zodat je sneller kunt adverteren en meer deals afrondt."
+      }
+    }
+  },
+  "faq": {
+    "title": "Veelgestelde vragen",
+    "questions": {
+      "whatIsVirtualStaging": {
+        "question": "Wat is virtuele styling?",
+        "answer": "Virtuele styling is het digitaal inrichten van een pandfoto om het potentieel te tonen, waardoor kopers zich kunnen voorstellen hoe een ruimte eruit kan zien en aanvoelt wanneer hij volledig is ingericht. Anders dan traditionele styling is het sneller, kostenefficiënter en biedt het meerdere ontwerpopties, afgestemd op verschillende kopersvoorkeuren. Met hoogwaardige beelden benadrukt virtuele styling de beste kenmerken van het pand, waardoor kopers makkelijker een emotionele band voelen en zich voorstellen er te wonen."
+      },
+      "howLong": {
+        "question": "Hoe lang duurt het?",
+        "answer": "Gemiddeld duurt virtuele styling ongeveer 8 seconden per foto om te verwerken, al kan de exacte tijd iets korter of langer zijn, afhankelijk van de complexiteit van de ruimte en de gekozen ontwerpstijl. Het resultaat is een snelle, naadloze transformatie die je pandfoto's laat opvallen."
+      },
+      "customTheme": {
+        "question": "Hoe selecteer ik een aangepast thema?",
+        "answer": "Zie je het gewenste thema niet, dan kun je \"Aangepast\" selecteren en vervolgens een specifieke prompt toevoegen voor het thema dat je wilt. We gebruiken je prompt om het gewenste thema te genereren."
+      },
+      "idealRoom": {
+        "question": "Wat maakt een ideale kamer om te stylen?",
+        "answer": "Een ideale kamer om te stylen heeft goede verlichting, vrije muren en minimale rommel. Lege of spaarzaam gemeubileerde kamers werken het best, omdat ze een schoon canvas bieden voor de AI om meubilair en decor toe te voegen dat past bij je gekozen stijl. Bredere opnames die meer van de kamer vastleggen zijn veel beter dan strakke of bijgesneden hoeken, omdat ze de AI meer context geven om de ruimte realistisch te stylen."
+      },
+      "privacy": {
+        "question": "Zijn mijn gegevens privé en veilig?",
+        "answer": "Ja. We gebruiken HTTPS-encryptie, slaan geüploade afbeeldingen na verwerking niet permanent op en verkopen je persoonlijke gegevens niet. Je behoudt de eigendom van je uploads en gegenereerde resultaten. We delen gegevens alleen met dienstverleners die nodig zijn om Stagify te laten draaien (zoals AI- en betalingsverwerkers), zoals beschreven in ons Privacybeleid."
+      }
+    }
+  },
+  "contact": {
+    "title": "Neem contact op",
+    "description": "We horen graag van je. Neem individueel contact op of mail ons op <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
+    "social": "Volg ons op <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a>, of <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> voor updates en voorbeelden!",
+    "labels": {
+      "name": "Naam",
+      "email": "E-mail",
+      "phone": "Telefoon"
+    },
+    "team": {
+      "maximilian": {
+        "name": "Maximilian Ising",
+        "email": "maximilianbising@gmail.com",
+        "phone": "(917) 690-6253",
+        "title": "Medeoprichter, Hoofd Ontwikkeling en AI",
+        "photoAlt": "Portret van Maximilian Ising, medeoprichter en Hoofd Ontwikkeling en AI bij Stagify.ai"
+      },
+      "lucas": {
+        "name": "Lucas Shtainer",
+        "email": "lucasshtainer1@gmail.com",
+        "phone": "(347) 491-9609",
+        "title": "Medeoprichter, Hoofd Marketing",
+        "photoAlt": "Portret van Lucas Shtainer, medeoprichter en Hoofd Marketing bij Stagify.ai"
+      },
+      "ryan": {
+        "name": "Ryan Croman",
+        "email": "ryancroman10@gmail.com",
+        "phone": "(646) 709-6715",
+        "title": "Medeoprichter, Hoofd Outreach",
+        "photoAlt": "Portret van Ryan Croman, medeoprichter en Hoofd Outreach bij Stagify.ai"
+      },
+      "emil": {
+        "name": "Emil Volvosky",
+        "email": "emvolvovsky@gmail.com",
+        "phone": "(917) 691-2013",
+        "title": "Statistisch marketinganalist",
+        "photoAlt": "Portret van Emil Volvosky, statistisch marketinganalist bij Stagify.ai"
+      }
+    }
+  },
+  "errors": {
+    "fileType": "Upload een PNG-, JPG-, JPEG-, WebP- of GIF-afbeeldingsbestand.",
+    "fileTooLarge": "Bestand is te groot. Upload een afbeelding kleiner dan 100 MB.",
+    "heicConvert": "We konden die HEIC-foto niet lezen. Probeer een JPG of PNG.",
+    "uploadFirst": "Upload eerst een afbeelding",
+    "badPrompt": "Ongeldige prompt ingevoerd",
+    "processingFailed": "Verwerking mislukt",
+    "noImageData": "Geen afbeeldingsgegevens ontvangen",
+    "dailyLimitFree": "Je hebt al je {limit} gratis styling-runs voor vandaag gebruikt (reset om middernacht UTC). Upgrade naar Stagify+ voor onbeperkte styling.",
+    "dailyLimitAnonymous": "Je hebt de gratis limiet voor dit netwerk bereikt ({limit} runs per dag, UTC). Meld je aan om styling aan je account te koppelen, of probeer het morgen opnieuw.",
+    "dailyLimitCta": "Bekijk Stagify+"
+  },
+  "common": {
+    "close": "Sluiten",
+    "selectLanguage": "Selecteer taal"
+  },
+  "footer": {
+    "privacy": "Privacybeleid",
+    "terms": "Servicevoorwaarden",
+    "contact": "Contact",
+    "copyright": "Stagify.ai"
+  },
+  "auth": {
+    "yourEmail": "je e-mail",
+    "welcomeTitle": "Welkom bij Stagify",
+    "welcomeSub": "Maak een gratis account om je foto's te uploaden en te stylen.",
+    "registerTitle": "Maak je gratis account",
+    "registerSub": "Meld je aan om afbeeldingen te uploaden en te stylen.",
+    "signInTitle": "Inloggen",
+    "signInSub": "Gebruik je e-mail en wachtwoord om verder te gaan.",
+    "verifyTitle": "Verifieer je e-mail",
+    "verifyCopy": "Voer de 6-cijferige code in die we naar {email} hebben gestuurd.",
+    "resetTitle": "Wachtwoord resetten",
+    "resetCopy": "We e-mailen je een eenmalige link om een nieuw wachtwoord in te stellen. De link verloopt na één uur.",
+    "email": "E-mail",
+    "emailPlaceholder": "jij@voorbeeld.com",
+    "password": "Wachtwoord",
+    "passwordPlaceholder": "Minstens 8 tekens",
+    "confirmPassword": "Bevestig wachtwoord",
+    "confirmPasswordPlaceholder": "Voer wachtwoord opnieuw in",
+    "or": "of",
+    "forgotPassword": "Wachtwoord vergeten?",
+    "verificationCode": "Verificatiecode",
+    "verificationCodePlaceholder": "123456",
+    "back": "Terug",
+    "resendCode": "Code opnieuw versturen",
+    "createAccount": "Account aanmaken",
+    "continue": "Doorgaan",
+    "signIn": "Inloggen",
+    "sendResetLink": "Reset-link versturen",
+    "backToSignIn": "Terug naar inloggen",
+    "alreadyHaveAccount": "Heb je al een account?",
+    "newHere": "Nieuw hier?",
+    "accountMenu": "Accountmenu",
+    "googleCancelled": "Google-inloggen is geannuleerd.",
+    "googleFailed": "Google-inloggen mislukt",
+    "networkError": "Netwerkfout. Probeer het opnieuw.",
+    "enterEmail": "Voer je e-mailadres in.",
+    "resendFailed": "Kon code niet opnieuw versturen. Probeer het opnieuw.",
+    "resendSuccess": "We hebben een nieuwe verificatiecode verstuurd.",
+    "resetSomethingWrong": "Er is iets misgegaan. Probeer het over een paar minuten opnieuw.",
+    "resetLinkSent": "We hebben een wachtwoord-reset-link verstuurd. Controleer je e-mail (en spam).",
+    "noAccountForEmail": "Er is geen account gevonden voor dat e-mailadres.",
+    "resetTryLater": "Er is iets misgegaan. Probeer het later opnieuw.",
+    "enterVerificationCode": "Voer de 6-cijferige verificatiecode uit je e-mail in.",
+    "verificationFailed": "Verificatie mislukt",
+    "passwordsNoMatch": "Wachtwoorden komen niet overeen.",
+    "somethingWrong": "Er is iets misgegaan",
+    "checkEmailForCode": "Controleer je e-mail voor een verificatiecode.",
+    "agreeTerms": "Door een account aan te maken ga je akkoord met de <a href=\"terms.html\">Voorwaarden</a> &amp; <a href=\"privacy.html\">Privacy</a>"
+  },
+  "profile": {
+    "signIn": "Inloggen",
+    "createAccount": "Account aanmaken",
+    "freePlan": "Gratis plan",
+    "upgradeToPlus": "Upgrade naar Stagify+",
+    "manageSubscription": "Abonnement beheren",
+    "signOut": "Uitloggen",
+    "manageBillingAria": "Facturering beheren in Stripe",
+    "stripeHelp": "Stripe-helpcentrum"
+  },
+  "pdf": {
+    "meta": {
+      "title": "AI-Designer | Stagify.ai - AI-aangedreven ontwerpassistent",
+      "description": "Chat met AI-Designer voor hulp bij ontwerpvragen, upload bestanden voor analyse en krijg direct professioneel ontwerpadvies.",
+      "keywords": "AI-Designer, AI-ontwerpassistent, ontwerpconsultatie, AI-chat, ontwerphulp, interieurontwerp AI"
+    },
+    "title": "AI-Designer",
+    "description": "Zet je CAD-plattegrond-PDF's om in fotorealistische 3D-interieurvisualisaties",
+    "statusMessages": {
+      "generating": ["afbeelding genereren...", "je afbeelding maken...", "je visie tot leven brengen...", "de details vormgeven...", "renderen...", "bijna klaar...", "details afronden...", "het resultaat polijsten...", "nog even..."],
+      "staging": ["je kamer stylen...", "meubilair toevoegen...", "decor selecteren...", "elementen schikken...", "stijlen toepassen...", "het ontwerp maken...", "de indeling genereren...", "details verfijnen...", "bijna klaar..."],
+      "analyzing": ["afbeelding analyseren...", "details onderzoeken...", "elementen identificeren...", "visuele gegevens verwerken...", "de ruimte begrijpen...", "compositie beoordelen...", "de indeling bestuderen...", "bijna klaar..."],
+      "welcome": ["je welkom voorbereiden...", "ons klaarmaken voor jou...", "alles instellen...", "een warm welkom voorbereiden...", "alles voor je klaarmaken...", "je bijna begroeten...", "je ruimte instellen...", "iets speciaals voorbereiden..."],
+      "general": ["nadenken...", "je verzoek verwerken...", "analyseren...", "opties overwegen...", "eraan werken...", "bijna klaar...", "nog even...", "antwoord voorbereiden..."]
+    },
+    "emptyState": "Begin een gesprek door een bericht te typen of een bestand te uploaden",
+    "welcomeFallback": "Hoi! Ik ben je Stagify AI-Designer. Vertel me wat je voor je ziet, of upload een kamerfoto, en we ontwerpen het samen. Een paar dingen die ik kan:\n• **Lege kamers stylen**: richt een kale ruimte in elke stijl in\n• **Bestaande kamers herontwerpen**: restyle, wissel meubilair of verander de hele sfeer\n• **Plattegrond → kamer**: verander een plattegrond in een fotorealistische, ingerichte render\n• **Verfijnen terwijl we chatten**: pas de kleuren, stukken en indeling aan tot het goed voelt\nWaar wil je beginnen?",
+    "uploadFile": "Bestand uploaden",
+    "inputPlaceholder": "Typ je bericht...",
+    "sendButton": "Versturen",
+    "uploadArea": "Upload een PDF of sleep en zet neer",
+    "uploadSubtext": "Ondersteund: PDF-bestanden",
+    "options": {
+      "title": "Verwerkingsopties",
+      "skip": "Eerste pagina's overslaan",
+      "skipHint": "Sla omslag- en titelpagina's over",
+      "concurrency": "Verwerkingssnelheid",
+      "concurrencyHint": "Hogere snelheden kunnen de verwerkingstijd per kamer verhogen",
+      "dpi": "Afbeeldingskwaliteit (DPI)",
+      "dpiHint": "Hogere DPI levert betere kwaliteit maar duurt langer"
+    },
+    "processButton": "PDF verwerken",
+    "progress": {
+      "uploading": "PDF uploaden…",
+      "processing": "PDF verwerken…",
+      "complete": "Klaar!"
+    },
+    "result": {
+      "title": "Verwerking voltooid!",
+      "description": "Je verwerkte PDF is klaar om te downloaden.",
+      "download": "Verwerkte PDF downloaden",
+      "uploadAnother": "Nog een PDF uploaden"
+    },
+    "info": {
+      "title": "Hoe het werkt",
+      "step1": "Upload je CAD-plattegrond-PDF",
+      "step2": "Onze AI identificeert kamers en haalt plattegronddetails eruit",
+      "step3": "Elke kamer wordt omgezet in een fotorealistische 3D-visualisatie",
+      "step4": "Download je verwerkte PDF met 3D-renders (duurt meestal 2 minuten)",
+      "note": "Let op: verwerking duurt doorgaans ongeveer 2 minuten. Heb even geduld terwijl onze AI je 3D-renders genereert."
+    },
+    "status": {
+      "fileReady": "Bestand klaar"
+    },
+    "modelSelector": {
+      "chooseModel": "Kies je model",
+      "fast": "Snel",
+      "fastDescription": "Standaardkwaliteit, sneller",
+      "pro": "Stagify+",
+      "proDescription": "Hogere kwaliteit, langzamer"
+    },
+    "messageTag": {
+      "auto": "Auto",
+      "generate": "Genereren",
+      "stage": "Stylen/Aanpassen",
+      "cadStage": "Stylen (plattegrond)",
+      "describe": "Beschrijven/Oproepen"
+    },
+    "thumbnailStrip": {
+      "label": "Basisafbeelding voor volgend bericht",
+      "help": "Selecteer welke kamerafbeelding de AI moet aanpassen wanneer je je volgende bericht verstuurt — vooral bij het toevoegen van meubilair. Handig als je meerdere uploads of gestylede versies hebt.",
+      "helpAria": "Wat betekent basisafbeelding?"
+    },
+    "alt": {
+      "uploadFile": "Voeg een bestand toe aan je bericht",
+      "reloadChat": "Start een nieuw chatgesprek",
+      "sendMessage": "Bericht versturen",
+      "reportBug": "Meld een bug",
+      "userAvatar": "Je avatar",
+      "assistantAvatar": "Stagify AI-Designer",
+      "uploadPreview": "Voorbeeld van geüpload bestand: {filename}",
+      "stagedRoom": "AI-gestylede kamer{suffix}",
+      "generatedImage": "AI-gegenereerde ontwerpafbeelding{suffix}",
+      "cadRender": "3D-render van plattegrond{suffix}",
+      "recalledImage": "Eerder gedeelde afbeelding uit dit gesprek",
+      "requestedImage": "Afbeelding opgevraagd uit gespreksgeschiedenis",
+      "editedImage": "Met masker bewerkte ontwerpafbeelding{suffix}",
+      "originalCarouselImage": "Originele afbeelding vóór maskerbewerkingen",
+      "enlargedImage": "Volledige weergave van ontwerpafbeelding",
+      "thumbnailSelected": "{label} — geselecteerd als basisafbeelding voor je volgende bericht",
+      "thumbnailOption": "{label} — afbeelding {index} in gesprek"
+    },
+    "maskEditor": {
+      "title": "Bewerken met masker",
+      "brush": "Penseel",
+      "erase": "Wissen",
+      "brushAllNote": "Zorg dat je over het hele gebied schildert dat je gemaskeerd wilt hebben.",
+      "toolsAria": "Maskeertool",
+      "brushSize": "Penseelgrootte:",
+      "promptLabel": "Wat wil je veranderen in het gemaskeerde gebied?",
+      "promptPlaceholder": "bijv. verander de muurkleur in blauw, vervang de bank door een moderne stoel...",
+      "cancel": "Annuleren",
+      "clearMask": "Masker wissen",
+      "applyEdit": "Bewerking toepassen",
+      "rerun": "Opnieuw genereren",
+      "done": "Ziet er goed uit",
+      "refineTitle": "De bewerking verfijnen",
+      "refineNote": "Schilder om meer van de bewerking te onthullen, wis om het te verbergen — dit hersnijdt alleen, het draait de AI niet opnieuw.",
+      "refineHelp": "Deze stap verfijnt alleen waar de wijziging van de AI zichtbaar is — het draait de AI niet opnieuw. Schilder om meer van de bewerking te onthullen, wis om het terug te halen. Het is een vangnet zodat de bewerking alleen het gebied raakt dat je koos en de rest van je foto niet kan verpesten. De vervaagde voorvertoning bovenop is er alleen zodat je de volledige bewerking kunt zien tijdens het verfijnen — hij komt niet in de uiteindelijke afbeelding.",
+      "promptHint": "Wees heel specifiek over locatie en plaatsing — bijvoorbeeld: “zet de bank strak tegen het midden van de achterwand.”",
+
+      "refineHelpAria": "Wat de verfijnstap doet",
+      "loadApplying": "Je bewerking toepassen…",
+      "referenceLabel": "Referentiefoto (optioneel)",
+      "referenceAdd": "+ Foto toevoegen",
+      "referenceHint": "Optioneel: een foto van meubilair of decor om in het gemaskeerde gebied te plaatsen",
+      "referenceRemove": "Referentiefoto verwijderen",
+      "referenceAlt": "Referentie voor gemaskeerde bewerking",
+      "referenceTooLarge": "Die afbeelding is te groot — kies er een onder 25 MB.",
+      "referenceInvalid": "Kies een geldige JPG-, PNG- of WebP-afbeelding.",
+      "processing": "Verwerken...",
+      "pleaseDrawMask": "Teken een masker over het gebied dat je wilt bewerken.",
+      "pleaseDescribeChange": "Beschrijf wat je wilt veranderen in het gemaskeerde gebied."
+    },
+    "errors": {
+      "invalidFileType": "Upload een PDF-bestand.",
+      "fileTooLarge": "Bestand is te groot. Upload een PDF kleiner dan 100 MB.",
+      "noFile": "Upload eerst een PDF-bestand",
+      "processingFailed": "Verwerking mislukt. Probeer het opnieuw.",
+      "noProcessedFile": "Geen verwerkte PDF beschikbaar."
+    }
+  },
+  "techHelp": {
+    "metaTitle": "Technische hulp - Stagify.ai probleemoplossing & ondersteuning",
+    "metaDescription": "Los veelvoorkomende technische problemen met Stagify.ai op. Oplossingen voor uploads, generatie, inloggen, facturering en browserproblemen.",
+    "metaKeywords": "stagify technische hulp, probleemoplossing, upload werkt niet, styling-hulp, ondersteuning, veelvoorkomende problemen",
+    "badge": "Technische hulp",
+    "title": "Probleemoplossing & veelvoorkomende problemen",
+    "subtitle": "De meeste problemen hebben een snelle oplossing. Vind hieronder je probleem — en als je nog vastzit, is ons team één e-mail verwijderd.",
+    "upload": {
+      "title": "Uploaden & bestanden",
+      "i1": {
+        "q": "Mijn foto wil niet uploaden.",
+        "a": "Zorg dat het bestand een JPG, PNG of WEBP onder 10 MB is. Heel grote telefoonfoto's mislukken soms — verklein de afbeelding of maak er een screenshot van en upload opnieuw. Lukt het nog steeds niet, ververs de pagina en probeer het opnieuw."
+      },
+      "i2": {
+        "q": "Welke foto's werken het best?",
+        "a": "Gebruik een scherpe, goed verlichte foto recht van voren, met de hele kamer zichtbaar en minimale rommel. Wazige, donkere of extreme groothoekopnames leveren zwakkere resultaten. Nieuw hier? Bekijk eerst de <a href=\"#walkthrough\">stapsgewijze uitleg</a>."
+      }
+    },
+    "tips": {
+      "title": "Betere resultaten & pro-tips",
+      "i1": {
+        "q": "Hoe krijg ik de meest realistische styling?",
+        "a": "Fotografeer de kamer recht van voren bij daglicht met de hele ruimte in beeld en oppervlakken leeg. Kies exact het kamertype en de stijl voordat je genereert, maak dan twee of drie variaties en houd de sterkste. <a href=\"index.html#stage\">Open de styling-studio</a> om het te proberen."
+      },
+      "i2": {
+        "q": "Welk plan of welke tool moet ik gebruiken?",
+        "a": "Gratis is perfect voor snelle losse kamers. <a href=\"stagify-plus.html\">Stagify+</a> ontgrendelt onbeperkte generaties, hogere-kwaliteitsmodellen, de maskeertool en de Prompt Bar. <a href=\"ai-designer.html\">AI-Designer</a> herontwerpt een hele kamer vanuit een korte chat — het best wanneer je wilt dat het de beslissingen voor je neemt."
+      },
+      "i3": {
+        "q": "Kan ik het meubilair en de indeling bepalen?",
+        "a": "Ja. Met <a href=\"stagify-plus.html\">Stagify+</a> laat de Prompt Bar je details beschrijven zoals \"voeg een hoekbank en een groot vloerkleed toe,\" en de Meubel-tool brengt je eigen stukken in. Als slechts één gebied er verkeerd uitziet, maskeer het en genereer alleen die plek opnieuw in plaats van de hele afbeelding over te doen."
+      },
+    "masking": {
+      "title": "Style met exacte precisie",
+      "subtitle": "In de nieuwe Maskeerstudio markeer je de gebieden om te herstylen, voeg je je eigen meubilair toe, en al het andere blijft pixel-perfect. <em>(Stagify+ Exclusief)</em>"
+    },
+      "i4": {
+        "q": "Hoe style ik meerdere gebieden tegelijk?",
+        "a": "Met Stagify+ laat de <a href=\"masking-studio.html\">Maskeerstudio</a> je tot zes gebieden in verschillende kleuren markeren, elk zijn eigen meubelfoto of prompt geven, en ze allemaal parallel stylen. Alleen de gemarkeerde plekken kunnen veranderen, en elk gebied kan meerdere versies genereren zodat je de beste houdt."
+      }
+    },
+    "generate": {
+      "title": "Genereren & resultaten",
+      "i1": {
+        "q": "Mijn generatie hangt of duurt te lang.",
+        "a": "De meeste afbeeldingen zijn in ongeveer 8 seconden klaar. Duurt het meer dan een minuut, dan is je verbinding mogelijk weggevallen — ververs de pagina en probeer het opnieuw. Wissel niet van tabblad en vergrendel je telefoon niet terwijl het draait."
+      },
+      "i2": {
+        "q": "Het resultaat heeft vreemd meubilair of artefacten.",
+        "a": "AI-styling is niet bij elke poging perfect. Genereer opnieuw voor een nieuwe variatie, wissel naar een andere stijl, of gebruik de <a href=\"ai-designer.html\">maskeertool</a> om alleen het gebied te herstellen dat er verkeerd uitziet in plaats van de hele afbeelding over te doen."
+      },
+      "i3": {
+        "q": "Er is niets veranderd of de kamer ziet er nog leeg uit.",
+        "a": "Dit betekent meestal dat er geen kamertype of stijl was geselecteerd, of dat de foto te donker was voor het model om te lezen. Kies een kamertype en stijl, en probeer dan een lichtere foto. Wil je dat de AI het van begin tot eind afhandelt? Probeer <a href=\"ai-designer.html\">AI-Designer</a>."
+      }
+    },
+    "account": {
+      "title": "Account & inloggen",
+      "i1": {
+        "q": "Mijn verificatiecode is niet aangekomen.",
+        "a": "Controleer je spam- of reclamemap — codes kunnen een minuut duren. Is hij er nog steeds niet, gebruik dan \"Code opnieuw versturen\" en controleer of je e-mail goed is getypt."
+      },
+      "i2": {
+        "q": "Ik ben mijn wachtwoord vergeten.",
+        "a": "Kies op het inlogscherm \"Wachtwoord vergeten?\" en we e-mailen je een reset-link. De link verloopt na één uur."
+      },
+      "i3": {
+        "q": "Google-inloggen werkt niet.",
+        "a": "Sta pop-ups toe voor stagify.ai en zorg dat cookies van derden niet volledig geblokkeerd zijn, en probeer het dan opnieuw. Je kunt ook inloggen met je e-mail en wachtwoord."
+      }
+    },
+    "billing": {
+      "title": "Facturering & Stagify+",
+      "i1": {
+        "q": "Hoe beheer of annuleer ik Stagify+?",
+        "a": "Klik op het profielpictogram rechtsboven, tik dan op het Stripe-pictogram naast Stagify+ om je factureringsdashboard te openen, waar je je abonnement kunt bijwerken of annuleren. Je kunt ook direct de <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">Stripe-factureringsportal</a> openen. Je behoudt toegang tot het einde van de huidige factureringsperiode."
+      },
+      "i2": {
+        "q": "Ik ben in rekening gebracht maar zie geen Stagify+-functies.",
+        "a": "Log uit en weer in om je account te vernieuwen. Verschijnen de functies nog steeds niet, mail ons dan op <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> vanaf het adres dat je hebt gebruikt."
+      }
+    },
+    "performance": {
+      "title": "Browser & prestaties",
+      "i1": {
+        "q": "Welke browsers worden ondersteund?",
+        "a": "Gebruik een actuele versie van Chrome, Safari, Edge of Firefox. Oudere browsers ondersteunen mogelijk de editor of de sleep-om-te-vergelijken-tools niet."
+      },
+      "i2": {
+        "q": "De pagina is traag of knoppen reageren niet.",
+        "a": "Ververs de pagina hard (Ctrl/Cmd + Shift + R) om een verouderde versie te wissen, sluit ongebruikte tabbladen en schakel adblockers uit voor stagify.ai, die uploads kunnen verstoren."
+      },
+      "i3": {
+        "q": "De site laadt helemaal niet.",
+        "a": "Controleer je internetverbinding en probeer dan een privé-/incognitovenster. Laadt hij daar, wis dan je browsercache voor stagify.ai."
+      }
+    },
+    "contact": {
+      "text": "Nog vastgelopen? Ons team helpt je graag. Mail ",
+      "email": "team@stagify.ai"
+    }
+  },
+  "guides": {
+    "badge": "Handleidingen",
+    "title": "Handleidingen & uitleg",
+    "subtitle": "Snelle interactieve uitleg om je in minuten aan het stylen te krijgen — plus oplossingen voor veelvoorkomende problemen.",
+    "heroBadge": "Helpcentrum",
+    "liveBadge": "Interactieve demo",
+    "walkthroughsTitle": "Stapsgewijze uitleg",
+    "demo1Title": "Je eerste gratis styling",
+    "demo1Desc": "Volg mee om een foto te uploaden en je eerste gestylede kamer te krijgen.",
+    "demo2Title": "Je eerste styling met Stagify+",
+    "demo2Desc": "Zie hoe je style met Stagify+ voor onbeperkte generaties, hogere kwaliteit en pro-tools.",
+    "pickerFree": "Gratis",
+    "pickerPlus": "Stagify+",
+    "pickerDesigner": "AI-Designer",
+    "pickerMasking": "Maskeerstudio",
+    "pickerPromptBar": "Prompt Bar",
+    "pickerFurniture": "Meubilair",
+    "demo3Desc": "Bekijk hoe AI-Designer agentisch een kamer stylet en herontwerpt vanuit een simpele chat.",
+    "troubleshootingTitle": "Probleemoplossing & veelvoorkomende problemen"
+  },
+  "pageMeta": {
+    "guides": {
+      "title": "Handleidingen & uitleg | Stagify.ai",
+      "description": "Stapsgewijze uitleg voor Stagify.ai — je eerste gratis styling, stylen met Stagify+, en oplossingen voor veelvoorkomende problemen."
+    },
+    "contact": {
+      "title": "Contact | Stagify.ai",
+      "description": "Neem contact op met het Stagify.ai-team voor ondersteuning, samenwerkingen of vragen over onze gratis AI-woningstyling-tool."
+    },
+    "stagifyPlus": {
+      "title": "Stagify+ — Plannen & prijzen | Stagify.ai",
+      "description": "Stagify+: onbeperkte AI-styling, hogere-kwaliteitsmodellen, AI-Designer en de maskeertool. Bekijk plannen en prijzen."
+    },
+    "enterprise": {
+      "title": "Stagify Enterprise — Verbruiksgebaseerde AI-styling voor teams",
+      "description": "Geef je hele team onbeperkte AI-styling met verbruiksgebaseerde facturering voor $0,15 per generatie. Eén factuur, geen kosten per gebruiker."
+    },
+    "maskingStudio": {
+      "title": "Maskeerstudio | Stagify.ai - Multi-gebied precisie virtuele styling",
+      "description": "Markeer meerdere gebieden van één kamerfoto in verschillende kleuren, koppel aan elk een meubelfoto en style ze allemaal tegelijk. Alleen de gemarkeerde gebieden kunnen veranderen — de rest van je foto blijft pixel-perfect.",
+      "keywords": "maskeerstudio, virtuele styling masker, precisie virtuele styling, multi-gebied styling, AI-meubelplaatsing, gemaskeerde fotobewerking, gebiedsbewerking, vastgoedfoto-styling, voor-na-vergelijking, Stagify"
+    }
+  },
+  "maskingStudio": {
+    "title": "Maskeerstudio",
+    "subtitle": "Markeer gebieden van je kamer in verschillende kleuren, geef elk zijn eigen meubilair en style ze allemaal tegelijk. Alleen de gemarkeerde gebieden kunnen veranderen, dus de rest van je foto blijft pixel-perfect.",
+    "gateTitle": "Maskeerstudio is een Stagify+-functie",
+    "gateBody": "Meld je aan met een Stagify+-account om meerdere gebieden van een foto te markeren, elk zijn eigen meubilair te geven en ze allemaal tegelijk te stylen — met pixel-perfecte maskering die de rest van je foto niet kan raken.",
+    "gateCta": "Bekijk Stagify+",
+    "gateBack": "Terug naar Home",
+    "stepPhoto": "Kamerfoto",
+    "stepPhotoHint": "Upload een foto van je kamer in de werkruimte rechts.",
+    "replacePhoto": "Foto vervangen",
+    "stepAreas": "Meubelgebieden",
+    "addArea": "+ Gebied toevoegen",
+    "areasHint": "Elk gebied wordt apart gestyled, tegelijkertijd — geef elke kleur een meubelfoto, een korte prompt, of beide.",
+    "areaName": "Gebied {n}",
+    "areaLimit": "Je kunt tot {n} gebieden markeren.",
+    "removeAreaAria": "Verwijder dit gebied",
+    "stepBrush": "Markeren",
+    "overlapHint": "Schilder over een gebied met een andere kleur om het opnieuw toe te wijzen — elke plek hoort bij slechts één gebied.",
+    "promptPlaceholder": "Beschrijf wat je hier wilt toevoegen (optioneel als je een meubelfoto toevoegt)…",
+    "addFurniture": "+ Meubelfoto",
+    "statusEmpty": "Nog niet gemarkeerd",
+    "statusNeedsDetails": "Heeft een prompt of foto nodig",
+    "statusReady": "Klaar",
+    "statusGenerating": "Stylen…",
+    "statusDone": "Klaar",
+    "statusFailed": "Mislukt",
+    "retry": "Opnieuw proberen",
+    "progressCount": "{done} van {total} gebieden gestyled",
+    "uploadHint": "Upload een foto van je kamer",
+    "uploadSub": "JPG, PNG, WebP of HEIC — klik of sleep het hierheen",
+    "editHighlights": "Bewerking verfijnen",
+    "defaultFurniturePrompt": "Voeg het meubilair uit de referentiefoto toe in het gemarkeerde gebied. Plaats het natuurlijk op de vloer met correct perspectief, schaal en verlichting voor de kamer.",
+    "needHighlight": "Schilder eerst minstens één gebied op de foto.",
+    "needPromptOrFurniture": "Elk gemarkeerd gebied heeft een korte prompt of een meubelfoto nodig.",
+    "doneToast": "Alle gebieden gestyled! Werk je markeringen bij, of druk op Ziet er goed uit om het resultaat te zien.",
+    "partialToast": "{done} van {total} gebieden gestyled — probeer de mislukte opnieuw.",
+    "failedToast": "Styling mislukt. Probeer het opnieuw.",
+    "rateLimited": "Je genereert te snel — wacht een minuut en probeer het opnieuw.",
+    "shortcutsHint": "<kbd>B</kbd> penseel&nbsp;· <kbd>E</kbd> wissen&nbsp;· <kbd>R</kbd> rechthoek&nbsp;· <kbd>W</kbd> magische selectie&nbsp;· <kbd>[</kbd> <kbd>]</kbd> penseelgrootte&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> gebied kiezen&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> ongedaan maken&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> opnieuw&nbsp;· houd <kbd>H</kbd> foto bekijken",
+    "compare": "Vergelijken",
+    "undo": "Ongedaan maken",
+    "furniturePasted": "Meubelfoto toegevoegd aan {area}",
+    "compareHandleAria": "Sleep om voor en na te vergelijken",
+    "helpTitle": "Hoe de Maskeerstudio werkt",
+    "helpStep1": "Upload een foto van je kamer.",
+    "helpStep2": "Markeer waar elk meubelstuk moet komen: schilder het, sleep een rechthoek, of gebruik de Magische tool om een object of gebied met één klik te selecteren. Gebruik één kleur per gebied.",
+    "helpStep3": "Geef elk gebied een meubelfoto, een korte prompt, of beide. Of zet een gebied op Object verwijderen om weg te halen wat het bedekt.",
+    "helpStep4": "Klik op Bewerking toepassen. Elk gebied wordt tegelijkertijd gestyled, en alleen de gemarkeerde plekken kunnen veranderen. De rest van je foto blijft pixel-perfect.",
+    "helpShortcuts": "Sneltoetsen",
+    "helpClose": "Begrepen",
+    "confirmTitle": "Gestylede resultaten weggooien?",
+    "confirmBody": "Opnieuw beginnen met een nieuwe foto wist je gemarkeerde gebieden en gestylede resultaten.",
+    "confirmDiscard": "Weggooien en doorgaan",
+    "confirmKeep": "Mijn resultaten behouden",
+    "zoomHint": "Ctrl+scroll of knijp om te zoomen, houd Spatie (of de middelste muisknop) ingedrukt om te pannen",
+    "presetSofa": "Bank|Voeg een comfortabele moderne bank toe die bij de stijl van de kamer past.",
+    "presetArmchair": "Fauteuil|Voeg een gezellige fauteuil toe die bij de kamer past.",
+    "presetRug": "Vloerkleed|Voeg een groot vloerkleed onder het meubilair toe.",
+    "presetPlant": "Plant|Voeg een hoge potplant toe.",
+    "presetLamp": "Vloerlamp|Voeg een stijlvolle vloerlamp toe.",
+    "presetArt": "Wandkunst|Voeg ingelijste wandkunst toe die bij de kamer past.",
+    "tryAnother": "Probeer een andere versie",
+    "versionLabel": "Versie {i} van {n}",
+    "versionPrev": "Vorige versie",
+    "versionNext": "Volgende versie",
+    "clearHighlight": "Markering wissen",
+    "toolRect": "Rechthoek",
+    "renameAria": "Hernoem dit gebied",
+    "resumeTitle": "Je laatste sessie hervatten?",
+    "resumeBody": "We hebben de foto en gemarkeerde gebieden van je laatste bezoek bewaard. Ga verder waar je gebleven was, of begin opnieuw.",
+    "resumeYes": "Hervatten",
+    "resumeNo": "Opnieuw beginnen",
+    "helpStep5": "Niet tevreden met een gebied? Gebruik Probeer een andere versie om meer opties te genereren en ertussen te wisselen.",
+    "promptIdeas": "Toon prompt-ideeën",
+    "looksGood": "Ziet er goed uit",
+    "redo": "Opnieuw",
+    "toolWand": "Magisch",
+    "wandHint": "Klik op een object in de foto om het te selecteren.",
+    "wandBusy": "Je foto analyseren…",
+    "wandBusyMessages": ["Je foto analyseren…","De objecten in de kamer vinden…","Omlijnen wat het vond…","Bijna klaar…"],
+    "wandMiss": "Daar geen object gevonden. Probeer op het midden van het object te klikken, of markeer het met het penseel.",
+    "modeAria": "Wat er in dit gebied gebeurt",
+    "modeStage": "Meubilair toevoegen",
+    "modeRemove": "Object verwijderen",
+    "removeHint": "Alles wat gemarkeerd is wordt verwijderd en de lege kamer wordt erachter herbouwd.",
+    "removePlaceholder": "Optioneel: iets om te behouden of details om te matchen (bijv. behoud het vloerkleed)…",
+    "removePrompt": "Verwijder alles binnen het gemarkeerde gebied. Reconstrueer wat erachter hoort — vloer, muren, plinten en lijstwerk — en zet de bestaande oppervlakken, texturen en verlichting van de kamer naadloos door. Voeg geen nieuw meubilair of objecten toe.",
+    "loadingMessages": [
+      "Je meubilair plaatsen…",
+      "Licht en schaduwen matchen…",
+      "Elk gebied inpassen…",
+      "De rest van de foto onaangeroerd houden…",
+      "De laatste hand aanleggen…"
+    ]
+  }
+}

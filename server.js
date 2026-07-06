@@ -865,6 +865,25 @@ try {
   DEBUG_MODE = false;
 }
 
+// Stats debug — when STATS_DEBUG=true, the home-page hero stats (Rooms Staged /
+// Users Served) are faked to the fixed env numbers DEBUG_ROOMS / DEBUG_USERS
+// instead of the real counts. When false or unset, the real counts are served
+// unchanged. Handy for screenshots/demos without touching real data.
+const STATS_DEBUG = String(process.env.STATS_DEBUG || '').trim().toLowerCase() === 'true';
+// Parse to a finite number, or NaN if unset/blank/non-numeric (so it falls back
+// to the real count rather than silently becoming 0).
+const parseStatOverride = (v) => {
+  const s = String(v ?? '').trim();
+  if (s === '') return NaN;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+};
+const DEBUG_ROOMS = parseStatOverride(process.env.DEBUG_ROOMS);
+const DEBUG_USERS = parseStatOverride(process.env.DEBUG_USERS);
+if (STATS_DEBUG) {
+  console.log(`Stats debug: ENABLED (rooms=${DEBUG_ROOMS}, users=${DEBUG_USERS})`);
+}
+
 // Email debug mode - if true, redirect all outbound mail to DEBUG_EMAIL (for local/staging only).
 // Default false so password reset and other mail reach the real recipient.
 let EMAIL_DEBUG_MODE = false;
@@ -3257,6 +3276,69 @@ async function roomIsAlreadyEmpty(imageBuffer) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Stageability pre-check
+// Before a room ever reaches a (paid) Gemini generation, a cheap GPT-vision pass
+// confirms the upload is actually a stageable property space — an interior room
+// or a stageable exterior — and not a selfie, a pet, a product close-up, food, a
+// document/screenshot, a car, or a random landscape. Returns { valid, reason }.
+// Fails OPEN (valid: true) on any error or when the reviewer is disabled, so a
+// flaky check never blocks a legitimate upload. The main stager and Masking
+// Studio call this the moment a photo is chosen (see POST /api/validate-image).
+const STAGEABLE_IMAGE_CHECK_PROMPT =
+  'You are the upload gatekeeper for a virtual home-staging tool. It works ONLY on ' +
+  'photographs of a real property space that can be furnished or decorated: any interior ' +
+  'room (living room, bedroom, kitchen, bathroom, office, hallway, basement, etc.) or a ' +
+  'stageable exterior space (patio, balcony, deck, yard, terrace). The space may be empty ' +
+  'and unfurnished OR already furnished — both are perfectly VALID.\n' +
+  'Reject the image only when it is clearly NOT a property space to stage — for example a ' +
+  'selfie or portrait where a person or pet fills the frame, a close-up of a single object ' +
+  'or product, food, a screenshot/document/text, a car, a meme, or an outdoor scene with no ' +
+  'building or usable space. A photo that mainly shows a room is VALID even if a person ' +
+  'happens to be standing in it. When you are unsure, answer VALID: true.\n' +
+  'Reply on the FIRST line EXACTLY "VALID: true" or "VALID: false".\n' +
+  'If and only if VALID is false, add a SECOND line "REASON: <one short, friendly sentence, ' +
+  'under 20 words, telling the user to upload a photo of a room or property space instead>".';
+
+const DEFAULT_UNSTAGEABLE_REASON =
+  "This doesn't look like a room or property space. Please upload a photo of an interior room " +
+  "or exterior space you'd like to stage.";
+
+async function validateStageableImage(imageBuffer) {
+  if (!openai) return { valid: true, reason: '' };
+  try {
+    const processed = await downscaleImage(imageBuffer);
+    const dataUrl = `data:image/jpeg;base64,${processed.toString('base64')}`;
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: STAGEABLE_IMAGE_CHECK_PROMPT },
+            // detail: 'low' → one ~512px tile (~85 image tokens) instead of
+            // high-detail tiling. A room/not-a-room judgment needs nothing more,
+            // and it makes the call several times faster (and cheaper).
+            { type: 'image_url', image_url: { url: dataUrl, detail: 'low' } },
+          ],
+        },
+      ],
+      temperature: 0,
+      max_tokens: 60,
+    });
+    const raw = (completion.choices[0].message.content || '').trim();
+    const valid = /VALID:\s*true/i.test(raw);
+    if (valid) return { valid: true, reason: '' };
+    const m = raw.match(/REASON:\s*(.+)/i);
+    const reason = m && m[1] ? m[1].trim().replace(/^["']|["']$/g, '') : '';
+    if (DEBUG_MODE) console.log(`[Validate] upload rejected as not stageable: ${raw.replace(/\s+/g, ' ')}`);
+    return { valid: false, reason: reason || DEFAULT_UNSTAGEABLE_REASON };
+  } catch (error) {
+    console.error('[Validate] stageability check failed, allowing image:', error.message);
+    return { valid: true, reason: '' };
+  }
+}
+
 // Build the keep-exception clause appended to the erase prompt. Deliberately
 // strict/anti-generalization: the model otherwise reads "keep the paintings" as
 // permission to keep nearby/similar furniture too.
@@ -4496,6 +4578,40 @@ app.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, res
   }
 });
 
+// Cheap pre-flight: is this upload actually a stageable room/property space? The
+// main stager and the Masking Studio call this the moment a photo is chosen so a
+// non-room (a selfie, a product shot, a document…) is rejected up front with a
+// friendly reason instead of wasting a Gemini generation. Body: JSON { image }
+// (a data URL). No auth required — the main stager serves free/anonymous mobile
+// visitors — and genLimiter + the 50mb JSON cap bound abuse. Always 200 with
+// { valid, reason }; fails OPEN so our own hiccup never blocks a real upload.
+app.post('/api/validate-image', genLimiter, async (req, res) => {
+  try {
+    const { image } = req.body || {};
+    if (!image || typeof image !== 'string' || !image.includes(',')) {
+      return res.status(400).json({ error: 'Image is required' });
+    }
+    // No reviewer configured → nothing to validate against, let it through.
+    if (!openai) {
+      return res.json({ valid: true, reason: '' });
+    }
+    let imageBuffer;
+    try {
+      imageBuffer = Buffer.from(image.slice(image.indexOf(',') + 1), 'base64');
+      if (!imageBuffer || imageBuffer.length === 0) throw new Error('empty buffer');
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid image data' });
+    }
+    const { valid, reason } = await validateStageableImage(imageBuffer);
+    setSensitiveHeaders(res);
+    return res.json({ valid, reason: valid ? '' : reason });
+  } catch (error) {
+    console.error('Error validating image:', error);
+    // Fail open — never block a real upload because our check errored.
+    return res.json({ valid: true, reason: '' });
+  }
+});
+
 // Contact logging endpoint
 app.post('/api/log-contact', emailLimiter, (req, res) => {
   try {
@@ -4709,15 +4825,21 @@ const healthHandler = (req, res) => {
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
 
-// Prompt count endpoint
+// Prompt count endpoint (Rooms Staged)
 app.get('/api/prompt-count', (req, res) => {
-  res.json({ 
+  if (STATS_DEBUG && Number.isFinite(DEBUG_ROOMS)) {
+    return res.json({ promptCount: DEBUG_ROOMS });
+  }
+  res.json({
     promptCount: promptCount
   });
 });
 
 // Contact count endpoint (Users Served = contact submissions + registered accounts)
 app.get('/api/contact-count', (req, res) => {
+  if (STATS_DEBUG && Number.isFinite(DEBUG_USERS)) {
+    return res.json({ usersServed: DEBUG_USERS });
+  }
   const userCount = authStore.getUserCount();
   res.json({
     contactCount,

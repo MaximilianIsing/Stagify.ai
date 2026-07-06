@@ -216,6 +216,22 @@
     "whyus": {
       "subtitle": "Otras herramientas de staging virtual son lentas, caras y restrictivas. Stagify está hecho para ser todo lo contrario."
     },
+    "testimonials": {
+      "title": "Lo que dicen los agentes",
+      "subtitle": "Directamente de agentes que dieron el paso.",
+      "items": {
+        "justin": {
+          "quote": "La primera vez que probé Stagify, me quedé sinceramente impresionado. Me di cuenta de que podía usar simplemente mi teléfono, ahorrarme el fotógrafo caro y aun así obtener resultados espectaculares. Es un antes y un después para mis anuncios, ¡y el precio es increíble!",
+          "author": "Justin S. (Agente)",
+          "role": "Tahari Realty"
+        },
+        "andy": {
+          "quote": "¡Guau! Stagify cambió por completo mi forma de abordar el home staging. Es tan rápido y a mis clientes les encanta. Esto es un antes y un después total para mis anuncios.",
+          "author": "Andy E. (Agente)",
+          "role": "Centennial Properties"
+        }
+      }
+    },
     "faq": {
       "subtitle": "Respuestas rápidas a las preguntas más frecuentes. ¿Sigues con dudas? Visita <a href=\"guides.html\">Guías</a> o escríbenos."
     },
@@ -570,6 +586,7 @@
       "general": ["pensando...", "procesando tu solicitud...", "analizando...", "considerando opciones...", "trabajando en ello...", "ya casi...", "un momento...", "preparando la respuesta..."]
     },
     "emptyState": "Comienza una conversación escribiendo un mensaje o subiendo un archivo",
+    "welcomeFallback": "¡Hola! Soy tu Diseñador IA de Stagify. Dime qué te imaginas, o sube la foto de una habitación, y la diseñaremos juntos. Algunas cosas que puedo hacer:\n• **Amueblar habitaciones vacías**: llena un espacio vacío en cualquier estilo\n• **Rediseñar habitaciones existentes**: cambia el estilo, los muebles o todo el ambiente\n• **Plano → habitación**: convierte un plano en un render amueblado y fotorrealista\n• **Refinar mientras chateamos**: ajusta los colores, las piezas y la distribución hasta que quede bien\n¿Por dónde te gustaría empezar?",
     "uploadFile": "Subir archivo",
     "inputPlaceholder": "Escribe tu mensaje...",
     "sendButton": "Enviar",
