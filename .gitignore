@@ -2,13 +2,14 @@
 node_modules/
 npm-debug.log*
 
-# Environment variables
+# Environment variables (real secrets for local dev live in .env — never commit it)
 .env
 .env.local
 .env.production
+!.env.example
 
-# API Keys (keep local key.txt for development)
-# key.txt
+# API keys & secrets now live in a single local .env (see .env.example for the
+# template). Legacy per-secret *.txt files are covered by the *.txt rule below.
 
 # Temporary files
 *.tmp
