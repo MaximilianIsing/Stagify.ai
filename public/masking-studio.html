@@ -2946,9 +2946,11 @@
 
           const run = ++genRun;
           const maxDim = Math.max(base.w, base.h);
-          // Same "secret brush expansion" numbers as the single-mask editor.
-          const coreGrow = Math.max(12, Math.round(maxDim * 0.02275));
-          const featherPx = Math.max(20, Math.round(maxDim * 0.04));
+          // ~10% of the single-mask editor's expansion: the studio promises
+          // precise containment, so edits hug the highlight with only a thin
+          // softening edge instead of the main tool's generous outward fade.
+          const coreGrow = Math.max(2, Math.round(maxDim * 0.0023));
+          const featherPx = Math.max(2, Math.round(maxDim * 0.004));
           genMeta = { coreGrow: coreGrow, featherPx: featherPx };
           const imageDataUrl = roomPayload();
 
