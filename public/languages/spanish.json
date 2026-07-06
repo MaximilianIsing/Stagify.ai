@@ -717,6 +717,10 @@
         "q": "¿Puedo controlar los muebles y la distribución?",
         "a": "Sí. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra de prompts te permite describir detalles como \"añade un sofá seccional y una alfombra grande\", y la herramienta de Muebles incorpora tus propias piezas. Si solo una zona se ve mal, enmascárala y regenera solo ese punto en lugar de rehacer toda la imagen."
       },
+    "masking": {
+      "title": "Prepara con precisión exacta",
+      "subtitle": "Enmascara las áreas a rehacer, añade tus propios muebles y todo lo demás queda idéntico al píxel. <em>(Exclusivo de Stagify+)</em>"
+    },
       "i4": {
         "q": "¿Cómo decoro varias zonas a la vez?",
         "a": "Con Stagify+, el <a href=\"masking-studio.html\">Estudio de Máscaras</a> te permite resaltar hasta seis zonas en distintos colores, darle a cada una su propia foto de mueble o descripción y decorarlas todas en paralelo. Solo los puntos resaltados pueden cambiar, y cada zona puede generar varias versiones para quedarte con la mejor."
@@ -797,6 +801,7 @@
     "pickerFree": "Gratis",
     "pickerPlus": "Stagify+",
     "pickerDesigner": "AI Designer",
+    "pickerMasking": "Estudio de máscaras",
     "pickerPromptBar": "Barra de prompts",
     "pickerFurniture": "Muebles",
     "demo3Desc": "Mira cómo AI Designer prepara y rediseña una habitación de forma autónoma a partir de un simple chat.",
