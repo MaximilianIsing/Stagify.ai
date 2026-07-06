@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stagify — Local Walkthroughs (Supademo-free)</title>
+  <link rel="stylesheet" href="demo-player.css" />
+  <style>
+    :root {
+      --indigo: #4f46e5;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: rgba(30, 58, 138, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 50% -10%, #eef2ff 0%, transparent 60%),
+        #f8fafc;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+    .head { text-align: center; margin-bottom: 28px; }
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--indigo);
+      background: #eef2ff;
+      border: 1px solid var(--line);
+      padding: 5px 12px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+    h1 { font-size: 1.9rem; margin: 0 0 8px; letter-spacing: -0.02em; }
+    .head p { margin: 0; color: var(--muted); font-size: 1rem; }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin: 26px 0 20px;
+    }
+    .tab {
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #334155;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .tab:hover { border-color: rgba(79, 70, 229, 0.4); color: var(--indigo); }
+    .tab.is-active {
+      background: var(--indigo);
+      color: #fff;
+      border-color: var(--indigo);
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.28);
+    }
+    .demo-title { text-align: center; font-size: 1.15rem; font-weight: 700; margin: 6px 0 2px; }
+    .demo-sub { text-align: center; color: var(--muted); font-size: 0.85rem; margin: 0 0 18px; }
+    #mount { margin-top: 6px; }
+    .foot-note {
+      margin-top: 34px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .foot-note kbd {
+      font-family: inherit;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <span class="badge">Local recreation · no watermark · no CTA slide</span>
+      <h1>Stagify Walkthroughs</h1>
+      <p>Self-hosted interactive demos rebuilt from your Supademo content.</p>
+    </div>
+
+    <div class="tabs" id="tabs" role="tablist" aria-label="Choose a walkthrough"></div>
+
+    <div class="demo-title" id="demoTitle"></div>
+    <p class="demo-sub" id="demoSub"></p>
+
+    <div id="mount"></div>
+
+    <p class="foot-note">
+      Click the frame or the <strong>Next</strong> button to advance · use
+      <kbd>←</kbd> <kbd>→</kbd> when the frame is focused · click a dot to jump.
+    </p>
+  </div>
+
+  <!-- data (window.SUPADEMO_DEMOS) + player -->
+  <script src="demos.js"></script>
+  <script src="demo-player.js"></script>
+  <script>
+    (function () {
+      var LABELS = {
+        free: 'Free',
+        plus: 'Stagify+',
+        designer: 'AI Designer',
+        masking: 'Masking Studio',
+        prompt: 'Prompt Bar',
+        furniture: 'Furniture'
+      };
+      var data = (window.SUPADEMO_DEMOS && window.SUPADEMO_DEMOS.demos) || [];
+      var tabsEl = document.getElementById('tabs');
+      var mountEl = document.getElementById('mount');
+      var titleEl = document.getElementById('demoTitle');
+      var subEl = document.getElementById('demoSub');
+      var current = null;
+
+      function show(demo, btn) {
+        Array.prototype.forEach.call(tabsEl.children, function (b) {
+          b.classList.toggle('is-active', b === btn);
+          b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+        });
+        if (current) current.destroy();
+        mountEl.innerHTML = '';
+        titleEl.textContent = demo.title;
+        subEl.textContent = demo.steps.length + ' steps';
+        current = SupademoPlayer.mount(mountEl, demo);
+      }
+
+      data.forEach(function (demo, i) {
+        var btn = document.createElement('button');
+        btn.className = 'tab';
+        btn.type = 'button';
+        btn.setAttribute('role', 'tab');
+        btn.textContent = LABELS[demo.key] || demo.title;
+        btn.addEventListener('click', function () { show(demo, btn); });
+        tabsEl.appendChild(btn);
+        if (i === 0) show(demo, btn);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -9,5 +9,5 @@ services:
       - key: NODE_ENV
         value: production
       - key: GOOGLE_AI_API_KEY
-        sync: false # Set this manually in Render dashboard
+        sync: false
     autoDeploy: true

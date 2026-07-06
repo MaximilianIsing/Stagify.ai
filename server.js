@@ -15,13 +15,13 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import { Resend } from 'resend';
-import { promptMatrix } from './promptMatrix.js';
-import { blueprintTo3D } from './cad-handling.js';
-import { createAuthStore } from './auth-store.js';
+import { promptMatrix } from './lib/promptMatrix.js';
+import { blueprintTo3D } from './lib/cad-handling.js';
+import { createAuthStore } from './lib/auth-store.js';
 import Stripe from 'stripe';
 import { OAuth2Client } from 'google-auth-library';
-import { handleStripeEvent } from './stripe-webhooks.js';
-import { createEnterpriseStore } from './enterprise-store.js';
+import { handleStripeEvent } from './lib/stripe-webhooks.js';
+import { createEnterpriseStore } from './lib/enterprise-store.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
