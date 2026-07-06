@@ -906,6 +906,7 @@
     "toolWand": "Varita",
     "wandHint": "Haz clic en un objeto de la foto para seleccionarlo.",
     "wandBusy": "Analizando tu foto…",
+    "wandBusyMessages": ["Analizando tu foto…","Buscando los objetos de la habitación…","Delimitando lo encontrado…","Casi listo…"],
     "wandMiss": "No se encontró ningún objeto ahí. Prueba a hacer clic en el centro del objeto o resáltalo con el pincel.",
     "modeAria": "Qué ocurre en esta zona",
     "modeStage": "Añadir mueble",

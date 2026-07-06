@@ -905,6 +905,7 @@
     "toolWand": "Bacchetta",
     "wandHint": "Clicca su un oggetto nella foto per selezionarlo.",
     "wandBusy": "Analisi della foto…",
+    "wandBusyMessages": ["Analisi della tua foto…","Ricerca degli oggetti nella stanza…","Delimitazione degli oggetti trovati…","Quasi fatto…"],
     "wandMiss": "Nessun oggetto trovato lì. Prova a cliccare al centro dell'oggetto oppure evidenzialo con il pennello.",
     "modeAria": "Cosa succede in quest'area",
     "modeStage": "Aggiungi mobile",

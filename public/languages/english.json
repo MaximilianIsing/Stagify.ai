@@ -922,6 +922,7 @@
     "toolWand": "Magic",
     "wandHint": "Click an object in the photo to select it.",
     "wandBusy": "Analyzing your photo…",
+    "wandBusyMessages": ["Analyzing your photo…","Finding the objects in the room…","Outlining what it found…","Almost there…"],
     "wandMiss": "No object found there. Try clicking the middle of the object, or highlight it with the brush.",
     "modeAria": "What happens in this area",
     "modeStage": "Add furniture",

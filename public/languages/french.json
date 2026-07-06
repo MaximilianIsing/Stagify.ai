@@ -905,6 +905,7 @@
     "toolWand": "Baguette",
     "wandHint": "Cliquez sur un objet de la photo pour le sélectionner.",
     "wandBusy": "Analyse de votre photo…",
+    "wandBusyMessages": ["Analyse de votre photo…","Recherche des objets de la pièce…","Délimitation des objets trouvés…","Presque terminé…"],
     "wandMiss": "Aucun objet trouvé à cet endroit. Essayez de cliquer au centre de l'objet, ou surlignez-le avec le pinceau.",
     "modeAria": "Ce qui se passe dans cette zone",
     "modeStage": "Ajouter un meuble",
