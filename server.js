@@ -8066,7 +8066,11 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
     // `batch` is the multi-area client's hint of how many sibling requests this
     // click fanned out into; big batches get a trimmed quality-retry budget so
     // one click can't cascade into batch × 3 Gemini generations.
-    const seedBase = Number.isInteger(seed) ? seed : null;
+    // Wrap into int32 range — Gemini rejects seeds outside [0, 2^31-1], and the
+    // per-attempt +1 shift below must not overflow either.
+    const seedBase = Number.isInteger(seed)
+      ? ((seed % 0x7fffffff) + 0x7fffffff) % 0x7fffffff
+      : null;
     const batchSize = Number.isInteger(batch) ? Math.max(1, Math.min(6, batch)) : 1;
     const maxQualityAttempts = batchSize >= 3 ? 2 : QUALITY_MAX_ATTEMPTS;
 
@@ -8209,7 +8213,7 @@ app.post('/api/mask-edit', genLimiter, async (req, res) => {
       // would just re-court the same rejected output.
       const modelInstance = genAI.getGenerativeModel({
         model: geminiModel,
-        ...(seedBase !== null ? { generationConfig: { seed: seedBase + attempt - 1 } } : {}),
+        ...(seedBase !== null ? { generationConfig: { seed: (seedBase + attempt - 1) % 0x7fffffff } } : {}),
       });
       const result = await modelInstance.generateContent(geminiPrompt);
       const response = await result.response;
@@ -8306,10 +8310,15 @@ app.post('/api/segment', genLimiter, async (req, res) => {
     // normalized coordinates map back onto any resolution. The sharp pass also
     // validates the payload is a real, decodable image.
     const rawBuffer = Buffer.from(image.slice(image.indexOf(',') + 1), 'base64');
-    const imageBuffer = await sharp(rawBuffer)
-      .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 90 })
-      .toBuffer();
+    let imageBuffer;
+    try {
+      imageBuffer = await sharp(rawBuffer)
+        .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 90 })
+        .toBuffer();
+    } catch (decodeError) {
+      return res.status(400).json({ error: 'Invalid image data' });
+    }
 
     const target = trimmedQuery
       ? `Give the segmentation masks for: ${trimmedQuery}.`
@@ -8342,27 +8351,37 @@ app.post('/api/segment', genLimiter, async (req, res) => {
       items = JSON.parse(jsonText);
     } catch (e) {
       const arr = jsonText.match(/\[[\s\S]*\]/);
-      items = arr ? JSON.parse(arr[0]) : [];
+      try { items = arr ? JSON.parse(arr[0]) : []; } catch (e2) { items = []; }
     }
     if (!Array.isArray(items)) items = [];
 
+    // Gemini often emits its internal `<seg_NN>` mask tokens instead of the
+    // documented base64 PNG; those are undecodable outside Google. Pass real
+    // PNGs through and null the rest — the client falls back to box_2d.
+    const pngMask = (m) => {
+      if (typeof m !== 'string') return null;
+      const b64 = m.startsWith('data:') ? m.slice(m.indexOf(',') + 1) : m;
+      return b64.startsWith('iVBOR') ? 'data:image/png;base64,' + b64 : null;
+    };
+
     const cleaned = items
-      .filter((it) => it && Array.isArray(it.box_2d) && it.box_2d.length === 4 &&
-        typeof it.mask === 'string' && it.mask.length > 0)
+      .filter((it) => it && Array.isArray(it.box_2d) && it.box_2d.length === 4)
       .slice(0, 24)
       .map((it) => ({
         box_2d: it.box_2d.map((v) => Math.max(0, Math.min(1000, Math.round(Number(v) || 0)))),
-        mask: it.mask.startsWith('data:') ? it.mask : 'data:image/png;base64,' + it.mask,
+        mask: pngMask(it.mask),
         label: typeof it.label === 'string' ? it.label.slice(0, 80) : '',
-      }));
+      }))
+      .filter((it) => it.box_2d[2] > it.box_2d[0] && it.box_2d[3] > it.box_2d[1]);
 
     if (DEBUG_MODE) {
-      console.log('[Segment] query:', trimmedQuery || '(all objects)', '→', cleaned.length, 'masks');
+      const withMasks = cleaned.filter((it) => it.mask).length;
+      console.log('[Segment] query:', trimmedQuery || '(all objects)', '→', cleaned.length, 'items,', withMasks, 'pixel masks');
     }
     return res.json({ success: true, items: cleaned });
   } catch (error) {
     console.error('Error processing segmentation:', error);
-    return res.status(500).json({ error: 'Failed to analyze the photo', details: error.message });
+    return res.status(500).json({ error: 'Failed to analyze the photo' });
   }
 });
 

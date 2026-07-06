@@ -2702,15 +2702,16 @@
         }
 
         // box_2d is [y0, x0, y1, x1] normalized to 0-1000; the mask PNG is a
-        // probability map covering just that box. Upscale onto a full-size
-        // canvas and binarize at the documented midpoint (>127 keeps).
+        // probability map covering just that box, binarized at the documented
+        // midpoint (>127 keeps). The API frequently omits usable pixel masks
+        // (the server nulls them out) — then the box itself becomes the
+        // selection, which the brush/eraser can refine.
         async function decodeSegItems(items) {
           const out = [];
           for (const it of items) {
             try {
               const y0 = it.box_2d[0], x0 = it.box_2d[1], y1 = it.box_2d[2], x1 = it.box_2d[3];
               if (y1 <= y0 || x1 <= x0) continue;
-              const img = await loadImage(it.mask);
               const bx = Math.round((x0 / 1000) * base.w);
               const by = Math.round((y0 / 1000) * base.h);
               const bw = Math.max(1, Math.round(((x1 - x0) / 1000) * base.w));
@@ -2719,16 +2720,26 @@
               c.width = base.w;
               c.height = base.h;
               const ctx = c.getContext('2d');
-              ctx.drawImage(img, bx, by, bw, bh);
-              const id = ctx.getImageData(bx, by, bw, bh);
-              const d = id.data;
               let area = 0;
-              for (let i = 0; i < d.length; i += 4) {
-                if (d[i] > 127) { d[i + 3] = 255; area++; }
-                else d[i + 3] = 0;
+              if (it.mask) {
+                const img = await loadImage(it.mask);
+                ctx.drawImage(img, bx, by, bw, bh);
+                const id = ctx.getImageData(bx, by, bw, bh);
+                const d = id.data;
+                for (let i = 0; i < d.length; i += 4) {
+                  if (d[i] > 127) { d[i + 3] = 255; area++; }
+                  else d[i + 3] = 0;
+                }
+                if (!area) continue;
+                ctx.putImageData(id, bx, by);
+              } else {
+                const r = Math.min(24, Math.min(bw, bh) * 0.12);
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, r);
+                else ctx.rect(bx, by, bw, bh);
+                ctx.fill();
+                area = bw * bh;
               }
-              if (!area) continue;
-              ctx.putImageData(id, bx, by);
               out.push({ canvas: c, area: area, label: it.label || '' });
             } catch (e) { /* one undecodable mask never sinks the batch */ }
           }
