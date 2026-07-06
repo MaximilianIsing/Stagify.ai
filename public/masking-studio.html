@@ -1320,8 +1320,9 @@
         // Shared mask math (growBinaryMask/buildModelMask/buildBlendMask/
         // compositeMaskedEditCanvas) — same module the main tool and the AI
         // Designer use, so the pixel-preservation guarantee is identical.
-        let buildModelMask, buildBlendMask, compositeMaskedEditCanvas;
+        let growBinaryMask, buildModelMask, buildBlendMask, compositeMaskedEditCanvas;
         const maskCoreReady = import('/scripts/mask-core.js').then((m) => {
+          growBinaryMask = m.growBinaryMask;
           buildModelMask = m.buildModelMask;
           buildBlendMask = m.buildBlendMask;
           compositeMaskedEditCanvas = m.compositeMaskedEditCanvas;
@@ -1884,7 +1885,9 @@
                 redoStack = []; // committed clear forks history
                 layer.canvasEl.getContext('2d').clearRect(0, 0, base.w, base.h);
                 layer.painted = false;
-                layer.blendMask = null;
+                // All masks, not just this one: neighbors' halos are clipped
+                // against this area's (now vacated) pixels.
+                layers.forEach((l) => { l.blendMask = null; });
                 renderLayers();
                 updateControls();
                 updateStageBackdrop();
@@ -3358,9 +3361,53 @@
         }
         const enqueueRun = createPool(3);
 
+        // Union of every OTHER area's painted pixels, binarized. The grow +
+        // feather halo may spill into unpainted photo (that forgiveness is the
+        // point), but it must never cross into pixels the user assigned to a
+        // different area — those are that area's exclusive territory.
+        function othersStamp(layer, fillColor) {
+          const others = layers.filter((l) => l !== layer && l.painted);
+          if (!others.length) return null;
+          const u = document.createElement('canvas');
+          u.width = base.w;
+          u.height = base.h;
+          const uctx = u.getContext('2d');
+          others.forEach((l) => uctx.drawImage(l.canvasEl, 0, 0));
+          const stamp = growBinaryMask(u, base.w, base.h, 0); // grow 0 = binarize
+          if (fillColor) {
+            const sctx = stamp.getContext('2d');
+            sctx.globalCompositeOperation = 'source-in';
+            sctx.fillStyle = fillColor;
+            sctx.fillRect(0, 0, base.w, base.h);
+          }
+          return stamp;
+        }
+
+        // buildModelMask / buildBlendMask with the halo clipped at neighboring
+        // areas: black out (editable-region mask) or erase (compositing mask)
+        // every pixel another area has painted.
+        function layerModelMask(layer, coreGrow) {
+          const mask = buildModelMask(layer.canvasEl, base.w, base.h, coreGrow);
+          const stamp = othersStamp(layer, '#000');
+          if (stamp) mask.getContext('2d').drawImage(stamp, 0, 0);
+          return mask;
+        }
+
+        function layerBlendMask(layer, coreGrow, featherPx) {
+          const mask = buildBlendMask(layer.canvasEl, base.w, base.h, coreGrow, featherPx);
+          const stamp = othersStamp(layer);
+          if (stamp) {
+            const mctx = mask.getContext('2d');
+            mctx.globalCompositeOperation = 'destination-out';
+            mctx.drawImage(stamp, 0, 0);
+            mctx.globalCompositeOperation = 'source-over';
+          }
+          return mask;
+        }
+
         async function runLayer(layer, imageDataUrl, coreGrow, run, context, batchSize) {
           await maskCoreReady;
-          const maskDataUrl = buildModelMask(layer.canvasEl, base.w, base.h, coreGrow).toDataURL('image/png');
+          const maskDataUrl = layerModelMask(layer, coreGrow).toDataURL('image/png');
           let prompt;
           if (layer.mode === 'remove') {
             prompt = tx(
@@ -3481,7 +3528,7 @@
             l.errorMsg = '';
             l.canvasEl.classList.remove('is-landed');
             // Freeze the compositing mask now — strokes can't change mid-run.
-            l.blendMask = buildBlendMask(l.canvasEl, base.w, base.h, coreGrow, featherPx);
+            l.blendMask = layerBlendMask(l, coreGrow, featherPx);
           });
           setPhase('generating');
           renderBusyDots(participating);
@@ -3557,7 +3604,7 @@
           layer.errorMsg = '';
           if (!layer.blendMask) {
             await maskCoreReady;
-            layer.blendMask = buildBlendMask(layer.canvasEl, base.w, base.h, genMeta.coreGrow, genMeta.featherPx);
+            layer.blendMask = layerBlendMask(layer, genMeta.coreGrow, genMeta.featherPx);
           }
           renderLayers();
           updateControls();
@@ -3600,7 +3647,7 @@
             // from the current strokes — same "re-crop, don't re-generate"
             // semantics as the single-mask editor's refine step.
             if (!layer.blendMask && genMeta && buildBlendMask) {
-              layer.blendMask = buildBlendMask(layer.canvasEl, base.w, base.h, genMeta.coreGrow, genMeta.featherPx);
+              layer.blendMask = layerBlendMask(layer, genMeta.coreGrow, genMeta.featherPx);
             }
             if (layer.blendMask) {
               acc = compositeMaskedEditCanvas(acc, layer.blendMask, layer.editedImg, base.w, base.h);
