@@ -63,7 +63,10 @@
     var stage = el('div', 'sdp__stage', frame);
     this.stage = stage;
     this.layers = [el('img', 'sdp__img', stage), el('img', 'sdp__img', stage)];
-    this.layers.forEach(function (im) { im.setAttribute('draggable', 'false'); im.decoding = 'async'; });
+    // Default to an empty (decorative) alt so both crossfade layers always carry
+    // an alt attribute — the frame is already labelled and each step's caption is
+    // shown as text. The visible layer gets a descriptive "Step N: …" alt in go().
+    this.layers.forEach(function (im) { im.setAttribute('draggable', 'false'); im.decoding = 'async'; im.alt = ''; });
     this.area = el('div', 'sdp__area', stage);
     this.dot = el('div', 'sdp__dot-hs', stage);
 

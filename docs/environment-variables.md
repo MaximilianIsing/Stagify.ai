@@ -46,6 +46,15 @@ RESEND_API_KEY=
 # Compared in constant time. Note the lowercase name. File fallback: endpointkey.txt
 endpoint_key=
 
+# --- Monitoring (Sentry) ---
+# Sentry DSN for production error tracking. Unset → the SDK is fully disabled (no
+# network calls, no overhead), so leave blank locally. Set it in the host dashboard
+# (Render) to start capturing errors.
+# PRODUCTION ONLY: errors are reported only when IS_STAGING is falsey (false/empty/unset).
+# When IS_STAGING is true/on/yes/1 the SDK is hard-disabled even if SENTRY_DSN is set, so a
+# staging deploy never reports. Ensure the production service does NOT have IS_STAGING=true.
+SENTRY_DSN=
+
 # --- Debug flags — all default OFF. Set true ONLY for local dev, never in production. ---
 # Verbose server logging (startup, key loading, etc.). true/false. File fallback: debug.txt
 DEBUG=false
