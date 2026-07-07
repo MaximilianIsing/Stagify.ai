@@ -176,8 +176,15 @@ if (googleClientId) {
 // subscribe / "Stripe help center" buttons are blocked or hidden in the UI.
 // Off by default, so production behaviour is unchanged.
 const IS_STAGING = /^(1|true|on|yes)$/i.test(String(process.env.IS_STAGING || '').trim());
+// HIDE_STAGING_BANNER hides ONLY the red staging banner (e.g. for screenshots or
+// demos on the staging site) — it does NOT re-enable Google sign-in or Stripe.
+const HIDE_STAGING_BANNER = /^(1|true|on|yes)$/i.test(String(process.env.HIDE_STAGING_BANNER || '').trim());
+const SHOW_STAGING_BANNER = IS_STAGING && !HIDE_STAGING_BANNER;
 if (IS_STAGING) {
-  console.log('[staging] IS_STAGING enabled — Google sign-in and Stripe checkout are disabled');
+  console.log(
+    '[staging] IS_STAGING enabled — Google sign-in and Stripe checkout are disabled' +
+      (HIDE_STAGING_BANNER ? ' (staging banner hidden)' : ''),
+  );
 }
 
 function readEndpointAccessKey() {
@@ -3653,9 +3660,9 @@ app.get('/privacy', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
 
-// Public status/uptime page (data comes from GET /api/uptime).
-app.get('/uptime', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'uptime.html'));
+// Public status/uptime page (data comes from GET /api/status).
+app.get('/status', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'status.html'));
 });
 
 app.get('/bimi-logo.svg', (req, res) => {
@@ -4143,6 +4150,9 @@ app.get('/api/auth/config', (req, res) => {
   res.json({
     googleClientId: IS_STAGING ? null : googleClientId || null,
     isStaging: IS_STAGING,
+    // Banner has its own flag so HIDE_STAGING_BANNER can suppress it without
+    // affecting the Google/Stripe restrictions that isStaging still drives.
+    showStagingBanner: SHOW_STAGING_BANNER,
   });
 });
 
@@ -4855,9 +4865,9 @@ const healthHandler = (req, res) => {
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
 
-// Uptime/status data for the public /uptime page. Computed from the heartbeat
+// Uptime/status data for the public /status page. Computed from the heartbeat
 // state on the persistent disk; no auth (it exposes only aggregate up/down).
-app.get('/api/uptime', (req, res) => {
+app.get('/api/status', (req, res) => {
   res.set('Cache-Control', 'no-store');
   res.json(uptimeMonitor.getSnapshot());
 });

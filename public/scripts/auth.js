@@ -168,7 +168,7 @@
   // aware they're on the staging/test site, not production. Sticky so it stays
   // visible; the sticky site header is nudged down to stack below it.
   window.StagifyAuth.fetchConfig().then(function (cfg) {
-    if (cfg && cfg.isStaging) showStagingBanner();
+    if (cfg && cfg.showStagingBanner) showStagingBanner();
   });
 
   function showStagingBanner() {

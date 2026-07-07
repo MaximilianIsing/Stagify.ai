@@ -21,6 +21,7 @@ This document describes HTTP endpoints registered in `server.js`. Static files a
 | `GET` | `/` | Serves `public/index.html`. |
 | `GET` | `/robots.txt` | Serves `public/robots.txt`. |
 | `GET` | `/sitemap.xml` | Serves `public/sitemap.xml`. |
+| `GET` | `/status` | Serves `public/status.html` — the public status/uptime page. Client-side it polls `GET /api/status` and draws 24-hour and 7-day availability graphs. |
 
 Other `.html` and assets are served by **`express.static('public')`** (e.g. `/stagify-plus.html`, `/ai-designer.html`).
 
@@ -52,7 +53,7 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 | `POST` | `/api/auth/register/verify` | **Body:** `{ email, code }`. Verifies code and creates account. Returns `{ success, token, user }` or `400`. |
 | `POST` | `/api/auth/register/resend` | **Body:** `{ email }`. Resends verification code for pending sign-up. |
 | `POST` | `/api/auth/login` | **Body:** `{ email, password }`. Returns `{ success, token, user }` or `401`. |
-| `GET` | `/api/auth/config` | Public. Returns `{ googleClientId: string \| null, isStaging: boolean }`. `isStaging` reflects the `IS_STAGING` env flag; when it's on, `googleClientId` is forced to `null` (UI hides the Google button) and the client also blocks the Stripe subscribe / "help center" buttons. |
+| `GET` | `/api/auth/config` | Public. Returns `{ googleClientId: string \| null, isStaging: boolean, showStagingBanner: boolean }`. `isStaging` reflects the `IS_STAGING` env flag; when it's on, `googleClientId` is forced to `null` (UI hides the Google button) and the client blocks the Stripe subscribe / "help center" buttons. `showStagingBanner` is `IS_STAGING && !HIDE_STAGING_BANNER` — the red staging banner shows only when it's `true`, so `HIDE_STAGING_BANNER` can suppress the banner without lifting the Google/Stripe restrictions. |
 | `POST` | `/api/auth/google` | **Body:** `{ credential }` (Google ID token). Returns `{ success, token, user }`, or `403` (`STAGING_DISABLED`) when `IS_STAGING` is on, or `4xx/503` if not configured or invalid. |
 | `GET` | `/api/auth/me` | **Auth:** valid session. Returns `{ user }` (public user shape, including `dailyGenerationsUsed` / `dailyGenerationLimit` for free tier). `401` if not signed in (`AUTH_REQUIRED`). |
 | `POST` | `/api/auth/logout` | **Body (optional):** `authToken`. **Or** `Authorization: Bearer` token. Invalidates the session. Returns `{ success: true }`. |
@@ -91,6 +92,7 @@ Example URL: `POST https://your-host/api/stage-by-endpoint-key?key=YOUR_SECRET` 
 | `POST` | `/api/log-contact` | **Body:** JSON with `userRole`, `referralSource`, `email`, `userAgent` (and similar). Appends a row to `contact_logs.csv` and bumps an in-memory contact counter. Returns `{ success: true }`. |
 | `POST` | `/api/send-email` | **Protected by server access key:** query `?key=` or `body.key` must match `endpointkey.txt` or `process.env.endpoint_key` (`LOGS_ACCESS_KEY`). **Body:** `to`, `subject`, `text` (Resend). Returns `403` if key wrong, `500` if no Resend, etc. |
 | `GET` | `/api/health` | **Public.** `{ status, timestamp, aiConfigured: boolean }` (and similar). |
+| `GET` | `/api/status` | **Public.** Uptime/status snapshot for the `/status` page. `Cache-Control: no-store`. Returns `{ status, currentState, monitoringSince, lastBeat, lastCheckedMsAgo, bootCount, windows: { '24h','7d','30d': { uptimePct, downMs, monitoredMs, coverage, incidents } }, buckets: { '24h'(48), '7d'(56): [{ start, end, state, uptimePct }] }, incidents: [{ start, end, durationMs, cause }], totalIncidents }`. Computed by `lib/uptime-monitor.js` from a heartbeat written every 60s to `data/uptime.json` (or `/data/uptime.json` on Render); downtime is inferred from heartbeat gaps detected on restart. `uptimePct` is `null` for a window with no monitored coverage yet. |
 | `GET` | `/api/prompt-count` | Returns `{ promptCount }` (server-side counter, used for hero “Rooms staged” type stats). |
 | `GET` | `/api/contact-count` | Returns `{ contactCount }` (in-memory + startup initialization). |
 
