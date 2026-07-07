@@ -561,7 +561,7 @@ app.set('trust proxy', process.env.TRUST_PROXY === '0' ? false : 1);
 // Middleware
 // --- Security headers (helmet) ---------------------------------------------
 // CSP is tuned for the inline scripts/handlers this app uses plus the third
-// parties it loads (Google sign-in, Stripe, Supademo + Instagram embeds).
+// parties it loads (Google sign-in, Stripe + Instagram embeds).
 // Set DISABLE_CSP=1 to turn the policy off without a code change if a deploy
 // surfaces an unexpected blocked resource.
 const cspDirectives = {
@@ -593,7 +593,6 @@ const cspDirectives = {
   connectSrc: ["'self'", 'https:', 'blob:', 'data:'],
   frameSrc: [
     "'self'",
-    'https://app.supademo.com',
     'https://www.instagram.com',
     'https://accounts.google.com',
     'https://*.stripe.com',
