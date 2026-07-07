@@ -1,5 +1,7 @@
 // chat routes, extracted verbatim from server.js.
 import express from 'express';
+import path from 'path';
+import { AI_DESIGNER_RESPONSE_ACTION_RULES, AI_DESIGNER_IMAGE_FRAMING_RULES, STAGIFY_SELF_KNOWLEDGE, DESIGNER_ROUTING_RESPONSE_FORMAT, DUAL_UPLOAD_ROOM_PROMPT_SUFFIX } from '../lib/prompts.js';
 
 export default function createChatRouter(deps) {
   const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, getUserIdentifier, annotateImage, downscaleImageForGPT, filterUnsupportedFiles, deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, applyBaseImageIndexToStagingParams, resolveCadImageIndex, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, applyAddFurnitureStagingFallback, getImageFromHistory, buildImageContext, getOriginalImageIndex, getStagifyDateContext, parseDesignerRoutingCompletion, aiResponseDefersImageAction, wantsStreamedChatResponse, chatWillProcessSlowImages, chatIntentType, initChatSse, writeChatSseEvent, finishStreamedChatResponse, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount } = deps;
@@ -391,8 +393,9 @@ router.post('/api/chat', genLimiter, async (req, res) => {
 
     // Use OpenAI GPT with JSON response format
     let aiResponseJson;
+    let completion;
     try {
-      const completion = await openai.chat.completions.create({
+      completion = await openai.chat.completions.create({
         model: selectedModel,
         messages: openaiMessages,
         temperature: getTemperatureForModel(selectedModel),

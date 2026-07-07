@@ -1,8 +1,11 @@
 // admin routes, extracted verbatim from server.js.
 import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import crypto from 'crypto';
 
 export default function createAdminRouter(deps) {
-  const { authStore, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, getMemoriesFile, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs } = deps;
+  const { authStore, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, getMemoriesFile, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT } = deps;
   const router = express.Router();
 
 router.get('/admin', (req, res) => {

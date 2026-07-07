@@ -1,8 +1,10 @@
 // public routes, extracted verbatim from server.js.
 import express from 'express';
+import path from 'path';
+import fs from 'fs';
 
 export default function createPublicRouter(deps) {
-  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, PDF_PROCESSING_SERVER, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount } = deps;
+  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, PDF_PROCESSING_SERVER, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
   const router = express.Router();
 
 router.get('/robots.txt', (req, res) => {

@@ -1,5 +1,8 @@
 // staging routes, extracted verbatim from server.js.
 import express from 'express';
+import https from 'https';
+import sharp from 'sharp';
+import FormData from 'form-data';
 
 export default function createStagingRouter(deps) {
   const { genAI, openai, genLimiter, stagingProcessUpload, pdfUpload, PDF_PROCESSING_SERVER, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, getStagingClientIp, isLikelyMobileStagingRequest, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, getUserIdentifier, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard } = deps;
