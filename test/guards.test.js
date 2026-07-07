@@ -67,6 +67,14 @@ test('endpoint-key routes reject requests with no key (403)', async () => {
   assert.equal(email.status, 403, '/api/send-email should 403 without a key');
 });
 
+// The admin uptime-reset is a mutating protectLogs route — it must reject an
+// unkeyed request (403) so server-status history can't be wiped anonymously.
+// protectLogs runs before the handler, so no reset happens here.
+test('POST /api/status/reset requires the admin key (403)', async () => {
+  const res = await postJson('/api/status/reset');
+  assert.equal(res.status, 403, 'POST /api/status/reset should 403 without a key');
+});
+
 // The actual Pro grant is POST /api/getpro, guarded by the admin key header (GET
 // /getpro is just the retry page and returns HTML for everyone). A wrong key must
 // be rejected so Pro can't be self-granted.

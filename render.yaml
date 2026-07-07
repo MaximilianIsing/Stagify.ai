@@ -10,4 +10,8 @@ services:
         value: production
       - key: GOOGLE_AI_API_KEY
         sync: false
+    disk:
+      name: stagify-data
+      mountPath: /data
+      sizeGB: 1
     autoDeploy: true

@@ -813,6 +813,24 @@
     setTimeout(function(){btn.disabled=false;btn.textContent='Refresh'},1500);
   });
 
+  // \u2500\u2500 Reset server status (uptime) data \u2500\u2500
+
+  (function(){
+    var rb=qs('#adm-reset-status');if(!rb)return;
+    rb.addEventListener('click',function(){
+      if(!confirm('Reset ALL server status data?\n\nThis wipes every recorded uptime percentage and incident and restarts monitoring from now. It changes the public status page and cannot be undone.'))return;
+      var msg=qs('#adm-reset-status-msg');var orig=rb.textContent;
+      rb.disabled=true;rb.textContent='Resetting\u2026';if(msg)msg.textContent='';
+      apiSend('/api/status/reset','POST').then(function(){
+        rb.disabled=false;rb.textContent=orig;
+        if(msg){msg.style.color='#166534';msg.textContent='\u2713 Server status reset. Monitoring restarted from now.'}
+      }).catch(function(e){
+        rb.disabled=false;rb.textContent=orig;
+        if(msg){msg.style.color='#dc2626';msg.textContent='Reset failed: '+e.message}
+      });
+    });
+  })();
+
   // ── Login with rate limiting ──
 
   qs('#adm-login-form').addEventListener('submit',function(e){

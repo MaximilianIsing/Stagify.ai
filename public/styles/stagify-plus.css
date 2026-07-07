@@ -208,6 +208,10 @@
         }
       }
       @media (max-width: 768px) {
+        /* A bit more breathing room above the hero on mobile */
+        .sp-page__inner {
+          padding-top: calc(1.75rem + 18px);
+        }
         .bh-stage {
           padding: 0;
         }
