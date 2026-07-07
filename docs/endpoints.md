@@ -6,7 +6,7 @@ This document describes HTTP endpoints registered in `server.js`. Static files a
 
 - **Bearer session:** `Authorization: Bearer <token>` (JWT/session token from `authToken` in login/register responses).
 - **Token in body:** `authToken` in JSON or multipart field (e.g. staging).
-- **Token in query:** `?authToken=...` (used by some browser flows and `/getpro`).
+- **Token in query:** `?authToken=...` (used by some browser flows).
 
 **`getAuthUserFromRequest`:** loads the user from a valid session token (header, body, or query).
 
@@ -30,7 +30,8 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/getpro` | **Query:** `key` — must match the secret in `endpointkey.txt` (or `process.env.endpoint_key`), same key as log exports and `/api/stage-by-endpoint-key`. Uses constant-time hash compare. **If not configured:** `503` plain text. **If wrong key:** `404` plain text. **If no valid session:** HTML page that can retry with `authToken` from `localStorage`. **If valid session:** grants Stagify+ to that user and returns success HTML. Optional: `authToken` in query for the same client used elsewhere. |
+| `GET` | `/getpro` | Serves `public/getpro.html` — the "activate Stagify+" page. **No key or auth on the GET itself** (`200` for everyone); the page collects the admin key and the user's session `authToken` and calls `POST /api/getpro`. |
+| `POST` | `/api/getpro` | **Grants Stagify+ to the signed-in account.** Both secrets ride in **headers**, never the URL: `X-Stagify-Endpoint-Key: <LOGS_ACCESS_KEY>` (constant-time compare) plus a valid session (`Authorization: Bearer <token>`). **Returns:** `503` if the key isn't configured, `403` on a missing/wrong key, `401` if the key is valid but there's no session, `400` if the grant fails, `{ ok: true }` on success. Same secret as the log exports, `/api/stage-by-endpoint-key`, and `/api/send-email`. |
 
 ---
 
@@ -123,13 +124,19 @@ Example URL: `POST https://your-host/api/stage-by-endpoint-key?key=YOUR_SECRET` 
 
 ---
 
-## Log download / admin (query key)
+## Log download / admin (header key)
 
-These routes use **`protectLogs`**: a shared secret `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`. **Query:** `?key=<LOGS_ACCESS_KEY>`. If missing/invalid: **`403`**. The same secret authenticates **`POST /api/stage-by-endpoint-key`** (query `key` or header `X-Stagify-Endpoint-Key`) and **`POST /api/send-email`**.
+These routes use **`protectLogs`**: a shared secret `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`, supplied in the **`X-Stagify-Endpoint-Key` header** — **never** the query string (a key in the URL leaks via access logs, proxies, browser history, and `Referer`). **If the server has no key configured:** `500`. **If the header is missing/invalid:** `403`.
+
+The same `LOGS_ACCESS_KEY` authenticates several endpoints, but each accepts it via a **different transport** — check per route:
+
+- **`protectLogs`** routes below and **`POST /api/getpro`** — `X-Stagify-Endpoint-Key` header **only**.
+- **`POST /api/stage-by-endpoint-key`** — `?key=` query **or** `X-Stagify-Endpoint-Key` header.
+- **`POST /api/send-email`** — `?key=` query **or** `key` in the JSON body.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/authstore` | Download `auth-store.json` (users, session tokens, password hashes, Stripe ids, etc.). **Highly sensitive** — same `?key=` as other admin exports. `404` if the file has not been created yet. On disk: `data/auth-store.json` (or `/data/auth-store.json` on Render). |
+| `GET` | `/authstore` | Download `auth-store.json` (users, session tokens, password hashes, Stripe ids, etc.). **Highly sensitive** — same `X-Stagify-Endpoint-Key` header as other admin exports. `404` if the file has not been created yet. On disk: `data/auth-store.json` (or `/data/auth-store.json` on Render). |
 | `GET` | `/promptlogs` | Download `prompt_logs.csv` (or `404` if missing). |
 | `GET` | `/contactlogs` | Download `contact_logs.csv`. |
 | `GET` | `/chatlogs` | Download `chat_logs.csv`. |

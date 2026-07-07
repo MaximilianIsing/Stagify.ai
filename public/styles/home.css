@@ -306,6 +306,13 @@
   0% { background-position: 150% center; }
   100% { background-position: -50% center; }
 }
+/* Once the local walkthrough player mounts into the host, the host stops
+   forcing its own aspect ratio (the player's frame provides it) and lets the
+   frame's shadow show. Before mount, the rules above keep the skeleton sized. */
+.designer-demo.sdp {
+  aspect-ratio: auto;
+  overflow: visible;
+}
 .designer-demo__spinner {
   width: 34px;
   height: 34px;

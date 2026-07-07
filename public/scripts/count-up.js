@@ -32,12 +32,13 @@
     return Math.min(lead, finalLen);
   }
 
-  // Ease-out ramp: the number rockets up fast at the start then decelerates as it
-  // settles into its final value. The pill widens quickly alongside it (width is
-  // tied to the digit count), but smoothWidthCh keeps that widening continuous so
-  // there are no janky per-digit steps like the original had.
+  // Ease-out ramp: the number climbs fast at the start then decelerates as it
+  // settles into its final value. Cubic (^3) gives a softer launch than quart
+  // (^4). The pill widens alongside it (width is tied to the digit count), but
+  // smoothWidthCh keeps that widening continuous so there are no janky per-digit
+  // steps like the original had.
   function rampValue(target, t) {
-    return target * (1 - Math.pow(1 - t, 4));
+    return target * (1 - Math.pow(1 - t, 3));
   }
 
   const running = new WeakSet();
@@ -114,7 +115,7 @@
 
       el.setAttribute("aria-hidden", "true");
       el.textContent = "0";
-      animate(el, target, 1400);
+      animate(el, target, 1700);
     });
 
     if (!updated) return;
