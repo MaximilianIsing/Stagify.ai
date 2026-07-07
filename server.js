@@ -503,6 +503,15 @@ let promptCount = 0;
 // Global variable to track contact count
 let contactCount = 0;
 
+// Live accessors for the runtime counters, passed to route modules via deps so
+// extracted routers read/increment the REAL module-scope values (not a stale
+// snapshot copied at mount time). Increment uses += 1 (not ++) so a global
+// "++" -> "inc" rewrite of the route bodies can never make these self-recurse.
+function getPromptCount() { return promptCount; }
+function incPromptCount() { promptCount += 1; }
+function getContactCount() { return contactCount; }
+function incContactCount() { contactCount += 1; }
+
 // Function to initialize prompt count from CSV file
 function initializePromptCount() {
   try {
@@ -4119,7 +4128,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
       geminiModel
     );
     images.push(stagedImage);
-    promptCount++;
+    incPromptCount();
   }
 
   if (meta.recordUsage) {
@@ -4228,7 +4237,7 @@ app.post('/api/log-contact', emailLimiter, (req, res) => {
     }
     
     // Increment contact count
-    contactCount++;
+    incContactCount();
     
     res.json({ success: true, message: 'Contact logged successfully' });
   } catch (error) {
@@ -4396,7 +4405,7 @@ app.get('/api/prompt-count', (req, res) => {
     return res.json({ promptCount: DEBUG_ROOMS });
   }
   res.json({
-    promptCount: promptCount
+    promptCount: getPromptCount()
   });
 });
 
@@ -4407,9 +4416,9 @@ app.get('/api/contact-count', (req, res) => {
   }
   const userCount = authStore.getUserCount();
   res.json({
-    contactCount,
+    contactCount: getContactCount(),
     userCount,
-    usersServed: contactCount + userCount,
+    usersServed: getContactCount() + userCount,
   });
 });
 
@@ -5262,7 +5271,7 @@ app.post('/api/chat', genLimiter, async (req, res) => {
                 const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer, geminiModel);
                 if (stagedImage) {
                   // Increment prompt count for staging
-                  promptCount++;
+                  incPromptCount();
                   
                   // Annotate staged image in parallel
                   const annotationPromise = annotateImage(stagedImage).then(annotation => {
@@ -6613,7 +6622,7 @@ app.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (re
                 const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer, geminiModel);
                 if (stagedImage) {
                   // Increment prompt count for staging
-                  promptCount++;
+                  incPromptCount();
                   
                   // Annotate staged image in parallel
                   const annotationPromise = annotateImage(stagedImage).then(annotation => {
