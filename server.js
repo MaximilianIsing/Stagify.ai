@@ -25,6 +25,7 @@ import { handleStripeEvent } from './lib/stripe-webhooks.js';
 import { createEnterpriseStore } from './lib/enterprise-store.js';
 import { createUptimeMonitor } from './lib/uptime-monitor.js';
 import createBillingRouter from './routes/billing.js';
+import { createLogging } from './lib/logging.js';
 import { createMemory } from './lib/memory.js';
 import { createConfig } from './lib/config.js';
 import { IMAGE_FRAMING_PRESERVATION_RULES, DUAL_UPLOAD_ROOM_PROMPT_SUFFIX, ADD_FURNITURE_PRESERVATION_SUFFIX, AI_DESIGNER_RESPONSE_ACTION_RULES, AI_DESIGNER_IMAGE_FRAMING_RULES, STAGIFY_SELF_KNOWLEDGE, STAGIFY_LAUNCH_DATE, DESIGNER_ROUTING_SCHEMA, DESIGNER_ROUTING_RESPONSE_FORMAT, QUALITY_REVIEW_PROMPT, REVIEW_WHY_SUFFIX, MASK_REVIEW_PROMPT, FURNITURE_ERASE_PROMPT, EMPTY_ROOM_CHECK_PROMPT, STAGEABLE_IMAGE_CHECK_PROMPT, DEFAULT_UNSTAGEABLE_REASON } from './lib/prompts.js';
@@ -199,159 +200,6 @@ function requireProAccount(req, res) {
     return null;
   }
   return user;
-}
-
-// Function to log prompts to CSV file
-function logPromptToFile(promptText, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, userReferralSource, userEmail, req) {
-  try {
-    const timestamp = new Date().toISOString();
-    const ipAddress = req ? (req.ip || req.connection.remoteAddress || 'unknown') : 'unknown';
-    
-    // Escape CSV fields that contain commas, quotes, or newlines
-    function escapeCSVField(field) {
-      if (field === null || field === undefined) return '';
-      const str = String(field);
-      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-        return '"' + str.replace(/"/g, '""') + '"';
-      }
-      return str;
-    }
-    
-    // Create CSV row
-    const csvRow = [
-      escapeCSVField(timestamp),
-      escapeCSVField(roomType),
-      escapeCSVField(furnitureStyle),
-      escapeCSVField(additionalPrompt || ''),
-      escapeCSVField(removeFurniture),
-      escapeCSVField(userRole || 'unknown'),
-      escapeCSVField(userReferralSource || 'unknown'),
-      escapeCSVField(userEmail || 'unknown'),
-      escapeCSVField(ipAddress)
-    ].join(',') + '\n';
-    
-    // Use mounted disk on Render, project data folder locally
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-      if (DEBUG_MODE) {
-        console.log('Using Render persistent disk');
-      }
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-      
-      // Create data directory if it doesn't exist
-      if (!fs.existsSync(logDir)) {
-        try {
-          fs.mkdirSync(logDir, { recursive: true });
-          if (DEBUG_MODE) {
-            console.log('Created local data directory successfully');
-          }
-        } catch (error) {
-          if (DEBUG_MODE) {
-            console.log('Error: Cannot create data directory, using project root');
-          }
-          logDir = __dirname;
-        }
-      }
-    }
-
-    const logFile = path.join(logDir, 'prompt_logs.csv');
-    
-    // Check if file exists to add header if it's a new file
-    const fileExists = fs.existsSync(logFile);
-    
-    if (!fileExists) {
-      // Create new file with header and first row
-      const header = 'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress\n';
-      fs.writeFileSync(logFile, header + csvRow);
-    } else {
-      // Append to existing file
-      fs.appendFile(logFile, csvRow, (err) => {
-        if (err) {
-          console.error('Error writing to prompt log:', err);
-        }
-      });
-    }
-  } catch (error) {
-    console.error('Error in logPromptToFile:', error);
-  }
-}
-
-// Function to log mask edits to CSV file
-function logMaskEditToFile(prompt, model, geminiModel, imageWidth, imageHeight, userId, req) {
-  try {
-    const timestamp = new Date().toISOString();
-    const ipAddress = req ? (req.ip || req.connection.remoteAddress || 'unknown') : 'unknown';
-    const userAgent = req ? (req.get('user-agent') || 'unknown') : 'unknown';
-    
-    // Escape CSV fields that contain commas, quotes, or newlines
-    function escapeCSVField(field) {
-      if (field === null || field === undefined) return '';
-      const str = String(field);
-      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-        return '"' + str.replace(/"/g, '""') + '"';
-      }
-      return str;
-    }
-    
-    // Create CSV row
-    const csvRow = [
-      escapeCSVField(timestamp),
-      escapeCSVField(prompt || ''),
-      escapeCSVField(model || 'unknown'),
-      escapeCSVField(geminiModel || 'unknown'),
-      escapeCSVField(imageWidth || ''),
-      escapeCSVField(imageHeight || ''),
-      escapeCSVField(userId || 'unknown'),
-      escapeCSVField(ipAddress),
-      escapeCSVField(userAgent)
-    ].join(',') + '\n';
-    
-    // Use mounted disk on Render, project data folder locally
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-      
-      // Create data directory if it doesn't exist
-      if (!fs.existsSync(logDir)) {
-        try {
-          fs.mkdirSync(logDir, { recursive: true });
-        } catch (error) {
-          console.log('Error: Cannot create data directory, using project root');
-          logDir = __dirname;
-        }
-      }
-    }
-
-    const logFile = path.join(logDir, 'mask_logs.csv');
-    
-    // Check if file exists to add header if it's a new file
-    const fileExists = fs.existsSync(logFile);
-    
-    if (!fileExists) {
-      // Create new file with header and first row
-      const header = 'timestamp,prompt,model,geminiModel,imageWidth,imageHeight,userId,ipAddress,userAgent\n';
-      fs.writeFileSync(logFile, header + csvRow);
-    } else {
-      // Append to existing file
-      fs.appendFile(logFile, csvRow, (err) => {
-        if (err) {
-          console.error('Error writing to mask log:', err);
-        }
-      });
-    }
-  } catch (error) {
-    console.error('Error in logMaskEditToFile:', error);
-  }
 }
 
 // Global variable to track prompt count
@@ -883,6 +731,7 @@ try {
 }
 
 const RESEND_FROM_EMAIL = String(process.env.RESEND_FROM_EMAIL || 'team@stagify.ai').trim();
+const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile } = createLogging({ __dirname, DEBUG_MODE });
 const { getMemoriesFile, loadAllMemories, loadMemories, saveMemories, evaluateMemoryActions } = createMemory({ __dirname, DEBUG_MODE, openai });
 
 /**
@@ -3070,23 +2919,6 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
   }
 }
 
-// Routes
-// Public status/uptime page (data comes from GET /api/status).
-function getDataLogDir() {
-  if (process.env.RENDER && fs.existsSync('/data')) {
-    return '/data';
-  }
-  const logDir = path.join(__dirname, 'data');
-  if (!fs.existsSync(logDir)) {
-    try {
-      fs.mkdirSync(logDir, { recursive: true });
-    } catch {
-      return __dirname;
-    }
-  }
-  return logDir;
-}
-
 // ── Public image hosting (admin-managed) ───────────────────────────────────
 // Admins upload an image from the dashboard; it's stored on the persistent disk
 // and served publicly at /i/<id> behind an unguessable random id. A manifest
@@ -3148,21 +2980,6 @@ const hostImageUpload = multer({
     else cb(new Error('Only PNG, JPG, WebP, and GIF images can be hosted'));
   },
 }).single('image');
-
-// Public: serve a hosted image by its random id. No auth — the id is the
-// capability. nosniff + a fixed content type keep it from being treated as an
-// active document; long immutable cache since ids never point at new bytes.
-// Admin: upload + host an image. Returns the public id/path/url.
-// Admin: list all hosted images (newest first).
-// Admin: delete (unhost) an image by id — removes the file and manifest entry.
-function escapeCsvField(field) {
-  if (field === null || field === undefined) return '';
-  const str = String(field);
-  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-    return '"' + str.replace(/"/g, '""') + '"';
-  }
-  return str;
-}
 
 function logEmailOpenToFile(email, req) {
   try {
@@ -3547,78 +3364,6 @@ async function handleVirtualStagingMultipart(req, res, meta) {
     emptyRoom: emptyRoomDataUrl || undefined,
     user: responseUser,
   });
-}
-
-// Image processing endpoint: signed-in users (account limits) OR mobile User-Agent without session (free daily cap per IP, UTC)
-// Cheap pre-flight: is this upload actually a stageable room/property space? The
-// main stager and the Masking Studio call this the moment a photo is chosen so a
-// non-room (a selfie, a product shot, a document…) is rejected up front with a
-// friendly reason instead of wasting a Gemini generation. Body: JSON { image }
-// (a data URL). No auth required — the main stager serves free/anonymous mobile
-// visitors — and genLimiter + the 50mb JSON cap bound abuse. Always 200 with
-// { valid, reason }; fails OPEN so our own hiccup never blocks a real upload.
-// Contact logging endpoint
-// Email sending endpoint - protected with key
-// Function to log chat messages to CSV file (only user messages, not AI responses)
-function logChatToFile(userId, userMessage, aiResponse, files, ipAddress, userAgent) {
-  try {
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-      
-      if (!fs.existsSync(logDir)) {
-        try {
-          fs.mkdirSync(logDir, { recursive: true });
-          if (DEBUG_MODE) {
-            console.log('Created local data directory successfully');
-          }
-        } catch (error) {
-          if (DEBUG_MODE) {
-            console.log('Error: Cannot create data directory, using project root');
-          }
-          logDir = __dirname;
-        }
-      }
-    }
-
-    const logFile = path.join(logDir, 'chat_logs.csv');
-    
-    const timestamp = new Date().toISOString();
-    const fileNames = files && files.length > 0 ? files.map(f => f.name || f.originalname || 'unknown').join('; ') : '';
-    const fileTypes = files && files.length > 0 ? files.map(f => f.type || f.mimetype || 'unknown').join('; ') : '';
-    
-    // Escape commas and quotes in CSV
-    const escapeCSV = (str) => {
-      if (!str) return '';
-      return '"' + String(str).replace(/"/g, '""') + '"';
-    };
-    
-    // Only log user message, not AI response
-    const csvRow = `${timestamp},${escapeCSV(userId)},${escapeCSV(userMessage)},${escapeCSV('')},${escapeCSV(fileNames)},${escapeCSV(fileTypes)},${escapeCSV(ipAddress)},${escapeCSV(userAgent)}\n`;
-    
-    // Check if file exists to add header if it's a new file
-    const fileExists = fs.existsSync(logFile);
-    
-    if (!fileExists) {
-      // Create new file with header and first row
-      const header = 'timestamp,userId,userMessage,aiResponse,fileNames,fileTypes,ipAddress,userAgent\n';
-      fs.writeFileSync(logFile, header + csvRow);
-    } else {
-      // Append to existing file
-      fs.appendFile(logFile, csvRow, (err) => {
-        if (err) {
-          console.error('Error writing to chat log:', err);
-        }
-      });
-    }
-  } catch (error) {
-    console.error('Error in logChatToFile:', error);
-  }
 }
 
 // Health check endpoints
