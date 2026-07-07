@@ -1,59 +1,44 @@
 (function () {
-  // Optional label when you redeploy; each page load also appends a unique
-  // timestamp so the browser always pulls the latest published Supademo embed.
-  var SUPADEMO_CACHE_BUST = '1';
+  // Homepage demo sections (AI Designer, Masking Studio) mount the self-hosted
+  // walkthrough player — no third-party iframe. Each host carries data-demo="<key>".
+  // Mounting is deferred until the section nears the viewport so the frames stay
+  // off the critical path and never compete with first paint.
 
-  function withCacheBust(url) {
-    var sep = url.indexOf('?') >= 0 ? '&' : '?';
-    return url + sep + 'v=' + encodeURIComponent(SUPADEMO_CACHE_BUST + '-' + Date.now());
+  function demoByKey(key) {
+    var data = window.STAGIFY_DEMOS && window.STAGIFY_DEMOS.demos;
+    if (!data) return null;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].key === key) return data[i];
+    }
+    return null;
   }
 
-  function buildIframe(host) {
-    if (host.querySelector('iframe')) return;
-    var iframe = document.createElement('iframe');
-    iframe.className = 'designer-demo__frame';
-    iframe.src = withCacheBust(host.getAttribute('data-supademo-embed'));
-    iframe.title = host.getAttribute('data-supademo-title') || 'Stagify AI Designer demo';
-    iframe.loading = 'lazy';
-    iframe.setAttribute('allow', 'clipboard-write');
-    iframe.setAttribute('frameborder', '0');
-    iframe.setAttribute('webkitallowfullscreen', 'true');
-    iframe.setAttribute('mozallowfullscreen', 'true');
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.addEventListener('load', function () {
-      host.classList.add('is-loaded');
-    });
-    host.appendChild(iframe);
-    host.classList.add('is-loading');
+  function mount(host) {
+    if (host.__demoMounted || !window.SupademoPlayer) return;
+    var demo = demoByKey(host.getAttribute('data-demo'));
+    if (!demo) return;
+    host.__demoMounted = true;
+    // drop the static skeleton placeholder — the player renders its own
+    host.textContent = '';
+    var title = host.getAttribute('data-demo-title');
+    var d = title ? Object.assign({}, demo, { title: title }) : demo;
+    // dots:false keeps the homepage showcase chrome-free (nav via card + click)
+    SupademoPlayer.mount(host, d, { dots: false });
   }
 
   function init() {
-    // Every section that features a Supademo walkthrough (AI Designer, Masking
-    // Studio, …) — mount them all, not just the first.
-    var hosts = document.querySelectorAll('[data-supademo-embed]');
+    var hosts = [].slice.call(document.querySelectorAll('.designer-demo[data-demo]'));
     if (!hosts.length) return;
-
-    // Load each embed in the background as soon as the page has painted and the
-    // browser is idle — so they're already loaded by the time the user scrolls
-    // to them, without blocking first paint or interactivity.
-    var mountAll = function () {
-      hosts.forEach(function (host) {
-        buildIframe(host);
-      });
-    };
+    // Mount once the browser is idle (or after load) so the frames never compete
+    // with first paint. Each mount only warms 1–2 images — the rest load lazily
+    // as the visitor steps through — so this stays lighter than the old embeds.
+    var mountAll = function () { hosts.forEach(mount); };
     if ('requestIdleCallback' in window) {
       requestIdleCallback(mountAll, { timeout: 2500 });
+    } else if (document.readyState === 'complete') {
+      setTimeout(mountAll, 200);
     } else {
-      // No requestIdleCallback — wait until the page is fully loaded, then load
-      // on the next tick so it never competes with the initial render.
-      var load = function () {
-        setTimeout(mountAll, 200);
-      };
-      if (document.readyState === 'complete') {
-        load();
-      } else {
-        window.addEventListener('load', load, { once: true });
-      }
+      window.addEventListener('load', function () { setTimeout(mountAll, 200); }, { once: true });
     }
   }
 

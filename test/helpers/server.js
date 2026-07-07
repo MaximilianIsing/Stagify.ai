@@ -2,7 +2,8 @@
 // it's listening. Used by the boot smoke test and the access-guard tests. No API
 // calls — the server degrades gracefully when unconfigured.
 //
-// Lives outside test/ so node --test doesn't treat it as a (test-less) spec file.
+// Not a spec: the `test` script runs `node --test "test/**/*.test.js"`, so this
+// file (not named *.test.js) is imported by the tests but never run as one.
 
 import { spawn } from 'node:child_process';
 import net from 'node:net';
@@ -10,7 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const BOOT_TIMEOUT_MS = 20_000;
 
 // Ask the OS for a free port so tests never collide with a real dev server.

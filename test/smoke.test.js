@@ -8,7 +8,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { startServer } from '../test-helpers/server.js';
+import { startServer } from './helpers/server.js';
 
 test('server boots and GET /health returns healthy', async () => {
   const server = await startServer();

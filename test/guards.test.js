@@ -17,7 +17,7 @@
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { startServer } from '../test-helpers/server.js';
+import { startServer } from './helpers/server.js';
 
 // A throwaway key that is configured on the server but never sent by any request.
 const DUMMY_KEY = 'test-guard-key-not-a-real-secret';
