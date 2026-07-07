@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 
 # Utility / auth pages — not for indexing
+Disallow: /admin
 Disallow: /admin.html
 Disallow: /reset-password.html
 Disallow: /pro.html
