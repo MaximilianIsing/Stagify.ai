@@ -1,0 +1,139 @@
+      @media (max-width: 768px) {
+        .desktop-only { display: none !important; }
+      }
+
+      .status-page {
+        --line: #e6edf5;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --faint: #94a3b8;
+        --green: #10b981;
+        --green-deep: #047857;
+        --amber: #f59e0b;
+        --red: #ef4444;
+        --red-deep: #b91c1c;
+        --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 16px 38px -20px rgba(16, 24, 40, .32);
+        padding: 0;
+      }
+      /* main is the site's scroll container (aurora-scrollbar anchors to its right
+         edge), so it must stay full-width — center the content in an inner wrapper. */
+      .status-inner { width: 100%; max-width: 940px; margin: 0 auto; padding: 32px 20px 84px; }
+
+      /* ---- Heading ---------------------------------------------------------- */
+      .st-head { text-align: center; margin-bottom: 22px; }
+      .st-head h1 {
+        font-size: clamp(30px, 5vw, 42px); font-weight: 800; letter-spacing: -.022em;
+        color: var(--ink); margin: 0 0 8px;
+      }
+      .st-head p { color: var(--muted); font-size: 15px; margin: 0; }
+
+      /* ---- Status banner ---------------------------------------------------- */
+      .st-banner {
+        display: flex; align-items: center; gap: 16px;
+        padding: 18px 22px; margin-bottom: 22px;
+        background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow);
+        transition: background .25s ease, border-color .25s ease;
+      }
+      .st-banner.is-up { background: linear-gradient(180deg, #f0fdf9 0%, #ffffff 62%); border-color: #b7f0d8; }
+      .st-banner.is-down { background: linear-gradient(180deg, #fef2f2 0%, #ffffff 62%); border-color: #fbcfcf; }
+      .st-banner__badge {
+        width: 46px; height: 46px; border-radius: 50%; flex: 0 0 auto;
+        display: grid; place-items: center; background: #eef2f7;
+      }
+      .is-up .st-banner__badge { background: #d6f7e8; }
+      .is-down .st-banner__badge { background: #fde3e3; }
+      .st-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--faint); }
+      .is-up .st-dot { background: var(--green); animation: st-pulse 2.4s infinite; }
+      .is-down .st-dot { background: var(--red); animation: st-pulse-red 2.4s infinite; }
+      @keyframes st-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, .5); }
+        70% { box-shadow: 0 0 0 11px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      }
+      @keyframes st-pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, .5); }
+        70% { box-shadow: 0 0 0 11px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      }
+      .st-banner__body { flex: 1 1 auto; min-width: 0; }
+      .st-banner__title { font-size: 19px; font-weight: 750; color: var(--ink); }
+      .is-up .st-banner__title { color: #065f46; }
+      .is-down .st-banner__title { color: #991b1b; }
+      .st-banner__sub { color: var(--muted); font-size: 13px; margin-top: 3px; }
+      /* ---- Summary cards ---------------------------------------------------- */
+      .st-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+      .st-card {
+        background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+        padding: 22px 18px; text-align: center; transition: transform .16s ease, box-shadow .16s ease;
+      }
+      .st-card:hover { transform: translateY(-2px); box-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 22px 44px -22px rgba(16, 24, 40, .38); }
+      .st-card__eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); }
+      .st-card__val { font-size: clamp(28px, 5vw, 38px); font-weight: 800; letter-spacing: -.02em; color: var(--ink); line-height: 1.04; margin: 9px 0 3px; }
+      .st-card__cap { font-size: 12.5px; color: var(--muted); }
+
+      /* ---- Graph blocks ----------------------------------------------------- */
+      .st-block {
+        background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+        padding: 22px 22px 20px; margin-bottom: 18px;
+      }
+      .st-block__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+      .st-block__head h2 { font-size: 15px; font-weight: 700; color: var(--ink); margin: 0; }
+      .st-block__meta { font-size: 11.5px; color: var(--faint); font-weight: 500; margin-left: 8px; }
+      .st-block__pct { font-size: 16px; font-weight: 800; color: var(--green-deep); }
+
+      .st-bars { display: flex; align-items: stretch; gap: 2px; height: 56px; }
+      .st-bar { flex: 1 1 0; min-width: 0; border-radius: 4px; background: #eef2f7; transition: transform .1s ease, filter .1s ease; cursor: default; }
+      .st-bar:hover { transform: scaleY(1.07); filter: brightness(1.08) saturate(1.05); }
+      .st-bar.up { background: linear-gradient(180deg, #34d399, #10b981); }
+      .st-bar.partial { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+      .st-bar.down { background: linear-gradient(180deg, #f87171, #ef4444); }
+      .st-bar.nodata { background: #eaeff5; }
+      .st-axis { display: flex; justify-content: space-between; margin-top: 11px; font-size: 11.5px; color: var(--faint); }
+
+      /* ---- Legend ----------------------------------------------------------- */
+      .st-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; justify-content: center; margin: 6px 0 24px; }
+      .st-legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted); }
+      .st-sw { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+      .st-sw.up { background: linear-gradient(180deg, #34d399, #10b981); }
+      .st-sw.partial { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+      .st-sw.down { background: linear-gradient(180deg, #f87171, #ef4444); }
+      .st-sw.nodata { background: #eaeff5; }
+
+      /* ---- Incidents -------------------------------------------------------- */
+      .st-incidents h2 { font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 6px; }
+      .st-incident { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 1px solid var(--line); }
+      .st-incident:first-child { border-top: none; }
+      .st-incident__sev { width: 10px; height: 10px; border-radius: 50%; background: var(--red); margin-top: 5px; flex: 0 0 auto; box-shadow: 0 0 0 4px rgba(239, 68, 68, .12); }
+      .st-incident__main { flex: 1 1 auto; min-width: 0; }
+      .st-incident__title { font-weight: 650; color: var(--ink); font-size: 14px; }
+      .st-incident__meta { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+      .st-incident__dur {
+        flex: 0 0 auto; align-self: center; font-size: 12.5px; font-weight: 700; color: var(--red-deep);
+        background: #fef2f2; border: 1px solid #fbcfcf; padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+      }
+      .st-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 26px 12px 16px; }
+      .st-empty__icon { width: 48px; height: 48px; border-radius: 50%; background: #d6f7e8; color: var(--green-deep); display: grid; place-items: center; }
+      .st-empty__title { font-weight: 700; color: var(--ink); font-size: 15px; }
+      .st-empty__text { font-size: 13px; color: var(--muted); max-width: 380px; line-height: 1.5; }
+
+      /* ---- Footer note ------------------------------------------------------ */
+      .st-foot { text-align: center; color: var(--faint); font-size: 12.5px; margin-top: 24px; line-height: 1.65; }
+      .st-foot a { color: #2563eb; text-decoration: none; }
+      .st-foot a:hover { text-decoration: underline; }
+
+      /* ---- Hover tooltip (bars) --------------------------------------------- */
+      .st-tip {
+        position: absolute; z-index: 60; pointer-events: none; display: none;
+        background: #0f172a; color: #fff; padding: 8px 11px; border-radius: 10px;
+        box-shadow: 0 10px 28px rgba(2, 6, 23, .3); max-width: 240px;
+      }
+      .st-tip__val { font-weight: 700; font-size: 12.5px; }
+      .st-tip__time { opacity: .72; font-size: 11px; margin-top: 2px; }
+
+      @media (max-width: 600px) {
+        .st-cards { grid-template-columns: 1fr; }
+        .status-inner { padding-top: 22px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .st-dot, .st-live__dot { animation: none !important; }
+      }
