@@ -48,7 +48,7 @@ test('server.js and lib modules are syntactically valid', () => {
     try {
       execFileSync(process.execPath, ['--check', f], { cwd: ROOT, stdio: 'pipe' });
     } catch (e) {
-      throw new Error(`Syntax error in ${f}:\n${e.stderr?.toString() || e.message}`);
+      throw new Error(`Syntax error in ${f}:\n${e.stderr?.toString() || e.message}`, { cause: e });
     }
   }
 });
@@ -60,7 +60,7 @@ test('client scripts in public/scripts are syntactically valid', () => {
     try {
       execFileSync(process.execPath, ['--check', f], { cwd: ROOT, stdio: 'pipe' });
     } catch (e) {
-      throw new Error(`Syntax error in ${path.relative(ROOT, f)}:\n${e.stderr?.toString() || e.message}`);
+      throw new Error(`Syntax error in ${path.relative(ROOT, f)}:\n${e.stderr?.toString() || e.message}`, { cause: e });
     }
   }
 });
@@ -124,7 +124,7 @@ test('every language file is valid, non-empty JSON', () => {
     try {
       obj = JSON.parse(fs.readFileSync(path.join(langDir, f), 'utf8'));
     } catch (e) {
-      throw new Error(`Invalid JSON in languages/${f}: ${e.message}`);
+      throw new Error(`Invalid JSON in languages/${f}: ${e.message}`, { cause: e });
     }
     assert.ok(
       obj && typeof obj === 'object' && Object.keys(obj).length > 0,

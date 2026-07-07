@@ -57,7 +57,7 @@ router.post('/api/validate-image', genLimiter, async (req, res) => {
     try {
       imageBuffer = Buffer.from(image.slice(image.indexOf(',') + 1), 'base64');
       if (!imageBuffer || imageBuffer.length === 0) throw new Error('empty buffer');
-    } catch (e) {
+    } catch {
       return res.status(400).json({ error: 'Invalid image data' });
     }
     const { valid, reason } = await validateStageableImage(imageBuffer);
@@ -467,7 +467,7 @@ router.post('/api/mask-edit', genLimiter, async (req, res) => {
       try {
         const outMeta = await sharp(Buffer.from(editedImageDataUrl.split(',')[1], 'base64')).metadata();
         console.log(`[Mask Edit] Model output ${outMeta.width}×${outMeta.height} vs room ${imageMetadata.width}×${imageMetadata.height}${referenceInline ? ' (reference used)' : ''}`);
-      } catch (_) {}
+      } catch { /* debug-only metadata; ignore logging failures */ }
     }
 
     // Log the mask edit request
@@ -519,7 +519,7 @@ router.post('/api/segment', genLimiter, async (req, res) => {
         .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
         .jpeg({ quality: 90 })
         .toBuffer();
-    } catch (decodeError) {
+    } catch {
       return res.status(400).json({ error: 'Invalid image data' });
     }
 
@@ -554,7 +554,7 @@ router.post('/api/segment', genLimiter, async (req, res) => {
       ]);
       const response = await result.response;
       let text = '';
-      try { text = response.text(); } catch (e) {
+      try { text = response.text(); } catch {
         const parts = (response && response.candidates && response.candidates[0] &&
           response.candidates[0].content && response.candidates[0].content.parts) || [];
         text = parts.map((p) => p.text || '').join('');
@@ -566,9 +566,9 @@ router.post('/api/segment', genLimiter, async (req, res) => {
       let items;
       try {
         items = JSON.parse(jsonText);
-      } catch (e) {
+      } catch {
         const arr = jsonText.match(/\[[\s\S]*\]/);
-        try { items = arr ? JSON.parse(arr[0]) : []; } catch (e2) { items = []; }
+        try { items = arr ? JSON.parse(arr[0]) : []; } catch { items = []; }
       }
       if (!Array.isArray(items)) items = [];
 

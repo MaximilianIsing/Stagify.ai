@@ -7,9 +7,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
-import crypto from 'crypto';
-import https from 'https';
-import FormData from 'form-data';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from 'openai';
 import sharp from "sharp";
@@ -31,7 +28,7 @@ import { createEmail } from './lib/email.js';
 import { createLogging } from './lib/logging.js';
 import { createMemory } from './lib/memory.js';
 import { createConfig } from './lib/config.js';
-import { IMAGE_FRAMING_PRESERVATION_RULES, DUAL_UPLOAD_ROOM_PROMPT_SUFFIX, ADD_FURNITURE_PRESERVATION_SUFFIX, AI_DESIGNER_RESPONSE_ACTION_RULES, AI_DESIGNER_IMAGE_FRAMING_RULES, STAGIFY_SELF_KNOWLEDGE, STAGIFY_LAUNCH_DATE, DESIGNER_ROUTING_SCHEMA, DESIGNER_ROUTING_RESPONSE_FORMAT, QUALITY_REVIEW_PROMPT, REVIEW_WHY_SUFFIX, MASK_REVIEW_PROMPT, FURNITURE_ERASE_PROMPT, EMPTY_ROOM_CHECK_PROMPT, STAGEABLE_IMAGE_CHECK_PROMPT, DEFAULT_UNSTAGEABLE_REASON } from './lib/prompts.js';
+import { IMAGE_FRAMING_PRESERVATION_RULES, ADD_FURNITURE_PRESERVATION_SUFFIX, STAGIFY_LAUNCH_DATE, QUALITY_REVIEW_PROMPT, REVIEW_WHY_SUFFIX, MASK_REVIEW_PROMPT, FURNITURE_ERASE_PROMPT, EMPTY_ROOM_CHECK_PROMPT, STAGEABLE_IMAGE_CHECK_PROMPT, DEFAULT_UNSTAGEABLE_REASON } from './lib/prompts.js';
 import createPublicRouter from './routes/public.js';
 import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
@@ -502,14 +499,6 @@ const imageFileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB limit
-  },
-  fileFilter: imageFileFilter
-});
-
 const stagingProcessUpload = multer({
   storage: storage,
   limits: {
@@ -735,8 +724,8 @@ try {
 
 const RESEND_FROM_EMAIL = String(process.env.RESEND_FROM_EMAIL || 'team@stagify.ai').trim();
 const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile } = createLogging({ __dirname, DEBUG_MODE });
-const { logEmailOpenToFile, getEmailOpenedFile, isStrictEmailClientProxyUa, isConfirmedEmailClientOpen, loadEmailOpened, saveEmailOpened, hasEmailEverOpened, markEmailOpened, sendRegistrationVerificationEmail } = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
-const { getMemoriesFile, loadAllMemories, loadMemories, saveMemories, evaluateMemoryActions } = createMemory({ __dirname, DEBUG_MODE, openai });
+const { logEmailOpenToFile, isConfirmedEmailClientOpen, sendRegistrationVerificationEmail } = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
+const { getMemoriesFile, loadMemories, saveMemories } = createMemory({ __dirname, DEBUG_MODE, openai });
 
 /**
  * Downscales an image to fit within 1920x1080 while maintaining aspect ratio
@@ -1327,13 +1316,11 @@ function stripImagesFromHistory(messages, keepCurrentMessageImages = false) {
     } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
       // Replace images with references, keep text
       const textParts = [];
-      let imageCount = 0;
       
       msg.content.forEach(item => {
         if (item.type === 'text') {
           textParts.push(item.text);
         } else if (item.type === 'image_url') {
-          imageCount++;
           textParts.push(`[Staged image from previous message]`);
         }
       });
@@ -1475,14 +1462,6 @@ function resolveCadImageIndex(cadRequest, baseImageIndex, messages, currentMessa
   const images = collectImagesFromHistory(messages);
   if (baseImageIndex >= images.length) return aiIndex;
   return baseImageIndex;
-}
-
-function getImageFromHistoryExact(messages, imageIndex = 0) {
-  const imageMessages = collectImagesFromHistory(messages);
-  if (imageIndex >= 0 && imageIndex < imageMessages.length) {
-    return imageMessages[imageIndex];
-  }
-  return null;
 }
 
 function findMostRecentStagedImageIndex(messages) {
@@ -2115,157 +2094,6 @@ function finishStreamedChatResponse(res, fullResponse) {
 }
 
 /**
- * Evaluates if staging should be performed and if an old image should be used
- * Similar to evaluateMemoryActions, but for staging requests
- */
-async function evaluateStagingRequest(userMessage, aiResponse, hasCurrentImage, conversationHistory, model = 'gpt-4o-mini') {
-  try {
-    if (!openai) {
-      console.error('OpenAI not initialized, cannot evaluate staging request');
-      return null;
-    }
-    
-    // Build context about available images in history
-    let imageContext = '';
-    let originalImageIndex = null;
-    if (conversationHistory && Array.isArray(conversationHistory)) {
-      const imageMessages = [];
-      // Collect ALL images in reverse chronological order (most recent first)
-      for (let i = conversationHistory.length - 1; i >= 0; i--) {
-        const msg = conversationHistory[i];
-        if (msg.role === 'user' && Array.isArray(msg.content)) {
-          // Get ALL images from this message, not just the first one
-          const imageItems = msg.content.filter(item => item.type === 'image_url');
-          // Process images in reverse order within the message (so first image in message = most recent)
-          for (let j = imageItems.length - 1; j >= 0; j--) {
-            const imageItem = imageItems[j];
-            const filename = imageItem.filename || imageItem.originalname || null;
-            imageMessages.push({ 
-              index: imageMessages.length, 
-              type: 'user-uploaded', 
-              messageIndex: i,
-              filename: filename
-            });
-          }
-        } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-          // Get ALL staged and generated images from this message
-          const imageItems = msg.content.filter(item => 
-            item.type === 'image_url' && 
-            (item.isStaged || item.isGenerated)
-          );
-          // Process images in reverse order within the message
-          for (let j = imageItems.length - 1; j >= 0; j--) {
-            const imageItem = imageItems[j];
-            const filename = imageItem.filename || imageItem.originalname || null;
-            const imageType = imageItem.isStaged ? 'staged' : 'generated';
-            imageMessages.push({ 
-              index: imageMessages.length, 
-              type: imageType, 
-              messageIndex: i,
-              filename: filename
-            });
-          }
-        }
-      }
-      
-      // Find the original (first) user-uploaded image (it's at the highest index since we're going reverse chronological)
-      const userUploadedImages = imageMessages.filter(img => img.type === 'user-uploaded');
-      if (userUploadedImages.length > 0) {
-        // The last one in the array (highest index) is the original/first uploaded image
-        originalImageIndex = userUploadedImages[userUploadedImages.length - 1].index;
-      }
-      
-      if (imageMessages.length > 0) {
-        imageContext = `\n\nAvailable images in conversation history (index 0 = most recent, higher index = older):\n`;
-        imageMessages.forEach((img, idx) => {
-          let description = `${img.type} image (from message ${img.messageIndex})`;
-          if (img.filename) {
-            description += ` (filename: ${img.filename})`;
-          }
-          if (idx === originalImageIndex) {
-            description += ' [ORIGINAL/FIRST USER-UPLOADED IMAGE]';
-          }
-          imageContext += `- Index ${idx}: ${description}\n`;
-        });
-        if (originalImageIndex !== null) {
-          imageContext += `\nIMPORTANT: The "original image" or "first image" is at index ${originalImageIndex}. When the user says "original image", "first image", "initial image", "go back to the original", or "refer back to the original image", use index ${originalImageIndex}.`;
-        }
-        imageContext += `\nIMPORTANT: When multiple images are uploaded in the same message, they are indexed separately. Use the filename to identify which image the user is referring to (e.g., if user says "add this chair" or mentions a specific filename, look for an image with that filename or matching description).`;
-      }
-    }
-    
-    const prompt = `You are a staging request evaluator for Stagify.ai. Analyze the following conversation and determine if room staging should be performed.
-
-User message: "${userMessage}"
-AI response: "${aiResponse}"
-Current message has image: ${hasCurrentImage}${imageContext}
-
-CRITICAL: Staging should be performed if the user wants to:
-- Add furniture, decorate, or style a room
-- Modify ANY aspect of an image (change colors, walls, furniture, etc.)
-- Apply any visual changes to a room image
-- "Show me X but with Y" (e.g., "show me the original but with red walls") = STAGING REQUEST
-- "Make X red/blue/etc" (e.g., "make the walls red") = STAGING REQUEST
-- "Change X to Y" (e.g., "change the color to blue") = STAGING REQUEST
-- Even if the user says "I don't want it staged" but then asks to modify the image, it's still a staging request
-
-If the user wants to stage a room or modify an image, respond with a JSON object containing staging parameters:
-{
-  "shouldStage": true,
-  "roomType": "Living room" | "Bedroom" | "Kitchen" | "Bathroom" | "Dining room" | "Office" | "Other",
-  "additionalPrompt": "Create a detailed, comprehensive staging prompt based on the user's request. Include specific details about: furniture style, color scheme, mood/atmosphere, specific furniture pieces to add, decor elements, lighting preferences, and any other relevant details. Make it detailed and descriptive, as if you're instructing a professional interior designer. Base this on what the user asked for in their message. IMPORTANT: Emphasize that architecture (walls, windows, doors, room structure) and existing furniture must be preserved exactly as they appear - only add new furniture and decor, do not modify what's already there. CRITICAL: Preserve the exact aspect ratio and full frame of the input photo — do not crop, zoom, or cut off any part of the room unless the user explicitly requested a tighter crop.",
-  "removeFurniture": true/false,
-  "usePreviousImage": false | 0 | 1 | 2 | ...
-}
-
-IMPORTANT: 
-- Always set furnitureStyle to "custom" (this will be handled automatically)
-- The additionalPrompt should be a comprehensive, detailed description that captures the user's vision
-- If the user says something vague like "make it cozy" or "modern style", expand it into a detailed prompt describing what that means
-- If the user mentions specific items, colors, or styles, incorporate those into the detailed prompt
-- "usePreviousImage": Set to false if using the current message's image, or set to the index (0 = most recent image in history, 1 = second most recent, etc.) if the user wants to modify a previous image. 
-  * If the user says "modify the previous staging" or "change the last one", use index 0 (most recent).
-  * If the user says "original image", "first image", "initial image", "go back to the original", "the original", or "show me the original", they mean the FIRST user-uploaded image, which is at the HIGHEST index number (oldest image). Look at the image context above to find which index corresponds to the first user-uploaded image.
-  * If the user says "the image before that" or "the one before the last one", use index 1 (second most recent).
-  * If the user says "show me the original but with X" or "the original but with X", use the original image index.
-
-If staging is NOT needed (user is just asking questions, not requesting image modifications), respond with:
-{
-  "shouldStage": false
-}
-
-Extract the parameters from the user's message and the AI's response.`;
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are a helpful assistant that evaluates staging requests. Always respond with valid JSON only.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' }
-    });
-    
-    const result = JSON.parse(completion.choices[0].message.content);
-    
-    if (result.shouldStage) {
-      return {
-        roomType: result.roomType || 'Living room',
-        furnitureStyle: 'custom', // Always use custom
-        additionalPrompt: result.additionalPrompt || '',
-        removeFurniture: result.removeFurniture || false,
-        usePreviousImage: result.usePreviousImage !== undefined ? result.usePreviousImage : false
-      };
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('Error evaluating staging request:', error);
-    return null;
-  }
-}
-
-/**
  * Process image through Stagify staging pipeline
  */
 /**
@@ -2299,7 +2127,7 @@ async function reviewImageQuality(imageDataUrl, opts = {}) {
     const extraUrls = [];
     if (Array.isArray(furnitureDataUrls)) {
       for (const u of furnitureDataUrls) {
-        try { extraUrls.push(await downscaleImageForGPT(u)); } catch (e) {}
+        try { extraUrls.push(await downscaleImageForGPT(u)); } catch { /* skip a furniture ref that fails to downscale */ }
       }
     }
     let guide = ' Image 1 is the photo to review.';
@@ -2351,8 +2179,8 @@ async function reviewMaskEdit(originalDataUrl, editedDataUrl, opts = {}) {
     const editSmall = await downscaleImageForGPT(editedDataUrl);
     let guide = ' Image 1 is the ORIGINAL room; image 2 is AFTER the edit.';
     const extras = [];
-    if (locatorDataUrl) { try { extras.push({ desc: locatorMarked ? 'outline' : 'mask', url: await downscaleImageForGPT(locatorDataUrl) }); } catch (e) {} }
-    if (referenceDataUrl) { try { extras.push({ desc: 'reference', url: await downscaleImageForGPT(referenceDataUrl) }); } catch (e) {} }
+    if (locatorDataUrl) { try { extras.push({ desc: locatorMarked ? 'outline' : 'mask', url: await downscaleImageForGPT(locatorDataUrl) }); } catch { /* optional reviewer image; skip on failure */ } }
+    if (referenceDataUrl) { try { extras.push({ desc: 'reference', url: await downscaleImageForGPT(referenceDataUrl) }); } catch { /* optional reviewer image; skip on failure */ } }
     let idx = 3;
     for (const e of extras) {
       if (e.desc === 'outline') guide += ` Image ${idx} is the SAME room with the editable area outlined in magenta — judge ONLY inside that outline and ignore everything outside it. The magenta line is just a location guide, NOT part of the photo, so never count it as a defect.`;
@@ -2871,7 +2699,7 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
     // to be added). Re-encode to JPEG so the data-URL MIME is always correct.
     const furnitureReviewUrls = [];
     for (const fb of furnitureBuffers) {
-      try { furnitureReviewUrls.push(`data:image/jpeg;base64,${(await sharp(fb).jpeg().toBuffer()).toString('base64')}`); } catch (e) {}
+      try { furnitureReviewUrls.push(`data:image/jpeg;base64,${(await sharp(fb).jpeg().toBuffer()).toString('base64')}`); } catch { /* skip a furniture ref that fails to encode */ }
     }
 
     // Generate, with the self-check quality gate retrying poor results.

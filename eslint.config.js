@@ -1,6 +1,6 @@
-// ESLint flat config (ESLint 9). Non-blocking in CI for now — see .github/workflows/ci.yml.
+// ESLint flat config (ESLint 9). Enforced in CI — a warning or error fails the build (.github/workflows/ci.yml).
 //
-// Scope: the BACKEND only. server.js, routes/, lib/, and the test suite are ES modules
+// Scope: the BACKEND only. server.js, instrument.js, routes/, lib/, and the test suite are ES modules
 // and lint cleanly. The frontend (public/scripts/*.js) is intentionally NOT linted yet:
 // those are classic <script> files that share globals across files, so `no-undef` /
 // `no-unused-vars` would flood with false positives until they get a browser-specific
@@ -27,7 +27,7 @@ export default [
 
   {
     // Backend: Node, ES modules.
-    files: ['server.js', 'load-env.js', 'routes/**/*.js', 'lib/**/*.js', 'test/**/*.js'],
+    files: ['server.js', 'load-env.js', 'instrument.js', 'routes/**/*.js', 'lib/**/*.js', 'test/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
