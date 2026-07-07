@@ -97,7 +97,7 @@ Example URL: `POST https://your-host/api/stage-by-endpoint-key?key=YOUR_SECRET` 
 |--------|------|-------------|
 | `POST` | `/api/log-contact` | **Body:** JSON with `userRole`, `referralSource`, `email`, `userAgent` (and similar). Appends a row to `contact_logs.csv` and bumps an in-memory contact counter. Returns `{ success: true }`. |
 | `POST` | `/api/send-email` | **Protected by server access key:** query `?key=` or `body.key` must match `endpointkey.txt` or `process.env.endpoint_key` (`LOGS_ACCESS_KEY`). **Body:** `to`, `subject`, `text` (Resend). Returns `403` if key wrong, `500` if no Resend, etc. |
-| `GET` | `/api/health` | **Public.** `{ status, timestamp, aiConfigured: boolean }` (and similar). |
+| `GET` | `/api/health` | **Public.** `{ status, timestamp, aiConfigured: boolean }` (and similar). Also registered as `GET /health` (same handler). |
 | `GET` | `/api/status` | **Public.** Uptime/status snapshot for the `/status` page. `Cache-Control: no-store`. Returns `{ status, currentState, monitoringSince, lastBeat, lastCheckedMsAgo, bootCount, windows: { '24h','7d','30d': { uptimePct, downMs, monitoredMs, coverage, incidents } }, buckets: { '24h'(48), '7d'(56): [{ start, end, state, uptimePct }] }, incidents: [{ start, end, durationMs, cause }], totalIncidents }`. Computed by `lib/uptime-monitor.js` from a heartbeat written every 60s to `data/uptime.json` (or `/data/uptime.json` on Render); downtime is inferred from heartbeat gaps detected on restart. `uptimePct` is `null` for a window with no monitored coverage yet. |
 | `GET` | `/api/prompt-count` | Returns `{ promptCount }` (server-side counter, used for hero “Rooms staged” type stats). |
 | `GET` | `/api/contact-count` | Returns `{ contactCount }` (in-memory + startup initialization). |
@@ -119,7 +119,7 @@ Example URL: `POST https://your-host/api/stage-by-endpoint-key?key=YOUR_SECRET` 
 |--------|------|-------------|
 | `GET` | `/api/welcome-message` | **Auth:** **`requireProAccount`**. **Query (optional):** `userId`. Returns `{ message, isReturning }` for the AI Designer welcome, using optional stored “memories”. |
 | `POST` | `/api/chat` | **Auth:** **`requireProAccount`**. **Body:** JSON with `messages` (OpenAI-style array), optional `model`, `messageTag`. Long-running: staging/CAD/generation inside JSON tool contract. Respects user message limits (e.g. 20 user messages) and may return `contextLimitReached`. |
-| `POST` | `/api/chat-upload` | **Auth:** **`requireProAccount`**. **Multipart:** up to 10 files in field `files`, plus form fields (e.g. `conversationHistory`, `messageTag`). AI Designer flow with file attachments. Large implementation in `server.js`. |
+| `POST` | `/api/chat-upload` | **Auth:** **`requireProAccount`**. **Multipart:** up to **5** files in field `files`, plus form fields (e.g. `conversationHistory`, `messageTag`). AI Designer flow with file attachments. Implemented in `routes/chat.js`. |
 
 ---
 
@@ -151,10 +151,25 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints, but each accepts it 
 | `GET` | `/chatlogs` | Download `chat_logs.csv`. |
 | `GET` | `/bugreports` | Download `bug_reports.csv`. |
 | `GET` | `/masklogs` | Download `mask_logs.csv`. |
+| `GET` | `/email-open-logs` | Download `email_open_logs.csv` (email open-tracking rows; `404` if none yet). |
+| `GET` | `/enterprise-domains` | Download `enterprise-domains.json` (active enterprise domains + Stripe ids); `{ domains: [] }` if none yet. |
 | `GET` | `/memories` | Download AI Designer `memories` JSON. |
 | `GET` | `/resetmemories` | **Clears** the memories file (all users). Returns JSON success. |
 
 `POST` `/api/send-email` uses the **same** `LOGS_ACCESS_KEY` (see above), not only for logs.
+
+---
+
+## Admin dashboard & image hosting
+
+The admin dashboard (`admin.html`) collects the `LOGS_ACCESS_KEY` client-side and calls these image-hosting APIs (and the log exports above) with the `X-Stagify-Endpoint-Key` header. Hosted images are served publicly at `GET /i/:id` (see Public pages).
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/admin` | Serves `public/admin.html` (internal dashboard). **No key on the GET** (`200`, `Cache-Control: no-store`); the page collects the admin key client-side. |
+| `POST` | `/api/host-image` | **`protectLogs`** (header key). **Multipart:** one image in field `image`. Stores it and returns `{ ok, id, path: '/i/<id>', url, entry }`; the image is then publicly served at `GET /i/:id`. `400` on a bad/missing upload, `500` on save failure. |
+| `GET` | `/api/hosted-images` | **`protectLogs`**. Lists hosted images newest-first: `{ images: [{ id, path, mime, size, uploadedAt, … }] }`. |
+| `DELETE` | `/api/hosted-images/:id` | **`protectLogs`**. Deletes a hosted image (file + manifest entry). Returns `{ ok: true }`, `400` for an invalid id, `404` if unknown. |
 
 ---
 
