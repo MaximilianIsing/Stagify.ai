@@ -5,7 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 
 export default function createAdminRouter(deps) {
-  const { authStore, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, getMemoriesFile, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT } = deps;
+  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, getMemoriesFile, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT } = deps;
   const router = express.Router();
 
 router.get('/admin', (req, res) => {
@@ -243,6 +243,18 @@ router.get('/resetmemories', protectLogs, (req, res) => {
       error: 'Failed to reset memories',
       message: error.message
     });
+  }
+});
+
+// Wipe all recorded uptime/incident history (admin "reset server status" button).
+router.post('/api/status/reset', protectLogs, (req, res) => {
+  try {
+    const snapshot = uptimeMonitor.reset();
+    if (DEBUG_MODE) console.log('✓ Server status (uptime) history reset');
+    res.status(200).json({ success: true, message: 'Server status history reset; monitoring restarted.', snapshot });
+  } catch (error) {
+    console.error('Error resetting server status:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

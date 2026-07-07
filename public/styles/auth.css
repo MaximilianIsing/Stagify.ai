@@ -369,6 +369,15 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
     padding-top: 46px;
   }
 }
+/* Stagify+ mobile: the language picker floats in the top-right corner (absolutely
+   positioned), and this page's hero heading starts high, so give the content column
+   enough top room to clear it. Higher specificity than the page's own .sp-page__inner
+   rule, so the clearance holds regardless of that value. */
+@media (max-width: 768px) {
+  body.page-stagify-plus .sp-page__inner {
+    padding-top: 3.5rem;
+  }
+}
 /* MOBILE ONLY: keep the main staging mask editor within the visible area so its
    top/bottom don't hide behind the mobile browser's URL bar / toolbar. The modal
    is pinned to the visual viewport in JS (setupStageMaskEditor); this caps the
@@ -609,7 +618,7 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   .nav .nav-center .profile-menu-wrap {
     position: absolute;
     right: max(6px, env(safe-area-inset-right));
-    bottom: 10px;
+    bottom: 0;
     z-index: 25;
   }
   .nav .nav-trailing {

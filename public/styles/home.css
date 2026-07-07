@@ -769,6 +769,25 @@
     radial-gradient(circle at 70% 70%, #1d4ed8 0, transparent 60%), #2563eb;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.32);
 }
+/* On narrow phones the three fixed-width pills wrap onto a second line.
+   Turn the control into a full-width segmented control: three equal tabs
+   sharing one row. Placed after the base rules so it wins the cascade. */
+@media (max-width: 600px) {
+  .studio-examples {
+    display: flex;
+    flex-wrap: nowrap;
+    align-self: stretch;
+    width: 100%;
+  }
+  .studio-ex {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 3px;
+    font-size: 11.5px;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
 
 /* respect reduced motion for all of the above */
 @media (prefers-reduced-motion: reduce) {
@@ -1422,6 +1441,12 @@
 .home-guides [id] {
   scroll-margin-top: 96px;
 }
+/* Mobile: a bit more breathing room above the guides hero */
+@media (max-width: 768px) {
+  .home-guides {
+    padding-top: 8px;
+  }
+}
 
 .guides-hero-title {
   background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #1e40af 100%);
@@ -1863,12 +1888,14 @@
   .guides-overview-grid {
     grid-template-columns: 1fr;
   }
+  /* force a fixed 2-wide × 3-tall grid so every tab is equal width instead
+     of wrapping based on its label length */
   .guide-demo-picker {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
   }
   .guide-demo-picker__btn {
-    flex: 1;
     justify-content: center;
   }
   .guides-walkthrough__panel {

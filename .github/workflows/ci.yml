@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20        # engines field says >=18; 20 is current LTS
+          node-version-file: .node-version   # single source of truth (Node 22 — matches local + Render); `node --test` glob needs >=21
           cache: npm
 
       - name: Install dependencies
