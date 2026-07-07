@@ -33,71 +33,140 @@
         .desktop-only { display: none !important; }
       }
 
-      .uptime-main { max-width: 920px; margin: 0 auto; padding: 108px 20px 80px; }
-
-      .up-head { text-align: center; margin-bottom: 28px; }
-      .up-head h1 { color: #1e3a8a; font-size: clamp(28px, 5vw, 40px); margin: 0 0 14px; }
-      .up-status-pill {
-        display: inline-flex; align-items: center; gap: 10px;
-        padding: 9px 18px; border-radius: 999px; font-weight: 600; font-size: 15px;
-        background: #ffffff; border: 1px solid var(--border);
-        box-shadow: 0 6px 20px rgba(15, 23, 42, .08);
+      .status-page {
+        --line: #e6edf5;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --faint: #94a3b8;
+        --green: #10b981;
+        --green-deep: #047857;
+        --amber: #f59e0b;
+        --red: #ef4444;
+        --red-deep: #b91c1c;
+        --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 16px 38px -20px rgba(16, 24, 40, .32);
+        padding: 0;
       }
-      .up-status-pill.is-up { color: #047857; border-color: #a7f3d0; }
-      .up-status-pill.is-down { color: #b91c1c; border-color: #fecaca; }
-      .up-status-pill.is-loading { color: var(--muted); }
-      .up-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: 0 0 auto; }
-      .is-up .up-dot { background: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, .18); }
-      .is-down .up-dot { background: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, .18); }
-      .up-sub { color: #2563eb; font-size: 14px; margin: 14px 0 0; }
+      /* main is the site's scroll container (aurora-scrollbar anchors to its right
+         edge), so it must stay full-width — center the content in an inner wrapper. */
+      .status-inner { width: 100%; max-width: 940px; margin: 0 auto; padding: 32px 20px 84px; }
 
-      .up-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 0 0 26px; }
-      .up-card {
-        background: #ffffff; border: 1px solid var(--border); border-radius: 16px;
-        padding: 20px 16px; text-align: center; box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+      /* ---- Heading ---------------------------------------------------------- */
+      .st-head { text-align: center; margin-bottom: 22px; }
+      .st-head h1 {
+        font-size: clamp(30px, 5vw, 42px); font-weight: 800; letter-spacing: -.022em;
+        color: var(--ink); margin: 0 0 8px;
       }
-      .up-card-val { font-size: clamp(24px, 4.5vw, 34px); font-weight: 700; color: #0f172a; line-height: 1.1; }
-      .up-card-label { margin-top: 6px; font-size: 13px; color: var(--muted); }
+      .st-head p { color: var(--muted); font-size: 15px; margin: 0; }
 
-      .up-block {
-        background: #ffffff; border: 1px solid var(--border); border-radius: 16px;
-        padding: 20px; margin-bottom: 18px; box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+      /* ---- Status banner ---------------------------------------------------- */
+      .st-banner {
+        display: flex; align-items: center; gap: 16px;
+        padding: 18px 22px; margin-bottom: 22px;
+        background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow);
+        transition: background .25s ease, border-color .25s ease;
       }
-      .up-block-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-      .up-block-head h2 { font-size: 16px; color: #0f172a; margin: 0; }
-      .up-block-pct { font-size: 15px; font-weight: 700; color: #047857; }
+      .st-banner.is-up { background: linear-gradient(180deg, #f0fdf9 0%, #ffffff 62%); border-color: #b7f0d8; }
+      .st-banner.is-down { background: linear-gradient(180deg, #fef2f2 0%, #ffffff 62%); border-color: #fbcfcf; }
+      .st-banner__badge {
+        width: 46px; height: 46px; border-radius: 50%; flex: 0 0 auto;
+        display: grid; place-items: center; background: #eef2f7;
+      }
+      .is-up .st-banner__badge { background: #d6f7e8; }
+      .is-down .st-banner__badge { background: #fde3e3; }
+      .st-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--faint); }
+      .is-up .st-dot { background: var(--green); animation: st-pulse 2.4s infinite; }
+      .is-down .st-dot { background: var(--red); animation: st-pulse-red 2.4s infinite; }
+      @keyframes st-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, .5); }
+        70% { box-shadow: 0 0 0 11px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      }
+      @keyframes st-pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, .5); }
+        70% { box-shadow: 0 0 0 11px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      }
+      .st-banner__body { flex: 1 1 auto; min-width: 0; }
+      .st-banner__title { font-size: 19px; font-weight: 750; color: var(--ink); }
+      .is-up .st-banner__title { color: #065f46; }
+      .is-down .st-banner__title { color: #991b1b; }
+      .st-banner__sub { color: var(--muted); font-size: 13px; margin-top: 3px; }
+      /* ---- Summary cards ---------------------------------------------------- */
+      .st-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+      .st-card {
+        background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+        padding: 22px 18px; text-align: center; transition: transform .16s ease, box-shadow .16s ease;
+      }
+      .st-card:hover { transform: translateY(-2px); box-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 22px 44px -22px rgba(16, 24, 40, .38); }
+      .st-card__eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); }
+      .st-card__val { font-size: clamp(28px, 5vw, 38px); font-weight: 800; letter-spacing: -.02em; color: var(--ink); line-height: 1.04; margin: 9px 0 3px; }
+      .st-card__cap { font-size: 12.5px; color: var(--muted); }
 
-      .up-bars { display: flex; align-items: stretch; gap: 2px; height: 46px; }
-      .up-bar { flex: 1 1 0; min-width: 0; border-radius: 3px; background: var(--border); transition: transform .08s ease; }
-      .up-bar:hover { transform: scaleY(1.08); }
-      .up-bar.up { background: #10b981; }
-      .up-bar.partial { background: #f59e0b; }
-      .up-bar.down { background: #ef4444; }
-      .up-bar.nodata { background: #e2e8f0; }
-      .up-axis { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--muted); }
+      /* ---- Graph blocks ----------------------------------------------------- */
+      .st-block {
+        background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+        padding: 22px 22px 20px; margin-bottom: 18px;
+      }
+      .st-block__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+      .st-block__head h2 { font-size: 15px; font-weight: 700; color: var(--ink); margin: 0; }
+      .st-block__meta { font-size: 11.5px; color: var(--faint); font-weight: 500; margin-left: 8px; }
+      .st-block__pct { font-size: 16px; font-weight: 800; color: var(--green-deep); }
 
-      .up-legend { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin: 6px 0 24px; font-size: 13px; color: var(--muted); }
-      .up-legend span { display: inline-flex; align-items: center; gap: 7px; }
-      .up-sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-      .up-sw.up { background: #10b981; } .up-sw.partial { background: #f59e0b; }
-      .up-sw.down { background: #ef4444; } .up-sw.nodata { background: #e2e8f0; }
+      .st-bars { display: flex; align-items: stretch; gap: 2px; height: 56px; }
+      .st-bar { flex: 1 1 0; min-width: 0; border-radius: 4px; background: #eef2f7; transition: transform .1s ease, filter .1s ease; cursor: default; }
+      .st-bar:hover { transform: scaleY(1.07); filter: brightness(1.08) saturate(1.05); }
+      .st-bar.up { background: linear-gradient(180deg, #34d399, #10b981); }
+      .st-bar.partial { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+      .st-bar.down { background: linear-gradient(180deg, #f87171, #ef4444); }
+      .st-bar.nodata { background: #eaeff5; }
+      .st-axis { display: flex; justify-content: space-between; margin-top: 11px; font-size: 11.5px; color: var(--faint); }
 
-      .up-incidents h2 { font-size: 16px; color: #0f172a; margin: 0 0 12px; }
-      .up-incident { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
-      .up-incident:first-child { border-top: none; }
-      .up-incident-dot { width: 9px; height: 9px; border-radius: 50%; background: #ef4444; margin-top: 5px; flex: 0 0 auto; }
-      .up-incident-main { flex: 1 1 auto; }
-      .up-incident-title { font-weight: 600; color: #0f172a; font-size: 14px; }
-      .up-incident-meta { color: var(--muted); font-size: 13px; margin-top: 2px; }
-      .up-incident-dur { color: #b91c1c; font-weight: 600; font-size: 13px; white-space: nowrap; }
-      .up-empty { color: var(--muted); font-size: 14px; padding: 6px 0; }
+      /* ---- Legend ----------------------------------------------------------- */
+      .st-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; justify-content: center; margin: 6px 0 24px; }
+      .st-legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted); }
+      .st-sw { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+      .st-sw.up { background: linear-gradient(180deg, #34d399, #10b981); }
+      .st-sw.partial { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+      .st-sw.down { background: linear-gradient(180deg, #f87171, #ef4444); }
+      .st-sw.nodata { background: #eaeff5; }
 
-      .up-foot { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 22px; line-height: 1.6; }
-      .up-foot a { color: #2563eb; }
+      /* ---- Incidents -------------------------------------------------------- */
+      .st-incidents h2 { font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 6px; }
+      .st-incident { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 1px solid var(--line); }
+      .st-incident:first-child { border-top: none; }
+      .st-incident__sev { width: 10px; height: 10px; border-radius: 50%; background: var(--red); margin-top: 5px; flex: 0 0 auto; box-shadow: 0 0 0 4px rgba(239, 68, 68, .12); }
+      .st-incident__main { flex: 1 1 auto; min-width: 0; }
+      .st-incident__title { font-weight: 650; color: var(--ink); font-size: 14px; }
+      .st-incident__meta { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+      .st-incident__dur {
+        flex: 0 0 auto; align-self: center; font-size: 12.5px; font-weight: 700; color: var(--red-deep);
+        background: #fef2f2; border: 1px solid #fbcfcf; padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+      }
+      .st-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 26px 12px 16px; }
+      .st-empty__icon { width: 48px; height: 48px; border-radius: 50%; background: #d6f7e8; color: var(--green-deep); display: grid; place-items: center; }
+      .st-empty__title { font-weight: 700; color: var(--ink); font-size: 15px; }
+      .st-empty__text { font-size: 13px; color: var(--muted); max-width: 380px; line-height: 1.5; }
 
-      @media (max-width: 560px) {
-        .up-cards { grid-template-columns: 1fr; }
-        .uptime-main { padding-top: 92px; }
+      /* ---- Footer note ------------------------------------------------------ */
+      .st-foot { text-align: center; color: var(--faint); font-size: 12.5px; margin-top: 24px; line-height: 1.65; }
+      .st-foot a { color: #2563eb; text-decoration: none; }
+      .st-foot a:hover { text-decoration: underline; }
+
+      /* ---- Hover tooltip (bars) --------------------------------------------- */
+      .st-tip {
+        position: absolute; z-index: 60; pointer-events: none; display: none;
+        background: #0f172a; color: #fff; padding: 8px 11px; border-radius: 10px;
+        box-shadow: 0 10px 28px rgba(2, 6, 23, .3); max-width: 240px;
+      }
+      .st-tip__val { font-weight: 700; font-size: 12.5px; }
+      .st-tip__time { opacity: .72; font-size: 11px; margin-top: 2px; }
+
+      @media (max-width: 600px) {
+        .st-cards { grid-template-columns: 1fr; }
+        .status-inner { padding-top: 22px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .st-dot, .st-live__dot { animation: none !important; }
       }
     </style>
   </head>
@@ -136,62 +205,89 @@
       </nav>
     </header>
 
-    <main class="uptime-main">
-      <header class="up-head">
-        <h1>Stagify.ai Status</h1>
-        <div class="up-status-pill is-loading" data-status>
-          <span class="up-dot"></span>
-          <span class="up-status-text">Checking status…</span>
+    <main class="status-page">
+      <div class="status-inner">
+      <div class="st-head">
+        <h1>Server Status</h1>
+        <p>Live availability and uptime history for Stagify.ai.</p>
+      </div>
+
+      <section class="st-banner is-loading" data-status aria-live="polite">
+        <span class="st-banner__badge"><span class="st-dot up-dot"></span></span>
+        <div class="st-banner__body">
+          <div class="st-banner__title up-status-text">Checking status…</div>
+          <div class="st-banner__sub" data-monitoring>&nbsp;</div>
         </div>
-        <p class="up-sub" data-monitoring>&nbsp;</p>
-      </header>
-
-      <div class="up-cards">
-        <div class="up-card"><div class="up-card-val" data-pct="24h">—</div><div class="up-card-label">Uptime · last 24 hours</div></div>
-        <div class="up-card"><div class="up-card-val" data-pct="7d">—</div><div class="up-card-label">Uptime · last 7 days</div></div>
-        <div class="up-card"><div class="up-card-val" data-pct="30d">—</div><div class="up-card-label">Uptime · last 30 days</div></div>
-      </div>
-
-      <section class="up-block">
-        <div class="up-block-head"><h2>Last 24 hours</h2><span class="up-block-pct" data-pct="24h">—</span></div>
-        <div class="up-bars" data-bars="24h" role="img" aria-label="Uptime bars for the last 24 hours"></div>
-        <div class="up-axis"><span>24 hours ago</span><span>now</span></div>
       </section>
 
-      <section class="up-block">
-        <div class="up-block-head"><h2>Last 7 days</h2><span class="up-block-pct" data-pct="7d">—</span></div>
-        <div class="up-bars" data-bars="7d" role="img" aria-label="Uptime bars for the last 7 days"></div>
-        <div class="up-axis"><span>7 days ago</span><span>now</span></div>
-      </section>
-
-      <div class="up-legend">
-        <span><i class="up-sw up"></i> Operational</span>
-        <span><i class="up-sw partial"></i> Partial outage</span>
-        <span><i class="up-sw down"></i> Downtime</span>
-        <span><i class="up-sw nodata"></i> No data yet</span>
+      <div class="st-cards">
+        <div class="st-card">
+          <div class="st-card__eyebrow">24 hours</div>
+          <div class="st-card__val up-card-val" data-pct="24h">—</div>
+          <div class="st-card__cap">uptime</div>
+        </div>
+        <div class="st-card">
+          <div class="st-card__eyebrow">7 days</div>
+          <div class="st-card__val up-card-val" data-pct="7d">—</div>
+          <div class="st-card__cap">uptime</div>
+        </div>
+        <div class="st-card">
+          <div class="st-card__eyebrow">30 days</div>
+          <div class="st-card__val up-card-val" data-pct="30d">—</div>
+          <div class="st-card__cap">uptime</div>
+        </div>
       </div>
 
-      <section class="up-block up-incidents">
+      <section class="st-block">
+        <div class="st-block__head">
+          <h2>Last 24 hours<span class="st-block__meta">48 bars · 30 min each</span></h2>
+          <span class="st-block__pct up-block-pct" data-pct="24h">—</span>
+        </div>
+        <div class="st-bars" data-bars="24h" role="img" aria-label="Uptime bars for the last 24 hours"></div>
+        <div class="st-axis"><span>24 hours ago</span><span>now</span></div>
+      </section>
+
+      <section class="st-block">
+        <div class="st-block__head">
+          <h2>Last 7 days<span class="st-block__meta">56 bars · 3 h each</span></h2>
+          <span class="st-block__pct up-block-pct" data-pct="7d">—</span>
+        </div>
+        <div class="st-bars" data-bars="7d" role="img" aria-label="Uptime bars for the last 7 days"></div>
+        <div class="st-axis"><span>7 days ago</span><span>now</span></div>
+      </section>
+
+      <div class="st-legend">
+        <span><i class="st-sw up"></i> Operational</span>
+        <span><i class="st-sw partial"></i> Partial outage</span>
+        <span><i class="st-sw down"></i> Downtime</span>
+        <span><i class="st-sw nodata"></i> No data</span>
+      </div>
+
+      <section class="st-block st-incidents">
         <h2>Recent incidents</h2>
-        <div data-incidents><p class="up-empty">Loading…</p></div>
+        <div data-incidents><p class="st-empty"><span class="st-empty__text">Loading…</span></p></div>
       </section>
 
-      <p class="up-foot" data-foot>&nbsp;</p>
+      <p class="st-foot" data-foot>&nbsp;</p>
+      </div>
     </main>
+
+    <div class="st-tip" role="tooltip" aria-hidden="true"></div>
 
     <script>
       (function () {
         'use strict';
         var ENDPOINT = '/api/status';
         var REFRESH_MS = 60000;
+        var SVG = 'http://www.w3.org/2000/svg';
 
         function $(sel, root) { return (root || document).querySelector(sel); }
         function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
         function fmtPct(v) {
           if (v === null || v === undefined) return '—';
-          // Show up to 3 decimals but drop trailing zeros (99.986%, 100%).
-          return Number(v.toFixed(3)) + '%';
+          // One decimal place, truncated so uptime is never rounded up (99.375 -> 99.3%).
+          return (Math.floor(v * 10 + 1e-6) / 10).toFixed(1) + '%';
         }
         function pctColor(v) {
           if (v === null || v === undefined) return 'var(--muted)';
@@ -227,56 +323,104 @@
           } catch (e) { return ''; }
         }
 
+        // ---- Bar hover tooltip -------------------------------------------------
+        var tip = $('.st-tip');
+        function showTip(bar) {
+          tip.textContent = '';
+          var val = document.createElement('div'); val.className = 'st-tip__val';
+          val.textContent = bar.getAttribute('data-val') || '';
+          var time = document.createElement('div'); time.className = 'st-tip__time';
+          time.textContent = bar.getAttribute('data-time') || '';
+          tip.appendChild(val); tip.appendChild(time);
+          tip.style.display = 'block';
+        }
+        function moveTip(e) {
+          if (tip.style.display !== 'block') return;
+          var r = tip.getBoundingClientRect();
+          var left = e.clientX - r.width / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - r.width - 8));
+          var top = e.clientY - r.height - 14;
+          if (top < 8) top = e.clientY + 16;
+          tip.style.left = (left + window.pageXOffset) + 'px';
+          tip.style.top = (top + window.pageYOffset) + 'px';
+        }
+        function hideTip() { tip.style.display = 'none'; }
+        $all('.st-bars').forEach(function (c) {
+          c.addEventListener('mouseover', function (e) {
+            var bar = e.target.closest ? e.target.closest('.st-bar') : null;
+            if (bar && c.contains(bar)) { showTip(bar); moveTip(e); }
+          });
+          c.addEventListener('mousemove', moveTip);
+          c.addEventListener('mouseleave', hideTip);
+        });
+
         function renderBars(container, buckets) {
           container.textContent = '';
           if (!buckets || !buckets.length) return;
           var frag = document.createDocumentFragment();
           buckets.forEach(function (b) {
             var el = document.createElement('div');
-            el.className = 'up-bar ' + (b.state || 'nodata');
-            var label = fmtTimeRange(b.start, b.end);
-            if (b.state === 'nodata') {
-              el.title = label + '\nNo data';
-            } else {
-              el.title = label + '\n' + fmtPct(b.uptimePct) + ' uptime';
-            }
+            el.className = 'st-bar ' + (b.state || 'nodata');
+            el.setAttribute('data-time', fmtTimeRange(b.start, b.end));
+            el.setAttribute('data-val', b.state === 'nodata' ? 'No data' : fmtPct(b.uptimePct) + ' uptime');
             frag.appendChild(el);
           });
           container.appendChild(frag);
         }
 
+        function checkIcon() {
+          var svg = document.createElementNS(SVG, 'svg');
+          svg.setAttribute('width', '26'); svg.setAttribute('height', '26');
+          svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none');
+          svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '2.4');
+          svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round');
+          svg.setAttribute('aria-hidden', 'true');
+          var p = document.createElementNS(SVG, 'path'); p.setAttribute('d', 'M20 6 9 17l-5-5');
+          svg.appendChild(p);
+          return svg;
+        }
+
         function renderIncidents(root, incidents) {
           root.textContent = '';
           if (!incidents || !incidents.length) {
-            var p = document.createElement('p');
-            p.className = 'up-empty';
-            p.textContent = 'No downtime recorded in the monitored period. 🎉';
-            root.appendChild(p);
+            var wrap = document.createElement('div');
+            wrap.className = 'st-empty';
+            var icon = document.createElement('span');
+            icon.className = 'st-empty__icon';
+            icon.appendChild(checkIcon());
+            var title = document.createElement('div');
+            title.className = 'st-empty__title';
+            title.textContent = 'No incidents recorded';
+            var text = document.createElement('div');
+            text.className = 'st-empty__text';
+            text.textContent = 'The service has had no detected downtime in the monitored period.';
+            wrap.appendChild(icon); wrap.appendChild(title); wrap.appendChild(text);
+            root.appendChild(wrap);
             return;
           }
           incidents.forEach(function (inc) {
             var row = document.createElement('div');
-            row.className = 'up-incident';
+            row.className = 'st-incident';
 
-            var dot = document.createElement('span');
-            dot.className = 'up-incident-dot';
+            var sev = document.createElement('span');
+            sev.className = 'st-incident__sev';
 
             var main = document.createElement('div');
-            main.className = 'up-incident-main';
+            main.className = 'st-incident__main';
             var title = document.createElement('div');
-            title.className = 'up-incident-title';
+            title.className = 'st-incident__title';
             title.textContent = inc.cause || 'Downtime';
             var meta = document.createElement('div');
-            meta.className = 'up-incident-meta';
+            meta.className = 'st-incident__meta';
             meta.textContent = fmtDate(inc.start) + ' → ' + fmtDate(inc.end);
             main.appendChild(title);
             main.appendChild(meta);
 
             var dur = document.createElement('div');
-            dur.className = 'up-incident-dur';
+            dur.className = 'st-incident__dur';
             dur.textContent = fmtDuration(inc.durationMs);
 
-            row.appendChild(dot);
+            row.appendChild(sev);
             row.appendChild(main);
             row.appendChild(dur);
             root.appendChild(row);
@@ -338,7 +482,8 @@
           pill.classList.remove('is-loading', 'is-up');
           pill.classList.add('is-down');
           $('.up-status-text', pill).textContent = 'Unable to load status';
-          $('[data-incidents]').innerHTML = '<p class="up-empty">Could not reach the status API. Retrying…</p>';
+          $('[data-monitoring]').textContent = 'Could not reach the status API — retrying…';
+          $('[data-incidents]').innerHTML = '<div class="st-empty"><span class="st-empty__text">Could not reach the status API. Retrying…</span></div>';
         }
 
         function load() {
