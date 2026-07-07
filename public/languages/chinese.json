@@ -74,6 +74,10 @@
       "title": "让 AI 为你的空间布置",
       "subtitle": "使用 AI Designer，通过对话对任何房间进行布置、重新设计和反复调整，直到呈现出可挂牌出售的效果。<em>（Stagify+ 专属）</em>"
     },
+    "masking": {
+      "title": "精准布置，分毫不差",
+      "subtitle": "遮罩需要重新布置的区域，放入你自己的家具，其余部分保持像素级不变。<em>（Stagify+ 专属）</em>"
+    },
     "info": {
       "eyebrow": "简而言之",
       "title": "什么是虚拟装修，为何它能促成成交",
@@ -277,7 +281,6 @@
     "staging": {
       "title": "选项",
       "close": "x",
-      "adDisclaimer": "*广告使我们能够免费提供此工具",
       "roomType": "房间类型",
       "furnitureStyle": "家具风格",
       "additionalPrompt": "额外提示",

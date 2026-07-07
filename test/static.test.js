@@ -133,11 +133,10 @@ test('every language file is valid, non-empty JSON', () => {
   }
 });
 
-// Informational only: translations currently lag english.json (e.g. home.testimonials.*).
-// Marked `todo` so it REPORTS the gap in test output without failing the suite — missing
-// translation keys don't take the site down. Backfill the locales, then drop the `todo`
-// option to promote this to a hard gate that enforces parity going forward.
-test('translations cover english.json keys', { todo: 'some locales lag english.json — see output for current gaps' }, () => {
+// Hard gate: every non-English locale must cover all of english.json's keys. When you
+// add an English string, translate it in every locale or the build fails here. To
+// temporarily downgrade this to non-blocking, add `{ todo: 'reason' }` as the 2nd arg.
+test('translations cover english.json keys', () => {
   const parsed = loadLanguages();
   const baseKeys = flattenKeys(parsed['english.json']);
   const mismatches = [];

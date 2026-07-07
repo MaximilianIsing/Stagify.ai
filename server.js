@@ -22,12 +22,14 @@ import Stripe from 'stripe';
 import { OAuth2Client } from 'google-auth-library';
 import { handleStripeEvent } from './lib/stripe-webhooks.js';
 import { createEnterpriseStore } from './lib/enterprise-store.js';
+import { createUptimeMonitor } from './lib/uptime-monitor.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const authStore = createAuthStore(__dirname);
 const enterpriseStore = createEnterpriseStore(__dirname);
+const uptimeMonitor = createUptimeMonitor(__dirname);
 setInterval(() => authStore.pruneSessions(), 6 * 60 * 60 * 1000).unref?.();
 
 /**
@@ -164,6 +166,18 @@ const googleOAuthClient = googleClientId
   : null;
 if (googleClientId) {
   console.log('[google] OAuth client id loaded (Sign-In with Google enabled)');
+}
+
+// --- Staging environment flag -------------------------------------------------
+// When IS_STAGING is truthy ("1"/"true"/"on"/"yes") this deploy is the Stagify
+// *staging* (test) site, not production. In that mode we disable the real
+// third-party sign-up/payment paths: Google sign-in is turned off (both the UI,
+// via /api/auth/config, and the /api/auth/google endpoint) and the Stripe
+// subscribe / "Stripe help center" buttons are blocked or hidden in the UI.
+// Off by default, so production behaviour is unchanged.
+const IS_STAGING = /^(1|true|on|yes)$/i.test(String(process.env.IS_STAGING || '').trim());
+if (IS_STAGING) {
+  console.log('[staging] IS_STAGING enabled — Google sign-in and Stripe checkout are disabled');
 }
 
 function readEndpointAccessKey() {
@@ -3639,6 +3653,11 @@ app.get('/privacy', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
 
+// Public status/uptime page (data comes from GET /api/uptime).
+app.get('/uptime', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'uptime.html'));
+});
+
 app.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));
@@ -4118,11 +4137,23 @@ app.post('/api/auth/login', authLimiter, express.json(), (req, res) => {
 
 /** Public client id for Google Identity Services (Sign In With Google button). */
 app.get('/api/auth/config', (req, res) => {
-  res.json({ googleClientId: googleClientId || null });
+  // On the staging site we withhold the client id so the UI never renders the
+  // Google button, and advertise isStaging so the client can block the Stripe
+  // subscribe / help-center buttons too.
+  res.json({
+    googleClientId: IS_STAGING ? null : googleClientId || null,
+    isStaging: IS_STAGING,
+  });
 });
 
 app.post('/api/auth/google', authLimiter, express.json(), async (req, res) => {
   try {
+    if (IS_STAGING) {
+      return res.status(403).json({
+        error: 'Google sign-in is disabled on the staging environment',
+        code: 'STAGING_DISABLED',
+      });
+    }
     if (!googleOAuthClient || !googleClientId) {
       return res.status(503).json({ error: 'Google sign-in is not configured' });
     }
@@ -4823,6 +4854,13 @@ const healthHandler = (req, res) => {
 };
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
+
+// Uptime/status data for the public /uptime page. Computed from the heartbeat
+// state on the persistent disk; no auth (it exposes only aggregate up/down).
+app.get('/api/uptime', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json(uptimeMonitor.getSnapshot());
+});
 
 // Prompt count endpoint (Rooms Staged)
 app.get('/api/prompt-count', (req, res) => {
@@ -8519,7 +8557,17 @@ app.post('/api/segment', genLimiter, async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`AI configured: ${!!genAI}`);
-  
+
+  // Begin the uptime heartbeat (and record any downtime gap since the last run).
+  // Skipped under tests so the suite doesn't write real uptime state or leave a
+  // timer/self-check running.
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      uptimeMonitor.start();
+    } catch (err) {
+      console.error('Uptime monitor failed to start:', err.message);
+    }
+  }
 
   const fakeContactAdd = 0;
   const fakePromptAdd = 0;

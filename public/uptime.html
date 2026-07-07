@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
+    <link rel="manifest" href="manifest.json">
+    <title>Status &amp; Uptime | Stagify.ai</title>
+    <meta name="description" content="Live status and uptime for Stagify.ai — 24-hour and 7-day availability with historical percentages.">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Stagify.ai Status &amp; Uptime">
+    <meta property="og:description" content="Live status and uptime for Stagify.ai — 24-hour and 7-day availability with historical percentages.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stagify.ai/uptime">
+    <meta property="og:site_name" content="Stagify.ai">
+    <meta property="og:image" content="https://stagify.ai/og-image.png">
+    <link rel="canonical" href="https://stagify.ai/uptime">
+    <meta name="theme-color" content="#2563eb">
+
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script src="scripts/language-detect.js" defer></script>
+    <script src="scripts/language-loader.js" defer></script>
+    <script src="scripts/language-switcher.js" defer></script>
+    <script src="scripts/nav-pill.js" defer></script>
+    <script src="scripts/auth.js" defer></script>
+    <script src="scripts/profile-menu.js" defer></script>
+    <style>
+      @media (max-width: 768px) {
+        .desktop-only { display: none !important; }
+      }
+
+      .uptime-main { max-width: 920px; margin: 0 auto; padding: 108px 20px 80px; }
+
+      .up-head { text-align: center; margin-bottom: 28px; }
+      .up-head h1 { color: #1e3a8a; font-size: clamp(28px, 5vw, 40px); margin: 0 0 14px; }
+      .up-status-pill {
+        display: inline-flex; align-items: center; gap: 10px;
+        padding: 9px 18px; border-radius: 999px; font-weight: 600; font-size: 15px;
+        background: #ffffff; border: 1px solid var(--border);
+        box-shadow: 0 6px 20px rgba(15, 23, 42, .08);
+      }
+      .up-status-pill.is-up { color: #047857; border-color: #a7f3d0; }
+      .up-status-pill.is-down { color: #b91c1c; border-color: #fecaca; }
+      .up-status-pill.is-loading { color: var(--muted); }
+      .up-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: 0 0 auto; }
+      .is-up .up-dot { background: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, .18); }
+      .is-down .up-dot { background: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, .18); }
+      .up-sub { color: #2563eb; font-size: 14px; margin: 14px 0 0; }
+
+      .up-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 0 0 26px; }
+      .up-card {
+        background: #ffffff; border: 1px solid var(--border); border-radius: 16px;
+        padding: 20px 16px; text-align: center; box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+      }
+      .up-card-val { font-size: clamp(24px, 4.5vw, 34px); font-weight: 700; color: #0f172a; line-height: 1.1; }
+      .up-card-label { margin-top: 6px; font-size: 13px; color: var(--muted); }
+
+      .up-block {
+        background: #ffffff; border: 1px solid var(--border); border-radius: 16px;
+        padding: 20px; margin-bottom: 18px; box-shadow: 0 6px 20px rgba(15, 23, 42, .06);
+      }
+      .up-block-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+      .up-block-head h2 { font-size: 16px; color: #0f172a; margin: 0; }
+      .up-block-pct { font-size: 15px; font-weight: 700; color: #047857; }
+
+      .up-bars { display: flex; align-items: stretch; gap: 2px; height: 46px; }
+      .up-bar { flex: 1 1 0; min-width: 0; border-radius: 3px; background: var(--border); transition: transform .08s ease; }
+      .up-bar:hover { transform: scaleY(1.08); }
+      .up-bar.up { background: #10b981; }
+      .up-bar.partial { background: #f59e0b; }
+      .up-bar.down { background: #ef4444; }
+      .up-bar.nodata { background: #e2e8f0; }
+      .up-axis { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--muted); }
+
+      .up-legend { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin: 6px 0 24px; font-size: 13px; color: var(--muted); }
+      .up-legend span { display: inline-flex; align-items: center; gap: 7px; }
+      .up-sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+      .up-sw.up { background: #10b981; } .up-sw.partial { background: #f59e0b; }
+      .up-sw.down { background: #ef4444; } .up-sw.nodata { background: #e2e8f0; }
+
+      .up-incidents h2 { font-size: 16px; color: #0f172a; margin: 0 0 12px; }
+      .up-incident { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
+      .up-incident:first-child { border-top: none; }
+      .up-incident-dot { width: 9px; height: 9px; border-radius: 50%; background: #ef4444; margin-top: 5px; flex: 0 0 auto; }
+      .up-incident-main { flex: 1 1 auto; }
+      .up-incident-title { font-weight: 600; color: #0f172a; font-size: 14px; }
+      .up-incident-meta { color: var(--muted); font-size: 13px; margin-top: 2px; }
+      .up-incident-dur { color: #b91c1c; font-weight: 600; font-size: 13px; white-space: nowrap; }
+      .up-empty { color: var(--muted); font-size: 14px; padding: 6px 0; }
+
+      .up-foot { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 22px; line-height: 1.6; }
+      .up-foot a { color: #2563eb; }
+
+      @media (max-width: 560px) {
+        .up-cards { grid-template-columns: 1fr; }
+        .uptime-main { padding-top: 92px; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Background Video -->
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+      <source src="background.mp4" type="video/mp4">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
+          <a href="masking-studio.html" class="nav-link desktop-only nav-masking-studio-pro hidden" data-lang="navigation.maskingStudio">Masking Studio</a>
+          <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
+          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="nav-trailing">
+          <div class="mobile-test-text">
+            <div data-lang="hero.title.upload">Upload.</div>
+            <div data-lang="hero.title.stage">Stage.</div>
+            <div data-lang="hero.title.imagine">Imagine.</div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="uptime-main">
+      <header class="up-head">
+        <h1>Stagify.ai Status</h1>
+        <div class="up-status-pill is-loading" data-status>
+          <span class="up-dot"></span>
+          <span class="up-status-text">Checking status…</span>
+        </div>
+        <p class="up-sub" data-monitoring>&nbsp;</p>
+      </header>
+
+      <div class="up-cards">
+        <div class="up-card"><div class="up-card-val" data-pct="24h">—</div><div class="up-card-label">Uptime · last 24 hours</div></div>
+        <div class="up-card"><div class="up-card-val" data-pct="7d">—</div><div class="up-card-label">Uptime · last 7 days</div></div>
+        <div class="up-card"><div class="up-card-val" data-pct="30d">—</div><div class="up-card-label">Uptime · last 30 days</div></div>
+      </div>
+
+      <section class="up-block">
+        <div class="up-block-head"><h2>Last 24 hours</h2><span class="up-block-pct" data-pct="24h">—</span></div>
+        <div class="up-bars" data-bars="24h" role="img" aria-label="Uptime bars for the last 24 hours"></div>
+        <div class="up-axis"><span>24 hours ago</span><span>now</span></div>
+      </section>
+
+      <section class="up-block">
+        <div class="up-block-head"><h2>Last 7 days</h2><span class="up-block-pct" data-pct="7d">—</span></div>
+        <div class="up-bars" data-bars="7d" role="img" aria-label="Uptime bars for the last 7 days"></div>
+        <div class="up-axis"><span>7 days ago</span><span>now</span></div>
+      </section>
+
+      <div class="up-legend">
+        <span><i class="up-sw up"></i> Operational</span>
+        <span><i class="up-sw partial"></i> Partial outage</span>
+        <span><i class="up-sw down"></i> Downtime</span>
+        <span><i class="up-sw nodata"></i> No data yet</span>
+      </div>
+
+      <section class="up-block up-incidents">
+        <h2>Recent incidents</h2>
+        <div data-incidents><p class="up-empty">Loading…</p></div>
+      </section>
+
+      <p class="up-foot" data-foot>&nbsp;</p>
+    </main>
+
+    <script>
+      (function () {
+        'use strict';
+        var ENDPOINT = '/api/uptime';
+        var REFRESH_MS = 60000;
+
+        function $(sel, root) { return (root || document).querySelector(sel); }
+        function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+        function fmtPct(v) {
+          if (v === null || v === undefined) return '—';
+          // Show up to 3 decimals but drop trailing zeros (99.986%, 100%).
+          return Number(v.toFixed(3)) + '%';
+        }
+        function pctColor(v) {
+          if (v === null || v === undefined) return 'var(--muted)';
+          if (v >= 99.9) return '#047857';
+          if (v >= 99) return '#b45309';
+          return '#b91c1c';
+        }
+        function fmtDuration(ms) {
+          if (ms < 1000) return '<1s';
+          var s = Math.round(ms / 1000);
+          if (s < 60) return s + 's';
+          var m = Math.floor(s / 60);
+          if (m < 60) return m + 'm ' + (s % 60) + 's';
+          var h = Math.floor(m / 60);
+          if (h < 24) return h + 'h ' + (m % 60) + 'm';
+          var d = Math.floor(h / 24);
+          return d + 'd ' + (h % 24) + 'h';
+        }
+        function fmtAgo(ms) {
+          if (ms === null || ms === undefined) return 'never';
+          if (ms < 60000) return Math.round(ms / 1000) + 's ago';
+          if (ms < 3600000) return Math.round(ms / 60000) + 'm ago';
+          if (ms < 86400000) return Math.round(ms / 3600000) + 'h ago';
+          return Math.round(ms / 86400000) + 'd ago';
+        }
+        function fmtDate(ts) {
+          try { return new Date(ts).toLocaleString(); } catch (e) { return String(ts); }
+        }
+        function fmtTimeRange(start, end) {
+          try {
+            var opts = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(start).toLocaleString([], opts) + ' – ' + new Date(end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          } catch (e) { return ''; }
+        }
+
+        function renderBars(container, buckets) {
+          container.textContent = '';
+          if (!buckets || !buckets.length) return;
+          var frag = document.createDocumentFragment();
+          buckets.forEach(function (b) {
+            var el = document.createElement('div');
+            el.className = 'up-bar ' + (b.state || 'nodata');
+            var label = fmtTimeRange(b.start, b.end);
+            if (b.state === 'nodata') {
+              el.title = label + '\nNo data';
+            } else {
+              el.title = label + '\n' + fmtPct(b.uptimePct) + ' uptime';
+            }
+            frag.appendChild(el);
+          });
+          container.appendChild(frag);
+        }
+
+        function renderIncidents(root, incidents) {
+          root.textContent = '';
+          if (!incidents || !incidents.length) {
+            var p = document.createElement('p');
+            p.className = 'up-empty';
+            p.textContent = 'No downtime recorded in the monitored period. 🎉';
+            root.appendChild(p);
+            return;
+          }
+          incidents.forEach(function (inc) {
+            var row = document.createElement('div');
+            row.className = 'up-incident';
+
+            var dot = document.createElement('span');
+            dot.className = 'up-incident-dot';
+
+            var main = document.createElement('div');
+            main.className = 'up-incident-main';
+            var title = document.createElement('div');
+            title.className = 'up-incident-title';
+            title.textContent = inc.cause || 'Downtime';
+            var meta = document.createElement('div');
+            meta.className = 'up-incident-meta';
+            meta.textContent = fmtDate(inc.start) + ' → ' + fmtDate(inc.end);
+            main.appendChild(title);
+            main.appendChild(meta);
+
+            var dur = document.createElement('div');
+            dur.className = 'up-incident-dur';
+            dur.textContent = fmtDuration(inc.durationMs);
+
+            row.appendChild(dot);
+            row.appendChild(main);
+            row.appendChild(dur);
+            root.appendChild(row);
+          });
+        }
+
+        function setStatus(data) {
+          var pill = $('[data-status]');
+          var text = $('.up-status-text', pill);
+          pill.classList.remove('is-loading', 'is-up', 'is-down');
+          if (data.currentState === 'up') {
+            pill.classList.add('is-up');
+            text.textContent = 'All systems operational';
+          } else {
+            pill.classList.add('is-down');
+            text.textContent = 'Service disruption detected';
+          }
+        }
+
+        function render(data) {
+          setStatus(data);
+
+          // Summary + per-graph percentages.
+          $all('[data-pct]').forEach(function (el) {
+            var key = el.getAttribute('data-pct');
+            var w = data.windows && data.windows[key];
+            var v = w ? w.uptimePct : null;
+            el.textContent = fmtPct(v);
+            if (el.classList.contains('up-card-val') || el.classList.contains('up-block-pct')) {
+              el.style.color = pctColor(v);
+            }
+          });
+
+          if (data.buckets) {
+            renderBars($('[data-bars="24h"]'), data.buckets['24h']);
+            renderBars($('[data-bars="7d"]'), data.buckets['7d']);
+          }
+
+          renderIncidents($('[data-incidents]'), data.incidents);
+
+          // Monitoring line.
+          var mon = $('[data-monitoring]');
+          if (data.monitoringSince) {
+            mon.textContent = 'Monitoring since ' + fmtDate(data.monitoringSince) +
+              ' · last check ' + fmtAgo(data.lastCheckedMsAgo);
+          } else {
+            mon.textContent = 'Collecting data…';
+          }
+
+          var foot = $('[data-foot]');
+          foot.innerHTML = 'Auto-refreshes every 60 seconds · ' + (data.bootCount || 0) +
+            ' restart' + (data.bootCount === 1 ? '' : 's') + ' logged · ' +
+            'Availability is measured from the server’s own heartbeat. For an independent check, ' +
+            '<a href="/health">/health</a> returns live status JSON.';
+        }
+
+        function showError() {
+          var pill = $('[data-status]');
+          pill.classList.remove('is-loading', 'is-up');
+          pill.classList.add('is-down');
+          $('.up-status-text', pill).textContent = 'Unable to load status';
+          $('[data-incidents]').innerHTML = '<p class="up-empty">Could not reach the status API. Retrying…</p>';
+        }
+
+        function load() {
+          fetch(ENDPOINT, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(render)
+            .catch(function () { showError(); });
+        }
+
+        load();
+        setInterval(load, REFRESH_MS);
+        // Refresh when the tab regains focus so a returning visitor sees current data.
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'visible') load();
+        });
+      })();
+    </script>
+
+    <script defer src="scripts/app.js"></script>
+    <script src="scripts/aurora-scrollbar.js" defer></script>
+  </body>
+</html>
