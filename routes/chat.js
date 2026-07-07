@@ -1,11 +1,16 @@
 // chat routes, extracted verbatim from server.js.
 import express from 'express';
+import createChatPipeline from '../lib/chat-pipeline.js';
 import path from 'path';
-import { DESIGNER_ROUTING_RESPONSE_FORMAT, DUAL_UPLOAD_ROOM_PROMPT_SUFFIX, buildChatSystemInstruction, buildChatUploadSystemInstruction } from '../lib/prompts.js';
+import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChatUploadSystemInstruction } from '../lib/prompts.js';
 
 export default function createChatRouter(deps) {
-  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, getUserIdentifier, annotateImage, downscaleImageForGPT, filterUnsupportedFiles, deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, applyBaseImageIndexToStagingParams, resolveCadImageIndex, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, applyAddFurnitureStagingFallback, getImageFromHistory, buildImageContext, getOriginalImageIndex, getStagifyDateContext, parseDesignerRoutingCompletion, aiResponseDefersImageAction, wantsStreamedChatResponse, chatWillProcessSlowImages, chatIntentType, initChatSse, writeChatSseEvent, finishStreamedChatResponse, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount } = deps;
+  // Direct deps used by the handlers. The post-routing dispatch deps
+  // (staging/generate/CAD/memory helpers, image resolution, etc.) are consumed
+  // by createChatPipeline(deps) below rather than referenced here.
+  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier, annotateImage, downscaleImageForGPT, filterUnsupportedFiles, deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext, getStagifyDateContext, parseDesignerRoutingCompletion, aiResponseDefersImageAction, wantsStreamedChatResponse, chatWillProcessSlowImages, chatIntentType, initChatSse, writeChatSseEvent, finishStreamedChatResponse, logChatToFile } = deps;
   const router = express.Router();
+  const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse } = createChatPipeline(deps);
 
 router.get('/api/welcome-message', async (req, res) => {
   try {
@@ -386,78 +391,15 @@ router.post('/api/chat', genLimiter, async (req, res) => {
       console.log('====================');
     }
 
-    // Process memory actions from AI response
-    const memoryActions = { stores: [], forgets: [] };
-    if (lastUserMessageText && memoryActionsFromAI) {
-      if (DEBUG_MODE) {
-        console.log(`[Memory] Processing memory actions from AI response:`, memoryActionsFromAI);
-      }
-      
-      // Process forget actions first
-      if (memoryActionsFromAI.forgets && memoryActionsFromAI.forgets.length > 0) {
-        // Check if user wants to forget all memories
-        if (memoryActionsFromAI.forgets.includes('all')) {
-          const forgottenCount = memories.length;
-          memories = [];
-          memoryActions.forgets = ['all'];
-          console.log(`Forgot ALL ${forgottenCount} memories for user ${userId}`);
-        } else {
-          // Process individual memory forgets
-          for (const memoryId of memoryActionsFromAI.forgets) {
-            const initialLength = memories.length;
-            // Try exact ID match first
-            memories = memories.filter(m => m.id !== memoryId);
-            
-            if (memories.length < initialLength) {
-              memoryActions.forgets.push(memoryId);
-              if (DEBUG_MODE) {
-                console.log(`Forgot memory with ID for user ${userId}:`, memoryId);
-              }
-            } else {
-              // Try to find by content match if ID didn't work
-              const memoryToForget = memories.find(m => 
-                m.content.toLowerCase().includes(memoryId.toLowerCase()) ||
-                memoryId.toLowerCase().includes(m.content.toLowerCase()) ||
-                m.id.includes(memoryId) ||
-                memoryId.includes(m.id)
-              );
-              
-              if (memoryToForget) {
-                memories = memories.filter(m => m.id !== memoryToForget.id);
-                memoryActions.forgets.push(memoryToForget.id);
-                if (DEBUG_MODE) {
-                  console.log(`Forgot memory for user ${userId}:`, memoryToForget.content);
-                }
-              }
-            }
-          }
-        }
-      }
-      
-      // Process store actions
-      if (memoryActionsFromAI.stores && memoryActionsFromAI.stores.length > 0) {
-        for (const memoryContent of memoryActionsFromAI.stores) {
-          if (memoryContent && memoryContent.trim()) {
-            const newMemory = {
-              id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
-              content: memoryContent.trim(),
-              timestamp: new Date().toISOString(),
-              userMessage: lastUserMessageText.substring(0, 100) // Store first 100 chars for context
-            };
-            memories.push(newMemory);
-            memoryActions.stores.push(newMemory.content);
-            if (DEBUG_MODE) {
-              console.log(`Stored new memory for user ${userId}:`, newMemory.content);
-            }
-          }
-        }
-      }
-      
-      // Save memories if any changes were made
-      if (memoryActions.stores.length > 0 || memoryActions.forgets.length > 0) {
-        saveMemories(userId, memories);
-      }
-    }
+    // Apply the AI's memory stores/forgets.
+    const memoryResult = applyMemoryActions({
+      memoryActionsFromAI,
+      memories,
+      userId,
+      userMessageText: lastUserMessageText,
+    });
+    memories = memoryResult.memories;
+    const memoryActions = memoryResult.memoryActions;
 
     const streamMode =
       wantsStreamedChatResponse(req) &&
@@ -473,674 +415,100 @@ router.post('/api/chat', genLimiter, async (req, res) => {
       });
     }
 
-    // Process image generation request(s) from AI response (supports single or array)
-    let generatedImages = [];
-    
-    if (generateRequestFromAI) {
-      // Normalize to array (max 3)
-      const generateRequests = Array.isArray(generateRequestFromAI) 
-        ? generateRequestFromAI.slice(0, 3).filter(g => g.shouldGenerate && g.prompt)
-        : (generateRequestFromAI.shouldGenerate && generateRequestFromAI.prompt ? [generateRequestFromAI] : []);
-      
-      if (generateRequests.length > 0) {
-        if (DEBUG_MODE) {
-          console.log(`[Image Generation] Processing ${generateRequests.length} generation request(s) from AI`);
-        }
-        
-        for (let i = 0; i < generateRequests.length; i++) {
-          const genRequest = generateRequests[i];
-          try {
-            if (DEBUG_MODE) {
-              console.log(`[Image Generation] Processing generation request ${i + 1}/${generateRequests.length}:`, genRequest.prompt.substring(0, 100) + '...');
-            }
-            const geminiModel = getGeminiImageModel(selectedModel);
-            const generatedImage = await processImageGeneration(genRequest.prompt, req, geminiModel);
-            if (generatedImage) {
-              // Annotate generated image in parallel
-              const annotationPromise = annotateImage(generatedImage).then(annotation => {
-                if (DEBUG_MODE) {
-                  console.log(`[Image Annotation] Annotation for generated image ${i + 1}: ${annotation || 'failed'}`);
-                }
-                return annotation;
-              }).catch(err => {
-                console.error(`[Image Annotation] Error annotating generated image ${i + 1}:`, err);
-                return null;
-              });
-              
-              generatedImages.push({
-                image: generatedImage,
-                annotationPromise: annotationPromise
-              });
-              if (DEBUG_MODE) {
-                console.log(`[Image Generation] Successfully generated image ${i + 1}/${generateRequests.length}`);
-              }
-            }
-          } catch (error) {
-            console.error(`[Image Generation] Error generating image ${i + 1}:`, error);
-            // Continue with other images if one fails
-          }
-        }
-        
-        if (generateRequests.length > 0 && generatedImages.length === 0) {
-          text = text + '\n\nSorry, I encountered an error while generating the images. Please try again.';
-        }
-      }
-    }
-    
-    // Process staging request(s) from AI response (supports single or array)
-    let stagingResults = [];
-    
-    if (stagingRequestFromAI) {
-      // Normalize to array (max 3)
-      const stagingRequests = Array.isArray(stagingRequestFromAI)
-        ? stagingRequestFromAI.slice(0, 3).filter(s => s.shouldStage)
-        : (stagingRequestFromAI.shouldStage ? [stagingRequestFromAI] : []);
-      
-      if (stagingRequests.length > 0) {
-        if (DEBUG_MODE) {
-          console.log(`[Staging] Processing ${stagingRequests.length} staging request(s) from AI`);
-        }
-        
-        for (let i = 0; i < stagingRequests.length; i++) {
-          const stagingRequest = stagingRequests[i];
-          if (DEBUG_MODE) {
-            console.log(`[Staging] Processing staging request ${i + 1}/${stagingRequests.length}:`, stagingRequest);
-          }
-          
-          // Build staging params from AI response
-          let stagingParams = {
-            roomType: stagingRequest.roomType || 'Other',
-            furnitureStyle: 'custom', // Always use custom
-            additionalPrompt: stagingRequest.additionalPrompt || '',
-            removeFurniture: stagingRequest.removeFurniture || false,
-            usePreviousImage: stagingRequest.usePreviousImage !== undefined ? stagingRequest.usePreviousImage : false,
-            furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null,
-            styleReference: stagingRequest.styleReference === true
-          };
+    // Image generation runs before staging in this endpoint (original order).
+    const generateOut = await runGenerateRequests({ generateRequestFromAI, req, selectedModel });
+    const generatedImages = generateOut.generatedImages;
+    if (generateOut.textSuffix) text = text + generateOut.textSuffix;
 
-          let currentMessageImageBuffer = null;
-          let currentMessageHasImageInChat = false;
-          if (lastUserMessage && Array.isArray(lastUserMessage.content)) {
-            const currentImageItem = lastUserMessage.content.find(
-              (item) => item.type === 'image_url' && item.image_url && item.image_url.url
-            );
-            if (currentImageItem) {
-              currentMessageHasImageInChat = true;
-              const b64 = currentImageItem.image_url.url.split(',')[1];
-              if (b64) currentMessageImageBuffer = Buffer.from(b64, 'base64');
-            }
+    // Staging. The current-message image is loop-invariant, so resolve it once.
+    let currentMessageHasImageInChat = false;
+    let currentMessageImageBuffer = null;
+    if (lastUserMessage && Array.isArray(lastUserMessage.content)) {
+      const currentImageItem = lastUserMessage.content.find(
+        (item) => item.type === 'image_url' && item.image_url && item.image_url.url
+      );
+      if (currentImageItem) {
+        currentMessageHasImageInChat = true;
+        const b64 = currentImageItem.image_url.url.split(',')[1];
+        if (b64) currentMessageImageBuffer = Buffer.from(b64, 'base64');
+      }
+    }
+    const stagingOut = await runStagingRequests({
+      stagingRequestFromAI,
+      history: messages,
+      userMessageText: lastUserMessageText,
+      userId,
+      req,
+      selectedModel,
+      baseImageIndex,
+      currentMessageHasImage: currentMessageHasImageInChat,
+      currentImageBuffer: currentMessageImageBuffer,
+      applyOriginalKeywordFallback: true,
+      resolveDualUpload: () => resolveDualUploadFromMessageContent(
+        lastUserMessage && Array.isArray(lastUserMessage.content) ? lastUserMessage.content : null,
+        lastUserMessageText
+      ),
+      resolveFallbackImage: () => {
+        if (imageFromHistory) {
+          const base64Data = imageFromHistory.split(',')[1];
+          if (base64Data) {
+            return {
+              buffer: Buffer.from(base64Data, 'base64'),
+              source: isStagedImage ? 'staged image' : 'conversation history',
+              logMessage: '[Staging] Using image from conversation history (fallback)',
+            };
           }
+        }
+        return null;
+      },
+    });
+    const stagingResults = stagingOut.stagingResults;
+    if (stagingOut.textSuffix) text = (text || '') + stagingOut.textSuffix;
 
-          const addFurnitureFallbackChat = applyAddFurnitureStagingFallback(
-            stagingParams,
-            lastUserMessageText,
-            messages,
-            {
-              currentMessageHasImage: currentMessageHasImageInChat,
-              currentImageBuffer: currentMessageImageBuffer,
-              baseImageIndex,
-            }
-          );
-          stagingParams = addFurnitureFallbackChat.stagingParams;
-          const furnitureFromCurrentUpload = addFurnitureFallbackChat.furnitureFromCurrentUpload;
-          
-          // Fallback: If user mentions "original", "first", or "initial" image but AI didn't set usePreviousImage correctly
-          const messageLower = lastUserMessageText.toLowerCase();
-          const hasOriginalKeywords = messageLower.includes('original') || 
-                                      messageLower.includes('first image') || 
-                                      messageLower.includes('initial image') ||
-                                      messageLower.includes('go back to') ||
-                                      messageLower.includes('refer back to');
-          
-          if (hasOriginalKeywords && (stagingParams.usePreviousImage === false || stagingParams.usePreviousImage === null)) {
-            // Find the original (first) user-uploaded image
-            const originalImageIndex = getOriginalImageIndex(messages);
-            if (originalImageIndex !== null) {
-              if (DEBUG_MODE) {
-                console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
-              }
-              stagingParams.usePreviousImage = originalImageIndex;
-            } else {
-              // If no original found, use most recent (index 0)
-              if (DEBUG_MODE) {
-                console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
-              }
-              stagingParams.usePreviousImage = 0;
-            }
-          }
+    // Recall.
+    const recalledImageForDisplay = resolveRecalledImage({ recallRequestFromAI, history: messages });
 
-          stagingParams = applyBaseImageIndexToStagingParams(
-            stagingParams,
-            baseImageIndex,
-            messages,
-            {
-              userMessage: lastUserMessageText,
-              currentMessageHasImage: currentMessageHasImageInChat,
-            }
-          );
-          
-          if (stagingParams) {
-            try {
-              let imageBuffer = null;
-              let imageSource = '';
-              let furnitureImageBuffer = furnitureFromCurrentUpload || null;
+    // Image request (may re-run GPT to analyze, replacing text).
+    const requestedOut = await resolveRequestedImage({
+      imageRequestFromAI,
+      history: messages,
+      baseMessages: openaiMessages,
+      systemInstruction,
+      userMessageText: lastUserMessageText,
+      analysisUserText: lastUserMessageText,
+      selectedModel,
+      text,
+    });
+    const requestedImageForDisplay = requestedOut.requestedImageForDisplay;
+    text = requestedOut.text;
 
-              const dualUploadStagingChat = resolveDualUploadFromMessageContent(
-                lastUserMessage && Array.isArray(lastUserMessage.content) ? lastUserMessage.content : null,
-                lastUserMessageText
-              );
-              if (dualUploadStagingChat) {
-                imageBuffer = dualUploadStagingChat.roomBuffer;
-                furnitureImageBuffer = dualUploadStagingChat.furnitureBuffers;
-                imageSource = dualUploadStagingChat.source;
-                if (!stagingParams.additionalPrompt || !stagingParams.additionalPrompt.includes('user\'s actual room photo')) {
-                  stagingParams = {
-                    ...stagingParams,
-                    additionalPrompt: (stagingParams.additionalPrompt || '') + DUAL_UPLOAD_ROOM_PROMPT_SUFFIX,
-                  };
-                }
-              } else if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
-              // AI requested a previous image - use the AI's chosen index (AI should use context to determine the correct image)
-              const imageIndex = typeof stagingParams.usePreviousImage === 'number' ? stagingParams.usePreviousImage : 0;
-              if (DEBUG_MODE) {
-                console.log(`[Staging] Looking for image at index ${imageIndex}`);
-              }
-              
-              const previousImage = getImageFromHistory(messages, imageIndex);
-              
-              if (previousImage && previousImage.url) {
-                const base64Data = previousImage.url.split(',')[1];
-                if (base64Data) {
-                  imageBuffer = Buffer.from(base64Data, 'base64');
-                  imageSource = previousImage.isStaged ? `staged image (index ${imageIndex})` : `user-uploaded image (index ${imageIndex})`;
-                  if (DEBUG_MODE) {
-                    console.log(`[Staging] Using previous ${imageSource}`);
-                  }
-                } else {
-                  if (DEBUG_MODE) {
-                    console.log(`[Staging] Previous image found but base64 data extraction failed`);
-                  }
-                }
-              } else {
-                if (DEBUG_MODE) {
-                  console.log(`[Staging] Previous image at index ${imageIndex} not found`);
-                }
-                // Fallback: try to use the most recent image (index 0) if requested index doesn't exist
-                if (imageIndex > 0) {
-                  if (DEBUG_MODE) {
-                    console.log(`[Staging] Attempting fallback to index 0`);
-                  }
-                  const fallbackImage = getImageFromHistory(messages, 0);
-                  if (fallbackImage && fallbackImage.url) {
-                    const base64Data = fallbackImage.url.split(',')[1];
-                    if (base64Data) {
-                      imageBuffer = Buffer.from(base64Data, 'base64');
-                      imageSource = fallbackImage.isStaged ? `staged image (fallback to index 0)` : `user-uploaded image (fallback to index 0)`;
-                      if (DEBUG_MODE) {
-                        console.log(`[Staging] Using fallback ${imageSource}`);
-                      }
-                    }
-                  }
-                }
-              }
-            } else if (imageFromHistory) {
-              // Fallback to old logic if usePreviousImage is false but we have imageFromHistory
-              const base64Data = imageFromHistory.split(',')[1];
-              if (base64Data) {
-                imageBuffer = Buffer.from(base64Data, 'base64');
-                imageSource = isStagedImage ? 'staged image' : 'conversation history';
-                if (DEBUG_MODE) {
-                  console.log(`[Staging] Using image from conversation history (fallback)`);
-                }
-              }
-            }
-            
-            // Retrieve furniture image if specified (skip if dual upload already set furniture buffers)
-            if (!dualUploadStagingChat && !furnitureImageBuffer && stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
-              const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
-              if (furnitureIndex !== null) {
-                if (DEBUG_MODE) {
-                  console.log(`[Staging] Looking for furniture image at index ${furnitureIndex}`);
-                }
-                const furnitureImage = getImageFromHistory(messages, furnitureIndex);
-                
-                if (furnitureImage && furnitureImage.url) {
-                  const base64Data = furnitureImage.url.split(',')[1];
-                  if (base64Data) {
-                    furnitureImageBuffer = Buffer.from(base64Data, 'base64');
-                    if (DEBUG_MODE) {
-                      console.log(`[Staging] Found furniture image at index ${furnitureIndex}`);
-                    }
-                  }
-                } else {
-                  if (DEBUG_MODE) {
-                    console.log(`[Staging] Furniture image at index ${furnitureIndex} not found`);
-                  }
-                }
-              }
-            }
-            
-            if (imageBuffer) {
-              try {
-                const geminiModel = getGeminiImageModel(selectedModel);
-                const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer, geminiModel);
-                if (stagedImage) {
-                  // Increment prompt count for staging
-                  incPromptCount();
-                  
-                  // Annotate staged image in parallel
-                  const annotationPromise = annotateImage(stagedImage).then(annotation => {
-                    if (DEBUG_MODE) {
-                      console.log(`[Image Annotation] Annotation for staged image ${i + 1}: ${annotation || 'failed'}`);
-                    }
-                    return annotation;
-                  }).catch(err => {
-                    console.error(`[Image Annotation] Error annotating staged image ${i + 1}:`, err);
-                    return null;
-                  });
-                  
-                  stagingResults.push({
-                    stagedImage: stagedImage,
-                    params: stagingParams,
-                    annotationPromise: annotationPromise
-                  });
-                  if (DEBUG_MODE) {
-                    console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
-                  }
-                }
-              } catch (stagingError) {
-                console.error(`[Staging] Error processing staging ${i + 1}:`, stagingError);
-                console.error(`[Staging] Error stack:`, stagingError.stack);
-                // Continue with other staging requests if one fails
-                // Add error message to text response
-                if (stagingRequests.length === 1) {
-                  text = (text || '') + '\n\nSorry, I encountered an error while staging the room. Please try again.';
-                }
-              }
-            } else {
-              if (DEBUG_MODE) {
-                console.log(`[Staging] No image found for staging ${i + 1}`);
-              }
-              if (stagingRequests.length === 1) {
-                text = (text || '') + '\n\nSorry, I couldn\'t find the image to stage. Please make sure you\'ve uploaded an image.';
-              }
-            }
-          } catch (error) {
-            console.error(`[Staging] Error in staging request ${i + 1}:`, error);
-            console.error(`[Staging] Error stack:`, error.stack);
-            // Continue with other staging requests if one fails
-            if (stagingRequests.length === 1) {
-              text = (text || '') + '\n\nSorry, I encountered an error while processing the staging request. Please try again.';
-            }
-          }
-          }
-        }
-      }
-    }
+    // CAD.
+    const cadCurrentMessageHasImage = Boolean(
+      lastUserMessage &&
+        Array.isArray(lastUserMessage.content) &&
+        lastUserMessage.content.some(
+          (item) => item.type === 'image_url' && item.image_url && item.image_url.url
+        )
+    );
+    const cadOut = await runCadRequests({
+      cadRequestFromAI,
+      history: messages,
+      baseImageIndex,
+      currentMessageHasImage: cadCurrentMessageHasImage,
+    });
+    const cadResults = cadOut.cadResults;
+    if (cadOut.textSuffix) text = (text || '') + cadOut.textSuffix;
 
-    // Process recall request from AI response (simpler than imageRequest - just retrieves and displays)
-    let recalledImageForDisplay = null;
-    if (recallRequestFromAI && recallRequestFromAI.shouldRecall) {
-      try {
-        const imageIndex = typeof recallRequestFromAI.imageIndex === 'number' ? recallRequestFromAI.imageIndex : 0;
-        if (DEBUG_MODE) {
-          console.log(`[Recall] Processing recall request from AI, index: ${imageIndex}`);
-        }
-        
-        // Retrieve the image from conversation history
-        const recalledImage = getImageFromHistory(messages, imageIndex);
-        
-        if (recalledImage && recalledImage.url) {
-          if (DEBUG_MODE) {
-            console.log(`[Recall] Found image at index ${imageIndex}`);
-          }
-          recalledImageForDisplay = recalledImage.url;
-        } else {
-          if (DEBUG_MODE) {
-            console.log(`[Recall] Image at index ${imageIndex} not found`);
-          }
-        }
-      } catch (error) {
-        console.error('Error processing recall request:', error);
-        // Continue with original response if recall fails
-      }
-    }
+    const response = await buildDesignerResponse({
+      text,
+      memoryActions,
+      stagingResults,
+      generatedImages,
+      requestedImageForDisplay,
+      recalledImageForDisplay,
+      cadResults,
+    });
 
-    // Process image request from AI response
-    let requestedImageForDisplay = null;
-    if (imageRequestFromAI && imageRequestFromAI.requestImage) {
-      try {
-        const imageIndex = typeof imageRequestFromAI.imageIndex === 'number' ? imageRequestFromAI.imageIndex : 0;
-        if (DEBUG_MODE) {
-          console.log(`[Image Request] Processing image request from AI, index: ${imageIndex}`);
-        }
-        
-        // Retrieve the image from conversation history
-        const requestedImage = getImageFromHistory(messages, imageIndex);
-        
-        if (requestedImage && requestedImage.url) {
-          if (DEBUG_MODE) {
-            console.log(`[Image Request] Found image at index ${imageIndex}`);
-          }
-          
-          // Store the image URL to return in response for display
-          requestedImageForDisplay = requestedImage.url;
-          
-          // Check if user wants to analyze/describe the image (vs just view it)
-          // Only analyze if explicitly asking for description/analysis, not just "show me"
-          const messageLower = lastUserMessageText.toLowerCase();
-          const wantsAnalysis = (messageLower.includes('describe') && !messageLower.includes('show')) || 
-                               (messageLower.includes('analyze') && !messageLower.includes('show')) || 
-                               (messageLower.includes('what') && messageLower.includes('in') && !messageLower.includes('show')) ||
-                               messageLower.includes('tell me about') ||
-                               (messageLower.includes('explain') && !messageLower.includes('show'));
-          
-          if (wantsAnalysis) {
-            if (DEBUG_MODE) {
-              console.log(`[Image Request] User wants analysis, sending to GPT for analysis`);
-            }
-            // Make another GPT call with the image for analysis
-            const imageAnalysisMessages = [
-              { role: 'system', content: systemInstruction },
-              ...openaiMessages.slice(1), // Skip the original system message, keep the rest
-              {
-                role: 'user',
-                content: [
-                  { type: 'text', text: lastUserMessageText },
-                  {
-                    type: 'image_url',
-                    image_url: {
-                      url: await downscaleImageForGPT(requestedImage.url)
-                    }
-                  }
-                ]
-              }
-            ];
-            
-            const imageAnalysisCompletion = await openai.chat.completions.create({
-              model: selectedModel,
-              messages: imageAnalysisMessages,
-              temperature: getTemperatureForModel(selectedModel),
-              response_format: DESIGNER_ROUTING_RESPONSE_FORMAT
-            });
-            
-            const imageAnalysisJson = parseDesignerRoutingCompletion(imageAnalysisCompletion);
-            text = imageAnalysisJson.response || imageAnalysisCompletion.choices[0].message.content;
-            
-            if (DEBUG_MODE) {
-              console.log(`[Image Request] Successfully analyzed image, response: ${text.substring(0, 100)}...`);
-            }
-          } else {
-            // User just wants to see the image - keep the original text response
-            if (DEBUG_MODE) {
-              console.log(`[Image Request] User wants to view image, returning image for display`);
-            }
-          }
-        } else {
-          if (DEBUG_MODE) {
-            console.log(`[Image Request] Image at index ${imageIndex} not found`);
-          }
-        }
-      } catch (error) {
-        console.error('Error processing image request:', error);
-        // Continue with original response if image request fails
-      }
-    }
-
-    // Process CAD request(s) from AI response (supports single or array)
-    let cadResults = [];
-    
-    if (cadRequestFromAI) {
-      // Normalize to array (max 3)
-      const cadRequests = Array.isArray(cadRequestFromAI)
-        ? cadRequestFromAI.slice(0, 3).filter(c => c.shouldProcessCAD)
-        : (cadRequestFromAI.shouldProcessCAD ? [cadRequestFromAI] : []);
-      
-      if (cadRequests.length > 0) {
-        if (DEBUG_MODE) {
-          console.log(`[CAD] Processing ${cadRequests.length} CAD request(s) from AI`);
-        }
-        
-        for (let i = 0; i < cadRequests.length; i++) {
-          const cadRequest = cadRequests[i];
-          if (DEBUG_MODE) {
-            console.log(`[CAD] Processing CAD request ${i + 1}/${cadRequests.length}:`, cadRequest);
-          }
-          
-          try {
-            const imageIndex = resolveCadImageIndex(
-              cadRequest,
-              baseImageIndex,
-              messages,
-              Boolean(
-                lastUserMessage &&
-                  Array.isArray(lastUserMessage.content) &&
-                  lastUserMessage.content.some(
-                    (item) => item.type === 'image_url' && item.image_url && item.image_url.url
-                  )
-              )
-            );
-            if (DEBUG_MODE) {
-              console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
-            }
-            
-            // Retrieve the blueprint image from conversation history
-            const blueprintImage = getImageFromHistory(messages, imageIndex);
-            
-            if (blueprintImage && blueprintImage.url) {
-              if (DEBUG_MODE) {
-                console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
-              }
-              
-              // Extract base64 data from the image URL
-              const base64Data = blueprintImage.url.split(',')[1];
-              if (base64Data) {
-                const imageBuffer = Buffer.from(base64Data, 'base64');
-                const mimeType = blueprintImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
-                
-                // Retrieve furniture images if specified
-                const furnitureImages = [];
-                if (cadRequest.furnitureImageIndex !== null && cadRequest.furnitureImageIndex !== undefined) {
-                  const furnitureIndices = Array.isArray(cadRequest.furnitureImageIndex) 
-                    ? cadRequest.furnitureImageIndex 
-                    : [cadRequest.furnitureImageIndex];
-                  
-                  for (const furnitureIndex of furnitureIndices) {
-                    if (furnitureIndex !== null && furnitureIndex !== undefined) {
-                      const furnitureImage = getImageFromHistory(messages, furnitureIndex);
-                      if (furnitureImage && furnitureImage.url) {
-                        const furnitureBase64Data = furnitureImage.url.split(',')[1];
-                        if (furnitureBase64Data) {
-                          const furnitureBuffer = Buffer.from(furnitureBase64Data, 'base64');
-                          const furnitureMimeType = furnitureImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
-                          furnitureImages.push({
-                            image: furnitureBuffer,
-                            mimeType: furnitureMimeType
-                          });
-                          if (DEBUG_MODE) {
-                            console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
-                          }
-                        }
-                      } else {
-                        if (DEBUG_MODE) {
-                          console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
-                        }
-                      }
-                    }
-                  }
-                }
-                
-                if (DEBUG_MODE) {
-                  console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequest.additionalPrompt ? ` (with additional prompt: ${cadRequest.additionalPrompt.substring(0, 50)}...)` : ''}...`);
-                }
-                // Process the blueprint through CAD function
-                const additionalPrompt = cadRequest.additionalPrompt || null;
-                const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
-                
-                // Convert result buffer to data URL
-                const cadImageBase64 = cadResultBuffer.toString('base64');
-                const cadImageForDisplay = `data:${mimeType};base64,${cadImageBase64}`;
-                
-                // Annotate CAD image in parallel
-                const annotationPromise = annotateImage(cadImageForDisplay, true).then(annotation => {
-                  if (DEBUG_MODE) {
-                    console.log(`[Image Annotation] Annotation for CAD render ${i + 1}: ${annotation || 'failed'}`);
-                  }
-                  return annotation;
-                }).catch(err => {
-                  console.error(`[Image Annotation] Error annotating CAD render ${i + 1}:`, err);
-                  return null;
-                });
-                
-                cadResults.push({
-                  cadImage: cadImageForDisplay,
-                  params: cadRequest,
-                  annotationPromise: annotationPromise
-                });
-                
-                if (DEBUG_MODE) {
-                  console.log(`[CAD] Successfully generated 3D render ${i + 1}/${cadRequests.length} from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
-                }
-              } else {
-                if (DEBUG_MODE) {
-                  console.log(`[CAD] Failed to extract base64 data from blueprint image`);
-                }
-              }
-            } else {
-              if (DEBUG_MODE) {
-                console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
-              }
-            }
-          } catch (error) {
-            if (DEBUG_MODE) {
-              console.error(`[CAD] Error processing CAD request ${i + 1}:`, error);
-            }
-            // Continue with other CAD requests if one fails
-            if (cadRequests.length === 1) {
-              text = (text || '') + '\n\nSorry, I encountered an error while processing the CAD blueprint. Please try again.';
-            }
-          }
-        }
-      }
-    }
-    
-    // Legacy support: maintain cadImageForDisplay and cadAnnotationPromise for backward compatibility
-    let cadImageForDisplay = null;
-    let cadAnnotationPromise = null;
-    if (cadResults.length > 0) {
-      cadImageForDisplay = cadResults[0].cadImage;
-      cadAnnotationPromise = cadResults[0].annotationPromise;
-    }
-
-    // Wait for all annotations to complete before building response
-    const stagedImageAnnotations = {};
-    if (stagingResults.length > 0) {
-      for (let i = 0; i < stagingResults.length; i++) {
-        if (stagingResults[i].annotationPromise) {
-          const annotation = await stagingResults[i].annotationPromise;
-          if (annotation) {
-            stagedImageAnnotations[`staged_${i}`] = annotation;
-          }
-        }
-      }
-    }
-    
-    const generatedImageAnnotations = {};
-    if (generatedImages.length > 0) {
-      for (let i = 0; i < generatedImages.length; i++) {
-        if (generatedImages[i].annotationPromise) {
-          const annotation = await generatedImages[i].annotationPromise;
-          if (annotation) {
-            generatedImageAnnotations[`generated_${i}`] = annotation;
-          }
-        }
-      }
-    }
-    
-    // Wait for all CAD annotations to complete
-    const cadImageAnnotations = {};
-    if (cadResults.length > 0) {
-      for (let i = 0; i < cadResults.length; i++) {
-        if (cadResults[i].annotationPromise) {
-          const annotation = await cadResults[i].annotationPromise;
-          if (annotation) {
-            cadImageAnnotations[`cad_${i}`] = annotation;
-          }
-        }
-      }
-    }
-    
-    // Legacy support
-    let cadImageAnnotation = null;
-    if (cadImageForDisplay && cadAnnotationPromise) {
-      cadImageAnnotation = await cadAnnotationPromise;
-    }
-
-    // Return JSON response with text, memory actions, staging result(s), generated image(s), and requested image if available
-    const response = { 
-      response: text,
-      memories: memoryActions
-    };
-    
-    // Handle multiple staging results
-    if (stagingResults.length > 0) {
-      if (stagingResults.length === 1) {
-        // Single result - maintain backward compatibility
-        response.stagedImage = stagingResults[0].stagedImage;
-        response.stagingParams = stagingResults[0].params;
-      } else {
-        // Multiple results - return as array
-        response.stagedImages = stagingResults.map(r => r.stagedImage);
-        response.stagingParams = stagingResults.map(r => r.params);
-      }
-      // Include annotations if available
-      if (Object.keys(stagedImageAnnotations).length > 0) {
-        response.stagedImageAnnotations = stagedImageAnnotations;
-      }
-    }
-    
-    // Handle multiple generated images
-    if (generatedImages.length > 0) {
-      if (generatedImages.length === 1) {
-        // Single result - maintain backward compatibility
-        response.generatedImage = generatedImages[0].image || generatedImages[0];
-      } else {
-        // Multiple results - return as array
-        response.generatedImages = generatedImages.map(g => g.image || g);
-      }
-      // Include annotations if available
-      if (Object.keys(generatedImageAnnotations).length > 0) {
-        response.generatedImageAnnotations = generatedImageAnnotations;
-      }
-    }
-    
-    if (requestedImageForDisplay) {
-      response.requestedImage = requestedImageForDisplay;
-    }
-    
-    if (recalledImageForDisplay) {
-      response.recalledImage = recalledImageForDisplay;
-    }
-    
-    // Handle multiple CAD results
-    if (cadResults.length > 0) {
-      if (cadResults.length === 1) {
-        // Single result - maintain backward compatibility
-        response.cadImage = cadResults[0].cadImage;
-        if (cadImageAnnotation) {
-          response.cadImageAnnotation = cadImageAnnotation;
-        }
-      } else {
-        // Multiple results - return as array
-        response.cadImages = cadResults.map(r => r.cadImage);
-        response.cadParams = cadResults.map(r => r.params);
-      }
-      // Include annotations if available
-      if (Object.keys(cadImageAnnotations).length > 0) {
-        response.cadImageAnnotations = cadImageAnnotations;
-      }
-    }
-    
     if (streamMode) {
       finishStreamedChatResponse(res, response);
     } else {
@@ -1721,80 +1089,16 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
       console.log('============================');
     }
 
-    // Process memory actions from AI response
-    const memoryActions = { stores: [], forgets: [] };
-    if (message && memoryActionsFromAI) {
-      if (DEBUG_MODE) {
-        console.log(`[Memory] Processing memory actions from AI response:`, memoryActionsFromAI);
-      }
-      
-      // Process forget actions first
-      if (memoryActionsFromAI.forgets && memoryActionsFromAI.forgets.length > 0) {
-        // Check if user wants to forget all memories
-        if (memoryActionsFromAI.forgets.includes('all')) {
-          const forgottenCount = memories.length;
-          memories = [];
-          memoryActions.forgets = ['all'];
-          if (DEBUG_MODE) {
-            console.log(`Forgot ALL ${forgottenCount} memories for user ${userId}`);
-          }
-        } else {
-          // Process individual memory forgets
-          for (const memoryId of memoryActionsFromAI.forgets) {
-            const initialLength = memories.length;
-            // Try exact ID match first
-            memories = memories.filter(m => m.id !== memoryId);
-            
-            if (memories.length < initialLength) {
-              memoryActions.forgets.push(memoryId);
-              console.log(`Forgot memory with ID for user ${userId}:`, memoryId);
-            } else {
-              // Try to find by content match if ID didn't work
-              const memoryToForget = memories.find(m => 
-                m.content.toLowerCase().includes(memoryId.toLowerCase()) ||
-                memoryId.toLowerCase().includes(m.content.toLowerCase()) ||
-                m.id.includes(memoryId) ||
-                memoryId.includes(m.id)
-              );
-              
-              if (memoryToForget) {
-                memories = memories.filter(m => m.id !== memoryToForget.id);
-                memoryActions.forgets.push(memoryToForget.id);
-                console.log(`Forgot memory for user ${userId}:`, memoryToForget.content);
-              }
-            }
-          }
-        }
-      }
-      
-      // Process store actions
-      if (memoryActionsFromAI.stores && memoryActionsFromAI.stores.length > 0) {
-        for (const memoryContent of memoryActionsFromAI.stores) {
-          if (memoryContent && memoryContent.trim()) {
-            const newMemory = {
-              id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
-              content: memoryContent.trim(),
-              timestamp: new Date().toISOString(),
-              userMessage: message.substring(0, 100) // Store first 100 chars for context
-            };
-            memories.push(newMemory);
-            memoryActions.stores.push(newMemory.content);
-            if (DEBUG_MODE) {
-              console.log(`Stored new memory for user ${userId}:`, newMemory.content);
-            }
-          }
-        }
-      }
-      
-      // Save memories if any changes were made
-      if (memoryActions.stores.length > 0 || memoryActions.forgets.length > 0) {
-        saveMemories(userId, memories);
-      }
-    }
+    // Apply the AI's memory stores/forgets.
+    const memoryResult = applyMemoryActions({
+      memoryActionsFromAI,
+      memories,
+      userId,
+      userMessageText: message,
+    });
+    memories = memoryResult.memories;
+    const memoryActions = memoryResult.memoryActions;
 
-    // Process staging request(s) from AI response (supports single or array)
-    let stagingResults = [];
-    
     // Check if current message has an image
     const currentMessageHasImage = firstImageFile !== null;
 
@@ -1826,568 +1130,68 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
         memories: memoryActions,
       });
     }
-    
-    if (stagingRequestFromAI) {
-      // Normalize to array (max 3)
-      const stagingRequests = Array.isArray(stagingRequestFromAI)
-        ? stagingRequestFromAI.slice(0, 3).filter(s => s.shouldStage)
-        : (stagingRequestFromAI.shouldStage ? [stagingRequestFromAI] : []);
-      
-      if (stagingRequests.length > 0) {
-        if (DEBUG_MODE) {
-          console.log(`[Staging] Processing ${stagingRequests.length} staging request(s) from AI`);
-        }
-        
-        for (let i = 0; i < stagingRequests.length; i++) {
-          const stagingRequest = stagingRequests[i];
-          if (DEBUG_MODE) {
-            console.log(`[Staging] Processing staging request ${i + 1}/${stagingRequests.length}:`, stagingRequest);
-          }
-          
-          // Build staging params from AI response
-          let stagingParams = {
-            roomType: stagingRequest.roomType || 'Other',
-            furnitureStyle: 'custom', // Always use custom
-            additionalPrompt: stagingRequest.additionalPrompt || '',
-            removeFurniture: stagingRequest.removeFurniture || false,
-            usePreviousImage: stagingRequest.usePreviousImage !== undefined ? stagingRequest.usePreviousImage : false,
-            furnitureImageIndex: stagingRequest.furnitureImageIndex !== undefined && stagingRequest.furnitureImageIndex !== null ? stagingRequest.furnitureImageIndex : null,
-            styleReference: stagingRequest.styleReference === true
+
+    // Staging runs before generation in this endpoint (original order).
+    const stagingOut = await runStagingRequests({
+      stagingRequestFromAI,
+      history: conversationHistory,
+      userMessageText: message,
+      userId,
+      req,
+      selectedModel,
+      baseImageIndex: baseImageIndexUpload,
+      currentMessageHasImage,
+      currentImageBuffer: firstImageFile ? firstImageFile.buffer : null,
+      applyOriginalKeywordFallback: !currentMessageHasImage,
+      resolveDualUpload: () => resolveDualUploadStaging(files, cleanedUserContent, message),
+      resolveFallbackImage: () => {
+        if (firstImageFile && !userWantsToAddFurnitureToRoom(message)) {
+          return {
+            buffer: firstImageFile.buffer,
+            source: 'current message',
+            logMessage: '[Staging] Using image from current message',
           };
+        }
+        return null;
+      },
+    });
+    const stagingResults = stagingOut.stagingResults;
+    if (stagingOut.textSuffix) text = (text || '') + stagingOut.textSuffix;
 
-          const addFurnitureFallbackUpload = applyAddFurnitureStagingFallback(
-            stagingParams,
-            message,
-            conversationHistory,
-            {
-              currentMessageHasImage,
-              currentImageBuffer: firstImageFile ? firstImageFile.buffer : null,
-              baseImageIndex: baseImageIndexUpload,
-            }
-          );
-          stagingParams = addFurnitureFallbackUpload.stagingParams;
-          const furnitureFromCurrentUpload = addFurnitureFallbackUpload.furnitureFromCurrentUpload;
-          
-          // Fallback: If user mentions "original", "first", or "initial" image but AI didn't set usePreviousImage correctly
-          if (!currentMessageHasImage) {
-            const messageLower = message.toLowerCase();
-            const hasOriginalKeywords = messageLower.includes('original') || 
-                                        messageLower.includes('first image') || 
-                                        messageLower.includes('initial image') ||
-                                        messageLower.includes('go back to') ||
-                                        messageLower.includes('refer back to');
-            
-            if (hasOriginalKeywords && (stagingParams.usePreviousImage === false || stagingParams.usePreviousImage === null)) {
-              // Find the original (first) user-uploaded image
-              const originalImageIndex = getOriginalImageIndex(conversationHistory);
-              if (originalImageIndex !== null) {
-                if (DEBUG_MODE) {
-                  console.log(`[Staging] Fallback: User mentioned "original" but AI didn't set usePreviousImage. Overriding to use original image at index ${originalImageIndex}`);
-                }
-                stagingParams.usePreviousImage = originalImageIndex;
-              } else {
-                // If no original found, use most recent (index 0)
-                if (DEBUG_MODE) {
-                  console.log(`[Staging] Fallback: User mentioned "original" but no original image found. Using most recent image (index 0) as fallback`);
-                }
-                stagingParams.usePreviousImage = 0;
-              }
-            }
-          }
+    // Image generation.
+    const generateOut = await runGenerateRequests({ generateRequestFromAI, req, selectedModel });
+    const generatedImages = generateOut.generatedImages;
+    if (generateOut.textSuffix) text = text + generateOut.textSuffix;
 
-          stagingParams = applyBaseImageIndexToStagingParams(
-            stagingParams,
-            baseImageIndexUpload,
-            conversationHistory,
-            {
-              userMessage: message,
-              currentMessageHasImage,
-            }
-          );
-          
-          if (stagingParams) {
-            try {
-            let imageBuffer = null;
-            let imageSource = '';
-            let furnitureImageBuffer = furnitureFromCurrentUpload || null;
+    // Recall.
+    const recalledImageForDisplay = resolveRecalledImage({ recallRequestFromAI, history: conversationHistory });
 
-            const dualUploadStaging = resolveDualUploadStaging(files, cleanedUserContent, message);
-            if (dualUploadStaging) {
-              imageBuffer = dualUploadStaging.roomBuffer;
-              furnitureImageBuffer = dualUploadStaging.furnitureBuffers;
-              imageSource = dualUploadStaging.source;
-              if (!stagingParams.additionalPrompt || !stagingParams.additionalPrompt.includes('user\'s actual room photo')) {
-                stagingParams = {
-                  ...stagingParams,
-                  additionalPrompt: (stagingParams.additionalPrompt || '') + DUAL_UPLOAD_ROOM_PROMPT_SUFFIX,
-                };
-              }
-            } else if (stagingParams.usePreviousImage !== false && stagingParams.usePreviousImage !== null) {
-            // AI requested a previous image
-            const imageIndex = typeof stagingParams.usePreviousImage === 'number' ? stagingParams.usePreviousImage : 0;
-            
-            // Use the AI's chosen image index (AI should use context to determine the correct image)
-            // Debug: Log conversation history structure
-            if (DEBUG_MODE) {
-              console.log(`[Staging] Looking for image at index ${imageIndex}`);
-              console.log(`[Staging] Conversation history length: ${conversationHistory.length}`);
-            }
-            if (DEBUG_MODE) {
-              console.log(`[Staging] Conversation history structure:`, JSON.stringify(conversationHistory.map(msg => ({
-                role: msg.role,
-                hasContent: !!msg.content,
-                contentType: Array.isArray(msg.content) ? 'array' : typeof msg.content,
-                contentLength: Array.isArray(msg.content) ? msg.content.length : (typeof msg.content === 'string' ? msg.content.length : 0),
-                hasImages: Array.isArray(msg.content) ? msg.content.some(item => item.type === 'image_url') : false
-              })), null, 2));
-            }
-            
-            const previousImage = getImageFromHistory(conversationHistory, imageIndex);
-            
-            if (previousImage && previousImage.url) {
-              const base64Data = previousImage.url.split(',')[1];
-              if (base64Data) {
-                imageBuffer = Buffer.from(base64Data, 'base64');
-                imageSource = previousImage.isStaged ? `staged image (index ${imageIndex})` : `user-uploaded image (index ${imageIndex})`;
-                if (DEBUG_MODE) {
-                  console.log(`[Staging] Using previous ${imageSource}`);
-                }
-              } else {
-                if (DEBUG_MODE) {
-                  console.log(`[Staging] Previous image found but base64 data extraction failed`);
-                }
-              }
-            } else {
-              if (DEBUG_MODE) {
-                console.log(`[Staging] Previous image at index ${imageIndex} not found`);
-              }
-              // Fallback: try to use the most recent image (index 0) if requested index doesn't exist
-              if (imageIndex > 0) {
-                if (DEBUG_MODE) {
-                  console.log(`[Staging] Attempting fallback to index 0`);
-                }
-                const fallbackImage = getImageFromHistory(conversationHistory, 0);
-                if (fallbackImage && fallbackImage.url) {
-                  const base64Data = fallbackImage.url.split(',')[1];
-                  if (base64Data) {
-                    imageBuffer = Buffer.from(base64Data, 'base64');
-                    imageSource = fallbackImage.isStaged ? `staged image (fallback to index 0)` : `user-uploaded image (fallback to index 0)`;
-                    if (DEBUG_MODE) {
-                      console.log(`[Staging] Using fallback ${imageSource}`);
-                    }
-                  }
-                }
-              }
-            }
-          } else if (firstImageFile && !userWantsToAddFurnitureToRoom(message)) {
-            // Use current message's image as the room (initial staging — not a furniture reference upload)
-            imageBuffer = firstImageFile.buffer;
-            imageSource = 'current message';
-            if (DEBUG_MODE) {
-              console.log(`[Staging] Using image from current message`);
-            }
-          }
-          
-          // Retrieve furniture image if specified (skip if dual upload already set furniture buffers)
-          if (!dualUploadStaging && !furnitureImageBuffer && stagingParams.furnitureImageIndex !== null && stagingParams.furnitureImageIndex !== undefined) {
-            const furnitureIndex = typeof stagingParams.furnitureImageIndex === 'number' ? stagingParams.furnitureImageIndex : null;
-            if (furnitureIndex !== null) {
-              if (DEBUG_MODE) {
-                console.log(`[Staging] Looking for furniture image at index ${furnitureIndex}`);
-              }
-              const furnitureImage = getImageFromHistory(conversationHistory, furnitureIndex);
-              
-              if (furnitureImage && furnitureImage.url) {
-                const base64Data = furnitureImage.url.split(',')[1];
-                if (base64Data) {
-                  furnitureImageBuffer = Buffer.from(base64Data, 'base64');
-                  console.log(`[Staging] Found furniture image at index ${furnitureIndex}`);
-                }
-              } else {
-                console.log(`[Staging] Furniture image at index ${furnitureIndex} not found`);
-              }
-            }
-          }
-          
-            if (imageBuffer) {
-              try {
-                const geminiModel = getGeminiImageModel(selectedModel);
-                const stagedImage = await processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer, geminiModel);
-                if (stagedImage) {
-                  // Increment prompt count for staging
-                  incPromptCount();
-                  
-                  // Annotate staged image in parallel
-                  const annotationPromise = annotateImage(stagedImage).then(annotation => {
-                    if (DEBUG_MODE) {
-                      console.log(`[Image Annotation] Annotation for staged image ${i + 1}: ${annotation || 'failed'}`);
-                    }
-                    return annotation;
-                  }).catch(err => {
-                    console.error(`[Image Annotation] Error annotating staged image ${i + 1}:`, err);
-                    return null;
-                  });
-                  
-                  stagingResults.push({
-                    stagedImage: stagedImage,
-                    params: stagingParams,
-                    annotationPromise: annotationPromise
-                  });
-                  if (DEBUG_MODE) {
-                    console.log(`[Staging] Successfully processed staging ${i + 1}/${stagingRequests.length} for user ${userId} from ${imageSource}${furnitureImageBuffer ? ' with furniture image' : ''}`);
-                  }
-                }
-              } catch (stagingError) {
-                console.error(`[Staging] Error processing staging ${i + 1}:`, stagingError);
-                console.error(`[Staging] Error stack:`, stagingError.stack);
-                // Continue with other staging requests if one fails
-                if (stagingRequests.length === 1) {
-                  text = (text || '') + '\n\nSorry, I encountered an error while staging the room. Please try again.';
-                }
-              }
-            } else {
-              console.log(`[Staging] No image found for staging ${i + 1}`);
-              if (stagingRequests.length === 1) {
-                text = (text || '') + '\n\nSorry, I couldn\'t find the image to stage. Please make sure you\'ve uploaded an image.';
-              }
-            }
-          } catch (error) {
-            console.error(`[Staging] Error in staging request ${i + 1}:`, error);
-            console.error(`[Staging] Error stack:`, error.stack);
-            // Continue with other staging requests if one fails
-            if (stagingRequests.length === 1) {
-              text = (text || '') + '\n\nSorry, I encountered an error while processing the staging request. Please try again.';
-            }
-          }
-          }
-        }
-      }
-    }
+    // Image request (may re-run GPT to analyze, replacing text).
+    const requestedOut = await resolveRequestedImage({
+      imageRequestFromAI,
+      history: conversationHistory,
+      baseMessages: safeMessages,
+      systemInstruction,
+      userMessageText: (message || ''),
+      analysisUserText: (message || 'Please analyze this image.'),
+      selectedModel,
+      text,
+    });
+    const requestedImageForDisplay = requestedOut.requestedImageForDisplay;
+    text = requestedOut.text;
 
-    // Process image generation request(s) from AI response (supports single or array)
-    let generatedImages = [];
-    
-    if (generateRequestFromAI) {
-      // Normalize to array (max 3)
-      const generateRequests = Array.isArray(generateRequestFromAI) 
-        ? generateRequestFromAI.slice(0, 3).filter(g => g.shouldGenerate && g.prompt)
-        : (generateRequestFromAI.shouldGenerate && generateRequestFromAI.prompt ? [generateRequestFromAI] : []);
-      
-      if (generateRequests.length > 0) {
-        console.log(`[Image Generation] Processing ${generateRequests.length} generation request(s) from AI`);
-        
-        for (let i = 0; i < generateRequests.length; i++) {
-          const genRequest = generateRequests[i];
-          try {
-            console.log(`[Image Generation] Processing generation request ${i + 1}/${generateRequests.length}:`, genRequest.prompt.substring(0, 100) + '...');
-            const geminiModel = getGeminiImageModel(selectedModel);
-            const generatedImage = await processImageGeneration(genRequest.prompt, req, geminiModel);
-            if (generatedImage) {
-              // Annotate generated image in parallel
-              const annotationPromise = annotateImage(generatedImage).then(annotation => {
-                if (DEBUG_MODE) {
-                  console.log(`[Image Annotation] Annotation for generated image ${i + 1}: ${annotation || 'failed'}`);
-                }
-                return annotation;
-              }).catch(err => {
-                console.error(`[Image Annotation] Error annotating generated image ${i + 1}:`, err);
-                return null;
-              });
-              
-              generatedImages.push({
-                image: generatedImage,
-                annotationPromise: annotationPromise
-              });
-              console.log(`[Image Generation] Successfully generated image ${i + 1}/${generateRequests.length}`);
-            }
-          } catch (error) {
-            console.error(`[Image Generation] Error generating image ${i + 1}:`, error);
-            // Continue with other images if one fails
-          }
-        }
-        
-        if (generateRequests.length > 0 && generatedImages.length === 0) {
-          text = text + '\n\nSorry, I encountered an error while generating the images. Please try again.';
-        }
-      }
-    }
-
-    // Process recall request from AI response (simpler than imageRequest - just retrieves and displays)
-    let recalledImageForDisplay = null;
-    if (recallRequestFromAI && recallRequestFromAI.shouldRecall) {
-      try {
-        const imageIndex = typeof recallRequestFromAI.imageIndex === 'number' ? recallRequestFromAI.imageIndex : 0;
-        console.log(`[Recall] Processing recall request from AI, index: ${imageIndex}`);
-        
-        // Retrieve the image from conversation history
-        const recalledImage = getImageFromHistory(conversationHistory, imageIndex);
-        
-        if (recalledImage && recalledImage.url) {
-          console.log(`[Recall] Found image at index ${imageIndex}`);
-          recalledImageForDisplay = recalledImage.url;
-        } else {
-          console.log(`[Recall] Image at index ${imageIndex} not found`);
-        }
-      } catch (error) {
-        console.error('Error processing recall request:', error);
-        // Continue with original response if recall fails
-      }
-    }
-
-    // Process image request from AI response
-    let requestedImageForDisplay = null;
-    if (imageRequestFromAI && imageRequestFromAI.requestImage) {
-      try {
-        const imageIndex = typeof imageRequestFromAI.imageIndex === 'number' ? imageRequestFromAI.imageIndex : 0;
-        console.log(`[Image Request] Processing image request from AI, index: ${imageIndex}`);
-        
-        // Retrieve the image from conversation history
-        const requestedImage = getImageFromHistory(conversationHistory, imageIndex);
-        
-        if (requestedImage && requestedImage.url) {
-          console.log(`[Image Request] Found image at index ${imageIndex}`);
-          
-          // Store the image URL to return in response for display
-          requestedImageForDisplay = requestedImage.url;
-          
-          // Check if user wants to analyze/describe the image (vs just view it)
-          // Only analyze if explicitly asking for description/analysis, not just "show me"
-          const messageLower = (message || '').toLowerCase();
-          const wantsAnalysis = (messageLower.includes('describe') && !messageLower.includes('show')) || 
-                               (messageLower.includes('analyze') && !messageLower.includes('show')) || 
-                               (messageLower.includes('what') && messageLower.includes('in') && !messageLower.includes('show')) ||
-                               messageLower.includes('tell me about') ||
-                               (messageLower.includes('explain') && !messageLower.includes('show'));
-          
-          if (wantsAnalysis) {
-            console.log(`[Image Request] User wants analysis, sending to GPT`);
-            // Build messages for image analysis (include conversation history context)
-            const imageAnalysisMessages = [
-              { role: 'system', content: systemInstruction },
-              ...safeMessages.slice(1), // Skip the original system message, keep the rest
-              {
-                role: 'user',
-                content: [
-                  { type: 'text', text: message || 'Please analyze this image.' },
-                  {
-                    type: 'image_url',
-                    image_url: {
-                      url: await downscaleImageForGPT(requestedImage.url)
-                    }
-                  }
-                ]
-              }
-            ];
-            
-            const imageAnalysisCompletion = await openai.chat.completions.create({
-              model: selectedModel,
-              messages: imageAnalysisMessages,
-              temperature: getTemperatureForModel(selectedModel),
-              response_format: DESIGNER_ROUTING_RESPONSE_FORMAT
-            });
-            
-            const imageAnalysisJson = parseDesignerRoutingCompletion(imageAnalysisCompletion);
-            text = imageAnalysisJson.response || imageAnalysisCompletion.choices[0].message.content;
-            
-            console.log(`[Image Request] Successfully analyzed image, response: ${text.substring(0, 100)}...`);
-          } else {
-            // User just wants to see the image - keep the original text response
-            console.log(`[Image Request] User wants to view image, returning image for display`);
-          }
-        } else {
-          console.log(`[Image Request] Image at index ${imageIndex} not found`);
-        }
-      } catch (error) {
-        console.error('Error processing image request:', error);
-        // Continue with original response if image request fails
-      }
-    }
-
-    // Process CAD request(s) from AI response (supports single or array)
-    let cadResultsUpload = [];
-    
-    if (cadRequestFromAI) {
-      // Normalize to array (max 3)
-      const cadRequests = Array.isArray(cadRequestFromAI)
-        ? cadRequestFromAI.slice(0, 3).filter(c => c.shouldProcessCAD)
-        : (cadRequestFromAI.shouldProcessCAD ? [cadRequestFromAI] : []);
-      
-      if (cadRequests.length > 0) {
-        if (DEBUG_MODE) {
-          console.log(`[CAD] Processing ${cadRequests.length} CAD request(s) from AI`);
-        }
-        
-        for (let i = 0; i < cadRequests.length; i++) {
-          const cadRequest = cadRequests[i];
-          if (DEBUG_MODE) {
-            console.log(`[CAD] Processing CAD request ${i + 1}/${cadRequests.length}:`, cadRequest);
-          }
-          
-          try {
-            const imageIndex = resolveCadImageIndex(
-              cadRequest,
-              baseImageIndexUpload,
-              conversationHistory,
-              currentMessageHasImage
-            );
-            if (DEBUG_MODE) {
-              console.log(`[CAD] Processing CAD request from AI, index: ${imageIndex}`);
-            }
-            
-            // Retrieve the blueprint image from conversation history
-            const blueprintImage = getImageFromHistory(conversationHistory, imageIndex);
-            
-            if (blueprintImage && blueprintImage.url) {
-              if (DEBUG_MODE) {
-                console.log(`[CAD] Found blueprint image at index ${imageIndex}`);
-              }
-              
-              // Extract base64 data from the image URL
-              const base64Data = blueprintImage.url.split(',')[1];
-              if (base64Data) {
-                const imageBuffer = Buffer.from(base64Data, 'base64');
-                const mimeType = blueprintImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
-                
-                // Retrieve furniture images if specified
-                const furnitureImages = [];
-                if (cadRequest.furnitureImageIndex !== null && cadRequest.furnitureImageIndex !== undefined) {
-                  const furnitureIndices = Array.isArray(cadRequest.furnitureImageIndex) 
-                    ? cadRequest.furnitureImageIndex 
-                    : [cadRequest.furnitureImageIndex];
-                  
-                  for (const furnitureIndex of furnitureIndices) {
-                    if (furnitureIndex !== null && furnitureIndex !== undefined) {
-                      const furnitureImage = getImageFromHistory(conversationHistory, furnitureIndex);
-                      if (furnitureImage && furnitureImage.url) {
-                        const furnitureBase64Data = furnitureImage.url.split(',')[1];
-                        if (furnitureBase64Data) {
-                          const furnitureBuffer = Buffer.from(furnitureBase64Data, 'base64');
-                          const furnitureMimeType = furnitureImage.url.match(/data:([^;]+)/)?.[1] || 'image/png';
-                          furnitureImages.push({
-                            image: furnitureBuffer,
-                            mimeType: furnitureMimeType
-                          });
-                          if (DEBUG_MODE) {
-                            console.log(`[CAD] Found furniture image at index ${furnitureIndex}`);
-                          }
-                    }
-                  } else {
-                    if (DEBUG_MODE) {
-                      console.log(`[CAD] Furniture image at index ${furnitureIndex} not found`);
-                    }
-                  }
-                }
-              }
-            }
-            
-                if (DEBUG_MODE) {
-                  console.log(`[CAD] Processing blueprint with CAD function${furnitureImages.length > 0 ? ` (with ${furnitureImages.length} furniture image(s))` : ''}${cadRequest.additionalPrompt ? ` (with additional prompt: ${cadRequest.additionalPrompt.substring(0, 50)}...)` : ''}...`);
-                }
-                // Process the blueprint through CAD function
-                const additionalPrompt = cadRequest.additionalPrompt || null;
-                const cadResultBuffer = await blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt);
-                
-                // Convert result buffer to data URL
-                const cadImageBase64 = cadResultBuffer.toString('base64');
-                const cadImageForDisplay = `data:${mimeType};base64,${cadImageBase64}`;
-                
-                // Annotate CAD image in parallel
-                const annotationPromise = annotateImage(cadImageForDisplay, true).then(annotation => {
-                  if (DEBUG_MODE) {
-                    console.log(`[Image Annotation] Annotation for CAD render ${i + 1}: ${annotation || 'failed'}`);
-                  }
-                  return annotation;
-                }).catch(err => {
-                  console.error(`[Image Annotation] Error annotating CAD render ${i + 1}:`, err);
-                  return null;
-                });
-                
-                cadResultsUpload.push({
-                  cadImage: cadImageForDisplay,
-                  params: cadRequest,
-                  annotationPromise: annotationPromise
-                });
-                
-                if (DEBUG_MODE) {
-                  console.log(`[CAD] Successfully generated 3D render ${i + 1}/${cadRequests.length} from blueprint${furnitureImages.length > 0 ? ' with furniture' : ''}`);
-                }
-              } else {
-                if (DEBUG_MODE) {
-                  console.log(`[CAD] Failed to extract base64 data from blueprint image`);
-                }
-              }
-            } else {
-              if (DEBUG_MODE) {
-                console.log(`[CAD] Blueprint image at index ${imageIndex} not found`);
-              }
-            }
-          } catch (error) {
-            if (DEBUG_MODE) {
-              console.error(`[CAD] Error processing CAD request ${i + 1}:`, error);
-            }
-            // Continue with other CAD requests if one fails
-            if (cadRequests.length === 1) {
-              text = (text || '') + '\n\nSorry, I encountered an error while processing the CAD blueprint. Please try again.';
-            }
-          }
-        }
-      }
-    }
-    
-    // Legacy support: maintain cadImageForDisplay and cadAnnotationPromiseUpload for backward compatibility
-    let cadImageForDisplay = null;
-    let cadAnnotationPromiseUpload = null;
-    if (cadResultsUpload.length > 0) {
-      cadImageForDisplay = cadResultsUpload[0].cadImage;
-      cadAnnotationPromiseUpload = cadResultsUpload[0].annotationPromise;
-    }
-
-    // Wait for all annotations to complete before building response
-    const stagedImageAnnotationsUpload = {};
-    if (stagingResults.length > 0) {
-      for (let i = 0; i < stagingResults.length; i++) {
-        if (stagingResults[i].annotationPromise) {
-          const annotation = await stagingResults[i].annotationPromise;
-          if (annotation) {
-            stagedImageAnnotationsUpload[`staged_${i}`] = annotation;
-          }
-        }
-      }
-    }
-    
-    const generatedImageAnnotationsUpload = {};
-    if (generatedImages.length > 0) {
-      for (let i = 0; i < generatedImages.length; i++) {
-        if (generatedImages[i].annotationPromise) {
-          const annotation = await generatedImages[i].annotationPromise;
-          if (annotation) {
-            generatedImageAnnotationsUpload[`generated_${i}`] = annotation;
-          }
-        }
-      }
-    }
-    
-    // Wait for all CAD annotations to complete
-    const cadImageAnnotationsUpload = {};
-    if (cadResultsUpload.length > 0) {
-      for (let i = 0; i < cadResultsUpload.length; i++) {
-        if (cadResultsUpload[i].annotationPromise) {
-          const annotation = await cadResultsUpload[i].annotationPromise;
-          if (annotation) {
-            cadImageAnnotationsUpload[`cad_${i}`] = annotation;
-          }
-        }
-      }
-    }
-    
-    // Legacy support
-    let cadImageAnnotationUpload = null;
-    if (cadImageForDisplay && cadAnnotationPromiseUpload) {
-      cadImageAnnotationUpload = await cadAnnotationPromiseUpload;
-    }
+    // CAD.
+    const cadOut = await runCadRequests({
+      cadRequestFromAI,
+      history: conversationHistory,
+      baseImageIndex: baseImageIndexUpload,
+      currentMessageHasImage,
+    });
+    const cadResults = cadOut.cadResults;
+    if (cadOut.textSuffix) text = (text || '') + cadOut.textSuffix;
 
     // Extract image annotations from cleanedUserContent to return to frontend
-    // Note: We use _annotation (private property) which is not sent to OpenAI
+    // (uses the private _annotation property, which is never sent to OpenAI).
     const imageAnnotations = {};
     cleanedUserContent.forEach((item, idx) => {
       if (item.type === 'image_url' && item._annotation) {
@@ -2397,77 +1201,19 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
         }
       }
     });
-    
-    // Return JSON response with text, memory actions, staging result(s), generated image(s), requested image, recalled image, and annotations if available
-    const response = { 
-      response: text,
-      files: fileInfo,
-      memories: memoryActions
-    };
-    
-    // Handle multiple staging results
-    if (stagingResults.length > 0) {
-      if (stagingResults.length === 1) {
-        // Single result - maintain backward compatibility
-        response.stagedImage = stagingResults[0].stagedImage;
-        response.stagingParams = stagingResults[0].params;
-      } else {
-        // Multiple results - return as array
-        response.stagedImages = stagingResults.map(r => r.stagedImage);
-        response.stagingParams = stagingResults.map(r => r.params);
-      }
-      // Include annotations if available
-      if (Object.keys(stagedImageAnnotationsUpload).length > 0) {
-        response.stagedImageAnnotations = stagedImageAnnotationsUpload;
-      }
-    }
-    
-    // Handle multiple generated images
-    if (generatedImages.length > 0) {
-      if (generatedImages.length === 1) {
-        // Single result - maintain backward compatibility
-        response.generatedImage = generatedImages[0].image || generatedImages[0];
-      } else {
-        // Multiple results - return as array
-        response.generatedImages = generatedImages.map(g => g.image || g);
-      }
-      // Include annotations if available
-      if (Object.keys(generatedImageAnnotationsUpload).length > 0) {
-        response.generatedImageAnnotations = generatedImageAnnotationsUpload;
-      }
-    }
-    
-    if (requestedImageForDisplay) {
-      response.requestedImage = requestedImageForDisplay;
-    }
-    
-    if (recalledImageForDisplay) {
-      response.recalledImage = recalledImageForDisplay;
-    }
-    
-    // Handle multiple CAD results
-    if (cadResultsUpload.length > 0) {
-      if (cadResultsUpload.length === 1) {
-        // Single result - maintain backward compatibility
-        response.cadImage = cadResultsUpload[0].cadImage;
-        if (cadImageAnnotationUpload) {
-          response.cadImageAnnotation = cadImageAnnotationUpload;
-        }
-      } else {
-        // Multiple results - return as array
-        response.cadImages = cadResultsUpload.map(r => r.cadImage);
-        response.cadParams = cadResultsUpload.map(r => r.params);
-      }
-      // Include annotations if available
-      if (Object.keys(cadImageAnnotationsUpload).length > 0) {
-        response.cadImageAnnotations = cadImageAnnotationsUpload;
-      }
-    }
-    
-    if (Object.keys(imageAnnotations).length > 0) {
-      response.imageAnnotations = imageAnnotations;
-    }
-    
+
+    const response = await buildDesignerResponse({
+      text,
+      memoryActions,
+      stagingResults,
+      generatedImages,
+      requestedImageForDisplay,
+      recalledImageForDisplay,
+      cadResults,
+      extraFields: { files: fileInfo },
+      imageAnnotations,
+    });
+
     if (streamModeUpload) {
       finishStreamedChatResponse(res, response);
     } else {
