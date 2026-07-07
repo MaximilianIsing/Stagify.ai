@@ -21,7 +21,7 @@ const envPath = path.join(__dirname, '.env');
 
 try {
   if (fs.existsSync(envPath)) {
-    const text = fs.readFileSync(envPath, 'utf8').replace(/^﻿/, '');
+    const text = fs.readFileSync(envPath, 'utf8').replace(/^\uFEFF/, '');
     let loaded = 0;
     for (let rawLine of text.split(/\r?\n/)) {
       const line = rawLine.trim();

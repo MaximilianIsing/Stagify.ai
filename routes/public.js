@@ -101,7 +101,7 @@ router.post('/api/log-contact', emailLimiter, (req, res) => {
           if (DEBUG_MODE) {
             console.log('Created local data directory successfully');
           }
-        } catch (error) {
+        } catch {
           if (DEBUG_MODE) {
             console.log('Error: Cannot create data directory, using project root');
           }
@@ -280,7 +280,7 @@ router.post('/api/bug-report', emailLimiter, async (req, res) => {
     let conversationLog = '';
     if (conversationHistory && Array.isArray(conversationHistory) && conversationHistory.length > 0) {
       const formattedMessages = conversationHistory.map((msg, index) => {
-        let content = '';
+        let content;
         if (Array.isArray(msg.content)) {
           // Handle array content (may contain images)
           const textParts = msg.content
@@ -331,7 +331,7 @@ router.post('/api/bug-report', emailLimiter, async (req, res) => {
       if (!fs.existsSync(logDir)) {
         try {
           fs.mkdirSync(logDir, { recursive: true });
-        } catch (error) {
+        } catch {
           console.log('Error: Cannot create data directory, using project root');
           logDir = __dirname;
         }

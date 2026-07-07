@@ -25,6 +25,4 @@ jobs:
         run: npm test             # node --test over test/**/*.test.js
 
       - name: Lint
-        run: npm run lint
-        continue-on-error: true   # non-blocking for now: reports findings but never fails the build.
-                                  # Remove this line once the backend is lint-clean to enforce it.
+        run: npm run lint         # backend is lint-clean; a new warning/error now fails the build

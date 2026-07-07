@@ -154,7 +154,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     let memories = loadMemories(userId);
     
     // Build context about available images in history with annotations
-    const { imageContext, imagesSentToGPT, originalImageIndex } = buildImageContext(deduplicatedMessages);
+    const { imageContext } = buildImageContext(deduplicatedMessages);
     
     // Log image context for debugging
     if (DEBUG_MODE) {
@@ -613,7 +613,7 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     // Build context about available images in history with annotations (now that conversationHistory is parsed)
     const currentUploadFilenames = (files || []).map((f) => f.originalname).filter(Boolean);
     const historyForImageContext = getPriorHistoryForImageContext(conversationHistory, currentUploadFilenames);
-    const { imageContext, imagesSentToGPT, originalImageIndex } = buildImageContext(historyForImageContext);
+    const { imageContext } = buildImageContext(historyForImageContext);
     
     // Log image context for debugging
     if (DEBUG_MODE) {
@@ -643,10 +643,6 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
       // The unsupported files are already mentioned in userContent, but make sure there's a clear message
       if (!message || !message.trim()) {
         // If no user message, add a prompt for the AI to acknowledge unsupported files
-        const unsupportedText = unsupportedFiles.map(f => {
-          const fileType = f.fileType || (f.ext ? f.ext.toUpperCase().substring(1) : f.type);
-          return `"${f.name}" (${fileType} format)`;
-        }).join(' and ');
         
         if (userContent.length === 0 || (userContent.length === 1 && userContent[0].type === 'text' && !userContent[0].text.trim())) {
           userContent.unshift({ type: 'text', text: `I uploaded ${unsupportedFiles.length > 1 ? 'some files' : 'a file'} but ${unsupportedFiles.length > 1 ? 'they are' : 'it is'} in an unsupported format.` });
