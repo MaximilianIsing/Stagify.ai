@@ -13,6 +13,7 @@ import OpenAI from 'openai';
 import sharp from "sharp";
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import { rateLimit } from 'express-rate-limit';
 import { Resend } from 'resend';
 import { promptMatrix } from './lib/promptMatrix.js';
@@ -647,6 +648,29 @@ app.use(
       return cb(null, false);
     },
     credentials: true,
+  })
+);
+
+// --- Response compression ---------------------------------------------------
+// gzip text responses (HTML/CSS/JS/JSON) — ~75-80% smaller on the wire. Two
+// deliberate skips:
+//   1. Server-Sent Events (text/event-stream): compressing buffers the stream
+//      and would break the AI Designer's live token-by-token responses.
+//   2. The image-generation endpoints: they return multi-MB base64 of images
+//      that are ALREADY compressed (PNG/JPEG/WebP), so gzip spends CPU for
+//      near-zero savings. Small JSON from every other /api route still compresses.
+const NO_COMPRESS_ROUTES = new Set([
+  '/api/process-image',
+  '/api/stage-by-endpoint-key',
+  '/api/mask-edit',
+]);
+app.use(
+  compression({
+    filter: (req, res) => {
+      if (NO_COMPRESS_ROUTES.has(req.path)) return false;
+      if (String(res.getHeader('Content-Type') || '').includes('text/event-stream')) return false;
+      return compression.filter(req, res); // default: compressible types over threshold
+    },
   })
 );
 
