@@ -182,3 +182,39 @@ test('promptMatrix has a non-empty prompt for every room/style', async () => {
   }
   assert.equal(bad.length, 0, `Empty or too-short prompt(s): ${bad.join(', ')}`);
 });
+
+test('every public HTML page has a non-empty title and charset + viewport meta', () => {
+  const htmlFiles = walk(PUBLIC).filter((f) => f.endsWith('.html'));
+  const problems = [];
+  for (const file of htmlFiles) {
+    const html = fs.readFileSync(file, 'utf8');
+    const rel = path.relative(ROOT, file);
+    if (!/<title[^>]*>[^<]*\S[^<]*<\/title>/i.test(html)) problems.push(`${rel}: missing a non-empty <title>`);
+    if (!/<meta[^>]+charset=/i.test(html)) problems.push(`${rel}: missing <meta charset>`);
+    if (!/<meta[^>]+name=["']viewport["']/i.test(html)) problems.push(`${rel}: missing viewport meta`);
+  }
+  assert.equal(problems.length, 0, `HTML metadata problems:\n${problems.join('\n')}`);
+});
+
+test('internal <a href> links to .html pages resolve to real files', () => {
+  const htmlFiles = walk(PUBLIC).filter((f) => f.endsWith('.html'));
+  const re = /<a\b[^>]*\bhref\s*=\s*["']([^"']+)["']/gi;
+  const missing = [];
+  for (const file of htmlFiles) {
+    const html = fs.readFileSync(file, 'utf8');
+    let m;
+    while ((m = re.exec(html))) {
+      const raw = m[1].trim();
+      const ref = raw.split('#')[0].split('?')[0].trim();
+      if (!ref) continue;
+      if (/^(https?:)?\/\//i.test(ref)) continue;
+      if (/^(data|mailto|tel|javascript|blob):/i.test(ref)) continue;
+      if (ref.startsWith('{{') || ref.includes('${')) continue;
+      // Only explicit .html links — clean-URL routes (e.g. /privacy) are served by the app.
+      if (!/\.html$/i.test(ref)) continue;
+      const resolved = ref.startsWith('/') ? path.join(PUBLIC, ref) : path.join(path.dirname(file), ref);
+      if (!fs.existsSync(resolved)) missing.push(`${path.relative(ROOT, file)}  →  ${raw}`);
+    }
+  }
+  assert.equal(missing.length, 0, `Broken internal .html link(s):\n${missing.join('\n')}`);
+});

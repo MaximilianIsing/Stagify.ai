@@ -1,4 +1,6 @@
 import './load-env.js'; // must be first: populates process.env from .env before any secret is read
+import './instrument.js'; // Sentry init — must load before app libraries (no-ops without SENTRY_DSN)
+import * as Sentry from '@sentry/node';
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
@@ -3286,6 +3288,11 @@ app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requirePr
 
 // public routes (routes/public.js)
 app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, PDF_PROCESSING_SERVER, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));
+
+// Sentry Express error handler — after ALL routes so it can capture errors thrown in
+// them. Captures the error, then passes it through unchanged (no effect on responses).
+// No-op when SENTRY_DSN is unset.
+Sentry.setupExpressErrorHandler(app);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

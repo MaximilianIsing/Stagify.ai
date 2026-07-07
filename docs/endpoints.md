@@ -1,6 +1,6 @@
 # Stagify API & server routes
 
-This document describes HTTP endpoints registered in `server.js`. Static files are also served from `public/` (not every path is listed here). Default port: **`process.env.PORT` or `3000`**.
+This document describes HTTP endpoints for the Stagify server. Routes are registered across `routes/*.js` (`public.js`, `auth.js`, `billing.js`, `staging.js`, `chat.js`, `admin.js`) and mounted from `server.js`; static files are also served from `public/` (not every path is listed here). Default port: **`process.env.PORT` or `3000`**.
 
 ## Authentication helpers (used by several routes)
 
@@ -22,6 +22,10 @@ This document describes HTTP endpoints registered in `server.js`. Static files a
 | `GET` | `/robots.txt` | Serves `public/robots.txt`. |
 | `GET` | `/sitemap.xml` | Serves `public/sitemap.xml`. |
 | `GET` | `/status` | Serves `public/status.html` — the public status/uptime page. Client-side it polls `GET /api/status` and draws 24-hour and 7-day availability graphs. |
+| `GET` | `/privacy` | Serves `public/privacy.html`. |
+| `GET` | `/i/:id` | **Public hosted-image serve.** `:id` is a 16–64-char hex id minted by `POST /api/host-image`. Streams the stored image with `Cache-Control: public, max-age=31536000, immutable` and `X-Content-Type-Options: nosniff`. `404` (plain text) for an invalid or unknown id. |
+| `GET` | `/email/logo.png` | Email logo **and open-tracking pixel.** With `?email=<addr>`, logs an email open (only when the request looks like a genuine email-client fetch) to `email_open_logs.csv`, then serves the logo PNG with `Cache-Control: no-store`. |
+| `GET` | `/bimi-logo.svg`, `/logo-full.png` | Brand assets served with explicit content types (BIMI SVG and full-logo PNG). |
 
 Other `.html` and assets are served by **`express.static('public')`** (e.g. `/stagify-plus.html`, `/ai-designer.html`).
 
@@ -42,6 +46,8 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 |--------|------|-------------|
 | `POST` | `/api/billing/stripe-webhook` | **Body:** raw JSON (must **not** go through `express.json()`; uses `express.raw`). **Header:** `stripe-signature` for verification. If Stripe is not configured: `503`. Forwards to internal `handleStripeEvent` (subscription lifecycle, etc.). Responds `{ received: true }` on success. |
 | `POST` | `/api/billing/customer-portal` | **Auth:** signed-in user with a Stripe customer id. **Body:** JSON (can be empty). Returns `{ url }` to Stripe Billing Portal, or `503` if Stripe off, `401` if not signed in, `400` if no `stripeCustomerId` on the user. |
+| `GET` | `/api/enterprise/config` | Public. Returns `{ publishableKey }` (Stripe publishable key) for the enterprise checkout page; `''` if Stripe isn't configured. |
+| `POST` | `/api/enterprise/create-checkout` | **Enterprise self-serve checkout** (from `enterprise.html`). **Body (JSON):** `{ domain, companyName, contactEmail, contactPhone? }`. Validates the fields, and creates a Stripe **subscription** Checkout Session for the metered enterprise price (`ENTERPRISE_PRICE_ID`), returning `{ url }` to redirect to. **Errors:** `503` if Stripe or the price id isn't configured, `400` on invalid input, `409` if the domain already has an active/trialing plan. |
 
 ---
 
@@ -117,12 +123,13 @@ Example URL: `POST https://your-host/api/stage-by-endpoint-key?key=YOUR_SECRET` 
 
 ---
 
-## Bug reports and mask edit
+## Bug reports & masking studio (mask edit + segment)
 
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/api/bug-report` | **Body:** `description` (required), and optional `steps`, `email`, `userId`, `userAgent`, `url`, `timestamp`, `conversationHistory`. Appends to `bug_reports.csv`. |
-| `POST` | `/api/mask-edit` | **Auth:** **`requireProAccount`**. **Body (JSON):** `image` and `mask` as data URLs, `prompt`, optional `model`. Uses Gemini for region edit; returns `{ success, editedImage }` (data URL) or `500` errors. |
+| `POST` | `/api/mask-edit` | **Auth:** **`requireProAccount`**. **Body (JSON):** `image` and `mask` as data URLs, `prompt`, optional `model`, `referenceImage`, `seed`, `batch`. Uses Gemini for the region edit; returns `{ success, editedImage }` (data URL) or `4xx/500` errors. |
+| `POST` | `/api/segment` | **Auth:** **`requireProAccount`**. **Body (JSON):** `image` (data URL) + optional `query` (target a specific object; omitted → detect all movable objects in the room). Runs Gemini object detection for the Masking Studio "magic wand" and returns `{ success, items: [{ box_2d, label }] }` (boxes normalized 0–1000). `400` if no image, `500` if AI not configured. |
 
 ---
 

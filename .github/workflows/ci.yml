@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20        # engines field says >=18; 20 is current LTS
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci               # clean, lockfile-exact install
+
+      - name: Run tests
+        run: npm test             # node --test over test/**/*.test.js
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true   # non-blocking for now: reports findings but never fails the build.
+                                  # Remove this line once the backend is lint-clean to enforce it.
