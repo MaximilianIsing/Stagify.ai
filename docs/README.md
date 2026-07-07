@@ -7,8 +7,11 @@ photorealistic 3D renders) and a **Masking Studio** for pixel-precise edits.
 
 This README is the entry point for the `docs/` folder. See also:
 
-- [`environment-variables.md`](environment-variables.md) — every env var, with a copy-paste `.env`.
-- [`endpoints.md`](endpoints.md) — HTTP API reference.
+- [`guides/architecture.md`](guides/architecture.md) — how the server is structured (composition root, `routes/` + `lib/`, request lifecycle).
+- [`guides/i18n.md`](guides/i18n.md) — the client-side translation system and how to add a language.
+- [`guides/testing.md`](guides/testing.md) — the test suite and how it gates deployment.
+- [`reference/endpoints.md`](reference/endpoints.md) — HTTP API reference.
+- [`reference/environment-variables.md`](reference/environment-variables.md) — every env var, with a copy-paste `.env`.
 
 ---
 
@@ -36,8 +39,9 @@ This README is the entry point for the `docs/` folder. See also:
 ## Tech stack
 
 - **Runtime:** Node.js ≥ 18, ES modules (`"type": "module"`).
-- **Server:** Express 4 — a single monolithic `server.js` that serves both the static
-  frontend and the JSON API.
+- **Server:** Express 4 — a composition-root `server.js` that mounts route modules
+  (`routes/*.js`) and wires shared `lib/` dependencies, serving both the static
+  frontend and the JSON API from one origin.
 - **Frontend:** Plain HTML/CSS/vanilla JS in `public/`. **No build step, no framework,
   no bundler** — files are served as-is.
 - **Image processing:** `sharp`.
@@ -49,19 +53,35 @@ This README is the entry point for the `docs/` folder. See also:
 
 ```
 .
-├── server.js                # The whole backend: routes, AI calls, auth, billing, logging
+├── server.js                # Composition root: loads config, wires deps, mounts routes/, serves static
+├── instrument.js            # Sentry init (imported before server.js when SENTRY_DSN is set)
 ├── load-env.js              # Zero-dependency .env loader (imported first, before any secret)
-├── render.yaml              # Render deploy config (build runs `npm test`)
+├── render.yaml              # Render deploy config (build runs `npm install && npm test`)
 ├── package.json             # Scripts, deps, Node engine
-├── lib/                     # Backend modules imported by server.js
+├── routes/                  # Express route modules, mounted by server.js
+│   ├── public.js            # Home/SEO/status pages, health, counters, contact, email, bug reports
+│   ├── auth.js              # Register/login/Google/logout/reset, /getpro, /api/auth/config
+│   ├── billing.js           # Stripe webhook, customer portal, enterprise config + checkout
+│   ├── staging.js           # process-image, validate-image, mask-edit, segment, process-pdf
+│   ├── chat.js              # AI Designer: chat, chat-upload, welcome-message
+│   └── admin.js             # /admin + log/JSON exports + image hosting (endpoint_key gated)
+├── lib/                     # Shared modules (factory + dependency-injection pattern)
+│   ├── config.js            # Secret/config readers (env var → .txt fallback)
 │   ├── auth-store.js        # User accounts, sessions, registration codes, daily limits
-│   ├── cad-handling.js      # CAD/PDF floor plan → 3D render (AI Designer)
 │   ├── enterprise-store.js  # Enterprise domains + metered usage tracking
+│   ├── stripe-webhooks.js   # Stripe subscription lifecycle handling
+│   ├── prompts.js           # AI prompt / schema constants
 │   ├── promptMatrix.js      # Room-type × style staging prompt templates
-│   └── stripe-webhooks.js   # Stripe subscription lifecycle handling
+│   ├── cad-handling.js      # CAD/PDF floor plan → 3D render (AI Designer)
+│   ├── chat-pipeline.js     # AI Designer chat orchestration
+│   ├── chat-upload-prep.js  # Chat file-upload preprocessing
+│   ├── memory.js            # Per-user chat-assistant memory
+│   ├── logging.js           # CSV logging helpers
+│   ├── email.js             # Resend email helpers
+│   └── uptime-monitor.js    # Heartbeat + /api/status snapshot
 ├── public/                  # Static frontend (HTML pages, scripts, styles, assets, i18n)
 ├── data/                    # Runtime state: JSON stores + CSV logs (see Data & persistence)
-├── test/                    # `node --test` suite (unit + smoke)
+├── test/                    # `node --test` suite (unit + smoke + route inventory)
 ├── demos/, ds-bundle/,      # Guide/demo assets and design-system bundle
 │   OG_Image/, to-build/
 └── docs/                    # You are here
@@ -80,7 +100,7 @@ npm install
 ```
 
 Then provide configuration. The simplest path is a project-root `.env` file (it is
-gitignored). Copy the template from [`environment-variables.md`](environment-variables.md)
+gitignored). Copy the template from [`environment-variables.md`](reference/environment-variables.md)
 and fill in what you need. At minimum, staging requires a Gemini key:
 
 ```dotenv
@@ -107,7 +127,7 @@ the same port (default `3000`, override with `PORT`).
 
 All runtime configuration is environment-variable driven, loaded by `load-env.js`
 before any secret is read. The full, commented list lives in
-[`environment-variables.md`](environment-variables.md). Highlights:
+[`environment-variables.md`](reference/environment-variables.md). Highlights:
 
 - **AI:** `GOOGLE_AI_API_KEY` (Gemini, required for staging), `GPT_KEY` (OpenAI, chat).
 - **Billing:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PUBLISHABLE_KEY`,
@@ -137,15 +157,25 @@ and no server-side rendering — `public/` is plain HTML that talks to `server.j
 
 ## Backend modules
 
-`server.js` is the orchestrator; the reusable pieces are in `lib/`:
+`server.js` is a composition root: it reads config, constructs the shared stores/
+helpers, and mounts the route modules in `routes/` (`public`, `auth`, `billing`,
+`staging`, `chat`, `admin`), injecting the reusable pieces from `lib/`:
 
 | Module | Responsibility |
 |---|---|
+| `config.js` | Reads every secret/config value (env var first, then a local `.txt` fallback) and the `IS_STAGING`/`HIDE_STAGING_BANNER` flags. |
 | `auth-store.js` | User accounts, sessions (30-day), email registration codes, per-day generation limits. JSON-backed via `data/auth-store.json`. |
-| `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D room renders (the AI Designer pipeline), using Gemini. |
 | `enterprise-store.js` | Tracks enterprise domains and metered usage for enterprise billing. |
-| `promptMatrix.js` | The prompt templates for each room-type × furniture-style combination used when staging. |
 | `stripe-webhooks.js` | Handles Stripe subscription lifecycle events (checkout completed, subscription updated/canceled, etc.). |
+| `prompts.js` | AI prompt and JSON-schema constants shared by the staging/chat routes. |
+| `promptMatrix.js` | The prompt templates for each room-type × furniture-style combination used when staging. |
+| `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D room renders (the AI Designer pipeline), using Gemini. |
+| `chat-pipeline.js` | Orchestrates an AI Designer chat turn (intent → staging/generation/CAD → response). |
+| `chat-upload-prep.js` | Preprocesses files attached to a chat message before the pipeline runs. |
+| `memory.js` | Per-user AI Designer memory (load/save/evaluate). |
+| `logging.js` | Append-only CSV logging helpers for prompts, chats, contacts, masks, bug reports, email opens. |
+| `email.js` | Resend transactional-email helpers (verification codes, reset links, etc.). |
+| `uptime-monitor.js` | Writes a heartbeat and computes the `/api/status` uptime snapshot. |
 
 ## Frontend
 
@@ -182,7 +212,7 @@ endpoints that read these files are protected by `endpoint_key`.
 
 ## HTTP API
 
-Served from `server.js` on the same origin. Full reference: [`endpoints.md`](endpoints.md).
+Served from `server.js` on the same origin. Full reference: [`endpoints.md`](reference/endpoints.md).
 Rough groups:
 
 - **Core AI:** `POST /api/process-image` (stage), `/api/mask-edit`, `/api/segment`,
@@ -218,8 +248,10 @@ npm test
 ```
 
 Uses the built-in Node test runner (`node --test`) over `test/**/*.test.js`. Current
-suites: `auth-store`, `guards`, `smoke`, `static`, and `stripe-webhooks`, with shared
-setup under `test/helpers/`.
+suites: `auth-store`, `enterprise-store`, `guards`, `public-endpoints`, `route-inventory`,
+`smoke`, `staging-endpoints`, `static`, `stripe-webhooks`, and `uptime`, with shared
+setup under `test/helpers/`. `route-inventory` boots the server and asserts every
+critical route is still registered — a safety net for the ongoing route extraction.
 
 > **The test suite gates deployment** — `render.yaml`'s build command runs
 > `npm install && npm test`, so a failing test blocks the Render deploy. Keep tests green.
