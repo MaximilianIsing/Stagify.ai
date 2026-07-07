@@ -4,9 +4,36 @@
   window.StagifyAuth = {
     TOKEN_KEY: TOKEN_KEY,
     user: null,
+    // Public client config from /api/auth/config (googleClientId, isStaging).
+    // Populated by fetchConfig(); isStaging drives the staging-only UI (no Google
+    // sign-in, no Stripe subscribe / help-center buttons).
+    config: null,
+    isStaging: false,
+    _configPromise: null,
 
     getToken: function () {
       return localStorage.getItem(TOKEN_KEY);
+    },
+
+    /** Fetch (and cache) the public client config once per page load. */
+    fetchConfig: function () {
+      if (this._configPromise) return this._configPromise;
+      var self = this;
+      this._configPromise = fetch('/api/auth/config')
+        .then(function (r) {
+          return r.ok ? r.json() : {};
+        })
+        .then(function (cfg) {
+          cfg = cfg || {};
+          self.config = cfg;
+          self.isStaging = !!cfg.isStaging;
+          return cfg;
+        })
+        .catch(function () {
+          self.config = {};
+          return {};
+        });
+      return this._configPromise;
     },
 
     setToken: function (t) {
@@ -134,4 +161,36 @@
       }
     },
   };
+
+  // --- Staging environment banner --------------------------------------------
+  // A red bar across the very top of every page that loads this script, shown
+  // only when the server reports IS_STAGING (via /api/auth/config). Keeps testers
+  // aware they're on the staging/test site, not production. Sticky so it stays
+  // visible; the sticky site header is nudged down to stack below it.
+  window.StagifyAuth.fetchConfig().then(function (cfg) {
+    if (cfg && cfg.isStaging) showStagingBanner();
+  });
+
+  function showStagingBanner() {
+    function mount() {
+      if (!document.body || document.getElementById('stagify-staging-banner')) return;
+      var bar = document.createElement('div');
+      bar.id = 'stagify-staging-banner';
+      bar.setAttribute('role', 'status');
+      bar.style.cssText =
+        'position:sticky;top:0;z-index:2147483647;flex:0 0 auto;' +
+        'background:#dc2626;color:#fff;text-align:center;text-transform:uppercase;' +
+        'letter-spacing:.05em;font:700 13px/1.25 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
+        'padding:7px 14px;box-shadow:0 2px 8px rgba(0,0,0,.25)';
+      bar.textContent = '⚠ Staging environment — test site, not the live stagify.ai';
+      document.body.insertBefore(bar, document.body.firstChild);
+      // Offset the sticky site header so it stacks below the banner (not under it).
+      var h = bar.offsetHeight || 31;
+      var s = document.createElement('style');
+      s.textContent = '.site-header{top:' + h + 'px !important}';
+      document.head.appendChild(s);
+    }
+    if (document.body) mount();
+    else document.addEventListener('DOMContentLoaded', mount);
+  }
 })();

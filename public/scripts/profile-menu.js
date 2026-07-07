@@ -8,6 +8,9 @@
   var GOOGLE_AUTH_INITIALIZED = false;
   var googleOAuthConfig = { loaded: false, clientId: '' };
   var googleSignInFetchInFlight = false;
+  // Staging site: hide the "Stripe help center" button in the pro menu. Set from
+  // /api/auth/config when it loads; the dropdown re-renders so it takes effect.
+  var isStagingMode = false;
   /** Stripe Customer Portal login (Dashboard → Customer portal → link). */
   var STRIPE_CUSTOMER_PORTAL_LOGIN =
     'https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00';
@@ -249,12 +252,18 @@
     }
     if (googleSignInFetchInFlight) return;
     googleSignInFetchInFlight = true;
-    fetch('/api/auth/config')
-      .then(function (r) {
-        return r.json();
-      })
+    var cfgPromise =
+      window.StagifyAuth && typeof window.StagifyAuth.fetchConfig === 'function'
+        ? window.StagifyAuth.fetchConfig()
+        : fetch('/api/auth/config').then(function (r) {
+            return r.json();
+          });
+    cfgPromise
       .then(function (cfg) {
         googleOAuthConfig.loaded = true;
+        // Staging: hide the "Stripe help center" button by re-rendering the menu.
+        isStagingMode = !!(cfg && cfg.isStaging);
+        if (isStagingMode) refresh();
         googleOAuthConfig.clientId = (cfg && cfg.googleClientId) || '';
         if (!googleOAuthConfig.clientId) {
           updateGooglePanelVisibility();
@@ -668,19 +677,23 @@
       dd.classList.remove('profile-menu-dropdown--guest');
       var planLine = '';
       if (u.plan === 'pro') {
+        // The "Stripe help center" button is hidden on the staging site.
+        var portalHelp = isStagingMode
+          ? ''
+          : '<a class="profile-menu__portal-help" href="' +
+            STRIPE_CUSTOMER_PORTAL_LOGIN +
+            '" target="_blank" rel="noopener noreferrer" title="' +
+            esc(lang('profile.stripeHelp', 'Stripe help center')) +
+            '" aria-label="' +
+            esc(lang('profile.manageBillingAria', 'Manage billing in Stripe')) +
+            '">' +
+            PORTAL_STRIPE_ICON +
+            '</a>';
         planLine =
           '<div class="profile-menu__plan-row">' +
           '<a href="stagify-plus.html" class="profile-menu__plan profile-menu__plan--plus">' +
           '<img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18" aria-hidden="true"> Stagify+</a>' +
-          '<a class="profile-menu__portal-help" href="' +
-          STRIPE_CUSTOMER_PORTAL_LOGIN +
-          '" target="_blank" rel="noopener noreferrer" title="' +
-          esc(lang('profile.stripeHelp', 'Stripe help center')) +
-          '" aria-label="' +
-          esc(lang('profile.manageBillingAria', 'Manage billing in Stripe')) +
-          '">' +
-          PORTAL_STRIPE_ICON +
-          '</a>' +
+          portalHelp +
           '</div>';
       } else {
         planLine = '<div class="profile-menu__plan">' + lang('profile.freePlan', 'Free Plan') + '</div>';

@@ -57,7 +57,7 @@
     "image-editing",
     "room-transformation"
   ],
-  "author": "",
+  "author": "Maximilian Ising",
   "license": "ISC",
   "description": "AI-powered virtual staging and interior design tool for real estate. Transform empty rooms with professional AI staging in seconds. Free home staging for agents, sellers, and buyers.",
   "dependencies": {

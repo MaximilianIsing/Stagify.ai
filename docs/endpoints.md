@@ -52,8 +52,8 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 | `POST` | `/api/auth/register/verify` | **Body:** `{ email, code }`. Verifies code and creates account. Returns `{ success, token, user }` or `400`. |
 | `POST` | `/api/auth/register/resend` | **Body:** `{ email }`. Resends verification code for pending sign-up. |
 | `POST` | `/api/auth/login` | **Body:** `{ email, password }`. Returns `{ success, token, user }` or `401`. |
-| `GET` | `/api/auth/config` | Public. Returns `{ googleClientId: string | null }` for Google Sign-In. |
-| `POST` | `/api/auth/google` | **Body:** `{ credential }` (Google ID token). Returns `{ success, token, user }` or `4xx/503` if not configured or invalid. |
+| `GET` | `/api/auth/config` | Public. Returns `{ googleClientId: string \| null, isStaging: boolean }`. `isStaging` reflects the `IS_STAGING` env flag; when it's on, `googleClientId` is forced to `null` (UI hides the Google button) and the client also blocks the Stripe subscribe / "help center" buttons. |
+| `POST` | `/api/auth/google` | **Body:** `{ credential }` (Google ID token). Returns `{ success, token, user }`, or `403` (`STAGING_DISABLED`) when `IS_STAGING` is on, or `4xx/503` if not configured or invalid. |
 | `GET` | `/api/auth/me` | **Auth:** valid session. Returns `{ user }` (public user shape, including `dailyGenerationsUsed` / `dailyGenerationLimit` for free tier). `401` if not signed in (`AUTH_REQUIRED`). |
 | `POST` | `/api/auth/logout` | **Body (optional):** `authToken`. **Or** `Authorization: Bearer` token. Invalidates the session. Returns `{ success: true }`. |
 | `POST` | `/api/auth/forgot-password` | **Body:** `{ email }`. If account exists and email is configured, sends reset link; various `{ ok, emailSent, message }` or `503/502` if email not configured. |

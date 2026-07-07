@@ -74,6 +74,10 @@
       "title": "Deja que una IA prepare tu espacio",
       "subtitle": "Con AI Designer, chatea para preparar, rediseñar e iterar sobre cualquier habitación hasta que quede lista para publicar. <em>(Exclusivo de Stagify+)</em>"
     },
+    "masking": {
+      "title": "Prepara con precisión exacta",
+      "subtitle": "Enmascara las áreas a rehacer, añade tus propios muebles y todo lo demás queda idéntico al píxel. <em>(Exclusivo de Stagify+)</em>"
+    },
     "info": {
       "eyebrow": "En resumen",
       "title": "Qué es el diseño virtual y por qué vende",
@@ -277,7 +281,6 @@
     "staging": {
       "title": "Opciones",
       "close": "x",
-      "adDisclaimer": "*Los anuncios nos permiten hacer esta herramienta gratuita",
       "roomType": "Tipo de habitación",
       "furnitureStyle": "Estilo de muebles",
       "additionalPrompt": "Prompt adicional",
