@@ -8,11 +8,14 @@ photorealistic 3D renders) and a **Masking Studio** for pixel-precise edits.
 This README is the entry point for the `docs/` folder. See also:
 
 - [`guides/architecture.md`](guides/architecture.md) — how the server is structured (composition root, `routes/` + `lib/`, request lifecycle).
+- [`guides/security.md`](guides/security.md) — auth model, request-size/DoS hardening, rate limits, CSP/CORS, and secret handling.
 - [`guides/i18n.md`](guides/i18n.md) — the client-side translation system and how to add a language.
 - [`guides/testing.md`](guides/testing.md) — the test suite and how it gates deployment.
 - [`reference/endpoints.md`](reference/endpoints.md) — HTTP API reference.
 - [`reference/environment-variables.md`](reference/environment-variables.md) — every env var, with a copy-paste `.env`.
+- [`reference/data-stores.md`](reference/data-stores.md) — the SQLite / JSON / CSV files, their shapes, where they live, and the single-instance caveats.
 - [`reference/caching.md`](reference/caching.md) — static asset `Cache-Control` policy, Render edge caching, and the rename/`?v=` cache-busting rule.
+- [`operations/deployment.md`](operations/deployment.md) — deploy runbook, staging vs production, `/data` backup, and rollback.
 
 ---
 
@@ -81,10 +84,10 @@ This README is the entry point for the `docs/` folder. See also:
 │   ├── email.js             # Resend email helpers
 │   └── uptime-monitor.js    # Heartbeat + /api/status snapshot
 ├── public/                  # Static frontend (HTML pages, scripts, styles, assets, i18n)
-├── data/                    # Runtime state: JSON stores + CSV logs (see Data & persistence)
+├── data/                    # Runtime state: one SQLite DB (all structured state) + CSV logs (see Data & persistence)
 ├── test/                    # `node --test` suite (unit + smoke + route inventory)
-├── demos/, ds-bundle/,      # Guide/demo assets and design-system bundle
-│   OG_Image/, to-build/
+├── ds-bundle/               # design-system bundle (generated)
+├── to-build/                # source masters: media-png, OG_Image, demos (see to-build/README.md)
 └── docs/                    # You are here
 ```
 
@@ -152,7 +155,8 @@ and no server-side rendering — `public/` is plain HTML that talks to `server.j
   provider, persists to `data/`, and responds.
 - **Secret resolution:** each secret resolves from its env var, falling back to a
   local `.txt` file (handy for local dev; production uses the host dashboard).
-- **Persistence:** flat JSON/CSV files under `data/` (see below) — no database.
+- **Persistence:** SQLite (`auth-store.db`) for accounts/sessions, plus flat JSON/CSV
+  files under `data/` for everything else (see below).
 - **i18n:** UI strings live in `public/languages/*.json` (11 languages) and are applied
   client-side by `language-loader.js` / `language-switcher.js`; prices remain USD.
 
@@ -165,7 +169,7 @@ helpers, and mounts the route modules in `routes/` (`public`, `auth`, `billing`,
 | Module | Responsibility |
 |---|---|
 | `config.js` | Reads every secret/config value (env var first, then a local `.txt` fallback) and the `IS_STAGING`/`HIDE_STAGING_BANNER` flags. |
-| `auth-store.js` | User accounts, sessions (30-day), email registration codes, per-day generation limits. JSON-backed via `data/auth-store.json`. |
+| `auth-store.js` | User accounts, sessions (30-day), email registration codes, per-day generation counts. **SQLite-backed** (`better-sqlite3`, `data/auth-store.db`); a legacy `data/auth-store.json` is imported once on first run, then kept as a fallback. |
 | `enterprise-store.js` | Tracks enterprise domains and metered usage for enterprise billing. |
 | `stripe-webhooks.js` | Handles Stripe subscription lifecycle events (checkout completed, subscription updated/canceled, etc.). |
 | `prompts.js` | AI prompt and JSON-schema constants shared by the staging/chat routes. |
@@ -197,15 +201,15 @@ Everything the browser loads is under `public/`:
 
 ## Data & persistence
 
-State is stored as flat files in `data/` (no database):
+State is stored in `data/` — **one SQLite database** for all structured state, plus flat
+files for logs and uploads. Full detail: [`reference/data-stores.md`](reference/data-stores.md).
 
 | File | Contents |
 |---|---|
-| `auth-store.json` | User accounts, hashed passwords, session tokens. **Sensitive.** |
-| `enterprise-domains.json` | Enterprise domain registrations + usage. |
-| `memories.json` | Per-user chat assistant memory. |
+| `auth-store.db` | **SQLite** (`better-sqlite3`, WAL) — the single app database, one shared connection (`lib/db.js`). Tables: auth (`users`, `sessions`, …, **sensitive**: hashed passwords + session tokens), `enterprise_domains`, `memories`, `uptime_state`. Each store imports its legacy JSON once on first run, then leaves it as a frozen fallback. |
 | `hosted-images/` | User-hosted image uploads served via `/i/:id`. |
 | `*_logs.csv` | Append-only logs: prompts, chats, contacts, masks, bug reports, email opens. |
+| `*.json` (legacy) | `auth-store.json`, `enterprise-domains.json`, `memories.json`, `uptime.json` — pre-SQLite stores, now frozen import fallbacks. |
 
 On Render, when a persistent disk is mounted at `/data`, these are written there
 instead of the repo `data/` folder (detected via the `RENDER` env var). The log/admin
@@ -276,23 +280,28 @@ red test still blocks it).
 
 ## Known limitations
 
-The persistence layer is deliberately simple (flat JSON/CSV files, no database), which
-has real consequences you must design around:
+The persistence layer is deliberately simple — a single SQLite database for all
+structured state plus flat CSV logs — which has real consequences you must design
+around:
 
 - **Single instance only.** All state lives in `data/` (or the Render `/data` disk).
-  Running more than one server instance concurrently will corrupt that shared state —
-  **do not scale horizontally** without first moving to a real shared datastore.
-- **No atomic writes, no backups.** Stores like `auth-store.json` are rewritten in
-  place; an interrupted or overlapping write can lose data, up to the **entire user
-  table**. Back up `/data` before risky operations, and prefer low-traffic windows for
-  anything that mutates it.
-- **No schema migrations.** Changes to the shape of the JSON stores are manual.
+  SQLite is single-writer, so running more than one server instance concurrently will
+  corrupt shared state — **do not scale horizontally** without first moving to a
+  client/server datastore (e.g. Postgres). (The rate limiter and uptime timer are
+  in-memory single-instance state too.)
+- **Structured state is durable.** Accounts, sessions, enterprise domains, memories, and
+  uptime all live in `auth-store.db` with WAL + transactions — atomic, per-row writes,
+  no whole-file rewrite. Still back up `/data` before risky operations, and copy the
+  `.db` **with its `-wal`/`-shm` sidecars**. (Render disk snapshots must **not** be used
+  to restore SQLite — export/copy the DB instead.)
+- **No schema migrations.** Changes to the SQLite schema or the JSON store shapes are
+  manual.
 
 ## Security notes
 
 - **Never commit secrets.** `.env` and the `*.txt` key files are gitignored; real
   secrets belong in the Render dashboard.
-- `data/auth-store.json` contains password hashes and session tokens — handle with care.
+- `data/auth-store.db` contains password hashes and session tokens — handle with care.
 - Admin/log endpoints are protected by `endpoint_key`, compared in constant time.
 - CSP is enforced via `helmet` (toggle with `DISABLE_CSP=1` only to debug a blocked
   resource); CORS is limited to `ALLOWED_ORIGINS`; auth/email/generation endpoints are

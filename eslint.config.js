@@ -16,9 +16,7 @@ export default [
       'public/**',        // frontend deferred (classic scripts, shared globals)
       'ds-bundle/**',     // generated bundle
       'supademo-local/**',
-      'demos/**',
-      'OG_Image/**',
-      'to-build/**',
+      'to-build/**',      // source masters (media-png, OG_Image, demos) — not runtime code
       '**/*.min.js',
     ],
   },
