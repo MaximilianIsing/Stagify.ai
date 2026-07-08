@@ -1,5 +1,5 @@
-(() => {
-    
+import { abbreviateFileName, dataURLToFile } from './app/helpers.js';
+
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
   
@@ -282,12 +282,6 @@
       });
     }
 
-    function abbreviateFileName(name, maxLen) {
-      var s = String(name || '');
-      if (s.length <= maxLen) return s;
-      return s.slice(0, maxLen) + '...';
-    }
-
     function updateFurnitureAddBtn() {
       if (!furnitureAddBtn) return;
       if (accumulatedFurnitureFiles.length >= FURNITURE_LIMIT) {
@@ -484,17 +478,6 @@
     let beforeIndex = 0;
     let afterVersions = [];
     let afterIndex = 0;
-
-    function dataURLToFile(dataUrl, filename) {
-      const arr = dataUrl.split(',');
-      const mimeMatch = arr[0].match(/:(.*?);/);
-      const mime = mimeMatch ? mimeMatch[1] : 'image/png';
-      const bstr = atob(arr[1]);
-      let n = bstr.length;
-      const u8 = new Uint8Array(n);
-      while (n--) u8[n] = bstr.charCodeAt(n);
-      return new File([u8], filename || 'photo.png', { type: mime });
-    }
 
     function isMobileStagingViewport() {
       return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
@@ -2356,7 +2339,6 @@
         set(value) { setValue(value); }
       };
     }
-  })();
 
   /** Show upgrade nudge only for users signed into a free account. */
   window.__stagifyUpdateHeroFreeGensLine = function () {
