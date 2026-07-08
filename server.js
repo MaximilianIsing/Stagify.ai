@@ -24,13 +24,14 @@ import { OAuth2Client } from 'google-auth-library';
 import { handleStripeEvent } from './lib/stripe-webhooks.js';
 import { createEnterpriseStore } from './lib/enterprise-store.js';
 import { createUptimeMonitor } from './lib/uptime-monitor.js';
-import { generateWithQualityRetry as runQualityRetry } from './lib/staging-pipeline.js';
+import { generateWithQualityRetry as runQualityRetry, normalizeFurnitureBuffers } from './lib/staging-pipeline.js';
 import createBillingRouter from './routes/billing.js';
 import { createEmail } from './lib/email.js';
 import { createLogging } from './lib/logging.js';
 import { createMemory } from './lib/memory.js';
 import { createConfig } from './lib/config.js';
-import { generatePrompt, QUALITY_REVIEW_PROMPT, REVIEW_WHY_SUFFIX, MASK_REVIEW_PROMPT, FURNITURE_ERASE_PROMPT, EMPTY_ROOM_CHECK_PROMPT, STAGEABLE_IMAGE_CHECK_PROMPT, DEFAULT_UNSTAGEABLE_REASON } from './lib/prompts.js';
+import { generatePrompt, styleReferencePromptSuffix, maskReferencePromptSuffix, furnitureReferencePromptSuffix, QUALITY_REVIEW_PROMPT, REVIEW_WHY_SUFFIX, MASK_REVIEW_PROMPT, FURNITURE_ERASE_PROMPT, EMPTY_ROOM_CHECK_PROMPT, STAGEABLE_IMAGE_CHECK_PROMPT, DEFAULT_UNSTAGEABLE_REASON } from './lib/prompts.js';
+import { downscaleImage, enforceAspectRatio, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, downscaleImageForGPT, compositeForReview } from './lib/image-primitives.js';
 import createPublicRouter from './routes/public.js';
 import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
@@ -39,6 +40,8 @@ import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL } from './lib/runtime-flags.js';
 import { setSensitiveHeaders, getStagingClientIp, isLikelyMobileStagingRequest, getUserIdentifier } from './lib/http-helpers.js';
 import { getTemperatureForModel, getGeminiImageModel } from './lib/model-config.js';
+import { createAuthHelpers } from './lib/auth-helpers.js';
+import { getPromptCount, incPromptCount, getContactCount, incContactCount, initializePromptCount, initializeContactCount } from './lib/counters.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -93,189 +96,12 @@ if (LOGS_ACCESS_KEY) {
   console.error('Error: No endpoint access key found in file or environment variable');
 }
 
-/**
- * Headers for any response that carries secrets or PII: keep it out of shared
- * caches and stop the URL/Referer from leaking onward to third parties.
- */
-function getAuthUserFromRequest(req) {
-  let token = null;
-  const h = req.headers.authorization;
-  if (h && typeof h === 'string' && h.startsWith('Bearer ')) {
-    token = h.slice(7).trim();
-  }
-  if (!token && req.body && typeof req.body === 'object' && req.body.authToken) {
-    token = String(req.body.authToken).trim();
-  }
-  // Note: we intentionally do NOT read the session token from req.query — a token
-  // in a URL leaks via access logs, browser history, and Referer headers. Use the
-  // Authorization: Bearer header (or a POST body) instead.
-  const user = authStore.validateSession(token);
-  return enhanceUserWithEnterprise(user);
-}
-
-function enhanceUserWithEnterprise(user) {
-  if (!user) return null;
-  if (user.plan === 'pro') return user;
-  const domain = user.email ? user.email.split('@')[1]?.toLowerCase() : null;
-  if (domain && enterpriseStore.isActiveDomain(domain)) {
-    return Object.assign({}, user, { plan: 'pro', enterpriseDomain: domain });
-  }
-  return user;
-}
-
-/** Public user payload for API responses — always reflects enterprise domain access. */
-function toPublicAuthUser(user) {
-  if (!user) return null;
-  return authStore.publicUser(enhanceUserWithEnterprise(user));
-}
-
-function enterpriseDomainForUser(user) {
-  if (!user) return null;
-
-  // Individual Stagify+ subscribers (own Stripe customer) are not billed to the enterprise domain
-  const stored = user.email ? authStore.findUserByEmail(user.email) : null;
-  const account = stored || user;
-  if (account.plan === 'pro' && account.stripeCustomerId) {
-    return null;
-  }
-
-  const domain =
-    user.enterpriseDomain ||
-    (user.email ? user.email.split('@')[1]?.toLowerCase() : null);
-  return domain && enterpriseStore.isActiveDomain(domain) ? domain : null;
-}
-
-
 const enterpriseMeterEventName = readEnterpriseMeterEventName();
 
-function reportEnterpriseUsage(domain, quantity = 1) {
-  // Always track locally so admin dashboard counts stay accurate (even without Stripe)
-  enterpriseStore.recordUsage(domain, quantity);
-  if (!stripe) return;
-  const entry = enterpriseStore.getDomainEntry(domain);
-  if (!entry || !entry.stripeCustomerId) {
-    console.warn('[enterprise] Stripe meter skipped — no Stripe customer for domain:', domain);
-    return;
-  }
-  stripe.billing.meterEvents
-    .create({
-      event_name: enterpriseMeterEventName,
-      payload: {
-        stripe_customer_id: entry.stripeCustomerId,
-        value: String(quantity),
-      },
-    })
-    .then(() => {
-      console.log('[enterprise] Usage reported:', quantity, 'generation(s) for', domain);
-    })
-    .catch((err) => {
-      console.error('[enterprise] Failed to report usage for', domain, ':', err.message);
-    });
-}
+// Auth/enterprise helpers (lib/auth-helpers.js), sharing this server's stores + Stripe.
+const { getAuthUserFromRequest, toPublicAuthUser, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount } = createAuthHelpers({ authStore, enterpriseStore, stripe, enterpriseMeterEventName });
 
-function requireProAccount(req, res) {
-  const user = getAuthUserFromRequest(req);
-  if (!user) {
-    res.status(401).json({ error: 'Sign in required', code: 'AUTH_REQUIRED' });
-    return null;
-  }
-  if (user.plan !== 'pro') {
-    res.status(403).json({ error: 'Stagify+ subscription required', code: 'PRO_REQUIRED' });
-    return null;
-  }
-  return user;
-}
-
-// Global variable to track prompt count
-let promptCount = 0;
-
-// Global variable to track contact count
-let contactCount = 0;
-
-// Live accessors for the runtime counters, passed to route modules via deps so
-// extracted routers read/increment the REAL module-scope values (not a stale
-// snapshot copied at mount time). Increment uses += 1 (not ++) so a global
-// "++" -> "inc" rewrite of the route bodies can never make these self-recurse.
-function getPromptCount() { return promptCount; }
-function incPromptCount() { promptCount += 1; }
-function getContactCount() { return contactCount; }
-function incContactCount() { contactCount += 1; }
-
-// Function to initialize prompt count from CSV file
-function initializePromptCount() {
-  try {
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-    }
-
-    const logFile = path.join(logDir, 'prompt_logs.csv');
-    
-    if (fs.existsSync(logFile)) {
-      const fileContent = fs.readFileSync(logFile, 'utf8');
-      
-      // Count rows that start with a timestamp (ISO format)
-      // Each valid CSV row starts with a timestamp like "2024-01-01T12:34:56"
-      const timestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/gm;
-      const matches = fileContent.match(timestampPattern);
-      promptCount = matches ? matches.length : 0;
-      if (DEBUG_MODE) {
-        console.log('Prompt count successfully initialized from file:', promptCount);
-      }
-    } else {
-      if (DEBUG_MODE) {
-        console.log('No prompt log file found, starting with count 0');
-      }
-      promptCount = 0;
-    }
-  } catch (error) {
-    console.error('Error initializing prompt count:', error);
-    promptCount = 0;
-  }
-}
-
-// Function to initialize contact count from CSV file
-function initializeContactCount() {
-  try {
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-    }
-
-    const logFile = path.join(logDir, 'contact_logs.csv');
-    
-    if (fs.existsSync(logFile)) {
-      const fileContent = fs.readFileSync(logFile, 'utf8');
-      
-      // Count rows that start with a timestamp (ISO format)
-      // Each valid CSV row starts with a timestamp like "2024-01-01T12:34:56"
-      const timestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/gm;
-      const matches = fileContent.match(timestampPattern);
-      contactCount = matches ? matches.length : 0;
-      if (DEBUG_MODE) {
-        console.log('Contact count successfully initialized from file:', contactCount);
-      }
-    } else {
-      if (DEBUG_MODE) {
-        console.log('No contact log file found, starting with count 0');
-      }
-      contactCount = 0;
-    }
-  } catch (error) {
-    console.error('Error initializing contact count:', error);
-    contactCount = 0;
-  }
-}
+// Home-page counters (rooms staged / contacts) live in lib/counters.js — imported above.
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -656,41 +482,6 @@ const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logCh
 const { logEmailOpenToFile, isConfirmedEmailClientOpen, sendRegistrationVerificationEmail } = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
 const { getMemoriesFile, loadMemories, saveMemories } = createMemory({ __dirname, DEBUG_MODE, openai });
 
-/**
- * Downscales an image to fit within 1920x1080 while maintaining aspect ratio
- */
-async function downscaleImage(imageBuffer) {
-  try {
-    const image = sharp(imageBuffer);
-    const metadata = await image.metadata();
-      
-    // Check if downscaling is needed
-    if (metadata.width <= 1920 && metadata.height <= 1080) {
-      return imageBuffer;
-    }
-    
-    // Calculate the scaling factor to fit within 1920x1080 while maintaining aspect ratio
-    const scaleWidth = 1920 / metadata.width;
-    const scaleHeight = 1080 / metadata.height;
-    const scale = Math.min(scaleWidth, scaleHeight);
-    
-    const newWidth = Math.floor(metadata.width * scale);
-    const newHeight = Math.floor(metadata.height * scale);
-    
-    const processedBuffer = await image
-      .resize(newWidth, newHeight, {
-        kernel: sharp.kernel.lanczos3,
-        withoutEnlargement: true
-      })
-      .jpeg({ quality: 90 })
-      .toBuffer();
-
-    return processedBuffer;
-  } catch (error) {
-    console.error("Error downscaling image:", error);
-    throw error;
-  }
-}
 
 // Gemini image models don't strictly honor the input aspect ratio — they tend to
 // "square up" wide/short rooms and return an image that's slightly taller (or
@@ -700,145 +491,9 @@ async function downscaleImage(imageBuffer) {
 // the drift is small enough to be imperceptible; larger drifts are left untouched
 // (stretching them would distort the room more than the wrong ratio does, and
 // they're better handled by regeneration). Fails open on any error.
-const AR_NOOP_TOLERANCE = 0.01; // within 1% of source ratio — already fine, skip re-encode
-const AR_MAX_CORRECTION = 0.08; // correct drifts up to 8%; beyond that, leave as-is
-async function enforceAspectRatio(outputBuffer, targetWidth, targetHeight) {
-  try {
-    if (!targetWidth || !targetHeight) return outputBuffer;
-    const targetRatio = targetWidth / targetHeight;
-    const meta = await sharp(outputBuffer).metadata();
-    if (!meta.width || !meta.height) return outputBuffer;
-    const outRatio = meta.width / meta.height;
-    const drift = Math.abs(outRatio - targetRatio) / targetRatio;
-    if (drift < AR_NOOP_TOLERANCE) return outputBuffer; // close enough already
-    if (drift > AR_MAX_CORRECTION) {
-      if (DEBUG_MODE) {
-        console.log(`[AspectRatio] drift ${(drift * 100).toFixed(1)}% exceeds ${AR_MAX_CORRECTION * 100}% cap — leaving output as-is (no zoom/distortion).`);
-      }
-      return outputBuffer;
-    }
-    // Keep the full width, adjust only the height to hit the source ratio. This is
-    // a small stretch/squash — no cropping, no padding, all content preserved.
-    const newHeight = Math.max(1, Math.round(meta.width / targetRatio));
-    if (DEBUG_MODE) {
-      console.log(`[AspectRatio] correcting ${(drift * 100).toFixed(1)}% drift: ${meta.width}x${meta.height} -> ${meta.width}x${newHeight}.`);
-    }
-    return await sharp(outputBuffer)
-      .resize(meta.width, newHeight, { fit: 'fill' })
-      .png()
-      .toBuffer();
-  } catch (error) {
-    console.error('[AspectRatio] enforcement failed, returning model output as-is:', error.message);
-    return outputBuffer;
-  }
-}
 
-// Pad a reference/extra image with TRANSPARENT margins so its aspect ratio matches
-// `targetAR` (room width / height). This stops Gemini from leaking the reference's
-// own aspect ratio into the generated output. Only the short side grows — the
-// subject is never scaled, stretched, or cropped, just framed in a room-shaped
-// canvas. Returns { buffer, padded }; when padded the buffer is PNG (transparent
-// alpha needs PNG). Pads only when the AR differs by more than `tol` (0 = any diff).
-async function padBufferToAspectRatio(buffer, targetAR, tol = 0) {
-  if (!targetAR || !isFinite(targetAR)) return { buffer, padded: false };
-  const meta = await sharp(buffer).metadata();
-  const w = meta.width, h = meta.height;
-  if (!w || !h) return { buffer, padded: false };
-  const ar = w / h;
-  if (Math.abs(ar - targetAR) / targetAR <= tol) return { buffer, padded: false };
-  let tw = w, th = h;
-  if (ar > targetAR) th = Math.round(w / targetAR);       // too wide → grow height
-  else if (ar < targetAR) tw = Math.round(h * targetAR);  // too tall → grow width
-  if (tw === w && th === h) return { buffer, padded: false };
-  const out = await sharp(buffer)
-    .resize(tw, th, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-    .png()
-    .toBuffer();
-  return { buffer: out, padded: true };
-}
 
-// Build a "locator" image for mask editing: the room with the brushed region's
-// BORDER drawn as a bright magenta outline (NOT a fill — a fill tempts the model
-// to reproduce it as a colored splotch in the output). The model generates from
-// the CLEAN room and reads this copy only to see WHERE to edit, so the magenta
-// never needs to appear in the result. Magenta is used because it is almost never
-// a real room/furniture color, so "ignore it" is unambiguous. Throws on failure so
-// the caller can fall back to the plain mask.
-async function buildMarkedRoomImage(roomBuffer, maskBuffer, width, height) {
-  const W = width, H = height;
-  const THICK = Math.max(3, Math.round(Math.min(W, H) * 0.006)); // outline thickness, px
-  const maskAlpha = await sharp(maskBuffer)
-    .resize(W, H, { fit: 'fill' })
-    .extractChannel(0) // white (255) inside the brushed area, 0 outside
-    .raw()
-    .toBuffer();
-  const inside = new Uint8Array(W * H);
-  for (let i = 0; i < W * H; i++) inside[i] = maskAlpha[i] >= 128 ? 1 : 0;
-  // Erode `inside` by THICK with a separable min-filter (O(W*H*THICK)); the outline
-  // is the band that is inside but NOT in the eroded core — a clean border, no fill.
-  const horiz = new Uint8Array(W * H);
-  for (let y = 0; y < H; y++) {
-    const row = y * W;
-    for (let x = 0; x < W; x++) {
-      let keep = 1;
-      for (let dx = -THICK; dx <= THICK; dx++) {
-        const nx = x + dx;
-        if (nx < 0 || nx >= W || !inside[row + nx]) { keep = 0; break; }
-      }
-      horiz[row + x] = keep;
-    }
-  }
-  const rgba = Buffer.alloc(W * H * 4); // zero-filled → fully transparent by default
-  for (let x = 0; x < W; x++) {
-    for (let y = 0; y < H; y++) {
-      const idx = y * W + x;
-      if (!inside[idx]) continue;
-      let eroded = 1;
-      for (let dy = -THICK; dy <= THICK; dy++) {
-        const ny = y + dy;
-        if (ny < 0 || ny >= H || !horiz[ny * W + x]) { eroded = 0; break; }
-      }
-      if (!eroded) { // inside but on the border band → magenta outline
-        rgba[idx * 4] = 255;     // R
-        rgba[idx * 4 + 1] = 0;   // G
-        rgba[idx * 4 + 2] = 255; // B
-        rgba[idx * 4 + 3] = 255; // A (opaque)
-      }
-    }
-  }
-  const overlay = await sharp(rgba, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer();
-  return await sharp(roomBuffer)
-    .resize(W, H, { fit: 'fill' })
-    .composite([{ input: overlay, blend: 'over' }])
-    .png()
-    .toBuffer();
-}
 
-// Lock a mask-edit output back to the room's aspect ratio. Gemini "squares up" the
-// AR, and the client composites by stretching the result onto the original canvas
-// — so a drifted AR would warp the edit out of alignment with the untouched
-// surroundings. A centered cover-crop restores the room ratio WITHOUT stretching
-// (Gemini usually just adds ceiling/floor bands, so cropping them re-aligns the
-// real content). Only acts when the AR actually drifted; fails open to the raw
-// output. Returns a PNG data URL.
-async function normalizeMaskOutputToRoom(base64Png, roomW, roomH) {
-  try {
-    const buf = Buffer.from(base64Png, 'base64');
-    const meta = await sharp(buf).metadata();
-    if (meta.width && meta.height && roomW && roomH) {
-      const roomAR = roomW / roomH;
-      const outAR = meta.width / meta.height;
-      if (Math.abs(outAR - roomAR) / roomAR > 0.01) {
-        const fixed = await sharp(buf).resize(roomW, roomH, { fit: 'cover' }).png().toBuffer();
-        if (DEBUG_MODE) console.log(`[Mask Edit] AR drift corrected ${meta.width}×${meta.height} → ${roomW}×${roomH} (cover crop)`);
-        return `data:image/png;base64,${fixed.toString('base64')}`;
-      }
-    }
-  } catch (e) {
-    console.warn('[Mask Edit] output AR normalization failed; returning raw output:', e.message);
-  }
-  return `data:image/png;base64,${base64Png}`;
-}
 
 // Downscale base64 image data URL for GPT API (max 2048x2048, recommended 1024x1024)
 // Annotate an image with a short description using GPT
@@ -907,90 +562,6 @@ async function annotateImage(imageDataUrl, isCAD = false, detectBlueprint = fals
   }
 }
 
-async function downscaleImageForGPT(dataUrl) {
-  try {
-    // Extract base64 data and MIME type
-    const matches = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-    if (!matches) {
-      if (DEBUG_MODE) {
-        console.log('[Image Downscale] Invalid data URL format, returning original');
-      }
-      return dataUrl;
-    }
-    
-    const mimeType = matches[1];
-    const base64Data = matches[2];
-    
-    // Convert base64 to buffer
-    const imageBuffer = Buffer.from(base64Data, 'base64');
-    
-    // Get image metadata
-    const image = sharp(imageBuffer);
-    const metadata = await image.metadata();
-    
-    // OpenAI recommends max 2048x2048, but 1024x1024 is better for performance
-    const maxDimension = 1024;
-    
-    // Check if downscaling is needed
-    if (metadata.width <= maxDimension && metadata.height <= maxDimension) {
-      if (DEBUG_MODE) {
-        console.log(`[Image Downscale] Image ${metadata.width}x${metadata.height} is within limits, no downscaling needed`);
-      }
-      return dataUrl;
-    }
-    
-    if (DEBUG_MODE) {
-      console.log(`[Image Downscale] Downscaling image from ${metadata.width}x${metadata.height} to fit within ${maxDimension}x${maxDimension}`);
-    }
-    
-    // Calculate the scaling factor to fit within maxDimension while maintaining aspect ratio
-    const scaleWidth = maxDimension / metadata.width;
-    const scaleHeight = maxDimension / metadata.height;
-    const scale = Math.min(scaleWidth, scaleHeight);
-    
-    const newWidth = Math.floor(metadata.width * scale);
-    const newHeight = Math.floor(metadata.height * scale);
-    
-    // Resize and convert to JPEG for smaller size (or keep original format if it's already JPEG)
-    let processedBuffer;
-    if (mimeType.includes('jpeg') || mimeType.includes('jpg')) {
-      processedBuffer = await image
-        .resize(newWidth, newHeight, {
-          kernel: sharp.kernel.lanczos3,
-          withoutEnlargement: true
-        })
-        .jpeg({ quality: 85 })
-        .toBuffer();
-    } else {
-      // For other formats, convert to JPEG
-      processedBuffer = await image
-        .resize(newWidth, newHeight, {
-          kernel: sharp.kernel.lanczos3,
-          withoutEnlargement: true
-        })
-        .jpeg({ quality: 85 })
-        .toBuffer();
-    }
-    
-    // Convert back to base64 data URL
-    const newBase64 = processedBuffer.toString('base64');
-    const newDataUrl = `data:image/jpeg;base64,${newBase64}`;
-    
-    const originalSize = Buffer.byteLength(dataUrl, 'utf8');
-    const newSize = Buffer.byteLength(newDataUrl, 'utf8');
-    const reduction = ((1 - newSize / originalSize) * 100).toFixed(1);
-    
-    if (DEBUG_MODE) {
-      console.log(`[Image Downscale] Downscaled to ${newWidth}x${newHeight}, size reduced by ${reduction}%`);
-    }
-    
-    return newDataUrl;
-  } catch (error) {
-    console.error('[Image Downscale] Error downscaling image:', error);
-    // Return original if downscaling fails
-    return dataUrl;
-  }
-}
 
 
 
@@ -1170,41 +741,6 @@ async function reviewMaskEdit(originalDataUrl, editedDataUrl, opts = {}) {
   }
 }
 
-// Composite the model's raw output onto the original through the mask — edited
-// pixels only inside the white mask region, original everywhere else — so the QA
-// reviewer judges the COMBINED result the user actually receives (not raw output
-// that may have drifted outside the mask). Falls back to the raw output on error.
-async function compositeForReview(originalBuf, maskBuf, editedDataUrl, width, height) {
-  try {
-    const editedBuf = Buffer.from(editedDataUrl.split(',')[1], 'base64');
-    // Mask's red channel = blend weight (white inside the brushed area).
-    const maskAlpha = await sharp(maskBuf)
-      .resize(width, height, { fit: 'fill' })
-      .extractChannel(0)
-      .raw()
-      .toBuffer();
-    const editedRaw = await sharp(editedBuf)
-      .resize(width, height, { fit: 'fill' })
-      .ensureAlpha()
-      .raw()
-      .toBuffer();
-    for (let i = 0; i < width * height; i++) {
-      editedRaw[i * 4 + 3] = maskAlpha[i]; // keep edited only where the mask is white
-    }
-    const editedPng = await sharp(editedRaw, { raw: { width, height, channels: 4 } })
-      .png()
-      .toBuffer();
-    const composite = await sharp(originalBuf)
-      .resize(width, height, { fit: 'fill' })
-      .composite([{ input: editedPng, blend: 'over' }])
-      .png()
-      .toBuffer();
-    return `data:image/png;base64,${composite.toString('base64')}`;
-  } catch (e) {
-    console.error('[Mask QA] composite for review failed, reviewing raw output:', e.message);
-    return editedDataUrl;
-  }
-}
 
 // Run an image-producing function up to QUALITY_MAX_ATTEMPTS times, returning the
 // first "perfect" result or, failing that, the highest-scoring one.
@@ -1274,43 +810,9 @@ Composition: frame the full scene naturally, keeping ceilings, floors, walls, an
   }
 }
 
-function normalizeFurnitureBuffers(furnitureImageInput) {
-  if (!furnitureImageInput) return [];
-  const raw = Array.isArray(furnitureImageInput) ? furnitureImageInput : [furnitureImageInput];
-  return raw.filter((b) => b && Buffer.isBuffer(b)).slice(0, 5);
-}
 
-// When the extra image(s) are an aesthetic/style reference rather than specific
-// furniture to place, instruct the model to emulate the look — not copy objects.
-function styleReferencePromptSuffix(count) {
-  if (count <= 0) return '';
-  const listText =
-    count === 1
-      ? 'The second image is'
-      : 'The additional images after the room photo are';
-  return `\n\nIMPORTANT: ${listText} a STYLE REFERENCE, not furniture to copy. Match its overall aesthetic — color palette, materials, mood, and design style — when staging the room. Do NOT copy its exact objects, layout, room, or camera angle. The first image is the room to stage; keep that room's architecture, dimensions, windows, and viewpoint unchanged.`;
-}
 
-function maskReferencePromptSuffix() {
-  return '\n\nIMPORTANT — REFERENCE IMAGE: A final reference image is provided as the LAST image (after the room photo and the highlighted room). Treat it as the visual source for the user\'s instruction above — typically the specific furniture, decor, object, fixture, material, or finish they want applied inside the white masked region. Recreate the referenced subject so it is clearly the SAME item — keep its design, colors, materials, textures, proportions, and distinctive details. Its IDENTITY is what must stay faithful, NOT its camera angle or orientation: you SHOULD and MUST freely ROTATE, turn, and re-angle the subject — even showing it from a completely different side than the reference photo — whenever that is needed to fit the masked area and sit naturally in the room. Re-orient it to match the room\'s perspective and vanishing lines and to rest correctly on the floor, surface, or along the wall the user indicates (for example, turn a sofa shown head-on in the reference so it runs ALONG the wall in proper receding perspective, rather than facing the camera). Never refuse to rotate or re-angle the object just to keep the reference\'s original viewpoint — preserving the reference camera angle at the cost of a natural fit is WRONG. Then adapt it to the scene so it looks naturally photographed in place — match the masked area\'s perspective, scale, lighting direction, shadows, and reflections, ground it realistically with correct contact shadows and no floating, and render it as a fully opaque, solid object — never semi-transparent, see-through, or ghosted. Use ONLY the physical object/subject from the reference image — treat it as a clean cut-out and extract just that object. COMPLETELY DISCARD everything in the reference that is not the object itself: its background and backdrop (including any plain white, grey, gradient, or studio backdrop), the floor or surface it stands on in the reference, its own lighting, framing, watermarks, surrounding objects, and any transparent or empty padding. NEVER copy, paint, extend, or bleed the reference\'s background or backdrop into the room — do NOT add a white, pale, or colored patch, panel, slab, rug, or floor area taken from the reference, and do NOT mistake the reference\'s backdrop for floor, wall, or surface. The object must sit directly on the room\'s OWN existing floor or surface, surrounded only by the room\'s existing content, with fresh contact shadows that match the room\'s lighting. Apply the result strictly within the white masked region and blend its edges seamlessly with the surroundings. Size the referenced subject so the WHOLE of it — including any legs, overhang, and contact shadow — fits completely inside the white masked region with a small margin from the edge; scale it down as needed and never let any part reach, touch, or cross the white boundary, or it will be cut off. Do not change anything outside the mask. The OUTPUT image MUST keep the EXACT same width, height, and aspect ratio as the FIRST (room) image — never resize, crop, stretch, or reshape the output to match the reference image\'s dimensions.';
-}
 
-function furnitureReferencePromptSuffix(count, preserveExistingStaging = false) {
-  if (count <= 0) return '';
-  const listText =
-    count === 1
-      ? 'The second image'
-      : count === 2
-        ? 'The second and third images'
-        : 'The second, third, and fourth images';
-  const pieceWord = count === 1 ? 'piece' : 'pieces';
-  let suffix = `\n\nIMPORTANT: ${listText} provided after the room photo ${count === 1 ? 'is' : 'are'} reference furniture ${pieceWord} that the user wants incorporated into the staged room. Match each item's style, color, and appearance as closely as possible. Use all reference images as guidance for what to place in the space. Use ONLY the furniture object(s) themselves — treat each reference as a clean cut-out. COMPLETELY DISCARD everything in the reference photos that is not the furniture: any plain white, grey, gradient, or studio backdrop, the floor or surface the item sits on in the reference, its own lighting, framing, watermarks, and surrounding objects. NEVER copy, paint, or bleed a reference's background into the room — do NOT add a white, pale, or colored patch, panel, slab, rug, or floor area from it, and do NOT mistake a reference's backdrop for floor, wall, or surface. Place each piece directly onto the room's own existing floor or surface, with fresh contact shadows that match the room's lighting.`;
-  if (preserveExistingStaging) {
-    suffix +=
-      '\n\nCRITICAL: The first image is an ALREADY-STAGED ROOM. Keep every existing element in that photo exactly as shown — same walls, windows, layout, camera angle, lighting, and all furniture/decor already present. ONLY add the reference furniture piece(s). Do not generate a different room. Preserve the exact aspect ratio and full frame — do not crop, zoom, or cut off any part of the original photo.';
-  }
-  return suffix;
-}
 
 // Two-stage "remove existing furniture": before staging, physically empty the
 // room in a dedicated pass. Cost-conscious but reliable — it starts on the cheap
