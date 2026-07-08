@@ -30,7 +30,7 @@ import { createEmail } from './lib/email.js';
 import { createLogging } from './lib/logging.js';
 import { createMemory } from './lib/memory.js';
 import { createConfig } from './lib/config.js';
-import { generatePrompt, styleReferencePromptSuffix, maskReferencePromptSuffix, furnitureReferencePromptSuffix, QUALITY_REVIEW_PROMPT, REVIEW_WHY_SUFFIX, MASK_REVIEW_PROMPT, FURNITURE_ERASE_PROMPT, EMPTY_ROOM_CHECK_PROMPT, STAGEABLE_IMAGE_CHECK_PROMPT, DEFAULT_UNSTAGEABLE_REASON } from './lib/prompts.js';
+import { generatePrompt, styleReferencePromptSuffix, maskReferencePromptSuffix, furnitureReferencePromptSuffix } from './lib/prompts.js';
 import { downscaleImage, enforceAspectRatio, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, downscaleImageForGPT, compositeForReview } from './lib/image-primitives.js';
 import createPublicRouter from './routes/public.js';
 import createChatRouter from './routes/chat.js';
@@ -42,6 +42,11 @@ import { setSensitiveHeaders, getStagingClientIp, isLikelyMobileStagingRequest, 
 import { getTemperatureForModel, getGeminiImageModel } from './lib/model-config.js';
 import { createAuthHelpers } from './lib/auth-helpers.js';
 import { getPromptCount, incPromptCount, getContactCount, incContactCount, initializePromptCount, initializeContactCount } from './lib/counters.js';
+import { createImageAnnotation } from './lib/image-annotation.js';
+import { createImageReview } from './lib/image-review.js';
+import { createErase } from './lib/erase.js';
+import { createHostedImages } from './lib/hosted-images.js';
+import { createHttpGuards } from './lib/http-guards.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -482,6 +487,14 @@ const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logCh
 const { logEmailOpenToFile, isConfirmedEmailClientOpen, sendRegistrationVerificationEmail } = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
 const { getMemoriesFile, loadMemories, saveMemories } = createMemory({ __dirname, DEBUG_MODE, openai });
 
+// GPT-vision / Gemini helpers extracted to lib/, instantiated with this server's
+// AI clients (the pure helpers they call are direct imports inside each module).
+const { annotateImage } = createImageAnnotation({ openai });
+const { reviewImageQuality, reviewMaskEdit, validateStageableImage } = createImageReview({ openai });
+const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
+const { getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest } = createHostedImages({ getDataLogDir });
+const { healthHandler, protectLogs, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches });
+
 
 // Gemini image models don't strictly honor the input aspect ratio — they tend to
 // "square up" wide/short rooms and return an image that's slightly taller (or
@@ -495,72 +508,6 @@ const { getMemoriesFile, loadMemories, saveMemories } = createMemory({ __dirname
 
 
 
-// Downscale base64 image data URL for GPT API (max 2048x2048, recommended 1024x1024)
-// Annotate an image with a short description using GPT
-async function annotateImage(imageDataUrl, isCAD = false, detectBlueprint = false) {
-  try {
-    if (!openai) {
-      if (DEBUG_MODE) {
-        console.log('[Image Annotation] OpenAI not initialized, skipping annotation');
-      }
-      return null;
-    }
-    
-    // Downscale image first to save tokens
-    const downscaledUrl = await downscaleImageForGPT(imageDataUrl);
-    
-    // Build prompt based on whether we need to detect blueprint
-    let promptText = 'Briefly describe this image in 5-10 words. Then, on a new line, answer: "CAD: True" if this is a blueprint, floor plan, or architectural drawing (top-down 2D plan view), or "CAD: False" if it is a normal room photo or 3D interior view.';
-    if (isCAD) {
-      // For explicitly CAD images, just get description and mark as CAD: True
-      promptText = 'Briefly describe this image in 5-10 words. Then, on a new line, answer: "CAD: True".';
-    } else if (!detectBlueprint) {
-      // For staged/generated images that are not CAD, just get description and mark as CAD: False
-      promptText = 'Briefly describe this image in 5-10 words. Then, on a new line, answer: "CAD: False".';
-    }
-    
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: promptText },
-            { type: 'image_url', image_url: { url: downscaledUrl } }
-          ]
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 50
-    });
-    
-    let annotation = completion.choices[0].message.content.trim();
-    
-    // Extract CAD classification from the response
-    const cadMatch = annotation.match(/CAD:\s*(True|False)/i);
-    if (cadMatch) {
-      // Remove the CAD: True/False line from the annotation text
-      annotation = annotation.replace(/\n?\s*CAD:\s*(True|False)\s*\.?$/i, '').trim();
-      // Add CAD classification back in standardized format
-      const cadValue = cadMatch[1];
-      annotation += ` CAD: ${cadValue}`;
-    } else {
-      // If API didn't return CAD classification, use the provided isCAD value
-      annotation += ` CAD: ${isCAD ? 'True' : 'False'}`;
-      if (DEBUG_MODE) {
-        console.log(`[Image Annotation] Warning: API did not return CAD classification, using default: ${isCAD ? 'True' : 'False'}`);
-      }
-    }
-    
-    if (DEBUG_MODE) {
-      console.log(`[Image Annotation] Generated annotation: "${annotation}"`);
-    }
-    return annotation;
-  } catch (error) {
-    console.error('[Image Annotation] Error annotating image:', error);
-    return null;
-  }
-}
 
 
 
@@ -638,108 +585,11 @@ const QUALITY_MAX_ATTEMPTS = 3;
 // When DEBUG is on, ask the reviewer to also name the specific defect(s) so we can
 // log them; kept out of the prompt in production to avoid the extra output tokens.
 
-// Review a single generated image. Returns { perfect, score }.
-// Fails OPEN (perfect: true) on any error so a flaky reviewer never blocks
-// delivering an image to the user.
-// opts: { instruction, furnitureDataUrls } — instruction is what the user asked for
-// (so the reviewer judges against intent, not its own taste); furnitureDataUrls are
-// any uploaded furniture references to also show it.
-async function reviewImageQuality(imageDataUrl, opts = {}) {
-  if (!openai) return { perfect: true, score: 100, reason: 'reviewer disabled' };
-  try {
-    const { instruction = '', furnitureDataUrls = [] } = opts;
-    const mainUrl = await downscaleImageForGPT(imageDataUrl);
-    const extraUrls = [];
-    if (Array.isArray(furnitureDataUrls)) {
-      for (const u of furnitureDataUrls) {
-        try { extraUrls.push(await downscaleImageForGPT(u)); } catch { /* skip a furniture ref that fails to downscale */ }
-      }
-    }
-    let guide = ' Image 1 is the photo to review.';
-    if (extraUrls.length) {
-      guide += ` The remaining ${extraUrls.length === 1 ? 'image is the furniture piece' : 'images are the furniture pieces'} the user uploaded to be included — check it was incorporated in a reasonable way (an exact match is NOT required; do not flag minor differences in shape, color, or angle).`;
-    }
-    const instr = (instruction && instruction.trim())
-      ? ` The user's request was: "${instruction.trim()}". A result that reasonably fulfills this request is GOOD even if it differs from what you might have chosen — judge against the request, not your own taste.`
-      : '';
-    const content = [
-      { type: 'text', text: QUALITY_REVIEW_PROMPT + instr + guide + (DEBUG_MODE ? REVIEW_WHY_SUFFIX : '') },
-      { type: 'image_url', image_url: { url: mainUrl } },
-    ];
-    for (const u of extraUrls) content.push({ type: 'image_url', image_url: { url: u } });
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content }],
-      temperature: 0,
-      max_tokens: DEBUG_MODE ? 220 : 80,
-    });
-    const raw = (completion.choices[0].message.content || '').trim();
-    const perfect = /PERFECT:\s*true/i.test(raw);
-    if (perfect) return { perfect: true, score: 100, reason: raw };
-    const m = raw.match(/SCORE:\s*(\d{1,3})/i);
-    // No score on a "not perfect" verdict → treat as a low score for ranking.
-    const score = m ? Math.max(0, Math.min(100, parseInt(m[1], 10))) : 0;
-    if (DEBUG_MODE) console.log(`[Quality] reviewer flagged NOT perfect (score ${score}): ${raw.replace(/\s+/g, ' ')}`);
-    return { perfect: false, score, reason: raw };
-  } catch (error) {
-    console.error('[Quality] review failed, accepting image:', error.message);
-    return { perfect: true, score: 100, reason: 'reviewer error' };
-  }
-}
 
 // Mask-edit QA: shows the reviewer BOTH the original and the edited image so it
 // can judge a localized edit — including whether it REMOVED TOO MUCH. Returns
 // { perfect, score }. Fails OPEN on any error so a flaky reviewer never blocks.
 
-// opts: { instruction, locatorDataUrl, locatorMarked, referenceDataUrl } — instruction
-// is what the user asked for (so the reviewer judges against intent, e.g. an intended
-// removal is not "removed too much"); locatorDataUrl shows which area was editable (the
-// magenta-outlined room when locatorMarked, else a B/W mask); referenceDataUrl is the
-// furniture/look they wanted placed.
-async function reviewMaskEdit(originalDataUrl, editedDataUrl, opts = {}) {
-  if (!openai) return { perfect: true, score: 100, reason: 'reviewer disabled' };
-  try {
-    const { instruction = '', locatorDataUrl = null, locatorMarked = false, referenceDataUrl = null } = opts;
-    const origSmall = await downscaleImageForGPT(originalDataUrl);
-    const editSmall = await downscaleImageForGPT(editedDataUrl);
-    let guide = ' Image 1 is the ORIGINAL room; image 2 is AFTER the edit.';
-    const extras = [];
-    if (locatorDataUrl) { try { extras.push({ desc: locatorMarked ? 'outline' : 'mask', url: await downscaleImageForGPT(locatorDataUrl) }); } catch { /* optional reviewer image; skip on failure */ } }
-    if (referenceDataUrl) { try { extras.push({ desc: 'reference', url: await downscaleImageForGPT(referenceDataUrl) }); } catch { /* optional reviewer image; skip on failure */ } }
-    let idx = 3;
-    for (const e of extras) {
-      if (e.desc === 'outline') guide += ` Image ${idx} is the SAME room with the editable area outlined in magenta — judge ONLY inside that outline and ignore everything outside it. The magenta line is just a location guide, NOT part of the photo, so never count it as a defect.`;
-      else if (e.desc === 'mask') guide += ` Image ${idx} is the MASK: only the WHITE area was editable — judge ONLY inside it and ignore everything outside it.`;
-      else guide += ` Image ${idx} is the REFERENCE the user wanted placed inside the masked area — the edit should resemble its identity (its exact angle and background do not matter).`;
-      idx++;
-    }
-    const instr = (instruction && instruction.trim())
-      ? ` The user's instruction was: "${instruction.trim()}". Judge whether the edit reflects THIS instruction. If it asked to REMOVE, clear, delete, or empty something, then a now-empty or barer masked area is CORRECT and expected — do NOT flag that as "removed too much".`
-      : '';
-    const content = [
-      { type: 'text', text: MASK_REVIEW_PROMPT + instr + guide + (DEBUG_MODE ? REVIEW_WHY_SUFFIX : '') },
-      { type: 'image_url', image_url: { url: origSmall } },
-      { type: 'image_url', image_url: { url: editSmall } },
-    ];
-    for (const e of extras) content.push({ type: 'image_url', image_url: { url: e.url } });
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content }],
-      temperature: 0,
-      max_tokens: DEBUG_MODE ? 220 : 80,
-    });
-    const raw = (completion.choices[0].message.content || '').trim();
-    const perfect = /PERFECT:\s*true/i.test(raw);
-    if (perfect) return { perfect: true, score: 100, reason: raw };
-    const m = raw.match(/SCORE:\s*(\d{1,3})/i);
-    const score = m ? Math.max(0, Math.min(100, parseInt(m[1], 10))) : 0;
-    if (DEBUG_MODE) console.log(`[Mask QA] reviewer flagged NOT perfect (score ${score}): ${raw.replace(/\s+/g, ' ')}`);
-    return { perfect: false, score, reason: raw };
-  } catch (error) {
-    console.error('[Mask QA] review failed, accepting image:', error.message);
-    return { perfect: true, score: 100, reason: 'reviewer error' };
-  }
-}
 
 
 // Run an image-producing function up to QUALITY_MAX_ATTEMPTS times, returning the
@@ -824,32 +674,6 @@ Composition: frame the full scene naturally, keeping ceilings, floors, walls, an
 // Fails open — on any error or when the reviewer is disabled we DON'T skip, so a
 // flaky check never silently turns off furniture removal.
 
-async function roomIsAlreadyEmpty(imageBuffer) {
-  if (!openai) return false;
-  try {
-    const processed = await downscaleImage(imageBuffer);
-    const dataUrl = `data:image/jpeg;base64,${processed.toString('base64')}`;
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: EMPTY_ROOM_CHECK_PROMPT },
-            { type: 'image_url', image_url: { url: dataUrl } },
-          ],
-        },
-      ],
-      temperature: 0,
-      max_tokens: 10,
-    });
-    const raw = (completion.choices[0].message.content || '').trim();
-    return /EMPTY:\s*true/i.test(raw);
-  } catch (error) {
-    console.error('[Erase] empty-room pre-check failed, proceeding with erase:', error.message);
-    return false;
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Stageability pre-check
@@ -862,90 +686,8 @@ async function roomIsAlreadyEmpty(imageBuffer) {
 // Studio call this the moment a photo is chosen (see POST /api/validate-image).
 
 
-async function validateStageableImage(imageBuffer) {
-  if (!openai) return { valid: true, reason: '' };
-  try {
-    const processed = await downscaleImage(imageBuffer);
-    const dataUrl = `data:image/jpeg;base64,${processed.toString('base64')}`;
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: STAGEABLE_IMAGE_CHECK_PROMPT },
-            // detail: 'low' → one ~512px tile (~85 image tokens) instead of
-            // high-detail tiling. A room/not-a-room judgment needs nothing more,
-            // and it makes the call several times faster (and cheaper).
-            { type: 'image_url', image_url: { url: dataUrl, detail: 'low' } },
-          ],
-        },
-      ],
-      temperature: 0,
-      max_tokens: 60,
-    });
-    const raw = (completion.choices[0].message.content || '').trim();
-    const valid = /VALID:\s*true/i.test(raw);
-    if (valid) return { valid: true, reason: '' };
-    const m = raw.match(/REASON:\s*(.+)/i);
-    const reason = m && m[1] ? m[1].trim().replace(/^["']|["']$/g, '') : '';
-    if (DEBUG_MODE) console.log(`[Validate] upload rejected as not stageable: ${raw.replace(/\s+/g, ' ')}`);
-    return { valid: false, reason: reason || DEFAULT_UNSTAGEABLE_REASON };
-  } catch (error) {
-    console.error('[Validate] stageability check failed, allowing image:', error.message);
-    return { valid: true, reason: '' };
-  }
-}
 
-// Build the keep-exception clause appended to the erase prompt. Deliberately
-// strict/anti-generalization: the model otherwise reads "keep the paintings" as
-// permission to keep nearby/similar furniture too.
-function buildKeepExceptionText(keepInstruction) {
-  if (!keepInstruction || !keepInstruction.trim()) return '';
-  return `\n\nNARROW EXCEPTION — keep ONLY these specific items, exactly where they are and unchanged: ${keepInstruction.trim()}.\nThis exception is strictly limited to the exact items named. Do NOT extend it to other items just because they are nearby, similar in type, look valuable, or seem related. For example, if told to keep paintings, you keep ONLY the paintings — you still remove every cabinet, sofa, table, chair, shelf, rug, and all other furniture and decor. Everything not explicitly named in this exception MUST still be removed in full, exactly as instructed above.`;
-}
 
-// GPT-vision verification of an erase result: is the room truly empty except for
-// the user's kept items? Returns { empty, remaining } where `remaining` lists the
-// leftover items so the retry can call them out by name. Fails OPEN (treats as
-// clean) on any error so a flaky reviewer never blocks the pipeline.
-async function verifyRoomEmptied(imageBuffer, keepInstruction = '') {
-  if (!openai) return { empty: true, remaining: '' };
-  try {
-    const processed = await downscaleImage(imageBuffer);
-    const dataUrl = `data:image/jpeg;base64,${processed.toString('base64')}`;
-    const keep = keepInstruction && keepInstruction.trim();
-    let instruction = `You are inspecting an interior room photo that was supposed to have ALL furniture, decor, rugs, curtains, wall art, plants, lamps, and movable objects removed, leaving an empty unfurnished room.`;
-    if (keep) {
-      instruction += `\nThe ONLY items allowed to remain are exactly these: ${keepInstruction.trim()}. Anything else (including chairs, cabinets, sofas, tables, shelves, rugs, and all other furniture/decor) is a leftover that should have been removed.`;
-    } else {
-      instruction += `\nNo furniture or decor at all should remain.`;
-    }
-    instruction += `\nIgnore the room's own walls, floor, ceiling, windows, doors, trim, and permanently built-in structural fixtures${keep ? ', and ignore the allowed items listed above' : ''}. List every other leftover furniture/decor/movable item you can still see.\nReply on ONE line in EXACTLY this format: "CLEAN: true" if nothing remains, or "CLEAN: false | <comma-separated leftover items>" if items remain. Output nothing else.`;
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: instruction },
-            { type: 'image_url', image_url: { url: dataUrl } },
-          ],
-        },
-      ],
-      temperature: 0,
-      max_tokens: 80,
-    });
-    const raw = (completion.choices[0].message.content || '').trim();
-    if (/CLEAN:\s*true/i.test(raw)) return { empty: true, remaining: '' };
-    const parts = raw.split('|');
-    const remaining = parts.length > 1 ? parts.slice(1).join('|').trim() : '';
-    return { empty: false, remaining };
-  } catch (error) {
-    console.error('[Erase] verification failed, accepting current erase:', error.message);
-    return { empty: true, remaining: '' };
-  }
-}
 
 // Two-stage removal — stage 1. Erase furniture with a verify-and-retry gate:
 // a cheap 2.5-flash attempt, a GPT-vision check that the room is truly empty
@@ -953,87 +695,7 @@ async function verifyRoomEmptied(imageBuffer, keepInstruction = '') {
 // left behind. Every attempt stays on the cheap 2.5-flash model (no escalation).
 // Returns the best { dataUrl, buffer } or null so callers can fall back to
 // single-pass staging.
-const ERASE_MAX_ATTEMPTS = 3;
-const ERASE_MODEL = 'gemini-2.5-flash-image';
 
-async function eraseFurniture(imageBuffer, req, keepInstruction = '') {
-  if (!genAI) return null;
-  try {
-    const processedImageBuffer = await downscaleImage(imageBuffer);
-    const base64Image = processedImageBuffer.toString('base64');
-    const srcMeta = await sharp(imageBuffer).metadata().catch(() => null);
-    const keepText = buildKeepExceptionText(keepInstruction);
-    if (keepText && DEBUG_MODE) {
-      console.log(`[Erase] keeping user-specified items: ${keepInstruction.trim()}`);
-    }
-
-    const buildPrompt = (extraNote) => {
-      let eraseText = FURNITURE_ERASE_PROMPT + keepText;
-      if (extraNote) eraseText += `\n\n${extraNote}`;
-      return [
-        { text: eraseText },
-        { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
-      ];
-    };
-
-    let bestBuffer = null;
-    let extraNote = '';
-    for (let attempt = 1; attempt <= ERASE_MAX_ATTEMPTS; attempt++) {
-      const isFinal = attempt === ERASE_MAX_ATTEMPTS;
-      if (DEBUG_MODE) {
-        console.log(`[Erase] attempt ${attempt}/${ERASE_MAX_ATTEMPTS} on ${ERASE_MODEL}`);
-      }
-
-      let outBuffer;
-      try {
-        const model = genAI.getGenerativeModel({ model: ERASE_MODEL });
-        const result = await model.generateContent(buildPrompt(extraNote));
-        const response = await result.response;
-        if (!response || !response.candidates || response.candidates.length === 0) {
-          throw new Error('no candidates in erase response');
-        }
-        const part = response.candidates[0].content.parts.find((p) => p.inlineData);
-        if (!part) throw new Error('no image data in erase response');
-        outBuffer = Buffer.from(part.inlineData.data, 'base64');
-      } catch (genErr) {
-        console.error(`[Erase] attempt ${attempt} generation failed:`, genErr.message);
-        if (bestBuffer) break; // keep the best earlier result
-        if (isFinal) return null;
-        continue;
-      }
-
-      // Lock the emptied room to the source aspect ratio before staging/verification.
-      if (srcMeta && srcMeta.width && srcMeta.height) {
-        outBuffer = await enforceAspectRatio(outBuffer, srcMeta.width, srcMeta.height);
-      }
-      bestBuffer = outBuffer; // latest attempt is our current best
-
-      if (isFinal) break; // no retry after the last attempt — take it
-
-      const check = await verifyRoomEmptied(outBuffer, keepInstruction);
-      if (check.empty) {
-        if (DEBUG_MODE) console.log(`[Erase] verified clean on attempt ${attempt}`);
-        break;
-      }
-      if (DEBUG_MODE) {
-        console.log(`[Erase] attempt ${attempt} left items behind: ${check.remaining || 'unspecified'} — retrying`);
-      }
-      extraNote = `IMPORTANT: A previous removal attempt FAILED — it left these items in the room that you MUST now remove completely: ${check.remaining || 'all remaining furniture and decor'}. Erase them entirely and realistically reconstruct the floor and wall behind them.`;
-      if (keepInstruction && keepInstruction.trim()) {
-        extraNote += ` Still keep ONLY: ${keepInstruction.trim()} — remove everything else, including the leftover items just listed.`;
-      }
-    }
-
-    if (!bestBuffer) return null;
-    return {
-      dataUrl: `data:image/png;base64,${bestBuffer.toString('base64')}`,
-      buffer: bestBuffer,
-    };
-  } catch (error) {
-    console.error('[Erase] furniture removal failed, falling back to single-pass staging:', error.message);
-    return null;
-  }
-}
 
 async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer = null, geminiModel = 'gemini-2.5-flash-image') {
   try {
@@ -1196,43 +858,7 @@ const HOSTED_IMAGE_MIME_EXT = {
   'image/gif': 'gif',
 };
 
-function getHostedImagesDir() {
-  const dir = path.join(getDataLogDir(), 'hosted-images');
-  if (!fs.existsSync(dir)) {
-    try {
-      fs.mkdirSync(dir, { recursive: true });
-    } catch (e) {
-      console.error('[host-image] failed to create dir', e);
-    }
-  }
-  return dir;
-}
-
-function getHostedImagesManifestPath() {
-  return path.join(getHostedImagesDir(), 'index.json');
-}
-
-function readHostedImagesManifest() {
-  try {
-    const p = getHostedImagesManifestPath();
-    if (!fs.existsSync(p)) return [];
-    const arr = JSON.parse(fs.readFileSync(p, 'utf8'));
-    return Array.isArray(arr) ? arr : [];
-  } catch (e) {
-    console.error('[host-image] manifest read failed', e);
-    return [];
-  }
-}
-
-function writeHostedImagesManifest(arr) {
-  try {
-    fs.writeFileSync(getHostedImagesManifestPath(), JSON.stringify(arr, null, 2));
-    return true;
-  } catch (e) {
-    console.error('[host-image] manifest write failed', e);
-    return false;
-  }
-}
+// Hosted-image store + manifest → lib/hosted-images.js (instantiated above).
 
 // Dedicated multer instance: safe raster types only (deliberately no SVG — it
 // can carry script and would execute on our own origin), 25 MB cap to protect
@@ -1438,61 +1064,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
 }
 
 // Health check endpoints
-const healthHandler = (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    aiConfigured: !!genAI,
-  });
-};
-// Uptime/status data for the public /status page. Computed from the heartbeat
-// state on the persistent disk; no auth (it exposes only aggregate up/down).
-// Prompt count endpoint (Rooms Staged)
-// Contact count endpoint (Users Served = contact submissions + registered accounts)
-// PDF Processing Proxy Endpoints
-// Health check proxy
-// PDF processing proxy endpoint
-// Middleware to protect logs endpoints with password
-function protectLogs(req, res, next) {
-  setSensitiveHeaders(res);
-  if (!LOGS_ACCESS_KEY) {
-    return res.status(500).json({
-      error: 'Server configuration error',
-      message: 'Logs access key not configured'
-    });
-  }
-
-  // Read the key from a header only — never the query string. A key in the URL
-  // leaks via access logs, reverse-proxy logs, browser history, and Referer.
-  const accessKey = req.get('X-Stagify-Endpoint-Key');
-  if (accessKey && endpointKeyMatches(accessKey, LOGS_ACCESS_KEY)) {
-    return next();
-  }
-  return res.status(403).json({
-    error: 'Access denied',
-    message: 'Valid access key required in the X-Stagify-Endpoint-Key header'
-  });
-}
-
-/** Same `LOGS_ACCESS_KEY` as `/promptlogs`, `/api/send-email`, etc. */
-function stagingEndpointKeyGuard(req, res, next) {
-  if (!LOGS_ACCESS_KEY) {
-    return res.status(500).json({
-      error: 'Server configuration error',
-      message: 'Endpoint access key not configured',
-    });
-  }
-  const q = req.query && req.query.key;
-  const h = req.headers['x-stagify-endpoint-key'];
-  const k = (typeof q === 'string' && q) || (typeof h === 'string' && h.trim());
-  if (k && k === LOGS_ACCESS_KEY) {
-    return next();
-  }
-  return res.status(403).json({
-    error: 'Access denied',
-    message: 'Valid endpoint key required (?key= on URL or X-Stagify-Endpoint-Key header)',
-  });
-}
+// healthHandler / protectLogs / stagingEndpointKeyGuard → lib/http-guards.js (instantiated above).
 
 const MAX_MASK_PROMPT_LENGTH = 1000;
 
