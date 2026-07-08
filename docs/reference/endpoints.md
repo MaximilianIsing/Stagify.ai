@@ -155,6 +155,7 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints, but each accepts it 
 | `GET` | `/enterprise-domains` | Download `enterprise-domains.json` (active enterprise domains + Stripe ids); `{ domains: [] }` if none yet. |
 | `GET` | `/memories` | Download AI Designer `memories` JSON. |
 | `GET` | `/resetmemories` | **Clears** the memories file (all users). Returns JSON success. |
+| `POST` | `/api/status/reset` | **Wipes** all recorded uptime history/incidents and restarts monitoring from now, via `uptimeMonitor.reset()` (rewrites `data/uptime.json`). Backs the admin "Reset server status data" button and changes the public `/status` page immediately. Returns `{ success: true, message, snapshot }`. |
 
 `POST` `/api/send-email` uses the **same** `LOGS_ACCESS_KEY` (see above), not only for logs.
 

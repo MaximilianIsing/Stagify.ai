@@ -52,3 +52,4 @@ build/
 .claude/
 # design-sync generated bundle (regenerable from design-system/ + public/fonts)
 ds-bundle/
+CLAUDE.md

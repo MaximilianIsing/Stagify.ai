@@ -23,6 +23,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { handleStripeEvent } from './lib/stripe-webhooks.js';
 import { createEnterpriseStore } from './lib/enterprise-store.js';
 import { createUptimeMonitor } from './lib/uptime-monitor.js';
+import { generateWithQualityRetry as runQualityRetry } from './lib/staging-pipeline.js';
 import createBillingRouter from './routes/billing.js';
 import { createEmail } from './lib/email.js';
 import { createLogging } from './lib/logging.js';
@@ -432,7 +433,23 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '50mb' })); // Increased limit to handle conversation history with images
+// JSON body parsing. Keep the app-wide limit SMALL so a single oversized JSON body
+// can't spike memory or block the event loop (JSON.parse is synchronous) on ANY
+// endpoint — this parser runs before the per-route rate limiters. Only the handful
+// of routes that legitimately receive base64 images in JSON get a large limit.
+// (Multipart image uploads go through multer, not this parser.)
+const JSON_LARGE_LIMIT_PATHS = new Set([
+  '/api/chat', // conversation history with embedded images
+  '/api/mask-edit', // image + mask + optional reference image (data URLs)
+  '/api/segment', // base64 image
+  '/api/validate-image', // base64 image
+  '/api/bug-report', // conversation history (may include images)
+]);
+const jsonSmall = express.json({ limit: '1mb' });
+const jsonLarge = express.json({ limit: '25mb' }); // tune to the real max payload if needed
+app.use((req, res, next) =>
+  (JSON_LARGE_LIMIT_PATHS.has(req.path) ? jsonLarge : jsonSmall)(req, res, next)
+);
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     console.error('JSON parsing error:', err.message);
@@ -501,8 +518,12 @@ const imageFileFilter = (req, file, cb) => {
 
 const stagingProcessUpload = multer({
   storage: storage,
+  // 25MB per file. memoryStorage buffers every file whole and .fields() allows up to
+  // 6 files (1 room image + 5 furniture refs), so this caps a request at ~150MB of
+  // RAM instead of the previous ~600MB. Photos are downscaled to 1920x1080 after
+  // receipt anyway, so 25MB is already far above any real phone photo.
   limits: {
-    fileSize: 100 * 1024 * 1024,
+    fileSize: 25 * 1024 * 1024,
   },
   fileFilter: imageFileFilter
 }).fields([
@@ -514,7 +535,7 @@ const stagingProcessUpload = multer({
 const pdfUpload = multer({
   storage: storage,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB limit
+    fileSize: 25 * 1024 * 1024, // 25MB — floor-plan PDFs are small; buffered whole in RAM
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf')) {
@@ -529,8 +550,10 @@ const pdfUpload = multer({
 const chatUpload = multer({
   storage: storage,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit per file
-    fieldSize: 50 * 1024 * 1024, // 50MB limit for form fields (for conversation history with base64 images)
+    // .array('files', 5) buffers up to 5 files whole in RAM, so 20MB/file caps a
+    // request at ~100MB + the history field, vs the previous ~250MB+.
+    fileSize: 20 * 1024 * 1024, // 20MB per file
+    fieldSize: 25 * 1024 * 1024, // conversation history (base64 images); matches the /api/chat JSON cap
   },
   fileFilter: (req, file, cb) => {
     // Allow all files - let the AI handle unsupported file types
@@ -2258,41 +2281,18 @@ async function compositeForReview(originalBuf, maskBuf, editedDataUrl, width, he
 // `onImageProduced(attempt)` (optional) fires once for every attempt that
 // actually yields an image — used to meter billing per generation attempt
 // (including quality-gate retries).
+// Thin wrapper binding this server's defaults (DEBUG_MODE, the reviewImageQuality
+// reviewer, QUALITY_MAX_ATTEMPTS). The retry/quality logic itself lives in
+// lib/staging-pipeline.js so it can be unit-tested without real model calls. The
+// signature is unchanged, so all call sites and the router deps stay identical.
 async function generateWithQualityRetry(generateOnce, label = 'image', onImageProduced = null, reviewFn = null, maxAttempts = QUALITY_MAX_ATTEMPTS) {
-  let best = null; // { url, score }
-  let lastError = null;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    let url;
-    try {
-      url = await generateOnce(attempt);
-    } catch (error) {
-      lastError = error;
-      if (DEBUG_MODE && attempt < maxAttempts) {
-        console.log(`[Quality] ${label}: regenerating — attempt ${attempt}/${maxAttempts} failed to produce an image (${error.message}).`);
-      }
-      continue; // try again; if all fail we rethrow below
-    }
-    if (!url) continue;
-    if (typeof onImageProduced === 'function') onImageProduced(attempt);
-    const { perfect, score } = await (reviewFn ? reviewFn(url) : reviewImageQuality(url));
-    if (DEBUG_MODE) {
-      console.log(`[Quality] ${label} attempt ${attempt}/${maxAttempts}: ${perfect ? 'perfect — accepted' : `not perfect (score ${score})`}`);
-    }
-    if (perfect) return url;
-    if (!best || score > best.score) best = { url, score };
-    // A regeneration is about to happen (unless this was the last allowed attempt).
-    if (DEBUG_MODE && attempt < maxAttempts) {
-      console.log(`[Quality] ${label}: regenerating — attempt ${attempt} was not perfect (quality score ${score}).`);
-    }
-  }
-  if (best) {
-    if (DEBUG_MODE) {
-      console.log(`[Quality] ${label}: no attempt was perfect; returning best (score ${best.score}).`);
-    }
-    return best.url;
-  }
-  // Never produced an image at all — surface the last generation error.
-  throw lastError || new Error('Image generation failed');
+  return runQualityRetry(generateOnce, {
+    label,
+    onImageProduced,
+    reviewFn: reviewFn || reviewImageQuality,
+    maxAttempts,
+    debug: DEBUG_MODE,
+  });
 }
 
 async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-flash-image') {
@@ -2814,24 +2814,9 @@ const hostImageUpload = multer({
 }).single('image');
 
 // Tracked logo for broker outreach emails — ?email=broker@example.com
-// Error handling middleware for multer
-app.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(413).json({ 
-        error: 'File too large', 
-        message: 'Please upload an image smaller than 100MB',
-        code: 'FILE_TOO_LARGE'
-      });
-    }
-    return res.status(400).json({ 
-      error: 'Upload error', 
-      message: err.message,
-      code: err.code 
-    });
-  }
-  next(err);
-});
+// NOTE: the multer upload-error handler lives AFTER the routers (see below), because
+// all multer middleware runs inside routes/*.js and Express only reaches an error
+// handler registered after the throwing route.
 
 /** Public client id for Google Identity Services (Sign In With Google button). */
 /**
@@ -3117,6 +3102,24 @@ app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requirePr
 // public routes (routes/public.js)
 app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, PDF_PROCESSING_SERVER, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));
 
+// Multer upload errors surface here — AFTER the routers that use multer, so Express
+// actually reaches this handler (it only runs error middleware registered after the
+// throwing route). Placed BEFORE the Sentry handler so an over-cap upload returns a
+// clean 413 and doesn't get reported as a server error.
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({
+        error: 'File too large',
+        message: 'That file is too large. Please upload a smaller file.',
+        code: 'FILE_TOO_LARGE',
+      });
+    }
+    return res.status(400).json({ error: 'Upload error', message: err.message, code: err.code });
+  }
+  next(err);
+});
+
 // Sentry Express error handler — after ALL routes so it can capture errors thrown in
 // them. Captures the error, then passes it through unchanged (no effect on responses).
 // No-op when SENTRY_DSN is unset.
@@ -3137,12 +3140,8 @@ app.listen(PORT, () => {
     }
   }
 
-  const fakeContactAdd = 0;
-  const fakePromptAdd = 0;
   // Initialize prompt count on server startup
   initializePromptCount();
-  promptCount += fakePromptAdd;
   // Initialize contact count on server startup
   initializeContactCount();
-  contactCount += fakeContactAdd;
 });
