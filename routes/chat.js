@@ -3,13 +3,16 @@ import express from 'express';
 import createChatPipeline from '../lib/chat-pipeline.js';
 import createUploadPrep from '../lib/chat-upload-prep.js';
 import path from 'path';
-import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChatUploadSystemInstruction } from '../lib/prompts.js';
+import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChatUploadSystemInstruction, getStagifyDateContext } from '../lib/prompts.js';
+import { filterUnsupportedFiles, deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext } from '../lib/chat-history.js';
+import { parseDesignerRoutingCompletion, aiResponseDefersImageAction, chatWillProcessSlowImages, chatIntentType } from '../lib/chat-routing.js';
+import { wantsStreamedChatResponse, initChatSse, writeChatSseEvent, finishStreamedChatResponse } from '../lib/chat-sse.js';
 
 export default function createChatRouter(deps) {
   // Direct deps used by the handlers. The post-routing dispatch deps
   // (staging/generate/CAD/memory helpers, image resolution, etc.) are consumed
   // by createChatPipeline(deps) below rather than referenced here.
-  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier, downscaleImageForGPT, filterUnsupportedFiles, deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext, getStagifyDateContext, parseDesignerRoutingCompletion, aiResponseDefersImageAction, wantsStreamedChatResponse, chatWillProcessSlowImages, chatIntentType, initChatSse, writeChatSseEvent, finishStreamedChatResponse, logChatToFile } = deps;
+  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier, downscaleImageForGPT, logChatToFile } = deps;
   const router = express.Router();
   const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse } = createChatPipeline(deps);
   const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting } = createUploadPrep(deps);
