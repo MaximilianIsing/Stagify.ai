@@ -1,3 +1,21 @@
+import {
+  formatFileSize,
+  imageCountSuffix,
+  formatMarkdown,
+  getFileStem,
+  slugifyName,
+  messageTypeFromTag,
+} from './ai-designer/format.js';
+import {
+  getRootBaseNameForImage,
+  getThumbnailLabel,
+  pickPreferredRoomImageIndex,
+  collectImagesFromConversationHistory as _collectImagesFromConversationHistory,
+  getBaseImageIndexForRequest as _getBaseImageIndexForRequest,
+  resolveStagingRootBaseName as _resolveStagingRootBaseName,
+} from './ai-designer/image-history.js';
+import { consumeChatSse } from './ai-designer/chat-sse-client.js';
+
       const chatMessages = document.getElementById('chat-messages');
       const chatInput = document.getElementById('chat-input');
       const sendBtn = document.getElementById('send-btn');
@@ -12,6 +30,16 @@
       let dragCounter = 0; // Track drag enter/leave events to handle nested elements
       const MAX_UPLOAD_FILES = 5;
       let pendingStagingRootBaseName = null;
+
+      // Thin wrappers over the pure image-history module (scripts/ai-designer/
+      // image-history.js): bind the live conversationHistory / selectedImageIndex
+      // so the call sites below stay unchanged. Logic + tests live in that module.
+      const collectImagesFromConversationHistory = () =>
+        _collectImagesFromConversationHistory(conversationHistory);
+      const getBaseImageIndexForRequest = () =>
+        _getBaseImageIndexForRequest(conversationHistory, selectedImageIndex);
+      const resolveStagingRootBaseName = (filesToSend) =>
+        _resolveStagingRootBaseName(filesToSend, conversationHistory, selectedImageIndex);
 
       function getPdfAlt(key, replacements = {}) {
         let text = (window.LanguageSystem && window.LanguageSystem.isLoaded())
@@ -43,10 +71,6 @@
           text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), v == null ? '' : String(v));
         });
         return text;
-      }
-
-      function imageCountSuffix(index, total) {
-        return total > 1 ? ` (${index + 1})` : '';
       }
 
       function isDesignerProOk() {
@@ -184,15 +208,6 @@
       window.addEventListener('languagechange', decorateReloadTitle);
       decorateReloadTitle();
 
-      // Format file size
-      function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-      }
-      
       // Update file preview
       function updateFilePreview() {
         const container = document.getElementById('file-preview-container');
@@ -251,68 +266,6 @@
         });
       }
       
-      // Format markdown text to HTML
-      // Escape HTML so model/user text can never inject markup. Returns a string
-      // safe to drop into innerHTML BEFORE we add our own (bold/italic) tags.
-      function escapeHtml(str) {
-        return String(str == null ? '' : str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-      }
-
-      // Apply inline **bold** / *italic* to text that is ALREADY html-escaped.
-      function applyInlineFormatting(escaped) {
-        return escaped
-          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-          .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
-      }
-
-      function formatMarkdown(text) {
-        if (!text) return '';
-
-        // Split into lines for processing
-        const lines = text.split('\n');
-        let html = '';
-        let inList = false;
-
-        lines.forEach((line, index) => {
-          // Check for bullet points: * item, - item, or • item
-          const bulletMatch = line.match(/^[\*\-\+•]\s+(.+)$/);
-
-          if (bulletMatch) {
-            if (!inList) {
-              html += '<ul>';
-              inList = true;
-            }
-            // Escape FIRST, then add our own formatting tags — without this,
-            // list items render raw HTML from the model/user (injection hole).
-            const itemText = applyInlineFormatting(escapeHtml(bulletMatch[1]));
-            html += `<li>${itemText}</li>`;
-          } else {
-            if (inList) {
-              html += '</ul>';
-              inList = false;
-            }
-
-            if (line.trim()) {
-              html += applyInlineFormatting(escapeHtml(line));
-            }
-
-            // Add line break if not last line
-            if (index < lines.length - 1) {
-              html += '<br>';
-            }
-          }
-        });
-
-        if (inList) {
-          html += '</ul>';
-        }
-
-        return html;
-      }
-
       // Small translation helper with a safe fallback. getText() returns the
       // placeholder "Loading..." (or echoes the key) for keys that aren't in the
       // language files yet, so we ignore those and use the English fallback.
@@ -710,144 +663,6 @@
       // Initialize send button state
       updateSendButtonState();
 
-      function getFileStem(filename) {
-        if (!filename || typeof filename !== 'string') return null;
-        const base = filename.replace(/\.[^.]+$/, '').trim();
-        return base || null;
-      }
-
-      function truncateThumbnailStem(stem) {
-        if (!stem) return 'Upload';
-        if (stem.length <= 22) return stem;
-        return `${stem.slice(0, 20)}…`;
-      }
-
-      function getRootBaseNameForImage(img) {
-        if (!img) return 'Upload';
-        if (img.rootBaseName) return img.rootBaseName;
-        const stem = getFileStem(img.filename);
-        return stem || 'Upload';
-      }
-
-      function resolveStagingRootBaseName(filesToSend) {
-        const images = collectImagesFromConversationHistory();
-        const baseIdx = getBaseImageIndexForRequest();
-        if (baseIdx !== undefined && images[baseIdx]) {
-          return getRootBaseNameForImage(images[baseIdx]);
-        }
-        const upload = filesToSend && filesToSend.find((f) => f.type.startsWith('image/'));
-        if (upload) return getFileStem(upload.name) || 'Upload';
-        if (images[0]) return getRootBaseNameForImage(images[0]);
-        return 'Upload';
-      }
-
-      function extractRawImagesChronological() {
-        const images = [];
-        for (let i = 0; i < conversationHistory.length; i++) {
-          const msg = conversationHistory[i];
-          if (msg.role === 'user' && Array.isArray(msg.content)) {
-            const imageItems = msg.content.filter(
-              (item) => item.type === 'image_url' && item.image_url && item.image_url.url
-            );
-            imageItems.forEach((imageItem) => {
-              images.push({
-                url: imageItem.image_url.url,
-                isStaged: false,
-                isGenerated: false,
-                isMasked: Boolean(imageItem.isMasked),
-                filename: imageItem.filename || null,
-                rootBaseName: imageItem.rootBaseName || null,
-                stagedNumber: imageItem.stagedNumber != null ? imageItem.stagedNumber : null,
-                maskNumber: imageItem.maskNumber != null ? imageItem.maskNumber : null,
-              });
-            });
-          } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-            const imageItems = msg.content.filter(
-              (item) =>
-                item.type === 'image_url' &&
-                item.image_url &&
-                item.image_url.url &&
-                (item.isStaged || item.isGenerated || item.isMasked)
-            );
-            imageItems.forEach((imageItem) => {
-              images.push({
-                url: imageItem.image_url.url,
-                isStaged: Boolean(imageItem.isStaged),
-                isGenerated: Boolean(imageItem.isGenerated),
-                isMasked: Boolean(imageItem.isMasked),
-                filename: imageItem.filename || null,
-                rootBaseName: imageItem.rootBaseName || null,
-                stagedNumber: imageItem.stagedNumber != null ? imageItem.stagedNumber : null,
-                maskNumber: imageItem.maskNumber != null ? imageItem.maskNumber : null,
-              });
-            });
-          }
-        }
-        return images;
-      }
-
-      function applyThumbnailLabels(chronologicalImages) {
-        const stagedCounts = {};
-        const maskCounts = {};
-        let lastUploadRoot = 'Upload';
-
-        chronologicalImages.forEach((img) => {
-          if (!img.isStaged && !img.isGenerated && !img.isMasked) {
-            const stem = getFileStem(img.filename);
-            img.rootBaseName = img.rootBaseName || stem || lastUploadRoot;
-            lastUploadRoot = img.rootBaseName;
-            img.displayLabel = truncateThumbnailStem(img.rootBaseName);
-            return;
-          }
-
-          const root = img.rootBaseName || lastUploadRoot;
-          img.rootBaseName = root;
-
-          if (img.isMasked) {
-            if (img.maskNumber == null) {
-              maskCounts[root] = (maskCounts[root] || 0) + 1;
-              img.maskNumber = maskCounts[root];
-            } else {
-              maskCounts[root] = Math.max(maskCounts[root] || 0, img.maskNumber);
-            }
-            img.displayLabel = img.maskNumber <= 1
-              ? `${truncateThumbnailStem(root)} (Masked)`
-              : `${truncateThumbnailStem(root)} (Masked ${img.maskNumber})`;
-            return;
-          }
-
-          if (img.isStaged) {
-            if (img.stagedNumber == null) {
-              stagedCounts[root] = (stagedCounts[root] || 0) + 1;
-              img.stagedNumber = stagedCounts[root];
-            } else {
-              stagedCounts[root] = Math.max(stagedCounts[root] || 0, img.stagedNumber);
-            }
-            img.displayLabel = `${truncateThumbnailStem(root)} (Staged #${img.stagedNumber})`;
-            return;
-          }
-
-          if (img.isGenerated) {
-            const genStem = getFileStem(img.filename);
-            img.displayLabel = genStem
-              ? `${truncateThumbnailStem(genStem)} (Generated)`
-              : `${truncateThumbnailStem(root)} (Generated)`;
-          }
-        });
-
-        return chronologicalImages;
-      }
-
-      function collectImagesFromConversationHistory() {
-        const chronological = extractRawImagesChronological();
-        applyThumbnailLabels(chronological);
-        return chronological.reverse();
-      }
-
-      function getThumbnailLabel(img) {
-        return img.displayLabel || truncateThumbnailStem(getRootBaseNameForImage(img));
-      }
-
       function syncImageThumbnailStrip(options) {
         const preferNewest = options && options.preferNewest === true;
         const strip = document.getElementById('image-thumbnail-strip');
@@ -899,35 +714,6 @@
         });
       }
 
-      function pickPreferredRoomImageIndex(images) {
-        if (!images || images.length < 2) return 0;
-        function roleFor(img) {
-          const hay = `${img.filename || ''} ${img.displayLabel || ''}`.toLowerCase();
-          const furniture = /\b(chair|sofa|couch|table|desk|lamp|bed|ottoman|dresser|armchair|furniture|stool|bench|nightstand)\b/;
-          const room = /\b(room|living|bedroom|kitchen|bathroom|dining|office|interior|empty)\b/;
-          if (furniture.test(hay) && !room.test(hay)) return 'furniture';
-          if (room.test(hay)) return 'room';
-          return 'unknown';
-        }
-        const roles = images.map((img, index) => ({ index, role: roleFor(img) }));
-        const roomHit = roles.find((r) => r.role === 'room');
-        if (roomHit) return roomHit.index;
-        const furnitureHit = roles.find((r) => r.role === 'furniture');
-        if (furnitureHit) {
-          const unknown = roles.find((r) => r.role === 'unknown');
-          if (unknown) return unknown.index;
-        }
-        // Default: second file in upload order = index 1 (chronological); reversed list index 1
-        return Math.min(1, images.length - 1);
-      }
-
-      function getBaseImageIndexForRequest() {
-        const images = collectImagesFromConversationHistory();
-        if (images.length === 0 || selectedImageIndex === null) return undefined;
-        if (selectedImageIndex >= images.length) return 0;
-        return selectedImageIndex;
-      }
-
       function getLastAssistantContentEl() {
         return document.querySelector('.message.assistant:last-child .message-content');
       }
@@ -938,19 +724,6 @@
         const textDiv = content.querySelector(':scope > div:first-child');
         if (textDiv) {
           textDiv.innerHTML = formatMarkdown(text);
-        }
-      }
-
-      // Map the user's selected message tag to a loading-status category. This
-      // replaces the old English-keyword guessing (which never worked for ES/ZH
-      // or paraphrased requests). "auto" stays generic until the server tells us.
-      function messageTypeFromTag(tag) {
-        switch (tag) {
-          case 'generate': return 'generating';
-          case 'stage':
-          case 'cad-stage': return 'staging';
-          case 'describe': return 'analyzing';
-          default: return 'general';
         }
       }
 
@@ -1066,34 +839,6 @@
         if (el) {
           clearRotatingStatusText(el);
           el.remove();
-        }
-      }
-
-      async function consumeChatSse(response, handlers) {
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          let splitAt;
-          while ((splitAt = buffer.indexOf('\n\n')) !== -1) {
-            const block = buffer.slice(0, splitAt);
-            buffer = buffer.slice(splitAt + 2);
-            let eventName = 'message';
-            let dataLine = '';
-            for (const line of block.split('\n')) {
-              if (line.startsWith('event: ')) eventName = line.slice(7).trim();
-              else if (line.startsWith('data: ')) dataLine = line.slice(6);
-            }
-            if (!dataLine) continue;
-            const payload = JSON.parse(dataLine);
-            if (eventName === 'status' && handlers.onStatus) handlers.onStatus(payload);
-            else if (eventName === 'message' && handlers.onMessage) handlers.onMessage(payload);
-            else if (eventName === 'images' && handlers.onImages) handlers.onImages(payload);
-            else if (eventName === 'error' && handlers.onError) handlers.onError(payload);
-          }
         }
       }
 
@@ -1813,15 +1558,6 @@
       }
       
       // Turn an arbitrary label (e.g. a room/source name) into a safe filename part.
-      function slugifyName(s) {
-        return String(s || '')
-          .toLowerCase()
-          .replace(/\.[^.]+$/, '')          // drop any extension
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '')
-          .slice(0, 60) || 'image';
-      }
-
       // Helper function to create AI image with download button. `baseName` is an
       // optional room/source label so downloads are named e.g.
       // "123-main-living-staged-room-1.png" instead of "image.png".

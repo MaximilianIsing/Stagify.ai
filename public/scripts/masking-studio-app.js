@@ -1,5 +1,4 @@
-      (function () {
-        'use strict';
+import { createPool, nextColorIdx } from './masking-studio/layers.js';
 
         // ---------------------------------------------------------------------
         // Access gate: Masking Studio is Stagify+ only. Anonymous visitors were
@@ -330,16 +329,9 @@
         // ---------------------------------------------------------------------
         // Area layers
         // ---------------------------------------------------------------------
-        function nextColorIdx() {
-          for (let i = 0; i < PALETTE.length; i++) {
-            if (!layers.some((l) => l.colorIdx === i)) return i;
-          }
-          return -1;
-        }
-
         function addLayer() {
           if (!base || layers.length >= MAX_LAYERS) return;
-          const colorIdx = nextColorIdx();
+          const colorIdx = nextColorIdx(layers, PALETTE.length);
           if (colorIdx === -1) return;
           const c = document.createElement('canvas');
           c.width = base.w;
@@ -2163,20 +2155,6 @@
         // At most 3 mask edits in flight at once: smoother on the server's rate
         // limiter and Gemini quotas than firing all 6 areas simultaneously,
         // while progressive compositing keeps the wait feeling short.
-        function createPool(size) {
-          let active = 0;
-          const queue = [];
-          const next = () => {
-            if (!queue.length || active >= size) return;
-            active++;
-            const job = queue.shift();
-            job.fn().then(job.resolve, job.reject).then(() => { active--; next(); });
-          };
-          return (fn) => new Promise((resolve, reject) => {
-            queue.push({ fn: fn, resolve: resolve, reject: reject });
-            next();
-          });
-        }
         const enqueueRun = createPool(3);
 
         // Union of every OTHER area's painted pixels, binarized. The grow +
@@ -2625,4 +2603,3 @@
             setHelpOpen(true, { hideShortcuts: true });
           }
         });
-      })();
