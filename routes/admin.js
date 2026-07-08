@@ -5,7 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, getMemoriesFile, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT } = deps;
+  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT } = deps;
   const router = express.Router();
 
 router.get('/admin', (req, res) => {
@@ -190,18 +190,11 @@ router.get('/email-open-logs', protectLogs, (req, res) => {
 
 router.get('/memories', protectLogs, (req, res) => {
   try {
-    const memoriesFile = getMemoriesFile();
-    
-    if (fs.existsSync(memoriesFile)) {
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Disposition', 'inline; filename="memories.json"');
-      res.sendFile(memoriesFile);
-    } else {
-      res.status(404).json({ 
-        error: 'File not found',
-        message: 'No memories are available yet'
-      });
-    }
+    // Live snapshot rebuilt from SQLite in the legacy { userId: [...] } shape.
+    const memories = exportAllMemories();
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', 'inline; filename="memories.json"');
+    res.send(JSON.stringify(memories, null, 2));
   } catch (error) {
     console.error('Error serving memories file:', error);
     res.status(500).json({ 
@@ -213,17 +206,7 @@ router.get('/memories', protectLogs, (req, res) => {
 
 router.get('/resetmemories', protectLogs, (req, res) => {
   try {
-    const memoriesFile = getMemoriesFile();
-    const logDir = path.dirname(memoriesFile);
-    
-    // Ensure directory exists
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
-    }
-    
-    // Write empty object to reset all memories
-    const emptyMemories = {};
-    fs.writeFileSync(memoriesFile, JSON.stringify(emptyMemories, null, 2));
+    resetAllMemories();
     
     if (DEBUG_MODE) {
       console.log('✓ Successfully reset all memories');
@@ -355,14 +338,10 @@ router.get('/masklogs', protectLogs, (req, res) => {
 
 router.get('/enterprise-domains', protectLogs, (req, res) => {
   try {
-    const storePath = enterpriseStore.getStoreFilePath();
-    if (fs.existsSync(storePath)) {
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.setHeader('Content-Disposition', 'inline; filename="enterprise-domains.json"');
-      res.sendFile(path.resolve(storePath));
-    } else {
-      res.json({ domains: [] });
-    }
+    // Live snapshot rebuilt from SQLite in the legacy { domains: [...] } shape.
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', 'inline; filename="enterprise-domains.json"');
+    res.send(JSON.stringify(enterpriseStore.exportStore(), null, 2));
   } catch (error) {
     console.error('Error serving enterprise domains file:', error);
     res.status(500).json({ error: 'Failed to retrieve enterprise domains', message: error.message });

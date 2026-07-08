@@ -7,14 +7,15 @@ How the Stagify.ai server is put together. For the project overview and setup se
 
 Stagify is a **static frontend + JSON API monolith** with no client framework and no
 build step. One Node process (`server.js`) serves the static site in `public/` *and*
-the JSON API, backed by flat JSON/CSV files in `data/`.
+the JSON API. State lives in `data/`: user accounts/sessions in a **SQLite** database,
+everything else in flat JSON/CSV files.
 
 ```
 browser ──HTTP──▶ server.js ──▶ express.static('public')   (HTML/CSS/JS/images)
                      │
                      ├──▶ routers (routes/*.js)  ──▶ lib/*.js  ──▶ AI / Stripe / Resend
                      │                                    │
-                     └──────────────────────────────────▶ data/  (JSON + CSV, flat files)
+                     └──────────────────────────────────▶ data/  (SQLite auth + JSON/CSV)
 ```
 
 ## The composition-root + factory pattern
@@ -79,7 +80,7 @@ Middleware runs in registration order in `server.js`:
 | Module | Responsibility |
 |---|---|
 | `config.js` | Reads secrets/config from env vars, falling back to local `stripe_*.txt` / `*.txt` files. |
-| `auth-store.js` | User accounts, salted+hashed passwords, 30-day sessions, email registration codes, free-tier daily limits. JSON-backed. |
+| `auth-store.js` | User accounts, salted+hashed passwords, 30-day sessions, email registration codes, free-tier usage. **SQLite-backed** (`better-sqlite3`, `data/auth-store.db`); imports a legacy `auth-store.json` once on first run. |
 | `enterprise-store.js` | Enterprise domain activation + metered usage, kept in sync with Stripe. |
 | `stripe-webhooks.js` | Applies Stripe subscription lifecycle events (checkout/updated/deleted) to accounts & domains. |
 | `email.js` | Sends registration-verification email; serves the email-open tracking pixel. |
@@ -90,7 +91,7 @@ Middleware runs in registration order in `server.js`:
 | `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D renders (AI Designer), via Gemini. |
 | `chat-upload-prep.js` | Pre-routing prep for `/api/chat-upload`: multipart upload → GPT-ready messages + routing completion. |
 | `chat-pipeline.js` | Post-routing dispatch shared by `/api/chat` and `/api/chat-upload`: memory writes, image generation, staging, recall, etc. |
-| `uptime-monitor.js` | Self-hosted uptime tracking (heartbeat → `data/uptime.json`); powers `/api/status` and the status page. |
+| `uptime-monitor.js` | Self-hosted uptime tracking (heartbeat → the `uptime_state` row in `auth-store.db`); powers `/api/status` and the status page. |
 
 ## Routers (`routes/`)
 
@@ -113,16 +114,21 @@ secret is read). Every secret resolves from its env var, falling back to a gitig
 
 ## Data & persistence
 
-No database — state is flat files under `data/` (or the Render `/data` disk when
-present, detected via the `RENDER` env var):
+State lives under `data/` (or the Render `/data` disk when present, detected via the
+`RENDER` env var):
 
-- **JSON stores:** `auth-store.json` (accounts/sessions — sensitive),
-  `enterprise-domains.json`, `memories.json`, `uptime.json`.
+- **SQLite (`better-sqlite3`, one shared connection via `lib/db.js`):** `auth-store.db`
+  holds all structured state — auth (`users`, `sessions`, …; **sensitive**),
+  `enterprise_domains`, `memories`, `uptime_state`. WAL + transactions, so writes are
+  atomic and per-row. Each store imports its legacy JSON (`auth-store.json`,
+  `enterprise-domains.json`, `memories.json`, `uptime.json`) once on first boot, then
+  keeps it as a frozen rollback fallback.
 - **Append-only CSV logs:** prompts, chats, contacts, masks, bug reports, email opens.
 - **Uploads:** `hosted-images/`, served via `GET /i/:id`.
 
-See the **Known limitations** section of the [README](../README.md#known-limitations):
-this design is single-instance only and has no atomic writes or backups.
+Full detail in [`data-stores.md`](../reference/data-stores.md). See the **Known
+limitations** section of the [README](../README.md#known-limitations): still
+single-instance only (SQLite is single-writer).
 
 ## Frontend
 
@@ -139,6 +145,7 @@ it carefully.
 - **Extraction is ongoing.** `server.js` is being split into `routes/` + `lib/`;
   changes are meant to be behavior-preserving. The `route-inventory` test guards
   against accidentally dropping a route during a refactor.
-- **`push = deploy`.** Pushing the default branch triggers a Render production deploy,
-  and the build runs the test suite — so a red test blocks the deploy. See
-  [`testing.md`](testing.md) and the README's Deployment section.
+- **Deploys are manual.** `render.yaml` sets `autoDeploy: false`, so a push does **not**
+  ship — you deploy from the Render dashboard. The build still runs the test suite, so a
+  red test blocks the deploy. See [`../operations/deployment.md`](../operations/deployment.md)
+  and [`testing.md`](testing.md).

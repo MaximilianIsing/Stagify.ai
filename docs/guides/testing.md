@@ -44,7 +44,9 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 | 0 | `smoke.test.js` | The server boots and `GET /health` returns `200 {status:'healthy'}`. The most common outage ("it doesn't start") caught first. |
 | 1 | `static.test.js` | No server, no network: `server.js` + every `lib/*.js` parses; client scripts parse; **local asset references in `public/*.html` exist on disk**; every language file is valid JSON and **covers `english.json`'s keys**; `sitemap.xml`/`manifest.json` are well-formed. |
 | 2 | `guards.test.js` | Access-guard status codes — log/admin routes 403 without a key, endpoint-key routes 403, Pro-only routes 401 without a session. Guards against silent auth bypass. |
-| 2 | `auth-store.test.js` | Auth correctness: register→login round-trip, email-code gating, salted/hashed passwords, session validate/logout, single-use password reset, non-enumerating reset, free-tier daily limits, anonymous mobile IP cap. |
+| 2 | `auth-store.test.js` | Auth correctness: register→login round-trip, email-code gating, salted/hashed passwords, session validate/logout, single-use password reset, non-enumerating reset, free-tier + mobile-IP usage recording. |
+| 2 | `auth-store-sqlite.test.js` | SQLite specifics: on-disk persistence, the one-time `auth-store.json` → SQLite migration (user-data safety), and the `exportStore`/`importStore` round-trip behind the admin backup. |
+| 2 | `db.test.js` | The `lib/db.js` layer: the WAL/pragmas it sets and that data actually persists to disk. |
 | 2 | `stripe-webhooks.test.js` | Billing lifecycle over hand-built events: checkout upgrades to Pro (by ref or email), `subscription.deleted` downgrades, `updated`→active restores Pro, enterprise routes to the enterprise store. Catches "paid but no Pro" / "churned but still Pro". |
 | 2 | `enterprise-store.test.js` | Domain activation (idempotent, case-insensitive), subscription-state sync, usage counting. |
 | 2 | `staging-endpoints.test.js` | Staging contracts without any AI call: `validate-image` rejects bad input (400) and fails open (200) when the reviewer is disabled; `process-image` requires a session for desktop. |
@@ -94,7 +96,7 @@ ESLint uses a flat config ([`eslint.config.js`](../../eslint.config.js)):
   `test/**`. The frontend (`public/scripts/*.js`) is **intentionally not linted yet** —
   those are classic `<script>` files that share globals across files, so `no-undef` /
   `no-unused-vars` would flood with false positives until they get a browser-specific
-  config. `node_modules`, `public`, `ds-bundle`, `demos`, and `*.min.js` are ignored.
+  config. `node_modules`, `public`, `ds-bundle`, `to-build`, and `*.min.js` are ignored.
 - **Deliberately lenient.** It's `@eslint/js`'s recommended set plus `no-unused-vars`
   as a **warning** (an `_`-prefixed name is treated as intentionally unused). The plan
   is to tighten once the backend baseline is clean.

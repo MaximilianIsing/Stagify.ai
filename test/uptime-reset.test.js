@@ -9,17 +9,27 @@ import path from 'node:path';
 import { createUptimeMonitor } from '../lib/uptime-monitor.js';
 
 const tempDirs = [];
-function freshMonitor() {
+const openMonitors = [];
+function newDir() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-uptime-'));
   tempDirs.push(dir);
-  return createUptimeMonitor(dir);
+  return dir;
+}
+function monitor(dir) {
+  const mon = createUptimeMonitor(dir);
+  openMonitors.push(mon);
+  return mon;
 }
 afterEach(() => {
+  while (openMonitors.length) {
+    try { openMonitors.pop().close(); } catch { /* already closed */ }
+  }
   while (tempDirs.length) fs.rmSync(tempDirs.pop(), { recursive: true, force: true });
 });
 
 test('reset() wipes all history and restarts monitoring from now', () => {
-  const mon = freshMonitor();
+  const dir = newDir();
+  const mon = monitor(dir);
 
   // Build up history: boot in the past, then boot again after a long gap so the
   // monitor records a downtime incident for the stretch it wasn't running.
@@ -36,8 +46,10 @@ test('reset() wipes all history and restarts monitoring from now', () => {
   assert.equal(snap.monitoringSince, now, 'monitoring restarts at now');
   assert.deepEqual(snap.incidents, [], 'the incident list is cleared');
 
-  // And the wipe is persisted, not just in-memory.
-  const state = JSON.parse(fs.readFileSync(mon.getStateFilePath(), 'utf8'));
+  // And the wipe is persisted, not just in-memory: a fresh monitor on the same
+  // data dir loads the reset state back from SQLite.
+  const reloaded = monitor(dir);
+  const state = reloaded._getState();
   assert.equal(state.incidents.length, 0, 'persisted state has no incidents');
   assert.equal(state.monitoringStart, now, 'persisted monitoringStart is now');
 });

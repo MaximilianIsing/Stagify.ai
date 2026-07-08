@@ -12,12 +12,19 @@ import path from 'node:path';
 import { createEnterpriseStore } from '../lib/enterprise-store.js';
 
 const tempDirs = [];
+const openStores = [];
 function freshStore() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-enterprise-'));
   tempDirs.push(dir);
-  return createEnterpriseStore(dir);
+  const store = createEnterpriseStore(dir);
+  openStores.push(store);
+  return store;
 }
 afterEach(() => {
+  // Close SQLite handles before removing the temp dir (Windows file locks).
+  while (openStores.length) {
+    try { openStores.pop().close(); } catch { /* already closed */ }
+  }
   while (tempDirs.length) fs.rmSync(tempDirs.pop(), { recursive: true, force: true });
 });
 

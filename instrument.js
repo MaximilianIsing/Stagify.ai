@@ -4,6 +4,11 @@
 //
 // Degrades gracefully: with no SENTRY_DSN set (e.g. local dev), Sentry.init() is a
 // no-op — no network calls, no overhead — exactly like the Gemini/Stripe/Resend keys.
+//
+// Loaded via `node --import ./instrument.js` — so this file runs BEFORE server.js and must
+// pull in .env itself to see SENTRY_DSN locally. On Render env comes from the dashboard (this
+// is a no-op there); locally there is no DSN anyway, so this only keeps the two paths consistent.
+import './load-env.js';
 import * as Sentry from '@sentry/node';
 
 // Only report from PRODUCTION. This deploy is "staging" when IS_STAGING is 1/true/on/yes
