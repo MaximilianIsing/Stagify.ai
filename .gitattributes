@@ -1,0 +1,4 @@
+# Shell scripts MUST use LF line endings so they run on Linux (Render). A committer
+# on Windows (core.autocrlf=true) would otherwise store CRLF, and `sh` chokes on the
+# trailing \r ("command not found"). eol=lf pins the checkout too.
+*.sh text eol=lf
