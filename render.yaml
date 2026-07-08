@@ -3,8 +3,8 @@ services:
     name: stagify-ai
     env: node
     plan: standard
-    buildCommand: npm install && npm test
-    startCommand: npm start
+    buildCommand: sh scripts/build.sh
+    startCommand: sh scripts/start.sh
     # For envVars, check docs/reference/environment-variables.md
     disk:
       name: stagify-data

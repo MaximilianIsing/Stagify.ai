@@ -12,8 +12,8 @@ Deployed on **Render** as a Node web service, defined by [`render.yaml`](../../r
 | Setting | Value |
 |---|---|
 | Service | `stagify-ai`, `env: node`, **`plan: standard`** (~2 GB RAM) |
-| Build | `npm install && npm test` — **a failing test blocks the deploy** |
-| Start | `npm start` → `node --import ./instrument.js server.js` (Sentry loads before the app) |
+| Build | `sh scripts/build.sh` — `npm install` → `npm test` (**a failing test blocks the deploy**) → download the Litestream binary into `./bin` |
+| Start | `sh scripts/start.sh` — restore the DB from R2 if `/data` is empty, then run the app under `litestream replicate` (which execs `npm start` → `node --import ./instrument.js server.js`, so Sentry still loads first) |
 | Disk | `stagify-data` mounted at **`/data`**, 1 GB — all runtime state lives here |
 | **`autoDeploy`** | **`false`** |
 
@@ -27,9 +27,9 @@ Deployed on **Render** as a Node web service, defined by [`render.yaml`](../../r
 1. Merge/commit to the default branch as usual (push does nothing on its own).
 2. In the **Render dashboard** → the `stagify-ai` service → **Manual Deploy** →
    deploy the latest commit (or a specific one).
-3. Render runs the build (`npm install && npm test`). **If any test fails the deploy
-   is aborted** — fix and retry. Keep the suite green (see
-   [`testing.md`](../guides/testing.md)).
+3. Render runs the build (`sh scripts/build.sh` — install, the test gate, then the
+   Litestream binary). **If any test fails the deploy is aborted** — fix and retry. Keep
+   the suite green (see [`testing.md`](../guides/testing.md)).
 4. Watch the deploy logs for `Server running on port …` and `AI configured: true`.
 
 ## Environments: staging vs production
@@ -44,6 +44,10 @@ thing that makes a deploy "staging" is the **`IS_STAGING`** env var (truthy =
   (e.g. for screenshots) while keeping the other staging behavior.
 - **Sentry reports from production only** — `instrument.js` sets `enabled: !IS_STAGING`,
   so staging never reports even though `SENTRY_DSN` is present there.
+- **Backups are disabled on staging** — `scripts/start.sh` skips Litestream entirely
+  when `IS_STAGING` is truthy, so staging can never replicate its throwaway data **into**
+  (nor restore production data **out of**) the R2 backup. Belt and suspenders: don't set
+  the `LITESTREAM_*` keys on the staging service either.
 
 > ⚠️ **The production service must NOT have `IS_STAGING` set** (or it must be
 > `false`/empty). If production is accidentally flagged staging, sign-in and checkout
@@ -66,10 +70,27 @@ memories, uptime — plus its `-wal`/`-shm` sidecars), the CSV logs, `hosted-ima
 the frozen legacy `*.json` fallbacks — lives on the **1 GB `/data` disk**, which survives
 deploys and restarts. Locally it's `./data`. Full inventory: [`data-stores.md`](../reference/data-stores.md).
 
-**Back up before anything risky** (a migration, a manual data edit, deleting the
-service): snapshot `/data` from the Render dashboard (disk snapshot) or copy the files
-off. There is **no automatic backup** and writes are not atomic — see the storage
-doc's caveats.
+### Backups & disaster recovery (Litestream → Cloudflare R2)
+
+The SQLite database is **continuously replicated off-disk** to a Cloudflare R2 bucket
+(`stagify-backups`) by [Litestream](https://litestream.io) — configured in
+[`litestream.yml`](../../litestream.yml), the binary fetched in `scripts/build.sh`, and
+run by `scripts/start.sh`:
+
+- **On boot**, if `/data/auth-store.db` is missing (fresh disk / disaster recovery),
+  `start.sh` restores it from R2 *before* the app starts — so recovering a lost disk is
+  just a redeploy.
+- **While running**, changes stream to R2 continuously (seconds of RPO).
+- Needs `LITESTREAM_ACCESS_KEY_ID` + `LITESTREAM_SECRET_ACCESS_KEY` on the **production**
+  service ([`environment-variables.md`](../reference/environment-variables.md)). If
+  they're unset — or on staging (`IS_STAGING`) — replication is skipped and the app
+  still runs normally.
+
+**Covered:** only the SQLite DB (`auth-store.db`) — i.e. all *structured* state.
+**Not covered:** the CSV logs and `hosted-images/`, which live only on the disk. For
+those, still **snapshot `/data`** (Render dashboard) before anything risky — a migration,
+a manual data edit, deleting the service. ⚠️ Do **not** restore a Render disk snapshot
+*into* a live SQLite DB (it can corrupt it) — recover the DB from the R2 replica instead.
 
 ## Rolling back
 
@@ -79,6 +100,9 @@ Because `autoDeploy` is off, you already control timing. To roll back a bad depl
    **Redeploy** (or "Rollback").
 2. If the bad deploy also changed **data shape** on `/data`, code rollback alone won't
    fix data — restore the disk snapshot too.
+3. **Lost the whole disk?** Just redeploy — `scripts/start.sh` restores `auth-store.db`
+   from the R2 replica on boot. (The CSV logs and `hosted-images/` come from a disk
+   snapshot, not R2.)
 
 ## Uptime & status
 

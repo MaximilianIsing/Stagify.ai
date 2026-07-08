@@ -8,10 +8,10 @@ npm test        # node --test "test/**/*.test.js"
 npm run lint    # eslint .  (backend only — see Linting below)
 ```
 
-> **Tests gate deployment.** `render.yaml`'s build command is
-> `npm install && npm test`, so a failing test **blocks the Render deploy**. Keep the
-> suite green — a red test is a stuck release, not just a warning. (Lint does **not**
-> gate anything yet — see below.)
+> **Tests gate deployment.** `render.yaml`'s build command is `sh scripts/build.sh`,
+> which runs `npm install` then `npm test`, so a failing test **blocks the Render
+> deploy**. Keep the suite green — a red test is a stuck release, not just a warning.
+> (Lint does **not** gate anything yet — see below.)
 
 ## Philosophy
 
@@ -109,7 +109,7 @@ Two independent pipelines run on the default branch:
   every push and PR to `main`: `npm ci`, then `npm test` (**blocking**), then
   `npm run lint` (**non-blocking**, `continue-on-error: true` — it reports findings but
   never fails the build). Remove that flag once the backend is lint-clean to enforce it.
-- **Render** — the deploy build runs `npm install && npm test`, so a failing test
-  **blocks the production deploy**. Lint is not part of the Render build.
+- **Render** — the deploy build runs `sh scripts/build.sh` (which runs `npm test`), so a
+  failing test **blocks the production deploy**. Lint is not part of the Render build.
 
 Net: a red test blocks both CI and the deploy; a lint finding currently blocks neither.

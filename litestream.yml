@@ -1,0 +1,17 @@
+# Litestream — continuous off-disk replication of the single SQLite application
+# database to Cloudflare R2. Disaster recovery: a disk loss becomes "restore from
+# R2" instead of data loss.
+#
+# Credentials are read from the ENVIRONMENT, never stored here:
+#   LITESTREAM_ACCESS_KEY_ID      R2 API token Access Key ID
+#   LITESTREAM_SECRET_ACCESS_KEY  R2 API token Secret Access Key
+# Set both in your local .env and in the Render dashboard. If either is unset,
+# Litestream can't authenticate and won't replicate — the app still runs normally.
+dbs:
+  - path: /data/auth-store.db          # Render persistent-disk path (./data locally)
+    replicas:
+      - type: s3
+        bucket: stagify-backups
+        path: auth-store               # key prefix inside the bucket
+        endpoint: https://034ebda8f0c9f4750fb1103f6dd5be02.r2.cloudflarestorage.com
+        region: auto                   # R2 uses "auto"

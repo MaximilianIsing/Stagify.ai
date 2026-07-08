@@ -44,6 +44,8 @@ Thumbs.db
 # Build output
 dist/
 build/
+# Litestream binary — downloaded into ./bin during the Render build, never committed
+bin/
 
 # Text files (but allow specific ones)
 *.txt
