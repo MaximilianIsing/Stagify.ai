@@ -450,7 +450,6 @@ export function createMaskEditor(deps) {
         if (refRemove) refRemove.setAttribute('aria-label', getText('pdf.maskEditor.referenceRemove'));
       }
       
-      let isDrawing = false;
       let brushSize = 50;
       let maskTool = 'brush';     // 'brush' adds to the selection, 'erase' removes
       let maskPainted = false;    // any selection present? (hot path avoids scanning)

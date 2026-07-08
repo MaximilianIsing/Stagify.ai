@@ -44,7 +44,7 @@ export function baseDeps() {
     reviewMaskEdit: async () => ({ perfect: true, score: 1 }),
     compositeForReview: async (b) => b,
     generateWithQualityRetry: async () => { throw new Error('generateWithQualityRetry not stubbed for this test'); },
-    maskReferencePromptSuffix: '',
+    maskReferencePromptSuffix: () => '', // handler calls this as a function (routes/staging.js)
     validateStageableImage: async () => ({ valid: true, reason: '' }),
     handleVirtualStagingMultipart: async (req, res) => res.json({ success: true, image: 'data:image/png;base64,AAAA' }),
   };

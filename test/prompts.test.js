@@ -5,7 +5,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildChatSystemInstruction, buildChatUploadSystemInstruction } from '../lib/prompts.js';
+import { buildChatSystemInstruction, buildChatUploadSystemInstruction } from '../lib/staging/prompts.js';
 
 test('buildChatSystemInstruction embeds image/date/base-selection context and the JSON contract', () => {
   const s = buildChatSystemInstruction({

@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createEnterpriseStore } from '../lib/enterprise-store.js';
+import { createEnterpriseStore } from '../lib/data/enterprise-store.js';
 
 const tempDirs = [];
 const openStores = [];

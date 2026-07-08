@@ -49,7 +49,7 @@ export function formatMarkdown(text) {
 
   lines.forEach((line, index) => {
     // Check for bullet points: * item, - item, or • item
-    const bulletMatch = line.match(/^[\*\-\+•]\s+(.+)$/);
+    const bulletMatch = line.match(/^[*\-+•]\s+(.+)$/);
 
     if (bulletMatch) {
       if (!inList) {

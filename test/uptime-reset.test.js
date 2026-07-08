@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createUptimeMonitor } from '../lib/uptime-monitor.js';
+import { createUptimeMonitor } from '../lib/data/uptime-monitor.js';
 
 const tempDirs = [];
 const openMonitors = [];

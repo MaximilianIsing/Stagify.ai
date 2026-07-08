@@ -8,24 +8,7 @@
          anonymous visitors bounce straight to the homepage demo row, and
          signed-in users see a hidden page until their plan is verified
          (ensureDesignerProAccess reveals it for Pro or redirects otherwise). -->
-    <script>
-      (function () {
-        var hasToken = false;
-        try { hasToken = !!localStorage.getItem('stagifyAuthToken'); } catch (e) {}
-        if (!hasToken) {
-          window.location.replace('index.html#ai-designer-demo');
-          return;
-        }
-        document.documentElement.className += ' ai-gate-pending';
-        // Safety net: never strand a signed-in user on a hidden page if the
-        // plan check stalls (e.g. a hung request).
-        setTimeout(function () {
-          if (document.documentElement.classList.contains('ai-gate-pending')) {
-            window.location.replace('index.html#ai-designer-demo');
-          }
-        }, 6000);
-      })();
-    </script>
+    <script src="scripts/ai-designer-gate.js"></script>
     <style>html.ai-gate-pending body{visibility:hidden!important}</style>
 
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">

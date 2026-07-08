@@ -3,7 +3,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { getTemperatureForModel, getGeminiImageModel } from '../lib/model-config.js';
+import { getTemperatureForModel, getGeminiImageModel } from '../lib/config/model-config.js';
 
 test('getTemperatureForModel: gpt-5 models must use temperature 1, others 0.7', () => {
   assert.equal(getTemperatureForModel('gpt-5-mini'), 1);

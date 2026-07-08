@@ -6,7 +6,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateWithQualityRetry } from '../lib/staging-pipeline.js';
+import { generateWithQualityRetry } from '../lib/staging/staging-pipeline.js';
 
 // A generator that returns queued values per call. A value may be an Error (thrown)
 // or null (a "no image produced" attempt). Records the attempt numbers it saw.

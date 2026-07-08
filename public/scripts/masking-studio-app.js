@@ -166,7 +166,6 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
         let redoStack = [];       // undone states, restored by Ctrl+Y (same cap)
         let segCache = null;      // decoded all-object masks for wand hit-testing
         let segToken = 0;         // bumped on photo change → drops in-flight results
-        let segBusy = false;      // one segmentation request at a time
         let comparePos = 0.5;     // compare-view divider, 0..1 of photo width
         let comparing = false;    // dragging the compare divider
         let zoom = 1;             // 1 = fit to view, up to 4x
@@ -1558,7 +1557,6 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
 
         let wandMsgTimer = null;
         function setSegBusy(b) {
-          segBusy = b;
           wandBusyEl.classList.toggle('hidden', !b);
           stack.classList.toggle('is-analyzing', b);
           if (wandMsgTimer) { clearInterval(wandMsgTimer); wandMsgTimer = null; }
@@ -2231,8 +2229,7 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
             batch: batchSize || 1,
             ...(layer.furniture && layer.mode !== 'remove' ? { referenceImage: layer.furniture } : {}),
           });
-          let response = null;
-          let result = null;
+          let response, result;
           // Rate-limit pressure (429) and transient overload (503) get two
           // jittered retries before the area is declared failed.
           for (let attempt = 0; ; attempt++) {

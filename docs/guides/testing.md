@@ -5,13 +5,13 @@ dependencies.
 
 ```bash
 npm test        # node --test "test/**/*.test.js"
-npm run lint    # eslint .  (backend only — see Linting below)
+npm run lint    # eslint .  (backend + frontend ES modules — see Linting below)
 ```
 
 > **Tests gate deployment.** `render.yaml`'s build command is `sh scripts/build.sh`,
 > which runs `npm install` then `npm test`, so a failing test **blocks the Render
 > deploy**. Keep the suite green — a red test is a stuck release, not just a warning.
-> (Lint does **not** gate anything yet — see below.)
+> (Lint isn't part of the Render build, but it **is** an enforced, blocking CI check — see below.)
 
 ## Philosophy
 
@@ -92,24 +92,34 @@ npm run lint     # eslint .
 
 ESLint uses a flat config ([`eslint.config.js`](../../eslint.config.js)):
 
-- **Backend only.** It lints `server.js`, `load-env.js`, `routes/**`, `lib/**`, and
-  `test/**`. The frontend (`public/scripts/*.js`) is **intentionally not linted yet** —
-  those are classic `<script>` files that share globals across files, so `no-undef` /
-  `no-unused-vars` would flood with false positives until they get a browser-specific
-  config. `node_modules`, `public`, `ds-bundle`, `to-build`, and `*.min.js` are ignored.
-- **Deliberately lenient.** It's `@eslint/js`'s recommended set plus `no-unused-vars`
-  as a **warning** (an `_`-prefixed name is treated as intentionally unused). The plan
-  is to tighten once the backend baseline is clean.
+- **Two scopes, both linted.**
+  - *Backend* — `eslint.config.js`, `server.js`, `load-env.js`, `instrument.js`, `routes/**`,
+    `lib/**`, `test/**` (Node globals).
+  - *Frontend* — the ES modules under `public/scripts/`, **auto-discovered**: the config scans
+    that tree at load and lints any file with a top-level `export` or static `import … from`
+    (browser globals). As classic `<script>` files migrate to ES modules they start being linted
+    automatically — no config edit needed. Files with neither marker (classic shared-global
+    scripts, and minified/generated bundles like `carousel.js`, `demo-data.js`, `vendor/*`) match
+    no block and stay unlinted.
+- **No blanket `public/**` ignore.** Only `node_modules`, `ds-bundle`, `supademo-local`,
+  `to-build`, and `*.min.js` are ignored outright. `public/**` is deliberately *not* ignored:
+  ESLint can't un-ignore files beneath a `/**`-ignored ancestor, so a broad ignore would make the
+  frontend allowlist unreachable. Classic scripts stay out by matching no `files` block, not by
+  being ignored.
+- **Deliberately lenient.** Both scopes use `@eslint/js`'s recommended set plus `no-unused-vars`
+  as a **warning** (an `_`-prefixed name is intentionally unused). The frontend scope also allows
+  empty `catch {}` and unused caught-error bindings (`no-empty {allowEmptyCatch}`,
+  `no-unused-vars {caughtErrors:'none'}`) — deliberate best-effort swallows in the UI code.
 
 ## Continuous integration
 
 Two independent pipelines run on the default branch:
 
 - **GitHub Actions** ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)) — on
-  every push and PR to `main`: `npm ci`, then `npm test` (**blocking**), then
-  `npm run lint` (**non-blocking**, `continue-on-error: true` — it reports findings but
-  never fails the build). Remove that flag once the backend is lint-clean to enforce it.
+  every push and PR to `main`: `npm ci`, then `npm test`, then `npm run lint`. Both are
+  **blocking** — a failing test, or any lint warning/error (`--max-warnings=0`), fails the build.
 - **Render** — the deploy build runs `sh scripts/build.sh` (which runs `npm test`), so a
-  failing test **blocks the production deploy**. Lint is not part of the Render build.
+  failing test **blocks the production deploy**. Lint is **not** part of the Render build.
 
-Net: a red test blocks both CI and the deploy; a lint finding currently blocks neither.
+Net: a red test blocks both CI and the deploy; a lint finding blocks CI (so it can't reach a
+clean `main`) but not the Render build itself.

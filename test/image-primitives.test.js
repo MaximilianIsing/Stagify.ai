@@ -15,7 +15,7 @@ import {
   normalizeMaskOutputToRoom,
   downscaleImageForGPT,
   compositeForReview,
-} from '../lib/image-primitives.js';
+} from '../lib/image/image-primitives.js';
 
 // A solid-color PNG of the given size.
 const png = (w, h, rgb = { r: 10, g: 120, b: 200 }) =>

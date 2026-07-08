@@ -7,7 +7,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import createChatPipeline from '../lib/chat-pipeline.js';
+import createChatPipeline from '../lib/chat/chat-pipeline.js';
 
 const dataUrl = (s) => 'data:image/png;base64,' + Buffer.from(s).toString('base64');
 const userImg = (s) => ({ role: 'user', content: [{ type: 'image_url', image_url: { url: dataUrl(s) } }] });

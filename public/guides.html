@@ -127,7 +127,7 @@
           </div>
         </div>
         <div class="nav-trailing">
-          <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
+          <div class="mobile-test-text" data-hover-glow>
             <div data-lang="hero.title.upload">Upload.</div>
             <div data-lang="hero.title.stage">Stage.</div>
             <div data-lang="hero.title.imagine">Imagine.</div>
@@ -474,9 +474,11 @@
       &nbsp;·&nbsp;
       <a href="/status" style="color:#2563eb;text-decoration:none;">Status</a>
       &nbsp;·&nbsp;
-      © <script>document.write(new Date().getFullYear())</script> Stagify.ai
+      © <span class="footer-year"></span> Stagify.ai
     </footer>
 
+      <script src="scripts/footer-year.js" defer></script>
       <script src="scripts/aurora-scrollbar.js" defer></script>
+      <script src="scripts/hover-glow.js" defer></script>
 </body>
 </html>

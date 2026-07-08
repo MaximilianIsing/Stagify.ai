@@ -167,7 +167,7 @@ test('sitemap.xml and manifest.json are well-formed; manifest icons exist', () =
 });
 
 test('promptMatrix has a non-empty prompt for every room/style', async () => {
-  const { promptMatrix } = await import('../lib/promptMatrix.js');
+  const { promptMatrix } = await import('../lib/staging/promptMatrix.js');
   const rooms = Object.keys(promptMatrix);
   assert.ok(rooms.length > 0, 'promptMatrix should define room types');
   const bad = [];

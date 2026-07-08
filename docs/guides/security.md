@@ -71,8 +71,18 @@ The body parsers are the cheapest DoS surface, so they're **scoped**, not global
 ## Transport & headers
 
 - **CSP** via `helmet`, tuned for the third parties the app loads (Google, Stripe,
-  Supademo/Instagram embeds, the HEIC WASM worker). Toggle with `DISABLE_CSP=1` only
-  to debug a blocked resource.
+  Supademo/Instagram embeds, the HEIC WASM worker).
+  - **`script-src` carries no `'unsafe-inline'`.** All page JS lives in external files
+    under `public/scripts/` — there are no inline `<script>` blocks or `on*=` handlers
+    left — so the policy genuinely blocks injected script (the core XSS defence). Keep
+    it that way: any new client-side JS goes in a file, never inline. Small former
+    inline snippets were extracted to dedicated files (e.g. `footer-year.js`,
+    `hover-glow.js`, the two page auth-gates); mark hookup points with a `data-*`
+    attribute (`data-hover-glow`, `data-print`) and bind in the external script.
+  - **`style-src` still allows `'unsafe-inline'`.** The pages carry many inline
+    `style=""` attributes, so this stays for now — a deliberately accepted, lower-severity
+    gap (CSS injection, not JS execution).
+  - Toggle the whole policy with `DISABLE_CSP=1` only to debug a blocked resource.
 - **CORS** restricted to the `ALLOWED_ORIGINS` allow-list (defaults to the stagify.ai
   origins + `localhost:3000`).
 

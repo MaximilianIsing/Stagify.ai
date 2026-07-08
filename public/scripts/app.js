@@ -139,7 +139,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
     // "Keep furniture" box only appears while remove-existing-furniture is checked.
     const removeFurnitureCheckbox = $('#remove-furniture');
     const keepFurnitureRow = $('#keep-furniture-row');
-    const keepFurnitureInput = $('#keep-furniture');
     function syncRemoveFurnitureUI() {
       const on = !!(removeFurnitureCheckbox && removeFurnitureCheckbox.checked);
       if (keepFurnitureRow) keepFurnitureRow.classList.toggle('hidden', !on);
@@ -159,12 +158,10 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
     const heroUpload = $('#hero-upload');
     const navUpload = $('#nav-upload');
     const pricingUpload = $('#pricing-upload');
-    const trySample = $('#try-sample');
     // Carousel is now handled by carousel.js
     
   
     // Stage screen elements (only on home page)
-    const stageSection = $('#stage');
     const modal = $('#stage-modal');
     const modalBackdrop = $('#modal-backdrop');
     const modalClose = $('#modal-close');
@@ -469,8 +466,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
     const yearSpan = $('#year');
     if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-    let variationResultUrls = [];
-
     // Version carousels: the before view holds the uploaded photo plus any
     // masked edits of it; the after view holds the staged result(s) plus any
     // masked refinements. Each is capped so the 6th mask attempt is blocked.
@@ -720,7 +715,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
       const tok = window.StagifyAuth && window.StagifyAuth.getToken();
       if (tok) formData.append('authToken', tok);
 
-      const u = window.StagifyAuth && window.StagifyAuth.user;
       const proPanel = document.getElementById('stagify-pro-panel');
       const proPanelUsable =
         proPanel &&
@@ -1019,7 +1013,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
 
       if (finalProgressInterval) {
         clearInterval(finalProgressInterval);
-        finalProgressInterval = null;
       }
       clearStagingUiTimers();
 
@@ -1053,11 +1046,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
         processingPlaceholder.style.display = 'flex';
       }
       throw new Error(window.LanguageSystem?.getText('errors.noImageData') || 'No image data received');
-    }
-  
-    function getSelectedPreset() {
-      const val = styleSelect?.value || 'standard';
-      return val;
     }
   
     // Toggle between Before and After views
@@ -1263,37 +1251,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
       showAfterView();
     });
   
-    function renderVariationThumbs(urls) {
-      const wrap = document.getElementById('variation-thumbs');
-      if (!wrap) return;
-      wrap.innerHTML = '';
-      if (!urls || urls.length <= 1) {
-        wrap.classList.add('hidden');
-        return;
-      }
-      wrap.classList.remove('hidden');
-      urls.forEach((url, idx) => {
-        const t = document.createElement('img');
-        t.src = url;
-        t.className = 'variation-thumb' + (idx === 0 ? ' active' : '');
-        t.alt = getStagingAlt('variationAlt', { index: idx + 1, total: urls.length });
-        t.addEventListener('click', () => {
-          wrap.querySelectorAll('.variation-thumb').forEach((el) => el.classList.remove('active'));
-          t.classList.add('active');
-          const im = new Image();
-          im.onload = () => {
-            const ctx1 = canvas1.getContext('2d');
-            ctx1.canvas.width = im.width;
-            ctx1.canvas.height = im.height;
-            ctx1.drawImage(im, 0, 0, im.width, im.height);
-            updateStagedCanvasAria(urls.length > 1 ? ` (${idx + 1})` : '');
-          };
-          im.src = url;
-        });
-        wrap.appendChild(t);
-      });
-    }
-
     async function stageImage() {
       if (!currentImageFile) {
         alert(window.LanguageSystem?.getText('errors.uploadFirst') || 'Please upload an image first');
@@ -1332,7 +1289,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
         }
         const processed = await processWithAI(stageInput);
         const urls = Array.isArray(processed) ? processed : [processed];
-        variationResultUrls = urls;
         // Reset the after carousel to the fresh staging result(s).
         afterVersions = urls.slice(0, MAX_MASK_VERSIONS);
         afterIndex = 0;
@@ -1477,7 +1433,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
       currentImageFile = null;
       hasProcessedImage = false; // Reset processing state
       stagePreview.src = '';
-      variationResultUrls = [];
       beforeVersions = [];
       beforeIndex = 0;
       afterVersions = [];

@@ -20,7 +20,7 @@
   </div>
 
   <div class="pp-toolbar">
-    <button type="button" class="pp-print-btn" onclick="window.print()">Print / Save PDF</button>
+    <button type="button" class="pp-print-btn" data-print>Print / Save PDF</button>
   </div>
 
   <h1>Master Services Agreement</h1>
@@ -282,7 +282,7 @@
   </div>
 
   <div class="pp-footer">
-    <span>© <script>document.write(new Date().getFullYear())</script> Stagify.ai</span>
+    <span>© <span class="footer-year"></span> Stagify.ai</span>
     <span>
       <a href="../privacy.html">Privacy Policy</a> &nbsp;·&nbsp;
       <a href="../terms.html">Terms of Service</a> &nbsp;·&nbsp;
@@ -292,5 +292,7 @@
   </div>
 
 </div>
+<script src="../scripts/footer-year.js" defer></script>
+<script src="../scripts/print-button.js" defer></script>
 </body>
 </html>
