@@ -44,6 +44,12 @@ Thumbs.db
 # Build output
 dist/
 build/
+
+# Playwright e2e artifacts (browsers live in the OS cache, not the repo)
+test-results/
+playwright-report/
+blob-report/
+.playwright/
 # Litestream binary — downloaded into ./bin during the Render build, never committed
 bin/
 

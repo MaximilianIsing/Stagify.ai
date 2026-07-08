@@ -3,7 +3,7 @@ import express from 'express';
 import createChatPipeline from '../lib/chat/chat-pipeline.js';
 import createUploadPrep from '../lib/chat/chat-upload-prep.js';
 import path from 'path';
-import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChatUploadSystemInstruction, getStagifyDateContext } from '../lib/staging/prompts.js';
+import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChatUploadSystemInstruction, getStagifyDateContext, buildWelcomeMessagePrompt, WELCOME_MESSAGE_SYSTEM } from '../lib/staging/prompts.js';
 import { filterUnsupportedFiles, deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext } from '../lib/chat/chat-history.js';
 import { parseDesignerRoutingCompletion, aiResponseDefersImageAction, chatWillProcessSlowImages, chatIntentType } from '../lib/chat/chat-routing.js';
 import { wantsStreamedChatResponse, initChatSse, writeChatSseEvent, finishStreamedChatResponse } from '../lib/chat/chat-sse.js';
@@ -41,30 +41,12 @@ router.get('/api/welcome-message', async (req, res) => {
           });
         }
         
-        // Build context from memories
-        let memoriesContext = '';
-        if (memories.length > 0) {
-          memoriesContext = '\n\nUser information:\n';
-          memories.forEach((memory, index) => {
-            memoriesContext += `${index + 1}. ${memory.content}\n`;
-          });
-        }
-        
-        const prompt = `Generate a brief, friendly, personalized welcome message for a returning user of Stagify AI Designer.${memoriesContext}
-
-The message should:
-- Be warm and welcoming
-- Reference something from their previous interactions if relevant
-- Be concise (2-3 sentences)
-- Mention that you're ready to help with room staging, design questions, or other requests
-- Sound natural and conversational
-
-Just return the message text, no additional formatting.`;
+        const prompt = buildWelcomeMessagePrompt(memories);
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: 'You are a friendly AI assistant for Stagify.ai. Generate brief, personalized welcome messages.' },
+        { role: 'system', content: WELCOME_MESSAGE_SYSTEM },
         { role: 'user', content: prompt }
       ],
       temperature: 0.7,

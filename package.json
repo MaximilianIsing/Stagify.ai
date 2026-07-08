@@ -1,6 +1,6 @@
 {
   "name": "stagify-ai",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "type": "module",
   "private": true,
   "main": "server.js",
@@ -8,6 +8,7 @@
     "start": "node --import ./instrument.js server.js",
     "dev": "nodemon --import ./instrument.js server.js",
     "test": "node --test \"test/**/*.test.js\"",
+    "test:e2e": "playwright test",
     "lint": "eslint . --max-warnings=0"
   },
   "author": "Maximilian Ising",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.61.1",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
     "nodemon": "^3.0.2"
