@@ -2,16 +2,12 @@ services:
   - type: web
     name: stagify-ai
     env: node
-    plan: starter
+    plan: standard
     buildCommand: npm install && npm test
     startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: GOOGLE_AI_API_KEY
-        sync: false
+    # For envVars, check docs/reference/environment-variables.md
     disk:
       name: stagify-data
       mountPath: /data
       sizeGB: 1
-    autoDeploy: true
+    autoDeploy: false

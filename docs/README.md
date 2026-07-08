@@ -12,6 +12,7 @@ This README is the entry point for the `docs/` folder. See also:
 - [`guides/testing.md`](guides/testing.md) — the test suite and how it gates deployment.
 - [`reference/endpoints.md`](reference/endpoints.md) — HTTP API reference.
 - [`reference/environment-variables.md`](reference/environment-variables.md) — every env var, with a copy-paste `.env`.
+- [`reference/caching.md`](reference/caching.md) — static asset `Cache-Control` policy, Render edge caching, and the rename/`?v=` cache-busting rule.
 
 ---
 
@@ -262,13 +263,16 @@ Deployed on **Render** as a single web service, configured by [`render.yaml`](..
 
 - **Build:** `npm install && npm test` (tests must pass to deploy).
 - **Start:** `npm start`.
-- **Auto-deploy:** on push to the default branch (`autoDeploy: true`).
+- **Auto-deploy:** off (`autoDeploy: false`) — a push does **not** deploy on its own; deploys are triggered manually from the Render dashboard.
 - **Env:** `NODE_ENV=production` is set in `render.yaml`; secrets like
   `GOOGLE_AI_API_KEY` are `sync: false` (entered in the Render dashboard, never committed).
 - **Persistence:** a disk mounted at `/data` holds the JSON/CSV state across deploys.
+- **Static caching:** assets are served with per-type `Cache-Control` headers; Render
+  edge caching can be enabled safely on top — see [`reference/caching.md`](reference/caching.md).
 
-Because pushing to the default branch triggers a production deploy, treat pushes as
-releases.
+Auto-deploy is off, so pushing to the default branch does **not** release on its own —
+start each deploy manually from the Render dashboard (the build reruns `npm test`, so a
+red test still blocks it).
 
 ## Known limitations
 
