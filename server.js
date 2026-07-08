@@ -495,83 +495,6 @@ const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
 const { getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest } = createHostedImages({ getDataLogDir });
 const { healthHandler, protectLogs, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches });
 
-
-// Gemini image models don't strictly honor the input aspect ratio — they tend to
-// "square up" wide/short rooms and return an image that's slightly taller (or
-// wider) than the source. We correct this with a GENTLE non-uniform resize back
-// to the source ratio (keep width, nudge height) — NOT a crop, so no content is
-// lost and the result never looks zoomed-in. The correction is only applied when
-// the drift is small enough to be imperceptible; larger drifts are left untouched
-// (stretching them would distort the room more than the wrong ratio does, and
-// they're better handled by regeneration). Fails open on any error.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/** Shared prompt block: clarify ambiguity before acting; never ask and trigger image actions in the same turn. */
-
-
-// Self-knowledge: facts about Stagify the AI Designer can draw on when a user
-// asks about the product, company, team, pricing, or features. Keep this as the
-// single source of truth — update here if any fact changes.
-
-
-// ---------------------------------------------------------------------------
-// Designer chat routing — strict Structured Outputs schema.
-// The conversational model returns ONE JSON object: its reply plus any image
-// actions (stage / generate / CAD / view / recall) and memory updates. Using
-// OpenAI's strict json_schema (constrained decoding) guarantees valid JSON,
-// every field present, and valid enums — removing the malformed-output and
-// invalid-roomType failure modes that plain json_object can't prevent.
-// staging/generate/cad are ALWAYS arrays here (null when unused); the downstream
-// consumers already accept arrays, so this needs no changes there.
-// ---------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-/**
- * Process image through Stagify staging pipeline
- */
-/**
- * Generate an image from a text prompt using Gemini
- * This is separate from the staging system - pure text-to-image generation
- */
 // ---------------------------------------------------------------------------
 // Self-check quality gate
 // After generating an image we ask a cheap vision model whether it is basically
@@ -580,17 +503,6 @@ const { healthHandler, protectLogs, stagingEndpointKeyGuard } = createHttpGuards
 // none come back perfect, return the highest-scoring attempt so the user always
 // gets the best available image.
 const QUALITY_MAX_ATTEMPTS = 3;
-
-
-// When DEBUG is on, ask the reviewer to also name the specific defect(s) so we can
-// log them; kept out of the prompt in production to avoid the extra output tokens.
-
-
-// Mask-edit QA: shows the reviewer BOTH the original and the edited image so it
-// can judge a localized edit — including whether it REMOVED TOO MUCH. Returns
-// { perfect, score }. Fails OPEN on any error so a flaky reviewer never blocks.
-
-
 
 // Run an image-producing function up to QUALITY_MAX_ATTEMPTS times, returning the
 // first "perfect" result or, failing that, the highest-scoring one.
@@ -659,43 +571,6 @@ Composition: frame the full scene naturally, keeping ceilings, floors, walls, an
     throw error;
   }
 }
-
-
-
-
-
-// Two-stage "remove existing furniture": before staging, physically empty the
-// room in a dedicated pass. Cost-conscious but reliable — it starts on the cheap
-// 2.5-flash model and only escalates (extra attempts, then the stronger model) if
-// a GPT-vision check finds leftover furniture. See eraseFurniture() below.
-
-// Cheap GPT-vision pre-check: if the room is already essentially empty there's
-// nothing to erase, so we skip the (more expensive) Gemini removal pass entirely.
-// Fails open — on any error or when the reviewer is disabled we DON'T skip, so a
-// flaky check never silently turns off furniture removal.
-
-
-// ---------------------------------------------------------------------------
-// Stageability pre-check
-// Before a room ever reaches a (paid) Gemini generation, a cheap GPT-vision pass
-// confirms the upload is actually a stageable property space — an interior room
-// or a stageable exterior — and not a selfie, a pet, a product close-up, food, a
-// document/screenshot, a car, or a random landscape. Returns { valid, reason }.
-// Fails OPEN (valid: true) on any error or when the reviewer is disabled, so a
-// flaky check never blocks a legitimate upload. The main stager and Masking
-// Studio call this the moment a photo is chosen (see POST /api/validate-image).
-
-
-
-
-
-// Two-stage removal — stage 1. Erase furniture with a verify-and-retry gate:
-// a cheap 2.5-flash attempt, a GPT-vision check that the room is truly empty
-// (only kept items remain), and up to 3 total attempts that call out whatever was
-// left behind. Every attempt stays on the cheap 2.5-flash model (no escalation).
-// Returns the best { dataUrl, buffer } or null so callers can fall back to
-// single-pass staging.
-
 
 async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuffer = null, geminiModel = 'gemini-2.5-flash-image') {
   try {
