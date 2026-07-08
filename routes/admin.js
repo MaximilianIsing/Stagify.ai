@@ -83,19 +83,15 @@ router.delete('/api/hosted-images/:id', protectLogs, (req, res) => {
 
 router.get('/authstore', protectLogs, (req, res) => {
   try {
-    const storePath = authStore.getStoreFilePath();
-    if (fs.existsSync(storePath)) {
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.setHeader('Content-Disposition', 'inline; filename="auth-store.json"');
-      res.sendFile(path.resolve(storePath));
-    } else {
-      res.status(404).json({
-        error: 'Auth store file not found',
-        message: 'The auth store has not been created yet on this server.',
-      });
-    }
+    // Serve a LIVE snapshot rebuilt from SQLite in the legacy auth-store.json
+    // shape. This keeps the admin backup download working after the move off
+    // flat files, and the output is a valid rollback/re-import payload.
+    const snapshot = authStore.exportStore();
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', 'inline; filename="auth-store.json"');
+    res.send(JSON.stringify(snapshot, null, 2));
   } catch (error) {
-    console.error('Error serving auth store file:', error);
+    console.error('Error serving auth store snapshot:', error);
     res.status(500).json({
       error: 'Failed to retrieve auth store',
       message: error.message,
