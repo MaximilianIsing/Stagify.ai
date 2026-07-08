@@ -132,16 +132,67 @@ single-instance only (SQLite is single-writer).
 
 ## Frontend
 
-Plain HTML/CSS/vanilla JS in `public/`, served as-is (no bundler). Pages `fetch` the
+Plain HTML/CSS/vanilla JS in `public/`, served as-is — **no build step** (a deliberate,
+standing decision; see [below](#decision-no-frontend-build-step)). Pages `fetch` the
 JSON API on the same origin. UI text is translated client-side — see
 [`i18n.md`](i18n.md). Note that `public/styles/styles.css` is partially minified; edit
 it carefully.
+
+## Decision: no frontend build step
+
+**Stagify ships its frontend source unbundled, and that is a deliberate, standing
+decision — not a stage we simply haven't finished.** The browser receives exactly what
+lives in `public/`: hand-written HTML, CSS, and native ES-module JavaScript
+(`<script type="module">`). There is no bundler, transpiler, or minifier and no
+`npm run build`; the pipeline is `npm install` → `npm test` → `start`, with nothing in
+between.
+
+**Why this is the right default here:**
+
+- **Nothing in the frontend needs a build.** It is a multi-page app — each page loads a
+  few small vanilla-JS modules, with no npm frontend packages and no shared dependency
+  graph to resolve. The problems bundlers exist to solve (node-module resolution,
+  TS/JSX transpile, collapsing a large import tree) don't arise.
+- **Native ESM runs as-authored** in every browser we target, so `import`/`export`
+  needs no transpilation. The ongoing migration of the big scripts to modules
+  (`public/scripts/`) moves *toward* this model, not away from it.
+- **What ships is what you debug.** Browser line numbers match the repo, there are no
+  source maps to generate, and you can edit a file and refresh. This also keeps the
+  "extraction is behaviour-preserving" refactors honest.
+- **Per-file caching stays granular.** Static assets are served
+  `Cache-Control: public, max-age=31536000, immutable` and busted by rename / `?v=`
+  (see [`caching.md`](../reference/caching.md)). A bundle would fold unrelated files
+  into one cache key, so a one-line change would re-download everything.
+- **The wire cost is already covered** by `compression` (gzip/brotli, `server.js`) plus
+  HTTP/2 multiplexing on Render — the two wins a bundler would buy (smaller bytes, fewer
+  round-trips) without owning a toolchain to get them.
+- **No build means no build to break, version, or maintain** — no bundler config, no
+  transpile-target drift, and no new failure mode between a green test and a live deploy.
+
+**What we accept in exchange:**
+
+- **No JS minification or tree-shaking.** Files ship at authored size (gzip/brotli
+  offsets most of the difference). `styles.css` is hand-minified for the same reason —
+  edit it carefully.
+- **Browser-native only.** No TypeScript, no JSX, and no npm frontend package unless it
+  is vendored into `public/` by hand.
+- **More requests per page** — mitigated by HTTP/2 + caching, not eliminated.
+
+> **When to reopen this — and only then:** the frontend takes on a real dependency graph
+> or npm UI libraries that need resolution/bundling; we want TypeScript or JSX; a client
+> framework is adopted (currently *deferred* in favour of incremental vanilla "islands",
+> not planned); or measured load time becomes dominated by JS request count/size in a
+> way HTTP/2 + compression cannot fix. Absent one of those triggers, the answer to
+> "should we add a build step?" is **no** — don't re-litigate it per-PR.
 
 ## Conventions & gotchas
 
 - **Factory + DI everywhere.** New shared logic should be a `createX(deps)` factory,
   wired at the `server.js` composition root — not a global.
 - **ESM, no `__dirname`.** Derive paths from `import.meta.url`.
+- **No frontend build — on purpose.** Write browser-native HTML/CSS/ESM; don't reach
+  for a bundler, transpiler, or npm frontend package. The reasoning and the (narrow)
+  conditions that would reopen it are in [Decision: no frontend build step](#decision-no-frontend-build-step).
 - **Extraction is ongoing.** `server.js` is being split into `routes/` + `lib/`;
   changes are meant to be behavior-preserving. The `route-inventory` test guards
   against accidentally dropping a route during a refactor.

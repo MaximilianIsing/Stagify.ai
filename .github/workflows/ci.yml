@@ -26,3 +26,27 @@ jobs:
 
       - name: Lint
         run: npm run lint         # backend is lint-clean; a new warning/error now fails the build
+
+  # Browser smoke of the two studios. Separate job so its (heavier, occasionally
+  # flaky) browser run is isolated from the fast unit gate above. The specs mock
+  # every /api/* call, so no real AI is invoked and no keys are needed.
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium (+ OS deps)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run studio e2e smoke
+        run: npm run test:e2e     # playwright test — boots `node server.js`, drives Chromium
+

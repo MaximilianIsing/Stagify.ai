@@ -99,6 +99,25 @@ export default [
   },
 
   {
+    // End-to-end Playwright specs + config. They run in Node (process, etc.) but their
+    // addInitScript/evaluate callbacks reference browser globals (localStorage, document).
+    files: ['playwright.config.js', 'e2e/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+    rules: {
+      ...recommendedRules,
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
+    },
+  },
+
+  {
     // Frontend: native ES modules (no build step), auto-discovered above. Browser globals.
     files: frontendEsmFiles,
     languageOptions: {
