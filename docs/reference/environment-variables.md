@@ -55,6 +55,18 @@ endpoint_key=
 # staging deploy never reports. Ensure the production service does NOT have IS_STAGING=true.
 SENTRY_DSN=
 
+# --- Backups (Litestream → Cloudflare R2) ---
+# S3-compatible credentials for the Cloudflare R2 bucket that Litestream
+# continuously replicates the SQLite database (data/auth-store.db) to, for off-disk
+# disaster recovery. Create them in Cloudflare R2 → Manage R2 API Tokens
+# (Object Read & Write, scoped to the bucket). Litestream reads these two exact
+# names automatically. PRODUCTION: set both in the Render dashboard.
+# If EITHER is unset, Litestream does not replicate and the app still runs normally
+# (backups are simply OFF until both are set). The bucket + endpoint are non-secret
+# and live in litestream.yml, not here.
+LITESTREAM_ACCESS_KEY_ID=
+LITESTREAM_SECRET_ACCESS_KEY=
+
 # --- Debug flags — all default OFF. Set true ONLY for local dev, never in production. ---
 # Verbose server logging (startup, key loading, etc.). true/false. File fallback: debug.txt
 DEBUG=false

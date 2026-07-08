@@ -60,7 +60,11 @@ This README is the entry point for the `docs/` folder. See also:
 ├── server.js                # Composition root: loads config, wires deps, mounts routes/, serves static
 ├── instrument.js            # Sentry init (imported before server.js when SENTRY_DSN is set)
 ├── load-env.js              # Zero-dependency .env loader (imported first, before any secret)
-├── render.yaml              # Render deploy config (build runs `npm install && npm test`)
+├── render.yaml              # Render deploy config (build/start run the scripts below)
+├── litestream.yml           # Litestream config: replicate the SQLite DB to Cloudflare R2
+├── scripts/                 # Deploy scripts
+│   ├── build.sh             # Render build: npm install → npm test (gate) → fetch litestream
+│   └── start.sh             # Render start: restore DB from R2 if empty → replicate → run app
 ├── package.json             # Scripts, deps, Node engine
 ├── routes/                  # Express route modules, mounted by server.js
 │   ├── public.js            # Home/SEO/status pages, health, counters, contact, email, bug reports
@@ -259,14 +263,14 @@ setup under `test/helpers/`. `route-inventory` boots the server and asserts ever
 critical route is still registered — a safety net for the ongoing route extraction.
 
 > **The test suite gates deployment** — `render.yaml`'s build command runs
-> `npm install && npm test`, so a failing test blocks the Render deploy. Keep tests green.
+> `sh scripts/build.sh`, which runs `npm test`, so a failing test blocks the Render deploy. Keep tests green.
 
 ## Deployment
 
 Deployed on **Render** as a single web service, configured by [`render.yaml`](../render.yaml):
 
-- **Build:** `npm install && npm test` (tests must pass to deploy).
-- **Start:** `npm start`.
+- **Build:** `sh scripts/build.sh` — `npm install`, the `npm test` gate, then downloads the Litestream backup binary.
+- **Start:** `sh scripts/start.sh` — restores the DB from Cloudflare R2 if the disk is empty, then runs the app under continuous Litestream replication (see [`operations/deployment.md`](operations/deployment.md)).
 - **Auto-deploy:** off (`autoDeploy: false`) — a push does **not** deploy on its own; deploys are triggered manually from the Render dashboard.
 - **Env:** `NODE_ENV=production` is set in `render.yaml`; secrets like
   `GOOGLE_AI_API_KEY` are `sync: false` (entered in the Render dashboard, never committed).

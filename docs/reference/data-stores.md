@@ -89,10 +89,15 @@ design around them:
   app also keeps in-memory single-instance state (the rate limiter, the uptime timer).
 - **Structured state is now transactional.** Accounts, sessions, enterprise domains,
   memories, and uptime all live in `auth-store.db` with WAL + transactions — atomic,
-  per-row writes, no whole-file rewrite. Still **snapshot `/data` before risky
-  operations**, and back up the `.db` **with its `-wal`/`-shm` sidecars**. (Per Render's
-  docs, don't restore a disk snapshot into a live SQLite DB — export/copy it instead.)
+  per-row writes, no whole-file rewrite.
+- **The database is backed up off-disk.** In production, [Litestream](https://litestream.io)
+  continuously replicates `auth-store.db` to Cloudflare R2 (config in `litestream.yml`,
+  run by `scripts/start.sh`) and restores it on boot if the disk is lost — so a disk
+  failure is recoverable, not fatal. Full runbook: [`deployment.md`](../operations/deployment.md).
+  ⚠️ Do **not** restore a Render disk snapshot *into* a live SQLite DB (it can corrupt
+  it) — recover the DB from the R2 replica instead.
+- **The CSV logs and `hosted-images/` are NOT replicated to R2** — they live only on the
+  disk, so still **snapshot `/data`** before risky operations to protect those.
 - **No automatic schema migrations.** Table changes are additive (`CREATE TABLE IF NOT
   EXISTS`); a breaking shape change is manual.
-- **CSV logs are the only flat data files left, and they grow unbounded.** They're
-  append-only (low risk), but nothing prunes them.
+- **CSV logs grow unbounded.** They're append-only (low risk), but nothing prunes them.
