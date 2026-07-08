@@ -14,12 +14,20 @@ import { createAuthStore } from '../lib/auth-store.js';
 import { handleStripeEvent } from '../lib/stripe-webhooks.js';
 
 const tempDirs = [];
+const openStores = [];
 function freshStore() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-stripe-'));
   tempDirs.push(dir);
-  return createAuthStore(dir);
+  const store = createAuthStore(dir);
+  openStores.push(store);
+  return store;
 }
 afterEach(() => {
+  // Close SQLite handles before removing the temp dir (Windows won't unlink an
+  // open .db/-wal/-shm file).
+  while (openStores.length) {
+    try { openStores.pop().close(); } catch { /* already closed */ }
+  }
   while (tempDirs.length) fs.rmSync(tempDirs.pop(), { recursive: true, force: true });
 });
 

@@ -14,12 +14,20 @@ import path from 'node:path';
 import { createAuthStore } from '../lib/auth-store.js';
 
 const tempDirs = [];
+const openStores = [];
 function freshStore() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-authstore-'));
   tempDirs.push(dir);
-  return createAuthStore(dir);
+  const store = createAuthStore(dir);
+  openStores.push(store);
+  return store;
 }
 afterEach(() => {
+  // Close SQLite handles before removing the temp dir so Windows can unlink the
+  // .db / -wal / -shm files (an open handle would otherwise lock them).
+  while (openStores.length) {
+    try { openStores.pop().close(); } catch { /* already closed */ }
+  }
   while (tempDirs.length) fs.rmSync(tempDirs.pop(), { recursive: true, force: true });
 });
 
@@ -109,55 +117,19 @@ test('startPasswordReset does not reveal whether an email exists', () => {
   assert.equal(res.token, undefined, 'but issues no token for a non-existent account');
 });
 
-// FREE_DAILY_LIMIT is intentionally huge (a practically-unlimited free tier), so we
-// probe the boundary directly rather than recording that many generations.
-test('free-tier usage increments, and canFreeUserGenerate enforces the daily limit', () => {
+// The daily cap is not enforced (the canFree/canMobile checks were removed as dead
+// code — nothing called them), but usage IS still recorded. recordFreeGeneration
+// feeds dailyGenerationsUsed, so we keep the recorders covered.
+test('recordFreeGeneration increments the per-day usage counter', () => {
   const store = freshStore();
   const u = registerVerifiedUser(store);
-  const limit = store.FREE_DAILY_LIMIT;
-  assert.ok(Number.isInteger(limit) && limit > 0, 'FREE_DAILY_LIMIT should be a positive integer');
-
-  // Real recording bumps the per-day counter.
   assert.equal(store.recordFreeGeneration(u.id).dailyGenerationsUsed, 1);
   assert.equal(store.recordFreeGeneration(u.id).dailyGenerationsUsed, 2);
-
-  // Probe the cap using the exact UTC day string the store stamped.
-  const today = store.findUserByEmail(u.email).usageDay;
-  assert.equal(
-    store.canFreeUserGenerate({ plan: 'free', usageDay: today, usageCount: limit - 1 }).ok,
-    true,
-    'one below the limit is allowed',
-  );
-  assert.equal(
-    store.canFreeUserGenerate({ plan: 'free', usageDay: today, usageCount: limit }).ok,
-    false,
-    'at the limit is blocked',
-  );
-  // Usage stamped on a previous day does not count toward today.
-  assert.equal(
-    store.canFreeUserGenerate({ plan: 'free', usageDay: '2000-01-01', usageCount: limit }).ok,
-    true,
-    'a stale day resets the count',
-  );
 });
 
-test('anonymous mobile IP cap is enforced per IP and resets daily', () => {
+test('recordMobileIpGeneration increments a separate counter per IP', () => {
   const store = freshStore();
-  const limit = store.FREE_DAILY_LIMIT;
-  const ip = '203.0.113.7';
-
-  // Real recording increments this IP's counter.
-  assert.equal(store.recordMobileIpGeneration(ip).used, 1);
-  assert.equal(store.canMobileIpGenerate(ip).ok, true, 'well under the cap → allowed');
-
-  // Seed this IP to the cap by editing the store directly (avoids 99,999 writes),
-  // reusing the exact day string the store stamped.
-  const file = store.getStoreFilePath();
-  const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-  const today = data.mobileIpUsage[ip].day;
-  data.mobileIpUsage[ip] = { day: today, count: limit };
-  fs.writeFileSync(file, JSON.stringify(data));
-
-  assert.equal(store.canMobileIpGenerate(ip).ok, false, 'at the cap → blocked');
-  assert.equal(store.canMobileIpGenerate('198.51.100.9').ok, true, 'a different IP is unaffected');
+  assert.equal(store.recordMobileIpGeneration('203.0.113.7').used, 1);
+  assert.equal(store.recordMobileIpGeneration('203.0.113.7').used, 2);
+  assert.equal(store.recordMobileIpGeneration('198.51.100.9').used, 1, 'a different IP counts separately');
 });
