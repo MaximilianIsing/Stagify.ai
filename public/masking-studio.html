@@ -9,25 +9,7 @@
          feature), and signed-in users see a hidden page until their plan is
          verified (ensureStudioProAccess reveals it for Pro, or shows the
          upgrade dialog for signed-in free users). -->
-    <script>
-      (function () {
-        var hasToken = false;
-        try { hasToken = !!localStorage.getItem('stagifyAuthToken'); } catch (e) {}
-        if (!hasToken) {
-          window.location.replace('stagify-plus.html');
-          return;
-        }
-        document.documentElement.className += ' ms-gate-pending';
-        // Safety net: never strand a signed-in user on a hidden page if the
-        // plan check stalls (e.g. a hung request). Generous enough that a
-        // slow-but-working connection can still finish the check.
-        setTimeout(function () {
-          if (document.documentElement.classList.contains('ms-gate-pending')) {
-            window.location.replace('stagify-plus.html');
-          }
-        }, 9000);
-      })();
-    </script>
+    <script src="scripts/masking-studio-gate.js"></script>
     <style>html.ms-gate-pending body{visibility:hidden!important}</style>
 
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">

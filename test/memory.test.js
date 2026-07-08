@@ -11,8 +11,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createMemory } from '../lib/memory.js';
-import { getDb } from '../lib/db.js';
+import { createMemory } from '../lib/data/memory.js';
+import { getDb } from '../lib/data/db.js';
 
 const tmps = [];
 const openMems = [];

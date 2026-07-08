@@ -21,7 +21,7 @@ import {
   classifyUploadImageRole,
   partitionDualUploadEntries,
   resolveDualUploadStaging,
-} from '../lib/chat-history.js';
+} from '../lib/chat/chat-history.js';
 
 // A conversation with interleaved images: user upload → assistant staged (+ a
 // decorative image that is NOT staged/generated) → user upload. Index 0 = most

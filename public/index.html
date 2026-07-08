@@ -81,17 +81,7 @@
     <link rel="stylesheet" href="styles/star-border.css" media="print" data-lazy-css>
     <link rel="stylesheet" href="styles/home-text-animate.css" media="print" data-lazy-css>
     <link rel="stylesheet" href="styles/demo-player.css" media="print" data-lazy-css>
-    <script>
-      (function () {
-        var links = document.querySelectorAll('link[data-lazy-css]');
-        for (var i = 0; i < links.length; i++) {
-          (function (link) {
-            if (link.sheet) { link.media = 'all'; }
-            else { link.addEventListener('load', function () { link.media = 'all'; }); }
-          })(links[i]);
-        }
-      })();
-    </script>
+    <script src="scripts/index-lazy-css.js"></script>
     <noscript>
       <link rel="stylesheet" href="styles/auth.css">
       <link rel="stylesheet" href="styles/star-border.css">
@@ -109,34 +99,7 @@
     <script src="scripts/heic-convert.js" defer></script>
     <script type="module" src="scripts/app.js"></script>
     <script src="scripts/carousel.js" defer></script>
-    <script>
-      // When arriving with #ai-designer-demo (e.g. bounced from the Stagify+ AI
-      // Designer page), scroll to that row reliably. Native anchor scrolling can
-      // land short while below-the-fold content settles, so re-assert once after
-      // load — unless the visitor has already taken over scrolling.
-      (function () {
-        if (location.hash !== '#ai-designer-demo') return;
-        function scrollToDemo() {
-          var el = document.getElementById('ai-designer-demo');
-          if (el) el.scrollIntoView({ block: 'start' });
-        }
-        window.addEventListener('load', function () {
-          scrollToDemo();
-          // Re-assert once after late content (images/fonts) settles, but bail
-          // if the visitor has already started scrolling themselves.
-          var cancelled = false;
-          var evs = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
-          function cancel() { cancelled = true; }
-          evs.forEach(function (ev) {
-            window.addEventListener(ev, cancel, { once: true, passive: true });
-          });
-          setTimeout(function () {
-            if (!cancelled) scrollToDemo();
-            evs.forEach(function (ev) { window.removeEventListener(ev, cancel); });
-          }, 350);
-        });
-      })();
-    </script>
+    <script src="scripts/index-inline.js" defer></script>
     <link rel="stylesheet" href="styles/index.css">
     <script src="scripts/star-border.js" defer></script>
     <script src="scripts/sponsors-scroll.js" defer></script>
@@ -147,6 +110,7 @@
     <script src="scripts/demo-data.js" defer></script>
     <script src="scripts/demo-player.js" defer></script>
     <script src="scripts/designer-demo.js" defer></script>
+    <script src="scripts/hover-glow.js" defer></script>
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -467,7 +431,7 @@
           </div>
         </div>
         <div class="nav-trailing">
-          <div class="mobile-test-text" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'">
+          <div class="mobile-test-text" data-hover-glow>
             <div data-lang="hero.title.upload">Upload.</div>
             <div data-lang="hero.title.stage">Stage.</div>
             <div data-lang="hero.title.imagine">Imagine.</div>
@@ -517,7 +481,7 @@
       </div>
       <section class="hero" id="home">
         <div class="hero-content">
-          <p class="catchphrase" style="color: #1e3a8a; font-size: clamp(1.25rem, 5vw, 2.5rem); font-weight: 700; margin: 0 0 1.5rem 0; text-align: center; line-height: 1.2; transition: all 0.3s ease; display: inline-block; max-width: 100%; transform-origin: center;" onmouseover="this.style.transform='scale(1.1)'; this.style.color='#3b82f6'; this.style.textShadow='0 0 20px rgba(59, 130, 246, 0.5)'" onmouseout="this.style.transform='scale(1)'; this.style.color='#1e3a8a'; this.style.textShadow='none'" data-lang="hero.catchphrase">Upload. Stage. Imagine.</p>
+          <p class="catchphrase" style="color: #1e3a8a; font-size: clamp(1.25rem, 5vw, 2.5rem); font-weight: 700; margin: 0 0 1.5rem 0; text-align: center; line-height: 1.2; transition: all 0.3s ease; display: inline-block; max-width: 100%; transform-origin: center;" data-hover-glow data-lang="hero.catchphrase">Upload. Stage. Imagine.</p>
           <div class="announcement" style="background: rgba(255, 255, 255, 0.4); color: #1e3a8a; backdrop-filter: blur(10px);" data-lang="hero.announcement">Built to make your dream space a reality</div>
           <h1 style="color: #1e3a8a;">
             <span class="w-free" data-lang="hero.title.free">Free</span>
@@ -754,29 +718,6 @@
           </figure>
         </div>
       </section>
-      <script>
-        // Spotlight glass: point a soft light at the cursor for each testimonial
-        // card by tracking pointer position into --mx/--my (rAF-throttled).
-        (function () {
-          var cards = document.querySelectorAll('#testimonials .tw-card');
-          if (!cards.length || !window.matchMedia || !matchMedia('(hover: hover)').matches) return;
-          cards.forEach(function (card) {
-            var queued = false, lx = 0, ly = 0;
-            card.addEventListener('pointermove', function (e) {
-              var r = card.getBoundingClientRect();
-              lx = e.clientX - r.left;
-              ly = e.clientY - r.top;
-              if (queued) return;
-              queued = true;
-              requestAnimationFrame(function () {
-                queued = false;
-                card.style.setProperty('--mx', lx + 'px');
-                card.style.setProperty('--my', ly + 'px');
-              });
-            });
-          });
-        })();
-      </script>
 
       <!-- ===================== AI DESIGNER (STAGIFY+) ===================== -->
       <section class="home-section home-designer" id="ai-designer-demo" aria-labelledby="designer-title">

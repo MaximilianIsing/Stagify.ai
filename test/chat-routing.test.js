@@ -10,7 +10,7 @@ import {
   aiResponseDefersImageAction,
   chatWillProcessSlowImages,
   chatIntentType,
-} from '../lib/chat-routing.js';
+} from '../lib/chat/chat-routing.js';
 
 test('parseDesignerRoutingCompletion: parses JSON content, and degrades a refusal to a plain reply', () => {
   const parsed = parseDesignerRoutingCompletion({ choices: [{ message: { content: '{"response":"hi","staging":null}' } }] });

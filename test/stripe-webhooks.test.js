@@ -10,8 +10,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createAuthStore } from '../lib/auth-store.js';
-import { handleStripeEvent } from '../lib/stripe-webhooks.js';
+import { createAuthStore } from '../lib/data/auth-store.js';
+import { handleStripeEvent } from '../lib/services/stripe-webhooks.js';
 
 const tempDirs = [];
 const openStores = [];

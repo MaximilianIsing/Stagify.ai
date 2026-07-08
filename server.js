@@ -5,48 +5,45 @@ import './load-env.js'; // must be first: populates process.env from .env before
 import * as Sentry from '@sentry/node';
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import fs from 'fs';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import OpenAI from 'openai';
 import sharp from "sharp";
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
-import { rateLimit } from 'express-rate-limit';
-import { Resend } from 'resend';
-import { blueprintTo3D } from './lib/cad-handling.js';
-import { createAuthStore } from './lib/auth-store.js';
+import { blueprintTo3D } from './lib/staging/cad-handling.js';
+import { createAuthStore } from './lib/data/auth-store.js';
 import Stripe from 'stripe';
 import { OAuth2Client } from 'google-auth-library';
-import { handleStripeEvent } from './lib/stripe-webhooks.js';
-import { createEnterpriseStore } from './lib/enterprise-store.js';
-import { createUptimeMonitor } from './lib/uptime-monitor.js';
-import { generateWithQualityRetry as runQualityRetry, normalizeFurnitureBuffers } from './lib/staging-pipeline.js';
+import { handleStripeEvent } from './lib/services/stripe-webhooks.js';
+import { createEnterpriseStore } from './lib/data/enterprise-store.js';
+import { createUptimeMonitor } from './lib/data/uptime-monitor.js';
+import { generateWithQualityRetry as runQualityRetry, normalizeFurnitureBuffers } from './lib/staging/staging-pipeline.js';
 import createBillingRouter from './routes/billing.js';
-import { createEmail } from './lib/email.js';
-import { createLogging } from './lib/logging.js';
-import { createMemory } from './lib/memory.js';
-import { createConfig } from './lib/config.js';
-import { generatePrompt, styleReferencePromptSuffix, maskReferencePromptSuffix, furnitureReferencePromptSuffix } from './lib/prompts.js';
-import { downscaleImage, enforceAspectRatio, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, downscaleImageForGPT, compositeForReview } from './lib/image-primitives.js';
+import { createEmail } from './lib/services/email.js';
+import { createLogging } from './lib/services/logging.js';
+import { createMemory } from './lib/data/memory.js';
+import { createConfig } from './lib/config/config.js';
+import { generatePrompt, styleReferencePromptSuffix, maskReferencePromptSuffix, furnitureReferencePromptSuffix } from './lib/staging/prompts.js';
+import { downscaleImage, enforceAspectRatio, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, downscaleImageForGPT, compositeForReview } from './lib/image/image-primitives.js';
 import createPublicRouter from './routes/public.js';
 import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
 import createAuthRouter from './routes/auth.js';
-import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL } from './lib/runtime-flags.js';
-import { setSensitiveHeaders, getStagingClientIp, isLikelyMobileStagingRequest, getUserIdentifier } from './lib/http-helpers.js';
-import { getTemperatureForModel, getGeminiImageModel } from './lib/model-config.js';
-import { createAuthHelpers } from './lib/auth-helpers.js';
-import { getPromptCount, incPromptCount, getContactCount, incContactCount, initializePromptCount, initializeContactCount } from './lib/counters.js';
-import { createImageAnnotation } from './lib/image-annotation.js';
-import { createImageReview } from './lib/image-review.js';
-import { createErase } from './lib/erase.js';
-import { createHostedImages } from './lib/hosted-images.js';
-import { createHttpGuards } from './lib/http-guards.js';
+import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
+import { setSensitiveHeaders, getStagingClientIp, isLikelyMobileStagingRequest, getUserIdentifier } from './lib/http/http-helpers.js';
+import { getTemperatureForModel, getGeminiImageModel } from './lib/config/model-config.js';
+import { createAuthHelpers } from './lib/services/auth-helpers.js';
+import { getPromptCount, incPromptCount, getContactCount, incContactCount, initializePromptCount, initializeContactCount } from './lib/data/counters.js';
+import { createImageAnnotation } from './lib/image/image-annotation.js';
+import { createImageReview } from './lib/image/image-review.js';
+import { createErase } from './lib/image/erase.js';
+import { createHostedImages } from './lib/image/hosted-images.js';
+import { createHttpGuards } from './lib/http/http-guards.js';
+import { createAiClients } from './lib/services/ai-clients.js';
+import { stagingProcessUpload, pdfUpload, chatUpload, hostImageUpload, HOSTED_IMAGE_MIME_EXT } from './lib/http/uploads.js';
+import { authLimiter, emailLimiter, genLimiter } from './lib/http/rate-limiters.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -75,18 +72,9 @@ if (googleClientId) {
   console.log('[google] OAuth client id loaded (Sign-In with Google enabled)');
 }
 
-// --- Staging environment flag -------------------------------------------------
-// When IS_STAGING is truthy ("1"/"true"/"on"/"yes") this deploy is the Stagify
-// *staging* (test) site, not production. In that mode we disable the real
-// third-party sign-up/payment paths: Google sign-in is turned off (both the UI,
-// via /api/auth/config, and the /api/auth/google endpoint) and the Stripe
-// subscribe / "Stripe help center" buttons are blocked or hidden in the UI.
-// Off by default, so production behaviour is unchanged.
-const IS_STAGING = /^(1|true|on|yes)$/i.test(String(process.env.IS_STAGING || '').trim());
-// HIDE_STAGING_BANNER hides ONLY the red staging banner (e.g. for screenshots or
-// demos on the staging site) — it does NOT re-enable Google sign-in or Stripe.
-const HIDE_STAGING_BANNER = /^(1|true|on|yes)$/i.test(String(process.env.HIDE_STAGING_BANNER || '').trim());
-const SHOW_STAGING_BANNER = IS_STAGING && !HIDE_STAGING_BANNER;
+// Staging-environment flags (IS_STAGING / HIDE_STAGING_BANNER / SHOW_STAGING_BANNER)
+// → lib/config/runtime-flags.js (imported above). Boot log kept here so its ordering with
+// the other startup lines is unchanged.
 if (IS_STAGING) {
   console.log(
     '[staging] IS_STAGING enabled — Google sign-in and Stripe checkout are disabled' +
@@ -103,10 +91,10 @@ if (LOGS_ACCESS_KEY) {
 
 const enterpriseMeterEventName = readEnterpriseMeterEventName();
 
-// Auth/enterprise helpers (lib/auth-helpers.js), sharing this server's stores + Stripe.
+// Auth/enterprise helpers (lib/services/auth-helpers.js), sharing this server's stores + Stripe.
 const { getAuthUserFromRequest, toPublicAuthUser, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount } = createAuthHelpers({ authStore, enterpriseStore, stripe, enterpriseMeterEventName });
 
-// Home-page counters (rooms staged / contacts) live in lib/counters.js — imported above.
+// Home-page counters (rooms staged / contacts) live in lib/data/counters.js — imported above.
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -115,8 +103,12 @@ app.set('trust proxy', process.env.TRUST_PROXY === '0' ? false : 1);
 
 // Middleware
 // --- Security headers (helmet) ---------------------------------------------
-// CSP is tuned for the inline scripts/handlers this app uses plus the third
-// parties it loads (Google sign-in, Stripe + Instagram embeds).
+// CSP is tuned for the third parties this app loads (Google sign-in, Stripe +
+// Instagram embeds). script-src is a real allowlist — all of our JS is served
+// from external files (no inline <script> blocks or on* handlers remain), so it
+// deliberately omits 'unsafe-inline' and an injected inline script won't run.
+// style-src still allows 'unsafe-inline' because the pages carry many inline
+// style="" attributes; that's a lower-severity gap (CSS injection, not JS).
 // Set DISABLE_CSP=1 to turn the policy off without a code change if a deploy
 // surfaces an unexpected blocked resource.
 const cspDirectives = {
@@ -126,7 +118,8 @@ const cspDirectives = {
   frameAncestors: ["'self'"],
   scriptSrc: [
     "'self'",
-    "'unsafe-inline'",
+    // NB: no 'unsafe-inline' — keep it that way. Any inline JS must move to a
+    // file under public/scripts/ (see e.g. footer-year.js, hover-glow.js).
     // HEIC upload conversion (heic2any/libheif) runs a WebAssembly module in a
     // Web Worker spawned from a blob: URL. 'wasm-unsafe-eval' permits ONLY WASM
     // compilation (not general eval); blob: lets the worker script load.
@@ -207,29 +200,8 @@ app.use(
   })
 );
 
-// --- Rate limiters ----------------------------------------------------------
-const rlOpts = { standardHeaders: 'draft-7', legacyHeaders: false };
-// Sign-in / account actions: blunt brute-force protection.
-const authLimiter = rateLimit({
-  ...rlOpts,
-  windowMs: 15 * 60 * 1000,
-  limit: Number(process.env.RL_AUTH || 40),
-  message: { error: 'Too many attempts. Please wait a few minutes and try again.' },
-});
-// Anything that sends an email: keep tight to prevent spam/abuse.
-const emailLimiter = rateLimit({
-  ...rlOpts,
-  windowMs: 15 * 60 * 1000,
-  limit: Number(process.env.RL_EMAIL || 6),
-  message: { error: 'Too many requests. Please wait a few minutes and try again.' },
-});
-// Paid AI generation: a generous backstop against cost abuse (humans stay well under).
-const genLimiter = rateLimit({
-  ...rlOpts,
-  windowMs: 5 * 60 * 1000,
-  limit: Number(process.env.RL_GEN || 60),
-  message: { error: 'You are generating too quickly. Please wait a moment and try again.' },
-});
+// Rate limiters (authLimiter / emailLimiter / genLimiter) → lib/http/rate-limiters.js
+// (imported above). Pure config; each reads its RL_* env override at module load.
 
 // Billing & enterprise routes (routes/billing.js). Mounted BEFORE express.json
 // below so the Stripe webhook can read the RAW request body for signature
@@ -303,184 +275,29 @@ app.use(
   })
 );
 
-// Explicit routes for SEO files to ensure they're always accessible
-/**
- * Grant Stagify+ to the signed-in account when ?key= matches endpointkey.txt (or endpoint_key env).
- * If the browser has no Authorization header, returns a tiny page that re-opens this URL with
- * ?authToken= from localStorage (same pattern as other auth flows).
- */
-// Static page that collects the admin key (from a #fragment or a field) and the
-// session token client-side, then POSTs them as headers. The page itself holds
-// no secrets, so it's safe to serve unconditionally.
-/**
- * Grant Stagify+ to the signed-in account. Both secrets ride in headers:
- *   X-Stagify-Endpoint-Key: <admin key>   (constant-time compared)
- *   Authorization: Bearer <session token>
- * Nothing sensitive touches the URL, so it can't leak via access logs, browser
- * history, or Referer headers.
- */
-// Configure multer for file uploads (images)
-const storage = multer.memoryStorage();
-const imageFileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only PNG, JPG, JPEG, and WebP files are allowed'));
-  }
-};
-
-const stagingProcessUpload = multer({
-  storage: storage,
-  // 25MB per file. memoryStorage buffers every file whole and .fields() allows up to
-  // 6 files (1 room image + 5 furniture refs), so this caps a request at ~150MB of
-  // RAM instead of the previous ~600MB. Photos are downscaled to 1920x1080 after
-  // receipt anyway, so 25MB is already far above any real phone photo.
-  limits: {
-    fileSize: 25 * 1024 * 1024,
-  },
-  fileFilter: imageFileFilter
-}).fields([
-  { name: 'image', maxCount: 1 },
-  { name: 'furnitureImage', maxCount: 5 }
-]);
-
-// Configure multer for PDF uploads
-const pdfUpload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 25 * 1024 * 1024, // 25MB — floor-plan PDFs are small; buffered whole in RAM
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF files are allowed'));
-    }
-  }
-});
-
-// Configure multer for chat file uploads (images, PDFs, text files)
-const chatUpload = multer({
-  storage: storage,
-  limits: {
-    // .array('files', 5) buffers up to 5 files whole in RAM, so 20MB/file caps a
-    // request at ~100MB + the history field, vs the previous ~250MB+.
-    fileSize: 20 * 1024 * 1024, // 20MB per file
-    fieldSize: 25 * 1024 * 1024, // conversation history (base64 images); matches the /api/chat JSON cap
-  },
-  fileFilter: (req, file, cb) => {
-    // Allow all files - let the AI handle unsupported file types
-    cb(null, true);
-  }
-});
+// Multer upload configs (staging / PDF / chat / hosted-image) + HOSTED_IMAGE_MIME_EXT
+// → lib/http/uploads.js (imported above). Pure config, no server-state deps.
 
 // External PDF processing server URL
 const PDF_PROCESSING_SERVER = 'https://stagify-project-imagination.onrender.com';
 
 // DEBUG_MODE / EMAIL_DEBUG_MODE / DEBUG_EMAIL are computed once in
-// lib/runtime-flags.js and imported at the top of this file (single source of
+// lib/config/runtime-flags.js and imported at the top of this file (single source of
 // truth shared with the extracted lib/ modules).
 
-// Stats debug — when STATS_DEBUG=true, the home-page hero stats (Rooms Staged /
-// Users Served) are faked to the fixed env numbers DEBUG_ROOMS / DEBUG_USERS
-// instead of the real counts. When false or unset, the real counts are served
-// unchanged. Handy for screenshots/demos without touching real data.
-const STATS_DEBUG = String(process.env.STATS_DEBUG || '').trim().toLowerCase() === 'true';
-// Parse to a finite number, or NaN if unset/blank/non-numeric (so it falls back
-// to the real count rather than silently becoming 0).
-const parseStatOverride = (v) => {
-  const s = String(v ?? '').trim();
-  if (s === '') return NaN;
-  const n = Number(s);
-  return Number.isFinite(n) ? n : NaN;
-};
-const DEBUG_ROOMS = parseStatOverride(process.env.DEBUG_ROOMS);
-const DEBUG_USERS = parseStatOverride(process.env.DEBUG_USERS);
+// Stats overrides (STATS_DEBUG / DEBUG_ROOMS / DEBUG_USERS) → lib/config/runtime-flags.js
+// (imported above). Boot log kept here so its ordering is unchanged.
 if (STATS_DEBUG) {
   console.log(`Stats debug: ENABLED (rooms=${DEBUG_ROOMS}, users=${DEBUG_USERS})`);
 }
 
-// getTemperatureForModel / getGeminiImageModel → lib/model-config.js
+// getTemperatureForModel / getGeminiImageModel → lib/config/model-config.js
 // getUserIdentifier / setSensitiveHeaders / getStagingClientIp /
-// isLikelyMobileStagingRequest → lib/http-helpers.js  (imported at top)
+// isLikelyMobileStagingRequest → lib/http/http-helpers.js  (imported at top)
 
-// Initialize Google AI (for image processing)
-let genAI;
-try {
-  // Try environment variable first (Render), then fall back to local file
-  let apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (apiKey === undefined){
-    if (DEBUG_MODE) {
-      console.log('GOOGLE_AI_API_KEY is not set in an enviorment variable, using local file');
-    }
-    apiKey = fs.readFileSync(path.join(__dirname, 'key.txt'), 'utf8').trim();
-  }
-  if (DEBUG_MODE) {
-    console.log("Google AI API key successfully loaded");
-  }
-  genAI = new GoogleGenerativeAI(apiKey);
-} catch (error) {
-  console.error('Error initializing Google AI:', error.message);
-}
-
-// Initialize OpenAI GPT (for chat)
-let openai;
-try {
-  // Try environment variable first (Render), then fall back to local file
-  let gptApiKey = process.env.GPT_KEY;
-  if (gptApiKey === undefined) {
-    if (DEBUG_MODE) {
-      console.log('GPT_KEY is not set in an environment variable, using local file');
-    }
-    const gptKeyFile = path.join(__dirname, 'gpt-key.txt');
-    if (fs.existsSync(gptKeyFile)) {
-      gptApiKey = fs.readFileSync(gptKeyFile, 'utf8').trim();
-    }
-  }
-  if (gptApiKey) {
-    openai = new OpenAI({ apiKey: gptApiKey });
-    if (DEBUG_MODE) {
-      console.log("OpenAI API key successfully loaded");
-    }
-  } else {
-    if (DEBUG_MODE) {
-      console.log("Warning: GPT key file is empty, chat features may not work");
-    }
-  }
-} catch (error) {
-  console.error('Error initializing OpenAI:', error.message);
-  console.log('Chat features will not be available');
-}
-
-// Initialize Resend (for email sending)
-let resend;
-try {
-  // Try environment variable first (Render), then fall back to local file
-  let resendApiKey = process.env.RESEND_API_KEY;
-  if (resendApiKey === undefined) {
-    if (DEBUG_MODE) {
-      console.log('RESEND_API_KEY is not set in an environment variable, using local file');
-    }
-    const resendKeyFile = path.join(__dirname, 'resendkey.txt');
-    if (fs.existsSync(resendKeyFile)) {
-      resendApiKey = fs.readFileSync(resendKeyFile, 'utf8').trim();
-    }
-  }
-  if (resendApiKey) {
-    resend = new Resend(resendApiKey);
-    if (DEBUG_MODE) {
-      console.log("Resend API key successfully loaded");
-    }
-  } else {
-    if (DEBUG_MODE) {
-      console.log("Warning: Resend key not found, email features will not be available");
-    }
-  }
-} catch (error) {
-  console.error('Error initializing Resend:', error.message);
-  console.log('Email features will not be available');
-}
+// AI/email clients (genAI / openai / resend) → lib/services/ai-clients.js. Constructed once
+// at boot from env vars (Render) or local *-key.txt fallbacks (dev).
+const { genAI, openai, resend } = createAiClients({ __dirname, DEBUG_MODE });
 
 const RESEND_FROM_EMAIL = String(process.env.RESEND_FROM_EMAIL || 'team@stagify.ai').trim();
 const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile } = createLogging({ __dirname, DEBUG_MODE });
@@ -512,7 +329,7 @@ const QUALITY_MAX_ATTEMPTS = 3;
 // (including quality-gate retries).
 // Thin wrapper binding this server's defaults (DEBUG_MODE, the reviewImageQuality
 // reviewer, QUALITY_MAX_ATTEMPTS). The retry/quality logic itself lives in
-// lib/staging-pipeline.js so it can be unit-tested without real model calls. The
+// lib/staging/staging-pipeline.js so it can be unit-tested without real model calls. The
 // signature is unchanged, so all call sites and the router deps stay identical.
 async function generateWithQualityRetry(generateOnce, label = 'image', onImageProduced = null, reviewFn = null, maxAttempts = QUALITY_MAX_ATTEMPTS) {
   return runQualityRetry(generateOnce, {
@@ -725,34 +542,13 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
 // Admins upload an image from the dashboard; it's stored on the persistent disk
 // and served publicly at /i/<id> behind an unguessable random id. A manifest
 // (index.json) records the metadata so the dashboard can list and unhost them.
-const HOSTED_IMAGE_MIME_EXT = {
-  'image/jpeg': 'jpg',
-  'image/jpg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-};
+// HOSTED_IMAGE_MIME_EXT + hostImageUpload (multer) → lib/http/uploads.js (imported above).
+// Hosted-image store + manifest → lib/image/hosted-images.js (instantiated above).
 
-// Hosted-image store + manifest → lib/hosted-images.js (instantiated above).
-
-// Dedicated multer instance: safe raster types only (deliberately no SVG — it
-// can carry script and would execute on our own origin), 25 MB cap to protect
-// the persistent disk.
-const hostImageUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 25 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (HOSTED_IMAGE_MIME_EXT[file.mimetype]) cb(null, true);
-    else cb(new Error('Only PNG, JPG, WebP, and GIF images can be hosted'));
-  },
-}).single('image');
-
-// Tracked logo for broker outreach emails — ?email=broker@example.com
 // NOTE: the multer upload-error handler lives AFTER the routers (see below), because
 // all multer middleware runs inside routes/*.js and Express only reaches an error
 // handler registered after the throwing route.
 
-/** Public client id for Google Identity Services (Sign In With Google button). */
 /**
  * Virtual staging after `stagingProcessUpload` has filled `req.files` / `req.body`.
  * @param {import('express').Request} req
@@ -939,7 +735,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
 }
 
 // Health check endpoints
-// healthHandler / protectLogs / stagingEndpointKeyGuard → lib/http-guards.js (instantiated above).
+// healthHandler / protectLogs / stagingEndpointKeyGuard → lib/http/http-guards.js (instantiated above).
 
 const MAX_MASK_PROMPT_LENGTH = 1000;
 

@@ -222,7 +222,10 @@ import { createMaskEditor } from './ai-designer/mask-editor.js';
       decorateReloadTitle();
 
       // Update file preview
-      function updateFilePreview() {
+      // A `let` (not a function declaration) so the wrapper installed later that
+      // also refreshes the send button can reassign it (see below). The recursive
+      // call inside resolves the outer binding, so it hits the wrapped version too.
+      let updateFilePreview = function () {
         const container = document.getElementById('file-preview-container');
         const list = document.getElementById('file-preview-list');
         
@@ -1538,6 +1541,10 @@ import { createMaskEditor } from './ai-designer/mask-editor.js';
           document.body.style.overflow = ''; // Restore scrolling
         }
       }
+      // The image modal's close handlers live in the classic (non-module)
+      // ai-designer-model-selector.js, which can't reach this module's scope,
+      // so expose the closer on window.
+      window.closeImageModal = closeImageModal;
       
       // Download image function
       function downloadImage(imageSrc, filename = 'image') {

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { openDb, resolveDataDir } from '../lib/db.js';
+import { openDb, resolveDataDir } from '../lib/data/db.js';
 
 const tempDirs = [];
 const openDbs = [];

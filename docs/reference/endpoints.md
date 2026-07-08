@@ -74,7 +74,7 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 |--------|------|-------------|
 | `POST` | `/api/validate-image` | **Pre-flight stageability check.** **Body (JSON):** `{ image }` — a data URL of the chosen photo (clients downscale to ~1024px first). No auth required (the main stager serves free/anonymous mobile visitors); rate-limited by `genLimiter`. A cheap `gpt-4o-mini` vision pass decides whether the photo is a stageable room/property space. Always returns **`200`** with `{ valid: boolean, reason: string }` — `reason` is a short, user-facing rejection message when `valid` is `false`, else `""`. **Fails OPEN** (`valid: true`) whenever the reviewer is disabled or errors, so it never blocks a legitimate upload. `400` only for a missing/undecodable `image`. Called by the main stager (on upload; hard-gates staging) and the Masking Studio (on upload; blocks entering the editor). |
 | `POST` | `/api/process-image` | **Multipart** staging upload (`stagingProcessUpload`). **File:** at least `image` (see multer field names in server). **Typical body fields** (strings): `roomType`, `furnitureStyle`, `additionalPrompt`, `removeFurniture`, `userRole`, `userReferralSource`, `userEmail`, and for pro: `model`, `variationCount`, `furnitureImage` (repeat), `authToken`. **Rules:** (1) Signed-in user: enforces per-account daily free limit for non-pro; on success, may return `user` with updated usage. (2) **Not signed in:** only **mobile** user-agents can use a per-**IP** daily cap (no session); desktop browsers get `401` with `AUTH_REQUIRED`. **Errors:** `429` with `DAILY_LIMIT` + `dailyGenerationsUsed` / `dailyGenerationLimit`, `500` if AI not configured, etc. **Success:** `image` or `images` plus `success: true` and often `user` after consumption. |
-| `POST` | `/api/stage-by-endpoint-key` | **Server integration staging** — same multipart shape as `/api/process-image`, but **no user session**. **Auth:** `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`, passed as **`?key=`** on the request URL **or** header **`X-Stagify-Endpoint-Key`**. Same secret as log CSV exports and `/api/send-email` — **highly sensitive**; treat like a root credential. **Behavior:** Staging runs with **Stagify+-level options** (`model` `gpt-4o-mini` \| `gpt-5-mini`, `variationCount` 1–3, up to three `furnitureImage` files). **Does not** increment per-user or per-IP free-tier daily counters. **Success:** same JSON as process-image (`image` / `images`, `user` is `null`). **`403`** if key missing/wrong, **`500`** if key not configured on server. |
+| `POST` | `/api/stage-by-endpoint-key` | **Server integration staging** — same multipart shape as `/api/process-image`, but **no user session**. **Auth:** `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`, passed in the **`X-Stagify-Endpoint-Key` header only** — **never** `?key=` on the URL (a key in the URL leaks via access logs, proxies, browser history, and `Referer`; the compare is constant-time). Same secret as log CSV exports and `/api/send-email` — **highly sensitive**; treat like a root credential. **Behavior:** Staging runs with **Stagify+-level options** (`model` `gpt-4o-mini` \| `gpt-5-mini`, `variationCount` 1–3, up to three `furnitureImage` files). **Does not** increment per-user or per-IP free-tier daily counters. **Success:** same JSON as process-image (`image` / `images`, `user` is `null`). **`403`** if key missing/wrong, **`500`** if key not configured on server. |
 
 **`POST /api/stage-by-endpoint-key` field reference (multipart):**
 
@@ -87,7 +87,7 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 | `variationCount` | String or number `1`–`3`. |
 | `furnitureImage` | Up to **3** files (same as Stagify+). |
 
-Example URL: `POST https://your-host/api/stage-by-endpoint-key?key=YOUR_SECRET` with `multipart/form-data` body (do not put the secret in client-side browser code).
+Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagify-Endpoint-Key: YOUR_SECRET` and a `multipart/form-data` body (do not put the secret in client-side browser code, and never in the URL).
 
 ---
 
@@ -139,8 +139,7 @@ These routes use **`protectLogs`**: a shared secret `LOGS_ACCESS_KEY` from `endp
 
 The same `LOGS_ACCESS_KEY` authenticates several endpoints, but each accepts it via a **different transport** — check per route:
 
-- **`protectLogs`** routes below and **`POST /api/getpro`** — `X-Stagify-Endpoint-Key` header **only**.
-- **`POST /api/stage-by-endpoint-key`** — `?key=` query **or** `X-Stagify-Endpoint-Key` header.
+- **`protectLogs`** routes below, **`POST /api/getpro`**, and **`POST /api/stage-by-endpoint-key`** — `X-Stagify-Endpoint-Key` header **only** (constant-time compare; a key in `?key=` is refused).
 - **`POST /api/send-email`** — `?key=` query **or** `key` in the JSON body.
 
 | Method | Path | Description |

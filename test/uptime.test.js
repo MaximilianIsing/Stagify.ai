@@ -12,7 +12,7 @@ import {
   computeBuckets,
   buildSnapshot,
   GAP_THRESHOLD_MS,
-} from '../lib/uptime-monitor.js';
+} from '../lib/data/uptime-monitor.js';
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
