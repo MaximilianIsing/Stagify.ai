@@ -1,5 +1,7 @@
 import './load-env.js'; // must be first: populates process.env from .env before any secret is read
-import './instrument.js'; // Sentry init — must load before app libraries (no-ops without SENTRY_DSN)
+// Sentry init runs via `node --import ./instrument.js` (see package.json), NOT a top-level import
+// here: ESM loads the whole import graph — including express — before any module body executes, so
+// an in-file import would call Sentry.init() too late to instrument express. --import runs it first.
 import * as Sentry from '@sentry/node';
 import express from 'express';
 import multer from 'multer';
@@ -15,7 +17,6 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { rateLimit } from 'express-rate-limit';
 import { Resend } from 'resend';
-import { promptMatrix } from './lib/promptMatrix.js';
 import { blueprintTo3D } from './lib/cad-handling.js';
 import { createAuthStore } from './lib/auth-store.js';
 import Stripe from 'stripe';
@@ -29,12 +30,15 @@ import { createEmail } from './lib/email.js';
 import { createLogging } from './lib/logging.js';
 import { createMemory } from './lib/memory.js';
 import { createConfig } from './lib/config.js';
-import { IMAGE_FRAMING_PRESERVATION_RULES, ADD_FURNITURE_PRESERVATION_SUFFIX, STAGIFY_LAUNCH_DATE, QUALITY_REVIEW_PROMPT, REVIEW_WHY_SUFFIX, MASK_REVIEW_PROMPT, FURNITURE_ERASE_PROMPT, EMPTY_ROOM_CHECK_PROMPT, STAGEABLE_IMAGE_CHECK_PROMPT, DEFAULT_UNSTAGEABLE_REASON } from './lib/prompts.js';
+import { generatePrompt, QUALITY_REVIEW_PROMPT, REVIEW_WHY_SUFFIX, MASK_REVIEW_PROMPT, FURNITURE_ERASE_PROMPT, EMPTY_ROOM_CHECK_PROMPT, STAGEABLE_IMAGE_CHECK_PROMPT, DEFAULT_UNSTAGEABLE_REASON } from './lib/prompts.js';
 import createPublicRouter from './routes/public.js';
 import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
 import createAuthRouter from './routes/auth.js';
+import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL } from './lib/runtime-flags.js';
+import { setSensitiveHeaders, getStagingClientIp, isLikelyMobileStagingRequest, getUserIdentifier } from './lib/http-helpers.js';
+import { getTemperatureForModel, getGeminiImageModel } from './lib/model-config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -93,11 +97,6 @@ if (LOGS_ACCESS_KEY) {
  * Headers for any response that carries secrets or PII: keep it out of shared
  * caches and stop the URL/Referer from leaking onward to third parties.
  */
-function setSensitiveHeaders(res) {
-  res.set('Cache-Control', 'no-store');
-  res.set('Referrer-Policy', 'no-referrer');
-}
-
 function getAuthUserFromRequest(req) {
   let token = null;
   const h = req.headers.authorization;
@@ -146,22 +145,6 @@ function enterpriseDomainForUser(user) {
   return domain && enterpriseStore.isActiveDomain(domain) ? domain : null;
 }
 
-/** Client IP for rate limits (honors X-Forwarded-For when behind a proxy). */
-function getStagingClientIp(req) {
-  const xff = req.headers['x-forwarded-for'];
-  if (typeof xff === 'string' && xff.trim()) {
-    return xff.split(',')[0].trim().slice(0, 128);
-  }
-  const ip = req.ip || req.socket?.remoteAddress || '';
-  return String(ip).replace(/^::ffff:/, '').slice(0, 128) || 'unknown';
-}
-
-/** Heuristic: anonymous mobile browsers may use IP-based free tier instead of signing in. */
-function isLikelyMobileStagingRequest(req) {
-  const ua = req.headers['user-agent'];
-  if (!ua || typeof ua !== 'string') return false;
-  return /Mobile|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-}
 
 const enterpriseMeterEventName = readEnterpriseMeterEventName();
 
@@ -564,27 +547,9 @@ const chatUpload = multer({
 // External PDF processing server URL
 const PDF_PROCESSING_SERVER = 'https://stagify-project-imagination.onrender.com';
 
-// Debug mode - check environment variable first, then fall back to debug.txt
-let DEBUG_MODE = false;
-try {
-  // Try environment variable first (Render), then fall back to local file
-  let debugValue = process.env.DEBUG;
-  if (debugValue === undefined) {
-    const debugFile = path.join(__dirname, 'debug.txt');
-    if (fs.existsSync(debugFile)) {
-      debugValue = fs.readFileSync(debugFile, 'utf8').trim();
-    }
-  }
-  if (debugValue !== undefined) {
-    DEBUG_MODE = debugValue.toLowerCase() === 'true';
-    if (DEBUG_MODE) {
-      console.log(`Debug mode: ${DEBUG_MODE ? 'ENABLED' : 'DISABLED'}`);
-    }
-  }
-} catch (error) {
-  console.error('Error reading debug configuration:', error.message);
-  DEBUG_MODE = false;
-}
+// DEBUG_MODE / EMAIL_DEBUG_MODE / DEBUG_EMAIL are computed once in
+// lib/runtime-flags.js and imported at the top of this file (single source of
+// truth shared with the extracted lib/ modules).
 
 // Stats debug — when STATS_DEBUG=true, the home-page hero stats (Rooms Staged /
 // Users Served) are faked to the fixed env numbers DEBUG_ROOMS / DEBUG_USERS
@@ -605,68 +570,9 @@ if (STATS_DEBUG) {
   console.log(`Stats debug: ENABLED (rooms=${DEBUG_ROOMS}, users=${DEBUG_USERS})`);
 }
 
-// Email debug mode - if true, redirect all outbound mail to DEBUG_EMAIL (for local/staging only).
-// Default false so password reset and other mail reach the real recipient.
-let EMAIL_DEBUG_MODE = false;
-const DEBUG_EMAIL = 'maximilianbising@gmail.com';
-try {
-  let emailDebugValue = process.env.EMAIL_DEBUG;
-  if (emailDebugValue === undefined) {
-    const emailDebugFile = path.join(__dirname, 'emaildebug.txt');
-    if (fs.existsSync(emailDebugFile)) {
-      emailDebugValue = fs.readFileSync(emailDebugFile, 'utf8').trim();
-    }
-  }
-  if (emailDebugValue !== undefined) {
-    EMAIL_DEBUG_MODE = emailDebugValue.toLowerCase() === 'true';
-  }
-  if (EMAIL_DEBUG_MODE) {
-    console.log(`Email debug mode: ENABLED - All emails will be sent to ${DEBUG_EMAIL}`);
-  } else {
-    console.log('Email debug mode: DISABLED - Emails go to actual recipients');
-  }
-} catch (error) {
-  console.error('Error reading email debug configuration:', error.message);
-  EMAIL_DEBUG_MODE = false;
-  console.log('Email debug mode: DISABLED (default after error)');
-}
-
-// Helper function to get appropriate temperature for a model
-// gpt-5-mini only supports temperature 1 (default), other models can use 0.7
-function getTemperatureForModel(model) {
-  if (model && model.includes('gpt-5')) {
-    return 1; // gpt-5-mini only supports default temperature (1)
-  }
-  return 0.7; // Default for other models
-}
-
-// Helper function to map GPT model selection to Gemini image model
-// Fast (gpt-4o-mini) → gemini-2.5-flash-image
-// Pro/Stagify+ (gpt-5-mini) → gemini-3.1-flash-image (Nano Banana 2)
-// Note: CAD floor-plan staging uses gemini-3-pro-image directly (see cad-handling.js)
-function getGeminiImageModel(gptModel) {
-  if (gptModel && gptModel.includes('gpt-5')) {
-    return 'gemini-3.1-flash-image'; // Stagify+ quality
-  }
-  return 'gemini-2.5-flash-image'; // Fast model (default)
-}
-
-function getUserIdentifier(req) {
-  // Try to get userId from request body
-  if (req.body && req.body.userId) {
-    return req.body.userId;
-  }
-  
-  // Try to get email from request body
-  if (req.body && req.body.userEmail && req.body.userEmail !== 'unknown') {
-    return req.body.userEmail;
-  }
-  
-  // Generate a user ID based on IP address (for anonymous users)
-  const ip = req.ip || req.connection?.remoteAddress || 'unknown';
-  // Create a simple hash-like identifier from IP
-  return `user_${ip.replace(/\./g, '_').replace(/:/g, '_')}`;
-}
+// getTemperatureForModel / getGeminiImageModel → lib/model-config.js
+// getUserIdentifier / setSensitiveHeaders / getStagingClientIp /
+// isLikelyMobileStagingRequest → lib/http-helpers.js  (imported at top)
 
 // Initialize Google AI (for image processing)
 let genAI;
@@ -1086,852 +992,31 @@ async function downscaleImageForGPT(dataUrl) {
   }
 }
 
-/**
- * Appended to image-to-image staging/CAD prompts so outputs match input framing.
- */
 
-/**
- * Generate styling prompt based on user preferences using a matrix system
- */
-function generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture) {
 
-  // Add furniture removal instruction if requested. Callers pass a real boolean
-  // (removeBool) in the live flow; older/string callers pass 'true' — accept both.
-  removeFurniture = removeFurniture === true || removeFurniture === 'true';
-  const furnitureRemovalText = removeFurniture
-    ? "First, remove all existing furniture and decor from the room. Then, "
-    : "CRITICAL — KEEP EXISTING FURNITURE: If the room already contains furniture or decor, you MUST preserve every existing piece exactly as it appears — do NOT remove, replace, delete, or relocate any furniture, decor, or belongings already in the photo. Keep their position, style, and appearance unchanged, and only add or rearrange NEW furnishings around what is already there to complete a professional staging. (If, and only if, the room is completely empty, stage it from scratch as normal.) ";
-  
-  // Build the base prompt
-  let basePrompt = `Stage this ${roomType} professionally.`;
-  
-  // If custom style with additional prompt, use the additional prompt as the main instruction
-  if (furnitureStyle === 'custom' && additionalPrompt && additionalPrompt.trim()) {
-    basePrompt = additionalPrompt.trim();
-  } else {
-    // Get the specific prompt for this room type and style combination (fallback)
-    basePrompt = promptMatrix[roomType]?.[furnitureStyle] || promptMatrix[roomType]?.['standard'] || basePrompt;
-  }
-  
-  // Build the complete prompt
-  let prompt = `${furnitureRemovalText}${basePrompt} 
 
-CRITICAL ARCHITECTURAL PRESERVATION RULES:
-- DO NOT alter, remove, modify, or change ANY architectural elements including: walls, windows, doors, door frames, window frames, ceilings, floors, floor patterns, room shape, room dimensions, structural elements, columns, beams, moldings, baseboards, trim, or any permanent fixtures
-- DO NOT add, remove, or modify windows, doors, or any openings
-- DO NOT change wall colors, textures, or materials unless explicitly requested by the user
-- DO NOT alter the room's structure, layout, or architectural integrity
-- PRESERVE all existing architectural features exactly as they appear in the original image
 
-CRITICAL IMAGE FORMAT RULES:
-${IMAGE_FRAMING_PRESERVATION_RULES}
 
-TARGETED-EDIT RULE (when the user is refining an already-staged image):
-- If the request is a specific change (e.g. "make the sofa leather", "warmer lighting", "swap the rug"), apply ONLY that change and keep EVERYTHING else identical — same furniture, decor, placement, colors, camera angle, and lighting as the input image. Do not re-stage the room from scratch or move/replace items that were not mentioned.
 
-The architecture must remain completely unchanged. Ensure the result looks realistic and professionally staged with high quality, sharp focus, detailed textures, professional photography lighting, and ultra-realistic rendering.`;
-  
-  // If not custom or if custom but we want to emphasize the additional details
-  if (furnitureStyle !== 'custom' && additionalPrompt && additionalPrompt.trim()) {
-    prompt += ` Prioritize the following above everything else: ${additionalPrompt.trim()}`;
-  }
-  
-  return prompt;
-}
 
-/**
- * Middleman filter to remove unsupported file types from content before sending to OpenAI
- * This ensures AVIF and other unsupported formats never reach GPT
- */
-function filterUnsupportedFiles(content, files = []) {
-  if (!Array.isArray(content)) {
-    return content; // If not an array, return as-is
-  }
-  
-  const supportedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-  const filteredContent = [];
-  const unsupportedFiles = [];
-  
-  for (const item of content) {
-    if (item.type === 'image_url' && item.image_url && item.image_url.url) {
-      const url = item.image_url.url;
-      
-      // Check for AVIF in the data URL - only check MIME type, not filename
-      const isAVIF = url.includes('data:image/avif') || 
-                     url.includes('image/avif;');
-      
-      // Extract MIME type from data URL (format: data:image/jpeg;base64,...)
-      const mimeMatch = url.match(/data:([^;]+)/);
-      const mimeType = mimeMatch ? mimeMatch[1].toLowerCase() : '';
-      
-      // Check if MIME type is unsupported
-      const isUnsupported = isAVIF || 
-                           (mimeType.startsWith('image/') && !supportedImageTypes.includes(mimeType));
-      
-      if (isUnsupported) {
-        // Find the corresponding file to get its name
-        let fileName = 'the file';
-        if (files && files.length > 0) {
-          // Try to match by base64 data
-          const base64Data = url.split(',')[1];
-          if (base64Data) {
-            const matchingFile = files.find(f => {
-              try {
-                const fileBase64 = f.buffer.toString('base64');
-                return fileBase64.substring(0, 100) === base64Data.substring(0, 100);
-              } catch {
-                return false;
-              }
-            });
-            if (matchingFile) {
-              fileName = matchingFile.originalname;
-            }
-          }
-        }
-        
-        const fileType = isAVIF ? 'AVIF' : (mimeType.split('/')[1]?.toUpperCase() || 'unsupported format');
-        unsupportedFiles.push({ name: fileName, type: fileType });
-        
-        // Convert to text instead of image
-        filteredContent.push({
-          type: 'text',
-          text: `I uploaded "${fileName}" but it is in ${fileType} format which is not supported.`
-        });
-      } else {
-        // Supported image - keep it
-        filteredContent.push(item);
-      }
-    } else {
-      // Not an image - keep as-is
-      filteredContent.push(item);
-    }
-  }
-  
-  return { filteredContent, unsupportedFiles };
-}
 
-/**
- * Filters unsupported files from conversation history messages
- */
-// Deduplicate messages based on role and content
-function deduplicateMessages(messages) {
-  if (!Array.isArray(messages)) return messages;
-  
-  const seen = new Set();
-  const deduplicated = [];
-  
-  for (const msg of messages) {
-    // Skip invalid messages
-    if (!msg || !msg.role) {
-      continue;
-    }
-    
-    // Create a unique key based on role and content
-    let key;
-    if (Array.isArray(msg.content)) {
-      // For array content, stringify the structure (without base64 data for images)
-      const simplifiedContent = msg.content.map(item => {
-        if (item.type === 'image_url' && item.image_url && item.image_url.url) {
-          // For images, use a placeholder to avoid comparing base64 data
-          return { type: 'image_url', image_url: { url: '[IMAGE_DATA]' } };
-        } else if (item.type === 'text') {
-          // Normalize text content (trim whitespace)
-          return { type: 'text', text: (item.text || '').trim() };
-        }
-        return item;
-      });
-      // Sort array items to ensure consistent ordering
-      simplifiedContent.sort((a, b) => {
-        if (a.type !== b.type) return a.type.localeCompare(b.type);
-        if (a.type === 'text' && b.type === 'text') {
-          return (a.text || '').localeCompare(b.text || '');
-        }
-        return 0;
-      });
-      key = `${msg.role}:${JSON.stringify(simplifiedContent)}`;
-    } else if (typeof msg.content === 'string') {
-      // Normalize text content (trim whitespace) for consistent comparison
-      key = `${msg.role}:${msg.content.trim()}`;
-    } else {
-      // Fallback for other content types
-      key = `${msg.role}:${JSON.stringify(msg.content)}`;
-    }
-    
-    // Only add if we haven't seen this exact message before
-    if (!seen.has(key)) {
-      seen.add(key);
-      deduplicated.push(msg);
-    } else {
-      // Log when we skip a duplicate
-      if (DEBUG_MODE) {
-        const contentPreview = Array.isArray(msg.content) 
-          ? `[${msg.content.length} items]` 
-          : (typeof msg.content === 'string' ? msg.content.substring(0, 50) : 'non-string');
-        console.log(`[Deduplication] Skipping duplicate ${msg.role} message: ${contentPreview}...`);
-      }
-    }
-  }
-  
-  return deduplicated;
-}
 
-function filterConversationHistory(messages) {
-  if (!Array.isArray(messages)) {
-    return messages;
-  }
-  
-  return messages.map(msg => {
-    if (msg.role === 'user' && Array.isArray(msg.content)) {
-      const { filteredContent } = filterUnsupportedFiles(msg.content);
-      return {
-        ...msg,
-        content: filteredContent
-      };
-    }
-    return msg;
-  });
-}
 
-/**
- * Strips images from conversation history messages (except current message)
- * This prevents payload size issues while keeping text context
- */
-function stripImagesFromHistory(messages, keepCurrentMessageImages = false) {
-  if (!Array.isArray(messages)) {
-    return messages;
-  }
-  
-  return messages.map((msg, index) => {
-    const isLastMessage = index === messages.length - 1;
-    const shouldKeepImages = keepCurrentMessageImages && isLastMessage && msg.role === 'user';
-    
-    if (msg.role === 'user' && Array.isArray(msg.content)) {
-      if (shouldKeepImages) {
-        // Keep images in current message
-        return msg;
-      } else {
-        // Replace images with filename references, keep text
-        const textParts = [];
-        let imageCount = 0;
-        
-        msg.content.forEach(item => {
-          if (item.type === 'text') {
-            textParts.push(item.text);
-          } else if (item.type === 'image_url') {
-            imageCount++;
-            // Try to extract filename from metadata or use generic name
-            const filename = item.filename || item.originalname || (imageCount === 1 ? 'uploaded_image.jpg' : `image_${imageCount}.jpg`);
-            const isStaged = item.isStaged || false;
-            if (isStaged) {
-              textParts.push(`[Staged image from previous message]`);
-            } else {
-              textParts.push(`[Image: ${filename}]`);
-            }
-          }
-        });
-        
-        const textContent = textParts.join('\n\n');
-        return {
-          role: 'user',
-          content: textContent || '[Previous message]'
-        };
-      }
-    } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-      // Replace images with references, keep text
-      const textParts = [];
-      
-      msg.content.forEach(item => {
-        if (item.type === 'text') {
-          textParts.push(item.text);
-        } else if (item.type === 'image_url') {
-          textParts.push(`[Staged image from previous message]`);
-        }
-      });
-      
-      const textContent = textParts.join('\n\n');
-      return {
-        role: 'assistant',
-        content: textContent || '[Previous response]'
-      };
-    }
-    return msg;
-  });
-}
 
-/**
- * Collect all images from conversation history (index 0 = most recent).
- */
-function collectImagesFromHistory(messages) {
-  const imageMessages = [];
-  if (!Array.isArray(messages)) return imageMessages;
 
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
-    if (msg.role === 'user' && Array.isArray(msg.content)) {
-      const imageItems = msg.content.filter(
-        (item) => item.type === 'image_url' && item.image_url && item.image_url.url
-      );
-      for (let j = imageItems.length - 1; j >= 0; j--) {
-        const imageItem = imageItems[j];
-        imageMessages.push({
-          url: imageItem.image_url.url,
-          isStaged: false,
-          isGenerated: false,
-          messageIndex: i,
-          filename: imageItem.filename || imageItem.originalname || null,
-          annotation: imageItem._annotation || imageItem.annotation || null,
-        });
-      }
-    } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-      const imageItems = msg.content.filter(
-        (item) =>
-          item.type === 'image_url' &&
-          item.image_url &&
-          item.image_url.url &&
-          (item.isStaged || item.isGenerated)
-      );
-      for (let j = imageItems.length - 1; j >= 0; j--) {
-        const imageItem = imageItems[j];
-        imageMessages.push({
-          url: imageItem.image_url.url,
-          isStaged: imageItem.isStaged || false,
-          isGenerated: imageItem.isGenerated || false,
-          messageIndex: i,
-          filename: imageItem.filename || imageItem.originalname || null,
-          annotation: imageItem._annotation || imageItem.annotation || null,
-        });
-      }
-    }
-  }
-  return imageMessages;
-}
 
-/**
- * When the client includes the current upload in conversationHistory, exclude that
- * trailing user message so image context does not count the same file twice.
- */
-function getPriorHistoryForImageContext(conversationHistory, currentUploadFilenames) {
-  if (!Array.isArray(conversationHistory) || conversationHistory.length === 0) {
-    return conversationHistory || [];
-  }
-  if (!currentUploadFilenames || currentUploadFilenames.length === 0) {
-    return conversationHistory;
-  }
-  const last = conversationHistory[conversationHistory.length - 1];
-  if (last.role !== 'user' || !Array.isArray(last.content)) {
-    return conversationHistory;
-  }
-  const lastImageNames = last.content
-    .filter((item) => item.type === 'image_url' && item.image_url && item.image_url.url)
-    .map((item) => item.filename || item.originalname)
-    .filter(Boolean);
-  if (lastImageNames.length === 0) {
-    return conversationHistory;
-  }
-  const currentSet = new Set(currentUploadFilenames);
-  const duplicatesCurrentUpload = lastImageNames.every((name) => currentSet.has(name));
-  if (duplicatesCurrentUpload) {
-    return conversationHistory.slice(0, -1);
-  }
-  return conversationHistory;
-}
 
-function parseBaseImageIndex(raw) {
-  if (raw === undefined || raw === null || raw === '') return null;
-  const n = parseInt(String(raw), 10);
-  return Number.isFinite(n) && n >= 0 ? n : null;
-}
 
-function getBaseImageSelectionContext(baseImageIndex, messages) {
-  if (baseImageIndex === null) return '';
-  const images = collectImagesFromHistory(messages);
-  if (baseImageIndex >= images.length) return '';
-  const img = images[baseImageIndex];
-  const typeLabel = img.isStaged ? 'staged' : img.isGenerated ? 'generated/CAD' : 'uploaded';
-  const name = img.filename ? ` (${img.filename})` : '';
-  return (
-    `\n\nUSER UI SELECTION: The user selected image index ${baseImageIndex} in the thumbnail strip as the base for this request — ${typeLabel} image${name}. ` +
-    `For staging or CAD that modifies an existing image in this turn, use index ${baseImageIndex} for usePreviousImage or imageIndex unless they clearly meant a different image or are only doing text-to-image generation. ` +
-    `If they are adding, placing, or staging furniture, put it IN THIS selected room (index ${baseImageIndex}). The selected image is the room to modify — not the furniture reference, unless it is clearly only a product photo with no room context.`
-  );
-}
 
-function applyBaseImageIndexToStagingParams(stagingParams, baseImageIndex, messages, options = {}) {
-  if (baseImageIndex === null || !stagingParams) return stagingParams;
-  const images = collectImagesFromHistory(messages);
-  if (baseImageIndex >= images.length) return stagingParams;
 
-  const { userMessage = '', currentMessageHasImage = false } = options;
-  const addingFurniture = currentMessageHasImage && userWantsToAddFurnitureToRoom(userMessage);
 
-  if (currentMessageHasImage && !addingFurniture) {
-    return stagingParams;
-  }
 
-  if (addingFurniture && currentMessageHasImage) {
-    return { ...stagingParams, usePreviousImage: baseImageIndex, furnitureImageIndex: null };
-  }
 
-  if (addingFurniture) {
-    return { ...stagingParams, usePreviousImage: baseImageIndex };
-  }
 
-  return { ...stagingParams, usePreviousImage: baseImageIndex };
-}
 
-function resolveCadImageIndex(cadRequest, baseImageIndex, messages, currentMessageHasImage = false) {
-  const aiIndex = typeof cadRequest.imageIndex === 'number' ? cadRequest.imageIndex : 0;
-  if (baseImageIndex === null || currentMessageHasImage) return aiIndex;
-  const images = collectImagesFromHistory(messages);
-  if (baseImageIndex >= images.length) return aiIndex;
-  return baseImageIndex;
-}
 
-function findMostRecentStagedImageIndex(messages) {
-  const imageMessages = collectImagesFromHistory(messages);
-  const idx = imageMessages.findIndex((img) => img.isStaged);
-  return idx >= 0 ? idx : null;
-}
 
-function userWantsToAddFurnitureToRoom(messageText) {
-  if (!messageText || typeof messageText !== 'string') return false;
-  const m = messageText.toLowerCase();
-  if (/\b(this|that|the)\s+(chair|sofa|couch|table|desk|lamp|bed|ottoman|dresser|armchair)\b/.test(m)) {
-    return true;
-  }
-  if (/\badd (this|the|that|my|a)\b/.test(m) && /\b(chair|sofa|couch|table|desk|lamp|bed|furniture|piece|it)\b/.test(m)) {
-    return true;
-  }
-  return (
-    /\b(add|include|put|place|incorporate|insert|use)\b/.test(m) &&
-    /\b(chair|sofa|couch|table|desk|lamp|bed|furniture|piece|item|this|it|these|that)\b/.test(m)
-  );
-}
 
-function isLikelyFurnitureReferenceImage(img) {
-  if (!img || img.isStaged || img.isGenerated) return false;
-  const hay = `${img.filename || ''} ${img.annotation || ''}`.toLowerCase();
-  const furnitureTerms = /\b(chair|sofa|couch|table|desk|lamp|bed|ottoman|dresser|armchair|furniture|stool|bench|nightstand|credenza|sideboard|recliner)\b/;
-  const roomTerms = /\b(room|living|bedroom|kitchen|bathroom|dining|office|interior|staging|staged|floor plan|blueprint|empty)\b/;
-  return furnitureTerms.test(hay) && !roomTerms.test(hay);
-}
-
-function isRoomImageForFurniturePlacement(img) {
-  if (!img) return false;
-  if (img.isStaged || img.isGenerated) return true;
-  return !isLikelyFurnitureReferenceImage(img);
-}
-
-function classifyUploadImageRole(img) {
-  if (!img) return 'unknown';
-  if (img.isStaged || img.isGenerated) return 'room';
-  const hay = `${img.filename || ''} ${img.annotation || ''}`.toLowerCase();
-  const furnitureTerms =
-    /\b(chair|sofa|couch|table|desk|lamp|bed|ottoman|dresser|armchair|furniture piece|product shot|isolated|white background|dining chair|sectional|nightstand|stool|bench|credenza|sideboard|recliner)\b/;
-  const roomTerms =
-    /\b(room|living room|bedroom|kitchen|bathroom|dining room|office|interior|empty room|unfurnished|listing photo|real estate|walls|windows|floor|space)\b/;
-  const furnitureHit = furnitureTerms.test(hay);
-  const roomHit = roomTerms.test(hay);
-  if (furnitureHit && !roomHit) return 'furniture';
-  if (roomHit && !furnitureHit) return 'room';
-  if (isLikelyFurnitureReferenceImage(img)) return 'furniture';
-  if (roomHit) return 'room';
-  return 'unknown';
-}
-
-function partitionDualUploadEntries(entries) {
-  const rooms = entries.filter((e) => e.role === 'room');
-  const furniture = entries.filter((e) => e.role === 'furniture');
-  const unknown = entries.filter((e) => e.role === 'unknown');
-
-  if (rooms.length >= 1 && furniture.length >= 1) {
-    return { room: rooms[0], furniture: [...furniture, ...unknown] };
-  }
-  if (rooms.length === 1 && unknown.length >= 1 && furniture.length === 0) {
-    return { room: rooms[0], furniture: unknown };
-  }
-  if (furniture.length === 1 && unknown.length >= 1 && rooms.length === 0) {
-    return { room: unknown[0], furniture };
-  }
-  if (entries.length === 2 && rooms.length === 0 && furniture.length === 0) {
-    // Common upload order: furniture first, room second
-    return { room: entries[entries.length - 1], furniture: [entries[0]] };
-  }
-  return null;
-}
-
-function resolveDualUploadStaging(files, annotatedUserContent, message) {
-  const imageFiles = (files || []).filter((f) => f.mimetype && f.mimetype.startsWith('image/'));
-  if (imageFiles.length < 2) return null;
-
-  const entries = imageFiles
-    .map((file) => {
-      const contentItem = (annotatedUserContent || []).find(
-        (item) =>
-          item.type === 'image_url' &&
-          (item._filename === file.originalname || item.filename === file.originalname)
-      );
-      const meta = {
-        filename: file.originalname,
-        annotation: contentItem?._annotation || contentItem?.annotation || null,
-      };
-      return {
-        buffer: file.buffer,
-        role: classifyUploadImageRole(meta),
-        filename: file.originalname,
-      };
-    })
-    .filter((e) => e.buffer);
-
-  if (entries.length < 2) return null;
-
-  let partition = partitionDualUploadEntries(entries);
-  const m = (message || '').toLowerCase();
-  if (!partition && /\bstage\s+(my|the|this)\s+room\b/.test(m) && entries.length === 2) {
-    partition = { room: entries[entries.length - 1], furniture: [entries[0]] };
-  }
-  if (!partition) return null;
-
-  const furnitureBuffers = partition.furniture.map((e) => e.buffer).filter(Boolean);
-  if (!partition.room?.buffer || furnitureBuffers.length === 0) return null;
-
-  if (DEBUG_MODE) {
-    console.log(
-      `[Staging] Dual upload split: room="${partition.room.filename}", furniture=[${partition.furniture.map((f) => f.filename).join(', ')}]`
-    );
-  }
-
-  return {
-    roomBuffer: partition.room.buffer,
-    furnitureBuffers,
-    source: 'current upload (room + furniture)',
-  };
-}
-
-function resolveDualUploadFromMessageContent(userMessageContent, message) {
-  if (!Array.isArray(userMessageContent)) return null;
-  const imageItems = userMessageContent.filter(
-    (item) => item.type === 'image_url' && item.image_url && item.image_url.url
-  );
-  if (imageItems.length < 2) return null;
-
-  const entries = imageItems
-    .map((item) => {
-      const meta = {
-        filename: item.filename || item.originalname,
-        annotation: item._annotation || item.annotation || null,
-      };
-      const b64 = item.image_url.url.split(',')[1];
-      if (!b64) return null;
-      return {
-        buffer: Buffer.from(b64, 'base64'),
-        role: classifyUploadImageRole(meta),
-        filename: meta.filename || 'upload',
-      };
-    })
-    .filter(Boolean);
-
-  if (entries.length < 2) return null;
-
-  let partition = partitionDualUploadEntries(entries);
-  const m = (message || '').toLowerCase();
-  if (!partition && /\bstage\s+(my|the|this)\s+room\b/.test(m) && entries.length === 2) {
-    partition = { room: entries[entries.length - 1], furniture: [entries[0]] };
-  }
-  if (!partition) return null;
-
-  const furnitureBuffers = partition.furniture.map((e) => e.buffer).filter(Boolean);
-  if (!partition.room?.buffer || furnitureBuffers.length === 0) return null;
-
-  return {
-    roomBuffer: partition.room.buffer,
-    furnitureBuffers,
-    source: 'message upload (room + furniture)',
-  };
-}
-
-
-function resolveTargetRoomImageIndex(messages, options = {}) {
-  const { baseImageIndex = null, userMessage = '' } = options;
-  const images = collectImagesFromHistory(messages);
-
-  if (baseImageIndex !== null && baseImageIndex < images.length) {
-    if (isRoomImageForFurniturePlacement(images[baseImageIndex])) {
-      return baseImageIndex;
-    }
-  }
-
-  const stagedIndex = findMostRecentStagedImageIndex(messages);
-  if (stagedIndex !== null) return stagedIndex;
-
-  const roomCandidates = images
-    .map((img, index) => ({ img, index }))
-    .filter(({ img }) => isRoomImageForFurniturePlacement(img));
-
-  if (roomCandidates.length === 1) {
-    return roomCandidates[0].index;
-  }
-
-  const m = (userMessage || '').toLowerCase();
-  if (/\b(original|first|initial)\b/.test(m) && /\b(room|image|photo)\b/.test(m)) {
-    const orig = getOriginalImageIndex(messages);
-    if (orig !== null) return orig;
-  }
-
-  if (/\b(that|this|the)\s+(room|space|listing|photo)\b/.test(m) || /\bstaged room\b/.test(m)) {
-    if (roomCandidates.length > 0) return roomCandidates[0].index;
-  }
-
-  return null;
-}
-
-
-/**
- * When the user uploads a furniture reference to add to an existing staged room,
- * force the staged room as the base image and the upload as furniture reference.
- */
-function applyAddFurnitureStagingFallback(stagingParams, userMessage, historyMessages, options = {}) {
-  const { currentMessageHasImage = false, currentImageBuffer = null, baseImageIndex = null } = options;
-  if (!userWantsToAddFurnitureToRoom(userMessage)) {
-    return { stagingParams, furnitureFromCurrentUpload: null };
-  }
-
-  const roomIndex = resolveTargetRoomImageIndex(historyMessages, { baseImageIndex, userMessage });
-  if (roomIndex === null) {
-    return { stagingParams, furnitureFromCurrentUpload: null };
-  }
-
-  const next = { ...stagingParams, preserveExistingStaging: true };
-  if (!next.additionalPrompt || !next.additionalPrompt.includes('already-staged room')) {
-    next.additionalPrompt = (next.additionalPrompt || '') + ADD_FURNITURE_PRESERVATION_SUFFIX;
-  }
-
-  if (currentMessageHasImage) {
-    next.usePreviousImage = roomIndex;
-    next.furnitureImageIndex = null;
-    if (DEBUG_MODE) {
-      console.log(`[Staging] Add-furniture fallback: room index ${roomIndex}, furniture from current upload`);
-    }
-    return { stagingParams: next, furnitureFromCurrentUpload: currentImageBuffer };
-  }
-
-  if (next.usePreviousImage === false || next.usePreviousImage === null) {
-    next.usePreviousImage = roomIndex;
-  }
-  if (DEBUG_MODE) {
-    console.log(`[Staging] Add-furniture fallback: modifying room at index ${roomIndex}`);
-  }
-  return { stagingParams: next, furnitureFromCurrentUpload: null };
-}
-
-/**
- * Extracts image from conversation history by index (0 = most recent, 1 = second most recent, etc.)
- * Returns the image data URL or null if not found
- */
-function getImageFromHistory(messages, imageIndex = 0) {
-  if (!Array.isArray(messages)) {
-    if (DEBUG_MODE) {
-      console.log(`[getImageFromHistory] Messages is not an array:`, typeof messages);
-    }
-    return null;
-  }
-
-  const imageMessages = collectImagesFromHistory(messages);
-
-  if (DEBUG_MODE) {
-    console.log(`[getImageFromHistory] Total images found: ${imageMessages.length}, requested index: ${imageIndex}`);
-    imageMessages.forEach((img, idx) => {
-      const kind = img.isStaged ? 'staged' : img.isGenerated ? 'generated' : 'user-uploaded';
-      console.log(`[getImageFromHistory] Found ${kind} image at index ${idx}, filename: ${img.filename || 'unknown'}`);
-    });
-  }
-
-  // Return the image at the requested index (0 = most recent)
-  if (imageIndex >= 0 && imageIndex < imageMessages.length) {
-    return imageMessages[imageIndex];
-  }
-
-  // If requested index doesn't exist but we have images, return the most recent (index 0) as fallback
-  if (imageMessages.length > 0) {
-    if (DEBUG_MODE) {
-      console.log(`[getImageFromHistory] Requested index ${imageIndex} not found, returning most recent image (index 0) as fallback`);
-    }
-    return imageMessages[0];
-  }
-
-  return null;
-}
-
-/**
- * Builds image context with annotations for GPT system instructions
- * Returns an object with imageContext string and imagesSentToGPT array
- */
-function buildImageContext(messages) {
-  const imageMessages = [];
-  const imagesSentToGPT = []; // Separate list of images that were sent to GPT (for assistant messages)
-  
-  if (!Array.isArray(messages)) {
-    return { imageContext: '', imagesSentToGPT: [], originalImageIndex: null };
-  }
-  
-  // Collect ALL images in reverse chronological order (most recent first)
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
-    if (msg.role === 'user' && Array.isArray(msg.content)) {
-      // Get ALL images from this message
-      const imageItems = msg.content.filter(item => item.type === 'image_url' && item.image_url && item.image_url.url);
-      // Process images in reverse order within the message
-      for (let j = imageItems.length - 1; j >= 0; j--) {
-        const imageItem = imageItems[j];
-        const filename = imageItem.filename || imageItem.originalname || null;
-        const annotation = imageItem._annotation || imageItem.annotation || null;
-        imageMessages.push({ 
-          index: imageMessages.length, 
-          type: 'user-uploaded', 
-          messageIndex: i,
-          filename: filename,
-          annotation: annotation
-        });
-        // User-uploaded images are sent to GPT
-        imagesSentToGPT.push({
-          index: imagesSentToGPT.length,
-          type: 'user-uploaded',
-          filename: filename,
-          annotation: annotation
-        });
-      }
-    } else if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-      // Get ALL staged and generated images from this message
-      const imageItems = msg.content.filter(item => 
-        item.type === 'image_url' && 
-        item.image_url && 
-        item.image_url.url && 
-        (item.isStaged || item.isGenerated)
-      );
-      // Process images in reverse order within the message
-      for (let j = imageItems.length - 1; j >= 0; j--) {
-        const imageItem = imageItems[j];
-        const filename = imageItem.filename || imageItem.originalname || null;
-        const imageType = imageItem.isStaged ? 'staged' : 'generated';
-        const annotation = imageItem._annotation || imageItem.annotation || null;
-        imageMessages.push({ 
-          index: imageMessages.length, 
-          type: imageType, 
-          messageIndex: i,
-          filename: filename,
-          annotation: annotation
-        });
-        // AI-generated images are also sent to GPT in future messages
-        imagesSentToGPT.push({
-          index: imagesSentToGPT.length,
-          type: imageType,
-          filename: filename,
-          annotation: annotation
-        });
-      }
-    }
-  }
-  
-  // Find the original (first) user-uploaded image
-  const userUploadedImages = imageMessages.filter(img => img.type === 'user-uploaded');
-  let originalImageIndex = null;
-  if (userUploadedImages.length > 0) {
-    originalImageIndex = userUploadedImages[userUploadedImages.length - 1].index;
-  }
-  
-  // Build image context string
-  let imageContext = '';
-  if (imageMessages.length > 0) {
-    imageContext = '\n\nAvailable images in conversation history (index 0 = most recent, higher index = older):\n';
-    imageMessages.forEach((img, idx) => {
-      let description = `${img.type} image`;
-      if (img.filename) {
-        description += ` (filename: ${img.filename})`;
-      }
-      if (img.annotation) {
-        // Parse CAD classification from annotation
-        const cadMatch = img.annotation.match(/CAD:\s*(True|False)/i);
-        const isCAD = cadMatch ? cadMatch[1].toLowerCase() === 'true' : false;
-        // Remove CAD classification from description for cleaner display, but show it separately
-        const annotationWithoutCAD = img.annotation.replace(/\s*CAD:\s*(True|False)/i, '').trim();
-        description += ` - ${annotationWithoutCAD}`;
-        description += ` [CAD: ${isCAD ? 'True' : 'False'}]`;
-      } else {
-        // If no annotation, default to False for CAD
-        description += ` [CAD: False]`;
-      }
-      if (idx === originalImageIndex) {
-        description += ' [ORIGINAL/FIRST USER-UPLOADED IMAGE]';
-      }
-      imageContext += `- Index ${idx}: ${description}\n`;
-    });
-    if (originalImageIndex !== null) {
-      imageContext += `\nIMPORTANT: The "original image" or "first image" is at index ${originalImageIndex}. When the user says "original image", "first image", "initial image", "go back to the original", or "refer back to the original image", use index ${originalImageIndex} in the staging request.`;
-    }
-    imageContext += `\nIMPORTANT: When multiple images are uploaded in the same message, they are indexed separately. Use the filename and annotation to identify which image the user is referring to (e.g., if user says "add this chair", look for an image with "chair" in the filename or annotation).`;
-    imageContext += `\nIMPORTANT: All images in the list above (user-uploaded, staged, generated, and CAD-staging renders) can be recalled using the recall function. Generated and staged images you created are included in this list and can be recalled by their index.`;
-    
-    // Add separate list of images sent to GPT
-    if (imagesSentToGPT.length > 0) {
-      imageContext += `\n\nImages sent to GPT in previous messages (for reference when building responses):\n`;
-      imagesSentToGPT.forEach((img, idx) => {
-        // Parse CAD classification from annotation
-        let cadStatus = 'False';
-        let annotationText = img.annotation || '';
-        if (img.annotation) {
-          const cadMatch = img.annotation.match(/CAD:\s*(True|False)/i);
-          cadStatus = cadMatch ? cadMatch[1] : 'False';
-          // Remove CAD classification from annotation text for cleaner display
-          annotationText = img.annotation.replace(/\s*CAD:\s*(True|False)/i, '').trim();
-        }
-        let description = `${img.type} image`;
-        if (img.filename) {
-          description += ` (filename: ${img.filename})`;
-        }
-        if (annotationText) {
-          description += ` - ${annotationText}`;
-        }
-        description += ` [CAD: ${cadStatus}]`;
-        imageContext += `- GPT Image ${idx}: ${description}\n`;
-      });
-    }
-  }
-  
-  return { imageContext, imagesSentToGPT, originalImageIndex };
-}
-
-/**
- * Gets the index of the original (first) user-uploaded image in the conversation history
- * Returns null if no original image is found
- */
-function getOriginalImageIndex(messages) {
-  if (!Array.isArray(messages)) {
-    return null;
-  }
-  
-  const userUploadedImages = [];
-  
-  // Collect all user-uploaded images in reverse chronological order (most recent first)
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
-    if (msg.role === 'user' && Array.isArray(msg.content)) {
-      const imageItem = msg.content.find(item => item.type === 'image_url');
-      if (imageItem && imageItem.image_url && imageItem.image_url.url) {
-        userUploadedImages.push({
-          index: userUploadedImages.length,
-          messageIndex: i
-        });
-      }
-    }
-  }
-  
-  // The original image is at the highest index (oldest)
-  if (userUploadedImages.length > 0) {
-    return userUploadedImages[userUploadedImages.length - 1].index;
-  }
-  
-  return null;
-}
 
 /** Shared prompt block: clarify ambiguity before acting; never ask and trigger image actions in the same turn. */
 
@@ -1940,37 +1025,6 @@ function getOriginalImageIndex(messages) {
 // asks about the product, company, team, pricing, or features. Keep this as the
 // single source of truth — update here if any fact changes.
 
-// The model has no idea what today's date is, so left alone it guesses (e.g.
-// "today is 2023, so Stagify launches in the future"). Give it the real current
-// date plus the already-computed age so it never has to do date math itself.
-function getStagifyDateContext() {
-  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-    'August', 'September', 'October', 'November', 'December'];
-  const now = new Date();
-  const todayStr = `${MONTHS[now.getUTCMonth()]} ${now.getUTCDate()}, ${now.getUTCFullYear()}`;
-
-  let ageStr;
-  if (now < STAGIFY_LAUNCH_DATE) {
-    ageStr = 'Stagify has not launched yet';
-  } else {
-    let months = (now.getUTCFullYear() - STAGIFY_LAUNCH_DATE.getUTCFullYear()) * 12 +
-      (now.getUTCMonth() - STAGIFY_LAUNCH_DATE.getUTCMonth());
-    if (now.getUTCDate() < STAGIFY_LAUNCH_DATE.getUTCDate()) months -= 1;
-    if (months < 1) {
-      ageStr = 'Stagify is less than a month old';
-    } else if (months < 12) {
-      ageStr = `Stagify is about ${months} month${months === 1 ? '' : 's'} old`;
-    } else {
-      const years = Math.floor(months / 12);
-      const rem = months % 12;
-      ageStr = `Stagify is about ${years} year${years === 1 ? '' : 's'}` +
-        (rem ? ` and ${rem} month${rem === 1 ? '' : 's'}` : '') + ' old';
-    }
-  }
-  return `\n\nCURRENT DATE (authoritative — use this and do NOT assume any other date): Today is ${todayStr}. ` +
-    `Stagify launched on August 22, 2025, so as of today, ${ageStr}. ` +
-    `When asked how old Stagify is, state that age; never say it launches in the future.`;
-}
 
 // ---------------------------------------------------------------------------
 // Designer chat routing — strict Structured Outputs schema.
@@ -1984,137 +1038,14 @@ function getStagifyDateContext() {
 // ---------------------------------------------------------------------------
 
 
-// Parse a routing completion. Strict mode can return a `refusal` instead of
-// `content`; surface that as a plain (non-actionable) reply rather than throwing
-// on JSON.parse(null), so a rare refusal degrades gracefully.
-function parseDesignerRoutingCompletion(completion) {
-  const message = completion?.choices?.[0]?.message;
-  if (message && message.refusal) {
-    return { response: message.refusal };
-  }
-  return JSON.parse(message.content);
-}
 
-/**
- * True when the assistant response is asking the user for input before acting.
- * Used to suppress staging/generate/cad if the model sets both questions and actions.
- */
-function aiResponseDefersImageAction(responseText) {
-  if (!responseText || typeof responseText !== 'string') return false;
-  const t = responseText.trim().toLowerCase();
-  if (/\bhere('s| is)\b.*\b(staged|staging result|your room)\b/.test(t)) return false;
-  if (/\bi('ve| have) (staged|created|generated)\b/.test(t)) return false;
-  const deferPatterns = [
-    /\bcould you (please )?(provide|share|tell|describe|specify|clarify|let me know|confirm)\b/,
-    /\bcan you (please )?(provide|share|tell|describe|specify|clarify|let me know|confirm)\b/,
-    /\bplease (provide|share|tell|describe|specify|clarify|confirm)\b/,
-    /\bwhat (style|color|colour|type|kind|theme|furniture|decor|preference|look|vibe|aesthetic)s?\b/,
-    /\bwhich (style|color|colour|theme|look|aesthetic|image|room|option|one)\b/,
-    /\bmore (details|information|about|specifics|context)\b/,
-    /\bany (preferences|specific|details|requirements)\b/,
-    /\bdo you have (specific|any|particular)\b/,
-    /\bfor example,?\s*what\b/,
-    /\bwould you (like to|prefer to|want to) (share|tell|specify|describe|clarify)\b/,
-    /\blet me know (what|which|if|about|your|how)\b/,
-    /\bbefore i (stage|generate|create|proceed|start)\b/,
-    /\bi('d| would) like to (know|understand|clarify)\b/,
-    /\bto make sure\b/,
-    /\bnot sure (which|what|if)\b/,
-    /\ba few (quick )?questions\b/,
-    /\bquick question\b/,
-  ];
-  if (!deferPatterns.some((p) => p.test(t))) return false;
-  return t.includes('?');
-}
 
-function wantsStreamedChatResponse(req) {
-  const body = req.body || {};
-  return (
-    body.streamResponse === true ||
-    body.streamResponse === 'true' ||
-    req.query?.stream === '1' ||
-    req.headers['x-stream-response'] === '1'
-  );
-}
 
-function chatWillProcessSlowImages(stagingReq, generateReq, cadReq) {
-  if (stagingReq) {
-    const reqs = Array.isArray(stagingReq) ? stagingReq : [stagingReq];
-    if (reqs.some((s) => s && s.shouldStage)) return true;
-  }
-  if (generateReq) {
-    const reqs = Array.isArray(generateReq) ? generateReq : [generateReq];
-    if (reqs.some((g) => g && g.shouldGenerate && g.prompt)) return true;
-  }
-  if (cadReq) {
-    const reqs = Array.isArray(cadReq) ? cadReq : [cadReq];
-    if (reqs.some((c) => c && c.shouldProcessCAD)) return true;
-  }
-  return false;
-}
 
-// Map the AI's decided intent to a loading-status category the client shows
-// during the (slow) image phase — language-independent, unlike keyword guessing.
-function chatIntentType(stagingReq, generateReq, cadReq) {
-  const some = (r, k) => {
-    const arr = Array.isArray(r) ? r : [r];
-    return arr.some((x) => x && x[k]);
-  };
-  if (some(cadReq, 'shouldProcessCAD')) return 'staging';
-  if (some(stagingReq, 'shouldStage')) return 'staging';
-  if (some(generateReq, 'shouldGenerate')) return 'generating';
-  return 'general';
-}
 
-function initChatSse(res) {
-  res.status(200);
-  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
-  if (typeof res.flushHeaders === 'function') {
-    res.flushHeaders();
-  }
-}
 
-function writeChatSseEvent(res, event, payload) {
-  res.write(`event: ${event}\n`);
-  res.write(`data: ${JSON.stringify(payload)}\n\n`);
-}
 
-function extractChatImagePayload(fullResponse) {
-  const payload = { response: fullResponse.response };
-  const keys = [
-    'stagedImage',
-    'stagedImages',
-    'stagingParams',
-    'stagedImageAnnotations',
-    'generatedImage',
-    'generatedImages',
-    'generatedImageAnnotations',
-    'cadImage',
-    'cadImages',
-    'cadParams',
-    'cadImageAnnotation',
-    'cadImageAnnotations',
-    'requestedImage',
-    'recalledImage',
-    'imageAnnotations',
-    'files',
-  ];
-  for (const key of keys) {
-    if (fullResponse[key] !== undefined) {
-      payload[key] = fullResponse[key];
-    }
-  }
-  return payload;
-}
 
-function finishStreamedChatResponse(res, fullResponse) {
-  writeChatSseEvent(res, 'images', extractChatImagePayload(fullResponse));
-  writeChatSseEvent(res, 'done', {});
-  res.end();
-}
 
 /**
  * Process image through Stagify staging pipeline
@@ -3061,23 +1992,8 @@ function stagingEndpointKeyGuard(req, res, next) {
   });
 }
 
-// Virtual staging for server-side integrations (no user session; no daily cap on account)
-// Auth store JSON (users, sessions, etc.) — same access key as log exports
-// Prompt logs endpoint - serves the prompt logs CSV file (protected)
-// Welcome message endpoint - returns personalized or generic welcome message
-// Chat endpoints
-// Text chat endpoint
-// Chat with file upload endpoint (multiple files)
-// Contact logs endpoint - serves the contact logs CSV file (protected)
-// Email open logs endpoint - serves broker outreach open tracking CSV (protected)
-// Memories endpoint - serves the memories JSON file (protected)
-// Reset memories endpoint - empties the memories JSON file (protected)
-// Chat logs endpoint - serves the chat logs CSV file (protected)
-// Bug reports endpoint - serves the bug reports CSV file (protected)
-// Bug report endpoint
 const MAX_MASK_PROMPT_LENGTH = 1000;
 
-// Mask editing endpoint - uses Gemini API for better image editing
 // --- AI-assisted selection (Masking Studio) ----------------------------------
 // Gemini 2.5 Flash segmentation: given a room photo and an optional natural-
 // language target ("the sofa", "the empty floor area"), returns box-cropped
@@ -3097,7 +2013,7 @@ app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImage
 app.use(createStagingRouter({ genAI, openai, genLimiter, stagingProcessUpload, pdfUpload, PDF_PROCESSING_SERVER, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, getStagingClientIp, isLikelyMobileStagingRequest, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, getUserIdentifier, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
 
 // chat routes (routes/chat.js)
-app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, getUserIdentifier, annotateImage, downscaleImageForGPT, filterUnsupportedFiles, deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, applyBaseImageIndexToStagingParams, resolveCadImageIndex, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, applyAddFurnitureStagingFallback, getImageFromHistory, buildImageContext, getOriginalImageIndex, getStagifyDateContext, parseDesignerRoutingCompletion, aiResponseDefersImageAction, wantsStreamedChatResponse, chatWillProcessSlowImages, chatIntentType, initChatSse, writeChatSseEvent, finishStreamedChatResponse, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
+app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, getUserIdentifier, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
 
 // public routes (routes/public.js)
 app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, PDF_PROCESSING_SERVER, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));
