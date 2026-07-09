@@ -1,120 +1,17 @@
-import { abbreviateFileName, dataURLToFile } from './app/helpers.js';
+import { dataURLToFile } from './app/helpers.js';
 import { createStageMaskEditor } from './app/stage-mask-editor.js';
+import { initCustomSelect } from './app/custom-select.js';
+import { initBackgroundVideoSync } from './app/background-video.js';
+import { init3DTiltEffect } from './app/tilt-effect.js';
+import { loadHeroStats, updateHeroFreeGensLine } from './app/hero-stats.js';
+import { validateStageableUpload } from './app/stage-validation.js';
+import { createFurnitureRefs, FURNITURE_LIMIT } from './app/furniture-refs.js';
+import { createVersionCarousel } from './app/version-carousel.js';
 
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
   
-    // Background video synchronization across page navigation
-    const BACKGROUND_VIDEO_KEY = 'stagify_background_video_time';
-    
-    // Store video currentTime when navigating away
-    const storeVideoTime = () => {
-        const video = $('#background-video');
-        if (video && !video.paused) {
-            localStorage.setItem(BACKGROUND_VIDEO_KEY, video.currentTime.toString());
-        }
-    };
-    
-    // Listen for various navigation events
-    window.addEventListener('beforeunload', storeVideoTime);
-    window.addEventListener('pagehide', storeVideoTime);
-    
-    // Also store time periodically while video is playing
-    let timeStoreInterval;
-    document.addEventListener('DOMContentLoaded', () => {
-        const video = $('#background-video');
-        if (video) {
-            video.addEventListener('play', () => {
-                // Store time every 2 seconds while playing
-                timeStoreInterval = setInterval(storeVideoTime, 2000);
-            });
-            
-            video.addEventListener('pause', () => {
-                if (timeStoreInterval) {
-                    clearInterval(timeStoreInterval);
-                }
-            });
-        }
-    });
-    
-    // Restore video currentTime when page loads
-    document.addEventListener('DOMContentLoaded', () => {
-        const video = $('#background-video');
-        if (video) {
-            const storedTime = localStorage.getItem(BACKGROUND_VIDEO_KEY);
-            
-            // Handle smooth video loading transition
-            video.addEventListener('loadeddata', () => {
-                video.classList.add('loaded');
-            });
-            
-            // Ensure video starts playing smoothly
-            video.addEventListener('canplay', () => {
-                video.play().catch(() => {
-                    // Handle autoplay restrictions gracefully - fallback to solid background
-                    video.style.display = 'none';
-                    document.body.style.background = '#b2c4f6';
-                });
-            });
-  
-            // Handle mobile autoplay restrictions
-            const attemptPlay = () => {
-                if (video.paused) {
-                    video.play().catch(() => {
-                        // Still failed, keep trying on user interaction
-                        // If this is the final attempt, hide video and show solid background
-                        if (playAttempts >= maxAttempts - 1) {
-                            video.style.display = 'none';
-                            document.body.style.background = '#b2c4f6';
-                        }
-                    });
-                }
-            };
-  
-            // Try to play on various user interactions
-            document.addEventListener('touchstart', attemptPlay, { once: true });
-            document.addEventListener('click', attemptPlay, { once: true });
-            document.addEventListener('scroll', attemptPlay, { once: true });
-  
-            // Also try periodically for mobile
-            let playAttempts = 0;
-            const maxAttempts = 1;
-            const playInterval = setInterval(() => {
-                if (video.paused && playAttempts < maxAttempts) {
-                    attemptPlay();
-                    playAttempts++;
-                } else if (!video.paused || playAttempts >= maxAttempts) {
-                    clearInterval(playInterval);
-                    // If we've exhausted all attempts, hide video and show solid background
-                    if (video.paused) {
-                        video.style.display = 'none';
-                        document.body.style.background = '#b2c4f6';
-                    }
-                }
-            }, 1000);
-            
-            if (storedTime) {
-                const targetTime = parseFloat(storedTime);
-                
-                const restoreTime = () => {
-                    if (video.duration && targetTime < video.duration) {
-                        video.currentTime = targetTime;
-                    }
-                };
-                
-                // Try to restore time when metadata is loaded
-                video.addEventListener('loadedmetadata', restoreTime);
-                
-                // Fallback if metadata is already loaded
-                if (video.readyState >= 1 && video.duration) {
-                    restoreTime();
-                }
-                
-                // Additional fallback after a short delay
-                setTimeout(restoreTime, 100);
-            }
-        }
-    });
+    initBackgroundVideoSync();
   
     const canvas1 = $('#canvas1');
     const downloadBtn = $('#download-btn');
@@ -212,231 +109,9 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
         if (stageFileInput) stageFileInput.click();
       });
     }
-    const furnitureFileInput = document.getElementById('stagify-furniture-file');
-    const furnitureList = document.getElementById('stagify-furniture-list');
-    const furnitureAddBtn = document.getElementById('stagify-furniture-add-btn');
-    let accumulatedFurnitureFiles = [];
-    let furniturePreviewUrls = [];
-    let furniturePreviewEl = null;
-    const FURNITURE_LIMIT = 5;
-    const FURNITURE_NAME_MAX = 40;
-
-    function getFurniturePreviewEl() {
-      if (furniturePreviewEl) return furniturePreviewEl;
-      furniturePreviewEl = document.createElement('div');
-      furniturePreviewEl.id = 'furniture-image-preview';
-      furniturePreviewEl.className = 'furniture-image-preview hidden';
-      furniturePreviewEl.setAttribute('aria-hidden', 'true');
-      var img = document.createElement('img');
-      img.alt = '';
-      furniturePreviewEl.appendChild(img);
-      document.body.appendChild(furniturePreviewEl);
-      return furniturePreviewEl;
-    }
-
-    function hideFurniturePreview() {
-      var pop = getFurniturePreviewEl();
-      pop.classList.add('hidden');
-      pop.setAttribute('aria-hidden', 'true');
-    }
-
-    function showFurniturePreview(previewUrl, anchorEl, filename) {
-      if (!previewUrl || !anchorEl) return;
-      var pop = getFurniturePreviewEl();
-      var img = pop.querySelector('img');
-      img.src = previewUrl;
-      img.alt = getStagingAlt('furnitureReferenceAlt', { filename: filename || 'furniture photo' });
-      pop.classList.remove('hidden');
-      pop.setAttribute('aria-hidden', 'false');
-      var rect = anchorEl.getBoundingClientRect();
-      var popW = 280;
-      var popH = 280;
-      var left = rect.right + 10;
-      var top = rect.top + rect.height / 2 - popH / 2;
-      if (left + popW > window.innerWidth - 8) {
-        left = rect.left - popW - 10;
-      }
-      if (left < 8) left = 8;
-      if (top < 8) top = 8;
-      if (top + popH > window.innerHeight - 8) {
-        top = window.innerHeight - popH - 8;
-      }
-      pop.style.left = left + 'px';
-      pop.style.top = top + 'px';
-    }
-
-    function revokeFurniturePreviewUrls() {
-      furniturePreviewUrls.forEach(function (u) {
-        if (u) URL.revokeObjectURL(u);
-      });
-      furniturePreviewUrls = [];
-      hideFurniturePreview();
-    }
-
-    function syncFurniturePreviewUrls() {
-      revokeFurniturePreviewUrls();
-      furniturePreviewUrls = accumulatedFurnitureFiles.map(function (f) {
-        return URL.createObjectURL(f);
-      });
-    }
-
-    function updateFurnitureAddBtn() {
-      if (!furnitureAddBtn) return;
-      if (accumulatedFurnitureFiles.length >= FURNITURE_LIMIT) {
-        furnitureAddBtn.classList.add('hidden');
-      } else {
-        furnitureAddBtn.classList.remove('hidden');
-      }
-    }
-
-    function renderFurnitureList() {
-      if (!furnitureList) return;
-      hideFurniturePreview();
-      furnitureList.innerHTML = '';
-      syncFurniturePreviewUrls();
-      if (!accumulatedFurnitureFiles.length) {
-        furnitureList.style.display = 'none';
-        updateFurnitureAddBtn();
-        return;
-      }
-      furnitureList.style.display = 'block';
-      accumulatedFurnitureFiles.forEach(function (f, idx) {
-        var row = document.createElement('div');
-        row.className = 'furniture-file-row';
-        var name = document.createElement('span');
-        var fullName = f.name || '';
-        name.textContent = abbreviateFileName(fullName, FURNITURE_NAME_MAX);
-        if (fullName.length > FURNITURE_NAME_MAX) name.title = fullName;
-
-        var previewBtn = document.createElement('button');
-        previewBtn.type = 'button';
-        previewBtn.className = 'furniture-preview-btn';
-        previewBtn.setAttribute('aria-label', 'Preview ' + fullName);
-        previewBtn.textContent = '?';
-        var previewUrl = furniturePreviewUrls[idx];
-        previewBtn.addEventListener('mouseenter', function () {
-          showFurniturePreview(previewUrl, previewBtn, fullName);
-        });
-        previewBtn.addEventListener('mouseleave', hideFurniturePreview);
-        previewBtn.addEventListener('focus', function () {
-          showFurniturePreview(previewUrl, previewBtn, fullName);
-        });
-        previewBtn.addEventListener('blur', hideFurniturePreview);
-
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'furniture-file-remove';
-        btn.title = 'Remove';
-        btn.textContent = '\u2715';
-        btn.addEventListener('click', function () {
-          accumulatedFurnitureFiles.splice(idx, 1);
-          syncFurnitureInput();
-          renderFurnitureList();
-        });
-        row.appendChild(name);
-        row.appendChild(previewBtn);
-        row.appendChild(btn);
-        furnitureList.appendChild(row);
-      });
-      updateFurnitureAddBtn();
-    }
-
-    function syncFurnitureInput() {
-      if (!furnitureFileInput) return;
-      var dt = new DataTransfer();
-      accumulatedFurnitureFiles.forEach(function (f) { dt.items.add(f); });
-      furnitureFileInput.files = dt.files;
-    }
-
-    function openFurniturePicker() {
-      if (!furnitureFileInput || accumulatedFurnitureFiles.length >= FURNITURE_LIMIT) return;
-      furnitureFileInput.click();
-    }
-
-    var FURNITURE_ACCEPT = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-
-    // Add files from either the file picker or a drag-and-drop, keeping the
-    // accept filter (the OS picker honors `accept`, but dropped files don't) and
-    // the 5-photo cap in one place.
-    async function addFurnitureFiles(fileList) {
-      // Convert any HEIC/HEIF picks to JPEG up front so they pass the filter and
-      // render like any other reference photo.
-      var raw = Array.from(fileList || []);
-      if (window.StagifyHeic) {
-        try {
-          raw = await Promise.all(raw.map(function (f) {
-            return window.StagifyHeic.isHeic(f) ? window.StagifyHeic.toDisplayableFile(f) : f;
-          }));
-        } catch (e) {
-          alert(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn't read that HEIC photo. Please try a JPG or PNG.");
-          return;
-        }
-      }
-      var incoming = raw.filter(function (f) {
-        return f && (FURNITURE_ACCEPT.indexOf(f.type) !== -1 || /\.(jpe?g|png|webp)$/i.test(f.name || ''));
-      });
-      if (!incoming.length) return;
-      incoming.forEach(function (f) {
-        if (accumulatedFurnitureFiles.length < FURNITURE_LIMIT) {
-          accumulatedFurnitureFiles.push(f);
-        }
-      });
-      if (accumulatedFurnitureFiles.length > FURNITURE_LIMIT) {
-        accumulatedFurnitureFiles = accumulatedFurnitureFiles.slice(0, FURNITURE_LIMIT);
-      }
-      syncFurnitureInput();
-      renderFurnitureList();
-    }
-
-    if (furnitureAddBtn) {
-      furnitureAddBtn.addEventListener('click', openFurniturePicker);
-    }
-
-    if (furnitureFileInput) {
-      furnitureFileInput.addEventListener('change', () => {
-        addFurnitureFiles(furnitureFileInput.files);
-      });
-    }
-
-    // Drag-and-drop: drop image files onto the "+ Add photos" button (or the
-    // list of already-added photos) to add reference photos, same as picking
-    // them. Highlights the button while a valid drag is over it.
-    (function wireFurnitureDrop() {
-      var zones = [furnitureAddBtn, furnitureList].filter(Boolean);
-      if (!zones.length) return;
-      var dragDepth = 0;
-      function atLimit() {
-        return accumulatedFurnitureFiles.length >= FURNITURE_LIMIT;
-      }
-      function hasFiles(e) {
-        var dt = e.dataTransfer;
-        return !!dt && Array.prototype.indexOf.call(dt.types || [], 'Files') !== -1;
-      }
-      zones.forEach(function (zone) {
-        zone.addEventListener('dragenter', function (e) {
-          if (!hasFiles(e) || atLimit()) return;
-          e.preventDefault();
-          dragDepth++;
-          if (furnitureAddBtn) furnitureAddBtn.classList.add('is-drag-over');
-        });
-        zone.addEventListener('dragover', function (e) {
-          if (!hasFiles(e) || atLimit()) return;
-          e.preventDefault();
-          if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
-        });
-        zone.addEventListener('dragleave', function () {
-          dragDepth = Math.max(0, dragDepth - 1);
-          if (dragDepth === 0 && furnitureAddBtn) furnitureAddBtn.classList.remove('is-drag-over');
-        });
-        zone.addEventListener('drop', function (e) {
-          if (!hasFiles(e)) return;
-          e.preventDefault();
-          dragDepth = 0;
-          if (furnitureAddBtn) furnitureAddBtn.classList.remove('is-drag-over');
-          if (e.dataTransfer) addFurnitureFiles(e.dataTransfer.files);
-        });
-      });
-    })();
+    // Furniture reference photos live in their own island (scripts/app/furniture-refs.js);
+    // the entry reads the accumulated files via getFiles() and resets them on new upload.
+    const furnitureRefs = createFurnitureRefs({ getStagingAlt });
 
     function hideStagingLimitInViewer() {
       if (stagingLimitViewer) stagingLimitViewer.classList.add('hidden');
@@ -470,10 +145,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
     // masked edits of it; the after view holds the staged result(s) plus any
     // masked refinements. Each is capped so the 6th mask attempt is blocked.
     const MAX_MASK_VERSIONS = 6;
-    let beforeVersions = [];
-    let beforeIndex = 0;
-    let afterVersions = [];
-    let afterIndex = 0;
 
     function isMobileStagingViewport() {
       return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
@@ -574,48 +245,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
     const DEFAULT_UNSTAGEABLE_MESSAGE =
       "This doesn't look like a room or property space. Please upload a photo of an interior room or exterior space you'd like to stage.";
 
-    // Downscale a data URL to a small JPEG (keeps the POST body well under the
-    // server's 50MB JSON cap and saves tokens), then ask the server whether it is
-    // a stageable space. Always resolves to { valid, reason }; never rejects.
-    function validateStageableUpload(dataUrl) {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = async () => {
-          let payload = dataUrl;
-          try {
-            // 512px matches the server's low-detail vision tile — bigger would
-            // only be downsampled away, so this keeps the upload small and fast.
-            const max = 512;
-            const scale = Math.min(1, max / Math.max(img.width, img.height));
-            const c = document.createElement('canvas');
-            c.width = Math.max(1, Math.round(img.width * scale));
-            c.height = Math.max(1, Math.round(img.height * scale));
-            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-            payload = c.toDataURL('image/jpeg', 0.9);
-          } catch (e) { /* fall back to the original data URL */ }
-          try {
-            const tok = window.StagifyAuth && window.StagifyAuth.getToken();
-            const resp = await fetch('/api/validate-image', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
-              },
-              body: JSON.stringify({ image: payload, authToken: tok || undefined }),
-            });
-            if (!resp.ok) return resolve({ valid: true, reason: '' });
-            const r = await resp.json().catch(() => null);
-            if (!r || typeof r.valid !== 'boolean') return resolve({ valid: true, reason: '' });
-            resolve(r);
-          } catch (e) {
-            resolve({ valid: true, reason: '' });
-          }
-        };
-        img.onerror = () => resolve({ valid: true, reason: '' });
-        img.src = dataUrl;
-      });
-    }
-
     async function handleStageFile(file) {
       // iPhone HEIC/HEIF photos aren't decodable by most browsers; convert to
       // JPEG first so the preview and on-canvas editing work everywhere.
@@ -647,10 +276,8 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
       reader.onload = () => {
         stagePreview.src = reader.result;
         // Seed the before carousel with the original photo; reset the after carousel.
-        beforeVersions = [reader.result];
-        beforeIndex = 0;
-        afterVersions = [];
-        afterIndex = 0;
+        setBeforeVersions([reader.result]);
+        setAfterVersions([]);
         stagePreview.alt = getStagingAlt('uploadedRoomAlt', {
           filenameSuffix: file.name ? ': ' + file.name : '',
         });
@@ -726,10 +353,11 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
         const varSel = document.getElementById('stagify-variation-count');
         if (modelSel) formData.append('model', modelSel.value || 'gpt-4o-mini');
         if (varSel) formData.append('variationCount', varSel.value || '1');
-        if (accumulatedFurnitureFiles.length) {
-          const n = Math.min(FURNITURE_LIMIT, accumulatedFurnitureFiles.length);
+        const furnitureFiles = furnitureRefs.getFiles();
+        if (furnitureFiles.length) {
+          const n = Math.min(FURNITURE_LIMIT, furnitureFiles.length);
           for (let i = 0; i < n; i++) {
-            formData.append('furnitureImage', accumulatedFurnitureFiles[i]);
+            formData.append('furnitureImage', furnitureFiles[i]);
           }
         }
       }
@@ -1112,143 +740,40 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
     window.addEventListener('resize', positionEmptyRoomFab);
 
     // ── Version carousel (before/after) ──
-    function activeViewIsAfter() {
-      return toggleAfterBtn && toggleAfterBtn.classList.contains('active');
-    }
-
-    function drawAfter(url, ariaSuffix) {
-      return new Promise((resolve) => {
-        const im = new Image();
-        im.onload = () => {
-          const ctx1 = canvas1.getContext('2d');
-          ctx1.canvas.width = im.width;
-          ctx1.canvas.height = im.height;
-          ctx1.drawImage(im, 0, 0, im.width, im.height);
-          updateStagedCanvasAria(ariaSuffix || '');
-          resolve();
-        };
-        im.src = url;
-      });
-    }
-
-    function showAfterVersion(i) {
-      if (!afterVersions.length) return;
-      afterIndex = Math.max(0, Math.min(i, afterVersions.length - 1));
-      drawAfter(afterVersions[afterIndex], afterVersions.length > 1 ? ` (${afterIndex + 1})` : '');
-      updateCarouselUI();
-    }
-
-    function showBeforeVersion(i) {
-      if (!beforeVersions.length) return;
-      beforeIndex = Math.max(0, Math.min(i, beforeVersions.length - 1));
-      stagePreview.src = beforeVersions[beforeIndex];
-      updateCarouselUI();
-    }
-
-    function carouselStep(delta) {
-      if (activeViewIsAfter()) showAfterVersion(afterIndex + delta);
-      else showBeforeVersion(beforeIndex + delta);
-    }
-
-    // Anchor the nav arrows + dots to the rendered image (not the viewer box),
-    // so dots sit at the photo's bottom edge and arrows are centered on it.
-    function positionCarousel() {
-      const el = activeViewIsAfter() ? canvas1 : stagePreview;
-      if (!el || !el.offsetHeight || !el.offsetWidth) return;
-      const top = el.offsetTop;
-      const left = el.offsetLeft;
-      const w = el.offsetWidth;
-      const h = el.offsetHeight;
-      const midY = top + h / 2;
-      if (carouselPrev && !carouselPrev.classList.contains('hidden')) {
-        carouselPrev.style.top = midY + 'px';
-        carouselPrev.style.left = (left + 12) + 'px';
-        carouselPrev.style.right = 'auto';
-      }
-      if (carouselNext && !carouselNext.classList.contains('hidden')) {
-        carouselNext.style.top = midY + 'px';
-        carouselNext.style.left = (left + w - 12 - carouselNext.offsetWidth) + 'px';
-        carouselNext.style.right = 'auto';
-      }
-      if (carouselDots && !carouselDots.classList.contains('hidden')) {
-        carouselDots.style.left = (left + w / 2) + 'px';
-        carouselDots.style.bottom = 'auto';
-        carouselDots.style.top = (top + h - carouselDots.offsetHeight - 12) + 'px';
-      }
-    }
-
-    window.addEventListener('resize', positionCarousel);
-    if (stagePreview) stagePreview.addEventListener('load', positionCarousel);
-
-    function updateCarouselUI() {
-      if (!carouselDots) return;
-      const isAfter = activeViewIsAfter();
-      const list = isAfter ? afterVersions : beforeVersions;
-      const idx = isAfter ? afterIndex : beforeIndex;
-      const viewerOpen = imageViewerContainer && !imageViewerContainer.classList.contains('hidden');
-      const show = viewerOpen && list.length > 1 && (!isAfter || hasProcessedImage);
-      [carouselPrev, carouselNext, carouselDots].forEach((el) => {
-        if (el) el.classList.toggle('hidden', !show);
-      });
-      if (!show) return;
-      if (carouselPrev) carouselPrev.disabled = idx <= 0;
-      if (carouselNext) carouselNext.disabled = idx >= list.length - 1;
-      carouselDots.innerHTML = '';
-      list.forEach((_, i) => {
-        const d = document.createElement('button');
-        d.type = 'button';
-        d.className = 'stage-carousel-dot' + (i === idx ? ' active' : '');
-        d.setAttribute('role', 'tab');
-        d.setAttribute('aria-selected', i === idx ? 'true' : 'false');
-        d.setAttribute('aria-label', (getStagingAlt('versionLabel', { index: i + 1 }) || ('Version ' + (i + 1))));
-        d.addEventListener('click', () => {
-          if (isAfter) showAfterVersion(i);
-          else showBeforeVersion(i);
-        });
-        carouselDots.appendChild(d);
-      });
-      positionCarousel();
-      requestAnimationFrame(positionCarousel);
-    }
-
-    if (carouselPrev) carouselPrev.addEventListener('click', () => carouselStep(-1));
-    if (carouselNext) carouselNext.addEventListener('click', () => carouselStep(1));
-
-    function showBeforeView() {
-      stagePreview.classList.remove('hidden');
-      canvas1.classList.add('hidden');
-      toggleBeforeBtn.classList.add('active');
-      toggleAfterBtn.classList.remove('active');
-      // Hide placeholder when showing the image
-      if (stagePreview.src) {
-        processingPlaceholder.style.display = 'none';
-      }
-      updateMaskButtonVisibility();
-      updateEmptyRoomButtonVisibility();
-      updateCarouselUI();
-    }
-
-    function showAfterView() {
-      stagePreview.classList.add('hidden');
-      canvas1.classList.remove('hidden');
-      toggleBeforeBtn.classList.remove('active');
-      toggleAfterBtn.classList.add('active');
-      // Show placeholder if no processing has been done yet
-      if (!hasProcessedImage) {
-        processingPlaceholder.style.display = 'flex';
-      } else {
-        processingPlaceholder.style.display = 'none';
-      }
-      updateMaskButtonVisibility();
-      updateEmptyRoomButtonVisibility();
-      updateCarouselUI();
-    }
-
-    // Add toggle event listeners
-    if (toggleBeforeBtn) toggleBeforeBtn.addEventListener('click', showBeforeView);
-    if (toggleAfterBtn) toggleAfterBtn.addEventListener('click', () => {
-      // Always allow switching to "After" view
-      showAfterView();
+    // Extracted island (scripts/app/version-carousel.js): owns the version
+    // arrays and the Before/After toggle; the entry mutates them only through
+    // this API and injects the FAB/aria glue it calls back into.
+    const {
+      activeViewIsAfter,
+      drawAfter,
+      showBeforeVersion,
+      showBeforeView,
+      showAfterView,
+      updateCarouselUI,
+      getBeforeVersions,
+      setBeforeVersions,
+      pushBeforeVersion,
+      getBeforeIndex,
+      getAfterVersions,
+      setAfterVersions,
+      pushAfterVersion,
+      setAfterIndex,
+    } = createVersionCarousel({
+      canvas1,
+      stagePreview,
+      toggleBeforeBtn,
+      toggleAfterBtn,
+      processingPlaceholder,
+      imageViewerContainer,
+      carouselPrev,
+      carouselNext,
+      carouselDots,
+      maxVersions: MAX_MASK_VERSIONS,
+      getHasProcessedImage: () => hasProcessedImage,
+      updateMaskButtonVisibility,
+      updateEmptyRoomButtonVisibility,
+      updateStagedCanvasAria,
+      getStagingAlt,
     });
   
     async function stageImage() {
@@ -1284,14 +809,15 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
       try {
         // Stage whichever "before" version is currently showing (original or a masked edit).
         let stageInput = currentImageFile;
-        if (beforeIndex > 0 && beforeVersions[beforeIndex]) {
-          stageInput = dataURLToFile(beforeVersions[beforeIndex], (currentImageFile && currentImageFile.name) || 'photo.png');
+        const bi = getBeforeIndex();
+        const bv = getBeforeVersions();
+        if (bi > 0 && bv[bi]) {
+          stageInput = dataURLToFile(bv[bi], (currentImageFile && currentImageFile.name) || 'photo.png');
         }
         const processed = await processWithAI(stageInput);
         const urls = Array.isArray(processed) ? processed : [processed];
         // Reset the after carousel to the fresh staging result(s).
-        afterVersions = urls.slice(0, MAX_MASK_VERSIONS);
-        afterIndex = 0;
+        setAfterVersions(urls.slice(0, MAX_MASK_VERSIONS));
 
         // Display the processed image
         const img = new Image();
@@ -1396,29 +922,26 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
       stagePreview,
       processBtn,
       activeViewIsAfter,
-      getBeforeVersions: () => beforeVersions,
-      getAfterVersions: () => afterVersions,
+      getBeforeVersions,
+      getAfterVersions,
       maxVersions: MAX_MASK_VERSIONS,
       updateMaskButtonVisibility,
       onMaskCommit: async (finalUrl, isBefore) => {
         if (isBefore) {
           // Append a new unstaged "before" variant; Process stages whichever
           // before version is on screen.
-          beforeVersions.push(finalUrl);
-          if (beforeVersions.length > MAX_MASK_VERSIONS) beforeVersions = beforeVersions.slice(-MAX_MASK_VERSIONS);
+          const bv = pushBeforeVersion(finalUrl);
           showBeforeView();
           stagePreview.classList.remove('processing');
-          showBeforeVersion(beforeVersions.length - 1);
+          showBeforeVersion(bv.length - 1);
           updateMaskButtonVisibility();
         } else {
           // Append a refined staged version and show it.
-          afterVersions.push(finalUrl);
-          if (afterVersions.length > MAX_MASK_VERSIONS) afterVersions = afterVersions.slice(-MAX_MASK_VERSIONS);
+          const av = pushAfterVersion(finalUrl);
           hasProcessedImage = true;
           showAfterView();
-          await drawAfter(afterVersions[afterVersions.length - 1],
-            afterVersions.length > 1 ? ` (${afterVersions.length})` : '');
-          afterIndex = afterVersions.length - 1;
+          await drawAfter(av[av.length - 1], av.length > 1 ? ` (${av.length})` : '');
+          setAfterIndex(av.length - 1);
           canvas1.classList.remove('processing');
           updateCarouselUI();
           updateMaskButtonVisibility();
@@ -1433,10 +956,8 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
       currentImageFile = null;
       hasProcessedImage = false; // Reset processing state
       stagePreview.src = '';
-      beforeVersions = [];
-      beforeIndex = 0;
-      afterVersions = [];
-      afterIndex = 0;
+      setBeforeVersions([]);
+      setAfterVersions([]);
       updateMaskButtonVisibility();
       updateCarouselUI();
       const vt = document.getElementById('variation-thumbs');
@@ -1444,9 +965,7 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
         vt.innerHTML = '';
         vt.classList.add('hidden');
       }
-      accumulatedFurnitureFiles = [];
-      if (furnitureFileInput) furnitureFileInput.value = '';
-      renderFurnitureList();
+      furnitureRefs.reset();
       // Show upload zone, hide viewer
       stageDropzone.classList.remove('hidden');
       imageViewerContainer.classList.add('hidden');
@@ -1472,108 +991,11 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
       modal.classList.add('hidden');
     }
   
-    // Custom select component
-    function initCustomSelect(rootSelector) {
-      const root = document.querySelector(rootSelector);
-      if (!root) return { get value() { return ''; } };
-      const trigger = root.querySelector('.select-trigger');
-      const menu = root.querySelector('.select-menu');
-      const valueEl = root.querySelector('.select-value');
-      const options = Array.from(root.querySelectorAll('.option'));
-      function setValue(val) {
-        root.dataset.value = val;
-        valueEl.textContent = options.find(o => o.dataset.value === val)?.textContent || val;
-        options.forEach(o => o.classList.toggle('selected', o.dataset.value === val));
-        menu.classList.add('hidden');
-      }
-      trigger.addEventListener('click', () => {
-        menu.classList.toggle('hidden');
-      });
-      options.forEach(o => {
-        o.addEventListener('click', () => setValue(o.dataset.value));
-      });
-      document.addEventListener('click', (e) => {
-        if (!root.contains(e.target)) menu.classList.add('hidden');
-      });
-      return {
-        get value() { return root.dataset.value; },
-        set(value) { setValue(value); }
-      };
-    }
-
-  /** Show upgrade nudge only for users signed into a free account. */
-  window.__stagifyUpdateHeroFreeGensLine = function () {
-    var el = document.getElementById('hero-free-gens-today');
-    if (!el) return;
-    var auth = window.StagifyAuth;
-    var isSignedInFree =
-      auth && auth.getToken && auth.getToken() && auth.user && !(auth.isProUser && auth.isProUser());
-    if (!isSignedInFree) {
-      el.classList.add('hidden');
-      return;
-    }
-    el.innerHTML = window.LanguageSystem?.getText('hero.freeGensUpgrade') ||
-      'Try Stagify+ today — <a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a>';
-    el.classList.remove('hidden');
-  };
+  // auth.js (classic script, runs before this module) calls this via window
+  // after sign-in/out; keep the exposure at top-level module eval.
+  window.__stagifyUpdateHeroFreeGensLine = updateHeroFreeGensLine;
   
   
-  // Load hero stat pills from server, then reveal and animate to live counts
-  function loadHeroStats(options) {
-    if (!document.querySelector('.stat-pill-number[data-stat]')) return;
-
-    var opts = options || {};
-    var isRefresh = opts.refresh === true;
-
-    Promise.all([
-      fetch('/api/prompt-count').then(function (r) {
-        return r.json();
-      }),
-      fetch('/api/contact-count').then(function (r) {
-        return r.json();
-      }),
-    ])
-      .then(function (results) {
-        var promptData = results[0];
-        var contactData = results[1];
-        var rooms =
-          promptData && promptData.promptCount !== undefined
-            ? Number(promptData.promptCount)
-            : null;
-        var users =
-          contactData && contactData.usersServed !== undefined
-            ? Number(contactData.usersServed)
-            : contactData && contactData.contactCount !== undefined
-              ? Number(contactData.contactCount) +
-                Number(contactData.userCount || 0)
-              : null;
-
-        if (window.StagifyHeroStats && typeof window.StagifyHeroStats.setCounts === 'function') {
-          window.StagifyHeroStats.setCounts(
-            { roomsStaged: rooms, usersServed: users },
-            { refresh: isRefresh }
-          );
-          return;
-        }
-
-        var wrap = document.getElementById('hero-stats');
-        var roomsEl = document.querySelector('.stat-pill-number[data-stat="roomsStaged"]');
-        var usersEl = document.querySelector('.stat-pill-number[data-stat="usersServed"]');
-        if (roomsEl && rooms != null && !Number.isNaN(rooms)) roomsEl.textContent = String(rooms);
-        if (usersEl && users != null && !Number.isNaN(users)) usersEl.textContent = String(users);
-        if (wrap) wrap.classList.add('is-ready');
-      })
-      .catch(function (error) {
-        console.error('Error loading hero stats:', error);
-        if (
-          window.StagifyHeroStats &&
-          typeof window.StagifyHeroStats.revealWithoutCounts === 'function'
-        ) {
-          window.StagifyHeroStats.revealWithoutCounts();
-        }
-      });
-  }
-
   // Initialize on page load (all pages)
   document.addEventListener('DOMContentLoaded', function() {
     loadHeroStats();
@@ -1596,48 +1018,6 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
     }
   });
   
-  // 3D Tilt Effect for the contact cards
-  function init3DTiltEffect() {
-    // Tilt is only for the contact cards.
-    const contactCards = document.querySelectorAll('.contact-card');
-    contactCards.forEach((card) => {
-      applyTiltEffectToElement(card);
-    });
-  }
-
-  function applyTiltEffectToElement(element) {
-    let isHovering = false;
-    let rect = null;        // cached on enter so we don't force a layout read per move
-    let rafId = null;
-    let lastX = 0, lastY = 0;
-
-    element.addEventListener('mouseenter', function() {
-      isHovering = true;
-      rect = element.getBoundingClientRect();
-    });
-
-    element.addEventListener('mouseleave', function() {
-      isHovering = false;
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-      // Reset to neutral position
-      element.style.transform = 'rotateX(0deg) rotateY(0deg)';
-    });
-
-    element.addEventListener('mousemove', function(e) {
-      if (!isHovering || !rect) return;
-      lastX = e.clientX;
-      lastY = e.clientY;
-      // Coalesce rapid moves into a single transform write per frame.
-      if (rafId) return;
-      rafId = requestAnimationFrame(function() {
-        rafId = null;
-        // Calculate rotation values (max 8 degrees) from the cached rect.
-        const rotateY = ((lastX - (rect.left + rect.width / 2)) / (rect.width / 2)) * 8;
-        const rotateX = -((lastY - (rect.top + rect.height / 2)) / (rect.height / 2)) * 8;
-        element.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-      });
-    });
-  }
   
   
   
