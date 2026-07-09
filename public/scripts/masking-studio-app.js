@@ -1,5 +1,4 @@
 import {
-  createPool,
   nextColorIdx,
   createLayer,
   layerColor as _layerColor,
@@ -7,17 +6,11 @@ import {
   previewText as _previewText,
   statusChip as _statusChip,
 } from './masking-studio/layers.js';
-import {
-  regionNameFromBounds,
-  buildAreaContext as _buildAreaContext,
-  requestError as _requestError,
-} from './masking-studio/generation.js';
-import {
-  serializeLayer,
-  serializeSession,
-  deserializeLayer,
-  isRestorableSession,
-} from './masking-studio/session.js';
+import { requestError as _requestError } from './masking-studio/generation.js';
+import { createSessionStore } from './masking-studio/session-store.js';
+import { createGeneratePipeline } from './masking-studio/generate-pipeline.js';
+import { createDrawTools } from './masking-studio/draw-tools.js';
+import { createSegWand } from './masking-studio/seg-wand.js';
 
         // ---------------------------------------------------------------------
         // Access gate: Masking Studio is Stagify+ only. Anonymous visitors were
@@ -144,17 +137,6 @@ import {
           }
         }
 
-        // Shared mask math (growBinaryMask/buildModelMask/buildBlendMask/
-        // compositeMaskedEditCanvas) — same module the main tool and the AI
-        // Designer use, so the pixel-preservation guarantee is identical.
-        let growBinaryMask, buildModelMask, buildBlendMask, compositeMaskedEditCanvas;
-        const maskCoreReady = import('/scripts/mask-core.js').then((m) => {
-          growBinaryMask = m.growBinaryMask;
-          buildModelMask = m.buildModelMask;
-          buildBlendMask = m.buildBlendMask;
-          compositeMaskedEditCanvas = m.compositeMaskedEditCanvas;
-        });
-
         // ---------------------------------------------------------------------
         // State
         // ---------------------------------------------------------------------
@@ -170,27 +152,29 @@ import {
         ];
         const MAX_LAYERS = PALETTE.length;
 
-        let base = null;          // { w, h, canvas } — working-resolution room photo
-        let layers = [];          // area objects, in z-order
-        let activeId = null;      // selected area (receives brush strokes)
-        let phase = 'empty';      // 'empty' | 'draw' | 'generating' | 'review'
-        let view = 'after';       // review-phase viewer toggle
-        let tool = 'brush';
-        let brushSize = 50;
-        let layerSeq = 0;
-        let genRun = 0;           // ignore async completions from stale runs
-        let genMeta = null;       // { coreGrow, featherPx } of the last run
+        // One shared mutable store: every field is touched by the entry and at
+        // least one extracted island (see scripts/masking-studio/*.js).
+        const state = {
+          base: null,        // { w, h, canvas } — working-resolution room photo
+          layers: [],        // area objects, in z-order
+          activeId: null,    // selected area (receives brush strokes)
+          phase: 'empty',    // 'empty' | 'draw' | 'generating' | 'review'
+          view: 'after',     // review-phase viewer toggle
+          brushSize: 50,
+          layerSeq: 0,
+          genRun: 0,         // ignore async completions from stale runs
+          genMeta: null,     // { coreGrow, featherPx } of the last run
+          undoStack: [],     // pre-stroke canvas snapshots (LIFO, capped)
+          redoStack: [],     // undone states, restored by Ctrl+Y (same cap)
+          segCache: null,    // decoded all-object masks for wand hit-testing
+          segToken: 0,       // bumped on photo change → drops in-flight results
+          comparing: false,  // dragging the compare divider
+          zoom: 1,           // 1 = fit to view, up to 4x
+          spaceDown: false,  // Space held → pan mode
+          panning: false,
+        };
         let busyMsgTimer = null;
-        let undoStack = [];       // pre-stroke canvas snapshots (LIFO, capped)
-        let redoStack = [];       // undone states, restored by Ctrl+Y (same cap)
-        let segCache = null;      // decoded all-object masks for wand hit-testing
-        let segToken = 0;         // bumped on photo change → drops in-flight results
         let comparePos = 0.5;     // compare-view divider, 0..1 of photo width
-        let comparing = false;    // dragging the compare divider
-        let zoom = 1;             // 1 = fit to view, up to 4x
-        let spaceDown = false;    // Space held → pan mode
-        let panning = false;
-        let panStart = null;      // { x, y, sl, st } at pan pointerdown
 
         // ---------------------------------------------------------------------
         // DOM refs
@@ -314,7 +298,7 @@ import {
           const c = document.createElement('canvas');
           c.width = w; c.height = h;
           c.getContext('2d').drawImage(img, 0, 0, w, h);
-          base = { w: w, h: h, canvas: c };
+          state.base = { w: w, h: h, canvas: c };
 
           baseCanvas.width = w;
           baseCanvas.height = h;
@@ -323,15 +307,15 @@ import {
           resultCanvas.height = h;
 
           // Fresh session for the new photo.
-          layers.forEach((l) => l.el && l.canvasEl && l.canvasEl.remove());
-          layers = [];
-          layerSeq = 0;
-          genRun++;
-          genMeta = null;
-          undoStack = [];
-          redoStack = [];
-          segCache = null;
-          segToken++;
+          state.layers.forEach((l) => l.el && l.canvasEl && l.canvasEl.remove());
+          state.layers = [];
+          state.layerSeq = 0;
+          state.genRun++;
+          state.genMeta = null;
+          state.undoStack = [];
+          state.redoStack = [];
+          state.segCache = null;
+          state.segToken++;
           resetZoom();
           if (!(opts && opts.noLayer)) addLayer();
 
@@ -348,52 +332,52 @@ import {
         // Area layers
         // ---------------------------------------------------------------------
         function addLayer() {
-          if (!base || layers.length >= MAX_LAYERS) return;
-          const colorIdx = nextColorIdx(layers, PALETTE.length);
+          if (!state.base || state.layers.length >= MAX_LAYERS) return;
+          const colorIdx = nextColorIdx(state.layers, PALETTE.length);
           if (colorIdx === -1) return;
           const c = document.createElement('canvas');
-          c.width = base.w;
-          c.height = base.h;
+          c.width = state.base.w;
+          c.height = state.base.h;
           c.className = 'ms-layer-canvas';
           // Insert below the result canvas so results always cover highlights.
           stack.insertBefore(c, resultCanvas);
-          const layer = createLayer({ id: 'L' + (++layerSeq), colorIdx: colorIdx, canvasEl: c });
-          layers.push(layer);
-          activeId = layer.id;
+          const layer = createLayer({ id: 'L' + (++state.layerSeq), colorIdx: colorIdx, canvasEl: c });
+          state.layers.push(layer);
+          state.activeId = layer.id;
           renderLayers();
           updateControls();
           scheduleSessionSave();
         }
 
         function removeLayer(id) {
-          const idx = layers.findIndex((l) => l.id === id);
+          const idx = state.layers.findIndex((l) => l.id === id);
           if (idx === -1) return;
-          const layer = layers[idx];
+          const layer = state.layers[idx];
           if (layer.canvasEl) layer.canvasEl.remove();
-          layers.splice(idx, 1);
-          if (activeId === id) activeId = layers.length ? layers[layers.length - 1].id : null;
-          if (!layers.length && base) addLayer();
-          if (phase === 'review') compositeAll();
+          state.layers.splice(idx, 1);
+          if (state.activeId === id) state.activeId = state.layers.length ? state.layers[state.layers.length - 1].id : null;
+          if (!state.layers.length && state.base) addLayer();
+          if (state.phase === 'review') compositeAll();
           // Re-derive the whole phase UI: in refine, removing an area must
           // refresh the ghost backdrop and may retire the Looks Good button
           // (when the last staged area went away).
-          setPhase(phase);
+          setPhase(state.phase);
           scheduleSessionSave();
         }
 
         function getLayer(id) {
-          return layers.find((l) => l.id === id) || null;
+          return state.layers.find((l) => l.id === id) || null;
         }
 
         function activeLayer() {
-          return getLayer(activeId);
+          return getLayer(state.activeId);
         }
 
         // Thin binding wrappers over the pure area-model helpers (scripts/
         // masking-studio/layers.js): bind the live PALETTE / layers array / tx so
         // every call site below stays unchanged. Logic + tests live in the module.
         function layerColor(layer) { return _layerColor(layer, PALETTE); }
-        function layerTitle(layer) { return _layerTitle(layer, layers, tx); }
+        function layerTitle(layer) { return _layerTitle(layer, state.layers, tx); }
         function statusChip(layer) { return _statusChip(layer, tx); }
 
         // Rebuild the layer cards. Prompt edits mutate state directly (no
@@ -402,8 +386,8 @@ import {
         // to their header row so six areas don't make the toolbar a tower.
         function renderLayers() {
           layerList.textContent = '';
-          layers.forEach((layer) => {
-            const isActive = layer.id === activeId;
+          state.layers.forEach((layer) => {
+            const isActive = layer.id === state.activeId;
             const card = document.createElement('div');
             card.className = 'ms-layer' + (isActive ? ' is-active' : '');
             card.style.setProperty('--layer-color', layerColor(layer));
@@ -423,7 +407,7 @@ import {
             renameBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
             renameBtn.addEventListener('click', (e) => {
               e.stopPropagation();
-              if (phase === 'generating') return;
+              if (state.phase === 'generating') return;
               let settled = false;
               const input = document.createElement('input');
               input.type = 'text';
@@ -469,7 +453,7 @@ import {
             removeBtn.innerHTML = '&times;';
             removeBtn.addEventListener('click', (e) => {
               e.stopPropagation();
-              if (phase === 'generating') return;
+              if (state.phase === 'generating') return;
               removeLayer(layer.id);
             });
             head.appendChild(dot);
@@ -480,8 +464,8 @@ import {
             head.appendChild(caret);
             head.appendChild(removeBtn);
             head.addEventListener('click', () => {
-              if (phase === 'generating') return;
-              activeId = layer.id;
+              if (state.phase === 'generating') return;
+              state.activeId = layer.id;
               renderLayers();
             });
 
@@ -512,7 +496,7 @@ import {
               b.setAttribute('aria-pressed', layer.mode === val ? 'true' : 'false');
               b.textContent = label;
               b.addEventListener('click', () => {
-                if (phase === 'generating' || layer.mode === val) return;
+                if (state.phase === 'generating' || layer.mode === val) return;
                 layer.mode = val;
                 renderLayers();
                 updateControls();
@@ -551,8 +535,8 @@ import {
               scheduleSessionSave();
             });
             promptEl.addEventListener('focus', () => {
-              if (activeId !== layer.id && phase !== 'generating') {
-                activeId = layer.id;
+              if (state.activeId !== layer.id && state.phase !== 'generating') {
+                state.activeId = layer.id;
                 // Highlight without a full re-render so the textarea keeps focus.
                 layerList.querySelectorAll('.ms-layer').forEach((el) => el.classList.remove('is-active'));
                 card.classList.add('is-active');
@@ -574,7 +558,7 @@ import {
                 toggle.title = ideasLabel;
                 toggle.setAttribute('aria-expanded', 'false');
                 toggle.addEventListener('click', () => {
-                  if (phase === 'generating') return;
+                  if (state.phase === 'generating') return;
                   layer.presetsOpen = true;
                   renderLayers();
                 });
@@ -601,7 +585,7 @@ import {
                   chipBtn.textContent = label;
                   chipBtn.title = sentence;
                   chipBtn.addEventListener('click', () => {
-                    if (phase === 'generating') return;
+                    if (state.phase === 'generating') return;
                     layer.prompt = sentence;
                     layer.presetsOpen = false; // next time takes a + click again
                     renderLayers();
@@ -639,7 +623,7 @@ import {
               rm.setAttribute('aria-label', tx('pdf.maskEditor.referenceRemove', 'Remove reference photo'));
               rm.innerHTML = '&times;';
               rm.addEventListener('click', () => {
-                if (phase === 'generating') return;
+                if (state.phase === 'generating') return;
                 layer.furniture = null;
                 layer.furnitureName = '';
                 renderLayers();
@@ -655,7 +639,7 @@ import {
               add.className = 'ms-furniture-add';
               add.textContent = tx('maskingStudio.addFurniture', '+ Furniture photo');
               add.addEventListener('click', () => {
-                if (phase === 'generating') return;
+                if (state.phase === 'generating') return;
                 pendingFurnitureLayerId = layer.id;
                 furnitureInput.click();
               });
@@ -664,20 +648,20 @@ import {
             }
 
             // Quick way to clear one area's strokes (undoable via Ctrl+Z).
-            if (layer.painted && phase === 'draw') {
+            if (layer.painted && state.phase === 'draw') {
               const clearBtn = document.createElement('button');
               clearBtn.type = 'button';
               clearBtn.className = 'ms-clear-btn';
               clearBtn.textContent = tx('maskingStudio.clearHighlight', 'Clear highlight');
               clearBtn.addEventListener('click', () => {
-                if (phase !== 'draw') return;
+                if (state.phase !== 'draw') return;
                 snapshotForUndo();
-                redoStack = []; // committed clear forks history
-                layer.canvasEl.getContext('2d').clearRect(0, 0, base.w, base.h);
+                state.redoStack = []; // committed clear forks history
+                layer.canvasEl.getContext('2d').clearRect(0, 0, state.base.w, state.base.h);
                 layer.painted = false;
                 // All masks, not just this one: neighbors' halos are clipped
                 // against this area's (now vacated) pixels.
-                layers.forEach((l) => { l.blendMask = null; });
+                state.layers.forEach((l) => { l.blendMask = null; });
                 renderLayers();
                 updateControls();
                 updateStageBackdrop();
@@ -697,7 +681,7 @@ import {
               retry.textContent = tx('maskingStudio.retry', 'Retry');
               retry.addEventListener('click', () => retryLayer(layer.id));
               body.appendChild(retry);
-            } else if (layer.status === 'done' && phase === 'review') {
+            } else if (layer.status === 'done' && state.phase === 'review') {
               // Version picker: flip between every generated result of this area.
               if (layer.candidates.length > 1) {
                 const row = document.createElement('div');
@@ -746,10 +730,10 @@ import {
         // so switching colors doesn't require leaving the photo.
         function renderChips() {
           chipbar.textContent = '';
-          layers.forEach((layer) => {
+          state.layers.forEach((layer) => {
             const chip = document.createElement('button');
             chip.type = 'button';
-            chip.className = 'ms-chip' + (layer.id === activeId ? ' is-active' : '');
+            chip.className = 'ms-chip' + (layer.id === state.activeId ? ' is-active' : '');
             chip.style.setProperty('--layer-color', layerColor(layer));
             const dot = document.createElement('span');
             dot.className = 'ms-layer-dot';
@@ -759,19 +743,19 @@ import {
             chip.appendChild(dot);
             chip.appendChild(label);
             chip.addEventListener('click', () => {
-              if (phase === 'generating') return;
-              activeId = layer.id;
+              if (state.phase === 'generating') return;
+              state.activeId = layer.id;
               renderLayers();
             });
             chipbar.appendChild(chip);
           });
-          if (base && layers.length < MAX_LAYERS) {
+          if (state.base && state.layers.length < MAX_LAYERS) {
             const add = document.createElement('button');
             add.type = 'button';
             add.className = 'ms-chip ms-chip--add';
             add.textContent = tx('maskingStudio.addArea', '+ Add area');
             add.addEventListener('click', () => {
-              if (phase === 'generating') return;
+              if (state.phase === 'generating') return;
               addLayer();
             });
             chipbar.appendChild(add);
@@ -780,7 +764,7 @@ import {
         }
 
         function updateChipbarVisibility() {
-          const visible = !!base && phase !== 'empty' && !(phase === 'review' && view !== 'before');
+          const visible = !!state.base && state.phase !== 'empty' && !(state.phase === 'review' && state.view !== 'before');
           chipbar.classList.toggle('hidden', !visible);
         }
 
@@ -866,183 +850,18 @@ import {
         // Paste an image from the clipboard: before a photo is loaded it becomes
         // the room photo; afterwards it becomes the active area's furniture.
         document.addEventListener('paste', (e) => {
-          if (phase === 'generating') return;
+          if (state.phase === 'generating') return;
           const t = e.target;
           if (t && t.closest && t.closest('input, textarea, [contenteditable]')) return;
           const files = (e.clipboardData && e.clipboardData.files) || [];
           const file = Array.prototype.find.call(files, (f) => /^image\//i.test(f.type || ''));
           if (!file) return;
           e.preventDefault();
-          if (!base) {
+          if (!state.base) {
             handleRoomFile(file);
             return;
           }
-          if (phase === 'draw') acceptFurnitureFile(activeLayer(), file, true);
-        });
-
-        // ---------------------------------------------------------------------
-        // Session persistence: the photo, strokes, prompts, and furniture refs
-        // are saved to IndexedDB (debounced) so a crash or closed tab doesn't
-        // lose the work. Generated results are deliberately not persisted —
-        // restore returns to the draw phase with everything ready to re-run.
-        // All storage calls fail silently (private mode, quota, old browsers).
-        // ---------------------------------------------------------------------
-        let idbPromise = null;
-        let saveTimer = null;
-        let restoring = false; // block saves while a restore is rebuilding state
-        let saveSeq = 0;       // bumped on clear so in-flight saves abort
-
-        function idb() {
-          if (!idbPromise) {
-            idbPromise = new Promise((resolve) => {
-              try {
-                const req = indexedDB.open('stagify-masking-studio', 1);
-                req.onupgradeneeded = () => { req.result.createObjectStore('session'); };
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => resolve(null);
-              } catch (e) { resolve(null); }
-            });
-          }
-          return idbPromise;
-        }
-
-        function idbOp(mode, fn) {
-          return idb().then((db) => new Promise((resolve) => {
-            if (!db) { resolve(null); return; }
-            try {
-              const tr = db.transaction('session', mode);
-              const out = fn(tr.objectStore('session'));
-              tr.oncomplete = () => resolve(out && 'result' in out ? out.result : null);
-              tr.onerror = () => resolve(null);
-            } catch (e) { resolve(null); }
-          }));
-        }
-
-        const sessionSave = (value) => idbOp('readwrite', (s) => s.put(value, 'current'));
-        const sessionLoad = () => idbOp('readonly', (s) => s.get('current'));
-        const sessionClear = () => idbOp('readwrite', (s) => s.delete('current'));
-
-        function toBlob(canvas, type, q) {
-          return new Promise((resolve) => {
-            try { canvas.toBlob(resolve, type, q); } catch (e) { resolve(null); }
-          });
-        }
-
-        function scheduleSessionSave() {
-          if (!base || restoring) return;
-          if (saveTimer) clearTimeout(saveTimer);
-          saveTimer = setTimeout(saveSessionNow, 1500);
-        }
-
-        async function saveSessionNow() {
-          if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-          if (!base || restoring) return;
-          if (phase === 'generating') {
-            // Don't drop edits made just before Apply Edit — retry after the run.
-            scheduleSessionSave();
-            return;
-          }
-          const seq = saveSeq;
-          try {
-            const baseBlob = await toBlob(base.canvas, 'image/jpeg', 0.9);
-            if (!baseBlob) return;
-            const layerData = [];
-            for (const l of layers) {
-              const maskBlob = l.painted ? await toBlob(l.canvasEl, 'image/png') : null;
-              layerData.push(serializeLayer(l, maskBlob));
-            }
-            // A clear/reset while we were encoding wins — never resurrect a
-            // session the user just discarded.
-            if (seq !== saveSeq) return;
-            await sessionSave(serializeSession(baseBlob, layerData, Date.now()));
-          } catch (e) {}
-        }
-
-        function clearStoredSession() {
-          saveSeq++;
-          if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-          sessionClear();
-        }
-
-        function blobToImage(blob) {
-          return new Promise((resolve, reject) => {
-            const url = URL.createObjectURL(blob);
-            const im = new Image();
-            im.onload = () => { URL.revokeObjectURL(url); resolve(im); };
-            im.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode')); };
-            im.src = url;
-          });
-        }
-
-        async function restoreSession(saved) {
-          // A half-finished restore must never overwrite the stored session
-          // (the debounced save could fire while masks are still decoding).
-          restoring = true;
-          try {
-            await restoreSessionInner(saved);
-          } finally {
-            restoring = false;
-          }
-          scheduleSessionSave();
-        }
-
-        async function restoreSessionInner(saved) {
-          const img = await blobToImage(saved.baseBlob);
-          setBaseImage(img, { noLayer: true });
-          for (const ld of saved.layers || []) {
-            if (layers.length >= MAX_LAYERS) break;
-            const c = document.createElement('canvas');
-            c.width = base.w;
-            c.height = base.h;
-            c.className = 'ms-layer-canvas';
-            stack.insertBefore(c, resultCanvas);
-            let painted = false;
-            if (ld.mask) {
-              try {
-                const maskImg = await blobToImage(ld.mask);
-                c.getContext('2d').drawImage(maskImg, 0, 0, base.w, base.h);
-                painted = true;
-              } catch (e) {}
-            }
-            layers.push(deserializeLayer(ld, {
-              id: 'L' + (++layerSeq),
-              canvasEl: c,
-              painted: painted,
-              paletteLength: PALETTE.length,
-            }));
-          }
-          if (!layers.length) addLayer();
-          activeId = layers[0].id;
-          renderLayers();
-          updateControls();
-        }
-
-        // Returns true if the resume dialog was shown (suppresses first-visit help).
-        async function maybeOfferResume() {
-          let saved = null;
-          try { saved = await sessionLoad(); } catch (e) {}
-          if (!isRestorableSession(saved) || base) return false;
-          resumeEl.classList.add('active');
-          resumeYesBtn.focus();
-          resumeYesBtn.addEventListener('click', async () => {
-            resumeEl.classList.remove('active');
-            try {
-              await restoreSession(saved);
-            } catch (e) {
-              showToast(tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
-              sessionClear();
-            }
-          }, { once: true });
-          resumeNoBtn.addEventListener('click', () => {
-            resumeEl.classList.remove('active');
-            clearStoredSession();
-          }, { once: true });
-          return true;
-        }
-
-        // Flush the pending save when the tab goes to the background.
-        document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'hidden' && saveTimer) saveSessionNow();
+          if (state.phase === 'draw') acceptFurnitureFile(activeLayer(), file, true);
         });
 
         // Keep Tab focus inside whichever dialog is open (help, resume,
@@ -1076,34 +895,34 @@ import {
         const ZOOM_MAX = 4;
 
         function setZoom(nz, focal) {
-          if (!base) return;
+          if (!state.base) return;
           nz = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, nz));
           const rect = baseCanvas.getBoundingClientRect();
           if (!rect.width) return;
-          const fitW = rect.width / zoom; // current width always equals fit × zoom
-          const prev = zoom;
-          zoom = nz;
-          if (zoom === 1) {
+          const fitW = rect.width / state.zoom; // current width always equals fit × zoom
+          const prev = state.zoom;
+          state.zoom = nz;
+          if (state.zoom === 1) {
             baseCanvas.style.width = '';
             baseCanvas.style.maxWidth = '';
             baseCanvas.style.maxHeight = '';
           } else {
-            baseCanvas.style.width = (fitW * zoom) + 'px';
+            baseCanvas.style.width = (fitW * state.zoom) + 'px';
             baseCanvas.style.maxWidth = 'none';
             baseCanvas.style.maxHeight = 'none';
           }
-          viewerEl.classList.toggle('is-zoomed', zoom > 1);
+          viewerEl.classList.toggle('is-zoomed', state.zoom > 1);
           // Keep the focal point (viewport coords) stationary while scaling.
-          if (focal && prev !== zoom) {
+          if (focal && prev !== state.zoom) {
             const vr = viewerEl.getBoundingClientRect();
-            const ratio = zoom / prev;
+            const ratio = state.zoom / prev;
             viewerEl.scrollLeft = (viewerEl.scrollLeft + (focal.x - vr.left)) * ratio - (focal.x - vr.left);
             viewerEl.scrollTop = (viewerEl.scrollTop + (focal.y - vr.top)) * ratio - (focal.y - vr.top);
           }
         }
 
         function resetZoom() {
-          zoom = 1;
+          state.zoom = 1;
           baseCanvas.style.width = '';
           baseCanvas.style.maxWidth = '';
           baseCanvas.style.maxHeight = '';
@@ -1111,9 +930,9 @@ import {
         }
 
         viewerEl.addEventListener('wheel', (e) => {
-          if (!base || !e.ctrlKey) return; // plain scroll stays plain scroll
+          if (!state.base || !e.ctrlKey) return; // plain scroll stays plain scroll
           e.preventDefault();
-          setZoom(zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), { x: e.clientX, y: e.clientY });
+          setZoom(state.zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), { x: e.clientX, y: e.clientY });
         }, { passive: false });
 
         // ---------------------------------------------------------------------
@@ -1123,13 +942,13 @@ import {
         let pendingConfirmAction = null;
 
         function hasAnyResults() {
-          return layers.some((l) => l.status === 'done' && l.editedImg);
+          return state.layers.some((l) => l.status === 'done' && l.editedImg);
         }
 
         // strict also protects unstaged work (strokes/prompts/furniture) — used
         // for accident-prone paths like dropping a file onto the photo itself.
         function requestDiscard(action, strict) {
-          const hasWork = strict && layers.some((l) => l.painted || l.prompt.trim() || l.furniture);
+          const hasWork = strict && state.layers.some((l) => l.painted || l.prompt.trim() || l.furniture);
           if (!hasAnyResults() && !hasWork) { action(); return; }
           pendingConfirmAction = action;
           confirmEl.classList.add('active');
@@ -1159,637 +978,6 @@ import {
           }
         });
 
-        // ---------------------------------------------------------------------
-        // Drawing
-        // ---------------------------------------------------------------------
-        let drawing = false;
-        let lastX = null;
-        let lastY = null;
-
-        // Drawing is only allowed in the draw phase: review keeps the strokes
-        // frozen so they still match the composited results ("Edit highlights"
-        // returns to the draw phase).
-        function canDraw() {
-          return base && phase === 'draw' && activeLayer();
-        }
-
-        function canvasPoint(e) {
-          const rect = baseCanvas.getBoundingClientRect();
-          if (!rect.width || !rect.height) return null;
-          return {
-            x: (e.clientX - rect.left) * (base.w / rect.width),
-            y: (e.clientY - rect.top) * (base.h / rect.height),
-          };
-        }
-
-        // Apply one stroke segment to a canvas context (dot for taps, line for
-        // moves). Solid pixels; the translucent look comes from CSS opacity.
-        function strokeSegment(ctx, x, y, composite, color) {
-          ctx.globalCompositeOperation = composite;
-          ctx.strokeStyle = color;
-          ctx.fillStyle = color;
-          ctx.lineWidth = brushSize;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          if (lastX === null || lastY === null) {
-            ctx.beginPath();
-            ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
-            ctx.fill();
-          } else {
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(x, y);
-            ctx.stroke();
-          }
-          ctx.globalCompositeOperation = 'source-over';
-        }
-
-        function paint(e) {
-          if (!drawing || !canDraw()) return;
-          const p = canvasPoint(e);
-          if (!p) return;
-          const layer = activeLayer();
-          const color = layerColor(layer);
-          if (tool === 'erase') {
-            strokeSegment(layer.canvasEl.getContext('2d'), p.x, p.y, 'destination-out', color);
-          } else {
-            strokeSegment(layer.canvasEl.getContext('2d'), p.x, p.y, 'source-over', color);
-            // Claim these pixels: erase the same stroke from every other area so
-            // masks never overlap — each spot belongs to exactly one area.
-            layers.forEach((other) => {
-              if (other !== layer) {
-                strokeSegment(other.canvasEl.getContext('2d'), p.x, p.y, 'destination-out', color);
-              }
-            });
-            if (!layer.painted) {
-              layer.painted = true;
-              updateControls();
-            }
-          }
-          lastX = p.x;
-          lastY = p.y;
-        }
-
-        // Downsampled alpha scan: reading a 256px-wide sample instead of the
-        // full canvas is ~50x less data per stroke-end. drawImage's area
-        // averaging keeps even a minimum-size brush dot well above threshold.
-        const scanScratch = document.createElement('canvas');
-        function scanHasContent(canvas) {
-          const sw = Math.min(256, canvas.width);
-          const sh = Math.max(1, Math.round(canvas.height * (sw / canvas.width)));
-          scanScratch.width = sw;  // resizing also clears the scratch canvas
-          scanScratch.height = sh;
-          const sctx = scanScratch.getContext('2d', { willReadFrequently: true });
-          sctx.drawImage(canvas, 0, 0, sw, sh);
-          const d = sctx.getImageData(0, 0, sw, sh).data;
-          for (let i = 3; i < d.length; i += 4) {
-            if (d[i] > 8) return true;
-          }
-          return false;
-        }
-
-        // One snapshot per stroke, taken at pointerdown. A brush stroke can only
-        // touch the active layer and layers that already have paint (pixel
-        // claiming is a no-op on empty canvases), so that's all we store.
-        // Snapshots are canvas-to-canvas copies: unlike getImageData they don't
-        // force a GPU readback, so starting a stroke stays stutter-free.
-        const UNDO_LIMIT = 5;
-        function snapshotForUndo() {
-          if (!base) return;
-          const entries = [];
-          layers.forEach((l) => {
-            if (l.painted || l.id === activeId) {
-              const copy = document.createElement('canvas');
-              copy.width = base.w;
-              copy.height = base.h;
-              copy.getContext('2d').drawImage(l.canvasEl, 0, 0);
-              entries.push({ id: l.id, canvas: copy });
-            }
-          });
-          undoStack.push(entries);
-          if (undoStack.length > UNDO_LIMIT) undoStack.shift();
-        }
-
-        // Current state of the given layers, in undo-entry form — pushed to the
-        // opposite stack so undo and redo are exact inverses of each other.
-        function captureLayers(ids) {
-          const entries = [];
-          ids.forEach((id) => {
-            const l = getLayer(id);
-            if (!l) return;
-            const copy = document.createElement('canvas');
-            copy.width = base.w;
-            copy.height = base.h;
-            copy.getContext('2d').drawImage(l.canvasEl, 0, 0);
-            entries.push({ id: id, canvas: copy });
-          });
-          return entries;
-        }
-
-        function restoreEntries(entries) {
-          entries.forEach((en) => {
-            const l = getLayer(en.id);
-            if (!l) return; // area was removed since this stroke
-            const ctx = l.canvasEl.getContext('2d');
-            ctx.clearRect(0, 0, base.w, base.h);
-            ctx.drawImage(en.canvas, 0, 0);
-          });
-          layers.forEach((l) => {
-            l.painted = scanHasContent(l.canvasEl);
-            l.blendMask = null;
-          });
-          renderLayers();
-          updateControls();
-          updateStageBackdrop();
-          scheduleSessionSave();
-        }
-
-        function undoStroke() {
-          if (!undoStack.length || phase !== 'draw' || !base) return;
-          const entries = undoStack.pop();
-          redoStack.push(captureLayers(entries.map((en) => en.id)));
-          if (redoStack.length > UNDO_LIMIT) redoStack.shift();
-          restoreEntries(entries);
-        }
-        undoBtn.addEventListener('click', undoStroke);
-
-        function redoStroke() {
-          if (!redoStack.length || phase !== 'draw' || !base) return;
-          const entries = redoStack.pop();
-          undoStack.push(captureLayers(entries.map((en) => en.id)));
-          if (undoStack.length > UNDO_LIMIT) undoStack.shift();
-          restoreEntries(entries);
-        }
-        redoBtn.addEventListener('click', redoStroke);
-
-        function startDraw(e) {
-          if (!canDraw()) return;
-          snapshotForUndo();
-          redoStack = []; // a new stroke forks history — redo targets are gone
-          drawing = true;
-          lastX = null;
-          lastY = null;
-          paint(e);
-        }
-
-        // --- Rectangle tool: drag out a marquee, fill it on release ------------
-        let rectDragging = false;
-        let rectStartPt = null;
-        let rectPreviewEl = null;
-
-        function beginRect(e) {
-          const p = canvasPoint(e);
-          if (!p) return;
-          snapshotForUndo();
-          rectDragging = true;
-          rectStartPt = p;
-          if (!rectPreviewEl) {
-            rectPreviewEl = document.createElement('div');
-            rectPreviewEl.className = 'ms-rect-preview';
-            rectPreviewEl.setAttribute('aria-hidden', 'true');
-            stack.appendChild(rectPreviewEl);
-          }
-          updateRectPreview(p);
-        }
-
-        function updateRectPreview(p) {
-          const rect = baseCanvas.getBoundingClientRect();
-          if (!rect.width) return;
-          const sx = rect.width / base.w;
-          const sy = rect.height / base.h;
-          rectPreviewEl.style.display = 'block';
-          rectPreviewEl.style.left = (Math.min(rectStartPt.x, p.x) * sx) + 'px';
-          rectPreviewEl.style.top = (Math.min(rectStartPt.y, p.y) * sy) + 'px';
-          rectPreviewEl.style.width = (Math.abs(p.x - rectStartPt.x) * sx) + 'px';
-          rectPreviewEl.style.height = (Math.abs(p.y - rectStartPt.y) * sy) + 'px';
-          const layer = activeLayer();
-          if (layer) rectPreviewEl.style.setProperty('--cursor-color', layerColor(layer));
-        }
-
-        function endRect(e) {
-          if (!rectDragging) return;
-          rectDragging = false;
-          if (rectPreviewEl) rectPreviewEl.style.display = 'none';
-          const p = canvasPoint(e);
-          const layer = activeLayer();
-          const start = rectStartPt;
-          rectStartPt = null;
-          if (!p || !layer || !start) return;
-          const x0 = Math.min(start.x, p.x);
-          const y0 = Math.min(start.y, p.y);
-          const w = Math.abs(p.x - start.x);
-          const h = Math.abs(p.y - start.y);
-          if (w < 3 || h < 3) {
-            undoStack.pop(); // nothing was drawn — drop the pre-stroke snapshot
-            updateControls();
-            return;
-          }
-          redoStack = []; // committed rectangle forks history
-          const ctx = layer.canvasEl.getContext('2d');
-          ctx.fillStyle = layerColor(layer);
-          ctx.fillRect(x0, y0, w, h);
-          // Claim these pixels from every other area, same as brush strokes.
-          layers.forEach((other) => {
-            if (other !== layer) {
-              const octx = other.canvasEl.getContext('2d');
-              octx.globalCompositeOperation = 'destination-out';
-              octx.fillRect(x0, y0, w, h);
-              octx.globalCompositeOperation = 'source-over';
-            }
-          });
-          layers.forEach((l) => {
-            l.painted = scanHasContent(l.canvasEl);
-            l.blendMask = null;
-          });
-          renderLayers();
-          updateControls();
-          updateStageBackdrop();
-          scheduleSessionSave();
-        }
-
-        function cancelRect() {
-          if (!rectDragging) return;
-          rectDragging = false;
-          rectStartPt = null;
-          if (rectPreviewEl) rectPreviewEl.style.display = 'none';
-          undoStack.pop();
-          updateControls();
-        }
-
-        function stopDraw() {
-          if (!drawing) return;
-          drawing = false;
-          lastX = null;
-          lastY = null;
-          // Accurate once-per-stroke rescan: erasing (or another area claiming
-          // pixels) may have emptied any layer.
-          layers.forEach((l) => {
-            l.painted = scanHasContent(l.canvasEl);
-            l.blendMask = null; // strokes changed → cached masks are stale
-          });
-          renderLayers();
-          updateControls();
-          updateStageBackdrop(); // refine ghost re-crops as strokes change
-          scheduleSessionSave();
-        }
-
-        // ---------------------------------------------------------------------
-        // Magic select: Gemini segmentation. The first wand click fetches masks
-        // for every object in the photo and caches them, so every later click
-        // resolves instantly by hit-testing the cache. Typed queries ("the
-        // empty floor") fetch a targeted mask. Either way the result is painted
-        // into the active area exactly like brush strokes — the wand is just a
-        // faster brush, and undo/pixel-claiming behave identically.
-        // ---------------------------------------------------------------------
-        function segPayload() {
-          // ~1024px is what Google's own segmentation samples send; coordinates
-          // come back normalized, so full resolution would only cost tokens.
-          const scale = Math.min(1, 1024 / Math.max(base.w, base.h));
-          const c = document.createElement('canvas');
-          c.width = Math.max(1, Math.round(base.w * scale));
-          c.height = Math.max(1, Math.round(base.h * scale));
-          const ctx = c.getContext('2d');
-          ctx.fillStyle = '#fff';
-          ctx.fillRect(0, 0, c.width, c.height);
-          ctx.drawImage(base.canvas, 0, 0, c.width, c.height);
-          return c.toDataURL('image/jpeg', 0.9);
-        }
-
-        async function fetchSegmentation(query) {
-          const tok = window.StagifyAuth && window.StagifyAuth.getToken();
-          const response = await fetch('/api/segment', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
-            },
-            body: JSON.stringify({ image: segPayload(), query: query || '', authToken: tok || undefined }),
-          });
-          let result = null;
-          try { result = await response.json(); } catch (e) {}
-          if (!response.ok || !result || !result.success) {
-            throw new Error(requestError(response.status, result));
-          }
-          return decodeSegItems(result.items || []);
-        }
-
-        // box_2d is [y0, x0, y1, x1] normalized to 0-1000; the mask PNG is a
-        // probability map covering just that box, binarized at the documented
-        // midpoint (>127 keeps). The API frequently omits usable pixel masks
-        // (the server nulls them out) — then the box itself becomes the
-        // selection, which the brush/eraser can refine.
-        async function decodeSegItems(items) {
-          const out = [];
-          for (const it of items) {
-            try {
-              const y0 = it.box_2d[0], x0 = it.box_2d[1], y1 = it.box_2d[2], x1 = it.box_2d[3];
-              if (y1 <= y0 || x1 <= x0) continue;
-              const bx = Math.round((x0 / 1000) * base.w);
-              const by = Math.round((y0 / 1000) * base.h);
-              const bw = Math.max(1, Math.round(((x1 - x0) / 1000) * base.w));
-              const bh = Math.max(1, Math.round(((y1 - y0) / 1000) * base.h));
-              const c = document.createElement('canvas');
-              c.width = base.w;
-              c.height = base.h;
-              const ctx = c.getContext('2d');
-              let area = 0;
-              if (it.mask) {
-                const img = await loadImage(it.mask);
-                ctx.drawImage(img, bx, by, bw, bh);
-                const id = ctx.getImageData(bx, by, bw, bh);
-                const d = id.data;
-                for (let i = 0; i < d.length; i += 4) {
-                  if (d[i] > 127) { d[i + 3] = 255; area++; }
-                  else d[i + 3] = 0;
-                }
-                if (!area) continue;
-                ctx.putImageData(id, bx, by);
-              } else {
-                const r = Math.min(24, Math.min(bw, bh) * 0.12);
-                ctx.beginPath();
-                if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, r);
-                else ctx.rect(bx, by, bw, bh);
-                ctx.fill();
-                area = bw * bh;
-              }
-              out.push({ canvas: c, area: area, label: it.label || '' });
-            } catch (e) { /* one undecodable mask never sinks the batch */ }
-          }
-          return out;
-        }
-
-        let wandMsgTimer = null;
-        function setSegBusy(b) {
-          wandBusyEl.classList.toggle('hidden', !b);
-          stack.classList.toggle('is-analyzing', b);
-          if (wandMsgTimer) { clearInterval(wandMsgTimer); wandMsgTimer = null; }
-          if (b) {
-            // Cycle through progress lines while Gemini works; hold the last
-            // one rather than looping back to "Analyzing…".
-            const raw = window.LanguageSystem && window.LanguageSystem.getText('maskingStudio.wandBusyMessages');
-            const msgs = Array.isArray(raw) && raw.length ? raw : [
-              'Analyzing your photo…',
-              'Finding the objects in the room…',
-              'Outlining what it found…',
-              'Almost there…',
-            ];
-            let i = 0;
-            wandBusyEl.textContent = msgs[0];
-            wandMsgTimer = setInterval(() => {
-              i++;
-              if (i >= msgs.length) { clearInterval(wandMsgTimer); wandMsgTimer = null; return; }
-              wandBusyEl.textContent = msgs[i];
-            }, 2200);
-          }
-        }
-
-        // Paint a decoded mask into the active area exactly as if it had been
-        // brushed: undo snapshot, tint in the layer color, claim the pixels
-        // from every other area, rescan painted flags.
-        function paintMaskIntoLayer(layer, maskCanvas) {
-          snapshotForUndo();
-          redoStack = []; // committed selection forks history
-          const tint = document.createElement('canvas');
-          tint.width = base.w;
-          tint.height = base.h;
-          const tctx = tint.getContext('2d');
-          tctx.drawImage(maskCanvas, 0, 0);
-          tctx.globalCompositeOperation = 'source-in';
-          tctx.fillStyle = layerColor(layer);
-          tctx.fillRect(0, 0, base.w, base.h);
-          layer.canvasEl.getContext('2d').drawImage(tint, 0, 0);
-          layers.forEach((other) => {
-            if (other === layer) return;
-            const octx = other.canvasEl.getContext('2d');
-            octx.globalCompositeOperation = 'destination-out';
-            octx.drawImage(maskCanvas, 0, 0);
-            octx.globalCompositeOperation = 'source-over';
-          });
-          layers.forEach((l) => {
-            l.painted = scanHasContent(l.canvasEl);
-            l.blendMask = null;
-          });
-          renderLayers();
-          updateControls();
-          updateStageBackdrop();
-          scheduleSessionSave();
-        }
-
-        // One shared in-flight request: clicks made while the analysis runs
-        // await the same promise and land as soon as it resolves, instead of
-        // being dropped. Prefetch (on tool select) uses the same path.
-        let segPromise = null;
-        function ensureSegCache() {
-          if (segCache) return Promise.resolve(segCache);
-          if (segPromise) return segPromise;
-          const token = segToken;
-          setSegBusy(true);
-          segPromise = (async () => {
-            try {
-              const items = await fetchSegmentation('');
-              if (token !== segToken) return null; // photo changed mid-flight
-              // Never cache an empty list: Gemini occasionally returns zero
-              // items for a full room, and caching that would make every
-              // later click insta-miss until the photo changes.
-              segCache = items.length ? items : null;
-              return items;
-            } finally {
-              segPromise = null;
-              setSegBusy(false);
-            }
-          })();
-          return segPromise;
-        }
-
-        async function wandClick(e) {
-          const p = canvasPoint(e);
-          const layer = activeLayer();
-          if (!p || !layer) return;
-          let cache;
-          try {
-            cache = await ensureSegCache();
-          } catch (err) {
-            showToast(err && err.message ? err.message : tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
-            return;
-          }
-          if (!cache || phase !== 'draw') return; // superseded while analyzing
-          const px = Math.max(0, Math.min(base.w - 1, Math.round(p.x)));
-          const py = Math.max(0, Math.min(base.h - 1, Math.round(p.y)));
-          let hit = null;
-          cache.forEach((it) => {
-            const a = it.canvas.getContext('2d').getImageData(px, py, 1, 1).data[3];
-            if (a > 0 && (!hit || it.area < hit.area)) hit = it; // smallest = most specific
-          });
-          if (!hit) {
-            showToast(tx('maskingStudio.wandMiss', 'No object found there. Try clicking the middle of the object, or highlight it with the brush.'), 'error');
-            return;
-          }
-          paintMaskIntoLayer(layer, hit.canvas);
-        }
-
-        // Touch: two-finger pinch zooms (phones have no Ctrl+wheel). A second
-        // finger aborts whatever the first one started so a pinch never leaves
-        // a half-stroke behind.
-        const touchPts = new Map();
-        let pinch = null; // { d0, zoom0 }
-
-        stack.addEventListener('pointerdown', (e) => {
-          if (e.pointerType === 'touch') {
-            touchPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (touchPts.size === 2 && base) {
-              if (drawing) {
-                drawing = false;
-                lastX = null;
-                lastY = null;
-                if (undoStack.length) restoreEntries(undoStack.pop());
-              }
-              if (rectDragging) cancelRect();
-              comparing = false;
-              panning = false;
-              const pts = Array.from(touchPts.values());
-              pinch = { d0: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1, zoom0: zoom };
-              e.preventDefault();
-              return;
-            }
-          }
-          if ((spaceDown || e.button === 1) && base) {
-            // Pan the zoomed view: drag with Space held or the middle button.
-            e.preventDefault();
-            try { stack.setPointerCapture(e.pointerId); } catch (err) {}
-            panning = true;
-            panStart = { x: e.clientX, y: e.clientY, sl: viewerEl.scrollLeft, st: viewerEl.scrollTop };
-            return;
-          }
-          if (phase === 'review' && view === 'compare') {
-            // Click anywhere in compare view to move the divider, then drag it.
-            e.preventDefault();
-            try { stack.setPointerCapture(e.pointerId); } catch (err) {}
-            comparing = true;
-            moveCompare(e);
-            return;
-          }
-          if (!canDraw()) return;
-          e.preventDefault();
-          if (tool === 'wand') { wandClick(e); return; }
-          try { stack.setPointerCapture(e.pointerId); } catch (err) {}
-          if (tool === 'rect') { beginRect(e); return; }
-          startDraw(e);
-        });
-        stack.addEventListener('pointermove', (e) => {
-          if (e.pointerType === 'touch' && touchPts.has(e.pointerId)) {
-            touchPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (pinch && touchPts.size >= 2) {
-              e.preventDefault();
-              const pts = Array.from(touchPts.values());
-              const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
-              setZoom(pinch.zoom0 * (d / pinch.d0), {
-                x: (pts[0].x + pts[1].x) / 2,
-                y: (pts[0].y + pts[1].y) / 2,
-              });
-              return;
-            }
-          }
-          if (panning) {
-            e.preventDefault();
-            viewerEl.scrollLeft = panStart.sl - (e.clientX - panStart.x);
-            viewerEl.scrollTop = panStart.st - (e.clientY - panStart.y);
-            return;
-          }
-          if (comparing) {
-            e.preventDefault();
-            moveCompare(e);
-            return;
-          }
-          if (rectDragging) {
-            e.preventDefault();
-            const p = canvasPoint(e);
-            if (p) updateRectPreview(p);
-            return;
-          }
-          updateCursorPreview(e);
-          if (!drawing) return;
-          e.preventDefault();
-          paint(e);
-        });
-        stack.addEventListener('pointerup', (e) => {
-          touchPts.delete(e.pointerId);
-          if (touchPts.size < 2) pinch = null;
-          panning = false;
-          comparing = false;
-          endRect(e);
-          stopDraw(e);
-        });
-        stack.addEventListener('pointercancel', (e) => {
-          touchPts.delete(e.pointerId);
-          if (touchPts.size < 2) pinch = null;
-          panning = false;
-          comparing = false;
-          cancelRect();
-          stopDraw(e);
-        });
-        stack.addEventListener('pointerleave', () => { if (cursorEl) cursorEl.style.display = 'none'; });
-
-        // Brush-size circle that follows the pointer over the photo, tinted with
-        // the active area's color (dashed gray while erasing).
-        let cursorEl = null;
-        function ensureCursor() {
-          if (cursorEl) return;
-          cursorEl = document.createElement('div');
-          cursorEl.className = 'ms-cursor';
-          cursorEl.setAttribute('aria-hidden', 'true');
-          stack.appendChild(cursorEl);
-        }
-        function updateCursorPreview(e) {
-          ensureCursor();
-          const layer = activeLayer();
-          if (!canDraw() || !layer || e.pointerType === 'touch' || spaceDown || tool === 'rect' || tool === 'wand') {
-            cursorEl.style.display = 'none';
-            return;
-          }
-          const rect = baseCanvas.getBoundingClientRect();
-          if (!rect.width) return;
-          const stackRect = stack.getBoundingClientRect();
-          const size = brushSize * (rect.width / base.w);
-          cursorEl.style.display = 'block';
-          cursorEl.style.width = size + 'px';
-          cursorEl.style.height = size + 'px';
-          cursorEl.style.left = (e.clientX - stackRect.left) + 'px';
-          cursorEl.style.top = (e.clientY - stackRect.top) + 'px';
-          cursorEl.style.setProperty('--cursor-color', layerColor(layer));
-          cursorEl.classList.toggle('is-erase', tool === 'erase');
-        }
-
-        function setTool(t) {
-          tool = t === 'erase' ? 'erase' : t === 'rect' ? 'rect' : t === 'wand' ? 'wand' : 'brush';
-          [[brushBtn, 'brush'], [eraseBtn, 'erase'], [rectBtn, 'rect'], [wandBtn, 'wand']].forEach(([btn, name]) => {
-            btn.classList.toggle('is-active', tool === name);
-            btn.setAttribute('aria-pressed', tool === name ? 'true' : 'false');
-          });
-          brushRow.classList.toggle('hidden', tool === 'wand');
-          wandRow.classList.toggle('hidden', tool !== 'wand');
-          if (cursorEl) {
-            cursorEl.classList.toggle('is-erase', tool === 'erase');
-            if (tool === 'rect' || tool === 'wand') cursorEl.style.display = 'none';
-          }
-          // Start analyzing the moment the wand is picked, so the photo is
-          // usually mapped before the first click lands. Errors stay silent
-          // here — the click path retries and surfaces them.
-          if (tool === 'wand' && base && phase === 'draw' && !segCache) {
-            ensureSegCache().catch(() => {});
-          }
-        }
-        brushBtn.addEventListener('click', () => setTool('brush'));
-        eraseBtn.addEventListener('click', () => setTool('erase'));
-        rectBtn.addEventListener('click', () => setTool('rect'));
-        wandBtn.addEventListener('click', () => setTool('wand'));
-
-        function setBrushSize(v) {
-          brushSize = Math.min(150, Math.max(20, v));
-          brushSlider.value = String(brushSize);
-          brushSizeLabel.textContent = brushSize + ' px';
-        }
-        brushSlider.addEventListener('input', () => setBrushSize(parseInt(brushSlider.value, 10)));
-
         // Desktop shortcuts: B brush, E erase, [ / ] brush size, 1-6 pick area,
         // Ctrl+Z undo stroke.
         document.addEventListener('keydown', (e) => {
@@ -1802,12 +990,12 @@ import {
               resumeEl.classList.remove('active');
               return;
             }
-            if (rectDragging) { e.preventDefault(); cancelRect(); return; }
+            if (cancelRect()) { e.preventDefault(); return; }
           }
           const t = e.target;
           const typing = t && t.closest && t.closest('input, textarea, select, [contenteditable]');
           if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'z') {
-            if (!typing && phase === 'draw') {
+            if (!typing && state.phase === 'draw') {
               e.preventDefault();
               if (e.shiftKey) redoStroke();
               else undoStroke();
@@ -1815,7 +1003,7 @@ import {
             return;
           }
           if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'y') {
-            if (!typing && phase === 'draw' && redoStack.length) {
+            if (!typing && state.phase === 'draw' && state.redoStack.length) {
               e.preventDefault();
               redoStroke();
             }
@@ -1823,15 +1011,15 @@ import {
           }
           if (e.ctrlKey || e.metaKey || e.altKey) return;
           if (typing) return;
-          if (!base || phase === 'generating') return;
+          if (!state.base || state.phase === 'generating') return;
           if (e.code === 'Space') {
             // Don't hijack Space when a button/link has focus (it activates it).
             if (t && t.closest && t.closest('button, a, [role="button"]')) return;
             e.preventDefault();
             if (!e.repeat) {
-              spaceDown = true;
+              state.spaceDown = true;
               stack.classList.add('is-pan');
-              if (cursorEl) cursorEl.style.display = 'none';
+              hideCursor();
             }
             return;
           }
@@ -1840,13 +1028,13 @@ import {
           else if (k === 'e') { setTool('erase'); }
           else if (k === 'r') { setTool('rect'); }
           else if (k === 'w') { setTool('wand'); }
-          else if (k === 'h') { if (!e.repeat && phase === 'draw') stack.classList.add('is-peek'); }
-          else if (e.key === '[') { setBrushSize(brushSize - 10); }
-          else if (e.key === ']') { setBrushSize(brushSize + 10); }
+          else if (k === 'h') { if (!e.repeat && state.phase === 'draw') stack.classList.add('is-peek'); }
+          else if (e.key === '[') { setBrushSize(state.brushSize - 10); }
+          else if (e.key === ']') { setBrushSize(state.brushSize + 10); }
           else if (/^[1-6]$/.test(e.key)) {
-            const layer = layers[parseInt(e.key, 10) - 1];
+            const layer = state.layers[parseInt(e.key, 10) - 1];
             if (layer) {
-              activeId = layer.id;
+              state.activeId = layer.id;
               renderLayers();
             }
           }
@@ -1854,15 +1042,15 @@ import {
         document.addEventListener('keyup', (e) => {
           if (e.key.toLowerCase() === 'h') stack.classList.remove('is-peek');
           if (e.code === 'Space') {
-            spaceDown = false;
-            panning = false;
+            state.spaceDown = false;
+            state.panning = false;
             stack.classList.remove('is-pan');
           }
         });
         window.addEventListener('blur', () => {
           stack.classList.remove('is-peek');
-          spaceDown = false;
-          panning = false;
+          state.spaceDown = false;
+          state.panning = false;
           stack.classList.remove('is-pan');
         });
 
@@ -1870,11 +1058,11 @@ import {
         // Phases & viewer
         // ---------------------------------------------------------------------
         function setPhase(p) {
-          phase = p;
+          state.phase = p;
           const inReview = p === 'review';
           // "Edit highlights" must not strand the user away from their results:
           // in the draw phase, existing results stay reachable via "View result".
-          const hasResults = layers.some((l) => l.status === 'done' && l.editedImg);
+          const hasResults = state.layers.some((l) => l.status === 'done' && l.editedImg);
           viewToggle.classList.toggle('hidden', !inReview);
           // The header only ever holds the view toggle and the review actions;
           // collapse it entirely when neither shows so the photo sits higher.
@@ -1885,36 +1073,36 @@ import {
           downloadBtn.classList.toggle('hidden', !inReview);
           stack.classList.toggle('can-draw', p === 'draw');
           stack.classList.toggle('is-busy', p === 'generating');
-          if (cursorEl && p !== 'draw') cursorEl.style.display = 'none';
+          if (p !== 'draw') hideCursor();
           if (busyOverlay) busyOverlay.classList.toggle('hidden', p !== 'generating');
           if (p === 'generating') startBusyMessages(); else stopBusyMessages();
           updateStageBackdrop();
           if (inReview) {
-            setView(view);
+            setView(state.view);
           } else {
             resultCanvas.classList.add('hidden');
             resultCanvas.style.clipPath = '';
-            layers.forEach((l) => l.canvasEl.classList.remove('hidden'));
+            state.layers.forEach((l) => l.canvasEl.classList.remove('hidden'));
             compareEl.classList.add('hidden');
             compareLabelBefore.classList.add('hidden');
             compareLabelAfter.classList.add('hidden');
             stack.classList.remove('is-compare');
-            comparing = false;
+            state.comparing = false;
           }
           renderLayers();
           updateControls();
         }
 
         function setView(v) {
-          view = v === 'before' ? 'before' : v === 'compare' ? 'compare' : 'after';
-          toggleBeforeBtn.classList.toggle('active', view === 'before');
-          toggleCompareBtn.classList.toggle('active', view === 'compare');
-          toggleAfterBtn.classList.toggle('active', view === 'after');
-          const inReview = phase === 'review';
-          const showResult = inReview && view !== 'before';
+          state.view = v === 'before' ? 'before' : v === 'compare' ? 'compare' : 'after';
+          toggleBeforeBtn.classList.toggle('active', state.view === 'before');
+          toggleCompareBtn.classList.toggle('active', state.view === 'compare');
+          toggleAfterBtn.classList.toggle('active', state.view === 'after');
+          const inReview = state.phase === 'review';
+          const showResult = inReview && state.view !== 'before';
           resultCanvas.classList.toggle('hidden', !showResult);
-          layers.forEach((l) => l.canvasEl.classList.toggle('hidden', showResult));
-          const compareOn = inReview && view === 'compare';
+          state.layers.forEach((l) => l.canvasEl.classList.toggle('hidden', showResult));
+          const compareOn = inReview && state.view === 'compare';
           compareEl.classList.toggle('hidden', !compareOn);
           compareLabelBefore.classList.toggle('hidden', !compareOn);
           compareLabelAfter.classList.toggle('hidden', !compareOn);
@@ -1922,7 +1110,7 @@ import {
           if (compareOn) {
             setComparePos(comparePos);
           } else {
-            comparing = false;
+            state.comparing = false;
             resultCanvas.style.clipPath = '';
           }
           updateChipbarVisibility();
@@ -2019,28 +1207,28 @@ import {
         }
 
         function updateControls() {
-          const generating = phase === 'generating';
-          addLayerBtn.disabled = !base || generating || layers.length >= MAX_LAYERS;
+          const generating = state.phase === 'generating';
+          addLayerBtn.disabled = !state.base || generating || state.layers.length >= MAX_LAYERS;
           replaceBtn.disabled = generating;
           brushSlider.disabled = generating;
           brushBtn.disabled = generating;
           eraseBtn.disabled = generating;
           rectBtn.disabled = generating;
           wandBtn.disabled = generating;
-          undoBtn.disabled = generating || phase !== 'draw' || !undoStack.length;
-          redoBtn.disabled = generating || phase !== 'draw' || !redoStack.length;
+          undoBtn.disabled = generating || state.phase !== 'draw' || !state.undoStack.length;
+          redoBtn.disabled = generating || state.phase !== 'draw' || !state.redoStack.length;
           editHighlightsBtn.disabled = generating;
-          downloadBtn.disabled = generating || !layers.some((l) => l.status === 'done');
+          downloadBtn.disabled = generating || !state.layers.some((l) => l.status === 'done');
           layerList.querySelectorAll('textarea, button').forEach((el) => { el.disabled = generating; });
 
-          const painted = layers.filter((l) => l.painted);
+          const painted = state.layers.filter((l) => l.painted);
           const allDetailed = painted.length > 0 && painted.every((l) => l.mode === 'remove' || l.prompt.trim() || l.furniture);
-          generateBtn.disabled = !base || generating || !allDetailed;
+          generateBtn.disabled = !state.base || generating || !allDetailed;
 
           // Explain a disabled Apply Edit instead of leaving it a mystery.
           let hint = '';
           if (!generating) {
-            if (!base) hint = tx('errors.uploadFirst', 'Please upload an image first');
+            if (!state.base) hint = tx('errors.uploadFirst', 'Please upload an image first');
             else if (!painted.length) hint = tx('maskingStudio.needHighlight', 'Paint at least one area on the photo first.');
             else if (!allDetailed) hint = tx('maskingStudio.needPromptOrFurniture', 'Each highlighted area needs a short prompt or a furniture photo.');
           }
@@ -2055,398 +1243,23 @@ import {
           return _requestError(status, result, tx, showProGate);
         }
 
-        // Rough position of a mask inside the photo ("lower left", "center"…)
-        // from its bounding box on a small alpha scan — feeds the cross-area
-        // context so parallel generations know what lands where.
-        function maskRegionName(canvasEl) {
-          const s = 48;
-          const c = document.createElement('canvas');
-          c.width = s; c.height = s;
-          const sctx = c.getContext('2d');
-          sctx.drawImage(canvasEl, 0, 0, s, s);
-          const d = sctx.getImageData(0, 0, s, s).data;
-          let minX = s, minY = s, maxX = -1, maxY = -1;
-          for (let y = 0; y < s; y++) {
-            for (let x = 0; x < s; x++) {
-              if (d[(y * s + x) * 4 + 3] > 8) {
-                if (x < minX) minX = x;
-                if (x > maxX) maxX = x;
-                if (y < minY) minY = y;
-                if (y > maxY) maxY = y;
-              }
-            }
-          }
-          return regionNameFromBounds(minX, minY, maxX, maxY, s);
-        }
-
-        // Areas generate in parallel and never see each other's output, so each
-        // prompt carries a sketch of the neighbors' plans — enough for the model
-        // to keep lighting, perspective, and style coherent across areas.
-        function buildAreaContext(layer, participants) {
-          return _buildAreaContext(layer, participants, (l) => maskRegionName(l.canvasEl));
-        }
-
-        // At most 3 mask edits in flight at once: smoother on the server's rate
-        // limiter and Gemini quotas than firing all 6 areas simultaneously,
-        // while progressive compositing keeps the wait feeling short.
-        const enqueueRun = createPool(3);
-
-        // Union of every OTHER area's painted pixels, binarized. The grow +
-        // feather halo may spill into unpainted photo (that forgiveness is the
-        // point), but it must never cross into pixels the user assigned to a
-        // different area — those are that area's exclusive territory.
-        function othersStamp(layer, fillColor) {
-          const others = layers.filter((l) => l !== layer && l.painted);
-          if (!others.length) return null;
-          const u = document.createElement('canvas');
-          u.width = base.w;
-          u.height = base.h;
-          const uctx = u.getContext('2d');
-          others.forEach((l) => uctx.drawImage(l.canvasEl, 0, 0));
-          const stamp = growBinaryMask(u, base.w, base.h, 0); // grow 0 = binarize
-          if (fillColor) {
-            const sctx = stamp.getContext('2d');
-            sctx.globalCompositeOperation = 'source-in';
-            sctx.fillStyle = fillColor;
-            sctx.fillRect(0, 0, base.w, base.h);
-          }
-          return stamp;
-        }
-
-        // buildModelMask / buildBlendMask with the halo clipped at neighboring
-        // areas: black out (editable-region mask) or erase (compositing mask)
-        // every pixel another area has painted.
-        function layerModelMask(layer, coreGrow) {
-          const mask = buildModelMask(layer.canvasEl, base.w, base.h, coreGrow);
-          const stamp = othersStamp(layer, '#000');
-          if (stamp) mask.getContext('2d').drawImage(stamp, 0, 0);
-          return mask;
-        }
-
-        function layerBlendMask(layer, coreGrow, featherPx) {
-          const mask = buildBlendMask(layer.canvasEl, base.w, base.h, coreGrow, featherPx);
-          const stamp = othersStamp(layer);
-          if (stamp) {
-            const mctx = mask.getContext('2d');
-            mctx.globalCompositeOperation = 'destination-out';
-            mctx.drawImage(stamp, 0, 0);
-            mctx.globalCompositeOperation = 'source-over';
-          }
-          return mask;
-        }
-
-        async function runLayer(layer, imageDataUrl, coreGrow, run, context, batchSize) {
-          await maskCoreReady;
-          const maskDataUrl = layerModelMask(layer, coreGrow).toDataURL('image/png');
-          let prompt;
-          if (layer.mode === 'remove') {
-            prompt = tx(
-              'maskingStudio.removePrompt',
-              'Remove everything inside the highlighted area. Reconstruct what belongs behind it — floor, walls, baseboards, and trim — continuing the room’s existing surfaces, textures, and lighting seamlessly. Do not add any new furniture or objects.'
-            );
-            if (layer.prompt.trim()) prompt = (prompt + ' ' + layer.prompt.trim()).slice(0, 1000);
-          } else {
-            prompt = layer.prompt.trim() || tx(
-              'maskingStudio.defaultFurniturePrompt',
-              'Add the furniture from the reference photo into the highlighted area. Place it naturally on the floor with correct perspective, scale, and lighting for the room.'
-            );
-          }
-          // Server caps prompts at 1000 chars — own prompt wins, context yields.
-          if (context) prompt = (prompt + context).slice(0, 1000);
-          const tok = window.StagifyAuth && window.StagifyAuth.getToken();
-          const body = JSON.stringify({
-            image: imageDataUrl,
-            mask: maskDataUrl,
-            prompt: prompt,
-            authToken: tok || undefined,
-            // Best-effort reproducibility passthrough + retry-budget hint for
-            // multi-area batches (the server trims its quality retries).
-            seed: (Math.random() * 0x7fffffff) | 0,
-            batch: batchSize || 1,
-            ...(layer.furniture && layer.mode !== 'remove' ? { referenceImage: layer.furniture } : {}),
-          });
-          let response, result;
-          // Rate-limit pressure (429) and transient overload (503) get two
-          // jittered retries before the area is declared failed.
-          for (let attempt = 0; ; attempt++) {
-            response = await fetch('/api/mask-edit', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
-              },
-              body: body,
-            });
-            result = null;
-            try { result = await response.json(); } catch (e) {}
-            if (run !== genRun) return; // a newer run/reset superseded this one
-            if ((response.status !== 429 && response.status !== 503) || attempt >= 2) break;
-            const retryAfter = Number(response.headers.get('retry-after'));
-            const waitMs = retryAfter > 0 && retryAfter <= 120
-              ? retryAfter * 1000
-              : 1500 * Math.pow(2, attempt) + Math.random() * 1000;
-            await new Promise((r) => setTimeout(r, waitMs));
-            if (run !== genRun) return;
-          }
-          if (!response.ok || !result || !result.editedImage) {
-            throw new Error(requestError(response.status, result));
-          }
-          const img = await loadImage(result.editedImage);
-          if (run !== genRun) return;
-          // Keep every version so the user can flip between them (capped to
-          // bound memory: each is a full-resolution image).
-          layer.candidates.push(img);
-          if (layer.candidates.length > 4) layer.candidates.shift();
-          layer.candIdx = layer.candidates.length - 1;
-          layer.editedImg = img;
-        }
-
-        // The room payload goes up as JPEG (~10x smaller than PNG across N
-        // parallel requests). This never touches the pixel-preservation
-        // guarantee: compositing happens client-side from the pristine canvas,
-        // so the upload encoding only affects what the model sees inside the
-        // masked areas. Flattened onto white in case the source had alpha.
-        function roomPayload() {
-          const c = document.createElement('canvas');
-          c.width = base.w;
-          c.height = base.h;
-          const ctx = c.getContext('2d');
-          ctx.fillStyle = '#fff';
-          ctx.fillRect(0, 0, base.w, base.h);
-          ctx.drawImage(base.canvas, 0, 0);
-          return c.toDataURL('image/jpeg', 0.92);
-        }
-
-        function updateRunProgress(doneCount, total) {
-          progressBar.style.width = Math.round((doneCount / total) * 100) + '%';
-          const template = tx('maskingStudio.progressCount', '{done} of {total} areas staged');
-          progressText.textContent = template.replace('{done}', String(doneCount)).replace('{total}', String(total));
-        }
-
-        async function generate() {
-          if (generateBtn.disabled || !base) return;
-          const participating = layers.filter((l) => l.painted);
-          if (!participating.length) {
-            showToast(tx('maskingStudio.needHighlight', 'Paint at least one area on the photo first.'), 'error');
-            return;
-          }
-          const missing = participating.find((l) => l.mode !== 'remove' && !l.prompt.trim() && !l.furniture);
-          if (missing) {
-            activeId = missing.id;
-            renderLayers();
-            showToast(tx('maskingStudio.needPromptOrFurniture', 'Each highlighted area needs a short prompt or a furniture photo.'), 'error');
-            return;
-          }
-
-          const run = ++genRun;
-          const maxDim = Math.max(base.w, base.h);
-          // ~10% of the single-mask editor's expansion: the studio promises
-          // precise containment, so edits hug the highlight with only a thin
-          // softening edge instead of the main tool's generous outward fade.
-          const coreGrow = Math.max(2, Math.round(maxDim * 0.0023));
-          const featherPx = Math.max(2, Math.round(maxDim * 0.004));
-          genMeta = { coreGrow: coreGrow, featherPx: featherPx };
-          const imageDataUrl = roomPayload();
-
-          await maskCoreReady;
-          participating.forEach((l) => {
-            l.status = 'generating';
-            l.editedImg = null;
-            l.candidates = [];
-            l.candIdx = 0;
-            l.errorMsg = '';
-            l.canvasEl.classList.remove('is-landed');
-            // Freeze the compositing mask now — strokes can't change mid-run.
-            l.blendMask = layerBlendMask(l, coreGrow, featherPx);
-          });
-          setPhase('generating');
-          renderBusyDots(participating);
-          progressEl.classList.remove('hidden');
-          progressText.classList.remove('hidden');
-          updateRunProgress(0, participating.length);
-
-          let settled = 0;
-          await Promise.all(participating.map((layer) =>
-            enqueueRun(() => runLayer(layer, imageDataUrl, coreGrow, run, buildAreaContext(layer, participating), participating.length))
-              .then(() => { if (run === genRun) layer.status = 'done'; })
-              .catch((err) => {
-                if (run !== genRun) return;
-                layer.status = 'failed';
-                layer.errorMsg = err && err.message ? err.message : '';
-              })
-              .then(() => {
-                if (run !== genRun) return;
-                settled++;
-                updateRunProgress(settled, participating.length);
-                renderBusyDots(participating);
-                renderLayers();
-                updateControls(); // keep layer controls disabled through the run
-                if (layer.status === 'done') {
-                  layer.canvasEl.classList.add('is-landed');
-                  updateStageBackdrop();
-                }
-              })
-          ));
-          if (run !== genRun) return;
-
-          layers.forEach((l) => l.canvasEl && l.canvasEl.classList.remove('is-landed'));
-          progressEl.classList.add('hidden');
-          progressText.classList.add('hidden');
-          compositeAll();
-          const done = participating.filter((l) => l.status === 'done').length;
-          if (done > 0) {
-            // Land in Refine Edit: highlights over the pure After (raw output
-            // ghosted outside them), and Looks Good waiting in the header.
-            setPhase('draw');
-          } else {
-            setPhase('review');
-            setView('before');
-          }
-          if (done === participating.length) {
-            showToast(tx('maskingStudio.doneToast', 'All areas staged!'), 'success');
-          } else if (done > 0) {
-            const t = tx('maskingStudio.partialToast', '{done} of {total} areas staged — retry the failed ones.');
-            showToast(t.replace('{done}', String(done)).replace('{total}', String(participating.length)), 'error');
-          } else {
-            showToast(tx('maskingStudio.failedToast', 'Staging failed. Please try again.'), 'error');
-          }
-        }
-        generateBtn.addEventListener('click', generate);
-
-        // Pick a different generated version of an area and recomposite.
-        function selectCandidate(layer, idx) {
-          if (!layer.candidates.length || phase === 'generating') return;
-          layer.candIdx = ((idx % layer.candidates.length) + layer.candidates.length) % layer.candidates.length;
-          layer.editedImg = layer.candidates[layer.candIdx];
-          compositeAll();
-          setView(view);
-          renderLayers();
-        }
-
-        // Re-run a single failed/done area, then rebuild the composite.
-        async function retryLayer(id) {
-          const layer = getLayer(id);
-          if (!layer || !base || phase === 'generating' || !genMeta) return;
-          if (!layer.painted) return;
-          const run = genRun;
-          layer.status = 'generating';
-          layer.errorMsg = '';
-          if (!layer.blendMask) {
-            await maskCoreReady;
-            layer.blendMask = layerBlendMask(layer, genMeta.coreGrow, genMeta.featherPx);
-          }
-          renderLayers();
-          updateControls();
-          try {
-            await enqueueRun(() => runLayer(layer, roomPayload(), genMeta.coreGrow, run, buildAreaContext(layer, layers.filter((l) => l.painted)), 1));
-            if (run !== genRun) return;
-            layer.status = 'done';
-          } catch (err) {
-            if (run !== genRun) return;
-            if (layer.candidates.length) {
-              // "Try another version" failed but earlier versions survive.
-              layer.status = 'done';
-              layer.editedImg = layer.candidates[layer.candIdx];
-              showToast(err && err.message ? err.message : tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
-            } else {
-              layer.status = 'failed';
-              layer.errorMsg = err && err.message ? err.message : '';
-            }
-          }
-          compositeAll();
-          setView(view);
-          renderLayers();
-          updateControls();
-          updateStageBackdrop(); // retries can happen from the refine phase too
-        }
-
-        // Chain the per-area composites over the pristine original, in layer
-        // order. compositeMaskedEditCanvas keeps its input untouched outside
-        // each area's feathered mask, so anything never highlighted is the
-        // original image, pixel for pixel.
-        function compositeAll() {
-          if (!base) return;
-          let acc = document.createElement('canvas');
-          acc.width = base.w;
-          acc.height = base.h;
-          acc.getContext('2d').drawImage(base.canvas, 0, 0);
-          layers.forEach((layer) => {
-            if (layer.status !== 'done' || !layer.editedImg) return;
-            // Strokes edited since the run invalidate the cached mask; rebuild
-            // from the current strokes — same "re-crop, don't re-generate"
-            // semantics as the single-mask editor's refine step.
-            if (!layer.blendMask && genMeta && buildBlendMask) {
-              layer.blendMask = layerBlendMask(layer, genMeta.coreGrow, genMeta.featherPx);
-            }
-            if (layer.blendMask) {
-              acc = compositeMaskedEditCanvas(acc, layer.blendMask, layer.editedImg, base.w, base.h);
-            }
-          });
-          const ctx = resultCanvas.getContext('2d');
-          ctx.clearRect(0, 0, base.w, base.h);
-          ctx.drawImage(acc, 0, 0);
-        }
-
-        // What the display canvas shows underneath the highlights. Normally the
-        // original photo; while refining after a run it mirrors the main tool's
-        // renderRefinePreview: highlighted areas show exactly the composited
-        // After, and each area's raw AI output is ghosted on top so content the
-        // model painted just past the strokes stays visible and brushable-in.
-        function updateStageBackdrop() {
-          if (!base) return;
-          const ctx = baseCanvas.getContext('2d');
-          ctx.clearRect(0, 0, base.w, base.h);
-          if (phase === 'generating' && hasAnyResults()) {
-            // Progressive composite: each finished area lands in the backdrop
-            // while the rest of the run is still generating.
-            compositeAll();
-            ctx.drawImage(resultCanvas, 0, 0);
-          } else if (phase === 'draw' && hasAnyResults()) {
-            compositeAll();
-            ctx.drawImage(resultCanvas, 0, 0);
-            // Ghost each area's raw output only OUTSIDE the highlights. A raw
-            // frame holds original-looking pixels where OTHER areas' edits sit,
-            // so an unclipped ghost would wash a neighbor's pure After back
-            // toward the Before — clip it out per layer.
-            ctx.globalAlpha = 0.55;
-            layers.forEach((layer) => {
-              if (layer.status !== 'done' || !layer.editedImg) return;
-              const g = document.createElement('canvas');
-              g.width = base.w;
-              g.height = base.h;
-              const gctx = g.getContext('2d');
-              gctx.drawImage(layer.editedImg, 0, 0, base.w, base.h);
-              const stamp = othersStamp(layer);
-              if (stamp) {
-                gctx.globalCompositeOperation = 'destination-out';
-                gctx.drawImage(stamp, 0, 0);
-                gctx.globalCompositeOperation = 'source-over';
-              }
-              ctx.drawImage(g, 0, 0);
-            });
-            ctx.globalAlpha = 1;
-          } else {
-            ctx.drawImage(base.canvas, 0, 0);
-          }
-        }
-
         // ---------------------------------------------------------------------
         // Review actions
         // ---------------------------------------------------------------------
         editHighlightsBtn.addEventListener('click', () => {
-          if (phase !== 'review') return;
+          if (state.phase !== 'review') return;
           setPhase('draw');
         });
 
         viewResultBtn.addEventListener('click', () => {
-          if (phase !== 'draw' || !layers.some((l) => l.status === 'done' && l.editedImg)) return;
+          if (state.phase !== 'draw' || !state.layers.some((l) => l.status === 'done' && l.editedImg)) return;
           compositeAll();
           setPhase('review');
           setView('after');
         });
 
         downloadBtn.addEventListener('click', () => {
-          if (!layers.some((l) => l.status === 'done')) return;
+          if (!state.layers.some((l) => l.status === 'done')) return;
           compositeAll(); // strokes may have changed since the last composite
           const link = document.createElement('a');
           link.download = 'stagify-masking-studio-' + Date.now() + '.jpg';
@@ -2466,7 +1279,7 @@ import {
           }
         });
         replaceBtn.addEventListener('click', () => {
-          if (phase === 'generating') return;
+          if (state.phase === 'generating') return;
           requestDiscard(() => fileInput.click());
         });
         fileInput.addEventListener('change', () => {
@@ -2489,7 +1302,7 @@ import {
               if (!hasFiles(e)) return;
               e.preventDefault();
               dropzone.classList.remove('is-drag-over');
-              if (phase === 'generating') return;
+              if (state.phase === 'generating') return;
               const file = e.dataTransfer.files && e.dataTransfer.files[0];
               // Dropping on the photo itself is easy to do by accident when
               // aiming for the furniture button, so also guard unstaged work.
@@ -2506,7 +1319,7 @@ import {
         });
 
         addLayerBtn.addEventListener('click', () => {
-          if (layers.length >= MAX_LAYERS) {
+          if (state.layers.length >= MAX_LAYERS) {
             const t = tx('maskingStudio.areaLimit', 'You can highlight up to {n} areas.');
             showToast(t.replace('{n}', String(MAX_LAYERS)));
             return;
@@ -2518,6 +1331,116 @@ import {
         window.addEventListener('languagechange', () => {
           renderLayers();
           updateControls();
+        });
+
+        // ---------------------------------------------------------------------
+        // Islands (scripts/masking-studio/*): each factory receives the shared
+        // state store plus entry glue; APIs are destructured into same-named
+        // consts so the call sites above stay unchanged.
+        // ---------------------------------------------------------------------
+        // Session persistence: IndexedDB transport, debounced saves, resume dialog.
+        const { scheduleSessionSave, maybeOfferResume } = createSessionStore({
+          state,
+          MAX_LAYERS,
+          PALETTE,
+          stack,
+          resultCanvas,
+          resumeEl,
+          resumeYesBtn,
+          resumeNoBtn,
+          setBaseImage,
+          addLayer,
+          renderLayers,
+          updateControls,
+          showToast,
+          tx,
+        });
+
+        // Generation pipeline: parallel per-area mask edits, compositing, and
+        // the refine-phase ghost backdrop.
+        const { compositeAll, updateStageBackdrop, selectCandidate, retryLayer } =
+          createGeneratePipeline({
+            state,
+            generateBtn,
+            progressEl,
+            progressBar,
+            progressText,
+            baseCanvas,
+            resultCanvas,
+            setPhase,
+            setView,
+            renderLayers,
+            updateControls,
+            renderBusyDots,
+            hasAnyResults,
+            getLayer,
+            requestError,
+            showToast,
+            tx,
+            loadImage,
+          });
+
+        // Draw tools: brush/erase/rect strokes, undo/redo, pointer + pinch
+        // handling, cursor preview, tool switching.
+        const {
+          setTool,
+          setBrushSize,
+          snapshotForUndo,
+          undoStroke,
+          redoStroke,
+          cancelRect,
+          hideCursor,
+          scanHasContent,
+          canvasPoint,
+        } = createDrawTools({
+          state,
+          stack,
+          baseCanvas,
+          viewerEl,
+          undoBtn,
+          redoBtn,
+          brushBtn,
+          eraseBtn,
+          rectBtn,
+          wandBtn,
+          brushRow,
+          wandRow,
+          brushSlider,
+          brushSizeLabel,
+          activeLayer,
+          getLayer,
+          layerColor,
+          renderLayers,
+          updateControls,
+          scheduleSessionSave,
+          updateStageBackdrop,
+          setZoom,
+          moveCompare,
+          // Late-bound: segWand is created just below, and these only fire on
+          // user input long after boot.
+          wandClick: (e) => segWand.wandClick(e),
+          ensureSegCache: () => segWand.ensureSegCache(),
+        });
+
+        // Magic select: Gemini segmentation wand (paints like a faster brush,
+        // via the draw-tools callbacks).
+        const segWand = createSegWand({
+          state,
+          stack,
+          wandBusyEl,
+          activeLayer,
+          layerColor,
+          renderLayers,
+          updateControls,
+          scheduleSessionSave,
+          updateStageBackdrop,
+          snapshotForUndo,
+          scanHasContent,
+          canvasPoint,
+          requestError,
+          showToast,
+          tx,
+          loadImage,
         });
 
         // ---------------------------------------------------------------------
