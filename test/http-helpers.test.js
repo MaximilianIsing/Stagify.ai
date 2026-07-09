@@ -10,7 +10,18 @@ import {
   getStagingClientIp,
   isLikelyMobileStagingRequest,
   getUserIdentifier,
+  sendError,
 } from '../lib/http/http-helpers.js';
+
+// Minimal Express-style res double: records the status + JSON body sendError emits.
+function mockRes() {
+  const rec = {};
+  const res = {
+    status(code) { rec.status = code; return res; },
+    json(body) { rec.body = body; return res; },
+  };
+  return { res, rec };
+}
 
 const DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -52,4 +63,30 @@ test('setSensitiveHeaders sets no-store + no-referrer', () => {
   setSensitiveHeaders({ set: (k, v) => { set[k] = v; } });
   assert.equal(set['Cache-Control'], 'no-store');
   assert.equal(set['Referrer-Policy'], 'no-referrer');
+});
+
+test('sendError: status is applied and body is always { error } at minimum', () => {
+  const { res, rec } = mockRes();
+  sendError(res, 400, 'Image is required');
+  assert.equal(rec.status, 400);
+  assert.deepEqual(rec.body, { error: 'Image is required' });
+});
+
+test('sendError: code and details are included only when truthy', () => {
+  const withCode = mockRes();
+  sendError(withCode.res, 401, 'Sign in required', { code: 'AUTH_REQUIRED' });
+  assert.deepEqual(withCode.rec.body, { error: 'Sign in required', code: 'AUTH_REQUIRED' });
+
+  const withDetails = mockRes();
+  sendError(withDetails.res, 500, 'Image processing failed', { details: 'boom' });
+  assert.deepEqual(withDetails.rec.body, { error: 'Image processing failed', details: 'boom' });
+
+  const withBoth = mockRes();
+  sendError(withBoth.res, 422, 'Could not stage', { code: 'NO_IMAGE_GENERATED', details: 'no candidates' });
+  assert.deepEqual(withBoth.rec.body, { error: 'Could not stage', code: 'NO_IMAGE_GENERATED', details: 'no candidates' });
+
+  // Falsy code/details must not leak empty keys into the body.
+  const bare = mockRes();
+  sendError(bare.res, 500, 'Failed', { code: undefined, details: '' });
+  assert.deepEqual(bare.rec.body, { error: 'Failed' });
 });

@@ -7,7 +7,7 @@ uploaded images alongside it as flat files.
 
 ## Where the data lives
 
-Resolved by `resolveDataDir()` ([`lib/db.js`](../../lib/db.js)) — the same rule for
+Resolved by `resolveDataDir()` ([`lib/data/db.js`](../../lib/data/db.js)) — the same rule for
 every store:
 
 - **Render:** the mounted persistent disk at **`/data`** (survives deploys — see
@@ -17,7 +17,7 @@ every store:
 ## SQLite — the application database (`auth-store.db`)
 
 All structured state lives in **one SQLite database** (via `better-sqlite3`), opened
-through a single shared connection in [`lib/db.js`](../../lib/db.js) and used by every
+through a single shared connection in [`lib/data/db.js`](../../lib/data/db.js) and used by every
 store factory. It began as the auth store, so the file is still named `auth-store.db`.
 
 - **File:** `auth-store.db` (WAL mode adds `auth-store.db-wal` and `auth-store.db-shm`
@@ -25,19 +25,22 @@ store factory. It began as the auth store, so the file is still named `auth-stor
 - **Pragmas:** `journal_mode=WAL`, `synchronous=NORMAL`, `busy_timeout=5000`,
   `foreign_keys=ON`. WAL + `busy_timeout` is a **single-writer** design — see caveats.
 - **Tables:**
-  - Auth ([`lib/auth-store.js`](../../lib/auth-store.js)): `users`, `sessions`,
-    `mobile_ip_usage`, `password_reset_tokens`, `pending_registrations`.
-  - `enterprise_domains` ([`lib/enterprise-store.js`](../../lib/enterprise-store.js)) —
+  - Auth ([`lib/data/auth-store.js`](../../lib/data/auth-store.js)): `users`, `sessions`,
+    `mobile_ip_usage` *(dormant — see below)*, `password_reset_tokens`, `pending_registrations`.
+  - `enterprise_domains` ([`lib/data/enterprise-store.js`](../../lib/data/enterprise-store.js)) —
     one row per domain: activation + metered-usage state, kept in sync with Stripe.
-  - `memories` ([`lib/memory.js`](../../lib/memory.js)) — one row per user holding that
+  - `memories` ([`lib/data/memory.js`](../../lib/data/memory.js)) — one row per user holding that
     user's AI-chat-assistant memories (a JSON array).
-  - `uptime_state` ([`lib/uptime-monitor.js`](../../lib/uptime-monitor.js)) — a single
+  - `uptime_state` ([`lib/data/uptime-monitor.js`](../../lib/data/uptime-monitor.js)) — a single
     row: last heartbeat + coalesced downtime incidents (powers `/api/status`).
   - `meta` — key/value bookkeeping (e.g. the one-time-import guards).
 - **What's inside auth:** accounts (email, **scrypt-hashed + per-user-salted** passwords —
   never plaintext, Google `sub`, Stripe customer/subscription ids, Pro flag), 30-day
   sessions, 15-minute registration codes, single-use password-reset tokens, and the
-  anonymous mobile per-IP daily usage counter.
+  **free-tier daily generation counter** (`usage_day` / `usage_count` on `users`, which
+  enforces the 50-generations/day free cap). The separate `mobile_ip_usage` table is a
+  **dormant legacy** table: no route writes to it anymore (staging now requires sign-in),
+  and it is retained only so the backup/export shape stays 1:1 for rollback.
 - **Legacy:** on first boot each store performs a **one-time import** of its old JSON
   file (`auth-store.json`, `enterprise-domains.json`, `memories.json`, `uptime.json`)
   into SQLite — guarded so it never re-runs — then leaves the JSON as a **frozen
@@ -55,7 +58,7 @@ migration is confirmed good; they double as a rollback source.
 
 ## CSV logs (append-only)
 
-Written by [`lib/logging.js`](../../lib/logging.js) (and the contact/bug handlers in
+Written by [`lib/services/logging.js`](../../lib/services/logging.js) (and the contact/bug handlers in
 [`routes/public.js`](../../routes/public.js)). Each is created with a header row on
 first write, then appended to. Exposed (read-only) through the `endpoint_key`-gated
 admin/log endpoints — see [`endpoints.md`](endpoints.md).

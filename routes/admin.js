@@ -1,12 +1,14 @@
 // admin routes, extracted verbatim from server.js.
-import express from 'express';
+import { createAsyncRouter } from '../lib/http/async-router.js';
+import { sendError } from '../lib/http/http-helpers.js';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import { logger } from '../lib/logger.js';
 
 export default function createAdminRouter(deps) {
   const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT } = deps;
-  const router = express.Router();
+  const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
   setSensitiveHeaders(res);
@@ -16,10 +18,10 @@ router.get('/admin', (req, res) => {
 router.post('/api/host-image', protectLogs, (req, res) => {
   hostImageUpload(req, res, (err) => {
     if (err) {
-      return res.status(400).json({ error: err.message || 'Upload failed' });
+      return sendError(res, 400, err.message || 'Upload failed');
     }
     if (!req.file || !req.file.buffer || !req.file.buffer.length) {
-      return res.status(400).json({ error: 'No image file provided' });
+      return sendError(res, 400, 'No image file provided');
     }
     try {
       const ext = HOSTED_IMAGE_MIME_EXT[req.file.mimetype] || 'bin';
@@ -42,11 +44,11 @@ router.post('/api/host-image', protectLogs, (req, res) => {
         .split(',')[0]
         .trim();
       const url = proto + '://' + req.get('host') + '/i/' + id;
-      console.log('[host-image] hosted', file, '(' + entry.size + ' bytes)');
+      logger.info('[host-image] hosted', file, '(' + entry.size + ' bytes)');
       return res.json({ ok: true, id, path: '/i/' + id, url, entry });
     } catch (e) {
-      console.error('[host-image] save failed', e);
-      return res.status(500).json({ error: 'Failed to save image' });
+      logger.error('[host-image] save failed', e);
+      return sendError(res, 500, 'Failed to save image');
     }
   });
 });
@@ -62,22 +64,22 @@ router.get('/api/hosted-images', protectLogs, (req, res) => {
 router.delete('/api/hosted-images/:id', protectLogs, (req, res) => {
   const id = String(req.params.id || '');
   if (!/^[a-f0-9]{16,64}$/.test(id)) {
-    return res.status(400).json({ error: 'Invalid id' });
+    return sendError(res, 400, 'Invalid id');
   }
   const manifest = readHostedImagesManifest();
   const idx = manifest.findIndex((e) => e && e.id === id);
   if (idx === -1) {
-    return res.status(404).json({ error: 'Not found' });
+    return sendError(res, 404, 'Not found');
   }
   const [entry] = manifest.splice(idx, 1);
   try {
     const filePath = path.join(getHostedImagesDir(), entry.file);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   } catch (e) {
-    console.error('[host-image] file delete failed', e);
+    logger.error('[host-image] file delete failed', e);
   }
   writeHostedImagesManifest(manifest);
-  console.log('[host-image] unhosted', entry.file);
+  logger.info('[host-image] unhosted', entry.file);
   return res.json({ ok: true });
 });
 
@@ -91,11 +93,8 @@ router.get('/authstore', protectLogs, (req, res) => {
     res.setHeader('Content-Disposition', 'inline; filename="auth-store.json"');
     res.send(JSON.stringify(snapshot, null, 2));
   } catch (error) {
-    console.error('Error serving auth store snapshot:', error);
-    res.status(500).json({
-      error: 'Failed to retrieve auth store',
-      message: error.message,
-    });
+    logger.error('Error serving auth store snapshot:', error);
+    sendError(res, 500, 'Failed to retrieve auth store', { details: error.message });
   }
 });
 
@@ -118,17 +117,11 @@ router.get('/promptlogs', protectLogs, (req, res) => {
       res.setHeader('Content-Disposition', 'inline; filename="prompt_logs.csv"');
       res.sendFile(logFile);
     } else {
-      res.status(404).json({ 
-        error: 'Log file not found',
-        message: 'No prompt logs are available yet'
-      });
+      sendError(res, 404, 'Log file not found', { details: 'No prompt logs are available yet' });
     }
   } catch (error) {
-    console.error('Error serving prompt log file:', error);
-    res.status(500).json({ 
-      error: 'Failed to retrieve prompt logs',
-      message: error.message
-    });
+    logger.error('Error serving prompt log file:', error);
+    sendError(res, 500, 'Failed to retrieve prompt logs', { details: error.message });
   }
 });
 
@@ -151,17 +144,11 @@ router.get('/contactlogs', protectLogs, (req, res) => {
       res.setHeader('Content-Disposition', 'inline; filename="contact_logs.csv"');
       res.sendFile(logFile);
     } else {
-      res.status(404).json({ 
-        error: 'Log file not found',
-        message: 'No contact logs are available yet'
-      });
+      sendError(res, 404, 'Log file not found', { details: 'No contact logs are available yet' });
     }
   } catch (error) {
-    console.error('Error serving contact log file:', error);
-    res.status(500).json({ 
-      error: 'Failed to retrieve contact logs',
-      message: error.message
-    });
+    logger.error('Error serving contact log file:', error);
+    sendError(res, 500, 'Failed to retrieve contact logs', { details: error.message });
   }
 });
 
@@ -174,17 +161,11 @@ router.get('/email-open-logs', protectLogs, (req, res) => {
       res.setHeader('Content-Disposition', 'inline; filename="email_open_logs.csv"');
       res.sendFile(logFile);
     } else {
-      res.status(404).json({
-        error: 'Log file not found',
-        message: 'No email open logs are available yet',
-      });
+      sendError(res, 404, 'Log file not found', { details: 'No email open logs are available yet' });
     }
   } catch (error) {
-    console.error('Error serving email open log file:', error);
-    res.status(500).json({
-      error: 'Failed to retrieve email open logs',
-      message: error.message,
-    });
+    logger.error('Error serving email open log file:', error);
+    sendError(res, 500, 'Failed to retrieve email open logs', { details: error.message });
   }
 });
 
@@ -196,11 +177,8 @@ router.get('/memories', protectLogs, (req, res) => {
     res.setHeader('Content-Disposition', 'inline; filename="memories.json"');
     res.send(JSON.stringify(memories, null, 2));
   } catch (error) {
-    console.error('Error serving memories file:', error);
-    res.status(500).json({ 
-      error: 'Failed to retrieve memories',
-      message: error.message
-    });
+    logger.error('Error serving memories file:', error);
+    sendError(res, 500, 'Failed to retrieve memories', { details: error.message });
   }
 });
 
@@ -209,7 +187,7 @@ router.get('/resetmemories', protectLogs, (req, res) => {
     resetAllMemories();
     
     if (DEBUG_MODE) {
-      console.log('✓ Successfully reset all memories');
+      logger.debug('✓ Successfully reset all memories');
     }
     
     res.status(200).json({ 
@@ -217,11 +195,8 @@ router.get('/resetmemories', protectLogs, (req, res) => {
       message: 'All memories have been reset successfully'
     });
   } catch (error) {
-    console.error('Error resetting memories:', error);
-    res.status(500).json({ 
-      error: 'Failed to reset memories',
-      message: error.message
-    });
+    logger.error('Error resetting memories:', error);
+    sendError(res, 500, 'Failed to reset memories', { details: error.message });
   }
 });
 
@@ -229,11 +204,11 @@ router.get('/resetmemories', protectLogs, (req, res) => {
 router.post('/api/status/reset', protectLogs, (req, res) => {
   try {
     const snapshot = uptimeMonitor.reset();
-    if (DEBUG_MODE) console.log('✓ Server status (uptime) history reset');
+    if (DEBUG_MODE) logger.debug('✓ Server status (uptime) history reset');
     res.status(200).json({ success: true, message: 'Server status history reset; monitoring restarted.', snapshot });
   } catch (error) {
-    console.error('Error resetting server status:', error);
-    res.status(500).json({ success: false, error: error.message });
+    logger.error('Error resetting server status:', error);
+    sendError(res, 500, error.message);
   }
 });
 
@@ -256,17 +231,11 @@ router.get('/chatlogs', protectLogs, (req, res) => {
       res.setHeader('Content-Disposition', 'inline; filename="chat_logs.csv"');
       res.sendFile(logFile);
     } else {
-      res.status(404).json({ 
-        error: 'Log file not found',
-        message: 'No chat logs are available yet'
-      });
+      sendError(res, 404, 'Log file not found', { details: 'No chat logs are available yet' });
     }
   } catch (error) {
-    console.error('Error serving chat log file:', error);
-    res.status(500).json({ 
-      error: 'Failed to retrieve chat logs',
-      message: error.message
-    });
+    logger.error('Error serving chat log file:', error);
+    sendError(res, 500, 'Failed to retrieve chat logs', { details: error.message });
   }
 });
 
@@ -289,17 +258,11 @@ router.get('/bugreports', protectLogs, (req, res) => {
       res.setHeader('Content-Disposition', 'inline; filename="bug_reports.csv"');
       res.sendFile(logFile);
     } else {
-      res.status(404).json({ 
-        error: 'Log file not found',
-        message: 'No bug reports are available yet'
-      });
+      sendError(res, 404, 'Log file not found', { details: 'No bug reports are available yet' });
     }
   } catch (error) {
-    console.error('Error serving bug reports file:', error);
-    res.status(500).json({ 
-      error: 'Failed to retrieve bug reports',
-      message: error.message
-    });
+    logger.error('Error serving bug reports file:', error);
+    sendError(res, 500, 'Failed to retrieve bug reports', { details: error.message });
   }
 });
 
@@ -322,17 +285,11 @@ router.get('/masklogs', protectLogs, (req, res) => {
       res.setHeader('Content-Disposition', 'inline; filename="mask_logs.csv"');
       res.sendFile(logFile);
     } else {
-      res.status(404).json({ 
-        error: 'Log file not found',
-        message: 'No mask logs are available yet'
-      });
+      sendError(res, 404, 'Log file not found', { details: 'No mask logs are available yet' });
     }
   } catch (error) {
-    console.error('Error serving mask logs file:', error);
-    res.status(500).json({ 
-      error: 'Failed to retrieve mask logs',
-      message: error.message
-    });
+    logger.error('Error serving mask logs file:', error);
+    sendError(res, 500, 'Failed to retrieve mask logs', { details: error.message });
   }
 });
 
@@ -343,8 +300,8 @@ router.get('/enterprise-domains', protectLogs, (req, res) => {
     res.setHeader('Content-Disposition', 'inline; filename="enterprise-domains.json"');
     res.send(JSON.stringify(enterpriseStore.exportStore(), null, 2));
   } catch (error) {
-    console.error('Error serving enterprise domains file:', error);
-    res.status(500).json({ error: 'Failed to retrieve enterprise domains', message: error.message });
+    logger.error('Error serving enterprise domains file:', error);
+    sendError(res, 500, 'Failed to retrieve enterprise domains', { details: error.message });
   }
 });
 

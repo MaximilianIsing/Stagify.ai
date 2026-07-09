@@ -1,4 +1,23 @@
-import { createPool, nextColorIdx } from './masking-studio/layers.js';
+import {
+  createPool,
+  nextColorIdx,
+  createLayer,
+  layerColor as _layerColor,
+  layerTitle as _layerTitle,
+  previewText as _previewText,
+  statusChip as _statusChip,
+} from './masking-studio/layers.js';
+import {
+  regionNameFromBounds,
+  buildAreaContext as _buildAreaContext,
+  requestError as _requestError,
+} from './masking-studio/generation.js';
+import {
+  serializeLayer,
+  serializeSession,
+  deserializeLayer,
+  isRestorableSession,
+} from './masking-studio/session.js';
 
         // ---------------------------------------------------------------------
         // Access gate: Masking Studio is Stagify+ only. Anonymous visitors were
@@ -338,25 +357,7 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
           c.className = 'ms-layer-canvas';
           // Insert below the result canvas so results always cover highlights.
           stack.insertBefore(c, resultCanvas);
-          const layer = {
-            id: 'L' + (++layerSeq),
-            colorIdx: colorIdx,
-            canvasEl: c,
-            painted: false,
-            name: '',            // user-given name; empty → "Area {n}"
-            prompt: '',
-            mode: 'stage',       // 'stage' adds furniture; 'remove' clears the area
-            presetsOpen: false,  // prompt-idea chips revealed via the + button
-            furniture: null,
-            furnitureName: '',   // original file name, shown in the header peek
-            status: 'idle',      // idle | generating | done | failed
-            editedImg: null,     // the selected candidate (what compositeAll uses)
-            candidates: [],      // every generated version of this area (capped)
-            candIdx: 0,
-            blendMask: null,
-            errorMsg: '',
-            el: null,
-          };
+          const layer = createLayer({ id: 'L' + (++layerSeq), colorIdx: colorIdx, canvasEl: c });
           layers.push(layer);
           activeId = layer.id;
           renderLayers();
@@ -388,25 +389,12 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
           return getLayer(activeId);
         }
 
-        function layerColor(layer) {
-          return PALETTE[layer.colorIdx].hex;
-        }
-
-        function layerTitle(layer) {
-          if (layer.name) return layer.name;
-          const template = tx('maskingStudio.areaName', 'Area {n}');
-          const n = layers.indexOf(layer) + 1;
-          return template.replace('{n}', String(n));
-        }
-
-        function statusChip(layer) {
-          if (layer.status === 'generating') return { cls: 'ms-layer-status--generating', text: tx('maskingStudio.statusGenerating', 'Staging…') };
-          if (layer.status === 'done') return { cls: 'ms-layer-status--done', text: tx('maskingStudio.statusDone', 'Done') };
-          if (layer.status === 'failed') return { cls: 'ms-layer-status--failed', text: tx('maskingStudio.statusFailed', 'Failed') };
-          if (!layer.painted) return { cls: '', text: tx('maskingStudio.statusEmpty', 'Not highlighted yet') };
-          if (layer.mode === 'remove' || layer.prompt.trim() || layer.furniture) return { cls: 'ms-layer-status--ready', text: tx('maskingStudio.statusReady', 'Ready') };
-          return { cls: '', text: tx('maskingStudio.statusNeedsDetails', 'Needs a prompt or photo') };
-        }
+        // Thin binding wrappers over the pure area-model helpers (scripts/
+        // masking-studio/layers.js): bind the live PALETTE / layers array / tx so
+        // every call site below stays unchanged. Logic + tests live in the module.
+        function layerColor(layer) { return _layerColor(layer, PALETTE); }
+        function layerTitle(layer) { return _layerTitle(layer, layers, tx); }
+        function statusChip(layer) { return _statusChip(layer, tx); }
 
         // Rebuild the layer cards. Prompt edits mutate state directly (no
         // re-render on keystroke), so rebuilding here never loses typed text.
@@ -461,11 +449,7 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
               });
               input.addEventListener('blur', commit);
             });
-            const previewFallback = () => {
-              if (layer.prompt.trim()) return layer.prompt.trim();
-              if (layer.mode === 'remove') return tx('maskingStudio.modeRemove', 'Remove object');
-              return layer.furniture ? (layer.furnitureName || '') : '';
-            };
+            const previewFallback = () => _previewText(layer, tx);
             const preview = document.createElement('span');
             preview.className = 'ms-layer-preview';
             preview.textContent = previewFallback();
@@ -964,21 +948,13 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
             if (!baseBlob) return;
             const layerData = [];
             for (const l of layers) {
-              layerData.push({
-                colorIdx: l.colorIdx,
-                name: l.name,
-                prompt: l.prompt,
-                mode: l.mode,
-                furniture: l.furniture,
-                furnitureName: l.furnitureName,
-                painted: l.painted,
-                mask: l.painted ? await toBlob(l.canvasEl, 'image/png') : null,
-              });
+              const maskBlob = l.painted ? await toBlob(l.canvasEl, 'image/png') : null;
+              layerData.push(serializeLayer(l, maskBlob));
             }
             // A clear/reset while we were encoding wins — never resurrect a
             // session the user just discarded.
             if (seq !== saveSeq) return;
-            await sessionSave({ savedAt: Date.now(), baseBlob: baseBlob, layers: layerData });
+            await sessionSave(serializeSession(baseBlob, layerData, Date.now()));
           } catch (e) {}
         }
 
@@ -1028,25 +1004,12 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
                 painted = true;
               } catch (e) {}
             }
-            layers.push({
+            layers.push(deserializeLayer(ld, {
               id: 'L' + (++layerSeq),
-              colorIdx: Math.min(PALETTE.length - 1, Math.max(0, ld.colorIdx || 0)),
               canvasEl: c,
               painted: painted,
-              name: ld.name || '',
-              prompt: ld.prompt || '',
-              mode: ld.mode === 'remove' ? 'remove' : 'stage',
-              presetsOpen: false,
-              furniture: ld.furniture || null,
-              furnitureName: ld.furnitureName || '',
-              status: 'idle',
-              editedImg: null,
-              candidates: [],
-              candIdx: 0,
-              blendMask: null,
-              errorMsg: '',
-              el: null,
-            });
+              paletteLength: PALETTE.length,
+            }));
           }
           if (!layers.length) addLayer();
           activeId = layers[0].id;
@@ -1058,7 +1021,7 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
         async function maybeOfferResume() {
           let saved = null;
           try { saved = await sessionLoad(); } catch (e) {}
-          if (!saved || !saved.baseBlob || base) return false;
+          if (!isRestorableSession(saved) || base) return false;
           resumeEl.classList.add('active');
           resumeYesBtn.focus();
           resumeYesBtn.addEventListener('click', async () => {
@@ -2089,13 +2052,7 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
         // Generation: every painted area runs as its own parallel mask edit.
         // ---------------------------------------------------------------------
         function requestError(status, result) {
-          if (status === 401 || status === 403) {
-            showProGate();
-            return tx('maskingStudio.gateTitle', 'Masking Studio is a Stagify+ feature');
-          }
-          if (status === 429) return tx('maskingStudio.rateLimited', "You're generating too quickly — wait a minute and try again.");
-          if (status === 413) return tx('errors.fileTooLarge', 'That image is too large.');
-          return (result && result.error) || tx('errors.processingFailed', 'Something went wrong. Please try again.');
+          return _requestError(status, result, tx, showProGate);
         }
 
         // Rough position of a mask inside the photo ("lower left", "center"…)
@@ -2119,35 +2076,14 @@ import { createPool, nextColorIdx } from './masking-studio/layers.js';
               }
             }
           }
-          if (maxX < 0) return '';
-          const cx = (minX + maxX) / 2 / s;
-          const cy = (minY + maxY) / 2 / s;
-          const col = cx < 1 / 3 ? 'left' : (cx > 2 / 3 ? 'right' : 'center');
-          const row = cy < 1 / 3 ? 'upper' : (cy > 2 / 3 ? 'lower' : 'middle');
-          if (row === 'middle' && col === 'center') return 'center';
-          if (row === 'middle') return 'center ' + col;
-          if (col === 'center') return row + ' middle';
-          return row + ' ' + col;
+          return regionNameFromBounds(minX, minY, maxX, maxY, s);
         }
 
         // Areas generate in parallel and never see each other's output, so each
         // prompt carries a sketch of the neighbors' plans — enough for the model
         // to keep lighting, perspective, and style coherent across areas.
         function buildAreaContext(layer, participants) {
-          const others = participants.filter((l) => l !== layer && l.painted);
-          if (!others.length) return '';
-          const plans = others.map((l) => {
-            let plan;
-            if (l.mode === 'remove') plan = 'the existing contents are being removed';
-            else if (l.prompt.trim()) plan = l.prompt.trim();
-            else plan = 'furniture from a reference photo is being added';
-            if (plan.length > 90) plan = plan.slice(0, 87) + '…';
-            const region = maskRegionName(l.canvasEl);
-            return (region ? 'in the ' + region + ' of the photo: ' : '') + plan;
-          });
-          return ' For context, other parts of this photo are being edited separately (' +
-            plans.join('; ') +
-            '). Only edit the masked area, but keep lighting, shadows, perspective, and furnishing style consistent with those planned changes.';
+          return _buildAreaContext(layer, participants, (l) => maskRegionName(l.canvasEl));
         }
 
         // At most 3 mask edits in flight at once: smoother on the server's rate

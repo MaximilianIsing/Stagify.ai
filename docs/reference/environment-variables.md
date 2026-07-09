@@ -30,7 +30,9 @@ GOOGLE_PUBLISHER_ID=
 
 # --- AI providers ---
 # Google Generative AI (Gemini) key. Powers the core staging pipeline — staging
-# fails without it. Also accepted under the name GEMINI_API_KEY. File fallback: key.txt
+# fails without it. The main staging client reads GOOGLE_AI_API_KEY only (file
+# fallback: key.txt); the GEMINI_API_KEY alias is honored ONLY by the CAD-to-3D
+# helper (lib/staging/cad-handling.js), so set GOOGLE_AI_API_KEY for staging to work.
 GOOGLE_AI_API_KEY=
 # OpenAI key. Powers the chat assistant only; the rest of the app works without
 # it (chat is simply disabled). File fallback: gpt-key.txt
@@ -69,7 +71,13 @@ LITESTREAM_SECRET_ACCESS_KEY=
 
 # --- Debug flags — all default OFF. Set true ONLY for local dev, never in production. ---
 # Verbose server logging (startup, key loading, etc.). true/false. File fallback: debug.txt
+# Raises the diagnostic-logger floor to `debug` unless LOG_LEVEL (below) overrides it.
 DEBUG=false
+# Diagnostic-logger verbosity (lib/logger.js): debug | info | warn | error | silent.
+# When set to a known level it WINS over DEBUG; unset/blank falls back to the DEBUG rule
+# (DEBUG on → debug, else info). Use LOG_LEVEL=warn to quiet a chatty deploy, or
+# LOG_LEVEL=silent to mute everything (e.g. in tests). Default (unset): info floor.
+# LOG_LEVEL=
 # Redirects ALL outbound email to the developer debug address instead of real
 # recipients — silently hides mail from real users, so keep this false in production.
 # true/false. File fallback: emaildebug.txt

@@ -27,8 +27,6 @@ export function baseDeps() {
     setSensitiveHeaders: () => {},
     getAuthUserFromRequest: () => null,
     enterpriseDomainForUser: () => null,
-    getStagingClientIp: () => '203.0.113.1',
-    isLikelyMobileStagingRequest: () => false,
     reportEnterpriseUsage: () => {},
     // Default: reject as unauthenticated (tests that need to get past it override this).
     requireProAccount: (req, res) => {

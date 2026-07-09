@@ -1,11 +1,13 @@
 // public routes, extracted verbatim from server.js.
-import express from 'express';
+import { createAsyncRouter } from '../lib/http/async-router.js';
+import { sendError } from '../lib/http/http-helpers.js';
 import path from 'path';
 import fs from 'fs';
+import { logger } from '../lib/logger.js';
 
 export default function createPublicRouter(deps) {
   const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, PDF_PROCESSING_SERVER, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
-  const router = express.Router();
+  const router = createAsyncRouter();
 
 router.get('/robots.txt', (req, res) => {
   res.type('text/plain');
@@ -88,7 +90,7 @@ router.post('/api/log-contact', emailLimiter, (req, res) => {
       // Use Render's mounted disk
       logDir = '/data';
       if (DEBUG_MODE) {
-        console.log('Using Render persistent disk for contact logs');
+        logger.debug('Using Render persistent disk for contact logs');
       }
     } else {
       // Use project data folder for local development
@@ -99,11 +101,11 @@ router.post('/api/log-contact', emailLimiter, (req, res) => {
         try {
           fs.mkdirSync(logDir, { recursive: true });
           if (DEBUG_MODE) {
-            console.log('Created local data directory successfully');
+            logger.debug('Created local data directory successfully');
           }
         } catch {
           if (DEBUG_MODE) {
-            console.log('Error: Cannot create data directory, using project root');
+            logger.debug('Error: Cannot create data directory, using project root');
           }
           logDir = __dirname;
         }
@@ -123,7 +125,7 @@ router.post('/api/log-contact', emailLimiter, (req, res) => {
       // Append to existing file
       fs.appendFile(logFile, csvRow, (err) => {
         if (err) {
-          console.error('Error writing to contact log:', err);
+          logger.error('Error writing to contact log:', err);
         }
       });
     }
@@ -133,8 +135,8 @@ router.post('/api/log-contact', emailLimiter, (req, res) => {
     
     res.json({ success: true, message: 'Contact logged successfully' });
   } catch (error) {
-    console.error('Error in contact logging:', error);
-    res.status(500).json({ success: false, message: 'Failed to log contact' });
+    logger.error('Error in contact logging:', error);
+    sendError(res, 500, 'Failed to log contact');
   }
 });
 
@@ -142,25 +144,18 @@ router.post('/api/send-email', emailLimiter, async (req, res) => {
   try {
     // Check access key
     if (!LOGS_ACCESS_KEY) {
-      return res.status(500).json({ 
-        error: 'Server configuration error',
-        message: 'Endpoint access key not configured'
-      });
+      return sendError(res, 500, 'Server configuration error', { details: 'Endpoint access key not configured' });
     }
-    
+
     const accessKey = req.query.key || req.body.key;
     if (accessKey !== LOGS_ACCESS_KEY) {
-      return res.status(403).json({ 
-        error: 'Access denied',
-        message: 'Valid access key required'
-      });
+      return sendError(res, 403, 'Access denied', { details: 'Valid access key required' });
     }
 
     // Check if Resend is initialized
     if (!resend) {
-      return res.status(500).json({ 
-        error: 'Email service not configured',
-        message: 'Resend API key not found. Please set RESEND_API_KEY environment variable or create resendkey.txt file'
+      return sendError(res, 500, 'Email service not configured', {
+        details: 'Resend API key not found. Please set RESEND_API_KEY environment variable or create resendkey.txt file',
       });
     }
 
@@ -168,10 +163,7 @@ router.post('/api/send-email', emailLimiter, async (req, res) => {
 
     // Validate required fields
     if (!to || !subject || !text) {
-      return res.status(400).json({ 
-        error: 'Missing required fields',
-        message: 'All fields "to", "subject", and "text" are required'
-      });
+      return sendError(res, 400, 'Missing required fields', { details: 'All fields "to", "subject", and "text" are required' });
     }
 
     const fromEmail = RESEND_FROM_EMAIL;
@@ -193,7 +185,7 @@ router.post('/api/send-email', emailLimiter, async (req, res) => {
     const result = await resend.emails.send(emailData);
 
     if (DEBUG_MODE) {
-      console.log('Email sent successfully:', result);
+      logger.debug('Email sent successfully:', result);
     }
 
     res.json({ 
@@ -202,11 +194,8 @@ router.post('/api/send-email', emailLimiter, async (req, res) => {
       id: result.id 
     });
   } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).json({ 
-      error: 'Failed to send email',
-      message: error.message || 'An error occurred while sending the email'
-    });
+    logger.error('Error sending email:', error);
+    sendError(res, 500, 'Failed to send email', { details: error.message || 'An error occurred while sending the email' });
   }
 });
 
@@ -246,7 +235,7 @@ router.get('/api/pdf-health', async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (error) {
-    console.error('Error checking PDF server health:', error);
+    logger.error('Error checking PDF server health:', error);
     res.status(500).json({ 
       status: 'error', 
       message: 'Failed to check PDF server health',
@@ -260,7 +249,7 @@ router.post('/api/bug-report', emailLimiter, async (req, res) => {
     const { description, steps, email, userId, userAgent, url, timestamp, conversationHistory } = req.body;
     
     if (!description || !description.trim()) {
-      return res.status(400).json({ error: 'Bug description is required' });
+      return sendError(res, 400, 'Bug description is required');
     }
     
     // Escape CSV fields that contain commas, quotes, or newlines
@@ -332,7 +321,7 @@ router.post('/api/bug-report', emailLimiter, async (req, res) => {
         try {
           fs.mkdirSync(logDir, { recursive: true });
         } catch {
-          console.log('Error: Cannot create data directory, using project root');
+          logger.info('Error: Cannot create data directory, using project root');
           logDir = __dirname;
         }
       }
@@ -351,19 +340,19 @@ router.post('/api/bug-report', emailLimiter, async (req, res) => {
       // Append to existing file
       fs.appendFile(logFile, csvRow, (err) => {
         if (err) {
-          console.error('Error writing to bug report log:', err);
+          logger.error('Error writing to bug report log:', err);
         }
       });
     }
     
     if (DEBUG_MODE) {
-      console.log(`✓ Bug report submitted by user: ${userId || 'unknown'}`);
+      logger.debug(`✓ Bug report submitted by user: ${userId || 'unknown'}`);
     }
     
     return res.json({ success: true, message: 'Bug report submitted successfully' });
   } catch (error) {
-    console.error('Error processing bug report:', error);
-    return res.status(500).json({ error: 'Failed to submit bug report' });
+    logger.error('Error processing bug report:', error);
+    return sendError(res, 500, 'Failed to submit bug report');
   }
 });
 

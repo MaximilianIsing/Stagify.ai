@@ -58,7 +58,7 @@ This README is the entry point for the `docs/` folder. See also:
 ```
 .
 ├── server.js                # Composition root: loads config, wires deps, mounts routes/, serves static
-├── instrument.js            # Sentry init (imported before server.js when SENTRY_DSN is set)
+├── instrument.js            # Sentry init (always imported before server.js via `node --import`; no-op when SENTRY_DSN is unset)
 ├── load-env.js              # Zero-dependency .env loader (imported first, before any secret)
 ├── render.yaml              # Render deploy config (build/start run the scripts below)
 ├── litestream.yml           # Litestream config: replicate the SQLite DB to Cloudflare R2
@@ -74,22 +74,18 @@ This README is the entry point for the `docs/` folder. See also:
 │   ├── chat.js              # AI Designer: chat, chat-upload, welcome-message
 │   └── admin.js             # /admin + log/JSON exports + image hosting (endpoint_key gated)
 ├── lib/                     # Shared modules (factory + dependency-injection pattern)
-│   ├── config.js            # Secret/config readers (env var → .txt fallback)
-│   ├── auth-store.js        # User accounts, sessions, registration codes, daily limits
-│   ├── enterprise-store.js  # Enterprise domains + metered usage tracking
-│   ├── stripe-webhooks.js   # Stripe subscription lifecycle handling
-│   ├── prompts.js           # AI prompt / schema constants
-│   ├── promptMatrix.js      # Room-type × style staging prompt templates
-│   ├── cad-handling.js      # CAD/PDF floor plan → 3D render (AI Designer)
-│   ├── chat-pipeline.js     # AI Designer chat orchestration
-│   ├── chat-upload-prep.js  # Chat file-upload preprocessing
-│   ├── memory.js            # Per-user chat-assistant memory
-│   ├── logging.js           # CSV logging helpers
-│   ├── email.js             # Resend email helpers
-│   └── uptime-monitor.js    # Heartbeat + /api/status snapshot
+│   ├── logger.js            # Diagnostic logger — the single stdout/stderr funnel (LOG_LEVEL)
+│   ├── config/              # config.js (secrets), model-config.js, runtime-flags.js
+│   ├── data/                # db.js (shared SQLite conn), auth-store, enterprise-store, memory, counters, uptime-monitor
+│   ├── http/                # async-router, http-helpers (sendError), http-guards, rate-limiters, uploads
+│   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images
+│   ├── services/            # ai-clients, auth-helpers, email, logging (CSV), stripe-webhooks
+│   ├── staging/             # prompts, promptMatrix, staging-pipeline, cad-handling
+│   └── chat/                # chat-pipeline, chat-upload-prep, chat-history, chat-routing, chat-sse
 ├── public/                  # Static frontend (HTML pages, scripts, styles, assets, i18n)
 ├── data/                    # Runtime state: one SQLite DB (all structured state) + CSV logs (see Data & persistence)
 ├── test/                    # `node --test` suite (unit + smoke + route inventory)
+├── e2e/                     # Playwright browser smokes of the two studios (npm run test:e2e)
 ├── ds-bundle/               # design-system bundle (generated)
 ├── to-build/                # source masters: media-png, OG_Image, demos (see to-build/README.md)
 └── docs/                    # You are here
@@ -125,7 +121,8 @@ config always wins.
 ```bash
 npm start        # node server.js       → http://localhost:3000
 npm run dev      # nodemon server.js    → auto-restart on change
-npm test         # node --test          → run the test suite
+npm test         # node --test          → unit/integration suite (gates deploy)
+npm run test:e2e # playwright test       → browser smokes (e2e/, real Chromium)
 ```
 
 `server.js` serves the static site (`/`, `/index.html`, etc.) and the JSON API from
@@ -168,23 +165,20 @@ and no server-side rendering — `public/` is plain HTML that talks to `server.j
 
 `server.js` is a composition root: it reads config, constructs the shared stores/
 helpers, and mounts the route modules in `routes/` (`public`, `auth`, `billing`,
-`staging`, `chat`, `admin`), injecting the reusable pieces from `lib/`:
+`staging`, `chat`, `admin`), injecting the reusable pieces from `lib/`. `lib/` is
+grouped into subdirectories by concern (full breakdown in
+[`guides/architecture.md`](guides/architecture.md#backend-modules-lib)):
 
-| Module | Responsibility |
+| Area | Key modules |
 |---|---|
-| `config.js` | Reads every secret/config value (env var first, then a local `.txt` fallback) and the `IS_STAGING`/`HIDE_STAGING_BANNER` flags. |
-| `auth-store.js` | User accounts, sessions (30-day), email registration codes, per-day generation counts. **SQLite-backed** (`better-sqlite3`, `data/auth-store.db`); a legacy `data/auth-store.json` is imported once on first run, then kept as a fallback. |
-| `enterprise-store.js` | Tracks enterprise domains and metered usage for enterprise billing. |
-| `stripe-webhooks.js` | Handles Stripe subscription lifecycle events (checkout completed, subscription updated/canceled, etc.). |
-| `prompts.js` | AI prompt and JSON-schema constants shared by the staging/chat routes. |
-| `promptMatrix.js` | The prompt templates for each room-type × furniture-style combination used when staging. |
-| `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D room renders (the AI Designer pipeline), using Gemini. |
-| `chat-pipeline.js` | Orchestrates an AI Designer chat turn (intent → staging/generation/CAD → response). |
-| `chat-upload-prep.js` | Preprocesses files attached to a chat message before the pipeline runs. |
-| `memory.js` | Per-user AI Designer memory (load/save/evaluate). |
-| `logging.js` | Append-only CSV logging helpers for prompts, chats, contacts, masks, bug reports, email opens. |
-| `email.js` | Resend transactional-email helpers (verification codes, reset links, etc.). |
-| `uptime-monitor.js` | Writes a heartbeat and computes the `/api/status` uptime snapshot. |
+| `lib/config/` | `config.js` (secrets, env → `.txt` fallback), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
+| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `enterprise-store.js`, `memory.js`, `counters.js`, `uptime-monitor.js`. |
+| `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer). |
+| `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`. |
+| `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `auth-helpers.js`, `email.js`, `logging.js` (append-only **CSV** business logs), `stripe-webhooks.js`. |
+| `lib/staging/` | `prompts.js`, `promptMatrix.js`, `staging-pipeline.js` (quality-retry loop), `cad-handling.js` (CAD/PDF → 3D). |
+| `lib/chat/` | `chat-pipeline.js`, `chat-upload-prep.js`, `chat-history.js`, `chat-routing.js`, `chat-sse.js`. |
+| `lib/logger.js` | The **diagnostic** logger — the single `logger.debug/info/warn/error` stdout funnel (`LOG_LEVEL`). Distinct from `services/logging.js` (CSV). |
 
 ## Frontend
 
@@ -210,7 +204,7 @@ files for logs and uploads. Full detail: [`reference/data-stores.md`](reference/
 
 | File | Contents |
 |---|---|
-| `auth-store.db` | **SQLite** (`better-sqlite3`, WAL) — the single app database, one shared connection (`lib/db.js`). Tables: auth (`users`, `sessions`, …, **sensitive**: hashed passwords + session tokens), `enterprise_domains`, `memories`, `uptime_state`. Each store imports its legacy JSON once on first run, then leaves it as a frozen fallback. |
+| `auth-store.db` | **SQLite** (`better-sqlite3`, WAL) — the single app database, one shared connection (`lib/data/db.js`). Tables: auth (`users`, `sessions`, …, **sensitive**: hashed passwords + session tokens), `enterprise_domains`, `memories`, `uptime_state`. Each store imports its legacy JSON once on first run, then leaves it as a frozen fallback. |
 | `hosted-images/` | User-hosted image uploads served via `/i/:id`. |
 | `*_logs.csv` | Append-only logs: prompts, chats, contacts, masks, bug reports, email opens. |
 | `*.json` (legacy) | `auth-store.json`, `enterprise-domains.json`, `memories.json`, `uptime.json` — pre-SQLite stores, now frozen import fallbacks. |
@@ -253,17 +247,24 @@ rather than crashing the server.
 ## Testing
 
 ```bash
-npm test
+npm test         # unit/integration — node --test over test/**/*.test.js (gates deploy)
+npm run test:e2e # end-to-end — Playwright browser smokes under e2e/
 ```
 
-Uses the built-in Node test runner (`node --test`) over `test/**/*.test.js`. Current
-suites: `auth-store`, `enterprise-store`, `guards`, `public-endpoints`, `route-inventory`,
-`smoke`, `staging-endpoints`, `static`, `stripe-webhooks`, and `uptime`, with shared
-setup under `test/helpers/`. `route-inventory` boots the server and asserts every
-critical route is still registered — a safety net for the ongoing route extraction.
+Two suites (full detail in [`guides/testing.md`](guides/testing.md)):
 
-> **The test suite gates deployment** — `render.yaml`'s build command runs
-> `sh scripts/build.sh`, which runs `npm test`, so a failing test blocks the Render deploy. Keep tests green.
+- **Unit / integration** — the built-in Node test runner over `test/**/*.test.js`, with
+  shared setup under `test/helpers/`. Fast, hermetic, no real keys or paid API calls.
+  `route-inventory.test.js` boots the server and asserts every critical route is still
+  registered — a safety net for the route extraction.
+- **End-to-end** — [Playwright](https://playwright.dev) specs under `e2e/` drive the real
+  studios in a real Chromium with every `/api/*` call mocked (no AI, no cost). Covers the
+  AI Designer and Masking Studio happy paths, their error paths, and session resume.
+
+> **The unit suite gates deployment** — `render.yaml`'s build runs `sh scripts/build.sh`
+> → `npm test`, so a failing unit test blocks the Render deploy. The Playwright e2e job runs
+> in GitHub CI but is kept out of the deploy gate (browser flake must never wedge a release).
+> Keep both green.
 
 ## Deployment
 
@@ -272,9 +273,11 @@ Deployed on **Render** as a single web service, configured by [`render.yaml`](..
 - **Build:** `sh scripts/build.sh` — `npm install`, the `npm test` gate, then downloads the Litestream backup binary.
 - **Start:** `sh scripts/start.sh` — restores the DB from Cloudflare R2 if the disk is empty, then runs the app under continuous Litestream replication (see [`operations/deployment.md`](operations/deployment.md)).
 - **Auto-deploy:** off (`autoDeploy: false`) — a push does **not** deploy on its own; deploys are triggered manually from the Render dashboard.
-- **Env:** `NODE_ENV=production` is set in `render.yaml`; secrets like
-  `GOOGLE_AI_API_KEY` are `sync: false` (entered in the Render dashboard, never committed).
-- **Persistence:** a disk mounted at `/data` holds the JSON/CSV state across deploys.
+- **Env:** environment variables (including secrets like `GOOGLE_AI_API_KEY`) are
+  entered in the Render dashboard, never committed — `render.yaml` intentionally carries
+  no `envVars` block (see [`reference/environment-variables.md`](reference/environment-variables.md)).
+- **Persistence:** a disk mounted at `/data` holds the SQLite database (`auth-store.db`)
+  and the CSV logs across deploys.
 - **Static caching:** assets are served with per-type `Cache-Control` headers; Render
   edge caching can be enabled safely on top — see [`reference/caching.md`](reference/caching.md).
 

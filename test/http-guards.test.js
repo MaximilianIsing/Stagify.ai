@@ -161,7 +161,7 @@ test('protectLogs returns 500 "Server configuration error" and does NOT call nex
 
   assert.equal(res.statusCode, 500);
   assert.equal(res.jsonBody.error, 'Server configuration error');
-  assert.equal(res.jsonBody.message, 'Logs access key not configured');
+  assert.equal(res.jsonBody.details, 'Logs access key not configured');
   assert.equal(next.called, false);
 });
 
@@ -235,7 +235,7 @@ test('protectLogs returns 403 "Access denied" when the header is missing entirel
 
   assert.equal(res.statusCode, 403);
   assert.equal(res.jsonBody.error, 'Access denied');
-  assert.equal(res.jsonBody.message, 'Valid access key required in the X-Stagify-Endpoint-Key header');
+  assert.equal(res.jsonBody.details, 'Valid access key required in the X-Stagify-Endpoint-Key header');
   assert.equal(next.called, false);
 });
 
@@ -322,7 +322,7 @@ test('stagingEndpointKeyGuard returns 500 "Server configuration error" when LOGS
 
   assert.equal(res.statusCode, 500);
   assert.equal(res.jsonBody.error, 'Server configuration error');
-  assert.equal(res.jsonBody.message, 'Endpoint access key not configured');
+  assert.equal(res.jsonBody.details, 'Endpoint access key not configured');
   assert.equal(next.called, false);
 });
 
@@ -382,7 +382,7 @@ test('stagingEndpointKeyGuard returns 403 when the header key is wrong', () => {
 
   assert.equal(res.statusCode, 403);
   assert.equal(res.jsonBody.error, 'Access denied');
-  assert.equal(res.jsonBody.message, 'Valid access key required in the X-Stagify-Endpoint-Key header');
+  assert.equal(res.jsonBody.details, 'Valid access key required in the X-Stagify-Endpoint-Key header');
   assert.equal(next.called, false);
 });
 

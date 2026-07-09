@@ -41,7 +41,7 @@ app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY,
 // routes/public.js
 export default function createPublicRouter(deps) {
   const { authStore, healthHandler, getPromptCount, /* … */ } = deps;
-  const router = express.Router();
+  const router = createAsyncRouter();          // not express.Router() — see Error handling
   router.get('/health', healthHandler);
   // …
   return router;
@@ -74,28 +74,112 @@ Middleware runs in registration order in `server.js`:
    html/css/js/json). This is why `/` serves `public/index.html`.
 6. **Routers** (`app.use(createXRouter(...))`) — the API and dynamic routes.
 7. **Explicit fallback routes** and a default 404.
+8. **Error-handling middleware** (registered last, see [Error handling](#error-handling)):
+   the JSON body-parse handler, the multer upload handler (after the routers so Express
+   reaches it), the Sentry capture hook, and a final catch-all that returns a clean JSON
+   `500` instead of leaking a stack-trace page.
 
 ## Backend modules (`lib/`)
+
+`lib/` is organized into subdirectories by concern (plus `lib/logger.js` at the root).
+Each module is a `createX(deps)` factory or a set of pure helpers.
+
+**`lib/config/`** — configuration
 
 | Module | Responsibility |
 |---|---|
 | `config.js` | Reads secrets/config from env vars, falling back to local `stripe_*.txt` / `*.txt` files. |
-| `auth-store.js` | User accounts, salted+hashed passwords, 30-day sessions, email registration codes, free-tier usage. **SQLite-backed** (`better-sqlite3`, `data/auth-store.db`); imports a legacy `auth-store.json` once on first run. |
+| `model-config.js` | Model selection + per-model temperature for the AI calls. |
+| `runtime-flags.js` | Computes the boot flags once (`DEBUG_MODE`, `IS_STAGING`, `HIDE_STAGING_BANNER`, stats overrides). The bootstrap layer beneath the logger. |
+
+**`lib/data/`** — persistence
+
+| Module | Responsibility |
+|---|---|
+| `db.js` | The single shared `better-sqlite3` connection (WAL + pragmas) and `resolveDataDir()`. Every store opens through this. |
+| `auth-store.js` | User accounts, salted+hashed passwords, 30-day sessions, email registration codes, free-tier usage. Imports a legacy `auth-store.json` once on first run. |
 | `enterprise-store.js` | Enterprise domain activation + metered usage, kept in sync with Stripe. |
-| `stripe-webhooks.js` | Applies Stripe subscription lifecycle events (checkout/updated/deleted) to accounts & domains. |
-| `email.js` | Sends registration-verification email; serves the email-open tracking pixel. |
-| `logging.js` | CSV/file logging helpers + the prompt/contact counters shown in the hero stats. |
 | `memory.js` | Per-user AI-chat memory storage and LLM-driven memory-action evaluation. |
-| `promptMatrix.js` | The room-type × furniture-style prompt templates used when staging. |
+| `counters.js` | The prompt/contact counters shown in the hero stats. |
+| `uptime-monitor.js` | Self-hosted uptime tracking (heartbeat → the `uptime_state` row in `auth-store.db`); powers `/api/status` and the status page. |
+
+**`lib/http/`** — request/response plumbing
+
+| Module | Responsibility |
+|---|---|
+| `async-router.js` | `createAsyncRouter()` — the async-safe `express.Router()` used by every route file (see [Error handling](#error-handling)). |
+| `http-helpers.js` | Small pure helpers: `sendError()` (the standard JSON error shape), `setSensitiveHeaders()`, client-IP + user-identifier helpers. |
+| `http-guards.js` | The `endpoint_key` guards (`protectLogs`, `stagingEndpointKeyGuard`) and the `/health` handler. |
+| `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN`). |
+| `uploads.js` | The multer upload configs (staging / PDF / chat / hosted-image). |
+
+**`lib/image/`** — image processing
+
+| Module | Responsibility |
+|---|---|
+| `image-primitives.js` | `sharp` helpers: downscale, aspect-ratio enforcement/padding, marked-room compositing. |
+| `image-annotation.js` | GPT-vision image annotation. |
+| `image-review.js` | The quality-gate reviewer + mask-edit / stageable-image validation. |
+| `erase.js` | Furniture-removal ("empty the room") pass. |
+| `hosted-images.js` | The admin-hosted image store + manifest served at `/i/:id`. |
+
+**`lib/services/`** — external providers
+
+| Module | Responsibility |
+|---|---|
+| `ai-clients.js` | Constructs the Gemini / OpenAI / Resend clients once at boot from env (or `.txt` fallbacks). |
+| `auth-helpers.js` | Cross-cutting auth/enterprise helpers (resolve user from request, enterprise domain, usage reporting, Pro gating). |
+| `email.js` | Sends registration-verification email; serves the email-open tracking pixel. |
+| `logging.js` | Append-only **CSV** business-event writer (prompts, chats, contacts, masks, bug reports, email opens). Not a diagnostic logger — that's `lib/logger.js`. |
+| `stripe-webhooks.js` | Applies Stripe subscription lifecycle events (checkout/updated/deleted) to accounts & domains. |
+
+**`lib/staging/`** — staging & AI Designer
+
+| Module | Responsibility |
+|---|---|
 | `prompts.js` | Pure prompt/data constants for the AI Designer, staging, QA review, and image gatekeeping. Single source of truth for model-facing wording. |
+| `promptMatrix.js` | The room-type × furniture-style prompt templates used when staging. |
+| `staging-pipeline.js` | The generate-with-quality-retry loop (unit-testable, no real model calls). |
 | `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D renders (AI Designer), via Gemini. |
+
+**`lib/chat/`** — AI Designer chat orchestration
+
+| Module | Responsibility |
+|---|---|
 | `chat-upload-prep.js` | Pre-routing prep for `/api/chat-upload`: multipart upload → GPT-ready messages + routing completion. |
 | `chat-pipeline.js` | Post-routing dispatch shared by `/api/chat` and `/api/chat-upload`: memory writes, image generation, staging, recall, etc. |
-| `uptime-monitor.js` | Self-hosted uptime tracking (heartbeat → the `uptime_state` row in `auth-store.db`); powers `/api/status` and the status page. |
+| `chat-history.js` | Conversation-history filtering, dedup, and image-context extraction. |
+| `chat-routing.js` | Parses the model's routing completion and classifies chat intent. |
+| `chat-sse.js` | Server-Sent Events plumbing for streamed chat responses. |
+
+**`lib/logger.js`** (root) — the diagnostic logger
+
+The single funnel for operator-facing stdout/stderr (`logger.debug/info/warn/error`).
+A raw `console.*` in `routes/`, `lib/`, or `server.js` is a lint **error** (`no-console`).
+Verbosity: `LOG_LEVEL` (`debug|info|warn|error|silent`) wins; else `DEBUG_MODE` raises the
+floor to `debug`; else the floor is `info`. Distinct from `lib/services/logging.js` (the
+CSV business-event writer) — don't conflate the two.
+
+## Error handling
+
+Route handlers are `async`, and on **Express 4** a rejected promise from an async handler
+is **not** forwarded to error middleware — it surfaces as an `unhandledRejection` and the
+request hangs. Two pieces close that gap:
+
+- **`createAsyncRouter()`** ([`lib/http/async-router.js`](../../lib/http/async-router.js)) —
+  every route file builds its router with this instead of `express.Router()`. It wraps each
+  terminal handler so an escaped rejection is routed to `next(err)`.
+- **A final catch-all** in `server.js` (after the Sentry hook) — turns any error reaching
+  Express's pipeline into a clean JSON `500`. Without it, an unhandled error falls through
+  to Express's built-in handler, which renders the full stack trace to the client.
+
+Within a handler, emit error responses through **`sendError(res, status, msg, { code, details })`**
+([`lib/http/http-helpers.js`](../../lib/http/http-helpers.js)) so every error body has the same
+shape (`{ error }`, optionally `code` / `details`).
 
 ## Routers (`routes/`)
 
-Each is a factory returning an `express.Router`, mounted in `server.js`.
+Each is a factory returning a router (built with `createAsyncRouter()`), mounted in `server.js`.
 
 | Router | Owns |
 |---|---|
@@ -117,7 +201,7 @@ secret is read). Every secret resolves from its env var, falling back to a gitig
 State lives under `data/` (or the Render `/data` disk when present, detected via the
 `RENDER` env var):
 
-- **SQLite (`better-sqlite3`, one shared connection via `lib/db.js`):** `auth-store.db`
+- **SQLite (`better-sqlite3`, one shared connection via `lib/data/db.js`):** `auth-store.db`
   holds all structured state — auth (`users`, `sessions`, …; **sensitive**),
   `enterprise_domains`, `memories`, `uptime_state`. WAL + transactions, so writes are
   atomic and per-row. Each store imports its legacy JSON (`auth-store.json`,
@@ -154,8 +238,9 @@ between.
   graph to resolve. The problems bundlers exist to solve (node-module resolution,
   TS/JSX transpile, collapsing a large import tree) don't arise.
 - **Native ESM runs as-authored** in every browser we target, so `import`/`export`
-  needs no transpilation. The ongoing migration of the big scripts to modules
-  (`public/scripts/`) moves *toward* this model, not away from it.
+  needs no transpilation. The big page scripts have since migrated to native modules
+  (`public/scripts/`, loaded `type="module"`), with cohesive logic extracted into
+  per-page submodules — still no build step, moving *toward* this model, not away from it.
 - **What ships is what you debug.** Browser line numbers match the repo, there are no
   source maps to generate, and you can edit a file and refresh. This also keeps the
   "extraction is behaviour-preserving" refactors honest.
@@ -189,6 +274,11 @@ between.
 
 - **Factory + DI everywhere.** New shared logic should be a `createX(deps)` factory,
   wired at the `server.js` composition root — not a global.
+- **New route files use `createAsyncRouter()`**, never `express.Router()`, and report
+  errors via `sendError()`. See [Error handling](#error-handling).
+- **Diagnostics go through `logger`**, not `console.*` (a raw `console` in `routes/`/`lib/`/
+  `server.js` is a lint error). `lib/services/logging.js` is a separate thing — the CSV
+  business-event writer, not a stdout logger.
 - **ESM, no `__dirname`.** Derive paths from `import.meta.url`.
 - **No frontend build — on purpose.** Write browser-native HTML/CSS/ESM; don't reach
   for a bundler, transpiler, or npm frontend package. The reasoning and the (narrow)

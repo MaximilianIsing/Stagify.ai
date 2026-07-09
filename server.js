@@ -32,7 +32,7 @@ import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
 import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
-import { setSensitiveHeaders, getStagingClientIp, isLikelyMobileStagingRequest, getUserIdentifier } from './lib/http/http-helpers.js';
+import { setSensitiveHeaders, getUserIdentifier, sendError } from './lib/http/http-helpers.js';
 import { getTemperatureForModel, getGeminiImageModel } from './lib/config/model-config.js';
 import { createAuthHelpers } from './lib/services/auth-helpers.js';
 import { getPromptCount, incPromptCount, getContactCount, incContactCount, initializePromptCount, initializeContactCount } from './lib/data/counters.js';
@@ -44,6 +44,7 @@ import { createHttpGuards } from './lib/http/http-guards.js';
 import { createAiClients } from './lib/services/ai-clients.js';
 import { stagingProcessUpload, pdfUpload, chatUpload, hostImageUpload, HOSTED_IMAGE_MIME_EXT } from './lib/http/uploads.js';
 import { authLimiter, emailLimiter, genLimiter } from './lib/http/rate-limiters.js';
+import { logger } from './lib/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -69,14 +70,14 @@ const googleOAuthClient = googleClientId
   ? new OAuth2Client(googleClientId, googleClientSecret || undefined)
   : null;
 if (googleClientId) {
-  console.log('[google] OAuth client id loaded (Sign-In with Google enabled)');
+  logger.info('[google] OAuth client id loaded (Sign-In with Google enabled)');
 }
 
 // Staging-environment flags (IS_STAGING / HIDE_STAGING_BANNER / SHOW_STAGING_BANNER)
 // → lib/config/runtime-flags.js (imported above). Boot log kept here so its ordering with
 // the other startup lines is unchanged.
 if (IS_STAGING) {
-  console.log(
+  logger.info(
     '[staging] IS_STAGING enabled — Google sign-in and Stripe checkout are disabled' +
       (HIDE_STAGING_BANNER ? ' (staging banner hidden)' : ''),
   );
@@ -84,9 +85,9 @@ if (IS_STAGING) {
 
 const LOGS_ACCESS_KEY = readEndpointAccessKey();
 if (LOGS_ACCESS_KEY) {
-  console.log('Endpoint access key successfully loaded');
+  logger.info('Endpoint access key successfully loaded');
 } else {
-  console.error('Error: No endpoint access key found in file or environment variable');
+  logger.error('Error: No endpoint access key found in file or environment variable');
 }
 
 const enterpriseMeterEventName = readEnterpriseMeterEventName();
@@ -238,15 +239,15 @@ app.use((req, res, next) =>
 );
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    console.error('JSON parsing error:', err.message);
-    console.error('Request body size:', req.headers['content-length'], 'bytes');
-    return res.status(400).json({ error: 'Invalid JSON or request too large' });
+    logger.error('JSON parsing error:', err.message);
+    logger.error('Request body size:', req.headers['content-length'], 'bytes');
+    return sendError(res, 400, 'Invalid JSON or request too large');
   }
   if (err.type === 'entity.too.large') {
-    console.error('Request entity too large:', err.message);
-    console.error('Request body size:', req.headers['content-length'], 'bytes');
-    console.error('Limit:', err.limit, 'bytes');
-    return res.status(413).json({ error: 'Request entity too large', limit: err.limit });
+    logger.error('Request entity too large:', err.message);
+    logger.error('Request body size:', req.headers['content-length'], 'bytes');
+    logger.error('Limit:', err.limit, 'bytes');
+    return sendError(res, 413, 'Request entity too large', { details: `limit ${err.limit} bytes` });
   }
   next(err);
 });
@@ -288,12 +289,11 @@ const PDF_PROCESSING_SERVER = 'https://stagify-project-imagination.onrender.com'
 // Stats overrides (STATS_DEBUG / DEBUG_ROOMS / DEBUG_USERS) → lib/config/runtime-flags.js
 // (imported above). Boot log kept here so its ordering is unchanged.
 if (STATS_DEBUG) {
-  console.log(`Stats debug: ENABLED (rooms=${DEBUG_ROOMS}, users=${DEBUG_USERS})`);
+  logger.debug(`Stats debug: ENABLED (rooms=${DEBUG_ROOMS}, users=${DEBUG_USERS})`);
 }
 
 // getTemperatureForModel / getGeminiImageModel → lib/config/model-config.js
-// getUserIdentifier / setSensitiveHeaders / getStagingClientIp /
-// isLikelyMobileStagingRequest → lib/http/http-helpers.js  (imported at top)
+// getUserIdentifier / setSensitiveHeaders → lib/http/http-helpers.js (imported at top)
 
 // AI/email clients (genAI / openai / resend) → lib/services/ai-clients.js. Constructed once
 // at boot from env vars (Render) or local *-key.txt fallbacks (dev).
@@ -348,8 +348,8 @@ async function processImageGeneration(prompt, req, geminiModel = 'gemini-2.5-fla
     }
     
     if (DEBUG_MODE) {
-      console.log(`[Image Generation] Generating image with prompt: "${prompt}"`);
-      console.log(`[Image Generation] Using Gemini model: ${geminiModel}`);
+      logger.debug(`[Image Generation] Generating image with prompt: "${prompt}"`);
+      logger.debug(`[Image Generation] Using Gemini model: ${geminiModel}`);
     }
     
     // Use Gemini's image generation model (text-to-image, no input image needed)
@@ -375,7 +375,7 @@ Composition: frame the full scene naturally, keeping ceilings, floors, walls, an
       for (const part of response.candidates[0].content.parts) {
         if (part.inlineData) {
           if (DEBUG_MODE) {
-            console.log(`[Image Generation] Successfully generated image`);
+            logger.debug(`[Image Generation] Successfully generated image`);
           }
           return `data:image/png;base64,${part.inlineData.data}`;
         }
@@ -384,7 +384,7 @@ Composition: frame the full scene naturally, keeping ceilings, floors, walls, an
       throw new Error('No image data in AI response');
     }, 'generation', null, (url) => reviewImageQuality(url, { instruction: prompt }));
   } catch (error) {
-    console.error('Error generating image:', error);
+    logger.error('Error generating image:', error);
     throw error;
   }
 }
@@ -437,7 +437,7 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
             anyReferencePadded = true;
           }
         } catch (padErr) {
-          if (DEBUG_MODE) console.warn('[Staging] Furniture aspect-ratio match failed; sending as-is:', padErr.message);
+          if (DEBUG_MODE) logger.warn('[Staging] Furniture aspect-ratio match failed; sending as-is:', padErr.message);
         }
       }
       prompt.push({
@@ -457,7 +457,7 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
             Boolean(stagingParams.preserveExistingStaging)
           );
       if (DEBUG_MODE) {
-        console.log(`[Staging] Including ${furnitureBuffers.length} ${stagingParams.styleReference ? 'style' : 'furniture'} reference image(s) in staging request`);
+        logger.debug(`[Staging] Including ${furnitureBuffers.length} ${stagingParams.styleReference ? 'style' : 'furniture'} reference image(s) in staging request`);
       }
       if (anyReferencePadded) {
         prompt[0].text += '\n\nNOTE ON REFERENCE IMAGES: One or more reference images have transparent/empty padding added around them to match the room\'s shape. Ignore that empty padding entirely — use only the actual furniture/subject shown, and scale it naturally within the room.';
@@ -478,7 +478,7 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
     );
     
     if (DEBUG_MODE) {
-      console.log(`[Staging] Using Gemini model: ${geminiModel}`);
+      logger.debug(`[Staging] Using Gemini model: ${geminiModel}`);
     }
     const model = genAI.getGenerativeModel({ model: geminiModel });
 
@@ -533,7 +533,7 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
     }
     return resultDataUrl;
   } catch (error) {
-    console.error('Error processing staging:', error);
+    logger.error('Error processing staging:', error);
     throw error;
   }
 }
@@ -553,21 +553,35 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
  * Virtual staging after `stagingProcessUpload` has filled `req.files` / `req.body`.
  * @param {import('express').Request} req
  * @param {import('express').Response} res
- * @param {{ user: object | null, mobileAnonymous: boolean, clientIp: string, recordUsage: boolean, treatAsPro: boolean }} meta
+ * @param {{ user: object | null, recordUsage: boolean, treatAsPro: boolean }} meta
  */
 async function handleVirtualStagingMultipart(req, res, meta) {
   const mainFile = req.files?.image?.[0];
   if (!mainFile) {
-    return res.status(400).json({ error: 'No image file provided' });
+    return sendError(res, 400, 'No image file provided');
   }
 
   if (!genAI) {
-    return res.status(500).json({ error: 'AI service not properly configured' });
+    return sendError(res, 500, 'AI service not properly configured');
   }
 
   const user = meta.user;
-  const clientIp = meta.clientIp;
-  const mobileAnonymous = meta.mobileAnonymous;
+
+  // Enforce the free-tier daily generation cap before doing any paid work. Pro
+  // accounts are uncapped; enterprise-domain users are metered and billed
+  // separately (reportEnterpriseUsage), so they are not subject to this cap.
+  if (meta.recordUsage && user && user.plan === 'free' && !enterpriseDomainForUser(user)) {
+    const status = authStore.freeGenerationStatus(user.id);
+    if (!status.allowed) {
+      return res.status(429).json({
+        error: `Daily free limit reached (${status.limit} generations/day). Resets at 00:00 UTC — or upgrade to Stagify+ for unlimited staging.`,
+        code: 'DAILY_LIMIT_REACHED',
+        dailyGenerationsUsed: status.used,
+        dailyGenerationLimit: status.limit,
+        user: toPublicAuthUser(user),
+      });
+    }
+  }
 
   const {
     roomType = 'Living room',
@@ -585,11 +599,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
   req.body.userRole = userRole;
   req.body.userReferralSource = userReferralSource;
   req.body.userEmail = userEmail;
-  req.body.authenticatedEmail = user
-    ? user.email
-    : mobileAnonymous
-      ? `mobile-ip:${clientIp}`
-      : 'endpoint-key';
+  req.body.authenticatedEmail = user ? user.email : 'endpoint-key';
 
   const isPro = meta.treatAsPro || (user && user.plan === 'pro');
   let selectedModel = gptModelRaw || 'gpt-4o-mini';
@@ -653,7 +663,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
       // instruction on an already-empty room.
       stageBaseParams = { ...stagingParamsBase, removeFurniture: false };
       if (DEBUG_MODE) {
-        console.log('[Erase] room already basically empty — skipping furniture-removal pass.');
+        logger.debug('[Erase] room already basically empty — skipping furniture-removal pass.');
       }
     } else {
       const keepInstruction = typeof keepFurniture === 'string' ? keepFurniture.trim().slice(0, 500) : '';
@@ -665,10 +675,10 @@ async function handleVirtualStagingMultipart(req, res, meta) {
         // "remove all furniture" instruction on an already-empty room.
         stageBaseParams = { ...stagingParamsBase, removeFurniture: false };
         if (DEBUG_MODE) {
-          console.log('[Erase] furniture removed in pre-stage pass; staging from empty room.');
+          logger.debug('[Erase] furniture removed in pre-stage pass; staging from empty room.');
         }
       } else if (DEBUG_MODE) {
-        console.log('[Erase] pre-stage erase unavailable; staging with single-pass removal prompt.');
+        logger.debug('[Erase] pre-stage erase unavailable; staging with single-pass removal prompt.');
       }
     }
   }
@@ -694,19 +704,15 @@ async function handleVirtualStagingMultipart(req, res, meta) {
     incPromptCount();
   }
 
-  if (meta.recordUsage) {
-    if (mobileAnonymous) {
-      authStore.recordMobileIpGeneration(clientIp);
-    } else if (user) {
-      const entDomain = enterpriseDomainForUser(user);
-      if (entDomain) {
-        // Bill per staging generation attempt (initial + quality-gate retries),
-        // which req._stagingGenerations accumulates across all variations. The
-        // furniture-erase pass and its retries are deliberately excluded.
-        reportEnterpriseUsage(entDomain, req._stagingGenerations || images.length || 1);
-      } else if (user.plan === 'free') {
-        authStore.recordFreeGeneration(user.id);
-      }
+  if (meta.recordUsage && user) {
+    const entDomain = enterpriseDomainForUser(user);
+    if (entDomain) {
+      // Bill per staging generation attempt (initial + quality-gate retries),
+      // which req._stagingGenerations accumulates across all variations. The
+      // furniture-erase pass and its retries are deliberately excluded.
+      reportEnterpriseUsage(entDomain, req._stagingGenerations || images.length || 1);
+    } else if (user.plan === 'free') {
+      authStore.recordFreeGeneration(user.id);
     }
   }
 
@@ -755,7 +761,7 @@ app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY
 app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT }));
 
 // staging routes (routes/staging.js)
-app.use(createStagingRouter({ genAI, openai, genLimiter, stagingProcessUpload, pdfUpload, PDF_PROCESSING_SERVER, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, getStagingClientIp, isLikelyMobileStagingRequest, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, getUserIdentifier, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
+app.use(createStagingRouter({ genAI, openai, genLimiter, stagingProcessUpload, pdfUpload, PDF_PROCESSING_SERVER, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, getUserIdentifier, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
 
 // chat routes (routes/chat.js)
 app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, getUserIdentifier, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
@@ -770,13 +776,15 @@ app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, 
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(413).json({
-        error: 'File too large',
-        message: 'That file is too large. Please upload a smaller file.',
+      return sendError(res, 413, 'File too large', {
         code: 'FILE_TOO_LARGE',
+        details: 'That file is too large. Please upload a smaller file.',
       });
     }
-    return res.status(400).json({ error: 'Upload error', message: err.message, code: err.code });
+    // Fold the multer message into `error` itself — the staging client surfaces
+    // this field to the user (app.js falls back to `error` when there's no `code`
+    // it recognises), so the specific reason must stay in the primary string.
+    return sendError(res, 400, err.message || 'Upload error', { code: err.code });
   }
   next(err);
 });
@@ -786,9 +794,22 @@ app.use((err, req, res, next) => {
 // No-op when SENTRY_DSN is unset.
 Sentry.setupExpressErrorHandler(app);
 
+// Final catch-all error handler — MUST be last. Without it, any error that reaches
+// Express's pipeline (a synchronous throw in a handler, or any next(err)) falls
+// through to Express's built-in default handler, which — because NODE_ENV isn't
+// 'production' here — renders the full stack trace as an HTML page to the client.
+// This returns a clean JSON 500 instead. The res.headersSent guard hands off to
+// Express so an error mid-stream (e.g. the chat SSE route) still aborts correctly
+// rather than trying to write a second set of headers.
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  logger.error('Unhandled route error:', err);
+  sendError(res, err.status || err.statusCode || 500, 'Internal server error');
+});
+
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`AI configured: ${!!genAI}`);
+  logger.info(`Server running on port ${PORT}`);
+  logger.info(`AI configured: ${!!genAI}`);
 
   // Begin the uptime heartbeat (and record any downtime gap since the last run).
   // Skipped under tests so the suite doesn't write real uptime state or leave a
@@ -797,7 +818,7 @@ app.listen(PORT, () => {
     try {
       uptimeMonitor.start();
     } catch (err) {
-      console.error('Uptime monitor failed to start:', err.message);
+      logger.error('Uptime monitor failed to start:', err.message);
     }
   }
 
