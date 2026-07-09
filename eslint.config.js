@@ -95,6 +95,29 @@ export default [
       // An unused variable is often a typo or dead code, but allow an underscore
       // prefix (e.g. `_next`) to intentionally mark an ignored arg.
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      // All diagnostics go through lib/logger.js — a raw console.* call is a
+      // migration miss. Errors (fails the build) so it can't creep back. The
+      // handful of files that legitimately touch console are re-allowed below.
+      'no-console': 'error',
+    },
+  },
+
+  {
+    // Files allowed to call console directly, in override order after the backend
+    // block above (later blocks win in flat config):
+    //   - lib/logger.js          — IS the console wrapper.
+    //   - lib/config/runtime-flags.js, load-env.js — bootstrap layer; they run
+    //     before/beneath the logger (runtime-flags supplies the DEBUG_MODE the
+    //     logger imports, so it cannot import the logger back without a cycle).
+    //   - test/**                — tests print diagnostics freely.
+    files: [
+      'lib/logger.js',
+      'lib/config/runtime-flags.js',
+      'load-env.js',
+      'test/**/*.js',
+    ],
+    rules: {
+      'no-console': 'off',
     },
   },
 

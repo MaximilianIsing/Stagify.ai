@@ -60,11 +60,19 @@ test('validate-image: fails open when the reviewer throws', async () => {
 
 // ── /api/process-image ───────────────────────────────────────────────────────
 
-test('process-image: desktop with no session is rejected (401)', async () => {
-  app = await mountStaging({ getAuthUserFromRequest: () => null, isLikelyMobileStagingRequest: () => false });
-  const res = await postJson(app.baseUrl, '/api/process-image', {}, { 'user-agent': DESKTOP_UA });
-  assert.equal(res.status, 401);
-  assert.equal((await res.json()).code, 'AUTH_REQUIRED');
+test('process-image: no session is rejected (401), even from a mobile UA', async () => {
+  app = await mountStaging({ getAuthUserFromRequest: () => null });
+
+  const desktop = await postJson(app.baseUrl, '/api/process-image', {}, { 'user-agent': DESKTOP_UA });
+  assert.equal(desktop.status, 401);
+  assert.equal((await desktop.json()).code, 'AUTH_REQUIRED');
+
+  // The old anonymous "mobile" bypass is gone: a mobile UA no longer grants
+  // accountless staging, closing the IP-rotation cost-abuse vector.
+  const MOBILE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605 Mobile/15E148';
+  const mobile = await postJson(app.baseUrl, '/api/process-image', {}, { 'user-agent': MOBILE_UA });
+  assert.equal(mobile.status, 401, 'mobile UA must still require sign-in');
+  assert.equal((await mobile.json()).code, 'AUTH_REQUIRED');
 });
 
 test('process-image: dispatches to the pipeline with the right flags for a signed-in user', async () => {

@@ -1,11 +1,17 @@
 # Testing
 
-The suite runs on the **built-in Node test runner** — no Jest, no Mocha, no extra
-dependencies.
+Two suites, deliberately kept separate:
+
+- **Unit / integration** — the **built-in Node test runner** (no Jest, no Mocha, no extra
+  dependencies) over `test/**/*.test.js`. This is the suite that **gates the Render deploy**.
+- **End-to-end** — [Playwright](https://playwright.dev) browser smokes under `e2e/`, run on
+  their own. Held *out* of the deploy gate so occasional browser flake can't block a release
+  (see [End-to-end (browser) tests](#end-to-end-browser-tests) below).
 
 ```bash
-npm test        # node --test "test/**/*.test.js"
-npm run lint    # eslint .  (backend + frontend ES modules — see Linting below)
+npm test         # node --test "test/**/*.test.js"   — unit/integration (gates deploy)
+npm run test:e2e # playwright test                   — browser smokes of the two studios
+npm run lint     # eslint . --max-warnings=0  (backend + frontend ES modules — see Linting below)
 ```
 
 > **Tests gate deployment.** `render.yaml`'s build command is `sh scripts/build.sh`,
@@ -46,13 +52,20 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 | 2 | `guards.test.js` | Access-guard status codes — log/admin routes 403 without a key, endpoint-key routes 403, Pro-only routes 401 without a session. Guards against silent auth bypass. |
 | 2 | `auth-store.test.js` | Auth correctness: register→login round-trip, email-code gating, salted/hashed passwords, session validate/logout, single-use password reset, non-enumerating reset, free-tier + mobile-IP usage recording. |
 | 2 | `auth-store-sqlite.test.js` | SQLite specifics: on-disk persistence, the one-time `auth-store.json` → SQLite migration (user-data safety), and the `exportStore`/`importStore` round-trip behind the admin backup. |
-| 2 | `db.test.js` | The `lib/db.js` layer: the WAL/pragmas it sets and that data actually persists to disk. |
+| 2 | `db.test.js` | The `lib/data/db.js` layer: the WAL/pragmas it sets and that data actually persists to disk. |
 | 2 | `stripe-webhooks.test.js` | Billing lifecycle over hand-built events: checkout upgrades to Pro (by ref or email), `subscription.deleted` downgrades, `updated`→active restores Pro, enterprise routes to the enterprise store. Catches "paid but no Pro" / "churned but still Pro". |
 | 2 | `enterprise-store.test.js` | Domain activation (idempotent, case-insensitive), subscription-state sync, usage counting. |
 | 2 | `staging-endpoints.test.js` | Staging contracts without any AI call: `validate-image` rejects bad input (400) and fails open (200) when the reviewer is disabled; `process-image` requires a session for desktop. |
 | 2 | `public-endpoints.test.js` | Public surface smoke: JSON endpoint shapes, SEO/landing files serve, static content types, unknown routes 404, a helmet header is present. |
 | — | `route-inventory.test.js` | Refactor safety net: asserts every **critical route is still registered** (responds with anything but 404 for its method). Guards the `server.js` → `routes/*` extraction. |
+| — | `async-router.test.js` | The `createAsyncRouter()` error-handling safety net: a rejecting async handler reaches the catch-all as a clean `500` instead of hanging the request. |
 | — | `uptime.test.js` | Pure math of the uptime monitor: window percentages, coverage, bucket classification, incident coalescing/pruning. |
+
+The table is a **representative selection**, not the full list — the suite has grown to
+~55 files as `server.js` is extracted into `lib/`. Most `lib/` modules now have a matching
+`*.test.js` (e.g. `logger`, `logging`, `http-helpers`, `erase`, `image-review`,
+`image-annotation`, `hosted-images`, the `masking-studio-*` frontend islands). Run
+`npm test` for the authoritative set.
 
 ## Writing a new test
 
@@ -84,10 +97,44 @@ The files are informally tiered from cheapest/most-fundamental to broader:
   failure message (via the harness `output()`), which usually shows the real cause
   (bad import, thrown error on startup).
 
+## End-to-end (browser) tests
+
+Playwright specs under [`e2e/`](../../e2e/) drive the **real** frontend in a real Chromium
+against a **real** `node server.js` — but every `/api/*` call the studios make is intercepted
+and fulfilled with a canned response, so **no AI is invoked, nothing costs money, and no
+secrets are needed**. Config: [`playwright.config.js`](../../playwright.config.js) (`testDir:
+./e2e`, so any `e2e/*.spec.js` is picked up automatically — no registration needed).
+
+```bash
+npm run test:e2e                                  # all specs (boots the server for you)
+npx playwright test e2e/masking-studio.spec.js    # one file
+```
+
+**Getting past the pro gate.** Both studios redirect anonymous users to the upsell page, so
+they can't be driven on a plain static server. [`e2e/fixtures.js`](../../e2e/fixtures.js)'s
+`seedProSession(page)` seeds an auth token into `localStorage` at first paint and mocks `GET
+/api/auth/me` → a Pro user, so the page reveals instead of redirecting. This is how gated
+flows (the mask editor, session resume) are exercised without a real account or backend auth.
+
+What's covered today (all green — 8 tests across 5 specs):
+
+| Spec | Covers |
+|---|---|
+| `ai-designer.spec.js` | Happy path — a chat turn renders the assistant text reply / a staged image. |
+| `ai-designer-errors.spec.js` | A failed `/api/chat` shows a **retryable** error bubble, Retry re-sends and recovers, and a 403 (not Stagify+) shows a **non-retryable** error. |
+| `masking-studio.spec.js` | Happy path — upload → paint a mask → prompt → Apply Edit renders a result. |
+| `masking-studio-errors.spec.js` | A 500 from `/api/mask-edit` flips the area to a visible **Failed** state with a retry. |
+| `masking-studio-resume.spec.js` | Session persistence — paint + prompt is saved to IndexedDB, survives a reload, and the Resume dialog restores the photo, layer, prompt, and painted mask. |
+
+**Writing an e2e spec.** Name it `e2e/<thing>.spec.js`, call `seedProSession(page)` in a
+`beforeEach` if the page is gated, `page.route('**/api/…')` **every** backend call it makes
+(never hit a real provider), and assert on user-visible DOM. Reuse the room-photo and
+tiny-PNG fixtures from `e2e/fixtures.js`.
+
 ## Linting
 
 ```bash
-npm run lint     # eslint .
+npm run lint     # eslint . --max-warnings=0
 ```
 
 ESLint uses a flat config ([`eslint.config.js`](../../eslint.config.js)):
@@ -116,10 +163,16 @@ ESLint uses a flat config ([`eslint.config.js`](../../eslint.config.js)):
 Two independent pipelines run on the default branch:
 
 - **GitHub Actions** ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)) — on
-  every push and PR to `main`: `npm ci`, then `npm test`, then `npm run lint`. Both are
-  **blocking** — a failing test, or any lint warning/error (`--max-warnings=0`), fails the build.
+  every push and PR to `main`, in **two parallel jobs**:
+  - `test` — `npm ci`, then `npm test`, then `npm run lint`. Both blocking: a failing unit
+    test, or any lint warning/error (`--max-warnings=0`), fails the build.
+  - `e2e` — `npm ci`, installs Chromium (`npx playwright install --with-deps chromium`),
+    then `npm run test:e2e`. Isolated in its own job so the heavier, occasionally-flaky
+    browser run doesn't slow the fast unit gate. Blocking in CI, but see the deploy note.
 - **Render** — the deploy build runs `sh scripts/build.sh` (which runs `npm test`), so a
-  failing test **blocks the production deploy**. Lint is **not** part of the Render build.
+  failing **unit** test **blocks the production deploy**. Neither the Playwright e2e job nor
+  lint is part of the Render build.
 
-Net: a red test blocks both CI and the deploy; a lint finding blocks CI (so it can't reach a
-clean `main`) but not the Render build itself.
+Net: a red **unit** test blocks both CI and the deploy. A lint finding or a failing **e2e**
+test blocks CI (so it can't reach a clean `main`) but does **not** block the Render deploy —
+by design, so browser flake can never wedge a release.

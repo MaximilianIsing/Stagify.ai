@@ -117,14 +117,35 @@ test('startPasswordReset does not reveal whether an email exists', () => {
   assert.equal(res.token, undefined, 'but issues no token for a non-existent account');
 });
 
-// The daily cap is not enforced (the canFree/canMobile checks were removed as dead
-// code — nothing called them), but usage IS still recorded. recordFreeGeneration
-// feeds dailyGenerationsUsed, so we keep the recorders covered.
+// The free-tier daily cap IS enforced server-side, before any paid AI call:
+// freeGenerationStatus reports the remaining allowance and recordFreeGeneration
+// drives it. (recordMobileIpGeneration is retained only for backup/rollback shape;
+// the anonymous mobile path no longer calls it — staging now requires sign-in.)
 test('recordFreeGeneration increments the per-day usage counter', () => {
   const store = freshStore();
   const u = registerVerifiedUser(store);
   assert.equal(store.recordFreeGeneration(u.id).dailyGenerationsUsed, 1);
   assert.equal(store.recordFreeGeneration(u.id).dailyGenerationsUsed, 2);
+});
+
+test('freeGenerationStatus enforces the free daily cap', () => {
+  const store = freshStore();
+  const u = registerVerifiedUser(store);
+
+  const before = store.freeGenerationStatus(u.id);
+  assert.equal(before.allowed, true, 'a fresh free user may generate');
+  assert.equal(before.used, 0);
+  assert.ok(before.limit > 0, 'the free tier has a finite daily cap');
+
+  // Burn through the entire daily allowance.
+  for (let i = 0; i < before.limit; i++) store.recordFreeGeneration(u.id);
+
+  const after = store.freeGenerationStatus(u.id);
+  assert.equal(after.used, before.limit, 'usage reached the cap');
+  assert.equal(after.allowed, false, 'at the cap, the next generation is blocked');
+
+  // An unknown user is treated as uncapped (no free row to charge against).
+  assert.deepEqual(store.freeGenerationStatus('no-such-user'), { allowed: true, used: 0, limit: null });
 });
 
 test('recordMobileIpGeneration increments a separate counter per IP', () => {

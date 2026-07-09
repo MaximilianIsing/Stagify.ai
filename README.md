@@ -20,8 +20,8 @@ echo "GOOGLE_AI_API_KEY=your_key_here" > .env
 npm start        # → http://localhost:3000
 ```
 
-Other scripts: `npm run dev` (auto-restart), `npm test` (the suite that gates deploys),
-`npm run lint`.
+Other scripts: `npm run dev` (auto-restart), `npm test` (unit suite; gates deploys),
+`npm run test:e2e` (Playwright browser smokes), `npm run lint`.
 
 ## Documentation
 

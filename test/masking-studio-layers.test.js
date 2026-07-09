@@ -5,7 +5,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createPool, nextColorIdx } from '../public/scripts/masking-studio/layers.js';
+import {
+  createPool,
+  nextColorIdx,
+  createLayer,
+  layerColor,
+  layerTitle,
+  previewText,
+  statusChip,
+} from '../public/scripts/masking-studio/layers.js';
+
+// The pure helpers take a translate(key, fallback) fn; tests exercise the
+// English fallbacks by returning the fallback verbatim.
+const tx = (_key, def) => def;
 
 test('createPool: never runs more than `size` jobs at once', async () => {
   const pool = createPool(2);
@@ -50,4 +62,72 @@ test('nextColorIdx: lowest free index, skipping used ones', () => {
 test('nextColorIdx: -1 when the palette is exhausted', () => {
   const layers = [0, 1, 2].map((colorIdx) => ({ colorIdx }));
   assert.equal(nextColorIdx(layers, 3), -1);
+});
+
+test('createLayer: carries id/colorIdx/canvasEl and stamps default bookkeeping', () => {
+  const canvasEl = { tag: 'canvas' };
+  const layer = createLayer({ id: 'L1', colorIdx: 2, canvasEl });
+  assert.equal(layer.id, 'L1');
+  assert.equal(layer.colorIdx, 2);
+  assert.equal(layer.canvasEl, canvasEl);
+  assert.equal(layer.painted, false);
+  assert.equal(layer.mode, 'stage');
+  assert.equal(layer.status, 'idle');
+  assert.deepEqual(layer.candidates, []);
+});
+
+test('createLayer: each layer owns its own candidates array (no shared reference)', () => {
+  const a = createLayer({ id: 'L1', colorIdx: 0, canvasEl: null });
+  const b = createLayer({ id: 'L2', colorIdx: 1, canvasEl: null });
+  a.candidates.push('x');
+  assert.deepEqual(b.candidates, []);
+});
+
+test('layerColor: reads the hex from the assigned palette slot', () => {
+  const palette = [{ hex: '#aaa' }, { hex: '#bbb' }, { hex: '#ccc' }];
+  assert.equal(layerColor({ colorIdx: 1 }, palette), '#bbb');
+});
+
+test('layerTitle: user name wins; otherwise 1-based "Area {n}"', () => {
+  const named = { name: 'Kitchen' };
+  const blank = { name: '' };
+  const layers = [blank, named];
+  assert.equal(layerTitle(named, layers, tx), 'Kitchen');
+  assert.equal(layerTitle(blank, layers, tx), 'Area 1');
+});
+
+test('previewText: prompt > remove-mode label > furniture name > empty', () => {
+  assert.equal(previewText({ prompt: '  sofa ', mode: 'stage' }, tx), 'sofa');
+  assert.equal(previewText({ prompt: '', mode: 'remove' }, tx), 'Remove object');
+  assert.equal(
+    previewText({ prompt: '', mode: 'stage', furniture: {}, furnitureName: 'chair.png' }, tx),
+    'chair.png'
+  );
+  assert.equal(previewText({ prompt: '', mode: 'stage', furniture: null }, tx), '');
+});
+
+test('statusChip: run status wins, then readiness of the area', () => {
+  assert.equal(statusChip({ status: 'generating' }, tx).text, 'Staging…');
+  assert.equal(statusChip({ status: 'done' }, tx).cls, 'ms-layer-status--done');
+  assert.equal(statusChip({ status: 'failed' }, tx).cls, 'ms-layer-status--failed');
+  // idle + not highlighted → empty hint, no class
+  assert.deepEqual(
+    statusChip({ status: 'idle', painted: false }, tx),
+    { cls: '', text: 'Not highlighted yet' }
+  );
+  // painted stage area with a prompt → ready
+  assert.equal(
+    statusChip({ status: 'idle', painted: true, mode: 'stage', prompt: 'rug', furniture: null }, tx).cls,
+    'ms-layer-status--ready'
+  );
+  // painted remove area is ready even with no prompt
+  assert.equal(
+    statusChip({ status: 'idle', painted: true, mode: 'remove', prompt: '', furniture: null }, tx).cls,
+    'ms-layer-status--ready'
+  );
+  // painted stage area with nothing to do → needs details
+  assert.equal(
+    statusChip({ status: 'idle', painted: true, mode: 'stage', prompt: '   ', furniture: null }, tx).text,
+    'Needs a prompt or photo'
+  );
 });

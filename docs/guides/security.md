@@ -7,7 +7,7 @@ rationale behind the limits in the code — change them deliberately. Related:
 
 ## Authentication & accounts
 
-Backed by SQLite (`auth-store.db`, [`lib/auth-store.js`](../../lib/auth-store.js)):
+Backed by SQLite (`auth-store.db`, [`lib/data/auth-store.js`](../../lib/data/auth-store.js)):
 
 - **Passwords:** hashed with **scrypt** (`crypto.scryptSync`, 64-byte key) using a
   per-user 16-byte random salt. Never stored or logged in plaintext.
@@ -18,8 +18,15 @@ Backed by SQLite (`auth-store.db`, [`lib/auth-store.js`](../../lib/auth-store.js
   **non-enumerating** (it does not reveal whether an email exists).
 - **Google Sign-In:** ID tokens are verified with `google-auth-library`
   (`OAuth2Client`) against `GOOGLE_CLIENT_ID`. Disabled on staging (see below).
-- **Free-tier limits:** the free plan is effectively unlimited; anonymous **mobile
-  requests are capped per IP per day** to bound cost abuse.
+- **Staging requires sign-in:** `POST /api/process-image` returns `401 AUTH_REQUIRED`
+  for any request without a valid session — there is **no** anonymous/"mobile UA"
+  staging path (that former per-IP bypass was removed to close the IP-rotation
+  cost-abuse vector).
+- **Free-tier daily cap:** free accounts are capped at **`FREE_DAILY_LIMIT` (50)
+  generations per UTC day**, enforced server-side **before** any paid AI call
+  (`freeGenerationStatus` in `lib/data/auth-store.js`); over-cap requests get
+  `429 DAILY_LIMIT_REACHED`. Pro accounts are uncapped; enterprise-domain users are
+  metered and billed separately.
 
 ## Admin / log-export endpoints
 
@@ -67,6 +74,20 @@ The body parsers are the cheapest DoS surface, so they're **scoped**, not global
 > Photos are downscaled to 1920×1080 after receipt, so these caps are already far
 > above any real upload. If a legit user hits a 413, raise the specific cap — don't
 > widen the global JSON limit.
+
+## Error responses (no stack-trace leak)
+
+Route handlers are async, and on **Express 4** an unhandled rejection would otherwise
+either hang the request or fall through to Express's built-in handler — which, when
+`NODE_ENV` isn't `production`, renders the full **stack trace** to the client. Two layers
+prevent that information leak:
+
+- Every router is built with **`createAsyncRouter()`** ([`lib/http/async-router.js`](../../lib/http/async-router.js)),
+  which funnels any escaped async rejection to `next(err)`.
+- A **final catch-all** in `server.js` (after the Sentry hook) returns a generic
+  `{ error: 'Internal server error' }` `500` — the stack trace is logged server-side (and
+  captured by Sentry), never sent to the client. Guarded by
+  [`test/async-router.test.js`](../../test/async-router.test.js).
 
 ## Transport & headers
 

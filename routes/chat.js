@@ -1,5 +1,5 @@
 // chat routes, extracted verbatim from server.js.
-import express from 'express';
+import { createAsyncRouter } from '../lib/http/async-router.js';
 import createChatPipeline from '../lib/chat/chat-pipeline.js';
 import createUploadPrep from '../lib/chat/chat-upload-prep.js';
 import path from 'path';
@@ -7,13 +7,24 @@ import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChat
 import { filterUnsupportedFiles, deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext } from '../lib/chat/chat-history.js';
 import { parseDesignerRoutingCompletion, aiResponseDefersImageAction, chatWillProcessSlowImages, chatIntentType } from '../lib/chat/chat-routing.js';
 import { wantsStreamedChatResponse, initChatSse, writeChatSseEvent, finishStreamedChatResponse } from '../lib/chat/chat-sse.js';
+import { sendError } from '../lib/http/http-helpers.js';
+import { logger } from '../lib/logger.js';
+
+// A single conversation is capped at this many user messages before the client
+// must start a fresh chat. Keeps the model's context window (and per-request
+// cost) bounded; the client resets by reloading the chat.
+const MAX_USER_MESSAGES = 20;
+const CONTEXT_LIMIT_MESSAGE =
+  `You've reached the maximum conversation context limit (${MAX_USER_MESSAGES} messages). ` +
+  'Please reload the chat by clicking the reload button (↻) to the left of the file upload ' +
+  'button to start a fresh conversation.';
 
 export default function createChatRouter(deps) {
   // Direct deps used by the handlers. The post-routing dispatch deps
   // (staging/generate/CAD/memory helpers, image resolution, etc.) are consumed
   // by createChatPipeline(deps) below rather than referenced here.
   const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier, downscaleImageForGPT, logChatToFile } = deps;
-  const router = express.Router();
+  const router = createAsyncRouter();
   const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse } = createChatPipeline(deps);
   const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting } = createUploadPrep(deps);
 
@@ -60,7 +71,7 @@ router.get('/api/welcome-message', async (req, res) => {
           isReturning: true
         });
       } catch (error) {
-        console.error('Error generating personalized welcome message:', error);
+        logger.error('Error generating personalized welcome message:', error);
         // Fallback to generic
         return res.json({ 
           message: 'Welcome back to Stagify AI Designer! I can help you stage rooms, answer questions, and assist with interior design. How can I help you today?',
@@ -75,7 +86,7 @@ router.get('/api/welcome-message', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Error in welcome message endpoint:', error);
+    logger.error('Error in welcome message endpoint:', error);
     // Fallback to generic message
     res.json({ 
       message: 'Hello! I\'m Stagify AI Designer, your AI assistant for room staging and interior design. Upload an image of a room to get started, or ask me anything!',
@@ -89,7 +100,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     if (!requireProAccount(req, res)) return;
 
     if (!openai) {
-      return res.status(500).json({ error: 'AI service not properly configured' });
+      return sendError(res, 500, 'AI service not properly configured');
     }
 
     const { messages, model, messageTag, baseImageIndex: baseImageIndexRaw } = req.body;
@@ -99,7 +110,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     const selectedModel = model || 'gpt-4o-mini';
     
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ error: 'Messages array is required' });
+      return sendError(res, 400, 'Messages array is required');
     }
 
     // Deduplicate messages to prevent double counting
@@ -107,7 +118,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     if (deduplicatedMessages.length !== messages.length) {
       const removedCount = messages.length - deduplicatedMessages.length;
       if (DEBUG_MODE) {
-        console.log(`[Deduplication] Removed ${removedCount} duplicate message(s) from ${messages.length} total messages`);
+        logger.debug(`[Deduplication] Removed ${removedCount} duplicate message(s) from ${messages.length} total messages`);
         // Log which messages were duplicates
         const seenKeys = new Set();
         messages.forEach((msg, idx) => {
@@ -115,7 +126,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
             ? `${msg.role}:${JSON.stringify(msg.content.map(item => item.type === 'text' ? item.text : item.type))}`
             : `${msg.role}:${typeof msg.content === 'string' ? msg.content.trim() : 'non-string'}`;
           if (seenKeys.has(key)) {
-            console.log(`[Deduplication] Duplicate found at index ${idx}: ${msg.role} message`);
+            logger.debug(`[Deduplication] Duplicate found at index ${idx}: ${msg.role} message`);
           } else {
             seenKeys.add(key);
           }
@@ -123,11 +134,11 @@ router.post('/api/chat', genLimiter, async (req, res) => {
       }
     }
     
-    // Check message limit (20 user messages max)
+    // Check message limit (see MAX_USER_MESSAGES)
     const userMessageCount = deduplicatedMessages.filter(msg => msg.role === 'user').length;
-    if (userMessageCount >= 20) {
+    if (userMessageCount >= MAX_USER_MESSAGES) {
       return res.json({
-        response: "You've reached the maximum conversation context limit (20 messages). Please reload the chat by clicking the reload button (↻) to the left of the file upload button to start a fresh conversation.",
+        response: CONTEXT_LIMIT_MESSAGE,
         contextLimitReached: true
       });
     }
@@ -144,11 +155,11 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     // Log image context for debugging
     if (DEBUG_MODE) {
       if (imageContext) {
-        console.log('=== IMAGE CONTEXT SENT TO AI (CHAT) ===');
-        console.log(imageContext);
-        console.log('========================================');
+        logger.debug('=== IMAGE CONTEXT SENT TO AI (CHAT) ===');
+        logger.debug(imageContext);
+        logger.debug('========================================');
       } else {
-        console.log('[Image Context] No images in conversation history');
+        logger.debug('[Image Context] No images in conversation history');
       }
     }
     
@@ -174,7 +185,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
           imageFromHistory = imageItem.image_url.url;
           isStagedImage = true;
           if (DEBUG_MODE) {
-            console.log(`[Staging] Found staged image in conversation history`);
+            logger.debug(`[Staging] Found staged image in conversation history`);
           }
           break;
         }
@@ -191,7 +202,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
             hasImageInHistory = true;
             imageFromHistory = imageItem.image_url.url;
             if (DEBUG_MODE) {
-              console.log(`[Staging] Found user-uploaded image in conversation history`);
+              logger.debug(`[Staging] Found user-uploaded image in conversation history`);
             }
             break;
           }
@@ -274,34 +285,34 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     const payloadSizeMB = (payloadSize / (1024 * 1024)).toFixed(2);
     
     if (DEBUG_MODE) {
-      console.log('=== SENDING TO AI (CHAT) ===');
-      console.log('Payload size:', payloadSize, 'bytes (', payloadSizeKB, 'KB /', payloadSizeMB, 'MB)');
-      console.log('Number of messages:', openaiMessages.length);
+      logger.debug('=== SENDING TO AI (CHAT) ===');
+      logger.debug('Payload size:', payloadSize, 'bytes (', payloadSizeKB, 'KB /', payloadSizeMB, 'MB)');
+      logger.debug('Number of messages:', openaiMessages.length);
       // Log individual messages instead of full array
-      console.log('--- MESSAGES ---');
+      logger.debug('--- MESSAGES ---');
       openaiMessages.forEach((msg, index) => {
         if (msg.role === 'system') {
-          console.log(`Message ${index + 1} [SYSTEM]:`, msg.content.substring(0, 500) + (msg.content.length > 500 ? '... [truncated]' : ''));
+          logger.debug(`Message ${index + 1} [SYSTEM]:`, msg.content.substring(0, 500) + (msg.content.length > 500 ? '... [truncated]' : ''));
         } else if (msg.role === 'user') {
           if (Array.isArray(msg.content)) {
             const textItems = msg.content.filter(item => item.type === 'text');
             const imageItems = msg.content.filter(item => item.type === 'image_url');
             const textContent = textItems.map(item => item.text).join(' ');
-            console.log(`Message ${index + 1} [USER]: Text: "${textContent.substring(0, 200)}${textContent.length > 200 ? '...' : ''}" | Images: ${imageItems.length}`);
+            logger.debug(`Message ${index + 1} [USER]: Text: "${textContent.substring(0, 200)}${textContent.length > 200 ? '...' : ''}" | Images: ${imageItems.length}`);
           } else {
-            console.log(`Message ${index + 1} [USER]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
+            logger.debug(`Message ${index + 1} [USER]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
           }
         } else if (msg.role === 'assistant') {
           if (Array.isArray(msg.content)) {
             const textItems = msg.content.filter(item => item.type === 'text');
             const textContent = textItems.map(item => item.text).join(' ');
-            console.log(`Message ${index + 1} [ASSISTANT]:`, textContent.substring(0, 200) + (textContent.length > 200 ? '...' : ''));
+            logger.debug(`Message ${index + 1} [ASSISTANT]:`, textContent.substring(0, 200) + (textContent.length > 200 ? '...' : ''));
           } else {
-            console.log(`Message ${index + 1} [ASSISTANT]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
+            logger.debug(`Message ${index + 1} [ASSISTANT]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
           }
         }
       });
-      console.log('----------------');
+      logger.debug('----------------');
       
       // Log image data sizes if present
       openaiMessages.forEach((msg, idx) => {
@@ -309,13 +320,13 @@ router.post('/api/chat', genLimiter, async (req, res) => {
           msg.content.forEach((item, itemIdx) => {
             if (item.type === 'image_url' && item.image_url && item.image_url.url) {
               const imageDataSize = Buffer.byteLength(item.image_url.url, 'utf8');
-              console.log(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB`);
+              logger.debug(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB`);
             }
           });
         }
       });
-        console.log('============================');
-        console.log('Calling OpenAI API...');
+        logger.debug('============================');
+        logger.debug('Calling OpenAI API...');
     }
 
     // Use OpenAI GPT with JSON response format
@@ -331,8 +342,8 @@ router.post('/api/chat', genLimiter, async (req, res) => {
 
       aiResponseJson = parseDesignerRoutingCompletion(completion);
     } catch (gptError) {
-      console.error('[GPT] Error calling OpenAI API:', gptError);
-      console.error('[GPT] Error stack:', gptError.stack);
+      logger.error('[GPT] Error calling OpenAI API:', gptError);
+      logger.error('[GPT] Error stack:', gptError.stack);
       return res.status(500).json({ 
         error: 'Failed to get AI response', 
         details: 'The AI service encountered an error. Please try again.',
@@ -349,7 +360,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
 
     if (aiResponseDefersImageAction(text)) {
       if (DEBUG_MODE) {
-        console.log('[AI Designer] Suppressed staging/generate/cad: response asks clarifying questions');
+        logger.debug('[AI Designer] Suppressed staging/generate/cad: response asks clarifying questions');
       }
       stagingRequestFromAI = null;
       generateRequestFromAI = null;
@@ -367,15 +378,15 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     
     // Debug logging
     if (DEBUG_MODE) {
-      console.log('=== AI CHAT DEBUG ===');
-      console.log('User ID:', userId);
-      console.log('User message:', lastUserMessageText);
-      console.log('AI response:', text);
-      console.log('Memories loaded:', memories.length);
+      logger.debug('=== AI CHAT DEBUG ===');
+      logger.debug('User ID:', userId);
+      logger.debug('User message:', lastUserMessageText);
+      logger.debug('AI response:', text);
+      logger.debug('Memories loaded:', memories.length);
       if (memories.length > 0) {
-        console.log('Memories:', memories.map(m => m.content).join(', '));
+        logger.debug('Memories:', memories.map(m => m.content).join(', '));
       }
-      console.log('====================');
+      logger.debug('====================');
     }
 
     // Apply the AI's memory stores/forgets.
@@ -502,7 +513,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
       res.json(response);
     }
   } catch (error) {
-    console.error('Error in chat:', error);
+    logger.error('Error in chat:', error);
     if (res.headersSent) {
       writeChatSseEvent(res, 'error', {
         error: 'Chat processing failed',
@@ -510,10 +521,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
       });
       res.end();
     } else {
-      res.status(500).json({ 
-        error: 'Chat processing failed', 
-        details: error.message 
-      });
+      sendError(res, 500, 'Chat processing failed', { details: error.message });
     }
   }
 });
@@ -523,11 +531,11 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     if (!requireProAccount(req, res)) return;
 
     if (!openai) {
-      return res.status(500).json({ error: 'AI service not properly configured' });
+      return sendError(res, 500, 'AI service not properly configured');
     }
 
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: 'No files provided' });
+      return sendError(res, 400, 'No files provided');
     }
 
     // Get message tag from form data
@@ -556,7 +564,7 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
           ? JSON.parse(conversationHistoryStr) 
           : conversationHistoryStr;
       } catch (error) {
-        console.error('Error parsing conversation history:', error);
+        logger.error('Error parsing conversation history:', error);
         conversationHistory = [];
       }
     }
@@ -568,7 +576,7 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
       const removedCount = originalHistoryLength - conversationHistory.length;
       
       if (DEBUG_MODE) {
-        console.log(`[Deduplication] Removed ${removedCount} duplicate message(s) from conversation history (${originalHistoryLength} -> ${conversationHistory.length})`);
+        logger.debug(`[Deduplication] Removed ${removedCount} duplicate message(s) from conversation history (${originalHistoryLength} -> ${conversationHistory.length})`);
         // Log which messages were duplicates
         const seenKeys = new Set();
         const original = conversationHistory.length < originalHistoryLength ? 
@@ -578,7 +586,7 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
             ? `${msg.role}:${JSON.stringify(msg.content.map(item => item.type === 'text' ? item.text : item.type))}`
             : `${msg.role}:${typeof msg.content === 'string' ? msg.content.trim() : 'non-string'}`;
           if (seenKeys.has(key)) {
-            console.log(`[Deduplication] Duplicate found at index ${idx}: ${msg.role} message`);
+            logger.debug(`[Deduplication] Duplicate found at index ${idx}: ${msg.role} message`);
           } else {
             seenKeys.add(key);
           }
@@ -586,11 +594,11 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
       }
     }
     
-    // Check message limit (20 user messages max)
+    // Check message limit (see MAX_USER_MESSAGES)
     const userMessageCount = conversationHistory.filter(msg => msg.role === 'user').length;
-    if (userMessageCount >= 20) {
+    if (userMessageCount >= MAX_USER_MESSAGES) {
       return res.json({
-        response: "You've reached the maximum conversation context limit (20 messages). Please reload the chat by clicking the reload button (↻) to the left of the file upload button to start a fresh conversation.",
+        response: CONTEXT_LIMIT_MESSAGE,
         contextLimitReached: true
       });
     }
@@ -603,11 +611,11 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     // Log image context for debugging
     if (DEBUG_MODE) {
       if (imageContext) {
-        console.log('=== IMAGE CONTEXT SENT TO AI (CHAT-UPLOAD) ===');
-        console.log(imageContext);
-        console.log('===============================================');
+        logger.debug('=== IMAGE CONTEXT SENT TO AI (CHAT-UPLOAD) ===');
+        logger.debug(imageContext);
+        logger.debug('===============================================');
       } else {
-        console.log('[Image Context] No images in conversation history');
+        logger.debug('[Image Context] No images in conversation history');
       }
     }
     
@@ -654,7 +662,7 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     let cadRequestFromAI = routing.cadRequestFromAI;
     if (aiResponseDefersImageAction(text)) {
       if (DEBUG_MODE) {
-        console.log('[AI Designer] Suppressed staging/generate/cad: response asks clarifying questions');
+        logger.debug('[AI Designer] Suppressed staging/generate/cad: response asks clarifying questions');
       }
       stagingRequestFromAI = null;
       generateRequestFromAI = null;
@@ -672,16 +680,16 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     
     // Debug logging
     if (DEBUG_MODE) {
-      console.log('=== AI CHAT-UPLOAD DEBUG ===');
-      console.log('User ID:', userId);
-      console.log('User message:', message);
-      console.log('Files:', fileInfo.map(f => `${f.name} (${f.type})`).join(', '));
-      console.log('AI response:', text);
-      console.log('Memories loaded:', memories.length);
+      logger.debug('=== AI CHAT-UPLOAD DEBUG ===');
+      logger.debug('User ID:', userId);
+      logger.debug('User message:', message);
+      logger.debug('Files:', fileInfo.map(f => `${f.name} (${f.type})`).join(', '));
+      logger.debug('AI response:', text);
+      logger.debug('Memories loaded:', memories.length);
       if (memories.length > 0) {
-        console.log('Memories:', memories.map(m => m.content).join(', '));
+        logger.debug('Memories:', memories.map(m => m.content).join(', '));
       }
-      console.log('============================');
+      logger.debug('============================');
     }
 
     // Apply the AI's memory stores/forgets.
@@ -815,8 +823,8 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
       res.json(response);
     }
   } catch (error) {
-    console.error('[Chat Upload] Fatal error in chat-upload endpoint:', error);
-    console.error('[Chat Upload] Error stack:', error.stack);
+    logger.error('[Chat Upload] Fatal error in chat-upload endpoint:', error);
+    logger.error('[Chat Upload] Error stack:', error.stack);
     
     if (res.headersSent) {
       writeChatSseEvent(res, 'error', {
@@ -874,7 +882,7 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
         }
       }
     } catch (aiError) {
-      console.error('Error generating AI error response:', aiError);
+      logger.error('Error generating AI error response:', aiError);
     }
     
     // Fallback to generic error - always send a response to prevent hanging requests

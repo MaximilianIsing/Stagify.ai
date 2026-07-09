@@ -72,8 +72,8 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/validate-image` | **Pre-flight stageability check.** **Body (JSON):** `{ image }` — a data URL of the chosen photo (clients downscale to ~1024px first). No auth required (the main stager serves free/anonymous mobile visitors); rate-limited by `genLimiter`. A cheap `gpt-4o-mini` vision pass decides whether the photo is a stageable room/property space. Always returns **`200`** with `{ valid: boolean, reason: string }` — `reason` is a short, user-facing rejection message when `valid` is `false`, else `""`. **Fails OPEN** (`valid: true`) whenever the reviewer is disabled or errors, so it never blocks a legitimate upload. `400` only for a missing/undecodable `image`. Called by the main stager (on upload; hard-gates staging) and the Masking Studio (on upload; blocks entering the editor). |
-| `POST` | `/api/process-image` | **Multipart** staging upload (`stagingProcessUpload`). **File:** at least `image` (see multer field names in server). **Typical body fields** (strings): `roomType`, `furnitureStyle`, `additionalPrompt`, `removeFurniture`, `userRole`, `userReferralSource`, `userEmail`, and for pro: `model`, `variationCount`, `furnitureImage` (repeat), `authToken`. **Rules:** (1) Signed-in user: enforces per-account daily free limit for non-pro; on success, may return `user` with updated usage. (2) **Not signed in:** only **mobile** user-agents can use a per-**IP** daily cap (no session); desktop browsers get `401` with `AUTH_REQUIRED`. **Errors:** `429` with `DAILY_LIMIT` + `dailyGenerationsUsed` / `dailyGenerationLimit`, `500` if AI not configured, etc. **Success:** `image` or `images` plus `success: true` and often `user` after consumption. |
+| `POST` | `/api/validate-image` | **Pre-flight stageability check.** **Body (JSON):** `{ image }` — a data URL of the chosen photo (clients downscale to ~1024px first). No auth required — a cheap public pre-flight (staging itself requires sign-in); rate-limited by `genLimiter`. A cheap `gpt-4o-mini` vision pass decides whether the photo is a stageable room/property space. Always returns **`200`** with `{ valid: boolean, reason: string }` — `reason` is a short, user-facing rejection message when `valid` is `false`, else `""`. **Fails OPEN** (`valid: true`) whenever the reviewer is disabled or errors, so it never blocks a legitimate upload. `400` only for a missing/undecodable `image`. Called by the main stager (on upload; hard-gates staging) and the Masking Studio (on upload; blocks entering the editor). |
+| `POST` | `/api/process-image` | **Multipart** staging upload (`stagingProcessUpload`). **File:** at least `image` (see multer field names in server). **Typical body fields** (strings): `roomType`, `furnitureStyle`, `additionalPrompt`, `removeFurniture`, `userRole`, `userReferralSource`, `userEmail`, and for pro: `model`, `variationCount`, `furnitureImage` (repeat), `authToken`. **Rules:** Requires a signed-in session — **any** unauthenticated request gets `401` with `AUTH_REQUIRED` (there is no anonymous/mobile staging path; this closes the IP-rotation cost-abuse vector). For a signed-in **free** user the per-account daily cap (`FREE_DAILY_LIMIT`) is enforced *before* any AI spend; **pro** accounts are uncapped and **enterprise-domain** users are metered separately. On success, may return `user` with updated usage. **Errors:** `401` `AUTH_REQUIRED` (no session); `429` `DAILY_LIMIT_REACHED` + `dailyGenerationsUsed` / `dailyGenerationLimit` (free cap hit); `422` `NO_IMAGE_GENERATED`; `500` if AI not configured. **Success:** `image` or `images` plus `success: true` and often `user` after consumption. |
 | `POST` | `/api/stage-by-endpoint-key` | **Server integration staging** — same multipart shape as `/api/process-image`, but **no user session**. **Auth:** `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`, passed in the **`X-Stagify-Endpoint-Key` header only** — **never** `?key=` on the URL (a key in the URL leaks via access logs, proxies, browser history, and `Referer`; the compare is constant-time). Same secret as log CSV exports and `/api/send-email` — **highly sensitive**; treat like a root credential. **Behavior:** Staging runs with **Stagify+-level options** (`model` `gpt-4o-mini` \| `gpt-5-mini`, `variationCount` 1–3, up to three `furnitureImage` files). **Does not** increment per-user or per-IP free-tier daily counters. **Success:** same JSON as process-image (`image` / `images`, `user` is `null`). **`403`** if key missing/wrong, **`500`** if key not configured on server. |
 
 **`POST /api/stage-by-endpoint-key` field reference (multipart):**
@@ -85,7 +85,7 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 | `userRole`, `userReferralSource`, `userEmail` | Optional analytics strings (default `unknown`). |
 | `model` | `gpt-4o-mini` or `gpt-5-mini` (invalid values fall back to `gpt-4o-mini`). |
 | `variationCount` | String or number `1`–`3`. |
-| `furnitureImage` | Up to **3** files (same as Stagify+). |
+| `furnitureImage` | Up to **5** files (same as Stagify+). |
 
 Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagify-Endpoint-Key: YOUR_SECRET` and a `multipart/form-data` body (do not put the secret in client-side browser code, and never in the URL).
 
@@ -98,9 +98,9 @@ Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagi
 | `POST` | `/api/log-contact` | **Body:** JSON with `userRole`, `referralSource`, `email`, `userAgent` (and similar). Appends a row to `contact_logs.csv` and bumps an in-memory contact counter. Returns `{ success: true }`. |
 | `POST` | `/api/send-email` | **Protected by server access key:** query `?key=` or `body.key` must match `endpointkey.txt` or `process.env.endpoint_key` (`LOGS_ACCESS_KEY`). **Body:** `to`, `subject`, `text` (Resend). Returns `403` if key wrong, `500` if no Resend, etc. |
 | `GET` | `/api/health` | **Public.** `{ status, timestamp, aiConfigured: boolean }` (and similar). Also registered as `GET /health` (same handler). |
-| `GET` | `/api/status` | **Public.** Uptime/status snapshot for the `/status` page. `Cache-Control: no-store`. Returns `{ status, currentState, monitoringSince, lastBeat, lastCheckedMsAgo, bootCount, windows: { '24h','7d','30d': { uptimePct, downMs, monitoredMs, coverage, incidents } }, buckets: { '24h'(48), '7d'(56): [{ start, end, state, uptimePct }] }, incidents: [{ start, end, durationMs, cause }], totalIncidents }`. Computed by `lib/uptime-monitor.js` from a heartbeat written every 60s to the `uptime_state` row in `auth-store.db`; downtime is inferred from heartbeat gaps detected on restart. `uptimePct` is `null` for a window with no monitored coverage yet. |
+| `GET` | `/api/status` | **Public.** Uptime/status snapshot for the `/status` page. `Cache-Control: no-store`. Returns `{ status, currentState, monitoringSince, lastBeat, lastCheckedMsAgo, bootCount, windows: { '24h','7d','30d': { uptimePct, downMs, monitoredMs, coverage, incidents } }, buckets: { '24h'(48), '7d'(56): [{ start, end, state, uptimePct }] }, incidents: [{ start, end, durationMs, cause }], totalIncidents }`. Computed by `lib/data/uptime-monitor.js` from a heartbeat written every 60s to the `uptime_state` row in `auth-store.db`; downtime is inferred from heartbeat gaps detected on restart. `uptimePct` is `null` for a window with no monitored coverage yet. |
 | `GET` | `/api/prompt-count` | Returns `{ promptCount }` (server-side counter, used for hero “Rooms staged” type stats). |
-| `GET` | `/api/contact-count` | Returns `{ contactCount }` (in-memory + startup initialization). |
+| `GET` | `/api/contact-count` | Returns `{ contactCount, userCount, usersServed }` where `usersServed = contactCount + registered user count` (the hero "users served" stat). Under `STATS_DEBUG` returns only `{ usersServed: DEBUG_USERS }`. |
 
 ---
 
@@ -176,7 +176,12 @@ The admin dashboard (`admin.html`) collects the `LOGS_ACCESS_KEY` client-side an
 ## Notes
 
 - **CORS** is enabled globally.
-- **JSON body limit** is very large (e.g. 50mb) for chat/history; oversized bodies get `400` / `413` with JSON error where configured.
+- **JSON body limit** is **1 MB** app-wide; only the five routes that carry base64 images
+  (`/api/chat`, `/api/mask-edit`, `/api/segment`, `/api/validate-image`, `/api/bug-report`)
+  get **25 MB**. Oversized bodies get `400` (bad JSON) / `413` (too large) as JSON.
+- **Error shape** is uniform: failures return `{ error }` (plus optional machine-readable
+  `code` and diagnostic `details`) via `sendError()`. An unhandled error still returns a
+  clean JSON `500` — never a stack-trace page (catch-all in `server.js`).
 - **Trust proxy** can be toggled with `TRUST_PROXY` (for real client IPs behind Render/nginx).
 
 If you add a route, append it to this file so operators can find auth and query requirements quickly.
