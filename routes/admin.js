@@ -6,6 +6,29 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { logger } from '../lib/logger.js';
 
+/**
+ * Build the admin router (dashboard, hosted-image upload/list/delete, CSV log
+ * downloads, memory + uptime resets). `deps` is the injection bag from server.js.
+ *
+ * @param {{
+ *   authStore: any,
+ *   uptimeMonitor: any,
+ *   enterpriseStore: any,
+ *   hostImageUpload: import('express').RequestHandler,
+ *   DEBUG_MODE: boolean,
+ *   setSensitiveHeaders: (res: import('express').Response) => void,
+ *   exportAllMemories: Function,
+ *   resetAllMemories: Function,
+ *   getDataLogDir: Function,
+ *   getHostedImagesDir: Function,
+ *   readHostedImagesManifest: Function,
+ *   writeHostedImagesManifest: Function,
+ *   protectLogs: import('express').RequestHandler,
+ *   __dirname: string,
+ *   HOSTED_IMAGE_MIME_EXT: Record<string, string>,
+ * }} deps - Stores, the hosted-image upload middleware + log-access guard, data-dir
+ *   and manifest helpers, memory/uptime admin actions, and the mime→ext map.
+ */
 export default function createAdminRouter(deps) {
   const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT } = deps;
   const router = createAsyncRouter();

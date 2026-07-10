@@ -9,6 +9,22 @@ import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
 import { logger } from '../lib/logger.js';
 
+/**
+ * Build the billing & enterprise router (Stripe webhook, customer portal,
+ * enterprise config + checkout). `deps` is the injection bag from server.js.
+ *
+ * @param {{
+ *   stripe: any,
+ *   stripeWebhookSecret: string,
+ *   stripePublishableKey: string,
+ *   enterprisePriceId: string,
+ *   authStore: any,
+ *   enterpriseStore: any,
+ *   handleStripeEvent: Function,
+ *   getAuthUserFromRequest: (req: import('express').Request) => any,
+ * }} deps - Injected Stripe client + config strings, the auth/enterprise stores,
+ *   the webhook event handler, and the session-user resolver.
+ */
 export default function createBillingRouter(deps) {
   const {
     stripe,

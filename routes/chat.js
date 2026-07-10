@@ -21,6 +21,36 @@ const CONTEXT_LIMIT_MESSAGE =
   'Please reload the chat by clicking the reload button (↻) to the left of the file upload ' +
   'button to start a fresh conversation.';
 
+/**
+ * Build the AI Designer chat router (/api/chat, /api/chat-upload,
+ * /api/welcome-message). `deps` is the injection bag from server.js; it is
+ * forwarded wholesale to the sub-factories (chat-pipeline / upload-prep /
+ * welcome / request-prep), each of which destructures its own slice — so this
+ * type covers every prop consumed anywhere in the chat subsystem, not just the
+ * ones referenced directly below.
+ *
+ * @param {{
+ *   openai: any,
+ *   genLimiter: import('express').RequestHandler,
+ *   chatUpload: import('multer').Multer,
+ *   DEBUG_MODE: boolean,
+ *   requireProAccount: (req: import('express').Request, res: import('express').Response) => any,
+ *   loadMemories: (userId: any) => any[],
+ *   saveMemories: Function,
+ *   getTemperatureForModel: (model: string) => number,
+ *   getGeminiImageModel: Function,
+ *   getUserIdentifier: (req: import('express').Request) => string,
+ *   annotateImage: (imageDataUrl: string, isCAD?: boolean, detectBlueprint?: boolean) => Promise<string | null>,
+ *   downscaleImageForGPT: (dataUrl: string) => Promise<string>,
+ *   processImageGeneration: Function,
+ *   processStaging: Function,
+ *   logChatToFile: Function,
+ *   blueprintTo3D: Function,
+ *   incPromptCount: Function,
+ * }} deps - Injected OpenAI client, rate-limit + upload middleware, the pro gate,
+ *   memory load/save, model resolvers, the image annotation/downscale/staging/
+ *   generation/CAD helpers, chat CSV logging, and the prompt counter.
+ */
 export default function createChatRouter(deps) {
   // Direct deps used by the handlers. The post-routing dispatch deps
   // (staging/generate/CAD/memory helpers, image resolution, etc.) are consumed

@@ -5,6 +5,32 @@ import { sendError } from '../lib/http/http-helpers.js';
 import path from 'path';
 import { logger } from '../lib/logger.js';
 
+/**
+ * Build the auth router (sign-up, email verification, login, Google sign-in,
+ * pro-pass grant). `deps` is the injection bag assembled in server.js.
+ *
+ * @param {{
+ *   authStore: any,
+ *   googleOAuthClient: any,
+ *   resend: any,
+ *   LOGS_ACCESS_KEY: string,
+ *   authLimiter: import('express').RequestHandler,
+ *   emailLimiter: import('express').RequestHandler,
+ *   RESEND_FROM_EMAIL: string,
+ *   EMAIL_DEBUG_MODE: boolean,
+ *   DEBUG_EMAIL: string,
+ *   IS_STAGING: boolean,
+ *   SHOW_STAGING_BANNER: boolean,
+ *   endpointKeyMatches: Function,
+ *   setSensitiveHeaders: (res: import('express').Response) => void,
+ *   getAuthUserFromRequest: (req: import('express').Request) => any,
+ *   toPublicAuthUser: Function,
+ *   sendRegistrationVerificationEmail: Function,
+ *   __dirname: string,
+ *   googleClientId: string,
+ * }} deps - Auth store, injected OAuth/email clients, rate-limit middleware,
+ *   staging/email flags, and auth helpers.
+ */
 export default function createAuthRouter(deps) {
   const { authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, sendRegistrationVerificationEmail , __dirname, googleClientId } = deps;
   const router = createAsyncRouter();
