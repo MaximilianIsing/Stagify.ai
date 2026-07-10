@@ -4,7 +4,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { abbreviateFileName, dataURLToFile } from '../public/scripts/app/helpers.js';
+import {
+  abbreviateFileName,
+  dataURLToFile,
+  fillTemplate,
+  dailyLimitMessage,
+  roomDownloadSlug,
+} from '../public/scripts/app/helpers.js';
 
 test('abbreviateFileName: passthrough when short, ellipsis when clipped', () => {
   assert.equal(abbreviateFileName('sofa.png', 20), 'sofa.png');
@@ -29,4 +35,56 @@ test('dataURLToFile: falls back to image/png and photo.png', () => {
   const file = dataURLToFile('data:base64,aGk=');
   assert.equal(file.type, 'image/png');
   assert.equal(file.name, 'photo.png');
+});
+
+test('fillTemplate: replaces every occurrence of each {token}', () => {
+  assert.equal(fillTemplate('{a}-{b}-{a}', { a: 1, b: 2 }), '1-2-1');
+  // null/undefined values collapse to an empty string.
+  assert.equal(fillTemplate('x{gap}y', { gap: null }), 'xy');
+  assert.equal(fillTemplate('x{gap}y', { gap: undefined }), 'xy');
+  // Unknown tokens are left untouched; no replacements is a passthrough.
+  assert.equal(fillTemplate('keep {unknown}', { other: 1 }), 'keep {unknown}');
+  assert.equal(fillTemplate('nothing to do'), 'nothing to do');
+  // Non-string / nullish templates coerce rather than throw.
+  assert.equal(fillTemplate(null), '');
+  assert.equal(fillTemplate(undefined, { a: 1 }), '');
+});
+
+test('dailyLimitMessage: fills the template with server counts', () => {
+  const msg = dailyLimitMessage(
+    { dailyGenerationLimit: 5, dailyGenerationsUsed: 5 },
+    { template: 'Used {used} of {limit} today.' },
+  );
+  assert.equal(msg, 'Used 5 of 5 today.');
+});
+
+test('dailyLimitMessage: defaults limit to 3 and used to limit when omitted', () => {
+  const msg = dailyLimitMessage({}, { template: '{used}/{limit}' });
+  assert.equal(msg, '3/3');
+});
+
+test('dailyLimitMessage: falls back when template is missing or still "Loading..."', () => {
+  // No template -> server error string wins.
+  assert.equal(
+    dailyLimitMessage({ error: 'Slow down.' }, {}),
+    'Slow down.',
+  );
+  // The i18n "Loading..." sentinel is treated as no template.
+  assert.equal(
+    dailyLimitMessage({ dailyGenerationLimit: 4 }, { template: 'Loading...' }),
+    'Daily free limit reached (4 per day).',
+  );
+  // No template and no server error -> hard-coded English default at the limit.
+  assert.equal(
+    dailyLimitMessage(null),
+    'Daily free limit reached (3 per day).',
+  );
+});
+
+test('roomDownloadSlug: lowercases, dashes whitespace, defaults to "room"', () => {
+  assert.equal(roomDownloadSlug('Living Room'), 'living-room');
+  assert.equal(roomDownloadSlug('DINING   ROOM'), 'dining-room');
+  assert.equal(roomDownloadSlug(''), 'room');
+  assert.equal(roomDownloadSlug(null), 'room');
+  assert.equal(roomDownloadSlug(undefined), 'room');
 });
