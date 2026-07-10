@@ -8,6 +8,7 @@
     "start": "node --import ./instrument.js server.js",
     "dev": "nodemon --import ./instrument.js server.js",
     "test": "node --test \"test/**/*.test.js\"",
+    "test:coverage": "node --test --experimental-test-coverage \"test/**/*.test.js\"",
     "test:e2e": "playwright test",
     "lint": "eslint . --max-warnings=0"
   },
