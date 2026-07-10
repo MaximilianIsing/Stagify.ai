@@ -181,3 +181,8 @@
     init();
   }
 })();
+
+// Loaded as <script type="module"> on every page; this empty export marks the file
+// as an ES module so it is covered by `eslint .` (see eslint.config.js). The IIFE
+// above still assigns window.LanguageSystem, so all consumers are unaffected.
+export {};
