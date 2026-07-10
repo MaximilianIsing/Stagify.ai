@@ -2,7 +2,10 @@
 // key-resolution contract createAiClients relies on: each of the three clients
 // (genAI / openai / resend) is constructed once from an env var (Render) or a
 // local *-key.txt fallback (dev), and the factory NEVER throws even when a key is
-// missing — a failed lookup just leaves that client `undefined`.
+// missing — a failed lookup leaves that client absent. Internally the client is
+// left `undefined`, but createAiClients normalizes absent → `null` at the return
+// (every consumer gates on `if (!client)`, and its dep typedefs spell absence as
+// `null`), so callers — and these tests — observe `null`.
 //
 // Why there is no real API, model, or email call here: constructing a
 // GoogleGenerativeAI / OpenAI / Resend SDK object only stores the key string; the
@@ -70,7 +73,7 @@ test('all three env keys present (empty __dirname) constructs genAI, openai and 
   assert.ok(resend, 'resend is constructed from RESEND_API_KEY');
 });
 
-test('all three env keys unset with no key files leaves every client undefined and throws nothing', () => {
+test('all three env keys unset with no key files leaves every client null and throws nothing', () => {
   setEnv({ GOOGLE_AI_API_KEY: undefined, GPT_KEY: undefined, RESEND_API_KEY: undefined });
 
   let clients;
@@ -81,9 +84,9 @@ test('all three env keys unset with no key files leaves every client undefined a
     clients = createAiClients({ __dirname: emptyDir(), DEBUG_MODE: false });
   });
 
-  assert.equal(clients.genAI, undefined, 'missing key.txt read throws and is caught → genAI undefined');
-  assert.equal(clients.openai, undefined, 'no gpt-key.txt and no env → openai undefined');
-  assert.equal(clients.resend, undefined, 'no resendkey.txt and no env → resend undefined');
+  assert.equal(clients.genAI, null, 'missing key.txt read throws and is caught → genAI null');
+  assert.equal(clients.openai, null, 'no gpt-key.txt and no env → openai null');
+  assert.equal(clients.resend, null, 'no resendkey.txt and no env → resend null');
 });
 
 test('positive file fallback: all env keys unset, real *-key.txt files present → genAI, openai and resend all construct', () => {
@@ -103,30 +106,30 @@ test('positive file fallback: all env keys unset, real *-key.txt files present �
   assert.ok(resend, 'resend constructed from resendkey.txt file fallback');
 });
 
-test('empty-string asymmetry: defined-empty GOOGLE_AI_API_KEY still constructs genAI, but defined-empty RESEND_API_KEY leaves resend undefined', () => {
+test('empty-string asymmetry: defined-empty GOOGLE_AI_API_KEY still constructs genAI, but defined-empty RESEND_API_KEY leaves resend null', () => {
   // Both keys are defined-but-empty, so BOTH skip the `=== undefined` file
   // fallback (empty __dirname would have nothing anyway). The divergence is in
   // what each block does with the empty string afterward: genAI passes '' straight
   // to new GoogleGenerativeAI('') (no truthiness guard) which still constructs a
   // truthy SDK handle, while resend is gated behind `if (resendApiKey)` so the
-  // empty string is falsy and resend is deliberately left undefined. GPT_KEY is a
+  // empty string is falsy and resend is deliberately left absent (null). GPT_KEY is a
   // fake non-empty key here only so its block isn't the one under test.
   setEnv({ GOOGLE_AI_API_KEY: '', GPT_KEY: 'sk-test', RESEND_API_KEY: '' });
   const { genAI, resend } = createAiClients({ __dirname: emptyDir(), DEBUG_MODE: false });
 
   assert.ok(genAI, 'empty GOOGLE_AI_API_KEY skips file fallback yet still constructs genAI');
-  assert.equal(resend, undefined, 'empty RESEND_API_KEY fails the if(resendApiKey) guard → resend undefined');
+  assert.equal(resend, null, 'empty RESEND_API_KEY fails the if(resendApiKey) guard → resend null');
 });
 
 test('empty-string GPT_KEY disables the OpenAI client while genAI and resend still construct', () => {
   // GPT_KEY defined-but-empty: the `=== undefined` file fallback is skipped, then
   // the `if (gptApiKey)` truthiness guard fails, so openai is deliberately left
-  // undefined. This pins the "empty GPT_KEY disables the chat/reviewer client"
+  // absent (null). This pins the "empty GPT_KEY disables the chat/reviewer client"
   // contract distinct from an unset key.
   setEnv({ GOOGLE_AI_API_KEY: 'g-test', GPT_KEY: '', RESEND_API_KEY: 're-test' });
   const { genAI, openai, resend } = createAiClients({ __dirname: emptyDir(), DEBUG_MODE: false });
 
-  assert.equal(openai, undefined, 'empty GPT_KEY is falsy → openai not constructed');
+  assert.equal(openai, null, 'empty GPT_KEY is falsy → openai not constructed');
   assert.ok(genAI, 'genAI still constructed from its own non-empty key');
   assert.ok(resend, 'resend still constructed from its own non-empty key');
 });

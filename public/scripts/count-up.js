@@ -1,45 +1,49 @@
 /* Stagify.ai — count-up animation for the hero stat numbers.
    Waits for live counts from app.js, then reveals pills and animates. */
+// The number/width math is pure and lives at module scope so it can be unit-tested
+// directly (test/count-up.test.js). The IIFE below drives the DOM animation with
+// these; the browser API is unchanged (window.StagifyHeroStats).
+
+export function format(n) {
+  return Math.round(n).toLocaleString("en-US");
+}
+
+export function widthForText(text) {
+  return Math.max(String(text).length, 1) + "ch";
+}
+
+// Characters in 10^exp when grouped (exp 5 -> "100,000" -> 7). Commas count as a
+// full char to match widthForText, so the reserved width is always a hair
+// generous (commas render narrower than a digit) and never clips.
+export function lenAtDecade(exp) {
+  return Math.pow(10, exp).toLocaleString("en-US").length;
+}
+
+// A continuous, monotonic pill width (in ch) for the current value: it eases
+// across digit AND comma boundaries instead of snapping a whole ch at each one,
+// always stays wide enough for the number (no clipping), and is clamped so it
+// lands exactly on the final width with no end-of-count overshoot. We round the
+// value first so the width tracks the *displayed* digits (e.g. 9.8 shows "10").
+export function smoothWidthCh(value, finalLen) {
+  const v = Math.max(Math.round(value), 1);
+  const lg = Math.log10(v);
+  const k = Math.floor(lg);
+  const frac = lg - k;
+  const lead = lenAtDecade(k) + (lenAtDecade(k + 1) - lenAtDecade(k)) * frac;
+  return Math.min(lead, finalLen);
+}
+
+// Ease-out ramp: the number climbs fast at the start then decelerates as it
+// settles into its final value. Cubic (^3) gives a softer launch than quart
+// (^4). The pill widens alongside it (width is tied to the digit count), but
+// smoothWidthCh keeps that widening continuous so there are no janky per-digit
+// steps like the original had.
+export function rampValue(target, t) {
+  return target * (1 - Math.pow(1 - t, 3));
+}
+
 (() => {
   "use strict";
-
-  function format(n) {
-    return Math.round(n).toLocaleString("en-US");
-  }
-
-  function widthForText(text) {
-    return Math.max(String(text).length, 1) + "ch";
-  }
-
-  // Characters in 10^exp when grouped (exp 5 -> "100,000" -> 7). Commas count as a
-  // full char to match widthForText, so the reserved width is always a hair
-  // generous (commas render narrower than a digit) and never clips.
-  function lenAtDecade(exp) {
-    return Math.pow(10, exp).toLocaleString("en-US").length;
-  }
-
-  // A continuous, monotonic pill width (in ch) for the current value: it eases
-  // across digit AND comma boundaries instead of snapping a whole ch at each one,
-  // always stays wide enough for the number (no clipping), and is clamped so it
-  // lands exactly on the final width with no end-of-count overshoot. We round the
-  // value first so the width tracks the *displayed* digits (e.g. 9.8 shows "10").
-  function smoothWidthCh(value, finalLen) {
-    const v = Math.max(Math.round(value), 1);
-    const lg = Math.log10(v);
-    const k = Math.floor(lg);
-    const frac = lg - k;
-    const lead = lenAtDecade(k) + (lenAtDecade(k + 1) - lenAtDecade(k)) * frac;
-    return Math.min(lead, finalLen);
-  }
-
-  // Ease-out ramp: the number climbs fast at the start then decelerates as it
-  // settles into its final value. Cubic (^3) gives a softer launch than quart
-  // (^4). The pill widens alongside it (width is tied to the digit count), but
-  // smoothWidthCh keeps that widening continuous so there are no janky per-digit
-  // steps like the original had.
-  function rampValue(target, t) {
-    return target * (1 - Math.pow(1 - t, 3));
-  }
 
   const running = new WeakSet();
 
@@ -137,7 +141,3 @@
 
   window.StagifyHeroStats = { setCounts, revealWithoutCounts };
 })();
-
-// Loaded as <script type="module">; this empty export marks the file as an ES
-// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
-export {};
