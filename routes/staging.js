@@ -6,6 +6,45 @@ import { createProcessPdfHandler } from '../lib/staging/pdf-proxy.js';
 import { createSegmentHandler } from '../lib/staging/segment.js';
 import { logger } from '../lib/logger.js';
 
+/**
+ * Build the virtual-staging router. `deps` is the full injection bag shared by
+ * this router's inline handlers and the sibling handler factories
+ * (mask-edit / segment / process-pdf), each of which destructures its own slice.
+ *
+ * @param {{
+ *   genAI: { getGenerativeModel: (options: any) => any },
+ *   openai: import('openai').default | null,
+ *   genLimiter: import('express').RequestHandler,
+ *   stagingProcessUpload: import('express').RequestHandler,
+ *   pdfUpload: { single: (fieldName: string) => import('express').RequestHandler },
+ *   stagingEndpointKeyGuard: import('express').RequestHandler,
+ *   setSensitiveHeaders: (res: import('express').Response) => void,
+ *   getAuthUserFromRequest: (req: import('express').Request) => any,
+ *   getUserIdentifier: (req: import('express').Request) => string,
+ *   requireProAccount: (req: import('express').Request, res: import('express').Response) => any,
+ *   enterpriseDomainForUser: Function,
+ *   reportEnterpriseUsage: Function,
+ *   validateStageableImage: (imageBuffer: Buffer) => Promise<{ valid: boolean, reason: string }>,
+ *   handleVirtualStagingMultipart: (req: import('express').Request, res: import('express').Response, meta: import('../lib/types/staging.js').VirtualStagingMeta) => Promise<import('express').Response | void>,
+ *   downscaleImage: Function,
+ *   padBufferToAspectRatio: Function,
+ *   buildMarkedRoomImage: Function,
+ *   normalizeMaskOutputToRoom: Function,
+ *   compositeForReview: Function,
+ *   reviewMaskEdit: Function,
+ *   generateWithQualityRetry: Function,
+ *   maskReferencePromptSuffix: Function,
+ *   logMaskEditToFile: Function,
+ *   PDF_PROCESSING_SERVER: string,
+ *   DEBUG_MODE: boolean,
+ *   MAX_MASK_PROMPT_LENGTH: number,
+ *   MAX_SEGMENT_QUERY_LENGTH: number,
+ *   QUALITY_MAX_ATTEMPTS: number,
+ * }} deps - Injected AI clients, upload/rate-limit middleware, auth + enterprise-usage
+ *   helpers, image-pipeline primitives, the QA reviewer, CSV logging, the virtual-staging
+ *   multipart handler, and route-tuning constants. Passed whole to the sibling
+ *   mask-edit / segment / process-pdf factories, which each type their own slice.
+ */
 export default function createStagingRouter(deps) {
   // Names used by the handlers still inlined below. The /api/mask-edit,
   // /api/process-pdf and /api/segment handlers are built by the sibling
