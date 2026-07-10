@@ -235,6 +235,36 @@ import { createUpload } from './masking-studio/upload.js';
           scheduleSessionSave();
         }
 
+        // Inverse of setBaseImage: tear the studio back down to the empty
+        // dropzone. Used when the async stageability pre-check comes back
+        // negative for a photo we already showed (see masking-studio/upload.js)
+        // — the non-room is pulled out of the studio instead of lingering.
+        function clearBaseImage() {
+          state.layers.forEach((l) => l.el && l.canvasEl && l.canvasEl.remove());
+          state.layers = [];
+          state.activeId = null;
+          state.base = null;
+          state.layerSeq = 0;
+          state.genRun++;
+          state.genMeta = null;
+          state.undoStack = [];
+          state.redoStack = [];
+          state.segCache = null;
+          state.segToken++;
+          resetZoom();
+
+          baseCanvas.getContext('2d').clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+          resultCanvas.getContext('2d').clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+
+          photoThumb.removeAttribute('src');
+          photoEmptyHint.classList.remove('hidden');
+          replaceBtn.classList.add('hidden');
+          dropzone.classList.remove('hidden');
+          stack.classList.add('hidden');
+          setPhase('empty');
+          scheduleSessionSave();
+        }
+
         // Area layers + all layer/chip rendering → masking-studio/layers-ui.js
         // (addLayer/removeLayer/getLayer/activeLayer/layerColor/layerTitle/
         //  statusChip/renderLayers/renderChips/updateChipbarVisibility).
@@ -632,6 +662,7 @@ import { createUpload } from './masking-studio/upload.js';
           tx,
           loadImage,
           setBaseImage,
+          clearBaseImage,
           requestDiscard,
           activeLayer,
           getLayer,
