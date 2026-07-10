@@ -123,18 +123,8 @@ router.get('/authstore', protectLogs, (req, res) => {
 
 router.get('/promptlogs', protectLogs, (req, res) => {
   try {
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-    }
+    const logFile = path.join(getDataLogDir(), 'prompt_logs.csv');
 
-    const logFile = path.join(logDir, 'prompt_logs.csv');
-    
     if (fs.existsSync(logFile)) {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'inline; filename="prompt_logs.csv"');
@@ -150,18 +140,8 @@ router.get('/promptlogs', protectLogs, (req, res) => {
 
 router.get('/contactlogs', protectLogs, (req, res) => {
   try {
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-    }
+    const logFile = path.join(getDataLogDir(), 'contact_logs.csv');
 
-    const logFile = path.join(logDir, 'contact_logs.csv');
-    
     if (fs.existsSync(logFile)) {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'inline; filename="contact_logs.csv"');
@@ -237,18 +217,8 @@ router.post('/api/status/reset', protectLogs, (req, res) => {
 
 router.get('/chatlogs', protectLogs, (req, res) => {
   try {
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-    }
+    const logFile = path.join(getDataLogDir(), 'chat_logs.csv');
 
-    const logFile = path.join(logDir, 'chat_logs.csv');
-    
     if (fs.existsSync(logFile)) {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'inline; filename="chat_logs.csv"');
@@ -264,18 +234,8 @@ router.get('/chatlogs', protectLogs, (req, res) => {
 
 router.get('/bugreports', protectLogs, (req, res) => {
   try {
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-    }
+    const logFile = path.join(getDataLogDir(), 'bug_reports.csv');
 
-    const logFile = path.join(logDir, 'bug_reports.csv');
-    
     if (fs.existsSync(logFile)) {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'inline; filename="bug_reports.csv"');
@@ -291,18 +251,8 @@ router.get('/bugreports', protectLogs, (req, res) => {
 
 router.get('/masklogs', protectLogs, (req, res) => {
   try {
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-    }
+    const logFile = path.join(getDataLogDir(), 'mask_logs.csv');
 
-    const logFile = path.join(logDir, 'mask_logs.csv');
-    
     if (fs.existsSync(logFile)) {
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'inline; filename="mask_logs.csv"');
