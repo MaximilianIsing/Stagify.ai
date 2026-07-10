@@ -63,13 +63,8 @@
 
   // ── Secure fetch: key sent in header, not URL ──
 
-  function apiFetch(url){
-    checkSessionTimeout();
-    return fetch(url,{headers:{'X-Stagify-Endpoint-Key':_key}}).then(function(r){if(!r.ok)throw new Error(r.status);return r});
-  }
-
-  // Kept as a named alias for the log/data endpoints; same header auth as apiFetch
-  // so the key never appears in the URL (no leak via logs/history/Referer).
+  // Header auth for the log/data endpoints so the key never appears in the URL
+  // (no leak via logs/history/Referer).
   function apiFetchQ(url){
     checkSessionTimeout();
     return fetch(url,{headers:{'X-Stagify-Endpoint-Key':_key}})
@@ -210,8 +205,8 @@
     data.promptRows.forEach(function(r){try{var t=new Date(r[0]);if(t>=d7)g7++;if(t>=d30)g30++}catch(e){}});
     var pro=data.users.filter(function(u){return u.plan==='pro'}).length;
     var free=data.users.filter(function(u){return u.plan==='free'}).length;
-    var s7=0,s30=0;
-    data.users.forEach(function(u){try{var t=new Date(u.createdAt);if(t>=d7)s7++;if(t>=d30)s30++}catch(e){}});
+    var s30=0;
+    data.users.forEach(function(u){try{var t=new Date(u.createdAt);if(t>=d30)s30++}catch(e){}});
     var activeEnt=data.enterprise.filter(function(e){return e.status==='active'||e.status==='trialing'}).length;
 
     var stats=[
@@ -270,7 +265,7 @@
     renderDailyChart(d30);
   }
 
-  function renderDailyChart(since){
+  function renderDailyChart(_since){
     var buckets={};
     for(var i=0;i<30;i++){var dk=daysAgo(i).toISOString().slice(0,10);buckets[dk]=0}
     data.promptRows.forEach(function(r){var k=dayKey(r[0]);if(k&&buckets[k]!==undefined)buckets[k]++});
@@ -885,3 +880,7 @@
   // sessionStorage only stores the timestamp for timeout tracking.
 
 })();
+
+// Loaded as <script type="module">; this empty export marks the file as an ES
+// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
+export {};
