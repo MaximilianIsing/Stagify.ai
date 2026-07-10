@@ -1,4 +1,4 @@
-// Multer fileFilter configs (lib/http/uploads.js). These three filters are the
+// Multer fileFilter configs (lib/http/uploads.js). These two filters are the
 // upload gatekeepers for the whole app: they decide, per file, whether multer
 // accepts the bytes into memoryStorage or rejects the request. They are pure —
 // (req, file, cb) in, a single cb(err, accept) out, no I/O — so we exercise them
@@ -8,9 +8,6 @@
 // Why each filter matters:
 //  - imageFileFilter        → the room/furniture staging uploads. Only the four
 //                             raster types the pipeline can actually process.
-//  - pdfFileFilter          → floor-plan uploads. Accepts by MIME *or* by .pdf
-//                             extension, because some clients mislabel PDFs as
-//                             application/octet-stream.
 //  - hostedImageFileFilter  → admin public image hosting. SECURITY-CRITICAL: it
 //                             must reject image/svg+xml. A hosted SVG executes
 //                             script on our own origin (stored XSS), so the SVG
@@ -30,7 +27,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   imageFileFilter,
-  pdfFileFilter,
   hostedImageFileFilter,
   HOSTED_IMAGE_MIME_EXT,
 } from '../lib/http/uploads.js';
@@ -66,31 +62,6 @@ test('imageFileFilter rejects svg, gif, pdf, and octet-stream with the PNG/JPG/J
     assert.equal(r.accepted, false, `${mimetype} must not be accepted`);
     assert.equal(r.error, 'Only PNG, JPG, JPEG, and WebP files are allowed', `${mimetype} error string`);
   }
-});
-
-// ── pdfFileFilter ───────────────────────────────────────────────────────────
-
-test('pdfFileFilter accepts a real application/pdf MIME type', () => {
-  const r = runFilter(pdfFileFilter, { mimetype: 'application/pdf', originalname: 'floorplan.pdf' });
-  assert.deepEqual(r, { accepted: true, error: null });
-});
-
-test('pdfFileFilter accepts by .pdf extension (case-insensitive) even when MIME is octet-stream', () => {
-  // Some clients send application/octet-stream for PDFs; the .pdf tail rescues them.
-  const r = runFilter(pdfFileFilter, { mimetype: 'application/octet-stream', originalname: 'plan.PDF' });
-  assert.deepEqual(r, { accepted: true, error: null }, 'uppercase .PDF extension should still pass');
-});
-
-test('pdfFileFilter accepts application/pdf even when the filename has no .pdf extension (MIME-only branch)', () => {
-  // Isolates the first OR-branch: MIME says PDF, the filename does NOT end in .pdf.
-  const r = runFilter(pdfFileFilter, { mimetype: 'application/pdf', originalname: 'document' });
-  assert.deepEqual(r, { accepted: true, error: null });
-});
-
-test('pdfFileFilter rejects a text/plain notes.txt with the "Only PDF files are allowed" message', () => {
-  const r = runFilter(pdfFileFilter, { mimetype: 'text/plain', originalname: 'notes.txt' });
-  assert.equal(r.accepted, false);
-  assert.equal(r.error, 'Only PDF files are allowed');
 });
 
 // ── hostedImageFileFilter ───────────────────────────────────────────────────

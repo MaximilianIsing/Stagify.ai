@@ -70,7 +70,7 @@ This README is the entry point for the `docs/` folder. See also:
 │   ├── public.js            # Home/SEO/status pages, health, counters, contact, email, bug reports
 │   ├── auth.js              # Register/login/Google/logout/reset, /getpro, /api/auth/config
 │   ├── billing.js           # Stripe webhook, customer portal, enterprise config + checkout
-│   ├── staging.js           # process-image, validate-image, mask-edit, segment, process-pdf
+│   ├── staging.js           # process-image, validate-image, mask-edit, segment
 │   ├── chat.js              # AI Designer: chat, chat-upload, welcome-message
 │   └── admin.js             # /admin + log/JSON exports + image hosting (endpoint_key gated)
 ├── lib/                     # Shared modules (factory + dependency-injection pattern)
@@ -80,7 +80,7 @@ This README is the entry point for the `docs/` folder. See also:
 │   ├── http/                # async-router, http-helpers (sendError), http-guards, rate-limiters, uploads, app-middleware
 │   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images
 │   ├── services/            # ai-clients, auth-helpers, email, logging (CSV), stripe-webhooks
-│   ├── staging/             # prompts, promptMatrix, staging-pipeline, staging-generation, virtual-staging-handler, mask-edit, segment, pdf-proxy, cad-handling
+│   ├── staging/             # prompts, promptMatrix, staging-pipeline, staging-generation, virtual-staging-handler, mask-edit, segment, cad-handling
 │   └── chat/                # chat-pipeline (wiring) + memory/image-retrieval/image-dispatch/staging/response dispatch, request-prep, upload-prep, welcome-message-handler, history, routing, sse
 ├── public/                  # Static frontend (HTML pages, scripts, styles, assets, i18n)
 ├── data/                    # Runtime state: one SQLite DB (all structured state) + CSV logs (see Data & persistence)
@@ -176,7 +176,7 @@ grouped into subdirectories by concern (full breakdown in
 | `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`). |
 | `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`. |
 | `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `auth-helpers.js`, `email.js`, `logging.js` (append-only **CSV** business logs), `stripe-webhooks.js`. |
-| `lib/staging/` | `prompts.js`, `promptMatrix.js`, `staging-pipeline.js` (quality-retry loop), `staging-generation.js` (`processStaging`/`processImageGeneration`) + `virtual-staging-handler.js` (from `server.js`), `mask-edit.js` / `segment.js` / `pdf-proxy.js` (from `routes/staging.js`), `cad-handling.js` (CAD/PDF → 3D). |
+| `lib/staging/` | `prompts.js`, `promptMatrix.js`, `staging-pipeline.js` (quality-retry loop), `staging-generation.js` (`processStaging`/`processImageGeneration`) + `virtual-staging-handler.js` (from `server.js`), `mask-edit.js` / `segment.js` (from `routes/staging.js`), `cad-handling.js` (CAD/PDF → 3D). |
 | `lib/chat/` | `chat-pipeline.js` (pure wiring) composing `chat-memory.js` / `chat-image-retrieval.js` / `chat-image-dispatch.js` / `chat-staging.js` / `chat-response.js`; pre-routing `chat-upload-prep.js` / `chat-request-prep.js` / `welcome-message-handler.js` / `chat-upload-error.js`; `chat-history.js`, `chat-routing.js`, `chat-sse.js`. |
 | `lib/logger.js` | The **diagnostic** logger — the single `logger.debug/info/warn/error` stdout funnel (`LOG_LEVEL`). Distinct from `services/logging.js` (CSV). |
 
@@ -219,7 +219,7 @@ Served from `server.js` on the same origin. Full reference: [`endpoints.md`](ref
 Rough groups:
 
 - **Core AI:** `POST /api/process-image` (stage), `/api/mask-edit`, `/api/segment`,
-  `/api/process-pdf`, `/api/validate-image`, `/api/stage-by-endpoint-key`.
+  `/api/validate-image`, `/api/stage-by-endpoint-key`.
 - **Auth:** `/api/auth/register`, `/register/verify`, `/login`, `/logout`, `/me`,
   `/forgot-password`, `/reset-password`, `/google`.
 - **Billing:** `/api/billing/customer-portal`, `/api/billing/stripe-webhook`,

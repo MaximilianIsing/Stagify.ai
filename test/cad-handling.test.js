@@ -9,15 +9,8 @@
 // hand-built inputs — a fake `result.response`-shaped object, plain strings, and
 // Buffers — without any network, key, or model dependency. Image fixtures that must
 // survive a real base64 round-trip through Buffer are built locally with sharp.
-//
-// We also cover the two PRE-PROXY branches of POST /api/process-pdf via the shared
-// mountStaging DI harness. process-pdf is an HTTPS proxy to an external PDF server;
-// it never calls blueprintTo3D. Only the auth gate (401) and the missing-file guard
-// (400) are reachable without hitting the network, so those are the only two paths
-// asserted here — the streaming/success path would contact a real server and is left
-// untouched by design.
 
-import { test, afterEach } from "node:test";
+import { test } from "node:test";
 import assert from "node:assert/strict";
 import sharp from "sharp";
 import {
@@ -25,7 +18,6 @@ import {
   getMimeType,
   extractBase64,
 } from "../lib/staging/cad-handling.js";
-import { mountStaging } from "./helpers/staging-app.js";
 
 // Wraps a base64 image payload in the { candidates: [{ content: { parts } }] }
 // shape that Gemini's result.response exposes — the object parseGeminiResponse reads.
@@ -177,26 +169,4 @@ test("extractBase64: throws 'Invalid image data format' for non-string, non-Buff
   assert.throws(() => extractBase64(null), /Invalid image data format/);
   assert.throws(() => extractBase64(123), /Invalid image data format/);
   assert.throws(() => extractBase64({}), /Invalid image data format/);
-});
-
-// ── POST /api/process-pdf (pre-proxy branches only) ──────────────────────────
-
-let app;
-afterEach(async () => { if (app) { await app.close(); app = null; } });
-
-test("process-pdf: rejects an unauthenticated request with 401 AUTH_REQUIRED", async () => {
-  // Default baseDeps.requireProAccount sends 401 and returns null before any proxy.
-  app = await mountStaging({});
-  const res = await fetch(`${app.baseUrl}/api/process-pdf`, { method: "POST" });
-  assert.equal(res.status, 401);
-  assert.equal((await res.json()).code, "AUTH_REQUIRED");
-});
-
-test("process-pdf: returns 400 'No PDF file provided' when a pro user uploads no file", async () => {
-  // requireProAccount truthy → past the auth gate; pdfUpload.single is a pass-through
-  // (baseDeps), so req.file stays undefined and the missing-file guard fires. No proxy.
-  app = await mountStaging({ requireProAccount: () => ({ id: "u1", plan: "pro" }) });
-  const res = await fetch(`${app.baseUrl}/api/process-pdf`, { method: "POST" });
-  assert.equal(res.status, 400);
-  assert.deepEqual(await res.json(), { error: "No PDF file provided" });
 });
