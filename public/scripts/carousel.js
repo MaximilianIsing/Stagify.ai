@@ -164,10 +164,9 @@ class Carousel {
 
   handleDrag() {
     const dragDistance = this.dragStartX - this.dragEndX;
-    const absDistance = Math.abs(dragDistance);
-    if (dragDistance > this.options.dragBuffer || absDistance > this.options.velocityThreshold) {
+    if (dragDistance > this.options.dragBuffer || dragDistance > this.options.velocityThreshold) {
       this.nextSlide();
-    } else if (dragDistance < -this.options.dragBuffer || absDistance > this.options.velocityThreshold) {
+    } else if (dragDistance < -this.options.dragBuffer || dragDistance < -this.options.velocityThreshold) {
       this.prevSlide();
     } else {
       this.updateSlidePosition();
