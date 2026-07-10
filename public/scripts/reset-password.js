@@ -47,3 +47,7 @@
           }
         });
       })();
+
+// Loaded as <script type="module">; this empty export marks the file as an ES
+// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
+export {};

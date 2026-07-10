@@ -207,3 +207,7 @@
         document.addEventListener('mouseleave', function () { lastPointer = null; target = 0; ensure(); });
         window.addEventListener('resize', function () { if (hasGL && running) { resize(); render(cur); } });
       })();
+
+// Loaded as <script type="module">; this empty export marks the file as an ES
+// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
+export {};
