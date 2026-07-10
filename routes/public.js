@@ -5,6 +5,36 @@ import path from 'path';
 import fs from 'fs';
 import { logger } from '../lib/logger.js';
 
+/**
+ * Build the public router (static pages, robots/sitemap, hosted-image serving,
+ * health/status, prompt/contact counts, contact + bug-report + email endpoints).
+ * `deps` is the injection bag from server.js.
+ *
+ * @param {{
+ *   authStore: any,
+ *   uptimeMonitor: any,
+ *   resend: any,
+ *   LOGS_ACCESS_KEY: string,
+ *   emailLimiter: import('express').RequestHandler,
+ *   RESEND_FROM_EMAIL: string,
+ *   DEBUG_MODE: boolean,
+ *   EMAIL_DEBUG_MODE: boolean,
+ *   DEBUG_EMAIL: string,
+ *   STATS_DEBUG: boolean,
+ *   DEBUG_ROOMS: number,
+ *   DEBUG_USERS: number,
+ *   getHostedImagesDir: Function,
+ *   readHostedImagesManifest: Function,
+ *   logEmailOpenToFile: Function,
+ *   isConfirmedEmailClientOpen: Function,
+ *   healthHandler: import('express').RequestHandler,
+ *   getPromptCount: Function,
+ *   getContactCount: Function,
+ *   incContactCount: Function,
+ *   __dirname: string,
+ * }} deps - Stores, injected email client, the email rate-limit + health-check
+ *   middleware, debug/stat flags, and hosted-image / logging / counter helpers.
+ */
 export default function createPublicRouter(deps) {
   const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
   const router = createAsyncRouter();
