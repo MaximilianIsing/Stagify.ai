@@ -164,7 +164,12 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `chat-image-dispatch.js` | Produces new images: text-to-image generation and CAD blueprint → 3D render. |
 | `chat-staging.js` | Runs the model's staging request(s), with the chat-vs-upload divergence injected via callbacks. |
 | `chat-response.js` | Pure response assembly: awaits image annotations and builds the final JSON body. |
-| `chat-history.js` | Conversation-history filtering, dedup, and image-context extraction. |
+| `chat-history.js` | **Barrel** re-exporting the four history/image-resolution modules below (kept so existing import sites are stable); no logic of its own. |
+| `chat-history-sanitize.js` | Conversation-history hygiene: strip unsupported image types, dedup messages, collapse history images to text placeholders. |
+| `chat-image-collection.js` | The image index-space primitive (`collectImagesFromHistory`) plus retrieval/index queries and the GPT image-context builder. |
+| `chat-image-classification.js` | Furniture-vs-room heuristics over filename/annotation + "add furniture to room" intent detection. |
+| `chat-dual-upload.js` | Splits a "room + furniture" dual upload into a room buffer + furniture buffers (from multipart files or message content). |
+| `chat-base-image-staging.js` | Folds the user's thumbnail selection + text intent into the staging params; resolves which history image a CAD/add-furniture request targets. |
 | `chat-routing.js` | Parses the model's routing completion and classifies chat intent. |
 | `chat-sse.js` | Server-Sent Events plumbing for streamed chat responses. |
 
