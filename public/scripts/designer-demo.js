@@ -1,3 +1,4 @@
+/* global SupademoPlayer */ // provided by the classic demo-player.js loaded alongside
 (function () {
   // Homepage demo sections (AI Designer, Masking Studio) mount the self-hosted
   // walkthrough player — no third-party iframe. Each host carries data-demo="<key>".
@@ -48,3 +49,7 @@
     init();
   }
 })();
+
+// Loaded as <script type="module">; this empty export marks the file as an ES
+// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
+export {};

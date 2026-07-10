@@ -67,3 +67,7 @@
   // pronunciation rules from the start. The switcher keeps it in sync on change.
   document.documentElement.lang = BCP47[lang] || "en";
 })();
+
+// Loaded as <script type="module">; this empty export marks the file as an ES
+// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
+export {};

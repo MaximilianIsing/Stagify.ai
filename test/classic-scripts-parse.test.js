@@ -52,12 +52,15 @@ function collectClassicScripts(dir) {
 const classicScripts = collectClassicScripts(scriptsDir);
 const rel = (f) => path.relative(rootDir, f).split(path.sep).join('/');
 
-test('there are classic scripts to guard, and the flagged ones are covered', () => {
+test('there are classic scripts to guard, and the render-blocking ones stay covered', () => {
   assert.ok(classicScripts.length > 0, 'expected to discover unlinted classic scripts under public/scripts');
   const names = new Set(classicScripts.map((f) => path.basename(f)));
-  // The code review specifically called out these two as escaping the lint net.
-  assert.ok(names.has('admin.js'), 'admin.js must be in the parse net');
-  assert.ok(names.has('profile-menu.js'), 'profile-menu.js must be in the parse net');
+  // The render-blocking gate/redirect scripts are intentionally kept as classic
+  // <script> — they must run before the body paints, which a deferred type="module"
+  // can't do — so they never reach the ESM linter. The parse net is their only guard.
+  assert.ok(names.has('ai-designer-gate.js'), 'ai-designer-gate.js must stay in the parse net');
+  assert.ok(names.has('masking-studio-gate.js'), 'masking-studio-gate.js must stay in the parse net');
+  assert.ok(names.has('faq-redirect.js'), 'faq-redirect.js must stay in the parse net');
 });
 
 for (const file of classicScripts) {
