@@ -58,7 +58,7 @@ export default function createChatRouter(deps) {
   const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier, logChatToFile } = deps;
   const router = createAsyncRouter();
   const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse } = createChatPipeline(deps);
-  const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting } = createUploadPrep(deps);
+  const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting, logUploadDedupDiagnostics } = createUploadPrep(deps);
   const { handleWelcomeMessage } = createWelcomeMessageHandler(deps);
   const { logDedupDiagnostics, detectHistoryImage, applyMessageTag, buildChatMessages, logChatPayload } = createChatRequestPrep(deps);
 
@@ -157,10 +157,9 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     } catch (gptError) {
       logger.error('[GPT] Error calling OpenAI API:', gptError);
       logger.error('[GPT] Error stack:', gptError.stack);
-      return res.status(500).json({ 
-        error: 'Failed to get AI response', 
+      return sendError(res, 500, 'Failed to get AI response', {
         details: 'The AI service encountered an error. Please try again.',
-        response: 'I apologize, but I encountered an error processing your request. Please try again.'
+        response: 'I apologize, but I encountered an error processing your request. Please try again.',
       });
     }
     let text = aiResponseJson.response || completion.choices[0].message.content;
@@ -383,29 +382,9 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     }
     
     // Deduplicate conversation history to prevent double counting
-    const originalHistoryLength = conversationHistory.length;
+    const originalHistory = conversationHistory;
     conversationHistory = deduplicateMessages(conversationHistory);
-    if (conversationHistory.length !== originalHistoryLength) {
-      const removedCount = originalHistoryLength - conversationHistory.length;
-      
-      if (DEBUG_MODE) {
-        logger.debug(`[Deduplication] Removed ${removedCount} duplicate message(s) from conversation history (${originalHistoryLength} -> ${conversationHistory.length})`);
-        // Log which messages were duplicates
-        const seenKeys = new Set();
-        const original = conversationHistory.length < originalHistoryLength ? 
-          JSON.parse(conversationHistoryStr || '[]') : conversationHistory;
-        original.forEach((msg, idx) => {
-          const key = Array.isArray(msg.content) 
-            ? `${msg.role}:${JSON.stringify(msg.content.map(item => item.type === 'text' ? item.text : item.type))}`
-            : `${msg.role}:${typeof msg.content === 'string' ? msg.content.trim() : 'non-string'}`;
-          if (seenKeys.has(key)) {
-            logger.debug(`[Deduplication] Duplicate found at index ${idx}: ${msg.role} message`);
-          } else {
-            seenKeys.add(key);
-          }
-        });
-      }
-    }
+    logUploadDedupDiagnostics(originalHistory, conversationHistory);
     
     // Check message limit (see MAX_USER_MESSAGES)
     const userMessageCount = conversationHistory.filter(msg => msg.role === 'user').length;
@@ -674,10 +653,9 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     
     // Fallback to generic error - always send a response to prevent hanging requests
     if (!res.headersSent) {
-      res.status(500).json({ 
-        error: 'File processing failed', 
+      sendError(res, 500, 'File processing failed', {
         details: 'An unexpected error occurred. Please try again.',
-        response: 'I apologize, but I encountered an unexpected error processing your files. Please try again.'
+        response: 'I apologize, but I encountered an unexpected error processing your files. Please try again.',
       });
     }
   }
