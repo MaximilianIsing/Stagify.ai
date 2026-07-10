@@ -57,3 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
     new StarBorder(pill, { color: '#70a7ff', speed: '6s', thickness: 5 });
   });
 });
+
+// Loaded as <script type="module">; this empty export marks the file as an ES
+// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
+export {};
