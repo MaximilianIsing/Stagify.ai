@@ -397,7 +397,7 @@ export function createStageMaskEditor(deps) {
               c.getContext('2d').drawImage(img, 0, 0, w, h);
               try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
             };
-            img.src = reader.result;
+            img.src = /** @type {string} */ (reader.result);
           };
           reader.readAsDataURL(file);
         });
@@ -676,7 +676,7 @@ export function createStageMaskEditor(deps) {
         const imageDataUrl = origCanvas.toDataURL('image/png');
         const maskDataUrl = buildModelMask(drawCanvas, w, h, coreGrow).toDataURL('image/png');
         let selectedModel = 'gpt-4o-mini';
-        const modelSel = document.getElementById('stagify-model-select');
+        const modelSel = /** @type {HTMLSelectElement} */ (document.getElementById('stagify-model-select'));
         if (modelSel && modelSel.value) selectedModel = modelSel.value;
         const referenceImageForRequest = maskReferenceDataUrl;
         const tok = window.StagifyAuth && window.StagifyAuth.getToken();

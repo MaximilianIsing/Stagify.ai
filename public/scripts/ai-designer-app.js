@@ -19,8 +19,8 @@ import { createThumbnailStrip } from './ai-designer/thumbnail-strip.js';
 import { createFileIntake } from './ai-designer/file-intake.js';
 
       const chatMessages = document.getElementById('chat-messages');
-      const chatInput = document.getElementById('chat-input');
-      const sendBtn = document.getElementById('send-btn');
+      const chatInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('chat-input'));
+      const sendBtn = /** @type {HTMLButtonElement} */ (document.getElementById('send-btn'));
       const fileInput = document.getElementById('file-input');
       const chatContainer = document.querySelector('.chat-container');
       
@@ -340,9 +340,9 @@ import { createFileIntake } from './ai-designer/file-intake.js';
         if (e.key !== 'Tab') return;
         const modal = getOpenModal();
         if (!modal) return;
-        const focusables = Array.from(
+        const focusables = /** @type {HTMLElement[]} */ (Array.from(
           modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')
-        ).filter((el) => el.offsetParent !== null || el === document.activeElement);
+        )).filter((el) => el.offsetParent !== null || el === document.activeElement);
         if (!focusables.length) return;
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
@@ -472,6 +472,7 @@ import { createFileIntake } from './ai-designer/file-intake.js';
               lastMessage.appendChild(stagedImageDiv);
             });
           }
+          /** @type {Array<Record<string, any>>} */
           const contentItems = [{ type: 'text', text: data.response }];
           stagedImages.forEach((stagedImage, index) => {
             const annotationKey = stagedImages.length === 1 ? 'staged_0' : `staged_${index}`;
@@ -515,6 +516,7 @@ import { createFileIntake } from './ai-designer/file-intake.js';
               lastMessage.appendChild(generatedImageDiv);
             });
           }
+          /** @type {Array<Record<string, any>>} */
           const contentItems = [{ type: 'text', text: data.response }];
           generatedImages.forEach((generatedImage, index) => {
             const annotationKey = generatedImages.length === 1 ? 'generated_0' : `generated_${index}`;
@@ -808,7 +810,7 @@ import { createFileIntake } from './ai-designer/file-intake.js';
             request
               .then(response => {
                 if (!response.ok) {
-                  const err = new Error('HTTP ' + response.status);
+                  const err = /** @type {Error & { response?: Response }} */ (new Error('HTTP ' + response.status));
                   err.response = response;
                   throw err;
                 }

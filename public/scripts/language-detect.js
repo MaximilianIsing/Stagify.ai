@@ -40,7 +40,7 @@
   function detect() {
     const tags = (navigator.languages && navigator.languages.length)
       ? navigator.languages
-      : [navigator.language || navigator.userLanguage];
+      : [navigator.language || /** @type {any} */ (navigator).userLanguage];
     for (const tag of tags) {
       const lang = toSupported(tag);
       if (lang) return lang;

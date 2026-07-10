@@ -55,8 +55,9 @@
     document.querySelectorAll('[data-lang]').forEach((el) => {
       const value = getText(el.getAttribute('data-lang'));
       if (value !== config.fallbackText) {
-        if (el.tagName === 'INPUT' && el.type === 'text') el.placeholder = value;
-        else if (el.tagName === 'TEXTAREA') el.placeholder = value;
+        if (el.tagName === 'INPUT' && /** @type {HTMLInputElement} */ (el).type === 'text')
+          /** @type {HTMLInputElement} */ (el).placeholder = value;
+        else if (el.tagName === 'TEXTAREA') /** @type {HTMLTextAreaElement} */ (el).placeholder = value;
         else el.textContent = value;
       }
     });
@@ -124,16 +125,17 @@
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType !== Node.ELEMENT_NODE) return;
+            const el = /** @type {Element} */ (node);
             if (
-              node.hasAttribute &&
-              (node.hasAttribute('data-lang') ||
-                node.hasAttribute('data-lang-html') ||
-                node.hasAttribute('data-lang-attr'))
+              el.hasAttribute &&
+              (el.hasAttribute('data-lang') ||
+                el.hasAttribute('data-lang-html') ||
+                el.hasAttribute('data-lang-attr'))
             ) {
               needsApply = true;
             }
-            if (node.querySelectorAll) {
-              const found = node.querySelectorAll('[data-lang], [data-lang-html], [data-lang-attr]');
+            if (el.querySelectorAll) {
+              const found = el.querySelectorAll('[data-lang], [data-lang-html], [data-lang-attr]');
               if (found.length > 0) needsApply = true;
             }
           });
@@ -145,15 +147,15 @@
   }
 
   function setupLanguageSelector() {
-    const select = document.getElementById('language-select');
+    const select = /** @type {HTMLSelectElement | null} */ (document.getElementById('language-select'));
     if (!select) return;
     const current = localStorage.getItem('selectedLanguage') || 'english';
     select.value = current;
     updateSelectorFlag(select);
     select.addEventListener('change', async (e) => {
-      const lang = e.target.value;
+      const lang = /** @type {HTMLSelectElement} */ (e.target).value;
       localStorage.setItem('selectedLanguage', lang);
-      updateSelectorFlag(e.target);
+      updateSelectorFlag(/** @type {HTMLSelectElement} */ (e.target));
       await loadLanguage(lang);
       applyLanguageToElements();
     });

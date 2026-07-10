@@ -68,7 +68,7 @@
   function apiFetchQ(url){
     checkSessionTimeout();
     return fetch(url,{headers:{'X-Stagify-Endpoint-Key':_key}})
-      .then(function(r){if(!r.ok)throw new Error(r.status);return r});
+      .then(function(r){if(!r.ok)throw new Error(String(r.status));return r});
   }
 
   // Mutating requests (POST/DELETE). For FormData bodies, the browser sets the
@@ -250,7 +250,7 @@
 
     // recent signups
     var recent=data.users.slice().filter(function(u){try{return new Date(u.createdAt)>=d30}catch(e){return false}})
-      .sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt)});
+      .sort(function(a,b){return new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()});
     var rw=qs('#adm-recent-signups');rw.innerHTML='';
     if(!recent.length){rw.innerHTML='<p style="color:#94a3b8;font-size:.85rem;padding:.5rem">No signups in last 30 days.</p>';return}
     var rtbl=el('table',{className:'adm-table'});
@@ -412,7 +412,7 @@
           var gt=el('table',{className:'adm-table'});
           gt.appendChild(el('thead',null,[el('tr',null,[el('th',{textContent:'When'}),el('th',{textContent:'Room'}),el('th',{textContent:'Style'}),el('th',{textContent:'Prompt'}),el('th',{textContent:'Remove?'})])]));
           var gb=el('tbody');
-          allR.slice().sort(function(a,b){return new Date(b[0])-new Date(a[0])}).slice(0,50).forEach(function(r){
+          allR.slice().sort(function(a,b){return new Date(b[0]).getTime()-new Date(a[0]).getTime()}).slice(0,50).forEach(function(r){
             gb.appendChild(el('tr',null,[
               el('td',{textContent:fmtDateTime(r[0])}),el('td',{textContent:r[1]||'\u2014'}),
               el('td',{textContent:r[2]||'\u2014'}),el('td',{textContent:(r[3]||'').slice(0,120)||'\u2014'}),
@@ -435,7 +435,7 @@
           var ct=el('table',{className:'adm-table'});
           ct.appendChild(el('thead',null,[el('tr',null,[el('th',{textContent:'When'}),el('th',{textContent:'Message'})])]));
           var cb=el('tbody');
-          chats.slice().sort(function(a,b){return new Date(b[0])-new Date(a[0])}).slice(0,30).forEach(function(r){
+          chats.slice().sort(function(a,b){return new Date(b[0]).getTime()-new Date(a[0]).getTime()}).slice(0,30).forEach(function(r){
             cb.appendChild(el('tr',null,[el('td',{textContent:fmtDateTime(r[0])}),el('td',{textContent:(r[2]||'').slice(0,250)||'\u2014'})]));
           });
           ct.appendChild(cb);cs.appendChild(ct);
@@ -451,7 +451,7 @@
           var mt=el('table',{className:'adm-table'});
           mt.appendChild(el('thead',null,[el('tr',null,[el('th',{textContent:'When'}),el('th',{textContent:'Prompt'}),el('th',{textContent:'Model'})])]));
           var mb=el('tbody');
-          masks.slice().sort(function(a,b){return new Date(b[0])-new Date(a[0])}).slice(0,30).forEach(function(r){
+          masks.slice().sort(function(a,b){return new Date(b[0]).getTime()-new Date(a[0]).getTime()}).slice(0,30).forEach(function(r){
             mb.appendChild(el('tr',null,[el('td',{textContent:fmtDateTime(r[0])}),el('td',{textContent:(r[1]||'').slice(0,150)||'\u2014'}),el('td',{textContent:r[2]||'\u2014'})]));
           });
           mt.appendChild(mb);ms.appendChild(mt);
@@ -513,7 +513,7 @@
     var q=(filter||'').toLowerCase();
     var rows=data.contactRows.slice();
     if(q)rows=rows.filter(function(r){return r.join(' ').toLowerCase().indexOf(q)!==-1});
-    rows.sort(function(a,b){return new Date(b[0])-new Date(a[0])});
+    rows.sort(function(a,b){return new Date(b[0]).getTime()-new Date(a[0]).getTime()});
     qs('#adm-contact-count').textContent=rows.length+' contact'+(rows.length!==1?'s':'');
 
     var wrap=qs('#adm-contacts-table');
@@ -558,7 +558,7 @@
         byEmail[em]={email:em,openedAt:r[0],ua:r[3]||''};
       }
     });
-    return Object.keys(byEmail).map(function(k){return byEmail[k]}).sort(function(a,b){return new Date(b.openedAt)-new Date(a.openedAt)});
+    return Object.keys(byEmail).map(function(k){return byEmail[k]}).sort(function(a,b){return new Date(b.openedAt).getTime()-new Date(a.openedAt).getTime()});
   }
 
   // ── Email Opens ──
@@ -601,7 +601,7 @@
     var q=(filter||'').toLowerCase();
     var rows=data.bugRows.slice();
     if(q)rows=rows.filter(function(r){return r.join(' ').toLowerCase().indexOf(q)!==-1});
-    rows.sort(function(a,b){return new Date(b[0])-new Date(a[0])});
+    rows.sort(function(a,b){return new Date(b[0]).getTime()-new Date(a[0]).getTime()});
     qs('#adm-bug-count').textContent=rows.length+' report'+(rows.length!==1?'s':'');
 
     var wrap=qs('#adm-bugs-table');

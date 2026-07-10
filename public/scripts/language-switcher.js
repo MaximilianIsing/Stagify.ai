@@ -35,14 +35,14 @@
   function init() {
     // The native <select> stays in the DOM (visually hidden) as the source of
     // truth so language-loader.js keeps working. This is purely the custom UI.
-    const select = document.getElementById("language-select");
+    const select = /** @type {HTMLSelectElement | null} */ (document.getElementById("language-select"));
     const root = document.querySelector("[data-lang-switch]");
     if (!select || !root) return;
 
-    const trigger = root.querySelector(".lang-switch__trigger");
-    const flagEl = root.querySelector(".lang-switch__flag");
+    const trigger = /** @type {HTMLElement | null} */ (root.querySelector(".lang-switch__trigger"));
+    const flagEl = /** @type {HTMLImageElement | null} */ (root.querySelector(".lang-switch__flag"));
     const labelEl = root.querySelector(".lang-switch__label");
-    const options = Array.from(root.querySelectorAll(".lang-switch__option"));
+    const options = /** @type {HTMLElement[]} */ (Array.from(root.querySelectorAll(".lang-switch__option")));
 
     const labelFor = (value) => {
       const opt = options.find((o) => o.dataset.value === value);
@@ -86,7 +86,7 @@
 
     function onKey(e) {
       const focusable = options;
-      const idx = focusable.indexOf(document.activeElement);
+      const idx = focusable.indexOf(/** @type {HTMLElement} */ (document.activeElement));
       if (e.key === "Escape") {
         close();
         trigger.focus();

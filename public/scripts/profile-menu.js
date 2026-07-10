@@ -88,7 +88,7 @@
     var tgl = document.querySelector('#auth-modal .auth-toggle');
     var mainsub = document.getElementById('auth-modal-sub');
     var title = document.getElementById('auth-modal-title');
-    var emailEl = document.getElementById('auth-email');
+    var emailEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-email'));
     var submitLabel = document.getElementById('auth-submit-label');
     if (!std || !frg) return;
     if (authModeRegister && authFlowVerify) {
@@ -302,7 +302,7 @@
   function resetAuthVerificationFlow() {
     authFlowVerify = false;
     authPendingEmail = '';
-    var codeEl = document.getElementById('auth-verify-code');
+    var codeEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-verify-code'));
     if (codeEl) codeEl.value = '';
     var verifyFb = document.getElementById('auth-verify-feedback');
     if (verifyFb) {
@@ -323,7 +323,7 @@
     var toggleLabel = document.getElementById('auth-toggle-label');
     var toggleBtn = document.getElementById('auth-mode-toggle');
     var confirmRow = document.getElementById('auth-password-confirm-row');
-    var confirmInput = document.getElementById('auth-password-confirm');
+    var confirmInput = /** @type {HTMLInputElement} */ (document.getElementById('auth-password-confirm'));
     var passInput = document.getElementById('auth-password');
     if (authModeRegister) {
       if (title) title.textContent = lang('auth.registerTitle', 'Create your free account');
@@ -423,11 +423,11 @@
         if (er) er.textContent = '';
       });
     }
-    var verifyResend = document.getElementById('auth-verify-resend');
+    var verifyResend = /** @type {HTMLButtonElement} */ (document.getElementById('auth-verify-resend'));
     if (verifyResend) {
       verifyResend.addEventListener('click', async function () {
         var fb = document.getElementById('auth-verify-feedback');
-        var emailEl = document.getElementById('auth-email');
+        var emailEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-email'));
         var email = authPendingEmail || (emailEl ? emailEl.value.trim() : '');
         if (fb) {
           fb.textContent = '';
@@ -471,11 +471,11 @@
         if (er) er.textContent = '';
       });
     }
-    var forgotSend = document.getElementById('auth-forgot-send');
+    var forgotSend = /** @type {HTMLButtonElement} */ (document.getElementById('auth-forgot-send'));
     if (forgotSend) {
       forgotSend.addEventListener('click', async function () {
         var fb = document.getElementById('auth-forgot-feedback');
-        var emailEl = document.getElementById('auth-email');
+        var emailEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-email'));
         var email = emailEl ? emailEl.value.trim() : '';
         if (fb) fb.textContent = '';
         if (!email) {
@@ -524,14 +524,14 @@
           return;
         }
         var errEl = document.getElementById('auth-error');
-        var emailEl = document.getElementById('auth-email');
-        var passEl = document.getElementById('auth-password');
-        var confirmEl = document.getElementById('auth-password-confirm');
+        var emailEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-email'));
+        var passEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-password'));
+        var confirmEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-password-confirm'));
         var email = emailEl ? emailEl.value.trim() : '';
         var password = passEl ? passEl.value : '';
         if (errEl) errEl.textContent = '';
         if (authModeRegister && authFlowVerify) {
-          var codeEl = document.getElementById('auth-verify-code');
+          var codeEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-verify-code'));
           var code = codeEl ? codeEl.value.trim() : '';
           if (!/^\d{6}$/.test(code)) {
             if (errEl) errEl.textContent = lang('auth.enterVerificationCode', 'Enter the 6-digit verification code from your email.');

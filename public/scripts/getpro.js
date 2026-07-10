@@ -3,7 +3,7 @@
         var TOKEN_KEY = 'stagifyAuthToken';
         var statusEl = document.getElementById('gp-status');
         var form = document.getElementById('gp-form');
-        var keyInput = document.getElementById('gp-key');
+        var keyInput = /** @type {HTMLInputElement} */ (document.getElementById('gp-key'));
         var links = document.getElementById('gp-links');
 
         function getToken() {

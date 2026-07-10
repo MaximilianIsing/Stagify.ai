@@ -1,0 +1,39 @@
+{
+  // Frontend type-CHECK config — the browser ES modules under public/scripts/.
+  // Same contract as the root tsconfig.json (checker-as-linter, emit nothing),
+  // but for the browser environment: DOM libs instead of Node types.
+  //
+  // This file holds ONLY compilerOptions and is never run directly (running
+  // `tsc -p tsconfig.frontend.json` reports "No inputs found" — that's expected).
+  // The file list is discovered — only the real ES modules, the same set ESLint
+  // lints — by scripts/typecheck-frontend.js, which `npm run typecheck` invokes.
+  // Keeping discovery in one place means the lint scope and the type-check scope
+  // can never drift apart.
+  //
+  // Like the backend, kept deliberately loose for the rollout (no strict /
+  // noImplicitAny). Every file here is genuinely checked — there are no
+  // @ts-nocheck opt-outs; tighten the flags once that has proven stable.
+  "compilerOptions": {
+    "checkJs": true,
+    "allowJs": true,
+    "noEmit": true,
+
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+
+    // The browser loads modules from the site root, so the studios lazy-import
+    // mask-core as `import('/scripts/mask-core.js')`. Map that root-absolute URL
+    // back to the file on disk so the checker resolves it (and gives it real
+    // types) instead of erroring TS2307.
+    "baseUrl": ".",
+    "paths": { "/scripts/*": ["./public/scripts/*"] },
+
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

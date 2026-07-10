@@ -4,7 +4,7 @@
         var form = document.getElementById('reset-form');
         var errEl = document.getElementById('reset-error');
         var okEl = document.getElementById('reset-success');
-        var submitBtn = document.getElementById('reset-submit');
+        var submitBtn = /** @type {HTMLButtonElement} */ (document.getElementById('reset-submit'));
         if (!token) {
           if (errEl) errEl.textContent = 'Invalid or missing reset link. Request a new one from the sign-in screen.';
           if (form) form.style.display = 'none';
@@ -12,8 +12,8 @@
         }
         form.addEventListener('submit', async function (e) {
           e.preventDefault();
-          var p1 = document.getElementById('reset-password').value;
-          var p2 = document.getElementById('reset-password-confirm').value;
+          var p1 = /** @type {HTMLInputElement} */ (document.getElementById('reset-password')).value;
+          var p2 = /** @type {HTMLInputElement} */ (document.getElementById('reset-password-confirm')).value;
           if (errEl) errEl.textContent = '';
           if (okEl) okEl.textContent = '';
           if (p1 !== p2) {

@@ -302,7 +302,8 @@ export function createDrawTools(deps) {
           return true;
         }
 
-        function stopDraw() {
+        /** @param {PointerEvent} [_e] Ignored; lets pointerup/pointercancel forward their event. */
+        function stopDraw(_e) {
           if (!drawing) return;
           drawing = false;
           lastX = null;

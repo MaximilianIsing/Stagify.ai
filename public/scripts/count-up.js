@@ -89,7 +89,7 @@
     const opts = options || {};
     const isRefresh = opts.refresh === true;
     const wrap = document.querySelector(".hero-stats");
-    const els = Array.from(document.querySelectorAll(".stat-pill-number[data-stat]"));
+    const els = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(".stat-pill-number[data-stat]")));
     if (!els.length) return;
 
     const reduceMotion =
@@ -126,7 +126,7 @@
 
   function revealWithoutCounts() {
     const wrap = document.querySelector(".hero-stats");
-    const els = Array.from(document.querySelectorAll(".stat-pill-number[data-stat]"));
+    const els = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll(".stat-pill-number[data-stat]")));
     els.forEach((el) => {
       el.textContent = "—";
       el.style.minWidth = "1ch";

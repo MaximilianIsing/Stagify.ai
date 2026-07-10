@@ -252,7 +252,7 @@ export function createFileIntake(deps) {
         const isTypingInOtherInput = activeElement &&
                                      activeElement.tagName === 'INPUT' &&
                                      activeElement !== chatInput &&
-                                     activeElement.type !== 'file';
+                                     /** @type {HTMLInputElement} */ (activeElement).type !== 'file';
 
         // Don't intercept paste if user is typing in another input field
         if (isTypingInOtherInput) return;

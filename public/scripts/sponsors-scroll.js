@@ -33,7 +33,7 @@ function initSponsorsScroll() {
   // Width of the first (original) half of the items including gaps — the offset
   // at which we wrap back to 0.
   function computeResetWidth() {
-    const items = track.querySelectorAll('.sponsor-item');
+    const items = /** @type {NodeListOf<HTMLElement>} */ (track.querySelectorAll('.sponsor-item'));
     const halfCount = items.length / 2;
     let width = 0;
     for (let i = 0; i < halfCount; i++) width += items[i].offsetWidth;

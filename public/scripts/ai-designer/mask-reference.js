@@ -9,7 +9,7 @@ export function createMaskReference({ lang, showToast }) {
 
   function clearMaskReference() {
     maskReferenceDataUrl = null;
-    const refFileInput = document.getElementById('mask-editor-ref-file');
+    const refFileInput = /** @type {HTMLInputElement} */ (document.getElementById('mask-editor-ref-file'));
     const refPreview = document.getElementById('mask-editor-ref-preview');
     const refImg = document.getElementById('mask-editor-ref-img');
     const refAddBtn = document.getElementById('mask-editor-ref-add');
@@ -22,7 +22,7 @@ export function createMaskReference({ lang, showToast }) {
   function setMaskReference(dataUrl) {
     maskReferenceDataUrl = dataUrl;
     const refPreview = document.getElementById('mask-editor-ref-preview');
-    const refImg = document.getElementById('mask-editor-ref-img');
+    const refImg = /** @type {HTMLImageElement} */ (document.getElementById('mask-editor-ref-img'));
     const refAddBtn = document.getElementById('mask-editor-ref-add');
     if (refImg) refImg.src = dataUrl;
     if (refPreview) refPreview.classList.remove('hidden');
@@ -51,7 +51,7 @@ export function createMaskReference({ lang, showToast }) {
           c.getContext('2d').drawImage(img, 0, 0, w, h);
           try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
         };
-        img.src = reader.result;
+        img.src = /** @type {string} */ (reader.result);
       };
       reader.readAsDataURL(file);
     });

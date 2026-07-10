@@ -4,7 +4,7 @@
 // the former inline block occupied — right after the lazy <link>s — so the flip
 // happens as early as before, minus the 'unsafe-inline' the inline version needed.
 (function () {
-  var links = document.querySelectorAll('link[data-lazy-css]');
+  var links = /** @type {NodeListOf<HTMLLinkElement>} */ (document.querySelectorAll('link[data-lazy-css]'));
   for (var i = 0; i < links.length; i++) {
     (function (link) {
       if (link.sheet) { link.media = 'all'; }

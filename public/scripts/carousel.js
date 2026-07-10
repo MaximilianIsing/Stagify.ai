@@ -6,6 +6,7 @@
 class Carousel {
   constructor(container, options = {}) {
     this.container = container;
+    /** @type {{ baseWidth: number, autoplay: boolean, autoplayDelay: number, pauseOnHover: boolean, loop: boolean, round: boolean, dragBuffer: number, velocityThreshold: number, gap: number, items?: Array<{ key: string, title: string, image?: string }> }} */
     this.options = {
       baseWidth: 300,
       autoplay: true,
@@ -236,7 +237,7 @@ class Carousel {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const container = document.querySelector('.carousel-container');
+  const container = /** @type {HTMLElement} */ (document.querySelector('.carousel-container'));
   if (!container) return;
 
   const items = [

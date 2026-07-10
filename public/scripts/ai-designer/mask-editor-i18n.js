@@ -42,7 +42,7 @@ export function updateMaskEditorTranslations() {
   }
 
   // Update prompt placeholder
-  const promptInput = document.getElementById('mask-editor-prompt');
+  const promptInput = /** @type {HTMLInputElement} */ (document.getElementById('mask-editor-prompt'));
   if (promptInput) {
     promptInput.placeholder = getText('pdf.maskEditor.promptPlaceholder');
   }
@@ -82,7 +82,7 @@ export function updateMaskEditorTranslations() {
   if (refAdd) refAdd.textContent = getText('pdf.maskEditor.referenceAdd');
   const refHint = document.querySelector('.mask-editor-ref-hint');
   if (refHint) refHint.textContent = getText('pdf.maskEditor.referenceHint');
-  const refImg = document.getElementById('mask-editor-ref-img');
+  const refImg = /** @type {HTMLImageElement} */ (document.getElementById('mask-editor-ref-img'));
   if (refImg) refImg.alt = getText('pdf.maskEditor.referenceAlt');
   const refRemove = document.getElementById('mask-editor-ref-remove');
   if (refRemove) refRemove.setAttribute('aria-label', getText('pdf.maskEditor.referenceRemove'));
