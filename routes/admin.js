@@ -19,7 +19,7 @@ import { logger } from '../lib/logger.js';
  *   setSensitiveHeaders: (res: import('express').Response) => void,
  *   exportAllMemories: Function,
  *   resetAllMemories: Function,
- *   getDataLogDir: Function,
+ *   getDataLogDir: ReturnType<typeof import('../lib/services/logging.js').createLogging>['getDataLogDir'],
  *   getHostedImagesDir: Function,
  *   readHostedImagesManifest: Function,
  *   writeHostedImagesManifest: Function,

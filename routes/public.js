@@ -28,9 +28,9 @@ import { logger } from '../lib/logger.js';
  *   logEmailOpenToFile: Function,
  *   isConfirmedEmailClientOpen: Function,
  *   healthHandler: import('express').RequestHandler,
- *   getPromptCount: Function,
- *   getContactCount: Function,
- *   incContactCount: Function,
+ *   getPromptCount: typeof import('../lib/data/counters.js').getPromptCount,
+ *   getContactCount: typeof import('../lib/data/counters.js').getContactCount,
+ *   incContactCount: typeof import('../lib/data/counters.js').incContactCount,
  *   __dirname: string,
  * }} deps - Stores, injected email client, the email rate-limit + health-check
  *   middleware, debug/stat flags, and hosted-image / logging / counter helpers.

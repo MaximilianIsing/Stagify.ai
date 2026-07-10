@@ -20,7 +20,7 @@ import { logger } from '../lib/logger.js';
  *   enterprisePriceId: string,
  *   authStore: any,
  *   enterpriseStore: any,
- *   handleStripeEvent: Function,
+ *   handleStripeEvent: typeof import('../lib/services/stripe-webhooks.js').handleStripeEvent,
  *   getAuthUserFromRequest: (req: import('express').Request) => any,
  * }} deps - Injected Stripe client + config strings, the auth/enterprise stores,
  *   the webhook event handler, and the session-user resolver.
