@@ -4,8 +4,8 @@ import createChatPipeline from '../lib/chat/chat-pipeline.js';
 import createUploadPrep from '../lib/chat/chat-upload-prep.js';
 import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChatUploadSystemInstruction, getStagifyDateContext } from '../lib/staging/prompts.js';
 import { deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext } from '../lib/chat/chat-history.js';
-import { parseDesignerRoutingCompletion, aiResponseDefersImageAction, chatWillProcessSlowImages, chatIntentType } from '../lib/chat/chat-routing.js';
-import { wantsStreamedChatResponse, initChatSse, writeChatSseEvent, finishStreamedChatResponse } from '../lib/chat/chat-sse.js';
+import { parseDesignerRoutingCompletion } from '../lib/chat/chat-routing.js';
+import { writeChatSseEvent } from '../lib/chat/chat-sse.js';
 import { sendError } from '../lib/http/http-helpers.js';
 import createWelcomeMessageHandler from '../lib/chat/welcome-message-handler.js';
 import createChatRequestPrep from '../lib/chat/chat-request-prep.js';
@@ -53,11 +53,12 @@ const CONTEXT_LIMIT_MESSAGE =
  */
 export default function createChatRouter(deps) {
   // Direct deps used by the handlers. The post-routing dispatch deps
-  // (staging/generate/CAD/memory helpers, image resolution, etc.) are consumed
-  // by createChatPipeline(deps) below rather than referenced here.
-  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier, logChatToFile } = deps;
+  // (staging/generate/CAD/memory helpers, image resolution, CSV+debug logging,
+  // SSE streaming, etc.) are consumed by createChatPipeline(deps) below rather
+  // than referenced here.
+  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier } = deps;
   const router = createAsyncRouter();
-  const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse } = createChatPipeline(deps);
+  const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse, applyPostRoutingSuppression, logRoutingOutcome, beginChatStream, sendChatResponse } = createChatPipeline(deps);
   const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting, logUploadDedupDiagnostics } = createUploadPrep(deps);
   const { handleWelcomeMessage } = createWelcomeMessageHandler(deps);
   const { logDedupDiagnostics, detectHistoryImage, applyMessageTag, buildChatMessages, logChatPayload } = createChatRequestPrep(deps);
@@ -170,36 +171,17 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     let generateRequestFromAI = aiResponseJson.generate || null;
     let cadRequestFromAI = aiResponseJson.cad || null;
 
-    if (aiResponseDefersImageAction(text)) {
-      if (DEBUG_MODE) {
-        logger.debug('[AI Designer] Suppressed staging/generate/cad: response asks clarifying questions');
-      }
-      stagingRequestFromAI = null;
-      generateRequestFromAI = null;
-      cadRequestFromAI = null;
-    }
+    ({ stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI } = applyPostRoutingSuppression({
+      text,
+      userMessageText: lastUserMessageText,
+      history: messages,
+      stagingRequestFromAI,
+      generateRequestFromAI,
+      cadRequestFromAI,
+    }));
 
-    if (userWantsToAddFurnitureToRoom(lastUserMessageText) && findMostRecentStagedImageIndex(messages) !== null) {
-      generateRequestFromAI = null;
-    }
-    
-    // Log chat to CSV file
-    const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
-    const userAgent = req.get('user-agent') || 'unknown';
-    logChatToFile(userId, lastUserMessageText, text, [], ipAddress, userAgent);
-    
-    // Debug logging
-    if (DEBUG_MODE) {
-      logger.debug('=== AI CHAT DEBUG ===');
-      logger.debug('User ID:', userId);
-      logger.debug('User message:', lastUserMessageText);
-      logger.debug('AI response:', text);
-      logger.debug('Memories loaded:', memories.length);
-      if (memories.length > 0) {
-        logger.debug('Memories:', memories.map(m => m.content).join(', '));
-      }
-      logger.debug('====================');
-    }
+    // Log chat to CSV + DEBUG dump.
+    logRoutingOutcome({ req, userId, userMessageText: lastUserMessageText, text, files: [], memories, label: 'CHAT' });
 
     // Apply the AI's memory stores/forgets.
     const memoryResult = applyMemoryActions({
@@ -211,19 +193,10 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     memories = memoryResult.memories;
     const memoryActions = memoryResult.memoryActions;
 
-    const streamMode =
-      wantsStreamedChatResponse(req) &&
-      chatWillProcessSlowImages(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI);
-    if (streamMode) {
-      initChatSse(res);
-      writeChatSseEvent(res, 'status', {
-        type: chatIntentType(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI),
-      });
-      writeChatSseEvent(res, 'message', {
-        response: text,
-        memories: memoryActions,
-      });
-    }
+    const streamMode = beginChatStream({
+      req, res, text, memoryActions,
+      stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI,
+    });
 
     // Image generation runs before staging in this endpoint (original order).
     const generateOut = await runGenerateRequests({ generateRequestFromAI, req, selectedModel });
@@ -319,11 +292,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
       cadResults,
     });
 
-    if (streamMode) {
-      finishStreamedChatResponse(res, response);
-    } else {
-      res.json(response);
-    }
+    sendChatResponse({ res, response, streamMode });
   } catch (error) {
     logger.error('Error in chat:', error);
     if (res.headersSent) {
@@ -452,37 +421,17 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     const recallRequestFromAI = routing.recallRequestFromAI;
     let generateRequestFromAI = routing.generateRequestFromAI;
     let cadRequestFromAI = routing.cadRequestFromAI;
-    if (aiResponseDefersImageAction(text)) {
-      if (DEBUG_MODE) {
-        logger.debug('[AI Designer] Suppressed staging/generate/cad: response asks clarifying questions');
-      }
-      stagingRequestFromAI = null;
-      generateRequestFromAI = null;
-      cadRequestFromAI = null;
-    }
+    ({ stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI } = applyPostRoutingSuppression({
+      text,
+      userMessageText: message,
+      history: conversationHistory,
+      stagingRequestFromAI,
+      generateRequestFromAI,
+      cadRequestFromAI,
+    }));
 
-    if (userWantsToAddFurnitureToRoom(message) && findMostRecentStagedImageIndex(conversationHistory) !== null) {
-      generateRequestFromAI = null;
-    }
-    
-    // Log chat to CSV file
-    const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
-    const userAgent = req.get('user-agent') || 'unknown';
-    logChatToFile(userId, message, text, files, ipAddress, userAgent);
-    
-    // Debug logging
-    if (DEBUG_MODE) {
-      logger.debug('=== AI CHAT-UPLOAD DEBUG ===');
-      logger.debug('User ID:', userId);
-      logger.debug('User message:', message);
-      logger.debug('Files:', fileInfo.map(f => `${f.name} (${f.type})`).join(', '));
-      logger.debug('AI response:', text);
-      logger.debug('Memories loaded:', memories.length);
-      if (memories.length > 0) {
-        logger.debug('Memories:', memories.map(m => m.content).join(', '));
-      }
-      logger.debug('============================');
-    }
+    // Log chat to CSV + DEBUG dump.
+    logRoutingOutcome({ req, userId, userMessageText: message, text, files, memories, label: 'CHAT-UPLOAD', fileInfo });
 
     // Apply the AI's memory stores/forgets.
     const memoryResult = applyMemoryActions({
@@ -512,19 +461,10 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
       };
     }
 
-    const streamModeUpload =
-      wantsStreamedChatResponse(req) &&
-      chatWillProcessSlowImages(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI);
-    if (streamModeUpload) {
-      initChatSse(res);
-      writeChatSseEvent(res, 'status', {
-        type: chatIntentType(stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI),
-      });
-      writeChatSseEvent(res, 'message', {
-        response: text,
-        memories: memoryActions,
-      });
-    }
+    const streamModeUpload = beginChatStream({
+      req, res, text, memoryActions,
+      stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI,
+    });
 
     // Staging runs before generation in this endpoint (original order).
     const stagingOut = await runStagingRequests({
@@ -609,11 +549,7 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
       imageAnnotations,
     });
 
-    if (streamModeUpload) {
-      finishStreamedChatResponse(res, response);
-    } else {
-      res.json(response);
-    }
+    sendChatResponse({ res, response, streamMode: streamModeUpload });
   } catch (error) {
     logger.error('[Chat Upload] Fatal error in chat-upload endpoint:', error);
     logger.error('[Chat Upload] Error stack:', error.stack);
