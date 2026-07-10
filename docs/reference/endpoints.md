@@ -104,15 +104,6 @@ Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagi
 
 ---
 
-## PDF (AI Designer proxy)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/pdf-health` | Proxies to external `PDF_PROCESSING_SERVER` `GET /health`, returns that JSON or `500` on failure. |
-| `POST` | `/api/process-pdf` | **Auth:** **`requireProAccount`** (Stagify+). **Body:** `multipart/form-data` with file field `pdf`. **Query:** e.g. `skip`, `concurrency`, `dpi`, `continue`, `merge`, `filename`. Proxies to the external PDF pipeline and streams the result (often a PDF download). |
-
----
-
 ## AI Designer (chat, welcome, files)
 
 | Method | Path | Description |

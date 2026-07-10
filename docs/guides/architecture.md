@@ -148,7 +148,6 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `virtual-staging-handler.js` | The `/api/process-image` + `/api/stage-by-endpoint-key` multipart handler (`handleVirtualStagingMultipart`), lifted out of `server.js`: free-tier cap, two-stage furniture removal, per-variation staging, enterprise metering. |
 | `mask-edit.js` | The `/api/mask-edit` request pipeline (locator overlay, reference letterboxing, quality-retry review), lifted out of `routes/staging.js`. |
 | `segment.js` | The `/api/segment` magic-wand handler (Gemini box detection → normalized `box_2d`), lifted out of `routes/staging.js`. |
-| `pdf-proxy.js` | The `/api/process-pdf` handler that proxies uploads to the external PDF server, lifted out of `routes/staging.js`. |
 | `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D renders (AI Designer), via Gemini. |
 
 **`lib/chat/`** — AI Designer chat orchestration
@@ -203,7 +202,7 @@ Each is a factory returning a router (built with `createAsyncRouter()`), mounted
 | `public.js` | SEO files (`robots.txt`, `sitemap.xml`), landing/status pages, `/health`, hero-stat counts, contact/bug logging, `/api/send-email`, hosted-image serving (`/i/:id`), email-open pixel. |
 | `auth.js` | `register` / `verify` / `login` / `logout` / `me` / `forgot-password` / `reset-password` / `google`, plus the staging-banner controls. |
 | `admin.js` | `endpoint_key`-gated log/data exports and hosted-image management (see [`endpoints.md`](../reference/endpoints.md)). |
-| `staging.js` | Core AI: `process-image`, `mask-edit`, `segment`, `process-pdf`, `validate-image`, `stage-by-endpoint-key`. |
+| `staging.js` | Core AI: `process-image`, `mask-edit`, `segment`, `validate-image`, `stage-by-endpoint-key`. |
 | `chat.js` | AI Designer chat: `/api/chat`, `/api/chat-upload`, `welcome-message`. |
 | `billing.js` | Stripe checkout, customer portal, `stripe-webhook`, enterprise checkout. |
 

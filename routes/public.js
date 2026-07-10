@@ -6,7 +6,7 @@ import fs from 'fs';
 import { logger } from '../lib/logger.js';
 
 export default function createPublicRouter(deps) {
-  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, PDF_PROCESSING_SERVER, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
+  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
   const router = createAsyncRouter();
 
 router.get('/robots.txt', (req, res) => {
@@ -227,21 +227,6 @@ router.get('/api/contact-count', (req, res) => {
     userCount,
     usersServed: getContactCount() + userCount,
   });
-});
-
-router.get('/api/pdf-health', async (req, res) => {
-  try {
-    const response = await fetch(`${PDF_PROCESSING_SERVER}/health`);
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    logger.error('Error checking PDF server health:', error);
-    res.status(500).json({ 
-      status: 'error', 
-      message: 'Failed to check PDF server health',
-      error: error.message 
-    });
-  }
 });
 
 router.post('/api/bug-report', emailLimiter, async (req, res) => {

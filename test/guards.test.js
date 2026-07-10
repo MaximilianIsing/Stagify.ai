@@ -91,5 +91,4 @@ test('Pro-only routes require a session (401)', async () => {
   assert.equal((await get('/api/welcome-message')).status, 401, '/api/welcome-message');
   assert.equal((await postJson('/api/chat', { messages: [] })).status, 401, '/api/chat');
   assert.equal((await postJson('/api/mask-edit', {})).status, 401, '/api/mask-edit');
-  assert.equal((await postJson('/api/process-pdf', {})).status, 401, '/api/process-pdf');
 });

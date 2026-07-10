@@ -64,7 +64,6 @@ The body parsers are the cheapest DoS surface, so they're **scoped**, not global
   RAM, and `.fields()`/`.array()` multiply the cap by the file count, so the caps are
   kept tight:
   - staging (`process-image`, `stage-by-endpoint-key`): **25 MB**/file (×6 max)
-  - `process-pdf`: **25 MB**
   - `chat-upload`: **20 MB**/file (×5) + 25 MB history field
   - `host-image`: **25 MB**
   - Over-cap uploads return a clean **413** (the multer error handler sits *after* the

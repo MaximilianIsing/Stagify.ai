@@ -27,9 +27,8 @@ test('over-cap uploads are rejected with a clean 413', async (t) => {
   const srv = await startServer();
   t.after(() => srv.close());
 
-  // Each cap: process-image/pdf 25MB, chat-upload 20MB. A file just over must 413.
+  // Each cap: process-image 25MB, chat-upload 20MB. A file just over must 413.
   assert.equal(await postForm(srv.baseUrl, '/api/process-image', fileForm('image', 26 * MB, 'image/png', 'b.png')), 413);
-  assert.equal(await postForm(srv.baseUrl, '/api/process-pdf', fileForm('pdf', 26 * MB, 'application/pdf', 'b.pdf')), 413);
   assert.equal(await postForm(srv.baseUrl, '/api/chat-upload', fileForm('files', 21 * MB, 'image/png', 'b.png')), 413);
 });
 
