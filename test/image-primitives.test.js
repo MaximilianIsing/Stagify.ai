@@ -15,11 +15,16 @@ import {
   normalizeMaskOutputToRoom,
   downscaleImageForGPT,
   compositeForReview,
+  orientedDimensions,
 } from '../lib/image/image-primitives.js';
 
 // A solid-color PNG of the given size.
 const png = (w, h, rgb = { r: 10, g: 120, b: 200 }) =>
   sharp({ create: { width: w, height: h, channels: 3, background: rgb } }).png().toBuffer();
+
+// A solid-color JPEG of the given size.
+const jpg = (w, h, rgb = { r: 10, g: 120, b: 200 }) =>
+  sharp({ create: { width: w, height: h, channels: 3, background: rgb } }).jpeg().toBuffer();
 
 // A black PNG with a white filled rectangle [x0,x1) × [y0,y1).
 async function maskWithRect(W, H, x0, y0, x1, y1) {
@@ -47,16 +52,51 @@ async function pixels(buf) {
 
 const meta = (buf) => sharp(buf).metadata();
 
-test('downscaleImage: within 1920x1080 returns the same buffer; larger is fit-resized to JPEG', async () => {
-  const small = await png(100, 100);
-  assert.equal(await downscaleImage(small), small, 'no re-encode when already within limits (identity)');
+test('downscaleImage: an in-bounds upright JPEG is returned untouched (identity)', async () => {
+  const smallJpeg = await jpg(100, 100);
+  assert.equal(await downscaleImage(smallJpeg), smallJpeg, 'upright in-bounds JPEG → identity, no re-encode');
+});
 
+test('downscaleImage: an in-bounds non-JPEG is normalized to JPEG so callers can label it image/jpeg', async () => {
+  // A PNG that fits the box used to pass through unchanged but was still labeled
+  // image/jpeg by every caller — a MIME/content mismatch. It is now re-encoded.
+  const smallPng = await png(100, 100);
+  const out = await downscaleImage(smallPng);
+  const m = await meta(out);
+  assert.equal(m.format, 'jpeg', 'in-bounds PNG is normalized to JPEG');
+  assert.equal(m.width, 100, 'dimensions preserved (no downscale needed)');
+  assert.equal(m.height, 100);
+});
+
+test('downscaleImage: an oversized image is fit-resized to JPEG within 1920x1080', async () => {
   const big = await png(2400, 1350); // 0.8 scale → 1920x1080
   const out = await downscaleImage(big);
   const m = await meta(out);
   assert.equal(m.width, 1920);
   assert.equal(m.height, 1080);
   assert.equal(m.format, 'jpeg', 'downscaled output is re-encoded to JPEG');
+});
+
+test('downscaleImage: bakes in EXIF orientation (5–8 swap W/H) and clears the tag', async () => {
+  // A 120×60 image tagged orientation 6 (rotate 90° CW) displays as 60×120 upright.
+  const rotated = await sharp({ create: { width: 120, height: 60, channels: 3, background: { r: 10, g: 120, b: 200 } } })
+    .withMetadata({ orientation: 6 })
+    .jpeg()
+    .toBuffer();
+  const out = await downscaleImage(rotated);
+  const m = await meta(out);
+  assert.equal(m.width, 60, 'orientation applied → visual width');
+  assert.equal(m.height, 120, 'orientation applied → visual height');
+  assert.ok(!m.orientation || m.orientation === 1, 'EXIF orientation is baked in and reset to upright');
+});
+
+test('orientedDimensions: swaps W/H for EXIF orientations 5–8, passes through otherwise', () => {
+  assert.deepEqual(orientedDimensions({ width: 120, height: 60, orientation: 1 }), { width: 120, height: 60 });
+  assert.deepEqual(orientedDimensions({ width: 120, height: 60 }), { width: 120, height: 60 }, 'missing orientation → treated as upright');
+  assert.deepEqual(orientedDimensions({ width: 120, height: 60, orientation: 6 }), { width: 60, height: 120 }, 'orientation 6 swaps');
+  assert.deepEqual(orientedDimensions({ width: 120, height: 60, orientation: 8 }), { width: 60, height: 120 }, 'orientation 8 swaps');
+  assert.equal(orientedDimensions(null), null);
+  assert.equal(orientedDimensions({ width: 0, height: 0 }), null, 'zero dims → null');
 });
 
 test('enforceAspectRatio: no-op under tolerance, stretch-correct within cap, leave-as-is past cap', async () => {
