@@ -108,8 +108,8 @@ prevent that information leak:
 
 ## File-upload safety
 
-- Staging/PDF/host uploads use **type `fileFilter`s** (images → jpeg/png/webp; PDF →
-  pdf). **`host-image` deliberately rejects SVG** — an SVG can carry script and would
+- Staging and host uploads use **type `fileFilter`s** (images → jpeg/png/webp).
+  **`host-image` deliberately rejects SVG** — an SVG can carry script and would
   execute on our own origin.
 - `chat-upload` intentionally accepts **all** types (the AI handles unsupported ones) —
   a known trade-off; it's still size-capped at 20 MB/file.

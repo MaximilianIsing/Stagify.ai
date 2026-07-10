@@ -119,10 +119,12 @@ config always wins.
 ## Running the app
 
 ```bash
-npm start        # node server.js       → http://localhost:3000
-npm run dev      # nodemon server.js    → auto-restart on change
-npm test         # node --test          → unit/integration suite (gates deploy)
-npm run test:e2e # playwright test       → browser smokes (e2e/, real Chromium)
+npm start         # node server.js       → http://localhost:3000
+npm run dev       # nodemon server.js    → auto-restart on change
+npm test          # typecheck + node --test → unit/integration suite (gates deploy)
+npm run typecheck # tsc --noEmit (checkJs) → backend + frontend type-check, no build
+npm run test:e2e  # playwright test       → browser smokes (e2e/, real Chromium)
+npm run lint      # eslint . --max-warnings=0
 ```
 
 `server.js` serves the static site (`/`, `/index.html`, etc.) and the JSON API from
@@ -247,12 +249,16 @@ rather than crashing the server.
 ## Testing
 
 ```bash
-npm test         # unit/integration — node --test over test/**/*.test.js (gates deploy)
+npm test         # typecheck (tsc --noEmit) then node --test over test/**/*.test.js (gates deploy)
 npm run test:e2e # end-to-end — Playwright browser smokes under e2e/
 ```
 
-Two suites (full detail in [`guides/testing.md`](guides/testing.md)):
+Full detail in [`guides/testing.md`](guides/testing.md):
 
+- **Type-check** — `npm test` first runs `npm run typecheck`: `tsc --noEmit` over the
+  backend plus a frontend checkJs pass. The whole codebase is type-checked as plain JS +
+  JSDoc (`checkJs`, **no build step**, **zero `@ts-nocheck`**); a type error blocks the
+  deploy like a red test.
 - **Unit / integration** — the built-in Node test runner over `test/**/*.test.js`, with
   shared setup under `test/helpers/`. Fast, hermetic, no real keys or paid API calls.
   `route-inventory.test.js` boots the server and asserts every critical route is still
@@ -261,10 +267,10 @@ Two suites (full detail in [`guides/testing.md`](guides/testing.md)):
   studios in a real Chromium with every `/api/*` call mocked (no AI, no cost). Covers the
   AI Designer and Masking Studio happy paths, their error paths, and session resume.
 
-> **The unit suite gates deployment** — `render.yaml`'s build runs `sh scripts/build.sh`
-> → `npm test`, so a failing unit test blocks the Render deploy. The Playwright e2e job runs
-> in GitHub CI but is kept out of the deploy gate (browser flake must never wedge a release).
-> Keep both green.
+> **`npm test` gates deployment** — `render.yaml`'s build runs `sh scripts/build.sh`
+> → `npm test`, so a type error **or** a failing unit test blocks the Render deploy. The
+> Playwright e2e job runs in GitHub CI but is kept out of the deploy gate (browser flake
+> must never wedge a release). Keep both green.
 
 ## Deployment
 

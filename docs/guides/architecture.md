@@ -114,7 +114,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `http-helpers.js` | Small pure helpers: `sendError()` (the standard JSON error shape), `setSensitiveHeaders()`, client-IP + user-identifier helpers. |
 | `http-guards.js` | The `endpoint_key` guards (`protectLogs`, `stagingEndpointKeyGuard`) and the `/health` handler. |
 | `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN`). |
-| `uploads.js` | The multer upload configs (staging / PDF / chat / hosted-image). |
+| `uploads.js` | The multer upload configs (staging / chat / hosted-image). |
 | `app-middleware.js` | The base HTTP middleware, lifted out of `server.js`. `applyEdgeMiddleware(app)` (helmet/CSP, CORS allow-list, compression — mounted **before** the billing router) and `applyBodyAndStatic(app)` (JSON body parsing + its error handler, `express.static` — mounted **after**, so Stripe's webhook still sees the raw body). |
 
 **`lib/image/`** — image processing
@@ -275,8 +275,10 @@ between.
 - **No JS minification or tree-shaking.** Files ship at authored size (gzip/brotli
   offsets most of the difference). `styles.css` is hand-minified for the same reason —
   edit it carefully.
-- **Browser-native only.** No TypeScript, no JSX, and no npm frontend package unless it
-  is vendored into `public/` by hand.
+- **Browser-native only.** No TypeScript *source*, no JSX, and no npm frontend package
+  unless it is vendored into `public/` by hand. (The `.js` is still statically
+  **type-checked** via `checkJs` + JSDoc — but as a linter that emits nothing, so it
+  stays a check, not a build step. See [`testing.md`](testing.md#type-checking).)
 - **More requests per page** — mitigated by HTTP/2 + caching, not eliminated.
 
 > **When to reopen this — and only then:** the frontend takes on a real dependency graph
@@ -296,6 +298,10 @@ between.
   `server.js` is a lint error). `lib/services/logging.js` is a separate thing — the CSV
   business-event writer, not a stdout logger.
 - **ESM, no `__dirname`.** Derive paths from `import.meta.url`.
+- **Everything is type-checked (`checkJs` + JSDoc).** Backend and frontend both run under
+  `tsc --noEmit` inside `npm test`, with **zero `@ts-nocheck`** — a type error blocks the
+  deploy. Add JSDoc types to new code; don't reach for a `@ts-nocheck` escape hatch. See
+  [`testing.md`](testing.md#type-checking).
 - **No frontend build — on purpose.** Write browser-native HTML/CSS/ESM; don't reach
   for a bundler, transpiler, or npm frontend package. The reasoning and the (narrow)
   conditions that would reopen it are in [Decision: no frontend build step](#decision-no-frontend-build-step).

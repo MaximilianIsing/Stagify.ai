@@ -9,7 +9,8 @@ Two suites, deliberately kept separate:
   (see [End-to-end (browser) tests](#end-to-end-browser-tests) below).
 
 ```bash
-npm test         # node --test "test/**/*.test.js"   — unit/integration (gates deploy)
+npm test         # npm run typecheck, then node --test "test/**/*.test.js"  (both gate deploy)
+npm run typecheck # tsc --noEmit (backend) + scripts/typecheck-frontend.js (frontend) — see Type-checking below
 npm run test:e2e # playwright test                   — browser smokes of the two studios
 npm run lint     # eslint . --max-warnings=0  (backend + frontend ES modules — see Linting below)
 ```
@@ -17,7 +18,10 @@ npm run lint     # eslint . --max-warnings=0  (backend + frontend ES modules —
 > **Tests gate deployment.** `render.yaml`'s build command is `sh scripts/build.sh`,
 > which runs `npm install` then `npm test`, so a failing test **blocks the Render
 > deploy**. Keep the suite green — a red test is a stuck release, not just a warning.
-> (Lint isn't part of the Render build, but it **is** an enforced, blocking CI check — see below.)
+> Note `npm test` runs **`npm run typecheck` first** (`tsc --noEmit` + the frontend
+> checkJs pass), so a *type* error blocks the deploy exactly like a failing test does —
+> see [Type-checking](#type-checking). (Lint isn't part of the Render build, but it **is**
+> an enforced, blocking CI check — see below.)
 
 ## Philosophy
 
@@ -131,6 +135,36 @@ What's covered today (all green — 8 tests across 5 specs):
 (never hit a real provider), and assert on user-visible DOM. Reuse the room-photo and
 tiny-PNG fixtures from `e2e/fixtures.js`.
 
+## Type-checking
+
+```bash
+npm run typecheck   # tsc --noEmit (backend) && node scripts/typecheck-frontend.js (frontend)
+```
+
+The whole codebase is **type-checked as plain JS + JSDoc** (`checkJs`), with **no build
+step** — `tsc` runs purely as a linter (`noEmit`, compiles nothing; `node server.js`
+still runs the untouched `.js`). `npm test` runs this **before** the Node test runner, so
+a type error **blocks the Render deploy** just like a red test. There are **zero
+`@ts-nocheck` opt-outs** — every in-scope file is genuinely checked, and a new file is
+checked from day one.
+
+Two scopes, one per environment (both deliberately loose for now — `strict: false`,
+`noImplicitAny: false` — to be tightened once stable):
+
+- **Backend** — [`tsconfig.json`](../../tsconfig.json), Node types. Covers `server.js`,
+  `instrument.js`, `load-env.js`, `lib/**`, `routes/**`, plus the shared ambient typedefs
+  in [`lib/types/*.d.ts`](../../lib/types/). Run directly as `tsc --noEmit`.
+- **Frontend** — [`tsconfig.frontend.json`](../../tsconfig.frontend.json), DOM libs +
+  [`public/scripts/globals.d.ts`](../../public/scripts/globals.d.ts) (ambient `Window`
+  augmentation). Its file list can't be a static glob (ESM-ness is content-based, not
+  path-based), so [`scripts/typecheck-frontend.js`](../../scripts/typecheck-frontend.js)
+  discovers the ES modules with the **same** collector ESLint uses
+  ([`scripts/collect-esm-frontend.js`](../../scripts/collect-esm-frontend.js)) and hands
+  them to `tsc` via a throwaway temp config. **Lint scope and type-check scope are
+  therefore identical** — every file we lint we also type-check, and vice-versa. Classic
+  shared-global scripts and `vendor/*.min.js` bundles have no `import`/`export`, so they
+  fall out of both.
+
 ## Linting
 
 ```bash
@@ -164,8 +198,9 @@ Two independent pipelines run on the default branch:
 
 - **GitHub Actions** ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)) — on
   every push and PR to `main`, in **two parallel jobs**:
-  - `test` — `npm ci`, then `npm test`, then `npm run lint`. Both blocking: a failing unit
-    test, or any lint warning/error (`--max-warnings=0`), fails the build.
+  - `test` — `npm ci`, then `npm test` (which type-checks **then** runs the unit suite),
+    then `npm run lint`. All blocking: a type error, a failing unit test, or any lint
+    warning/error (`--max-warnings=0`) fails the build.
   - `e2e` — `npm ci`, installs Chromium (`npx playwright install --with-deps chromium`),
     then `npm run test:e2e`. Isolated in its own job so the heavier, occasionally-flaky
     browser run doesn't slow the fast unit gate. Blocking in CI, but see the deploy note.
@@ -173,6 +208,7 @@ Two independent pipelines run on the default branch:
   failing **unit** test **blocks the production deploy**. Neither the Playwright e2e job nor
   lint is part of the Render build.
 
-Net: a red **unit** test blocks both CI and the deploy. A lint finding or a failing **e2e**
-test blocks CI (so it can't reach a clean `main`) but does **not** block the Render deploy —
-by design, so browser flake can never wedge a release.
+Net: a **type error or a red unit test** blocks both CI and the deploy (both run inside
+`npm test`). A lint finding or a failing **e2e** test blocks CI (so it can't reach a clean
+`main`) but does **not** block the Render deploy — by design, so browser flake can never
+wedge a release.
