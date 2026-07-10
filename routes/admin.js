@@ -56,7 +56,7 @@ router.post('/api/host-image', protectLogs, (req, res) => {
 router.get('/api/hosted-images', protectLogs, (req, res) => {
   const images = readHostedImagesManifest()
     .slice()
-    .sort((a, b) => new Date(b.uploadedAt || 0) - new Date(a.uploadedAt || 0))
+    .sort((a, b) => new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime())
     .map((e) => Object.assign({}, e, { path: '/i/' + e.id }));
   return res.json({ images });
 });

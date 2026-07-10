@@ -1,0 +1,32 @@
+{
+  // Type-CHECK only — never a build step. `node server.js` still runs the .js
+  // files directly and untouched; tsc runs as a linter (`npm run typecheck`,
+  // wired into `npm test` so a type error blocks the Render deploy like a red
+  // test does). We emit nothing (noEmit) and compile nothing.
+  //
+  // Rollout is a ratchet: the checker is green today because most backend files
+  // opt out with a top-of-file `// @ts-nocheck`. Removing that line from a file
+  // turns checking ON for it — do that subsystem by subsystem (billing/auth/data
+  // first), driving each to zero, instead of boiling the ocean across 10k LOC.
+  // New files without the pragma are checked from day one.
+  "compilerOptions": {
+    "checkJs": true,
+    "allowJs": true,
+    "noEmit": true,
+
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["node"],
+
+    // Deliberately loose for the initial rollout. Tighten (strict, noImplicitAny)
+    // once a meaningful share of files have shed their @ts-nocheck pragma.
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["server.js", "instrument.js", "load-env.js", "lib/**/*.js", "routes/**/*.js", "lib/types/**/*.d.ts"],
+  "exclude": ["node_modules"]
+}

@@ -844,7 +844,10 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
                              errorMessage.toLowerCase().includes('unsupported');
       
       // Check if we have files in the request
-      const files = req.files ? (Array.isArray(req.files) ? req.files : [req.files]) : [];
+      // `.array()` uploads give an array; the map-shaped `.fields()` fallback is any-cast
+      // so the common File[] branch keeps its `.originalname`/`.mimetype` type checking.
+      /** @type {Express.Multer.File[]} */
+      const files = req.files ? (Array.isArray(req.files) ? req.files : /** @type {any} */ ([req.files])) : [];
       
       if ((isFileTypeError || files.length > 0) && openai) {
         // Find unsupported files by checking extensions and MIME types
