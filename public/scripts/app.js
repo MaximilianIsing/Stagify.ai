@@ -1,4 +1,4 @@
-import { dataURLToFile } from './app/helpers.js';
+import { dataURLToFile, fillTemplate, dailyLimitMessage, roomDownloadSlug } from './app/helpers.js';
 import { createStageMaskEditor } from './app/stage-mask-editor.js';
 import { initCustomSelect } from './app/custom-select.js';
 import { initBackgroundVideoSync } from './app/background-video.js';
@@ -89,11 +89,8 @@ import { createVersionCarousel } from './app/version-carousel.js';
     }
 
     function getStagingAlt(key, replacements = {}) {
-      let text = window.LanguageSystem?.getText('modal.staging.' + key) || '';
-      Object.entries(replacements).forEach(([k, v]) => {
-        text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), v == null ? '' : String(v));
-      });
-      return text;
+      const text = window.LanguageSystem?.getText('modal.staging.' + key) || '';
+      return fillTemplate(text, replacements);
     }
 
     function updateStagedCanvasAria(suffix = '') {
@@ -127,15 +124,10 @@ import { createVersionCarousel } from './app/version-carousel.js';
     }
 
     function messageForDailyLimitResponse(errorData) {
-      const lim = errorData.dailyGenerationLimit != null ? errorData.dailyGenerationLimit : 3;
-      const used = errorData.dailyGenerationsUsed != null ? errorData.dailyGenerationsUsed : lim;
       const hasAccount = !!(window.StagifyAuth && window.StagifyAuth.getToken());
       const key = hasAccount ? 'errors.dailyLimitFree' : 'errors.dailyLimitAnonymous';
-      const tpl = window.LanguageSystem?.getText(key);
-      if (tpl && tpl !== 'Loading...') {
-        return tpl.replace(/\{limit\}/g, String(lim)).replace(/\{used\}/g, String(used));
-      }
-      return errorData.error || `Daily free limit reached (${lim} per day).`;
+      const template = window.LanguageSystem?.getText(key);
+      return dailyLimitMessage(errorData, { template });
     }
   
     const yearSpan = $('#year');
@@ -876,7 +868,7 @@ import { createVersionCarousel } from './app/version-carousel.js';
     if (downloadBtn) downloadBtn.addEventListener('click', () => {
       if (!canvas1.width) return;
       const link = document.createElement('a');
-      const roomSlug = (roomSelect?.value || 'room').toLowerCase().replace(/\s+/g, '-');
+      const roomSlug = roomDownloadSlug(roomSelect?.value);
       link.download = `stagify-${roomSlug}-${Date.now()}.jpg`;
       link.href = canvas1.toDataURL('image/jpeg', 0.92);
       link.click();
@@ -907,7 +899,7 @@ import { createVersionCarousel } from './app/version-carousel.js';
     if (emptyRoomDownload) emptyRoomDownload.addEventListener('click', () => {
       if (!lastEmptyRoomUrl) return;
       const link = document.createElement('a');
-      const roomSlug = (roomSelect?.value || 'room').toLowerCase().replace(/\s+/g, '-');
+      const roomSlug = roomDownloadSlug(roomSelect?.value);
       link.download = `stagify-${roomSlug}-empty-${Date.now()}.jpg`;
       link.href = lastEmptyRoomUrl;
       link.click();

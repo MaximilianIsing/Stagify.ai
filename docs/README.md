@@ -8,6 +8,7 @@ photorealistic 3D renders) and a **Masking Studio** for pixel-precise edits.
 This README is the entry point for the `docs/` folder. See also:
 
 - [`guides/architecture.md`](guides/architecture.md) — how the server is structured (composition root, `routes/` + `lib/`, request lifecycle).
+- [`guides/frontend.md`](guides/frontend.md) — the browser side: the page/entry/island model and why it's vanilla ES modules, not a component framework.
 - [`guides/security.md`](guides/security.md) — auth model, request-size/DoS hardening, rate limits, CSP/CORS, and secret handling.
 - [`guides/i18n.md`](guides/i18n.md) — the client-side translation system and how to add a language.
 - [`guides/testing.md`](guides/testing.md) — the test suite and how it gates deployment.

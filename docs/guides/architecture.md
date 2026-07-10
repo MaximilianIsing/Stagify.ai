@@ -238,6 +238,10 @@ JSON API on the same origin. UI text is translated client-side — see
 [`i18n.md`](i18n.md). Note that `public/styles/styles.css` is partially minified; edit
 it carefully.
 
+The browser side has its own architecture guide — the page/entry/island model and the
+standing decision to use vanilla ES modules instead of a component framework — in
+[`frontend.md`](frontend.md).
+
 ## Decision: no frontend build step
 
 **Stagify ships its frontend source unbundled, and that is a deliberate, standing
