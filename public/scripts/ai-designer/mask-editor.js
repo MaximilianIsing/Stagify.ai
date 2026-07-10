@@ -12,6 +12,10 @@
 // Window globals (visualViewport, matchMedia, LanguageSystem, StagifyHeic,
 // StagifyAuth, getSelectedModelApiName) are referenced directly.
 import { getRootBaseNameForImage } from './image-history.js';
+import { updateMaskEditorTranslations } from './mask-editor-i18n.js';
+import { createMaskViewport } from './mask-viewport.js';
+import { createMaskOverlay } from './mask-overlay.js';
+import { createMaskReference } from './mask-reference.js';
 
 export function createMaskEditor(deps) {
   const {
@@ -24,53 +28,15 @@ export function createMaskEditor(deps) {
     pushHistoryEntry,
   } = deps;
 
+  // Extracted mask-editor slices (self-contained; each owns its own DOM/state).
+  const viewport = createMaskViewport();
+  const overlay = createMaskOverlay({ lang });
+  const reference = createMaskReference({ lang, showToast });
+
       // Mask editor functionality
       // Track original image containers and their masked versions
       const maskedImageData = new Map(); // Map<originalImageSrc, {container, originalSrc, maskedVersions: []}>
       
-      // Keep the mask editor pinned to the VISUAL viewport (the area not covered
-      // by the mobile browser's URL bar / toolbar, and above the on-screen
-      // keyboard). Without this, the fixed top:0 modal sits behind the URL bar on
-      // iOS Safari and its header/buttons get clipped. Desktop is left untouched.
-      let maskViewportSyncHandler = null;
-      function syncMaskEditorToViewport() {
-        const modal = document.getElementById('mask-editor-modal');
-        if (!modal || !modal.classList.contains('active')) return;
-        const vv = window.visualViewport;
-        const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        if (!vv || !isMobile) {
-          modal.style.top = '';
-          modal.style.left = '';
-          modal.style.width = '';
-          modal.style.height = '';
-          return;
-        }
-        modal.style.top = vv.offsetTop + 'px';
-        modal.style.left = vv.offsetLeft + 'px';
-        modal.style.width = vv.width + 'px';
-        modal.style.height = vv.height + 'px';
-      }
-      function bindMaskViewportSync() {
-        if (maskViewportSyncHandler || !window.visualViewport) return;
-        maskViewportSyncHandler = () => syncMaskEditorToViewport();
-        window.visualViewport.addEventListener('resize', maskViewportSyncHandler);
-        window.visualViewport.addEventListener('scroll', maskViewportSyncHandler);
-      }
-      function unbindMaskViewportSync() {
-        if (maskViewportSyncHandler && window.visualViewport) {
-          window.visualViewport.removeEventListener('resize', maskViewportSyncHandler);
-          window.visualViewport.removeEventListener('scroll', maskViewportSyncHandler);
-        }
-        maskViewportSyncHandler = null;
-        const modal = document.getElementById('mask-editor-modal');
-        if (modal) {
-          modal.style.top = '';
-          modal.style.left = '';
-          modal.style.width = '';
-          modal.style.height = '';
-        }
-      }
-
       function openMaskEditor(imageSrc, imageType) {
         const modal = document.getElementById('mask-editor-modal');
         if (!modal) {
@@ -171,8 +137,8 @@ export function createMaskEditor(deps) {
           canvas.dataset.originalHeight = img.height;
           
           existingModal.classList.add('active');
-          bindMaskViewportSync();
-          syncMaskEditorToViewport();
+          viewport.bind();
+          viewport.sync();
           maskPainted = false;
           setMaskTool('brush');
           initMaskDrawing(maskCanvas);
@@ -181,7 +147,7 @@ export function createMaskEditor(deps) {
           if (promptInput) {
             promptInput.value = '';
           }
-          clearMaskReference();
+          reference.clear();
           
           // Remove blur effect if it exists (from previous session)
           const canvasContainer = document.querySelector('.mask-editor-canvas-container');
@@ -309,34 +275,12 @@ export function createMaskEditor(deps) {
           document.getElementById('mask-editor-brush-size').textContent = e.target.value + ' px';
         });
 
-        const refFileInput = document.getElementById('mask-editor-ref-file');
-        const refAddBtn = document.getElementById('mask-editor-ref-add');
-        const refRemoveBtn = document.getElementById('mask-editor-ref-remove');
-        if (refAddBtn && refFileInput) {
-          refAddBtn.addEventListener('click', () => refFileInput.click());
-          refFileInput.addEventListener('change', () => {
-            const file = refFileInput.files && refFileInput.files[0];
-            refFileInput.value = ''; // allow re-selecting the same file later
-            if (!file) return;
-            // Convert HEIC/HEIF to JPEG first so it decodes and passes validation.
-            const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
-              ? window.StagifyHeic.toDisplayableFile(file)
-              : Promise.resolve(file);
-            prep
-              .then(prepareReferenceFile)
-              .then(setMaskReference)
-              .catch((err) => {
-                clearMaskReference();
-                const key = err && err.message === 'size' ? 'pdf.maskEditor.referenceTooLarge' : 'pdf.maskEditor.referenceInvalid';
-                const fallback = err && err.message === 'size'
-                  ? 'That image is too large — please choose one under 25 MB.'
-                  : 'Please choose a valid JPG, PNG, or WebP image.';
-                showToast(lang(key, fallback), 'error');
-              });
-          });
-        }
-        if (refRemoveBtn) refRemoveBtn.addEventListener('click', clearMaskReference);
-        
+        reference.wire(
+          document.getElementById('mask-editor-ref-file'),
+          document.getElementById('mask-editor-ref-add'),
+          document.getElementById('mask-editor-ref-remove')
+        );
+
         // Add event listener for prompt input changes
         const promptInput = document.getElementById('mask-editor-prompt');
         if (promptInput) {
@@ -365,146 +309,10 @@ export function createMaskEditor(deps) {
         });
       }
       
-      // Function to update mask editor translations
-      function updateMaskEditorTranslations() {
-        if (!window.LanguageSystem || !window.LanguageSystem.isLoaded()) {
-          return;
-        }
-        
-        const getText = (key) => {
-          return window.LanguageSystem.getText(key) || key;
-        };
-        
-        // Update title
-        const title = document.querySelector('.mask-editor-title');
-        if (title) {
-          title.textContent = getText('pdf.maskEditor.title');
-        }
-        
-        // Update brush size label
-        const brushLabel = document.querySelector('.mask-editor-brush-label');
-        if (brushLabel) {
-          brushLabel.textContent = getText('pdf.maskEditor.brushSize');
-        }
-
-        // Update tool toggle labels
-        const brushToolText = document.querySelector('#mask-editor-brush-btn span');
-        if (brushToolText) {
-          brushToolText.textContent = getText('pdf.maskEditor.brush');
-        }
-        const eraseToolText = document.querySelector('#mask-editor-erase-btn span');
-        if (eraseToolText) {
-          eraseToolText.textContent = getText('pdf.maskEditor.erase');
-        }
-        
-        // Update prompt label
-        const promptLabel = document.querySelector('.mask-editor-prompt-label');
-        if (promptLabel) {
-          promptLabel.textContent = getText('pdf.maskEditor.promptLabel');
-        }
-        
-        // Update prompt placeholder
-        const promptInput = document.getElementById('mask-editor-prompt');
-        if (promptInput) {
-          promptInput.placeholder = getText('pdf.maskEditor.promptPlaceholder');
-        }
-
-        // Placement hint under the prompt (guard against the raw key if missing)
-        const promptHint = document.querySelector('.mask-editor-prompt-hint');
-        if (promptHint) {
-          const hintText = getText('pdf.maskEditor.promptHint');
-          promptHint.textContent = (hintText && hintText !== 'pdf.maskEditor.promptHint')
-            ? hintText
-            : 'Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”';
-        }
-        
-        // Update buttons
-        const cancelBtn = document.getElementById('mask-editor-cancel');
-        if (cancelBtn) {
-          cancelBtn.textContent = getText('pdf.maskEditor.cancel');
-        }
-        
-        const clearBtn = document.getElementById('mask-editor-clear');
-        if (clearBtn) {
-          const clearText = clearBtn.querySelector('span');
-          if (clearText) clearText.textContent = getText('pdf.maskEditor.clearMask');
-        }
-        
-        const submitBtn = document.getElementById('mask-editor-submit');
-        if (submitBtn) {
-          const submitText = submitBtn.querySelector('span');
-          if (submitText) {
-            submitText.textContent = getText('pdf.maskEditor.applyEdit');
-          }
-        }
-
-        const refLabel = document.querySelector('.mask-editor-ref-label');
-        if (refLabel) refLabel.textContent = getText('pdf.maskEditor.referenceLabel');
-        const refAdd = document.getElementById('mask-editor-ref-add');
-        if (refAdd) refAdd.textContent = getText('pdf.maskEditor.referenceAdd');
-        const refHint = document.querySelector('.mask-editor-ref-hint');
-        if (refHint) refHint.textContent = getText('pdf.maskEditor.referenceHint');
-        const refImg = document.getElementById('mask-editor-ref-img');
-        if (refImg) refImg.alt = getText('pdf.maskEditor.referenceAlt');
-        const refRemove = document.getElementById('mask-editor-ref-remove');
-        if (refRemove) refRemove.setAttribute('aria-label', getText('pdf.maskEditor.referenceRemove'));
-      }
-      
       let brushSize = 50;
       let maskTool = 'brush';     // 'brush' adds to the selection, 'erase' removes
       let maskPainted = false;    // any selection present? (hot path avoids scanning)
       let maskDrawingInited = false;
-      let maskReferenceDataUrl = null;
-
-      function clearMaskReference() {
-        maskReferenceDataUrl = null;
-        const refFileInput = document.getElementById('mask-editor-ref-file');
-        const refPreview = document.getElementById('mask-editor-ref-preview');
-        const refImg = document.getElementById('mask-editor-ref-img');
-        const refAddBtn = document.getElementById('mask-editor-ref-add');
-        if (refFileInput) refFileInput.value = '';
-        if (refPreview) refPreview.classList.add('hidden');
-        if (refImg) refImg.removeAttribute('src');
-        if (refAddBtn) refAddBtn.classList.remove('hidden');
-      }
-
-      function setMaskReference(dataUrl) {
-        maskReferenceDataUrl = dataUrl;
-        const refPreview = document.getElementById('mask-editor-ref-preview');
-        const refImg = document.getElementById('mask-editor-ref-img');
-        const refAddBtn = document.getElementById('mask-editor-ref-add');
-        if (refImg) refImg.src = dataUrl;
-        if (refPreview) refPreview.classList.remove('hidden');
-        if (refAddBtn) refAddBtn.classList.add('hidden');
-      }
-
-      // Validate, downscale (max 1536px), and PNG-encode a chosen reference file so
-      // the payload is always small, clean, and a format the backend accepts.
-      // Resolves to a data URL; rejects with 'type' | 'size' | 'read' | 'decode'.
-      function prepareReferenceFile(file) {
-        return new Promise((resolve, reject) => {
-          if (!file || !/^image\/(jpeg|jpg|png|webp)$/i.test(file.type || '')) { reject(new Error('type')); return; }
-          if (file.size > 25 * 1024 * 1024) { reject(new Error('size')); return; }
-          const reader = new FileReader();
-          reader.onerror = () => reject(new Error('read'));
-          reader.onload = () => {
-            const img = new Image();
-            img.onerror = () => reject(new Error('decode'));
-            img.onload = () => {
-              const maxDim = 1536;
-              const scale = Math.min(1, maxDim / Math.max(img.width || 1, img.height || 1));
-              const w = Math.max(1, Math.round((img.width || 1) * scale));
-              const h = Math.max(1, Math.round((img.height || 1) * scale));
-              const c = document.createElement('canvas');
-              c.width = w; c.height = h;
-              c.getContext('2d').drawImage(img, 0, 0, w, h);
-              try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
-            };
-            img.src = reader.result;
-          };
-          reader.readAsDataURL(file);
-        });
-      }
 
       function setMaskTool(t) {
         maskTool = t === 'erase' ? 'erase' : 'brush';
@@ -541,51 +349,7 @@ export function createMaskEditor(deps) {
       // Repainting only re-crops the already-generated image (instant, free).
       let maskPhase = 'draw';          // 'draw' | 'loading' | 'refine'
       let maskRefineState = null;      // { originCanvas, imageSrc, w, h, coreGrow, featherPx, editedImg }
-      let maskLoadMsgTimer = null;
-      let maskLoadingOverlay = null;
-      const MASK_LOAD_MESSAGES = [
-        'Applying your edit…',
-        'Reworking the masked area…',
-        'Blending in the new details…',
-        'Refining textures and lighting…',
-        'Adding finishing touches…',
-      ];
 
-      function maskEnsureOverlay() {
-        const container = document.querySelector('.mask-editor-canvas-container');
-        if (maskLoadingOverlay || !container) return;
-        if (!document.getElementById('smask-refine-styles')) {
-          const st = document.createElement('style');
-          st.id = 'smask-refine-styles';
-          st.textContent = '.smask-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(255,255,255,.4);z-index:6;border-radius:inherit;}.smask-overlay__spin{width:46px;height:46px;border-radius:50%;border:4px solid rgba(37,99,235,.25);border-top-color:#2563eb;animation:smask-spin .9s linear infinite;}.smask-overlay__msg{font-weight:600;color:#1f2937;font-size:14px;text-align:center;max-width:80%;padding:0 12px;}.smask-help{position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid #94a3b8;color:#64748b;font-size:11px;font-weight:700;cursor:help;margin-left:6px;margin-right:auto;line-height:1;user-select:none;flex:0 0 auto;}.smask-help.hidden{display:none;}.smask-help__tip{position:absolute;top:140%;left:0;width:min(290px,72vw);background:#1f2937;color:#fff;font-size:12px;font-weight:400;line-height:1.45;padding:10px 12px;border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);opacity:0;visibility:hidden;transition:opacity .15s ease;z-index:30;text-align:left;pointer-events:none;white-space:normal;}.smask-help:hover .smask-help__tip,.smask-help:focus .smask-help__tip,.smask-help:focus-within .smask-help__tip{opacity:1;visibility:visible;}@keyframes smask-spin{to{transform:rotate(360deg);}}';
-          document.head.appendChild(st);
-        }
-        if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
-        maskLoadingOverlay = document.createElement('div');
-        maskLoadingOverlay.className = 'smask-overlay hidden';
-        const spin = document.createElement('div'); spin.className = 'smask-overlay__spin';
-        const msg = document.createElement('div'); msg.className = 'smask-overlay__msg';
-        maskLoadingOverlay.appendChild(spin); maskLoadingOverlay.appendChild(msg);
-        container.appendChild(maskLoadingOverlay);
-      }
-      function maskStartOverlay() {
-        maskEnsureOverlay();
-        const container = document.querySelector('.mask-editor-canvas-container');
-        if (container) container.classList.add('processing');
-        if (!maskLoadingOverlay) return;
-        maskLoadingOverlay.classList.remove('hidden');
-        const msgEl = maskLoadingOverlay.querySelector('.smask-overlay__msg');
-        let i = 0;
-        if (msgEl) msgEl.textContent = lang('pdf.maskEditor.loadApplying', MASK_LOAD_MESSAGES[0]);
-        if (maskLoadMsgTimer) clearInterval(maskLoadMsgTimer);
-        maskLoadMsgTimer = setInterval(() => { i = (i + 1) % MASK_LOAD_MESSAGES.length; if (msgEl) msgEl.textContent = MASK_LOAD_MESSAGES[i]; }, 2000);
-      }
-      function maskStopOverlay() {
-        if (maskLoadMsgTimer) { clearInterval(maskLoadMsgTimer); maskLoadMsgTimer = null; }
-        const container = document.querySelector('.mask-editor-canvas-container');
-        if (container) container.classList.remove('processing');
-        if (maskLoadingOverlay) maskLoadingOverlay.classList.add('hidden');
-      }
       function maskSetControlsDisabled(dis) {
         ['mask-editor-cancel','mask-editor-clear','mask-editor-submit','mask-editor-rerun','mask-editor-done','mask-editor-brush-btn','mask-editor-erase-btn','mask-editor-brush-slider','mask-editor-prompt','mask-editor-ref-add','mask-editor-ref-remove']
           .forEach((id) => { const el = document.getElementById(id); if (el) el.disabled = dis; });
@@ -601,11 +365,11 @@ export function createMaskEditor(deps) {
         const note = document.querySelector('.mask-editor-note');
         if (p === 'loading') {
           maskSetControlsDisabled(true);
-          maskStartOverlay();
+          overlay.start();
           if (maskCanvas) { maskCanvas.style.pointerEvents = 'none'; maskCanvas.style.cursor = 'not-allowed'; }
           return;
         }
-        maskStopOverlay();
+        overlay.stop();
         maskSetControlsDisabled(false);
         if (maskCanvas) { maskCanvas.style.pointerEvents = 'auto'; maskCanvas.style.cursor = 'crosshair'; }
         if (p === 'refine') {
@@ -812,10 +576,10 @@ export function createMaskEditor(deps) {
         const modal = document.getElementById('mask-editor-modal');
         if (modal) {
           modal.classList.remove('active');
-          unbindMaskViewportSync();
-          maskStopOverlay();
+          viewport.unbind();
+          overlay.stop();
           clearMask();
-          clearMaskReference();
+          reference.clear();
           maskRefineState = null;
           maskPhase = 'draw';
           const submitBtn = document.getElementById('mask-editor-submit');
@@ -861,7 +625,7 @@ export function createMaskEditor(deps) {
             prompt: prompt,
             model: selectedModel,
             authToken: maskAuthTok || undefined,
-            ...(maskReferenceDataUrl ? { referenceImage: maskReferenceDataUrl } : {}),
+            ...(reference.getDataUrl() ? { referenceImage: reference.getDataUrl() } : {}),
           })
         });
         const data = await response.json();

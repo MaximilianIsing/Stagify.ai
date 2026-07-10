@@ -60,7 +60,10 @@ route, you add its dependency to the factory's `deps` at the `server.js` call si
 
 ## Request lifecycle
 
-Middleware runs in registration order in `server.js`:
+Middleware runs in registration order, wired from `server.js` (steps 1–2 via
+`applyEdgeMiddleware(app)` and step 5 via `applyBodyAndStatic(app)`, both in
+[`lib/http/app-middleware.js`](../../lib/http/app-middleware.js); the billing router is
+mounted between them so the Stripe webhook still sees the raw body):
 
 1. **`helmet`** — security headers + Content-Security-Policy (toggle with `DISABLE_CSP=1`).
 2. **`cors`** — restricted to `ALLOWED_ORIGINS`.
@@ -112,6 +115,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `http-guards.js` | The `endpoint_key` guards (`protectLogs`, `stagingEndpointKeyGuard`) and the `/health` handler. |
 | `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN`). |
 | `uploads.js` | The multer upload configs (staging / PDF / chat / hosted-image). |
+| `app-middleware.js` | The base HTTP middleware, lifted out of `server.js`. `applyEdgeMiddleware(app)` (helmet/CSP, CORS allow-list, compression — mounted **before** the billing router) and `applyBodyAndStatic(app)` (JSON body parsing + its error handler, `express.static` — mounted **after**, so Stripe's webhook still sees the raw body). |
 
 **`lib/image/`** — image processing
 
@@ -140,6 +144,11 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `prompts.js` | Pure prompt/data constants for the AI Designer, staging, QA review, and image gatekeeping. Single source of truth for model-facing wording. |
 | `promptMatrix.js` | The room-type × furniture-style prompt templates used when staging. |
 | `staging-pipeline.js` | The generate-with-quality-retry loop (unit-testable, no real model calls). |
+| `staging-generation.js` | The Gemini image-generation pipeline lifted out of `server.js`: the positional quality-gate wrapper plus `processImageGeneration` (text-to-image) and `processStaging` (virtual staging). |
+| `virtual-staging-handler.js` | The `/api/process-image` + `/api/stage-by-endpoint-key` multipart handler (`handleVirtualStagingMultipart`), lifted out of `server.js`: free-tier cap, two-stage furniture removal, per-variation staging, enterprise metering. |
+| `mask-edit.js` | The `/api/mask-edit` request pipeline (locator overlay, reference letterboxing, quality-retry review), lifted out of `routes/staging.js`. |
+| `segment.js` | The `/api/segment` magic-wand handler (Gemini box detection → normalized `box_2d`), lifted out of `routes/staging.js`. |
+| `pdf-proxy.js` | The `/api/process-pdf` handler that proxies uploads to the external PDF server, lifted out of `routes/staging.js`. |
 | `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D renders (AI Designer), via Gemini. |
 
 **`lib/chat/`** — AI Designer chat orchestration
@@ -147,7 +156,15 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | Module | Responsibility |
 |---|---|
 | `chat-upload-prep.js` | Pre-routing prep for `/api/chat-upload`: multipart upload → GPT-ready messages + routing completion. |
-| `chat-pipeline.js` | Post-routing dispatch shared by `/api/chat` and `/api/chat-upload`: memory writes, image generation, staging, recall, etc. |
+| `chat-request-prep.js` | Pre-routing prep for `/api/chat` (the JSON mirror of `chat-upload-prep`): dedup diagnostics, history-image detection, message-tag application, OpenAI message assembly, payload logging. |
+| `welcome-message-handler.js` | The `GET /api/welcome-message` handler (generic vs. AI-personalized greeting). |
+| `chat-upload-error.js` | Pure helper building the "unsupported file type" body for the `/api/chat-upload` catch block. |
+| `chat-pipeline.js` | **Pure wiring**: composes the five dispatch sub-modules below into the 7-method interface both chat handlers consume (`applyMemoryActions` / `runGenerateRequests` / `resolveRecalledImage` / `resolveRequestedImage` / `runCadRequests` / `runStagingRequests` / `buildDesignerResponse`). |
+| `chat-memory.js` | Applies the model's memory store/forget decisions. |
+| `chat-image-retrieval.js` | Retrieves an existing history image by index (recall for display; request for optional GPT analysis). |
+| `chat-image-dispatch.js` | Produces new images: text-to-image generation and CAD blueprint → 3D render. |
+| `chat-staging.js` | Runs the model's staging request(s), with the chat-vs-upload divergence injected via callbacks. |
+| `chat-response.js` | Pure response assembly: awaits image annotations and builds the final JSON body. |
 | `chat-history.js` | Conversation-history filtering, dedup, and image-context extraction. |
 | `chat-routing.js` | Parses the model's routing completion and classifies chat intent. |
 | `chat-sse.js` | Server-Sent Events plumbing for streamed chat responses. |
@@ -248,7 +265,7 @@ between.
   `Cache-Control: public, max-age=31536000, immutable` and busted by rename / `?v=`
   (see [`caching.md`](../reference/caching.md)). A bundle would fold unrelated files
   into one cache key, so a one-line change would re-download everything.
-- **The wire cost is already covered** by `compression` (gzip/brotli, `server.js`) plus
+- **The wire cost is already covered** by `compression` (gzip/brotli, `lib/http/app-middleware.js`) plus
   HTTP/2 multiplexing on Render — the two wins a bundler would buy (smaller bytes, fewer
   round-trips) without owning a toolchain to get them.
 - **No build means no build to break, version, or maintain** — no bundler config, no

@@ -8,8 +8,9 @@ versioned URLs. Get those headers right and edge caching is safe to turn on.
 
 ## Cache-Control policy
 
-`server.js` serves `public/` through `express.static` and sets `Cache-Control`
-per file type in its `setHeaders` callback ([`server.js:259`](../../server.js)):
+The server serves `public/` through `express.static` and sets `Cache-Control`
+per file type in the `setHeaders` callback of `applyBodyAndStatic()`
+([`lib/http/app-middleware.js:161`](../../lib/http/app-middleware.js), wired from `server.js`):
 
 | File types | `Cache-Control` | Effect |
 |---|---|---|
@@ -51,7 +52,7 @@ which means the update path differs by asset type:
   will serve the old bytes to returning visitors (and, with edge caching on, from
   the CDN too). To change one, **rename the file** (and update its references) or
   **append a version query** (`background.mp4?v=2`). This convention is also noted
-  inline at [`server.js:268`](../../server.js).
+  inline at [`lib/http/app-middleware.js:174`](../../lib/http/app-middleware.js).
 
 Enabling edge caching does not change these rules — it just makes the `immutable`
 year-long TTLs apply at the CDN as well, so the rename/`?v=` habit matters a little
