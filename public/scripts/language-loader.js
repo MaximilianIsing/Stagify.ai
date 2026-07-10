@@ -1,1 +1,183 @@
-(()=>{"use strict";let t={defaultLanguage:"english",languagePath:"languages/",fallbackText:"Loading..."},e=null,a=!1;async function l(l=t.defaultLanguage){try{let n=await fetch(`${t.languagePath}${l}.json`);if(!n.ok)throw Error(`Failed to load language file: ${n.status}`);return e=await n.json(),a=!0,e}catch(r){return console.error("Error loading language:",r),{meta:{title:"Stagify.ai",description:"AI Home Staging Tool"},navigation:{home:"Home",whyUs:"Why Us?",faq:"FAQ",contactUs:"Contact Us"},hero:{catchphrase:"Upload. Stage. Imagine."},errors:{processingFailed:"Processing failed"}}}}function n(a,l=t.fallbackText){if(!e)return l;let n=a.split("."),r=e;for(let i of n){if(!r||"object"!=typeof r||!(i in r))return l;r=r[i]}return void 0!==r?r:l}function r(){if(!a)return;let e=document.querySelectorAll("[data-lang]");e.forEach(e=>{let a=e.getAttribute("data-lang"),l=n(a);l!==t.fallbackText&&("INPUT"===e.tagName&&"text"===e.type?e.placeholder=l:"TEXTAREA"===e.tagName?e.placeholder=l:e.textContent=l)});let l=document.querySelectorAll("[data-lang-html]");l.forEach(e=>{let a=e.getAttribute("data-lang-html"),l=n(a);l!==t.fallbackText&&(e.innerHTML=l)});let r=document.querySelectorAll("[data-lang-attr]");r.forEach(e=>{let a=e.getAttribute("data-lang-attr"),[l,r]=a.split("|"),i=n(l);i!==t.fallbackText&&e.setAttribute(r,i)}),i(),o(),document.body.classList.add("language-loaded"),window.dispatchEvent(new Event("languagechange"))}function i(){if(!a)return;let l=document.querySelector("title[data-lang]");if(l){let r=n(l.getAttribute("data-lang"));r!==t.fallbackText&&(document.title=r)}}function o(){if(!a)return;let e=document.querySelector('script[type="application/ld+json"]');if(e)try{let l=JSON.parse(e.textContent),s=document.querySelector("title[data-lang]"),d=document.querySelector('meta[name="description"][data-lang-attr]'),r=n(s?s.getAttribute("data-lang"):"meta.title"),i=n(d?d.getAttribute("data-lang-attr").split("|")[0]:"meta.description"),o=n("meta.keywords");r!==t.fallbackText&&(l.name=r),i!==t.fallbackText&&(l.description=i),o!==t.fallbackText&&(l.keywords=o),e.textContent=JSON.stringify(l)}catch(s){console.error("Error updating structured data:",s)}}async function s(){let e=localStorage.getItem("selectedLanguage")||t.defaultLanguage;await l(e),r(),c();let a=new MutationObserver(t=>{let e=!1;t.forEach(t=>{"childList"===t.type&&t.addedNodes.length>0&&t.addedNodes.forEach(t=>{if(t.nodeType===Node.ELEMENT_NODE&&(t.hasAttribute&&(t.hasAttribute("data-lang")||t.hasAttribute("data-lang-html")||t.hasAttribute("data-lang-attr"))&&(e=!0),t.querySelectorAll)){let a=t.querySelectorAll("[data-lang], [data-lang-html], [data-lang-attr]");a.length>0&&(e=!0)}})}),e&&r()});a.observe(document.body,{childList:!0,subtree:!0})}function c(){let t=document.getElementById("language-select");if(!t)return;let e=localStorage.getItem("selectedLanguage")||"english";t.value=e,d(t),t.addEventListener("change",async t=>{let e=t.target.value;localStorage.setItem("selectedLanguage",e),d(t.target),await l(e),r()})}function d(t){t.classList.remove("spanish","chinese","korean"),"spanish"===t.value?t.classList.add("spanish"):"chinese"===t.value?t.classList.add("chinese"):"korean"===t.value&&t.classList.add("korean")}window.LanguageSystem={loadLanguage:l,getText:n,applyLanguageToElements:r,isLoaded:()=>a,getCurrentLanguage:()=>e},"loading"===document.readyState?document.addEventListener("DOMContentLoaded",s):s()})();
+// Language loader — the site-wide i18n runtime. Fetches languages/<lang>.json,
+// applies it to [data-lang] / [data-lang-html] / [data-lang-attr] nodes, keeps the
+// <title> and JSON-LD structured data in sync, and re-applies to nodes injected
+// later via a MutationObserver. Exposes window.LanguageSystem for the rest of the
+// app (carousel, mask editors, etc.). Classic <script defer>, runs on every page.
+
+(() => {
+  'use strict';
+
+  const config = {
+    defaultLanguage: 'english',
+    languagePath: 'languages/',
+    fallbackText: 'Loading...',
+  };
+
+  let translations = null;
+  let loaded = false;
+
+  async function loadLanguage(lang = config.defaultLanguage) {
+    try {
+      const res = await fetch(`${config.languagePath}${lang}.json`);
+      if (!res.ok) throw Error(`Failed to load language file: ${res.status}`);
+      translations = await res.json();
+      loaded = true;
+      return translations;
+    } catch (err) {
+      console.error('Error loading language:', err);
+      // Minimal built-in fallback so the page is never left showing raw keys.
+      return {
+        meta: { title: 'Stagify.ai', description: 'AI Home Staging Tool' },
+        navigation: { home: 'Home', whyUs: 'Why Us?', faq: 'FAQ', contactUs: 'Contact Us' },
+        hero: { catchphrase: 'Upload. Stage. Imagine.' },
+        errors: { processingFailed: 'Processing failed' },
+      };
+    }
+  }
+
+  // Resolve a dot-path key (e.g. "hero.catchphrase") against the loaded
+  // translations, returning `fallback` if any segment is missing.
+  function getText(key, fallback = config.fallbackText) {
+    if (!translations) return fallback;
+    const parts = key.split('.');
+    let current = translations;
+    for (const part of parts) {
+      if (!current || typeof current !== 'object' || !(part in current)) return fallback;
+      current = current[part];
+    }
+    return current !== undefined ? current : fallback;
+  }
+
+  function applyLanguageToElements() {
+    if (!loaded) return;
+
+    // Text content (or placeholder for text inputs / textareas).
+    document.querySelectorAll('[data-lang]').forEach((el) => {
+      const value = getText(el.getAttribute('data-lang'));
+      if (value !== config.fallbackText) {
+        if (el.tagName === 'INPUT' && el.type === 'text') el.placeholder = value;
+        else if (el.tagName === 'TEXTAREA') el.placeholder = value;
+        else el.textContent = value;
+      }
+    });
+
+    // Raw HTML content.
+    document.querySelectorAll('[data-lang-html]').forEach((el) => {
+      const value = getText(el.getAttribute('data-lang-html'));
+      if (value !== config.fallbackText) el.innerHTML = value;
+    });
+
+    // Attribute values, encoded as "key|attribute".
+    document.querySelectorAll('[data-lang-attr]').forEach((el) => {
+      const [key, attr] = el.getAttribute('data-lang-attr').split('|');
+      const value = getText(key);
+      if (value !== config.fallbackText) el.setAttribute(attr, value);
+    });
+
+    updateTitle();
+    updateStructuredData();
+    document.body.classList.add('language-loaded');
+    window.dispatchEvent(new Event('languagechange'));
+  }
+
+  function updateTitle() {
+    if (!loaded) return;
+    const titleEl = document.querySelector('title[data-lang]');
+    if (titleEl) {
+      const value = getText(titleEl.getAttribute('data-lang'));
+      if (value !== config.fallbackText) document.title = value;
+    }
+  }
+
+  function updateStructuredData() {
+    if (!loaded) return;
+    const ldEl = document.querySelector('script[type="application/ld+json"]');
+    if (!ldEl) return;
+    try {
+      const data = JSON.parse(ldEl.textContent);
+      const titleEl = document.querySelector('title[data-lang]');
+      const descEl = document.querySelector('meta[name="description"][data-lang-attr]');
+      const name = getText(titleEl ? titleEl.getAttribute('data-lang') : 'meta.title');
+      const description = getText(
+        descEl ? descEl.getAttribute('data-lang-attr').split('|')[0] : 'meta.description'
+      );
+      const keywords = getText('meta.keywords');
+      if (name !== config.fallbackText) data.name = name;
+      if (description !== config.fallbackText) data.description = description;
+      if (keywords !== config.fallbackText) data.keywords = keywords;
+      ldEl.textContent = JSON.stringify(data);
+    } catch (err) {
+      console.error('Error updating structured data:', err);
+    }
+  }
+
+  async function init() {
+    const saved = localStorage.getItem('selectedLanguage') || config.defaultLanguage;
+    await loadLanguage(saved);
+    applyLanguageToElements();
+    setupLanguageSelector();
+
+    // Re-apply translations to nodes added to the DOM after initial load.
+    const observer = new MutationObserver((mutations) => {
+      let needsApply = false;
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType !== Node.ELEMENT_NODE) return;
+            if (
+              node.hasAttribute &&
+              (node.hasAttribute('data-lang') ||
+                node.hasAttribute('data-lang-html') ||
+                node.hasAttribute('data-lang-attr'))
+            ) {
+              needsApply = true;
+            }
+            if (node.querySelectorAll) {
+              const found = node.querySelectorAll('[data-lang], [data-lang-html], [data-lang-attr]');
+              if (found.length > 0) needsApply = true;
+            }
+          });
+        }
+      });
+      if (needsApply) applyLanguageToElements();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  function setupLanguageSelector() {
+    const select = document.getElementById('language-select');
+    if (!select) return;
+    const current = localStorage.getItem('selectedLanguage') || 'english';
+    select.value = current;
+    updateSelectorFlag(select);
+    select.addEventListener('change', async (e) => {
+      const lang = e.target.value;
+      localStorage.setItem('selectedLanguage', lang);
+      updateSelectorFlag(e.target);
+      await loadLanguage(lang);
+      applyLanguageToElements();
+    });
+  }
+
+  // The selector shows a flag icon via a language-specific class.
+  function updateSelectorFlag(select) {
+    select.classList.remove('spanish', 'chinese', 'korean');
+    if (select.value === 'spanish') select.classList.add('spanish');
+    else if (select.value === 'chinese') select.classList.add('chinese');
+    else if (select.value === 'korean') select.classList.add('korean');
+  }
+
+  window.LanguageSystem = {
+    loadLanguage,
+    getText,
+    applyLanguageToElements,
+    isLoaded: () => loaded,
+    getCurrentLanguage: () => translations,
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
