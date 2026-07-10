@@ -984,7 +984,7 @@ import { createVersionCarousel } from './app/version-carousel.js';
       modal.classList.add('hidden');
     }
   
-  // auth.js (classic script, runs before this module) calls this via window
+  // auth.js (loaded before this module) calls this via window
   // after sign-in/out; keep the exposure at top-level module eval.
   window.__stagifyUpdateHeroFreeGensLine = updateHeroFreeGensLine;
   
