@@ -24,6 +24,9 @@ jobs:
       - name: Run tests
         run: npm test             # tsc --noEmit (checkJs) then node --test over test/**/*.test.js
 
+      - name: Coverage floor
+        run: npm run test:coverage   # re-runs the suite with V8 coverage; fails if product-source lines/branches/functions dip below the floors in scripts/test-coverage.js
+
       - name: Lint
         run: npm run lint         # backend is lint-clean; a new warning/error now fails the build
 
