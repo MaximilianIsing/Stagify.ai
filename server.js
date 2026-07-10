@@ -238,7 +238,7 @@ app.use((req, res, next) =>
   (JSON_LARGE_LIMIT_PATHS.has(req.path) ? jsonLarge : jsonSmall)(req, res, next)
 );
 app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+  if (err instanceof SyntaxError && /** @type {any} */ (err).status === 400 && 'body' in err) {
     logger.error('JSON parsing error:', err.message);
     logger.error('Request body size:', req.headers['content-length'], 'bytes');
     return sendError(res, 400, 'Invalid JSON or request too large');
@@ -403,6 +403,10 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
     const srcMeta = await sharp(imageBuffer).metadata().catch(() => null);
     const roomAR = srcMeta && srcMeta.width && srcMeta.height ? srcMeta.width / srcMeta.height : null;
     
+    // Typed as the SDK's Part[] so the mixed text/inlineData parts match
+    // generateContent()'s `(string | Part)[]` parameter (union-array inference alone
+    // doesn't line up with Part's discriminated members).
+    /** @type {Array<import('@google/generative-ai').Part>} */
     const prompt = [
       { text: generatePrompt(
         stagingParams.roomType,
@@ -504,7 +508,7 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
         }
       }
 
-      const noImageErr = new Error('No image data in AI response');
+      const noImageErr = /** @type {Error & { code?: string }} */ (new Error('No image data in AI response'));
       noImageErr.code = 'NO_IMAGE_GENERATED';
       throw noImageErr;
     }, 'staging', () => {
@@ -553,10 +557,10 @@ async function processStaging(imageBuffer, stagingParams, req, furnitureImageBuf
  * Virtual staging after `stagingProcessUpload` has filled `req.files` / `req.body`.
  * @param {import('express').Request} req
  * @param {import('express').Response} res
- * @param {{ user: object | null, recordUsage: boolean, treatAsPro: boolean }} meta
+ * @param {{ user: ({ id: string, email: string, plan: string } & Record<string, any>) | null, recordUsage: boolean, treatAsPro: boolean }} meta
  */
 async function handleVirtualStagingMultipart(req, res, meta) {
-  const mainFile = req.files?.image?.[0];
+  const mainFile = /** @type {Record<string, Express.Multer.File[]>} */ (req.files)?.image?.[0];
   if (!mainFile) {
     return sendError(res, 400, 'No image file provided');
   }
@@ -616,7 +620,7 @@ async function handleVirtualStagingMultipart(req, res, meta) {
     variationCount = 1;
   }
 
-  const furnitureFiles = isPro ? req.files?.furnitureImage : null;
+  const furnitureFiles = isPro ? /** @type {Record<string, Express.Multer.File[]>} */ (req.files)?.furnitureImage : null;
   const furnitureBuffers =
     Array.isArray(furnitureFiles) && furnitureFiles.length > 0
       ? furnitureFiles.slice(0, 5).map((f) => f.buffer).filter(Boolean)

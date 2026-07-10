@@ -70,12 +70,14 @@ router.post('/api/process-pdf', genLimiter, pdfUpload.single('pdf'), async (req,
     }
 
     // Get query parameters from request
-    const skip = req.query.skip || '4';
-    const concurrency = req.query.concurrency || '2';
-    const dpi = req.query.dpi || '110';
-    const continueOnError = req.query.continue || 'false';
-    const merge = req.query.merge || 'false';
-    const filename = req.query.filename || req.file.originalname;
+    // Coerce to string: req.query values are `string | string[] | ParsedQs`, but
+    // these are always scalar query params forwarded to URLSearchParams (which needs strings).
+    const skip = String(req.query.skip || '4');
+    const concurrency = String(req.query.concurrency || '2');
+    const dpi = String(req.query.dpi || '110');
+    const continueOnError = String(req.query.continue || 'false');
+    const merge = String(req.query.merge || 'false');
+    const filename = String(req.query.filename || req.file.originalname);
 
     // Build query parameters for external server
     const params = new URLSearchParams();
@@ -127,7 +129,7 @@ router.post('/api/process-pdf', genLimiter, pdfUpload.single('pdf'), async (req,
             } catch {
               sendError(res, proxyRes.statusCode, errorData || `Server error: ${proxyRes.statusCode}`);
             }
-            resolve();
+            resolve(undefined);
           });
           return;
         }
@@ -168,14 +170,14 @@ router.post('/api/process-pdf', genLimiter, pdfUpload.single('pdf'), async (req,
           if (!res.headersSent) {
             sendError(res, 500, 'Error receiving response from PDF server', { details: err.message });
           }
-          resolve();
+          resolve(undefined);
         });
 
         // Stream the response from proxy to client
         proxyRes.pipe(res);
         
         proxyRes.on('end', () => {
-          resolve();
+          resolve(undefined);
         });
       });
 
@@ -318,6 +320,9 @@ router.post('/api/mask-edit', genLimiter, async (req, res) => {
       logger.info('[Mask Edit] Reference photo received from client');
       try {
         const refB64 = referenceImage.slice(referenceImage.indexOf(',') + 1);
+        // Typed as the general `Buffer` (ArrayBufferLike) so sharp's `.toBuffer()` result,
+        // which is `Buffer<ArrayBufferLike>`, can be reassigned without a generic mismatch.
+        /** @type {Buffer} */
         let refBuffer = Buffer.from(refB64, 'base64');
         if (!refBuffer || refBuffer.length === 0) throw new Error('empty reference buffer');
         refBuffer = await downscaleImage(refBuffer);
