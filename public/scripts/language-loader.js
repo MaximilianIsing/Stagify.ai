@@ -2,7 +2,7 @@
 // applies it to [data-lang] / [data-lang-html] / [data-lang-attr] nodes, keeps the
 // <title> and JSON-LD structured data in sync, and re-applies to nodes injected
 // later via a MutationObserver. Exposes window.LanguageSystem for the rest of the
-// app (carousel, mask editors, etc.). Classic <script defer>, runs on every page.
+// app (carousel, mask editors, etc.). Loaded as <script type="module">, runs on every page.
 
 (() => {
   'use strict';

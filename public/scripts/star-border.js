@@ -1,7 +1,7 @@
 // StarBorder — wraps an element in an animated glowing gradient border by
 // replacing it with a container that holds two radial-gradient layers plus the
 // original content. Used on the homepage stat pills (.stat-pill).
-// Classic <script> (defines the global `StarBorder`); self-initialises on load.
+// Defines the global `StarBorder` (for classic consumers); self-initialises on load.
 
 class StarBorder {
   constructor(element, options = {}) {

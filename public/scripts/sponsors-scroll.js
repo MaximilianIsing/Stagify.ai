@@ -2,7 +2,7 @@
 // The track holds the logo set duplicated twice; the transform resets to 0 once
 // the first copy has scrolled fully off, giving a seamless loop. Honours
 // prefers-reduced-motion and pauses while the tab is hidden.
-// Classic <script> (defines the globals `initSponsorsScroll` / `cleanupSponsorsScroll`).
+// Defines the globals `initSponsorsScroll` / `cleanupSponsorsScroll` (for classic consumers).
 
 let sponsorsAnimationId = null;
 let sponsorsInitialized = false;
