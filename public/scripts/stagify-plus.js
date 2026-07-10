@@ -4,9 +4,9 @@
         var IS_STAGING = false;
         function applyStripeCheckout(user) {
           var hint = document.getElementById('plus-checkout-hint');
-          var link = document.getElementById('stagify-plus-checkout-link');
+          var link = /** @type {HTMLAnchorElement} */ (document.getElementById('stagify-plus-checkout-link'));
           var manageWrap = document.getElementById('sp-manage-subscription-wrap');
-          var manageBtn = document.getElementById('sp-manage-subscription-btn');
+          var manageBtn = /** @type {HTMLButtonElement} */ (document.getElementById('sp-manage-subscription-btn'));
           if (!link) return;
 
           if (user && user.plan === 'pro') {
@@ -79,7 +79,7 @@
           if (manageWrap) manageWrap.classList.add('hidden');
         }
         document.addEventListener('DOMContentLoaded', function () {
-          var manageBtn = document.getElementById('sp-manage-subscription-btn');
+          var manageBtn = /** @type {HTMLButtonElement} */ (document.getElementById('sp-manage-subscription-btn'));
           if (manageBtn && window.StagifyAuth && typeof window.StagifyAuth.openBillingPortal === 'function') {
             manageBtn.addEventListener('click', function () {
               manageBtn.disabled = true;

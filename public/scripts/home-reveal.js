@@ -21,8 +21,9 @@
         ".info-row__media img, .ba img, .plus-card__logo, .sponsor-logo, .cmp-brandcell img"
       )
       .forEach((img) => {
-        if (img && typeof img.decode === "function") {
-          img.decode().catch(() => {});
+        const image = /** @type {HTMLImageElement} */ (img);
+        if (image && typeof image.decode === "function") {
+          image.decode().catch(() => {});
         }
       });
   }
@@ -67,9 +68,10 @@
       exitMQ.addEventListener("change", (e) => {
         if (e.matches) return; // became desktop — nothing to undo
         els.forEach((el) => {
-          clearTimeout(el._revTimer);
-          el.classList.remove("exit-up", "exit-down");
-          if (el.dataset.seen) el.classList.add("is-visible");
+          const revEl = /** @type {HTMLElement & { _revTimer?: ReturnType<typeof setTimeout> }} */ (el);
+          clearTimeout(revEl._revTimer);
+          revEl.classList.remove("exit-up", "exit-down");
+          if (revEl.dataset.seen) revEl.classList.add("is-visible");
         });
       });
     }

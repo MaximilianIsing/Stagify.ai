@@ -279,8 +279,8 @@ import { createUpload } from './masking-studio/upload.js';
           if (!card) return;
           const focusables = card.querySelectorAll('button, a[href], input, textarea, select, [tabindex]:not([tabindex="-1"])');
           if (!focusables.length) return;
-          const first = focusables[0];
-          const last = focusables[focusables.length - 1];
+          const first = /** @type {HTMLElement} */ (focusables[0]);
+          const last = /** @type {HTMLElement} */ (focusables[focusables.length - 1]);
           if (!card.contains(document.activeElement)) {
             e.preventDefault();
             first.focus();
@@ -352,7 +352,7 @@ import { createUpload } from './masking-studio/upload.js';
             }
             if (cancelRect()) { e.preventDefault(); return; }
           }
-          const t = e.target;
+          const t = /** @type {HTMLElement} */ (e.target);
           const typing = t && t.closest && t.closest('input, textarea, select, [contenteditable]');
           if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'z') {
             if (!typing && state.phase === 'draw') {

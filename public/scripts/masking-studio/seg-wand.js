@@ -214,6 +214,7 @@ export function createSegWand(deps) {
           if (!cache || state.phase !== 'draw') return; // superseded while analyzing
           const px = Math.max(0, Math.min(state.base.w - 1, Math.round(p.x)));
           const py = Math.max(0, Math.min(state.base.h - 1, Math.round(p.y)));
+          /** @type {{ canvas: HTMLCanvasElement, area: number } | null} */
           let hit = null;
           cache.forEach((it) => {
             const a = it.canvas.getContext('2d').getImageData(px, py, 1, 1).data[3];

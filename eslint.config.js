@@ -3,10 +3,12 @@
 // Two linted scopes, each carrying the recommended ruleset:
 //   1. Backend — server.js, instrument.js, routes/, lib/, the test suite. Node ES modules.
 //   2. Frontend — the files under public/scripts/ that are actual ES modules. This list is
-//      AUTO-DISCOVERED (see collectEsmFrontend): any file with a top-level `import … from`
-//      or `export` is a real module (proper scope, so browser globals lint cleanly with no
-//      cross-file `no-undef`) and gets linted. As classic <script> files migrate to ESM they
-//      start being linted automatically — no edit here is needed.
+//      AUTO-DISCOVERED (see scripts/collect-esm-frontend.js): any file with a top-level
+//      `import … from` or `export` is a real module (proper scope, so browser globals lint
+//      cleanly with no cross-file `no-undef`) and gets linted. As classic <script> files
+//      migrate to ESM they start being linted automatically — no edit here is needed. The
+//      type-checker (scripts/typecheck-frontend.js) consumes that same discovery, so the lint
+//      scope and the type-check scope are always the same set of files.
 //
 // Everything else under public/ — classic <script> files that share globals across files, plus
 // minified/generated bundles (carousel, star-border, sponsors-scroll, language-loader, demo-data,
@@ -17,48 +19,18 @@
 
 import js from '@eslint/js';
 import globals from 'globals';
-import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { collectEsmFrontend } from './scripts/collect-esm-frontend.js';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const recommendedRules = js.configs.recommended.rules;
 
-// A file is a frontend ES module if it has a top-level `export` or a static `import … from` /
-// side-effect `import '…'`. Dynamic `import()` in a classic script does NOT count (it has no
-// `from` and no leading `export`), so those correctly stay unlinted.
-const ESM_MARKER = /^\s*(?:export\b|import\s+(?:[^(;]*\sfrom\s|['"]))/m;
-
-function collectEsmFrontend(dir) {
-  const out = [];
-  let entries;
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return out; // directory missing → nothing to lint
-  }
-  for (const entry of entries) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name === 'vendor') continue; // third-party bundles
-      out.push(...collectEsmFrontend(full));
-    } else if (entry.name.endsWith('.js') && !entry.name.endsWith('.min.js')) {
-      let src;
-      try {
-        src = fs.readFileSync(full, 'utf8');
-      } catch {
-        continue;
-      }
-      if (ESM_MARKER.test(src)) {
-        // ESLint wants POSIX-style globs relative to this config's directory.
-        out.push(path.relative(rootDir, full).split(path.sep).join('/'));
-      }
-    }
-  }
-  return out;
-}
-
-const frontendEsmFiles = collectEsmFrontend(path.join(rootDir, 'public', 'scripts'));
+// The frontend lint scope is every real ES module under public/scripts/ — the exact same set
+// scripts/typecheck-frontend.js hands the type-checker (both call collectEsmFrontend), so lint
+// and type-check always cover identical files. Passing rootDir makes the returned paths the
+// POSIX-style, config-relative globs ESLint's `files` expects.
+const frontendEsmFiles = collectEsmFrontend(path.join(rootDir, 'public', 'scripts'), rootDir);
 
 export default [
   {

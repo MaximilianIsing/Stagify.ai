@@ -47,7 +47,7 @@ export function createMaskEditor(deps) {
         let originalContainer = null;
         const allContainers = document.querySelectorAll('.ai-image-container');
         for (const container of allContainers) {
-          const img = container.querySelector('.ai-generated-image');
+          const img = /** @type {HTMLImageElement} */ (container.querySelector('.ai-generated-image'));
           if (img && img.src === imageSrc) {
             originalContainer = container;
             break;
@@ -66,7 +66,7 @@ export function createMaskEditor(deps) {
         if (carouselItem) {
           const carousel = carouselItem.closest('.masked-image-carousel');
           if (carousel) {
-            const firstItem = carousel.querySelector('.masked-image-carousel-item:first-child img');
+            const firstItem = /** @type {HTMLImageElement} */ (carousel.querySelector('.masked-image-carousel-item:first-child img'));
             if (firstItem) {
               originalImageSrc = firstItem.src;
             }
@@ -83,8 +83,8 @@ export function createMaskEditor(deps) {
         }
         
         const existingModal = document.getElementById('mask-editor-modal');
-        const canvas = document.getElementById('mask-editor-canvas');
-        const promptInput = document.getElementById('mask-editor-prompt');
+        const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-canvas'));
+        const promptInput = /** @type {HTMLInputElement} */ (document.getElementById('mask-editor-prompt'));
         
         // Load image onto canvas
         const img = new Image();
@@ -122,7 +122,7 @@ export function createMaskEditor(deps) {
           ctx.drawImage(img, 0, 0, img.width, img.height);
           
           // Initialize mask canvas (transparent overlay)
-          const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+          const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
           maskCanvas.width = img.width;
           maskCanvas.height = img.height;
           maskCanvas.style.width = displayWidth + 'px';
@@ -133,8 +133,8 @@ export function createMaskEditor(deps) {
           // Store image source and scale for later use
           canvas.dataset.imageSrc = imageSrc;
           canvas.dataset.imageType = imageType;
-          canvas.dataset.originalWidth = img.width;
-          canvas.dataset.originalHeight = img.height;
+          canvas.dataset.originalWidth = String(img.width);
+          canvas.dataset.originalHeight = String(img.height);
           
           existingModal.classList.add('active');
           viewport.bind();
@@ -271,8 +271,9 @@ export function createMaskEditor(deps) {
         document.getElementById('mask-editor-brush-btn').addEventListener('click', () => setMaskTool('brush'));
         document.getElementById('mask-editor-erase-btn').addEventListener('click', () => setMaskTool('erase'));
         document.getElementById('mask-editor-brush-slider').addEventListener('input', (e) => {
-          brushSize = parseInt(e.target.value, 10);
-          document.getElementById('mask-editor-brush-size').textContent = e.target.value + ' px';
+          const slider = /** @type {HTMLInputElement} */ (e.target);
+          brushSize = parseInt(slider.value, 10);
+          document.getElementById('mask-editor-brush-size').textContent = slider.value + ' px';
         });
 
         reference.wire(
@@ -289,7 +290,7 @@ export function createMaskEditor(deps) {
         }
         
         // Initially disable the button
-        const submitBtn = document.getElementById('mask-editor-submit');
+        const submitBtn = /** @type {HTMLButtonElement} */ (document.getElementById('mask-editor-submit'));
         if (submitBtn) {
           submitBtn.disabled = true;
         }
@@ -352,7 +353,7 @@ export function createMaskEditor(deps) {
 
       function maskSetControlsDisabled(dis) {
         ['mask-editor-cancel','mask-editor-clear','mask-editor-submit','mask-editor-rerun','mask-editor-done','mask-editor-brush-btn','mask-editor-erase-btn','mask-editor-brush-slider','mask-editor-prompt','mask-editor-ref-add','mask-editor-ref-remove']
-          .forEach((id) => { const el = document.getElementById(id); if (el) el.disabled = dis; });
+          .forEach((id) => { const el = /** @type {HTMLButtonElement} */ (document.getElementById(id)); if (el) el.disabled = dis; });
       }
       function maskSetPhase(p) {
         maskPhase = p;
@@ -362,7 +363,7 @@ export function createMaskEditor(deps) {
         const rerunBtn = document.getElementById('mask-editor-rerun');
         const doneBtn = document.getElementById('mask-editor-done');
         const title = document.querySelector('.mask-editor-title');
-        const note = document.querySelector('.mask-editor-note');
+        const note = /** @type {HTMLElement} */ (document.querySelector('.mask-editor-note'));
         if (p === 'loading') {
           maskSetControlsDisabled(true);
           overlay.start();
@@ -405,7 +406,7 @@ export function createMaskEditor(deps) {
         if (!maskRefineState) return;
         const { originCanvas, w, h, coreGrow, featherPx, editedImg } = maskRefineState;
         const maskCanvas = document.getElementById('mask-editor-mask-canvas');
-        const baseCanvas = document.getElementById('mask-editor-canvas');
+        const baseCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-canvas'));
         if (!maskCanvas || !baseCanvas) return;
         const keep = maskBuildBlendMask(maskCanvas, w, h, coreGrow, featherPx);
         const composed = maskCompositeEditCanvas(originCanvas, keep, editedImg, w, h);
@@ -425,7 +426,7 @@ export function createMaskEditor(deps) {
       // Recolor every painted stroke to `color` (keeps alpha) — purely cosmetic,
       // used to switch the selection to the refine-phase color.
       function maskRecolor(color) {
-        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+        const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
         if (!maskCanvas || !maskCanvas.width || !maskCanvas.height) return;
         const ctx = maskCanvas.getContext('2d');
         ctx.save();
@@ -437,7 +438,7 @@ export function createMaskEditor(deps) {
 
       // Accurate (expensive) scan — only on stroke end, never per-move.
       function maskScanHasContent() {
-        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+        const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
         if (!maskCanvas || !maskCanvas.width || !maskCanvas.height) return false;
         const d = maskCanvas.getContext('2d').getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
         for (let i = 3; i < d.length; i += 4) { if (d[i] > 10) return true; }
@@ -540,7 +541,7 @@ export function createMaskEditor(deps) {
       }
       
       function clearMask() {
-        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+        const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
         const ctx = maskCanvas.getContext('2d');
         ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
         maskPainted = false;
@@ -548,7 +549,7 @@ export function createMaskEditor(deps) {
       }
       
       function checkMaskHasContent() {
-        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
+        const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
         if (!maskCanvas || maskCanvas.width === 0 || maskCanvas.height === 0) {
           return false;
         }
@@ -558,13 +559,13 @@ export function createMaskEditor(deps) {
       }
       
       function checkPromptHasContent() {
-        const promptInput = document.getElementById('mask-editor-prompt');
+        const promptInput = /** @type {HTMLInputElement} */ (document.getElementById('mask-editor-prompt'));
         return promptInput && promptInput.value.trim().length > 0;
       }
       
       function updateApplyButtonState() {
-        const submitBtn = document.getElementById('mask-editor-submit');
-        const rerunBtn = document.getElementById('mask-editor-rerun');
+        const submitBtn = /** @type {HTMLButtonElement} */ (document.getElementById('mask-editor-submit'));
+        const rerunBtn = /** @type {HTMLButtonElement} */ (document.getElementById('mask-editor-rerun'));
         // Use the cheap flag (set while drawing, recomputed on stroke end) so this
         // never scans the whole canvas in the hot path.
         const ready = maskPainted && checkPromptHasContent();
@@ -599,7 +600,7 @@ export function createMaskEditor(deps) {
           }
           // Restore the draw-phase title/note for next time.
           const title = document.querySelector('.mask-editor-title');
-          const note = document.querySelector('.mask-editor-note');
+          const note = /** @type {HTMLElement} */ (document.querySelector('.mask-editor-note'));
           if (title) title.textContent = lang('pdf.maskEditor.title', 'Edit with Mask');
           if (note) { note.style.display = 'none'; note.textContent = ''; }
         }
@@ -644,8 +645,8 @@ export function createMaskEditor(deps) {
       // "Apply Edit" (draw phase): generate, then enter refine mode in-modal.
       async function submitMaskEdit() {
         if (maskPhase !== 'draw') return;
-        const canvas = document.getElementById('mask-editor-canvas');
-        const promptInput = document.getElementById('mask-editor-prompt');
+        const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-canvas'));
+        const promptInput = /** @type {HTMLInputElement} */ (document.getElementById('mask-editor-prompt'));
         const prompt = promptInput.value.trim();
         if (!prompt) {
           showToast(lang('pdf.mask.needPrompt', 'Please describe what you want to change in the masked area.'), 'error');
@@ -685,7 +686,7 @@ export function createMaskEditor(deps) {
       // "Regenerate" (refine phase): run the AI again with the refined strokes.
       async function rerunMaskAI() {
         if (maskPhase !== 'refine' || !maskRefineState) return;
-        const promptInput = document.getElementById('mask-editor-prompt');
+        const promptInput = /** @type {HTMLInputElement} */ (document.getElementById('mask-editor-prompt'));
         const prompt = promptInput.value.trim();
         if (!prompt || !checkMaskHasContent()) return;
         const { imageSrc, w, h, coreGrow } = maskRefineState;
@@ -723,7 +724,7 @@ export function createMaskEditor(deps) {
         if (carouselItem) {
           const carousel = carouselItem.closest('.masked-image-carousel');
           if (carousel) {
-            const firstItem = carousel.querySelector('.masked-image-carousel-item:first-child img');
+            const firstItem = /** @type {HTMLImageElement} */ (carousel.querySelector('.masked-image-carousel-item:first-child img'));
             if (firstItem) {
               originalImageSrc = firstItem.src;
               originalContainer = carousel;
@@ -735,7 +736,7 @@ export function createMaskEditor(deps) {
         if (!imageData) {
           const allContainers = document.querySelectorAll('.ai-image-container');
           for (const container of allContainers) {
-            const img = container.querySelector('.ai-generated-image');
+            const img = /** @type {HTMLImageElement} */ (container.querySelector('.ai-generated-image'));
             if (img && img.src === maskedImageSrc) {
               originalImageSrc = maskedImageSrc;
               originalContainer = container;

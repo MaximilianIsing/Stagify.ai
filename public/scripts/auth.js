@@ -26,7 +26,7 @@
         .then(function (cfg) {
           cfg = cfg || {};
           self.config = cfg;
-          self.isStaging = !!cfg.isStaging;
+          self.isStaging = !!(/** @type {any} */ (cfg)).isStaging;
           return cfg;
         })
         .catch(function () {
@@ -121,7 +121,7 @@
           removeRow.classList.remove('hidden');
         } else {
           removeRow.classList.add('hidden');
-          var rfCb = document.getElementById('remove-furniture');
+          var rfCb = /** @type {HTMLInputElement} */ (document.getElementById('remove-furniture'));
           if (rfCb && rfCb.checked) {
             rfCb.checked = false;
             rfCb.dispatchEvent(new Event('change', { bubbles: true }));

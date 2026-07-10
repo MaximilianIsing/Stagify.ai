@@ -14,7 +14,7 @@ export const FURNITURE_LIMIT = 5;
 export function createFurnitureRefs(deps) {
   const { getStagingAlt } = deps;
 
-    const furnitureFileInput = document.getElementById('stagify-furniture-file');
+    const furnitureFileInput = /** @type {HTMLInputElement} */ (document.getElementById('stagify-furniture-file'));
     const furnitureList = document.getElementById('stagify-furniture-list');
     const furnitureAddBtn = document.getElementById('stagify-furniture-add-btn');
     let accumulatedFurnitureFiles = [];

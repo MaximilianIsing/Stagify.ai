@@ -34,7 +34,7 @@
     // with first paint. Each mount only warms 1–2 images — the rest load lazily
     // as the visitor steps through — so this stays lighter than the old embeds.
     var mountAll = function () { hosts.forEach(mount); };
-    if ('requestIdleCallback' in window) {
+    if ('requestIdleCallback' in /** @type {any} */ (window)) {
       requestIdleCallback(mountAll, { timeout: 2500 });
     } else if (document.readyState === 'complete') {
       setTimeout(mountAll, 200);

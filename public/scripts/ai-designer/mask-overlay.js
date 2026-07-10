@@ -15,7 +15,7 @@ export function createMaskOverlay({ lang }) {
   ];
 
   function maskEnsureOverlay() {
-    const container = document.querySelector('.mask-editor-canvas-container');
+    const container = /** @type {HTMLElement} */ (document.querySelector('.mask-editor-canvas-container'));
     if (maskLoadingOverlay || !container) return;
     if (!document.getElementById('smask-refine-styles')) {
       const st = document.createElement('style');

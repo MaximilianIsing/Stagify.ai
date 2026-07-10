@@ -220,7 +220,7 @@ import { createVersionCarousel } from './app/version-carousel.js';
       const variationValueEl = document.getElementById('stagify-variation-value');
       if (variationSlider && variationValueEl) {
         const syncVariationLabel = () => {
-          const v = variationSlider.value;
+          const v = /** @type {HTMLInputElement} */ (variationSlider).value;
           variationValueEl.textContent = v;
           variationSlider.setAttribute('aria-valuenow', v);
         };
@@ -326,10 +326,10 @@ import { createVersionCarousel } from './app/version-carousel.js';
       formData.append('furnitureStyle', styleSelect?.value || 'standard');
       formData.append('additionalPrompt', additionalPrompt?.value || '');
 
-      const removeFurnitureCheckbox = document.getElementById('remove-furniture');
+      const removeFurnitureCheckbox = /** @type {HTMLInputElement} */ (document.getElementById('remove-furniture'));
       const removeChecked = removeFurnitureCheckbox?.checked || false;
-      formData.append('removeFurniture', removeChecked);
-      const keepFurnitureEl = document.getElementById('keep-furniture');
+      formData.append('removeFurniture', String(removeChecked));
+      const keepFurnitureEl = /** @type {HTMLTextAreaElement} */ (document.getElementById('keep-furniture'));
       formData.append('keepFurniture', (removeChecked && keepFurnitureEl?.value) ? keepFurnitureEl.value.trim() : '');
 
       const userRole = localStorage.getItem('userRole') || 'unknown';
@@ -349,8 +349,8 @@ import { createVersionCarousel } from './app/version-carousel.js';
         window.getComputedStyle(proPanel).display !== 'none' &&
         window.getComputedStyle(proPanel).visibility !== 'hidden';
       if (isProUser() && proPanelUsable) {
-        const modelSel = document.getElementById('stagify-model-select');
-        const varSel = document.getElementById('stagify-variation-count');
+        const modelSel = /** @type {HTMLSelectElement} */ (document.getElementById('stagify-model-select'));
+        const varSel = /** @type {HTMLInputElement} */ (document.getElementById('stagify-variation-count'));
         if (modelSel) formData.append('model', modelSel.value || 'gpt-4o-mini');
         if (varSel) formData.append('variationCount', varSel.value || '1');
         const furnitureFiles = furnitureRefs.getFiles();
@@ -409,7 +409,7 @@ import { createVersionCarousel } from './app/version-carousel.js';
         progress.classList.add('hidden');
         progressBar.style.width = '0%';
         showStagingError(reason || DEFAULT_UNSTAGEABLE_MESSAGE);
-        const err = new Error(reason || DEFAULT_UNSTAGEABLE_MESSAGE);
+        const err = /** @type {Error & { code?: string }} */ (new Error(reason || DEFAULT_UNSTAGEABLE_MESSAGE));
         err.code = 'NOT_STAGEABLE';
         throw err;
       }
@@ -427,6 +427,7 @@ import { createVersionCarousel } from './app/version-carousel.js';
       // the generation to finish. The fetch below is wired to this signal, and its
       // catch turns the abort into the friendly "not stageable" rejection.
       const genAbort = new AbortController();
+      /** @type {{ valid?: boolean, reason?: string } | null} */
       let validationRejection = null;
       if (stageValidation && !stageValidationResult) {
         stageValidation.then((r) => {
@@ -578,14 +579,14 @@ import { createVersionCarousel } from './app/version-carousel.js';
         progressBar.style.width = '0%';
         const errorData = await response.json().catch(() => ({}));
         if (errorData.code === 'AUTH_REQUIRED') {
-          const authErr = new Error(errorData.error || 'Please sign in to stage images.');
+          const authErr = /** @type {Error & { code?: string }} */ (new Error(errorData.error || 'Please sign in to stage images.'));
           authErr.code = 'AUTH_REQUIRED';
           throw authErr;
         }
         if (errorData.code === 'DAILY_LIMIT' || response.status === 429) {
           const limitMsg = messageForDailyLimitResponse(errorData);
           showStagingLimitInViewer(limitMsg);
-          const limitErr = new Error(limitMsg);
+          const limitErr = /** @type {Error & { code?: string }} */ (new Error(limitMsg));
           limitErr.code = 'DAILY_LIMIT';
           throw limitErr;
         }
@@ -598,7 +599,7 @@ import { createVersionCarousel } from './app/version-carousel.js';
         if (errorData.code === 'NO_IMAGE_GENERATED' || response.status === 422) {
           const msg = errorData.error || 'This image couldn\'t be staged. Please try a different photo of an interior room.';
           showStagingError(msg);
-          const noImgErr = new Error(msg);
+          const noImgErr = /** @type {Error & { code?: string }} */ (new Error(msg));
           noImgErr.code = 'NO_IMAGE_GENERATED';
           throw noImgErr;
         }

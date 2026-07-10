@@ -1,12 +1,12 @@
       (function () {
-        var domainInput = document.getElementById('ent-domain');
+        var domainInput = /** @type {HTMLInputElement} */ (document.getElementById('ent-domain'));
         var preview = document.getElementById('ent-domain-preview');
         var form = document.getElementById('ent-form');
         var formCard = document.getElementById('ent-form-card');
         var successCard = document.getElementById('ent-success');
         var successDomain = document.getElementById('ent-success-domain');
         var errorEl = document.getElementById('ent-error');
-        var submitBtn = document.getElementById('ent-submit-btn');
+        var submitBtn = /** @type {HTMLButtonElement} */ (document.getElementById('ent-submit-btn'));
 
         var params = new URLSearchParams(window.location.search);
         if (params.get('success') === '1') {
@@ -35,9 +35,9 @@
           hideError();
 
           var domain = domainInput.value.trim().replace(/^@/, '').toLowerCase();
-          var company = document.getElementById('ent-company').value.trim();
-          var email = document.getElementById('ent-email').value.trim();
-          var phone = document.getElementById('ent-phone').value.trim();
+          var company = /** @type {HTMLInputElement} */ (document.getElementById('ent-company')).value.trim();
+          var email = /** @type {HTMLInputElement} */ (document.getElementById('ent-email')).value.trim();
+          var phone = /** @type {HTMLInputElement} */ (document.getElementById('ent-phone')).value.trim();
 
           if (!domain || !domain.includes('.')) {
             showError('Please enter a valid domain (e.g. company.com).');

@@ -9,8 +9,8 @@
       (function () {
         var stage = document.getElementById('bh-stage');
         var btn = document.getElementById('stagify-plus-checkout-link');
-        var canvas = document.getElementById('bh-canvas');
-        var video = document.getElementById('background-video');
+        var canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('bh-canvas'));
+        var video = /** @type {HTMLVideoElement} */ (document.getElementById('background-video'));
         if (!stage || !btn || !canvas) return;
         var canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
         var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -98,8 +98,8 @@
         }
         function initGL() {
           try {
-            gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true })
-              || canvas.getContext('experimental-webgl');
+            gl = /** @type {WebGLRenderingContext} */ (canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: true })
+              || canvas.getContext('experimental-webgl'));
           } catch (e) { gl = null; }
           if (!gl) return false;
           var v = compile(gl.VERTEX_SHADER, VERT), f = compile(gl.FRAGMENT_SHADER, FRAG);

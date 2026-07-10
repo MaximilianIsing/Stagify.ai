@@ -32,7 +32,7 @@
 // 2) Spotlight glass: point a soft light at the cursor for each testimonial
 //    card by tracking pointer position into --mx/--my (rAF-throttled).
 (function () {
-  var cards = document.querySelectorAll('#testimonials .tw-card');
+  var cards = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('#testimonials .tw-card'));
   if (!cards.length || !window.matchMedia || !matchMedia('(hover: hover)').matches) return;
   cards.forEach(function (card) {
     var queued = false, lx = 0, ly = 0;

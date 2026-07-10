@@ -145,7 +145,7 @@ export function createUpload(deps) {
           c.getContext('2d').drawImage(img, 0, 0, w, h);
           try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
         };
-        img.src = reader.result;
+        img.src = /** @type {string} */ (reader.result);
       };
       reader.readAsDataURL(file);
     });
@@ -211,7 +211,7 @@ export function createUpload(deps) {
   // the room photo; afterwards it becomes the active area's furniture.
   document.addEventListener('paste', (e) => {
     if (state.phase === 'generating') return;
-    const t = e.target;
+    const t = /** @type {HTMLElement} */ (e.target);
     if (t && t.closest && t.closest('input, textarea, [contenteditable]')) return;
     const files = (e.clipboardData && e.clipboardData.files) || [];
     const file = Array.prototype.find.call(files, (f) => /^image\//i.test(f.type || ''));

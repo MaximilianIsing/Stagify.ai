@@ -20,7 +20,7 @@ export function createImageViewer(deps) {
       // Image modal functions
       function openImageModal(imageSrc, altText) {
         const modal = document.getElementById('image-modal');
-        const modalImg = document.getElementById('image-modal-img');
+        const modalImg = /** @type {HTMLImageElement} */ (document.getElementById('image-modal-img'));
         if (modal && modalImg) {
           modalImg.src = imageSrc;
           modalImg.alt = altText || getPdfAlt('enlargedImage');
@@ -378,7 +378,7 @@ export function createImageViewer(deps) {
           // Update all next buttons (they're inside each image container)
           const allNextButtons = track.querySelectorAll('.masked-image-carousel-nav.next');
           allNextButtons.forEach((btn) => {
-            btn.disabled = currentIndex === totalItemsCount - 1;
+            /** @type {HTMLButtonElement} */ (btn).disabled = currentIndex === totalItemsCount - 1;
           });
         }
 

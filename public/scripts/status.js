@@ -41,7 +41,7 @@
         }
         function fmtTimeRange(start, end) {
           try {
-            var opts = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            var opts = /** @type {Intl.DateTimeFormatOptions} */ ({ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             return new Date(start).toLocaleString([], opts) + ' – ' + new Date(end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           } catch (e) { return ''; }
         }

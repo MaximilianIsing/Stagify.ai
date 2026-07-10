@@ -24,10 +24,10 @@
     const studio = document.getElementById("staging-studio");
     if (!studio) return;
 
-    const ba = studio.querySelector(".ba");
-    const handle = studio.querySelector(".ba-handle");
-    const beforeImg = studio.querySelector(".ba-before");
-    const afterImg = studio.querySelector(".ba-after");
+    const ba = /** @type {HTMLElement} */ (studio.querySelector(".ba"));
+    const handle = /** @type {HTMLElement} */ (studio.querySelector(".ba-handle"));
+    const beforeImg = /** @type {HTMLImageElement} */ (studio.querySelector(".ba-before"));
+    const afterImg = /** @type {HTMLImageElement} */ (studio.querySelector(".ba-after"));
     const exBtns = Array.from(studio.querySelectorAll(".studio-ex"));
     if (!ba || !handle) return;
 
@@ -44,7 +44,7 @@
     function setPos(p) {
       pos = Math.max(0, Math.min(100, p));
       ba.style.setProperty("--pos", pos + "%");
-      handle.setAttribute("aria-valuenow", Math.round(pos));
+      handle.setAttribute("aria-valuenow", String(Math.round(pos)));
     }
     setPos(pos);
 
