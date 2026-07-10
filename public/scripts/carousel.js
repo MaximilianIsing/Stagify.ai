@@ -1,7 +1,7 @@
 // Carousel — the homepage hero "example styles" slider. Renders its own markup
 // from an items array, supports mouse/touch drag, clickable indicators,
-// pause-on-hover and autoplay. Classic <script> (defines the global `Carousel`);
-// self-initialises against `.carousel-container` on load.
+// pause-on-hover and autoplay. Defines the global `Carousel` (for classic consumers)
+// and self-initialises against `.carousel-container` on load.
 
 class Carousel {
   constructor(container, options = {}) {

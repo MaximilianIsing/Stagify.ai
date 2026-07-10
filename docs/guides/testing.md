@@ -179,9 +179,10 @@ ESLint uses a flat config ([`eslint.config.js`](../../eslint.config.js)):
   - *Frontend* — the ES modules under `public/scripts/`, **auto-discovered**: the config scans
     that tree at load and lints any file with a top-level `export` or static `import … from`
     (browser globals). As classic `<script>` files migrate to ES modules they start being linted
-    automatically — no config edit needed. Files with neither marker (classic shared-global
-    scripts, and minified/generated bundles like `carousel.js`, `demo-data.js`, `vendor/*`) match
-    no block and stay unlinted.
+    automatically — no config edit needed. Files with neither marker (the render-blocking gate
+    scripts like `masking-studio-gate.js`, and generated/vendor bundles like `demo-data.js`,
+    `vendor/*.min.js`) match no block and stay unlinted — currently 7 of the 75 files under
+    `public/scripts/`; the other 68 are linted **and** type-checked.
 - **No blanket `public/**` ignore.** Only `node_modules`, `ds-bundle`, `supademo-local`,
   `to-build`, and `*.min.js` are ignored outright. `public/**` is deliberately *not* ignored:
   ESLint can't un-ignore files beneath a `/**`-ignored ancestor, so a broad ignore would make the
