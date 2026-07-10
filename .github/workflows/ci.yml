@@ -27,6 +27,9 @@ jobs:
       - name: Lint
         run: npm run lint         # backend is lint-clean; a new warning/error now fails the build
 
+      - name: Audit dependencies
+        run: npm audit --omit=dev --audit-level=high   # fail the build on a new high/critical in runtime deps
+
   # Browser smoke of the two studios. Separate job so its (heavier, occasionally
   # flaky) browser run is isolated from the fast unit gate above. The specs mock
   # every /api/* call, so no real AI is invoked and no keys are needed.
