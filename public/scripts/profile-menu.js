@@ -1,3 +1,4 @@
+/* global google */ // Google Identity Services, loaded from accounts.google.com
 (function () {
   var AUTH_BOUND = false;
   var authModeRegister = true;
@@ -604,7 +605,7 @@
           closeAuthModal();
           if (window.__stagifyPendingStaging) {
             window.__stagifyPendingStaging = false;
-            var stageModal = document.getElementById('stage-modal');
+            stageModal = document.getElementById('stage-modal');
             if (stageModal) stageModal.classList.remove('hidden');
           }
           refresh();
@@ -675,7 +676,7 @@
         '</div>';
     } else {
       dd.classList.remove('profile-menu-dropdown--guest');
-      var planLine = '';
+      var planLine;
       if (u.plan === 'pro') {
         // The "Stripe help center" button is hidden on the staging site.
         var portalHelp = isStagingMode
@@ -833,3 +834,7 @@
     refresh();
   });
 })();
+
+// Loaded as <script type="module">; this empty export marks the file as an ES
+// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
+export {};

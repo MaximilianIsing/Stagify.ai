@@ -126,7 +126,7 @@
     });
   }
 
-  function maxAnimMs(el, type, mode) {
+  function maxAnimMs(el, type, _mode) {
     const segs = el.querySelectorAll(".tx-seg");
     if (!segs.length) return 800;
     const stagger = parseInt(
@@ -348,3 +348,7 @@
 
   window.HomeTextAnimate = { refresh, init };
 })();
+
+// Loaded as <script type="module">; this empty export marks the file as an ES
+// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
+export {};
