@@ -243,7 +243,7 @@ import { createVersionCarousel } from './app/version-carousel.js';
     // case — the check starts at upload, so it is almost always done by click.
     let stageValidationResult = null;
     const DEFAULT_UNSTAGEABLE_MESSAGE =
-      "This doesn't look like a room or property space. Please upload a photo of an interior room or exterior space you'd like to stage.";
+      "This doesn't look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you'd like to stage.";
 
     async function handleStageFile(file) {
       // iPhone HEIC/HEIF photos aren't decodable by most browsers; convert to

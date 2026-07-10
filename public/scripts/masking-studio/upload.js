@@ -20,6 +20,7 @@ export function createUpload(deps) {
     tx,
     loadImage,
     setBaseImage,
+    clearBaseImage,
     requestDiscard,
     activeLayer,
     getLayer,
@@ -34,7 +35,7 @@ export function createUpload(deps) {
   const ROOM_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
   const DEFAULT_UNSTAGEABLE_MESSAGE =
-    "This doesn't look like a room or property space. Please upload a photo of an interior room or exterior space you'd like to stage.";
+    "This doesn't look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you'd like to stage.";
 
   // Cheap server-side pre-check: is this actually a stageable room/property
   // photo (not a selfie, a product shot, a document…)? Downscales the
@@ -103,15 +104,21 @@ export function createUpload(deps) {
       showToast(tx('errors.fileType', 'Please upload a JPG, PNG, or WebP image.'), 'error');
       return;
     }
-    // Pre-flight: only stageable room/property photos may enter the studio.
-    // A non-room (a selfie, a product shot, a document…) is rejected here
-    // with a friendly reason instead of wasting a masking generation.
-    const stageable = await validateStageableRoom(img);
-    if (stageable && stageable.valid === false) {
-      showToast(stageable.reason || DEFAULT_UNSTAGEABLE_MESSAGE, 'error');
-      return;
-    }
+    // Show the photo in the studio immediately, then run the stageability
+    // pre-check in the background so the vision round-trip never blocks the
+    // upload. A non-room (a selfie, a product shot, a document…) is pulled
+    // back out (clearBaseImage) when the verdict lands, with a friendly reason
+    // instead of wasting a masking generation. Capturing state.base guards the
+    // race where a quick re-upload replaces this photo before its verdict
+    // arrives — a stale rejection must not tear down the newer photo.
     setBaseImage(img);
+    const token = state.base;
+    validateStageableRoom(img).then((stageable) => {
+      if (!stageable || stageable.valid !== false) return;
+      if (state.base !== token) return;
+      clearBaseImage();
+      showToast(stageable.reason || DEFAULT_UNSTAGEABLE_MESSAGE, 'error');
+    });
   }
 
   // ---------------------------------------------------------------------
