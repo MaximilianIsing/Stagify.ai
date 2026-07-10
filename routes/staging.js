@@ -11,7 +11,7 @@ import { logger } from '../lib/logger.js';
  * (mask-edit / segment), each of which destructures its own slice.
  *
  * @param {{
- *   genAI: { getGenerativeModel: (options: any) => any },
+ *   genAI: { getGenerativeModel: (options: any) => any } | null,
  *   openai: import('openai').default | null,
  *   genLimiter: import('express').RequestHandler,
  *   stagingProcessUpload: import('express').RequestHandler,

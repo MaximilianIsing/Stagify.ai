@@ -13,21 +13,55 @@
  *   isHeic(file)            -> boolean
  *   toDisplayableFile(file) -> Promise<File>  (non-HEIC files pass through as-is)
  */
+const HEIC_EXT = /\.(heic|heif)$/i;
+const HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'];
+
+// isHeic / sniff are pure and live at module scope so they can be unit-tested
+// directly (test/heic-convert.test.js). The IIFE below still uses them, and the
+// browser API is unchanged (window.StagifyHeic).
+
+/**
+ * True if `file` looks like HEIC/HEIF by MIME type, or by a .heic/.heif extension
+ * when the browser reports an empty/generic type. Pure over { type, name }.
+ */
+export function isHeic(file) {
+  if (!file) return false;
+  var type = (file.type || '').toLowerCase();
+  if (HEIC_TYPES.indexOf(type) !== -1) return true;
+  // Some browsers report an empty or generic type for .heic files; fall back
+  // to the filename extension in that case.
+  if ((type === '' || type === 'application/octet-stream') && HEIC_EXT.test(file.name || '')) return true;
+  return false;
+}
+
+/**
+ * Identify an image by its real leading bytes, not its name/extension. Returns
+ * 'heic' | 'jpeg' | 'png' | 'webp' | 'gif' | 'avif' | null. Content wins because
+ * files often lie about their extension (e.g. a JPEG saved as ".heic").
+ */
+export function sniff(bytes) {
+  if (!bytes || bytes.length < 12) return null;
+  var ascii = function (i, n) {
+    var s = '';
+    for (var j = i; j < i + n && j < bytes.length; j++) s += String.fromCharCode(bytes[j]);
+    return s;
+  };
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return 'jpeg';
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'png';
+  if (ascii(0, 3) === 'GIF') return 'gif';
+  if (ascii(0, 4) === 'RIFF' && ascii(8, 4) === 'WEBP') return 'webp';
+  if (ascii(4, 4) === 'ftyp') {
+    // Major brand + the compatible-brand list that follows it.
+    var head = ascii(8, bytes.length - 8).toLowerCase();
+    if (/avif|avis/.test(head)) return 'avif';               // AV1 — browsers decode natively
+    if (/heic|heix|heim|heis|hevc|hevx|mif1|msf1/.test(head)) return 'heic';
+    return 'heic'; // some other ISO-BMFF image; let the converter try
+  }
+  return null;
+}
+
 (function () {
   'use strict';
-
-  var HEIC_EXT = /\.(heic|heif)$/i;
-  var HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'];
-
-  function isHeic(file) {
-    if (!file) return false;
-    var type = (file.type || '').toLowerCase();
-    if (HEIC_TYPES.indexOf(type) !== -1) return true;
-    // Some browsers report an empty or generic type for .heic files; fall back
-    // to the filename extension in that case.
-    if ((type === '' || type === 'application/octet-stream') && HEIC_EXT.test(file.name || '')) return true;
-    return false;
-  }
 
   var loaderPromise = null;
   function loadLibrary() {
@@ -96,30 +130,6 @@
   var MIME_BY_KIND = { jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', avif: 'image/avif' };
   var EXT_BY_KIND = { jpeg: '.jpg', png: '.png', webp: '.webp', gif: '.gif', avif: '.avif' };
 
-  // Identify a file by its real bytes, not its name/extension. Returns one of
-  // 'heic' | 'jpeg' | 'png' | 'webp' | 'gif' | 'avif' | null. Files often lie
-  // about their extension (e.g. a JPEG saved as ".heic"), so content wins.
-  function sniff(bytes) {
-    if (!bytes || bytes.length < 12) return null;
-    var ascii = function (i, n) {
-      var s = '';
-      for (var j = i; j < i + n && j < bytes.length; j++) s += String.fromCharCode(bytes[j]);
-      return s;
-    };
-    if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return 'jpeg';
-    if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'png';
-    if (ascii(0, 3) === 'GIF') return 'gif';
-    if (ascii(0, 4) === 'RIFF' && ascii(8, 4) === 'WEBP') return 'webp';
-    if (ascii(4, 4) === 'ftyp') {
-      // Major brand + the compatible-brand list that follows it.
-      var head = ascii(8, bytes.length - 8).toLowerCase();
-      if (/avif|avis/.test(head)) return 'avif';               // AV1 — browsers decode natively
-      if (/heic|heix|heim|heis|hevc|hevx|mif1|msf1/.test(head)) return 'heic';
-      return 'heic'; // some other ISO-BMFF image; let the converter try
-    }
-    return null;
-  }
-
   function readHeader(file) {
     if (file.slice && file.slice(0, 32).arrayBuffer) {
       return file.slice(0, 32).arrayBuffer().then(function (buf) { return new Uint8Array(buf); });
@@ -171,7 +181,3 @@
 
   window.StagifyHeic = { isHeic: isHeic, toDisplayableFile: toDisplayableFile };
 })();
-
-// Loaded as <script type="module">; this empty export marks the file as an ES
-// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
-export {};

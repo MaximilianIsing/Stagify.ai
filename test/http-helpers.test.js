@@ -40,11 +40,14 @@ test('isLikelyMobileStagingRequest: mobile UAs → true, desktop / missing → f
   assert.equal(isLikelyMobileStagingRequest({ headers: { 'user-agent': '' } }), false, 'empty UA → false');
 });
 
-test('getStagingClientIp: prefers X-Forwarded-For, strips ::ffff:, falls back to unknown', () => {
+test('getStagingClientIp: trusts req.ip, ignores raw X-Forwarded-For, strips ::ffff:, falls back to unknown', () => {
+  // Security-critical: a client-supplied X-Forwarded-For must NOT override req.ip
+  // (which Express derives from the trust-proxy chain). Trusting the raw header would
+  // let a caller rotate it to evade the per-IP anonymous cap.
   assert.equal(
-    getStagingClientIp({ headers: { 'x-forwarded-for': '203.0.113.7, 10.0.0.1' }, ip: '10.0.0.1' }),
-    '203.0.113.7',
-    'the client (first) XFF entry wins',
+    getStagingClientIp({ headers: { 'x-forwarded-for': '203.0.113.7, 10.0.0.1' }, ip: '198.51.100.9' }),
+    '198.51.100.9',
+    'req.ip wins; the spoofable XFF header is ignored',
   );
   assert.equal(getStagingClientIp({ headers: {}, ip: '::ffff:192.168.1.5' }), '192.168.1.5', 'IPv4-mapped prefix stripped');
   assert.equal(getStagingClientIp({ headers: {}, socket: { remoteAddress: '198.51.100.9' } }), '198.51.100.9');

@@ -1,6 +1,7 @@
 // public routes, extracted verbatim from server.js.
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
+import { escapeCsvField } from '../lib/http/csv-escape.js';
 import path from 'path';
 import fs from 'fs';
 import { logger } from '../lib/logger.js';
@@ -15,6 +16,7 @@ import { logger } from '../lib/logger.js';
  *   uptimeMonitor: any,
  *   resend: any,
  *   LOGS_ACCESS_KEY: string,
+ *   endpointKeyMatches: (received: string, expected: string) => boolean,
  *   emailLimiter: import('express').RequestHandler,
  *   RESEND_FROM_EMAIL: string,
  *   DEBUG_MODE: boolean,
@@ -36,7 +38,7 @@ import { logger } from '../lib/logger.js';
  *   middleware, debug/stat flags, and hosted-image / logging / counter helpers.
  */
 export default function createPublicRouter(deps) {
-  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
+  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
   const router = createAsyncRouter();
 
 router.get('/robots.txt', (req, res) => {
@@ -109,9 +111,18 @@ router.post('/api/log-contact', emailLimiter, (req, res) => {
     const { userRole = 'unknown', referralSource = 'unknown', email = 'unknown', userAgent = 'unknown' } = req.body;
     const timestamp = new Date().toISOString();
     const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
-    
-    // Create CSV row
-    const csvRow = `${timestamp},"${userRole}","${referralSource}","${email}","${userAgent}","${ipAddress}"\n`;
+
+    // Create CSV row. Every field is run through escapeCsvField so attacker-supplied
+    // values (userRole/referralSource/email/userAgent) can neither break out of their
+    // column via an embedded quote/comma nor smuggle a spreadsheet formula (=,+,-,@).
+    const csvRow = [
+      escapeCsvField(timestamp),
+      escapeCsvField(userRole),
+      escapeCsvField(referralSource),
+      escapeCsvField(email),
+      escapeCsvField(userAgent),
+      escapeCsvField(ipAddress),
+    ].join(',') + '\n';
     
     // Use mounted disk on Render, project data folder locally
     let logDir;
@@ -177,9 +188,14 @@ router.post('/api/send-email', emailLimiter, async (req, res) => {
       return sendError(res, 500, 'Server configuration error', { details: 'Endpoint access key not configured' });
     }
 
-    const accessKey = req.query.key || req.body.key;
-    if (accessKey !== LOGS_ACCESS_KEY) {
-      return sendError(res, 403, 'Access denied', { details: 'Valid access key required' });
+    // Require the endpoint key in a header (never ?key= or the body — a key in the
+    // URL leaks via access logs, reverse-proxy logs, browser history, and Referer)
+    // and compare it in constant time, mirroring protectLogs / stagingEndpointKeyGuard.
+    const accessKey = (req.get('X-Stagify-Endpoint-Key') || '').trim();
+    if (!accessKey || !endpointKeyMatches(accessKey, LOGS_ACCESS_KEY)) {
+      return sendError(res, 403, 'Access denied', {
+        details: 'Valid access key required in the X-Stagify-Endpoint-Key header',
+      });
     }
 
     // Check if Resend is initialized

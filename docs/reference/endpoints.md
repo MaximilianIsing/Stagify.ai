@@ -96,7 +96,7 @@ Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagi
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/api/log-contact` | **Body:** JSON with `userRole`, `referralSource`, `email`, `userAgent` (and similar). Appends a row to `contact_logs.csv` and bumps an in-memory contact counter. Returns `{ success: true }`. |
-| `POST` | `/api/send-email` | **Protected by server access key:** query `?key=` or `body.key` must match `endpointkey.txt` or `process.env.endpoint_key` (`LOGS_ACCESS_KEY`). **Body:** `to`, `subject`, `text` (Resend). Returns `403` if key wrong, `500` if no Resend, etc. |
+| `POST` | `/api/send-email` | **Protected by server access key:** the **`X-Stagify-Endpoint-Key` header** must match `endpointkey.txt` or `process.env.endpoint_key` (`LOGS_ACCESS_KEY`), compared in constant time (a key in `?key=`/`body.key` is refused — it would leak via access logs, proxies, browser history, and `Referer`). **Body:** `to`, `subject`, `text` (Resend). Returns `403` if key wrong/missing, `500` if no Resend, etc. |
 | `GET` | `/api/health` | **Public.** `{ status, timestamp, aiConfigured: boolean }` (and similar). Also registered as `GET /health` (same handler). |
 | `GET` | `/api/status` | **Public.** Uptime/status snapshot for the `/status` page. `Cache-Control: no-store`. Returns `{ status, currentState, monitoringSince, lastBeat, lastCheckedMsAgo, bootCount, windows: { '24h','7d','30d': { uptimePct, downMs, monitoredMs, coverage, incidents } }, buckets: { '24h'(48), '7d'(56): [{ start, end, state, uptimePct }] }, incidents: [{ start, end, durationMs, cause }], totalIncidents }`. Computed by `lib/data/uptime-monitor.js` from a heartbeat written every 60s to the `uptime_state` row in `auth-store.db`; downtime is inferred from heartbeat gaps detected on restart. `uptimePct` is `null` for a window with no monitored coverage yet. |
 | `GET` | `/api/prompt-count` | Returns `{ promptCount }` (server-side counter, used for hero “Rooms staged” type stats). |
@@ -128,10 +128,9 @@ Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagi
 
 These routes use **`protectLogs`**: a shared secret `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`, supplied in the **`X-Stagify-Endpoint-Key` header** — **never** the query string (a key in the URL leaks via access logs, proxies, browser history, and `Referer`). **If the server has no key configured:** `500`. **If the header is missing/invalid:** `403`.
 
-The same `LOGS_ACCESS_KEY` authenticates several endpoints, but each accepts it via a **different transport** — check per route:
+The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take it via the **same** transport — the `X-Stagify-Endpoint-Key` header, compared in constant time; a key in `?key=`/`body.key` is refused (it would leak via access logs, proxies, browser history, and `Referer`):
 
-- **`protectLogs`** routes below, **`POST /api/getpro`**, and **`POST /api/stage-by-endpoint-key`** — `X-Stagify-Endpoint-Key` header **only** (constant-time compare; a key in `?key=` is refused).
-- **`POST /api/send-email`** — `?key=` query **or** `key` in the JSON body.
+- **`protectLogs`** routes below, **`POST /api/getpro`**, **`POST /api/stage-by-endpoint-key`**, and **`POST /api/send-email`** — `X-Stagify-Endpoint-Key` header **only**.
 
 | Method | Path | Description |
 |--------|------|-------------|

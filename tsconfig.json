@@ -20,9 +20,16 @@
     "lib": ["ES2022"],
     "types": ["node"],
 
-    // Deliberately loose for the initial rollout. Tighten (strict, noImplicitAny)
-    // once a meaningful share of files have shed their @ts-nocheck pragma.
+    // strictNullChecks is ON: null/undefined must be handled, not silently
+    // dereferenced — this is the flag that actually catches "possibly undefined"
+    // bugs, so it leads the strict rollout. The rest of `strict` and
+    // `noImplicitAny` stay off for now (noImplicitAny is a large, mostly
+    // mechanical @param sweep); tighten those next, not before.
+    // NOTE: useUnknownInCatchVariables defaults to false while strict is off, so
+    // catch bindings stay `any` — don't set `strict: true` without also handling
+    // the ~60 catch-clause narrowings that flips on.
     "strict": false,
+    "strictNullChecks": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true

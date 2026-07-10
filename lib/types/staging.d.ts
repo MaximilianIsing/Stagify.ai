@@ -15,7 +15,7 @@ export interface StagingParams {
   furnitureStyle?: string;
   additionalPrompt?: string;
   removeFurniture?: boolean | string;
-  usePreviousImage?: boolean | number;
+  usePreviousImage?: boolean | number | null;
   furnitureImageIndex?: number | number[] | null;
   styleReference?: boolean;
   preserveExistingStaging?: boolean;

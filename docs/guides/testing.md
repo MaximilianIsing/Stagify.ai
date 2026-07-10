@@ -31,10 +31,31 @@ bypasses, revenue bugs, a server that won't boot, and broken static/asset refere
 degrades gracefully when unconfigured, and billing/auth logic is exercised over throwaway
 temp-dir stores with hand-built event objects.
 
-## The test harness
+## The test harnesses
 
-`test/helpers/server.js` (not a `*.test.js`, so it's never run as a spec) exports
-`startServer(extraEnv)`. It:
+`test/helpers/` holds the shared harnesses (none are `*.test.js`, so they're never run as
+specs). Three styles, cheapest first:
+
+**Router-mount** — `staging-app.js`, `chat-app.js`, `auth-app.js`, `billing-app.js`,
+`admin-app.js`. Each mounts **one real router factory** (`routes/*.js`) on a bare
+`express()` app with its dependency bag faked, listens on an ephemeral port, and returns
+`{ baseUrl, …, close }` so the test drives it with `fetch`. This exercises the actual
+handlers — auth gate, body parsing, validation, response shaping, error mapping — with the
+slow/external clients (Gemini/OpenAI, Stripe, Resend email, Google OAuth) swapped for
+deterministic in-process fakes: no full boot, no network, no secrets. How much is faked
+varies with what's under test:
+
+- `auth-app.js` keeps a **real temp-dir SQLite store** + the real auth-helpers, so a
+  register→verify→login round-trip is genuine — only the email sender and Google OAuth are
+  faked.
+- `billing-app.js` fakes the Stripe SDK and event handler outright, to isolate the
+  webhook signature check + route control flow.
+- `admin-app.js` keeps the **real** `protectLogs` access-key guard (that gate is the
+  router's whole security story) and fakes the stores behind an in-memory manifest + temp dir.
+
+`fake-ai.js` provides the scripted AI stub the staging/chat harnesses use.
+
+**Full-boot** — `server.js` (not a `*.test.js`) exports `startServer(extraEnv)`, which:
 
 - picks a free port from the OS (so tests never collide with a dev server),
 - spawns the **real** `server.js` as a child process with `NODE_ENV=test` and any
@@ -42,8 +63,10 @@ temp-dir stores with hand-built event objects.
 - resolves once the child logs `Server running on port …` (20s boot timeout),
 - returns `{ baseUrl, output(), close() }`.
 
-Boot/HTTP tests use this to hit the actual server; pure-logic tests import a `lib/`
-module directly and point it at a temp directory.
+Boot/HTTP smokes use this to hit the whole app end-to-end.
+
+**Direct import** — pure-logic tests import a `lib/` module (or an extracted frontend
+helper) directly and point it at a temp directory; no server at all.
 
 ## What's covered
 
@@ -61,15 +84,21 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 | 2 | `enterprise-store.test.js` | Domain activation (idempotent, case-insensitive), subscription-state sync, usage counting. |
 | 2 | `staging-endpoints.test.js` | Staging contracts without any AI call: `validate-image` rejects bad input (400) and fails open (200) when the reviewer is disabled; `process-image` requires a session for desktop. |
 | 2 | `public-endpoints.test.js` | Public surface smoke: JSON endpoint shapes, SEO/landing files serve, static content types, unknown routes 404, a helmet header is present. |
+| 2 | `auth-route.test.js` | The auth **routes** over a real temp-dir store (email/Google faked): register→verify→login→`/me`→logout round-trip, `{ok:false}`→status mapping (400/401), the `/api/auth/me` gate (401 `AUTH_REQUIRED`), and the staging Google-disable (403 `STAGING_DISABLED`). |
+| 2 | `billing-route.test.js` | The Stripe **route** layer (faked SDK): the webhook rejects unconfigured / missing-signature / bad-signature **before** dispatch, a verified event dispatches and acks `{received:true}`, and the customer-portal + enterprise-checkout auth/validation gates (incl. 409 on a duplicate domain). |
+| 2 | `admin-route.test.js` | The admin **routes** with the real access-key guard: no/wrong key → 403 (unconfigured → 500, fail-closed), the hosted-image host/list/unhost lifecycle (writes + deletes real files), snapshot downloads, and the memory/uptime reset actions. |
+| 2 | `chat-route.test.js` | The `/api/chat` handler (faked OpenAI + image steps): the auth gate, the routing-completion parse, and the SSE-vs-`res.json` streamMode decision. |
 | — | `route-inventory.test.js` | Refactor safety net: asserts every **critical route is still registered** (responds with anything but 404 for its method). Guards the `server.js` → `routes/*` extraction. |
 | — | `async-router.test.js` | The `createAsyncRouter()` error-handling safety net: a rejecting async handler reaches the catch-all as a clean `500` instead of hanging the request. |
 | — | `uptime.test.js` | Pure math of the uptime monitor: window percentages, coverage, bucket classification, incident coalescing/pruning. |
 
 The table is a **representative selection**, not the full list — the suite has grown to
-~55 files as `server.js` is extracted into `lib/`. Most `lib/` modules now have a matching
-`*.test.js` (e.g. `logger`, `logging`, `http-helpers`, `erase`, `image-review`,
-`image-annotation`, `hosted-images`, the `masking-studio-*` frontend islands). Run
-`npm test` for the authoritative set.
+~65 files as `server.js` is extracted into `lib/` and pure frontend logic is pulled into
+testable helpers. Most `lib/` modules now have a matching `*.test.js` (e.g. `logger`,
+`logging`, `http-helpers`, `erase`, `image-review`, `image-annotation`, `hosted-images`),
+as do the extracted frontend helpers — the `masking-studio-*` islands plus pure slices like
+`heic-convert` (content-type sniffing), `count-up` (counter width/easing math), and
+`version-carousel` (version-history cap). Run `npm test` for the authoritative set.
 
 ## Writing a new test
 
@@ -85,9 +114,13 @@ The table is a **representative selection**, not the full list — the suite has
   });
   ```
 
-- **Prefer pure-logic tests** against a `lib/` module with a temp dir — they're fast and
-  need no server. Reach for `startServer()` from `test/helpers/server.js` only when you
-  must exercise real routing/middleware.
+- **Prefer pure-logic tests** against a `lib/` module (or an extracted frontend helper)
+  with a temp dir — they're fast and need no server.
+- **To exercise one router's handlers** without a full boot, mount it with the matching
+  `test/helpers/<router>-app.js` harness: fake its dependency bag, then `fetch` the
+  ephemeral port. This is the pattern used for `staging`, `chat`, `auth`, `billing`, and
+  `admin`. Reach for `startServer()` from `test/helpers/server.js` only when you must boot
+  the **whole** app (cross-router wiring, real middleware order).
 - **Never require real keys or make paid API calls.** Configure the child via `extraEnv`
   to force deterministic paths (e.g. `GPT_KEY=''` disables the OpenAI reviewer so
   `validate-image` takes its documented fail-open branch).
