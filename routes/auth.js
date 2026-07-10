@@ -24,7 +24,7 @@ import { logger } from '../lib/logger.js';
  *   endpointKeyMatches: Function,
  *   setSensitiveHeaders: (res: import('express').Response) => void,
  *   getAuthUserFromRequest: (req: import('express').Request) => any,
- *   toPublicAuthUser: Function,
+ *   toPublicAuthUser: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['toPublicAuthUser'],
  *   sendRegistrationVerificationEmail: Function,
  *   __dirname: string,
  *   googleClientId: string,
