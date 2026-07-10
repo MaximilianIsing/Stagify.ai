@@ -193,8 +193,11 @@ Everything the browser loads is under `public/`:
 - **Scripts (`public/scripts/`):** e.g. `app.js` (main staging tool), `auth.js`,
   `mask-core.js` (shared masking canvas math), `count-up.js` (hero stats),
   `carousel.js`, `home-reveal.js`, and the `language-*.js` i18n helpers.
-- **Styles (`public/styles/`):** `styles.css` (partially minified — edit with care),
-  `home.css`, `carousel.css`, and per-feature CSS.
+- **Styles (`public/styles/`):** a site-wide base `styles.css` (partially minified — edit
+  with care) plus per-page (`home.css`, `ai-designer.css`, …) and opt-in per-feature
+  (`auth.css`, `carousel.css`, `demo-player.css`, …) files, linked à la carte per page.
+  See [`guides/frontend.md`](guides/frontend.md#styles) for the tiers, the lazy
+  (non-render-blocking) CSS on the home page, and the FOUC auth gates.
 - **i18n (`public/languages/`):** one JSON file per language; `english.json` is the
   source of truth for keys.
 - **Assets:** `media-webp/`, `fonts/`, `background.mp4`, `bimi-logo.svg`, icons,

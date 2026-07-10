@@ -74,6 +74,52 @@ to compose.
   `app.js` into `helpers.js` precisely so they could be tested.
 - **Cross-island state?** Reach for (or create) a shared store island, not globals.
 
+## Styles
+
+CSS mirrors the JS split: one shared base plus per-page and per-feature files, linked
+à la carte from each page's `<head>`. There is no CSS build/bundle either — the browser
+gets the files as authored (same [no-build-step decision](architecture.md#decision-no-frontend-build-step)).
+
+**Three tiers, same as the scripts:**
+
+- **Site-wide base — `styles/styles.css`.** The design tokens (`:root` custom
+  properties), reset, top navigation, buttons, language switcher, footer, and the custom
+  scrollbar/spotlight chrome. Loaded by nearly every page. **Partially hand-minified at
+  the top** (a deliberate exception to the no-minify rule — see
+  [`architecture.md`](architecture.md#decision-no-frontend-build-step)), so edit it
+  carefully; the lower sections are `/* === … === */`-commented and readable.
+- **Per-page — `styles/<page>.css`.** One file per page's own layout: `home.css`
+  (the index/marketing page), `ai-designer.css`, `masking-studio.css`, `stagify-plus.css`,
+  `enterprise.css`, `status.css`, `admin.css`, `getpro.css`, `reset-password.css`,
+  `index.css`. Legal pages share `legal.css` (privacy + terms) and `enterprise-msa.css`.
+- **Shared feature CSS — opt-in per page.** Small files a page links only if it uses the
+  feature: `auth.css` (nav + auth-modal UI, on ~10 pages), `carousel.css`,
+  `star-border.css`, `home-text-animate.css`, `demo-player.css`. A page pulls in only the
+  feature CSS it actually renders, so no page carries the whole site's styles.
+
+A given page therefore links `styles.css` + (usually) `auth.css` + its own `<page>.css`
++ any feature files it needs. Overlap between base and page files is deliberate and tiny
+(a page-level `html`/`body`/scrollbar override for a full-bleed studio, a repeated
+`.hidden` utility) — not copied rule sets.
+
+**Non-render-blocking (lazy) CSS.** The heavy home page (`index.html`) splits its
+stylesheets by criticality. `styles.css` / `carousel.css` / `home.css` load normally
+(render-blocking); the below-the-fold ones (`auth.css`, `star-border.css`,
+`home-text-animate.css`, `demo-player.css`) ship as `media="print"` with a `data-lazy-css`
+attribute so they **don't block first paint**, and [`scripts/index-lazy-css.js`](../../public/scripts/index-lazy-css.js)
+promotes each to `media="all"` once fetched. A `<noscript>` block links them the normal
+way for the no-JS path. The promotion is an external script rather than an inline
+`onload=` handler on purpose — it keeps the page under the CSP's `script-src-attr 'none'`
+(no `unsafe-inline`).
+
+**FOUC auth gates.** `ai-designer.html` and `masking-studio.html` carry a one-line inline
+`<style>html.<x>-gate-pending body{visibility:hidden!important}</style>`. The gate script
+([`ai-designer-gate.js`](../../public/scripts/ai-designer-gate.js) /
+[`masking-studio-gate.js`](../../public/scripts/masking-studio-gate.js)) adds that class
+before paint so a non-Pro visitor never flashes the studio, and the entry script removes
+it once access is verified (with a ~6s safety-net redirect if the plan check stalls).
+This one style **must** stay inline — it has to apply before any external CSS loads.
+
 ## Decision: vanilla ES-module islands, not a component framework
 
 **Stagify's frontend is hand-written HTML/CSS/vanilla JS organized into ES-module
