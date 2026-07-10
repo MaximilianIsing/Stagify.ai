@@ -6,11 +6,12 @@
 // (and, for erase, a null genAI it never touches on these paths) and assert exactly what the
 // real regexes/return shapes produce.
 //
-// WHY NO REAL API CALL EVER HAPPENS: every reviewer/annotator/verifier reaches its model only
-// through `openai.chat.completions.create`. Our fake replaces that method with an async that
-// returns a scripted `choices[0].message.content` string (or throws, to drive the documented
-// fail-OPEN error paths). Nothing here can hit OpenAI or Gemini — there is no real client in
-// scope. That makes the suite deterministic, offline, and free.
+// WHY NO REAL API CALL EVER HAPPENS: each factory reaches its model through one injected
+// seam — the QA reviewers (createImageReview) call `genAI.getGenerativeModel().generateContent`;
+// the annotator/verifier call `openai.chat.completions.create`. Our fakes replace those with
+// an async that returns a scripted reply (or throws, to drive the documented fail-OPEN error
+// paths). Nothing here can hit OpenAI or Gemini — there is no real client in scope. That makes
+// the suite deterministic, offline, and free.
 //
 // FIXTURE NOTE: the buffer-input methods (validateStageableImage, roomIsAlreadyEmpty,
 // verifyRoomEmptied) decode through the REAL lib/image-primitives.downscaleImage, which THROWS
@@ -49,44 +50,60 @@ function fakeOpenAI(reply) {
   };
 }
 
+// ── Scripted fake Gemini client (for the QA reviewers, which moved to Gemini). ─
+// `reply` is a string → it becomes the model's `response.text()` for one call.
+// `reply` is an Error → generateContent() throws it, exercising the fail-open branches.
+function fakeGrader(reply) {
+  return {
+    getGenerativeModel() {
+      return {
+        generateContent: async () => {
+          if (reply instanceof Error) throw reply;
+          return { response: { text: () => reply } };
+        },
+      };
+    },
+  };
+}
+
 // ── A. reviewImageQuality parse matrix ────────────────────────────────────────
 
 test('reviewImageQuality: a PERFECT:true verdict returns perfect with score 100', async () => {
-  const { reviewImageQuality } = createImageReview({ openai: fakeOpenAI('PERFECT: true') });
+  const { reviewImageQuality } = createImageReview({ genAI: fakeGrader('PERFECT: true') });
   const out = await reviewImageQuality(REAL_DATA_URL);
   assert.equal(out.perfect, true);
   assert.equal(out.score, 100);
 });
 
 test('reviewImageQuality: a non-perfect "SCORE: 87" verdict returns perfect=false and score 87', async () => {
-  const { reviewImageQuality } = createImageReview({ openai: fakeOpenAI('SCORE: 87') });
+  const { reviewImageQuality } = createImageReview({ genAI: fakeGrader('SCORE: 87') });
   const out = await reviewImageQuality(REAL_DATA_URL);
   assert.equal(out.perfect, false);
   assert.equal(out.score, 87);
 });
 
 test('reviewImageQuality: an out-of-range "SCORE: 250" is clamped to 100', async () => {
-  const { reviewImageQuality } = createImageReview({ openai: fakeOpenAI('SCORE: 250') });
+  const { reviewImageQuality } = createImageReview({ genAI: fakeGrader('SCORE: 250') });
   const out = await reviewImageQuality(REAL_DATA_URL);
   assert.equal(out.perfect, false);
   assert.equal(out.score, 100);
 });
 
 test('reviewImageQuality: a not-perfect verdict with no SCORE token scores 0', async () => {
-  const { reviewImageQuality } = createImageReview({ openai: fakeOpenAI('Not great, visible artifacts.') });
+  const { reviewImageQuality } = createImageReview({ genAI: fakeGrader('Not great, visible artifacts.') });
   const out = await reviewImageQuality(REAL_DATA_URL);
   assert.equal(out.perfect, false);
   assert.equal(out.score, 0);
 });
 
 test('reviewImageQuality: a null openai client is treated as a disabled reviewer (perfect, score 100)', async () => {
-  const { reviewImageQuality } = createImageReview({ openai: null });
+  const { reviewImageQuality } = createImageReview({ genAI: null });
   const out = await reviewImageQuality(REAL_DATA_URL);
   assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer disabled' });
 });
 
 test('reviewImageQuality: a thrown create() fails OPEN (perfect, score 100, reason "reviewer error")', async () => {
-  const { reviewImageQuality } = createImageReview({ openai: fakeOpenAI(new Error('OpenAI exploded')) });
+  const { reviewImageQuality } = createImageReview({ genAI: fakeGrader(new Error('OpenAI exploded')) });
   const out = await reviewImageQuality(REAL_DATA_URL);
   assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer error' });
 });
@@ -94,34 +111,34 @@ test('reviewImageQuality: a thrown create() fails OPEN (perfect, score 100, reas
 // ── B. reviewMaskEdit shares the same parse contract ──────────────────────────
 
 test('reviewMaskEdit: a PERFECT:true verdict returns perfect with score 100', async () => {
-  const { reviewMaskEdit } = createImageReview({ openai: fakeOpenAI('PERFECT: true') });
+  const { reviewMaskEdit } = createImageReview({ genAI: fakeGrader('PERFECT: true') });
   const out = await reviewMaskEdit(REAL_DATA_URL, REAL_DATA_URL);
   assert.equal(out.perfect, true);
   assert.equal(out.score, 100);
 });
 
 test('reviewMaskEdit: a non-perfect "SCORE: 42" verdict returns perfect=false and score 42', async () => {
-  const { reviewMaskEdit } = createImageReview({ openai: fakeOpenAI('SCORE: 42') });
+  const { reviewMaskEdit } = createImageReview({ genAI: fakeGrader('SCORE: 42') });
   const out = await reviewMaskEdit(REAL_DATA_URL, REAL_DATA_URL);
   assert.equal(out.perfect, false);
   assert.equal(out.score, 42);
 });
 
 test('reviewMaskEdit: an out-of-range "SCORE: 250" is clamped to 100', async () => {
-  const { reviewMaskEdit } = createImageReview({ openai: fakeOpenAI('SCORE: 250') });
+  const { reviewMaskEdit } = createImageReview({ genAI: fakeGrader('SCORE: 250') });
   const out = await reviewMaskEdit(REAL_DATA_URL, REAL_DATA_URL);
   assert.equal(out.perfect, false);
   assert.equal(out.score, 100);
 });
 
 test('reviewMaskEdit: a null openai client is treated as a disabled reviewer (perfect, score 100)', async () => {
-  const { reviewMaskEdit } = createImageReview({ openai: null });
+  const { reviewMaskEdit } = createImageReview({ genAI: null });
   const out = await reviewMaskEdit(REAL_DATA_URL, REAL_DATA_URL);
   assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer disabled' });
 });
 
 test('reviewMaskEdit: a thrown create() fails OPEN (perfect, score 100, reason "reviewer error")', async () => {
-  const { reviewMaskEdit } = createImageReview({ openai: fakeOpenAI(new Error('OpenAI exploded')) });
+  const { reviewMaskEdit } = createImageReview({ genAI: fakeGrader(new Error('OpenAI exploded')) });
   const out = await reviewMaskEdit(REAL_DATA_URL, REAL_DATA_URL);
   assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer error' });
 });
@@ -129,14 +146,14 @@ test('reviewMaskEdit: a thrown create() fails OPEN (perfect, score 100, reason "
 // ── C. validateStageableImage ─────────────────────────────────────────────────
 
 test('validateStageableImage: a "VALID: true" verdict returns valid with empty reason', async () => {
-  const { validateStageableImage } = createImageReview({ openai: fakeOpenAI('VALID: true') });
+  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('VALID: true') });
   const out = await validateStageableImage(REAL_BUF);
   assert.deepEqual(out, { valid: true, reason: '' });
 });
 
 test('validateStageableImage: a rejection parses REASON text (quotes stripped) and marks invalid', async () => {
   const { validateStageableImage } = createImageReview({
-    openai: fakeOpenAI('VALID: false\nREASON: "Not a room."'),
+    genAI: fakeGrader('VALID: false\nREASON: "Not a room."'),
   });
   const out = await validateStageableImage(REAL_BUF);
   assert.equal(out.valid, false);
@@ -144,13 +161,13 @@ test('validateStageableImage: a rejection parses REASON text (quotes stripped) a
 });
 
 test('validateStageableImage: a null openai client fails OPEN as valid', async () => {
-  const { validateStageableImage } = createImageReview({ openai: null });
+  const { validateStageableImage } = createImageReview({ genAI: null });
   const out = await validateStageableImage(REAL_BUF);
   assert.deepEqual(out, { valid: true, reason: '' });
 });
 
 test('validateStageableImage: a thrown create() fails OPEN as valid', async () => {
-  const { validateStageableImage } = createImageReview({ openai: fakeOpenAI(new Error('OpenAI exploded')) });
+  const { validateStageableImage } = createImageReview({ genAI: fakeGrader(new Error('OpenAI exploded')) });
   const out = await validateStageableImage(REAL_BUF);
   assert.deepEqual(out, { valid: true, reason: '' });
 });

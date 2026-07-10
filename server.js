@@ -162,7 +162,7 @@ const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = crea
 // GPT-vision / Gemini helpers extracted to lib/, instantiated with this server's
 // AI clients (the pure helpers they call are direct imports inside each module).
 const { annotateImage } = createImageAnnotation({ openai });
-const { reviewImageQuality, reviewMaskEdit, validateStageableImage } = createImageReview({ openai });
+const { reviewImageQuality, reviewMaskEdit, validateStageableImage } = createImageReview({ genAI });
 const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
 const { getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest } = createHostedImages({ getDataLogDir });
 const { healthHandler, protectLogs, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches });
