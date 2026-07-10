@@ -55,8 +55,10 @@ afterEach(() => {
   }
 });
 
-test('escapeCsvField: quotes only fields with comma/quote/newline; doubles inner quotes; blanks null-ish', () => {
+test('escapeCsvField: shared hardened escaper — RFC-4180 quoting + formula-injection neutralization', () => {
   const { logging } = freshLogging();
+  // createLogging now re-exports the shared lib/http/csv-escape.js escaper (same
+  // instance injected into email.js), so every CSV writer is hardened identically.
   const { escapeCsvField: e } = logging;
   assert.equal(e('plain'), 'plain', 'no special chars → unchanged');
   assert.equal(e(''), '', 'empty string stays empty');
@@ -66,6 +68,12 @@ test('escapeCsvField: quotes only fields with comma/quote/newline; doubles inner
   assert.equal(e('a,b'), '"a,b"', 'comma forces quoting');
   assert.equal(e('line\nbreak'), '"line\nbreak"', 'newline forces quoting');
   assert.equal(e('say "hi"'), '"say ""hi"""', 'inner quotes are doubled and the field wrapped');
+  // Spreadsheet formula injection is neutralized with a leading quote (the reason the
+  // shared escaper exists) — a prompt/userAgent starting with = + - @ can't execute in Excel.
+  assert.equal(e('=1+1'), "'=1+1", 'leading = neutralized');
+  assert.equal(e('+1'), "'+1", 'leading + neutralized');
+  assert.equal(e('-cmd'), "'-cmd", 'leading - neutralized');
+  assert.equal(e('@x'), "'@x", 'leading @ neutralized');
 });
 
 test('getDataLogDir: returns <__dirname>/data and creates it on demand', () => {
@@ -128,6 +136,15 @@ test('logPromptToFile: a second call appends rather than rewriting the header', 
   assert.ok(l[2].includes('Room2'));
 });
 
+test('logPromptToFile: neutralizes spreadsheet formula injection in an attacker-controlled field', () => {
+  const { logging, dataDir } = freshLogging();
+  // additionalPrompt is free text a user controls; a leading = must not execute in Excel.
+  logging.logPromptToFile('p', 'Room', 'Style', '=2+3', false, 'realtor', 'google', 'u@x.com', { ip: '1.1.1.1' });
+  const raw = readCsv(path.join(dataDir, 'prompt_logs.csv'));
+  assert.ok(raw.includes("'=2+3"), `formula-leading field is prefixed with a quote: ${raw}`);
+  assert.ok(!raw.includes(',=2+3'), 'the raw =2+3 must not appear as a bare cell value');
+});
+
 test('logMaskEditToFile: header, positioned fields, and the userAgent column from req', () => {
   const { logging, dataDir } = freshLogging();
   const req = { ip: '198.51.100.4', get: (h) => (h === 'user-agent' ? 'Mozilla/5.0 Test' : undefined) };
@@ -174,9 +191,10 @@ test('logChatToFile: logs the user message but NEVER the AI response (privacy), 
   assert.ok(!raw.includes('SECRET assistant reply'), 'the AI response is deliberately NOT written');
   assert.ok(raw.includes('floor.png; plan.pdf'), 'file names joined across name/originalname');
   assert.ok(raw.includes('image/png; application/pdf'), 'file types joined across type/mimetype');
-  // logChatToFile double-quotes non-empty fields; the redacted aiResponse slot is left blank.
+  // Fields are quoted only when they contain comma/quote/newline (shared escaper); the
+  // redacted aiResponse slot is left blank.
   const cells = l[1].split(',');
-  assert.equal(cells[1], '"user_9"', 'non-empty fields are quoted');
+  assert.equal(cells[1], 'user_9', 'plain fields pass through unquoted');
   assert.equal(cells[3], '', 'aiResponse column is blank (never populated)');
 });
 
