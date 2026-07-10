@@ -2,12 +2,14 @@
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import createChatPipeline from '../lib/chat/chat-pipeline.js';
 import createUploadPrep from '../lib/chat/chat-upload-prep.js';
-import path from 'path';
-import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChatUploadSystemInstruction, getStagifyDateContext, buildWelcomeMessagePrompt, WELCOME_MESSAGE_SYSTEM } from '../lib/staging/prompts.js';
-import { filterUnsupportedFiles, deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext } from '../lib/chat/chat-history.js';
+import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChatUploadSystemInstruction, getStagifyDateContext } from '../lib/staging/prompts.js';
+import { deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext } from '../lib/chat/chat-history.js';
 import { parseDesignerRoutingCompletion, aiResponseDefersImageAction, chatWillProcessSlowImages, chatIntentType } from '../lib/chat/chat-routing.js';
 import { wantsStreamedChatResponse, initChatSse, writeChatSseEvent, finishStreamedChatResponse } from '../lib/chat/chat-sse.js';
 import { sendError } from '../lib/http/http-helpers.js';
+import createWelcomeMessageHandler from '../lib/chat/welcome-message-handler.js';
+import createChatRequestPrep from '../lib/chat/chat-request-prep.js';
+import { buildUnsupportedFileErrorBody } from '../lib/chat/chat-upload-error.js';
 import { logger } from '../lib/logger.js';
 
 // A single conversation is capped at this many user messages before the client
@@ -23,77 +25,14 @@ export default function createChatRouter(deps) {
   // Direct deps used by the handlers. The post-routing dispatch deps
   // (staging/generate/CAD/memory helpers, image resolution, etc.) are consumed
   // by createChatPipeline(deps) below rather than referenced here.
-  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier, downscaleImageForGPT, logChatToFile } = deps;
+  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier, logChatToFile } = deps;
   const router = createAsyncRouter();
   const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse } = createChatPipeline(deps);
   const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting } = createUploadPrep(deps);
+  const { handleWelcomeMessage } = createWelcomeMessageHandler(deps);
+  const { logDedupDiagnostics, detectHistoryImage, applyMessageTag, buildChatMessages, logChatPayload } = createChatRequestPrep(deps);
 
-router.get('/api/welcome-message', async (req, res) => {
-  try {
-    if (!requireProAccount(req, res)) return;
-
-    // Get user identifier from query or generate from IP
-    const userId = req.query.userId || getUserIdentifier(req);
-    
-    // Load stored memories for this user
-    const memories = loadMemories(userId);
-    
-    // Check if user has memories (returning user)
-    const isReturningUser = memories && memories.length > 0;
-    
-    if (isReturningUser) {
-      // Generate personalized welcome message using AI
-      try {
-        if (!openai) {
-          // Fallback to generic if AI not available
-          return res.json({ 
-            message: 'Welcome back to Stagify AI Designer! I can help you stage rooms, answer questions, and assist with interior design. How can I help you today?',
-            isReturning: true
-          });
-        }
-        
-        const prompt = buildWelcomeMessagePrompt(memories);
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: WELCOME_MESSAGE_SYSTEM },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 150
-    });
-        
-        const personalizedMessage = completion.choices[0].message.content.trim();
-        
-        return res.json({ 
-          message: personalizedMessage,
-          isReturning: true
-        });
-      } catch (error) {
-        logger.error('Error generating personalized welcome message:', error);
-        // Fallback to generic
-        return res.json({ 
-          message: 'Welcome back to Stagify AI Designer! I can help you stage rooms, answer questions, and assist with interior design. How can I help you today?',
-          isReturning: true
-        });
-      }
-    } else {
-      // First-time user - return generic welcome message
-      return res.json({ 
-        message: 'Hello! I\'m Stagify AI Designer, your AI assistant for room staging and interior design. I can help you:\n• Stage rooms by uploading images and describing your desired style\n• Answer questions about interior design and home staging\n• Modify and refine staged room designs\n• Convert your top-down floorplans into 3D renders\n\nUpload an image of a room to get started, or ask me anything about interior design!',
-        isReturning: false
-      });
-    }
-  } catch (error) {
-    logger.error('Error in welcome message endpoint:', error);
-    // Fallback to generic message
-    res.json({ 
-      message: 'Hello! I\'m Stagify AI Designer, your AI assistant for room staging and interior design. Upload an image of a room to get started, or ask me anything!',
-      isReturning: false
-    });
-  }
-});
+router.get('/api/welcome-message', handleWelcomeMessage);
 
 router.post('/api/chat', genLimiter, async (req, res) => {
   try {
@@ -116,24 +55,9 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     // Deduplicate messages to prevent double counting
     const deduplicatedMessages = deduplicateMessages(messages);
     if (deduplicatedMessages.length !== messages.length) {
-      const removedCount = messages.length - deduplicatedMessages.length;
-      if (DEBUG_MODE) {
-        logger.debug(`[Deduplication] Removed ${removedCount} duplicate message(s) from ${messages.length} total messages`);
-        // Log which messages were duplicates
-        const seenKeys = new Set();
-        messages.forEach((msg, idx) => {
-          const key = Array.isArray(msg.content) 
-            ? `${msg.role}:${JSON.stringify(msg.content.map(item => item.type === 'text' ? item.text : item.type))}`
-            : `${msg.role}:${typeof msg.content === 'string' ? msg.content.trim() : 'non-string'}`;
-          if (seenKeys.has(key)) {
-            logger.debug(`[Deduplication] Duplicate found at index ${idx}: ${msg.role} message`);
-          } else {
-            seenKeys.add(key);
-          }
-        });
-      }
+      logDedupDiagnostics(messages, deduplicatedMessages);
     }
-    
+
     // Check message limit (see MAX_USER_MESSAGES)
     const userMessageCount = deduplicatedMessages.filter(msg => msg.role === 'user').length;
     if (userMessageCount >= MAX_USER_MESSAGES) {
@@ -171,44 +95,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     const lastUserMessageText = lastUserMessage ? (typeof lastUserMessage.content === 'string' ? lastUserMessage.content : '') : '';
     
     // Check if there are images in conversation history (from user uploads or staged images)
-    let hasImageInHistory = false;
-    let imageFromHistory = null;
-    let isStagedImage = false;
-    
-    // First, check for staged images (from assistant messages) - prioritize these for modifications
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const msg = messages[i];
-      if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-        const imageItem = msg.content.find(item => item.type === 'image_url' && item.isStaged);
-        if (imageItem && imageItem.image_url && imageItem.image_url.url) {
-          hasImageInHistory = true;
-          imageFromHistory = imageItem.image_url.url;
-          isStagedImage = true;
-          if (DEBUG_MODE) {
-            logger.debug(`[Staging] Found staged image in conversation history`);
-          }
-          break;
-        }
-      }
-    }
-    
-    // If no staged image found, check for user-uploaded images
-    if (!hasImageInHistory) {
-      for (let i = deduplicatedMessages.length - 1; i >= 0; i--) {
-        const msg = deduplicatedMessages[i];
-        if (msg.role === 'user' && Array.isArray(msg.content)) {
-          const imageItem = msg.content.find(item => item.type === 'image_url');
-          if (imageItem && imageItem.image_url && imageItem.image_url.url) {
-            hasImageInHistory = true;
-            imageFromHistory = imageItem.image_url.url;
-            if (DEBUG_MODE) {
-              logger.debug(`[Staging] Found user-uploaded image in conversation history`);
-            }
-            break;
-          }
-        }
-      }
-    }
+    const { imageFromHistory, isStagedImage } = detectHistoryImage(messages, deduplicatedMessages);
 
     // Strip images from conversation history (except current message) to prevent payload size issues
     // Only send text context, images will be requested via special mechanism if needed
@@ -218,116 +105,12 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     const filteredMessages = filterConversationHistory(strippedMessages);
     
     // Add message tag to the last user message if provided
-    if (messageTag && messageTag !== 'auto' && filteredMessages.length > 0) {
-      const lastMessage = filteredMessages[filteredMessages.length - 1];
-      if (lastMessage.role === 'user') {
-        const tagMap = {
-          'generate': '[TAG: Generate]',
-          'stage': '[TAG: Stage]',
-          'cad-stage': '[TAG: CAD-Stage]',
-          'describe': '[TAG: Describe/Recall]'
-        };
-        const tagText = tagMap[messageTag] || '';
-        
-        if (Array.isArray(lastMessage.content)) {
-          // Find the first text item or add one
-          const textItem = lastMessage.content.find(item => item.type === 'text');
-          if (textItem) {
-            textItem.text = `${tagText} ${textItem.text}`.trim();
-          } else {
-            lastMessage.content.unshift({ type: 'text', text: tagText });
-          }
-        } else if (typeof lastMessage.content === 'string') {
-          lastMessage.content = `${tagText} ${lastMessage.content}`.trim();
-        }
-      }
-    }
-    
-    const openaiMessages = [
-      { role: 'system', content: systemInstruction },
-      ...await Promise.all(filteredMessages.map(async (msg) => {
-        if (msg.role === 'user' && Array.isArray(msg.content)) {
-          // User message with images - only current message has images, apply filter
-          const { filteredContent } = filterUnsupportedFiles(msg.content);
-          // Clean image objects - remove extra properties that OpenAI doesn't accept and downscale images
-          const cleanedContent = await Promise.all(filteredContent.map(async (item) => {
-            if (item.type === 'image_url' && item.image_url && item.image_url.url) {
-              // Downscale image if needed before sending to GPT
-              const downscaledUrl = await downscaleImageForGPT(item.image_url.url);
-              // Only keep the structure OpenAI expects: { type: 'image_url', image_url: { url: '...' } }
-              return {
-                type: 'image_url',
-                image_url: {
-                  url: downscaledUrl
-                }
-              };
-            }
-            return item;
-          }));
-          return {
-            role: 'user',
-            content: cleanedContent
-          };
-        } else {
-          // All other messages are text-only (images stripped)
-          return {
-            role: msg.role === 'user' ? 'user' : 'assistant',
-            content: msg.content
-          };
-        }
-      }))
-    ];
+    applyMessageTag(filteredMessages, messageTag);
 
-    // Debug logging - log what's being sent to AI (ALWAYS log, not just in DEBUG_MODE)
-    const messagesJson = JSON.stringify(openaiMessages);
-    const payloadSize = Buffer.byteLength(messagesJson, 'utf8');
-    const payloadSizeKB = (payloadSize / 1024).toFixed(2);
-    const payloadSizeMB = (payloadSize / (1024 * 1024)).toFixed(2);
-    
-    if (DEBUG_MODE) {
-      logger.debug('=== SENDING TO AI (CHAT) ===');
-      logger.debug('Payload size:', payloadSize, 'bytes (', payloadSizeKB, 'KB /', payloadSizeMB, 'MB)');
-      logger.debug('Number of messages:', openaiMessages.length);
-      // Log individual messages instead of full array
-      logger.debug('--- MESSAGES ---');
-      openaiMessages.forEach((msg, index) => {
-        if (msg.role === 'system') {
-          logger.debug(`Message ${index + 1} [SYSTEM]:`, msg.content.substring(0, 500) + (msg.content.length > 500 ? '... [truncated]' : ''));
-        } else if (msg.role === 'user') {
-          if (Array.isArray(msg.content)) {
-            const textItems = msg.content.filter(item => item.type === 'text');
-            const imageItems = msg.content.filter(item => item.type === 'image_url');
-            const textContent = textItems.map(item => item.text).join(' ');
-            logger.debug(`Message ${index + 1} [USER]: Text: "${textContent.substring(0, 200)}${textContent.length > 200 ? '...' : ''}" | Images: ${imageItems.length}`);
-          } else {
-            logger.debug(`Message ${index + 1} [USER]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
-          }
-        } else if (msg.role === 'assistant') {
-          if (Array.isArray(msg.content)) {
-            const textItems = msg.content.filter(item => item.type === 'text');
-            const textContent = textItems.map(item => item.text).join(' ');
-            logger.debug(`Message ${index + 1} [ASSISTANT]:`, textContent.substring(0, 200) + (textContent.length > 200 ? '...' : ''));
-          } else {
-            logger.debug(`Message ${index + 1} [ASSISTANT]:`, msg.content.substring(0, 200) + (msg.content.length > 200 ? '...' : ''));
-          }
-        }
-      });
-      logger.debug('----------------');
-      
-      // Log image data sizes if present
-      openaiMessages.forEach((msg, idx) => {
-        if (msg.role === 'user' && Array.isArray(msg.content)) {
-          msg.content.forEach((item, itemIdx) => {
-            if (item.type === 'image_url' && item.image_url && item.image_url.url) {
-              const imageDataSize = Buffer.byteLength(item.image_url.url, 'utf8');
-              logger.debug(`Message ${idx}, Image ${itemIdx}: ${(imageDataSize / 1024).toFixed(2)} KB`);
-            }
-          });
-        }
-      });
-        logger.debug('============================');
-        logger.debug('Calling OpenAI API...');
-    }
+    const openaiMessages = await buildChatMessages({ filteredMessages, systemInstruction });
+
+    // Debug logging - log what's being sent to AI (DEBUG_MODE only)
+    logChatPayload({ openaiMessages });
 
     // Use OpenAI GPT with JSON response format
     let aiResponseJson;
@@ -850,38 +633,9 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
       const files = req.files ? (Array.isArray(req.files) ? req.files : /** @type {any} */ ([req.files])) : [];
       
       if ((isFileTypeError || files.length > 0) && openai) {
-        // Find unsupported files by checking extensions and MIME types
-        const unsupportedFiles = files.filter(file => {
-          const ext = path.extname(file.originalname).toLowerCase();
-          const supportedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-          return ext === '.avif' || 
-                 file.mimetype === 'image/avif' ||
-                 (file.mimetype.startsWith('image/') && !supportedImageTypes.includes(file.mimetype));
-        });
-        
-        if (unsupportedFiles.length > 0) {
-          const fileTypes = unsupportedFiles.map(file => {
-            const ext = path.extname(file.originalname).toLowerCase();
-            if (ext === '.avif' || file.mimetype === 'image/avif') {
-              return 'AVIF';
-            }
-            return ext.toUpperCase().substring(1) || file.mimetype;
-          });
-          
-          const uniqueFileTypes = [...new Set(fileTypes)];
-          const fileTypeList = uniqueFileTypes.length === 1 
-            ? uniqueFileTypes[0] 
-            : uniqueFileTypes.join(', ');
-          
-          const aiResponse = `I'm unable to handle ${uniqueFileTypes.length > 1 ? 'these file types' : 'this file type'}: ${fileTypeList}. ` +
-                           `Supported file types are: images (JPEG, JPG, PNG, WebP, GIF), PDFs, and text files. ` +
-                           `Please convert ${unsupportedFiles.length > 1 ? 'these files' : 'this file'} to a supported format and try again.`;
-          
-          return res.json({ 
-            response: aiResponse,
-            files: unsupportedFiles.map(f => ({ name: f.originalname, type: f.mimetype })),
-            memories: { stores: [], forgets: [] }
-          });
+        const errorBody = buildUnsupportedFileErrorBody(files);
+        if (errorBody) {
+          return res.json(errorBody);
         }
       }
     } catch (aiError) {

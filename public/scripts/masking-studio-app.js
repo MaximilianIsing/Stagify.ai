@@ -1,16 +1,11 @@
-import {
-  nextColorIdx,
-  createLayer,
-  layerColor as _layerColor,
-  layerTitle as _layerTitle,
-  previewText as _previewText,
-  statusChip as _statusChip,
-} from './masking-studio/layers.js';
 import { requestError as _requestError } from './masking-studio/generation.js';
 import { createSessionStore } from './masking-studio/session-store.js';
 import { createGeneratePipeline } from './masking-studio/generate-pipeline.js';
 import { createDrawTools } from './masking-studio/draw-tools.js';
 import { createSegWand } from './masking-studio/seg-wand.js';
+import { createLayersUi } from './masking-studio/layers-ui.js';
+import { createViewer } from './masking-studio/viewer.js';
+import { createUpload } from './masking-studio/upload.js';
 
         // ---------------------------------------------------------------------
         // Access gate: Masking Studio is Stagify+ only. Anonymous visitors were
@@ -102,41 +97,6 @@ import { createSegWand } from './masking-studio/seg-wand.js';
           });
         }
 
-        const DEFAULT_UNSTAGEABLE_MESSAGE =
-          "This doesn't look like a room or property space. Please upload a photo of an interior room or exterior space you'd like to stage.";
-
-        // Cheap server-side pre-check: is this actually a stageable room/property
-        // photo (not a selfie, a product shot, a document…)? Downscales the
-        // already-decoded image to a small JPEG first (keeps the POST tiny), then
-        // asks the server. Always resolves to { valid, reason }; fails OPEN so our
-        // own hiccup never blocks a legitimate upload.
-        async function validateStageableRoom(img) {
-          try {
-            const max = 1024;
-            const scale = Math.min(1, max / Math.max(img.width, img.height));
-            const c = document.createElement('canvas');
-            c.width = Math.max(1, Math.round(img.width * scale));
-            c.height = Math.max(1, Math.round(img.height * scale));
-            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-            const payload = c.toDataURL('image/jpeg', 0.9);
-            const tok = window.StagifyAuth && window.StagifyAuth.getToken();
-            const resp = await fetch('/api/validate-image', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(tok ? { Authorization: 'Bearer ' + tok } : {}),
-              },
-              body: JSON.stringify({ image: payload, authToken: tok || undefined }),
-            });
-            if (!resp.ok) return { valid: true, reason: '' };
-            const r = await resp.json().catch(() => null);
-            if (!r || typeof r.valid !== 'boolean') return { valid: true, reason: '' };
-            return r;
-          } catch (e) {
-            return { valid: true, reason: '' };
-          }
-        }
-
         // ---------------------------------------------------------------------
         // State
         // ---------------------------------------------------------------------
@@ -173,8 +133,6 @@ import { createSegWand } from './masking-studio/seg-wand.js';
           spaceDown: false,  // Space held → pan mode
           panning: false,
         };
-        let busyMsgTimer = null;
-        let comparePos = 0.5;     // compare-view divider, 0..1 of photo width
 
         // ---------------------------------------------------------------------
         // DOM refs
@@ -233,60 +191,9 @@ import { createSegWand } from './masking-studio/seg-wand.js';
         const viewResultBtn = $('#ms-view-result');
         const downloadBtn = $('#ms-download');
 
-        let busyOverlay = null;
-        let pendingFurnitureLayerId = null;
-
         // ---------------------------------------------------------------------
-        // Room photo upload
+        // Room photo → base canvas (upload intake lives in masking-studio/upload.js)
         // ---------------------------------------------------------------------
-        const ROOM_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-
-        async function handleRoomFile(file) {
-          if (!file) return;
-          try {
-            if (window.StagifyHeic && window.StagifyHeic.isHeic(file)) {
-              file = await window.StagifyHeic.toDisplayableFile(file);
-            }
-          } catch (e) {
-            showToast(tx('errors.heicConvert', "We couldn't read that HEIC photo. Please try a JPG or PNG."), 'error');
-            return;
-          }
-          if (ROOM_TYPES.indexOf((file.type || '').toLowerCase()) === -1) {
-            showToast(tx('errors.fileType', 'Please upload a JPG, PNG, or WebP image.'), 'error');
-            return;
-          }
-          if (file.size > 100 * 1024 * 1024) {
-            showToast(tx('errors.fileTooLarge', 'That image is too large — please choose one under 100 MB.'), 'error');
-            return;
-          }
-          const dataUrl = await new Promise((resolve, reject) => {
-            const r = new FileReader();
-            r.onerror = () => reject(new Error('read'));
-            r.onload = () => resolve(r.result);
-            r.readAsDataURL(file);
-          }).catch(() => null);
-          if (!dataUrl) {
-            showToast(tx('errors.processingFailed', 'Something went wrong. Please try again.'), 'error');
-            return;
-          }
-          let img;
-          try {
-            img = await loadImage(dataUrl);
-          } catch (e) {
-            showToast(tx('errors.fileType', 'Please upload a JPG, PNG, or WebP image.'), 'error');
-            return;
-          }
-          // Pre-flight: only stageable room/property photos may enter the studio.
-          // A non-room (a selfie, a product shot, a document…) is rejected here
-          // with a friendly reason instead of wasting a masking generation.
-          const stageable = await validateStageableRoom(img);
-          if (stageable && stageable.valid === false) {
-            showToast(stageable.reason || DEFAULT_UNSTAGEABLE_MESSAGE, 'error');
-            return;
-          }
-          setBaseImage(img);
-        }
-
         // Work at the same resolution the server generates at (fits inside
         // 1920×1080, mirroring its downscale step) so every returned edit maps
         // 1:1 onto our canvases and huge photos don't exhaust canvas memory
@@ -328,541 +235,11 @@ import { createSegWand } from './masking-studio/seg-wand.js';
           scheduleSessionSave();
         }
 
-        // ---------------------------------------------------------------------
-        // Area layers
-        // ---------------------------------------------------------------------
-        function addLayer() {
-          if (!state.base || state.layers.length >= MAX_LAYERS) return;
-          const colorIdx = nextColorIdx(state.layers, PALETTE.length);
-          if (colorIdx === -1) return;
-          const c = document.createElement('canvas');
-          c.width = state.base.w;
-          c.height = state.base.h;
-          c.className = 'ms-layer-canvas';
-          // Insert below the result canvas so results always cover highlights.
-          stack.insertBefore(c, resultCanvas);
-          const layer = createLayer({ id: 'L' + (++state.layerSeq), colorIdx: colorIdx, canvasEl: c });
-          state.layers.push(layer);
-          state.activeId = layer.id;
-          renderLayers();
-          updateControls();
-          scheduleSessionSave();
-        }
+        // Area layers + all layer/chip rendering → masking-studio/layers-ui.js
+        // (addLayer/removeLayer/getLayer/activeLayer/layerColor/layerTitle/
+        //  statusChip/renderLayers/renderChips/updateChipbarVisibility).
 
-        function removeLayer(id) {
-          const idx = state.layers.findIndex((l) => l.id === id);
-          if (idx === -1) return;
-          const layer = state.layers[idx];
-          if (layer.canvasEl) layer.canvasEl.remove();
-          state.layers.splice(idx, 1);
-          if (state.activeId === id) state.activeId = state.layers.length ? state.layers[state.layers.length - 1].id : null;
-          if (!state.layers.length && state.base) addLayer();
-          if (state.phase === 'review') compositeAll();
-          // Re-derive the whole phase UI: in refine, removing an area must
-          // refresh the ghost backdrop and may retire the Looks Good button
-          // (when the last staged area went away).
-          setPhase(state.phase);
-          scheduleSessionSave();
-        }
-
-        function getLayer(id) {
-          return state.layers.find((l) => l.id === id) || null;
-        }
-
-        function activeLayer() {
-          return getLayer(state.activeId);
-        }
-
-        // Thin binding wrappers over the pure area-model helpers (scripts/
-        // masking-studio/layers.js): bind the live PALETTE / layers array / tx so
-        // every call site below stays unchanged. Logic + tests live in the module.
-        function layerColor(layer) { return _layerColor(layer, PALETTE); }
-        function layerTitle(layer) { return _layerTitle(layer, state.layers, tx); }
-        function statusChip(layer) { return _statusChip(layer, tx); }
-
-        // Rebuild the layer cards. Prompt edits mutate state directly (no
-        // re-render on keystroke), so rebuilding here never loses typed text.
-        // Only the active card shows its full body — inactive areas collapse
-        // to their header row so six areas don't make the toolbar a tower.
-        function renderLayers() {
-          layerList.textContent = '';
-          state.layers.forEach((layer) => {
-            const isActive = layer.id === state.activeId;
-            const card = document.createElement('div');
-            card.className = 'ms-layer' + (isActive ? ' is-active' : '');
-            card.style.setProperty('--layer-color', layerColor(layer));
-            card.setAttribute('role', 'listitem');
-
-            const head = document.createElement('div');
-            head.className = 'ms-layer-head';
-            const dot = document.createElement('span');
-            dot.className = 'ms-layer-dot';
-            const name = document.createElement('span');
-            name.className = 'ms-layer-name';
-            name.textContent = layerTitle(layer);
-            const renameBtn = document.createElement('button');
-            renameBtn.type = 'button';
-            renameBtn.className = 'ms-layer-rename';
-            renameBtn.setAttribute('aria-label', tx('maskingStudio.renameAria', 'Rename this area'));
-            renameBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
-            renameBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              if (state.phase === 'generating') return;
-              let settled = false;
-              const input = document.createElement('input');
-              input.type = 'text';
-              input.className = 'ms-layer-name-input';
-              input.maxLength = 24;
-              input.value = layer.name || layerTitle(layer);
-              head.replaceChild(input, name);
-              renameBtn.classList.add('hidden');
-              input.focus();
-              input.select();
-              input.addEventListener('click', (ev) => ev.stopPropagation());
-              const commit = () => {
-                if (settled) return;
-                settled = true;
-                layer.name = input.value.trim();
-                renderLayers();
-                scheduleSessionSave();
-              };
-              input.addEventListener('keydown', (ev) => {
-                ev.stopPropagation();
-                if (ev.key === 'Enter') commit();
-                else if (ev.key === 'Escape') { settled = true; renderLayers(); }
-              });
-              input.addEventListener('blur', commit);
-            });
-            const previewFallback = () => _previewText(layer, tx);
-            const preview = document.createElement('span');
-            preview.className = 'ms-layer-preview';
-            preview.textContent = previewFallback();
-            preview.title = previewFallback();
-            const chip = statusChip(layer);
-            const status = document.createElement('span');
-            status.className = 'ms-layer-status ' + chip.cls;
-            status.textContent = chip.text;
-            const caret = document.createElement('span');
-            caret.className = 'ms-layer-caret';
-            caret.setAttribute('aria-hidden', 'true');
-            caret.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'ms-layer-remove';
-            removeBtn.setAttribute('aria-label', tx('maskingStudio.removeAreaAria', 'Remove this area'));
-            removeBtn.innerHTML = '&times;';
-            removeBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              if (state.phase === 'generating') return;
-              removeLayer(layer.id);
-            });
-            head.appendChild(dot);
-            head.appendChild(name);
-            head.appendChild(renameBtn);
-            head.appendChild(preview);
-            head.appendChild(status);
-            head.appendChild(caret);
-            head.appendChild(removeBtn);
-            head.addEventListener('click', () => {
-              if (state.phase === 'generating') return;
-              state.activeId = layer.id;
-              renderLayers();
-            });
-
-            if (!isActive) {
-              // Collapsed: header only. Clicking the head (below) activates
-              // and expands it.
-              card.appendChild(head);
-              layer.el = card;
-              layerList.appendChild(card);
-              return;
-            }
-
-            const body = document.createElement('div');
-            body.className = 'ms-layer-body';
-
-            // Stage vs. remove: declutter is a first-class mode, not a prompt trick.
-            const modeRow = document.createElement('div');
-            modeRow.className = 'ms-mode-row';
-            modeRow.setAttribute('role', 'group');
-            modeRow.setAttribute('aria-label', tx('maskingStudio.modeAria', 'What happens in this area'));
-            [
-              ['stage', tx('maskingStudio.modeStage', 'Add furniture')],
-              ['remove', tx('maskingStudio.modeRemove', 'Remove object')],
-            ].forEach(([val, label]) => {
-              const b = document.createElement('button');
-              b.type = 'button';
-              b.className = 'ms-mode-btn' + (layer.mode === val ? ' is-on' : '');
-              b.setAttribute('aria-pressed', layer.mode === val ? 'true' : 'false');
-              b.textContent = label;
-              b.addEventListener('click', () => {
-                if (state.phase === 'generating' || layer.mode === val) return;
-                layer.mode = val;
-                renderLayers();
-                updateControls();
-                scheduleSessionSave();
-              });
-              modeRow.appendChild(b);
-            });
-            body.appendChild(modeRow);
-
-            const isRemove = layer.mode === 'remove';
-            if (isRemove) {
-              const hint = document.createElement('p');
-              hint.className = 'ms-mode-hint';
-              hint.textContent = tx('maskingStudio.removeHint', 'Everything highlighted is removed and the empty room is rebuilt behind it.');
-              body.appendChild(hint);
-            }
-
-            const promptEl = document.createElement('textarea');
-            promptEl.className = 'text-input ms-layer-prompt';
-            promptEl.rows = 2;
-            promptEl.maxLength = 1000;
-            promptEl.placeholder = isRemove
-              ? tx('maskingStudio.removePlaceholder', 'Optional: anything to keep or details to match (e.g. keep the rug)…')
-              : tx('maskingStudio.promptPlaceholder', 'Describe what to add here (optional if you add a furniture photo)…');
-            promptEl.value = layer.prompt;
-            promptEl.addEventListener('input', () => {
-              layer.prompt = promptEl.value;
-              // Refresh this card's status chip in place (a full re-render here
-              // would steal focus from the textarea mid-typing).
-              const liveChip = statusChip(layer);
-              status.className = 'ms-layer-status ' + liveChip.cls;
-              status.textContent = liveChip.text;
-              preview.textContent = previewFallback();
-              preview.title = preview.textContent;
-              updateControls();
-              scheduleSessionSave();
-            });
-            promptEl.addEventListener('focus', () => {
-              if (state.activeId !== layer.id && state.phase !== 'generating') {
-                state.activeId = layer.id;
-                // Highlight without a full re-render so the textarea keeps focus.
-                layerList.querySelectorAll('.ms-layer').forEach((el) => el.classList.remove('is-active'));
-                card.classList.add('is-active');
-              }
-            });
-            body.appendChild(promptEl);
-
-            // One-click prompt ideas while the prompt is empty, tucked behind a
-            // little + so the card stays quiet until asked. Each value is
-            // "Chip label|Full prompt sentence" in the language files.
-            if (!layer.prompt.trim() && !isRemove) {
-              if (!layer.presetsOpen) {
-                const toggle = document.createElement('button');
-                toggle.type = 'button';
-                toggle.className = 'ms-preset-toggle';
-                toggle.textContent = '+';
-                const ideasLabel = tx('maskingStudio.promptIdeas', 'Show prompt ideas');
-                toggle.setAttribute('aria-label', ideasLabel);
-                toggle.title = ideasLabel;
-                toggle.setAttribute('aria-expanded', 'false');
-                toggle.addEventListener('click', () => {
-                  if (state.phase === 'generating') return;
-                  layer.presetsOpen = true;
-                  renderLayers();
-                });
-                body.appendChild(toggle);
-              } else {
-                const PRESET_DEFAULTS = {
-                  presetSofa: "Sofa|Add a comfortable modern sofa that fits the room's style.",
-                  presetArmchair: 'Armchair|Add a cozy armchair that matches the room.',
-                  presetRug: 'Rug|Add a large area rug under the furniture.',
-                  presetPlant: 'Plant|Add a tall potted plant.',
-                  presetLamp: 'Floor lamp|Add a stylish floor lamp.',
-                  presetArt: 'Wall art|Add framed wall art that suits the room.',
-                };
-                const presetRow = document.createElement('div');
-                presetRow.className = 'ms-preset-row';
-                Object.keys(PRESET_DEFAULTS).forEach((key) => {
-                  const raw = tx('maskingStudio.' + key, PRESET_DEFAULTS[key]);
-                  const bar = raw.indexOf('|');
-                  const label = bar === -1 ? raw : raw.slice(0, bar);
-                  const sentence = bar === -1 ? raw : raw.slice(bar + 1);
-                  const chipBtn = document.createElement('button');
-                  chipBtn.type = 'button';
-                  chipBtn.className = 'ms-preset';
-                  chipBtn.textContent = label;
-                  chipBtn.title = sentence;
-                  chipBtn.addEventListener('click', () => {
-                    if (state.phase === 'generating') return;
-                    layer.prompt = sentence;
-                    layer.presetsOpen = false; // next time takes a + click again
-                    renderLayers();
-                    updateControls();
-                  });
-                  presetRow.appendChild(chipBtn);
-                });
-                // Trailing "−" tucks the chips back away.
-                const closeChip = document.createElement('button');
-                closeChip.type = 'button';
-                closeChip.className = 'ms-preset';
-                closeChip.textContent = '−';
-                closeChip.setAttribute('aria-label', tx('common.close', 'Close'));
-                closeChip.title = tx('common.close', 'Close');
-                closeChip.addEventListener('click', () => {
-                  layer.presetsOpen = false;
-                  renderLayers();
-                });
-                presetRow.appendChild(closeChip);
-                body.appendChild(presetRow);
-              }
-            }
-
-            if (isRemove) {
-              // No furniture reference in remove mode — nothing is being added.
-            } else if (layer.furniture) {
-              const prev = document.createElement('div');
-              prev.className = 'ms-furniture-preview';
-              const img = document.createElement('img');
-              img.src = layer.furniture;
-              img.alt = tx('pdf.maskEditor.referenceAlt', 'Reference for masked edit');
-              const rm = document.createElement('button');
-              rm.type = 'button';
-              rm.className = 'ms-furniture-remove';
-              rm.setAttribute('aria-label', tx('pdf.maskEditor.referenceRemove', 'Remove reference photo'));
-              rm.innerHTML = '&times;';
-              rm.addEventListener('click', () => {
-                if (state.phase === 'generating') return;
-                layer.furniture = null;
-                layer.furnitureName = '';
-                renderLayers();
-                updateControls();
-                scheduleSessionSave();
-              });
-              prev.appendChild(img);
-              prev.appendChild(rm);
-              body.appendChild(prev);
-            } else {
-              const add = document.createElement('button');
-              add.type = 'button';
-              add.className = 'ms-furniture-add';
-              add.textContent = tx('maskingStudio.addFurniture', '+ Furniture photo');
-              add.addEventListener('click', () => {
-                if (state.phase === 'generating') return;
-                pendingFurnitureLayerId = layer.id;
-                furnitureInput.click();
-              });
-              wireFurnitureDrop(add, layer);
-              body.appendChild(add);
-            }
-
-            // Quick way to clear one area's strokes (undoable via Ctrl+Z).
-            if (layer.painted && state.phase === 'draw') {
-              const clearBtn = document.createElement('button');
-              clearBtn.type = 'button';
-              clearBtn.className = 'ms-clear-btn';
-              clearBtn.textContent = tx('maskingStudio.clearHighlight', 'Clear highlight');
-              clearBtn.addEventListener('click', () => {
-                if (state.phase !== 'draw') return;
-                snapshotForUndo();
-                state.redoStack = []; // committed clear forks history
-                layer.canvasEl.getContext('2d').clearRect(0, 0, state.base.w, state.base.h);
-                layer.painted = false;
-                // All masks, not just this one: neighbors' halos are clipped
-                // against this area's (now vacated) pixels.
-                state.layers.forEach((l) => { l.blendMask = null; });
-                renderLayers();
-                updateControls();
-                updateStageBackdrop();
-                scheduleSessionSave();
-              });
-              body.appendChild(clearBtn);
-            }
-
-            if (layer.status === 'failed') {
-              const err = document.createElement('div');
-              err.className = 'ms-layer-error';
-              err.textContent = layer.errorMsg || tx('maskingStudio.statusFailed', 'Failed');
-              body.appendChild(err);
-              const retry = document.createElement('button');
-              retry.type = 'button';
-              retry.className = 'ms-layer-retry';
-              retry.textContent = tx('maskingStudio.retry', 'Retry');
-              retry.addEventListener('click', () => retryLayer(layer.id));
-              body.appendChild(retry);
-            } else if (layer.status === 'done' && state.phase === 'review') {
-              // Version picker: flip between every generated result of this area.
-              if (layer.candidates.length > 1) {
-                const row = document.createElement('div');
-                row.className = 'ms-version-row';
-                const prev = document.createElement('button');
-                prev.type = 'button';
-                prev.className = 'ms-version-btn';
-                prev.textContent = '‹';
-                prev.setAttribute('aria-label', tx('maskingStudio.versionPrev', 'Previous version'));
-                prev.addEventListener('click', () => selectCandidate(layer, layer.candIdx - 1));
-                const label = document.createElement('span');
-                label.className = 'ms-version-label';
-                label.textContent = tx('maskingStudio.versionLabel', 'Version {i} of {n}')
-                  .replace('{i}', String(layer.candIdx + 1))
-                  .replace('{n}', String(layer.candidates.length));
-                const next = document.createElement('button');
-                next.type = 'button';
-                next.className = 'ms-version-btn';
-                next.textContent = '›';
-                next.setAttribute('aria-label', tx('maskingStudio.versionNext', 'Next version'));
-                next.addEventListener('click', () => selectCandidate(layer, layer.candIdx + 1));
-                row.appendChild(prev);
-                row.appendChild(label);
-                row.appendChild(next);
-                body.appendChild(row);
-              }
-              const retry = document.createElement('button');
-              retry.type = 'button';
-              retry.className = 'ms-layer-retry';
-              retry.style.borderColor = '#2563eb';
-              retry.style.color = '#2563eb';
-              retry.textContent = tx('maskingStudio.tryAnother', 'Try another version');
-              retry.addEventListener('click', () => retryLayer(layer.id));
-              body.appendChild(retry);
-            }
-
-            card.appendChild(head);
-            card.appendChild(body);
-            layer.el = card;
-            layerList.appendChild(card);
-          });
-          renderChips();
-        }
-
-        // Compact quick-switch chips above the canvas mirroring the layer list,
-        // so switching colors doesn't require leaving the photo.
-        function renderChips() {
-          chipbar.textContent = '';
-          state.layers.forEach((layer) => {
-            const chip = document.createElement('button');
-            chip.type = 'button';
-            chip.className = 'ms-chip' + (layer.id === state.activeId ? ' is-active' : '');
-            chip.style.setProperty('--layer-color', layerColor(layer));
-            const dot = document.createElement('span');
-            dot.className = 'ms-layer-dot';
-            dot.style.background = layerColor(layer);
-            const label = document.createElement('span');
-            label.textContent = layerTitle(layer);
-            chip.appendChild(dot);
-            chip.appendChild(label);
-            chip.addEventListener('click', () => {
-              if (state.phase === 'generating') return;
-              state.activeId = layer.id;
-              renderLayers();
-            });
-            chipbar.appendChild(chip);
-          });
-          if (state.base && state.layers.length < MAX_LAYERS) {
-            const add = document.createElement('button');
-            add.type = 'button';
-            add.className = 'ms-chip ms-chip--add';
-            add.textContent = tx('maskingStudio.addArea', '+ Add area');
-            add.addEventListener('click', () => {
-              if (state.phase === 'generating') return;
-              addLayer();
-            });
-            chipbar.appendChild(add);
-          }
-          updateChipbarVisibility();
-        }
-
-        function updateChipbarVisibility() {
-          const visible = !!state.base && state.phase !== 'empty' && !(state.phase === 'review' && state.view !== 'before');
-          chipbar.classList.toggle('hidden', !visible);
-        }
-
-        // ---------------------------------------------------------------------
-        // Furniture reference photos (per area)
-        // ---------------------------------------------------------------------
-        // Validate, downscale (max 1536px) and PNG-encode — identical rules to
-        // the single-mask editor so the backend sees the same payloads.
-        function prepareReferenceFile(file) {
-          return new Promise((resolve, reject) => {
-            if (!file || !/^image\/(jpeg|jpg|png|webp)$/i.test(file.type || '')) { reject(new Error('type')); return; }
-            if (file.size > 25 * 1024 * 1024) { reject(new Error('size')); return; }
-            const reader = new FileReader();
-            reader.onerror = () => reject(new Error('read'));
-            reader.onload = () => {
-              const img = new Image();
-              img.onerror = () => reject(new Error('decode'));
-              img.onload = () => {
-                const maxDim = 1536;
-                const scale = Math.min(1, maxDim / Math.max(img.width || 1, img.height || 1));
-                const w = Math.max(1, Math.round((img.width || 1) * scale));
-                const h = Math.max(1, Math.round((img.height || 1) * scale));
-                const c = document.createElement('canvas');
-                c.width = w; c.height = h;
-                c.getContext('2d').drawImage(img, 0, 0, w, h);
-                try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
-              };
-              img.src = reader.result;
-            };
-            reader.readAsDataURL(file);
-          });
-        }
-
-        function refErrorMessage(err) {
-          return err && err.message === 'size'
-            ? tx('pdf.maskEditor.referenceTooLarge', 'That image is too large — please choose one under 25 MB.')
-            : tx('pdf.maskEditor.referenceInvalid', 'Please choose a valid JPG, PNG, or WebP image.');
-        }
-
-        function acceptFurnitureFile(layer, file, announce) {
-          if (!layer || !file) return;
-          const fileName = file.name || '';
-          const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
-            ? window.StagifyHeic.toDisplayableFile(file)
-            : Promise.resolve(file);
-          prep
-            .then(prepareReferenceFile)
-            .then((dataUrl) => {
-              layer.furniture = dataUrl;
-              layer.furnitureName = fileName;
-              renderLayers();
-              updateControls();
-              scheduleSessionSave();
-              if (announce && getLayer(layer.id)) {
-                const t = tx('maskingStudio.furniturePasted', 'Furniture photo added to {area}');
-                showToast(t.replace('{area}', layerTitle(layer)), 'success');
-              }
-            })
-            .catch((err) => showToast(refErrorMessage(err), 'error'));
-        }
-
-        function wireFurnitureDrop(zone, layer) {
-          const hasFiles = (e) =>
-            !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
-          zone.addEventListener('dragenter', (e) => { if (hasFiles(e)) { e.preventDefault(); zone.classList.add('is-drag-over'); } });
-          zone.addEventListener('dragover', (e) => { if (hasFiles(e)) { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; } });
-          zone.addEventListener('dragleave', () => zone.classList.remove('is-drag-over'));
-          zone.addEventListener('drop', (e) => {
-            if (!hasFiles(e)) return;
-            e.preventDefault();
-            zone.classList.remove('is-drag-over');
-            acceptFurnitureFile(layer, e.dataTransfer.files && e.dataTransfer.files[0]);
-          });
-        }
-
-        furnitureInput.addEventListener('change', () => {
-          const file = furnitureInput.files && furnitureInput.files[0];
-          furnitureInput.value = '';
-          acceptFurnitureFile(getLayer(pendingFurnitureLayerId), file);
-          pendingFurnitureLayerId = null;
-        });
-
-        // Paste an image from the clipboard: before a photo is loaded it becomes
-        // the room photo; afterwards it becomes the active area's furniture.
-        document.addEventListener('paste', (e) => {
-          if (state.phase === 'generating') return;
-          const t = e.target;
-          if (t && t.closest && t.closest('input, textarea, [contenteditable]')) return;
-          const files = (e.clipboardData && e.clipboardData.files) || [];
-          const file = Array.prototype.find.call(files, (f) => /^image\//i.test(f.type || ''));
-          if (!file) return;
-          e.preventDefault();
-          if (!state.base) {
-            handleRoomFile(file);
-            return;
-          }
-          if (state.phase === 'draw') acceptFurnitureFile(activeLayer(), file, true);
-        });
+        // Furniture-reference intake (prepare/accept/drop + paste) → masking-studio/upload.js
 
         // Keep Tab focus inside whichever dialog is open (help, resume,
         // discard-confirm, or the pro gate — they share the overlay class).
@@ -886,54 +263,7 @@ import { createSegWand } from './masking-studio/seg-wand.js';
           }
         });
 
-        // ---------------------------------------------------------------------
-        // Zoom & pan. Zoom works by setting an explicit CSS width on the base
-        // canvas (the overlay canvases are inset:0/100%, so they follow), which
-        // keeps all pointer math valid: it already reads getBoundingClientRect.
-        // ---------------------------------------------------------------------
-        const ZOOM_MIN = 1;
-        const ZOOM_MAX = 4;
-
-        function setZoom(nz, focal) {
-          if (!state.base) return;
-          nz = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, nz));
-          const rect = baseCanvas.getBoundingClientRect();
-          if (!rect.width) return;
-          const fitW = rect.width / state.zoom; // current width always equals fit × zoom
-          const prev = state.zoom;
-          state.zoom = nz;
-          if (state.zoom === 1) {
-            baseCanvas.style.width = '';
-            baseCanvas.style.maxWidth = '';
-            baseCanvas.style.maxHeight = '';
-          } else {
-            baseCanvas.style.width = (fitW * state.zoom) + 'px';
-            baseCanvas.style.maxWidth = 'none';
-            baseCanvas.style.maxHeight = 'none';
-          }
-          viewerEl.classList.toggle('is-zoomed', state.zoom > 1);
-          // Keep the focal point (viewport coords) stationary while scaling.
-          if (focal && prev !== state.zoom) {
-            const vr = viewerEl.getBoundingClientRect();
-            const ratio = state.zoom / prev;
-            viewerEl.scrollLeft = (viewerEl.scrollLeft + (focal.x - vr.left)) * ratio - (focal.x - vr.left);
-            viewerEl.scrollTop = (viewerEl.scrollTop + (focal.y - vr.top)) * ratio - (focal.y - vr.top);
-          }
-        }
-
-        function resetZoom() {
-          state.zoom = 1;
-          baseCanvas.style.width = '';
-          baseCanvas.style.maxWidth = '';
-          baseCanvas.style.maxHeight = '';
-          viewerEl.classList.remove('is-zoomed');
-        }
-
-        viewerEl.addEventListener('wheel', (e) => {
-          if (!state.base || !e.ctrlKey) return; // plain scroll stays plain scroll
-          e.preventDefault();
-          setZoom(state.zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), { x: e.clientX, y: e.clientY });
-        }, { passive: false });
+        // Zoom & pan → masking-studio/viewer.js (setZoom/resetZoom).
 
         // ---------------------------------------------------------------------
         // Discard confirmation: replacing the photo (or starting over) wipes
@@ -1054,187 +384,9 @@ import { createSegWand } from './masking-studio/seg-wand.js';
           stack.classList.remove('is-pan');
         });
 
-        // ---------------------------------------------------------------------
-        // Phases & viewer
-        // ---------------------------------------------------------------------
-        function setPhase(p) {
-          state.phase = p;
-          const inReview = p === 'review';
-          // "Edit highlights" must not strand the user away from their results:
-          // in the draw phase, existing results stay reachable via "View result".
-          const hasResults = state.layers.some((l) => l.status === 'done' && l.editedImg);
-          viewToggle.classList.toggle('hidden', !inReview);
-          // The header only ever holds the view toggle and the review actions;
-          // collapse it entirely when neither shows so the photo sits higher.
-          viewerHeader.classList.toggle('hidden', !(inReview || (p === 'draw' && hasResults)));
-          viewerActions.classList.toggle('hidden', !(inReview || (p === 'draw' && hasResults)));
-          editHighlightsBtn.classList.toggle('hidden', !inReview);
-          viewResultBtn.classList.toggle('hidden', !(p === 'draw' && hasResults));
-          downloadBtn.classList.toggle('hidden', !inReview);
-          stack.classList.toggle('can-draw', p === 'draw');
-          stack.classList.toggle('is-busy', p === 'generating');
-          if (p !== 'draw') hideCursor();
-          if (busyOverlay) busyOverlay.classList.toggle('hidden', p !== 'generating');
-          if (p === 'generating') startBusyMessages(); else stopBusyMessages();
-          updateStageBackdrop();
-          if (inReview) {
-            setView(state.view);
-          } else {
-            resultCanvas.classList.add('hidden');
-            resultCanvas.style.clipPath = '';
-            state.layers.forEach((l) => l.canvasEl.classList.remove('hidden'));
-            compareEl.classList.add('hidden');
-            compareLabelBefore.classList.add('hidden');
-            compareLabelAfter.classList.add('hidden');
-            stack.classList.remove('is-compare');
-            state.comparing = false;
-          }
-          renderLayers();
-          updateControls();
-        }
-
-        function setView(v) {
-          state.view = v === 'before' ? 'before' : v === 'compare' ? 'compare' : 'after';
-          toggleBeforeBtn.classList.toggle('active', state.view === 'before');
-          toggleCompareBtn.classList.toggle('active', state.view === 'compare');
-          toggleAfterBtn.classList.toggle('active', state.view === 'after');
-          const inReview = state.phase === 'review';
-          const showResult = inReview && state.view !== 'before';
-          resultCanvas.classList.toggle('hidden', !showResult);
-          state.layers.forEach((l) => l.canvasEl.classList.toggle('hidden', showResult));
-          const compareOn = inReview && state.view === 'compare';
-          compareEl.classList.toggle('hidden', !compareOn);
-          compareLabelBefore.classList.toggle('hidden', !compareOn);
-          compareLabelAfter.classList.toggle('hidden', !compareOn);
-          stack.classList.toggle('is-compare', compareOn);
-          if (compareOn) {
-            setComparePos(comparePos);
-          } else {
-            state.comparing = false;
-            resultCanvas.style.clipPath = '';
-          }
-          updateChipbarVisibility();
-        }
-        toggleBeforeBtn.addEventListener('click', () => setView('before'));
-        toggleCompareBtn.addEventListener('click', () => setView('compare'));
-        toggleAfterBtn.addEventListener('click', () => setView('after'));
-
-        // The result canvas sits on top of the original: clipping its left side
-        // at the divider shows Before on the left, After on the right.
-        function setComparePos(f) {
-          comparePos = Math.min(1, Math.max(0, f));
-          const pct = (comparePos * 100).toFixed(2) + '%';
-          compareEl.style.left = pct;
-          resultCanvas.style.clipPath = 'inset(0 0 0 ' + pct + ')';
-          compareGrip.setAttribute('aria-valuenow', String(Math.round(comparePos * 100)));
-        }
-
-        function moveCompare(e) {
-          const rect = baseCanvas.getBoundingClientRect();
-          if (!rect.width) return;
-          setComparePos((e.clientX - rect.left) / rect.width);
-        }
-
-        compareGrip.addEventListener('keydown', (e) => {
-          const step = 0.03;
-          if (e.key === 'ArrowLeft') { e.preventDefault(); setComparePos(comparePos - step); }
-          else if (e.key === 'ArrowRight') { e.preventDefault(); setComparePos(comparePos + step); }
-          else if (e.key === 'Home') { e.preventDefault(); setComparePos(0); }
-          else if (e.key === 'End') { e.preventDefault(); setComparePos(1); }
-        });
-
-        function ensureBusyOverlay() {
-          if (busyOverlay) return;
-          busyOverlay = document.createElement('div');
-          busyOverlay.className = 'ms-busy-overlay hidden';
-          const spin = document.createElement('div');
-          spin.className = 'ms-busy-spin';
-          const dots = document.createElement('div');
-          dots.className = 'ms-busy-dots';
-          const msg = document.createElement('div');
-          msg.className = 'ms-busy-msg';
-          busyOverlay.appendChild(spin);
-          busyOverlay.appendChild(dots);
-          busyOverlay.appendChild(msg);
-          stack.appendChild(busyOverlay);
-        }
-
-        // One dot per running area, in its highlight color: pulsing while it
-        // stages, a check when done, an exclamation mark if it failed.
-        function renderBusyDots(participating) {
-          ensureBusyOverlay();
-          const host = busyOverlay.querySelector('.ms-busy-dots');
-          host.textContent = '';
-          participating.forEach((l) => {
-            const d = document.createElement('span');
-            d.className = 'ms-busy-dot' + (l.status === 'generating' ? ' ms-busy-dot--running' : '');
-            d.style.background = l.status === 'failed' ? '#b91c1c' : layerColor(l);
-            d.textContent = l.status === 'done' ? '✓' : l.status === 'failed' ? '!' : '';
-            d.title = layerTitle(l);
-            host.appendChild(d);
-          });
-        }
-
-        function loadingMessages() {
-          const fromLang = window.LanguageSystem && window.LanguageSystem.getText('maskingStudio.loadingMessages');
-          if (Array.isArray(fromLang) && fromLang.length) return fromLang;
-          return [
-            'Placing your furniture…',
-            'Matching light and shadows…',
-            'Blending each area in…',
-            'Keeping the rest of the photo untouched…',
-            'Adding finishing touches…',
-          ];
-        }
-
-        function startBusyMessages() {
-          ensureBusyOverlay();
-          busyOverlay.classList.remove('hidden');
-          const msgEl = busyOverlay.querySelector('.ms-busy-msg');
-          const msgs = loadingMessages();
-          let i = 0;
-          msgEl.textContent = msgs[0];
-          if (busyMsgTimer) clearInterval(busyMsgTimer);
-          busyMsgTimer = setInterval(() => {
-            i = (i + 1) % msgs.length;
-            msgEl.textContent = msgs[i];
-          }, 2200);
-        }
-
-        function stopBusyMessages() {
-          if (busyMsgTimer) { clearInterval(busyMsgTimer); busyMsgTimer = null; }
-          if (busyOverlay) busyOverlay.classList.add('hidden');
-        }
-
-        function updateControls() {
-          const generating = state.phase === 'generating';
-          addLayerBtn.disabled = !state.base || generating || state.layers.length >= MAX_LAYERS;
-          replaceBtn.disabled = generating;
-          brushSlider.disabled = generating;
-          brushBtn.disabled = generating;
-          eraseBtn.disabled = generating;
-          rectBtn.disabled = generating;
-          wandBtn.disabled = generating;
-          undoBtn.disabled = generating || state.phase !== 'draw' || !state.undoStack.length;
-          redoBtn.disabled = generating || state.phase !== 'draw' || !state.redoStack.length;
-          editHighlightsBtn.disabled = generating;
-          downloadBtn.disabled = generating || !state.layers.some((l) => l.status === 'done');
-          layerList.querySelectorAll('textarea, button').forEach((el) => { el.disabled = generating; });
-
-          const painted = state.layers.filter((l) => l.painted);
-          const allDetailed = painted.length > 0 && painted.every((l) => l.mode === 'remove' || l.prompt.trim() || l.furniture);
-          generateBtn.disabled = !state.base || generating || !allDetailed;
-
-          // Explain a disabled Apply Edit instead of leaving it a mystery.
-          let hint = '';
-          if (!generating) {
-            if (!state.base) hint = tx('errors.uploadFirst', 'Please upload an image first');
-            else if (!painted.length) hint = tx('maskingStudio.needHighlight', 'Paint at least one area on the photo first.');
-            else if (!allDetailed) hint = tx('maskingStudio.needPromptOrFurniture', 'Each highlighted area needs a short prompt or a furniture photo.');
-          }
-          ctaHint.textContent = hint;
-          ctaHint.classList.toggle('hidden', !hint);
-        }
+        // Phase state machine, before/compare/after view, compare divider, busy
+        // overlay, and control-enablement → masking-studio/viewer.js (setPhase/
+        // setView/setComparePos/moveCompare/renderBusyDots/updateControls).
 
         // ---------------------------------------------------------------------
         // Generation: every painted area runs as its own parallel mask edit.
@@ -1268,48 +420,7 @@ import { createSegWand } from './masking-studio/seg-wand.js';
         });
 
 
-        // ---------------------------------------------------------------------
-        // Upload wiring (dropzone click/keyboard/drop + toolbar replace)
-        // ---------------------------------------------------------------------
-        dropzone.addEventListener('click', () => fileInput.click());
-        dropzone.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            fileInput.click();
-          }
-        });
-        replaceBtn.addEventListener('click', () => {
-          if (state.phase === 'generating') return;
-          requestDiscard(() => fileInput.click());
-        });
-        fileInput.addEventListener('change', () => {
-          const file = fileInput.files && fileInput.files[0];
-          fileInput.value = '';
-          handleRoomFile(file);
-        });
-        (function wireRoomDrop() {
-          const hasFiles = (e) =>
-            !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
-          [dropzone, stack].forEach((zone) => {
-            zone.addEventListener('dragover', (e) => {
-              if (!hasFiles(e)) return;
-              e.preventDefault();
-              if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
-              if (zone === dropzone) dropzone.classList.add('is-drag-over');
-            });
-            zone.addEventListener('dragleave', () => dropzone.classList.remove('is-drag-over'));
-            zone.addEventListener('drop', (e) => {
-              if (!hasFiles(e)) return;
-              e.preventDefault();
-              dropzone.classList.remove('is-drag-over');
-              if (state.phase === 'generating') return;
-              const file = e.dataTransfer.files && e.dataTransfer.files[0];
-              // Dropping on the photo itself is easy to do by accident when
-              // aiming for the furniture button, so also guard unstaged work.
-              requestDiscard(() => handleRoomFile(file), zone === stack);
-            });
-          });
-        })();
+        // Dropzone / replace / file-input / room-drop wiring → masking-studio/upload.js
 
         helpBtn.addEventListener('click', () => setHelpOpen(true));
         helpCloseBtn.addEventListener('click', () => setHelpOpen(false));
@@ -1318,26 +429,90 @@ import { createSegWand } from './masking-studio/seg-wand.js';
           if (e.target === helpEl) setHelpOpen(false);
         });
 
-        addLayerBtn.addEventListener('click', () => {
-          if (state.layers.length >= MAX_LAYERS) {
-            const t = tx('maskingStudio.areaLimit', 'You can highlight up to {n} areas.');
-            showToast(t.replace('{n}', String(MAX_LAYERS)));
-            return;
-          }
-          addLayer();
-        });
-
-        // Re-render translated card copy when the language changes.
-        window.addEventListener('languagechange', () => {
-          renderLayers();
-          updateControls();
-        });
+        // Add-area button + languagechange re-render → masking-studio/layers-ui.js
 
         // ---------------------------------------------------------------------
         // Islands (scripts/masking-studio/*): each factory receives the shared
         // state store plus entry glue; APIs are destructured into same-named
         // consts so the call sites above stay unchanged.
         // ---------------------------------------------------------------------
+        // Area layers + card/chip rendering. Its cross-island collaborators
+        // (updateControls/setPhase/scheduleSessionSave/… from islands created
+        // below) are late-bound arrows — every one fires only on a user event or
+        // during boot AFTER this whole block runs, so the consts are assigned.
+        const {
+          addLayer,
+          getLayer,
+          activeLayer,
+          layerColor,
+          layerTitle,
+          renderLayers,
+          updateChipbarVisibility,
+        } = createLayersUi({
+          state,
+          MAX_LAYERS,
+          PALETTE,
+          layerList,
+          chipbar,
+          stack,
+          resultCanvas,
+          addLayerBtn,
+          tx,
+          showToast,
+          updateControls: () => updateControls(),
+          scheduleSessionSave: () => scheduleSessionSave(),
+          updateStageBackdrop: () => updateStageBackdrop(),
+          compositeAll: () => compositeAll(),
+          setPhase: (p) => setPhase(p),
+          snapshotForUndo: () => snapshotForUndo(),
+          retryLayer: (id) => retryLayer(id),
+          selectCandidate: (l, i) => selectCandidate(l, i),
+          wireFurnitureDrop: (z, l) => wireFurnitureDrop(z, l),
+          beginFurniturePick: (id) => beginFurniturePick(id),
+        });
+
+        // Phases/view/compare, zoom & pan, busy overlay, control enablement.
+        const { setPhase, setView, moveCompare, renderBusyDots, updateControls, setZoom, resetZoom } = createViewer({
+          state,
+          MAX_LAYERS,
+          stack,
+          baseCanvas,
+          resultCanvas,
+          viewerEl,
+          viewToggle,
+          viewerHeader,
+          viewerActions,
+          editHighlightsBtn,
+          viewResultBtn,
+          downloadBtn,
+          toggleBeforeBtn,
+          toggleCompareBtn,
+          toggleAfterBtn,
+          compareEl,
+          compareGrip,
+          compareLabelBefore,
+          compareLabelAfter,
+          addLayerBtn,
+          replaceBtn,
+          brushSlider,
+          brushBtn,
+          eraseBtn,
+          rectBtn,
+          wandBtn,
+          undoBtn,
+          redoBtn,
+          layerList,
+          generateBtn,
+          ctaHint,
+          tx,
+          renderLayers,
+          updateChipbarVisibility,
+          layerColor,
+          layerTitle,
+          updateStageBackdrop: () => updateStageBackdrop(),
+          hideCursor: () => hideCursor(),
+        });
+
         // Session persistence: IndexedDB transport, debounced saves, resume dialog.
         const { scheduleSessionSave, maybeOfferResume } = createSessionStore({
           state,
@@ -1441,6 +616,29 @@ import { createSegWand } from './masking-studio/seg-wand.js';
           showToast,
           tx,
           loadImage,
+        });
+
+        // Room-photo + furniture intake, drop/paste, and dropzone/replace wiring.
+        // Created last: layers-ui's furniture-add button late-binds to
+        // wireFurnitureDrop/beginFurniturePick, and both only fire post-upload.
+        const { wireFurnitureDrop, beginFurniturePick } = createUpload({
+          state,
+          dropzone,
+          fileInput,
+          furnitureInput,
+          stack,
+          replaceBtn,
+          showToast,
+          tx,
+          loadImage,
+          setBaseImage,
+          requestDiscard,
+          activeLayer,
+          getLayer,
+          renderLayers,
+          updateControls,
+          layerTitle,
+          scheduleSessionSave,
         });
 
         // ---------------------------------------------------------------------
