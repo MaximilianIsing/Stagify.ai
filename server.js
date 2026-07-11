@@ -28,7 +28,7 @@ import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
 import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
-import { setSensitiveHeaders, getUserIdentifier, sendError } from './lib/http/http-helpers.js';
+import { setSensitiveHeaders, sendError } from './lib/http/http-helpers.js';
 import { getTemperatureForModel, getGeminiImageModel } from './lib/config/model-config.js';
 import { createAuthHelpers } from './lib/services/auth-helpers.js';
 import { getPromptCount, incPromptCount, getContactCount, incContactCount, initializePromptCount, initializeContactCount } from './lib/data/counters.js';
@@ -145,7 +145,7 @@ if (STATS_DEBUG) {
 }
 
 // getTemperatureForModel / getGeminiImageModel → lib/config/model-config.js
-// getUserIdentifier / setSensitiveHeaders → lib/http/http-helpers.js (imported at top)
+// setSensitiveHeaders → lib/http/http-helpers.js (imported at top)
 
 // AI/email clients (genAI / openai / resend) → lib/services/ai-clients.js. Constructed once
 // at boot from env vars (Render) or local *-key.txt fallbacks (dev).
@@ -234,10 +234,10 @@ app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY
 app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT }));
 
 // staging routes (routes/staging.js)
-app.use(createStagingRouter({ genAI, openai, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, getUserIdentifier, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
+app.use(createStagingRouter({ genAI, openai, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
 
 // chat routes (routes/chat.js)
-app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, getUserIdentifier, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
+app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
 
 // public routes (routes/public.js)
 app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));

@@ -39,7 +39,6 @@ const CONTEXT_LIMIT_MESSAGE =
  *   saveMemories: Function,
  *   getTemperatureForModel: (model: string) => number,
  *   getGeminiImageModel: typeof import('../lib/config/model-config.js').getGeminiImageModel,
- *   getUserIdentifier: (req: import('express').Request) => string,
  *   annotateImage: (imageDataUrl: string, isCAD?: boolean, detectBlueprint?: boolean) => Promise<string | null>,
  *   downscaleImageForGPT: (dataUrl: string) => Promise<string>,
  *   processImageGeneration: ReturnType<typeof import('../lib/staging/staging-generation.js').createStagingGeneration>['processImageGeneration'],
@@ -56,7 +55,7 @@ export default function createChatRouter(deps) {
   // (staging/generate/CAD/memory helpers, image resolution, CSV+debug logging,
   // SSE streaming, etc.) are consumed by createChatPipeline(deps) below rather
   // than referenced here.
-  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel, getUserIdentifier } = deps;
+  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel } = deps;
   const router = createAsyncRouter();
   const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse, applyPostRoutingSuppression, logRoutingOutcome, beginChatStream, sendChatResponse } = createChatPipeline(deps);
   const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting, logUploadDedupDiagnostics } = createUploadPrep(deps);
@@ -67,7 +66,8 @@ router.get('/api/welcome-message', handleWelcomeMessage);
 
 router.post('/api/chat', genLimiter, async (req, res) => {
   try {
-    if (!requireProAccount(req, res)) return;
+    const proUser = requireProAccount(req, res);
+    if (!proUser) return;
 
     if (!openai) {
       return sendError(res, 500, 'AI service not properly configured');
@@ -98,12 +98,14 @@ router.post('/api/chat', genLimiter, async (req, res) => {
       });
     }
 
-    // Get user identifier
-    const userId = getUserIdentifier(req);
-    
+    // Key per-user data on the validated session account — NOT a client-supplied
+    // body field. Trusting req.body.userId here would let any signed-in user read
+    // or overwrite another account's memories by passing that account's id (IDOR).
+    const userId = proUser.id;
+
     // Load stored memories for this user
     let memories = loadMemories(userId);
-    
+
     // Build context about available images in history with annotations
     const { imageContext } = buildImageContext(deduplicatedMessages);
     
@@ -309,7 +311,8 @@ router.post('/api/chat', genLimiter, async (req, res) => {
 
 router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async (req, res) => {
   try {
-    if (!requireProAccount(req, res)) return;
+    const proUser = requireProAccount(req, res);
+    if (!proUser) return;
 
     if (!openai) {
       return sendError(res, 500, 'AI service not properly configured');
@@ -322,12 +325,12 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     // Get message tag from form data
     const messageTag = req.body.messageTag;
     
-    // Get user identifier
-    const userId = getUserIdentifier(req);
-    
+    // Key per-user data on the validated session account, never a body field (see /api/chat).
+    const userId = proUser.id;
+
     // Load stored memories for this user
     let memories = loadMemories(userId);
-    
+
     // Build system instruction with memories (base instruction, will add image context after parsing conversationHistory)
     let systemInstruction = buildChatUploadSystemInstruction({ memories, dateContext: getStagifyDateContext() });
 

@@ -32,7 +32,6 @@ export function baseDeps() {
       return null;
     },
     logMaskEditToFile: () => {},
-    getUserIdentifier: () => 'test',
     downscaleImage: async (b) => b,
     padBufferToAspectRatio: async (b) => b,
     buildMarkedRoomImage: async (b) => b,

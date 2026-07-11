@@ -257,6 +257,32 @@ test('an unauthenticated request is rejected with 401 and never stages', async (
   assert.equal(app.calls.processStaging.calls, 0);
 });
 
+// 6b ─ IDOR guard: memories key on the VALIDATED SESSION account (proUser.id),
+//      never a client-supplied body field. A signed-in user must not be able to
+//      read or overwrite another account's memories by passing that account's id.
+test('memories key on the session user.id and ignore a spoofed body userId', async () => {
+  const loadArgs = [];
+  app = await mountChat({
+    routing: { response: 'Noted.', memories: { stores: ['User is an architect'] } },
+    requireProAccount: () => ({ id: 'session-user', email: 'me@example.com', plan: 'pro' }),
+    loadMemories: (id) => { loadArgs.push(id); return []; },
+  });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{ role: 'user', content: 'I am an architect' }],
+    // Attacker-controlled identity fields — both MUST be ignored by the handler.
+    userId: 'victim-account-id',
+    userEmail: 'victim@example.com',
+  });
+
+  assert.equal(res.status, 200);
+  // Read path: memories were loaded for the session user, not the spoofed id.
+  assert.deepEqual(loadArgs, ['session-user']);
+  // Write path: the AI's memory store persisted under the session user, not the spoofed id.
+  assert.equal(app.calls.saveMemories.calls, 1);
+  assert.equal(app.calls.saveMemories.lastArgs[0], 'session-user');
+});
+
 // 7 ─ Misconfiguration: no OpenAI client → 500 with the documented message.
 test('a missing OpenAI client yields a 500 AI-not-configured error', async () => {
   app = await mountChat({ openai: null });
