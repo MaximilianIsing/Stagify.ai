@@ -75,6 +75,31 @@ export default [
   },
 
   {
+    // File-size ratchet for backend product code — the same 650-line cap the
+    // frontend ESM modules carry (below), extended here so routes/ and lib/ can't
+    // drift into 800–1000-line "junk drawers" unnoticed. Scoped to product code
+    // only: test/** is intentionally excluded (test files legitimately grow and
+    // aren't the entry-script junk drawers this guards against). When a module
+    // bumps the cap, split it into cohesive siblings — don't raise this. The one
+    // file over the line is grandfathered just below, as debt to shrink the same way.
+    files: ['server.js', 'instrument.js', 'load-env.js', 'routes/**/*.js', 'lib/**/*.js'],
+    rules: {
+      'max-lines': ['error', 650],
+    },
+  },
+
+  {
+    // Grandfathered: predates the backend 650-line ratchet above. Capped at 800
+    // (today's worst is ~780) so it can't regress toward 1000, but not yet forced
+    // under 650. Debt: split into cohesive modules, then delete this entry so the
+    // global 650 cap applies.
+    files: ['lib/data/auth-store.js'],
+    rules: {
+      'max-lines': ['error', 800],
+    },
+  },
+
+  {
     // Files allowed to call console directly, in override order after the backend
     // block above (later blocks win in flat config):
     //   - lib/logger.js          — IS the console wrapper.
