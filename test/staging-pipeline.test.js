@@ -6,7 +6,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateWithQualityRetry } from '../lib/staging/staging-pipeline.js';
+import { generateWithQualityRetry, normalizeFurnitureBuffers } from '../lib/staging/staging-pipeline.js';
 
 // A generator that returns queued values per call. A value may be an Error (thrown)
 // or null (a "no image produced" attempt). Records the attempt numbers it saw.
@@ -99,4 +99,30 @@ test('validates its required options', async () => {
     generateWithQualityRetry(async () => 'a', { reviewFn: async () => ({ perfect: true, score: 1 }), maxAttempts: 0 }),
     /maxAttempts/,
   );
+});
+
+// --- normalizeFurnitureBuffers: coerce the furniture-image input into ≤5 Buffers ---
+
+test('normalizeFurnitureBuffers returns [] for null/undefined/empty input', () => {
+  assert.deepEqual(normalizeFurnitureBuffers(null), []);
+  assert.deepEqual(normalizeFurnitureBuffers(undefined), []);
+  assert.deepEqual(normalizeFurnitureBuffers([]), []);
+});
+
+test('normalizeFurnitureBuffers wraps a single Buffer into a one-element array', () => {
+  const b = Buffer.from('one');
+  assert.deepEqual(normalizeFurnitureBuffers(b), [b]);
+});
+
+test('normalizeFurnitureBuffers keeps only real Buffers from a mixed array', () => {
+  const b1 = Buffer.from('a');
+  const b2 = Buffer.from('b');
+  assert.deepEqual(normalizeFurnitureBuffers([b1, null, 'not-a-buffer', b2, undefined]), [b1, b2]);
+});
+
+test('normalizeFurnitureBuffers caps the list at 5 buffers', () => {
+  const buffers = Array.from({ length: 8 }, (_, i) => Buffer.from(String(i)));
+  const out = normalizeFurnitureBuffers(buffers);
+  assert.equal(out.length, 5, 'never more than 5 references');
+  assert.deepEqual(out, buffers.slice(0, 5), 'keeps the first 5 in order');
 });

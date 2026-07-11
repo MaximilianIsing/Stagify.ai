@@ -130,6 +130,30 @@ export default [
       // caught-error bindings that go unused are fine for the same reason.
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
+      // File-size ratchet. These entry scripts used to grow into 800–1000-line
+      // "junk drawers"; the fix has been to lift cohesive concerns into sibling
+      // islands (scripts/<page>/*.js) wired via the factory-island pattern. This
+      // caps a served ESM module at 650 lines (raw, incl. comments/blanks) so a
+      // file can't drift back there unnoticed. When a module bumps the cap, split
+      // it — don't raise this. The three files still over the line are grandfathered
+      // just below, as tracked debt to shrink the same way.
+      'max-lines': ['error', 650],
+    },
+  },
+
+  {
+    // Grandfathered: cohesive-but-large modules that predate the 650-line ratchet
+    // above. Capped at 850 (today's worst is ~815) so they can't regress toward
+    // 1000, but not yet forced under 650. Debt: split each into islands (as was
+    // done for app.js / ai-designer-app.js / admin.js / profile-menu.js), then
+    // delete its entry here so the global 650 cap applies.
+    files: [
+      'public/scripts/ai-designer/mask-editor.js',    // ~815
+      'public/scripts/app/stage-mask-editor.js',      // ~777
+      'public/scripts/masking-studio-app.js',         // ~690
+    ],
+    rules: {
+      'max-lines': ['error', 850],
     },
   },
 ];
