@@ -18,7 +18,6 @@ import { logger } from '../lib/logger.js';
  *   stagingEndpointKeyGuard: import('express').RequestHandler,
  *   setSensitiveHeaders: (res: import('express').Response) => void,
  *   getAuthUserFromRequest: (req: import('express').Request) => any,
- *   getUserIdentifier: (req: import('express').Request) => string,
  *   requireProAccount: (req: import('express').Request, res: import('express').Response) => any,
  *   enterpriseDomainForUser: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['enterpriseDomainForUser'],
  *   reportEnterpriseUsage: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['reportEnterpriseUsage'],

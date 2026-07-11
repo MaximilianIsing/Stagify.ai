@@ -64,11 +64,11 @@ export async function mountChat(options = {}) {
     genLimiter: pass,
     // Consumed at route-registration time (chatUpload.array('files', 5)).
     chatUpload: { array: () => pass },
-    // Default: authorized. Return truthy and DON'T touch res (matches real guard).
-    requireProAccount: () => true,
+    // Default: authorized. Return the validated user (the handler keys memories on
+    // `user.id`) and DON'T touch res (matches the real requireProAccount guard).
+    requireProAccount: () => ({ id: 'test', email: 'test@example.com', plan: 'pro' }),
     loadMemories: () => [],
     saveMemories,
-    getUserIdentifier: () => 'test',
     getTemperatureForModel: () => 0.7,
     getGeminiImageModel: () => 'gemini-x',
     downscaleImageForGPT: async (u) => u,

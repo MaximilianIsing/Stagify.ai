@@ -9,7 +9,6 @@ import {
   setSensitiveHeaders,
   getStagingClientIp,
   isLikelyMobileStagingRequest,
-  getUserIdentifier,
   sendError,
 } from '../lib/http/http-helpers.js';
 
@@ -52,13 +51,6 @@ test('getStagingClientIp: trusts req.ip, ignores raw X-Forwarded-For, strips ::f
   assert.equal(getStagingClientIp({ headers: {}, ip: '::ffff:192.168.1.5' }), '192.168.1.5', 'IPv4-mapped prefix stripped');
   assert.equal(getStagingClientIp({ headers: {}, socket: { remoteAddress: '198.51.100.9' } }), '198.51.100.9');
   assert.equal(getStagingClientIp({ headers: {} }), 'unknown');
-});
-
-test('getUserIdentifier: userId > userEmail > IP-derived', () => {
-  assert.equal(getUserIdentifier({ body: { userId: 'u_1' } }), 'u_1');
-  assert.equal(getUserIdentifier({ body: { userEmail: 'a@b.com' } }), 'a@b.com');
-  assert.equal(getUserIdentifier({ body: { userEmail: 'unknown' }, ip: '1.2.3.4' }), 'user_1_2_3_4', 'the "unknown" sentinel is ignored');
-  assert.equal(getUserIdentifier({ body: {}, ip: '1.2.3.4' }), 'user_1_2_3_4');
 });
 
 test('setSensitiveHeaders sets no-store + no-referrer', () => {
