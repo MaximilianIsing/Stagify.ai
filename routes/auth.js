@@ -26,13 +26,14 @@ import { logger } from '../lib/logger.js';
  *   getAuthUserFromRequest: (req: import('express').Request) => any,
  *   toPublicAuthUser: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['toPublicAuthUser'],
  *   sendRegistrationVerificationEmail: Function,
+ *   sendAccountExistsNotice: Function,
  *   __dirname: string,
  *   googleClientId: string,
  * }} deps - Auth store, injected OAuth/email clients, rate-limit middleware,
  *   staging/email flags, and auth helpers.
  */
 export default function createAuthRouter(deps) {
-  const { authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, sendRegistrationVerificationEmail , __dirname, googleClientId } = deps;
+  const { authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, sendRegistrationVerificationEmail, sendAccountExistsNotice, __dirname, googleClientId } = deps;
   const router = createAsyncRouter();
 
 router.get('/getpro', (req, res) => {
@@ -71,12 +72,22 @@ router.post('/api/auth/register', authLimiter, express.json(), async (req, res) 
     const { email, password } = req.body || {};
     const result = authStore.startRegistration(email, password);
     if (!result.ok) {
+      // Only genuine input errors (bad email / weak password) reach here now —
+      // a "this email is taken" result is intentionally reported as ok:true with
+      // alreadyExists (see auth-store.js#startRegistration) so the response can't
+      // be used to enumerate accounts.
       return sendError(res, 400, result.error);
     }
-    const mail = await sendRegistrationVerificationEmail({
-      toEmail: result.toEmail,
-      code: result.code,
-    });
+    // Send either the verification code (new email) or an "account already
+    // exists" notice (taken email). Both helpers return the SAME body, so the
+    // caller can't tell which branch ran. Both hit the email provider, so the
+    // dominant response latency is equalized too.
+    const mail = result.alreadyExists
+      ? await sendAccountExistsNotice({ toEmail: result.toEmail })
+      : await sendRegistrationVerificationEmail({
+          toEmail: result.toEmail,
+          code: result.code,
+        });
     if (!mail.ok) {
       return res.status(mail.status).json(mail.body);
     }
@@ -220,15 +231,22 @@ router.post('/api/auth/forgot-password', emailLimiter, express.json(), async (re
       process.env.PUBLIC_APP_URL || process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
     const baseUrl = String(baseUrlRaw).replace(/\/$/, '');
 
-    if (!result.token) {
-      return res.json({
+    // Anti-enumeration: one neutral response for BOTH an existing and a
+    // non-existent account. The old code returned a distinct "there is no
+    // account for that email" body, which turned this endpoint into an account
+    // oracle. Only the real mailbox owner ever learns anything (they receive the
+    // actual reset link).
+    const neutralOk = () =>
+      res.json({
         ok: true,
-        emailSent: false,
         message:
-          'There is no Stagify account for that email address. Try signing up, or double-check for typos.',
+          'If an account exists for that email, we’ve sent a password reset link. It expires in one hour. ' +
+          'If you don’t see it within a few minutes, check your spam or Promotions folder.',
       });
-    }
 
+    // Email delivery being unconfigured is a server-wide condition, independent
+    // of whether the account exists — check it BEFORE branching on existence so
+    // both cases behave identically (every request gets the same 503).
     if (!resend) {
       logger.error('[auth] Resend not configured; cannot send password reset email');
       return sendError(
@@ -237,6 +255,11 @@ router.post('/api/auth/forgot-password', emailLimiter, express.json(), async (re
         'We could not send a reset email because email delivery is not configured on this server. Please contact support.',
         { code: 'EMAIL_NOT_CONFIGURED' },
       );
+    }
+
+    // No account for this email → return the SAME body as the success path.
+    if (!result.token) {
+      return neutralOk();
     }
 
     const resetUrl = `${baseUrl}/reset-password.html?token=${encodeURIComponent(result.token)}`;
@@ -260,21 +283,14 @@ router.post('/api/auth/forgot-password', emailLimiter, express.json(), async (re
         typeof sendResult.error?.message === 'string'
           ? sendResult.error.message
           : JSON.stringify(sendResult.error);
+      // Log for operators, but DON'T surface the failure: this branch is only
+      // reached for real accounts, so a per-request 502 here would itself be an
+      // enumeration signal. Return the neutral body instead (the user can retry).
       logger.error('[auth] Resend password reset failed:', errMsg);
-      return sendError(
-        res,
-        502,
-        'We could not send the reset email right now. Please try again in a few minutes. If it keeps failing, contact support.',
-        { code: 'EMAIL_SEND_FAILED' },
-      );
+      return neutralOk();
     }
 
-    return res.json({
-      ok: true,
-      emailSent: true,
-      message:
-        'We sent a password reset link to your email. It expires in one hour. If you do not see it within a few minutes, check your spam or Promotions folder.',
-    });
+    return neutralOk();
   } catch (e) {
     logger.error('forgot-password error', e);
     sendError(res, 500, 'Could not process request');

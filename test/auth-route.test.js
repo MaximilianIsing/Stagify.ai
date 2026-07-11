@@ -100,6 +100,64 @@ test('verify with a wrong code → 400', async () => {
   assert.equal(res.status, 400);
 });
 
+test('registering a taken email is indistinguishable from a fresh sign-up', async () => {
+  app = await mountAuth();
+  const email = 'dupe@example.com';
+
+  // Create the account (register → verify).
+  await post(app.baseUrl, '/api/auth/register', { email, password: PASSWORD });
+  assert.equal(app.sentEmails.length, 1);
+  await post(app.baseUrl, '/api/auth/register/verify', { email, code: app.sentEmails[0].code });
+
+  // Register the SAME email again: must still be 200 (no tell-tale 400) …
+  const dup = await post(app.baseUrl, '/api/auth/register', { email, password: 'Different0ne!' });
+  assert.equal(dup.status, 200, 'a taken email must not surface a distinguishable error');
+  const dupBody = await dup.json();
+  assert.equal(dupBody.needsVerification, true);
+
+  // … and it sends the "account exists" notice, NOT a second verification code.
+  assert.equal(app.sentEmails.length, 1, 'no verification code is issued for a taken email');
+  assert.equal(app.sentAccountExistsNotices.length, 1, 'the address gets an account-exists notice');
+  assert.equal(app.sentAccountExistsNotices[0].toEmail, email);
+
+  // A genuinely new email returns the exact same status and body.
+  const fresh = await post(app.baseUrl, '/api/auth/register', { email: 'newbie@example.com', password: PASSWORD });
+  assert.equal(fresh.status, dup.status, 'same status for taken vs brand-new email');
+  assert.deepEqual(await fresh.json(), dupBody, 'same response body for taken vs brand-new email');
+});
+
+test('forgot-password returns one neutral body for existing and unknown emails', async () => {
+  const sent = [];
+  const resend = {
+    emails: {
+      send: async (msg) => {
+        sent.push(msg);
+        return { data: { id: 'sent' }, error: null };
+      },
+    },
+  };
+  app = await mountAuth({ resend });
+
+  const email = 'reset-me@example.com';
+  await post(app.baseUrl, '/api/auth/register', { email, password: PASSWORD });
+  await post(app.baseUrl, '/api/auth/register/verify', { email, code: app.sentEmails[0].code });
+
+  const existing = await post(app.baseUrl, '/api/auth/forgot-password', { email });
+  const unknown = await post(app.baseUrl, '/api/auth/forgot-password', { email: 'no-such@example.com' });
+
+  assert.equal(existing.status, 200);
+  assert.equal(unknown.status, 200);
+  assert.deepEqual(
+    await unknown.json(),
+    await existing.json(),
+    'identical response body regardless of whether the account exists',
+  );
+
+  // Only the real account actually triggers an outbound reset email.
+  assert.equal(sent.length, 1, 'a reset email is sent only for the account that exists');
+  assert.equal(sent[0].to, email);
+});
+
 test('GET /api/auth/me without a token → 401 AUTH_REQUIRED', async () => {
   app = await mountAuth();
   const res = await get(app.baseUrl, '/api/auth/me');

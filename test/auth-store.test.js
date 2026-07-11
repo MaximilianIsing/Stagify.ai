@@ -117,6 +117,49 @@ test('startPasswordReset does not reveal whether an email exists', () => {
   assert.equal(res.token, undefined, 'but issues no token for a non-existent account');
 });
 
+test('startRegistration does not reveal that an email is already taken', () => {
+  const store = freshStore();
+  registerVerifiedUser(store, 'taken@example.com', 'CorrectHorse9!');
+
+  // A second sign-up for the same email must NOT surface an "already exists"
+  // error (that would make sign-up an account-enumeration oracle). Instead it
+  // reports ok + alreadyExists so the route sends a notice, never a code.
+  const again = store.startRegistration('taken@example.com', 'Different0ne!');
+  assert.equal(again.ok, true, 'no enumerable error for a taken email');
+  assert.equal(again.alreadyExists, true, 'flags the dup for the route (notice, not code)');
+  assert.equal(again.code, undefined, 'never issues a verification code for an existing account');
+  assert.equal(again.toEmail, 'taken@example.com');
+
+  // The existing account is untouched: its original password still logs in and
+  // the duplicate attempt created no pending it could verify into.
+  assert.equal(store.login('taken@example.com', 'CorrectHorse9!').ok, true, 'original login still works');
+  assert.equal(store.login('taken@example.com', 'Different0ne!').ok, false, 'the dup attempt set no password');
+  assert.equal(
+    store.completeRegistration('taken@example.com', '000000').ok,
+    false,
+    'no pending registration exists to verify into',
+  );
+});
+
+test('login gives one generic error for missing, wrong-password, and Google-only accounts', () => {
+  const store = freshStore();
+  registerVerifiedUser(store, 'pw@example.com', 'CorrectHorse9!');
+  store.loginWithGoogle({ email: 'goog@example.com', googleSub: 'sub-xyz' });
+
+  const missing = store.login('nobody@example.com', 'whatever!');
+  const wrongPw = store.login('pw@example.com', 'wrong-password!');
+  const googleOnly = store.login('goog@example.com', 'whatever!');
+
+  for (const r of [missing, wrongPw, googleOnly]) {
+    assert.equal(r.ok, false);
+  }
+  // Identical wording across all three so login can't distinguish "no such user"
+  // from "wrong password" from "this is a Google account".
+  assert.equal(missing.error, wrongPw.error, 'missing vs wrong-password errors match');
+  assert.equal(missing.error, googleOnly.error, 'a Google-only account is indistinguishable too');
+  assert.equal(missing.error, 'Invalid email or password');
+});
+
 // The free-tier daily cap IS enforced server-side, before any paid AI call:
 // freeGenerationStatus reports the remaining allowance and recordFreeGeneration
 // drives it. (recordMobileIpGeneration is retained only for backup/rollback shape;

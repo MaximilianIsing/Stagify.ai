@@ -305,15 +305,13 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
                 data.message ||
                 lang('auth.resetSomethingWrong', 'Something went wrong. Please try again in a few minutes.');
               fb.classList.add('auth-forgot-feedback--warn');
-            } else if (data.emailSent) {
-              fb.textContent =
-                data.message ||
-                lang('auth.resetLinkSent', 'We sent a password reset link. Check your email (and spam).');
-              fb.classList.add('auth-forgot-feedback--success');
             } else {
+              // The server returns one neutral message whether or not the email
+              // has an account (anti-enumeration), so we always show it as-is.
               fb.textContent =
                 data.message ||
-                lang('auth.noAccountForEmail', 'No account was found for that email.');
+                lang('auth.resetLinkSent', 'If that email has an account, we sent a reset link. Check your inbox (and spam).');
+              fb.classList.add('auth-forgot-feedback--success');
             }
           }
         } catch (err) {

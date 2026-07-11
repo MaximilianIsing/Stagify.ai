@@ -43,9 +43,11 @@ const inertEnterpriseStore = {
 /**
  * Mount the auth router with a real store. `overrides` merges over the default deps
  * (e.g. `IS_STAGING: true`, a scripted `googleOAuthClient`, `googleClientId: null`).
- * Returns { baseUrl, store, sentEmails, close }. `sentEmails` collects every
- * { toEmail, code } the router asked to send, so a test can read back the
- * verification code without a mailbox.
+ * Returns { baseUrl, store, sentEmails, sentAccountExistsNotices, close }.
+ * `sentEmails` collects every { toEmail, code } the router asked to send (so a
+ * test can read back the verification code without a mailbox);
+ * `sentAccountExistsNotices` collects the { toEmail } of every "you already have
+ * an account" notice, used to prove the anti-enumeration sign-up path.
  */
 export async function mountAuth(overrides = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-auth-'));
@@ -58,9 +60,25 @@ export async function mountAuth(overrides = {}) {
   });
 
   const sentEmails = [];
+  // The success body must match sendAccountExistsNotice's exactly (see below) so
+  // route tests can prove the "new email" and "taken email" paths are identical.
+  const verificationBody = {
+    ok: true,
+    needsVerification: true,
+    message:
+      'We sent a 6-digit verification code to your email. Enter it below to finish creating your account.',
+  };
   const sendRegistrationVerificationEmail = async ({ toEmail, code }) => {
     sentEmails.push({ toEmail, code });
-    return { ok: true, body: { ok: true, message: 'Verification code sent', email: toEmail } };
+    return { ok: true, body: verificationBody };
+  };
+
+  // Fake of the "account already exists" notice: captures the recipient and
+  // returns the SAME body as a real verification send (indistinguishable path).
+  const sentAccountExistsNotices = [];
+  const sendAccountExistsNotice = async ({ toEmail }) => {
+    sentAccountExistsNotices.push({ toEmail });
+    return { ok: true, body: verificationBody };
   };
 
   const baseDeps = {
@@ -80,6 +98,7 @@ export async function mountAuth(overrides = {}) {
     getAuthUserFromRequest: helpers.getAuthUserFromRequest,
     toPublicAuthUser: helpers.toPublicAuthUser,
     sendRegistrationVerificationEmail,
+    sendAccountExistsNotice,
     __dirname: path.resolve('.'),
     googleClientId: 'test-google-client-id',
   };
@@ -95,6 +114,7 @@ export async function mountAuth(overrides = {}) {
     baseUrl: `http://127.0.0.1:${port}`,
     store,
     sentEmails,
+    sentAccountExistsNotices,
     close: () =>
       new Promise((r) =>
         server.close(() => {
