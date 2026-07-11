@@ -100,3 +100,27 @@ test('recordUsage increments a domain counter and no-ops for unknown domains', (
   assert.equal(store.getDomainEntry('acme.com').usageCount, 4);
   assert.doesNotThrow(() => store.recordUsage('unknown.com'), 'unknown domain is a silent no-op');
 });
+
+test('getEntryByStripeCustomerId looks a domain up by its Stripe customer', () => {
+  const store = freshStore();
+  activate(store); // cus_ent
+  assert.equal(store.getEntryByStripeCustomerId('cus_ent')?.domain, 'acme.com');
+  assert.equal(store.getEntryByStripeCustomerId('cus_missing'), null, 'unknown customer → null');
+  assert.equal(store.getEntryByStripeCustomerId(null), null, 'falsy id → null');
+});
+
+test('exportStore returns every domain under a { domains } envelope', () => {
+  const store = freshStore();
+  assert.deepEqual(store.exportStore(), { domains: [] }, 'empty store exports no domains');
+  activate(store);
+  const dump = store.exportStore();
+  assert.equal(dump.domains.length, 1);
+  assert.equal(dump.domains[0].domain, 'acme.com');
+});
+
+test('getStoreFilePath points at the SQLite db inside the store dir', () => {
+  const store = freshStore();
+  const p = store.getStoreFilePath();
+  assert.equal(typeof p, 'string');
+  assert.match(p, /auth-store\.db$/, 'the enterprise data lives in the shared auth-store.db');
+});

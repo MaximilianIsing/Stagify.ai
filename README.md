@@ -45,5 +45,5 @@ triggered manually from the Render dashboard. See the
 
 ## Requirements
 
-Node.js ≥ 18. API keys are optional except **Gemini** (`GOOGLE_AI_API_KEY`) for the
+Node.js ≥ 22.8.0. API keys are optional except **Gemini** (`GOOGLE_AI_API_KEY`) for the
 core staging flow; every other integration degrades gracefully when unconfigured.
