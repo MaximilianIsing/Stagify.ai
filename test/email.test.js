@@ -83,6 +83,38 @@ test('sendRegistrationVerificationEmail: transport failures map to the exact sta
   assert.equal(r2.body.code, 'EMAIL_SEND_FAILED');
 });
 
+test('sendAccountExistsNotice: body is byte-identical to the verification path (no enumeration)', async () => {
+  const resend = fakeResend();
+  const api = createEmail(baseDeps({ resend }));
+  const notice = await api.sendAccountExistsNotice({ toEmail: 'taken@example.com' });
+
+  // The success body must exactly match a real verification send, so
+  // /api/auth/register looks the same whether or not the email is taken.
+  const verify = await api.sendRegistrationVerificationEmail({ toEmail: 'taken@example.com', code: '424242' });
+  assert.deepEqual(notice.body, verify.body, 'account-exists body equals verification body');
+
+  // But the actual email that goes out is the "you already have an account" one,
+  // and it never contains a verification code.
+  const p = resend.sent[0];
+  assert.equal(p.subject, 'You already have a Stagify account');
+  assert.equal(p.to, 'taken@example.com');
+  assert.ok(/already have/i.test(p.text), 'tells the owner they already have an account');
+});
+
+test('sendAccountExistsNotice: transport failures map to the same status/code as verification', async () => {
+  const notConfigured = createEmail(baseDeps({ resend: null }));
+  const r1 = await notConfigured.sendAccountExistsNotice({ toEmail: 'a@b.com' });
+  assert.equal(r1.ok, false);
+  assert.equal(r1.status, 503);
+  assert.equal(r1.body.code, 'EMAIL_NOT_CONFIGURED');
+
+  const failing = createEmail(baseDeps({ resend: fakeResend({ data: null, error: { message: 'rate limited' } }) }));
+  const r2 = await failing.sendAccountExistsNotice({ toEmail: 'a@b.com' });
+  assert.equal(r2.ok, false);
+  assert.equal(r2.status, 502);
+  assert.equal(r2.body.code, 'EMAIL_SEND_FAILED');
+});
+
 test('isStrictEmailClientProxyUa: only known image proxies count; bots and real browsers do not', () => {
   const { isStrictEmailClientProxyUa: p } = createEmail(baseDeps());
   // Recognized email-provider image proxies → true.
