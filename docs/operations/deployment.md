@@ -32,6 +32,15 @@ Deployed on **Render** as a Node web service, defined by [`render.yaml`](../../r
    the suite green (see [`testing.md`](../guides/testing.md)).
 4. Watch the deploy logs for `Server running on port …` and `AI configured: true`.
 
+> **Check the `e2e` CI job before deploying.** The Playwright studio smoke
+> ([`playwright.config.js`](../../playwright.config.js)) runs as a **separate GitHub CI
+> job**, *not* as part of `scripts/build.sh` — so the Render build gate (`npm test`)
+> does **not** cover it. This is deliberate: a flaky browser test must never block a
+> deploy. The trade-off is that a genuinely broken studio flow won't abort the build on
+> its own, so before clicking **Manual Deploy**, confirm the **`e2e` job is green on the
+> commit you're shipping** (GitHub → the commit/PR → CI). Treat a red `e2e` as a
+> deploy-blocker even though the build won't.
+
 ## Environments: staging vs production
 
 There is a separate **staging** service (`stagify-ai-staging.onrender.com`). The only
@@ -123,3 +132,6 @@ every 60s, and
   for a year. To update one in place, **rename it or append `?v=`** — see
   [`caching.md`](../reference/caching.md).
 - **A red test blocks the deploy** — the build gate is real.
+- **A red `e2e` job does NOT block the deploy** — the Playwright studio smoke is a
+  separate CI job outside the build gate (by design). Check it's green manually before a
+  Manual Deploy; see [Deploying](#deploying).
