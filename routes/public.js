@@ -283,16 +283,6 @@ router.post('/api/bug-report', emailLimiter, async (req, res) => {
       return sendError(res, 400, 'Bug description is required');
     }
     
-    // Escape CSV fields that contain commas, quotes, or newlines
-    function escapeCSVField(field) {
-      if (field === null || field === undefined) return '';
-      const str = String(field);
-      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-        return '"' + str.replace(/"/g, '""') + '"';
-      }
-      return str;
-    }
-    
     const reportTimestamp = timestamp || new Date().toISOString();
     const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
     
@@ -326,15 +316,15 @@ router.post('/api/bug-report', emailLimiter, async (req, res) => {
     
     // Create CSV row
     const csvRow = [
-      escapeCSVField(reportTimestamp),
-      escapeCSVField(description),
-      escapeCSVField(steps || ''),
-      escapeCSVField(email || ''),
-      escapeCSVField(userId || 'unknown'),
-      escapeCSVField(userAgent || 'unknown'),
-      escapeCSVField(url || 'unknown'),
-      escapeCSVField(ipAddress),
-      escapeCSVField(conversationLog)
+      escapeCsvField(reportTimestamp),
+      escapeCsvField(description),
+      escapeCsvField(steps || ''),
+      escapeCsvField(email || ''),
+      escapeCsvField(userId || 'unknown'),
+      escapeCsvField(userAgent || 'unknown'),
+      escapeCsvField(url || 'unknown'),
+      escapeCsvField(ipAddress),
+      escapeCsvField(conversationLog)
     ].join(',') + '\n';
     
     // Use mounted disk on Render, project data folder locally
