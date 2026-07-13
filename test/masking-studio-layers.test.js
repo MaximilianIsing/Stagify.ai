@@ -13,6 +13,7 @@ import {
   layerTitle,
   previewText,
   statusChip,
+  nearestAreaLabels,
 } from '../public/scripts/masking-studio/layers.js';
 
 // The pure helpers take a translate(key, fallback) fn; tests exercise the
@@ -104,6 +105,49 @@ test('previewText: prompt > remove-mode label > furniture name > empty', () => {
     'chair.png'
   );
   assert.equal(previewText({ prompt: '', mode: 'stage', furniture: null }, tx), '');
+});
+
+// Build one seed alpha array from a list of "on" pixel indices.
+const seedFrom = (n, on) => {
+  const a = new Uint8Array(n);
+  on.forEach((i) => { a[i] = 255; });
+  return a;
+};
+
+test('nearestAreaLabels: splits a 1-D row at the midline between two seeds', () => {
+  // Seeds at both ends of a 5-wide row. Distances to seed0 are [0,1,2,3,4] and
+  // to seed1 [4,3,2,1,0]; the tie at the centre resolves deterministically to
+  // the lower-index area, so exactly the left half (incl. centre) is area 0.
+  const labels = nearestAreaLabels([seedFrom(5, [0]), seedFrom(5, [4])], 5, 1, 10);
+  assert.deepEqual(Array.from(labels), [0, 0, 0, 1, 1]);
+});
+
+test('nearestAreaLabels: every pixel is owned by exactly one area (disjoint cells)', () => {
+  // Two seeds in opposite corners of an 8x8 grid — no pixel is left unassigned
+  // and none is shared, which is what keeps two areas from editing one band.
+  const w = 8, h = 8, n = w * h;
+  const labels = nearestAreaLabels([seedFrom(n, [0]), seedFrom(n, [n - 1])], w, h, 10);
+  assert.ok(labels.every((v) => v === 0 || v === 1), 'no pixel left unlabeled');
+  assert.equal(labels[0], 0, 'seed 0 owns its own pixel');
+  assert.equal(labels[n - 1], 1, 'seed 1 owns its own pixel');
+});
+
+test('nearestAreaLabels: a single seeded area owns the whole photo', () => {
+  const labels = nearestAreaLabels([seedFrom(9, [4]), new Uint8Array(9)], 3, 3, 10);
+  assert.ok(Array.from(labels).every((v) => v === 0));
+});
+
+test('nearestAreaLabels: no seeds anywhere → all pixels unlabeled (-1)', () => {
+  const labels = nearestAreaLabels([new Uint8Array(9)], 3, 3, 10);
+  assert.ok(Array.from(labels).every((v) => v === -1));
+});
+
+test('nearestAreaLabels: sub-threshold alpha does not seed an area', () => {
+  // Alpha 8 is below the default threshold of 10, so area 1 has no seed and
+  // area 0 (solid) wins everything — mirrors the >8 painted-pixel test.
+  const faint = new Uint8Array(4); faint.fill(8);
+  const labels = nearestAreaLabels([seedFrom(4, [0]), faint], 2, 2, 10);
+  assert.ok(Array.from(labels).every((v) => v === 0));
 });
 
 test('statusChip: run status wins, then readiness of the area', () => {
