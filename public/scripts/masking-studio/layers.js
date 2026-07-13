@@ -26,6 +26,58 @@ export function createPool(size) {
   });
 }
 
+// Nearest-area label grid (an approximate Voronoi partition) over the painted
+// areas, via a two-pass chamfer distance transform. `seeds` is one alpha array
+// per area (length w*h); a pixel seeds area k when seeds[k][i] > threshold.
+// Returns an Int16Array(w*h) whose value at each pixel is the index of the
+// nearest seeded area, or -1 only where NO area has any seed.
+//
+// Why: painted pixels are already exclusive per area, but each area's edit is
+// grown + feathered outward at generation time. Without this, two nearby areas'
+// halos both land in the gap between them and edit the same band. Giving every
+// pixel a single owning area lets the entry clip each area's halo to its own
+// territory, so neighbouring halos meet at the midline instead of overlapping.
+// Pure (typed arrays only, no DOM) so it runs under node --test.
+export function nearestAreaLabels(seeds, w, h, threshold = 10) {
+  const n = w * h;
+  const label = new Int16Array(n).fill(-1);
+  const dist = new Float64Array(n).fill(Infinity);
+  for (let k = 0; k < seeds.length; k++) {
+    const s = seeds[k];
+    if (!s) continue;
+    for (let i = 0; i < n; i++) {
+      if (s[i] > threshold && dist[i] !== 0) { dist[i] = 0; label[i] = k; }
+    }
+  }
+  const A = 1;             // orthogonal step cost
+  const B = Math.SQRT2;    // diagonal step cost (Euclidean-ish chamfer)
+  const relax = (i, j, cost) => {
+    const c = dist[j] + cost;
+    if (c < dist[i]) { dist[i] = c; label[i] = label[j]; }
+  };
+  // Forward pass: top-left → bottom-right, pulling from already-visited nbrs.
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x;
+      if (x > 0) relax(i, i - 1, A);
+      if (y > 0) relax(i, i - w, A);
+      if (x > 0 && y > 0) relax(i, i - w - 1, B);
+      if (x < w - 1 && y > 0) relax(i, i - w + 1, B);
+    }
+  }
+  // Backward pass: bottom-right → top-left, completing the transform.
+  for (let y = h - 1; y >= 0; y--) {
+    for (let x = w - 1; x >= 0; x--) {
+      const i = y * w + x;
+      if (x < w - 1) relax(i, i + 1, A);
+      if (y < h - 1) relax(i, i + w, A);
+      if (x < w - 1 && y < h - 1) relax(i, i + w + 1, B);
+      if (x > 0 && y < h - 1) relax(i, i + w - 1, B);
+    }
+  }
+  return label;
+}
+
 // Lowest palette index not yet claimed by an existing layer, or -1 when the
 // palette is exhausted (all `paletteLength` colors are in use).
 export function nextColorIdx(layers, paletteLength) {

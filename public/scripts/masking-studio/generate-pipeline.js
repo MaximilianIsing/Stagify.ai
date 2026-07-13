@@ -12,7 +12,7 @@
 //         baseCanvas, resultCanvas, setPhase, setView, renderLayers,
 //         updateControls, renderBusyDots, hasAnyResults, getLayer,
 //         requestError, showToast, tx, loadImage }
-import { createPool } from './layers.js';
+import { createPool, nearestAreaLabels } from './layers.js';
 import {
   regionNameFromBounds,
   buildAreaContext as _buildAreaContext,
@@ -40,12 +40,11 @@ export function createGeneratePipeline(deps) {
     loadImage,
   } = deps;
 
-        // Shared mask math (growBinaryMask/buildModelMask/buildBlendMask/
+        // Shared mask math (buildModelMask/buildBlendMask/
         // compositeMaskedEditCanvas) — same module the main tool and the AI
         // Designer use, so the pixel-preservation guarantee is identical.
-        let growBinaryMask, buildModelMask, buildBlendMask, compositeMaskedEditCanvas;
+        let buildModelMask, buildBlendMask, compositeMaskedEditCanvas;
         const maskCoreReady = import('/scripts/mask-core.js').then((m) => {
-          growBinaryMask = m.growBinaryMask;
           buildModelMask = m.buildModelMask;
           buildBlendMask = m.buildBlendMask;
           compositeMaskedEditCanvas = m.compositeMaskedEditCanvas;
@@ -87,31 +86,82 @@ export function createGeneratePipeline(deps) {
         // while progressive compositing keeps the wait feeling short.
         const enqueueRun = createPool(3);
 
-        // Union of every OTHER area's painted pixels, binarized. The grow +
-        // feather halo may spill into unpainted photo (that forgiveness is the
-        // point), but it must never cross into pixels the user assigned to a
-        // different area — those are that area's exclusive territory.
+        // Working resolution for the nearest-area partition. The distance
+        // transform is O(pixels) and the midline only has to be right to within
+        // a pixel or two, so we compute it small and scale each area's stamp
+        // back up nearest-neighbour (crisp boundary). Both the model mask and
+        // the blend mask read the SAME partition, so areas stay disjoint however
+        // far the halo grows.
+        const PARTITION_MAX = 640;
+
+        // Assign every pixel to the nearest painted area (a Voronoi split), at
+        // PARTITION_MAX resolution. Recomputed per call: each generate /
+        // stroke-end / retry is one user action, so this runs a handful of times
+        // at most and never on the drag hot-path. Returns { painted, labels,
+        // pw, ph } or null when fewer than two areas are painted (one area owns
+        // the whole photo → nothing to split).
+        function computePartition() {
+          const painted = state.layers.filter((l) => l.painted);
+          if (painted.length < 2) return null;
+          const scale = Math.min(1, PARTITION_MAX / Math.max(state.base.w, state.base.h));
+          const pw = Math.max(1, Math.round(state.base.w * scale));
+          const ph = Math.max(1, Math.round(state.base.h * scale));
+          const seeds = painted.map((l) => {
+            const c = document.createElement('canvas');
+            c.width = pw;
+            c.height = ph;
+            const cx = c.getContext('2d', { willReadFrequently: true });
+            cx.drawImage(l.canvasEl, 0, 0, pw, ph);
+            const rgba = cx.getImageData(0, 0, pw, ph).data;
+            const alpha = new Uint8Array(pw * ph);
+            for (let i = 0; i < alpha.length; i++) alpha[i] = rgba[i * 4 + 3];
+            return alpha;
+          });
+          return { painted: painted, labels: nearestAreaLabels(seeds, pw, ph, 10), pw: pw, ph: ph };
+        }
+
+        // Full-res stamp of every pixel that belongs to ANOTHER area's territory
+        // (its Voronoi cell). Clipping `layer`'s grow + feather halo against this
+        // keeps each area's edit inside its own cell: the forgiving spill into
+        // unpainted photo stays (that's the point), but where two areas compete
+        // their halos meet at the midline instead of both editing the same band.
+        // null when there is nothing to clip against (only this area is painted).
         function othersStamp(layer, fillColor) {
-          const others = state.layers.filter((l) => l !== layer && l.painted);
-          if (!others.length) return null;
-          const u = document.createElement('canvas');
-          u.width = state.base.w;
-          u.height = state.base.h;
-          const uctx = u.getContext('2d');
-          others.forEach((l) => uctx.drawImage(l.canvasEl, 0, 0));
-          const stamp = growBinaryMask(u, state.base.w, state.base.h, 0); // grow 0 = binarize
+          const part = computePartition();
+          if (!part) return null;
+          const myIdx = part.painted.indexOf(layer);
+          if (myIdx < 0) return null; // layer isn't painted → no territory to defend
+          const { labels, pw, ph } = part;
+          const small = document.createElement('canvas');
+          small.width = pw;
+          small.height = ph;
+          const sctx = small.getContext('2d');
+          const id = sctx.createImageData(pw, ph);
+          const d = id.data;
+          for (let i = 0; i < labels.length; i++) {
+            // Opaque wherever the nearest area is some OTHER area (never -1).
+            if (labels[i] !== myIdx && labels[i] !== -1) {
+              d[i * 4] = 255; d[i * 4 + 1] = 255; d[i * 4 + 2] = 255; d[i * 4 + 3] = 255;
+            }
+          }
+          sctx.putImageData(id, 0, 0);
+          const stamp = document.createElement('canvas');
+          stamp.width = state.base.w;
+          stamp.height = state.base.h;
+          const stx = stamp.getContext('2d');
+          stx.imageSmoothingEnabled = false; // crisp cell boundary, no gray edge
+          stx.drawImage(small, 0, 0, state.base.w, state.base.h);
           if (fillColor) {
-            const sctx = stamp.getContext('2d');
-            sctx.globalCompositeOperation = 'source-in';
-            sctx.fillStyle = fillColor;
-            sctx.fillRect(0, 0, state.base.w, state.base.h);
+            stx.globalCompositeOperation = 'source-in';
+            stx.fillStyle = fillColor;
+            stx.fillRect(0, 0, state.base.w, state.base.h);
           }
           return stamp;
         }
 
-        // buildModelMask / buildBlendMask with the halo clipped at neighboring
-        // areas: black out (editable-region mask) or erase (compositing mask)
-        // every pixel another area has painted.
+        // buildModelMask / buildBlendMask with the halo clipped to this area's
+        // territory: black out (editable-region mask) or erase (compositing
+        // mask) every pixel that belongs to another area's cell.
         function layerModelMask(layer, coreGrow) {
           const mask = buildModelMask(layer.canvasEl, state.base.w, state.base.h, coreGrow);
           const stamp = othersStamp(layer, '#000');
