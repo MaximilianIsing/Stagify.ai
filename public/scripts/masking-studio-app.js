@@ -2,6 +2,7 @@ import { requestError as _requestError } from './masking-studio/generation.js';
 import { createSessionStore } from './masking-studio/session-store.js';
 import { createGeneratePipeline } from './masking-studio/generate-pipeline.js';
 import { createDrawTools } from './masking-studio/draw-tools.js';
+import { createSnapRefine } from './masking-studio/snap-refine.js';
 import { createSegWand } from './masking-studio/seg-wand.js';
 import { createLayersUi } from './masking-studio/layers-ui.js';
 import { createViewer } from './masking-studio/viewer.js';
@@ -499,6 +500,8 @@ import { createUpload } from './masking-studio/upload.js';
           selectCandidate: (l, i) => selectCandidate(l, i),
           wireFurnitureDrop: (z, l) => wireFurnitureDrop(z, l),
           beginFurniturePick: (id) => beginFurniturePick(id),
+          // Late-bound: snapRefine is created after the draw-tools island below.
+          snapLayer: (id) => snapRefine.snapLayer(id),
         });
 
         // Phases/view/compare, zoom & pan, busy overlay, control enablement.
@@ -583,6 +586,8 @@ import { createUpload } from './masking-studio/upload.js';
             showToast,
             tx,
             loadImage,
+            // Late-bound: snapRefine is created after the draw-tools island below.
+            computeSpillForDone: (p) => snapRefine.computeSpillForDone(p),
           });
 
         // Draw tools: brush/erase/rect strokes, undo/redo, pointer + pinch
@@ -595,8 +600,8 @@ import { createUpload } from './masking-studio/upload.js';
           redoStroke,
           cancelRect,
           hideCursor,
-          scanHasContent,
           canvasPoint,
+          paintMaskIntoLayer,
         } = createDrawTools({
           state,
           stack,
@@ -627,21 +632,19 @@ import { createUpload } from './masking-studio/upload.js';
           ensureSegCache: () => segWand.ensureSegCache(),
         });
 
+        // Refine "Snap to object": after a run, grow an area's mask to the
+        // object the AI actually drew when it spilled just past the highlight.
+        const snapRefine = createSnapRefine({ state, paintMaskIntoLayer });
+
         // Magic select: Gemini segmentation wand (paints like a faster brush,
-        // via the draw-tools callbacks).
+        // via the shared paintMaskIntoLayer stroke path).
         const segWand = createSegWand({
           state,
           stack,
           wandBusyEl,
           activeLayer,
-          layerColor,
-          renderLayers,
-          updateControls,
-          scheduleSessionSave,
-          updateStageBackdrop,
-          snapshotForUndo,
-          scanHasContent,
           canvasPoint,
+          paintMaskIntoLayer,
           requestError,
           showToast,
           tx,

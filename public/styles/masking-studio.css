@@ -376,7 +376,7 @@
       .ms-mode-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
       .ms-mode-hint { color: #6b7280; font-size: 12px; line-height: 1.45; margin: 0; }
       .ms-preset:focus-visible, .ms-clear-btn:focus-visible, .ms-version-btn:focus-visible,
-      .ms-layer-retry:focus-visible, .ms-furniture-add:focus-visible {
+      .ms-layer-retry:focus-visible, .ms-furniture-add:focus-visible, .ms-snap-btn:focus-visible {
         outline: 2px solid #2563eb;
         outline-offset: 2px;
       }
@@ -392,6 +392,43 @@
         cursor: pointer;
       }
       .ms-clear-btn:hover { color: #b91c1c; }
+
+      /* Refine "Snap to object": grow the mask to the AI's actual object edges.
+         Tinted with the area's own highlight color (--layer-color, set on the
+         card) so it reads as that area's action. */
+      .ms-snap-btn {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1.5px solid var(--layer-color, #2563eb);
+        border-radius: 999px;
+        background: none;
+        padding: 3px 11px;
+        color: var(--layer-color, #2563eb);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.12s ease, color 0.12s ease;
+      }
+      .ms-snap-btn::before { content: "\2922"; font-size: 12px; line-height: 1; }
+      .ms-snap-btn:hover { background: var(--layer-color, #2563eb); color: #fff; }
+      @media (prefers-reduced-motion: reduce) { .ms-snap-btn { transition: none; } }
+
+      /* Small badge on a layer head when a Snap suggestion is pending — visible
+         even while the card is collapsed. */
+      .ms-layer-spill-flag {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px; height: 16px;
+        border-radius: 50%;
+        background: var(--layer-color, #2563eb);
+        color: #fff;
+        font-size: 10px;
+        line-height: 1;
+      }
 
       /* Version picker for areas with more than one generated result. */
       .ms-version-row { display: flex; align-items: center; gap: 6px; }

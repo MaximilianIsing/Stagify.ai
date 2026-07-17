@@ -9,24 +9,16 @@
 // and nulls state.segCache; ensureSegCache captures the token before the
 // fetch and refuses to cache on mismatch.
 //
-// deps: { state, stack, wandBusyEl, activeLayer, layerColor, renderLayers,
-//         updateControls, scheduleSessionSave, updateStageBackdrop,
-//         snapshotForUndo, scanHasContent, canvasPoint, requestError,
-//         showToast, tx, loadImage }
+// deps: { state, stack, wandBusyEl, activeLayer, canvasPoint, paintMaskIntoLayer,
+//         requestError, showToast, tx, loadImage }
 export function createSegWand(deps) {
   const {
     state,
     stack,
     wandBusyEl,
     activeLayer,
-    layerColor,
-    renderLayers,
-    updateControls,
-    scheduleSessionSave,
-    updateStageBackdrop,
-    snapshotForUndo,
-    scanHasContent,
     canvasPoint,
+    paintMaskIntoLayer,
     requestError,
     showToast,
     tx,
@@ -140,38 +132,6 @@ export function createSegWand(deps) {
               wandBusyEl.textContent = msgs[i];
             }, 2200);
           }
-        }
-
-        // Paint a decoded mask into the active area exactly as if it had been
-        // brushed: undo snapshot, tint in the layer color, claim the pixels
-        // from every other area, rescan painted flags.
-        function paintMaskIntoLayer(layer, maskCanvas) {
-          snapshotForUndo();
-          state.redoStack = []; // committed selection forks history
-          const tint = document.createElement('canvas');
-          tint.width = state.base.w;
-          tint.height = state.base.h;
-          const tctx = tint.getContext('2d');
-          tctx.drawImage(maskCanvas, 0, 0);
-          tctx.globalCompositeOperation = 'source-in';
-          tctx.fillStyle = layerColor(layer);
-          tctx.fillRect(0, 0, state.base.w, state.base.h);
-          layer.canvasEl.getContext('2d').drawImage(tint, 0, 0);
-          state.layers.forEach((other) => {
-            if (other === layer) return;
-            const octx = other.canvasEl.getContext('2d');
-            octx.globalCompositeOperation = 'destination-out';
-            octx.drawImage(maskCanvas, 0, 0);
-            octx.globalCompositeOperation = 'source-over';
-          });
-          state.layers.forEach((l) => {
-            l.painted = scanHasContent(l.canvasEl);
-            l.blendMask = null;
-          });
-          renderLayers();
-          updateControls();
-          updateStageBackdrop();
-          scheduleSessionSave();
         }
 
         // One shared in-flight request: clicks made while the analysis runs

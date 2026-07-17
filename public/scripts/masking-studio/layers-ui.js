@@ -40,6 +40,7 @@ export function createLayersUi(deps) {
     selectCandidate,
     wireFurnitureDrop,
     beginFurniturePick,
+    snapLayer,
   } = deps;
 
   function addLayer() {
@@ -153,6 +154,9 @@ export function createLayersUi(deps) {
       const status = document.createElement('span');
       status.className = 'ms-layer-status ' + chip.cls;
       status.textContent = chip.text;
+      // Advertises a pending "Snap to object" suggestion even while the card is
+      // collapsed, so areas whose edit spilled past the highlight stand out.
+      const hasSpill = !!(layer.spill && layer.spill.count > 0 && layer.status === 'done');
       const caret = document.createElement('span');
       caret.className = 'ms-layer-caret';
       caret.setAttribute('aria-hidden', 'true');
@@ -172,6 +176,14 @@ export function createLayersUi(deps) {
       head.appendChild(renameBtn);
       head.appendChild(preview);
       head.appendChild(status);
+      if (hasSpill) {
+        const flag = document.createElement('span');
+        flag.className = 'ms-layer-spill-flag';
+        flag.textContent = '⤢';
+        flag.title = tx('maskingStudio.spillFlag', 'This edit reaches past the highlight — Snap to object available.');
+        flag.setAttribute('aria-hidden', 'true');
+        head.appendChild(flag);
+      }
       head.appendChild(caret);
       head.appendChild(removeBtn);
       head.addEventListener('click', () => {
@@ -378,6 +390,21 @@ export function createLayersUi(deps) {
           scheduleSessionSave();
         });
         body.appendChild(clearBtn);
+      }
+
+      // Snap-to-object: the AI drew this area's object slightly past the
+      // highlight, so offer to grow the mask to it (grow-only, undoable).
+      if (hasSpill && state.phase === 'draw') {
+        const snapBtn = document.createElement('button');
+        snapBtn.type = 'button';
+        snapBtn.className = 'ms-snap-btn';
+        snapBtn.textContent = tx('maskingStudio.snapToObject', 'Snap to object');
+        snapBtn.title = tx('maskingStudio.snapToObjectHint', "Grow this highlight to the edges of what the AI actually drew, so nothing gets cut off.");
+        snapBtn.addEventListener('click', () => {
+          if (state.phase !== 'draw') return;
+          snapLayer(layer.id);
+        });
+        body.appendChild(snapBtn);
       }
 
       if (layer.status === 'failed') {
