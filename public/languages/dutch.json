@@ -44,7 +44,7 @@
     }
   },
   "sponsors": {
-    "title": "Officieel erkend door:"
+    "title": "Vertrouwd door makelaars bij:"
   },
   "home": {
     "studio": {
@@ -225,14 +225,16 @@
       "subtitle": "Rechtstreeks van makelaars die de overstap maakten.",
       "items": {
         "justin": {
-          "quote": "Toen ik Stagify voor het eerst probeerde, was ik oprecht verbluft. Ik besefte dat ik gewoon mijn telefoon kon gebruiken, de dure fotograaf kon overslaan en toch prachtige resultaten had. Het is een gamechanger voor mijn advertenties — en de prijs is geweldig!",
+          "quote": "Toen ik Stagify voor het eerst probeerde, was ik oprecht verbluft. Ik besefte dat ik gewoon mijn telefoon kon gebruiken, de dure fotograaf kon overslaan en toch prachtige resultaten had. Het is een gamechanger voor mijn advertenties, en de prijs is geweldig!",
           "author": "Justin S. (Makelaar)",
-          "role": "Tahari Realty"
+          "role": "Tahari Realty",
+          "location": "Manhattan, New York"
         },
         "andy": {
-          "quote": "Wow! Stagify heeft mijn aanpak van styling compleet veranderd. Het is zo snel, en mijn klanten zijn er dol op. Dit is een totale gamechanger voor mijn advertenties.",
+          "quote": "Stagify past perfect in mijn manier van werken. Ik upload tussen twee bezichtigingen door een foto van een woning en die is gestyled voordat ik terug ben op kantoor. Mijn klanten zijn altijd onder de indruk van hoe verzorgd de uiteindelijke foto's eruitzien.",
           "author": "Andy E. (Makelaar)",
-          "role": "Centennial Properties"
+          "role": "Centennial Properties",
+          "location": "Manhattan, New York"
         }
       }
     },

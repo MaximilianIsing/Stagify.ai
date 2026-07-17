@@ -27,7 +27,20 @@ This document describes HTTP endpoints for the Stagify server. Routes are regist
 | `GET` | `/email/logo.png` | Email logo **and open-tracking pixel.** With `?email=<addr>`, logs an email open (only when the request looks like a genuine email-client fetch) to `email_open_logs.csv`, then serves the logo PNG with `Cache-Control: no-store`. |
 | `GET` | `/bimi-logo.svg`, `/logo-full.png` | Brand assets served with explicit content types (BIMI SVG and full-logo PNG). |
 
-Other `.html` and assets are served by **`express.static('public')`** (e.g. `/stagify-plus.html`, `/ai-designer.html`).
+Other `.html` and assets are served by **`express.static('public')`** (e.g. `/stagify-plus.html`, `/ai-designer.html`, `/plus-welcome.html`).
+
+> **Stagify+ personal subscription flow (no server endpoint).** Unlike the enterprise
+> plan (`POST /api/enterprise/create-checkout`, below), the individual Stagify+ plan does
+> **not** create a server-side Checkout Session. The "Start free trial" button on
+> `stagify-plus.html` is a Stripe **Payment Link** (`scripts/stagify-plus.js` appends the
+> signed-in user's `client_reference_id` + `prefilled_email`). Stripe hosts checkout,
+> fires `checkout.session.completed` to `POST /api/billing/stripe-webhook` (which upgrades
+> the account to `pro`), then redirects the buyer to **`/plus-welcome.html`** — the
+> post-purchase confirmation page. That redirect is configured on the Payment Link's
+> *After payment* setting in the **Stripe dashboard, not in this repo**, and the same
+> `https://stagify.ai/plus-welcome.html` URL is registered as the Google Ads conversion
+> page. Renaming or removing `plus-welcome.html` therefore silently breaks the
+> post-checkout hand-off and ad conversion tracking (guarded by `test/plus-welcome.test.js`).
 
 ---
 

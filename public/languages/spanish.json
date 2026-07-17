@@ -44,7 +44,7 @@
     }
   },
   "sponsors": {
-    "title": "Reconocido Oficialmente Por:"
+    "title": "Con la confianza de agentes de:"
   },
   "home": {
     "studio": {
@@ -227,12 +227,14 @@
         "justin": {
           "quote": "La primera vez que probé Stagify, me quedé sinceramente impresionado. Me di cuenta de que podía usar simplemente mi teléfono, ahorrarme el fotógrafo caro y aun así obtener resultados espectaculares. Es un antes y un después para mis anuncios, ¡y el precio es increíble!",
           "author": "Justin S. (Agente)",
-          "role": "Tahari Realty"
+          "role": "Tahari Realty",
+          "location": "Manhattan, Nueva York"
         },
         "andy": {
-          "quote": "¡Guau! Stagify cambió por completo mi forma de abordar el home staging. Es tan rápido y a mis clientes les encanta. Esto es un antes y un después total para mis anuncios.",
+          "quote": "Stagify encaja perfectamente en mi forma de trabajar. Subo la foto de un anuncio entre visitas y ya está preparada antes de volver a mi escritorio; mis clientes siempre quedan impresionados por lo pulidas que se ven las fotos finales.",
           "author": "Andy E. (Agente)",
-          "role": "Centennial Properties"
+          "role": "Centennial Properties",
+          "location": "Manhattan, Nueva York"
         }
       }
     },

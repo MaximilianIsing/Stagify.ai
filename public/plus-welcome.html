@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Pro32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Pro64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Pro180x180.webp">
+    <title>Welcome to Stagify+ — You're all set | Stagify.ai</title>
+    <meta name="description" content="Your Stagify+ subscription is active. Every professional staging tool is now unlocked on your account.">
+    <!-- Post-purchase confirmation page: reached only via the Stripe redirect, so
+         keep it out of search results. -->
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="stylesheet" href="styles/plus-welcome.css">
+  </head>
+  <body class="page-stagify-plus">
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+      <source src="background.mp4" type="video/mp4">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <a href="index.html" class="brand">
+          <img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high">
+          <span class="brand-strong">Stagify</span><span class="brand-light">.ai</span>
+        </a>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden">AI Designer</a>
+          <a href="masking-studio.html" class="nav-link desktop-only nav-masking-studio-pro hidden">Masking Studio</a>
+          <a href="guides.html" class="nav-link">Guides</a>
+          <a href="contact.html" class="nav-link">Contact Us</a>
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="nav-trailing"></div>
+      </nav>
+    </header>
+
+    <main class="pw-page">
+      <section class="pw-card" aria-labelledby="pw-title">
+        <div class="pw-badge" aria-hidden="true">
+          <span class="pw-rays"></span>
+          <span class="pw-ring"></span>
+          <span class="pw-ring pw-ring--2"></span>
+          <span class="pw-disc">
+            <svg class="pw-check-svg" viewBox="0 0 52 52" aria-hidden="true">
+              <path class="pw-check-path" d="M14 27l8 8 16-18"/>
+            </svg>
+          </span>
+        </div>
+
+        <h1 id="pw-title">Welcome to <span class="pw-grad">Stagify+</span></h1>
+        <p class="pw-lead">You're all set — everything's unlocked. Go make something beautiful.</p>
+
+        <a class="pw-enjoy" href="index.html">
+          Get Staging
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </a>
+
+        <p class="pw-note">
+          A receipt is on its way to your inbox. Manage or cancel anytime from
+          <a href="stagify-plus.html">your plan page</a>.
+        </p>
+      </section>
+    </main>
+
+    <canvas id="pw-confetti" aria-hidden="true"></canvas>
+
+    <footer style="text-align:center;padding:20px 16px 28px;font-size:13px;color:#374151;">
+      <a href="privacy.html" style="color:#2563eb;text-decoration:none;">Privacy Policy</a>
+      &nbsp;·&nbsp;
+      <a href="terms.html" style="color:#2563eb;text-decoration:none;">Terms of Service</a>
+      &nbsp;·&nbsp;
+      <a href="/status" style="color:#2563eb;text-decoration:none;">Status</a>
+      &nbsp;·&nbsp;
+      © <span class="footer-year"></span> Stagify.ai
+    </footer>
+
+    <script type="module" src="scripts/nav-pill.js"></script>
+    <script type="module" src="scripts/auth.js"></script>
+    <script type="module" src="scripts/profile-menu.js"></script>
+    <script type="module" src="scripts/aurora-scrollbar.js"></script>
+    <script type="module" src="scripts/card-spotlight.js"></script>
+    <script type="module" src="scripts/footer-year.js"></script>
+    <script type="module" src="scripts/plus-welcome-confetti.js"></script>
+  </body>
+</html>

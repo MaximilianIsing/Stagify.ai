@@ -90,8 +90,9 @@ gets the files as authored (same [no-build-step decision](architecture.md#decisi
   carefully; the lower sections are `/* === … === */`-commented and readable.
 - **Per-page — `styles/<page>.css`.** One file per page's own layout: `home.css`
   (the index/marketing page), `ai-designer.css`, `masking-studio.css`, `stagify-plus.css`,
-  `enterprise.css`, `status.css`, `admin.css`, `getpro.css`, `reset-password.css`,
-  `index.css`. Legal pages share `legal.css` (privacy + terms) and `enterprise-msa.css`.
+  `plus-welcome.css` (the post-checkout confirmation card), `enterprise.css`, `status.css`,
+  `admin.css`, `getpro.css`, `reset-password.css`, `index.css`. Legal pages share
+  `legal.css` (privacy + terms) and `enterprise-msa.css`.
 - **Shared feature CSS — opt-in per page.** Small files a page links only if it uses the
   feature: `auth.css` (nav + auth-modal UI, on ~10 pages), `carousel.css`,
   `star-border.css`, `home-text-animate.css`, `demo-player.css`. A page pulls in only the
