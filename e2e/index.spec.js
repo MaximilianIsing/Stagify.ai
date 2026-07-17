@@ -4,6 +4,7 @@
 // before/after carousel controls exist. The two hero-stat count endpoints are
 // mocked so the numbers are deterministic; everything else is the real app.
 import { test, expect } from '@playwright/test';
+import { stubAnalytics } from './fixtures.js';
 
 test.describe('Home page — load smoke', () => {
   test.beforeEach(async ({ page }) => {
@@ -18,6 +19,9 @@ test.describe('Home page — load smoke', () => {
         document.documentElement.appendChild(s);
       } catch { /* ignore */ }
     });
+
+    // Keep the Google Ads tag (gtag.js) from making real external calls.
+    await stubAnalytics(page);
 
     await page.route('**/api/prompt-count', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ promptCount: 1234 }) }),

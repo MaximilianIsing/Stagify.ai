@@ -44,9 +44,26 @@ export async function spilloverEditedDataUrl() {
   return 'data:image/png;base64,' + buf.toString('base64');
 }
 
+// The Google Ads tag (public/scripts/gtag.js) sits in the <head> of every public
+// page — both studios and the home page. In tests we abort its outbound requests
+// so the suite stays hermetic and deterministic (the whole point of this e2e
+// setup): no real gtag.js/googleadservices/doubleclick fetches, no ad beacons, no
+// dependence on external network reachability. Blocking the googletagmanager entry
+// point alone would suffice (the library is what pulls the rest), but the ad hosts
+// are listed too so a stray direct call can't slip out either. An aborted request
+// logs a "Failed to load resource" console message, which index.spec already
+// ignores. Called by seedProSession (studios) and directly by index.spec (home).
+export async function stubAnalytics(page) {
+  await page.route(/googletagmanager\.com|googleadservices\.com|doubleclick\.net/, (route) =>
+    route.abort(),
+  );
+}
+
 // Seed the render-blocking auth gate (a token must be in localStorage at first paint)
 // and mock GET /api/auth/me → Pro, so neither studio redirects to the upsell page.
 export async function seedProSession(page, { msHelpSeen = false } = {}) {
+  await stubAnalytics(page);
+
   await page.addInitScript((flags) => {
     try {
       localStorage.setItem('stagifyAuthToken', 'e2e-token');
