@@ -17,6 +17,8 @@ import {
   compositeForReview,
   orientedDimensions,
   upscaleForDelivery,
+  nearestGeminiAspectRatio,
+  cropToAspectRatio,
 } from '../lib/image/image-primitives.js';
 
 // A solid-color PNG of the given size.
@@ -118,6 +120,63 @@ test('enforceAspectRatio: no-op under tolerance, stretch-correct within cap, lea
   assert.equal(await enforceAspectRatio(wild, 400, 400), wild, 'over-cap drift → identity (no zoom/warp)');
 
   assert.equal(await enforceAspectRatio(square, 0, 400), square, 'missing target dim → passthrough');
+});
+
+test('nearestGeminiAspectRatio: snaps to the nearest supported ratio (log-symmetric)', () => {
+  assert.equal(nearestGeminiAspectRatio(1500, 1000).label, '3:2', 'exact 3:2');
+  assert.equal(nearestGeminiAspectRatio(1600, 900).label, '16:9', 'exact 16:9');
+  assert.equal(nearestGeminiAspectRatio(1024, 1024).label, '1:1', 'square');
+  assert.equal(nearestGeminiAspectRatio(1200, 1000).label, '5:4', '1.20 → 5:4 (1.25) is nearest');
+  assert.equal(nearestGeminiAspectRatio(1000, 1500).label, '2:3', 'portrait snaps to a portrait bucket');
+  assert.equal(nearestGeminiAspectRatio(1080, 1920).label, '9:16', 'tall portrait (exact 9:16)');
+  assert.equal(nearestGeminiAspectRatio(0, 100), null, 'missing dimension → null');
+});
+
+test('cropToAspectRatio: no-op within tolerance, centered cover-crop past it, fail-open', async () => {
+  // An HONORED bucket (1344×768 = 1.75 vs 16:9 = 1.778, ~1.6% off) is left untouched —
+  // this is what stops repeated round-trips from slowly zooming in.
+  const honored = await png(1344, 768);
+  assert.equal(await cropToAspectRatio(honored, 16 / 9), honored, 'honored bucket → identity (same reference)');
+
+  // A clear IGNORE (square output, target 3:2) → crop the excess height, keep the width,
+  // no stretch. 1200×1200 → 1200×800.
+  const square = await png(1200, 1200);
+  const cropped = await cropToAspectRatio(square, 1.5);
+  const cm = await meta(cropped);
+  assert.equal(cm.width, 1200, 'width kept (crop, not resize)');
+  assert.equal(cm.height, 800, 'height cropped to width / 1.5');
+  assert.equal(cm.format, 'png');
+
+  // Too-wide ignore → crop the sides instead. 2000×800 (2.5) target 1:1 → 800×800.
+  const wide = await png(2000, 800);
+  const wm = await meta(await cropToAspectRatio(wide, 1));
+  assert.equal(wm.width, 800, 'width cropped to height × 1');
+  assert.equal(wm.height, 800, 'height kept');
+
+  // Non-finite / zero target → passthrough.
+  assert.equal(await cropToAspectRatio(square, 0), square, 'zero target → identity');
+
+  // Undecodable buffer → fail-open to the input rather than throwing.
+  const garbage = Buffer.from('not-an-image');
+  assert.equal(await cropToAspectRatio(garbage, 1.5), garbage, 'fail-open on decode error');
+});
+
+test('pin + crop is a stable fixed point — no AR drift across repeated round-trips', async () => {
+  // The bug this fix closes: iterative staging (download → re-upload → stage again) let a
+  // tiny per-round AR wobble compound into a visible stretch. With the ratio pinned, an
+  // honored output is a fixed bucket, so re-snapping + the (no-op) crop leave the shape
+  // EXACTLY constant round after round. Model here always returns 2.5's honored "3:2"
+  // bucket (1248×832); assert 8 rounds don't move a pixel.
+  let buf = await png(1248, 832);
+  for (let i = 0; i < 8; i++) {
+    const m = await meta(buf);
+    const pin = nearestGeminiAspectRatio(m.width, m.height);
+    assert.equal(pin.label, '3:2', 'stays snapped to the same bucket every round');
+    buf = await cropToAspectRatio(buf, pin.ratio);
+  }
+  const fm = await meta(buf);
+  assert.equal(fm.width, 1248, 'width unchanged after 8 round-trips');
+  assert.equal(fm.height, 832, 'height unchanged after 8 round-trips (no compounding stretch)');
 });
 
 test('padBufferToAspectRatio: grows the short side with transparent margin; respects tol and non-finite AR', async () => {

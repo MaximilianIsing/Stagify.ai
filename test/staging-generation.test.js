@@ -73,3 +73,35 @@ test('processImageGeneration: delivers the model output upscaled ×2 as WebP', a
   assert.equal(m.width, 1600);
   assert.equal(m.height, 1200);
 });
+
+test('processStaging: pins imageConfig.aspectRatio to the input\'s nearest supported ratio', async () => {
+  // The wiring guarantee behind the anti-drift fix: a non-standard-AR room (1.607) must be
+  // pinned to the nearest ratio the model supports (3:2), so iterative re-staging lands in a
+  // stable bucket instead of accumulating a stretch. Guards against the pin being dropped.
+  const modelPng = await png(1248, 832); // stand-in for the model's honored 3:2 bucket
+  let capturedOptions = null;
+  const genAI = {
+    getGenerativeModel: (opts) => {
+      capturedOptions = opts;
+      return {
+        generateContent: async () => ({
+          response: { candidates: [{ content: { parts: [{ inlineData: { data: modelPng.toString('base64') } }] } }] },
+        }),
+      };
+    },
+  };
+  const { processStaging } = createStagingGeneration({
+    genAI, DEBUG_MODE: false, runQualityRetry: passthroughRetry,
+    reviewImageQuality: async () => ({ isPerfect: true }), QUALITY_MAX_ATTEMPTS: 1, logPromptToFile: () => {},
+  });
+  const roomInput = await jpg(900, 560); // AR 1.607 → nearest supported ratio is 3:2
+  await processStaging(
+    roomInput,
+    { roomType: 'Bedroom', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false },
+    { body: {} }, null, 'gemini-2.5-flash-image',
+  );
+  assert.equal(
+    capturedOptions?.generationConfig?.imageConfig?.aspectRatio, '3:2',
+    'staging pins the nearest supported aspect ratio on the model',
+  );
+});
