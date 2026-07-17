@@ -16,6 +16,7 @@ import {
   downscaleImageForGPT,
   compositeForReview,
   orientedDimensions,
+  upscaleForDelivery,
 } from '../lib/image/image-primitives.js';
 
 // A solid-color PNG of the given size.
@@ -202,6 +203,35 @@ test('normalizeMaskOutputToRoom: cover-crops a drifted AR back to room dims; pas
 
   // Undecodable input → fail-open to the raw base64.
   assert.equal(await normalizeMaskOutputToRoom('@@@', 200, 100), 'data:image/png;base64,@@@');
+});
+
+test('upscaleForDelivery: enlarges the model output ×2 as WebP, caps the long edge, and fails open', async () => {
+  // ~1 MP-ish PNG (what the flash model returns) → doubled, delivered as WebP.
+  const src = `data:image/png;base64,${(await png(800, 600)).toString('base64')}`;
+  const out = await upscaleForDelivery(src);
+  assert.match(out, /^data:image\/webp;base64,/, 'delivered as WebP, not PNG');
+  const om = await meta(Buffer.from(out.split(',')[1], 'base64'));
+  assert.equal(om.width, 1600, 'width doubled');
+  assert.equal(om.height, 1200, 'height doubled');
+  assert.equal(om.format, 'webp');
+
+  // A large input whose ×2 would blow past the 4096 cap is only scaled up to the cap.
+  const bigUrl = `data:image/png;base64,${(await png(3000, 1500)).toString('base64')}`;
+  const capped = await upscaleForDelivery(bigUrl);
+  const cm = await meta(Buffer.from(capped.split(',')[1], 'base64'));
+  assert.ok(Math.max(cm.width, cm.height) <= 4096, 'long edge never exceeds the cap');
+  assert.ok(cm.width > 3000, 'still enlarged toward the cap');
+
+  // Already at the cap → not enlarged, but still normalized to WebP.
+  const atCapUrl = `data:image/png;base64,${(await png(4096, 1000)).toString('base64')}`;
+  const capOut = await upscaleForDelivery(atCapUrl);
+  assert.match(capOut, /^data:image\/webp;base64,/);
+  const acm = await meta(Buffer.from(capOut.split(',')[1], 'base64'));
+  assert.equal(acm.width, 4096, 'not enlarged past the cap');
+  assert.equal(acm.height, 1000);
+
+  // Non-data-URL input is returned untouched (fail-open).
+  assert.equal(await upscaleForDelivery('not-a-data-url'), 'not-a-data-url');
 });
 
 test('downscaleImageForGPT: passes through small/non-data-url input; re-encodes large images to JPEG ≤1024', async () => {

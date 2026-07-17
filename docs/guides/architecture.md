@@ -121,7 +121,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 
 | Module | Responsibility |
 |---|---|
-| `image-primitives.js` | `sharp` helpers: downscale, aspect-ratio enforcement/padding, marked-room compositing. |
+| `image-primitives.js` | `sharp` helpers: input downscale, aspect-ratio enforcement/padding, marked-room compositing, and the final delivery upscale (`upscaleForDelivery` — a ~2× lanczos enlarge + gentle sharpen of the finished result, encoded as WebP; interpolation only, no added detail). |
 | `image-annotation.js` | GPT-vision image annotation. |
 | `image-review.js` | The quality-gate reviewer + mask-edit / stageable-image validation. |
 | `erase.js` | Furniture-removal ("empty the room") pass. |
@@ -144,7 +144,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `prompts.js` | Pure prompt/data constants for the AI Designer, staging, QA review, and image gatekeeping. Single source of truth for model-facing wording. |
 | `promptMatrix.js` | The room-type × furniture-style prompt templates used when staging. |
 | `staging-pipeline.js` | The generate-with-quality-retry loop (unit-testable, no real model calls). |
-| `staging-generation.js` | The Gemini image-generation pipeline lifted out of `server.js`: the positional quality-gate wrapper plus `processImageGeneration` (text-to-image) and `processStaging` (virtual staging). |
+| `staging-generation.js` | The Gemini image-generation pipeline lifted out of `server.js`: the positional quality-gate wrapper plus `processImageGeneration` (text-to-image) and `processStaging` (virtual staging). Both generators run the quality-gate winner through the delivery upscale (`upscaleForDelivery`, WebP ~2×) before returning, so the served image is larger than the model's ~1 MP native output. |
 | `virtual-staging-handler.js` | The `/api/process-image` + `/api/stage-by-endpoint-key` multipart handler (`handleVirtualStagingMultipart`), lifted out of `server.js`: free-tier cap, two-stage furniture removal, per-variation staging, enterprise metering. |
 | `mask-edit.js` | The `/api/mask-edit` request pipeline (locator overlay, reference letterboxing, quality-retry review), lifted out of `routes/staging.js`. |
 | `segment.js` | The `/api/segment` magic-wand handler (Gemini box detection → normalized `box_2d`), lifted out of `routes/staging.js`. |
