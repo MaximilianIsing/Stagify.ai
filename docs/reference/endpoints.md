@@ -29,6 +29,25 @@ This document describes HTTP endpoints for the Stagify server. Routes are regist
 
 Other `.html` and assets are served by **`express.static('public')`** (e.g. `/stagify-plus.html`, `/ai-designer.html`, `/plus-welcome.html`).
 
+### Indexing policy (robots.txt / sitemap.xml / canonical)
+
+`public/robots.txt` and `public/sitemap.xml` are hand-maintained. Every page falls
+into exactly one of three buckets — keep both files in sync when adding a page:
+
+- **Indexable** — carries `<meta name="robots" content="index, follow">` **and** a
+  `sitemap.xml` entry whose `<loc>` matches its `rel="canonical"`. These are the ten
+  marketing/product/legal pages: `/`, `ai-designer.html`, `masking-studio.html`,
+  `stagify-plus.html`, `enterprise.html`, `guides.html`, `contact.html`, `/status`,
+  `privacy.html`, `terms.html`. Not in `robots.txt`.
+- **Internal** — `noindex, nofollow`, **absent** from the sitemap, and listed under
+  `Disallow:` in `robots.txt`: `admin.html` (`/admin`), `reset-password.html`,
+  `getpro.html` (`/getpro`), `plus-welcome.html`, and everything under `legal/`.
+- **Redirect stubs** — `pro.html` → `stagify-plus.html` and `faq.html` →
+  `index.html#faq`, each a meta-refresh + `rel="canonical"` to its real page. These
+  are deliberately **left out of `robots.txt`**: blocking them would stop crawlers
+  from reading the canonical and folding the old URL into the new one. Keep them
+  crawlable and out of the sitemap.
+
 > **Stagify+ personal subscription flow (no server endpoint).** Unlike the enterprise
 > plan (`POST /api/enterprise/create-checkout`, below), the individual Stagify+ plan does
 > **not** create a server-side Checkout Session. The "Start free trial" button on

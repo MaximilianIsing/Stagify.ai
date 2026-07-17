@@ -244,7 +244,8 @@
     "contactCta": {
       "title": "Наш почтовый ящик всегда открыт",
       "subtitle": "Вопросы, отзывы или идеи партнёрства? Мы читаем каждое сообщение и отвечаем как можно скорее.",
-      "email": "team@stagify.ai"
+      "email": "team@stagify.ai",
+      "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Нравится Stagify?",
@@ -456,7 +457,7 @@
   },
   "contact": {
     "title": "Свяжитесь с нами",
-    "description": "Мы будем рады услышать вас. Обращайтесь к нам индивидуально или по адресу <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
+    "description": "Мы будем рады услышать вас. Обращайтесь к нам индивидуально или по адресу <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a> или по телефону <a href=\"tel:+19292514372\" style=\"color: #1e3a8a; text-decoration: underline;\">(929) 251-4372</a>.",
     "social": "Подписывайтесь на нас в <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> или <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a>, чтобы видеть обновления и примеры!",
     "labels": {
       "name": "Имя",

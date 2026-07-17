@@ -244,7 +244,8 @@
     "contactCta": {
       "title": "我们随时查收邮件",
       "subtitle": "有问题、反馈或合作想法 — 我们会阅读每一封邮件并尽快回复。",
-      "email": "team@stagify.ai"
+      "email": "team@stagify.ai",
+      "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "喜欢 Stagify 吗？",
@@ -456,7 +457,7 @@
   },
   "contact": {
     "title": "联系我们",
-    "description": "我们很乐意听到您的声音。单独联系我们或发邮件至 <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>。",
+    "description": "我们很乐意听到您的声音。单独联系我们或发邮件至 <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a> 或致电 <a href=\"tel:+19292514372\" style=\"color: #1e3a8a; text-decoration: underline;\">(929) 251-4372</a>。",
     "social": "在 <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>、<a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> 或 <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> 关注我们，获取更新和示例！",
     "labels": {
       "name": "姓名",

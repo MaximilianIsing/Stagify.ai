@@ -1,13 +1,22 @@
 User-agent: *
 Allow: /
 
-# Utility / auth pages — not for indexing
+# Utility / auth pages — internal, noindex
 Disallow: /admin
 Disallow: /admin.html
 Disallow: /reset-password.html
-Disallow: /pro.html
+
+# Account activation & post-purchase confirmation — internal, noindex
+Disallow: /getpro
+Disallow: /getpro.html
+Disallow: /plus-welcome.html
 
 # Internal legal (noindex on page; keep out of crawl budget)
 Disallow: /legal/
+
+# NOTE: pro.html and faq.html are legacy redirect stubs (meta-refresh +
+# rel=canonical to their real page). Leave them crawlable — blocking them here
+# would stop crawlers reading the canonical and folding the old URL into the new
+# one. Do NOT add them to the Disallow list.
 
 Sitemap: https://stagify.ai/sitemap.xml
