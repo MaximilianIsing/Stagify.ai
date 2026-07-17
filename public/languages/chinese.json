@@ -44,7 +44,7 @@
     }
   },
   "sponsors": {
-    "title": "官方认可："
+    "title": "受以下机构经纪人信赖："
   },
   "home": {
     "studio": {
@@ -225,14 +225,16 @@
       "subtitle": "来自已经改用它的经纪人。",
       "items": {
         "justin": {
-          "quote": "我第一次试用 Stagify 时，说实话被震撼到了。我意识到只需用手机，省下昂贵的摄影师，依然能得到惊艳的效果。这对我的房源来说是颠覆性的——而且价格好得不可思议！",
+          "quote": "我第一次试用 Stagify 时，说实话被震撼到了。我意识到只需用手机，省下昂贵的摄影师，依然能得到惊艳的效果。这对我的房源来说是颠覆性的，而且价格好得不可思议！",
           "author": "Justin S.（经纪人）",
-          "role": "Tahari Realty"
+          "role": "Tahari Realty",
+          "location": "纽约曼哈顿"
         },
         "andy": {
-          "quote": "哇！Stagify 彻底改变了我做布置的方式。它非常快，我的客户都很喜欢。这对我的房源来说是彻底的颠覆。",
+          "quote": "Stagify 完美融入了我原本的工作方式。我在两场看房之间上传一张房源照片，等我回到办公桌前它就已经布置好了。客户总是对最终照片的精致效果印象深刻。",
           "author": "Andy E.（经纪人）",
-          "role": "Centennial Properties"
+          "role": "Centennial Properties",
+          "location": "纽约曼哈顿"
         }
       }
     },

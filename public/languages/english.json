@@ -44,7 +44,7 @@
     }
   },
   "sponsors": {
-    "title": "Officially Recognized By:"
+    "title": "Trusted by agents at:"
   },
   "home": {
     "studio": {
@@ -225,14 +225,16 @@
       "subtitle": "Straight from brokers who made the switch.",
       "items": {
         "justin": {
-          "quote": "When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings—and the price is amazing!",
+          "quote": "When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings, and the price is amazing!",
           "author": "Justin S. (Broker)",
-          "role": "Tahari Realty"
+          "role": "Tahari Realty",
+          "location": "Manhattan, NYC"
         },
         "andy": {
-          "quote": "Wow! Stagify completely shifted how I approach staging. It’s so fast, and my clients love it. This is a total game-changer for my listings.",
+          "quote": "Stagify fits right into how I already work. I’ll upload a listing photo between showings and it’s staged before I’m back at my desk. My clients are always impressed by how polished the final photos look.",
           "author": "Andy E. (Broker)",
-          "role": "Centennial Properties"
+          "role": "Centennial Properties",
+          "location": "Manhattan, NYC"
         }
       }
     },

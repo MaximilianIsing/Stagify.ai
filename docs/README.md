@@ -188,8 +188,10 @@ grouped into subdirectories by concern (full breakdown in
 Everything the browser loads is under `public/`:
 
 - **Pages:** `index.html` (the staging tool + marketing home), `ai-designer.html`,
-  `masking-studio.html`, `stagify-plus.html`, `enterprise.html`, `guides.html`,
-  `faq.html`, `contact.html`, `admin.html`, legal pages, etc.
+  `masking-studio.html`, `stagify-plus.html`, `plus-welcome.html` (post-checkout
+  "Welcome to Stagify+" confirmation — the Stripe Payment Link's after-payment
+  redirect target and the Google Ads conversion page), `enterprise.html`,
+  `guides.html`, `faq.html`, `contact.html`, `admin.html`, legal pages, etc.
 - **Scripts (`public/scripts/`):** e.g. `app.js` (main staging tool), `auth.js`,
   `mask-core.js` (shared masking canvas math), `count-up.js` (hero stats),
   `carousel.js`, `home-reveal.js`, and the `language-*.js` i18n helpers.

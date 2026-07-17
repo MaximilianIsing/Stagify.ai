@@ -44,7 +44,7 @@
     }
   },
   "sponsors": {
-    "title": "Reconhecido oficialmente por:"
+    "title": "A confiança de corretores da:"
   },
   "home": {
     "studio": {
@@ -225,14 +225,16 @@
       "subtitle": "Direto de corretores que fizeram a mudança.",
       "items": {
         "justin": {
-          "quote": "Quando experimentei o Stagify pela primeira vez, fiquei honestamente impressionado. Percebi que podia simplesmente usar meu celular, dispensar o fotógrafo caro e ainda ter resultados incríveis. É uma virada de jogo para meus anúncios — e o preço é sensacional!",
+          "quote": "Quando experimentei o Stagify pela primeira vez, fiquei honestamente impressionado. Percebi que podia simplesmente usar meu celular, dispensar o fotógrafo caro e ainda ter resultados incríveis. É uma virada de jogo para meus anúncios, e o preço é sensacional!",
           "author": "Justin S. (Corretor)",
-          "role": "Tahari Realty"
+          "role": "Tahari Realty",
+          "location": "Manhattan, Nova York"
         },
         "andy": {
-          "quote": "Uau! O Stagify mudou completamente a forma como faço o home staging. É tão rápido, e meus clientes adoram. Isso é uma virada de jogo total para meus anúncios.",
+          "quote": "O Stagify se encaixa perfeitamente na minha rotina. Eu envio a foto de um anúncio entre uma visita e outra e ela já volta decorada antes de eu chegar à mesa. Meus clientes sempre ficam impressionados com o acabamento das fotos finais.",
           "author": "Andy E. (Corretor)",
-          "role": "Centennial Properties"
+          "role": "Centennial Properties",
+          "location": "Manhattan, Nova York"
         }
       }
     },

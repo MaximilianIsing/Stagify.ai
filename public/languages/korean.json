@@ -44,7 +44,7 @@
     }
   },
   "sponsors": {
-    "title": "공식 인정 기관:"
+    "title": "다음 기관의 에이전트가 신뢰합니다:"
   },
   "home": {
     "studio": {
@@ -225,14 +225,16 @@
       "subtitle": "전환한 중개인들에게서 직접.",
       "items": {
         "justin": {
-          "quote": "Stagify를 처음 사용해봤을 때 솔직히 깜짝 놀랐습니다. 그냥 휴대폰만 쓰고 값비싼 사진작가 없이도 멋진 결과를 얻을 수 있다는 걸 깨달았죠. 제 매물에는 게임 체인저이고—가격도 놀랍습니다!",
+          "quote": "Stagify를 처음 사용해봤을 때 솔직히 깜짝 놀랐습니다. 그냥 휴대폰만 쓰고 값비싼 사진작가 없이도 멋진 결과를 얻을 수 있다는 걸 깨달았죠. 제 매물에는 게임 체인저이고, 가격도 놀랍습니다!",
           "author": "Justin S. (중개인)",
-          "role": "Tahari Realty"
+          "role": "Tahari Realty",
+          "location": "뉴욕 맨해튼"
         },
         "andy": {
-          "quote": "와! Stagify는 제가 스테이징에 접근하는 방식을 완전히 바꿔놨습니다. 아주 빠르고 고객들이 정말 좋아해요. 제 매물에는 완전한 게임 체인저입니다.",
+          "quote": "Stagify는 제 기존 업무 방식에 딱 들어맞습니다. 매물 사진을 내방 사이에 업로드하면 제가 자리에 돌아오기도 전에 스테이징이 끝나 있고, 고객들은 늘 최종 사진의 완성도에 감탄합니다.",
           "author": "Andy E. (중개인)",
-          "role": "Centennial Properties"
+          "role": "Centennial Properties",
+          "location": "뉴욕 맨해튼"
         }
       }
     },
