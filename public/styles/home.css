@@ -1432,6 +1432,20 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.contact-cta-phone {
+  display: block;
+  margin-top: 6px;
+  font-size: clamp(1rem, 1.9vw, 1.15rem);
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.contact-cta-phone:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
 /* Guides page */
 .home-guides {
@@ -2112,10 +2126,25 @@
   opacity: 1;
 }
 /* content rides above the spotlight */
+.tw-stars,
 .tw-text,
 .tw-by {
   position: relative;
   z-index: 1;
+}
+.tw-stars {
+  display: flex;
+  gap: 5px;
+  margin: 0 0 14px;
+  color: #ffb400;
+}
+.tw-stars svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  stroke: #b06a00;
+  stroke-width: 0.5;
+  filter: drop-shadow(0 1px 3px rgba(210, 130, 0, 0.55));
 }
 .tw-text {
   margin: 0 0 18px;

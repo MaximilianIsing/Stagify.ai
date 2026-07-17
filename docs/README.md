@@ -191,7 +191,11 @@ Everything the browser loads is under `public/`:
   `masking-studio.html`, `stagify-plus.html`, `plus-welcome.html` (post-checkout
   "Welcome to Stagify+" confirmation — the Stripe Payment Link's after-payment
   redirect target and the Google Ads conversion page), `enterprise.html`,
-  `guides.html`, `faq.html`, `contact.html`, `admin.html`, legal pages, etc.
+  `guides.html`, `contact.html`, `admin.html`, legal pages, plus legacy redirect
+  stubs (`pro.html` → `stagify-plus.html`, `faq.html` → `index.html#faq`). Which
+  pages are indexed vs `noindex` vs redirect stub — and how `robots.txt`,
+  `sitemap.xml`, and `rel="canonical"` stay in sync — is documented in
+  [`reference/endpoints.md`](reference/endpoints.md#public-pages--seo-no-api-key).
 - **Scripts (`public/scripts/`):** e.g. `app.js` (main staging tool), `auth.js`,
   `mask-core.js` (shared masking canvas math), `count-up.js` (hero stats),
   `carousel.js`, `home-reveal.js`, and the `language-*.js` i18n helpers.

@@ -244,7 +244,8 @@
     "contactCta": {
       "title": "Onze inbox staat altijd open",
       "subtitle": "Vragen, feedback of ideeën voor samenwerking? We lezen elk bericht en reageren zo snel als we kunnen.",
-      "email": "team@stagify.ai"
+      "email": "team@stagify.ai",
+      "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Geniet je van Stagify?",
@@ -456,7 +457,7 @@
   },
   "contact": {
     "title": "Neem contact op",
-    "description": "We horen graag van je. Neem individueel contact op of mail ons op <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a>.",
+    "description": "We horen graag van je. Neem individueel contact op of mail ons op <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a> of <a href=\"tel:+19292514372\" style=\"color: #1e3a8a; text-decoration: underline;\">(929) 251-4372</a>.",
     "social": "Volg ons op <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a>, of <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> voor updates en voorbeelden!",
     "labels": {
       "name": "Naam",
