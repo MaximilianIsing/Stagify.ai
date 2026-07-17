@@ -38,6 +38,7 @@ export function createGeneratePipeline(deps) {
     showToast,
     tx,
     loadImage,
+    computeSpillForDone,
   } = deps;
 
         // Shared mask math (buildModelMask/buildBlendMask/
@@ -340,6 +341,9 @@ export function createGeneratePipeline(deps) {
           progressText.classList.add('hidden');
           compositeAll();
           const done = participating.filter((l) => l.status === 'done').length;
+          // Measure any spill past each highlight so the refine step can offer
+          // to snap the mask to the object (before setPhase → renderLayers).
+          const spillCount = done > 0 ? computeSpillForDone(participating) : 0;
           if (done > 0) {
             // Land in Refine Edit: highlights over the pure After (raw output
             // ghosted outside them), and Looks Good waiting in the header.
@@ -355,6 +359,9 @@ export function createGeneratePipeline(deps) {
             showToast(t.replace('{done}', String(done)).replace('{total}', String(participating.length)), 'error');
           } else {
             showToast(tx('maskingStudio.failedToast', 'Staging failed. Please try again.'), 'error');
+          }
+          if (spillCount > 0) {
+            showToast(tx('maskingStudio.snapToast', 'Some staged items reach past your highlight — open that area and tap “Snap to object” to include the rest.'));
           }
         }
         generateBtn.addEventListener('click', generate);
@@ -400,6 +407,7 @@ export function createGeneratePipeline(deps) {
             }
           }
           compositeAll();
+          computeSpillForDone([layer]); // refresh this area's snap suggestion
           setView(state.view);
           renderLayers();
           updateControls();

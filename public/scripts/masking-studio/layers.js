@@ -108,6 +108,7 @@ export function createLayer({ id, colorIdx, canvasEl }) {
     candidates: [],      // every generated version of this area (capped)
     candIdx: 0,
     blendMask: null,
+    spill: null,         // pending "snap to object" suggestion from the last run
     errorMsg: '',
     el: null,
   };

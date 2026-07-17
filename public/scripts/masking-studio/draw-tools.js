@@ -320,6 +320,40 @@ export function createDrawTools(deps) {
           scheduleSessionSave();
         }
 
+        // Paint a ready-made alpha mask into a layer exactly as if it had been
+        // brushed: undo snapshot, tint in the layer color, claim the pixels from
+        // every other area, rescan painted flags, invalidate cached masks, and
+        // re-render. Shared by the segmentation wand and the refine "Snap to
+        // object" step so all three "programmatic stroke" paths stay identical.
+        function paintMaskIntoLayer(layer, maskCanvas) {
+          snapshotForUndo();
+          state.redoStack = []; // committed selection forks history
+          const tint = document.createElement('canvas');
+          tint.width = state.base.w;
+          tint.height = state.base.h;
+          const tctx = tint.getContext('2d');
+          tctx.drawImage(maskCanvas, 0, 0);
+          tctx.globalCompositeOperation = 'source-in';
+          tctx.fillStyle = layerColor(layer);
+          tctx.fillRect(0, 0, state.base.w, state.base.h);
+          layer.canvasEl.getContext('2d').drawImage(tint, 0, 0);
+          state.layers.forEach((other) => {
+            if (other === layer) return;
+            const octx = other.canvasEl.getContext('2d');
+            octx.globalCompositeOperation = 'destination-out';
+            octx.drawImage(maskCanvas, 0, 0);
+            octx.globalCompositeOperation = 'source-over';
+          });
+          state.layers.forEach((l) => {
+            l.painted = scanHasContent(l.canvasEl);
+            l.blendMask = null;
+          });
+          renderLayers();
+          updateControls();
+          updateStageBackdrop();
+          scheduleSessionSave();
+        }
+
         // Touch: two-finger pinch zooms (phones have no Ctrl+wheel). A second
         // finger aborts whatever the first one started so a pinch never leaves
         // a half-stroke behind.
@@ -499,5 +533,6 @@ export function createDrawTools(deps) {
     hideCursor,
     scanHasContent,
     canvasPoint,
+    paintMaskIntoLayer,
   };
 }
