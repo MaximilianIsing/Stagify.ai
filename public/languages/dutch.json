@@ -241,6 +241,11 @@
     "faq": {
       "subtitle": "Snelle antwoorden op de vragen die we het vaakst horen. Nog vastgelopen? Bezoek <a href=\"guides.html\">Handleidingen</a> of neem contact op."
     },
+    "blog": {
+      "title": "Van de Stagify-blog",
+      "subtitle": "Gidsen en tips over virtuele styling, MLS-vermelding en het sneller vermarkten van je woningen.",
+      "viewAll": "Bezoek de Stagify-blog →"
+    },
     "contactCta": {
       "title": "Onze inbox staat altijd open",
       "subtitle": "Vragen, feedback of ideeën voor samenwerking? We lezen elk bericht en reageren zo snel als we kunnen.",
@@ -452,6 +457,14 @@
       "privacy": {
         "question": "Zijn mijn gegevens privé en veilig?",
         "answer": "Ja. We gebruiken HTTPS-encryptie, slaan geüploade afbeeldingen na verwerking niet permanent op en verkopen je persoonlijke gegevens niet. Je behoudt de eigendom van je uploads en gegenereerde resultaten. We delen gegevens alleen met dienstverleners die nodig zijn om Stagify te laten draaien (zoals AI- en betalingsverwerkers), zoals beschreven in ons Privacybeleid."
+      },
+      "whatMakesDifferent": {
+        "question": "Wat maakt Stagify anders dan andere tools voor virtuele styling?",
+        "answer": "Een paar dingen. Ten eerste de prijs: je kunt gratis beginnen met stylen, en Stagify+ kost slechts $11.99 per maand voor onbeperkt stylen — terwijl traditionele styling honderden tot duizenden dollars per kamer kan kosten. Ten tweede kun je met de AI-Designer met onze AI chatten om een hele kamer opnieuw in te richten en het resultaat gaandeweg te verfijnen, in plaats van alleen voorinstellingen toe te passen. Ten derde biedt de Maskeerstudio precisie tot op pixelniveau — markeer precies welke delen van een foto mogen veranderen en koppel specifiek meubilair aan elk gebied, zodat alles wat je niet selecteert onaangetast blijft. De meeste tools doen slechts één van deze dingen goed; Stagify combineert betaalbaarheid, creatieve controle en precisie."
+      },
+      "mlsAllowed": {
+        "question": "Mag ik virtueel gestylede foto's gebruiken in mijn woningadvertenties?",
+        "answer": "Ja. Virtuele styling wordt breed gebruikt en geaccepteerd in woningadvertenties en MLS-systemen. De belangrijkste regel is transparantie: de meeste MLS-systemen en lokale regelgeving vragen je duidelijk te vermelden wanneer een foto virtueel gestyled is, bijvoorbeeld door deze in het onderschrift als ‘virtueel gestyled’ te markeren. Omdat Stagify alleen meubilair en decoratie verandert en nooit de werkelijke structuur van de kamer aanpast, blijven je foto's een eerlijke weergave van de ruimte. We raden altijd aan een vermelding van virtuele styling toe te voegen om te voldoen aan de regels van je lokale MLS en makelaarsvereniging."
       }
     }
   },
@@ -952,5 +965,186 @@
       "De rest van de foto onaangeroerd houden…",
       "De laatste hand aanleggen…"
     ]
+  },
+  "status": {
+    "pageTitle": "Status & Uptime | Stagify.ai",
+    "pageDescription": "Live status en uptime voor Stagify.ai — beschikbaarheid over 24 uur en 7 dagen met historische percentages.",
+    "heading": "Serverstatus",
+    "subheading": "Live beschikbaarheid en uptime-geschiedenis voor Stagify.ai.",
+    "checking": "Status controleren…",
+    "operational": "Alle systemen operationeel",
+    "disruption": "Storing gedetecteerd",
+    "unableToLoad": "Status kan niet worden geladen",
+    "uptime": "uptime",
+    "now": "nu",
+    "cards": {
+      "24h": "24 uur",
+      "7d": "7 dagen",
+      "30d": "30 dagen"
+    },
+    "graph24h": {
+      "title": "Laatste 24 uur",
+      "meta": "48 balken · elk 30 min",
+      "aria": "Uptime-balken voor de laatste 24 uur",
+      "axisStart": "24 uur geleden"
+    },
+    "graph7d": {
+      "title": "Laatste 7 dagen",
+      "meta": "56 balken · elk 3 uur",
+      "aria": "Uptime-balken voor de laatste 7 dagen",
+      "axisStart": "7 dagen geleden"
+    },
+    "legend": {
+      "operational": "Operationeel",
+      "partial": "Gedeeltelijke storing",
+      "downtime": "Uitval",
+      "nodata": "Geen gegevens"
+    },
+    "incidents": {
+      "heading": "Recente incidenten",
+      "loading": "Laden…",
+      "noneTitle": "Geen incidenten geregistreerd",
+      "noneText": "De service heeft geen gedetecteerde uitval gehad in de bewaakte periode.",
+      "defaultCause": "Uitval",
+      "causeMissedHeartbeats": "Uitval gedetecteerd bij herstart (gemiste heartbeats)",
+      "loadError": "Kan de status-API niet bereiken. Opnieuw proberen…"
+    },
+    "monitoring": {
+      "since": "Bewaakt sinds {date} · laatste controle {ago}",
+      "collecting": "Gegevens verzamelen…",
+      "error": "Kan de status-API niet bereiken — opnieuw proberen…"
+    },
+    "tooltip": {
+      "nodata": "Geen gegevens",
+      "uptime": "{pct} uptime"
+    },
+    "ago": {
+      "never": "nooit",
+      "template": "{v} geleden"
+    },
+    "foot": "Vernieuwt elke 60 seconden · Geregistreerde herstarts: {count} · Beschikbaarheid wordt gemeten aan de hand van de eigen heartbeat van de server. Voor een onafhankelijke controle geeft <a href=\"/health\">/health</a> live status-JSON."
+  },
+  "enterprise": {
+    "hero": {
+      "title": "Stagify Enterprise",
+      "subtitle": "Geef je hele team onbeperkte AI-styling. Elke medewerker met je bedrijfs-e-mail krijgt automatisch Stagify+ — je betaalt alleen voor wat ze gebruiken."
+    },
+    "highlights": {
+      "perGenerationLabel": "per generatie",
+      "unlimitedValue": "Onbeperkt",
+      "unlimitedLabel": "teamleden",
+      "monthlyValue": "Maandelijks",
+      "monthlyLabel": "facturering op basis van gebruik"
+    },
+    "features": {
+      "ariaLabel": "Inbegrepen Stagify+-functies",
+      "fullAccess": "Volledig Stagify+ voor elke @domain-gebruiker",
+      "aiDesigner": "AI Designer & maskerbewerking",
+      "models": "Hoogwaardige beeldmodellen",
+      "variations": "Meerdere variaties per generatie",
+      "furniture": "Uploads van meubelreferenties",
+      "noSeatFees": "Geen kosten per gebruiker"
+    },
+    "success": {
+      "title": "Enterprise-abonnement geactiveerd",
+      "line": "Alle accounts met e-mailadressen die eindigen op {domain} hebben nu Stagify+-functies.",
+      "yourDomain": "je domein",
+      "billing": "Je wordt aan het einde van elke maand gefactureerd op basis van het totale teamgebruik tegen $0,15 per generatie."
+    },
+    "form": {
+      "title": "Aan de slag",
+      "intro": "Vul hieronder je bedrijfsgegevens in. Na het afrekenen krijgt elk account met een e-mailadres van je domein automatisch Stagify+-functies.",
+      "domainLabel": "Bedrijfsdomein",
+      "domainHint": "Alle e-mails die eindigen op @{domain} krijgen Stagify+",
+      "companyLabel": "Bedrijfsnaam",
+      "emailLabel": "Contact-e-mail",
+      "phoneLabel": "Telefoonnummer",
+      "phoneOptional": "(optioneel)",
+      "submit": "Doorgaan naar betaling",
+      "redirecting": "Doorverwijzen naar Stripe…"
+    },
+    "errors": {
+      "domain": "Voer een geldig domein in (bijv. company.com).",
+      "company": "Voer je bedrijfsnaam in.",
+      "email": "Voer een geldig contact-e-mailadres in.",
+      "generic": "Er is iets misgegaan. Probeer het opnieuw.",
+      "unexpected": "Onverwacht antwoord. Probeer het opnieuw.",
+      "network": "Netwerkfout. Controleer je verbinding en probeer het opnieuw."
+    },
+    "footnote": "Veilig afrekenen via Stripe · Maandelijks gefactureerd op basis van gebruik · Altijd opzegbaar<br>Vragen? <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> · <a href=\"stagify-plus.html\">Individuele abonnementen</a>",
+    "legal": "Door door te gaan ga je akkoord met onze <a href=\"legal/enterprise-msa.html\">Master Services Agreement</a>, <a href=\"terms.html\">Servicevoorwaarden</a> en <a href=\"privacy.html\">Privacybeleid</a>."
+  },
+  "stagifyPlus": {
+    "hero": {
+      "title": "Alles in Stagify, <span class=\"sp-grad\">ontgrendeld</span>.",
+      "subtitle": "Onbeperkt hoogwaardige styling, de AI Designer, meubels verwijderen en elk professioneel hulpmiddel. Allemaal voor minder dan de kosten van één traditionele styling."
+    },
+    "plan": {
+      "hintSignIn": "Meld je eerst aan via het profielmenu, zodat je betaling aan je Stagify-account kan worden gekoppeld.",
+      "hintTip": "Tip: meld je eerst aan via het profielmenu, zodat je betaling aan je Stagify-account kan worden gekoppeld.",
+      "hintStagingDisabled": "Abonnementen zijn uitgeschakeld op de staging-site.",
+      "billedMonthly": "Maandelijks gefactureerd · Altijd opzegbaar",
+      "perMonth": "/ maand",
+      "trialPill": "Begin met 7 dagen gratis",
+      "startTrial": "Gratis proefperiode starten",
+      "subscribed": "Geabonneerd ✓",
+      "unavailableStaging": "Niet beschikbaar op staging",
+      "payNote": "Je wordt pas na afloop van je proefperiode gefactureerd. Altijd opzegbaar.",
+      "securedByStripe": "Beveiligd door Stripe",
+      "noCommitment": "Geen verplichtingen",
+      "manage": "Abonnement beheren of opzeggen"
+    },
+    "features": {
+      "heading": "Alles wat je nodig hebt om als een pro te stylen",
+      "model": {
+        "title": "Hoogwaardig model",
+        "desc": "Ons meest geavanceerde model levert scherpere, realistischere meubels, materialen en verlichting."
+      },
+      "remove": {
+        "title": "Bestaande meubels verwijderen",
+        "desc": "Wis meubels, rommel en decoratie en stijl de lege ruimte helemaal opnieuw."
+      },
+      "designer": {
+        "title": "AI Designer",
+        "desc": "Beschrijf in gewone taal wat je wilt en verfijn elk resultaat in een gesprek."
+      },
+      "masking": {
+        "title": "Maskergereedschap",
+        "desc": "Schilder over een willekeurig gebied om alleen dat deel van de foto te wijzigen of aan te passen."
+      },
+      "studio": {
+        "title": "Masking Studio",
+        "desc": "Markeer meerdere gebieden in verschillende kleuren, geef elk zijn eigen meubelfoto en stijl ze allemaal tegelijk. Genereer meerdere versies per gebied en behoud de beste."
+      },
+      "references": {
+        "title": "Meubelreferenties",
+        "desc": "Upload productfoto’s om ruimtes te stylen met specifieke meubelstukken die jij kiest."
+      }
+    },
+    "compare": {
+      "heading": "Abonnementen vergelijken",
+      "feature": "Functie",
+      "free": "Gratis",
+      "included": "Inbegrepen",
+      "notIncluded": "Niet inbegrepen",
+      "rows": {
+        "customizable": "Aanpasbare styling",
+        "fastModel": "Snel beeldmodel",
+        "unlimited": "Onbeperkte styling-generaties",
+        "hqModel": "Hoogwaardig beeldmodel",
+        "remove": "Bestaande meubels verwijderen",
+        "designer": "AI Designer",
+        "masking": "Maskergereedschap",
+        "studio": "Masking Studio (meerdere gebieden)",
+        "variations": "Meerdere variaties per generatie",
+        "references": "Meubelreferenties"
+      }
+    },
+    "enterpriseRow": "Voor teams of ondernemingen <a href=\"enterprise.html\">ontdek je ons enterprise-abonnement</a> of neem contact op met <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> voor persoonlijke abonnementsopties.",
+    "footLinks": {
+      "backToFree": "Terug naar gratis staging",
+      "questions": "Vragen voordat je koopt?",
+      "footnote": "Teams, facturering of maatwerkvoorwaarden: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+    }
   }
 }

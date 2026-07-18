@@ -78,8 +78,9 @@
         text-align: left;
         /* Optical centering: bold lining digits are all cap-height with no
            descenders, so they read slightly high next to the x-height label.
-           Nudge them down a hair to visually center. Tunable. */
-        transform: translateY(0.05em);
+           Nudge them down a hair to visually center. Tunable.
+           Combined with a 1px upward shift so the numbers sit a touch higher. */
+        transform: translateY(calc(0.05em - 1px));
         transition: min-width 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
       }
       .stat-pill-text {

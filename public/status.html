@@ -7,8 +7,8 @@
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
     <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
     <link rel="manifest" href="manifest.json">
-    <title>Status &amp; Uptime | Stagify.ai</title>
-    <meta name="description" content="Live status and uptime for Stagify.ai — 24-hour and 7-day availability with historical percentages.">
+    <title data-lang="status.pageTitle">Status &amp; Uptime | Stagify.ai</title>
+    <meta name="description" data-lang-attr="status.pageDescription|content" content="Live status and uptime for Stagify.ai — 24-hour and 7-day availability with historical percentages.">
     <meta name="robots" content="index, follow">
     <meta property="og:title" content="Stagify.ai Status &amp; Uptime">
     <meta property="og:description" content="Live status and uptime for Stagify.ai — 24-hour and 7-day availability with historical percentages.">
@@ -66,10 +66,50 @@
     </header>
 
     <main class="status-page">
+      <!-- Language Picker -->
+      <div class="language-picker-container">
+        <div class="language-selector">
+          <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
+          <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
+            <option value="english" selected>EN</option>
+            <option value="german">DE</option>
+            <option value="dutch">NL</option>
+            <option value="spanish">ES</option>
+            <option value="french">FR</option>
+            <option value="italian">IT</option>
+            <option value="portuguese">PT</option>
+            <option value="russian">RU</option>
+            <option value="chinese">中文</option>
+            <option value="japanese">日本語</option>
+            <option value="korean">한국어</option>
+          </select>
+          <div class="lang-switch" data-lang-switch>
+            <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <img class="lang-switch__flag" src="media-webp/flags/US.svg" alt="" width="20" height="14" />
+              <span class="lang-switch__label">English</span>
+              <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <div class="status-inner">
       <div class="st-head">
-        <h1>Server Status</h1>
-        <p>Live availability and uptime history for Stagify.ai.</p>
+        <h1 data-lang="status.heading">Server Status</h1>
+        <p data-lang="status.subheading">Live availability and uptime history for Stagify.ai.</p>
       </div>
 
       <section class="st-banner is-loading" data-status aria-live="polite">
@@ -82,50 +122,50 @@
 
       <div class="st-cards">
         <div class="st-card">
-          <div class="st-card__eyebrow">24 hours</div>
+          <div class="st-card__eyebrow" data-lang="status.cards.24h">24 hours</div>
           <div class="st-card__val up-card-val" data-pct="24h">—</div>
-          <div class="st-card__cap">uptime</div>
+          <div class="st-card__cap" data-lang="status.uptime">uptime</div>
         </div>
         <div class="st-card">
-          <div class="st-card__eyebrow">7 days</div>
+          <div class="st-card__eyebrow" data-lang="status.cards.7d">7 days</div>
           <div class="st-card__val up-card-val" data-pct="7d">—</div>
-          <div class="st-card__cap">uptime</div>
+          <div class="st-card__cap" data-lang="status.uptime">uptime</div>
         </div>
         <div class="st-card">
-          <div class="st-card__eyebrow">30 days</div>
+          <div class="st-card__eyebrow" data-lang="status.cards.30d">30 days</div>
           <div class="st-card__val up-card-val" data-pct="30d">—</div>
-          <div class="st-card__cap">uptime</div>
+          <div class="st-card__cap" data-lang="status.uptime">uptime</div>
         </div>
       </div>
 
       <section class="st-block">
         <div class="st-block__head">
-          <h2>Last 24 hours<span class="st-block__meta">48 bars · 30 min each</span></h2>
+          <h2><span data-lang="status.graph24h.title">Last 24 hours</span><span class="st-block__meta" data-lang="status.graph24h.meta">48 bars · 30 min each</span></h2>
           <span class="st-block__pct up-block-pct" data-pct="24h">—</span>
         </div>
-        <div class="st-bars" data-bars="24h" role="img" aria-label="Uptime bars for the last 24 hours"></div>
-        <div class="st-axis"><span>24 hours ago</span><span>now</span></div>
+        <div class="st-bars" data-bars="24h" role="img" aria-label="Uptime bars for the last 24 hours" data-lang-attr="status.graph24h.aria|aria-label"></div>
+        <div class="st-axis"><span data-lang="status.graph24h.axisStart">24 hours ago</span><span data-lang="status.now">now</span></div>
       </section>
 
       <section class="st-block">
         <div class="st-block__head">
-          <h2>Last 7 days<span class="st-block__meta">56 bars · 3 h each</span></h2>
+          <h2><span data-lang="status.graph7d.title">Last 7 days</span><span class="st-block__meta" data-lang="status.graph7d.meta">56 bars · 3 h each</span></h2>
           <span class="st-block__pct up-block-pct" data-pct="7d">—</span>
         </div>
-        <div class="st-bars" data-bars="7d" role="img" aria-label="Uptime bars for the last 7 days"></div>
-        <div class="st-axis"><span>7 days ago</span><span>now</span></div>
+        <div class="st-bars" data-bars="7d" role="img" aria-label="Uptime bars for the last 7 days" data-lang-attr="status.graph7d.aria|aria-label"></div>
+        <div class="st-axis"><span data-lang="status.graph7d.axisStart">7 days ago</span><span data-lang="status.now">now</span></div>
       </section>
 
       <div class="st-legend">
-        <span><i class="st-sw up"></i> Operational</span>
-        <span><i class="st-sw partial"></i> Partial outage</span>
-        <span><i class="st-sw down"></i> Downtime</span>
-        <span><i class="st-sw nodata"></i> No data</span>
+        <span><i class="st-sw up"></i><span data-lang="status.legend.operational">Operational</span></span>
+        <span><i class="st-sw partial"></i><span data-lang="status.legend.partial">Partial outage</span></span>
+        <span><i class="st-sw down"></i><span data-lang="status.legend.downtime">Downtime</span></span>
+        <span><i class="st-sw nodata"></i><span data-lang="status.legend.nodata">No data</span></span>
       </div>
 
       <section class="st-block st-incidents">
-        <h2>Recent incidents</h2>
-        <div data-incidents><p class="st-empty"><span class="st-empty__text">Loading…</span></p></div>
+        <h2 data-lang="status.incidents.heading">Recent incidents</h2>
+        <div data-incidents><p class="st-empty"><span class="st-empty__text" data-lang="status.incidents.loading">Loading…</span></p></div>
       </section>
 
       <p class="st-foot" data-foot>&nbsp;</p>

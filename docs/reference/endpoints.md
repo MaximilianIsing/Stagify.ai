@@ -23,6 +23,9 @@ This document describes HTTP endpoints for the Stagify server. Routes are regist
 | `GET` | `/sitemap.xml` | Serves `public/sitemap.xml`. |
 | `GET` | `/status` | Serves `public/status.html` — the public status/uptime page. Client-side it polls `GET /api/status` and draws 24-hour and 7-day availability graphs. |
 | `GET` | `/privacy` | Serves `public/privacy.html`. |
+| `GET` | `/blog` | **301-redirects to `/blog/`** — `express.static` runs before the router and `public/blog/` is a real directory, so a `router.get('/blog')` would be dead code (don't add one). |
+| `GET` | `/blog/` | Serves `public/blog/index.html` — the blog hub (static directory index). Canonical hub URL. |
+| `GET` | `/blog/<slug>` | Serves an article via an **explicit clean, extensionless route** in `public.js` — e.g. `/blog/is-virtual-staging-allowed-on-the-mls`, `/blog/masking-studio-and-ai-designer`, `/blog/does-virtual-staging-help-sell-homes`. Route registration + sitemap sync are guarded by `test/public-endpoints.test.js`. |
 | `GET` | `/i/:id` | **Public hosted-image serve.** `:id` is a 16–64-char hex id minted by `POST /api/host-image`. Streams the stored image with `Cache-Control: public, max-age=31536000, immutable` and `X-Content-Type-Options: nosniff`. `404` (plain text) for an invalid or unknown id. |
 | `GET` | `/email/logo.png` | Email logo **and open-tracking pixel.** With `?email=<addr>`, logs an email open (only when the request looks like a genuine email-client fetch) to `email_open_logs.csv`, then serves the logo PNG with `Cache-Control: no-store`. |
 | `GET` | `/bimi-logo.svg`, `/logo-full.png` | Brand assets served with explicit content types (BIMI SVG and full-logo PNG). |
@@ -35,10 +38,12 @@ Other `.html` and assets are served by **`express.static('public')`** (e.g. `/st
 into exactly one of three buckets — keep both files in sync when adding a page:
 
 - **Indexable** — carries `<meta name="robots" content="index, follow">` **and** a
-  `sitemap.xml` entry whose `<loc>` matches its `rel="canonical"`. These are the ten
+  `sitemap.xml` entry whose `<loc>` matches its `rel="canonical"`. These are the
   marketing/product/legal pages: `/`, `ai-designer.html`, `masking-studio.html`,
   `stagify-plus.html`, `enterprise.html`, `guides.html`, `contact.html`, `/status`,
-  `privacy.html`, `terms.html`. Not in `robots.txt`.
+  `privacy.html`, `terms.html` — **plus the blog**: the hub `/blog/` and each article
+  `/blog/<slug>` (self-contained pages under `public/blog/`, each carrying `index, follow`,
+  a canonical, `BlogPosting`/`BreadcrumbList` JSON-LD, and a `sitemap.xml` entry). Not in `robots.txt`.
 - **Internal** — `noindex, nofollow`, **absent** from the sitemap, and listed under
   `Disallow:` in `robots.txt`: `admin.html` (`/admin`), `reset-password.html`,
   `getpro.html` (`/getpro`), `plus-welcome.html`, and everything under `legal/`.

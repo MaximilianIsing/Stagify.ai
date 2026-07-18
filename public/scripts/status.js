@@ -7,6 +7,33 @@
         function $(sel, root) { return (root || document).querySelector(sel); }
         function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
+        // ---- i18n helpers ------------------------------------------------------
+        // Resolve a translation key via the shared language runtime, falling back
+        // to the built-in English string until languages/<lang>.json has loaded.
+        function t(key, fallback) {
+          var ls = window.LanguageSystem;
+          return (ls && typeof ls.getText === 'function') ? ls.getText(key, fallback) : fallback;
+        }
+        // Fill {name} placeholders in a template with values from `vars`.
+        function interpolate(str, vars) {
+          return String(str).replace(/\{(\w+)\}/g, function (m, k) {
+            return Object.prototype.hasOwnProperty.call(vars, k) ? vars[k] : m;
+          });
+        }
+        // Incident causes are recorded server-side as fixed English strings.
+        // Map the known ones to translation keys so they localize; anything
+        // unrecognized falls back to the raw cause (or a generic default).
+        function translateCause(cause) {
+          if (cause === 'downtime detected on restart (missed heartbeats)') {
+            return t('status.incidents.causeMissedHeartbeats', cause);
+          }
+          return cause || t('status.incidents.defaultCause', 'Downtime');
+        }
+        // Last successful payload / last-load-failed flag, so a mid-session
+        // language switch can re-render the JS-injected parts in the new language.
+        var lastData = null;
+        var loadFailed = false;
+
         function fmtPct(v) {
           if (v === null || v === undefined) return '—';
           // One decimal place, truncated so uptime is never rounded up (99.375 -> 99.3%).
@@ -30,11 +57,13 @@
           return d + 'd ' + (h % 24) + 'h';
         }
         function fmtAgo(ms) {
-          if (ms === null || ms === undefined) return 'never';
-          if (ms < 60000) return Math.round(ms / 1000) + 's ago';
-          if (ms < 3600000) return Math.round(ms / 60000) + 'm ago';
-          if (ms < 86400000) return Math.round(ms / 3600000) + 'h ago';
-          return Math.round(ms / 86400000) + 'd ago';
+          if (ms === null || ms === undefined) return t('status.ago.never', 'never');
+          var v;
+          if (ms < 60000) v = Math.round(ms / 1000) + 's';
+          else if (ms < 3600000) v = Math.round(ms / 60000) + 'm';
+          else if (ms < 86400000) v = Math.round(ms / 3600000) + 'h';
+          else v = Math.round(ms / 86400000) + 'd';
+          return interpolate(t('status.ago.template', '{v} ago'), { v: v });
         }
         function fmtDate(ts) {
           try { return new Date(ts).toLocaleString(); } catch (e) { return String(ts); }
@@ -85,7 +114,9 @@
             var el = document.createElement('div');
             el.className = 'st-bar ' + (b.state || 'nodata');
             el.setAttribute('data-time', fmtTimeRange(b.start, b.end));
-            el.setAttribute('data-val', b.state === 'nodata' ? 'No data' : fmtPct(b.uptimePct) + ' uptime');
+            el.setAttribute('data-val', b.state === 'nodata'
+              ? t('status.tooltip.nodata', 'No data')
+              : interpolate(t('status.tooltip.uptime', '{pct} uptime'), { pct: fmtPct(b.uptimePct) }));
             frag.appendChild(el);
           });
           container.appendChild(frag);
@@ -113,10 +144,10 @@
             icon.appendChild(checkIcon());
             var title = document.createElement('div');
             title.className = 'st-empty__title';
-            title.textContent = 'No incidents recorded';
+            title.textContent = t('status.incidents.noneTitle', 'No incidents recorded');
             var text = document.createElement('div');
             text.className = 'st-empty__text';
-            text.textContent = 'The service has had no detected downtime in the monitored period.';
+            text.textContent = t('status.incidents.noneText', 'The service has had no detected downtime in the monitored period.');
             wrap.appendChild(icon); wrap.appendChild(title); wrap.appendChild(text);
             root.appendChild(wrap);
             return;
@@ -132,7 +163,7 @@
             main.className = 'st-incident__main';
             var title = document.createElement('div');
             title.className = 'st-incident__title';
-            title.textContent = inc.cause || 'Downtime';
+            title.textContent = translateCause(inc.cause);
             var meta = document.createElement('div');
             meta.className = 'st-incident__meta';
             meta.textContent = fmtDate(inc.start) + ' → ' + fmtDate(inc.end);
@@ -156,14 +187,16 @@
           pill.classList.remove('is-loading', 'is-up', 'is-down');
           if (data.currentState === 'up') {
             pill.classList.add('is-up');
-            text.textContent = 'All systems operational';
+            text.textContent = t('status.operational', 'All systems operational');
           } else {
             pill.classList.add('is-down');
-            text.textContent = 'Service disruption detected';
+            text.textContent = t('status.disruption', 'Service disruption detected');
           }
         }
 
         function render(data) {
+          lastData = data;
+          loadFailed = false;
           setStatus(data);
 
           // Summary + per-graph percentages.
@@ -187,26 +220,37 @@
           // Monitoring line.
           var mon = $('[data-monitoring]');
           if (data.monitoringSince) {
-            mon.textContent = 'Monitoring since ' + fmtDate(data.monitoringSince) +
-              ' · last check ' + fmtAgo(data.lastCheckedMsAgo);
+            mon.textContent = interpolate(
+              t('status.monitoring.since', 'Monitoring since {date} · last check {ago}'),
+              { date: fmtDate(data.monitoringSince), ago: fmtAgo(data.lastCheckedMsAgo) }
+            );
           } else {
-            mon.textContent = 'Collecting data…';
+            mon.textContent = t('status.monitoring.collecting', 'Collecting data…');
           }
 
           var foot = $('[data-foot]');
-          foot.innerHTML = 'Auto-refreshes every 60 seconds · ' + (data.bootCount || 0) +
-            ' restart' + (data.bootCount === 1 ? '' : 's') + ' logged · ' +
-            'Availability is measured from the server’s own heartbeat. For an independent check, ' +
-            '<a href="/health">/health</a> returns live status JSON.';
+          foot.innerHTML = interpolate(
+            t('status.foot', 'Auto-refreshes every 60 seconds · Restarts logged: {count} · Availability is measured from the server’s own heartbeat. For an independent check, <a href="/health">/health</a> returns live status JSON.'),
+            { count: (data.bootCount || 0) }
+          );
         }
 
         function showError() {
+          loadFailed = true;
           var pill = $('[data-status]');
           pill.classList.remove('is-loading', 'is-up');
           pill.classList.add('is-down');
-          $('.up-status-text', pill).textContent = 'Unable to load status';
-          $('[data-monitoring]').textContent = 'Could not reach the status API — retrying…';
-          $('[data-incidents]').innerHTML = '<div class="st-empty"><span class="st-empty__text">Could not reach the status API. Retrying…</span></div>';
+          $('.up-status-text', pill).textContent = t('status.unableToLoad', 'Unable to load status');
+          $('[data-monitoring]').textContent = t('status.monitoring.error', 'Could not reach the status API — retrying…');
+          var incRoot = $('[data-incidents]');
+          incRoot.textContent = '';
+          var wrap = document.createElement('div');
+          wrap.className = 'st-empty';
+          var span = document.createElement('span');
+          span.className = 'st-empty__text';
+          span.textContent = t('status.incidents.loadError', 'Could not reach the status API. Retrying…');
+          wrap.appendChild(span);
+          incRoot.appendChild(wrap);
         }
 
         function load() {
@@ -216,6 +260,21 @@
             .catch(function () { showError(); });
         }
 
+        // Translate the initial "Checking status…" banner, and re-render the
+        // dynamic (JS-injected) parts whenever the visitor switches language.
+        function renderLoading() {
+          var pill = $('[data-status]');
+          if (pill.classList.contains('is-up') || pill.classList.contains('is-down')) return;
+          $('.up-status-text', pill).textContent = t('status.checking', 'Checking status…');
+        }
+        function rerender() {
+          if (loadFailed) showError();
+          else if (lastData) render(lastData);
+          else renderLoading();
+        }
+        window.addEventListener('languagechange', rerender);
+
+        rerender();
         load();
         setInterval(load, REFRESH_MS);
         // Refresh when the tab regains focus so a returning visitor sees current data.
