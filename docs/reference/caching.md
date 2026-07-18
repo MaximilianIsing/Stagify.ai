@@ -22,6 +22,11 @@ per file type in the `setHeaders` callback of `applyBodyAndStatic()`
 `no-cache` is not "don't cache" — it means "cache, but always revalidate before
 use," which is why deploys can't serve stale code even without hashed filenames.
 
+The **localized pages** (`/es`, `/fr/…`) aren't files — `routes/i18n.js` renders them
+server-side and sets the same `Cache-Control: no-cache`, so they revalidate like the
+static `.html` pages. The render itself is memoized in-process (cleared on each deploy's
+restart), so a translation change goes live on redeploy.
+
 Dynamic and sensitive responses opt out of caching entirely with `no-store`
 (e.g. the auth config, the `/getpro` grant page, hosted-image listings), so they
 are never stored at any layer.

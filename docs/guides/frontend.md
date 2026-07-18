@@ -150,8 +150,9 @@ reasoning, and the (narrow) conditions under which we'd revisit it.
   [no-build-step decision](architecture.md#decision-no-frontend-build-step) — and with it
   the "what ships is what you debug" property and granular per-file caching.
 - **i18n is DOM-coupled.** UI text is applied by scanning the document for `data-lang`
-  attributes (see [`i18n.md`](i18n.md)); a template/vDOM layer would have to reconcile
-  with that scanner across 11 languages — a large, cross-cutting mechanical cost.
+  attributes — server-side per-language URL and client-side for dynamic nodes (see
+  [`i18n.md`](i18n.md)); a template/vDOM layer would have to reconcile with that scanner
+  across 11 languages — a large, cross-cutting mechanical cost.
 - **The factory + DI island pattern already gives us a component boundary** — owned
   state, an explicit interface, no globals — without a runtime, a build, or a new
   dependency to track.

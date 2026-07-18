@@ -17,6 +17,8 @@ import {
 } from '../lib/i18n/locales.js';
 import { renderLocalizedPage } from '../lib/i18n/render-page.js';
 import { buildSitemap } from '../lib/i18n/sitemap.js';
+import { injectHreflang } from '../scripts/build-i18n-seo.js';
+import { splitLocale, urlLanguage, hrefForLanguage, localizedTarget } from '../public/scripts/i18n-routing.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -191,6 +193,77 @@ test('every English indexable page carries the full baked-in hreflang cluster', 
     const cluster = buildHreflangCluster(page.path);
     assert.ok(html.includes(cluster), `${page.file} is missing/stale hreflang — run: node scripts/build-i18n-seo.js`);
   }
+});
+
+// ── Client routing helpers (public/scripts/i18n-routing.js) ─────────────────
+
+/** Run `fn` with a stubbed browser `location`. */
+function withLocation(pathname, hash, fn) {
+  const prev = /** @type {any} */ (globalThis).location;
+  /** @type {any} */ (globalThis).location = { pathname, hash: hash || '' };
+  try {
+    return fn();
+  } finally {
+    /** @type {any} */ (globalThis).location = prev;
+  }
+}
+
+test('splitLocale separates the locale prefix from the base path', () => {
+  assert.deepEqual(splitLocale('/es/guides.html'), { prefix: 'es', basePath: '/guides.html' });
+  assert.deepEqual(splitLocale('/es'), { prefix: 'es', basePath: '/' });
+  assert.deepEqual(splitLocale('/es/index.html'), { prefix: 'es', basePath: '/' });
+  assert.deepEqual(splitLocale('/contact.html'), { prefix: '', basePath: '/contact.html' });
+  assert.deepEqual(splitLocale('/'), { prefix: '', basePath: '/' });
+  // a two-letter segment that isn't a known prefix is not treated as a locale
+  assert.deepEqual(splitLocale('/ai-designer.html'), { prefix: '', basePath: '/ai-designer.html' });
+});
+
+test('urlLanguage returns the URL language, or null on the English root', () => {
+  withLocation('/es/guides.html', '', () => assert.equal(urlLanguage(), 'spanish'));
+  withLocation('/fr', '', () => assert.equal(urlLanguage(), 'french'));
+  withLocation('/', '', () => assert.equal(urlLanguage(), null));
+  withLocation('/contact.html', '', () => assert.equal(urlLanguage(), null));
+});
+
+test('hrefForLanguage builds the localized URL of the current page (switcher target)', () => {
+  withLocation('/es/guides.html', '', () => {
+    assert.equal(hrefForLanguage('french'), '/fr/guides.html'); // switch locale, same page
+    assert.equal(hrefForLanguage('english'), '/guides.html'); // English drops the prefix
+  });
+  withLocation('/es', '', () => {
+    assert.equal(hrefForLanguage('german'), '/de'); // home stays home
+    assert.equal(hrefForLanguage('english'), '/');
+  });
+  withLocation('/guides.html', '#faq', () => {
+    assert.equal(hrefForLanguage('spanish'), '/es/guides.html#faq'); // hash preserved
+  });
+  // a page with no localized variant (faq) sends a non-English pick to that locale's home
+  withLocation('/faq.html', '', () => assert.equal(hrefForLanguage('spanish'), '/es'));
+});
+
+test('localizedTarget prefixes in-app redirects (no-op on the English root)', () => {
+  withLocation('/es/ai-designer.html', '', () => {
+    assert.equal(localizedTarget('stagify-plus.html'), '/es/stagify-plus.html');
+    assert.equal(localizedTarget('index.html#ai-designer-demo'), '/es#ai-designer-demo');
+  });
+  withLocation('/ai-designer.html', '', () => {
+    assert.equal(localizedTarget('stagify-plus.html'), 'stagify-plus.html'); // English → unchanged
+  });
+});
+
+// ── Build script (scripts/build-i18n-seo.js) ────────────────────────────────
+
+test('injectHreflang is idempotent and preserves line endings', () => {
+  const lf = '<head>\n    <link rel="canonical" href="https://stagify.ai/contact.html">\n    <!-- next -->\n</head>';
+  const once = injectHreflang(lf, '/contact.html');
+  assert.equal(once, injectHreflang(once, '/contact.html'), 'running twice must equal running once');
+  assert.ok(once.includes(buildHreflangCluster('/contact.html')), 'LF cluster present');
+  assert.ok(!once.includes('\r\n'), 'LF input stays LF');
+
+  const crlf = lf.replace(/\n/g, '\r\n');
+  const crOnce = injectHreflang(crlf, '/contact.html');
+  assert.ok(crOnce.includes('\r\n') && !/[^\r]\n/.test(crOnce), 'CRLF input stays CRLF (no lone LF)');
+  assert.equal(crOnce, injectHreflang(crOnce, '/contact.html'), 'CRLF idempotent');
 });
 
 // ── Live routes ─────────────────────────────────────────────────────────────

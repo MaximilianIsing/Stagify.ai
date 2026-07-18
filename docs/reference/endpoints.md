@@ -20,7 +20,8 @@ This document describes HTTP endpoints for the Stagify server. Routes are regist
 |--------|------|-------------|
 | `GET` | `/` | Serves `public/index.html`. |
 | `GET` | `/robots.txt` | Serves `public/robots.txt`. |
-| `GET` | `/sitemap.xml` | Serves `public/sitemap.xml`. |
+| `GET` | `/sitemap.xml` | Serves `public/sitemap.xml` — **generated** by `scripts/build-i18n-seo.js` (per-language `<url>` entries + `xhtml:link` alternates). A test fails if the committed file drifts from the generator. |
+| `GET` | `/<lang>`, `/<lang>/<page>` | **Localized pages** — `/es`, `/fr/guides.html`, `/de/contact.html`, … Rendered server-side per language from `public/languages/*.json` by `routes/i18n.js` (`lib/i18n/`). `/<lang>/index.html` 301s to `/<lang>`. English stays un-prefixed at the root. See [`i18n.md`](../guides/i18n.md). |
 | `GET` | `/status` | Serves `public/status.html` — the public status/uptime page. Client-side it polls `GET /api/status` and draws 24-hour and 7-day availability graphs. |
 | `GET` | `/privacy` | Serves `public/privacy.html`. |
 | `GET` | `/blog` | **301-redirects to `/blog/`** — `express.static` runs before the router and `public/blog/` is a real directory, so a `router.get('/blog')` would be dead code (don't add one). |
@@ -32,18 +33,25 @@ This document describes HTTP endpoints for the Stagify server. Routes are regist
 
 Other `.html` and assets are served by **`express.static('public')`** (e.g. `/stagify-plus.html`, `/ai-designer.html`, `/plus-welcome.html`).
 
-### Indexing policy (robots.txt / sitemap.xml / canonical)
+### Indexing policy (robots.txt / sitemap.xml / canonical / hreflang)
 
-`public/robots.txt` and `public/sitemap.xml` are hand-maintained. Every page falls
-into exactly one of three buckets — keep both files in sync when adding a page:
+`public/robots.txt` is hand-maintained; **`public/sitemap.xml` is generated** by
+`scripts/build-i18n-seo.js` from `lib/i18n/locales.js` (rerun it after changing the
+language or page set — a drift test enforces it). Every page falls into exactly one of
+three buckets — keep `robots.txt` and the canonical/sitemap in sync when adding a page:
 
 - **Indexable** — carries `<meta name="robots" content="index, follow">` **and** a
   `sitemap.xml` entry whose `<loc>` matches its `rel="canonical"`. These are the
   marketing/product/legal pages: `/`, `ai-designer.html`, `masking-studio.html`,
   `stagify-plus.html`, `enterprise.html`, `guides.html`, `contact.html`, `/status`,
-  `privacy.html`, `terms.html` — **plus the blog**: the hub `/blog/` and each article
-  `/blog/<slug>` (self-contained pages under `public/blog/`, each carrying `index, follow`,
-  a canonical, `BlogPosting`/`BreadcrumbList` JSON-LD, and a `sitemap.xml` entry). Not in `robots.txt`.
+  `privacy.html`, `terms.html`. Each is **served in 11 languages at its own URL** (`/`
+  English + `/<lang>/…` for the other 10) with a self-referential canonical, a full
+  `hreflang` cluster (all languages + `x-default`), and one sitemap `<url>` per language
+  carrying `xhtml:link` alternates — all driven by `lib/i18n/locales.js` (see
+  [`i18n.md`](../guides/i18n.md)). **Plus the blog** (English-only): the hub `/blog/` and
+  each article `/blog/<slug>` (self-contained pages under `public/blog/`, each carrying
+  `index, follow`, a canonical, `BlogPosting`/`BreadcrumbList` JSON-LD, and a `sitemap.xml`
+  entry). Not in `robots.txt`.
 - **Internal** — `noindex, nofollow`, **absent** from the sitemap, and listed under
   `Disallow:` in `robots.txt`: `admin.html` (`/admin`), `reset-password.html`,
   `getpro.html` (`/getpro`), `plus-welcome.html`, and everything under `legal/`.
