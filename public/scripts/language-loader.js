@@ -4,6 +4,8 @@
 // later via a MutationObserver. Exposes window.LanguageSystem for the rest of the
 // app (carousel, mask editors, etc.). Loaded as <script type="module">, runs on every page.
 
+import { urlLanguage, hrefForLanguage, localizeLinks } from './i18n-routing.js';
+
 (() => {
   'use strict';
 
@@ -77,6 +79,10 @@
 
     updateTitle();
     updateStructuredData();
+    // Applying [data-lang-html] resets any links inside translated rich text to
+    // their raw JSON form (bare "#…" anchors, "terms.html", …). On a localized URL
+    // that would break under <base href="/">, so re-prefix them to this locale.
+    localizeLinks();
     document.body.classList.add('language-loaded');
     window.dispatchEvent(new Event('languagechange'));
   }
@@ -113,7 +119,9 @@
   }
 
   async function init() {
-    const saved = localStorage.getItem('selectedLanguage') || config.defaultLanguage;
+    // A localized URL (/es, /fr/…) wins over the stored preference, so the page
+    // renders in its URL language even if the visitor's saved choice differs.
+    const saved = urlLanguage() || localStorage.getItem('selectedLanguage') || config.defaultLanguage;
     await loadLanguage(saved);
     applyLanguageToElements();
     setupLanguageSelector();
@@ -152,12 +160,14 @@
     const current = localStorage.getItem('selectedLanguage') || 'english';
     select.value = current;
     updateSelectorFlag(select);
-    select.addEventListener('change', async (e) => {
+    // Each language now has its own URL, so switching navigates to the localized
+    // URL of the current page (a full load that the server renders in-language)
+    // instead of swapping strings in place. This keeps the URL, canonical, and
+    // hreflang consistent with what the visitor sees.
+    select.addEventListener('change', (e) => {
       const lang = /** @type {HTMLSelectElement} */ (e.target).value;
-      localStorage.setItem('selectedLanguage', lang);
-      updateSelectorFlag(/** @type {HTMLSelectElement} */ (e.target));
-      await loadLanguage(lang);
-      applyLanguageToElements();
+      try { localStorage.setItem('selectedLanguage', lang); } catch (err) { /* ignore */ }
+      window.location.assign(hrefForLanguage(lang));
     });
   }
 

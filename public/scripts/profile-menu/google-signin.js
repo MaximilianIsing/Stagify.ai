@@ -1,4 +1,5 @@
 import { lang } from './dom-utils.js';
+import { localizedTarget } from '../i18n-routing.js';
 
 /* global google */ // Google Identity Services, loaded from accounts.google.com
 
@@ -77,7 +78,7 @@ export function createGoogleSignIn({ getAuthFlow, closeAuthModal, onRefresh }) {
         }
         onRefresh();
         if (goPlus) {
-          window.location.href = 'stagify-plus.html';
+          window.location.href = localizedTarget('stagify-plus.html');
           return;
         }
       })

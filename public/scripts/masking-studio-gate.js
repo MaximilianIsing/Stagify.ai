@@ -8,10 +8,24 @@
 // before the body paints, exactly as the former inline block did — externalised
 // only so the CSP can drop 'unsafe-inline' from script-src.
 (function () {
+  // Classic (render-blocking) script — can't import the shared helper, so inline
+  // the locale-prefix resolution: on a localized URL (/es, /fr/…) keep the visitor
+  // in their language (<base href="/"> would otherwise drop them to English root).
+  function localeTarget(rel) {
+    var m = location.pathname.match(/^\/(es|fr|de|zh|ko|pt|ru|it|ja|nl)(\/|$)/);
+    if (!m) return rel;
+    var pfx = '/' + m[1];
+    var i = rel.search(/[#?]/);
+    var bare = (i === -1 ? rel : rel.slice(0, i)).replace(/^\//, '');
+    var suffix = i === -1 ? '' : rel.slice(i);
+    var p = bare ? '/' + bare : '/';
+    if (p === '/index.html') p = '/';
+    return (p === '/' ? pfx : pfx + p) + suffix;
+  }
   var hasToken = false;
   try { hasToken = !!localStorage.getItem('stagifyAuthToken'); } catch (e) {}
   if (!hasToken) {
-    window.location.replace('stagify-plus.html');
+    window.location.replace(localeTarget('stagify-plus.html'));
     return;
   }
   document.documentElement.className += ' ms-gate-pending';
@@ -20,7 +34,7 @@
   // slow-but-working connection can still finish the check.
   setTimeout(function () {
     if (document.documentElement.classList.contains('ms-gate-pending')) {
-      window.location.replace('stagify-plus.html');
+      window.location.replace(localeTarget('stagify-plus.html'));
     }
   }, 9000);
 })();

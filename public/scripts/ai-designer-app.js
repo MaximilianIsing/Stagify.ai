@@ -9,6 +9,7 @@ import {
   resolveStagingRootBaseName as _resolveStagingRootBaseName,
 } from './ai-designer/image-history.js';
 import { lang } from './ai-designer/i18n.js';
+import { localizedTarget } from './i18n-routing.js';
 import { showToast } from './ai-designer/toast.js';
 import { createMaskEditor } from './ai-designer/mask-editor.js';
 import { createImageViewer } from './ai-designer/image-viewer.js';
@@ -116,13 +117,13 @@ import { createChatResponse } from './ai-designer/chat-response.js';
           waited += 50;
         }
         if (!window.StagifyAuth) {
-          window.location.replace('index.html#ai-designer-demo');
+          window.location.replace(localizedTarget('index.html#ai-designer-demo'));
           return false;
         }
         await window.StagifyAuth.fetchMe();
         const u = window.StagifyAuth.user;
         if (!u || u.plan !== 'pro') {
-          window.location.replace('index.html#ai-designer-demo');
+          window.location.replace(localizedTarget('index.html#ai-designer-demo'));
           return false;
         }
         // Verified Pro — reveal the page (the head gate hid it until now).
