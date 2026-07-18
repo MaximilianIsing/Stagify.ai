@@ -1,10 +1,11 @@
       body.page-enterprise main.ent-page {
-        flex: 0 0 auto;
+        /* Full-width scroll container (like every other page's <main>) so the
+           Aurora scrollbar tracks it and sits at the viewport edge. Content is
+           width-constrained by the inner .ent-inner wrapper instead. */
+        display: block;
         overflow-x: hidden;
-        overflow-y: visible;
-        width: 100%;
       }
-      .ent-page {
+      .ent-inner {
         max-width: min(820px, 100%);
         margin: 0 auto;
         padding: 2rem clamp(1.25rem, 4vw, 2.5rem) 3rem;
@@ -14,13 +15,7 @@
         text-align: center;
         margin-bottom: 2.25rem;
       }
-      .ent-hero-logo {
-        width: clamp(72px, 18vw, 96px);
-        height: auto;
-        display: block;
-        margin: 0 auto 1rem;
-      }
-      .ent-hero h1 {
+            .ent-hero h1 {
         margin: 0 0 0.5rem;
         font-size: clamp(1.75rem, 4vw, 2.125rem);
         color: #1e3a8a;

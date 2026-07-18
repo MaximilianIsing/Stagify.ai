@@ -7,7 +7,19 @@
         var PAYMENT_LINK = 'https://buy.stripe.com/9B6cN5bC24w8aTG1Jf7EQ03';
         // On the staging site, block real Stripe checkout (set from /api/auth/config).
         var IS_STAGING = false;
+        // Last user state applied, so a mid-session language switch can re-render the
+        // JS-managed checkout button + hint in the new language.
+        var currentUser = null;
+
+        // Resolve a translation key via the shared language runtime, falling back to
+        // the built-in English string until languages/<lang>.json has loaded.
+        function t(key, fallback) {
+          var ls = window.LanguageSystem;
+          return (ls && typeof ls.getText === 'function') ? ls.getText(key, fallback) : fallback;
+        }
+
         function applyStripeCheckout(user) {
+          currentUser = user;
           var hint = document.getElementById('plus-checkout-hint');
           var link = /** @type {HTMLAnchorElement} */ (document.getElementById('stagify-plus-checkout-link'));
           var manageWrap = document.getElementById('sp-manage-subscription-wrap');
@@ -21,7 +33,7 @@
             link.setAttribute('tabindex', '-1');
             link.setAttribute('aria-disabled', 'true');
             link.classList.add('sp-gradient-checkout-btn--subscribed');
-            link.innerHTML = '<strong>Subscribed ✓</strong>';
+            link.innerHTML = '<strong>' + t('stagifyPlus.plan.subscribed', 'Subscribed ✓') + '</strong>';
             if (hint) {
               hint.textContent = '';
               hint.classList.add('hidden');
@@ -45,9 +57,9 @@
             link.setAttribute('tabindex', '-1');
             link.setAttribute('aria-disabled', 'true');
             link.classList.add('sp-gradient-checkout-btn--subscribed');
-            link.innerHTML = '<strong>Unavailable on staging</strong>';
+            link.innerHTML = '<strong>' + t('stagifyPlus.plan.unavailableStaging', 'Unavailable on staging') + '</strong>';
             if (hint) {
-              hint.textContent = 'Subscriptions are disabled on the staging site.';
+              hint.textContent = t('stagifyPlus.plan.hintStagingDisabled', 'Subscriptions are disabled on the staging site.');
               hint.classList.remove('hidden');
             }
             if (manageWrap) manageWrap.classList.add('hidden');
@@ -59,7 +71,7 @@
           link.classList.remove('sp-gradient-checkout-btn--subscribed');
           link.setAttribute('rel', 'noopener noreferrer');
           link.setAttribute('target', '_blank');
-          link.innerHTML = '<strong>Start free trial</strong>';
+          link.innerHTML = '<strong>' + t('stagifyPlus.plan.startTrial', 'Start free trial') + '</strong>';
 
           var url = PAYMENT_LINK;
           if (user && user.id) {
@@ -75,14 +87,22 @@
             url += sep + 'client_reference_id=' + encodeURIComponent(user.id);
           } else {
             if (hint) {
-              hint.textContent =
-                'Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.';
+              hint.textContent = t(
+                'stagifyPlus.plan.hintTip',
+                'Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.'
+              );
               hint.classList.remove('hidden');
             }
           }
           link.href = url;
           if (manageWrap) manageWrap.classList.add('hidden');
         }
+
+        // Re-render the JS-managed button + hint when the visitor switches language.
+        window.addEventListener('languagechange', function () {
+          applyStripeCheckout(currentUser);
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
           var manageBtn = /** @type {HTMLButtonElement} */ (document.getElementById('sp-manage-subscription-btn'));
           if (manageBtn && window.StagifyAuth && typeof window.StagifyAuth.openBillingPortal === 'function') {

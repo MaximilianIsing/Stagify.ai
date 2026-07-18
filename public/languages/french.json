@@ -241,6 +241,11 @@
     "faq": {
       "subtitle": "Des réponses rapides aux questions les plus fréquentes. Toujours bloqué ? Consultez les <a href=\"guides.html\">Guides</a> ou contactez-nous."
     },
+    "blog": {
+      "title": "Le blog de Stagify",
+      "subtitle": "Guides et conseils sur le staging virtuel, la divulgation MLS et la promotion plus rapide de vos annonces.",
+      "viewAll": "Visiter le blog de Stagify →"
+    },
     "contactCta": {
       "title": "Notre boîte de réception est toujours ouverte",
       "subtitle": "Des questions, des retours ou des idées de partenariat ? Nous lisons chaque message et répondons dès que possible.",
@@ -452,6 +457,14 @@
       "privacy": {
         "question": "Mes données sont-elles privées et sécurisées ?",
         "answer": "Oui. Nous utilisons le chiffrement HTTPS, ne conservons pas définitivement les images importées après traitement et ne vendons pas vos informations personnelles. Vous conservez la propriété de vos imports et des résultats générés. Nous ne partageons les données qu'avec les prestataires nécessaires au fonctionnement de Stagify (tels que les services d'IA et de paiement), comme décrit dans notre Politique de confidentialité."
+      },
+      "whatMakesDifferent": {
+        "question": "Qu'est-ce qui distingue Stagify des autres outils de staging virtuel ?",
+        "answer": "Plusieurs choses. D'abord, le prix : vous pouvez commencer à aménager gratuitement, et Stagify+ ne coûte que $11.99 par mois pour un aménagement illimité — alors que le staging traditionnel peut coûter des centaines, voire des milliers de dollars par pièce. Ensuite, le Designer IA vous permet de discuter avec notre IA pour réaménager une pièce entière et d'affiner le résultat au fil de la conversation, au lieu de simplement appliquer des préréglages. Enfin, le Studio de masquage offre une précision au pixel près — indiquez exactement quelles zones d'une photo peuvent changer et associez un meuble précis à chacune, afin que tout ce que vous ne sélectionnez pas reste intact. La plupart des outils ne font bien qu'une seule de ces choses ; Stagify réunit accessibilité, contrôle créatif et précision."
+      },
+      "mlsAllowed": {
+        "question": "Puis-je utiliser des photos aménagées virtuellement dans mes annonces immobilières ?",
+        "answer": "Oui. Le staging virtuel est largement utilisé et accepté dans les annonces immobilières et les MLS. La règle principale est la transparence : la plupart des MLS et des réglementations locales demandent d'indiquer clairement qu'une photo a fait l'objet d'un staging virtuel, par exemple en la légendant « aménagée virtuellement ». Comme Stagify ne modifie que les meubles et la décoration, sans jamais changer la structure réelle de la pièce, vos photos restent une représentation honnête de l'espace. Nous recommandons toujours d'ajouter une mention de staging virtuel afin de rester conforme aux règles de votre MLS et de votre chambre immobilière locale."
       }
     }
   },
@@ -952,5 +965,186 @@
       "Le reste de la photo reste intact…",
       "Touches finales en cours…"
     ]
+  },
+  "status": {
+    "pageTitle": "État et disponibilité | Stagify.ai",
+    "pageDescription": "État et disponibilité en direct de Stagify.ai — disponibilité sur 24 heures et 7 jours avec pourcentages historiques.",
+    "heading": "État du serveur",
+    "subheading": "Disponibilité en direct et historique de disponibilité de Stagify.ai.",
+    "checking": "Vérification de l’état…",
+    "operational": "Tous les systèmes sont opérationnels",
+    "disruption": "Interruption détectée",
+    "unableToLoad": "Impossible de charger l’état",
+    "uptime": "disponibilité",
+    "now": "maintenant",
+    "cards": {
+      "24h": "24 heures",
+      "7d": "7 jours",
+      "30d": "30 jours"
+    },
+    "graph24h": {
+      "title": "Dernières 24 heures",
+      "meta": "48 barres · 30 min chacune",
+      "aria": "Barres de disponibilité des dernières 24 heures",
+      "axisStart": "il y a 24 heures"
+    },
+    "graph7d": {
+      "title": "7 derniers jours",
+      "meta": "56 barres · 3 h chacune",
+      "aria": "Barres de disponibilité des 7 derniers jours",
+      "axisStart": "il y a 7 jours"
+    },
+    "legend": {
+      "operational": "Opérationnel",
+      "partial": "Panne partielle",
+      "downtime": "Indisponibilité",
+      "nodata": "Aucune donnée"
+    },
+    "incidents": {
+      "heading": "Incidents récents",
+      "loading": "Chargement…",
+      "noneTitle": "Aucun incident enregistré",
+      "noneText": "Le service n’a connu aucune indisponibilité détectée sur la période surveillée.",
+      "defaultCause": "Indisponibilité",
+      "causeMissedHeartbeats": "Indisponibilité détectée au redémarrage (signaux de présence manqués)",
+      "loadError": "Impossible de joindre l’API d’état. Nouvelle tentative…"
+    },
+    "monitoring": {
+      "since": "Surveillance depuis {date} · dernière vérification {ago}",
+      "collecting": "Collecte des données…",
+      "error": "Impossible de joindre l’API d’état — nouvelle tentative…"
+    },
+    "tooltip": {
+      "nodata": "Aucune donnée",
+      "uptime": "{pct} de disponibilité"
+    },
+    "ago": {
+      "never": "jamais",
+      "template": "il y a {v}"
+    },
+    "foot": "Actualisation toutes les 60 secondes · Redémarrages enregistrés : {count} · La disponibilité est mesurée à partir du signal de présence du serveur. Pour une vérification indépendante, <a href=\"/health\">/health</a> renvoie l’état en direct au format JSON."
+  },
+  "enterprise": {
+    "hero": {
+      "title": "Stagify Enterprise",
+      "subtitle": "Offrez à toute votre équipe un home staging par IA illimité. Chaque employé disposant de votre e-mail d’entreprise obtient automatiquement Stagify+ — vous ne payez que ce que vous utilisez."
+    },
+    "highlights": {
+      "perGenerationLabel": "par génération",
+      "unlimitedValue": "Illimité",
+      "unlimitedLabel": "membres de l’équipe",
+      "monthlyValue": "Mensuel",
+      "monthlyLabel": "facturation à l’usage"
+    },
+    "features": {
+      "ariaLabel": "Fonctionnalités Stagify+ incluses",
+      "fullAccess": "Stagify+ complet pour chaque utilisateur @domaine",
+      "aiDesigner": "AI Designer et édition par masque",
+      "models": "Modèles d’image de haute qualité",
+      "variations": "Plusieurs variations par génération",
+      "furniture": "Téléversement de références de meubles",
+      "noSeatFees": "Aucun frais par utilisateur"
+    },
+    "success": {
+      "title": "Plan Enterprise activé",
+      "line": "Tous les comptes dont l’e-mail se termine par {domain} disposent désormais des fonctionnalités Stagify+.",
+      "yourDomain": "votre domaine",
+      "billing": "La facturation a lieu à la fin de chaque mois en fonction de l’utilisation totale de l’équipe, à 0,15 $ par génération."
+    },
+    "form": {
+      "title": "Commencer",
+      "intro": "Renseignez les informations de votre entreprise ci-dessous. Après le paiement, chaque compte doté d’un e-mail de votre domaine recevra automatiquement les fonctionnalités Stagify+.",
+      "domainLabel": "Domaine de l’entreprise",
+      "domainHint": "Tous les e-mails se terminant par @{domain} recevront Stagify+",
+      "companyLabel": "Nom de l’entreprise",
+      "emailLabel": "E-mail de contact",
+      "phoneLabel": "Numéro de téléphone",
+      "phoneOptional": "(facultatif)",
+      "submit": "Continuer vers le paiement",
+      "redirecting": "Redirection vers Stripe…"
+    },
+    "errors": {
+      "domain": "Veuillez saisir un domaine valide (par ex. company.com).",
+      "company": "Veuillez saisir le nom de votre entreprise.",
+      "email": "Veuillez saisir un e-mail de contact valide.",
+      "generic": "Une erreur s’est produite. Veuillez réessayer.",
+      "unexpected": "Réponse inattendue. Veuillez réessayer.",
+      "network": "Erreur réseau. Veuillez vérifier votre connexion et réessayer."
+    },
+    "footnote": "Paiement sécurisé via Stripe · Facturation mensuelle selon l’usage · Annulable à tout moment<br>Des questions ? <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> · <a href=\"stagify-plus.html\">Offres individuelles</a>",
+    "legal": "En continuant, vous acceptez notre <a href=\"legal/enterprise-msa.html\">contrat de services principal</a>, nos <a href=\"terms.html\">conditions d’utilisation</a> et notre <a href=\"privacy.html\">politique de confidentialité</a>."
+  },
+  "stagifyPlus": {
+    "hero": {
+      "title": "Tout dans Stagify, <span class=\"sp-grad\">débloqué</span>.",
+      "subtitle": "Home staging illimité de haute qualité, l’AI Designer, la suppression de meubles et tous les outils professionnels. Le tout pour moins que le coût d’un seul home staging traditionnel."
+    },
+    "plan": {
+      "hintSignIn": "Connectez-vous d’abord via le menu profil pour que le paiement puisse être lié à votre compte Stagify.",
+      "hintTip": "Astuce : connectez-vous d’abord via le menu profil pour que le paiement puisse être lié à votre compte Stagify.",
+      "hintStagingDisabled": "Les abonnements sont désactivés sur le site de préproduction.",
+      "billedMonthly": "Facturation mensuelle · Annulable à tout moment",
+      "perMonth": "/ mois",
+      "trialPill": "Commencez avec 7 jours gratuits",
+      "startTrial": "Démarrer l’essai gratuit",
+      "subscribed": "Abonné ✓",
+      "unavailableStaging": "Indisponible en préproduction",
+      "payNote": "Vous ne serez débité qu’à la fin de votre essai. Annulable à tout moment.",
+      "securedByStripe": "Sécurisé par Stripe",
+      "noCommitment": "Sans engagement",
+      "manage": "Gérer ou annuler l’abonnement"
+    },
+    "features": {
+      "heading": "Tout ce qu’il vous faut pour un home staging de pro",
+      "model": {
+        "title": "Modèle haute qualité",
+        "desc": "Notre modèle le plus avancé restitue des meubles, matériaux et éclairages plus nets et plus réalistes."
+      },
+      "remove": {
+        "title": "Supprimer les meubles existants",
+        "desc": "Effacez meubles, désordre et décoration, puis réaménagez la pièce vidée sur une base vierge."
+      },
+      "designer": {
+        "title": "AI Designer",
+        "desc": "Décrivez ce que vous voulez en langage simple et affinez chaque résultat au fil de la conversation."
+      },
+      "masking": {
+        "title": "Outil de masque",
+        "desc": "Peignez sur une zone pour modifier ou restyliser uniquement cette partie de la photo."
+      },
+      "studio": {
+        "title": "Masking Studio",
+        "desc": "Surlignez plusieurs zones de différentes couleurs, donnez à chacune sa propre photo de meuble et aménagez-les toutes en même temps. Générez plusieurs versions par zone et gardez la meilleure."
+      },
+      "references": {
+        "title": "Références de meubles",
+        "desc": "Téléversez des photos de produits pour aménager des pièces avec des meubles précis que vous choisissez."
+      }
+    },
+    "compare": {
+      "heading": "Comparer les offres",
+      "feature": "Fonctionnalité",
+      "free": "Gratuit",
+      "included": "Inclus",
+      "notIncluded": "Non inclus",
+      "rows": {
+        "customizable": "Home staging personnalisable",
+        "fastModel": "Modèle d’image rapide",
+        "unlimited": "Générations de staging illimitées",
+        "hqModel": "Modèle d’image haute qualité",
+        "remove": "Supprimer les meubles existants",
+        "designer": "AI Designer",
+        "masking": "Outil de masque",
+        "studio": "Masking Studio (multi-zones)",
+        "variations": "Plusieurs variations par génération",
+        "references": "Références de meubles"
+      }
+    },
+    "enterpriseRow": "Pour les équipes ou les entreprises, <a href=\"enterprise.html\">découvrez notre offre enterprise</a> ou contactez <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> pour des options d’abonnement personnalisées.",
+    "footLinks": {
+      "backToFree": "Retour au home staging gratuit",
+      "questions": "Des questions avant d’acheter ?",
+      "footnote": "Équipes, facturation ou conditions sur mesure : <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+    }
   }
 }

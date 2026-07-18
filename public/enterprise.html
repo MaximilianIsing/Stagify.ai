@@ -54,14 +54,14 @@
       <nav class="nav">
         <a href="index.html" class="brand">
           <img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high">
-          <span class="brand-strong">Stagify</span><span class="brand-light">.ai</span>
+          <span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span>
         </a>
         <div class="nav-center">
-          <a href="index.html" class="nav-link">Home</a>
-          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden">AI Designer</a>
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
           <a href="masking-studio.html" class="nav-link desktop-only nav-masking-studio-pro hidden" data-lang="navigation.maskingStudio">Masking Studio</a>
-          <a href="guides.html" class="nav-link">Guides</a>
-          <a href="contact.html" class="nav-link">Contact Us</a>
+          <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
+          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
           <div class="profile-menu-wrap">
             <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
               <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -77,102 +77,145 @@
     </header>
 
     <main class="ent-page">
+      <!-- Language Picker -->
+      <div class="language-picker-container">
+        <div class="language-selector">
+          <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
+          <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
+            <option value="english" selected>EN</option>
+            <option value="german">DE</option>
+            <option value="dutch">NL</option>
+            <option value="spanish">ES</option>
+            <option value="french">FR</option>
+            <option value="italian">IT</option>
+            <option value="portuguese">PT</option>
+            <option value="russian">RU</option>
+            <option value="chinese">中文</option>
+            <option value="japanese">日本語</option>
+            <option value="korean">한국어</option>
+          </select>
+          <div class="lang-switch" data-lang-switch>
+            <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <img class="lang-switch__flag" src="media-webp/flags/US.svg" alt="" width="20" height="14" />
+              <span class="lang-switch__label">English</span>
+              <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="ent-inner">
       <header class="ent-hero">
-        <img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai virtual staging for enterprise teams" class="ent-hero-logo" width="96" height="96">
-        <h1>Stagify Enterprise</h1>
-        <p>Give your entire team unlimited AI staging. Every employee with your company email gets Stagify+ automatically — you only pay for what they use.</p>
+        <h1 data-lang="enterprise.hero.title">Stagify Enterprise</h1>
+        <p data-lang="enterprise.hero.subtitle">Give your entire team unlimited AI staging. Every employee with your company email gets Stagify+ automatically — you only pay for what they use.</p>
       </header>
 
       <div class="ent-highlights">
         <div class="ent-highlight">
           <span class="ent-highlight-value">$0.15</span>
-          <span class="ent-highlight-label">per generation</span>
+          <span class="ent-highlight-label" data-lang="enterprise.highlights.perGenerationLabel">per generation</span>
         </div>
         <div class="ent-highlight">
-          <span class="ent-highlight-value">Unlimited</span>
-          <span class="ent-highlight-label">team members</span>
+          <span class="ent-highlight-value" data-lang="enterprise.highlights.unlimitedValue">Unlimited</span>
+          <span class="ent-highlight-label" data-lang="enterprise.highlights.unlimitedLabel">team members</span>
         </div>
         <div class="ent-highlight">
-          <span class="ent-highlight-value">Monthly</span>
-          <span class="ent-highlight-label">usage-based billing</span>
+          <span class="ent-highlight-value" data-lang="enterprise.highlights.monthlyValue">Monthly</span>
+          <span class="ent-highlight-label" data-lang="enterprise.highlights.monthlyLabel">usage-based billing</span>
         </div>
       </div>
 
-      <div class="ent-features" aria-label="Included Stagify+ features">
-        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span> Full Stagify+ for every @domain user</div>
-        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span> AI Designer &amp; mask editing</div>
-        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span> High-quality image models</div>
-        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span> Multiple variations per generation</div>
-        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span> Furniture reference uploads</div>
-        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span> No per-seat fees</div>
+      <div class="ent-features" aria-label="Included Stagify+ features" data-lang-attr="enterprise.features.ariaLabel|aria-label">
+        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span><span data-lang="enterprise.features.fullAccess">Full Stagify+ for every @domain user</span></div>
+        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span><span data-lang="enterprise.features.aiDesigner">AI Designer &amp; mask editing</span></div>
+        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span><span data-lang="enterprise.features.models">High-quality image models</span></div>
+        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span><span data-lang="enterprise.features.variations">Multiple variations per generation</span></div>
+        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span><span data-lang="enterprise.features.furniture">Furniture reference uploads</span></div>
+        <div class="ent-feature"><span class="ent-feature-icon" aria-hidden="true">✓</span><span data-lang="enterprise.features.noSeatFees">No per-seat fees</span></div>
       </div>
 
       <!-- Success state (shown after Stripe checkout redirect) -->
       <div class="ent-card ent-success hidden" id="ent-success">
         <span class="ent-success-icon" aria-hidden="true">&#10003;</span>
-        <h2>Enterprise plan activated</h2>
-        <p>All accounts with emails ending in <span class="ent-success-domain" id="ent-success-domain">your domain</span> now have Stagify+ features.</p>
-        <p>You'll be billed at the end of each month based on total team usage at $0.15 per generation.</p>
+        <h2 data-lang="enterprise.success.title">Enterprise plan activated</h2>
+        <p id="ent-success-line">All accounts with emails ending in <span class="ent-success-domain" id="ent-success-domain">your domain</span> now have Stagify+ features.</p>
+        <p data-lang="enterprise.success.billing">You'll be billed at the end of each month based on total team usage at $0.15 per generation.</p>
       </div>
 
       <!-- Form (hidden after success) -->
       <div class="ent-card" id="ent-form-card">
-        <h2>Get started</h2>
-        <p>Fill out your company details below. After checkout, every account with an email ending in your domain will automatically receive Stagify+ features.</p>
+        <h2 data-lang="enterprise.form.title">Get started</h2>
+        <p data-lang="enterprise.form.intro">Fill out your company details below. After checkout, every account with an email ending in your domain will automatically receive Stagify+ features.</p>
 
         <form id="ent-form" novalidate>
           <div class="ent-field">
-            <label for="ent-domain">Company domain</label>
+            <label for="ent-domain" data-lang="enterprise.form.domainLabel">Company domain</label>
             <input type="text" id="ent-domain" class="ent-input" placeholder="company.com" autocomplete="off" required>
-            <p class="ent-field-hint">All emails ending in @<span id="ent-domain-preview">yourdomain.com</span> will get Stagify+</p>
+            <p class="ent-field-hint" id="ent-domain-hint">All emails ending in @yourdomain.com will get Stagify+</p>
           </div>
 
           <div class="ent-field">
-            <label for="ent-company">Company name</label>
+            <label for="ent-company" data-lang="enterprise.form.companyLabel">Company name</label>
             <input type="text" id="ent-company" class="ent-input" placeholder="Company Inc." autocomplete="organization" required>
           </div>
 
           <div class="ent-row">
             <div class="ent-field">
-              <label for="ent-email">Contact email</label>
+              <label for="ent-email" data-lang="enterprise.form.emailLabel">Contact email</label>
               <input type="email" id="ent-email" class="ent-input" placeholder="jane@company.com" autocomplete="email" required>
             </div>
             <div class="ent-field">
-              <label for="ent-phone">Phone number <span class="ent-optional">(optional)</span></label>
+              <label for="ent-phone"><span data-lang="enterprise.form.phoneLabel">Phone number</span> <span class="ent-optional" data-lang="enterprise.form.phoneOptional">(optional)</span></label>
               <input type="tel" id="ent-phone" class="ent-input" placeholder="+1 (555) 123-4567" autocomplete="tel">
             </div>
           </div>
 
           <div class="ent-error-msg hidden" id="ent-error" role="alert"></div>
 
-          <button type="submit" class="ent-submit-btn" id="ent-submit-btn">
+          <button type="submit" class="ent-submit-btn" id="ent-submit-btn" data-lang="enterprise.form.submit">
             Continue to payment
           </button>
         </form>
       </div>
 
-      <p class="ent-footnote">
+      <p class="ent-footnote" data-lang-html="enterprise.footnote">
         Secure checkout powered by Stripe · Billed monthly based on usage · Cancel anytime<br>
         Questions? <a href="mailto:team@stagify.ai">team@stagify.ai</a> · <a href="stagify-plus.html">Individual plans</a>
       </p>
 
-      <div class="ent-legal">
+      <div class="ent-legal" data-lang-html="enterprise.legal">
         By continuing, you agree to our <a href="legal/enterprise-msa.html">Master Services Agreement</a>,
         <a href="terms.html">Terms of Service</a>, and <a href="privacy.html">Privacy Policy</a>.
       </div>
+
+      <footer class="ent-site-footer">
+        <a href="privacy.html" data-lang="footer.privacy">Privacy Policy</a>
+        &nbsp;·&nbsp;
+        <a href="terms.html" data-lang="footer.terms">Terms of Service</a>
+        &nbsp;·&nbsp;
+        <a href="/status" data-lang="footer.status">Status</a>
+        &nbsp;·&nbsp;
+        © <span class="footer-year"></span> Stagify.ai
+      </footer>
+      </div>
     </main>
 
-    <footer class="ent-site-footer">
-      <a href="privacy.html">Privacy Policy</a>
-      &nbsp;·&nbsp;
-      <a href="terms.html">Terms of Service</a>
-      &nbsp;·&nbsp;
-      <a href="/status">Status</a>
-      &nbsp;·&nbsp;
-      © <span class="footer-year"></span> Stagify.ai
-    </footer>
-
+    <script type="module" src="scripts/language-detect.js"></script>
     <script type="module" src="scripts/language-loader.js"></script>
+    <script type="module" src="scripts/language-switcher.js"></script>
     <script type="module" src="scripts/nav-pill.js"></script>
     <script type="module" src="scripts/auth.js"></script>
     <script type="module" src="scripts/profile-menu.js"></script>

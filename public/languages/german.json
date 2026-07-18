@@ -241,6 +241,11 @@
     "faq": {
       "subtitle": "Schnelle Antworten auf die häufigsten Fragen. Immer noch unklar? Besuchen Sie die <a href=\"guides.html\">Anleitungen</a> oder melden Sie sich."
     },
+    "blog": {
+      "title": "Aus dem Stagify-Blog",
+      "subtitle": "Anleitungen und Tipps zu virtuellem Staging, MLS-Kennzeichnung und schnellerem Vermarkten deiner Angebote.",
+      "viewAll": "Zum Stagify-Blog →"
+    },
     "contactCta": {
       "title": "Unser Postfach ist immer offen",
       "subtitle": "Fragen, Feedback oder Ideen für Partnerschaften? Wir lesen jede Nachricht und antworten so schnell wie möglich.",
@@ -452,6 +457,14 @@
       "privacy": {
         "question": "Sind meine Daten privat und sicher?",
         "answer": "Ja. Wir verwenden HTTPS-Verschlüsselung, speichern hochgeladene Bilder nach der Verarbeitung nicht dauerhaft und verkaufen Ihre persönlichen Daten nicht. Sie behalten das Eigentum an Ihren Uploads und erzeugten Ergebnissen. Wir geben Daten nur an Dienstleister weiter, die für den Betrieb von Stagify nötig sind (etwa KI- und Zahlungsdienstleister), wie in unserer Datenschutzrichtlinie beschrieben."
+      },
+      "whatMakesDifferent": {
+        "question": "Was unterscheidet Stagify von anderen Tools für virtuelles Staging?",
+        "answer": "Einige Dinge. Erstens der Preis: Du kannst kostenlos mit dem Einrichten beginnen, und Stagify+ kostet nur $11.99 pro Monat für unbegrenztes Staging — während traditionelles Staging pro Raum Hunderte bis Tausende Dollar kosten kann. Zweitens kannst du mit dem KI-Designer im Chat mit unserer KI einen ganzen Raum neu gestalten und das Ergebnis im Gespräch verfeinern, statt nur Voreinstellungen anzuwenden. Drittens bietet das Masken-Studio pixelgenaue Präzision — markiere exakt, welche Bereiche eines Fotos verändert werden dürfen, und weise jedem ein bestimmtes Möbelstück zu, sodass alles, was du nicht auswählst, unberührt bleibt. Die meisten Tools beherrschen nur eines davon gut; Stagify vereint Erschwinglichkeit, kreative Kontrolle und Präzision."
+      },
+      "mlsAllowed": {
+        "question": "Darf ich virtuell eingerichtete Fotos in meinen Immobilienanzeigen verwenden?",
+        "answer": "Ja. Virtuelles Staging wird in Immobilienanzeigen und MLS weit verbreitet genutzt und akzeptiert. Die wichtigste Regel ist Transparenz: Die meisten MLS und lokalen Vorschriften verlangen, dass du deutlich kennzeichnest, wenn ein Foto virtuell eingerichtet wurde, zum Beispiel indem du es in der Bildunterschrift als „virtuell eingerichtet“ markierst. Da Stagify nur Möbel und Dekoration verändert und niemals die tatsächliche Struktur des Raums, bleiben deine Fotos eine ehrliche Darstellung des Raums. Wir empfehlen immer, einen Hinweis auf virtuelles Staging hinzuzufügen, um die Vorgaben deines lokalen MLS und deiner Immobilienbehörde einzuhalten."
       }
     }
   },
@@ -952,5 +965,186 @@
       "Der Rest des Fotos bleibt unberührt…",
       "Letzter Feinschliff…"
     ]
+  },
+  "status": {
+    "pageTitle": "Status & Verfügbarkeit | Stagify.ai",
+    "pageDescription": "Live-Status und Verfügbarkeit von Stagify.ai — Verfügbarkeit der letzten 24 Stunden und 7 Tage mit historischen Prozentwerten.",
+    "heading": "Serverstatus",
+    "subheading": "Live-Verfügbarkeit und Verlaufsdaten für Stagify.ai.",
+    "checking": "Status wird geprüft…",
+    "operational": "Alle Systeme betriebsbereit",
+    "disruption": "Störung erkannt",
+    "unableToLoad": "Status kann nicht geladen werden",
+    "uptime": "Verfügbarkeit",
+    "now": "jetzt",
+    "cards": {
+      "24h": "24 Stunden",
+      "7d": "7 Tage",
+      "30d": "30 Tage"
+    },
+    "graph24h": {
+      "title": "Letzte 24 Stunden",
+      "meta": "48 Balken · je 30 Min.",
+      "aria": "Verfügbarkeitsbalken der letzten 24 Stunden",
+      "axisStart": "vor 24 Stunden"
+    },
+    "graph7d": {
+      "title": "Letzte 7 Tage",
+      "meta": "56 Balken · je 3 Std.",
+      "aria": "Verfügbarkeitsbalken der letzten 7 Tage",
+      "axisStart": "vor 7 Tagen"
+    },
+    "legend": {
+      "operational": "Betriebsbereit",
+      "partial": "Teilausfall",
+      "downtime": "Ausfall",
+      "nodata": "Keine Daten"
+    },
+    "incidents": {
+      "heading": "Aktuelle Vorfälle",
+      "loading": "Wird geladen…",
+      "noneTitle": "Keine Vorfälle erfasst",
+      "noneText": "Im überwachten Zeitraum wurde keine Ausfallzeit festgestellt.",
+      "defaultCause": "Ausfall",
+      "causeMissedHeartbeats": "Ausfall beim Neustart erkannt (fehlende Heartbeats)",
+      "loadError": "Status-API nicht erreichbar. Erneuter Versuch…"
+    },
+    "monitoring": {
+      "since": "Überwacht seit {date} · letzte Prüfung {ago}",
+      "collecting": "Daten werden erfasst…",
+      "error": "Status-API nicht erreichbar — erneuter Versuch…"
+    },
+    "tooltip": {
+      "nodata": "Keine Daten",
+      "uptime": "{pct} Verfügbarkeit"
+    },
+    "ago": {
+      "never": "nie",
+      "template": "vor {v}"
+    },
+    "foot": "Aktualisiert alle 60 Sekunden · Erfasste Neustarts: {count} · Die Verfügbarkeit wird anhand des Heartbeats des Servers gemessen. Für eine unabhängige Prüfung liefert <a href=\"/health\">/health</a> Live-Status-JSON."
+  },
+  "enterprise": {
+    "hero": {
+      "title": "Stagify Enterprise",
+      "subtitle": "Geben Sie Ihrem gesamten Team unbegrenztes KI-Staging. Jeder Mitarbeiter mit Ihrer Firmen-E-Mail erhält automatisch Stagify+ — Sie zahlen nur für die tatsächliche Nutzung."
+    },
+    "highlights": {
+      "perGenerationLabel": "pro Generierung",
+      "unlimitedValue": "Unbegrenzt",
+      "unlimitedLabel": "Teammitglieder",
+      "monthlyValue": "Monatlich",
+      "monthlyLabel": "nutzungsbasierte Abrechnung"
+    },
+    "features": {
+      "ariaLabel": "Enthaltene Stagify+-Funktionen",
+      "fullAccess": "Volles Stagify+ für jeden @domain-Nutzer",
+      "aiDesigner": "AI Designer & Maskenbearbeitung",
+      "models": "Hochwertige Bildmodelle",
+      "variations": "Mehrere Variationen pro Generierung",
+      "furniture": "Upload von Möbelreferenzen",
+      "noSeatFees": "Keine Gebühren pro Platz"
+    },
+    "success": {
+      "title": "Enterprise-Plan aktiviert",
+      "line": "Alle Konten mit E-Mail-Adressen, die auf {domain} enden, verfügen jetzt über Stagify+-Funktionen.",
+      "yourDomain": "Ihre Domain",
+      "billing": "Die Abrechnung erfolgt am Ende jedes Monats auf Basis der gesamten Teamnutzung zu 0,15 $ pro Generierung."
+    },
+    "form": {
+      "title": "Loslegen",
+      "intro": "Füllen Sie unten Ihre Firmendaten aus. Nach dem Checkout erhält jedes Konto mit einer E-Mail-Adresse Ihrer Domain automatisch Stagify+-Funktionen.",
+      "domainLabel": "Firmen-Domain",
+      "domainHint": "Alle E-Mails, die auf @{domain} enden, erhalten Stagify+",
+      "companyLabel": "Firmenname",
+      "emailLabel": "Kontakt-E-Mail",
+      "phoneLabel": "Telefonnummer",
+      "phoneOptional": "(optional)",
+      "submit": "Weiter zur Zahlung",
+      "redirecting": "Weiterleitung zu Stripe…"
+    },
+    "errors": {
+      "domain": "Bitte geben Sie eine gültige Domain ein (z. B. company.com).",
+      "company": "Bitte geben Sie Ihren Firmennamen ein.",
+      "email": "Bitte geben Sie eine gültige Kontakt-E-Mail ein.",
+      "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+      "unexpected": "Unerwartete Antwort. Bitte versuchen Sie es erneut.",
+      "network": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+    },
+    "footnote": "Sicherer Checkout über Stripe · Monatliche Abrechnung nach Nutzung · Jederzeit kündbar<br>Fragen? <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> · <a href=\"stagify-plus.html\">Einzelpläne</a>",
+    "legal": "Indem Sie fortfahren, stimmen Sie unserer <a href=\"legal/enterprise-msa.html\">Master-Services-Vereinbarung</a>, den <a href=\"terms.html\">Nutzungsbedingungen</a> und der <a href=\"privacy.html\">Datenschutzrichtlinie</a> zu."
+  },
+  "stagifyPlus": {
+    "hero": {
+      "title": "Alles in Stagify, <span class=\"sp-grad\">freigeschaltet</span>.",
+      "subtitle": "Unbegrenztes hochwertiges Staging, der AI Designer, das Entfernen von Möbeln und alle professionellen Werkzeuge. Und das für weniger als die Kosten eines einzigen klassischen Stagings."
+    },
+    "plan": {
+      "hintSignIn": "Melden Sie sich zuerst über das Profilmenü an, damit die Zahlung mit Ihrem Stagify-Konto verknüpft werden kann.",
+      "hintTip": "Tipp: Melden Sie sich zuerst über das Profilmenü an, damit die Zahlung mit Ihrem Stagify-Konto verknüpft werden kann.",
+      "hintStagingDisabled": "Abonnements sind auf der Staging-Website deaktiviert.",
+      "billedMonthly": "Monatliche Abrechnung · Jederzeit kündbar",
+      "perMonth": "/ Monat",
+      "trialPill": "Mit 7 Tagen kostenlos starten",
+      "startTrial": "Kostenlose Testphase starten",
+      "subscribed": "Abonniert ✓",
+      "unavailableStaging": "Auf Staging nicht verfügbar",
+      "payNote": "Ihnen wird erst nach Ablauf der Testphase etwas berechnet. Jederzeit kündbar.",
+      "securedByStripe": "Abgesichert durch Stripe",
+      "noCommitment": "Keine Verpflichtung",
+      "manage": "Abonnement verwalten oder kündigen"
+    },
+    "features": {
+      "heading": "Alles, was Sie brauchen, um wie ein Profi zu stagen",
+      "model": {
+        "title": "Hochwertiges Modell",
+        "desc": "Unser fortschrittlichstes Modell erzeugt schärfere, realistischere Möbel, Materialien und Beleuchtung."
+      },
+      "remove": {
+        "title": "Vorhandene Möbel entfernen",
+        "desc": "Entfernen Sie Möbel, Unordnung und Deko und stagen Sie den geleerten Raum von Grund auf neu."
+      },
+      "designer": {
+        "title": "AI Designer",
+        "desc": "Beschreiben Sie in einfachen Worten, was Sie möchten, und verfeinern Sie jedes Ergebnis im Dialog."
+      },
+      "masking": {
+        "title": "Masken-Werkzeug",
+        "desc": "Übermalen Sie einen beliebigen Bereich, um genau diesen Teil des Fotos zu ändern oder umzugestalten."
+      },
+      "studio": {
+        "title": "Masking Studio",
+        "desc": "Markieren Sie mehrere Bereiche in verschiedenen Farben, geben Sie jedem sein eigenes Möbelfoto und stagen Sie alle auf einmal. Erzeugen Sie mehrere Versionen pro Bereich und behalten Sie die beste."
+      },
+      "references": {
+        "title": "Möbelreferenzen",
+        "desc": "Laden Sie Produktfotos hoch, um Räume mit bestimmten, von Ihnen gewählten Möbelstücken zu stagen."
+      }
+    },
+    "compare": {
+      "heading": "Pläne vergleichen",
+      "feature": "Funktion",
+      "free": "Kostenlos",
+      "included": "Enthalten",
+      "notIncluded": "Nicht enthalten",
+      "rows": {
+        "customizable": "Anpassbares Staging",
+        "fastModel": "Schnelles Bildmodell",
+        "unlimited": "Unbegrenzte Staging-Generierungen",
+        "hqModel": "Hochwertiges Bildmodell",
+        "remove": "Vorhandene Möbel entfernen",
+        "designer": "AI Designer",
+        "masking": "Masken-Werkzeug",
+        "studio": "Masking Studio (mehrere Bereiche)",
+        "variations": "Mehrere Variationen pro Generierung",
+        "references": "Möbelreferenzen"
+      }
+    },
+    "enterpriseRow": "Für Teams oder Unternehmen <a href=\"enterprise.html\">entdecken Sie unseren Enterprise-Plan</a> oder kontaktieren Sie <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> für individuelle Abo-Optionen.",
+    "footLinks": {
+      "backToFree": "Zurück zum kostenlosen Staging",
+      "questions": "Noch Fragen vor dem Kauf?",
+      "footnote": "Teams, Rechnungsstellung oder individuelle Konditionen: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+    }
   }
 }

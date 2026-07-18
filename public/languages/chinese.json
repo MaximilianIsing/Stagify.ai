@@ -241,6 +241,11 @@
     "faq": {
       "subtitle": "最常见问题的快速解答。仍有疑问？请查看<a href=\"guides.html\">指南</a>或与我们联系。"
     },
+    "blog": {
+      "title": "来自 Stagify 博客",
+      "subtitle": "关于虚拟装修、MLS 信息披露以及更快推广房源的指南与技巧。",
+      "viewAll": "访问 Stagify 博客 →"
+    },
     "contactCta": {
       "title": "我们随时查收邮件",
       "subtitle": "有问题、反馈或合作想法 — 我们会阅读每一封邮件并尽快回复。",
@@ -452,6 +457,14 @@
       "privacy": {
         "question": "我的数据是私密和安全的吗？",
         "answer": "是的，我们认真对待您的隐私。您上传的图片会安全处理，不会永久存储在我们的服务器上。我们使用行业标准加密，不会与第三方共享您的数据。"
+      },
+      "whatMakesDifferent": {
+        "question": "Stagify 与其他虚拟装修工具有何不同？",
+        "answer": "有几点。第一，价格：你可以免费开始装修，Stagify+ 每月仅需 $11.99 即可无限次装修——而传统装修每个房间可能要花费数百甚至数千美元。第二，AI设计师 让你通过与 AI 对话来重新设计整个房间，并以对话方式不断优化效果，而不只是套用预设。第三，遮罩工作室 提供像素级的精准控制——精确标出照片中允许改变的区域，并为每个区域附上指定的家具，未选中的部分则保持不变。大多数工具只能做好其中一项；而 Stagify 将实惠、创意掌控与精准度融为一体。"
+      },
+      "mlsAllowed": {
+        "question": "我可以在房地产房源中使用虚拟装修的照片吗？",
+        "answer": "可以。虚拟装修在房地产房源和 MLS 中被广泛使用并获得认可。最重要的原则是透明：大多数 MLS 和当地法规要求你明确说明照片经过虚拟装修，例如在图片说明中标注“虚拟装修”。由于 Stagify 只改变家具和装饰，绝不改变房间的实际结构，你的照片仍然是空间的真实呈现。我们始终建议附上虚拟装修的说明，以符合你当地 MLS 和房地产委员会的规定。"
       }
     }
   },
@@ -952,5 +965,186 @@
       "正在保持照片其余部分不变…",
       "正在添加最后的润色…"
     ]
+  },
+  "status": {
+    "pageTitle": "状态和可用性 | Stagify.ai",
+    "pageDescription": "Stagify.ai 的实时状态和可用性 — 提供 24 小时和 7 天可用性及历史百分比。",
+    "heading": "服务器状态",
+    "subheading": "Stagify.ai 的实时可用性和运行时间历史记录。",
+    "checking": "正在检查状态…",
+    "operational": "所有系统运行正常",
+    "disruption": "检测到服务中断",
+    "unableToLoad": "无法加载状态",
+    "uptime": "运行时间",
+    "now": "现在",
+    "cards": {
+      "24h": "24 小时",
+      "7d": "7 天",
+      "30d": "30 天"
+    },
+    "graph24h": {
+      "title": "过去 24 小时",
+      "meta": "48 个条形 · 每个 30 分钟",
+      "aria": "过去 24 小时的可用性条形图",
+      "axisStart": "24 小时前"
+    },
+    "graph7d": {
+      "title": "过去 7 天",
+      "meta": "56 个条形 · 每个 3 小时",
+      "aria": "过去 7 天的可用性条形图",
+      "axisStart": "7 天前"
+    },
+    "legend": {
+      "operational": "正常运行",
+      "partial": "部分中断",
+      "downtime": "停机",
+      "nodata": "无数据"
+    },
+    "incidents": {
+      "heading": "近期事件",
+      "loading": "加载中…",
+      "noneTitle": "未记录任何事件",
+      "noneText": "在监控期间未检测到服务停机。",
+      "defaultCause": "停机",
+      "causeMissedHeartbeats": "重启时检测到停机（心跳信号丢失）",
+      "loadError": "无法连接状态 API。正在重试…"
+    },
+    "monitoring": {
+      "since": "自 {date} 起监控 · 上次检查 {ago}",
+      "collecting": "正在收集数据…",
+      "error": "无法连接状态 API — 正在重试…"
+    },
+    "tooltip": {
+      "nodata": "无数据",
+      "uptime": "{pct} 运行时间"
+    },
+    "ago": {
+      "never": "从不",
+      "template": "{v}前"
+    },
+    "foot": "每 60 秒自动刷新 · 已记录重启次数：{count} · 可用性根据服务器自身的心跳信号测量。如需独立检查，<a href=\"/health\">/health</a> 会返回实时状态 JSON。"
+  },
+  "enterprise": {
+    "hero": {
+      "title": "Stagify Enterprise",
+      "subtitle": "为您的整个团队提供无限量 AI 虚拟布置。每位使用公司邮箱的员工都会自动获得 Stagify+ — 您只需为实际用量付费。"
+    },
+    "highlights": {
+      "perGenerationLabel": "每次生成",
+      "unlimitedValue": "无限",
+      "unlimitedLabel": "团队成员",
+      "monthlyValue": "按月",
+      "monthlyLabel": "按用量计费"
+    },
+    "features": {
+      "ariaLabel": "包含的 Stagify+ 功能",
+      "fullAccess": "为每位 @域名 用户提供完整 Stagify+",
+      "aiDesigner": "AI Designer 和蒙版编辑",
+      "models": "高质量图像模型",
+      "variations": "每次生成多个变体",
+      "furniture": "家具参考图上传",
+      "noSeatFees": "无按席位收费"
+    },
+    "success": {
+      "title": "Enterprise 方案已激活",
+      "line": "所有以 {domain} 结尾的邮箱账户现已拥有 Stagify+ 功能。",
+      "yourDomain": "您的域名",
+      "billing": "将在每月底根据团队的总用量按每次生成 $0.15 计费。"
+    },
+    "form": {
+      "title": "开始使用",
+      "intro": "在下方填写您的公司信息。付款后，每个使用您域名邮箱的账户都将自动获得 Stagify+ 功能。",
+      "domainLabel": "公司域名",
+      "domainHint": "所有以 @{domain} 结尾的邮箱都将获得 Stagify+",
+      "companyLabel": "公司名称",
+      "emailLabel": "联系邮箱",
+      "phoneLabel": "电话号码",
+      "phoneOptional": "（可选）",
+      "submit": "继续付款",
+      "redirecting": "正在跳转到 Stripe…"
+    },
+    "errors": {
+      "domain": "请输入有效的域名（例如 company.com）。",
+      "company": "请输入您的公司名称。",
+      "email": "请输入有效的联系邮箱。",
+      "generic": "出了点问题。请重试。",
+      "unexpected": "意外的响应。请重试。",
+      "network": "网络错误。请检查您的连接后重试。"
+    },
+    "footnote": "由 Stripe 提供安全结账 · 按用量每月计费 · 随时取消<br>有疑问？ <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> · <a href=\"stagify-plus.html\">个人方案</a>",
+    "legal": "继续即表示您同意我们的<a href=\"legal/enterprise-msa.html\">主服务协议</a>、<a href=\"terms.html\">服务条款</a>和<a href=\"privacy.html\">隐私政策</a>。"
+  },
+  "stagifyPlus": {
+    "hero": {
+      "title": "Stagify 的一切，<span class=\"sp-grad\">全部解锁</span>。",
+      "subtitle": "无限量的高质量虚拟布置、AI Designer、家具移除以及所有专业工具。所有这些的花费还不到一次传统布置的成本。"
+    },
+    "plan": {
+      "hintSignIn": "请先从个人资料菜单登录，以便结账时将付款与您的 Stagify 账户关联。",
+      "hintTip": "提示：请先从个人资料菜单登录，以便结账时将付款与您的 Stagify 账户关联。",
+      "hintStagingDisabled": "预发布站点已停用订阅功能。",
+      "billedMonthly": "按月计费 · 随时取消",
+      "perMonth": "/ 月",
+      "trialPill": "先免费试用 7 天",
+      "startTrial": "开始免费试用",
+      "subscribed": "已订阅 ✓",
+      "unavailableStaging": "预发布环境不可用",
+      "payNote": "试用期结束前不会向您收费。可随时取消。",
+      "securedByStripe": "由 Stripe 保护",
+      "noCommitment": "无需承诺",
+      "manage": "管理或取消订阅"
+    },
+    "features": {
+      "heading": "像专业人士一样布置所需的一切",
+      "model": {
+        "title": "高质量模型",
+        "desc": "我们最先进的模型可呈现更清晰、更逼真的家具、材质和光照。"
+      },
+      "remove": {
+        "title": "移除现有家具",
+        "desc": "擦除家具、杂物和装饰，然后从空房间重新开始布置。"
+      },
+      "designer": {
+        "title": "AI Designer",
+        "desc": "用简单的语言描述您想要的效果，并通过对话逐步优化每个结果。"
+      },
+      "masking": {
+        "title": "蒙版工具",
+        "desc": "涂抹任意区域，只更改或重新设计照片的那一部分。"
+      },
+      "studio": {
+        "title": "Masking Studio",
+        "desc": "用不同颜色标注多个区域，为每个区域指定各自的家具照片，并一次性完成全部布置。可为每个区域生成多个版本并保留最佳的一个。"
+      },
+      "references": {
+        "title": "家具参考",
+        "desc": "上传产品照片，用您选择的特定家具来布置房间。"
+      }
+    },
+    "compare": {
+      "heading": "方案对比",
+      "feature": "功能",
+      "free": "免费",
+      "included": "包含",
+      "notIncluded": "不包含",
+      "rows": {
+        "customizable": "可自定义布置",
+        "fastModel": "快速图像模型",
+        "unlimited": "无限量布置生成",
+        "hqModel": "高质量图像模型",
+        "remove": "移除现有家具",
+        "designer": "AI Designer",
+        "masking": "蒙版工具",
+        "studio": "Masking Studio（多区域）",
+        "variations": "每次生成多个变体",
+        "references": "家具参考"
+      }
+    },
+    "enterpriseRow": "如果是团队或企业，<a href=\"enterprise.html\">了解我们的企业方案</a>，或联系 <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> 获取个性化的订阅方案。",
+    "footLinks": {
+      "backToFree": "返回免费布置",
+      "questions": "购买前还有疑问？",
+      "footnote": "团队、开票或定制条款：<a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+    }
   }
 }

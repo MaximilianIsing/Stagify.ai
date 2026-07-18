@@ -1032,12 +1032,16 @@
   width: 19px;
   height: 19px;
 }
-/* Framed card that crops the Instagram embed to a tidier height */
+/* Framed card that crops the Instagram embed to a tidier height.
+   The iframe is pulled up by --ig-header so Instagram's own header bar
+   (avatar / follower count / "View profile") is clipped off the top, and the
+   wrapper height is reduced to match so the bottom footer stays clipped too. */
 .ig-embed {
+  --ig-header: 54px;
   justify-self: center;
   width: 100%;
   max-width: 330px;
-  height: 460px;
+  height: calc(460px - var(--ig-header));
   overflow: hidden;
   border-radius: 18px;
   background: #fff;
@@ -1047,6 +1051,7 @@
 .ig-embed__frame {
   width: 100%;
   height: 620px;
+  margin-top: calc(-1 * var(--ig-header));
   border: none;
   display: block;
 }
@@ -2211,4 +2216,84 @@
   .tw-card:hover {
     transform: none;
   }
+}
+
+/* --- From-the-blog teaser (homepage) ------------------------------------- */
+.home-blog__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.home-blog__card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid rgba(30, 58, 138, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 12px 34px rgba(30, 58, 138, 0.1);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.home-blog__card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 48px rgba(30, 58, 138, 0.18);
+}
+.home-blog__thumb {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+.home-blog__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px 20px;
+  flex: 1;
+}
+.home-blog__tag {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.home-blog__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.32;
+  color: #1e3a8a;
+  margin: 0;
+}
+.home-blog__meta {
+  font-size: 12.5px;
+  color: #8a93ab;
+  margin-top: auto;
+}
+.home-blog__all {
+  text-align: center;
+  margin-top: 26px;
+}
+.home-blog__all a {
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 14.5px;
+  text-decoration: none;
+}
+.home-blog__all a:hover { text-decoration: underline; }
+/* Showcase count: the 3 most-recent posts on desktop, only the most-recent 1 on mobile.
+   Cards are ordered newest-first in the HTML, so nth-child maps to recency. */
+.home-blog__card:nth-child(n + 4) { display: none; }
+@media (max-width: 768px) {
+  .home-blog__grid { grid-template-columns: 1fr; max-width: 440px; }
+  .home-blog__card:nth-child(n + 2) { display: none; }
 }

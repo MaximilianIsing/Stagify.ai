@@ -63,6 +63,21 @@ router.get('/status', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'status.html'));
 });
 
+// The blog hub is served as a static directory index at /blog/ (public/blog/index.html);
+// express.static (mounted ahead of this router) 301-redirects /blog → /blog/. Individual
+// articles have no matching file/dir, so they fall through to these clean, extensionless routes.
+router.get('/blog/is-virtual-staging-allowed-on-the-mls', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'is-virtual-staging-allowed-on-the-mls.html'));
+});
+
+router.get('/blog/masking-studio-and-ai-designer', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'masking-studio-and-ai-designer.html'));
+});
+
+router.get('/blog/does-virtual-staging-help-sell-homes', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'does-virtual-staging-help-sell-homes.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));

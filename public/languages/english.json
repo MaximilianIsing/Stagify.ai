@@ -241,6 +241,11 @@
     "faq": {
       "subtitle": "Quick answers to the questions we hear most. Still stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch."
     },
+    "blog": {
+      "title": "From the Stagify blog",
+      "subtitle": "Guides and tips on virtual staging, MLS disclosure, and marketing your listings faster.",
+      "viewAll": "Visit the Stagify blog →"
+    },
     "contactCta": {
       "title": "Our inbox is always open",
       "subtitle": "Questions, feedback, or partnership ideas? We read every message and reply as soon as we can.",
@@ -452,6 +457,14 @@
       "privacy": {
         "question": "Is my data private and secure?",
         "answer": "Yes. We use HTTPS encryption, do not permanently store uploaded images after processing, and do not sell your personal information. You retain ownership of your uploads and generated results. We share data only with service providers needed to run Stagify (such as AI and payment processors) as described in our Privacy Policy."
+      },
+      "whatMakesDifferent": {
+        "question": "What makes Stagify different from other virtual staging tools?",
+        "answer": "A few things. First, price: you can start staging for free, and Stagify+ is just $11.99/month for unlimited staging — while traditional staging can cost hundreds or thousands of dollars per room. Second, AI Designer lets you chat with our AI to redesign a whole room and refine the result conversationally, instead of only applying presets. Third, the Masking Studio gives you pixel-level precision — highlight exactly which areas of a photo can change and attach specific furniture to each one, so everything you don't select stays untouched. Most tools do just one of these well; Stagify brings affordability, creative control, and precision together."
+      },
+      "mlsAllowed": {
+        "question": "Can I use virtually staged photos in my real estate listings?",
+        "answer": "Yes. Virtual staging is widely used and accepted across real estate listings and MLSs. The main rule is transparency: most MLSs and local regulations ask that you clearly disclose when a photo has been virtually staged, for example by labeling it \"virtually staged\" in the caption. Because Stagify only changes furniture and decor and never alters the actual structure of the room, your photos remain honest representations of the space. We always recommend adding a virtual-staging disclosure to stay compliant with your local MLS and real estate board."
       }
     }
   },
@@ -579,8 +592,8 @@
   },
   "pdf": {
     "meta": {
-      "title": "AI Designer | Stagify.ai - AI-Powered Design Assistant",
-      "description": "Chat with AI Designer to get help with design questions, upload files for analysis, and get professional design advice instantly.",
+      "title": "AI Interior Design Assistant — Redesign Any Room | Stagify.ai",
+      "description": "Chat with an AI interior design assistant to redesign any room. Upload a photo, describe your style, and get instant, photorealistic interior design ideas.",
       "keywords": "AI Designer, AI design assistant, design consultation, AI chat, design help, interior design AI"
     },
     "title": "AI Designer",
@@ -952,5 +965,186 @@
       "Keeping the rest of the photo untouched…",
       "Adding finishing touches…"
     ]
+  },
+  "status": {
+    "pageTitle": "Status & Uptime | Stagify.ai",
+    "pageDescription": "Live status and uptime for Stagify.ai — 24-hour and 7-day availability with historical percentages.",
+    "heading": "Server Status",
+    "subheading": "Live availability and uptime history for Stagify.ai.",
+    "checking": "Checking status…",
+    "operational": "All systems operational",
+    "disruption": "Service disruption detected",
+    "unableToLoad": "Unable to load status",
+    "uptime": "uptime",
+    "now": "now",
+    "cards": {
+      "24h": "24 hours",
+      "7d": "7 days",
+      "30d": "30 days"
+    },
+    "graph24h": {
+      "title": "Last 24 hours",
+      "meta": "48 bars · 30 min each",
+      "aria": "Uptime bars for the last 24 hours",
+      "axisStart": "24 hours ago"
+    },
+    "graph7d": {
+      "title": "Last 7 days",
+      "meta": "56 bars · 3 h each",
+      "aria": "Uptime bars for the last 7 days",
+      "axisStart": "7 days ago"
+    },
+    "legend": {
+      "operational": "Operational",
+      "partial": "Partial outage",
+      "downtime": "Downtime",
+      "nodata": "No data"
+    },
+    "incidents": {
+      "heading": "Recent incidents",
+      "loading": "Loading…",
+      "noneTitle": "No incidents recorded",
+      "noneText": "The service has had no detected downtime in the monitored period.",
+      "defaultCause": "Downtime",
+      "causeMissedHeartbeats": "Downtime detected on restart (missed heartbeats)",
+      "loadError": "Could not reach the status API. Retrying…"
+    },
+    "monitoring": {
+      "since": "Monitoring since {date} · last check {ago}",
+      "collecting": "Collecting data…",
+      "error": "Could not reach the status API — retrying…"
+    },
+    "tooltip": {
+      "nodata": "No data",
+      "uptime": "{pct} uptime"
+    },
+    "ago": {
+      "never": "never",
+      "template": "{v} ago"
+    },
+    "foot": "Auto-refreshes every 60 seconds · Restarts logged: {count} · Availability is measured from the server’s own heartbeat. For an independent check, <a href=\"/health\">/health</a> returns live status JSON."
+  },
+  "enterprise": {
+    "hero": {
+      "title": "Stagify Enterprise",
+      "subtitle": "Give your entire team unlimited AI staging. Every employee with your company email gets Stagify+ automatically — you only pay for what they use."
+    },
+    "highlights": {
+      "perGenerationLabel": "per generation",
+      "unlimitedValue": "Unlimited",
+      "unlimitedLabel": "team members",
+      "monthlyValue": "Monthly",
+      "monthlyLabel": "usage-based billing"
+    },
+    "features": {
+      "ariaLabel": "Included Stagify+ features",
+      "fullAccess": "Full Stagify+ for every @domain user",
+      "aiDesigner": "AI Designer & mask editing",
+      "models": "High-quality image models",
+      "variations": "Multiple variations per generation",
+      "furniture": "Furniture reference uploads",
+      "noSeatFees": "No per-seat fees"
+    },
+    "success": {
+      "title": "Enterprise plan activated",
+      "line": "All accounts with emails ending in {domain} now have Stagify+ features.",
+      "yourDomain": "your domain",
+      "billing": "You’ll be billed at the end of each month based on total team usage at $0.15 per generation."
+    },
+    "form": {
+      "title": "Get started",
+      "intro": "Fill out your company details below. After checkout, every account with an email ending in your domain will automatically receive Stagify+ features.",
+      "domainLabel": "Company domain",
+      "domainHint": "All emails ending in @{domain} will get Stagify+",
+      "companyLabel": "Company name",
+      "emailLabel": "Contact email",
+      "phoneLabel": "Phone number",
+      "phoneOptional": "(optional)",
+      "submit": "Continue to payment",
+      "redirecting": "Redirecting to Stripe…"
+    },
+    "errors": {
+      "domain": "Please enter a valid domain (e.g. company.com).",
+      "company": "Please enter your company name.",
+      "email": "Please enter a valid contact email.",
+      "generic": "Something went wrong. Please try again.",
+      "unexpected": "Unexpected response. Please try again.",
+      "network": "Network error. Please check your connection and try again."
+    },
+    "footnote": "Secure checkout powered by Stripe · Billed monthly based on usage · Cancel anytime<br>Questions? <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> · <a href=\"stagify-plus.html\">Individual plans</a>",
+    "legal": "By continuing, you agree to our <a href=\"legal/enterprise-msa.html\">Master Services Agreement</a>, <a href=\"terms.html\">Terms of Service</a>, and <a href=\"privacy.html\">Privacy Policy</a>."
+  },
+  "stagifyPlus": {
+    "hero": {
+      "title": "Everything in Stagify, <span class=\"sp-grad\">unlocked</span>.",
+      "subtitle": "Unlimited high-quality staging, the AI Designer, furniture removal, and every professional tool. All for less than the cost of one traditional staging."
+    },
+    "plan": {
+      "hintSignIn": "Sign in from the profile menu first so checkout can link your payment to your Stagify account.",
+      "hintTip": "Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.",
+      "hintStagingDisabled": "Subscriptions are disabled on the staging site.",
+      "billedMonthly": "Billed monthly · Cancel anytime",
+      "perMonth": "/ month",
+      "trialPill": "Start with 7 days free",
+      "startTrial": "Start free trial",
+      "subscribed": "Subscribed ✓",
+      "unavailableStaging": "Unavailable on staging",
+      "payNote": "You won’t be charged until your trial ends. Cancel anytime.",
+      "securedByStripe": "Secured by Stripe",
+      "noCommitment": "No commitment",
+      "manage": "Manage or cancel subscription"
+    },
+    "features": {
+      "heading": "Everything you need to stage like a pro",
+      "model": {
+        "title": "High-quality model",
+        "desc": "Our most advanced model renders sharper, more realistic furniture, materials, and lighting."
+      },
+      "remove": {
+        "title": "Remove existing furniture",
+        "desc": "Erase furniture, clutter, and decor, then restage the emptied room from a clean slate."
+      },
+      "designer": {
+        "title": "AI Designer",
+        "desc": "Describe what you want in plain language and refine each result conversationally."
+      },
+      "masking": {
+        "title": "Masking tool",
+        "desc": "Paint over any area to change or restyle just that part of the photo."
+      },
+      "studio": {
+        "title": "Masking Studio",
+        "desc": "Highlight several areas in different colors, give each its own furniture photo, and stage them all at once. Generate multiple versions per area and keep the best one."
+      },
+      "references": {
+        "title": "Furniture references",
+        "desc": "Upload product photos to stage rooms with specific furniture pieces you choose."
+      }
+    },
+    "compare": {
+      "heading": "Compare plans",
+      "feature": "Feature",
+      "free": "Free",
+      "included": "Included",
+      "notIncluded": "Not included",
+      "rows": {
+        "customizable": "Customizable staging",
+        "fastModel": "Fast image model",
+        "unlimited": "Unlimited staging generations",
+        "hqModel": "High quality image model",
+        "remove": "Remove existing furniture",
+        "designer": "AI Designer",
+        "masking": "Masking tool",
+        "studio": "Masking Studio (multi-area)",
+        "variations": "Multiple variations per generation",
+        "references": "Furniture references"
+      }
+    },
+    "enterpriseRow": "For teams or enterprises, <a href=\"enterprise.html\">explore our enterprise plan</a> or contact <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> for personalized subscription options.",
+    "footLinks": {
+      "backToFree": "Back to free staging",
+      "questions": "Questions before you buy?",
+      "footnote": "Teams, invoicing, or custom terms: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+    }
   }
 }

@@ -241,6 +241,11 @@
     "faq": {
       "subtitle": "よく寄せられる質問への手早い回答です。まだ解決しませんか？<a href=\"guides.html\">ガイド</a>をご覧いただくか、お問い合わせください。"
     },
+    "blog": {
+      "title": "Stagify ブログ",
+      "subtitle": "バーチャルステージング、MLS の開示、物件をより早く売り出すためのガイドとヒント。",
+      "viewAll": "Stagify ブログを見る →"
+    },
     "contactCta": {
       "title": "私たちの受信箱はいつでも開いています",
       "subtitle": "ご質問、ご感想、提携のアイデアはありますか？すべてのメッセージに目を通し、できるだけ早くお返事します。",
@@ -452,6 +457,14 @@
       "privacy": {
         "question": "私のデータはプライベートかつ安全ですか？",
         "answer": "はい。HTTPS暗号化を使用し、処理後にアップロードされた画像を恒久的に保存することはなく、お客様の個人情報を販売することもありません。アップロードと生成結果の所有権はお客様が保持します。データは、Stagifyの運営に必要なサービスプロバイダー（AIや決済処理など）とのみ、プライバシーポリシーに記載のとおり共有します。"
+      },
+      "whatMakesDifferent": {
+        "question": "Stagify は他のバーチャルステージングツールと何が違いますか？",
+        "answer": "いくつかあります。まず価格です。無料でステージングを始められ、Stagify+ なら月額 $11.99 でステージングし放題です——一方、従来のステージングは1部屋あたり数百から数千ドルかかることもあります。次に、AIデザイナー では、プリセットを適用するだけでなく、AIとチャットしながら部屋全体をデザインし直し、対話しながら仕上がりを調整できます。さらに、マスクスタジオ ではピクセル単位の精度が得られます——写真のどの部分を変更してよいかを正確に指定し、それぞれに特定の家具を割り当てられるので、選択していない部分はそのまま保たれます。多くのツールはこのうち1つしかうまくこなせませんが、Stagify は手頃さ、クリエイティブな制御、そして精度をひとつにまとめています。"
+      },
+      "mlsAllowed": {
+        "question": "バーチャルステージングした写真を不動産の物件情報に使用できますか？",
+        "answer": "はい。バーチャルステージングは不動産の物件情報や MLS で広く使われ、受け入れられています。最も重要な原則は透明性です。多くの MLS や地域の規則では、写真がバーチャルステージングされたものであることを、たとえばキャプションに「バーチャルステージング」と明記するなど、はっきりと開示するよう求めています。Stagify は家具と装飾のみを変更し、部屋の実際の構造は決して変えないため、写真は空間の正直な表現のままです。お住まいの地域の MLS や不動産団体の規定に従うため、バーチャルステージングである旨の注記を常に加えることをおすすめします。"
       }
     }
   },
@@ -952,5 +965,186 @@
       "写真の他の部分はそのまま保護中…",
       "最後の仕上げ中…"
     ]
+  },
+  "status": {
+    "pageTitle": "ステータスと稼働状況 | Stagify.ai",
+    "pageDescription": "Stagify.ai のリアルタイムのステータスと稼働状況 — 過去24時間と7日間の稼働率、および履歴の割合を表示します。",
+    "heading": "サーバーステータス",
+    "subheading": "Stagify.ai のリアルタイムの稼働状況と稼働履歴。",
+    "checking": "ステータスを確認中…",
+    "operational": "すべてのシステムが正常に稼働しています",
+    "disruption": "障害を検出しました",
+    "unableToLoad": "ステータスを読み込めません",
+    "uptime": "稼働率",
+    "now": "現在",
+    "cards": {
+      "24h": "24時間",
+      "7d": "7日間",
+      "30d": "30日間"
+    },
+    "graph24h": {
+      "title": "過去24時間",
+      "meta": "48本のバー · 各30分",
+      "aria": "過去24時間の稼働状況バー",
+      "axisStart": "24時間前"
+    },
+    "graph7d": {
+      "title": "過去7日間",
+      "meta": "56本のバー · 各3時間",
+      "aria": "過去7日間の稼働状況バー",
+      "axisStart": "7日前"
+    },
+    "legend": {
+      "operational": "正常",
+      "partial": "一部障害",
+      "downtime": "停止",
+      "nodata": "データなし"
+    },
+    "incidents": {
+      "heading": "最近のインシデント",
+      "loading": "読み込み中…",
+      "noneTitle": "記録されたインシデントはありません",
+      "noneText": "監視期間中に検出された停止はありませんでした。",
+      "defaultCause": "停止",
+      "causeMissedHeartbeats": "再起動時に停止を検出（ハートビート欠落）",
+      "loadError": "ステータス API に接続できません。再試行しています…"
+    },
+    "monitoring": {
+      "since": "{date} から監視 · 最終チェック {ago}",
+      "collecting": "データを収集中…",
+      "error": "ステータス API に接続できません — 再試行しています…"
+    },
+    "tooltip": {
+      "nodata": "データなし",
+      "uptime": "稼働率 {pct}"
+    },
+    "ago": {
+      "never": "なし",
+      "template": "{v}前"
+    },
+    "foot": "60秒ごとに自動更新 · 記録された再起動回数：{count} · 稼働状況はサーバー自身のハートビートに基づいて測定されます。独立した確認には、<a href=\"/health\">/health</a> がリアルタイムのステータス JSON を返します。"
+  },
+  "enterprise": {
+    "hero": {
+      "title": "Stagify Enterprise",
+      "subtitle": "チーム全体に無制限の AI ステージングを。会社のメールアドレスを持つすべての従業員が自動的に Stagify+ を利用でき、使った分だけお支払いいただきます。"
+    },
+    "highlights": {
+      "perGenerationLabel": "1 回の生成あたり",
+      "unlimitedValue": "無制限",
+      "unlimitedLabel": "チームメンバー",
+      "monthlyValue": "毎月",
+      "monthlyLabel": "従量課金"
+    },
+    "features": {
+      "ariaLabel": "含まれる Stagify+ の機能",
+      "fullAccess": "すべての @ドメイン ユーザーに完全な Stagify+",
+      "aiDesigner": "AI Designer とマスク編集",
+      "models": "高品質な画像モデル",
+      "variations": "1 回の生成で複数のバリエーション",
+      "furniture": "家具参考画像のアップロード",
+      "noSeatFees": "席あたりの料金なし"
+    },
+    "success": {
+      "title": "Enterprise プランが有効になりました",
+      "line": "{domain} で終わるメールアドレスのすべてのアカウントで、Stagify+ の機能が利用できるようになりました。",
+      "yourDomain": "お客様のドメイン",
+      "billing": "毎月末に、チーム全体の使用量に基づき 1 回の生成あたり $0.15 で請求されます。"
+    },
+    "form": {
+      "title": "はじめる",
+      "intro": "以下に会社情報を入力してください。決済後、お客様のドメインのメールアドレスを持つすべてのアカウントに自動的に Stagify+ の機能が付与されます。",
+      "domainLabel": "会社のドメイン",
+      "domainHint": "@{domain} で終わるすべてのメールが Stagify+ を取得します",
+      "companyLabel": "会社名",
+      "emailLabel": "連絡先メールアドレス",
+      "phoneLabel": "電話番号",
+      "phoneOptional": "（任意）",
+      "submit": "支払いに進む",
+      "redirecting": "Stripe にリダイレクトしています…"
+    },
+    "errors": {
+      "domain": "有効なドメインを入力してください（例: company.com）。",
+      "company": "会社名を入力してください。",
+      "email": "有効な連絡先メールアドレスを入力してください。",
+      "generic": "問題が発生しました。もう一度お試しください。",
+      "unexpected": "予期しない応答です。もう一度お試しください。",
+      "network": "ネットワークエラーです。接続を確認してもう一度お試しください。"
+    },
+    "footnote": "Stripe による安全な決済 · 使用量に基づく毎月の請求 · いつでもキャンセル可能<br>ご質問は？ <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> · <a href=\"stagify-plus.html\">個人向けプラン</a>",
+    "legal": "続行すると、当社の<a href=\"legal/enterprise-msa.html\">マスターサービス契約</a>、<a href=\"terms.html\">利用規約</a>、および<a href=\"privacy.html\">プライバシーポリシー</a>に同意したことになります。"
+  },
+  "stagifyPlus": {
+    "hero": {
+      "title": "Stagify のすべてを、<span class=\"sp-grad\">アンロック</span>。",
+      "subtitle": "無制限の高品質ステージング、AI Designer、家具の除去、そしてあらゆるプロ向けツール。すべてが従来のステージング 1 回分より低コストで。"
+    },
+    "plan": {
+      "hintSignIn": "決済をあなたの Stagify アカウントに紐付けられるよう、先にプロフィールメニューからサインインしてください。",
+      "hintTip": "ヒント：決済をあなたの Stagify アカウントに紐付けられるよう、先にプロフィールメニューからサインインしてください。",
+      "hintStagingDisabled": "ステージングサイトではサブスクリプションが無効になっています。",
+      "billedMonthly": "毎月請求 · いつでもキャンセル可能",
+      "perMonth": "/ 月",
+      "trialPill": "まずは 7 日間無料で開始",
+      "startTrial": "無料トライアルを開始",
+      "subscribed": "登録済み ✓",
+      "unavailableStaging": "ステージングでは利用できません",
+      "payNote": "トライアルが終了するまで料金は発生しません。いつでもキャンセルできます。",
+      "securedByStripe": "Stripe により保護",
+      "noCommitment": "契約の縛りなし",
+      "manage": "サブスクリプションの管理・キャンセル"
+    },
+    "features": {
+      "heading": "プロのようにステージングするために必要なすべて",
+      "model": {
+        "title": "高品質モデル",
+        "desc": "当社の最先端モデルが、より鮮明でリアルな家具・素材・照明を描き出します。"
+      },
+      "remove": {
+        "title": "既存の家具を除去",
+        "desc": "家具・散らかり・装飾を消して、空になった部屋を一から作り直します。"
+      },
+      "designer": {
+        "title": "AI Designer",
+        "desc": "欲しいものを普通の言葉で伝え、会話しながら各結果を調整できます。"
+      },
+      "masking": {
+        "title": "マスクツール",
+        "desc": "任意の範囲を塗るだけで、写真のその部分だけを変更・リスタイルできます。"
+      },
+      "studio": {
+        "title": "Masking Studio",
+        "desc": "複数の範囲を異なる色でハイライトし、それぞれに家具写真を割り当てて一度にステージング。範囲ごとに複数バージョンを生成し、最も良いものを残せます。"
+      },
+      "references": {
+        "title": "家具リファレンス",
+        "desc": "製品写真をアップロードして、あなたが選んだ特定の家具で部屋をステージングします。"
+      }
+    },
+    "compare": {
+      "heading": "プランを比較",
+      "feature": "機能",
+      "free": "無料",
+      "included": "対応",
+      "notIncluded": "非対応",
+      "rows": {
+        "customizable": "カスタマイズ可能なステージング",
+        "fastModel": "高速画像モデル",
+        "unlimited": "無制限のステージング生成",
+        "hqModel": "高品質画像モデル",
+        "remove": "既存の家具を除去",
+        "designer": "AI Designer",
+        "masking": "マスクツール",
+        "studio": "Masking Studio（複数範囲）",
+        "variations": "1 回の生成で複数バリエーション",
+        "references": "家具リファレンス"
+      }
+    },
+    "enterpriseRow": "チームや企業の場合は、<a href=\"enterprise.html\">エンタープライズプランをご覧ください</a>。または <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> までご連絡いただければ、個別のサブスクリプションをご案内します。",
+    "footLinks": {
+      "backToFree": "無料ステージングに戻る",
+      "questions": "ご購入前に質問がありますか？",
+      "footnote": "チーム・請求書・個別条件については：<a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
+    }
   }
 }
