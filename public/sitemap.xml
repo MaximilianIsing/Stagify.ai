@@ -1,56 +1,1985 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Homepage -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://stagify.ai/</loc>
     <lastmod>2026-07-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
   </url>
-
-  <!-- Core product -->
+  <url>
+    <loc>https://stagify.ai/es</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/"/>
+  </url>
   <url>
     <loc>https://stagify.ai/ai-designer.html</loc>
     <lastmod>2026-07-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/es/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl/ai-designer.html</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/ai-designer.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/ai-designer.html"/>
   </url>
   <url>
     <loc>https://stagify.ai/masking-studio.html</loc>
     <lastmod>2026-07-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
   </url>
-
-  <!-- Plans -->
+  <url>
+    <loc>https://stagify.ai/es/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl/masking-studio.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/masking-studio.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/masking-studio.html"/>
+  </url>
   <url>
     <loc>https://stagify.ai/stagify-plus.html</loc>
     <lastmod>2026-07-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/es/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl/stagify-plus.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/stagify-plus.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/stagify-plus.html"/>
   </url>
   <url>
     <loc>https://stagify.ai/enterprise.html</loc>
     <lastmod>2026-07-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
   </url>
-
-  <!-- Help & support -->
+  <url>
+    <loc>https://stagify.ai/es/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl/enterprise.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/enterprise.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/enterprise.html"/>
+  </url>
   <url>
     <loc>https://stagify.ai/guides.html</loc>
     <lastmod>2026-07-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/es/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl/guides.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/guides.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html"/>
   </url>
   <url>
     <loc>https://stagify.ai/contact.html</loc>
     <lastmod>2026-07-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
   </url>
-
-  <!-- Blog -->
+  <url>
+    <loc>https://stagify.ai/es/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl/contact.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/contact.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/es/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl/status</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/status"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/status"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/status"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/status"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/status"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/status"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/status"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/status"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/status"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/status"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/status"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/status"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/es/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl/privacy.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/privacy.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/es/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/fr/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/de/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/zh/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ko/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/pt/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ru/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/it/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/ja/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
+  <url>
+    <loc>https://stagify.ai/nl/terms.html</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://stagify.ai/es/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://stagify.ai/de/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://stagify.ai/it/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://stagify.ai/terms.html"/>
+  </url>
   <url>
     <loc>https://stagify.ai/blog/</loc>
     <lastmod>2026-07-17</lastmod>
@@ -80,27 +2009,5 @@
     <lastmod>2026-06-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-  </url>
-
-  <!-- Status -->
-  <url>
-    <loc>https://stagify.ai/status</loc>
-    <lastmod>2026-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <!-- Legal -->
-  <url>
-    <loc>https://stagify.ai/privacy.html</loc>
-    <lastmod>2026-07-10</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://stagify.ai/terms.html</loc>
-    <lastmod>2026-07-10</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
   </url>
 </urlset>

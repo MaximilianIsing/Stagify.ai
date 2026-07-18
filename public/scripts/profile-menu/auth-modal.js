@@ -1,6 +1,7 @@
 import { lang } from './dom-utils.js';
 import { AUTH_MODAL_HTML } from './auth-modal-template.js';
 import { createGoogleSignIn } from './google-signin.js';
+import { localizedTarget } from '../i18n-routing.js';
 
 /**
  * The account auth modal — create-account / sign-in / forgot-password / email
@@ -363,7 +364,7 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
             }
             onRefresh();
             if (goPlusVerify) {
-              window.location.href = 'stagify-plus.html';
+              window.location.href = localizedTarget('stagify-plus.html');
               return;
             }
           } catch (verr) {
@@ -413,7 +414,7 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
           }
           onRefresh();
           if (goPlusLogin) {
-            window.location.href = 'stagify-plus.html';
+            window.location.href = localizedTarget('stagify-plus.html');
             return;
           }
         } catch (err) {

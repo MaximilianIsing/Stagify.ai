@@ -1,3 +1,5 @@
+import { urlLanguage } from "./i18n-routing.js";
+
 (() => {
   "use strict";
 
@@ -48,20 +50,29 @@
     return "english";
   }
 
+  // On a localized URL (/es, /fr/…) the URL is authoritative — it wins over any
+  // stored preference so the page the visitor opened matches what they see, and
+  // shareable localized links always render in their language.
+  const forced = urlLanguage();
+
   let lang;
-  try {
-    lang = localStorage.getItem("selectedLanguage");
-  } catch (e) {
-    lang = null;
+  if (forced && forced in BCP47) {
+    lang = forced;
+  } else {
+    try {
+      lang = localStorage.getItem("selectedLanguage");
+    } catch (e) {
+      lang = null;
+    }
+
+    // No saved choice (or a stale/unknown one): infer from the browser. An explicit
+    // choice the visitor made earlier is always respected.
+    if (!lang || !(lang in BCP47)) lang = detect();
   }
 
-  // No saved choice (or a stale/unknown one): infer from the browser and persist
-  // it, so language-loader.js picks it up on this very load. An explicit choice
-  // the visitor made earlier is always respected.
-  if (!lang || !(lang in BCP47)) {
-    lang = detect();
-    try { localStorage.setItem("selectedLanguage", lang); } catch (e) {}
-  }
+  // Persist so language-loader.js picks it up on this very load and the switcher
+  // shows the right current language.
+  try { localStorage.setItem("selectedLanguage", lang); } catch (e) {}
 
   // Set <html lang> before first paint so assistive tech uses the right
   // pronunciation rules from the start. The switcher keeps it in sync on change.

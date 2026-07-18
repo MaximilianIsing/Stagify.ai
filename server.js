@@ -23,6 +23,7 @@ import { createConfig } from './lib/config/config.js';
 import { maskReferencePromptSuffix } from './lib/staging/prompts.js';
 import { downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, downscaleImageForGPT, compositeForReview } from './lib/image/image-primitives.js';
 import createPublicRouter from './routes/public.js';
+import createI18nRouter from './routes/i18n.js';
 import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
@@ -238,6 +239,11 @@ app.use(createStagingRouter({ genAI, openai, genLimiter, stagingProcessUpload, D
 
 // chat routes (routes/chat.js)
 app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
+
+// localized-page routes (routes/i18n.js) — /es, /fr/ai-designer.html, … rendered
+// server-side from the language JSON. Mounted before the public router; its prefixes
+// (/es, /fr, …) are disjoint from every other route and from the static files.
+app.use(createI18nRouter({ __dirname, DEBUG_MODE }));
 
 // public routes (routes/public.js)
 app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));

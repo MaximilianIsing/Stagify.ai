@@ -7,6 +7,7 @@ import { createSegWand } from './masking-studio/seg-wand.js';
 import { createLayersUi } from './masking-studio/layers-ui.js';
 import { createViewer } from './masking-studio/viewer.js';
 import { createUpload } from './masking-studio/upload.js';
+import { localizedTarget } from './i18n-routing.js';
 
         // ---------------------------------------------------------------------
         // Access gate: Masking Studio is Stagify+ only. Anonymous visitors were
@@ -22,20 +23,20 @@ import { createUpload } from './masking-studio/upload.js';
             waited += 50;
           }
           if (!window.StagifyAuth) {
-            window.location.replace('stagify-plus.html');
+            window.location.replace(localizedTarget('stagify-plus.html'));
             return false;
           }
           try {
             await window.StagifyAuth.fetchMe();
           } catch (e) {
             // Network failure verifying the plan — same treatment as no user.
-            window.location.replace('stagify-plus.html');
+            window.location.replace(localizedTarget('stagify-plus.html'));
             return false;
           }
           const u = window.StagifyAuth.user;
           if (!u) {
             // Token was present but invalid/expired.
-            window.location.replace('stagify-plus.html');
+            window.location.replace(localizedTarget('stagify-plus.html'));
             return false;
           }
           document.documentElement.classList.remove('ms-gate-pending');
