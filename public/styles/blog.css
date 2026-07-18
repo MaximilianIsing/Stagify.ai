@@ -249,6 +249,42 @@ a { color: var(--brand); }
 .blog-footer a:hover { text-decoration: underline; }
 .blog-footer .row { margin-bottom: 8px; }
 
+/* ---------- Comparison table ------------------------------------------------- */
+.article-table {
+  overflow-x: auto;
+  margin: 1.6rem 0;
+}
+.article-table table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+}
+.article-table th,
+.article-table td {
+  border: 1px solid var(--line);
+  padding: 10px 13px;
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.45;
+}
+.article-table thead th {
+  background: #eff6ff;
+  color: var(--brand-ink);
+  font-weight: 700;
+}
+.article-table tbody th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: var(--ink);
+}
+.article-table .col-stagify {
+  background: rgba(37, 99, 235, 0.06);
+  color: var(--brand-ink);
+  font-weight: 600;
+}
+
 /* ---------- Responsive ------------------------------------------------------- */
 @media (max-width: 640px) {
   .blog-hero h1 { font-size: 2rem; }

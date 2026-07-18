@@ -78,6 +78,10 @@ router.get('/blog/does-virtual-staging-help-sell-homes', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'blog', 'does-virtual-staging-help-sell-homes.html'));
 });
 
+router.get('/blog/stagify-vs-other-virtual-staging-tools', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'stagify-vs-other-virtual-staging-tools.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));
