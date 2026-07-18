@@ -69,6 +69,7 @@ test('blog hub and articles are served, and stay in sync with the sitemap', asyn
     '/blog/is-virtual-staging-allowed-on-the-mls',
     '/blog/masking-studio-and-ai-designer',
     '/blog/does-virtual-staging-help-sell-homes',
+    '/blog/stagify-vs-other-virtual-staging-tools',
   ];
   for (const p of articles) {
     const res = await get(p);
