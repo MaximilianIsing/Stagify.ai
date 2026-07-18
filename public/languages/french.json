@@ -19,7 +19,7 @@
     "logoAlt": "Logo Stagify.ai — aller à l'accueil"
   },
   "hero": {
-    "catchphrase": "Importez. Aménagez. Imaginez.",
+    "catchphrase": "Importez. Aménagez.",
     "announcement": "Conçu pour faire de votre espace de rêve une réalité",
     "title": {
       "free": "Staging",
@@ -32,7 +32,7 @@
       "stage": "Aménagez.",
       "imagine": "Imaginez."
     },
-    "cta": "Importez une image gratuitement",
+    "cta": "Importez gratuitement",
     "freeGensLeft": "{n} générations gratuites restantes aujourd'hui, ",
     "freeGensLeftUpgrade": "Mettre à niveau",
     "freeGensUpgrade": "Essayez Stagify+ dès aujourd'hui. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mettre à niveau</a>",

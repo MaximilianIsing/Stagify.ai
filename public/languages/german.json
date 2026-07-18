@@ -19,14 +19,14 @@
     "logoAlt": "Stagify.ai-Logo – zur Startseite"
   },
   "hero": {
-    "catchphrase": "Hochladen. Einrichten. Vorstellen.",
+    "catchphrase": "Hochladen. Einrichten.",
     "announcement": "Entwickelt, um Ihren Traumraum Wirklichkeit werden zu lassen",
     "title": {
       "free": "Virtuelles",
       "virtual": "Staging",
       "staging": "gratis",
-      "with": "mit",
-      "one": "einem",
+      "with": "",
+      "one": "per",
       "click": "Klick",
       "upload": "Hochladen.",
       "stage": "Einrichten.",
