@@ -10,7 +10,7 @@ This README is the entry point for the `docs/` folder. See also:
 - [`guides/architecture.md`](guides/architecture.md) — how the server is structured (composition root, `routes/` + `lib/`, request lifecycle).
 - [`guides/frontend.md`](guides/frontend.md) — the browser side: the page/entry/island model and why it's vanilla ES modules, not a component framework.
 - [`guides/security.md`](guides/security.md) — auth model, request-size/DoS hardening, rate limits, CSP/CORS, and secret handling.
-- [`guides/i18n.md`](guides/i18n.md) — the client-side translation system and how to add a language.
+- [`guides/i18n.md`](guides/i18n.md) — the 11-language localized-URL system (server-rendered per-language URLs) and how to add a language.
 - [`guides/testing.md`](guides/testing.md) — the test suite and how it gates deployment.
 - [`reference/endpoints.md`](reference/endpoints.md) — HTTP API reference.
 - [`reference/environment-variables.md`](reference/environment-variables.md) — every env var, with a copy-paste `.env`.
@@ -161,14 +161,16 @@ and no server-side rendering — `public/` is plain HTML that talks to `server.j
   local `.txt` file (handy for local dev; production uses the host dashboard).
 - **Persistence:** SQLite (`auth-store.db`) for accounts/sessions, plus flat JSON/CSV
   files under `data/` for everything else (see below).
-- **i18n:** UI strings live in `public/languages/*.json` (11 languages) and are applied
-  client-side by `language-loader.js` / `language-switcher.js`; prices remain USD.
+- **i18n:** UI strings live in `public/languages/*.json` (11 languages). Each language
+  is served at its **own URL** (`/es`, `/fr/guides.html`, …) — rendered server-side by
+  `routes/i18n.js` for SEO — and the client applies the same strings for dynamic content.
+  Prices remain USD. See [`guides/i18n.md`](guides/i18n.md).
 
 ## Backend modules
 
 `server.js` is a composition root: it reads config, constructs the shared stores/
 helpers, and mounts the route modules in `routes/` (`public`, `auth`, `billing`,
-`staging`, `chat`, `admin`), injecting the reusable pieces from `lib/`. `lib/` is
+`staging`, `chat`, `admin`, `i18n`), injecting the reusable pieces from `lib/`. `lib/` is
 grouped into subdirectories by concern (full breakdown in
 [`guides/architecture.md`](guides/architecture.md#backend-modules-lib)):
 
@@ -205,9 +207,10 @@ Everything the browser loads is under `public/`:
   See [`guides/frontend.md`](guides/frontend.md#styles) for the tiers, the lazy
   (non-render-blocking) CSS on the home page, and the FOUC auth gates.
 - **i18n (`public/languages/`):** one JSON file per language; `english.json` is the
-  source of truth for keys.
+  source of truth for keys. Served per-language at its own URL — see
+  [`guides/i18n.md`](guides/i18n.md).
 - **Assets:** `media-webp/`, `fonts/`, `background.mp4`, `bimi-logo.svg`, icons,
-  `sitemap.xml`, `robots.txt`, `manifest.json`.
+  `sitemap.xml` (**generated** by `scripts/build-i18n-seo.js`), `robots.txt`, `manifest.json`.
 
 ## Data & persistence
 

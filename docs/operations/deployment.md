@@ -131,6 +131,10 @@ every 60s, and
 - **Immutable image caching:** images/fonts/media are served `Cache-Control: immutable`
   for a year. To update one in place, **rename it or append `?v=`** — see
   [`caching.md`](../reference/caching.md).
+- **Localized SEO is generated — rebuild before committing.** After changing the
+  language or page set in `lib/i18n/locales.js`, run **`node scripts/build-i18n-seo.js`**
+  (regenerates `sitemap.xml` + the English pages' `hreflang`). A drift test blocks the
+  deploy if you forget. See [`i18n.md`](../guides/i18n.md).
 - **A red test blocks the deploy** — the build gate is real.
 - **A red `e2e` job does NOT block the deploy** — the Playwright studio smoke is a
   separate CI job outside the build gate (by design). Check it's green manually before a

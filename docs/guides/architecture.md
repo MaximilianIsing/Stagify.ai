@@ -205,6 +205,7 @@ Each is a factory returning a router (built with `createAsyncRouter()`), mounted
 | Router | Owns |
 |---|---|
 | `public.js` | SEO files (`robots.txt`, `sitemap.xml`), landing/status pages, `/health`, hero-stat counts, contact/bug logging, `/api/send-email`, hosted-image serving (`/i/:id`), email-open pixel. |
+| `i18n.js` | The localized-URL pages: `/es`, `/fr/guides.html`, … rendered server-side per language from `public/languages/*.json` (`lib/i18n/`). Mounted before `public.js`; prefixes are disjoint from every other route. See [`i18n.md`](i18n.md). |
 | `auth.js` | `register` / `verify` / `login` / `logout` / `me` / `forgot-password` / `reset-password` / `google`, plus the staging-banner controls. |
 | `admin.js` | `endpoint_key`-gated log/data exports and hosted-image management (see [`endpoints.md`](../reference/endpoints.md)). |
 | `staging.js` | Core AI: `process-image`, `mask-edit`, `segment`, `validate-image`, `stage-by-endpoint-key`. |
@@ -239,9 +240,10 @@ single-instance only (SQLite is single-writer).
 
 Plain HTML/CSS/vanilla JS in `public/`, served as-is — **no build step** (a deliberate,
 standing decision; see [below](#decision-no-frontend-build-step)). Pages `fetch` the
-JSON API on the same origin. UI text is translated client-side — see
-[`i18n.md`](i18n.md). Note that `public/styles/styles.css` is partially minified; edit
-it carefully.
+JSON API on the same origin. UI text is translated from `public/languages/*.json` — each
+language server-rendered at its own URL (`/es`, `/fr/…`) for SEO, and applied client-side
+for dynamic content; see [`i18n.md`](i18n.md). Note that `public/styles/styles.css` is
+partially minified; edit it carefully.
 
 The browser side has its own architecture guide — the page/entry/island model and the
 standing decision to use vanilla ES modules instead of a component framework — in
