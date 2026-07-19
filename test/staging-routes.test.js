@@ -32,30 +32,44 @@ test('validate-image: 400 on a missing or malformed image', async () => {
   assert.equal((await postJson(app.baseUrl, '/api/validate-image', { image: 'no-comma' })).status, 400);
 });
 
-test('validate-image: fails open (200 valid) when no reviewer is configured', async () => {
-  app = await mountStaging({ openai: null });
+test('validate-image: relays an approving verdict as valid, with no code or copy', async () => {
+  // The route has no "is a reviewer configured?" short-circuit of its own — a disabled
+  // reviewer is validateStageableImage's business, and it reports that as valid.
+  app = await mountStaging({ validateStageableImage: async () => ({ valid: true, code: null, reason: '' }) });
   const body = await (await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE })).json();
-  assert.deepEqual(body, { valid: true, reason: '' });
+  assert.deepEqual(body, { valid: true, code: null, reason: '' });
 });
 
-test('validate-image: relays a rejection from the reviewer', async () => {
+test('validate-image: runs the reviewer even with no OpenAI client (the grader is Gemini)', async () => {
+  // Regression guard: the route used to skip validation whenever `openai` was null,
+  // which silently disabled a Gemini-powered check on an unrelated key.
+  let called = false;
   app = await mountStaging({
-    openai: {}, // truthy → reviewer runs
-    validateStageableImage: async () => ({ valid: false, reason: 'This is not a room.' }),
+    openai: null,
+    validateStageableImage: async () => { called = true; return { valid: false, code: 'FOOD', reason: 'Not a room.' }; },
+  });
+  const body = await (await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE })).json();
+  assert.equal(called, true, 'the reviewer must run regardless of the OpenAI client');
+  assert.equal(body.valid, false);
+});
+
+test('validate-image: relays both the category code and the copy from the reviewer', async () => {
+  app = await mountStaging({
+    validateStageableImage: async () => ({ valid: false, code: 'FOOD', reason: 'This is not a room.' }),
   });
   const body = await (await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE })).json();
   assert.equal(body.valid, false);
+  assert.equal(body.code, 'FOOD', 'the code is what the browser localizes against');
   assert.equal(body.reason, 'This is not a room.');
 });
 
 test('validate-image: fails open when the reviewer throws', async () => {
   app = await mountStaging({
-    openai: {},
-    validateStageableImage: async () => { throw new Error('OpenAI exploded'); },
+    validateStageableImage: async () => { throw new Error('the grader exploded'); },
   });
   const res = await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE });
   assert.equal(res.status, 200);
-  assert.deepEqual(await res.json(), { valid: true, reason: '' });
+  assert.deepEqual(await res.json(), { valid: true, code: null, reason: '' });
 });
 
 // ── /api/process-image ───────────────────────────────────────────────────────

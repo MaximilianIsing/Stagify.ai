@@ -5,10 +5,23 @@
 // negative. The validate-image response is gated (held open until the test has
 // observed the draw phase) so the ordering is deterministic, not a timing race.
 // No real Gemini call, no cost.
+//
+// Doubles as the browser-level proof that rejection copy is LOCALIZED: the server
+// sends a category code plus canonical English, and the page must render the string
+// from the language pack instead. The mock's `reason` below is deliberately NOT the
+// pack's wording, so an assertion against the pack can only pass if the lookup ran.
 import { test, expect } from '@playwright/test';
+import fs from 'node:fs';
 import { roomPngBuffer, seedProSession } from './fixtures.js';
 
-const REJECT_REASON = 'This looks like a selfie, not a room.';
+// Distinct from the pack copy on purpose — if the lookup silently stopped working,
+// this string would surface and the assertion below would fail.
+const SERVER_ENGLISH = 'This looks like a selfie, not a room.';
+
+// Sourced from the pack rather than hardcoded, so re-wording the copy can't break
+// this test (test/unstageable-i18n.test.js is what guards the key's existence).
+const PACK_COPY = JSON.parse(fs.readFileSync('public/languages/english.json', 'utf8'))
+  .errors.unstageable.PERSON_PORTRAIT;
 
 test.describe('Masking Studio — stageability reject', () => {
   test.beforeEach(async ({ page }) => {
@@ -25,7 +38,7 @@ test.describe('Masking Studio — stageability reject', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ valid: false, reason: REJECT_REASON }),
+        body: JSON.stringify({ valid: false, code: 'PERSON_PORTRAIT', reason: SERVER_ENGLISH }),
       });
     });
 
@@ -48,6 +61,9 @@ test.describe('Masking Studio — stageability reject', () => {
     await expect(page.locator('#ms-dropzone')).toBeVisible();
     await expect(page.locator('#ms-stack')).toBeHidden();
     await expect(prompt).toHaveCount(0);
-    await expect(page.locator('.toast--error')).toContainText(REJECT_REASON);
+    // The pack's wording wins over the server's English — i.e. the code was localized.
+    const toast = page.locator('.toast--error');
+    await expect(toast).toContainText(PACK_COPY);
+    await expect(toast).not.toContainText(SERVER_ENGLISH);
   });
 });

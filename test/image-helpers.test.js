@@ -145,31 +145,32 @@ test('reviewMaskEdit: a thrown create() fails OPEN (perfect, score 100, reason "
 
 // ── C. validateStageableImage ─────────────────────────────────────────────────
 
-test('validateStageableImage: a "VALID: true" verdict returns valid with empty reason', async () => {
-  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('VALID: true') });
+// The digit→code taxonomy itself is pinned in image-review.test.js; these cover the
+// same function from the helper-suite angle (valid, reject, and both fail-open paths).
+test('validateStageableImage: a "CODE: 0" verdict returns valid with no code or reason', async () => {
+  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('CODE: 0') });
   const out = await validateStageableImage(REAL_BUF);
-  assert.deepEqual(out, { valid: true, reason: '' });
+  assert.deepEqual(out, { valid: true, code: null, reason: '' });
 });
 
-test('validateStageableImage: a rejection parses REASON text (quotes stripped) and marks invalid', async () => {
-  const { validateStageableImage } = createImageReview({
-    genAI: fakeGrader('VALID: false\nREASON: "Not a room."'),
-  });
+test('validateStageableImage: a rejection digit marks invalid and carries our own copy', async () => {
+  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('CODE: 1') });
   const out = await validateStageableImage(REAL_BUF);
   assert.equal(out.valid, false);
-  assert.equal(out.reason, 'Not a room.');
+  assert.equal(out.code, 'PERSON_PORTRAIT');
+  assert.match(out.reason, /person/i, 'the message is ours, not the model\'s prose');
 });
 
 test('validateStageableImage: a null openai client fails OPEN as valid', async () => {
   const { validateStageableImage } = createImageReview({ genAI: null });
   const out = await validateStageableImage(REAL_BUF);
-  assert.deepEqual(out, { valid: true, reason: '' });
+  assert.deepEqual(out, { valid: true, code: null, reason: '' });
 });
 
 test('validateStageableImage: a thrown create() fails OPEN as valid', async () => {
   const { validateStageableImage } = createImageReview({ genAI: fakeGrader(new Error('OpenAI exploded')) });
   const out = await validateStageableImage(REAL_BUF);
-  assert.deepEqual(out, { valid: true, reason: '' });
+  assert.deepEqual(out, { valid: true, code: null, reason: '' });
 });
 
 // ── D. annotateImage CAD classification ───────────────────────────────────────

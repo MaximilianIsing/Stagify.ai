@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import { createImageReview } from '../lib/image/image-review.js';
-import { DEFAULT_UNSTAGEABLE_REASON } from '../lib/staging/prompts.js';
+import { DEFAULT_UNSTAGEABLE_REASON, UNSTAGEABLE_CODES, GENERIC_UNSTAGEABLE_CODE } from '../lib/staging/unstageable.js';
 
 const TINY_PNG =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -93,31 +93,57 @@ test('reviewMaskEdit: disabled reviewer passes; parses score; fails open on erro
 });
 
 // --- validateStageableImage (takes a Buffer, not a data URL) ----------------
+// The grader answers with a digit from the fixed UNSTAGEABLE_CODES taxonomy (0 = valid)
+// and we own the copy, so these pin the digit→code/message mapping and the fail-OPEN
+// behaviour on every unusable reply.
+const VALID = { valid: true, code: null, reason: '' };
+
 test('validateStageableImage: no client → valid', async () => {
   const { validateStageableImage } = createImageReview({ genAI: null });
-  assert.deepEqual(await validateStageableImage(await roomBuffer()), { valid: true, reason: '' });
+  assert.deepEqual(await validateStageableImage(await roomBuffer()), VALID);
 });
 
-test('validateStageableImage: "VALID: true" → valid with empty reason', async () => {
-  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('VALID: true') });
-  assert.deepEqual(await validateStageableImage(await roomBuffer()), { valid: true, reason: '' });
+test('validateStageableImage: "CODE: 0" → valid, with no code and no reason', async () => {
+  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('CODE: 0') });
+  assert.deepEqual(await validateStageableImage(await roomBuffer()), VALID);
 });
 
-test('validateStageableImage: "VALID: false | REASON: ..." surfaces the reason (quotes stripped)', async () => {
-  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('VALID: false\nREASON: "This is a person, not a room"') });
+test('validateStageableImage: every rejection digit maps to its own code and message', async () => {
+  for (const [digit, entry] of Object.entries(UNSTAGEABLE_CODES)) {
+    const { validateStageableImage } = createImageReview({ genAI: fakeGrader(`CODE: ${digit}`) });
+    const r = await validateStageableImage(await roomBuffer());
+    assert.equal(r.valid, false, `digit ${digit} should reject`);
+    assert.equal(r.code, entry.code);
+    assert.equal(r.reason, entry.message);
+  }
+});
+
+test('validateStageableImage: the six rejection codes and messages are all distinct', () => {
+  const entries = Object.values(UNSTAGEABLE_CODES);
+  assert.equal(entries.length, 6);
+  assert.equal(new Set(entries.map((e) => e.code)).size, 6, 'duplicate code would collapse two categories');
+  assert.equal(new Set(entries.map((e) => e.message)).size, 6, 'duplicate copy defeats the point of the taxonomy');
+  assert.ok(!entries.some((e) => e.code === GENERIC_UNSTAGEABLE_CODE), 'generic code must not collide with a category');
+});
+
+test('validateStageableImage: an in-range but unmapped digit still rejects, with the generic copy', async () => {
+  // Defensive: the grader said "not valid", so honour the verdict rather than
+  // discarding it just because the digit is outside the taxonomy we published.
+  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('CODE: 9') });
   const r = await validateStageableImage(await roomBuffer());
   assert.equal(r.valid, false);
-  assert.equal(r.reason, 'This is a person, not a room');
-});
-
-test('validateStageableImage: rejected with no REASON falls back to the default message', async () => {
-  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('VALID: false') });
-  const r = await validateStageableImage(await roomBuffer());
-  assert.equal(r.valid, false);
+  assert.equal(r.code, GENERIC_UNSTAGEABLE_CODE);
   assert.equal(r.reason, DEFAULT_UNSTAGEABLE_REASON);
+});
+
+test('validateStageableImage: an unreadable reply fails OPEN rather than blocking the upload', async () => {
+  for (const reply of ['', 'VALID: false', 'I think this is a picture of a dog.']) {
+    const { validateStageableImage } = createImageReview({ genAI: fakeGrader(reply) });
+    assert.deepEqual(await validateStageableImage(await roomBuffer()), VALID, `reply ${JSON.stringify(reply)}`);
+  }
 });
 
 test('validateStageableImage: a thrown error fails open (allow the upload)', async () => {
   const { validateStageableImage } = createImageReview({ genAI: fakeGrader(new Error('vision down')) });
-  assert.deepEqual(await validateStageableImage(await roomBuffer()), { valid: true, reason: '' });
+  assert.deepEqual(await validateStageableImage(await roomBuffer()), VALID);
 });

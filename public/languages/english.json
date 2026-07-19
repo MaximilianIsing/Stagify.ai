@@ -509,6 +509,15 @@
     }
   },
   "errors": {
+    "unstageable": {
+      "PERSON_PORTRAIT": "This looks like a photo of a person. Please upload a photo of a room, space, or piece of furniture.",
+      "ANIMAL": "This looks like a photo of a pet. Please upload a photo of a room, space, or piece of furniture.",
+      "FOOD": "This looks like a photo of food. Please upload a photo of a room, space, or piece of furniture.",
+      "DOCUMENT": "This looks like a screenshot or document. Please upload a photo of a room, space, or piece of furniture.",
+      "VEHICLE": "This looks like a photo of a vehicle. Please upload a photo of a room, space, or piece of furniture.",
+      "UNRELATED_OBJECT": "This doesn't look like a room, space, or furniture. Please upload a photo of a space or furniture you'd like to stage.",
+      "UNSTAGEABLE": "This doesn't look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you'd like to stage."
+    },
     "fileType": "Please upload a PNG, JPG, JPEG, WebP, or GIF image file.",
     "fileTooLarge": "File is too large. Please upload an image smaller than 100MB.",
     "heicConvert": "We couldn't read that HEIC photo. Please try a JPG or PNG.",

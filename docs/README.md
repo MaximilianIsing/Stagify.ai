@@ -81,7 +81,7 @@ This README is the entry point for the `docs/` folder. See also:
 │   ├── http/                # async-router, http-helpers (sendError), http-guards, rate-limiters, uploads, app-middleware
 │   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images
 │   ├── services/            # ai-clients, auth-helpers, email, logging (CSV), stripe-webhooks
-│   ├── staging/             # prompts, promptMatrix, staging-pipeline, staging-generation, virtual-staging-handler, mask-edit, segment, cad-handling
+│   ├── staging/             # prompts, promptMatrix, unstageable (upload-gate prompt + reject taxonomy), staging-pipeline, staging-generation, virtual-staging-handler, mask-edit, segment, cad-handling
 │   └── chat/                # chat-pipeline (wiring) + memory/image-retrieval/image-dispatch/staging/response dispatch, request-prep, upload-prep, welcome-message-handler, history, routing, sse
 ├── public/                  # Static frontend (HTML pages, scripts, styles, assets, i18n)
 ├── data/                    # Runtime state: one SQLite DB (all structured state) + CSV logs (see Data & persistence)
@@ -234,7 +234,8 @@ Served from `server.js` on the same origin. Full reference: [`endpoints.md`](ref
 Rough groups:
 
 - **Core AI:** `POST /api/process-image` (stage), `/api/mask-edit`, `/api/segment`,
-  `/api/validate-image`, `/api/stage-by-endpoint-key`.
+  `/api/validate-image` (upload gatekeeper — returns a localizable rejection `code`),
+  `/api/stage-by-endpoint-key`.
 - **Auth:** `/api/auth/register`, `/register/verify`, `/login`, `/logout`, `/me`,
   `/forgot-password`, `/reset-password`, `/google`.
 - **Billing:** `/api/billing/customer-portal`, `/api/billing/stripe-webhook`,

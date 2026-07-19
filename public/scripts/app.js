@@ -5,6 +5,7 @@ import { initBackgroundVideoSync } from './app/background-video.js';
 import { init3DTiltEffect } from './app/tilt-effect.js';
 import { loadHeroStats, updateHeroFreeGensLine } from './app/hero-stats.js';
 import { validateStageableUpload } from './app/stage-validation.js';
+import { unstageableMessage } from './unstageable-message.js';
 import { createFurnitureRefs, FURNITURE_LIMIT } from './app/furniture-refs.js';
 import { createVersionCarousel } from './app/version-carousel.js';
 import { createStagingPipeline } from './app/staging-pipeline.js';
@@ -236,8 +237,6 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
     // still in flight). Lets processWithAI() gate WITHOUT awaiting in the common
     // case — the check starts at upload, so it is almost always done by click.
     let stageValidationResult = null;
-    const DEFAULT_UNSTAGEABLE_MESSAGE =
-      "This doesn't look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you'd like to stage.";
 
     async function handleStageFile(file) {
       // iPhone HEIC/HEIF photos aren't decodable by most browsers; convert to
@@ -299,7 +298,7 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
           if (currentImageFile === checkForFile) {
             stageValidationResult = result;
             if (result.valid === false) {
-              showStagingError(result.reason || DEFAULT_UNSTAGEABLE_MESSAGE);
+              showStagingError(unstageableMessage(result));
             }
           }
         });
@@ -411,7 +410,7 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
     // shared upload/validation state (as getters) and the messaging helpers.
     const { processWithAI } = createStagingPipeline({
       stagePreview, progress, progressBar, progressText, loadingMessage, processingPlaceholder,
-      roomSelect, styleSelect, additionalPrompt, furnitureRefs, FURNITURE_LIMIT, DEFAULT_UNSTAGEABLE_MESSAGE,
+      roomSelect, styleSelect, additionalPrompt, furnitureRefs, FURNITURE_LIMIT,
       getStageValidation: () => stageValidation,
       getStageValidationResult: () => stageValidationResult,
       getHasProcessedImage: () => hasProcessedImage,

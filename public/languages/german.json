@@ -509,6 +509,15 @@
     }
   },
   "errors": {
+    "unstageable": {
+      "PERSON_PORTRAIT": "Das sieht nach dem Foto einer Person aus. Bitte laden Sie das Foto eines Raums, einer Fläche oder eines Möbelstücks hoch.",
+      "ANIMAL": "Das sieht nach dem Foto eines Haustiers aus. Bitte laden Sie das Foto eines Raums, einer Fläche oder eines Möbelstücks hoch.",
+      "FOOD": "Das sieht nach einem Foto von Essen aus. Bitte laden Sie das Foto eines Raums, einer Fläche oder eines Möbelstücks hoch.",
+      "DOCUMENT": "Das sieht nach einem Screenshot oder Dokument aus. Bitte laden Sie das Foto eines Raums, einer Fläche oder eines Möbelstücks hoch.",
+      "VEHICLE": "Das sieht nach dem Foto eines Fahrzeugs aus. Bitte laden Sie das Foto eines Raums, einer Fläche oder eines Möbelstücks hoch.",
+      "UNRELATED_OBJECT": "Das sieht nicht nach einem Raum, einer Fläche oder einem Möbelstück aus. Bitte laden Sie das Foto des Raums oder Möbelstücks hoch, das Sie einrichten möchten.",
+      "UNSTAGEABLE": "Das sieht nicht nach einem Raum, einer Fläche oder einem Möbelstück aus. Bitte laden Sie das Foto eines Innenraums, eines Außenbereichs oder eines Möbelstücks hoch, das Sie einrichten möchten."
+    },
     "heicConvert": "Wir konnten dieses HEIC-Foto nicht lesen. Bitte versuchen Sie es mit JPG oder PNG.",
     "fileType": "Bitte laden Sie eine PNG-, JPG-, JPEG-, WebP- oder GIF-Bilddatei hoch.",
     "fileTooLarge": "Die Datei ist zu groß. Bitte laden Sie ein Bild mit weniger als 100 MB hoch.",

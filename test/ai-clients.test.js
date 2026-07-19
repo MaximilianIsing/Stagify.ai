@@ -106,18 +106,21 @@ test('positive file fallback: all env keys unset, real *-key.txt files present �
   assert.ok(resend, 'resend constructed from resendkey.txt file fallback');
 });
 
-test('empty-string asymmetry: defined-empty GOOGLE_AI_API_KEY still constructs genAI, but defined-empty RESEND_API_KEY leaves resend null', () => {
-  // Both keys are defined-but-empty, so BOTH skip the `=== undefined` file
-  // fallback (empty __dirname would have nothing anyway). The divergence is in
-  // what each block does with the empty string afterward: genAI passes '' straight
-  // to new GoogleGenerativeAI('') (no truthiness guard) which still constructs a
-  // truthy SDK handle, while resend is gated behind `if (resendApiKey)` so the
-  // empty string is falsy and resend is deliberately left absent (null). GPT_KEY is a
-  // fake non-empty key here only so its block isn't the one under test.
+test('an empty key leaves its client null — same rule for all three, no empty-string asymmetry', () => {
+  // Both keys are defined-but-empty, so BOTH skip the `=== undefined` file fallback
+  // (an empty __dirname would have nothing anyway) and then fail their truthiness
+  // guard. GPT_KEY is a fake non-empty key here only so its block isn't under test.
+  //
+  // genAI used to be the odd one out: it passed '' straight to
+  // new GoogleGenerativeAI(''), which constructs a TRUTHY handle that 400s on every
+  // call. That read as "configured" to every `if (!genAI)` guard in the codebase, so
+  // an empty key produced failing network round-trips instead of a clean no-op — and
+  // it made "disable the AI" impossible to express in tests. It now matches the
+  // openai/resend blocks, which is what lets the staging tests switch the grader off.
   setEnv({ GOOGLE_AI_API_KEY: '', GPT_KEY: 'sk-test', RESEND_API_KEY: '' });
   const { genAI, resend } = createAiClients({ __dirname: emptyDir(), DEBUG_MODE: false });
 
-  assert.ok(genAI, 'empty GOOGLE_AI_API_KEY skips file fallback yet still constructs genAI');
+  assert.equal(genAI, null, 'empty GOOGLE_AI_API_KEY is falsy → genAI not constructed');
   assert.equal(resend, null, 'empty RESEND_API_KEY fails the if(resendApiKey) guard → resend null');
 });
 
