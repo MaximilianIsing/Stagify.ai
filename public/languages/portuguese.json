@@ -509,6 +509,15 @@
     }
   },
   "errors": {
+    "unstageable": {
+      "PERSON_PORTRAIT": "Isto parece a foto de uma pessoa. Envie a foto de um cômodo, espaço ou móvel.",
+      "ANIMAL": "Isto parece a foto de um animal de estimação. Envie a foto de um cômodo, espaço ou móvel.",
+      "FOOD": "Isto parece uma foto de comida. Envie a foto de um cômodo, espaço ou móvel.",
+      "DOCUMENT": "Isto parece uma captura de tela ou documento. Envie a foto de um cômodo, espaço ou móvel.",
+      "VEHICLE": "Isto parece a foto de um veículo. Envie a foto de um cômodo, espaço ou móvel.",
+      "UNRELATED_OBJECT": "Isto não parece um cômodo, espaço ou móvel. Envie a foto do espaço ou do móvel que você quer decorar.",
+      "UNSTAGEABLE": "Isto não parece um cômodo, espaço ou móvel. Envie a foto de um cômodo, área externa ou móvel que você quer decorar."
+    },
     "heicConvert": "Não foi possível ler essa foto HEIC. Tente um JPG ou PNG.",
     "fileType": "Envie um arquivo de imagem PNG, JPG, JPEG, WebP ou GIF.",
     "fileTooLarge": "O arquivo é muito grande. Envie uma imagem menor que 100 MB.",

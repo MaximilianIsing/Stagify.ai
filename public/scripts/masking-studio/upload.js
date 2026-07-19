@@ -8,6 +8,8 @@
 // deps: { state, dropzone, fileInput, furnitureInput, stack, replaceBtn, showToast,
 //         tx, loadImage, setBaseImage, requestDiscard, activeLayer, getLayer,
 //         renderLayers, updateControls, layerTitle, scheduleSessionSave }
+import { unstageableMessage } from '../unstageable-message.js';
+
 export function createUpload(deps) {
   const {
     state,
@@ -33,9 +35,6 @@ export function createUpload(deps) {
   let pendingFurnitureLayerId = null;
 
   const ROOM_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-
-  const DEFAULT_UNSTAGEABLE_MESSAGE =
-    "This doesn't look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you'd like to stage.";
 
   // Cheap server-side pre-check: is this actually a stageable room/property
   // photo (not a selfie, a product shot, a document…)? Downscales the
@@ -117,7 +116,7 @@ export function createUpload(deps) {
       if (!stageable || stageable.valid !== false) return;
       if (state.base !== token) return;
       clearBaseImage();
-      showToast(stageable.reason || DEFAULT_UNSTAGEABLE_MESSAGE, 'error');
+      showToast(unstageableMessage(stageable), 'error');
     });
   }
 

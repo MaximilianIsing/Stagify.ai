@@ -33,6 +33,10 @@ GOOGLE_PUBLISHER_ID=
 # fails without it. The main staging client reads GOOGLE_AI_API_KEY only (file
 # fallback: key.txt); the GEMINI_API_KEY alias is honored ONLY by the CAD-to-3D
 # helper (lib/staging/cad-handling.js), so set GOOGLE_AI_API_KEY for staging to work.
+# Set to an EMPTY value to disable the client outright (same rule as GPT_KEY and
+# RESEND_API_KEY): an empty key skips the key.txt fallback and leaves genAI null, so
+# every Gemini-backed feature cleanly no-ops instead of making calls that 400. This is
+# how tests switch the AI off — see docs/guides/testing.md.
 GOOGLE_AI_API_KEY=
 # OpenAI key. Powers the chat assistant only; the rest of the app works without
 # it (chat is simply disabled). File fallback: gpt-key.txt

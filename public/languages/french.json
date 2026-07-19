@@ -509,6 +509,15 @@
     }
   },
   "errors": {
+    "unstageable": {
+      "PERSON_PORTRAIT": "Cette photo semble représenter une personne. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
+      "ANIMAL": "Cette photo semble représenter un animal. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
+      "FOOD": "Cette photo semble représenter de la nourriture. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
+      "DOCUMENT": "Cela ressemble à une capture d'écran ou à un document. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
+      "VEHICLE": "Cette photo semble représenter un véhicule. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
+      "UNRELATED_OBJECT": "Cela ne ressemble ni à une pièce, ni à un espace, ni à un meuble. Veuillez importer la photo de l'espace ou du meuble que vous souhaitez aménager.",
+      "UNSTAGEABLE": "Cela ne ressemble ni à une pièce, ni à un espace, ni à un meuble. Veuillez importer la photo d'une pièce, d'un espace extérieur ou d'un meuble que vous souhaitez aménager."
+    },
     "heicConvert": "Impossible de lire cette photo HEIC. Essayez un JPG ou un PNG.",
     "fileType": "Veuillez importer une image PNG, JPG, JPEG, WebP ou GIF.",
     "fileTooLarge": "Le fichier est trop volumineux. Veuillez importer une image de moins de 100 Mo.",

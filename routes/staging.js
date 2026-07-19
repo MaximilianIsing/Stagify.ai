@@ -12,7 +12,6 @@ import { logger } from '../lib/logger.js';
  *
  * @param {{
  *   genAI: { getGenerativeModel: (options: any) => any } | null,
- *   openai: import('openai').default | null,
  *   genLimiter: import('express').RequestHandler,
  *   stagingProcessUpload: import('express').RequestHandler,
  *   stagingEndpointKeyGuard: import('express').RequestHandler,
@@ -21,7 +20,7 @@ import { logger } from '../lib/logger.js';
  *   requireProAccount: (req: import('express').Request, res: import('express').Response) => any,
  *   enterpriseDomainForUser: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['enterpriseDomainForUser'],
  *   reportEnterpriseUsage: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['reportEnterpriseUsage'],
- *   validateStageableImage: (imageBuffer: Buffer) => Promise<{ valid: boolean, reason: string }>,
+ *   validateStageableImage: (imageBuffer: Buffer) => Promise<{ valid: boolean, code: string | null, reason: string }>,
  *   handleVirtualStagingMultipart: (req: import('express').Request, res: import('express').Response, meta: import('../lib/types/staging.js').VirtualStagingMeta) => Promise<import('express').Response | void>,
  *   downscaleImage: typeof import('../lib/image/image-primitives.js').downscaleImage,
  *   padBufferToAspectRatio: typeof import('../lib/image/image-primitives.js').padBufferToAspectRatio,
@@ -45,7 +44,7 @@ export default function createStagingRouter(deps) {
   // Names used by the handlers still inlined below. The /api/mask-edit and
   // /api/segment handlers are built by the sibling factories (which each
   // destructure their own slice of the full `deps`).
-  const { openai, genLimiter, stagingProcessUpload, setSensitiveHeaders, getAuthUserFromRequest, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard } = deps;
+  const { genLimiter, stagingProcessUpload, setSensitiveHeaders, getAuthUserFromRequest, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard } = deps;
   const router = createAsyncRouter();
 
 router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, res) => {
@@ -78,10 +77,11 @@ router.post('/api/validate-image', genLimiter, async (req, res) => {
     if (!image || typeof image !== 'string' || !image.includes(',')) {
       return sendError(res, 400, 'Image is required');
     }
-    // No reviewer configured → nothing to validate against, let it through.
-    if (!openai) {
-      return res.json({ valid: true, reason: '' });
-    }
+    // No "is a reviewer configured?" short-circuit here on purpose: this used to gate
+    // on `openai`, which stopped being the reviewer's client when the grader moved to
+    // Gemini — so an unset OPENAI key silently disabled a Gemini-powered check.
+    // validateStageableImage already returns valid when its own client is missing, so
+    // the route stays out of it rather than re-deriving which client is in play.
     let imageBuffer;
     try {
       imageBuffer = Buffer.from(image.slice(image.indexOf(',') + 1), 'base64');
@@ -89,13 +89,15 @@ router.post('/api/validate-image', genLimiter, async (req, res) => {
     } catch {
       return sendError(res, 400, 'Invalid image data');
     }
-    const { valid, reason } = await validateStageableImage(imageBuffer);
+    const { valid, code, reason } = await validateStageableImage(imageBuffer);
     setSensitiveHeaders(res);
-    return res.json({ valid, reason: valid ? '' : reason });
+    // `code` is the stable category the client localizes; `reason` is the canonical
+    // English copy, and doubles as the client's fallback until a translation exists.
+    return res.json({ valid, code: valid ? null : code, reason: valid ? '' : reason });
   } catch (error) {
     logger.error('Error validating image:', error);
     // Fail open — never block a real upload because our check errored.
-    return res.json({ valid: true, reason: '' });
+    return res.json({ valid: true, code: null, reason: '' });
   }
 });
 

@@ -1,3 +1,5 @@
+import { unstageableMessage } from '../unstageable-message.js';
+
 /**
  * The staging generation pipeline: builds the multipart request, drives the
  * progress-bar / loading-message state machine, honours the stageability
@@ -12,7 +14,7 @@
 export function createStagingPipeline(deps) {
   const {
     stagePreview, progress, progressBar, progressText, loadingMessage, processingPlaceholder,
-    roomSelect, styleSelect, additionalPrompt, furnitureRefs, FURNITURE_LIMIT, DEFAULT_UNSTAGEABLE_MESSAGE,
+    roomSelect, styleSelect, additionalPrompt, furnitureRefs, FURNITURE_LIMIT,
     getStageValidation, getStageValidationResult, getHasProcessedImage, setLastEmptyRoomUrl,
     hideStagingLimitInViewer, hideStagingError, showBeforeView, isProUser,
     showStagingError, messageForDailyLimitResponse, showStagingLimitInViewer,
@@ -107,14 +109,18 @@ export function createStagingPipeline(deps) {
     // Stageability pre-check came back invalid → tear the loading UI back down
     // and surface the reason. Thrown so stageImage()'s catch re-enables the
     // button; the message is already on screen via showStagingError.
-    function rejectUnstageable(reason) {
+    // Takes the whole verdict (not just its text) so the per-category copy is
+    // resolved through the language pack in one place.
+    /** @param {{ code?: string | null, reason?: string } | null} result */
+    function rejectUnstageable(result) {
       clearStagingUiTimers();
       stagePreview.classList.remove('processing');
       loadingMessage.classList.add('hidden');
       progress.classList.add('hidden');
       progressBar.style.width = '0%';
-      showStagingError(reason || DEFAULT_UNSTAGEABLE_MESSAGE);
-      const err = /** @type {Error & { code?: string }} */ (new Error(reason || DEFAULT_UNSTAGEABLE_MESSAGE));
+      const message = unstageableMessage(result);
+      showStagingError(message);
+      const err = /** @type {Error & { code?: string }} */ (new Error(message));
       err.code = 'NOT_STAGEABLE';
       throw err;
     }
@@ -124,7 +130,7 @@ export function createStagingPipeline(deps) {
     // still in flight we don't wait: staging runs below while the check finishes
     // concurrently. Net cost of the check on a valid photo: zero added wait.
     if (getStageValidationResult() && getStageValidationResult().valid === false) {
-      rejectUnstageable(getStageValidationResult().reason);
+      rejectUnstageable(getStageValidationResult());
     }
 
     // If the check is still running, watch it: the moment it rejects the photo,
@@ -132,7 +138,7 @@ export function createStagingPipeline(deps) {
     // the generation to finish. The fetch below is wired to this signal, and its
     // catch turns the abort into the friendly "not stageable" rejection.
     const genAbort = new AbortController();
-    /** @type {{ valid?: boolean, reason?: string } | null} */
+    /** @type {{ valid?: boolean, code?: string | null, reason?: string } | null} */
     let validationRejection = null;
     if (getStageValidation() && !getStageValidationResult()) {
       getStageValidation().then((r) => {
@@ -208,7 +214,7 @@ export function createStagingPipeline(deps) {
       } catch (e) {
         // Aborted because the pre-check rejected the photo mid-generation →
         // stop the bar and show the reason instead of a generic network error.
-        if (validationRejection) rejectUnstageable(validationRejection.reason);
+        if (validationRejection) rejectUnstageable(validationRejection);
         clearStagingUiTimers();
         stagePreview.classList.remove('processing');
         loadingMessage.classList.add('hidden');
@@ -260,7 +266,7 @@ export function createStagingPipeline(deps) {
       } catch (e) {
         // Aborted because the pre-check rejected the photo mid-generation →
         // stop the bar and show the reason instead of a generic network error.
-        if (validationRejection) rejectUnstageable(validationRejection.reason);
+        if (validationRejection) rejectUnstageable(validationRejection);
         clearStagingUiTimers();
         stagePreview.classList.remove('processing');
         loadingMessage.classList.add('hidden');
@@ -331,7 +337,7 @@ export function createStagingPipeline(deps) {
     if (getStageValidation()) {
       const finalCheck = getStageValidationResult() || (await getStageValidation().catch(() => null));
       if (finalCheck && finalCheck.valid === false) {
-        rejectUnstageable(finalCheck.reason);
+        rejectUnstageable(finalCheck);
       }
     }
 

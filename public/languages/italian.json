@@ -509,6 +509,15 @@
     }
   },
   "errors": {
+    "unstageable": {
+      "PERSON_PORTRAIT": "Questa sembra la foto di una persona. Carica la foto di una stanza, di uno spazio o di un mobile.",
+      "ANIMAL": "Questa sembra la foto di un animale domestico. Carica la foto di una stanza, di uno spazio o di un mobile.",
+      "FOOD": "Questa sembra una foto di cibo. Carica la foto di una stanza, di uno spazio o di un mobile.",
+      "DOCUMENT": "Questa sembra una schermata o un documento. Carica la foto di una stanza, di uno spazio o di un mobile.",
+      "VEHICLE": "Questa sembra la foto di un veicolo. Carica la foto di una stanza, di uno spazio o di un mobile.",
+      "UNRELATED_OBJECT": "Questa non sembra una stanza, uno spazio o un mobile. Carica la foto dello spazio o del mobile che vuoi arredare.",
+      "UNSTAGEABLE": "Questa non sembra una stanza, uno spazio o un mobile. Carica la foto di una stanza, di uno spazio esterno o di un mobile che vuoi arredare."
+    },
     "heicConvert": "Non siamo riusciti a leggere quella foto HEIC. Prova con un JPG o PNG.",
     "fileType": "Carica un file immagine PNG, JPG, JPEG, WebP o GIF.",
     "fileTooLarge": "Il file è troppo grande. Carica un'immagine inferiore a 100 MB.",

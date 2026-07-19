@@ -123,7 +123,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 |---|---|
 | `image-primitives.js` | `sharp` helpers: input downscale, aspect-ratio handling (`nearestGeminiAspectRatio` snaps a room to the nearest ratio the image models emit — passed as `imageConfig.aspectRatio` so iterative round-trips can't drift — plus the `cropToAspectRatio` safety net, and the legacy `enforceAspectRatio`/padding still used by the erase pass), marked-room compositing, and the final delivery upscale (`upscaleForDelivery` — a ~2× lanczos enlarge + gentle sharpen of the finished result, encoded as WebP; interpolation only, no added detail). |
 | `image-annotation.js` | GPT-vision image annotation. |
-| `image-review.js` | The quality-gate reviewer + mask-edit / stageable-image validation. |
+| `image-review.js` | The quality-gate reviewer + mask-edit / stageable-image validation. All three reviewers **fail open**. The upload gatekeeper answers with a digit from the fixed taxonomy in `lib/staging/unstageable.js`, which maps to a stable `code` the browser localizes — see [`i18n.md`](i18n.md). |
 | `erase.js` | Furniture-removal ("empty the room") pass. |
 | `hosted-images.js` | The admin-hosted image store + manifest served at `/i/:id`. |
 

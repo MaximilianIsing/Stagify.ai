@@ -82,7 +82,7 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 | 2 | `db.test.js` | The `lib/data/db.js` layer: the WAL/pragmas it sets and that data actually persists to disk. |
 | 2 | `stripe-webhooks.test.js` | Billing lifecycle over hand-built events: checkout upgrades to Pro (by ref or email), `subscription.deleted` downgrades, `updated`→active restores Pro, enterprise routes to the enterprise store. Catches "paid but no Pro" / "churned but still Pro". |
 | 2 | `enterprise-store.test.js` | Domain activation (idempotent, case-insensitive), subscription-state sync, usage counting. |
-| 2 | `staging-endpoints.test.js` | Staging contracts without any AI call: `validate-image` rejects bad input (400) and fails open (200) when the reviewer is disabled; `process-image` requires a session for desktop. |
+| 2 | `staging-endpoints.test.js` | Staging contracts without any AI call: `validate-image` rejects bad input (400) and fails open (200) when the reviewer is disabled (booted with **both** AI keys blank — the grader is Gemini, so `GPT_KEY` alone is not enough); `process-image` requires a session for desktop. |
 | 2 | `public-endpoints.test.js` | Public surface smoke: JSON endpoint shapes, SEO/landing files serve, static content types, unknown routes 404, a helmet header is present. |
 | 2 | `i18n.test.js` | The localized-URL layer (`lib/i18n/` + `routes/i18n.js`): the config is consistent, the page renderer applies translations + `<base>` + canonical/hreflang + link rewriting, the client routing helpers resolve prefixes correctly, live `/es` & `/fr/…` routes render in-language (301/404 edges), and **drift guards** fail if the committed `sitemap.xml` or the English pages' baked-in hreflang is stale (rebuild with `scripts/build-i18n-seo.js`). |
 | 2 | `auth-route.test.js` | The auth **routes** over a real temp-dir store (email/Google faked): register→verify→login→`/me`→logout round-trip, `{ok:false}`→status mapping (400/401), the `/api/auth/me` gate (401 `AUTH_REQUIRED`), and the staging Google-disable (403 `STAGING_DISABLED`). |
@@ -92,6 +92,8 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 | — | `route-inventory.test.js` | Refactor safety net: asserts every **critical route is still registered** (responds with anything but 404 for its method). Guards the `server.js` → `routes/*` extraction. |
 | — | `async-router.test.js` | The `createAsyncRouter()` error-handling safety net: a rejecting async handler reaches the catch-all as a clean `500` instead of hanging the request. |
 | — | `uptime.test.js` | Pure math of the uptime monitor: window percentages, coverage, bucket classification, incident coalescing/pruning. |
+| 1 | `unstageable-message.test.js` | The browser's rejection-copy resolver (`public/scripts/unstageable-message.js`) against a stubbed `LanguageSystem`: a translated code wins, an untranslated one degrades to the server's English, and no input shape ever yields an empty message. |
+| — | `unstageable-i18n.test.js` | **Drift guard** between the rejection taxonomy (`lib/staging/unstageable.js`) and `public/languages/*.json`: every code is translated in **every** language, no pack carries a stale code, and no non-English pack still holds the English string. Needed because a missing key silently falls back to English rather than failing. |
 
 The table is a **representative selection**, not the full list — the suite has grown to
 ~65 files as `server.js` is extracted into `lib/` and pure frontend logic is pulled into
@@ -123,8 +125,10 @@ as do the extracted frontend helpers — the `masking-studio-*` islands plus pur
   `admin`. Reach for `startServer()` from `test/helpers/server.js` only when you must boot
   the **whole** app (cross-router wiring, real middleware order).
 - **Never require real keys or make paid API calls.** Configure the child via `extraEnv`
-  to force deterministic paths (e.g. `GPT_KEY=''` disables the OpenAI reviewer so
-  `validate-image` takes its documented fail-open branch).
+  to force deterministic paths (e.g. `GOOGLE_AI_API_KEY=''` disables the Gemini client so
+  `validate-image` takes its documented fail-open branch). Blank the key of the client the
+  code path actually uses — the stageability grader is **Gemini**, so `GPT_KEY=''` alone
+  leaves it live and the test will hit a real API.
 - If you add a route the frontend or an integration depends on, add it to
   `route-inventory.test.js` so a future refactor can't silently drop it.
 
@@ -154,15 +158,20 @@ they can't be driven on a plain static server. [`e2e/fixtures.js`](../../e2e/fix
 /api/auth/me` → a Pro user, so the page reveals instead of redirecting. This is how gated
 flows (the mask editor, session resume) are exercised without a real account or backend auth.
 
-What's covered today (all green — 8 tests across 5 specs):
+What's covered today (all green — 16 tests across 10 specs):
 
 | Spec | Covers |
 |---|---|
+| `index.spec.js` | Home page load smoke — hero stats, the custom select, and the before/after controls. |
+| `stage-reject.spec.js` | Main tool — a rejected upload surfaces the **localized** reason in the stage modal's error viewer before any generation is spent, plus an approved-upload negative control. The masking studio's reject path is a different consumer, hence the separate spec below. |
 | `ai-designer.spec.js` | Happy path — a chat turn renders the assistant text reply / a staged image. |
 | `ai-designer-errors.spec.js` | A failed `/api/chat` shows a **retryable** error bubble, Retry re-sends and recovers, and a 403 (not Stagify+) shows a **non-retryable** error. |
 | `masking-studio.spec.js` | Happy path — upload → paint a mask → prompt → Apply Edit renders a result. |
 | `masking-studio-errors.spec.js` | A 500 from `/api/mask-edit` flips the area to a visible **Failed** state with a retry. |
+| `masking-studio-reject.spec.js` | The stageability reject path: the photo enters the studio **immediately** (the response is gated open to prove it doesn't await the verdict), then is torn back out when the verdict lands. Also the browser-level proof that rejection copy is **localized** — the toast must show the language pack's wording for the returned `code`, not the server's English. |
 | `masking-studio-resume.spec.js` | Session persistence — paint + prompt is saved to IndexedDB, survives a reload, and the Resume dialog restores the photo, layer, prompt, and painted mask. |
+| `masking-studio-snap.spec.js` | An edit that spills past the highlight offers **Snap to object**, and accepting it consumes the suggestion. |
+| `masking-studio-wand.spec.js` | Magic wand — prefetches `/api/segment` with a busy strip and paints from cache on click; a miss toasts and paints nothing; a failing segment toasts and is not cached. |
 
 **Writing an e2e spec.** Name it `e2e/<thing>.spec.js`, call `seedProSession(page)` in a
 `beforeEach` if the page is gated, `page.route('**/api/…')` **every** backend call it makes

@@ -509,6 +509,15 @@
     }
   },
   "errors": {
+    "unstageable": {
+      "PERSON_PORTRAIT": "Dit lijkt een foto van een persoon. Upload een foto van een kamer, ruimte of meubelstuk.",
+      "ANIMAL": "Dit lijkt een foto van een huisdier. Upload een foto van een kamer, ruimte of meubelstuk.",
+      "FOOD": "Dit lijkt een foto van eten. Upload een foto van een kamer, ruimte of meubelstuk.",
+      "DOCUMENT": "Dit lijkt een schermafbeelding of document. Upload een foto van een kamer, ruimte of meubelstuk.",
+      "VEHICLE": "Dit lijkt een foto van een voertuig. Upload een foto van een kamer, ruimte of meubelstuk.",
+      "UNRELATED_OBJECT": "Dit lijkt geen kamer, ruimte of meubelstuk. Upload een foto van de ruimte of het meubelstuk dat je wilt stylen.",
+      "UNSTAGEABLE": "Dit lijkt geen kamer, ruimte of meubelstuk. Upload een foto van een kamer, buitenruimte of meubelstuk dat je wilt stylen."
+    },
     "fileType": "Upload een PNG-, JPG-, JPEG-, WebP- of GIF-afbeeldingsbestand.",
     "fileTooLarge": "Bestand is te groot. Upload een afbeelding kleiner dan 100 MB.",
     "heicConvert": "We konden die HEIC-foto niet lezen. Probeer een JPG of PNG.",

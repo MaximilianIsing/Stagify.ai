@@ -509,6 +509,15 @@
     }
   },
   "errors": {
+    "unstageable": {
+      "PERSON_PORTRAIT": "Esto parece la foto de una persona. Sube la foto de una habitación, un espacio o un mueble.",
+      "ANIMAL": "Esto parece la foto de una mascota. Sube la foto de una habitación, un espacio o un mueble.",
+      "FOOD": "Esto parece una foto de comida. Sube la foto de una habitación, un espacio o un mueble.",
+      "DOCUMENT": "Esto parece una captura de pantalla o un documento. Sube la foto de una habitación, un espacio o un mueble.",
+      "VEHICLE": "Esto parece la foto de un vehículo. Sube la foto de una habitación, un espacio o un mueble.",
+      "UNRELATED_OBJECT": "Esto no parece una habitación, un espacio ni un mueble. Sube la foto del espacio o el mueble que quieras diseñar.",
+      "UNSTAGEABLE": "Esto no parece una habitación, un espacio ni un mueble. Sube la foto de una habitación, un espacio exterior o un mueble que quieras diseñar."
+    },
     "heicConvert": "No pudimos leer esa foto HEIC. Prueba con un JPG o PNG.",
     "fileType": "Por favor sube un archivo de imagen PNG, JPG, JPEG, WebP o GIF.",
     "fileTooLarge": "El archivo es demasiado grande. Por favor sube una imagen menor a 100MB.",
