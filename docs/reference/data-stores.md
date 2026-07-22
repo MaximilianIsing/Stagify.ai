@@ -41,6 +41,16 @@ store factory. It began as the auth store, so the file is still named `auth-stor
   enforces the 50-generations/day free cap). The separate `mobile_ip_usage` table is a
   **dormant legacy** table: no route writes to it anymore (staging now requires sign-in),
   and it is retained only so the backup/export shape stays 1:1 for rollback.
+- **Admin comp grants** ([`lib/data/pro-grants.js`](../../lib/data/pro-grants.js)): the admin
+  dashboard can hand a free account one calendar month of Stagify+ with **no Stripe
+  subscription** behind it. A grant is `plan='pro'` plus `proGrantedAt` /
+  `proGrantExpiresAt` (and `proGrantRevokedAt` if ended early). Those three fields are
+  deliberately **absent from `KNOWN_USER_KEYS`**, so they ride in the `users.extra_json`
+  blob and needed no column migration on the live DB — see the additive-change note under
+  Caveats. Expiry is enforced when a row is **read** (`applyGrantExpiry` inside
+  `rowToUser`), so a lapsed grant reads as `free` everywhere at once and the row
+  self-heals to `plan='free'` on its next write; there is no sweep job to run. A real
+  Stripe subscription always wins and is never expired this way.
 - **Legacy:** on first boot each store performs a **one-time import** of its old JSON
   file (`auth-store.json`, `enterprise-domains.json`, `memories.json`, `uptime.json`)
   into SQLite — guarded so it never re-runs — then leaves the JSON as a **frozen
@@ -102,5 +112,9 @@ design around them:
 - **The CSV logs and `hosted-images/` are NOT replicated to R2** — they live only on the
   disk, so still **snapshot `/data`** before risky operations to protect those.
 - **No automatic schema migrations.** Table changes are additive (`CREATE TABLE IF NOT
-  EXISTS`); a breaking shape change is manual.
+  EXISTS`); a breaking shape change is manual. Note that `CREATE TABLE IF NOT EXISTS`
+  does **not** add a column to a table that already exists, so a new user field either
+  needs a hand-written `ALTER TABLE` or — the cheaper route, used by the comp-grant
+  fields above — is simply left out of `KNOWN_USER_KEYS` and rides in `extra_json`,
+  which round-trips unknown keys verbatim.
 - **CSV logs grow unbounded.** They're append-only (low risk), but nothing prunes them.

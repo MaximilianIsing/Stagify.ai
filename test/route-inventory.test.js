@@ -33,6 +33,8 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/auth/login'],
   ['POST', '/api/auth/register'],
   ['POST', '/api/getpro'],
+  ['POST', '/api/admin/grant-plus'],
+  ['POST', '/api/admin/revoke-plus'],
   ['POST', '/api/billing/stripe-webhook'],
   ['POST', '/api/billing/customer-portal'],
   ['POST', '/api/enterprise/create-checkout'],

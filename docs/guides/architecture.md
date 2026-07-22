@@ -101,6 +101,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 |---|---|
 | `db.js` | The single shared `better-sqlite3` connection (WAL + pragmas) and `resolveDataDir()`. Every store opens through this. |
 | `auth-store.js` | User accounts, salted+hashed passwords, 30-day sessions, email registration codes, free-tier usage. Imports a legacy `auth-store.json` once on first run. |
+| `pro-grants.js` | Admin **comp grants** — one calendar month of Stagify+ with no Stripe subscription behind it. Owns the month arithmetic and the grant/revoke rules; its `applyGrantExpiry` is called from the auth-store's `rowToUser`, so a lapsed grant is downgraded on **read** rather than by a sweep job. |
 | `enterprise-store.js` | Enterprise domain activation + metered usage, kept in sync with Stripe. |
 | `memory.js` | Per-user AI-chat memory storage and LLM-driven memory-action evaluation. |
 | `counters.js` | The prompt/contact counters shown in the hero stats. |
