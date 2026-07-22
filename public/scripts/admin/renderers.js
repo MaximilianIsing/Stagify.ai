@@ -3,6 +3,7 @@ import {
   badge, statusBadge, authBadge, ICONS, iconDiv, fmtBytes, fullHostUrl,
   copyToClipboard, isStrictEmailClientProxyUa,
 } from './helpers.js';
+import { createGrantSection, grantActive } from './grant.js';
 
 /**
  * All admin tab rendering plus the data-derived helpers, over a single shared
@@ -31,6 +32,8 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     if(userEnterpriseActive(u))return'enterprise';
     return u.plan||'free';
   }
+
+  var grantSection=createGrantSection({apiSend:apiSend,onChanged:function(){renderUsers()}});
 
   function updateTabCounts(){
     qs('#tc-users').textContent=ctx.data.users.length;
@@ -260,6 +263,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
           u.stripeCustomerId?['Stripe Customer',u.stripeCustomerId]:null,
           u.stripeSubscriptionId?['Stripe Subscription',u.stripeSubscriptionId]:null,
           u.proPassGrantedAt?['Pro Pass Granted',fmtDateTime(u.proPassGrantedAt)]:null,
+          grantActive(u)?['Free Month Ends',fmtDateTime(u.proGrantExpiresAt)]:null,
         ].filter(Boolean);
         fields.forEach(function(f){
           var kv=el('div',{className:'adm-detail-kv'});
@@ -268,6 +272,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
           grid.appendChild(kv);
         });
         ig.appendChild(grid);det.appendChild(ig);
+        det.appendChild(grantSection(u,effectivePlan(u)));
 
         // generations
         var gs=el('div',{className:'adm-detail-section'});

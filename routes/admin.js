@@ -1,4 +1,5 @@
 // admin routes, extracted verbatim from server.js.
+import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
 import path from 'path';
@@ -264,6 +265,37 @@ router.get('/masklogs', protectLogs, (req, res) => {
     logger.error('Error serving mask logs file:', error);
     sendError(res, 500, 'Failed to retrieve mask logs', { details: error.message });
   }
+});
+
+// Comp Stagify+: hand a currently-free account one month of pro with no Stripe
+// subscription behind it (see lib/data/pro-grants.js). protectLogs runs BEFORE the
+// body parser so an unauthenticated request is rejected without parsing its body.
+router.post('/api/admin/grant-plus', protectLogs, express.json(), (req, res) => {
+  const { email, userId } = req.body || {};
+  if (!email && !userId) {
+    return sendError(res, 400, 'An email or userId is required');
+  }
+  const result = authStore.grantProMonth({ userId, email });
+  if (!result.ok) {
+    return sendError(res, 400, result.error || 'Could not grant Stagify+');
+  }
+  logger.info('[admin] granted 1 month of Stagify+ to', result.userId, '— expires', result.expiresAt);
+  return res.json({ ok: true, userId: result.userId, email: result.email, expiresAt: result.expiresAt });
+});
+
+// End a running comp grant early. Paying subscribers are refused — they have to be
+// cancelled in Stripe, not here.
+router.post('/api/admin/revoke-plus', protectLogs, express.json(), (req, res) => {
+  const { userId } = req.body || {};
+  if (!userId) {
+    return sendError(res, 400, 'A userId is required');
+  }
+  const result = authStore.revokeProGrant(String(userId));
+  if (!result.ok) {
+    return sendError(res, 400, result.error || 'Could not revoke the grant');
+  }
+  logger.info('[admin] revoked the Stagify+ grant for', result.userId);
+  return res.json({ ok: true, userId: result.userId, email: result.email });
 });
 
 router.get('/enterprise-domains', protectLogs, (req, res) => {

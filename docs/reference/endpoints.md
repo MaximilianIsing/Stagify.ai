@@ -187,6 +187,8 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take
 | `GET` | `/masklogs` | Download `mask_logs.csv`. |
 | `GET` | `/email-open-logs` | Download `email_open_logs.csv` (email open-tracking rows; `404` if none yet). |
 | `GET` | `/enterprise-domains` | Download `enterprise-domains.json` (active enterprise domains + Stripe ids); `{ domains: [] }` if none yet. |
+| `POST` | `/api/admin/grant-plus` | **Comp Stagify+.** Body `{ userId }` or `{ email }`. Gives a **currently-free** account one calendar month of `plan: 'pro'` with **no Stripe subscription** — no card, no invoice, no webhook (`lib/data/pro-grants.js`). Refused (`400`) if the account already has Stagify+ or has a Stripe subscription. Returns `{ ok, userId, email, expiresAt }`. Expiry is enforced on **read**, so the account reverts to free by itself. |
+| `POST` | `/api/admin/revoke-plus` | Body `{ userId }`. Ends a running comp grant immediately. Refused (`400`) if there is no active grant, or if the account is on a Stripe subscription (cancel that in Stripe). |
 | `GET` | `/memories` | Download AI Designer `memories` JSON. |
 | `GET` | `/resetmemories` | **Clears** the memories file (all users). Returns JSON success. |
 | `POST` | `/api/status/reset` | **Wipes** all recorded uptime history/incidents and restarts monitoring from now, via `uptimeMonitor.reset()` (rewrites the `uptime_state` row in `auth-store.db`). Backs the admin "Reset server status data" button and changes the public `/status` page immediately. Returns `{ success: true, message, snapshot }`. |
@@ -198,6 +200,8 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take
 ## Admin dashboard & image hosting
 
 The admin dashboard (`admin.html`) collects the `LOGS_ACCESS_KEY` client-side and calls these image-hosting APIs (and the log exports above) with the `X-Stagify-Endpoint-Key` header. Hosted images are served publicly at `GET /i/:id` (see Public pages).
+
+**Comp Stagify+ grants.** In the **Users** tab, expanding a row shows a *Stagify+ Grant* section ([`public/scripts/admin/grant.js`](../../public/scripts/admin/grant.js)) that calls `POST /api/admin/grant-plus` / `revoke-plus` above. It renders one of four states: a free account gets a *Grant 1 month of Stagify+* button; a running grant shows its end date plus *Revoke now*; a Stripe subscriber and an enterprise-covered account are read-only. Nothing here touches Stripe — the grant expires on its own (see [`data-stores.md`](data-stores.md)), so there is no follow-up action to remember.
 
 | Method | Path | Description |
 |--------|------|-------------|

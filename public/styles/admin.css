@@ -100,6 +100,14 @@
     .adm-detail-section{margin-bottom:1.15rem}
     .adm-detail-section:last-child{margin-bottom:0}
     .adm-detail-empty{font-size:.8rem;color:#94a3b8;font-style:italic}
+    /* comp Stagify+ grant control (inside the user detail drawer) */
+    .adm-grant-btn{padding:.5rem 1rem;font-size:.8rem;font-weight:700;color:#fff;background:#7c3aed;border:none;border-radius:9px;cursor:pointer;font-family:inherit;transition:.18s}
+    .adm-grant-btn:hover:not(:disabled){background:#6d28d9}
+    .adm-grant-btn:disabled{opacity:.5;cursor:wait}
+    .adm-grant-btn--danger{background:#dc2626}
+    .adm-grant-btn--danger:hover:not(:disabled){background:#b91c1c}
+    .adm-grant-status{margin:0 0 .5rem;font-size:.8rem;font-weight:600;color:#6d28d9}
+    .adm-grant-msg{margin:.5rem 0 0;font-size:.78rem;color:#64748b;min-height:1em}
     .adm-detail-info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem}
     .adm-detail-kv{font-size:.78rem;color:#475569}
     .adm-detail-kv strong{color:#1e3a8a;font-weight:600}

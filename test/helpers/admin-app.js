@@ -36,11 +36,16 @@ function makeSpy(impl) {
  *   - `logsAccessKey` (default ADMIN_KEY) → set '' to hit the "key not configured" 500,
  *   - `uploadFile`  → the req.file the faked upload middleware injects,
  *   - `uploadError` → make the upload middleware fail (400 branch),
- *   - `dataLogFiles` → { 'prompt_logs.csv': 'contents' } seeded into the data-log dir.
+ *   - `dataLogFiles` → { 'prompt_logs.csv': 'contents' } seeded into the data-log dir,
+ *   - `grantResult` / `revokeResult` → what the faked comp-grant store calls return.
  * Returns { baseUrl, key, calls, getManifest, hostedImagesDir, close }.
  */
 export async function mountAdmin(options = {}) {
-  const { logsAccessKey = ADMIN_KEY, uploadFile, uploadError, dataLogFiles = {} } = options;
+  const {
+    logsAccessKey = ADMIN_KEY, uploadFile, uploadError, dataLogFiles = {},
+    grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
+    revokeResult = { ok: true, userId: 'u_1', email: 'granted@example.com' },
+  } = options;
 
   const hostedImagesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-hosted-'));
   const dataLogDir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-logs-'));
@@ -62,7 +67,11 @@ export async function mountAdmin(options = {}) {
   const exportAllMemories = makeSpy(() => ({ 'user-1': [{ id: 'm1', text: 'remember me' }] }));
   const resetAllMemories = makeSpy(() => {});
   const uptimeMonitor = { reset: makeSpy(() => ({ up: true, since: 'now' })) };
-  const authStore = { exportStore: makeSpy(() => ({ users: [], sessions: [] })) };
+  const authStore = {
+    exportStore: makeSpy(() => ({ users: [], sessions: [] })),
+    grantProMonth: makeSpy(() => grantResult),
+    revokeProGrant: makeSpy(() => revokeResult),
+  };
   const enterpriseStore = { exportStore: makeSpy(() => ({ domains: [] })) };
 
   const { protectLogs } = createHttpGuards({ genAI: null, LOGS_ACCESS_KEY: logsAccessKey, endpointKeyMatches });
@@ -95,7 +104,7 @@ export async function mountAdmin(options = {}) {
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     key: logsAccessKey,
-    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest },
+    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant },
     getManifest: () => manifest,
     hostedImagesDir,
     close: () =>
