@@ -152,6 +152,65 @@ test('status/reset wipes uptime history and returns the fresh snapshot', async (
   assert.equal(app.calls.uptimeReset.calls, 1);
 });
 
+// ---- Emails tab: preview gallery + test send ------------------------------
+
+test('email-previews requires the key and returns the full catalog', async () => {
+  app = await mountAdmin();
+  const noKey = await fetch(app.baseUrl + '/api/admin/email-previews');
+  assert.equal(noKey.status, 403, 'gated by the access key');
+
+  const res = await fetch(app.baseUrl + '/api/admin/email-previews', { headers: auth });
+  assert.equal(res.status, 200);
+  const { emails } = await res.json();
+  assert.ok(Array.isArray(emails) && emails.length >= 8, 'returns every user-facing email');
+  const welcome = emails.find((e) => e.id === 'trial-welcome');
+  assert.ok(welcome && welcome.subject && welcome.html, 'entries carry subject + html');
+});
+
+test('email-test-send: valid id + email invokes the sender and acks', async () => {
+  app = await mountAdmin();
+  const res = await fetch(app.baseUrl + '/api/admin/email-test-send', {
+    method: 'POST',
+    headers: { ...auth, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: 'trial-welcome', email: 'me@example.com' }),
+  });
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).ok, true);
+  assert.equal(app.calls.sendTestEmail.calls, 1, 'the test-send helper was called once');
+  assert.deepEqual(app.calls.sendTestEmail.lastArgs[0], { id: 'trial-welcome', toEmail: 'me@example.com' });
+});
+
+test('email-test-send: missing fields or a bad email → 400, sender not called', async () => {
+  app = await mountAdmin();
+  const send = (body) => fetch(app.baseUrl + '/api/admin/email-test-send', {
+    method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+
+  assert.equal((await send({ email: 'me@example.com' })).status, 400, 'missing id');
+  assert.equal((await send({ id: 'trial-welcome' })).status, 400, 'missing email');
+  assert.equal((await send({ id: 'trial-welcome', email: 'not-an-email' })).status, 400, 'bad email');
+  assert.equal(app.calls.sendTestEmail.calls, 0, 'never reached the sender');
+});
+
+test('email-test-send: the key gate rejects an unauthenticated request', async () => {
+  app = await mountAdmin();
+  const res = await fetch(app.baseUrl + '/api/admin/email-test-send', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: 'trial-welcome', email: 'me@example.com' }),
+  });
+  assert.equal(res.status, 403);
+  assert.equal(app.calls.sendTestEmail.calls, 0);
+});
+
+test('email-test-send: a sender failure surfaces its status', async () => {
+  app = await mountAdmin({ testSendResult: { ok: false, status: 503, error: 'Email delivery is not configured on this server.' } });
+  const res = await fetch(app.baseUrl + '/api/admin/email-test-send', {
+    method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: 'trial-welcome', email: 'me@example.com' }),
+  });
+  assert.equal(res.status, 503);
+});
+
 // ---- CSV log downloads ----------------------------------------------------
 
 test('a present CSV log is served, a missing one → 404', async () => {

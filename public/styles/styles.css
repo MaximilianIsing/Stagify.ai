@@ -2531,7 +2531,17 @@ html {
   padding:0;
   z-index:12;
   box-shadow:0 2px 8px rgba(0,0,0,.35);
-  transition:background .2s,transform .2s
+  transition:background .2s,transform .2s,filter .3s
+}
+/* While a staging run is in flight the photo under these FABs is blurred
+   (.viewer-image.processing) — blur them along with it and take them out of
+   hit-testing, so the mask editor can't be opened on an image that is still
+   being generated. Sibling selector, so the FABs follow the image's own state
+   with no JS to keep in sync (stage-mask-editor.js guards the keyboard path,
+   which pointer-events cannot). */
+#stage-preview.processing ~ .stage-mask-fab {
+  filter:blur(3px);
+  pointer-events:none
 }
 .stage-mask-fab img {
   width:22px;

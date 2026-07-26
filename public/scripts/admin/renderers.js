@@ -5,6 +5,7 @@ import {
 } from './helpers.js';
 import { createGrantSection, grantActive } from './grant.js';
 import { stripHeader } from './analytics.js';
+import { activityIndexFrom, lastActiveMs, daysSinceActive } from './analytics-users.js';
 import { createOverview } from './overview.js';
 import { createInsights } from './insights.js';
 
@@ -87,7 +88,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     return (pIdx[(u.email||'').toLowerCase()]||[]).length;
   }
 
-  function sortUserList(list, pIdx, d30){
+  function sortUserList(list, pIdx, d30, actIdx){
     var dir=ctx.userSortDir==='asc'?1:-1;
     return list.sort(function(a,b){
       var av,bv;
@@ -110,6 +111,11 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
         case 'gensAll':
           av=userGensAll(a,pIdx); bv=userGensAll(b,pIdx);
           return (av-bv)*dir;
+        case 'lastActive':
+          // Never-active accounts sort as 0 so they cluster at one end rather
+          // than scattering through the list on an unparseable date.
+          av=lastActiveMs(a,actIdx)||0; bv=lastActiveMs(b,actIdx)||0;
+          return (av-bv)*dir;
         default: return 0;
       }
     });
@@ -128,8 +134,22 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     return th;
   }
 
+  // "Last active" is the newest signal across ALL three logs, and they key on two
+  // different identifiers (renders by email, chat/mask by userId) — see
+  // analytics-users.js. A never-active account is a real, common state here:
+  // renders logged without an email can't be attributed to anyone, so "never"
+  // means "never seen", not "never used the product".
+  function lastActiveCell(u,actIdx){
+    var days=daysSinceActive(u,actIdx);
+    if(days===null)return el('td',null,[el('span',{className:'adm-stale adm-stale--never',textContent:'Never'})]);
+    var cls=days>=90?'adm-stale--cold':days>=30?'adm-stale--warm':'adm-stale--fresh';
+    var text=days===0?'Today':days===1?'Yesterday':days+'d ago';
+    return el('td',null,[el('span',{className:'adm-stale '+cls,title:fmtDateTime(new Date(lastActiveMs(u,actIdx)).toISOString()),textContent:text})]);
+  }
+
   function renderUsers(filter){
     var pIdx=buildPromptIndex();
+    var actIdx=activityIndexFrom(ctx.data);
     var d30=daysAgo(30);
     var q=(filter||qs('#adm-user-search').value||'').toLowerCase();
 
@@ -137,7 +157,9 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     if(q)list=list.filter(function(u){return(u.email||'').toLowerCase().indexOf(q)!==-1});
     if(ctx.userFilter==='pro')list=list.filter(function(u){return effectivePlan(u)==='pro'});
     if(ctx.userFilter==='free')list=list.filter(function(u){return effectivePlan(u)==='free'});
-    list=sortUserList(list,pIdx,d30);
+    if(ctx.userFilter==='dormant')list=list.filter(function(u){var d=daysSinceActive(u,actIdx);return d!==null&&d>=30});
+    if(ctx.userFilter==='never')list=list.filter(function(u){return daysSinceActive(u,actIdx)===null});
+    list=sortUserList(list,pIdx,d30,actIdx);
 
     qs('#adm-user-count').textContent=list.length+' user'+(list.length!==1?'s':'');
 
@@ -147,7 +169,8 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     var tbl=el('table',{className:'adm-table'});
     tbl.appendChild(el('thead',null,[el('tr',null,[
       userSortTh('Email','email'),userSortTh('Plan','plan'),userSortTh('Auth','auth'),
-      userSortTh('Created','created'),userSortTh('Gens (30d)','gens30'),userSortTh('Gens (all)','gensAll')
+      userSortTh('Created','created'),userSortTh('Last active','lastActive'),
+      userSortTh('Gens (30d)','gens30'),userSortTh('Gens (all)','gensAll')
     ])]));
     var tbody=el('tbody');
 
@@ -158,6 +181,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
       var row=el('tr',{className:'adm-row-click'},[
         el('td',{textContent:u.email}),el('td',null,[badge(effectivePlan(u))]),el('td',null,[authBadge(u)]),
         el('td',{textContent:fmtDate(u.createdAt)}),
+        lastActiveCell(u,actIdx),
         el('td',{className:'adm-num',textContent:String(c30)}),el('td',{className:'adm-num',textContent:String(allR.length)})
       ]);
 
@@ -168,7 +192,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
         if(old){old.remove();var prev=tbody.querySelector('.adm-row-expanded');if(prev)prev.classList.remove('adm-row-expanded')}
         row.classList.add('adm-row-expanded');
 
-        var td=el('td',{colspan:'6'});
+        var td=el('td',{colspan:'7'});
         var det=el('div',{className:'adm-detail'});
 
         // info grid

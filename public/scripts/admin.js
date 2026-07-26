@@ -1,4 +1,5 @@
 import { createRenderers } from './admin/renderers.js';
+import { createEmailsPanel } from './admin/emails.js';
 import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
 
 (function () {
@@ -21,6 +22,8 @@ import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
   };
 
   var renderers = createRenderers({ ctx: ctx, apiSend: apiSend, secureBlobDownload: secureBlobDownload });
+  var emailsPanel = createEmailsPanel({ apiSend: apiSend });
+  emailsPanel.init();
 
   // ── Secure fetch: key sent in header, not URL ──
 
@@ -118,6 +121,8 @@ import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
     btn.classList.add('active');btn.setAttribute('aria-selected','true');
     qsa('.adm-panel').forEach(function(p){p.classList.remove('active')});
     var p=qs('#panel-'+btn.dataset.tab);if(p)p.classList.add('active');
+    // The Emails gallery is static — lazy-load it the first time the tab opens.
+    if(btn.dataset.tab==='emails')emailsPanel.ensureLoaded();
     // Panels are display:none while inactive, so a tab that was hidden during the
     // last render starts scrolled wherever the previous one was.
     window.scrollTo({top:0,behavior:'smooth'});
@@ -244,6 +249,7 @@ import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
   function signOut(){
     _key='';_sessionStart=0;
     sessionStorage.removeItem('adm_ts');
+    emailsPanel.reset();
     ctx.data={users:[],promptRows:[],chatRows:[],bugRows:[],maskRows:[],contactRows:[],emailOpenRows:[],enterprise:[],hostedImages:[]};
     qs('#adm-dash').classList.add('hidden');
     qs('#adm-login').style.display='';

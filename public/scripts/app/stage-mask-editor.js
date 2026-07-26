@@ -625,6 +625,10 @@ export function createStageMaskEditor(deps) {
       // Same paint-brush FAB on both views: edits the staged result on After,
       // or the original photo on Before.
       if (maskEditBtn) maskEditBtn.addEventListener('click', () => {
+        // Staging in flight: the FAB is blurred and pointer-inert in CSS (see
+        // `#stage-preview.processing ~ .stage-mask-fab`), but a keyboard Enter
+        // still lands here — don't open the editor on a half-generated image.
+        if (stagePreview && stagePreview.classList.contains('processing')) return;
         if (activeViewIsAfter()) openEditor();
         else openBeforeEditor();
       });
