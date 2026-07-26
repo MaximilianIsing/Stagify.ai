@@ -14,6 +14,7 @@
 import { getRootBaseNameForImage } from './image-history.js';
 import { updateMaskEditorTranslations } from './mask-editor-i18n.js';
 import { createMaskViewport } from './mask-viewport.js';
+import { createMaskFit } from './mask-fit.js';
 import { createMaskOverlay } from './mask-overlay.js';
 import { createMaskReference } from './mask-reference.js';
 
@@ -30,8 +31,11 @@ export function createMaskEditor(deps) {
 
   // Extracted mask-editor slices (self-contained; each owns its own DOM/state).
   const viewport = createMaskViewport();
+  const fit = createMaskFit();
   const overlay = createMaskOverlay({ lang });
-  const reference = createMaskReference({ lang, showToast });
+  // The reference thumbnail replaces the "+ Add photo" button, so showing or
+  // hiding it changes the chrome height the image was sized against.
+  const reference = createMaskReference({ lang, showToast, onChange: () => fit.fit() });
 
       // Mask editor functionality
       // Track original image containers and their masked versions
@@ -90,34 +94,13 @@ export function createMaskEditor(deps) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
-          // Calculate display size (maintain aspect ratio). On mobile, use the
-          // visual viewport height and a smaller fraction so the image leaves room
-          // for the header + controls + action buttons without excessive scrolling.
-          const isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
-          const viewportH = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-          const viewportW = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
-          const maxHeight = viewportH * (isMobileViewport ? 0.5 : 0.7);
-          const maxWidth = viewportW * 0.9;
-          let displayWidth = img.width;
-          let displayHeight = img.height;
-          
-          if (displayHeight > maxHeight) {
-            displayWidth = (maxHeight / displayHeight) * displayWidth;
-            displayHeight = maxHeight;
-          }
-          if (displayWidth > maxWidth) {
-            displayHeight = (maxWidth / displayWidth) * displayHeight;
-            displayWidth = maxWidth;
-          }
-          
-          // Set canvas display size
-          canvas.style.width = displayWidth + 'px';
-          canvas.style.height = displayHeight + 'px';
-          
+          // Display size is measured against the live dialog once it is visible
+          // (see fit.fit() below) — never guessed from a fraction of the
+          // viewport, which overflowed and clipped the image on short screens.
           // Set canvas actual size (for drawing)
           canvas.width = img.width;
           canvas.height = img.height;
-          
+
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, img.width, img.height);
           
@@ -125,8 +108,6 @@ export function createMaskEditor(deps) {
           const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
           maskCanvas.width = img.width;
           maskCanvas.height = img.height;
-          maskCanvas.style.width = displayWidth + 'px';
-          maskCanvas.style.height = displayHeight + 'px';
           const maskCtx = maskCanvas.getContext('2d');
           maskCtx.fillStyle = 'rgba(37, 99, 235, 0.4)'; // Blue overlay for mask (Stagify blue)
           
@@ -136,6 +117,7 @@ export function createMaskEditor(deps) {
           canvas.dataset.originalWidth = String(img.width);
           canvas.dataset.originalHeight = String(img.height);
           
+          fit.setImage(img.width, img.height);
           existingModal.classList.add('active');
           viewport.bind();
           viewport.sync();
@@ -161,6 +143,10 @@ export function createMaskEditor(deps) {
           updateApplyButtonState();
           maskRefineState = null;
           maskSetPhase('draw');
+          // Last, once every row that shares the dialog's height budget is in
+          // its final state (translated, reference cleared, draw-phase buttons).
+          fit.fit();
+          fit.bind();
         };
         img.src = imageSrc;
       }
@@ -202,7 +188,7 @@ export function createMaskEditor(deps) {
               <div class="mask-editor-prompt-container">
                 <label class="mask-editor-prompt-label" data-i18n="pdf.maskEditor.promptLabel">What would you like to change in the masked area?</label>
                 <input type="text" id="mask-editor-prompt" class="mask-editor-prompt-input" maxlength="1000" data-i18n-placeholder="pdf.maskEditor.promptPlaceholder" placeholder="e.g., change the wall color to blue, replace the sofa with a modern chair...">
-                <p class="mask-editor-prompt-hint" data-i18n="pdf.maskEditor.promptHint" style="margin:6px 0 0;font-size:12px;font-style:italic;opacity:0.7;line-height:1.4;">Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”</p>
+                <p class="mask-editor-prompt-hint" data-i18n="pdf.maskEditor.promptHint">Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”</p>
               </div>
               <div class="mask-editor-ref-container">
                 <label class="mask-editor-ref-label" for="mask-editor-ref-file" data-i18n="pdf.maskEditor.referenceLabel">Reference photo (optional)</label>
@@ -399,6 +385,9 @@ export function createMaskEditor(deps) {
           if (title) title.textContent = lang('pdf.maskEditor.title', 'Edit with Mask');
           if (note) { note.style.display = 'none'; note.textContent = ''; }
         }
+        // The refine phase adds a note row and swaps the buttons — re-measure so
+        // the image gives back (or takes) the height that costs.
+        fit.fit();
       }
       // Re-composite the already-generated AI output through the CURRENT strokes —
       // instant, free, no API call.
@@ -578,6 +567,7 @@ export function createMaskEditor(deps) {
         if (modal) {
           modal.classList.remove('active');
           viewport.unbind();
+          fit.unbind();
           overlay.stop();
           clearMask();
           reference.clear();

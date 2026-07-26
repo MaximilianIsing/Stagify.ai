@@ -105,7 +105,7 @@ import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
   }
 
   function showLoading(){
-    ['adm-stats','adm-recent-signups','adm-top-users','adm-users-table','adm-ent-table','adm-bugs-table','adm-contacts-table','adm-email-opens-table','adm-email-open-summary','adm-chart','adm-hosting-list'].forEach(function(id){
+    ['adm-stats','adm-recent-signups','adm-top-users','adm-users-table','adm-ent-table','adm-bugs-table','adm-contacts-table','adm-email-opens-table','adm-email-open-summary','adm-charts','adm-insights','adm-hosting-list'].forEach(function(id){
       var e=document.getElementById(id);if(e)e.innerHTML='<div class="adm-loading"><span class="adm-spinner"></span>Loading\u2026</div>';
     });
   }
@@ -114,10 +114,13 @@ import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
 
   qs('#adm-tabs').addEventListener('click',function(e){
     var btn=e.target.closest('.adm-tab');if(!btn)return;
-    qsa('.adm-tab').forEach(function(t){t.classList.remove('active')});
-    btn.classList.add('active');
+    qsa('.adm-tab').forEach(function(t){t.classList.remove('active');t.setAttribute('aria-selected','false')});
+    btn.classList.add('active');btn.setAttribute('aria-selected','true');
     qsa('.adm-panel').forEach(function(p){p.classList.remove('active')});
     var p=qs('#panel-'+btn.dataset.tab);if(p)p.classList.add('active');
+    // Panels are display:none while inactive, so a tab that was hidden during the
+    // last render starts scrolled wherever the previous one was.
+    window.scrollTo({top:0,behavior:'smooth'});
   });
 
   // ── User filters ──

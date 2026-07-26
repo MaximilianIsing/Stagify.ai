@@ -9,11 +9,15 @@
 // parseCSV is the one with real teeth: the CSV logs contain user-supplied text
 // (prompts, filenames), so quoting, embedded commas/newlines and doubled quotes
 // have to survive the round trip or the dashboard silently mis-columns rows.
+//
+// Chart bucketing (day/week/month keys, zero-fill, distributions) is NOT here —
+// it moved to public/scripts/admin/analytics.js, covered by
+// test/admin-analytics.test.js.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { parseCSV, esc, fmtDate, dayKey, daysAgo } from '../public/scripts/admin/helpers.js';
+import { parseCSV, esc, fmtDate, daysAgo } from '../public/scripts/admin/helpers.js';
 
 test('parseCSV: plain rows, and blank input is an empty table', () => {
   assert.deepEqual(parseCSV('a,b\n1,2'), [['a', 'b'], ['1', '2']]);
@@ -51,12 +55,6 @@ test('fmtDate: em dash for missing, month-day-year for a real timestamp', () => 
   assert.equal(fmtDate(/** @type {any} */ (null)), '—');
   // Locale data varies by ICU build, so assert the shape, not the exact string.
   assert.match(fmtDate('2026-07-22T10:00:00.000Z'), /2026/);
-});
-
-test('dayKey: ISO date prefix, null when unparseable', () => {
-  assert.equal(dayKey('2026-07-22T10:00:00.000Z'), '2026-07-22');
-  assert.equal(dayKey('not-a-date'), null);
-  assert.equal(dayKey(''), null);
 });
 
 test('daysAgo: n days back, snapped to local midnight', () => {
