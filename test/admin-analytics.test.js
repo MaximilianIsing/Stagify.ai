@@ -22,7 +22,8 @@ import assert from 'node:assert/strict';
 import {
   COL, stripHeader, toDate, dayKeyLocal, monthKeyLocal, weekStartLocal, startOfDaysAgo,
   dailyCounts, pickGranularity, allTimeCounts, cumulative, windowDelta,
-  topValues, hourHistogram, weekdayHistogram, planMix, authMix, booleanMix,
+  topValues, topValuesByPerson, distinctPeople, categoryKey,
+  hourHistogram, weekdayHistogram, planMix, authMix, booleanMix,
   peakPoint, averageValue,
   withOutcome, successRate, failuresByDay, percentile, durationStats, durationHistogram,
 } from '../public/scripts/admin/analytics.js';
@@ -243,18 +244,119 @@ test('topValues: counts a column, sorts desc, skips blank and "unknown"', () => 
   assert.deepEqual(topValues([], 1), []);
 });
 
-test('topValues: the tail folds into one Other bucket, conserving the total', () => {
+test('topValues: the tail folds into one bucket, conserving the total', () => {
   const rows = [];
   ['a', 'a', 'a', 'b', 'b', 'c', 'd', 'e'].forEach((v) => rows.push(['t', v]));
   const out = topValues(rows, 1, { top: 2 });
   assert.deepEqual(out, [
     { label: 'a', value: 3 },
     { label: 'b', value: 2 },
-    { label: 'Other', value: 3 },
+    { label: 'Other (3 more)', value: 3 },
   ]);
   assert.equal(out.reduce((s, r) => s + r.value, 0), rows.length);
   // top:0 means "no folding" — return the full ranking.
   assert.equal(topValues(rows, 1, { top: 0 }).length, 5);
+});
+
+test('topValues: the fold label cannot collide with a REAL category called "Other"', () => {
+  // Shipped bug: room types include a genuine "Other" option, and the fold used a
+  // fixed "Other" label — the chart drew two rows both labelled Other, one real
+  // and one synthetic, with different numbers.
+  const rows = [];
+  for (let i = 0; i < 5; i++) rows.push(['t', 'Living room']);
+  for (let i = 0; i < 4; i++) rows.push(['t', 'Other']);
+  rows.push(['t', 'Attic'], ['t', 'Garage']);
+
+  const out = topValues(rows, 1, { top: 2 });
+  const labels = out.map((r) => r.label);
+  assert.equal(new Set(labels).size, labels.length, 'no duplicate labels: ' + labels.join(' | '));
+  assert.deepEqual(out, [
+    { label: 'Living room', value: 5 },
+    { label: 'Other', value: 4 },
+    { label: 'Other (2 more)', value: 2 },
+  ]);
+});
+
+test('categoryKey: case and whitespace folded, so one category is one bucket', () => {
+  assert.equal(categoryKey('Living Room'), 'living room');
+  assert.equal(categoryKey('  Living   room '), 'living room');
+  assert.equal(categoryKey(null), '');
+});
+
+test('topValues: case and spacing variants are ONE category, not three', () => {
+  // Shipped bug: "Living room" (24,325) and "Living Room" (315) charted as two
+  // separate rooms because grouping was case-sensitive.
+  const rows = [];
+  for (let i = 0; i < 5; i++) rows.push(['t', 'Living room']);
+  for (let i = 0; i < 3; i++) rows.push(['t', 'Living Room']);
+  rows.push(['t', 'living  room']);
+
+  const out = topValues(rows, 1);
+  assert.equal(out.length, 1, 'one bucket: ' + JSON.stringify(out));
+  assert.equal(out[0].value, 9, 'every variant counted');
+  assert.equal(out[0].label, 'Living room', 'labelled with the most common spelling');
+});
+
+test('topValues: unknown is skipped case-insensitively too', () => {
+  assert.deepEqual(topValues([['t', 'UNKNOWN'], ['t', 'Unknown'], ['t', 'Kitchen']], 1), [{ label: 'Kitchen', value: 1 }]);
+});
+
+// ── Per-person distributions ────────────────────────────────────────────────
+//
+// The onboarding answers (role, referral source) are per-PERSON attributes that
+// the client replays onto every render row. Counting rows over the render log
+// turned a few hundred answers into tens of thousands of "people", weighted by
+// whoever staged the most rooms — the shipped bug these cover.
+
+/** contact_logs row: timestamp,userRole,referralSource,email,userAgent,ipAddress */
+const contact = (role, referral, email) => ['2026-07-20T10:00:00Z', role, referral, email, 'ua', '1.1.1.1'];
+
+test('topValuesByPerson: one count per person, however many rows they left', () => {
+  const rows = [
+    contact('agent', 'socials', 'a@x.com'),
+    contact('agent', 'socials', 'a@x.com'),
+    contact('agent', 'socials', 'A@X.COM'),
+    contact('agent', 'friend', 'b@x.com'),
+  ];
+  // Tied at one person each, so the order is the alphabetical tie-break.
+  assert.deepEqual(topValuesByPerson(rows, 2, 3), [
+    { label: 'friend', value: 1 },
+    { label: 'socials', value: 1 },
+  ]);
+  // Same table counted by ROW is the buggy shape — kept as the contrast.
+  assert.deepEqual(topValues(rows, 2), [{ label: 'socials', value: 3 }, { label: 'friend', value: 1 }]);
+});
+
+test('topValuesByPerson: a person who answered twice differently counts in both', () => {
+  const rows = [contact('agent', 'socials', 'a@x.com'), contact('agent', 'friend', 'a@x.com')];
+  assert.deepEqual(topValuesByPerson(rows, 2, 3), [
+    { label: 'friend', value: 1 },
+    { label: 'socials', value: 1 },
+  ]);
+});
+
+test('topValuesByPerson: rows with no identity cannot be deduped, so each counts once', () => {
+  const rows = [contact('agent', 'socials', 'unknown'), contact('agent', 'socials', ''), contact('agent', 'socials', 'a@x.com')];
+  assert.deepEqual(topValuesByPerson(rows, 2, 3), [{ label: 'socials', value: 3 }]);
+});
+
+test('topValuesByPerson: same grouping and folding rules as topValues', () => {
+  const rows = [
+    contact('agent', 'Socials', 'a@x.com'),
+    contact('agent', 'socials', 'b@x.com'),
+    contact('agent', 'friend', 'c@x.com'),
+    contact('agent', 'email', 'd@x.com'),
+  ];
+  const out = topValuesByPerson(rows, 2, 3, { top: 1 });
+  assert.deepEqual(out, [{ label: 'Socials', value: 2 }, { label: 'Other (2 more)', value: 2 }]);
+  assert.deepEqual(topValuesByPerson([], 2, 3), []);
+});
+
+test('distinctPeople: unique identities plus each un-identifiable row', () => {
+  assert.equal(distinctPeople([contact('a', 'b', 'a@x.com'), contact('a', 'b', 'A@X.com')], 3), 1);
+  assert.equal(distinctPeople([contact('a', 'b', 'a@x.com'), contact('a', 'b', 'b@x.com')], 3), 2);
+  assert.equal(distinctPeople([contact('a', 'b', 'unknown'), contact('a', 'b', '')], 3), 2);
+  assert.equal(distinctPeople([], 3), 0);
 });
 
 test('topValues: ties break alphabetically so a re-render keeps the same order', () => {
