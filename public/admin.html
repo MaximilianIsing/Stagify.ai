@@ -61,23 +61,27 @@
         <button class="adm-tab" data-tab="enterprise">Enterprise <span class="adm-tab-count" id="tc-ent">0</span></button>
         <button class="adm-tab" data-tab="contacts">Contacts <span class="adm-tab-count" id="tc-contacts">0</span></button>
         <button class="adm-tab" data-tab="email-opens">Email Opens <span class="adm-tab-count" id="tc-email-opens">0</span></button>
+        <button class="adm-tab" data-tab="emails">Emails</button>
         <button class="adm-tab" data-tab="bugs">Bugs <span class="adm-tab-count" id="tc-bugs">0</span></button>
         <button class="adm-tab" data-tab="hosting">Image Hosting <span class="adm-tab-count" id="tc-hosting">0</span></button>
         <button class="adm-tab" data-tab="downloads">Downloads</button>
       </div>
 
       <div class="adm-panel active" id="panel-overview">
+        <!-- Range selector, built by scripts/admin/overview.js. Scopes the stat
+             cards, the first chart, and both tables; the all-time chart ignores it. -->
+        <div class="adm-range" id="adm-range"></div>
         <div class="adm-stats" id="adm-stats"></div>
         <!-- Both generation charts (trailing 30 days + all time) are appended here
              by scripts/admin/overview.js — see docs/guides/admin-dashboard.md. -->
         <div class="adm-chart-stack" id="adm-charts"></div>
         <div class="adm-top-grid">
           <div class="adm-card">
-            <h2>Top users <span class="adm-card-tag">30 days</span></h2>
+            <h2>Top users <span class="adm-card-tag" id="adm-top-users-range">30 days</span></h2>
             <div class="adm-table-wrap adm-table-wrap--short" id="adm-top-users"></div>
           </div>
           <div class="adm-card">
-            <h2>Recent signups <span class="adm-card-tag">30 days</span></h2>
+            <h2>Recent signups <span class="adm-card-tag" id="adm-recent-signups-range">30 days</span></h2>
             <div class="adm-table-wrap adm-table-wrap--short" id="adm-recent-signups"></div>
           </div>
         </div>
@@ -94,6 +98,8 @@
           <button class="adm-filter" id="adm-filter-all" data-filter="all">All</button>
           <button class="adm-filter" id="adm-filter-pro" data-filter="pro">Pro only</button>
           <button class="adm-filter" id="adm-filter-free" data-filter="free">Free only</button>
+          <button class="adm-filter" data-filter="dormant" title="Last seen 30+ days ago">Dormant</button>
+          <button class="adm-filter" data-filter="never" title="Never seen in any log">Never active</button>
           <span class="adm-result-count" id="adm-user-count"></span>
         </div>
         <div class="adm-card">
@@ -130,6 +136,18 @@
           <p class="adm-card-sub">Binary open tracking: each email is either opened or not. Only Gmail/Outlook/Yahoo image-proxy requests count — generic browser or bot hits are ignored. Use <code class="adm-code">https://stagify.ai/email/logo.png?email=broker@example.com</code> in outreach emails.</p>
           <div id="adm-email-open-summary" class="adm-summary"></div>
           <div class="adm-table-wrap" id="adm-email-opens-table"></div>
+        </div>
+      </div>
+
+      <div class="adm-panel" id="panel-emails">
+        <div class="adm-card">
+          <h2>Email preview</h2>
+          <p class="adm-card-sub">Every email a user can receive, rendered exactly as it arrives. Enter your address, then hit &ldquo;Send test&rdquo; on any template to get a live copy (its subject is prefixed with <code class="adm-code">[Test]</code>). Test sends go to the address you type here &mdash; never to real users.</p>
+          <div class="adm-email-test">
+            <input type="email" id="adm-email-test-to" class="adm-search adm-email-test-input" placeholder="you@example.com" autocomplete="off" spellcheck="false">
+            <span id="adm-email-test-hint" class="adm-email-test-hint">Enter your email above to enable test sends.</span>
+          </div>
+          <div id="adm-email-gallery" class="adm-email-gallery"></div>
         </div>
       </div>
 

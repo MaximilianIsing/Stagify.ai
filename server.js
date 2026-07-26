@@ -45,6 +45,9 @@ import { logger } from './lib/logger.js';
 import { applyEdgeMiddleware, applyBodyAndStatic } from './lib/http/app-middleware.js';
 import { createStagingGeneration } from './lib/staging/staging-generation.js';
 import { createVirtualStagingHandler } from './lib/staging/virtual-staging-handler.js';
+import { createLifecycleEmails } from './lib/services/lifecycle-emails.js';
+import { createTrialLifecycle } from './lib/services/trial-lifecycle.js';
+import { createEmailCatalog } from './lib/services/email-catalog.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -110,6 +113,56 @@ applyEdgeMiddleware(app);
 // Rate limiters (authLimiter / emailLimiter / genLimiter) → lib/http/rate-limiters.js
 // (imported above). Pure config; each reads its RL_* env override at module load.
 
+// AI/email clients (genAI / openai / resend) → lib/services/ai-clients.js.
+// Constructed HERE (before the billing router) because the Stripe webhook drives
+// the trial-email lifecycle, which needs the Resend client. genAI/openai are just
+// held for the routers mounted further down.
+const { genAI, openai, resend } = createAiClients({ __dirname, DEBUG_MODE });
+const RESEND_FROM_EMAIL = String(process.env.RESEND_FROM_EMAIL || 'team@stagify.ai').trim();
+const APP_URL = String(process.env.PUBLIC_APP_URL || process.env.APP_URL || 'https://stagify.ai').replace(/\/$/, '');
+
+// Trial-email lifecycle (welcome / activation / value / ending / win-back). The
+// webhook fires the event-driven ones; trialLifecycle.start() (below, post-listen)
+// runs the behaviour-based sweep.
+const lifecycleEmails = createLifecycleEmails({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, appUrl: APP_URL });
+const trialLifecycle = createTrialLifecycle({ authStore, emails: lifecycleEmails });
+
+// Email catalog (every user-facing email, built from the same renderers the senders
+// use) powers the admin dashboard's Emails tab — preview gallery + "send test to me".
+const emailCatalog = createEmailCatalog({ appUrl: APP_URL });
+
+/**
+ * Send a one-off copy of a catalog email to an admin-supplied address (the Emails
+ * tab's "send test" button). Sends to the exact address requested — no
+ * EMAIL_DEBUG_MODE redirect, because the operator is deliberately testing delivery
+ * to themselves. Never throws; returns a { ok, status?, error? } shape.
+ * @param {{ id: string, toEmail: string }} arg - Catalog id + recipient.
+ * @returns {Promise<{ ok: boolean, status?: number, error?: string }>}
+ */
+async function sendTestEmail({ id, toEmail }) {
+  if (!resend) return { ok: false, status: 503, error: 'Email delivery is not configured on this server.' };
+  const entry = emailCatalog.renderById(id);
+  if (!entry) return { ok: false, status: 400, error: 'Unknown email template.' };
+  try {
+    const result = await resend.emails.send({
+      from: RESEND_FROM_EMAIL,
+      to: toEmail,
+      subject: `[Test] ${entry.subject}`,
+      html: entry.html,
+      text: entry.text,
+    });
+    if (result && result.error) {
+      const msg = typeof result.error?.message === 'string' ? result.error.message : JSON.stringify(result.error);
+      logger.error('[admin] test email send failed:', msg);
+      return { ok: false, status: 502, error: 'The email provider rejected the send.' };
+    }
+    return { ok: true };
+  } catch (err) {
+    logger.error('[admin] test email send threw:', err && err.message ? err.message : err);
+    return { ok: false, status: 502, error: 'Could not send the test email.' };
+  }
+}
+
 // Billing & enterprise routes (routes/billing.js). Mounted BEFORE express.json
 // below so the Stripe webhook can read the RAW request body for signature
 // verification; the other billing routes carry their own inline express.json.
@@ -123,6 +176,7 @@ app.use(
     enterpriseStore,
     handleStripeEvent,
     getAuthUserFromRequest,
+    trialLifecycle,
   })
 );
 
@@ -148,11 +202,9 @@ if (STATS_DEBUG) {
 // getTemperatureForModel / getGeminiImageModel → lib/config/model-config.js
 // setSensitiveHeaders → lib/http/http-helpers.js (imported at top)
 
-// AI/email clients (genAI / openai / resend) → lib/services/ai-clients.js. Constructed once
-// at boot from env vars (Render) or local *-key.txt fallbacks (dev).
-const { genAI, openai, resend } = createAiClients({ __dirname, DEBUG_MODE });
-
-const RESEND_FROM_EMAIL = String(process.env.RESEND_FROM_EMAIL || 'team@stagify.ai').trim();
+// AI/email clients (genAI / openai / resend) + RESEND_FROM_EMAIL / APP_URL are
+// constructed above the billing router (the Stripe webhook needs the Resend client
+// for the trial-email lifecycle). Reused here for the remaining routers.
 const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile } = createLogging({ __dirname, DEBUG_MODE });
 const { logEmailOpenToFile, isConfirmedEmailClientOpen, sendRegistrationVerificationEmail, sendAccountExistsNotice } = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
 const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = createMemory({ __dirname, DEBUG_MODE, openai });
@@ -232,7 +284,7 @@ const MAX_SEGMENT_QUERY_LENGTH = 200;
 app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, sendRegistrationVerificationEmail, sendAccountExistsNotice, __dirname, googleClientId }));
 
 // admin routes (routes/admin.js)
-app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT }));
+app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail }));
 
 // staging routes (routes/staging.js)
 app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
@@ -298,6 +350,15 @@ app.listen(PORT, () => {
       uptimeMonitor.start();
     } catch (err) {
       logger.error('Uptime monitor failed to start:', err.message);
+    }
+
+    // Behaviour-based trial emails (activation nudge + mid-trial value). The
+    // event-driven ones fire from the Stripe webhook; this sweep covers the two
+    // that depend on trial age + whether the user has staged yet.
+    try {
+      trialLifecycle.start();
+    } catch (err) {
+      logger.error('Trial-lifecycle sweep failed to start:', err.message);
     }
   }
 

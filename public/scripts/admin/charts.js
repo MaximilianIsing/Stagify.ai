@@ -395,6 +395,134 @@ export function donutChart(slices, opts = {}) {
 }
 
 /**
+ * Conversion funnel. Each step is a bar scaled against the FIRST step (not the
+ * previous one), so the visual width is the share of the top of the funnel and
+ * consecutive steps are directly comparable; the step-over-step conversion is
+ * called out separately, since that is the number you act on.
+ * @param {Array<{label: string, value: number, pctOfPrev: number|null, pctOfTop: number}>} steps
+ * @param {{color?: string}} [opts]
+ * @returns {HTMLElement}
+ */
+export function funnelChart(steps, opts = {}) {
+  if (!steps || !steps.length) return chartEmpty();
+  const wrap = document.createElement('div');
+  wrap.className = 'adm-funnel';
+  const base = opts.color || PALETTE[0];
+
+  steps.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'adm-funnel-step';
+
+    const head = document.createElement('div');
+    head.className = 'adm-funnel-head';
+    const label = document.createElement('span');
+    label.className = 'adm-funnel-label';
+    label.textContent = s.label;
+    const val = document.createElement('span');
+    val.className = 'adm-funnel-val';
+    val.textContent = fmtNum(s.value);
+    head.appendChild(label);
+    head.appendChild(val);
+    row.appendChild(head);
+
+    const track = document.createElement('div');
+    track.className = 'adm-funnel-track';
+    const fill = document.createElement('div');
+    fill.className = 'adm-funnel-fill';
+    fill.style.width = Math.max(0.5, s.pctOfTop) + '%';
+    // Fade each step so depth reads without five unrelated hues.
+    fill.style.background = base;
+    fill.style.opacity = String(Math.max(0.42, 1 - i * 0.14));
+    track.appendChild(fill);
+    row.appendChild(track);
+
+    const foot = document.createElement('div');
+    foot.className = 'adm-funnel-foot';
+    foot.textContent = s.pctOfPrev === null
+      ? Math.round(s.pctOfTop) + '% of accounts'
+      : s.pctOfPrev.toFixed(1) + '% of previous step · ' + s.pctOfTop.toFixed(1) + '% of accounts';
+    row.appendChild(foot);
+
+    row.title = s.label + ': ' + fmtNum(s.value);
+    wrap.appendChild(row);
+  });
+  return wrap;
+}
+
+/**
+ * Cohort-retention grid: one row per signup month, one cell per elapsed month,
+ * shaded by the share of that cohort still active.
+ *
+ * Cells only exist for months that have actually elapsed, so the rows are ragged
+ * by design — a blank tail means "not yet", which is a different statement from
+ * a 0% cell, and flattening the two would read as churn that never happened.
+ * @param {{cohorts: Array<{key: string, label: string, size: number, cells: Array<{offset: number, active: number, pct: number}>}>, maxOffset: number}} data
+ * @returns {HTMLElement}
+ */
+export function cohortGrid(data) {
+  const cohorts = (data && data.cohorts) || [];
+  if (!cohorts.length) return chartEmpty('No signup cohorts yet.');
+  const maxOffset = Math.min(data.maxOffset || 0, 11);
+
+  const scroll = document.createElement('div');
+  scroll.className = 'adm-cohort-scroll';
+  const table = document.createElement('table');
+  table.className = 'adm-cohort';
+
+  const thead = document.createElement('thead');
+  const hrow = document.createElement('tr');
+  ['Cohort', 'Users'].forEach((t) => {
+    const th = document.createElement('th');
+    th.className = 'adm-cohort-head';
+    th.textContent = t;
+    hrow.appendChild(th);
+  });
+  for (let i = 0; i <= maxOffset; i++) {
+    const th = document.createElement('th');
+    th.className = 'adm-cohort-head';
+    th.textContent = 'M' + i;
+    hrow.appendChild(th);
+  }
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  cohorts.forEach((c) => {
+    const tr = document.createElement('tr');
+    const name = document.createElement('td');
+    name.className = 'adm-cohort-name';
+    name.textContent = c.label;
+    tr.appendChild(name);
+    const size = document.createElement('td');
+    size.className = 'adm-cohort-size';
+    size.textContent = fmtNum(c.size);
+    tr.appendChild(size);
+
+    for (let i = 0; i <= maxOffset; i++) {
+      const cell = c.cells[i];
+      const td = document.createElement('td');
+      if (!cell) {
+        td.className = 'adm-cohort-cell adm-cohort-cell--future';
+        td.textContent = '';
+      } else {
+        td.className = 'adm-cohort-cell';
+        // Opacity, not a hue ramp: one channel, so the eye reads intensity as
+        // magnitude directly. Floor it so a real 0% is still a visible cell.
+        td.style.background = 'rgba(37, 99, 235, ' + (cell.pct === 0 ? 0.05 : 0.12 + (cell.pct / 100) * 0.68).toFixed(3) + ')';
+        if (cell.pct >= 55) td.style.color = '#fff';
+        td.textContent = Math.round(cell.pct) + '%';
+        td.title = c.label + ' · month ' + i + ': ' + cell.active + ' of ' + c.size + ' active (' + cell.pct.toFixed(1) + '%)';
+      }
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  scroll.appendChild(table);
+  return scroll;
+}
+
+/**
  * Tiny inline trend line for a stat card — no axes, no labels, just the shape.
  * @param {Point[]} points
  * @param {{color?: string}} [opts]

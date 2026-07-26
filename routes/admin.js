@@ -27,11 +27,14 @@ import { logger } from '../lib/logger.js';
  *   protectLogs: import('express').RequestHandler,
  *   __dirname: string,
  *   HOSTED_IMAGE_MIME_EXT: Record<string, string>,
+ *   emailCatalog: ReturnType<typeof import('../lib/services/email-catalog.js').createEmailCatalog>,
+ *   sendTestEmail: (arg: { id: string, toEmail: string }) => Promise<{ ok: boolean, status?: number, error?: string }>,
  * }} deps - Stores, the hosted-image upload middleware + log-access guard, data-dir
- *   and manifest helpers, memory/uptime admin actions, and the mime→ext map.
+ *   and manifest helpers, memory/uptime admin actions, the mime→ext map, and the
+ *   user-facing email catalog + test-send helper for the Emails tab.
  */
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT } = deps;
+  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail } = deps;
   const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
@@ -296,6 +299,39 @@ router.post('/api/admin/revoke-plus', protectLogs, express.json(), (req, res) =>
   }
   logger.info('[admin] revoked the Stagify+ grant for', result.userId);
   return res.json({ ok: true, userId: result.userId, email: result.email });
+});
+
+// Emails tab: the preview gallery. Returns every user-facing email (subject + HTML +
+// text) built from the same renderers the senders use, so a preview matches what
+// actually ships. Read-only; nothing is sent here.
+router.get('/api/admin/email-previews', protectLogs, (req, res) => {
+  if (!emailCatalog || typeof emailCatalog.list !== 'function') {
+    return sendError(res, 500, 'Email catalog not configured');
+  }
+  return res.json({ emails: emailCatalog.list() });
+});
+
+// Emails tab: send one catalog email as a live test to an admin-supplied address.
+// protectLogs runs BEFORE the body parser so an unauthenticated request is rejected
+// without parsing its body.
+router.post('/api/admin/email-test-send', protectLogs, express.json(), async (req, res) => {
+  const { id, email } = req.body || {};
+  if (!id || !email) {
+    return sendError(res, 400, 'An email template id and a recipient email are required');
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
+    return sendError(res, 400, 'Enter a valid email address');
+  }
+  if (typeof sendTestEmail !== 'function') {
+    return sendError(res, 500, 'Test send is not configured');
+  }
+  const out = await sendTestEmail({ id: String(id), toEmail: String(email).trim() });
+  if (!out.ok) {
+    return sendError(res, out.status || 500, out.error || 'Could not send the test email');
+  }
+  // Log the template but NOT the recipient address (PII).
+  logger.info('[admin] test email sent:', String(id));
+  return res.json({ ok: true });
 });
 
 router.get('/enterprise-domains', protectLogs, (req, res) => {

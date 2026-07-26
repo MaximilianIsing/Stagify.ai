@@ -22,8 +22,10 @@ import { logger } from '../lib/logger.js';
  *   enterpriseStore: any,
  *   handleStripeEvent: typeof import('../lib/services/stripe-webhooks.js').handleStripeEvent,
  *   getAuthUserFromRequest: (req: import('express').Request) => any,
+ *   trialLifecycle?: ReturnType<typeof import('../lib/services/trial-lifecycle.js').createTrialLifecycle>,
  * }} deps - Injected Stripe client + config strings, the auth/enterprise stores,
- *   the webhook event handler, and the session-user resolver.
+ *   the webhook event handler, the session-user resolver, and the trial-email
+ *   lifecycle (fires welcome/ending/win-back off Stripe events).
  */
 export default function createBillingRouter(deps) {
   const {
@@ -35,6 +37,7 @@ export default function createBillingRouter(deps) {
     enterpriseStore,
     handleStripeEvent,
     getAuthUserFromRequest,
+    trialLifecycle,
   } = deps;
 
   const router = createAsyncRouter();
@@ -59,7 +62,7 @@ export default function createBillingRouter(deps) {
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
     try {
-      const out = await handleStripeEvent(event, authStore, { stripe, enterpriseStore });
+      const out = await handleStripeEvent(event, authStore, { stripe, enterpriseStore, lifecycle: trialLifecycle });
       if (!out.handled) {
         logger.info('[stripe] Unhandled event type (ok):', event.type);
       }

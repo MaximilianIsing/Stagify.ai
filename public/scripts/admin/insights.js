@@ -7,19 +7,21 @@
 // and no partial update — a refresh rebuilds the whole grid, which is cheap
 // (pure DOM, no listeners) and removes any chance of a stale card.
 //
-// Column indices below are the CSV schemas written by lib/services/logging.js
-// (prompt/mask/chat), routes/public.js (contact/bug) and lib/services/email.js.
-// They are listed in docs/guides/admin-dashboard.md — if a writer gains a column,
-// fix both.
+// Column indices come from analytics.js#COL — the single source of truth for the
+// CSV schemas, mirrored in docs/guides/admin-dashboard.md.
 
 import { qs } from './helpers.js';
 import {
-  stripHeader, dailyCounts, allTimeCounts, cumulative, topValues,
+  COL, stripHeader, dailyCounts, allTimeCounts, cumulative, topValues,
   hourHistogram, weekdayHistogram, planMix, authMix, booleanMix,
+  successRate, failuresByDay, durationStats, durationHistogram,
 } from './analytics.js';
 import {
+  activityIndexFrom, attributionCoverage, activationFunnel, paidConversion, cohortRetention,
+} from './analytics-users.js';
+import {
   areaChart as wideArea, barChart as wideBar,
-  rankedBars, donutChart, chartCard, chartEmpty, fmtNum, PALETTE,
+  rankedBars, donutChart, funnelChart, cohortGrid, chartCard, chartEmpty, fmtNum, PALETTE,
 } from './charts.js';
 
 // Cards in this grid give a chart ~350 CSS px of content width, so their charts draw into a
@@ -29,13 +31,6 @@ import {
 const CARD_VB_W = 380;
 const areaChart = (points, opts) => wideArea(points, { width: CARD_VB_W, ...opts });
 const barChart = (points, opts) => wideBar(points, { width: CARD_VB_W, ...opts });
-
-/** prompt_logs.csv: timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress */
-const PROMPT_COL = { ROOM: 1, STYLE: 2, REMOVE: 4, ROLE: 5, REFERRAL: 6, EMAIL: 7 };
-/** contact_logs.csv: timestamp,userRole,referralSource,email,userAgent,ipAddress */
-const CONTACT_COL = { ROLE: 1, REFERRAL: 2 };
-/** mask_logs.csv: timestamp,prompt,model,geminiModel,imageWidth,imageHeight,userId,… */
-const MASK_COL = { MODEL: 3 };
 
 const GRANULARITY_NOUN = { day: 'day', week: 'week', month: 'month' };
 
@@ -106,7 +101,7 @@ export function createInsights({ ctx, effectivePlan }) {
       title: 'Furniture removal',
       sub: 'Share of renders that asked to empty the room first.',
       body: promptRows.length
-        ? donutChart(booleanMix(promptRows, PROMPT_COL.REMOVE, 'Removed first', 'Staged as-is'), {
+        ? donutChart(booleanMix(promptRows, COL.PROMPT.REMOVE, 'Removed first', 'Staged as-is'), {
           centerLabel: 'renders', colors: [PALETTE[6], PALETTE[0]],
         })
         : chartEmpty('No renders logged yet.'),
@@ -117,35 +112,35 @@ export function createInsights({ ctx, effectivePlan }) {
     host.appendChild(chartCard({
       title: 'Room types',
       sub: 'Which rooms get staged, all time.',
-      body: rankedBars(topValues(promptRows, PROMPT_COL.ROOM, { top: 10 }), { unit: 'renders', colorful: true }),
+      body: rankedBars(topValues(promptRows, COL.PROMPT.ROOM, { top: 10 }), { unit: 'renders', colorful: true }),
     }));
 
     host.appendChild(chartCard({
       title: 'Furniture styles',
       sub: 'Which styles get picked, all time.',
-      body: rankedBars(topValues(promptRows, PROMPT_COL.STYLE, { top: 10 }), { unit: 'renders', color: PALETTE[1] }),
+      body: rankedBars(topValues(promptRows, COL.PROMPT.STYLE, { top: 10 }), { unit: 'renders', color: PALETTE[1] }),
     }));
 
     // Referral/role are self-reported at signup and repeated onto every prompt
     // row, so the contact form is the cleaner sample when prompts carry none.
-    const referral = topValues(promptRows, PROMPT_COL.REFERRAL, { top: 8 });
+    const referral = topValues(promptRows, COL.PROMPT.REFERRAL, { top: 8 });
     host.appendChild(chartCard({
       title: 'Referral sources',
       sub: referral.length ? 'Self-reported "how did you hear about us", from render logs.' : 'From contact-form submissions.',
-      body: rankedBars(referral.length ? referral : topValues(contactRows, CONTACT_COL.REFERRAL, { top: 8 }), { color: PALETTE[3] }),
+      body: rankedBars(referral.length ? referral : topValues(contactRows, COL.CONTACT.REFERRAL, { top: 8 }), { color: PALETTE[3] }),
     }));
 
-    const role = topValues(promptRows, PROMPT_COL.ROLE, { top: 8 });
+    const role = topValues(promptRows, COL.PROMPT.ROLE, { top: 8 });
     host.appendChild(chartCard({
       title: 'User roles',
       sub: 'Self-reported role — agent, photographer, stager, and so on.',
-      body: rankedBars(role.length ? role : topValues(contactRows, CONTACT_COL.ROLE, { top: 8 }), { color: PALETTE[5] }),
+      body: rankedBars(role.length ? role : topValues(contactRows, COL.CONTACT.ROLE, { top: 8 }), { color: PALETTE[5] }),
     }));
 
     host.appendChild(chartCard({
       title: 'Mask-edit models',
       sub: 'Which model served each masking-studio round-trip.',
-      body: rankedBars(topValues(maskRows, MASK_COL.MODEL, { top: 6 }), { unit: 'edits', color: PALETTE[4] }),
+      body: rankedBars(topValues(maskRows, COL.MASK.MODEL, { top: 6 }), { unit: 'edits', color: PALETTE[4] }),
     }));
 
     const domains = (ctx.data.enterprise || [])
@@ -186,6 +181,106 @@ export function createInsights({ ctx, effectivePlan }) {
     }));
   }
 
+  // ── Reliability ───────────────────────────────────────────────────────────
+  //
+  // Only renders logged since the outcome columns were added carry a result, so
+  // every card here states how many rows it is actually speaking for. Silently
+  // charting a partial sample as if it were the whole history is exactly the kind
+  // of quiet wrongness these charts exist to remove.
+
+  function reliabilityCards(host, promptRows) {
+    const rate = successRate(promptRows);
+    const unrecordedNote = rate.unrecorded
+      ? fmtNum(rate.unrecorded) + ' older renders have no recorded outcome'
+      : '';
+
+    host.appendChild(chartCard({
+      title: 'Render outcomes',
+      sub: 'Did the staging call actually produce an image?',
+      body: rate.recorded
+        ? donutChart([{ label: 'Succeeded', value: rate.ok }, { label: 'Failed', value: rate.failed }],
+          { centerLabel: 'renders', colors: [PALETTE[2], PALETTE[6]] })
+        : chartEmpty('No outcomes recorded yet — they start appearing after the next deploy.'),
+      notes: [
+        rate.pct === null ? 'Success rate unknown' : rate.pct.toFixed(1) + '% success',
+        fmtNum(rate.recorded) + ' recorded',
+        unrecordedNote,
+      ].filter(Boolean),
+    }));
+
+    host.appendChild(chartCard({
+      title: 'Failed renders per day',
+      sub: 'Absolute failures over the trailing 30 days — a quiet day and a broken day should not look alike.',
+      body: barChart(failuresByDay(promptRows, 30), { height: 210, color: PALETTE[6], unit: 'failures', maxLabels: 5 }),
+    }));
+
+    const reasons = topValues(promptRows, COL.PROMPT.ERROR, { top: 8 });
+    host.appendChild(chartCard({
+      title: 'Failure reasons',
+      sub: 'Error code recorded on each failed render.',
+      body: reasons.length ? rankedBars(reasons, { unit: 'failures', color: PALETTE[6] }) : chartEmpty('No failures recorded.'),
+    }));
+
+    const d = durationStats(promptRows);
+    host.appendChild(chartCard({
+      title: 'Render duration',
+      sub: 'Wall-clock time of successful renders, including quality-gate retries.',
+      body: d.count
+        ? barChart(durationHistogram(promptRows), { height: 210, color: PALETTE[5], unit: 'renders', maxLabels: 6 })
+        : chartEmpty('No durations recorded yet.'),
+      notes: d.count ? [
+        'p50 ' + (d.p50 / 1000).toFixed(1) + 's',
+        'p90 ' + (d.p90 / 1000).toFixed(1) + 's',
+        'p95 ' + (d.p95 / 1000).toFixed(1) + 's',
+        fmtNum(d.count) + ' timed renders',
+      ] : [],
+    }));
+
+    const models = topValues(promptRows, COL.PROMPT.MODEL, { top: 6 });
+    host.appendChild(chartCard({
+      title: 'Staging models',
+      sub: 'Which Gemini model served each render.',
+      body: models.length ? rankedBars(models, { unit: 'renders', color: PALETTE[0] }) : chartEmpty('No models recorded yet.'),
+    }));
+  }
+
+  // ── Funnel & retention ────────────────────────────────────────────────────
+  //
+  // Both are joins between accounts and render rows, so both inherit the
+  // attribution gap: a render logged without an email cannot be tied to anyone.
+  // Each card states the coverage rather than presenting a floor as a count.
+
+  function lifecycleCards(host, promptRows) {
+    const index = activityIndexFrom(ctx.data);
+    const coverage = attributionCoverage(promptRows);
+    const coverageNote = coverage.total
+      ? Math.round(coverage.pct) + '% of renders are attributable (' + fmtNum(coverage.total - coverage.attributed) + ' anonymous)'
+      : '';
+
+    // Paid is reported beside the funnel, not inside it: a subscriber whose
+    // renders logged anonymously is paid but not "activated", so it does not nest
+    // and would draw as a step wider than its parent. See analytics-users.js.
+    const paid = paidConversion(ctx.data.users || [], effectivePlan);
+    host.appendChild(chartCard({
+      title: 'Activation funnel',
+      sub: 'Accounts that went on to render, and kept going. Each step is a strict subset of the one above.',
+      body: funnelChart(activationFunnel(ctx.data.users || [], index)),
+      notes: [
+        fmtNum(paid.paid) + ' of ' + fmtNum(paid.total) + ' accounts pay (' + paid.pct.toFixed(1) + '%) — tracked separately, it does not nest',
+        coverageNote,
+        'Anonymous renders count for nobody — read these as a floor',
+      ].filter(Boolean),
+    }));
+
+    host.appendChild(chartCard({
+      title: 'Cohort retention',
+      sub: 'Share of each signup month still rendering N months later. A blank cell is a month that has not happened yet, not a zero.',
+      body: cohortGrid(cohortRetention(ctx.data.users || [], promptRows)),
+      notes: [coverageNote].filter(Boolean),
+      wide: true,
+    }));
+  }
+
   function render() {
     const host = qs('#adm-insights');
     if (!host) return;
@@ -199,6 +294,8 @@ export function createInsights({ ctx, effectivePlan }) {
     const signupStamps = (ctx.data.users || []).map((u) => u.createdAt);
 
     host.innerHTML = '';
+    reliabilityCards(host, promptRows);
+    lifecycleCards(host, promptRows);
     growthCards(host, promptStamps, signupStamps);
     compositionCards(host, promptRows, chatStamps, maskStamps, promptStamps);
     contentCards(host, promptRows, maskRows, contactRows);

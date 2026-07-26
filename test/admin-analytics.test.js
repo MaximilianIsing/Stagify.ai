@@ -20,10 +20,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  stripHeader, toDate, dayKeyLocal, monthKeyLocal, weekStartLocal, startOfDaysAgo,
+  COL, stripHeader, toDate, dayKeyLocal, monthKeyLocal, weekStartLocal, startOfDaysAgo,
   dailyCounts, pickGranularity, allTimeCounts, cumulative, windowDelta,
   topValues, hourHistogram, weekdayHistogram, planMix, authMix, booleanMix,
   peakPoint, averageValue,
+  withOutcome, successRate, failuresByDay, percentile, durationStats, durationHistogram,
 } from '../public/scripts/admin/analytics.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -329,4 +330,117 @@ test('averageValue: mean over ALL buckets including zeros, one decimal', () => {
   assert.equal(averageValue([{ value: 1 }, { value: 2 }]), 1.5);
   assert.equal(averageValue([{ value: 1 }, { value: 1 }, { value: 2 }]), 1.3);
   assert.equal(averageValue([]), 0);
+});
+
+
+// ── Render outcomes ─────────────────────────────────────────────────────────
+//
+// The outcome columns were appended to prompt_logs.csv after the fact, so most of
+// the historical file has empty cells there. The load-bearing rule under test:
+// an unrecorded outcome is UNKNOWN and must be excluded — counting it as a
+// failure would paint an error spike across the entire pre-existing history, and
+// counting it as a success would hide a real outage behind old data.
+
+/** A render row; `status` empty models a row written before the outcome columns. */
+function renderRow({ ts = '2026-07-20T10:00:00Z', status = '', durationMs = '', model = '', error = '' } = {}) {
+  const r = [ts, 'Living Room', 'Modern', '', 'false', 'agent', 'google', 'a@x.com', '1.1.1.1'];
+  r[COL.PROMPT.STATUS] = status;
+  r[COL.PROMPT.DURATION] = String(durationMs);
+  r[COL.PROMPT.MODEL] = model;
+  r[COL.PROMPT.ATTEMPTS] = '1';
+  r[COL.PROMPT.ERROR] = error;
+  return r;
+}
+
+test('withOutcome: only ok/failed rows count — legacy and unknown rows are excluded', () => {
+  const rows = [
+    renderRow({ status: 'ok' }),
+    renderRow({ status: 'failed' }),
+    renderRow({ status: '' }),
+    renderRow({ status: 'unknown' }),
+  ];
+  assert.equal(withOutcome(rows).length, 2);
+  assert.equal(withOutcome([]).length, 0);
+});
+
+test('successRate: splits ok/failed and reports what it could not speak for', () => {
+  const rows = [
+    renderRow({ status: 'ok' }), renderRow({ status: 'ok' }), renderRow({ status: 'ok' }),
+    renderRow({ status: 'failed' }),
+    renderRow({ status: '' }), renderRow({ status: '' }),
+  ];
+  const r = successRate(rows);
+  assert.equal(r.ok, 3);
+  assert.equal(r.failed, 1);
+  assert.equal(r.recorded, 4);
+  assert.equal(r.unrecorded, 2, 'legacy rows are surfaced, not silently dropped');
+  assert.equal(r.pct, 75);
+});
+
+test('successRate: nothing recorded yet is null, not a flattering 100%', () => {
+  assert.equal(successRate([renderRow({ status: '' })]).pct, null);
+  assert.equal(successRate([]).pct, null);
+});
+
+test('failuresByDay: absolute failures, zero-filled, ignoring unrecorded rows', () => {
+  const points = failuresByDay([
+    renderRow({ ts: daysBack(0).toISOString(), status: 'failed' }),
+    renderRow({ ts: daysBack(0).toISOString(), status: 'failed' }),
+    renderRow({ ts: daysBack(0).toISOString(), status: 'ok' }),
+    renderRow({ ts: daysBack(0).toISOString(), status: '' }),
+    renderRow({ ts: daysBack(2).toISOString(), status: 'failed' }),
+  ], 7);
+  assert.equal(points.length, 7);
+  assert.equal(points[6].value, 2);
+  assert.equal(points[4].value, 1);
+  assert.equal(points[0].value, 0);
+});
+
+test('percentile: nearest-rank, clamped, null on an empty sample', () => {
+  const v = [10, 20, 30, 40, 50];
+  assert.equal(percentile(v, 50), 30);
+  assert.equal(percentile(v, 100), 50);
+  assert.equal(percentile(v, 0), 10);
+  assert.equal(percentile([42], 95), 42);
+  assert.equal(percentile([], 50), null);
+  // Order of the input must not matter.
+  assert.equal(percentile([50, 10, 40, 20, 30], 50), 30);
+  // Junk is filtered rather than sorted as NaN.
+  assert.equal(percentile([/** @type {any} */ ('x'), 10, 20], 50), 10);
+});
+
+test('durationStats: successful renders only — a fast failure must not flatter latency', () => {
+  const rows = [
+    renderRow({ status: 'ok', durationMs: 1000 }),
+    renderRow({ status: 'ok', durationMs: 2000 }),
+    renderRow({ status: 'ok', durationMs: 3000 }),
+    renderRow({ status: 'failed', durationMs: 5 }),
+    renderRow({ status: 'ok', durationMs: 0 }),
+    renderRow({ status: '', durationMs: 9999 }),
+  ];
+  const d = durationStats(rows);
+  assert.equal(d.count, 3, 'the failure, the zero, and the legacy row are all excluded');
+  assert.equal(d.p50, 2000);
+  assert.equal(d.p95, 3000);
+  assert.deepEqual(durationStats([]), { count: 0, p50: null, p90: null, p95: null });
+});
+
+test('durationHistogram: fixed buckets, always all six, each render in exactly one', () => {
+  const rows = [
+    renderRow({ status: 'ok', durationMs: 1200 }),
+    renderRow({ status: 'ok', durationMs: 4999 }),
+    renderRow({ status: 'ok', durationMs: 5000 }),
+    renderRow({ status: 'ok', durationMs: 25000 }),
+    renderRow({ status: 'ok', durationMs: 120000 }),
+    renderRow({ status: 'failed', durationMs: 1000 }),
+  ];
+  const h = durationHistogram(rows);
+  assert.equal(h.length, 6);
+  assert.deepEqual(h.map((b) => b.label), ['<5s', '5–10s', '10–20s', '20–30s', '30–60s', '60s+']);
+  assert.equal(h[0].value, 2, '1.2s and 4999ms');
+  assert.equal(h[1].value, 1, '5000ms lands in the NEXT bucket, not the one it equals the top of');
+  assert.equal(h[3].value, 1);
+  assert.equal(h[5].value, 1, 'the open-ended bucket catches the outlier');
+  assert.equal(h.reduce((s, b) => s + b.value, 0), 5, 'every successful render counted exactly once');
+  assert.equal(durationHistogram([]).length, 6);
 });

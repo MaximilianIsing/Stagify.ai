@@ -87,14 +87,15 @@ test('getDataLogDir: returns <__dirname>/data and creates it on demand', () => {
 test('logPromptToFile: first call writes header + row; the fields land in column order', () => {
   const { logging, dataDir } = freshLogging();
   const req = { ip: '203.0.113.9' };
-  logging.logPromptToFile('the prompt', 'Living Room', 'Modern', 'extra note', false, 'realtor', 'google', 'u@x.com', req);
+  logging.logPromptToFile('the prompt', 'Living Room', 'Modern', 'extra note', false, 'realtor', 'google', 'u@x.com', req,
+    { status: 'ok', durationMs: 8421.7, model: 'gemini-2.5-flash-image', attempts: 2, errorCode: '' });
 
   const file = path.join(dataDir, 'prompt_logs.csv');
   const l = lines(file);
   assert.equal(l.length, 2, 'header + exactly one data row (synchronous first write)');
   assert.equal(
     l[0],
-    'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress',
+    'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode',
   );
   const cols = l[1].split(',');
   // cols[0] is the ISO timestamp; assert the stable, positioned fields.
@@ -106,6 +107,51 @@ test('logPromptToFile: first call writes header + row; the fields land in column
   assert.equal(cols[6], 'google');
   assert.equal(cols[7], 'u@x.com');
   assert.equal(cols[8], '203.0.113.9');
+  // The outcome columns are APPENDED, so these indices must never shift — the
+  // admin dashboard reads this file positionally.
+  assert.equal(cols[9], 'ok');
+  assert.equal(cols[10], '8422', 'durationMs is rounded to a whole millisecond');
+  assert.equal(cols[11], 'gemini-2.5-flash-image');
+  assert.equal(cols[12], '2');
+  assert.equal(cols[13], '');
+});
+
+test('logPromptToFile: an omitted outcome writes unknown/empty, never a fake success', () => {
+  const { logging, dataDir } = freshLogging();
+  logging.logPromptToFile('p', 'Room', 'S', '', false, 'r', 'src', 'a@x.com', { ip: '1.1.1.1' });
+  const cols = lines(path.join(dataDir, 'prompt_logs.csv'))[1].split(',');
+  assert.equal(cols[9], 'unknown', 'status is unknown, not ok — an unrecorded render is not a success');
+  assert.equal(cols[10], '', 'no duration invented');
+  assert.equal(cols[12], '', 'no attempt count invented');
+});
+
+test('logPromptToFile: a failure row carries its error code and still records duration', () => {
+  const { logging, dataDir } = freshLogging();
+  logging.logPromptToFile('p', 'Room', 'S', '', false, 'r', 'src', 'a@x.com', { ip: '1.1.1.1' },
+    { status: 'failed', durationMs: 1200, model: 'gemini-3-pro-image', attempts: 0, errorCode: 'NO_IMAGE_GENERATED' });
+  const cols = lines(path.join(dataDir, 'prompt_logs.csv'))[1].split(',');
+  assert.equal(cols[9], 'failed');
+  assert.equal(cols[10], '1200');
+  assert.equal(cols[12], '0', 'zero attempts is a real value, not a missing one');
+  assert.equal(cols[13], 'NO_IMAGE_GENERATED');
+});
+
+test('logPromptToFile: a legacy-header file is upgraded in place, keeping every data row', async () => {
+  const { logging, dataDir } = freshLogging();
+  const file = path.join(dataDir, 'prompt_logs.csv');
+  fs.mkdirSync(dataDir, { recursive: true });
+  const legacy = 'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress';
+  fs.writeFileSync(file, legacy + '\n2026-01-01T00:00:00.000Z,Old Room,Old Style,,false,r,src,old@x.com,1.1.1.1\n');
+
+  logging.logPromptToFile('p', 'New Room', 'S', '', false, 'r', 'src', 'new@x.com', { ip: '2.2.2.2' },
+    { status: 'ok', durationMs: 10, model: 'm', attempts: 1 });
+
+  await waitForLineCount(file, 3);
+  const l = lines(file);
+  assert.equal(l[0], 'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode');
+  assert.ok(l[1].includes('Old Room'), 'the pre-existing row survives the header rewrite');
+  assert.ok(l[2].includes('New Room'));
+  assert.equal(fs.existsSync(file + '.tmp'), false, 'the temp file is renamed away, not left behind');
 });
 
 test('logPromptToFile: unknown-field defaults and CSV escaping of nasty values', () => {
@@ -118,8 +164,12 @@ test('logPromptToFile: unknown-field defaults and CSV escaping of nasty values',
   assert.ok(raw.includes('"Kitchen, Dining"'), 'comma field is quoted');
   assert.ok(raw.includes('"he said ""wow"""'), 'inner quotes doubled');
   // null role/referral/email fall back to the "unknown" sentinels; no req → ip "unknown".
+  // null role/referral/email fall back to the "unknown" sentinels; no req → ip
+  // "unknown". Asserted as a substring, not by splitting on commas: the quoted
+  // "Kitchen, Dining" cell above contains one, which is the whole point of the
+  // escaping under test. The outcome-column defaults have their own test.
   const dataRow = lines(file)[1];
-  assert.ok(dataRow.endsWith(',unknown,unknown,unknown,unknown'), `role/referral/email/ip default to unknown: ${dataRow}`);
+  assert.ok(dataRow.includes(',unknown,unknown,unknown,unknown,'), `role/referral/email/ip default to unknown: ${dataRow}`);
 });
 
 test('logPromptToFile: a second call appends rather than rewriting the header', async () => {

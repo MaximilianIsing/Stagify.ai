@@ -43,7 +43,7 @@ globalThis.document = /** @type {any} */ ({
 
 const {
   areaChart, barChart, rankedBars, donutChart, sparkline, legend,
-  chartCard, chartEmpty, fmtNum, fmtCompact, niceMax, PALETTE,
+  funnelChart, cohortGrid, chartCard, chartEmpty, fmtNum, fmtCompact, niceMax, PALETTE,
 } = await import('../public/scripts/admin/charts.js');
 
 // ---- Walkers ---------------------------------------------------------------
@@ -307,4 +307,87 @@ test('chartCard: title, optional sub-caption, body, and optional note chips', ()
   const bare = chartCard({ title: 'T', body: globalThis.document.createElement('div') });
   assert.equal(findAllByClass(bare, 'adm-chart-sub').length, 0);
   assert.equal(findAllByClass(bare, 'adm-chart-notes').length, 0);
+});
+
+
+// ---- Funnel ----------------------------------------------------------------
+
+test('funnelChart: bars scale against the TOP step, so steps are comparable', () => {
+  const steps = [
+    { label: 'Accounts', value: 100, pctOfPrev: null, pctOfTop: 100 },
+    { label: 'Activated', value: 40, pctOfPrev: 40, pctOfTop: 40 },
+    { label: 'Paid', value: 10, pctOfPrev: 25, pctOfTop: 10 },
+  ];
+  const wrap = funnelChart(steps);
+  const fills = findAllByClass(wrap, 'adm-funnel-fill');
+  assert.equal(fills.length, 3);
+  assert.deepEqual(fills.map((f) => f.style.width), ['100%', '40%', '10%']);
+  // Each step fades slightly, so depth reads without three unrelated hues.
+  const opacity = fills.map((f) => Number(f.style.opacity));
+  assert.ok(opacity[0] > opacity[1] && opacity[1] > opacity[2]);
+});
+
+test('funnelChart: the first step has no step-over-step conversion to show', () => {
+  const wrap = funnelChart([
+    { label: 'Accounts', value: 100, pctOfPrev: null, pctOfTop: 100 },
+    { label: 'Activated', value: 40, pctOfPrev: 40, pctOfTop: 40 },
+  ]);
+  const feet = findAllByClass(wrap, 'adm-funnel-foot').map((f) => f.textContent);
+  assert.ok(!feet[0].includes('of previous'), feet[0]);
+  assert.ok(feet[1].includes('40.0% of previous step'), feet[1]);
+});
+
+test('funnelChart: a zero step still renders a row, and empty input degrades', () => {
+  const wrap = funnelChart([{ label: 'Accounts', value: 0, pctOfPrev: null, pctOfTop: 0 }]);
+  assert.equal(findAllByClass(wrap, 'adm-funnel-step').length, 1);
+  assert.equal(findAllByClass(wrap, 'adm-funnel-fill')[0].style.width, '0.5%', 'a sliver, so the row is not invisible');
+  assert.ok(hasClass(funnelChart([]), 'adm-chart-empty'));
+});
+
+// ---- Cohort grid -----------------------------------------------------------
+
+const COHORTS = {
+  maxOffset: 2,
+  cohorts: [
+    { key: '2026-05', label: "May '26", size: 2, cells: [
+      { offset: 0, active: 2, pct: 100 }, { offset: 1, active: 0, pct: 0 }, { offset: 2, active: 1, pct: 50 },
+    ] },
+    { key: '2026-07', label: "Jul '26", size: 1, cells: [{ offset: 0, active: 1, pct: 100 }] },
+  ],
+};
+
+test('cohortGrid: a row per cohort, a column per elapsed month', () => {
+  const wrap = cohortGrid(COHORTS);
+  const rows = findAll(wrap, 'tr');
+  assert.equal(rows.length, 3, 'header + two cohorts');
+  const text = allText(wrap);
+  ["May '26", "Jul '26", 'M0', 'M1', 'M2'].forEach((t) => assert.ok(text.includes(t), 'missing ' + t));
+});
+
+test('cohortGrid: a month that has not elapsed is BLANK, never 0%', () => {
+  const wrap = cohortGrid(COHORTS);
+  const future = findAllByClass(wrap, 'adm-cohort-cell--future');
+  assert.equal(future.length, 2, "Jul's months 1 and 2 have not happened");
+  assert.ok(future.every((c) => c.textContent === ''), 'no number is implied for a month that has not occurred');
+
+  // ...while a real 0% IS drawn, because it is a measured value.
+  const zero = findAllByClass(wrap, 'adm-cohort-cell').filter((c) => c.textContent === '0%');
+  assert.equal(zero.length, 1, "May's month 1 is a measured zero and must be shown");
+});
+
+test('cohortGrid: cell shading rises with retention and every cell carries its counts', () => {
+  const wrap = cohortGrid(COHORTS);
+  const cells = findAllByClass(wrap, 'adm-cohort-cell').filter((c) => !hasClass(c, 'adm-cohort-cell--future'));
+  const alpha = (c) => Number(/rgba\([^)]*,\s*([\d.]+)\)/.exec(c.style.background)[1]);
+  const hundred = cells.find((c) => c.textContent === '100%');
+  const fifty = cells.find((c) => c.textContent === '50%');
+  const zero = cells.find((c) => c.textContent === '0%');
+  assert.ok(alpha(hundred) > alpha(fifty) && alpha(fifty) > alpha(zero));
+  assert.ok(alpha(zero) > 0, 'a measured zero is still a visible cell');
+  assert.ok(hundred.title.includes('2 of 2 active'), hundred.title);
+});
+
+test('cohortGrid: no cohorts degrades to a placeholder', () => {
+  assert.ok(hasClass(cohortGrid({ cohorts: [], maxOffset: 0 }), 'adm-chart-empty'));
+  assert.ok(hasClass(cohortGrid(/** @type {any} */ (null)), 'adm-chart-empty'));
 });

@@ -14,6 +14,7 @@ import crypto from 'node:crypto';
 import createAdminRouter from '../../routes/admin.js';
 import { createHttpGuards } from '../../lib/http/http-guards.js';
 import { setSensitiveHeaders } from '../../lib/http/http-helpers.js';
+import { createEmailCatalog } from '../../lib/services/email-catalog.js';
 
 export const ADMIN_KEY = 'test-endpoint-key';
 
@@ -45,6 +46,7 @@ export async function mountAdmin(options = {}) {
     logsAccessKey = ADMIN_KEY, uploadFile, uploadError, dataLogFiles = {},
     grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
     revokeResult = { ok: true, userId: 'u_1', email: 'granted@example.com' },
+    testSendResult = { ok: true },
   } = options;
 
   const hostedImagesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-hosted-'));
@@ -74,6 +76,11 @@ export async function mountAdmin(options = {}) {
   };
   const enterpriseStore = { exportStore: makeSpy(() => ({ domains: [] })) };
 
+  // Real (pure) email catalog + a spied test-send so the Emails-tab endpoints are
+  // exercised without touching Resend.
+  const emailCatalog = createEmailCatalog({ appUrl: 'https://stagify.ai' });
+  const sendTestEmail = makeSpy(async () => testSendResult);
+
   const { protectLogs } = createHttpGuards({ genAI: null, LOGS_ACCESS_KEY: logsAccessKey, endpointKeyMatches });
 
   const deps = {
@@ -92,6 +99,8 @@ export async function mountAdmin(options = {}) {
     protectLogs,
     __dirname: path.resolve('.'),
     HOSTED_IMAGE_MIME_EXT: { 'image/png': 'png', 'image/jpeg': 'jpg' },
+    emailCatalog,
+    sendTestEmail,
   };
 
   const app = express();
@@ -104,7 +113,7 @@ export async function mountAdmin(options = {}) {
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     key: logsAccessKey,
-    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant },
+    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail },
     getManifest: () => manifest,
     hostedImagesDir,
     close: () =>

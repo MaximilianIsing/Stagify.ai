@@ -24,6 +24,21 @@
  */
 /** @typedef {{label: string, value: number}} Slice */
 
+/**
+ * CSV column indices, in one place because every consumer addresses these files
+ * positionally. Mirrors the writers: `lib/services/logging.js` (prompt/chat/mask),
+ * `routes/public.js` (contact/bug), `lib/services/email.js` (opens). The five
+ * outcome columns on a render row were APPENDED, so a row written before they
+ * existed still reads correctly — its outcome cells are simply empty.
+ * Documented in docs/guides/admin-dashboard.md.
+ */
+export const COL = {
+  PROMPT: { TS: 0, ROOM: 1, STYLE: 2, REMOVE: 4, ROLE: 5, REFERRAL: 6, EMAIL: 7, STATUS: 9, DURATION: 10, MODEL: 11, ATTEMPTS: 12, ERROR: 13 },
+  CHAT: { TS: 0, USER_ID: 1 },
+  MASK: { TS: 0, MODEL: 3, USER_ID: 6 },
+  CONTACT: { TS: 0, ROLE: 1, REFERRAL: 2, EMAIL: 3 },
+};
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -384,4 +399,113 @@ export function averageValue(points) {
   if (!points || !points.length) return 0;
   const total = points.reduce((sum, p) => sum + (p.value || 0), 0);
   return Math.round((total / points.length) * 10) / 10;
+}
+
+// ── Render outcomes ─────────────────────────────────────────────────────────
+//
+// The outcome columns were added on 2026-07-26; every render logged before that
+// has empty cells there. Those rows are **excluded** from all of the following
+// rather than counted as failures — an unrecorded outcome is unknown, and
+// treating it as a failure would invent an error spike across the entire history.
+
+/**
+ * Render rows that actually carry a recorded outcome.
+ * @param {string[][]} rows
+ * @returns {string[][]}
+ */
+export function withOutcome(rows) {
+  return (rows || []).filter((r) => {
+    const s = String((r && r[COL.PROMPT.STATUS]) || '').trim().toLowerCase();
+    return s === 'ok' || s === 'failed';
+  });
+}
+
+/**
+ * Succeeded / failed split over the rows that recorded an outcome. `pct` is null
+ * when nothing has been recorded yet — not 100, which would read as "all good".
+ * @param {string[][]} rows
+ * @returns {{ok: number, failed: number, recorded: number, unrecorded: number, pct: number|null}}
+ */
+export function successRate(rows) {
+  const recordedRows = withOutcome(rows);
+  let ok = 0;
+  recordedRows.forEach((r) => { if (String(r[COL.PROMPT.STATUS]).trim().toLowerCase() === 'ok') ok++; });
+  const recorded = recordedRows.length;
+  return {
+    ok,
+    failed: recorded - ok,
+    recorded,
+    unrecorded: (rows || []).length - recorded,
+    pct: recorded ? (ok / recorded) * 100 : null,
+  };
+}
+
+/**
+ * Daily counts of failed renders. Absolute rather than a success *percentage*:
+ * a rate chart has to invent a value for days with no renders at all, and a flat
+ * 0% on a quiet day is indistinguishable from a total outage.
+ * @param {string[][]} rows
+ * @param {number} [days]
+ * @returns {SeriesPoint[]}
+ */
+export function failuresByDay(rows, days = 30) {
+  const failed = withOutcome(rows).filter((r) => String(r[COL.PROMPT.STATUS]).trim().toLowerCase() === 'failed');
+  return dailyCounts(failed.map((r) => r[COL.PROMPT.TS]), days);
+}
+
+/**
+ * Nearest-rank percentile over a numeric sample. Returns null for an empty one.
+ * @param {number[]} values
+ * @param {number} p 0–100.
+ * @returns {number|null}
+ */
+export function percentile(values, p) {
+  const sorted = (values || []).filter((v) => typeof v === 'number' && Number.isFinite(v)).sort((a, b) => a - b);
+  if (!sorted.length) return null;
+  const rank = Math.ceil((Math.min(100, Math.max(0, p)) / 100) * sorted.length);
+  return sorted[Math.min(sorted.length - 1, Math.max(0, rank - 1))];
+}
+
+/**
+ * Duration percentiles over the renders that recorded one, in milliseconds.
+ * Successful renders only — a render that failed after 400ms would otherwise
+ * flatter the latency numbers.
+ * @param {string[][]} rows
+ * @returns {{count: number, p50: number|null, p90: number|null, p95: number|null}}
+ */
+export function durationStats(rows) {
+  const values = withOutcome(rows)
+    .filter((r) => String(r[COL.PROMPT.STATUS]).trim().toLowerCase() === 'ok')
+    .map((r) => Number(r[COL.PROMPT.DURATION]))
+    .filter((v) => Number.isFinite(v) && v > 0);
+  return { count: values.length, p50: percentile(values, 50), p90: percentile(values, 90), p95: percentile(values, 95) };
+}
+
+const DURATION_BUCKETS = [
+  { label: '<5s', max: 5000 },
+  { label: '5–10s', max: 10000 },
+  { label: '10–20s', max: 20000 },
+  { label: '20–30s', max: 30000 },
+  { label: '30–60s', max: 60000 },
+  { label: '60s+', max: Infinity },
+];
+
+/**
+ * Histogram of successful-render durations over fixed buckets. Buckets are fixed
+ * (not derived from the data) so the shape is comparable between refreshes.
+ * @param {string[][]} rows
+ * @returns {SeriesPoint[]}
+ */
+export function durationHistogram(rows) {
+  const counts = DURATION_BUCKETS.map(() => 0);
+  withOutcome(rows)
+    .filter((r) => String(r[COL.PROMPT.STATUS]).trim().toLowerCase() === 'ok')
+    .forEach((r) => {
+      const v = Number(r[COL.PROMPT.DURATION]);
+      if (!Number.isFinite(v) || v <= 0) return;
+      for (let i = 0; i < DURATION_BUCKETS.length; i++) {
+        if (v < DURATION_BUCKETS[i].max) { counts[i]++; return; }
+      }
+    });
+  return DURATION_BUCKETS.map((b, i) => ({ key: b.label, label: b.label, value: counts[i] }));
 }

@@ -4,6 +4,7 @@ import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
 import path from 'path';
 import { logger } from '../lib/logger.js';
+import { renderPasswordResetEmail } from '../lib/services/email.js';
 
 /**
  * Build the auth router (sign-up, email verification, login, Google sign-in,
@@ -269,13 +270,7 @@ router.post('/api/auth/forgot-password', emailLimiter, express.json(), async (re
     const sendResult = await resend.emails.send({
       from: RESEND_FROM_EMAIL,
       to: recipient,
-      subject: 'Reset your Stagify password',
-      html:
-        `<p>Hi,</p><p>We received a request to reset your Stagify password${debugNote}.</p>` +
-        `<p><a href="${resetUrl}">Choose a new password</a></p>` +
-        `<p>This link expires in one hour. If you didn’t ask for this, you can ignore this email.</p>` +
-        `<p>— Stagify</p>`,
-      text: `Reset your Stagify password: ${resetUrl}\n\nExpires in one hour. If you didn't request this, ignore this email.`,
+      ...renderPasswordResetEmail({ resetUrl, debugNote }),
     });
 
     if (sendResult.error) {

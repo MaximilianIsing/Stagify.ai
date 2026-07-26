@@ -19,11 +19,13 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 |---|---|
 | [`scripts/admin.js`](../../public/scripts/admin.js) | **Entry.** Login + lockout, the in-closure key, `apiFetchQ` / `apiSend` / `secureBlobDownload`, `loadAll()`, tab switching, upload wiring, sign-out. |
 | [`scripts/admin/renderers.js`](../../public/scripts/admin/renderers.js) | The table tabs (users + detail drawer, enterprise, contacts, email opens, bugs, hosting, downloads) and `effectivePlan`, which both chart islands take as a dependency. |
-| [`scripts/admin/overview.js`](../../public/scripts/admin/overview.js) | The **Overview** tab: stat cards, the two generation charts, top users, recent signups. |
+| [`scripts/admin/overview.js`](../../public/scripts/admin/overview.js) | The **Overview** tab: the range selector, stat cards, the two generation charts, top users, recent signups. |
 | [`scripts/admin/insights.js`](../../public/scripts/admin/insights.js) | The **Insights** tab: the chart grid. |
-| [`scripts/admin/analytics.js`](../../public/scripts/admin/analytics.js) | **Pure aggregation** — bucketing, distributions, deltas. No DOM. |
-| [`scripts/admin/charts.js`](../../public/scripts/admin/charts.js) | **SVG chart primitives** — area, bar, ranked bars, donut, sparkline, card chrome. |
+| [`scripts/admin/analytics.js`](../../public/scripts/admin/analytics.js) | **Pure aggregation** — bucketing, distributions, deltas, render outcomes. Owns `COL`, the CSV column map. No DOM. |
+| [`scripts/admin/analytics-users.js`](../../public/scripts/admin/analytics-users.js) | **Pure per-account aggregation** — last-active, activation funnel, cohort retention. No DOM. |
+| [`scripts/admin/charts.js`](../../public/scripts/admin/charts.js) | **SVG chart primitives** — area, bar, ranked bars, donut, funnel, cohort grid, sparkline, card chrome. |
 | [`scripts/admin/grant.js`](../../public/scripts/admin/grant.js) | The comp-Stagify+ control inside the user detail drawer. |
+| [`scripts/admin/emails.js`](../../public/scripts/admin/emails.js) | The **Emails** tab: the preview gallery + per-template test send. Lazy-loaded on first open. |
 | [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. |
 | [`styles/admin.css`](../../public/styles/admin.css) | Page styles, including everything the SVG charts are painted with. |
 
@@ -50,30 +52,62 @@ the SVG directly, under three rules:
 
 ### Catalog
 
-**Overview** — `#adm-stats` (8 stat cards with trailing-window deltas and sparklines),
-then `#adm-charts`:
+**Overview** — a **range selector** (`#adm-range`: 7 / 30 / 90 days / all time), then
+`#adm-stats` (8 stat cards with deltas and sparklines) and `#adm-charts`:
 
 | Chart | Source |
 |---|---|
-| Daily generation activity | Trailing 30 days, zero-filled, area |
+| Daily generation activity | The selected range, zero-filled, area |
 | Generation activity — all time | First render → today, **auto-bucketed** day/week/month |
 
-**Insights** — `#adm-insights`, one grid of cards: cumulative generations · total accounts
-over time · new signups per bucket · plan mix · sign-in method · feature usage mix ·
-furniture removal · room types · furniture styles · referral sources · user roles ·
-mask-edit models · enterprise usage by domain · activity by hour · activity by weekday ·
-chat messages (30d) · mask edits (30d).
+The range scopes the stat cards, the first chart, and both tables. It does **not** touch
+the all-time chart — and selecting "All time" hides the first chart rather than drawing
+the same series twice at a worse granularity.
 
-The two generation charts answer different questions on purpose. The 30-day one is "is it
-busy right now", so its window is fixed and zero-filled — a dead week must *look* dead.
-The all-time one is the shape of the whole history, so it re-buckets itself as history
-grows (`pickGranularity`: ≤70 days → daily, ≤550 → weekly, beyond → monthly), keeping the
-point count in a readable 20–90 band at every scale.
+The two charts answer different questions on purpose. The first is "is it busy right now",
+so its window is fixed and zero-filled — a dead week must *look* dead. The all-time one is
+the shape of the whole history, so it re-buckets itself as history grows
+(`pickGranularity`: ≤70 days → daily, ≤550 → weekly, beyond → monthly), keeping the point
+count in a readable 20–90 band at every scale.
+
+**Insights** — `#adm-insights`, one grid of cards, in four groups:
+
+- **Reliability** — render outcomes · failed renders per day · failure reasons · render
+  duration (p50/p90/p95 + histogram) · staging models.
+- **Lifecycle** — activation funnel · cohort retention.
+- **Growth** — cumulative generations · total accounts over time · new signups per bucket.
+- **Composition & content** — plan mix · sign-in method · feature usage mix · furniture
+  removal · room types · furniture styles · referral sources · user roles · mask-edit
+  models · enterprise usage by domain · activity by hour · activity by weekday · chat
+  messages (30d) · mask edits (30d).
+
+### Three places "absent" must not read as "zero"
+
+These are the invariants most likely to be broken by an innocent-looking edit:
+
+1. **Unrecorded outcomes.** The outcome columns were added on 2026-07-26; every render
+   before that has empty cells. `withOutcome` excludes them. Counting them as failures
+   would paint an error spike across the whole history; counting them as successes would
+   hide a live outage behind old data. A success rate with nothing recorded is `null`,
+   rendered `—`, never 100%.
+2. **Unattributed renders.** A render row's email is `unknown` whenever the client didn't
+   send one, so a large share of usage belongs to no account. The funnel and the cohort
+   grid can only see the attributed remainder, so both print the coverage and are
+   documented as **a floor, not a count**.
+3. **Months that haven't elapsed.** A cohort three weeks old has no month-2 cell. The grid
+   renders those blank (hatched), never 0% — 0% is a measured value and is drawn.
+
+**Paid is not a funnel step.** `activationFunnel` is a strictly nested usage ladder
+(accounts → activated → repeat → power), so it can only narrow — `funnelMonotonic` asserts
+it. Paying doesn't nest: a subscriber whose renders all logged anonymously is paid but not
+activated, and on live data the paid count *exceeded* the activated count, drawing a step
+wider than its parent. `paidConversion` reports it separately, beside the chart.
 
 ### Adding a chart
 
-1. Add the aggregation to `analytics.js` as a **pure function** and cover it in
-   `test/admin-analytics.test.js`.
+1. Add the aggregation as a **pure function** — `analytics.js` for time series and
+   distributions, `analytics-users.js` if it joins accounts to activity — and cover it in
+   the matching `test/admin-analytics*.test.js`.
 2. Render it in `insights.js` (or `overview.js`) with an existing primitive from
    `charts.js`, wrapped in `chartCard({title, sub, body, notes})`.
 3. Only add a new primitive if no existing one fits — and cover it in
@@ -83,13 +117,13 @@ point count in a readable 20–90 band at every scale.
 
 Everything is fetched in one `Promise.all` in `admin.js#loadAll`. The CSV files are parsed
 by `helpers.js#parseCSV` (RFC 4180) into arrays of string cells addressed **by index**, so
-the column maps below are load-bearing. They are duplicated as named constants at the top
-of `insights.js` — if a writer gains a column, fix both.
+the column maps below are load-bearing. They live in code as `analytics.js#COL`, the single
+source of truth — if a writer gains a column, update `COL` and this table.
 
 | Endpoint | Written by | Columns |
 |---|---|---|
 | `/authstore` | `lib/data/auth-store.js` | JSON — `{users: [...]}` |
-| `/promptlogs` | `lib/services/logging.js` | `timestamp, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, referralSource, email, ipAddress` |
+| `/promptlogs` | `lib/services/logging.js` | `timestamp, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, referralSource, email, ipAddress, status, durationMs, model, attempts, errorCode` |
 | `/chatlogs` | `lib/services/logging.js` | `timestamp, userId, userMessage, aiResponse, fileNames, fileTypes, ipAddress, userAgent` |
 | `/masklogs` | `lib/services/logging.js` | `timestamp, prompt, model, geminiModel, imageWidth, imageHeight, userId, ipAddress, userAgent` |
 | `/contactlogs` | `routes/public.js` | `timestamp, userRole, referralSource, email, userAgent, ipAddress` |
@@ -98,7 +132,7 @@ of `insights.js` — if a writer gains a column, fix both.
 | `/enterprise-domains` | `lib/data/enterprise-store.js` | JSON — `{domains: [...]}` |
 | `/api/hosted-images` | `lib/image/hosted-images.js` | JSON — `{images: [...]}` |
 
-Two conventions the aggregators depend on:
+Three conventions the aggregators depend on:
 
 - **Every log file starts with a `timestamp,…` header row**, and `parseCSV` has no reason
   to know that — to it the header is just another row. `analytics.js#stripHeader` drops
@@ -108,6 +142,21 @@ Two conventions the aggregators depend on:
   "today" must be *their* today. `toISOString().slice(0,10)` looks equivalent but shifts
   every row by a day for anyone east of UTC. Everything goes through
   `analytics.js#dayKeyLocal`.
+- **New CSV columns are APPENDED, never inserted.** Every consumer reads these files by
+  index, so inserting a column mid-row silently re-labels the entire history. The five
+  outcome columns were appended for exactly this reason, and `logPromptToFile` upgrades an
+  existing file's header line in place (temp + rename) so a download still opens with the
+  right labels.
+
+### Render outcomes
+
+`logPromptToFile` is called **once per render, after the model call settles** — from the
+success path and from the `catch` alike, guarded so only one row is written. It records
+`status`, `durationMs`, `model`, `attempts` (images produced, quality-gate retries
+included) and `errorCode`. Before this the row was written *before* the Gemini call, so it
+counted attempts and carried no result: the dashboard could show volume but not whether
+staging actually worked. A failure that happens before the prompt is even assembled still
+logs a row, with an empty prompt, so it lands in the error rate.
 
 ## Testing
 
@@ -115,15 +164,66 @@ Three suites, all pure/DOM-stubbed — no jsdom, no browser (see
 [`testing.md`](testing.md)):
 
 - [`test/admin-analytics.test.js`](../../test/admin-analytics.test.js) — the aggregators:
-  local day keys, zero-fill, granularity thresholds, window deltas, distributions.
-  Fixtures are built relative to `new Date()` so the suite can't rot.
+  local day keys, zero-fill, granularity thresholds, window deltas, distributions, and the
+  outcome maths (unrecorded rows excluded, success rate `null` not 100%, duration
+  percentiles over successes only). Fixtures are built relative to `new Date()` so the
+  suite can't rot.
+- [`test/admin-analytics-users.test.js`](../../test/admin-analytics-users.test.js) — the
+  per-account joins: last-active across both identifiers, the funnel's monotonicity
+  (including the real-data regression where paid exceeded activated), and cohort cells that
+  keep "hasn't happened" distinct from 0%. `now` is injected, so nothing is clock-dependent.
 - [`test/admin-charts.test.js`](../../test/admin-charts.test.js) — the SVG builders,
   asserted on invariants rather than coordinates: one hover target per point, geometry
-  proportional to the data, a zero drawing nothing, axis labels that don't collide.
+  proportional to the data, a zero drawing nothing, axis labels that don't collide, funnel
+  bars scaled against the top step, and cohort cells that stay blank for a month that
+  hasn't elapsed.
 - [`test/admin-helpers.test.js`](../../test/admin-helpers.test.js) — `parseCSV` and the
   formatters. [`test/admin-grant-ui.test.js`](../../test/admin-grant-ui.test.js) covers
   the grant control; [`test/admin-route.test.js`](../../test/admin-route.test.js) covers
   the server side.
+
+## Emails tab
+
+A gallery of **every email a user can receive**, each rendered exactly as it arrives, with
+a per-template **"Send test"** button that mails a live copy to an address the operator
+types in. It exists so you can eyeball the real templates (and check a change) without
+digging through code or triggering a real signup/trial.
+
+**Single source of truth.** The preview is built from the *same* pure renderers the real
+senders use — never a copy — so a preview can't drift from what actually ships:
+
+- Account mail lives in [`lib/services/email.js`](../../lib/services/email.js) as
+  `renderRegistrationVerificationEmail` / `renderAccountExistsEmail` /
+  `renderPasswordResetEmail` (the senders and `routes/auth.js` build from these).
+- Trial mail lives in [`lib/services/lifecycle-emails.js`](../../lib/services/lifecycle-emails.js)
+  as `renderTrialWelcomeEmail` / `…ActivationNudge…` / `…Value…` / `…Ending…` /
+  `renderSubscriptionCanceledEmail`.
+- [`lib/services/email-catalog.js`](../../lib/services/email-catalog.js) collects them all
+  with representative **sample data** into `list()` (the gallery) and `renderById(id)` (the
+  test send). Operator-only mail (bug reports, contact form) is deliberately excluded — this
+  is a "what users see" gallery.
+
+**Endpoints** (both `protectLogs`-gated, like every admin route):
+
+| Route | Purpose |
+|---|---|
+| `GET /api/admin/email-previews` | Returns the catalog — `{ emails: [{ id, label, category, description, subject, html, text }] }`. Read-only. |
+| `POST /api/admin/email-test-send` | `{ id, email }` → sends `[Test] <subject>` to that address. Validates the id + email; the recipient is never logged. |
+
+`sendTestEmail` (built in `server.js`) sends to the **exact address entered** — it does not
+apply the `EMAIL_DEBUG_MODE` redirect, because the operator is deliberately testing delivery
+to themselves. It returns `{ ok, status?, error? }` and never throws, so a Resend outage
+surfaces as a clean error rather than a 500.
+
+**Rendering.** Each preview HTML is shown in a `<iframe sandbox="allow-same-origin" srcdoc>`
+— `allow-same-origin` *without* `allow-scripts` isolates the email's own inline styles from
+the dashboard and lets the island auto-size the frame to its content, while still guaranteeing
+no script in the markup can run.
+
+**Adding an email to the gallery:** write (or reuse) a pure `render…Email()` that returns
+`{ subject, html, text }`, then add one entry to the `defs` array in `email-catalog.js` with
+an `id`, `label`, `category`, `description`, and a `render()` thunk supplying sample data.
+`test/email-catalog.test.js` pins the roster, so update its `EXPECTED_IDS` too.
 
 ## Conventions when editing
 
