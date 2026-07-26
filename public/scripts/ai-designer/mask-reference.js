@@ -3,9 +3,14 @@
 // remove wiring. Extracted verbatim from mask-editor.js. Owns the reference
 // data URL; the entry reads it via getDataUrl() when building the request.
 //
-//   createMaskReference({ lang, showToast }) -> { clear, getDataUrl, wire }
-export function createMaskReference({ lang, showToast }) {
+// `onChange` (optional) fires whenever the preview is shown or hidden — the
+// editor uses it to re-fit the canvas, since the thumbnail changes how much
+// height the controls take.
+//
+//   createMaskReference({ lang, showToast, onChange }) -> { clear, getDataUrl, wire }
+export function createMaskReference({ lang, showToast, onChange }) {
   let maskReferenceDataUrl = null;
+  const notifyChange = () => { if (onChange) onChange(); };
 
   function clearMaskReference() {
     maskReferenceDataUrl = null;
@@ -17,6 +22,7 @@ export function createMaskReference({ lang, showToast }) {
     if (refPreview) refPreview.classList.add('hidden');
     if (refImg) refImg.removeAttribute('src');
     if (refAddBtn) refAddBtn.classList.remove('hidden');
+    notifyChange();
   }
 
   function setMaskReference(dataUrl) {
@@ -27,6 +33,7 @@ export function createMaskReference({ lang, showToast }) {
     if (refImg) refImg.src = dataUrl;
     if (refPreview) refPreview.classList.remove('hidden');
     if (refAddBtn) refAddBtn.classList.add('hidden');
+    notifyChange();
   }
 
   // Validate, downscale (max 1536px), and PNG-encode a chosen reference file so

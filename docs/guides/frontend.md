@@ -57,6 +57,13 @@ The entry resolves the page's DOM elements once, then constructs and wires the i
   [`scripts/masking-studio/session-store.js`](../../public/scripts/masking-studio/session-store.js)
   owns the IndexedDB save/restore choreography for the whole studio.
 
+**Worked example — the admin dashboard.** `/admin` is the fullest instance of this
+pattern: an entry (`admin.js`) that owns auth and fetching, table islands
+(`admin/renderers.js`), two chart-panel islands (`admin/overview.js`, `admin/insights.js`),
+and two DOM-free logic modules (`admin/analytics.js` for aggregation, `admin/charts.js`
+for the hand-rolled SVG) that are unit-tested without a browser. See
+[`admin-dashboard.md`](admin-dashboard.md).
+
 **3. Standalone page scripts** — the non-interactive pages (marketing, legal, status,
 guides) load small independent scripts (`carousel.js`, `home-reveal.js`, `count-up.js`,
 the `language-*.js` i18n helpers, …). No entry/island structure — there is no app state
@@ -92,7 +99,9 @@ gets the files as authored (same [no-build-step decision](architecture.md#decisi
   (the index/marketing page), `ai-designer.css`, `masking-studio.css`, `stagify-plus.css`,
   `plus-welcome.css` (the post-checkout confirmation card), `enterprise.css`, `status.css`,
   `admin.css`, `getpro.css`, `reset-password.css`, `index.css`. Legal pages share
-  `legal.css` (privacy + terms) and `enterprise-msa.css`.
+  `legal.css` (privacy + terms) and `enterprise-msa.css`. A page file may declare its own
+  local custom properties where its palette/scale genuinely differs from the site's —
+  `admin.css` does, on `.page-admin`, for the dashboard's denser data UI.
 - **Shared feature CSS — opt-in per page.** Small files a page links only if it uses the
   feature: `auth.css` (nav + auth-modal UI, on ~10 pages), `carousel.css`,
   `star-border.css`, `home-text-animate.css`, `demo-player.css`. A page pulls in only the

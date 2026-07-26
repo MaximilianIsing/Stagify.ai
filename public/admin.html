@@ -54,8 +54,9 @@
         </div>
       </div>
 
-      <div class="adm-tabs" id="adm-tabs">
+      <div class="adm-tabs" id="adm-tabs" role="tablist">
         <button class="adm-tab active" data-tab="overview">Overview</button>
+        <button class="adm-tab" data-tab="insights">Insights</button>
         <button class="adm-tab" data-tab="users">Users <span class="adm-tab-count" id="tc-users">0</span></button>
         <button class="adm-tab" data-tab="enterprise">Enterprise <span class="adm-tab-count" id="tc-ent">0</span></button>
         <button class="adm-tab" data-tab="contacts">Contacts <span class="adm-tab-count" id="tc-contacts">0</span></button>
@@ -67,20 +68,24 @@
 
       <div class="adm-panel active" id="panel-overview">
         <div class="adm-stats" id="adm-stats"></div>
+        <!-- Both generation charts (trailing 30 days + all time) are appended here
+             by scripts/admin/overview.js — see docs/guides/admin-dashboard.md. -->
+        <div class="adm-chart-stack" id="adm-charts"></div>
         <div class="adm-top-grid">
           <div class="adm-card">
-            <h2>Top Users (30 days)</h2>
-            <div class="adm-table-wrap" id="adm-top-users" style="max-height:340px"></div>
+            <h2>Top users <span class="adm-card-tag">30 days</span></h2>
+            <div class="adm-table-wrap adm-table-wrap--short" id="adm-top-users"></div>
           </div>
           <div class="adm-card">
-            <h2>Recent Signups</h2>
-            <div class="adm-table-wrap" id="adm-recent-signups" style="max-height:340px"></div>
+            <h2>Recent signups <span class="adm-card-tag">30 days</span></h2>
+            <div class="adm-table-wrap adm-table-wrap--short" id="adm-recent-signups"></div>
           </div>
         </div>
-        <div class="adm-card">
-          <h2>Daily Generation Activity (30 days)</h2>
-          <div id="adm-chart" style="overflow-x:auto"></div>
-        </div>
+      </div>
+
+      <div class="adm-panel" id="panel-insights">
+        <!-- Chart grid, built entirely by scripts/admin/insights.js. -->
+        <div class="adm-chart-grid" id="adm-insights"></div>
       </div>
 
       <div class="adm-panel" id="panel-users">
@@ -98,7 +103,7 @@
 
       <div class="adm-panel" id="panel-enterprise">
         <div class="adm-card">
-          <h2>Enterprise Domains</h2>
+          <h2>Enterprise domains</h2>
           <p class="adm-card-sub">Domains with active enterprise subscriptions. All users with matching email domains receive Stagify+ features.</p>
           <div class="adm-table-wrap" id="adm-ent-table"></div>
         </div>
@@ -110,7 +115,7 @@
           <span class="adm-result-count" id="adm-contact-count"></span>
         </div>
         <div class="adm-card">
-          <h2>Contact Submissions</h2>
+          <h2>Contact submissions</h2>
           <div class="adm-table-wrap" id="adm-contacts-table"></div>
         </div>
       </div>
@@ -121,9 +126,9 @@
           <span class="adm-result-count" id="adm-email-open-count"></span>
         </div>
         <div class="adm-card">
-          <h2>Broker Email Opens</h2>
-          <p class="adm-card-sub">Binary open tracking: each email is either opened or not. Only Gmail/Outlook/Yahoo image-proxy requests count — generic browser or bot hits are ignored. Use <code style="font-size:.8rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">https://stagify.ai/email/logo.png?email=broker@example.com</code> in outreach emails.</p>
-          <div id="adm-email-open-summary" style="margin-bottom:1rem"></div>
+          <h2>Broker email opens</h2>
+          <p class="adm-card-sub">Binary open tracking: each email is either opened or not. Only Gmail/Outlook/Yahoo image-proxy requests count — generic browser or bot hits are ignored. Use <code class="adm-code">https://stagify.ai/email/logo.png?email=broker@example.com</code> in outreach emails.</p>
+          <div id="adm-email-open-summary" class="adm-summary"></div>
           <div class="adm-table-wrap" id="adm-email-opens-table"></div>
         </div>
       </div>
@@ -134,14 +139,14 @@
           <span class="adm-result-count" id="adm-bug-count"></span>
         </div>
         <div class="adm-card">
-          <h2>Bug Reports</h2>
+          <h2>Bug reports</h2>
           <div class="adm-table-wrap" id="adm-bugs-table"></div>
         </div>
       </div>
 
       <div class="adm-panel" id="panel-hosting">
         <div class="adm-card">
-          <h2>Host a New Image</h2>
+          <h2>Host a new image</h2>
           <p class="adm-card-sub">Upload an image to host it publicly. You'll get a permanent link with a random URL that anyone can open or embed externally. Max 25&nbsp;MB &middot; PNG, JPG, WebP, GIF.</p>
           <div class="adm-host-upload">
             <input type="file" id="adm-host-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
@@ -152,7 +157,7 @@
           <div class="adm-host-result hidden" id="adm-host-result"></div>
         </div>
         <div class="adm-card">
-          <h2>Hosted Images <span class="adm-tab-count" id="adm-host-count" style="background:#dbeafe;color:#1e40af">0</span></h2>
+          <h2>Hosted images <span class="adm-count-chip" id="adm-host-count">0</span></h2>
           <p class="adm-card-sub">Every image currently hosted. Deleting unhosts it immediately &mdash; the link stops working right away.</p>
           <div id="adm-hosting-list"></div>
         </div>
@@ -160,15 +165,15 @@
 
       <div class="adm-panel" id="panel-downloads">
         <div class="adm-card">
-          <h2>Export Data</h2>
+          <h2>Export data</h2>
           <p class="adm-card-sub">Download raw data files. Files are fetched securely via JavaScript — the access key is never exposed in URLs or browser history.</p>
           <div class="adm-dl-grid" id="adm-dl-grid"></div>
         </div>
         <div class="adm-card">
           <h2>Server status</h2>
           <p class="adm-card-sub">Wipe all recorded uptime history and incidents and restart monitoring from now. This changes the public <a href="/status" target="_blank" rel="noopener">status page</a> and cannot be undone.</p>
-          <button id="adm-reset-status" type="button" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:.6rem 1.1rem;font-weight:700;cursor:pointer;font-size:.9rem">Reset server status data</button>
-          <span id="adm-reset-status-msg" style="margin-left:.75rem;font-size:.85rem;color:#64748b"></span>
+          <button id="adm-reset-status" class="adm-danger-btn" type="button">Reset server status data</button>
+          <span id="adm-reset-status-msg" class="adm-inline-msg"></span>
         </div>
       </div>
     </div>

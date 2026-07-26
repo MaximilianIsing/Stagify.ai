@@ -10,6 +10,7 @@ This README is the entry point for the `docs/` folder. See also:
 - [`guides/architecture.md`](guides/architecture.md) — how the server is structured (composition root, `routes/` + `lib/`, request lifecycle).
 - [`guides/frontend.md`](guides/frontend.md) — the browser side: the page/entry/island model and why it's vanilla ES modules, not a component framework.
 - [`guides/security.md`](guides/security.md) — auth model, request-size/DoS hardening, rate limits, CSP/CORS, and secret handling.
+- [`guides/admin-dashboard.md`](guides/admin-dashboard.md) — the `/admin` operator console: module map, the hand-rolled SVG charts, and the CSV column maps they read.
 - [`guides/i18n.md`](guides/i18n.md) — the 11-language localized-URL system (server-rendered per-language URLs) and how to add a language.
 - [`guides/testing.md`](guides/testing.md) — the test suite and how it gates deployment.
 - [`reference/endpoints.md`](reference/endpoints.md) — HTTP API reference.
@@ -74,6 +75,7 @@ This README is the entry point for the `docs/` folder. See also:
 │   ├── staging.js           # process-image, validate-image, mask-edit, segment
 │   ├── chat.js              # AI Designer: chat, chat-upload, welcome-message
 │   └── admin.js             # /admin + log/JSON exports + image hosting (endpoint_key gated)
+│                            #   (the dashboard UI itself: docs/guides/admin-dashboard.md)
 ├── lib/                     # Shared modules (factory + dependency-injection pattern)
 │   ├── logger.js            # Diagnostic logger — the single stdout/stderr funnel (LOG_LEVEL)
 │   ├── config/              # config.js (secrets), model-config.js, runtime-flags.js

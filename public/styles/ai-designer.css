@@ -1478,6 +1478,9 @@
         gap: 16px;
         box-sizing: border-box;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        /* Safety net for viewports so short that even a floor-sized image plus
+           the controls exceed 90vh: scroll rather than clip anything away. */
+        overflow-y: auto;
       }
       
       .mask-editor-header {
@@ -1522,12 +1525,25 @@
         border-radius: 8px;
         overflow: hidden;
         background: #000;
+        /* `overflow: hidden` drops a flex item's automatic minimum size to 0, so
+           without this the column was free to squash the image box while the
+           canvas kept its pixel height — the photo got clipped at the bottom
+           with nothing to scroll. mask-fit.js sizes the canvas to the height
+           that is actually free, so flex never needs to take any back. */
+        flex-shrink: 0;
+        /* Hug the canvas instead of stretching to the dialog width: once the
+           image is scaled down for a short viewport it is narrower than the
+           controls, and a stretched box showed its black background as a gutter
+           beside the photo. Centred, the border wraps the image exactly. */
+        align-self: center;
       }
-      
+
       .mask-editor-canvas {
         display: block;
+        /* Size is set in px by mask-fit.js (both canvases together, so the mask
+           overlay stays registered with the photo). No max-height here: it would
+           clamp height independently of width and distort the aspect ratio. */
         max-width: 100%;
-        max-height: 70vh;
         cursor: crosshair;
       }
       
@@ -1847,6 +1863,42 @@
         font-size: 12px;
         color: #64748b;
         line-height: 1.4;
+      }
+
+      /* Was an inline style attribute on the <p>; moved here so the short-viewport
+         block below can actually tighten it (inline styles would outrank it). */
+      .mask-editor-prompt-hint {
+        margin: 6px 0 0;
+        font-size: 12px;
+        font-style: italic;
+        opacity: 0.7;
+        line-height: 1.4;
+      }
+
+      /* SHORT VIEWPORTS (~768px-tall laptops): the controls stack costs ~460px of
+         the dialog's 90vh budget, which left almost nothing for the photo — the
+         image is the part you actually need to see to paint a mask. Tighten the
+         paddings and gaps (no guidance text is removed) to hand ~75px back to it.
+         mask-fit.js measures whatever this block leaves, so the two stay in sync
+         automatically. */
+      @media (max-height: 800px) {
+        .mask-editor-content {
+          padding: 16px;
+          gap: 10px;
+        }
+        .mask-editor-controls {
+          gap: 8px;
+        }
+        .mask-editor-prompt-container,
+        .mask-editor-ref-container {
+          gap: 4px;
+        }
+        .mask-editor-prompt-input {
+          padding: 8px 10px;
+        }
+        .mask-editor-prompt-hint {
+          margin-top: 2px;
+        }
       }
 
       /* MOBILE ONLY: the mask editor's top (header) and bottom (action buttons)

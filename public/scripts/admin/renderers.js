@@ -1,14 +1,21 @@
 import {
-  qs, el, esc, fmtDate, fmtDateTime, daysAgo, dayKey,
-  badge, statusBadge, authBadge, ICONS, iconDiv, fmtBytes, fullHostUrl,
+  qs, el, esc, fmtDate, fmtDateTime, daysAgo,
+  badge, statusBadge, authBadge, ICONS, fmtBytes, fullHostUrl,
   copyToClipboard, isStrictEmailClientProxyUa,
 } from './helpers.js';
 import { createGrantSection, grantActive } from './grant.js';
+import { stripHeader } from './analytics.js';
+import { createOverview } from './overview.js';
+import { createInsights } from './insights.js';
 
 /**
  * All admin tab rendering plus the data-derived helpers, over a single shared
  * mutable context. `ctx.data` is swapped wholesale on sign-out, so everything
  * reads through `ctx` rather than capturing `ctx.data` up front.
+ *
+ * The two chart-heavy tabs live in their own islands (overview.js, insights.js);
+ * this module keeps the table tabs and owns `effectivePlan`, which both of them
+ * need and which depends on the enterprise-domain list in `ctx`.
  *
  * @param {object} deps
  * @param {{data: any, userFilter: string, userSortCol: string, userSortDir: string}} deps.ctx Shared app state.
@@ -34,21 +41,25 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   }
 
   var grantSection=createGrantSection({apiSend:apiSend,onChanged:function(){renderUsers()}});
+  var overview=createOverview({ctx:ctx,effectivePlan:effectivePlan});
+  var insights=createInsights({ctx:ctx,effectivePlan:effectivePlan});
 
   function updateTabCounts(){
     qs('#tc-users').textContent=ctx.data.users.length;
     qs('#tc-ent').textContent=ctx.data.enterprise.length;
-    qs('#tc-bugs').textContent=ctx.data.bugRows.length;
-    qs('#tc-contacts').textContent=ctx.data.contactRows.length;
+    qs('#tc-bugs').textContent=stripHeader(ctx.data.bugRows).length;
+    qs('#tc-contacts').textContent=stripHeader(ctx.data.contactRows).length;
     qs('#tc-email-opens').textContent=getOpenedEmails().length;
     qs('#tc-hosting').textContent=ctx.data.hostedImages.length;
   }
 
   // ── Prompt index ──
 
+  // email → that account's render rows. Header-stripped, because the CSV's own
+  // `…,email,…` header line would otherwise index itself as a user named "email".
   function buildPromptIndex(){
     var idx={};
-    ctx.data.promptRows.forEach(function(r){
+    stripHeader(ctx.data.promptRows).forEach(function(r){
       var email=(r[7]||'').trim().toLowerCase();
       if(!email||email==='unknown')return;
       if(!idx[email])idx[email]=[];
@@ -60,102 +71,9 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
   // ── Render all ──
 
   function renderAll(){
-    [renderOverview,renderUsers,renderEnterprise,renderContacts,renderEmailOpens,renderBugs,renderHosting,renderDownloads].forEach(function(fn){
-      try{fn()}catch(e){console.error('Admin render error in '+fn.name+':',e)}
+    [overview.render,insights.render,renderUsers,renderEnterprise,renderContacts,renderEmailOpens,renderBugs,renderHosting,renderDownloads].forEach(function(fn){
+      try{fn()}catch(e){console.error('Admin render error in '+(fn.name||'renderer')+':',e)}
     });
-  }
-
-  function renderOverview(){
-    var pIdx=buildPromptIndex();
-    var total=ctx.data.promptRows.length;
-    var d7=daysAgo(7),d30=daysAgo(30);
-    var g7=0,g30=0;
-    ctx.data.promptRows.forEach(function(r){try{var t=new Date(r[0]);if(t>=d7)g7++;if(t>=d30)g30++}catch(e){}});
-    var pro=ctx.data.users.filter(function(u){return u.plan==='pro'}).length;
-    var free=ctx.data.users.filter(function(u){return u.plan==='free'}).length;
-    var s30=0;
-    ctx.data.users.forEach(function(u){try{var t=new Date(u.createdAt);if(t>=d30)s30++}catch(e){}});
-    var activeEnt=ctx.data.enterprise.filter(function(e){return e.status==='active'||e.status==='trialing'}).length;
-
-    var stats=[
-      {val:ctx.data.users.length,lbl:'Total Users',icon:'users',color:'adm-stat-icon--blue'},
-      {val:pro,lbl:'Pro Subscribers',icon:'pro',color:'adm-stat-icon--purple'},
-      {val:free,lbl:'Free Users',icon:'users',color:'adm-stat-icon--blue'},
-      {val:activeEnt,lbl:'Enterprise Domains',icon:'ent',color:'adm-stat-icon--amber'},
-      {val:total.toLocaleString(),lbl:'Total Generations',icon:'gen',color:'adm-stat-icon--green'},
-      {val:g30.toLocaleString(),lbl:'Generations (30d)',icon:'gen',color:'adm-stat-icon--green'},
-      {val:g7.toLocaleString(),lbl:'Generations (7d)',icon:'chart',color:'adm-stat-icon--green'},
-      {val:s30,lbl:'Signups (30d)',icon:'signup',color:'adm-stat-icon--purple'},
-    ];
-    var sc=qs('#adm-stats');sc.innerHTML='';
-    stats.forEach(function(s){
-      sc.appendChild(el('div',{className:'adm-stat'},[
-        iconDiv(s.icon,s.color),
-        el('div',{className:'adm-stat-body'},[
-          el('span',{className:'adm-stat-val',textContent:String(s.val)}),
-          el('span',{className:'adm-stat-lbl',textContent:s.lbl})
-        ])
-      ]));
-    });
-
-    // top users
-    var topArr=[];
-    Object.keys(pIdx).forEach(function(em){
-      var cnt=pIdx[em].filter(function(r){try{return new Date(r[0])>=d30}catch(e){return false}}).length;
-      if(cnt>0)topArr.push({email:em,cnt:cnt,total:pIdx[em].length});
-    });
-    topArr.sort(function(a,b){return b.cnt-a.cnt});
-
-    var tw=qs('#adm-top-users');tw.innerHTML='';
-    if(!topArr.length){tw.innerHTML='<p style="color:#94a3b8;font-size:.85rem;padding:.5rem">No generation data yet.</p>';return}
-    var ttbl=el('table',{className:'adm-table'});
-    ttbl.appendChild(el('thead',null,[el('tr',null,[el('th',{textContent:'Email'}),el('th',{textContent:'30d'}),el('th',{textContent:'All'})])]));
-    var ttb=el('tbody');
-    topArr.slice(0,10).forEach(function(u){
-      ttb.appendChild(el('tr',null,[el('td',{textContent:u.email}),el('td',{textContent:String(u.cnt)}),el('td',{textContent:String(u.total)})]));
-    });
-    ttbl.appendChild(ttb);tw.appendChild(ttbl);
-
-    // recent signups
-    var recent=ctx.data.users.slice().filter(function(u){try{return new Date(u.createdAt)>=d30}catch(e){return false}})
-      .sort(function(a,b){return new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()});
-    var rw=qs('#adm-recent-signups');rw.innerHTML='';
-    if(!recent.length){rw.innerHTML='<p style="color:#94a3b8;font-size:.85rem;padding:.5rem">No signups in last 30 days.</p>';return}
-    var rtbl=el('table',{className:'adm-table'});
-    rtbl.appendChild(el('thead',null,[el('tr',null,[el('th',{textContent:'Email'}),el('th',{textContent:'Plan'}),el('th',{textContent:'Date'})])]));
-    var rtb=el('tbody');
-    recent.slice(0,15).forEach(function(u){
-      rtb.appendChild(el('tr',null,[el('td',{textContent:u.email}),el('td',null,[badge(effectivePlan(u))]),el('td',{textContent:fmtDate(u.createdAt)})]));
-    });
-    rtbl.appendChild(rtb);rw.appendChild(rtbl);
-
-    // daily chart (simple bar chart via divs)
-    renderDailyChart(d30);
-  }
-
-  function renderDailyChart(_since){
-    var buckets={};
-    for(var i=0;i<30;i++){var dk=daysAgo(i).toISOString().slice(0,10);buckets[dk]=0}
-    ctx.data.promptRows.forEach(function(r){var k=dayKey(r[0]);if(k&&buckets[k]!==undefined)buckets[k]++});
-    var keys=Object.keys(buckets).sort();
-    var max=Math.max.apply(null,keys.map(function(k){return buckets[k]}))||1;
-
-    var wrap=qs('#adm-chart');wrap.innerHTML='';
-    var chart=el('div',{style:'display:flex;align-items:flex-end;gap:3px;height:120px;padding:0 .25rem'});
-    keys.forEach(function(k){
-      var v=buckets[k];
-      var pct=Math.max(2,Math.round(v/max*100));
-      var bar=el('div',{
-        style:'flex:1;min-width:8px;height:'+pct+'%;background:#3b82f6;border-radius:3px 3px 0 0;transition:height .3s;position:relative;cursor:default',
-        title:k+': '+v+' generations'
-      });
-      chart.appendChild(bar);
-    });
-    wrap.appendChild(chart);
-    var labels=el('div',{style:'display:flex;justify-content:space-between;font-size:.65rem;color:#94a3b8;padding:4px .25rem 0'});
-    labels.appendChild(el('span',{textContent:keys[0]}));
-    labels.appendChild(el('span',{textContent:keys[keys.length-1]}));
-    wrap.appendChild(labels);
   }
 
   // ── Users ──
@@ -224,7 +142,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     qs('#adm-user-count').textContent=list.length+' user'+(list.length!==1?'s':'');
 
     var wrap=qs('#adm-users-table');
-    if(!list.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No users found.</p>';return}
+    if(!list.length){wrap.innerHTML='<p class="adm-empty">No users found.</p>';return}
 
     var tbl=el('table',{className:'adm-table'});
     tbl.appendChild(el('thead',null,[el('tr',null,[
@@ -240,7 +158,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
       var row=el('tr',{className:'adm-row-click'},[
         el('td',{textContent:u.email}),el('td',null,[badge(effectivePlan(u))]),el('td',null,[authBadge(u)]),
         el('td',{textContent:fmtDate(u.createdAt)}),
-        el('td',{textContent:String(c30)}),el('td',{textContent:String(allR.length)})
+        el('td',{className:'adm-num',textContent:String(c30)}),el('td',{className:'adm-num',textContent:String(allR.length)})
       ]);
 
       row.addEventListener('click',function(){
@@ -290,14 +208,14 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
             ]));
           });
           gt.appendChild(gb);
-          if(allR.length>50)gs.appendChild(el('p',{style:'font-size:.72rem;color:#94a3b8;margin:0 0 .25rem',textContent:'Showing 50 of '+allR.length}));
+          if(allR.length>50)gs.appendChild(el('p',{className:'adm-more',textContent:'Showing 50 of '+allR.length}));
           gs.appendChild(gt);
         }
         det.appendChild(gs);
 
         // chats
         var uid=u.id;
-        var chats=ctx.data.chatRows.filter(function(r){return(r[1]||'').trim()===uid});
+        var chats=stripHeader(ctx.data.chatRows).filter(function(r){return(r[1]||'').trim()===uid});
         var cs=el('div',{className:'adm-detail-section'});
         cs.appendChild(el('h3',{textContent:'Chat Messages ('+chats.length+')'}));
         if(!chats.length){cs.appendChild(el('p',{className:'adm-detail-empty',textContent:'No chat messages.'}))}
@@ -313,7 +231,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
         det.appendChild(cs);
 
         // masks
-        var masks=ctx.data.maskRows.filter(function(r){return(r[6]||'').trim()===uid});
+        var masks=stripHeader(ctx.data.maskRows).filter(function(r){return(r[6]||'').trim()===uid});
         var ms=el('div',{className:'adm-detail-section'});
         ms.appendChild(el('h3',{textContent:'Mask Edits ('+masks.length+')'}));
         if(!masks.length){ms.appendChild(el('p',{className:'adm-detail-empty',textContent:'No mask edits.'}))}
@@ -341,14 +259,14 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
 
   function renderEnterprise(){
     var wrap=qs('#adm-ent-table');
-    if(!ctx.data.enterprise.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No enterprise domains configured.</p>';return}
+    if(!ctx.data.enterprise.length){wrap.innerHTML='<p class="adm-empty">No enterprise domains configured.</p>';return}
 
     // Summary bar
     var totalUses=ctx.data.enterprise.reduce(function(s,e){return s+(e.usageCount||0)},0);
     var totalRev=(totalUses*0.15).toFixed(2);
-    var summary=el('div',{style:'display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem'});
-    [[totalUses+' total uses','#1e3a8a'],['$'+totalRev+' total revenue','#065f46']].forEach(function(item){
-      summary.appendChild(el('div',{style:'background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:10px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;color:'+item[1],textContent:item[0]}));
+    var summary=el('div',{className:'adm-summary'});
+    [[totalUses.toLocaleString()+' total uses','adm-pill--blue'],['$'+totalRev+' total revenue','adm-pill--green']].forEach(function(item){
+      summary.appendChild(el('div',{className:'adm-pill '+item[1],textContent:item[0]}));
     });
 
     var tbl=el('table',{className:'adm-table'});
@@ -365,8 +283,8 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
         el('td',{textContent:e.domain}),el('td',{textContent:e.companyName||'\u2014'}),
         el('td',{textContent:e.contactEmail||'\u2014'}),
         el('td',null,[statusBadge(e.status)]),
-        el('td',{textContent:uses.toLocaleString(),style:'font-weight:600;color:#1e3a8a'}),
-        el('td',{textContent:rev,style:'font-weight:600;color:#065f46'}),
+        el('td',{className:'adm-num adm-num--blue',textContent:uses.toLocaleString()}),
+        el('td',{className:'adm-num adm-num--green',textContent:rev}),
         el('td',{textContent:e.stripeCustomerId||'\u2014'}),
         el('td',{textContent:fmtDate(e.createdAt)})
       ]));
@@ -381,13 +299,13 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
 
   function renderContacts(filter){
     var q=(filter||'').toLowerCase();
-    var rows=ctx.data.contactRows.slice();
+    var rows=stripHeader(ctx.data.contactRows).slice();
     if(q)rows=rows.filter(function(r){return r.join(' ').toLowerCase().indexOf(q)!==-1});
     rows.sort(function(a,b){return new Date(b[0]).getTime()-new Date(a[0]).getTime()});
     qs('#adm-contact-count').textContent=rows.length+' contact'+(rows.length!==1?'s':'');
 
     var wrap=qs('#adm-contacts-table');
-    if(!rows.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No contact submissions.</p>';return}
+    if(!rows.length){wrap.innerHTML='<p class="adm-empty">No contact submissions.</p>';return}
     var tbl=el('table',{className:'adm-table'});
     tbl.appendChild(el('thead',null,[el('tr',null,[
       el('th',{textContent:'When'}),el('th',{textContent:'Email'}),el('th',{textContent:'Role'}),
@@ -402,7 +320,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
       ]));
     });
     tbl.appendChild(tb);wrap.innerHTML='';
-    if(rows.length>200)wrap.appendChild(el('p',{style:'font-size:.72rem;color:#94a3b8;margin:0 0 .5rem',textContent:'Showing 200 of '+rows.length}));
+    if(rows.length>200)wrap.appendChild(el('p',{className:'adm-more',textContent:'Showing 200 of '+rows.length}));
     wrap.appendChild(tbl);
   }
 
@@ -432,11 +350,11 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     var summaryWrap=qs('#adm-email-open-summary');
     summaryWrap.innerHTML='';
     if(rows.length){
-      summaryWrap.appendChild(el('div',{style:'background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:10px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;color:#065f46',textContent:rows.length+' recipient'+(rows.length!==1?'s':'')+' opened your email'}));
+      summaryWrap.appendChild(el('div',{className:'adm-pill adm-pill--green',textContent:rows.length+' recipient'+(rows.length!==1?'s':'')+' opened your email'}));
     }
 
     var wrap=qs('#adm-email-opens-table');
-    if(!rows.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No confirmed opens yet.</p>';return}
+    if(!rows.length){wrap.innerHTML='<p class="adm-empty">No confirmed opens yet.</p>';return}
     var tbl=el('table',{className:'adm-table'});
     tbl.appendChild(el('thead',null,[el('tr',null,[
       el('th',{textContent:'Email'}),el('th',{textContent:'Opened'}),
@@ -458,13 +376,13 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
 
   function renderBugs(filter){
     var q=(filter||'').toLowerCase();
-    var rows=ctx.data.bugRows.slice();
+    var rows=stripHeader(ctx.data.bugRows).slice();
     if(q)rows=rows.filter(function(r){return r.join(' ').toLowerCase().indexOf(q)!==-1});
     rows.sort(function(a,b){return new Date(b[0]).getTime()-new Date(a[0]).getTime()});
     qs('#adm-bug-count').textContent=rows.length+' report'+(rows.length!==1?'s':'');
 
     var wrap=qs('#adm-bugs-table');
-    if(!rows.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No bug reports.</p>';return}
+    if(!rows.length){wrap.innerHTML='<p class="adm-empty">No bug reports.</p>';return}
     var tbl=el('table',{className:'adm-table'});
     tbl.appendChild(el('thead',null,[el('tr',null,[
       el('th',{textContent:'When'}),el('th',{textContent:'Email'}),
@@ -480,7 +398,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
       ]));
     });
     tbl.appendChild(tb);wrap.innerHTML='';
-    if(rows.length>100)wrap.appendChild(el('p',{style:'font-size:.72rem;color:#94a3b8;margin:0 0 .5rem',textContent:'Showing 100 of '+rows.length}));
+    if(rows.length>100)wrap.appendChild(el('p',{className:'adm-more',textContent:'Showing 100 of '+rows.length}));
     wrap.appendChild(tbl);
   }
 
@@ -488,7 +406,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
     var wrap=qs('#adm-hosting-list');if(!wrap)return;
     var list=ctx.data.hostedImages||[];
     qs('#adm-host-count').textContent=list.length;
-    if(!list.length){wrap.innerHTML='<p style="color:#94a3b8;font-size:.85rem">No hosted images yet. Upload one above to get a public link.</p>';return}
+    if(!list.length){wrap.innerHTML='<p class="adm-empty">No hosted images yet. Upload one above to get a public link.</p>';return}
     wrap.innerHTML='';
     var grid=el('div',{className:'adm-host-grid'});
     list.forEach(function(img){
