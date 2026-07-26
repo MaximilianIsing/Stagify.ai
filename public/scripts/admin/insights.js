@@ -10,10 +10,10 @@
 // Column indices come from analytics.js#COL — the single source of truth for the
 // CSV schemas, mirrored in docs/guides/admin-dashboard.md.
 
-import { qs } from './helpers.js';
+import { qs, el } from './helpers.js';
 import {
-  COL, stripHeader, dailyCounts, allTimeCounts, cumulative, topValues,
-  hourHistogram, weekdayHistogram, planMix, authMix, booleanMix,
+  COL, stripHeader, dailyCounts, allTimeCounts, cumulative, topValues, topValuesByPerson,
+  distinctPeople, hourHistogram, weekdayHistogram, planMix, authMix, booleanMix,
   successRate, failuresByDay, durationStats, durationHistogram,
 } from './analytics.js';
 import {
@@ -121,20 +121,29 @@ export function createInsights({ ctx, effectivePlan }) {
       body: rankedBars(topValues(promptRows, COL.PROMPT.STYLE, { top: 10 }), { unit: 'renders', color: PALETTE[1] }),
     }));
 
-    // Referral/role are self-reported at signup and repeated onto every prompt
-    // row, so the contact form is the cleaner sample when prompts carry none.
-    const referral = topValues(promptRows, COL.PROMPT.REFERRAL, { top: 8 });
+    // Onboarding answers, counted as PEOPLE from the contact log — one row per
+    // answer. They must NOT be counted off the render log: the client replays the
+    // stored answer onto every render, so a few hundred answers became tens of
+    // thousands of "people", weighted by whoever staged the most rooms.
+    const answered = distinctPeople(contactRows, COL.CONTACT.EMAIL);
+    const answeredNote = answered ? fmtNum(answered) + ' people answered' : '';
+
     host.appendChild(chartCard({
       title: 'Referral sources',
-      sub: referral.length ? 'Self-reported "how did you hear about us", from render logs.' : 'From contact-form submissions.',
-      body: rankedBars(referral.length ? referral : topValues(contactRows, COL.CONTACT.REFERRAL, { top: 8 }), { color: PALETTE[3] }),
+      sub: 'Self-reported "how did you hear about us" — one count per person, from the onboarding answers.',
+      body: contactRows.length
+        ? rankedBars(topValuesByPerson(contactRows, COL.CONTACT.REFERRAL, COL.CONTACT.EMAIL, { top: 8 }), { unit: 'people', color: PALETTE[3] })
+        : chartEmpty('No onboarding answers recorded.'),
+      notes: [answeredNote].filter(Boolean),
     }));
 
-    const role = topValues(promptRows, COL.PROMPT.ROLE, { top: 8 });
     host.appendChild(chartCard({
       title: 'User roles',
-      sub: 'Self-reported role — agent, photographer, stager, and so on.',
-      body: rankedBars(role.length ? role : topValues(contactRows, COL.CONTACT.ROLE, { top: 8 }), { color: PALETTE[5] }),
+      sub: 'Self-reported role — one count per person, from the onboarding answers.',
+      body: contactRows.length
+        ? rankedBars(topValuesByPerson(contactRows, COL.CONTACT.ROLE, COL.CONTACT.EMAIL, { top: 8 }), { unit: 'people', color: PALETTE[5] })
+        : chartEmpty('No onboarding answers recorded.'),
+      notes: [answeredNote].filter(Boolean),
     }));
 
     host.appendChild(chartCard({
@@ -265,6 +274,10 @@ export function createInsights({ ctx, effectivePlan }) {
       title: 'Activation funnel',
       sub: 'Accounts that went on to render, and kept going. Each step is a strict subset of the one above.',
       body: funnelChart(activationFunnel(ctx.data.users || [], index)),
+      // Full width: the bars scale to the container, so the conversion drop-off
+      // is far easier to read, and a tall card in one column would strand the
+      // two beside it.
+      wide: true,
       notes: [
         fmtNum(paid.paid) + ' of ' + fmtNum(paid.total) + ' accounts pay (' + paid.pct.toFixed(1) + '%) — tracked separately, it does not nest',
         coverageNote,
@@ -281,6 +294,28 @@ export function createInsights({ ctx, effectivePlan }) {
     }));
   }
 
+  // Each group gets its own grid rather than all 24 cards sharing one.
+  //
+  // A single grid sizes every row to its tallest card, so an empty-state card
+  // ("No failures recorded") next to a full chart left large dead areas, and one
+  // very tall card stranded the whole band beside it. Cards within a group are
+  // the same KIND of thing and so roughly the same height, which makes the rows
+  // even; the headings also give 24 cards some navigable structure.
+  function section(host, title, build) {
+    const grid = el('div', { className: 'adm-chart-grid' });
+    build(grid);
+    if (!grid.children.length) return;
+    // Four cards in a three-column grid leaves a lone orphan on its own row.
+    // 2x2 is the tidier shape, so a group of exactly four asks for two columns.
+    // Full-width cards take a row to themselves and don't count toward this.
+    const inFlow = [...grid.children].filter((c) => !c.classList.contains('adm-chart-card--wide')).length;
+    if (inFlow === 4) grid.classList.add('adm-chart-grid--2col');
+    host.appendChild(el('section', { className: 'adm-section' }, [
+      el('h2', { className: 'adm-section-title', textContent: title }),
+      grid,
+    ]));
+  }
+
   function render() {
     const host = qs('#adm-insights');
     if (!host) return;
@@ -294,12 +329,12 @@ export function createInsights({ ctx, effectivePlan }) {
     const signupStamps = (ctx.data.users || []).map((u) => u.createdAt);
 
     host.innerHTML = '';
-    reliabilityCards(host, promptRows);
-    lifecycleCards(host, promptRows);
-    growthCards(host, promptStamps, signupStamps);
-    compositionCards(host, promptRows, chatStamps, maskStamps, promptStamps);
-    contentCards(host, promptRows, maskRows, contactRows);
-    rhythmCards(host, promptStamps, chatStamps, maskStamps);
+    section(host, 'Reliability', (g) => reliabilityCards(g, promptRows));
+    section(host, 'Lifecycle', (g) => lifecycleCards(g, promptRows));
+    section(host, 'Growth', (g) => growthCards(g, promptStamps, signupStamps));
+    section(host, 'Composition', (g) => compositionCards(g, promptRows, chatStamps, maskStamps, promptStamps));
+    section(host, 'What gets staged', (g) => contentCards(g, promptRows, maskRows, contactRows));
+    section(host, 'When it happens', (g) => rhythmCards(g, promptStamps, chatStamps, maskStamps));
   }
 
   return { render };

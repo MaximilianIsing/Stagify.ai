@@ -70,16 +70,54 @@ the shape of the whole history, so it re-buckets itself as history grows
 (`pickGranularity`: ≤70 days → daily, ≤550 → weekly, beyond → monthly), keeping the point
 count in a readable 20–90 band at every scale.
 
-**Insights** — `#adm-insights`, one grid of cards, in four groups:
+**Insights** — `#adm-insights`, six labelled sections, **each with its own grid**:
 
 - **Reliability** — render outcomes · failed renders per day · failure reasons · render
   duration (p50/p90/p95 + histogram) · staging models.
-- **Lifecycle** — activation funnel · cohort retention.
+- **Lifecycle** — activation funnel · cohort retention (both full width).
 - **Growth** — cumulative generations · total accounts over time · new signups per bucket.
-- **Composition & content** — plan mix · sign-in method · feature usage mix · furniture
-  removal · room types · furniture styles · referral sources · user roles · mask-edit
-  models · enterprise usage by domain · activity by hour · activity by weekday · chat
-  messages (30d) · mask edits (30d).
+- **Composition** — plan mix · sign-in method · feature usage mix · furniture removal.
+- **What gets staged** — room types · furniture styles · referral sources · user roles ·
+  mask-edit models · enterprise usage by domain.
+- **When it happens** — activity by hour · activity by weekday · chat messages (30d) ·
+  mask edits (30d).
+
+The per-section grid is the layout fix, not just organisation. A grid row is sized by its
+tallest card, so with all 24 in one grid an empty-state card ("No failures recorded") sat
+beside a full chart and left large dead areas, and one very tall card stranded the band
+next to it. Within a section the cards are the same *kind* of thing and so roughly the same
+height. Three rules keep the rows clean:
+
+- Cards **stretch** to a shared row height (the grid default — don't reintroduce
+  `align-items: start`), and `.adm-chart-notes` uses `margin-top: auto` so the note chips
+  land on one baseline across the row.
+- A section of exactly **four** in-flow cards switches to two columns
+  (`adm-chart-grid--2col`), because 2×2 beats three-plus-an-orphan.
+- A card that is tall or needs the width passes `wide: true` and takes a full row — the
+  funnel and the cohort grid both do.
+
+### Counting people vs. counting rows
+
+`userRole` and `userReferralSource` are **onboarding answers stored per person**, which the
+client replays onto *every* render it sends. Counting them off the render log therefore
+reports render volume weighted by whoever staged the most rooms — a few hundred answers
+charted as tens of thousands of "people". Those two cards read `contact_logs.csv` (one row
+per answer) through `topValuesByPerson`, which deduplicates by email.
+
+Rule of thumb: **a per-person attribute must be counted from a per-person table.** Only
+per-event columns (room type, style, model, outcome) may be counted off the render log, and
+those cards say "renders" in their unit.
+
+### Category grouping
+
+`topValues` / `topValuesByPerson` group through `categoryKey` — lower-cased with whitespace
+runs collapsed — because these columns are free text written by several client versions.
+Grouping on the raw string charted `Living room` and `Living Room` as two different rooms.
+The label shown is the **most common original spelling**, not a machine-lowercased one.
+
+The folded tail bucket is labelled `Other (N more)`, built to be unique. A fixed `Other`
+collided with the genuine `Other` room type, so the chart drew two rows both labelled
+Other, one real and one synthetic, with different numbers.
 
 ### Three places "absent" must not read as "zero"
 

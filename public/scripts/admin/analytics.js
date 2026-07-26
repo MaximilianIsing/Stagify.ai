@@ -272,32 +272,123 @@ export function windowDelta(timestamps, days) {
 // ── Distributions ───────────────────────────────────────────────────────────
 
 /**
- * Top-N distribution of one CSV column, with the tail folded into "Other" so a
- * long-tail column (styles, referral sources) still renders as a readable chart.
- * Blank/`unknown` cells are skipped rather than charted as a category.
+ * Fold a value to its grouping key: lower-cased, with runs of whitespace
+ * collapsed. These columns are free text assembled by several client versions,
+ * so "Living room", "Living Room" and "Living  room" are one category that must
+ * not chart as three.
+ * @param {any} value
+ * @returns {string}
+ */
+export function categoryKey(value) {
+  return String(value === null || value === undefined ? '' : value).trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+// Sort a {key → {label, value}} tally and fold everything past `top` into one
+// bucket. The fold label is BUILT to be unique ("Other (3 more)") rather than a
+// bare "Other": several of these columns contain a genuine category called
+// "Other", and a fixed label collided with it — the chart then showed two rows
+// both labelled Other, one real and one synthetic.
+function rankTally(tally, top) {
+  const all = Object.keys(tally)
+    .map((k) => ({ label: tally[k].label, value: tally[k].value }))
+    .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
+  if (top <= 0 || all.length <= top) return all;
+  const head = all.slice(0, top);
+  const rest = all.slice(top);
+  const tail = rest.reduce((sum, s) => sum + s.value, 0);
+  if (tail > 0) head.push({ label: 'Other (' + rest.length + ' more)', value: tail });
+  return head;
+}
+
+// Track the spellings seen for one grouping key and surface the most common one,
+// so the chart shows the label people actually see rather than an arbitrary
+// first-wins or a machine-lowercased version.
+function addSpelling(tally, key, raw, weight) {
+  const entry = tally[key] || (tally[key] = { label: raw, value: 0, spellings: {} });
+  entry.value += weight;
+  entry.spellings[raw] = (entry.spellings[raw] || 0) + 1;
+  if (entry.spellings[raw] > (entry.spellings[entry.label] || 0)) entry.label = raw;
+}
+
+/**
+ * Top-N distribution of one CSV column, counting ROWS. Values are grouped
+ * case- and whitespace-insensitively (see {@link categoryKey}); blank and
+ * `unknown` cells are skipped rather than charted as a category.
  * @param {string[][]} rows
  * @param {number} index Column to count.
- * @param {{top?: number, otherLabel?: string}} [opts]
+ * @param {{top?: number}} [opts]
  * @returns {Slice[]}
  */
 export function topValues(rows, index, opts = {}) {
   const top = opts.top === undefined ? 8 : opts.top;
-  const otherLabel = opts.otherLabel || 'Other';
-  /** @type {Record<string, number>} */
-  const counts = {};
+  /** @type {Record<string, {label: string, value: number, spellings: Record<string, number>}>} */
+  const tally = {};
   (rows || []).forEach((r) => {
-    const raw = String((r && r[index]) || '').trim();
-    if (!raw || raw.toLowerCase() === 'unknown') return;
-    counts[raw] = (counts[raw] || 0) + 1;
+    const raw = String((r && r[index]) || '').trim().replace(/\s+/g, ' ');
+    const key = categoryKey(raw);
+    if (!key || key === 'unknown') return;
+    addSpelling(tally, key, raw, 1);
   });
-  const all = Object.keys(counts)
-    .map((label) => ({ label, value: counts[label] }))
-    .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
-  if (top <= 0 || all.length <= top) return all;
-  const head = all.slice(0, top);
-  const tail = all.slice(top).reduce((sum, s) => sum + s.value, 0);
-  if (tail > 0) head.push({ label: otherLabel, value: tail });
-  return head;
+  return rankTally(tally, top);
+}
+
+/**
+ * Top-N distribution counting **distinct people** instead of rows.
+ *
+ * The onboarding answers (role, referral source) are per-person attributes that
+ * the client replays onto every render row, so counting rows over the render log
+ * reports render volume weighted by heavy users — tens of thousands of "people"
+ * from a few hundred actual answers. Pass the table that holds one row per
+ * answer and the column identifying the person.
+ *
+ * Rows with no usable identity can't be deduplicated, so each counts once; that
+ * is a ceiling on those, and the only alternative (dropping them) is a floor.
+ *
+ * @param {string[][]} rows
+ * @param {number} index Column to count.
+ * @param {number} identityIndex Column identifying the person (usually an email).
+ * @param {{top?: number}} [opts]
+ * @returns {Slice[]}
+ */
+export function topValuesByPerson(rows, index, identityIndex, opts = {}) {
+  const top = opts.top === undefined ? 8 : opts.top;
+  /** @type {Record<string, {label: string, value: number, spellings: Record<string, number>, seen: Record<string, true>}>} */
+  const tally = {};
+  (rows || []).forEach((r) => {
+    const raw = String((r && r[index]) || '').trim().replace(/\s+/g, ' ');
+    const key = categoryKey(raw);
+    if (!key || key === 'unknown') return;
+    const identity = categoryKey(r && r[identityIndex]);
+    const entry = tally[key];
+    if (entry && identity && identity !== 'unknown' && entry.seen[identity]) {
+      // Same person answering twice — record the spelling, not a second person.
+      entry.spellings[raw] = (entry.spellings[raw] || 0) + 1;
+      return;
+    }
+    addSpelling(tally, key, raw, 1);
+    if (identity && identity !== 'unknown') tally[key].seen = Object.assign(tally[key].seen || {}, { [identity]: true });
+    else tally[key].seen = tally[key].seen || {};
+  });
+  return rankTally(tally, top);
+}
+
+/**
+ * Distinct people represented by a table, on the same identity rule as
+ * {@link topValuesByPerson} — for stating what a per-person chart is counting.
+ * @param {string[][]} rows
+ * @param {number} identityIndex
+ * @returns {number}
+ */
+export function distinctPeople(rows, identityIndex) {
+  /** @type {Record<string, true>} */
+  const seen = {};
+  let anonymous = 0;
+  (rows || []).forEach((r) => {
+    const identity = categoryKey(r && r[identityIndex]);
+    if (identity && identity !== 'unknown') seen[identity] = true;
+    else anonymous++;
+  });
+  return Object.keys(seen).length + anonymous;
 }
 
 /**
