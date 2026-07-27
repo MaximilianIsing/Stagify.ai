@@ -10,6 +10,7 @@ import { sendError } from '../lib/http/http-helpers.js';
 import createWelcomeMessageHandler from '../lib/chat/welcome-message-handler.js';
 import createChatRequestPrep from '../lib/chat/chat-request-prep.js';
 import { buildUnsupportedFileErrorBody } from '../lib/chat/chat-upload-error.js';
+import { resolveChatModel } from '../lib/config/model-config.js';
 import { logger } from '../lib/logger.js';
 
 // A single conversation is capped at this many user messages before the client
@@ -76,9 +77,11 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     const { messages, model, messageTag, baseImageIndex: baseImageIndexRaw } = req.body;
     const baseImageIndex = parseBaseImageIndex(baseImageIndexRaw);
     
-    // Get model from request or default to gpt-4o-mini
-    const selectedModel = model || 'gpt-4o-mini';
-    
+    // Resolve the client-supplied model through the allow-list — this value is
+    // forwarded to OpenAI verbatim. requireProAccount above already guarantees a
+    // paid account, hence isPro: true.
+    const selectedModel = resolveChatModel(model, { isPro: true });
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return sendError(res, 400, 'Messages array is required');
     }
@@ -337,9 +340,9 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     const { message = '', conversationHistory: conversationHistoryStr, model } = req.body;
     const files = Array.isArray(req.files) ? req.files : [req.files];
     
-    // Get model from request or default to gpt-4o-mini
-    const selectedModel = model || 'gpt-4o-mini';
-    
+    // Allow-listed before it reaches OpenAI (see /api/chat); pro-gated above.
+    const selectedModel = resolveChatModel(model, { isPro: true });
+
     // Parse conversation history if provided
     let conversationHistory = [];
     if (conversationHistoryStr) {
