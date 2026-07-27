@@ -17,7 +17,7 @@ const HEIC_EXT = /\.(heic|heif)$/i;
 const HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'];
 
 // isHeic / sniff are pure and live at module scope so they can be unit-tested
-// directly (test/heic-convert.test.js). The IIFE below still uses them, and the
+// directly (test/frontend/heic-convert.test.js). The IIFE below still uses them, and the
 // browser API is unchanged (window.StagifyHeic).
 
 /**

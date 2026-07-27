@@ -19,7 +19,7 @@ import { roomPngBuffer, seedProSession } from './fixtures.js';
 const SERVER_ENGLISH = 'This looks like a selfie, not a room.';
 
 // Sourced from the pack rather than hardcoded, so re-wording the copy can't break
-// this test (test/unstageable-i18n.test.js is what guards the key's existence).
+// this test (test/i18n/unstageable-i18n.test.js is what guards the key's existence).
 const PACK_COPY = JSON.parse(fs.readFileSync('public/languages/english.json', 'utf8'))
   .errors.unstageable.PERSON_PORTRAIT;
 

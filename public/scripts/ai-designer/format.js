@@ -2,7 +2,7 @@
 //
 // No DOM, no window, no i18n, no app state — every function is a deterministic
 // transform on its arguments, so these are unit-testable under `node --test`
-// with zero shim (see test/ai-designer-format.test.js). The browser entry
+// with zero shim (see test/frontend/ai-designer/ai-designer-format.test.js). The browser entry
 // (scripts/ai-designer-app.js) imports these; each was lifted verbatim from
 // that file so behaviour is identical.
 

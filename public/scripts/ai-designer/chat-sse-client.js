@@ -5,7 +5,7 @@
 // delimited event blocks, parses each `event:` / `data:` pair, and dispatches
 // to the matching handler. No DOM, no app state — the only inputs are the
 // response and the callbacks, so it is unit-testable under node --test with a
-// fake reader (see test/ai-designer-chat-sse-client.test.js). The browser entry
+// fake reader (see test/frontend/ai-designer/ai-designer-chat-sse-client.test.js). The browser entry
 // wires the handlers to its DOM-rendering functions.
 //
 // handlers: { onStatus, onMessage, onImages, onError } — each optional, called

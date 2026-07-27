@@ -9,7 +9,7 @@
 //   2. Regenerates public/sitemap.xml with a <url> per language + xhtml alternates.
 //
 // Idempotent: re-running removes the previously-injected cluster and rewrites it,
-// so it's safe to run any time. A test (test/i18n.test.js) asserts the committed
+// so it's safe to run any time. A test (test/i18n/i18n.test.js) asserts the committed
 // sitemap and the English hreflang blocks match this output, so CI catches a
 // forgotten rebuild.
 

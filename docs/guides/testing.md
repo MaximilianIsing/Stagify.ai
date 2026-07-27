@@ -31,6 +31,37 @@ bypasses, revenue bugs, a server that won't boot, and broken static/asset refere
 degrades gracefully when unconfigured, and billing/auth logic is exercised over throwaway
 temp-dir stores with hand-built event objects.
 
+## Layout
+
+Specs are grouped into **subfolders that mirror the source tree**, so a change to a `lib/`
+module has an obvious place to look (and to add to). The runner glob is `test/**/*.test.js`,
+so a new folder needs no registration — just drop the file in.
+
+| Folder | Holds | Mirrors |
+|---|---|---|
+| `test/server/` | Whole-app boot smokes and cross-cutting HTTP infra: `smoke`, `guards`, `static`, `json-body-limit`, `upload-limits`, `route-inventory`, `public-endpoints`. These use the full-boot `startServer()` harness (or no server at all). | `server.js` |
+| `test/routes/` | **Contract** tests for one router's endpoints — mostly mounted with the matching `test/helpers/<router>-app.js` harness, though `staging-endpoints` deliberately full-boots to get the real blank-key fail-open config. | `routes/` |
+| `test/chat/` | The AI Designer chat pipeline modules. | `lib/chat/` |
+| `test/staging/` | Prompt building, the staging pipeline/generation, CAD handling. | `lib/staging/` |
+| `test/image/` | Erase, annotation, review, primitives, hosted images. | `lib/image/` |
+| `test/data/` | Auth store, SQLite layer, enterprise store, memory, counters, uptime, pro grants, public-email-domain gate. | `lib/data/` |
+| `test/services/` | AI clients, auth helpers, email + lifecycle emails, CSV logging, Stripe webhooks, trial lifecycle. | `lib/services/` |
+| `test/http/` | Async router, guards, helpers, rate limiters, uploads, CSV escaping. | `lib/http/` |
+| `test/config/` | Runtime flags, model config, the diagnostic logger. | `lib/config/`, `lib/logger.js` |
+| `test/i18n/` | The localized-URL layer **and** the translation **drift guards** (`room-types-i18n`, `unstageable-i18n`). | `lib/i18n/` |
+| `test/frontend/` | Browser logic, split **by area** rather than by exact path: `admin/`, `ai-designer/`, `app/`, `masking-studio/` (which also holds `mask-core`, the shared engine that lives a level up in the source). Standalone modules and page-level guards stay at the top: `count-up`, `heic-convert`, `unstageable-message`, `plus-welcome`, `classic-scripts-parse`. | `public/scripts/` |
+| `test/helpers/` | Shared harnesses — **not** specs. | — |
+
+Two rules of thumb when a spec could sit in two places — both are about **what is under
+test**, never which harness it happens to use:
+
+- It belongs with the **module under test**, not the feature it serves. `public-email-domains`
+  is under `data/`, not `i18n/`, even though it also asserts a translation key.
+- A spec targeting **one router's endpoints** goes in `routes/`; one targeting **whole-app or
+  cross-router** behavior (boot, middleware order, guards across every route, body/upload
+  limits) goes in `server/`. The harness is not the tiebreaker: `routes/staging-endpoints`
+  full-boots and still belongs in `routes/`, while `server/static` starts no server at all.
+
 ## The test harnesses
 
 `test/helpers/` holds the shared harnesses (none are `*.test.js`, so they're never run as
@@ -74,39 +105,39 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 
 | Tier | File | Covers |
 |---|---|---|
-| 0 | `smoke.test.js` | The server boots and `GET /health` returns `200 {status:'healthy'}`. The most common outage ("it doesn't start") caught first. |
-| 1 | `static.test.js` | No server, no network: `server.js` + every `lib/*.js` parses; client scripts parse; **local asset references in `public/*.html` exist on disk**; every language file is valid JSON and **covers `english.json`'s keys**; `sitemap.xml`/`manifest.json` are well-formed. |
-| 2 | `guards.test.js` | Access-guard status codes — log/admin routes 403 without a key, endpoint-key routes 403, Pro-only routes 401 without a session. Guards against silent auth bypass. |
-| 2 | `auth-store.test.js` | Auth correctness: register→login round-trip, email-code gating, salted/hashed passwords, session validate/logout, single-use password reset, non-enumerating reset, free-tier + mobile-IP usage recording. |
-| 2 | `auth-store-sqlite.test.js` | SQLite specifics: on-disk persistence, the one-time `auth-store.json` → SQLite migration (user-data safety), and the `exportStore`/`importStore` round-trip behind the admin backup. |
-| 2 | `db.test.js` | The `lib/data/db.js` layer: the WAL/pragmas it sets and that data actually persists to disk. |
-| 2 | `stripe-webhooks.test.js` | Billing lifecycle over hand-built events: checkout upgrades to Pro (by ref or email), `subscription.deleted` downgrades, `updated`→active restores Pro, enterprise routes to the enterprise store, and an enterprise checkout whose metadata names a **public email provider** activates nothing (acked, not applied — the case a replayed or dashboard-made subscription would hit). Catches "paid but no Pro" / "churned but still Pro". |
-| 2 | `enterprise-store.test.js` | Domain activation (idempotent, case-insensitive), subscription-state sync, usage counting, and the **public-provider gate**: `activateDomain` refuses to write a `gmail.com` row, `isActiveDomain` grants nothing even when such a row is already stored, and — wired to the real `auth-helpers` — a user on a public domain is never upgraded to `pro`. |
-| 2 | `staging-endpoints.test.js` | Staging contracts without any AI call: `validate-image` rejects bad input (400) and fails open (200) when the reviewer is disabled (booted with **both** AI keys blank — the grader is Gemini, so `GPT_KEY` alone is not enough); `process-image` requires a session for desktop. |
-| 2 | `public-endpoints.test.js` | Public surface smoke: JSON endpoint shapes, SEO/landing files serve, static content types, unknown routes 404, a helmet header is present. |
-| 2 | `i18n.test.js` | The localized-URL layer (`lib/i18n/` + `routes/i18n.js`): the config is consistent, the page renderer applies translations + `<base>` + canonical/hreflang + link rewriting, the client routing helpers resolve prefixes correctly, live `/es` & `/fr/…` routes render in-language (301/404 edges), and **drift guards** fail if the committed `sitemap.xml` or the English pages' baked-in hreflang is stale (rebuild with `scripts/build-i18n-seo.js`). |
-| 2 | `auth-route.test.js` | The auth **routes** over a real temp-dir store (email/Google faked): register→verify→login→`/me`→logout round-trip, `{ok:false}`→status mapping (400/401), the `/api/auth/me` gate (401 `AUTH_REQUIRED`), and the staging Google-disable (403 `STAGING_DISABLED`). |
-| 2 | `billing-route.test.js` | The Stripe **route** layer (faked SDK): the webhook rejects unconfigured / missing-signature / bad-signature **before** dispatch, a verified event dispatches and acks `{received:true}`, and the customer-portal + enterprise-checkout auth/validation gates (409 on a duplicate domain; `400 PUBLIC_EMAIL_DOMAIN` for a public mailbox provider, asserted to reach Stripe **zero** times). |
-| 2 | `admin-route.test.js` | The admin **routes** with the real access-key guard: no/wrong key → 403 (unconfigured → 500, fail-closed), the hosted-image host/list/unhost lifecycle (writes + deletes real files), snapshot downloads, and the memory/uptime reset actions. |
-| 2 | `pro-grant.test.js` | Admin **comp grants** (`lib/data/pro-grants.js` + the grant/revoke routes): the month arithmetic incl. the Jan-31 clamp, granting over a real temp-dir store, the grant surviving a close/reopen (it rides in `extra_json`), **expiry enforced on read** so a lapsed grant reads as `free` with no sweep job, the refusals (already-pro, Stripe subscriber), revoking early, and a Stripe checkout clearing the grant so a paying subscriber is never downgraded. |
-| 1 | `admin-analytics.test.js` | The dashboard's chart aggregators (`public/scripts/admin/analytics.js`), pure and DOM-free: **local** (not UTC) day keys, zero-filled windows, the day→week→month granularity thresholds, trailing-vs-previous window deltas, and the top-N/"Other" distributions. These bugs never throw — they just draw a wrong picture — so the assertions target the quiet failures. |
-| 1 | `admin-analytics-users.test.js` | The dashboard's per-account joins (`public/scripts/admin/analytics-users.js`): last-active resolved across BOTH identifiers (renders key on email, chat/mask on userId), the activation funnel's nesting invariant — with the live-data regression where paid accounts outnumbered activated ones and drew a funnel step wider than its parent — and cohort cells that keep "this month hasn't elapsed" distinct from a measured 0%. |
-| 1 | `admin-charts.test.js` | The dashboard's SVG chart builders (`public/scripts/admin/charts.js`) against a stub `document`: one hover target per data point, geometry proportional to the values, a zero drawing nothing, axis labels thinned so they can't collide, and every chart degrading to a placeholder instead of an empty SVG. |
-| 1 | `admin-grant-ui.test.js` | The dashboard's grant control (`public/scripts/admin/grant.js`) against a minimal fake DOM: which of the four states renders (free → grant button, active grant → expiry + revoke, Stripe subscriber and enterprise → read-only notes), the confirm gate, the request each button sends, and the failed-request path re-enabling the button. |
-| 2 | `chat-route.test.js` | The `/api/chat` handler (faked OpenAI + image steps): the auth gate, the routing-completion parse, and the SSE-vs-`res.json` streamMode decision. |
-| — | `route-inventory.test.js` | Refactor safety net: asserts every **critical route is still registered** (responds with anything but 404 for its method). Guards the `server.js` → `routes/*` extraction. |
-| — | `async-router.test.js` | The `createAsyncRouter()` error-handling safety net: a rejecting async handler reaches the catch-all as a clean `500` instead of hanging the request. |
-| — | `uptime.test.js` | Pure math of the uptime monitor: window percentages, coverage, bucket classification, incident coalescing/pruning. |
-| 1 | `unstageable-message.test.js` | The browser's rejection-copy resolver (`public/scripts/unstageable-message.js`) against a stubbed `LanguageSystem`: a translated code wins, an untranslated one degrades to the server's English, and no input shape ever yields an empty message. |
-| — | `unstageable-i18n.test.js` | **Drift guard** between the rejection taxonomy (`lib/staging/unstageable.js`) and `public/languages/*.json`: every code is translated in **every** language, no pack carries a stale code, and no non-English pack still holds the English string. Needed because a missing key silently falls back to English rather than failing. |
-| 1 | `public-email-domains.test.js` | The public-mailbox-provider gate (`lib/data/public-email-domains.js`) that stops `gmail.com` being sold as an enterprise domain. Matching is tested against the evasions someone would actually try — case, `@` prefix, a whole address, a trailing dot, a pasted URL, `mail.gmail.com` — plus the inverse (`notgmail.com`, `gmail.com.evil.co`, real brokerage domains must pass), the list's own hygiene, and the **i18n drift guard** for `enterprise.errors.publicDomain` across all 11 packs. |
-| 1 | `remove-furniture-gate.test.js` | The stage modal's remove-existing-furniture rule (`public/scripts/app/remove-furniture-gate.js`) against a minimal fake DOM: the pure `removalAllowed(isPro, roomType)` decision, and that the DOM writer **clears the checkbox** (not just hides the row) when the control is withdrawn — the pipeline reads `.checked`, so a hidden-but-checked box would still submit `removeFurniture=true`. Also idempotence, since `applyUserToUI()` re-runs it from eight call sites. |
-| 1 | `prompts.test.js` | The staging/chat prompt builders (`lib/staging/prompts.js`): the chat system instructions embed their context and JSON contract, and `generatePrompt` composes the matrix text with the keep/remove-furniture branches. Also pins the **`Dorm` constraints** — that the fixed university-furniture and small-room-scale rules survive a custom style (which bypasses the matrix) and a remove-furniture request (which would otherwise strip them), including the block **ordering** that makes the override work. Asserts structure, never exact prose. |
-| 1 | `download-menu.test.js` | The staged-result download sizes (`public/scripts/app/download-menu.js`) with `Image` stubbed: the readiness check (an unsized `<canvas>` reports the HTML default **300x150, not 0**, so the obvious `canvas.width > 0` reads "ready" on a blank page — that shipped once), `Original` matching the upload's **long edge** so a snapped-bucket aspect mismatch can't stretch the room, and the dimension probe resolving `null` on error/timeout instead of hanging (the first version used `img.decode()`, which never settles in a backgrounded tab, so the menu silently never opened). All three are quiet failures — nothing throws, the user just gets the wrong file or no menu. |
-| — | `room-types-i18n.test.js` | **Drift guard** across the four places a room type must exist at once: `promptMatrix`, the `#room-type-select` options in `index.html`, the AI Designer routing enum (schema **and** the prose copy of it in both system instructions), and `roomTypes.*` in all 11 packs. Every one of these fails quietly on its own — a missing routing enum entry just reroutes to `Other` and the generic prompt, which is exactly how `Outdoors` went unreachable from chat until this guard was added. |
+| 0 | `server/smoke.test.js` | The server boots and `GET /health` returns `200 {status:'healthy'}`. The most common outage ("it doesn't start") caught first. |
+| 1 | `server/static.test.js` | No server, no network: `server.js` + every `lib/*.js` parses; client scripts parse; **local asset references in `public/*.html` exist on disk**; every language file is valid JSON and **covers `english.json`'s keys**; `sitemap.xml`/`manifest.json` are well-formed. |
+| 2 | `server/guards.test.js` | Access-guard status codes — log/admin routes 403 without a key, endpoint-key routes 403, Pro-only routes 401 without a session. Guards against silent auth bypass. |
+| 2 | `data/auth-store.test.js` | Auth correctness: register→login round-trip, email-code gating, salted/hashed passwords, session validate/logout, single-use password reset, non-enumerating reset, free-tier + mobile-IP usage recording. |
+| 2 | `data/auth-store-sqlite.test.js` | SQLite specifics: on-disk persistence, the one-time `auth-store.json` → SQLite migration (user-data safety), and the `exportStore`/`importStore` round-trip behind the admin backup. |
+| 2 | `data/db.test.js` | The `lib/data/db.js` layer: the WAL/pragmas it sets and that data actually persists to disk. |
+| 2 | `services/stripe-webhooks.test.js` | Billing lifecycle over hand-built events: checkout upgrades to Pro (by ref or email), `subscription.deleted` downgrades, `updated`→active restores Pro, enterprise routes to the enterprise store, and an enterprise checkout whose metadata names a **public email provider** activates nothing (acked, not applied — the case a replayed or dashboard-made subscription would hit). Catches "paid but no Pro" / "churned but still Pro". |
+| 2 | `data/enterprise-store.test.js` | Domain activation (idempotent, case-insensitive), subscription-state sync, usage counting, and the **public-provider gate**: `activateDomain` refuses to write a `gmail.com` row, `isActiveDomain` grants nothing even when such a row is already stored, and — wired to the real `auth-helpers` — a user on a public domain is never upgraded to `pro`. |
+| 2 | `routes/staging-endpoints.test.js` | Staging contracts without any AI call: `validate-image` rejects bad input (400) and fails open (200) when the reviewer is disabled (booted with **both** AI keys blank — the grader is Gemini, so `GPT_KEY` alone is not enough); `process-image` requires a session for desktop. |
+| 2 | `server/public-endpoints.test.js` | Public surface smoke: JSON endpoint shapes, SEO/landing files serve, static content types, unknown routes 404, a helmet header is present. |
+| 2 | `i18n/i18n.test.js` | The localized-URL layer (`lib/i18n/` + `routes/i18n.js`): the config is consistent, the page renderer applies translations + `<base>` + canonical/hreflang + link rewriting, the client routing helpers resolve prefixes correctly, live `/es` & `/fr/…` routes render in-language (301/404 edges), and **drift guards** fail if the committed `sitemap.xml` or the English pages' baked-in hreflang is stale (rebuild with `scripts/build-i18n-seo.js`). |
+| 2 | `routes/auth-route.test.js` | The auth **routes** over a real temp-dir store (email/Google faked): register→verify→login→`/me`→logout round-trip, `{ok:false}`→status mapping (400/401), the `/api/auth/me` gate (401 `AUTH_REQUIRED`), and the staging Google-disable (403 `STAGING_DISABLED`). |
+| 2 | `routes/billing-route.test.js` | The Stripe **route** layer (faked SDK): the webhook rejects unconfigured / missing-signature / bad-signature **before** dispatch, a verified event dispatches and acks `{received:true}`, and the customer-portal + enterprise-checkout auth/validation gates (409 on a duplicate domain; `400 PUBLIC_EMAIL_DOMAIN` for a public mailbox provider, asserted to reach Stripe **zero** times). |
+| 2 | `routes/admin-route.test.js` | The admin **routes** with the real access-key guard: no/wrong key → 403 (unconfigured → 500, fail-closed), the hosted-image host/list/unhost lifecycle (writes + deletes real files), snapshot downloads, and the memory/uptime reset actions. |
+| 2 | `data/pro-grant.test.js` | Admin **comp grants** (`lib/data/pro-grants.js` + the grant/revoke routes): the month arithmetic incl. the Jan-31 clamp, granting over a real temp-dir store, the grant surviving a close/reopen (it rides in `extra_json`), **expiry enforced on read** so a lapsed grant reads as `free` with no sweep job, the refusals (already-pro, Stripe subscriber), revoking early, and a Stripe checkout clearing the grant so a paying subscriber is never downgraded. |
+| 1 | `frontend/admin/admin-analytics.test.js` | The dashboard's chart aggregators (`public/scripts/admin/analytics.js`), pure and DOM-free: **local** (not UTC) day keys, zero-filled windows, the day→week→month granularity thresholds, trailing-vs-previous window deltas, and the top-N/"Other" distributions. These bugs never throw — they just draw a wrong picture — so the assertions target the quiet failures. |
+| 1 | `frontend/admin/admin-analytics-users.test.js` | The dashboard's per-account joins (`public/scripts/admin/analytics-users.js`): last-active resolved across BOTH identifiers (renders key on email, chat/mask on userId), the activation funnel's nesting invariant — with the live-data regression where paid accounts outnumbered activated ones and drew a funnel step wider than its parent — and cohort cells that keep "this month hasn't elapsed" distinct from a measured 0%. |
+| 1 | `frontend/admin/admin-charts.test.js` | The dashboard's SVG chart builders (`public/scripts/admin/charts.js`) against a stub `document`: one hover target per data point, geometry proportional to the values, a zero drawing nothing, axis labels thinned so they can't collide, and every chart degrading to a placeholder instead of an empty SVG. |
+| 1 | `frontend/admin/admin-grant-ui.test.js` | The dashboard's grant control (`public/scripts/admin/grant.js`) against a minimal fake DOM: which of the four states renders (free → grant button, active grant → expiry + revoke, Stripe subscriber and enterprise → read-only notes), the confirm gate, the request each button sends, and the failed-request path re-enabling the button. |
+| 2 | `routes/chat-route.test.js` | The `/api/chat` handler (faked OpenAI + image steps): the auth gate, the routing-completion parse, and the SSE-vs-`res.json` streamMode decision. |
+| — | `server/route-inventory.test.js` | Refactor safety net: asserts every **critical route is still registered** (responds with anything but 404 for its method). Guards the `server.js` → `routes/*` extraction. |
+| — | `http/async-router.test.js` | The `createAsyncRouter()` error-handling safety net: a rejecting async handler reaches the catch-all as a clean `500` instead of hanging the request. |
+| — | `data/uptime.test.js` | Pure math of the uptime monitor: window percentages, coverage, bucket classification, incident coalescing/pruning. |
+| 1 | `frontend/unstageable-message.test.js` | The browser's rejection-copy resolver (`public/scripts/unstageable-message.js`) against a stubbed `LanguageSystem`: a translated code wins, an untranslated one degrades to the server's English, and no input shape ever yields an empty message. |
+| — | `i18n/unstageable-i18n.test.js` | **Drift guard** between the rejection taxonomy (`lib/staging/unstageable.js`) and `public/languages/*.json`: every code is translated in **every** language, no pack carries a stale code, and no non-English pack still holds the English string. Needed because a missing key silently falls back to English rather than failing. |
+| 1 | `data/public-email-domains.test.js` | The public-mailbox-provider gate (`lib/data/public-email-domains.js`) that stops `gmail.com` being sold as an enterprise domain. Matching is tested against the evasions someone would actually try — case, `@` prefix, a whole address, a trailing dot, a pasted URL, `mail.gmail.com` — plus the inverse (`notgmail.com`, `gmail.com.evil.co`, real brokerage domains must pass), the list's own hygiene, and the **i18n drift guard** for `enterprise.errors.publicDomain` across all 11 packs. |
+| 1 | `frontend/app/remove-furniture-gate.test.js` | The stage modal's remove-existing-furniture rule (`public/scripts/app/remove-furniture-gate.js`) against a minimal fake DOM: the pure `removalAllowed(isPro, roomType)` decision, and that the DOM writer **clears the checkbox** (not just hides the row) when the control is withdrawn — the pipeline reads `.checked`, so a hidden-but-checked box would still submit `removeFurniture=true`. Also idempotence, since `applyUserToUI()` re-runs it from eight call sites. |
+| 1 | `staging/prompts.test.js` | The staging/chat prompt builders (`lib/staging/prompts.js`): the chat system instructions embed their context and JSON contract, and `generatePrompt` composes the matrix text with the keep/remove-furniture branches. Also pins the **`Dorm` constraints** — that the fixed university-furniture and small-room-scale rules survive a custom style (which bypasses the matrix) and a remove-furniture request (which would otherwise strip them), including the block **ordering** that makes the override work. Asserts structure, never exact prose. |
+| 1 | `frontend/app/download-menu.test.js` | The staged-result download sizes (`public/scripts/app/download-menu.js`) with `Image` stubbed: the readiness check (an unsized `<canvas>` reports the HTML default **300x150, not 0**, so the obvious `canvas.width > 0` reads "ready" on a blank page — that shipped once), `Original` matching the upload's **long edge** so a snapped-bucket aspect mismatch can't stretch the room, and the dimension probe resolving `null` on error/timeout instead of hanging (the first version used `img.decode()`, which never settles in a backgrounded tab, so the menu silently never opened). All three are quiet failures — nothing throws, the user just gets the wrong file or no menu. |
+| — | `i18n/room-types-i18n.test.js` | **Drift guard** across the four places a room type must exist at once: `promptMatrix`, the `#room-type-select` options in `index.html`, the AI Designer routing enum (schema **and** the prose copy of it in both system instructions), and `roomTypes.*` in all 11 packs. Every one of these fails quietly on its own — a missing routing enum entry just reroutes to `Other` and the generic prompt, which is exactly how `Outdoors` went unreachable from chat until this guard was added. |
 
 The table is a **representative selection**, not the full list — the suite has grown to
-~65 files as `server.js` is extracted into `lib/` and pure frontend logic is pulled into
+~90 files as `server.js` is extracted into `lib/` and pure frontend logic is pulled into
 testable helpers. Most `lib/` modules now have a matching `*.test.js` (e.g. `logger`,
 `logging`, `http-helpers`, `erase`, `image-review`, `image-annotation`, `hosted-images`),
 as do the extracted frontend helpers — the `masking-studio-*` islands plus pure slices like
@@ -116,7 +147,9 @@ staged-result readiness check). Run `npm test` for the authoritative set.
 
 ## Writing a new test
 
-- Name it `test/<thing>.test.js` so the glob picks it up.
+- Name it `test/<area>/<thing>.test.js`, picking the area from the [Layout](#layout) table
+  above (mirror the source tree). The glob is `test/**/*.test.js`, so any depth is picked up
+  automatically — but keep it in the folder that matches the module under test.
 - Use Node's runner API:
 
   ```js
@@ -141,11 +174,12 @@ staged-result readiness check). Run `npm test` for the authoritative set.
   code path actually uses — the stageability grader is **Gemini**, so `GPT_KEY=''` alone
   leaves it live and the test will hit a real API.
 - If you add a route the frontend or an integration depends on, add it to
-  `route-inventory.test.js` so a future refactor can't silently drop it.
+  `test/server/route-inventory.test.js` so a future refactor can't silently drop it.
 
 ## Debugging a failing run
 
-- Run one file: `node --test test/auth-store.test.js`.
+- Run one file: `node --test test/data/auth-store.test.js`.
+- Run one area: `node --test "test/routes/**/*.test.js"`.
 - A boot test that times out prints the child server's captured stdout/stderr in the
   failure message (via the harness `output()`), which usually shows the real cause
   (bad import, thrown error on startup).

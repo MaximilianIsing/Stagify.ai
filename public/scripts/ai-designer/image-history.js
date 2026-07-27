@@ -3,7 +3,7 @@
 // Pure data logic — no DOM, no window, no app state. The functions that used to
 // read the module-global `conversationHistory` / `selectedImageIndex` now take
 // them as parameters, so the whole module is unit-testable under `node --test`
-// (see test/ai-designer-image-history.test.js). The browser entry keeps thin
+// (see test/frontend/ai-designer/ai-designer-image-history.test.js). The browser entry keeps thin
 // same-named wrappers that pass its live globals, so its call sites are
 // unchanged.
 //

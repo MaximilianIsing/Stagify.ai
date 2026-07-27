@@ -4,7 +4,7 @@
 // stay in the browser entry — they need a live canvas / IndexedDB. What lives
 // here is the plain-object ⇄ layer projection and the restorability guard: pure
 // data shaping with no DOM and no module state, so it runs under node --test with
-// no shim (see test/masking-studio-session.test.js).
+// no shim (see test/frontend/masking-studio/masking-studio-session.test.js).
 
 import { createLayer } from './layers.js';
 

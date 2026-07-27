@@ -1,7 +1,7 @@
 // Pure area-layer / concurrency helpers for the Masking Studio.
 //
 // No DOM, no module state — inputs come in as parameters, so these run under
-// node --test with no shim (see test/masking-studio-layers.test.js). The browser
+// node --test with no shim (see test/frontend/masking-studio/masking-studio-layers.test.js). The browser
 // entry keeps the DOM-bound layer bookkeeping and passes its `layers` array,
 // palette, and translate function in. Anything here that needs a live canvas
 // (painting, compositing) stays in the entry; only the plain-object view-model

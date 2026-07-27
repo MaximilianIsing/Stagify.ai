@@ -1,7 +1,7 @@
 /* Stagify.ai — count-up animation for the hero stat numbers.
    Waits for live counts from app.js, then reveals pills and animates. */
 // The number/width math is pure and lives at module scope so it can be unit-tested
-// directly (test/count-up.test.js). The IIFE below drives the DOM animation with
+// directly (test/frontend/count-up.test.js). The IIFE below drives the DOM animation with
 // these; the browser API is unchanged (window.StagifyHeroStats).
 
 export function format(n) {

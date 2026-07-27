@@ -2,7 +2,7 @@
 // a run whose mocked /api/mask-edit returns an object that overhangs the painted
 // mask, then asserts the refine step surfaces a Snap-to-object suggestion and that
 // accepting it grows the mask (the suggestion is consumed) without error. The
-// pixel math itself is unit-tested (test/masking-studio-spill.test.js); this locks
+// pixel math itself is unit-tested (test/frontend/masking-studio/masking-studio-spill.test.js); this locks
 // in the wiring: run → detect spill → button → apply → recomposite.
 import { test, expect } from '@playwright/test';
 import { roomPngBuffer, seedProSession, spilloverEditedDataUrl } from './fixtures.js';

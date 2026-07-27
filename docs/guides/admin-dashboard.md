@@ -145,11 +145,11 @@ wider than its parent. `paidConversion` reports it separately, beside the chart.
 
 1. Add the aggregation as a **pure function** — `analytics.js` for time series and
    distributions, `analytics-users.js` if it joins accounts to activity — and cover it in
-   the matching `test/admin-analytics*.test.js`.
+   the matching `test/frontend/admin/admin-analytics*.test.js`.
 2. Render it in `insights.js` (or `overview.js`) with an existing primitive from
    `charts.js`, wrapped in `chartCard({title, sub, body, notes})`.
 3. Only add a new primitive if no existing one fits — and cover it in
-   `test/admin-charts.test.js`.
+   `test/frontend/admin/admin-charts.test.js`.
 
 ## Data sources
 
@@ -201,23 +201,23 @@ logs a row, with an empty prompt, so it lands in the error rate.
 Three suites, all pure/DOM-stubbed — no jsdom, no browser (see
 [`testing.md`](testing.md)):
 
-- [`test/admin-analytics.test.js`](../../test/admin-analytics.test.js) — the aggregators:
+- [`test/frontend/admin/admin-analytics.test.js`](../../test/frontend/admin/admin-analytics.test.js) — the aggregators:
   local day keys, zero-fill, granularity thresholds, window deltas, distributions, and the
   outcome maths (unrecorded rows excluded, success rate `null` not 100%, duration
   percentiles over successes only). Fixtures are built relative to `new Date()` so the
   suite can't rot.
-- [`test/admin-analytics-users.test.js`](../../test/admin-analytics-users.test.js) — the
+- [`test/frontend/admin/admin-analytics-users.test.js`](../../test/frontend/admin/admin-analytics-users.test.js) — the
   per-account joins: last-active across both identifiers, the funnel's monotonicity
   (including the real-data regression where paid exceeded activated), and cohort cells that
   keep "hasn't happened" distinct from 0%. `now` is injected, so nothing is clock-dependent.
-- [`test/admin-charts.test.js`](../../test/admin-charts.test.js) — the SVG builders,
+- [`test/frontend/admin/admin-charts.test.js`](../../test/frontend/admin/admin-charts.test.js) — the SVG builders,
   asserted on invariants rather than coordinates: one hover target per point, geometry
   proportional to the data, a zero drawing nothing, axis labels that don't collide, funnel
   bars scaled against the top step, and cohort cells that stay blank for a month that
   hasn't elapsed.
-- [`test/admin-helpers.test.js`](../../test/admin-helpers.test.js) — `parseCSV` and the
-  formatters. [`test/admin-grant-ui.test.js`](../../test/admin-grant-ui.test.js) covers
-  the grant control; [`test/admin-route.test.js`](../../test/admin-route.test.js) covers
+- [`test/frontend/admin/admin-helpers.test.js`](../../test/frontend/admin/admin-helpers.test.js) — `parseCSV` and the
+  formatters. [`test/frontend/admin/admin-grant-ui.test.js`](../../test/frontend/admin/admin-grant-ui.test.js) covers
+  the grant control; [`test/routes/admin-route.test.js`](../../test/routes/admin-route.test.js) covers
   the server side.
 
 ## Emails tab
@@ -261,7 +261,7 @@ no script in the markup can run.
 **Adding an email to the gallery:** write (or reuse) a pure `render…Email()` that returns
 `{ subject, html, text }`, then add one entry to the `defs` array in `email-catalog.js` with
 an `id`, `label`, `category`, `description`, and a `render()` thunk supplying sample data.
-`test/email-catalog.test.js` pins the roster, so update its `EXPECTED_IDS` too.
+`test/services/email-catalog.test.js` pins the roster, so update its `EXPECTED_IDS` too.
 
 ## Conventions when editing
 

@@ -140,7 +140,7 @@ test.describe('Main tool — room-type selection', () => {
 
 // The "Remove existing furniture" control is gated by plan AND room type, from two
 // different files (auth.js and app.js). The unit suite covers the rule in isolation
-// (test/remove-furniture-gate.test.js); these prove the wiring in a real browser —
+// (test/frontend/app/remove-furniture-gate.test.js); these prove the wiring in a real browser —
 // that the room-type select actually re-runs the gate, and that a box checked before
 // the switch does not still submit removeFurniture=true.
 test.describe('Main tool — remove-furniture gate', () => {
