@@ -29,6 +29,11 @@ store factory. It began as the auth store, so the file is still named `auth-stor
     `mobile_ip_usage` *(dormant — see below)*, `password_reset_tokens`, `pending_registrations`.
   - `enterprise_domains` ([`lib/data/enterprise-store.js`](../../lib/data/enterprise-store.js)) —
     one row per domain: activation + metered-usage state, kept in sync with Stripe.
+    A row here is a **blanket `pro` grant to every address under that domain**, so
+    public mailbox providers are refused on write *and* re-checked on read against
+    [`public-email-domains.js`](../../lib/data/public-email-domains.js) — a `gmail.com`
+    row arriving via the legacy import or `importStore()` grants nothing. See
+    [`security.md`](../guides/security.md#enterprise-domains-are-a-blanket-grant).
   - `memories` ([`lib/data/memory.js`](../../lib/data/memory.js)) — one row per user holding that
     user's AI-chat-assistant memories (a JSON array).
   - `uptime_state` ([`lib/data/uptime-monitor.js`](../../lib/data/uptime-monitor.js)) — a single

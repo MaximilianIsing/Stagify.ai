@@ -1134,6 +1134,7 @@
       "domain": "Bitte geben Sie eine gültige Domain ein (z. B. company.com).",
       "company": "Bitte geben Sie Ihren Firmennamen ein.",
       "email": "Bitte geben Sie eine gültige Kontakt-E-Mail ein.",
+      "publicDomain": "Stagify Enterprise erfordert Ihre eigene Firmendomain. Öffentliche E-Mail-Anbieter wie gmail.com oder yahoo.com können nicht registriert werden.",
       "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
       "unexpected": "Unerwartete Antwort. Bitte versuchen Sie es erneut.",
       "network": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."

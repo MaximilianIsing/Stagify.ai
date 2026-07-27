@@ -11,6 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createAuthStore } from '../lib/data/auth-store.js';
+import { createEnterpriseStore } from '../lib/data/enterprise-store.js';
 import { handleStripeEvent } from '../lib/services/stripe-webhooks.js';
 
 const tempDirs = [];
@@ -133,6 +134,36 @@ test('enterprise checkout routes to the enterprise store, not to a user account'
   assert.equal(res.handled, true);
   assert.ok(activated, 'enterpriseStore.activateDomain should have been called');
   assert.equal(activated.domain, 'acme.com');
+});
+
+test('an enterprise checkout for a public email provider activates nothing', async () => {
+  // The checkout route refuses gmail.com up front, so an event carrying it never
+  // came from our own form — a replayed session, a dashboard-created subscription,
+  // hand-edited metadata. Uses the REAL enterprise store so activateDomain's own
+  // guard is what's under test, not a fake that always says ok.
+  const store = freshStore();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-stripe-ent-'));
+  tempDirs.push(dir);
+  const enterpriseStore = createEnterpriseStore(dir);
+  openStores.push(enterpriseStore);
+  const stripe = { subscriptions: { retrieve: async () => ({ items: { data: [{ id: 'si_1' }] } }) } };
+
+  const event = {
+    type: 'checkout.session.completed',
+    data: { object: {
+      mode: 'subscription',
+      metadata: { enterprise_domain: 'gmail.com', enterprise_company: 'Totally Legit LLC' },
+      subscription: 'sub_ent',
+      customer: 'cus_ent',
+    } },
+  };
+
+  const res = await handleStripeEvent(event, store, { stripe, enterpriseStore });
+  assert.equal(res.handled, true, 'the event is still acked so Stripe stops retrying');
+  assert.equal(res.result.ok, false);
+  assert.equal(res.result.reason, 'public_email_domain');
+  assert.equal(enterpriseStore.getDomainEntry('gmail.com'), null, 'no domain row is written');
+  assert.equal(enterpriseStore.isActiveDomain('gmail.com'), false);
 });
 
 test('an unrecognized event type is acknowledged but not handled', async () => {

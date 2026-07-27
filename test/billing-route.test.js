@@ -145,6 +145,20 @@ test('create-checkout rejects an invalid domain, email, or missing company (400)
   assert.equal(app.calls.checkoutCreate.calls, 0, 'no checkout created for invalid input');
 });
 
+test('create-checkout refuses a public email provider before Stripe (400 + code)', async () => {
+  // The domain is a blanket grant to everyone under it, so gmail.com must never
+  // reach checkout — and the refusal carries the code the page localizes.
+  app = await mountBilling();
+  for (const domain of ['gmail.com', '@YAHOO.com', ' aol.com ', 'mail.gmail.com', 'mailinator.com']) {
+    const res = await postJson(app.baseUrl, '/api/enterprise/create-checkout', {
+      domain, companyName: 'Acme', contactEmail: 'a@acme.com',
+    });
+    assert.equal(res.status, 400, `expected 400 for ${domain}`);
+    assert.equal((await res.json()).code, 'PUBLIC_EMAIL_DOMAIN', `expected the code for ${domain}`);
+  }
+  assert.equal(app.calls.checkoutCreate.calls, 0, 'no Stripe session is created');
+});
+
 test('create-checkout → 409 when the domain already has an active plan', async () => {
   app = await mountBilling({ enterpriseDomainEntry: { status: 'active' } });
   const res = await postJson(app.baseUrl, '/api/enterprise/create-checkout', {

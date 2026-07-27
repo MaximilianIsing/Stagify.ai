@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createEnterpriseStore } from '../lib/data/enterprise-store.js';
+import { createAuthHelpers } from '../lib/services/auth-helpers.js';
 
 const tempDirs = [];
 const openStores = [];
@@ -49,6 +50,61 @@ test('activateDomain activates a domain (case-insensitive) with its details', ()
   const entry = store.getDomainEntry('acme.com');
   assert.equal(entry.companyName, 'Acme Inc');
   assert.equal(entry.status, 'active');
+});
+
+test('activateDomain refuses a public email provider and writes nothing', () => {
+  const store = freshStore();
+  const res = activate(store, { domain: 'GMAIL.com' });
+  assert.equal(res.ok, false);
+  assert.equal(res.reason, 'public_email_domain');
+  assert.equal(store.getDomainEntry('gmail.com'), null, 'no row is created');
+  assert.equal(store.getAllDomains().length, 0);
+});
+
+test('isActiveDomain never grants a public provider, even from an imported row', () => {
+  // The route and activateDomain both refuse gmail.com, so a row can only exist
+  // if it arrived some other way — a legacy JSON import, a restore, a hand-edited
+  // DB. This is the chokepoint every plan upgrade passes through, so it re-checks
+  // rather than trusting whatever is stored.
+  const store = freshStore();
+  store.importStore({
+    domains: [
+      { domain: 'gmail.com', status: 'active' },
+      { domain: 'acme.com', status: 'active' },
+    ],
+  });
+  assert.equal(store.isActiveDomain('gmail.com'), false, 'a stored gmail.com row grants nothing');
+  assert.equal(store.isActiveDomain('user@gmail.com'.split('@')[1]), false);
+  assert.equal(store.isActiveDomain('acme.com'), true, 'real domains are unaffected');
+});
+
+test('a user on a public email domain is never upgraded to pro', () => {
+  // The end-to-end statement of the whole gate: even with a gmail.com row sitting
+  // in the table, the helper that actually hands out `pro` refuses. Uses the real
+  // store (auth-helpers.test.js fakes it, so it cannot cover this).
+  const store = freshStore();
+  store.importStore({
+    domains: [
+      { domain: 'gmail.com', status: 'active' },
+      { domain: 'acme.com', status: 'active' },
+    ],
+  });
+  const { enhanceUserWithEnterprise, enterpriseDomainForUser } = createAuthHelpers({
+    // Only findUserByEmail is reached on these paths (the individual-subscriber
+    // carve-out in enterpriseDomainForUser); nothing else is touched.
+    authStore: { findUserByEmail: () => null },
+    enterpriseStore: store,
+    stripe: null,
+    enterpriseMeterEventName: 'generation',
+  });
+
+  const freeUser = { id: 'u1', email: 'someone@gmail.com', plan: 'free' };
+  assert.equal(enhanceUserWithEnterprise(freeUser).plan, 'free', 'gmail users stay free');
+  assert.equal(enterpriseDomainForUser(freeUser), null, 'and nothing is billed to gmail.com');
+
+  const employee = { id: 'u2', email: 'someone@acme.com', plan: 'free' };
+  assert.equal(enhanceUserWithEnterprise(employee).plan, 'pro', 'real enterprise users still work');
+  assert.equal(enterpriseDomainForUser(employee), 'acme.com');
 });
 
 test('activateDomain is idempotent — re-activating updates the same entry', () => {

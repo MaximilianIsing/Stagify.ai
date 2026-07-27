@@ -1134,6 +1134,7 @@
       "domain": "Please enter a valid domain (e.g. company.com).",
       "company": "Please enter your company name.",
       "email": "Please enter a valid contact email.",
+      "publicDomain": "Stagify Enterprise requires your own company domain. Public email providers like gmail.com or yahoo.com can't be registered.",
       "generic": "Something went wrong. Please try again.",
       "unexpected": "Unexpected response. Please try again.",
       "network": "Network error. Please check your connection and try again."

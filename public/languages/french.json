@@ -1134,6 +1134,7 @@
       "domain": "Veuillez saisir un domaine valide (par ex. company.com).",
       "company": "Veuillez saisir le nom de votre entreprise.",
       "email": "Veuillez saisir un e-mail de contact valide.",
+      "publicDomain": "Stagify Enterprise nécessite le domaine de votre propre entreprise. Les fournisseurs de messagerie publics comme gmail.com ou yahoo.com ne peuvent pas être enregistrés.",
       "generic": "Une erreur s’est produite. Veuillez réessayer.",
       "unexpected": "Réponse inattendue. Veuillez réessayer.",
       "network": "Erreur réseau. Veuillez vérifier votre connexion et réessayer."
