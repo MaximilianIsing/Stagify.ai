@@ -13,7 +13,17 @@ export function initCustomSelect(rootSelector) {
       const options = Array.from(root.querySelectorAll('.option'));
       function setValue(val) {
         root.dataset.value = val;
-        valueEl.textContent = options.find(o => o.dataset.value === val)?.textContent || val;
+        const opt = options.find(o => o.dataset.value === val);
+        // An option may carry trailing chrome (e.g. the "New" badge on Dorm). When it
+        // does, the label lives in its own .option-label span — read that, or the whole
+        // option's text would land in the trigger as "DormNew".
+        const labelEl = opt?.querySelector('.option-label') || opt;
+        valueEl.textContent = labelEl?.textContent?.trim() || val;
+        // Carry the label's i18n key onto the trigger too. Without this the trigger keeps
+        // whichever key it was authored with, so switching language after choosing a room
+        // would re-render the trigger as the default room instead of the selected one.
+        const langKey = labelEl?.getAttribute?.('data-lang');
+        if (langKey) valueEl.setAttribute('data-lang', langKey);
         options.forEach(o => o.classList.toggle('selected', o.dataset.value === val));
         menu.classList.add('hidden');
       }

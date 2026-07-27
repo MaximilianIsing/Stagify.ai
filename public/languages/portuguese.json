@@ -359,7 +359,10 @@
           "Adicionando os toques finais",
           "Dando vida à sua visão"
         ]
-      }
+      },
+      "downloadSizeMenu": "Escolher resolução de download",
+      "downloadOriginal": "Original",
+      "downloadNative": "nativa"
     }
   },
   "roomTypes": {
@@ -369,7 +372,8 @@
     "kitchen": "Cozinha",
     "bathroom": "Banheiro",
     "office": "Escritório",
-    "outdoors": "Área externa"
+    "outdoors": "Área externa",
+    "dorm": "Quarto universitário"
   },
   "furnitureStyles": {
     "standard": "Padrão",
@@ -531,7 +535,8 @@
   },
   "common": {
     "close": "Fechar",
-    "selectLanguage": "Selecionar idioma"
+    "selectLanguage": "Selecionar idioma",
+    "newBadge": "Novo"
   },
   "footer": {
     "privacy": "Política de Privacidade",
@@ -608,11 +613,58 @@
     "title": "Designer IA",
     "description": "Converta seus PDFs de plantas em CAD em visualizações 3D fotorrealistas de interiores",
     "statusMessages": {
-      "generating": ["gerando imagem...", "criando sua imagem...", "dando vida à sua visão...", "elaborando os detalhes...", "renderizando...", "quase lá...", "finalizando os detalhes...", "aprimorando o resultado...", "um momento..."],
-      "staging": ["decorando seu cômodo...", "adicionando móveis...", "selecionando a decoração...", "organizando os elementos...", "aplicando estilos...", "criando o design...", "gerando o layout...", "refinando os detalhes...", "quase pronto..."],
-      "analyzing": ["analisando a imagem...", "examinando os detalhes...", "identificando os elementos...", "processando os dados visuais...", "entendendo o espaço...", "revisando a composição...", "estudando o layout...", "quase terminando..."],
-      "welcome": ["preparando suas boas-vindas...", "nos preparando para você...", "configurando tudo...", "preparando uma calorosa recepção...", "deixando tudo pronto para você...", "quase prontos para recebê-lo...", "configurando seu espaço...", "preparando algo especial..."],
-      "general": ["pensando...", "processando sua solicitação...", "analisando...", "considerando as opções...", "trabalhando nisso...", "quase lá...", "um momento...", "preparando a resposta..."]
+      "generating": [
+        "gerando imagem...",
+        "criando sua imagem...",
+        "dando vida à sua visão...",
+        "elaborando os detalhes...",
+        "renderizando...",
+        "quase lá...",
+        "finalizando os detalhes...",
+        "aprimorando o resultado...",
+        "um momento..."
+      ],
+      "staging": [
+        "decorando seu cômodo...",
+        "adicionando móveis...",
+        "selecionando a decoração...",
+        "organizando os elementos...",
+        "aplicando estilos...",
+        "criando o design...",
+        "gerando o layout...",
+        "refinando os detalhes...",
+        "quase pronto..."
+      ],
+      "analyzing": [
+        "analisando a imagem...",
+        "examinando os detalhes...",
+        "identificando os elementos...",
+        "processando os dados visuais...",
+        "entendendo o espaço...",
+        "revisando a composição...",
+        "estudando o layout...",
+        "quase terminando..."
+      ],
+      "welcome": [
+        "preparando suas boas-vindas...",
+        "nos preparando para você...",
+        "configurando tudo...",
+        "preparando uma calorosa recepção...",
+        "deixando tudo pronto para você...",
+        "quase prontos para recebê-lo...",
+        "configurando seu espaço...",
+        "preparando algo especial..."
+      ],
+      "general": [
+        "pensando...",
+        "processando sua solicitação...",
+        "analisando...",
+        "considerando as opções...",
+        "trabalhando nisso...",
+        "quase lá...",
+        "um momento...",
+        "preparando a resposta..."
+      ]
     },
     "emptyState": "Inicie uma conversa digitando uma mensagem ou enviando um arquivo",
     "welcomeFallback": "Oi! Eu sou o seu Designer IA da Stagify. Me diga o que você está imaginando, ou envie a foto de um cômodo, e vamos projetá-lo juntos. Algumas coisas que posso fazer:\n• **Mobiliar cômodos vazios**: mobilie um espaço vazio em qualquer estilo\n• **Redesenhar cômodos existentes**: mude o estilo, troque os móveis ou altere todo o clima\n• **Planta → cômodo**: transforme uma planta em um render mobiliado e fotorrealista\n• **Refinar enquanto conversamos**: ajuste as cores, as peças e o layout até ficar do jeito certo\nPor onde você quer começar?",
@@ -709,7 +761,6 @@
       "refineNote": "Pinte para revelar mais da edição, apague para ocultá-la: isso apenas recorta novamente, não executa a IA de novo.",
       "refineHelp": "Esta etapa apenas ajusta onde a mudança da IA aparece, ela não executa a IA de novo. Pinte para revelar mais da edição, apague para reduzi-la. É uma rede de segurança, para que a edição toque apenas na área que você escolheu e não possa estragar o resto da sua foto. A pré-visualização esmaecida mostrada por cima serve apenas para você ver a edição completa enquanto a ajusta; ela não aparecerá na imagem final.",
       "promptHint": "Seja bem específico sobre o local e o posicionamento — por exemplo: “encoste o sofá no centro da parede dos fundos.”",
-
       "refineHelpAria": "O que a etapa de refinamento faz",
       "loadApplying": "Aplicando sua edição…",
       "referenceLabel": "Foto de referência (opcional)",
@@ -763,10 +814,10 @@
         "q": "Posso controlar os móveis e o layout?",
         "a": "Sim. Com o <a href=\"stagify-plus.html\">Stagify+</a>, a barra de instruções permite descrever detalhes como «adicionar um sofá de canto e um tapete grande», e a ferramenta Móveis insere suas próprias peças. Se apenas uma área não ficou boa, mascare-a e gere novamente só aquele ponto em vez de refazer a imagem inteira."
       },
-    "masking": {
-      "title": "Decore com precisão exata",
-      "subtitle": "Mascare as áreas a refazer, adicione seus próprios móveis e todo o resto fica idêntico ao pixel. <em>(Exclusivo do Stagify+)</em>"
-    },
+      "masking": {
+        "title": "Decore com precisão exata",
+        "subtitle": "Mascare as áreas a refazer, adicione seus próprios móveis e todo o resto fica idêntico ao pixel. <em>(Exclusivo do Stagify+)</em>"
+      },
       "i4": {
         "q": "Como mobílio várias áreas de uma vez?",
         "a": "Com o Stagify+, o <a href=\"masking-studio.html\">Estúdio de Máscaras</a> permite destacar até seis áreas em cores diferentes, dar a cada uma sua própria foto de móvel ou descrição e mobiliá-las todas em paralelo. Apenas os pontos destacados podem mudar, e cada área pode gerar várias versões para você ficar com a melhor."
@@ -959,7 +1010,12 @@
     "toolWand": "Varinha",
     "wandHint": "Clique em um objeto na foto para selecioná-lo.",
     "wandBusy": "Analisando sua foto…",
-    "wandBusyMessages": ["Analisando sua foto…","Procurando os objetos do ambiente…","Delimitando o que foi encontrado…","Quase pronto…"],
+    "wandBusyMessages": [
+      "Analisando sua foto…",
+      "Procurando os objetos do ambiente…",
+      "Delimitando o que foi encontrado…",
+      "Quase pronto…"
+    ],
     "wandMiss": "Nenhum objeto encontrado aí. Tente clicar no centro do objeto ou destaque-o com o pincel.",
     "modeAria": "O que acontece nesta área",
     "modeStage": "Adicionar móvel",

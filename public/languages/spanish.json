@@ -359,7 +359,10 @@
           "Añadiendo toques finales",
           "Dando vida a tu visión"
         ]
-      }
+      },
+      "downloadSizeMenu": "Elegir resolución de descarga",
+      "downloadOriginal": "Original",
+      "downloadNative": "nativa"
     }
   },
   "roomTypes": {
@@ -369,7 +372,8 @@
     "kitchen": "Cocina",
     "bathroom": "Baño",
     "office": "Oficina",
-    "outdoors": "Exterior"
+    "outdoors": "Exterior",
+    "dorm": "Habitación de residencia"
   },
   "furnitureStyles": {
     "standard": "Estándar",
@@ -531,7 +535,8 @@
   },
   "common": {
     "close": "Cerrar",
-    "selectLanguage": "Seleccionar idioma"
+    "selectLanguage": "Seleccionar idioma",
+    "newBadge": "Nuevo"
   },
   "footer": {
     "privacy": "Política de privacidad",
@@ -608,11 +613,58 @@
     "title": "Diseñador IA",
     "description": "Convierte tus PDFs de planos CAD en visualizaciones 3D fotorrealistas de interiores",
     "statusMessages": {
-      "generating": ["generando imagen...", "creando tu imagen...", "dando vida a tu visión...", "elaborando los detalles...", "renderizando...", "ya casi...", "finalizando detalles...", "puliendo el resultado...", "un momento..."],
-      "staging": ["amueblando tu sala...", "añadiendo muebles...", "seleccionando la decoración...", "organizando los elementos...", "aplicando estilos...", "creando el diseño...", "generando la distribución...", "refinando detalles...", "casi listo..."],
-      "analyzing": ["analizando la imagen...", "examinando detalles...", "identificando elementos...", "procesando datos visuales...", "entendiendo el espacio...", "revisando la composición...", "estudiando la distribución...", "casi terminado..."],
-      "welcome": ["preparando tu bienvenida...", "preparándonos para ti...", "configurando todo...", "preparando una cálida bienvenida...", "dejando todo listo para ti...", "casi listos para saludarte...", "preparando tu espacio...", "preparando algo especial..."],
-      "general": ["pensando...", "procesando tu solicitud...", "analizando...", "considerando opciones...", "trabajando en ello...", "ya casi...", "un momento...", "preparando la respuesta..."]
+      "generating": [
+        "generando imagen...",
+        "creando tu imagen...",
+        "dando vida a tu visión...",
+        "elaborando los detalles...",
+        "renderizando...",
+        "ya casi...",
+        "finalizando detalles...",
+        "puliendo el resultado...",
+        "un momento..."
+      ],
+      "staging": [
+        "amueblando tu sala...",
+        "añadiendo muebles...",
+        "seleccionando la decoración...",
+        "organizando los elementos...",
+        "aplicando estilos...",
+        "creando el diseño...",
+        "generando la distribución...",
+        "refinando detalles...",
+        "casi listo..."
+      ],
+      "analyzing": [
+        "analizando la imagen...",
+        "examinando detalles...",
+        "identificando elementos...",
+        "procesando datos visuales...",
+        "entendiendo el espacio...",
+        "revisando la composición...",
+        "estudiando la distribución...",
+        "casi terminado..."
+      ],
+      "welcome": [
+        "preparando tu bienvenida...",
+        "preparándonos para ti...",
+        "configurando todo...",
+        "preparando una cálida bienvenida...",
+        "dejando todo listo para ti...",
+        "casi listos para saludarte...",
+        "preparando tu espacio...",
+        "preparando algo especial..."
+      ],
+      "general": [
+        "pensando...",
+        "procesando tu solicitud...",
+        "analizando...",
+        "considerando opciones...",
+        "trabajando en ello...",
+        "ya casi...",
+        "un momento...",
+        "preparando la respuesta..."
+      ]
     },
     "emptyState": "Comienza una conversación escribiendo un mensaje o subiendo un archivo",
     "welcomeFallback": "¡Hola! Soy tu Diseñador IA de Stagify. Dime qué te imaginas, o sube la foto de una habitación, y la diseñaremos juntos. Algunas cosas que puedo hacer:\n• **Amueblar habitaciones vacías**: llena un espacio vacío en cualquier estilo\n• **Rediseñar habitaciones existentes**: cambia el estilo, los muebles o todo el ambiente\n• **Plano → habitación**: convierte un plano en un render amueblado y fotorrealista\n• **Refinar mientras chateamos**: ajusta los colores, las piezas y la distribución hasta que quede bien\n¿Por dónde te gustaría empezar?",
@@ -709,7 +761,6 @@
       "refineNote": "Pinta para mostrar más de la edición, borra para ocultarla — esto solo recorta, no vuelve a ejecutar la IA.",
       "refineHelp": "Este paso solo ajusta dónde se ve el cambio de la IA, sin volver a ejecutarla. Pinta para mostrar más de la edición, borra para retirarla. Es una red de seguridad para que la edición solo afecte el área que elegiste y no estropee el resto de tu foto. La vista previa atenuada que se muestra encima solo está ahí para que veas la edición completa mientras la ajustas; no aparecerá en la imagen final.",
       "promptHint": "Sé muy específico con la ubicación y la colocación; por ejemplo: “coloca el sofá pegado al centro de la pared del fondo.”",
-
       "refineHelpAria": "Qué hace el paso de refinar",
       "loadApplying": "Aplicando tu edición…",
       "referenceLabel": "Foto de referencia (opcional)",
@@ -763,10 +814,10 @@
         "q": "¿Puedo controlar los muebles y la distribución?",
         "a": "Sí. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra de prompts te permite describir detalles como \"añade un sofá seccional y una alfombra grande\", y la herramienta de Muebles incorpora tus propias piezas. Si solo una zona se ve mal, enmascárala y regenera solo ese punto en lugar de rehacer toda la imagen."
       },
-    "masking": {
-      "title": "Prepara con precisión exacta",
-      "subtitle": "Enmascara las áreas a rehacer, añade tus propios muebles y todo lo demás queda idéntico al píxel. <em>(Exclusivo de Stagify+)</em>"
-    },
+      "masking": {
+        "title": "Prepara con precisión exacta",
+        "subtitle": "Enmascara las áreas a rehacer, añade tus propios muebles y todo lo demás queda idéntico al píxel. <em>(Exclusivo de Stagify+)</em>"
+      },
       "i4": {
         "q": "¿Cómo decoro varias zonas a la vez?",
         "a": "Con Stagify+, el <a href=\"masking-studio.html\">Estudio de Máscaras</a> te permite resaltar hasta seis zonas en distintos colores, darle a cada una su propia foto de mueble o descripción y decorarlas todas en paralelo. Solo los puntos resaltados pueden cambiar, y cada zona puede generar varias versiones para quedarte con la mejor."
@@ -959,7 +1010,12 @@
     "toolWand": "Varita",
     "wandHint": "Haz clic en un objeto de la foto para seleccionarlo.",
     "wandBusy": "Analizando tu foto…",
-    "wandBusyMessages": ["Analizando tu foto…","Buscando los objetos de la habitación…","Delimitando lo encontrado…","Casi listo…"],
+    "wandBusyMessages": [
+      "Analizando tu foto…",
+      "Buscando los objetos de la habitación…",
+      "Delimitando lo encontrado…",
+      "Casi listo…"
+    ],
     "wandMiss": "No se encontró ningún objeto ahí. Prueba a hacer clic en el centro del objeto o resáltalo con el pincel.",
     "modeAria": "Qué ocurre en esta zona",
     "modeStage": "Añadir mueble",

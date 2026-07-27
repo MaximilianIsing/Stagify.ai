@@ -1198,6 +1198,9 @@
                       <div class="option" data-value="Bathroom" role="option" data-lang="roomTypes.bathroom">Bathroom</div>
                       <div class="option" data-value="Office" role="option" data-lang="roomTypes.office">Office</div>
                       <div class="option" data-value="Outdoors" role="option" data-lang="roomTypes.outdoors">Outdoors</div>
+                      <!-- data-lang overwrites textContent, so the label lives in its own
+                           span and the badge sits beside it rather than inside it. -->
+                      <div class="option option--with-badge" data-value="Dorm" role="option"><span class="option-label" data-lang="roomTypes.dorm">Dorm</span><span class="option-badge" data-lang="common.newBadge">New</span></div>
                     </div>
                   </div>
                 </div>
@@ -1282,8 +1285,14 @@
                       <button id="toggle-after" class="toggle-btn" data-lang="modal.staging.after">After</button>
                     </div>
                     <div class="viewer-actions">
-                      <button id="download-btn" class="btn btn-primary"><strong data-lang="modal.staging.downloadResult">Download Result</strong></button>
                       <button id="new-upload" class="btn btn-ghost"><strong data-lang="modal.staging.uploadAnother">Upload Another</strong></button>
+                      <div id="download-split" class="download-split">
+                        <button id="download-btn" class="btn btn-primary" disabled><strong data-lang="modal.staging.downloadResult">Download Result</strong></button>
+                        <button id="download-size-toggle" class="btn btn-primary download-caret" type="button" disabled aria-haspopup="menu" aria-expanded="false" data-lang-attr="modal.staging.downloadSizeMenu|aria-label" aria-label="Choose download resolution">
+                          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        <div id="download-size-menu" class="select-menu download-size-menu hidden" role="menu"></div>
+                      </div>
                     </div>
                   </div>
                   

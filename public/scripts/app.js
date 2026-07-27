@@ -8,6 +8,7 @@ import { validateStageableUpload } from './app/stage-validation.js';
 import { unstageableMessage } from './unstageable-message.js';
 import { createFurnitureRefs, FURNITURE_LIMIT } from './app/furniture-refs.js';
 import { createVersionCarousel } from './app/version-carousel.js';
+import { createDownloadMenu } from './app/download-menu.js';
 import { createStagingPipeline } from './app/staging-pipeline.js';
 import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
 
@@ -516,13 +517,16 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
     if (modalBackdrop) modalBackdrop.addEventListener('click', closeModal);
     if (modalClose) modalClose.addEventListener('click', closeModal);
   
-    if (downloadBtn) downloadBtn.addEventListener('click', () => {
-      if (!canvas1.width) return;
-      const link = document.createElement('a');
-      const roomSlug = roomDownloadSlug(roomSelect?.value);
-      link.download = `stagify-${roomSlug}-${Date.now()}.jpg`;
-      link.href = canvas1.toDataURL('image/jpeg', 0.92);
-      link.click();
+    // Download affordances for the staged result (scripts/app/download-menu.js): the
+    // plain full-size button plus the caret's resolution menu. "Original" reads the
+    // FIRST before-version (the untouched upload) rather than stagePreview, whose
+    // src follows the before carousel.
+    createDownloadMenu({
+      downloadBtn, canvas: canvas1,
+      split: $('#download-split'), toggle: $('#download-size-toggle'), menu: $('#download-size-menu'),
+      getOriginalSrc: () => getBeforeVersions()[0] || stagePreview?.src || '',
+      buildFilename: (w, h) =>
+        `stagify-${roomDownloadSlug(roomSelect?.value)}-${Date.now()}${w ? `-${w}x${h}` : ''}.jpg`,
     });
 
 

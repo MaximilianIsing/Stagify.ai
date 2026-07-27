@@ -359,7 +359,10 @@
           "De laatste hand aanleggen",
           "Je visie tot leven brengen"
         ]
-      }
+      },
+      "downloadSizeMenu": "Downloadresolutie kiezen",
+      "downloadOriginal": "Origineel",
+      "downloadNative": "native"
     }
   },
   "roomTypes": {
@@ -369,7 +372,8 @@
     "kitchen": "Keuken",
     "bathroom": "Badkamer",
     "office": "Kantoor",
-    "outdoors": "Buiten"
+    "outdoors": "Buiten",
+    "dorm": "Studentenkamer"
   },
   "furnitureStyles": {
     "standard": "Standaard",
@@ -531,7 +535,8 @@
   },
   "common": {
     "close": "Sluiten",
-    "selectLanguage": "Selecteer taal"
+    "selectLanguage": "Selecteer taal",
+    "newBadge": "Nieuw"
   },
   "footer": {
     "privacy": "Privacybeleid",
@@ -608,11 +613,58 @@
     "title": "AI-Designer",
     "description": "Zet je CAD-plattegrond-PDF's om in fotorealistische 3D-interieurvisualisaties",
     "statusMessages": {
-      "generating": ["afbeelding genereren...", "je afbeelding maken...", "je visie tot leven brengen...", "de details vormgeven...", "renderen...", "bijna klaar...", "details afronden...", "het resultaat polijsten...", "nog even..."],
-      "staging": ["je kamer stylen...", "meubilair toevoegen...", "decor selecteren...", "elementen schikken...", "stijlen toepassen...", "het ontwerp maken...", "de indeling genereren...", "details verfijnen...", "bijna klaar..."],
-      "analyzing": ["afbeelding analyseren...", "details onderzoeken...", "elementen identificeren...", "visuele gegevens verwerken...", "de ruimte begrijpen...", "compositie beoordelen...", "de indeling bestuderen...", "bijna klaar..."],
-      "welcome": ["je welkom voorbereiden...", "ons klaarmaken voor jou...", "alles instellen...", "een warm welkom voorbereiden...", "alles voor je klaarmaken...", "je bijna begroeten...", "je ruimte instellen...", "iets speciaals voorbereiden..."],
-      "general": ["nadenken...", "je verzoek verwerken...", "analyseren...", "opties overwegen...", "eraan werken...", "bijna klaar...", "nog even...", "antwoord voorbereiden..."]
+      "generating": [
+        "afbeelding genereren...",
+        "je afbeelding maken...",
+        "je visie tot leven brengen...",
+        "de details vormgeven...",
+        "renderen...",
+        "bijna klaar...",
+        "details afronden...",
+        "het resultaat polijsten...",
+        "nog even..."
+      ],
+      "staging": [
+        "je kamer stylen...",
+        "meubilair toevoegen...",
+        "decor selecteren...",
+        "elementen schikken...",
+        "stijlen toepassen...",
+        "het ontwerp maken...",
+        "de indeling genereren...",
+        "details verfijnen...",
+        "bijna klaar..."
+      ],
+      "analyzing": [
+        "afbeelding analyseren...",
+        "details onderzoeken...",
+        "elementen identificeren...",
+        "visuele gegevens verwerken...",
+        "de ruimte begrijpen...",
+        "compositie beoordelen...",
+        "de indeling bestuderen...",
+        "bijna klaar..."
+      ],
+      "welcome": [
+        "je welkom voorbereiden...",
+        "ons klaarmaken voor jou...",
+        "alles instellen...",
+        "een warm welkom voorbereiden...",
+        "alles voor je klaarmaken...",
+        "je bijna begroeten...",
+        "je ruimte instellen...",
+        "iets speciaals voorbereiden..."
+      ],
+      "general": [
+        "nadenken...",
+        "je verzoek verwerken...",
+        "analyseren...",
+        "opties overwegen...",
+        "eraan werken...",
+        "bijna klaar...",
+        "nog even...",
+        "antwoord voorbereiden..."
+      ]
     },
     "emptyState": "Begin een gesprek door een bericht te typen of een bestand te uploaden",
     "welcomeFallback": "Hoi! Ik ben je Stagify AI-Designer. Vertel me wat je voor je ziet, of upload een kamerfoto, en we ontwerpen het samen. Een paar dingen die ik kan:\n• **Lege kamers stylen**: richt een kale ruimte in elke stijl in\n• **Bestaande kamers herontwerpen**: restyle, wissel meubilair of verander de hele sfeer\n• **Plattegrond → kamer**: verander een plattegrond in een fotorealistische, ingerichte render\n• **Verfijnen terwijl we chatten**: pas de kleuren, stukken en indeling aan tot het goed voelt\nWaar wil je beginnen?",
@@ -709,7 +761,6 @@
       "refineNote": "Schilder om meer van de bewerking te onthullen, wis om het te verbergen — dit hersnijdt alleen, het draait de AI niet opnieuw.",
       "refineHelp": "Deze stap verfijnt alleen waar de wijziging van de AI zichtbaar is — het draait de AI niet opnieuw. Schilder om meer van de bewerking te onthullen, wis om het terug te halen. Het is een vangnet zodat de bewerking alleen het gebied raakt dat je koos en de rest van je foto niet kan verpesten. De vervaagde voorvertoning bovenop is er alleen zodat je de volledige bewerking kunt zien tijdens het verfijnen — hij komt niet in de uiteindelijke afbeelding.",
       "promptHint": "Wees heel specifiek over locatie en plaatsing — bijvoorbeeld: “zet de bank strak tegen het midden van de achterwand.”",
-
       "refineHelpAria": "Wat de verfijnstap doet",
       "loadApplying": "Je bewerking toepassen…",
       "referenceLabel": "Referentiefoto (optioneel)",
@@ -763,10 +814,10 @@
         "q": "Kan ik het meubilair en de indeling bepalen?",
         "a": "Ja. Met <a href=\"stagify-plus.html\">Stagify+</a> laat de Prompt Bar je details beschrijven zoals \"voeg een hoekbank en een groot vloerkleed toe,\" en de Meubel-tool brengt je eigen stukken in. Als slechts één gebied er verkeerd uitziet, maskeer het en genereer alleen die plek opnieuw in plaats van de hele afbeelding over te doen."
       },
-    "masking": {
-      "title": "Style met exacte precisie",
-      "subtitle": "In de nieuwe Maskeerstudio markeer je de gebieden om te herstylen, voeg je je eigen meubilair toe, en al het andere blijft pixel-perfect. <em>(Stagify+ Exclusief)</em>"
-    },
+      "masking": {
+        "title": "Style met exacte precisie",
+        "subtitle": "In de nieuwe Maskeerstudio markeer je de gebieden om te herstylen, voeg je je eigen meubilair toe, en al het andere blijft pixel-perfect. <em>(Stagify+ Exclusief)</em>"
+      },
       "i4": {
         "q": "Hoe style ik meerdere gebieden tegelijk?",
         "a": "Met Stagify+ laat de <a href=\"masking-studio.html\">Maskeerstudio</a> je tot zes gebieden in verschillende kleuren markeren, elk zijn eigen meubelfoto of prompt geven, en ze allemaal parallel stylen. Alleen de gemarkeerde plekken kunnen veranderen, en elk gebied kan meerdere versies genereren zodat je de beste houdt."
@@ -959,7 +1010,12 @@
     "toolWand": "Magisch",
     "wandHint": "Klik op een object in de foto om het te selecteren.",
     "wandBusy": "Je foto analyseren…",
-    "wandBusyMessages": ["Je foto analyseren…","De objecten in de kamer vinden…","Omlijnen wat het vond…","Bijna klaar…"],
+    "wandBusyMessages": [
+      "Je foto analyseren…",
+      "De objecten in de kamer vinden…",
+      "Omlijnen wat het vond…",
+      "Bijna klaar…"
+    ],
     "wandMiss": "Daar geen object gevonden. Probeer op het midden van het object te klikken, of markeer het met het penseel.",
     "modeAria": "Wat er in dit gebied gebeurt",
     "modeStage": "Meubilair toevoegen",

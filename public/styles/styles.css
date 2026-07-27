@@ -1438,6 +1438,159 @@ h2 {
   display:flex;
   gap:12px
 }
+/* This row shares its width with the before/after toggle, so neither action may
+   wrap to a second line — .btn defaults to white-space:normal, and the caret's
+   extra ~38px was enough to break both labels onto two lines. Nowrap plus the
+   slightly tighter horizontal padding keeps all three on one row. */
+.viewer-actions .btn {
+  white-space:nowrap;
+  padding:12px 18px
+}
+/* Split button: "Download Result" keeps its own click behaviour, the caret beside
+   it opens the resolution menu (scripts/app/download-menu.js). The two halves are
+   flush and read as ONE control — the group owns the radius and the hover lift, so
+   the individual buttons suppress their own .btn shadow. */
+.download-split {
+  position:relative;
+  display:flex;
+  border-radius:6px;
+  box-shadow:0 1px 2px rgba(15,23,42,.12);
+  transition:box-shadow .2s
+}
+.download-split:hover {
+  box-shadow:0 4px 14px rgba(37,99,235,.3)
+}
+.download-split>.btn,.download-split>.btn:hover {
+  box-shadow:none
+}
+/* Until a result exists both halves are genuinely disabled (the module sets the
+   `disabled` property, so clicks never fire). `.btn:disabled` already dims them;
+   this kills the group's hover lift too, so nothing about the control invites a
+   click while it's dead. */
+.download-split.is-disabled,.download-split.is-disabled:hover {
+  box-shadow:none
+}
+.download-split.is-disabled>.btn {
+  cursor:not-allowed
+}
+.download-split>#download-btn {
+  border-top-right-radius:0;
+  border-bottom-right-radius:0
+}
+/* Child selector, not a bare .download-caret: it has to out-specify the
+   `.viewer-actions .btn` padding above, which would otherwise pad the caret out
+   to the same width as a full text button. */
+.download-split>.download-caret {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px 11px;
+  border-top-left-radius:0;
+  border-bottom-left-radius:0;
+  border-left:1px solid rgba(255,255,255,.28)
+}
+.download-caret svg {
+  width:14px;
+  height:14px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  transition:transform .2s ease
+}
+.download-split.open .download-caret svg {
+  transform:rotate(180deg)
+}
+/* The UA default focus ring draws a hard black box over the filled blue button,
+   which reads as a rendering fault. Keyboard focus gets a branded ring instead;
+   mouse clicks (:focus without :focus-visible) get none. */
+.download-split>.btn:focus{
+  outline:none
+}
+.download-split>.btn:focus-visible {
+  outline:2px solid var(--primary);
+  outline-offset:2px
+}
+/* Right-aligned so the menu can't overflow the viewer on narrow screens. */
+.download-size-menu {
+  left:auto;
+  right:0;
+  min-width:236px;
+  text-transform:none;
+  letter-spacing:normal;
+  box-shadow:0 12px 28px rgba(15,23,42,.18);
+  animation:downloadMenuIn .14s ease-out
+}
+@keyframes downloadMenuIn {
+  from { opacity:0; transform:translateY(-4px) }
+  to { opacity:1; transform:none }
+}
+.download-size-option {
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:16px;
+  white-space:nowrap;
+  font-size:14px;
+  font-weight:500;
+  transition:background .15s
+}
+.download-size-option:hover,.download-size-option:focus-visible {
+  background:var(--bg-elevated);
+  outline:none
+}
+.download-size-dims {
+  font-size:12px;
+  font-weight:400;
+  color:var(--muted);
+  font-variant-numeric:tabular-nums
+}
+/* Below ~600px the toggle plus both actions no longer fit on one row, and the
+   labels can no longer wrap to absorb it (see .viewer-actions .btn above), so
+   without this they would overflow the header. Let the header wrap the actions
+   onto their own row and tighten them — the same approach .ms-viewer-header
+   takes in masking-studio.css. .viewer-actions also wraps internally, so on a
+   very narrow phone the two buttons stack rather than spilling. The caret is
+   excluded from the padding override or it would widen back to a text button. */
+@media (max-width:600px) {
+  .viewer-header {
+    flex-wrap:wrap;
+    row-gap:10px
+  }
+  .viewer-actions {
+    width:100%;
+    flex-wrap:wrap
+  }
+  .viewer-actions .btn:not(.download-caret) {
+    padding:12px 14px;
+    font-size:13px
+  }
+  /* Once stacked, ragged button widths look unfinished — stretch both action
+     items to the full row so their edges line up. Inside the split, only the
+     label half grows; the caret keeps its fixed width. */
+  .viewer-actions>* {
+    flex:1 1 100%
+  }
+  .download-split>#download-btn {
+    flex:1 1 auto
+  }
+}
+/* Below 480px the global `.btn { width:100%; max-width:280px }` rule further down
+   caps every button. The split is a div, so it escapes that cap and would sit
+   wider than "Upload Another" beneath it — match the cap on the group instead,
+   and release it on the two halves inside so they divide the 280px between them
+   rather than each trying to claim it. */
+@media (max-width:480px) {
+  .download-split {
+    width:100%;
+    max-width:280px
+  }
+  .download-split>.btn {
+    width:auto;
+    max-width:none
+  }
+}
 .image-viewer {
   position:relative;
   width:100%;
@@ -1711,6 +1864,34 @@ body:has(.modal:not(.hidden)) .language-picker-container {
 .option.selected {
   background:var(--accent);
   color:#fff
+}
+/* Option carrying a trailing badge (e.g. "New"). Flex so the badge sits on the
+   label's baseline row instead of wrapping, and so the option keeps the same
+   vertical rhythm as its plain siblings. */
+.option--with-badge {
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+.option-badge {
+  flex:none;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  line-height:1;
+  color:#2563eb;
+  background:rgba(37,99,235,.1);
+  border:1px solid rgba(37,99,235,.2);
+  padding:3px 7px;
+  border-radius:999px
+}
+/* .option.selected paints a dark background, where the blue-on-blue tint above
+   would nearly vanish — invert to a translucent white capsule instead. */
+.option.selected .option-badge {
+  color:#fff;
+  background:rgba(255,255,255,.22);
+  border-color:rgba(255,255,255,.35)
 }
 .process-cta {
   display:grid;

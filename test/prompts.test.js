@@ -98,6 +98,57 @@ test('generatePrompt appends non-custom additional details as a priority suffix'
   assert.match(p, /Prioritize the following above everything else: add a green island/);
 });
 
+// --- Dorm: the fixed university-issued furniture + small-room scale constraints ---
+//
+// A dorm's desk, bed frame, wardrobe and dresser are university property the student
+// cannot swap, so a staging that restyles them is unusable. These rules therefore have
+// to reach the model on EVERY dorm path — including the two that bypass the prompt
+// matrix (custom style) or would otherwise contradict them (remove-furniture).
+
+test('generatePrompt pins the fixed dorm furniture and small-room scale', () => {
+  const p = generatePrompt('Dorm', 'standard', '', false);
+  assert.match(p, /FIXED UNIVERSITY-ISSUED FURNITURE/);
+  assert.match(p, /DORM SCALE AND FOOTPRINT/);
+  for (const fixed of [/\bdesk\b/i, /bed frame/i, /wardrobe/i, /dresser/i]) {
+    assert.match(p, fixed, `names the fixed piece ${fixed}`);
+  }
+});
+
+test('generatePrompt keeps the dorm constraints under a remove-furniture request', () => {
+  // The removal clause and the dorm rules directly conflict; the dorm block is emitted
+  // after it and says so explicitly, otherwise "remove all furniture" would strip the
+  // very desk and bed frame that must survive.
+  const p = generatePrompt('Dorm', 'modern', '', true);
+  assert.match(p, /remove all existing furniture and decor/i);
+  assert.match(p, /FIXED UNIVERSITY-ISSUED FURNITURE/);
+  assert.match(p, /overrides every other instruction above/i);
+  assert.ok(
+    p.indexOf('FIXED UNIVERSITY-ISSUED FURNITURE') > p.indexOf('remove all existing furniture'),
+    'the dorm rules come after the removal clause so they get the last word',
+  );
+});
+
+test('generatePrompt keeps the dorm constraints for a custom style', () => {
+  // A custom style replaces the matrix entry wholesale, so constraints living in
+  // promptMatrix would silently vanish here.
+  const p = generatePrompt('Dorm', 'custom', 'neon cyberpunk vibe', false);
+  assert.ok(p.includes('neon cyberpunk vibe'));
+  assert.match(p, /FIXED UNIVERSITY-ISSUED FURNITURE/);
+  assert.match(p, /DORM SCALE AND FOOTPRINT/);
+});
+
+test('generatePrompt adds standard-issue dorm furniture when the room is bare', () => {
+  const p = generatePrompt('Dorm', 'standard', '', false);
+  assert.match(p, /If the room is bare and one of those pieces is absent, add a plain standard-issue version/i);
+});
+
+test('generatePrompt leaves non-dorm room types free of the dorm constraints', () => {
+  for (const room of ['Bedroom', 'Living room', 'Office']) {
+    const p = generatePrompt(room, 'standard', '', false);
+    assert.ok(!p.includes('FIXED UNIVERSITY-ISSUED FURNITURE'), `${room} is unconstrained`);
+  }
+});
+
 // --- qualityRetryFeedbackSuffix: turn a QA verdict into a corrective suffix ---
 
 test('qualityRetryFeedbackSuffix is empty for a missing or passing review', () => {

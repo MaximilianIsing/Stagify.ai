@@ -359,7 +359,10 @@
           "Adding finishing touches",
           "Bringing your vision to life"
         ]
-      }
+      },
+      "downloadSizeMenu": "Choose download resolution",
+      "downloadOriginal": "Original",
+      "downloadNative": "native"
     }
   },
   "roomTypes": {
@@ -369,7 +372,8 @@
     "kitchen": "Kitchen",
     "bathroom": "Bathroom",
     "office": "Office",
-    "outdoors": "Outdoors"
+    "outdoors": "Outdoors",
+    "dorm": "Dorm"
   },
   "furnitureStyles": {
     "standard": "Standard",
@@ -531,7 +535,8 @@
   },
   "common": {
     "close": "Close",
-    "selectLanguage": "Select language"
+    "selectLanguage": "Select language",
+    "newBadge": "New"
   },
   "footer": {
     "privacy": "Privacy Policy",
@@ -608,11 +613,58 @@
     "title": "AI Designer",
     "description": "Convert your CAD floorplan PDFs into photorealistic 3D interior visualizations",
     "statusMessages": {
-      "generating": ["generating image...", "creating your image...", "bringing your vision to life...", "crafting the details...", "rendering...", "almost there...", "finalizing details...", "polishing the result...", "just a moment..."],
-      "staging": ["staging your room...", "adding furniture...", "selecting decor...", "arranging elements...", "applying styles...", "creating the design...", "generating the layout...", "refining details...", "almost ready..."],
-      "analyzing": ["analyzing image...", "examining details...", "identifying elements...", "processing visual data...", "understanding the space...", "reviewing composition...", "studying the layout...", "almost done..."],
-      "welcome": ["preparing your welcome...", "getting ready for you...", "setting things up...", "preparing a warm welcome...", "getting everything ready for you...", "almost ready to greet you...", "setting up your space...", "preparing something special..."],
-      "general": ["thinking...", "processing your request...", "analyzing...", "considering options...", "working on it...", "almost there...", "just a moment...", "preparing response..."]
+      "generating": [
+        "generating image...",
+        "creating your image...",
+        "bringing your vision to life...",
+        "crafting the details...",
+        "rendering...",
+        "almost there...",
+        "finalizing details...",
+        "polishing the result...",
+        "just a moment..."
+      ],
+      "staging": [
+        "staging your room...",
+        "adding furniture...",
+        "selecting decor...",
+        "arranging elements...",
+        "applying styles...",
+        "creating the design...",
+        "generating the layout...",
+        "refining details...",
+        "almost ready..."
+      ],
+      "analyzing": [
+        "analyzing image...",
+        "examining details...",
+        "identifying elements...",
+        "processing visual data...",
+        "understanding the space...",
+        "reviewing composition...",
+        "studying the layout...",
+        "almost done..."
+      ],
+      "welcome": [
+        "preparing your welcome...",
+        "getting ready for you...",
+        "setting things up...",
+        "preparing a warm welcome...",
+        "getting everything ready for you...",
+        "almost ready to greet you...",
+        "setting up your space...",
+        "preparing something special..."
+      ],
+      "general": [
+        "thinking...",
+        "processing your request...",
+        "analyzing...",
+        "considering options...",
+        "working on it...",
+        "almost there...",
+        "just a moment...",
+        "preparing response..."
+      ]
     },
     "emptyState": "Start a conversation by typing a message or uploading a file",
     "welcomeFallback": "Hi! I'm your Stagify AI Designer. Tell me what you're picturing, or upload a room photo, and we'll design it together. A few things I can do:\n• **Stage empty rooms**: furnish a bare space in any style\n• **Redesign existing rooms**: restyle, swap furniture, or change the whole mood\n• **Floor plan → room**: turn a floor plan into a photorealistic, furnished render\n• **Refine as we chat**: adjust the colors, pieces, and layout until it feels right\nWhere would you like to start?",
@@ -709,7 +761,6 @@
       "refineNote": "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI.",
       "refineHelp": "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining — it won't be in the final image.",
       "promptHint": "Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”",
-
       "refineHelpAria": "What the refine step does",
       "loadApplying": "Applying your edit…",
       "referenceLabel": "Reference photo (optional)",
@@ -763,10 +814,10 @@
         "q": "Can I control the furniture and layout?",
         "a": "Yes. With <a href=\"stagify-plus.html\">Stagify+</a> the Prompt Bar lets you describe specifics like \"add a sectional sofa and a large area rug,\" and the Furniture tool brings in your own pieces. If just one area looks off, mask it and regenerate only that spot instead of redoing the whole image."
       },
-    "masking": {
-      "title": "Stage with exact precision",
-      "subtitle": "In the new Masking Studio, highlight the areas to restage, add your own furniture, and everything else stays pixel-perfect. <em>(Stagify+ Exclusive)</em>"
-    },
+      "masking": {
+        "title": "Stage with exact precision",
+        "subtitle": "In the new Masking Studio, highlight the areas to restage, add your own furniture, and everything else stays pixel-perfect. <em>(Stagify+ Exclusive)</em>"
+      },
       "i4": {
         "q": "How do I stage several areas at once?",
         "a": "With Stagify+ the <a href=\"masking-studio.html\">Masking Studio</a> lets you highlight up to six areas in different colors, give each one its own furniture photo or prompt, and stage them all in parallel. Only the highlighted spots can change, and every area can generate several versions so you keep the best one."
@@ -959,7 +1010,12 @@
     "toolWand": "Magic",
     "wandHint": "Click an object in the photo to select it.",
     "wandBusy": "Analyzing your photo…",
-    "wandBusyMessages": ["Analyzing your photo…","Finding the objects in the room…","Outlining what it found…","Almost there…"],
+    "wandBusyMessages": [
+      "Analyzing your photo…",
+      "Finding the objects in the room…",
+      "Outlining what it found…",
+      "Almost there…"
+    ],
     "wandMiss": "No object found there. Try clicking the middle of the object, or highlight it with the brush.",
     "modeAria": "What happens in this area",
     "modeStage": "Add furniture",
