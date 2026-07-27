@@ -99,7 +99,9 @@ test('password reset sets a new password, invalidates the old one, and is single
   assert.ok(reset.token, 'a real account should receive a reset token');
 
   const newPassword = 'BrandN3wPass!';
-  assert.equal(store.completePasswordReset(reset.token, newPassword).ok, true);
+  const done = store.completePasswordReset(reset.token, newPassword);
+  assert.equal(done.ok, true);
+  assert.equal(done.toEmail, u.email, 'returns the recipient for the password-changed notice');
 
   assert.equal(store.login(u.email, 'OldPassw0rd!').ok, false, 'old password no longer works');
   assert.equal(store.login(u.email, newPassword).ok, true, 'new password works');

@@ -11,6 +11,7 @@ const EXPECTED_IDS = [
   'verification',
   'account-exists',
   'password-reset',
+  'password-changed',
   'trial-welcome',
   'trial-activation',
   'trial-value',

@@ -158,6 +158,81 @@ test('forgot-password returns one neutral body for existing and unknown emails',
   assert.equal(sent[0].to, email);
 });
 
+// Captures every outbound message; `fail` scripts the transport's failure mode so a
+// test can prove the reset still reports success when the notice can't be delivered.
+function captureResend({ fail = null } = {}) {
+  const sent = [];
+  return {
+    sent,
+    emails: {
+      send: async (msg) => {
+        sent.push(msg);
+        if (fail === 'throw') throw new Error('transport exploded');
+        if (fail === 'error') return { data: null, error: { message: 'mailbox full' } };
+        return { data: { id: 'sent' }, error: null };
+      },
+    },
+  };
+}
+
+// Registers a verified account and returns a live reset token (minted through the
+// real store, so the route sees exactly what the emailed link would carry).
+async function accountWithResetToken(app, email) {
+  await post(app.baseUrl, '/api/auth/register', { email, password: PASSWORD });
+  await post(app.baseUrl, '/api/auth/register/verify', { email, code: app.sentEmails[0].code });
+  return app.store.startPasswordReset(email).token;
+}
+
+test('completing a reset emails the account owner that the password changed', async () => {
+  const resend = captureResend();
+  app = await mountAuth({ resend });
+  const email = 'notify-me@example.com';
+  const token = await accountWithResetToken(app, email);
+
+  const res = await post(app.baseUrl, '/api/auth/reset-password', { token, password: 'BrandN3wPass!' });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { ok: true });
+
+  const notice = resend.sent.find((m) => /password was changed/i.test(m.subject));
+  assert.ok(notice, 'a password-changed notice was sent');
+  assert.equal(notice.to, email, 'it goes to the account owner, not the requester');
+  assert.match(notice.html, /signed you out on every device/i, 'it states the sessions were revoked');
+  assert.match(notice.html, /if you didn’t do this/i, 'it tells a victim what to do');
+});
+
+test('a failing notice does not fail the reset — the password is already changed', async () => {
+  for (const fail of ['error', 'throw']) {
+    const resend = captureResend({ fail });
+    app = await mountAuth({ resend });
+    const email = `mail-${fail}@example.com`;
+    const token = await accountWithResetToken(app, email);
+
+    const res = await post(app.baseUrl, '/api/auth/reset-password', { token, password: 'BrandN3wPass!' });
+    assert.equal(res.status, 200, `send-${fail} must not surface as an error`);
+    assert.deepEqual(await res.json(), { ok: true });
+
+    // The reset really did take effect, which is why reporting failure would be wrong.
+    assert.equal(app.store.login(email, 'BrandN3wPass!').ok, true, 'new password works');
+    await app.close();
+    app = null;
+  }
+});
+
+test('a rejected reset sends no notice', async () => {
+  const resend = captureResend();
+  app = await mountAuth({ resend });
+  const email = 'no-notice@example.com';
+  await accountWithResetToken(app, email);
+
+  const res = await post(app.baseUrl, '/api/auth/reset-password', { token: 'not-a-real-token', password: 'BrandN3wPass!' });
+  assert.equal(res.status, 400);
+  assert.equal(
+    resend.sent.filter((m) => /password was changed/i.test(m.subject)).length,
+    0,
+    'an invalid token must not tell anyone their password changed',
+  );
+});
+
 test('GET /api/auth/me without a token → 401 AUTH_REQUIRED', async () => {
   app = await mountAuth();
   const res = await get(app.baseUrl, '/api/auth/me');

@@ -160,9 +160,17 @@ Notes for anyone touching this:
   session survives — that last assertion is what catches a `DELETE` that loses its
   `WHERE user_id`.
 
-**Not done:** there is no "your password was changed" notification email, and the reset
-UI does not tell the user their other devices were signed out. The email is the useful
-complement here — it is how an account owner learns about an attacker-initiated reset.
+A **"your password was changed" notice** is emailed to the account owner on success
+(`renderPasswordChangedEmail`, sent from the route). That mail is the flow's only
+channel back to the real owner — every other step is driven by whoever holds the
+mailbox link — so it is how someone learns about an attacker-initiated reset. It is
+sent **best-effort**: the password is already changed and the sessions already revoked
+by the time it goes out, so a delivery failure is logged and the response is still
+`{ ok: true }`. Failing the request there would tell the user their reset didn't work
+when it did, and send them round the loop again.
+
+**Not done:** the reset UI itself doesn't mention that other devices were signed out —
+only the email says so.
 
 **Still open:** `endpoint_key` remains a single, non-rotating, process-wide
 secret with no per-admin identity and no audit trail, and it also guards the CSV

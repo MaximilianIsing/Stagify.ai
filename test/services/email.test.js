@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createEmail } from '../../lib/services/email.js';
+import { createEmail, renderPasswordChangedEmail } from '../../lib/services/email.js';
 
 const tmps = [];
 function tmpDir() {
@@ -40,6 +40,28 @@ const baseDeps = (over = {}) => ({
   resend: null, RESEND_FROM_EMAIL: 'no-reply@stagify.ai',
   EMAIL_DEBUG_MODE: false, DEBUG_EMAIL: 'debug@stagify.ai',
   escapeCsvField: esc, getDataLogDir: () => tmpDir(), ...over,
+});
+
+test('renderPasswordChangedEmail: states what happened and what a victim should do', () => {
+  const msg = renderPasswordChangedEmail({ appUrl: 'https://example.test/' });
+
+  assert.equal(msg.subject, 'Your Stagify password was changed');
+  for (const body of [msg.html, msg.text]) {
+    assert.match(body, /signed you out on every device/i, 'names the session revocation');
+    assert.match(body, /if you didn.t do this/i, 'gives the account owner a next step');
+    assert.match(body, /https:\/\/example\.test\//, 'links to the configured origin');
+    assert.doesNotMatch(body, /example\.test\/\//, 'no double slash from a trailing-slash appUrl');
+  }
+  // The sibling account emails end with "if this wasn't you, ignore this" because
+  // nothing changed. Here something DID change, so that line would be wrong.
+  assert.doesNotMatch(msg.text, /you can ignore this email/i);
+});
+
+test('renderPasswordChangedEmail: debug note rides along like the other account emails', () => {
+  const msg = renderPasswordChangedEmail({ debugNote: ' (intended recipient: real@example.com)' });
+  assert.match(msg.html, /intended recipient: real@example\.com/);
+  assert.match(msg.text, /intended recipient: real@example\.com/);
+  assert.match(renderPasswordChangedEmail({}).text, /^Your Stagify password was just changed/);
 });
 
 test('sendRegistrationVerificationEmail: success returns the needsVerification contract and renders the code', async () => {
