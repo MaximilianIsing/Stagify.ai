@@ -187,7 +187,7 @@ Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagi
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/welcome-message` | **Auth:** **`requireProAccount`**. **Query (optional):** `userId`. Returns `{ message, isReturning }` for the AI Designer welcome, using optional stored “memories”. |
+| `GET` | `/api/welcome-message` | **Auth:** **`requireProAccount`** — the session token **must** arrive as `Authorization: Bearer`; `getAuthUserFromRequest` never reads `req.query`, so a `?authToken=` always 401s (this endpoint was dead in production for exactly that reason). **No query params** — memories are keyed on the validated session account, not a client-supplied `userId`. Returns `{ message, isReturning }` for the AI Designer welcome, using optional stored “memories”. |
 | `POST` | `/api/chat` | **Auth:** **`requireProAccount`**. **Body:** JSON with `messages` (OpenAI-style array), optional `model`, `messageTag`. Long-running: staging/CAD/generation inside JSON tool contract. Respects user message limits (e.g. 20 user messages) and may return `contextLimitReached`. When the model routes a staging request it must pick `roomType` from a **fixed enum** (`DESIGNER_ROUTING_SCHEMA` in `lib/staging/prompts.js`): every room type in **Room types** above, plus `Other` for a room with no template. A room type missing from that enum is unreachable from chat — the model falls back to `Other` and the generic prompt. |
 | `POST` | `/api/chat-upload` | **Auth:** **`requireProAccount`**. **Multipart:** up to **5** files in field `files`, plus form fields (e.g. `conversationHistory`, `messageTag`). AI Designer flow with file attachments. Implemented in `routes/chat.js`. |
 
