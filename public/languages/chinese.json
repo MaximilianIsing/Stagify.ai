@@ -362,7 +362,9 @@
       },
       "downloadSizeMenu": "选择下载分辨率",
       "downloadOriginal": "原始尺寸",
-      "downloadNative": "原生"
+      "downloadNative": "原生",
+      "uploadAnotherShort": "重传",
+      "downloadResultShort": "下载"
     }
   },
   "roomTypes": {

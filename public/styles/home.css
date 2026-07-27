@@ -1041,7 +1041,7 @@
   justify-self: center;
   width: 100%;
   max-width: 330px;
-  height: calc(460px - var(--ig-header));
+  height: calc(452px - var(--ig-header));
   overflow: hidden;
   border-radius: 18px;
   background: #fff;

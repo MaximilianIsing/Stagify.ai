@@ -362,7 +362,9 @@
       },
       "downloadSizeMenu": "ダウンロード解像度を選択",
       "downloadOriginal": "オリジナル",
-      "downloadNative": "ネイティブ"
+      "downloadNative": "ネイティブ",
+      "uploadAnotherShort": "再アップ",
+      "downloadResultShort": "保存"
     }
   },
   "roomTypes": {

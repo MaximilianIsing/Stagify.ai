@@ -137,3 +137,80 @@ test.describe('Main tool — room-type selection', () => {
     await expect.poll(() => submittedRoomType, { timeout: 15_000 }).toBe('Dorm');
   });
 });
+
+// The "Remove existing furniture" control is gated by plan AND room type, from two
+// different files (auth.js and app.js). The unit suite covers the rule in isolation
+// (test/remove-furniture-gate.test.js); these prove the wiring in a real browser —
+// that the room-type select actually re-runs the gate, and that a box checked before
+// the switch does not still submit removeFurniture=true.
+test.describe('Main tool — remove-furniture gate', () => {
+  test.beforeEach(async ({ page }) => {
+    await seedProSession(page); // plan: 'pro' — the control is Stagify+ only
+    await stubAnalytics(page);
+    await page.route('**/api/validate-image', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ valid: true, code: null, reason: '' }),
+      }),
+    );
+  });
+
+  test('the control is offered on a normal room and withdrawn when Dorm is picked', async ({ page }) => {
+    await openStageModal(page);
+    const row = page.locator('#remove-furniture-row');
+
+    await expect(row).toBeVisible(); // pro user, default room (Bedroom)
+
+    await pickRoomType(page, 'Dorm');
+    await expect(row).toBeHidden();
+
+    // …and comes back on a room whose furniture is not fixed.
+    await pickRoomType(page, 'Living room');
+    await expect(row).toBeVisible();
+  });
+
+  test('a box checked before switching to Dorm does not submit removeFurniture', async ({ page }) => {
+    // The failure this guards: hiding the row without clearing the checkbox. The
+    // pipeline reads `#remove-furniture.checked`, not the row's visibility, so the
+    // request would still ask to discard the dorm's fixed furniture.
+    let submitted = null;
+    await page.route('**/api/process-image', async (route) => {
+      const body = route.request().postData() || '';
+      const grab = (field) => (body.match(new RegExp(`name="${field}"\\r?\\n\\r?\\n([^\\r\\n]*)`)) || [])[1];
+      submitted = { roomType: grab('roomType'), removeFurniture: grab('removeFurniture') };
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false, error: 'stopped by e2e' }),
+      });
+    });
+
+    await openStageModal(page);
+
+    const checkbox = page.locator('#remove-furniture');
+    await checkbox.check();
+    await expect(checkbox).toBeChecked();
+    // The keep-furniture box rides on the checkbox, so it should be showing now.
+    await expect(page.locator('#keep-furniture-row')).toBeVisible();
+
+    await pickRoomType(page, 'Dorm');
+    await expect(page.locator('#remove-furniture-row')).toBeHidden();
+    await expect(checkbox).not.toBeChecked();
+    // Clearing must also fire `change`, which is what puts the dependent UI back.
+    await expect(page.locator('#keep-furniture-row')).toBeHidden();
+
+    await page.locator('#stage-file-input').setInputFiles({
+      name: 'room.png',
+      mimeType: 'image/png',
+      buffer: await roomPngBuffer(),
+    });
+    await expect(page.locator('#stage-preview')).toBeVisible();
+    await page.locator('#process-btn').click();
+
+    await expect.poll(() => submitted, { timeout: 15_000 }).toEqual({
+      roomType: 'Dorm',
+      removeFurniture: 'false',
+    });
+  });
+});

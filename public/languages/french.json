@@ -362,7 +362,9 @@
       },
       "downloadSizeMenu": "Choisir la résolution de téléchargement",
       "downloadOriginal": "Originale",
-      "downloadNative": "native"
+      "downloadNative": "native",
+      "uploadAnotherShort": "Changer",
+      "downloadResultShort": "Télécharger"
     }
   },
   "roomTypes": {

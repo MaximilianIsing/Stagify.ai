@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://stagify.ai/</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -20,7 +20,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/es</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -38,7 +38,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/fr</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -56,7 +56,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/de</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -74,7 +74,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/zh</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -92,7 +92,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/ko</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -110,7 +110,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/pt</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -128,7 +128,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/ru</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -146,7 +146,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/it</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -164,7 +164,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/ja</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -182,7 +182,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/nl</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://stagify.ai/"/>
@@ -1982,7 +1982,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/blog/</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -2007,6 +2007,18 @@
   <url>
     <loc>https://stagify.ai/blog/stagify-vs-other-virtual-staging-tools</loc>
     <lastmod>2026-06-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://stagify.ai/blog/top-10-ai-virtual-staging-sites-2026</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://stagify.ai/blog/dorm-room-design-ai-college-freshmen</loc>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

@@ -362,7 +362,9 @@
       },
       "downloadSizeMenu": "Выберите разрешение загрузки",
       "downloadOriginal": "Оригинал",
-      "downloadNative": "исходное"
+      "downloadNative": "исходное",
+      "uploadAnotherShort": "Заново",
+      "downloadResultShort": "Скачать"
     }
   },
   "roomTypes": {
