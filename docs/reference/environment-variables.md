@@ -30,9 +30,10 @@ GOOGLE_PUBLISHER_ID=
 
 # --- AI providers ---
 # Google Generative AI (Gemini) key. Powers the core staging pipeline — staging
-# fails without it. The main staging client reads GOOGLE_AI_API_KEY only (file
-# fallback: key.txt); the GEMINI_API_KEY alias is honored ONLY by the CAD-to-3D
-# helper (lib/staging/cad-handling.js), so set GOOGLE_AI_API_KEY for staging to work.
+# fails without it. This is the ONLY Gemini key variable (file fallback: key.txt).
+# A GEMINI_API_KEY alias used to be honored by the CAD-to-3D helper alone, because
+# that module built its own client; it now shares the one client every other
+# Gemini-backed feature uses, so GEMINI_API_KEY is no longer read anywhere.
 # Set to an EMPTY value to disable the client outright (same rule as GPT_KEY and
 # RESEND_API_KEY): an empty key skips the key.txt fallback and leaves genAI null, so
 # every Gemini-backed feature cleanly no-ops instead of making calls that 400. This is

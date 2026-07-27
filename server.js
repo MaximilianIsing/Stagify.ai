@@ -7,7 +7,7 @@ import express from 'express';
 import multer from 'multer';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { blueprintTo3D } from './lib/staging/cad-handling.js';
+import { createCadHandling } from './lib/staging/cad-handling.js';
 import { createAuthStore } from './lib/data/auth-store.js';
 import Stripe from 'stripe';
 import { OAuth2Client } from 'google-auth-library';
@@ -214,6 +214,7 @@ const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = crea
 const { annotateImage } = createImageAnnotation({ openai });
 const { reviewImageQuality, reviewMaskEdit, validateStageableImage } = createImageReview({ genAI });
 const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
+const { blueprintTo3D } = createCadHandling({ genAI });
 const { getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest } = createHostedImages({ getDataLogDir });
 const { healthHandler, protectLogs, stagingEndpointKeyGuard } = createHttpGuards({ genAI, LOGS_ACCESS_KEY, endpointKeyMatches });
 

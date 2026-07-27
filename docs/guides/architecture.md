@@ -152,7 +152,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `virtual-staging-handler.js` | The `/api/process-image` + `/api/stage-by-endpoint-key` multipart handler (`handleVirtualStagingMultipart`), lifted out of `server.js`: free-tier cap, two-stage furniture removal, per-variation staging, enterprise metering. |
 | `mask-edit.js` | The `/api/mask-edit` request pipeline (locator overlay, reference letterboxing, quality-retry review), lifted out of `routes/staging.js`. |
 | `segment.js` | The `/api/segment` magic-wand handler (Gemini box detection → normalized `box_2d`), lifted out of `routes/staging.js`. |
-| `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D renders (AI Designer), via Gemini. |
+| `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D renders (AI Designer), via Gemini. `createCadHandling({ genAI })` — takes the **shared** client from `server.js`; it must not build its own (it used to, from a `lib/staging/key.txt` that never existed). |
 
 **`lib/chat/`** — AI Designer chat orchestration
 
