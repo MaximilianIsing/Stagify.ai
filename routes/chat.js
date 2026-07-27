@@ -45,7 +45,7 @@ const CONTEXT_LIMIT_MESSAGE =
  *   processImageGeneration: ReturnType<typeof import('../lib/staging/staging-generation.js').createStagingGeneration>['processImageGeneration'],
  *   processStaging: ReturnType<typeof import('../lib/staging/staging-generation.js').createStagingGeneration>['processStaging'],
  *   logChatToFile: ReturnType<typeof import('../lib/services/logging.js').createLogging>['logChatToFile'],
- *   blueprintTo3D: typeof import('../lib/staging/cad-handling.js').blueprintTo3D,
+ *   blueprintTo3D: ReturnType<typeof import('../lib/staging/cad-handling.js').createCadHandling>['blueprintTo3D'],
  *   incPromptCount: typeof import('../lib/data/counters.js').incPromptCount,
  * }} deps - Injected OpenAI client, rate-limit + upload middleware, the pro gate,
  *   memory load/save, model resolvers, the image annotation/downscale/staging/

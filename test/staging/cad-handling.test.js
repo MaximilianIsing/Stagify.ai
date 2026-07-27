@@ -14,6 +14,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import sharp from "sharp";
 import {
+  createCadHandling,
   parseGeminiResponse,
   getMimeType,
   extractBase64,
@@ -169,4 +170,117 @@ test("extractBase64: throws 'Invalid image data format' for non-string, non-Buff
   assert.throws(() => extractBase64(null), /Invalid image data format/);
   assert.throws(() => extractBase64(123), /Invalid image data format/);
   assert.throws(() => extractBase64({}), /Invalid image data format/);
+});
+
+// ── createCadHandling (client injection) ─────────────────────────────────────
+//
+// This module used to build its OWN GoogleGenerativeAI client from a private
+// readApiKey() that resolved lib/staging/key.txt — a path that never exists,
+// since the repo-wide convention is a root-level key file resolved through an
+// injected __dirname. It was also the only consumer of GEMINI_API_KEY, and it
+// threw on an empty GOOGLE_AI_API_KEY where ai-clients.js treats empty as
+// "disabled". It now takes the shared client like every other AI-touching module.
+//
+// Still no real API call: the injected client is a fake whose getGenerativeModel
+// returns a scripted generateContent, which is exactly the seam the old private
+// client denied us.
+
+// Minimal stand-in for the GoogleGenerativeAI client, recording what it was asked for.
+function fakeGenAI(response) {
+  const calls = { models: [], contents: [] };
+  return {
+    calls,
+    getGenerativeModel({ model }) {
+      calls.models.push(model);
+      return {
+        generateContent: async (content) => {
+          calls.contents.push(content);
+          return { response };
+        },
+      };
+    },
+  };
+}
+
+test("createCadHandling: uses the INJECTED client rather than constructing its own", async () => {
+  const pngBuffer = await sharp({
+    create: { width: 4, height: 4, channels: 3, background: { r: 10, g: 20, b: 30 } },
+  }).png().toBuffer();
+
+  const genAI = fakeGenAI(
+    responseWithParts([
+      { inlineData: { data: pngBuffer.toString("base64"), mimeType: "image/png" } },
+    ]),
+  );
+  const { blueprintTo3D } = createCadHandling({ genAI });
+
+  const result = await blueprintTo3D("data:image/png;base64,QUJD");
+
+  assert.ok(Buffer.isBuffer(result), "returns the parsed render Buffer");
+  assert.equal(genAI.calls.models.length, 1, "the injected client was the one used");
+  assert.equal(
+    genAI.calls.models[0],
+    "gemini-3-pro-image",
+    "CAD stays on Pro (see the model note in lib/config/model-config.js)",
+  );
+});
+
+test("createCadHandling: throws a clear error when the shared client is null (no key configured)", async () => {
+  // ai-clients.js leaves genAI null for BOTH an unset and an empty GOOGLE_AI_API_KEY.
+  // The old private readApiKey() honored GEMINI_API_KEY and threw its own message, so
+  // "Gemini is off" behaved differently here than everywhere else in the app.
+  const { blueprintTo3D } = createCadHandling({ genAI: null });
+
+  await assert.rejects(
+    () => blueprintTo3D("data:image/png;base64,QUJD"),
+    /Google AI client not configured/,
+  );
+});
+
+test("createCadHandling: forwards the blueprint and furniture images as inlineData parts", async () => {
+  const pngBuffer = await sharp({
+    create: { width: 4, height: 4, channels: 3, background: { r: 0, g: 0, b: 0 } },
+  }).png().toBuffer();
+
+  const genAI = fakeGenAI(
+    responseWithParts([
+      { inlineData: { data: pngBuffer.toString("base64"), mimeType: "image/png" } },
+    ]),
+  );
+  const { blueprintTo3D } = createCadHandling({ genAI });
+
+  await blueprintTo3D("data:image/png;base64,QUJD", null, [
+    { image: "data:image/webp;base64,REVG", mimeType: "image/webp" },
+  ]);
+
+  const content = genAI.calls.contents[0];
+  const images = content.filter((p) => p.inlineData);
+  assert.equal(images.length, 2, "blueprint + one furniture image");
+  assert.equal(images[0].inlineData.data, "QUJD", "blueprint base64 is stripped of its data URL prefix");
+  assert.equal(images[0].inlineData.mimeType, "image/png");
+  assert.equal(images[1].inlineData.mimeType, "image/webp", "furniture mime type is preserved");
+  assert.ok(
+    content.some((p) => typeof p.text === "string" && p.text.includes("TOP-DOWN")),
+    "the prompt text part is appended last",
+  );
+});
+
+test("createCadHandling: folds an additional prompt into the request", async () => {
+  const pngBuffer = await sharp({
+    create: { width: 4, height: 4, channels: 3, background: { r: 1, g: 2, b: 3 } },
+  }).png().toBuffer();
+
+  const genAI = fakeGenAI(
+    responseWithParts([
+      { inlineData: { data: pngBuffer.toString("base64"), mimeType: "image/png" } },
+    ]),
+  );
+  const { blueprintTo3D } = createCadHandling({ genAI });
+
+  await blueprintTo3D("QUJD", "image/png", [], "  use a warm scandinavian palette  ");
+
+  const text = genAI.calls.contents[0].find((p) => p.text).text;
+  assert.match(text, /ADDITIONAL REQUIREMENTS FROM USER/);
+  assert.match(text, /use a warm scandinavian palette/);
+  assert.ok(!text.includes("  use a warm"), "the extra prompt is trimmed");
 });
