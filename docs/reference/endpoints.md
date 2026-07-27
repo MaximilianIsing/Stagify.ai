@@ -213,7 +213,8 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/authstore` | Download a live JSON snapshot of the auth store (users, session tokens, password hashes, Stripe ids, etc.), rebuilt from SQLite via `exportStore()` and streamed as `auth-store.json`. **Highly sensitive** — same `X-Stagify-Endpoint-Key` header as other admin exports. Backed by `data/auth-store.db` (or `/data/auth-store.db` on Render); the payload is a valid rollback/re-import shape. |
+| `GET` | `/api/admin/ping` | `{ ok: true }`. Exists so the `/admin` sign-in screen can validate a key without fetching a data endpoint. No payload, but still key-gated — it is an oracle for the admin key. |
+| `GET` | `/authstore` | Live **redacted** user list (`{ users: [...] }`) via `exportRedacted()`, streamed as `auth-store.json`. Carries only the fields the dashboard renders — id, email, plan, createdAt, usage, `googleSub`, Stripe ids, grant timestamps. Still sensitive (every customer email), hence the key. **It deliberately does NOT carry credentials.** `exportRedacted` uses an *allowlist*, so a new field added to `extra_json` is withheld until someone adds it there on purpose. |
 | `GET` | `/promptlogs` | Download `prompt_logs.csv` (or `404` if missing). |
 | `GET` | `/contactlogs` | Download `contact_logs.csv`. |
 | `GET` | `/chatlogs` | Download `chat_logs.csv`. |

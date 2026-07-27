@@ -70,7 +70,11 @@ export async function mountAdmin(options = {}) {
   const resetAllMemories = makeSpy(() => {});
   const uptimeMonitor = { reset: makeSpy(() => ({ up: true, since: 'now' })) };
   const authStore = {
+    // exportStore (the credential-bearing backup shape) is deliberately NOT wired
+    // to any route — if a future edit points /authstore back at it, the spy stays
+    // at 0 calls and test/routes/admin-route.test.js fails.
     exportStore: makeSpy(() => ({ users: [], sessions: [] })),
+    exportRedacted: makeSpy(() => ({ users: [] })),
     grantProMonth: makeSpy(() => grantResult),
     revokeProGrant: makeSpy(() => revokeResult),
   };
@@ -113,7 +117,7 @@ export async function mountAdmin(options = {}) {
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     key: logsAccessKey,
-    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail },
+    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail },
     getManifest: () => manifest,
     hostedImagesDir,
     close: () =>

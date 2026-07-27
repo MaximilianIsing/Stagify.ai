@@ -39,7 +39,8 @@ const postJson = (p, body = {}) =>
 // protectLogs — download/admin routes must 403 without the access-key header.
 // Read-only routes only (see Safety note above).
 const PROTECTED_LOG_ROUTES = [
-  '/authstore',        // users, password hashes, session tokens — the crown jewels
+  '/authstore',        // redacted user list — still PII (every customer email)
+  '/api/admin/ping',   // no payload, but it is the admin key oracle — keep it gated
   '/promptlogs',
   '/contactlogs',
   '/chatlogs',

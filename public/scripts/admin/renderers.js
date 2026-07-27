@@ -487,7 +487,9 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
       {label:'Chat Logs',url:'/chatlogs',file:'chat_logs.csv'},
       {label:'Bug Reports',url:'/bugreports',file:'bug_reports.csv'},
       {label:'Mask Logs',url:'/masklogs',file:'mask_logs.csv'},
-      {label:'Auth Store',url:'/authstore',file:'auth-store.json'},
+      // No "Auth Store" entry: /authstore is now a redacted user list, not a
+      // backup. The real backup is the SQLite file (Litestream → R2) — offering a
+      // credential dump as a browser download is what made one leaked key fatal.
       {label:'Enterprise Domains',url:'/enterprise-domains',file:'enterprise-domains.json'},
     ];
     var grid=qs('#adm-dl-grid');grid.innerHTML='';

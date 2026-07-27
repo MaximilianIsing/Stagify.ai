@@ -111,13 +111,29 @@ test('unhost removes the file and its manifest entry', async () => {
 
 // ---- Snapshot downloads + reset actions -----------------------------------
 
-test('authstore download serves the store snapshot as a JSON attachment', async () => {
+test('authstore serves the REDACTED snapshot, never the credential-bearing export', async () => {
   app = await mountAdmin();
   const res = await fetch(app.baseUrl + '/authstore', { headers: auth });
   assert.equal(res.status, 200);
   assert.match(res.headers.get('content-disposition') || '', /auth-store\.json/);
-  assert.deepEqual(await res.json(), { users: [], sessions: [] });
-  assert.equal(app.calls.authExport.calls, 1, 'a live snapshot is rebuilt');
+  assert.deepEqual(await res.json(), { users: [] });
+  assert.equal(app.calls.authExportRedacted.calls, 1, 'a live redacted snapshot is rebuilt');
+  assert.equal(
+    app.calls.authExport.calls,
+    0,
+    'exportStore() carries password hashes + live session tokens and must never reach HTTP',
+  );
+});
+
+test('admin ping validates the key without returning any data', async () => {
+  app = await mountAdmin();
+  const res = await fetch(app.baseUrl + '/api/admin/ping', { headers: auth });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { ok: true });
+  assert.equal(app.calls.authExportRedacted.calls, 0, 'the login probe touches no store');
+
+  const denied = await fetch(app.baseUrl + '/api/admin/ping');
+  assert.equal(denied.status, 403, 'still gated by the endpoint key');
 });
 
 test('memories download serves the exported memories snapshot', async () => {

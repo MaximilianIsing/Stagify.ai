@@ -71,6 +71,38 @@ guarded by the **`endpoint_key`** (note the lowercase env name):
 - Responses carrying secrets/PII set `Cache-Control: no-store` and
   `Referrer-Policy: no-referrer` (`setSensitiveHeaders`).
 
+### No credentials over HTTP — `exportStore` vs `exportRedacted`
+
+`GET /authstore` serves `authStore.exportRedacted()`: users, minus credentials.
+It must stay that way. `exportStore()` — the sibling that backs
+migration/restore — additionally returns **password hashes and salts, every live
+session token keyed to its user, every outstanding password-reset token, and
+pending-registration hashes**. That is a complete account-takeover kit: the
+session and reset tokens need no cracking at all, they are bearer credentials.
+
+It used to be what this route returned, so the single static `endpoint_key`
+was, on its own, the only thing standing between a leak and every account. The
+dashboard never read a single one of those fields.
+
+Rules:
+- **Never** serve `exportStore()` over HTTP, on this route or a new one. Backup
+  and rollback are the SQLite file itself (Litestream → R2), not a browser
+  download.
+- `exportRedacted` filters through the `ADMIN_VISIBLE_USER_KEYS` **allowlist**.
+  A new admin panel that needs another column adds it there deliberately. Do not
+  convert it to a denylist — `rowToUser` spreads `extra_json`, so anything parked
+  there would start shipping to the browser on its own.
+- Enforced by `test/data/auth-store-sqlite.test.js` (no secret survives
+  redaction; unknown `extra_json` fields do not leak) and
+  `test/routes/admin-route.test.js` (the route calls the redacted export and
+  `exportStore` is never invoked).
+
+**Still open:** `endpoint_key` remains a single, non-rotating, process-wide
+secret with no per-admin identity and no audit trail, and it also guards the CSV
+exports (customer emails, prompt text) and mutating routes like
+`/api/admin/grant-plus`. Redacting `/authstore` removed the worst blast radius;
+it did not fix the admin auth model.
+
 ## Rate limiting
 
 `express-rate-limit`, tunable via env (see the env doc):

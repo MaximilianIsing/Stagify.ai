@@ -124,6 +124,65 @@ test('exportStore / importStore round-trips all state', () => {
   assert.deepEqual(b.exportStore(), snap, 'the full export is identical after a round-trip');
 });
 
+// ---- exportRedacted — what GET /authstore is allowed to serve ---------------
+// exportStore() is a backup payload and carries every credential in the system.
+// exportRedacted() is the browser-facing view; these tests are the line between
+// them. If one starts failing, do not "fix" it by widening the export.
+
+test('exportRedacted omits every credential: hashes, session tokens, reset tokens, pendings', () => {
+  const s = storeAt(tempDir());
+  const reg = verifyUser(s, 'secret@example.com');
+  const reset = s.startPasswordReset('secret@example.com');
+  s.startRegistration('pending@example.com', 'CorrectHorse9!'); // leaves a pending row
+
+  const full = s.exportStore();
+  const redacted = s.exportRedacted();
+  const wire = JSON.stringify(redacted);
+
+  // The full export really does carry the secrets — otherwise this test proves nothing.
+  const stored = full.users.find((u) => u.email === 'secret@example.com');
+  assert.ok(stored.passwordHash && stored.passwordSalt, 'precondition: exportStore carries credentials');
+  assert.ok(Object.keys(full.sessions).length, 'precondition: exportStore carries live sessions');
+  assert.ok(reset.token, 'precondition: a reset token exists');
+
+  // None of it survives redaction.
+  assert.ok(!wire.includes(stored.passwordHash), 'no password hash on the wire');
+  assert.ok(!wire.includes(stored.passwordSalt), 'no password salt on the wire');
+  assert.ok(!wire.includes(reg.token), 'no live session token on the wire');
+  assert.ok(!wire.includes(reset.token), 'no password-reset token on the wire');
+  assert.deepEqual(Object.keys(redacted), ['users'], 'sessions/resets/pendings are dropped wholesale');
+  assert.ok(!wire.includes('pending@example.com'), 'unverified signups are not exposed either');
+
+  const user = redacted.users.find((u) => u.email === 'secret@example.com');
+  assert.ok(user, 'the account itself is still listed');
+  assert.equal(user.passwordHash, undefined);
+  assert.equal(user.passwordSalt, undefined);
+});
+
+test('exportRedacted keeps the fields the dashboard renders', () => {
+  const s = storeAt(tempDir());
+  verifyUser(s, 'shown@example.com');
+  const [u] = s.exportRedacted().users;
+  for (const k of ['id', 'email', 'plan', 'createdAt']) {
+    assert.ok(u[k] !== undefined, `${k} is still available to the admin UI`);
+  }
+});
+
+test('exportRedacted is an allowlist — a new extra_json field does NOT leak by default', () => {
+  const s = storeAt(tempDir());
+  // extra_json is a catch-all; rowToUser spreads it. A denylist implementation
+  // would pass this straight through to the browser.
+  s.importStore({
+    ...EMPTY,
+    users: [{
+      id: 'u_x', email: 'x@example.com', plan: 'free', createdAt: '2024-01-01T00:00:00.000Z',
+      oauthRefreshToken: 'super-secret-value',
+    }],
+  });
+  const wire = JSON.stringify(s.exportRedacted());
+  assert.ok(!wire.includes('super-secret-value'), 'unknown extra_json fields stay server-side');
+});
+
 test('importStore replaces all prior state (transactional, not a merge)', () => {
   const s = storeAt(tempDir());
   s.importStore({ ...EMPTY, users: [{ id: 'u_a', email: 'a@x.com', plan: 'free', createdAt: '2024-01-01T00:00:00.000Z' }] });
