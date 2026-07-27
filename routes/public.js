@@ -82,6 +82,14 @@ router.get('/blog/stagify-vs-other-virtual-staging-tools', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'blog', 'stagify-vs-other-virtual-staging-tools.html'));
 });
 
+router.get('/blog/top-10-ai-virtual-staging-sites-2026', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'top-10-ai-virtual-staging-sites-2026.html'));
+});
+
+router.get('/blog/dorm-room-design-ai-college-freshmen', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'dorm-room-design-ai-college-freshmen.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));

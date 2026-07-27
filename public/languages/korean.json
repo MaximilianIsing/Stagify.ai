@@ -362,7 +362,9 @@
       },
       "downloadSizeMenu": "다운로드 해상도 선택",
       "downloadOriginal": "원본",
-      "downloadNative": "원본 크기"
+      "downloadNative": "원본 크기",
+      "uploadAnotherShort": "다시 업로드",
+      "downloadResultShort": "다운로드"
     }
   },
   "roomTypes": {

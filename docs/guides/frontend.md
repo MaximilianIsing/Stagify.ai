@@ -111,6 +111,39 @@ default. The same sibling-span shape is what the SSR renderer needs — a `data-
 wrapper would swallow the badge server-side too (see [`i18n.md`](i18n.md)). Covered by
 [`e2e/stage-room-type.spec.js`](../../e2e/stage-room-type.spec.js).
 
+**Reacting to a pick.** Pass `{ onChange }` as the second argument to be notified when the
+user selects an option: `initCustomSelect('#room-type-select', { onChange: fn })`. It fires
+only on a real pick, **not** on the programmatic `set()` — a caller using `set()` already
+knows the value it just wrote, and firing there would re-enter whatever sync logic that
+caller is in the middle of.
+
+### The remove-furniture gate
+
+The stage modal's **Remove existing furniture** checkbox is gated by two conditions owned
+by two different files — the plan (Stagify+/Enterprise only, applied by `auth.js` on every
+auth change) and the room type (a dorm's issued furniture is fixed, applied by `app.js` on
+every select change).
+
+Both funnel through
+[`scripts/app/remove-furniture-gate.js`](../../public/scripts/app/remove-furniture-gate.js),
+which recomputes the whole rule from scratch, so there is **exactly one writer**. Don't
+add a second place that toggles `#remove-furniture-row`: `applyUserToUI()` runs from eight
+call sites (login, logout, profile menu, Google sign-in, after a staging run), and any of
+them would re-reveal the row while a no-removal room is still selected.
+
+Two things worth knowing before touching it:
+
+- **Hiding the row is not enough — the checkbox must be cleared.**
+  `staging-pipeline.js` reads `#remove-furniture.checked` directly, so a hidden-but-checked
+  box still submits `removeFurniture=true`. The gate clears it and dispatches `change`,
+  which is also what puts the variation slider back and hides the keep-furniture box.
+- **The rule is a pure function** (`removalAllowed(isPro, roomType)`) so it is unit-tested
+  without a DOM — [`test/remove-furniture-gate.test.js`](../../test/remove-furniture-gate.test.js).
+  The browser-level wiring is covered by
+  [`e2e/stage-room-type.spec.js`](../../e2e/stage-room-type.spec.js).
+
+To make another room type drop the control, add its key to `ROOM_TYPES_WITHOUT_REMOVAL`.
+
 ### The download resolution menu
 
 `createDownloadMenu(deps)`
@@ -121,14 +154,23 @@ and the caret beside it that opens a size picker. It reuses the custom select's
 markup, because each one shows its own computed pixel dimensions.
 
 ```html
-<div id="download-split" class="download-split">
-  <button id="download-btn" class="btn btn-primary" disabled>…</button>
-  <button id="download-size-toggle" class="btn btn-primary download-caret" disabled …>…</button>
-  <div id="download-size-menu" class="select-menu download-size-menu hidden" role="menu"></div>
+<div class="viewer-actions">
+  <button id="new-upload" class="btn btn-ghost">
+    <strong class="label-full"  data-lang="modal.staging.uploadAnother">Upload Another</strong>
+    <strong class="label-short" data-lang="modal.staging.uploadAnotherShort">Reupload</strong>
+  </button>
+  <div id="download-split" class="download-split">
+    <button id="download-btn" class="btn btn-primary" disabled>
+      <strong class="label-full"  data-lang="modal.staging.downloadResult">Download Result</strong>
+      <strong class="label-short" data-lang="modal.staging.downloadResultShort">Download</strong>
+    </button>
+    <button id="download-size-toggle" class="btn btn-primary download-caret" disabled …>…</button>
+    <div id="download-size-menu" class="select-menu download-size-menu hidden" role="menu"></div>
+  </div>
 </div>
 ```
 
-Four rules worth knowing before touching it:
+Five rules worth knowing before touching it:
 
 - **Both buttons ship `disabled` in the markup.** The island flips them on when a staged
   result exists and back off on reset, driven by a `MutationObserver` on `canvas1`'s
@@ -146,6 +188,35 @@ Four rules worth knowing before touching it:
   and never settles in a backgrounded tab, which leaves the menu awaiting forever and
   simply never opening — no error, no menu. `probeDimensions` uses `onload`/`onerror`
   behind a timeout; a failed probe costs only the `Original` row.
+- **Each action carries BOTH labels; CSS picks one.** Below 600px the viewer header has to
+  fit the Before/After toggle *and* both actions on one row — about 317px at a 375px
+  viewport. The full wording does not fit at any sane padding, so mobile shows
+  `.label-short` (`Reupload` / `Download`) and hides `.label-full`; desktop does the
+  reverse. Both live in the markup rather than JS swapping `textContent`, so `data-lang`
+  keeps translating them and the SSR renderer sees both (see [`i18n.md`](i18n.md)) —
+  which means a new language needs `uploadAnotherShort` and `downloadResultShort`, not
+  just the full keys. The mobile block also sets `.viewer-actions { display: contents }`,
+  promoting both actions into `.viewer-header`'s flex flow so all three controls share
+  one row instead of being boxed together.
+- **The three controls are flush and fill the row exactly.** `gap: 0` plus equal
+  `flex: 1 1 auto` on the toggle, `#new-upload` and `.download-split`, so the ~20px the
+  tightened labels leave over is shared between them rather than pooling as holes — zero
+  gap, both outer edges flush to the header. Note `#new-upload` sets its grow in the same
+  rule that releases the global mobile `width:100%/max-width:280px`; splitting those into
+  two rules lets the later same-specificity one silently clobber the grow.
+- **Positional CSS on a bare `.download-size-menu` selector does nothing.** `.select-menu`
+  is declared later in `styles.css` at the same specificity, so its `left: 0` beats any
+  `left`/`right` set on `.download-size-menu` — which is why the menu stayed anchored to
+  the split's LEFT edge and ran off-screen on mobile once the split got narrow, clipping
+  the dimensions column. The mobile block right-aligns it via
+  `.download-split .download-size-menu` (one class deeper, so it actually wins) plus a
+  `max-width: calc(100vw - 24px)` backstop. Anchor from that selector, not the bare one.
+- **The fit is tight, and deliberately degrades rather than overflows.** `flex-wrap` stays
+  on, so an over-long translation or a very narrow phone drops the split to a second row —
+  where it still grows to full width, so there are no holes there either. Verified at
+  320–600px and in all 11 languages. If you lengthen either short label, re-check French:
+  `Télécharger` is the binding constraint and is not meaningfully shortenable, which is
+  why the French reupload label is the terser `Changer`.
 
 Sizes are multipliers of what the model actually produced. Upscaling is plain
 interpolation and adds no real detail, so rows state their true pixels rather than

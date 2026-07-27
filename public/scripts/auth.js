@@ -1,3 +1,5 @@
+import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
+
 (function () {
   var TOKEN_KEY = 'stagifyAuthToken';
 
@@ -112,22 +114,12 @@
       var u = this.user;
       var proPanel = document.getElementById('stagify-pro-panel');
 
-      // "Remove existing furniture" is Stagify+ / Enterprise only (enterprise
-      // users carry plan === 'pro'). Hide the control for everyone else and clear
-      // any checked state so a downgraded/anon user can't submit removeFurniture.
-      var removeRow = document.getElementById('remove-furniture-row');
-      if (removeRow) {
-        if (u && u.plan === 'pro') {
-          removeRow.classList.remove('hidden');
-        } else {
-          removeRow.classList.add('hidden');
-          var rfCb = /** @type {HTMLInputElement} */ (document.getElementById('remove-furniture'));
-          if (rfCb && rfCb.checked) {
-            rfCb.checked = false;
-            rfCb.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-        }
-      }
+      // "Remove existing furniture" is Stagify+ / Enterprise only (enterprise users
+      // carry plan === 'pro'), AND is unavailable for room types whose furniture is
+      // fixed. Both conditions are applied by the shared gate so this call site and
+      // the room-type select can't fight over the row — see remove-furniture-gate.js.
+      // It reads the plan off window.StagifyAuth, which `u` already is.
+      syncRemoveFurnitureRow();
 
       document.querySelectorAll('.nav-ai-designer-pro, .nav-masking-studio-pro').forEach(function (el) {
         if (u && u.plan === 'pro') {

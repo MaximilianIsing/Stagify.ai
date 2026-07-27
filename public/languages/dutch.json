@@ -362,7 +362,9 @@
       },
       "downloadSizeMenu": "Downloadresolutie kiezen",
       "downloadOriginal": "Origineel",
-      "downloadNative": "native"
+      "downloadNative": "native",
+      "uploadAnotherShort": "Opnieuw",
+      "downloadResultShort": "Download"
     }
   },
   "roomTypes": {

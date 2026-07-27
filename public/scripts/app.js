@@ -1,6 +1,7 @@
 import { dataURLToFile, fillTemplate, dailyLimitMessage, roomDownloadSlug } from './app/helpers.js';
 import { createStageMaskEditor } from './app/stage-mask-editor.js';
 import { initCustomSelect } from './app/custom-select.js';
+import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
 import { initBackgroundVideoSync } from './app/background-video.js';
 import { init3DTiltEffect } from './app/tilt-effect.js';
 import { loadHeroStats, updateHeroFreeGensLine } from './app/hero-stats.js';
@@ -72,7 +73,9 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
     const processBtn = $('#process-btn');
     const additionalPrompt = $('#additional-prompt');
     // Custom selects
-    const roomSelect = initCustomSelect('#room-type-select');
+    // Picking a room type can withdraw the remove-existing-furniture option (a dorm's
+    // issued furniture is fixed), so re-run the shared gate on every change.
+    const roomSelect = initCustomSelect('#room-type-select', { onChange: syncRemoveFurnitureRow });
     const styleSelect = initCustomSelect('#furniture-style-select');
     const progress = $('#progress');
     const progressBar = $('#progress-bar');

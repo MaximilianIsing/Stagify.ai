@@ -1438,6 +1438,15 @@ h2 {
   display:flex;
   gap:12px
 }
+/* Each action button carries BOTH labels; CSS picks one. Mobile has to fit the
+   toggle + both actions on a single row, which the full wording cannot do at any
+   sane padding, so it swaps to the short forms ("Reupload" / "Download"). Desktop
+   shows the full wording. Both live in the markup (rather than JS swapping
+   textContent) so `data-lang` keeps translating them and the SSR renderer sees
+   both — see i18n.md. */
+.label-short {
+  display:none
+}
 /* This row shares its width with the before/after toggle, so neither action may
    wrap to a second line — .btn defaults to white-space:normal, and the caret's
    extra ~38px was enough to break both labels onto two lines. Nowrap plus the
@@ -1512,10 +1521,12 @@ h2 {
   outline:2px solid var(--primary);
   outline-offset:2px
 }
-/* Right-aligned so the menu can't overflow the viewer on narrow screens. */
+/* NOTE: left/right anchoring is deliberately NOT set here. `.select-menu` is
+   declared later in this file at the same specificity, so anything positional set
+   on a bare `.download-size-menu` loses to it and silently does nothing. The
+   mobile block right-aligns the menu via `.download-split .download-size-menu`,
+   which has the specificity to actually win. */
 .download-size-menu {
-  left:auto;
-  right:0;
   min-width:236px;
   text-transform:none;
   letter-spacing:normal;
@@ -1546,47 +1557,100 @@ h2 {
   color:var(--muted);
   font-variant-numeric:tabular-nums
 }
-/* Below ~600px the toggle plus both actions no longer fit on one row, and the
-   labels can no longer wrap to absorb it (see .viewer-actions .btn above), so
-   without this they would overflow the header. Let the header wrap the actions
-   onto their own row and tighten them — the same approach .ms-viewer-header
-   takes in masking-studio.css. .viewer-actions also wraps internally, so on a
-   very narrow phone the two buttons stack rather than spilling. The caret is
-   excluded from the padding override or it would widen back to a text button. */
+/* Mobile viewer header: Before/After, Reupload and Download share ONE row, flush
+   against each other and filling its full width. Three things make that work:
+     1. `display:contents` dissolves .viewer-actions, so its two children become
+        direct flex items of .viewer-header instead of being boxed together.
+     2. The short labels (.label-short) plus tightened type and padding — the full
+        wording does not fit in ~317px at any sane padding; that is what the
+        rename buys.
+     3. Equal flex-grow on all three with gap:0, so they butt together and split
+        the leftover width between them instead of leaving holes.
+   flex-wrap stays on deliberately: a very narrow phone (~320px) or an over-long
+   translation degrades to a second row rather than overflowing the viewer. */
 @media (max-width:600px) {
   .viewer-header {
     flex-wrap:wrap;
-    row-gap:10px
+    gap:0;
+    row-gap:10px;
+    align-items:center
   }
   .viewer-actions {
-    width:100%;
-    flex-wrap:wrap
+    display:contents
   }
-  .viewer-actions .btn:not(.download-caret) {
-    padding:12px 14px;
-    font-size:13px
+  .label-full {
+    display:none
   }
-  /* Once stacked, ragged button widths look unfinished — stretch both action
-     items to the full row so their edges line up. Inside the split, only the
-     label half grows; the caret keeps its fixed width. */
-  .viewer-actions>* {
-    flex:1 1 100%
+  .label-short {
+    display:inline
   }
+  /* Grow together to consume the row exactly. Must come AFTER the width/max-width
+     release below in specificity terms — #new-upload is set once, here, so the
+     grow can't be clobbered by a later same-specificity rule. */
+  .toggle-container,
+  .download-split {
+    flex:1 1 auto
+  }
+  .toggle-btn,
   .download-split>#download-btn {
     flex:1 1 auto
   }
-}
-/* Below 480px the global `.btn { width:100%; max-width:280px }` rule further down
-   caps every button. The split is a div, so it escapes that cap and would sit
-   wider than "Upload Another" beneath it — match the cap on the group instead,
-   and release it on the two halves inside so they divide the 280px between them
-   rather than each trying to claim it. */
-@media (max-width:480px) {
-  .download-split {
-    width:100%;
-    max-width:280px
+  .toggle-btn {
+    padding:8px 7px;
+    font-size:11px
+  }
+  /* letter-spacing goes to 0 here: .btn adds .5px per character, which on two
+     8-character uppercase labels is ~8px of the headroom this row has. */
+  .viewer-actions .btn:not(.download-caret) {
+    padding:11px 7px;
+    font-size:11px;
+    letter-spacing:0
+  }
+  /* width/max-width release: the global mobile `.btn { width:100%; max-width:280px }`
+     further down would otherwise blow each action out to its own row. Grow is set
+     in the same rule so nothing later overrides it. */
+  #new-upload {
+    width:auto;
+    max-width:none;
+    flex:1 1 auto
   }
   .download-split>.btn {
+    width:auto;
+    max-width:none
+  }
+  .download-split>.download-caret {
+    flex:0 0 auto;
+    padding:11px 6px
+  }
+  .download-caret svg {
+    width:13px;
+    height:13px
+  }
+  /* Right-align the size menu to the split's right edge so it opens inward and
+     can't run off the screen.
+
+     The descendant selector is load-bearing: `.select-menu { left:0 }` is declared
+     LATER in this file at the same specificity, so the plain `.download-size-menu`
+     rule above loses and the menu stays anchored to the split's LEFT edge. With
+     the split narrow and sitting at the right of the row, the menu's content width
+     then pushed its right edge past the viewport and the dimensions column was
+     clipped. `min-width:0` drops `.select-menu`'s 100% floor (the split is far
+     narrower than the menu here), and the max-width keeps it on-screen whatever
+     the language. */
+  .download-split .download-size-menu {
+    left:auto;
+    right:0;
+    min-width:0;
+    max-width:calc(100vw - 24px)
+  }
+}
+/* Below 480px the global `.btn { width:100%; max-width:280px }` rule further down
+   stretches every button. That fights the single-row action layout above, where
+   all three controls must keep their natural widths, so release it inside the
+   viewer's action row (the `.btn` halves of the split are released in the
+   max-width:600px block). */
+@media (max-width:480px) {
+  .download-split {
     width:auto;
     max-width:none
   }
@@ -2482,6 +2546,12 @@ html {
 }
 .staging-limit-viewer__cta {
   display:inline-flex;
+  /* Shrink-wrap to the label and stay centred by the panel's `text-align:center`.
+     Below 480px the global `.btn { width:100%; max-width:280px }` (line ~2258)
+     would otherwise stretch this CTA across the whole overlay; this rule is later
+     in the file at equal specificity, so it wins without !important. */
+  width:auto;
+  max-width:100%;
   text-decoration:none;
   text-transform:none;
   letter-spacing:0;

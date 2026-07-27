@@ -70,6 +70,8 @@ test('blog hub and articles are served, and stay in sync with the sitemap', asyn
     '/blog/masking-studio-and-ai-designer',
     '/blog/does-virtual-staging-help-sell-homes',
     '/blog/stagify-vs-other-virtual-staging-tools',
+    '/blog/top-10-ai-virtual-staging-sites-2026',
+    '/blog/dorm-room-design-ai-college-freshmen',
   ];
   for (const p of articles) {
     const res = await get(p);
