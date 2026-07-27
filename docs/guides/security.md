@@ -11,11 +11,13 @@ Backed by SQLite (`auth-store.db`, [`lib/data/auth-store.js`](../../lib/data/aut
 
 - **Passwords:** hashed with **scrypt** (`crypto.scryptSync`, 64-byte key) using a
   per-user 16-byte random salt. Never stored or logged in plaintext.
-- **Sessions:** random 30-day tokens, validated on each request until logout.
+- **Sessions:** random 30-day tokens, validated on each request until logout. Stored
+  **SHA-256 hashed**, never raw — see [Tokens at rest](#tokens-at-rest).
 - **Registration:** email-verified — a code with a **15-minute expiry** and **max 5
   verify attempts** before it's invalidated.
-- **Password reset:** **single-use** tokens; the "forgot password" flow is
-  **non-enumerating** (it does not reveal whether an email exists).
+- **Password reset:** **single-use** tokens, hashed at rest like sessions and expiring
+  after an hour; the "forgot password" flow is **non-enumerating** (it does not reveal
+  whether an email exists).
 - **Google Sign-In:** ID tokens are verified with `google-auth-library`
   (`OAuth2Client`) against `GOOGLE_CLIENT_ID`. Disabled on staging (see below).
 - **Staging requires sign-in:** `POST /api/process-image` returns `401 AUTH_REQUIRED`
@@ -75,10 +77,12 @@ guarded by the **`endpoint_key`** (note the lowercase env name):
 
 `GET /authstore` serves `authStore.exportRedacted()`: users, minus credentials.
 It must stay that way. `exportStore()` — the sibling that backs
-migration/restore — additionally returns **password hashes and salts, every live
-session token keyed to its user, every outstanding password-reset token, and
-pending-registration hashes**. That is a complete account-takeover kit: the
-session and reset tokens need no cracking at all, they are bearer credentials.
+migration/restore — additionally returns **password hashes and salts,
+pending-registration hashes, and a row per live session / outstanding reset token
+keyed to its user**. Those token keys are now SHA-256 digests rather than the
+bearer values (see *Tokens at rest* below), so the payload no longer hands over
+accounts by itself — but it is still every credential the system has, plus a
+session→user map.
 
 It used to be what this route returned, so the single static `endpoint_key`
 was, on its own, the only thing standing between a leak and every account. The
@@ -96,6 +100,37 @@ Rules:
   redaction; unknown `extra_json` fields do not leak) and
   `test/routes/admin-route.test.js` (the route calls the redacted export and
   `exportStore` is never invoked).
+
+### Tokens at rest
+
+Session tokens and password-reset tokens are **bearer credentials** — the string
+alone authenticates, with no password step. They are therefore stored **hashed**:
+[`lib/data/session-tokens.js`](../../lib/data/session-tokens.js) owns both token
+tables, hashes on every write, and hashes the presented token on every lookup, so
+the database holds `sha256$<digest>` and never a usable token.
+
+This is what keeps a database read from being a mass account takeover. Password
+hashes are scrypt, so the DB alone doesn't yield accounts — these two tables were
+the exception, and they are the reason a leaked `/data` volume, a Litestream/R2
+restore, or the frozen `auth-store.json` is now a disclosure rather than a
+break-in.
+
+Notes for anyone touching this:
+
+- **Plain SHA-256, no salt, no stretching, and that is deliberate.** The input is
+  already 32 bytes of CSPRNG output — there is no guessable keyspace for a work
+  factor to slow down — and validation runs on every authenticated request, so the
+  digest has to stay a fast deterministic key. Do not "upgrade" it to scrypt.
+- **Write token rows only through `session-tokens.js`.** It is the single
+  chokepoint; a new call site that prepares its own `INSERT INTO sessions` puts a
+  raw token back on disk.
+- **The `sha256$` prefix is load-bearing.** A raw token and its digest are both 64
+  hex chars, so the prefix is the only way to tell stored form from raw. It makes
+  the boot migration and the backup/legacy import idempotent instead of
+  double-hashing, which would sign every user out.
+- Enforced by `test/data/auth-store-sqlite.test.js` (raw tokens never appear in
+  the tables, a stored digest is not replayable, the migration keeps existing
+  sessions valid and is idempotent).
 
 **Still open:** `endpoint_key` remains a single, non-rotating, process-wide
 secret with no per-admin identity and no audit trail, and it also guards the CSV

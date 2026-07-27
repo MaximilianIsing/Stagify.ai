@@ -181,7 +181,7 @@ grouped into subdirectories by concern (full breakdown in
 | Area | Key modules |
 |---|---|
 | `lib/config/` | `config.js` (secrets, env → `.txt` fallback), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
-| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `enterprise-store.js`, `memory.js`, `counters.js`, `uptime-monitor.js`. |
+| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `enterprise-store.js`, `memory.js`, `counters.js`, `uptime-monitor.js`. |
 | `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`). |
 | `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`. |
 | `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `auth-helpers.js`, `email.js`, `logging.js` (append-only **CSV** business logs), `stripe-webhooks.js`. |
@@ -223,7 +223,7 @@ files for logs and uploads. Full detail: [`reference/data-stores.md`](reference/
 
 | File | Contents |
 |---|---|
-| `auth-store.db` | **SQLite** (`better-sqlite3`, WAL) — the single app database, one shared connection (`lib/data/db.js`). Tables: auth (`users`, `sessions`, …, **sensitive**: hashed passwords + session tokens), `enterprise_domains`, `memories`, `uptime_state`. Each store imports its legacy JSON once on first run, then leaves it as a frozen fallback. |
+| `auth-store.db` | **SQLite** (`better-sqlite3`, WAL) — the single app database, one shared connection (`lib/data/db.js`). Tables: auth (`users`, `sessions`, …, **sensitive**: hashed passwords; session/reset tokens are hashed too — `lib/data/session-tokens.js`), `enterprise_domains`, `memories`, `uptime_state`. Each store imports its legacy JSON once on first run, then leaves it as a frozen fallback. |
 | `hosted-images/` | User-hosted image uploads served via `/i/:id`. |
 | `*_logs.csv` | Append-only logs: prompts, chats, contacts, masks, bug reports, email opens. |
 | `*.json` (legacy) | `auth-store.json`, `enterprise-domains.json`, `memories.json`, `uptime.json` — pre-SQLite stores, now frozen import fallbacks. |
@@ -335,7 +335,7 @@ around:
 
 - **Never commit secrets.** `.env` and the `*.txt` key files are gitignored; real
   secrets belong in the Render dashboard.
-- `data/auth-store.db` contains password hashes and session tokens — handle with care.
+- `data/auth-store.db` contains password hashes and (hashed) session tokens — handle with care.
 - Admin/log endpoints are protected by `endpoint_key`, compared in constant time.
 - CSP is enforced via `helmet` (toggle with `DISABLE_CSP=1` only to debug a blocked
   resource); CORS is limited to `ALLOWED_ORIGINS`; auth/email/generation endpoints are
