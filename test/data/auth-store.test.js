@@ -110,6 +110,30 @@ test('password reset sets a new password, invalidates the old one, and is single
   );
 });
 
+test('password reset revokes every existing session for that user', () => {
+  const store = freshStore();
+  const u = registerVerifiedUser(store, 'erin@example.com', 'OldPassw0rd!');
+  // A second session for the same account — the "other device" (or the thief).
+  const second = store.login(u.email, 'OldPassw0rd!');
+  assert.equal(second.ok, true);
+  // A bystander, to prove the revocation is scoped to one user_id.
+  const other = registerVerifiedUser(store, 'frank@example.com', 'CorrectHorse9!');
+
+  assert.equal(store.validateSession(u.token)?.id, u.id, 'session 1 valid before reset');
+  assert.equal(store.validateSession(second.token)?.id, u.id, 'session 2 valid before reset');
+
+  const reset = store.startPasswordReset(u.email);
+  assert.equal(store.completePasswordReset(reset.token, 'BrandN3wPass!').ok, true);
+
+  assert.equal(store.validateSession(u.token), null, 'session 1 revoked by the reset');
+  assert.equal(store.validateSession(second.token), null, 'session 2 revoked by the reset');
+  assert.equal(
+    store.validateSession(other.token)?.id,
+    other.id,
+    "another user's session must survive",
+  );
+});
+
 test('startPasswordReset does not reveal whether an email exists', () => {
   const store = freshStore();
   const res = store.startPasswordReset('nobody@example.com');

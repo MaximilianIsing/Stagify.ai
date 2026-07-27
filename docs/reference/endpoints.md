@@ -132,7 +132,7 @@ three buckets — keep `robots.txt` and the canonical/sitemap in sync when addin
 | `GET` | `/api/auth/me` | **Auth:** valid session. Returns `{ user }` (public user shape, including `dailyGenerationsUsed` / `dailyGenerationLimit` for free tier). `401` if not signed in (`AUTH_REQUIRED`). |
 | `POST` | `/api/auth/logout` | **Body (optional):** `authToken`. **Or** `Authorization: Bearer` token. Invalidates the session. Returns `{ success: true }`. |
 | `POST` | `/api/auth/forgot-password` | **Body:** `{ email }`. If account exists and email is configured, sends reset link; various `{ ok, emailSent, message }` or `503/502` if email not configured. |
-| `POST` | `/api/auth/reset-password` | **Body:** `{ token, password }`. Completes reset. Returns `{ ok: true }` or `400`. |
+| `POST` | `/api/auth/reset-password` | **Body:** `{ token, password }`. Completes reset and **revokes every live session for the account** (all devices signed out; no new session is minted, so the client goes to the login page). Returns `{ ok: true }` or `400`. |
 
 ---
 
