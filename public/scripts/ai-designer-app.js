@@ -17,6 +17,7 @@ import { createChatMessages } from './ai-designer/chat-messages.js';
 import { createThumbnailStrip } from './ai-designer/thumbnail-strip.js';
 import { createFileIntake } from './ai-designer/file-intake.js';
 import { createChatResponse } from './ai-designer/chat-response.js';
+import { fetchWelcomeMessage } from './ai-designer/welcome.js';
 
       const chatMessages = document.getElementById('chat-messages');
       const chatInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('chat-input'));
@@ -162,20 +163,22 @@ import { createChatResponse } from './ai-designer/chat-response.js';
           localStorage.setItem('userId', userId);
           
           const tok = window.StagifyAuth && window.StagifyAuth.getToken();
-          const q = new URLSearchParams({ userId: userId });
-          if (tok) q.set('authToken', tok);
-          const response = await fetch(`/api/welcome-message?${q}`);
-          const data = await response.json();
-          
+          // Token goes in the Authorization header, never a query param — see the
+          // header comment in ai-designer/welcome.js for why this endpoint was dead.
+          const greeting = await fetchWelcomeMessage(tok, {
+            warn: (m) => console.warn(m),
+          });
+
           // Remove typing indicator
           removeTypingIndicator(typingId);
-          
+
           {
             // Always greet; fall back to a built-in message if the API is empty
-            addMessage('assistant', data.message || defaultWelcomeMessage());
-            
+            const message = greeting || defaultWelcomeMessage();
+            addMessage('assistant', message);
+
             // Add to conversation history
-            conversationHistory.push({ role: 'assistant', content: data.message || defaultWelcomeMessage() });
+            conversationHistory.push({ role: 'assistant', content: message });
           }
         } catch (error) {
           console.error('Error loading welcome message:', error);
