@@ -36,6 +36,7 @@ export function createStageMaskEditor(deps) {
       const brushSizeLabel = $('#stage-mask-brush-size');
       const promptInput = $('#stage-mask-prompt');
       const cancelBtn = $('#stage-mask-cancel');
+      const closeBtn = $('#stage-mask-close');
       const clearBtn = $('#stage-mask-clear');
       const submitBtn = $('#stage-mask-submit');
       const brushToolBtn = $('#stage-mask-brush-btn');
@@ -566,6 +567,10 @@ export function createStageMaskEditor(deps) {
       if (promptInput) promptInput.addEventListener('input', updateSubmitState);
       if (clearBtn) clearBtn.addEventListener('click', clearDraw);
       if (cancelBtn) cancelBtn.addEventListener('click', closeEditor);
+      // The header X. Not part of setControlsDisabled(), so it stays live during a
+      // run — guard it the way the backdrop and Escape are, and never leave it
+      // unwired: it is the control most people reach for first.
+      if (closeBtn) closeBtn.addEventListener('click', () => { if (phase !== 'loading') closeEditor(); });
       if (brushToolBtn) brushToolBtn.addEventListener('click', () => setTool('brush'));
       if (eraseToolBtn) eraseToolBtn.addEventListener('click', () => setTool('erase'));
       // Accept a single reference file from either the picker or a drop: validate

@@ -87,4 +87,19 @@ test.describe('Main tool — mask editor Apply Edit gate', () => {
     await expect(page.locator('#stage-mask-modal')).toHaveClass(/active/);
     await expect(page.locator('#stage-mask-submit')).toBeDisabled();
   });
+
+  // The header X had no click listener at all — only Cancel, the backdrop and
+  // Escape closed the editor. Cover every dismissal path so a dead control is
+  // caught here rather than by a user.
+  for (const [name, dismiss] of [
+    ['the X button', (page) => page.locator('#stage-mask-close').click()],
+    ['Cancel', (page) => page.locator('#stage-mask-cancel').click()],
+    ['Escape', (page) => page.keyboard.press('Escape')],
+  ]) {
+    test(`closes on ${name}`, async ({ page }) => {
+      await openMaskEditor(page);
+      await dismiss(page);
+      await expect(page.locator('#stage-mask-modal')).not.toHaveClass(/active/);
+    });
+  }
 });
