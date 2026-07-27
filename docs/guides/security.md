@@ -17,7 +17,8 @@ Backed by SQLite (`auth-store.db`, [`lib/data/auth-store.js`](../../lib/data/aut
   verify attempts** before it's invalidated.
 - **Password reset:** **single-use** tokens, hashed at rest like sessions and expiring
   after an hour; the "forgot password" flow is **non-enumerating** (it does not reveal
-  whether an email exists).
+  whether an email exists). Completing a reset **revokes every live session** for that
+  account — see [Password reset revokes sessions](#password-reset-revokes-sessions).
 - **Google Sign-In:** ID tokens are verified with `google-auth-library`
   (`OAuth2Client`) against `GOOGLE_CLIENT_ID`. Disabled on staging (see below).
 - **Staging requires sign-in:** `POST /api/process-image` returns `401 AUTH_REQUIRED`
@@ -131,6 +132,37 @@ Notes for anyone touching this:
 - Enforced by `test/data/auth-store-sqlite.test.js` (raw tokens never appear in
   the tables, a stored digest is not replayable, the migration keeps existing
   sessions valid and is idempotent).
+
+### Password reset revokes sessions
+
+`completePasswordReset` ([`lib/data/auth-store.js`](../../lib/data/auth-store.js))
+rotates the scrypt hash, drops the account's reset tokens, **and deletes every row in
+`sessions` for that `user_id`** — all in one transaction, so the new password and the
+revocation can never diverge.
+
+The revocation is the point of the flow, not a courtesy. A reset is what someone does
+when they believe another party is in their account, and a session token is a bearer
+credential with a 30-day life: rotating the password alone would leave a stolen cookie
+working for up to a month after the one action the user was told to take. Sessions are
+plain DB rows re-read by `validateSession` on every request — there is no in-memory
+cache — so the delete takes effect immediately, across every device and process.
+
+Notes for anyone touching this:
+
+- **Signing the user out of their other devices is intended**, not a regression to
+  paper over. `POST /api/auth/reset-password` returns a bare `{ ok: true }` and mints
+  no session, so the user is already headed to the login page.
+- **`dropSessionsForUser` is keyed by `user_id`, so it does not hash its argument** —
+  unlike its neighbours in `session-tokens.js`, which all take raw tokens. That
+  asymmetry is correct; don't "fix" it by wrapping the id in `hashToken`.
+- Enforced by `test/data/auth-store.test.js` ("password reset revokes every existing
+  session for that user"): two sessions for the victim both die, and a third user's
+  session survives — that last assertion is what catches a `DELETE` that loses its
+  `WHERE user_id`.
+
+**Not done:** there is no "your password was changed" notification email, and the reset
+UI does not tell the user their other devices were signed out. The email is the useful
+complement here — it is how an account owner learns about an attacker-initiated reset.
 
 **Still open:** `endpoint_key` remains a single, non-rotating, process-wide
 secret with no per-admin identity and no audit trail, and it also guards the CSV

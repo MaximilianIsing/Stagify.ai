@@ -45,7 +45,9 @@ store factory. It began as the auth store, so the file is still named `auth-stor
 - **What's inside auth:** accounts (email, **scrypt-hashed + per-user-salted** passwords —
   never plaintext, Google `sub`, Stripe customer/subscription ids, Pro flag), 30-day
   sessions and single-use password-reset tokens (both **SHA-256 hashed at rest** —
-  see [`lib/data/session-tokens.js`](../../lib/data/session-tokens.js)), 15-minute
+  see [`lib/data/session-tokens.js`](../../lib/data/session-tokens.js); a completed
+  password reset deletes every `sessions` row for that user in the same transaction as
+  the hash rotation), 15-minute
   registration codes, and the
   **free-tier daily generation counter** (`usage_day` / `usage_count` on `users`, which
   enforces the 50-generations/day free cap). The separate `mobile_ip_usage` table is a
