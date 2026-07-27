@@ -27,6 +27,9 @@ store factory. It began as the auth store, so the file is still named `auth-stor
 - **Tables:**
   - Auth ([`lib/data/auth-store.js`](../../lib/data/auth-store.js)): `users`, `sessions`,
     `mobile_ip_usage` *(dormant — see below)*, `password_reset_tokens`, `pending_registrations`.
+    The two token tables are owned by
+    [`lib/data/session-tokens.js`](../../lib/data/session-tokens.js), which hashes every
+    token on the way in and out — the auth store never writes them directly.
   - `enterprise_domains` ([`lib/data/enterprise-store.js`](../../lib/data/enterprise-store.js)) —
     one row per domain: activation + metered-usage state, kept in sync with Stripe.
     A row here is a **blanket `pro` grant to every address under that domain**, so
@@ -41,7 +44,9 @@ store factory. It began as the auth store, so the file is still named `auth-stor
   - `meta` — key/value bookkeeping (e.g. the one-time-import guards).
 - **What's inside auth:** accounts (email, **scrypt-hashed + per-user-salted** passwords —
   never plaintext, Google `sub`, Stripe customer/subscription ids, Pro flag), 30-day
-  sessions, 15-minute registration codes, single-use password-reset tokens, and the
+  sessions and single-use password-reset tokens (both **SHA-256 hashed at rest** —
+  see [`lib/data/session-tokens.js`](../../lib/data/session-tokens.js)), 15-minute
+  registration codes, and the
   **free-tier daily generation counter** (`usage_day` / `usage_count` on `users`, which
   enforces the 50-generations/day free cap). The separate `mobile_ip_usage` table is a
   **dormant legacy** table: no route writes to it anymore (staging now requires sign-in),
@@ -61,8 +66,10 @@ store factory. It began as the auth store, so the file is still named `auth-stor
   into SQLite — guarded so it never re-runs — then leaves the JSON as a **frozen
   fallback**. Those files are no longer the source of truth.
 
-> **Sensitive.** `auth-store.db` holds password hashes, live session tokens, and
-> billing identifiers. Treat backups and access accordingly.
+> **Sensitive.** `auth-store.db` holds password hashes, live sessions, and billing
+> identifiers. Session and reset tokens are stored as SHA-256 digests
+> ([`lib/data/session-tokens.js`](../../lib/data/session-tokens.js)), so a leaked
+> copy is not a set of usable logins — but treat backups and access accordingly.
 
 ## Legacy JSON fallbacks
 

@@ -79,6 +79,13 @@ memories, uptime — plus its `-wal`/`-shm` sidecars), the CSV logs, `hosted-ima
 the frozen legacy `*.json` fallbacks — lives on the **1 GB `/data` disk**, which survives
 deploys and restarts. Locally it's `./data`. Full inventory: [`data-stores.md`](../reference/data-stores.md).
 
+**Schema/data migrations run on boot, not as a deploy step.** Each store fixes up its own
+rows when it opens (the one-time legacy-JSON import; the in-place token hashing in
+[`session-tokens.js`](../../lib/data/session-tokens.js)). They are written to be
+idempotent and non-destructive, so a redeploy, a rollback, or a roll-forward can each run
+them again safely — the token migration in particular rewrites rows in place, so **nobody
+is signed out by a deploy**. Nothing to run by hand from the Render shell.
+
 ### Backups & disaster recovery (Litestream → Cloudflare R2)
 
 The SQLite database is **continuously replicated off-disk** to a Cloudflare R2 bucket

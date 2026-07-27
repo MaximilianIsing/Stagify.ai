@@ -5,10 +5,12 @@
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createAuthStore } from '../../lib/data/auth-store.js';
+import { openDb, dbPathFor } from '../../lib/data/db.js';
 
 const tempDirs = [];
 const openStores = [];
@@ -72,6 +74,10 @@ test('imports a legacy auth-store.json on first open, preserving unknown fields'
   assert.equal(u.stripeCustomerId, 'cus_1');
   assert.equal(u.referralSource, 'twitter', 'unknown legacy field preserved through the migration');
   assert.equal(store.validateSession('tok_legacy')?.id, 'u_legacy', 'the legacy session was imported');
+  assert.ok(
+    !Object.keys(store.exportStore().sessions).includes('tok_legacy'),
+    'and hashed on the way in — the legacy JSON holds raw tokens, the DB must not'
+  );
 });
 
 test('the legacy import is one-time — a restart never clobbers live SQLite data', () => {
@@ -192,4 +198,88 @@ test('importStore replaces all prior state (transactional, not a merge)', () => 
   assert.equal(s.getUserCount(), 1, 'replace, not merge');
   assert.equal(s.findUserByEmail('a@x.com'), null, 'the prior user was removed');
   assert.equal(s.findUserByEmail('b@x.com').plan, 'pro');
+});
+
+// ---- tokens at rest ---------------------------------------------------------
+// Session and reset tokens are bearer credentials: a raw one read out of the DB
+// file (a stolen /data volume, a Litestream restore, the frozen auth-store.json)
+// is an account takeover with no cracking step. Only digests may be stored.
+
+const sha256 = (s) => `sha256$${crypto.createHash('sha256').update(s).digest('hex')}`;
+
+test('session and reset tokens are stored hashed, never in the clear', () => {
+  const s = storeAt(tempDir());
+  const reg = verifyUser(s, 'atrest@example.com');
+  const reset = s.startPasswordReset('atrest@example.com');
+
+  const snap = s.exportStore();
+  const sessionKeys = Object.keys(snap.sessions);
+  const resetKeys = Object.keys(snap.passwordResetTokens);
+  assert.equal(sessionKeys.length, 1, 'precondition: the signup left a live session');
+  assert.equal(resetKeys.length, 1, 'precondition: a reset token was issued');
+
+  assert.ok(!sessionKeys.includes(reg.token), 'the raw session token is not a stored key');
+  assert.ok(!resetKeys.includes(reset.token), 'the raw reset token is not a stored key');
+  assert.equal(sessionKeys[0], sha256(reg.token), 'the session row is keyed by the digest');
+  assert.equal(resetKeys[0], sha256(reset.token), 'the reset row is keyed by the digest');
+
+  // Nothing about the surface behavior changes — both tokens still work.
+  assert.equal(s.validateSession(reg.token)?.email, 'atrest@example.com');
+  assert.equal(s.completePasswordReset(reset.token, 'BrandNewPass9!').ok, true);
+  assert.equal(s.login('atrest@example.com', 'BrandNewPass9!').ok, true);
+});
+
+test('a forged digest is not a session — only the raw token authenticates', () => {
+  const s = storeAt(tempDir());
+  const reg = verifyUser(s, 'forge@example.com');
+  // Someone who read the DB holds the stored value. Presenting it must fail: the
+  // lookup hashes what it is given, so the digest hashes to something else.
+  assert.equal(s.validateSession(sha256(reg.token)), null, 'the stored value is not replayable');
+  assert.equal(s.validateSession(reg.token)?.email, 'forge@example.com', 'the real token still works');
+});
+
+test('logout and expiry still find the row through the hash', () => {
+  const s = storeAt(tempDir());
+  const reg = verifyUser(s, 'bye@example.com');
+  s.logout(reg.token);
+  assert.equal(s.validateSession(reg.token), null, 'logout deleted the hashed row');
+  assert.equal(Object.keys(s.exportStore().sessions).length, 0, 'no orphan row left behind');
+});
+
+test('tokens written before hashing are migrated on open, without signing anyone out', () => {
+  const dir = tempDir();
+  const s1 = storeAt(dir);
+  const reg = verifyUser(s1, 'preexisting@example.com');
+  const reset = s1.startPasswordReset('preexisting@example.com');
+  s1.close();
+
+  // Rewrite both rows the way the pre-hashing code stored them: raw token as the
+  // primary key. This is what a live production DB looks like at deploy time.
+  const raw = openDb(dbPathFor(dir));
+  raw.prepare('UPDATE sessions SET token = ?').run(reg.token);
+  raw.prepare('UPDATE password_reset_tokens SET token = ?').run(reset.token);
+  raw.close();
+
+  const s2 = storeAt(dir); // opening runs the migration
+  const snap = s2.exportStore();
+  assert.equal(Object.keys(snap.sessions)[0], sha256(reg.token), 'the session row was hashed in place');
+  assert.equal(Object.keys(snap.passwordResetTokens)[0], sha256(reset.token), 'the reset row too');
+  assert.equal(
+    s2.validateSession(reg.token)?.email,
+    'preexisting@example.com',
+    'the cookie the user already holds still works — nobody is signed out by the migration'
+  );
+  assert.equal(s2.completePasswordReset(reset.token, 'AnotherPass9!').ok, true, 'an in-flight reset link still works');
+});
+
+test('the migration is idempotent — reopening does not double-hash', () => {
+  const dir = tempDir();
+  const s1 = storeAt(dir);
+  const reg = verifyUser(s1, 'twice@example.com');
+  const first = s1.exportStore().sessions;
+  s1.close();
+
+  const s2 = storeAt(dir); // migration runs again over already-hashed rows
+  assert.deepEqual(s2.exportStore().sessions, first, 'already-hashed rows were left alone');
+  assert.equal(s2.validateSession(reg.token)?.email, 'twice@example.com', 'the session survived a second open');
 });
