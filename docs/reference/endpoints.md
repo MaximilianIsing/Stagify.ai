@@ -92,7 +92,30 @@ three buckets — keep `robots.txt` and the canonical/sitemap in sync when addin
 | `POST` | `/api/billing/stripe-webhook` | **Body:** raw JSON (must **not** go through `express.json()`; uses `express.raw`). **Header:** `stripe-signature` for verification. If Stripe is not configured: `503`. Forwards to internal `handleStripeEvent` (subscription lifecycle, etc.). Responds `{ received: true }` on success. |
 | `POST` | `/api/billing/customer-portal` | **Auth:** signed-in user with a Stripe customer id. **Body:** JSON (can be empty). Returns `{ url }` to Stripe Billing Portal, or `503` if Stripe off, `401` if not signed in, `400` if no `stripeCustomerId` on the user. |
 | `GET` | `/api/enterprise/config` | Public. Returns `{ publishableKey }` (Stripe publishable key) for the enterprise checkout page; `''` if Stripe isn't configured. |
-| `POST` | `/api/enterprise/create-checkout` | **Enterprise self-serve checkout** (from `enterprise.html`). **Body (JSON):** `{ domain, companyName, contactEmail, contactPhone? }`. Validates the fields, and creates a Stripe **subscription** Checkout Session for the metered enterprise price (`ENTERPRISE_PRICE_ID`), returning `{ url }` to redirect to. **Errors:** `503` if Stripe or the price id isn't configured, `400` on invalid input, `409` if the domain already has an active/trialing plan. |
+| `POST` | `/api/enterprise/create-checkout` | **Enterprise self-serve checkout** (from `enterprise.html`). **Body (JSON):** `{ domain, companyName, contactEmail, contactPhone? }`. Validates the fields, and creates a Stripe **subscription** Checkout Session for the metered enterprise price (`ENTERPRISE_PRICE_ID`), returning `{ url }` to redirect to. **Errors:** `503` if Stripe or the price id isn't configured, `400` on invalid input, `400` `PUBLIC_EMAIL_DOMAIN` if `domain` is a public mailbox provider (see below), `409` if the domain already has an active/trialing plan. |
+
+> **Public email providers can't be registered as enterprise domains.** An enterprise
+> domain is a *blanket grant* — `isActiveDomain()` upgrades every account whose email
+> ends in it to `pro` — so selling `gmail.com` would hand Stagify+ to the whole
+> internet for one seat. The domain list and matcher live in
+> [`lib/data/public-email-domains.js`](../../lib/data/public-email-domains.js) (free
+> consumer providers + common disposable services), and the refusal carries the stable
+> code **`PUBLIC_EMAIL_DOMAIN`** so the page can localize it
+> (`enterprise.errors.publicDomain`). Matching normalizes first, so `@GMAIL.com`, a
+> whole address, a trailing dot, and subdomains such as `mail.gmail.com` are all
+> caught. Adding a provider is a one-line edit to that file.
+>
+> The gate is enforced in **three** places, and the third is the one to keep:
+> the checkout route above; `activateDomain()` (refuses to write the row, so a
+> replayed webhook or a subscription created straight in the Stripe dashboard can't
+> sneak one in); and **`isActiveDomain()`** itself. That last check looks redundant
+> next to the write-path guard but is not — it is the single chokepoint every plan
+> upgrade passes through, so it also neutralizes rows that arrived some other way (the
+> legacy `enterprise-domains.json` import, `importStore()`, a hand-edited DB). Don't
+> remove it as a duplicate.
+>
+> **Scope:** enterprise registration only. Ordinary signup (`/api/auth/register`)
+> must keep accepting gmail/yahoo/outlook addresses — never wire this list into auth.
 
 ---
 

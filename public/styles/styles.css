@@ -2546,6 +2546,16 @@ html {
 .staging-limit-viewer__inner {
   max-width:28rem
 }
+/* Either viewer panel (rejection or daily limit) blankets the image, but the
+   FABs sit above it (z-index 12 vs 6) and would float over the message —
+   the paint-brush edits a photo that is being pulled back out. Pull them
+   out of the layer entirely (display:none, so they also leave the tab order)
+   for as long as a panel is up. Done in CSS with no JS to keep in sync:
+   `updateMaskButtonVisibility` / `updateEmptyRoomButtonVisibility` run from
+   eight call sites and would each need the same guard. */
+.image-viewer:has(> .staging-limit-viewer:not(.hidden)) .stage-mask-fab {
+  display:none
+}
 .staging-limit-viewer__text {
   margin:0 0 14px;
   font-size:15px;

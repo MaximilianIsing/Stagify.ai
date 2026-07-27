@@ -134,7 +134,13 @@
             });
             var data = await res.json();
             if (!res.ok) {
-              showError(data.error || t('enterprise.errors.generic', 'Something went wrong. Please try again.'));
+              // The public-provider refusal comes back as a stable code (the
+              // domain list lives server-side only, so there is nothing to keep
+              // in sync here); everything else falls back to the server prose.
+              var msg = data.code === 'PUBLIC_EMAIL_DOMAIN'
+                ? t('enterprise.errors.publicDomain', data.error)
+                : data.error;
+              showError(msg || t('enterprise.errors.generic', 'Something went wrong. Please try again.'));
               resetSubmit();
               return;
             }

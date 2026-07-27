@@ -28,6 +28,37 @@ Backed by SQLite (`auth-store.db`, [`lib/data/auth-store.js`](../../lib/data/aut
   `429 DAILY_LIMIT_REACHED`. Pro accounts are uncapped; enterprise-domain users are
   metered and billed separately.
 
+## Enterprise domains are a blanket grant
+
+An active enterprise domain upgrades **every** account whose email ends in it to
+`pro` (`enhanceUserWithEnterprise` → `enterpriseStore.isActiveDomain`). That makes the
+domain field on `enterprise.html` a privilege-escalation surface, not just a form
+field: registering `gmail.com` would hand Stagify+ to a large slice of the internet
+for the price of one seat.
+
+So **public mailbox providers cannot be registered** — free consumer providers and
+common disposable services, listed with their matcher in
+[`lib/data/public-email-domains.js`](../../lib/data/public-email-domains.js). Input is
+normalized before matching (case, an `@` prefix, a full address, a trailing dot, a
+pasted URL) and subdomains of a listed provider match too, since the buyer controls
+neither `gmail.com` nor `mail.gmail.com`.
+
+Enforced at three layers, deliberately overlapping:
+
+1. `POST /api/enterprise/create-checkout` — `400` with code `PUBLIC_EMAIL_DOMAIN`,
+   before Stripe is contacted at all.
+2. `activateDomain()` — refuses to write the row, so a replayed webhook, hand-edited
+   session metadata, or a subscription created directly in the Stripe dashboard
+   cannot bypass the route.
+3. `isActiveDomain()` — re-checks on **read**. This is the important one: it is the
+   single chokepoint every plan upgrade passes through, so it neutralizes a bad row
+   regardless of how it got there (the legacy `enterprise-domains.json` import,
+   `importStore()` during a restore, a hand-edited DB). It looks redundant next to
+   layer 2 — it isn't, and it should not be "simplified" away.
+
+**Scope:** this list gates enterprise registration only. Ordinary signup must keep
+accepting gmail/yahoo/outlook addresses — do not wire it into the auth routes.
+
 ## Admin / log-export endpoints
 
 The log and data-export routes (`/promptlogs`, `/authstore`, `/api/getpro`, etc.) are

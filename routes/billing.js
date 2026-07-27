@@ -8,6 +8,11 @@ import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
 import { logger } from '../lib/logger.js';
+import {
+  isPublicEmailDomain,
+  PUBLIC_EMAIL_DOMAIN_CODE,
+  PUBLIC_EMAIL_DOMAIN_MESSAGE,
+} from '../lib/data/public-email-domains.js';
 
 /**
  * Build the billing & enterprise router (Stripe webhook, customer portal,
@@ -122,6 +127,12 @@ export default function createBillingRouter(deps) {
         return sendError(res, 400, 'A valid domain is required (e.g. company.com)');
       }
       const cleanDomain = domain.trim().toLowerCase().replace(/^@/, '');
+      // An enterprise domain is a blanket grant to every address under it, so a
+      // public mailbox provider is never a legitimate purchase. Rejected before
+      // Stripe is involved; the browser localizes the `code`.
+      if (isPublicEmailDomain(cleanDomain)) {
+        return sendError(res, 400, PUBLIC_EMAIL_DOMAIN_MESSAGE, { code: PUBLIC_EMAIL_DOMAIN_CODE });
+      }
       if (!contactEmail || typeof contactEmail !== 'string' || !contactEmail.includes('@')) {
         return sendError(res, 400, 'A valid contact email is required');
       }

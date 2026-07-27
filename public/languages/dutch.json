@@ -1134,6 +1134,7 @@
       "domain": "Voer een geldig domein in (bijv. company.com).",
       "company": "Voer je bedrijfsnaam in.",
       "email": "Voer een geldig contact-e-mailadres in.",
+      "publicDomain": "Stagify Enterprise vereist het domein van je eigen bedrijf. Openbare e-mailproviders zoals gmail.com of yahoo.com kunnen niet worden geregistreerd.",
       "generic": "Er is iets misgegaan. Probeer het opnieuw.",
       "unexpected": "Onverwacht antwoord. Probeer het opnieuw.",
       "network": "Netwerkfout. Controleer je verbinding en probeer het opnieuw."

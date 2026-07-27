@@ -1134,6 +1134,7 @@
       "domain": "请输入有效的域名（例如 company.com）。",
       "company": "请输入您的公司名称。",
       "email": "请输入有效的联系邮箱。",
+      "publicDomain": "Stagify Enterprise 需要使用贵公司自有的域名。gmail.com、yahoo.com 等公共邮箱域名无法注册。",
       "generic": "出了点问题。请重试。",
       "unexpected": "意外的响应。请重试。",
       "network": "网络错误。请检查您的连接后重试。"

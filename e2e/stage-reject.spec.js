@@ -56,6 +56,12 @@ test.describe('Main tool — stageability reject', () => {
     await expect(errorText).toHaveText(PACK_COPY);
     await expect(page.locator('#staging-error-viewer')).toBeVisible();
     await expect(errorText).not.toHaveText(SERVER_ENGLISH);
+
+    // The paint-brush FAB paints above the panel (z-index 12 vs 6) and would
+    // float over the message, offering to edit a photo the app is rejecting.
+    // The approved-upload test below shows it visible for this same pro session,
+    // so this assertion cannot pass just because the FAB is never there.
+    await expect(page.locator('#mask-edit-btn')).toBeHidden();
   });
 
   test('an approved upload shows no rejection error', async ({ page }) => {
@@ -83,5 +89,8 @@ test.describe('Main tool — stageability reject', () => {
 
     await expect(page.locator('#stage-preview')).toBeVisible();
     await expect(page.locator('#staging-error-viewer')).toBeHidden();
+    // Pro session + a loaded photo: the FAB belongs on screen here. This is what
+    // makes the hidden-FAB assertion in the reject test above non-vacuous.
+    await expect(page.locator('#mask-edit-btn')).toBeVisible();
   });
 });
