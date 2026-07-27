@@ -30,6 +30,7 @@ const CRITICAL_ROUTES = [
   ['GET', '/getpro'],
   ['GET', '/promptlogs'],
   ['GET', '/authstore'],
+  ['GET', '/api/admin/ping'], // the admin sign-in probe — losing it locks out /admin
   ['POST', '/api/auth/login'],
   ['POST', '/api/auth/register'],
   ['POST', '/api/getpro'],

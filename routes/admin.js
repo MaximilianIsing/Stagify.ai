@@ -110,12 +110,21 @@ router.delete('/api/hosted-images/:id', protectLogs, (req, res) => {
   return res.json({ ok: true });
 });
 
+// Cheap key check for the admin sign-in screen. It exists so the login probe does
+// NOT have to fetch a data endpoint just to learn whether the key is valid — the
+// old flow probed /authstore, pulling the whole user table on every sign-in.
+router.get('/api/admin/ping', protectLogs, (req, res) => {
+  return res.json({ ok: true });
+});
+
 router.get('/authstore', protectLogs, (req, res) => {
   try {
-    // Serve a LIVE snapshot rebuilt from SQLite in the legacy auth-store.json
-    // shape. This keeps the admin backup download working after the move off
-    // flat files, and the output is a valid rollback/re-import payload.
-    const snapshot = authStore.exportStore();
+    // REDACTED by design. This served exportStore() — password hashes, live
+    // session tokens, and password-reset tokens — behind nothing but the static
+    // process-wide endpoint key, so a single leak of that key was full account
+    // takeover for every user. The dashboard never read any of those fields.
+    // Backup/rollback is the SQLite file itself (Litestream → R2), not this route.
+    const snapshot = authStore.exportRedacted();
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Content-Disposition', 'inline; filename="auth-store.json"');
     res.send(JSON.stringify(snapshot, null, 2));

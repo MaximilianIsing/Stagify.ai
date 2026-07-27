@@ -226,7 +226,9 @@ import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
     errEl.classList.add('hidden');
     btn.disabled=true;btn.textContent='Verifying\u2026';
 
-    fetch('/authstore',{headers:{'X-Stagify-Endpoint-Key':k}}).then(function(r){
+    // Probe a no-payload endpoint, not a data one — validating the key should not
+    // pull down the user table (this used to hit /authstore).
+    fetch('/api/admin/ping',{headers:{'X-Stagify-Endpoint-Key':k}}).then(function(r){
       if(r.ok){
         _key=k;_sessionStart=Date.now();_loginAttempts=0;
         sessionStorage.setItem('adm_ts',String(_sessionStart));
