@@ -1,6 +1,6 @@
 // Per-account aggregation for the admin dashboard: when each user was last
 // active, the signup→activation→paid funnel, and cohort retention. Pure, no DOM;
-// unit-tested in test/admin-analytics-users.test.js.
+// unit-tested in test/frontend/admin/admin-analytics-users.test.js.
 //
 // Split from analytics.js because these all share one awkward property that the
 // time-series aggregators don't: **activity is recorded under two different

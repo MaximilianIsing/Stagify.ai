@@ -52,7 +52,7 @@ The entry resolves the page's DOM elements once, then constructs and wires the i
   they run under `node --test` with no browser shim. Example:
   [`scripts/app/helpers.js`](../../public/scripts/app/helpers.js) (`fillTemplate`,
   `dailyLimitMessage`, `roomDownloadSlug`, `dataURLToFile`, …), unit-tested in
-  [`test/app-helpers.test.js`](../../test/app-helpers.test.js).
+  [`test/frontend/app/app-helpers.test.js`](../../test/frontend/app/app-helpers.test.js).
 - **Shared stores** — cross-island state and persistence. Example: the Masking Studio's
   [`scripts/masking-studio/session-store.js`](../../public/scripts/masking-studio/session-store.js)
   owns the IndexedDB save/restore choreography for the whole studio.
@@ -138,7 +138,7 @@ Two things worth knowing before touching it:
   box still submits `removeFurniture=true`. The gate clears it and dispatches `change`,
   which is also what puts the variation slider back and hides the keep-furniture box.
 - **The rule is a pure function** (`removalAllowed(isPro, roomType)`) so it is unit-tested
-  without a DOM — [`test/remove-furniture-gate.test.js`](../../test/remove-furniture-gate.test.js).
+  without a DOM — [`test/frontend/app/remove-furniture-gate.test.js`](../../test/frontend/app/remove-furniture-gate.test.js).
   The browser-level wiring is covered by
   [`e2e/stage-room-type.spec.js`](../../e2e/stage-room-type.spec.js).
 
@@ -221,7 +221,7 @@ Five rules worth knowing before touching it:
 Sizes are multipliers of what the model actually produced. Upscaling is plain
 interpolation and adds no real detail, so rows state their true pixels rather than
 implying otherwise. Pure logic covered by
-[`test/download-menu.test.js`](../../test/download-menu.test.js).
+[`test/frontend/app/download-menu.test.js`](../../test/frontend/app/download-menu.test.js).
 
 ### How to extend it
 

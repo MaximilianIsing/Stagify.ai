@@ -26,7 +26,7 @@ This document describes HTTP endpoints for the Stagify server. Routes are regist
 | `GET` | `/privacy` | Serves `public/privacy.html`. |
 | `GET` | `/blog` | **301-redirects to `/blog/`** — `express.static` runs before the router and `public/blog/` is a real directory, so a `router.get('/blog')` would be dead code (don't add one). |
 | `GET` | `/blog/` | Serves `public/blog/index.html` — the blog hub (static directory index). Canonical hub URL. |
-| `GET` | `/blog/<slug>` | Serves an article via an **explicit clean, extensionless route** in `public.js` — e.g. `/blog/is-virtual-staging-allowed-on-the-mls`, `/blog/masking-studio-and-ai-designer`, `/blog/does-virtual-staging-help-sell-homes`. Route registration + sitemap sync are guarded by `test/public-endpoints.test.js`. |
+| `GET` | `/blog/<slug>` | Serves an article via an **explicit clean, extensionless route** in `public.js` — e.g. `/blog/is-virtual-staging-allowed-on-the-mls`, `/blog/masking-studio-and-ai-designer`, `/blog/does-virtual-staging-help-sell-homes`. Route registration + sitemap sync are guarded by `test/server/public-endpoints.test.js`. |
 | `GET` | `/i/:id` | **Public hosted-image serve.** `:id` is a 16–64-char hex id minted by `POST /api/host-image`. Streams the stored image with `Cache-Control: public, max-age=31536000, immutable` and `X-Content-Type-Options: nosniff`. `404` (plain text) for an invalid or unknown id. |
 | `GET` | `/email/logo.png` | Email logo **and open-tracking pixel.** With `?email=<addr>`, logs an email open (only when the request looks like a genuine email-client fetch) to `email_open_logs.csv`, then serves the logo PNG with `Cache-Control: no-store`. |
 | `GET` | `/bimi-logo.svg`, `/logo-full.png` | Brand assets served with explicit content types (BIMI SVG and full-logo PNG). |
@@ -72,7 +72,7 @@ three buckets — keep `robots.txt` and the canonical/sitemap in sync when addin
 > *After payment* setting in the **Stripe dashboard, not in this repo**, and the same
 > `https://stagify.ai/plus-welcome.html` URL is registered as the Google Ads conversion
 > page. Renaming or removing `plus-welcome.html` therefore silently breaks the
-> post-checkout hand-off and ad conversion tracking (guarded by `test/plus-welcome.test.js`).
+> post-checkout hand-off and ad conversion tracking (guarded by `test/frontend/plus-welcome.test.js`).
 
 ---
 

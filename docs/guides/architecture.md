@@ -341,7 +341,7 @@ lost on both:
 wardrobe and dresser cannot be changed by the student, so a staging that restyles them is
 useless. Those rules sit in `ROOM_TYPE_CONSTRAINTS` at step 4 — after the removal clause,
 and applied to every style — and say so explicitly ("overrides every other instruction
-above"). [`test/prompts.test.js`](../../test/prompts.test.js) pins both the custom-style
+above"). [`test/staging/prompts.test.js`](../../test/staging/prompts.test.js) pins both the custom-style
 and remove-furniture cases, including the block **ordering**.
 
 ### Adding a room type
@@ -364,9 +364,9 @@ prompt, or an English label, not an error:
    controls the visible label. See [`frontend.md`](frontend.md#the-custom-select).
 5. **All 11 language packs** — `roomTypes.<camelCaseKey>` in every
    `public/languages/*.json`.
-6. **Tests** — [`test/room-types-i18n.test.js`](../../test/room-types-i18n.test.js) already
+6. **Tests** — [`test/i18n/room-types-i18n.test.js`](../../test/i18n/room-types-i18n.test.js) already
    guards steps 1, 3, 4 and 5 against each other, so a missed step fails the build. Add
-   prompt-behavior tests to `test/prompts.test.js` if you added step 2.
+   prompt-behavior tests to `test/staging/prompts.test.js` if you added step 2.
 
 No rebuild is needed (`build-i18n-seo.js` covers locales and pages, not room types).
 

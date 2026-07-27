@@ -87,7 +87,9 @@ This README is the entry point for the `docs/` folder. See also:
 │   └── chat/                # chat-pipeline (wiring) + memory/image-retrieval/image-dispatch/staging/response dispatch, request-prep, upload-prep, welcome-message-handler, history, routing, sse
 ├── public/                  # Static frontend (HTML pages, scripts, styles, assets, i18n)
 ├── data/                    # Runtime state: one SQLite DB (all structured state) + CSV logs (see Data & persistence)
-├── test/                    # `node --test` suite (unit + smoke + route inventory)
+├── test/                    # `node --test` suite, in subfolders mirroring the source tree
+│                            #   (server/ routes/ chat/ staging/ image/ data/ services/
+│                            #    http/ config/ i18n/ frontend/) + helpers/ harnesses
 ├── e2e/                     # Playwright browser smokes of the two studios (npm run test:e2e)
 ├── ds-bundle/               # design-system bundle (generated)
 ├── to-build/                # source masters: media-png, OG_Image, demos (see to-build/README.md)
@@ -276,8 +278,11 @@ Full detail in [`guides/testing.md`](guides/testing.md):
   JSDoc (`checkJs`, **no build step**, **zero `@ts-nocheck`**); a type error blocks the
   deploy like a red test.
 - **Unit / integration** — the built-in Node test runner over `test/**/*.test.js`, with
-  shared setup under `test/helpers/`. Fast, hermetic, no real keys or paid API calls.
-  `route-inventory.test.js` boots the server and asserts every critical route is still
+  shared setup under `test/helpers/`. Fast, hermetic, no real keys or paid API calls. Specs
+  are grouped into **subfolders mirroring the source tree** (`test/data/` ↔ `lib/data/`,
+  `test/routes/` ↔ `routes/`, `test/frontend/app/` ↔ `public/scripts/app/`, …); the glob
+  picks up any depth, so a new folder needs no registration.
+  `test/server/route-inventory.test.js` boots the server and asserts every critical route is still
   registered — a safety net for the route extraction.
 - **End-to-end** — [Playwright](https://playwright.dev) specs under `e2e/` drive the real
   studios in a real Chromium with every `/api/*` call mocked (no AI, no cost). Covers the

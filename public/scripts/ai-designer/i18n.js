@@ -3,7 +3,7 @@
 // Thin wrappers over the classic window.LanguageSystem loader, lifted verbatim
 // from the entry (scripts/ai-designer-app.js). `lang` guards its access with
 // try/catch; `getPdfAlt` reads window.LanguageSystem bare, so node tests must
-// shim globalThis.window first (see test/ai-designer-i18n.test.js).
+// shim globalThis.window first (see test/frontend/ai-designer/ai-designer-i18n.test.js).
 
       // Small translation helper with a safe fallback. getText() returns the
       // placeholder "Loading..." (or echoes the key) for keys that aren't in the

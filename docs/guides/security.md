@@ -90,7 +90,7 @@ The body parsers are the cheapest DoS surface, so they're **scoped**, not global
   `/api/segment`, `/api/validate-image`, `/api/bug-report`) get **25 MB**. This matters
   because the parser runs before the per-route limiters and `JSON.parse` is
   **synchronous** — a large body on any path would otherwise buffer + block the event
-  loop. Guarded by [`test/json-body-limit.test.js`](../../test/json-body-limit.test.js).
+  loop. Guarded by [`test/server/json-body-limit.test.js`](../../test/server/json-body-limit.test.js).
 - **Multipart uploads (`multer`, memory storage):** each file is buffered whole in
   RAM, and `.fields()`/`.array()` multiply the cap by the file count, so the caps are
   kept tight:
@@ -99,7 +99,7 @@ The body parsers are the cheapest DoS surface, so they're **scoped**, not global
   - `host-image`: **25 MB**
   - Over-cap uploads return a clean **413** (the multer error handler sits *after* the
     routers — a subtle bit; if moved before them it silently regresses to 500).
-    Guarded by [`test/upload-limits.test.js`](../../test/upload-limits.test.js).
+    Guarded by [`test/server/upload-limits.test.js`](../../test/server/upload-limits.test.js).
 
 > Photos are downscaled to 1920×1080 after receipt, so these caps are already far
 > above any real upload. If a legit user hits a 413, raise the specific cap — don't
@@ -117,7 +117,7 @@ prevent that information leak:
 - A **final catch-all** in `server.js` (after the Sentry hook) returns a generic
   `{ error: 'Internal server error' }` `500` — the stack trace is logged server-side (and
   captured by Sentry), never sent to the client. Guarded by
-  [`test/async-router.test.js`](../../test/async-router.test.js).
+  [`test/http/async-router.test.js`](../../test/http/async-router.test.js).
 
 ## Transport & headers
 

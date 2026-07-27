@@ -1,6 +1,6 @@
 // Pure data aggregation for the admin dashboard charts. No DOM, no app state —
 // every export is a plain function over the parsed CSV rows / auth-store users,
-// so the whole module is unit-tested in test/admin-analytics.test.js.
+// so the whole module is unit-tested in test/frontend/admin/admin-analytics.test.js.
 //
 // Two things here are deliberate and easy to get wrong if you touch them:
 //

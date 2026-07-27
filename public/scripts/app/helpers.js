@@ -1,7 +1,7 @@
 // Pure helpers extracted from the main Stagify tool (scripts/app.js).
 //
 // No DOM, no app state — deterministic transforms on their arguments, so they
-// run under node --test with no shim (see test/app-helpers.test.js). atob /
+// run under node --test with no shim (see test/frontend/app/app-helpers.test.js). atob /
 // Uint8Array / File are Web-platform globals available in both the browser and
 // modern Node (>=20).
 

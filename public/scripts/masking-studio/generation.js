@@ -1,7 +1,7 @@
 // Pure helpers backing the Masking Studio's parallel mask-edit flow: region
 // naming, cross-area prompt context, and request-error mapping.
 //
-// No DOM, no module state (see test/masking-studio-generation.test.js). The
+// No DOM, no module state (see test/frontend/masking-studio/masking-studio-generation.test.js). The
 // entry does the canvas pixel work — scanning a layer's alpha for its bounding
 // box, POSTing to /api/mask-edit — and hands the plain results in here.
 

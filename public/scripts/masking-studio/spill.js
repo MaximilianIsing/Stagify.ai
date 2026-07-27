@@ -13,7 +13,7 @@
 //
 // No DOM and no module state: inputs are typed arrays (RGBA for base/edited,
 // alpha for the strokes, the nearest-area label grid), so this runs under
-// node --test with no shim (see test/masking-studio-spill.test.js). The browser
+// node --test with no shim (see test/frontend/masking-studio/masking-studio-spill.test.js). The browser
 // island downsamples the canvases into these arrays and upsamples the result
 // back into a mask canvas.
 
