@@ -257,14 +257,27 @@ router.post('/api/send-email', emailLimiter, async (req, res) => {
 
     const result = await resend.emails.send(emailData);
 
+    // Resend resolves — it does NOT throw — on a rejected send, returning
+    // { data: null, error }. Without this check a bounce, a suppressed address or
+    // a bad `from` would report success. Mirrors sendRegistrationVerificationEmail
+    // in lib/services/email.js.
+    if (result.error) {
+      const errMsg =
+        typeof result.error?.message === 'string' ? result.error.message : JSON.stringify(result.error);
+      logger.error('Resend send-email failed:', errMsg);
+      return sendError(res, 502, 'Failed to send email', { details: errMsg });
+    }
+
     if (DEBUG_MODE) {
       logger.debug('Email sent successfully:', result);
     }
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Email sent successfully',
-      id: result.id 
+      // The id lives under `data` in the Resend v6 response shape; `result.id` is
+      // always undefined.
+      id: result.data?.id,
     });
   } catch (error) {
     logger.error('Error sending email:', error);

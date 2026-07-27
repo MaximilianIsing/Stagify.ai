@@ -423,3 +423,34 @@ test('a request with no messages array is rejected with 400', async () => {
   assert.equal(app.calls.openaiCreate.calls, 0);
   assert.equal(app.calls.processStaging.calls, 0);
 });
+
+// 11 ─ Spend control: `model` is a client-controlled body field that reaches
+//      OpenAI verbatim, so an off-list value would bill an arbitrary (far pricier)
+//      model to our key. The handler must resolve it through the allow-list; these
+//      assert on what the fake OpenAI client actually RECEIVED, not on the reply.
+test('an off-allow-list model is never forwarded to OpenAI', async () => {
+  app = await mountChat({ routing: { response: 'Hi.' } });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{ role: 'user', content: 'hello' }],
+    model: 'o1-pro',
+    streamResponse: false,
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(app.calls.openaiCreate.calls, 1);
+  assert.equal(app.calls.openaiCreate.lastArgs[0].model, 'gpt-4o-mini');
+});
+
+test('an allow-listed model is forwarded to OpenAI unchanged', async () => {
+  app = await mountChat({ routing: { response: 'Hi.' } });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{ role: 'user', content: 'hello' }],
+    model: 'gpt-5-mini',
+    streamResponse: false,
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(app.calls.openaiCreate.lastArgs[0].model, 'gpt-5-mini');
+});
