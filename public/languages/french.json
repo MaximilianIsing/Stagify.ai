@@ -359,7 +359,10 @@
           "Ajouter les touches finales",
           "Donner vie à votre vision"
         ]
-      }
+      },
+      "downloadSizeMenu": "Choisir la résolution de téléchargement",
+      "downloadOriginal": "Originale",
+      "downloadNative": "native"
     }
   },
   "roomTypes": {
@@ -369,7 +372,8 @@
     "kitchen": "Cuisine",
     "bathroom": "Salle de bain",
     "office": "Bureau",
-    "outdoors": "Extérieur"
+    "outdoors": "Extérieur",
+    "dorm": "Chambre universitaire"
   },
   "furnitureStyles": {
     "standard": "Standard",
@@ -531,7 +535,8 @@
   },
   "common": {
     "close": "Fermer",
-    "selectLanguage": "Sélectionner la langue"
+    "selectLanguage": "Sélectionner la langue",
+    "newBadge": "Nouveau"
   },
   "footer": {
     "privacy": "Politique de confidentialité",
@@ -608,11 +613,58 @@
     "title": "Designer IA",
     "description": "Convertissez vos PDF de plans CAO en visualisations d'intérieur 3D photoréalistes",
     "statusMessages": {
-      "generating": ["génération de l'image...", "création de votre image...", "donne vie à votre vision...", "élaboration des détails...", "rendu en cours...", "presque terminé...", "finalisation des détails...", "peaufinage du résultat...", "un instant..."],
-      "staging": ["mise en scène de votre pièce...", "ajout du mobilier...", "sélection de la décoration...", "agencement des éléments...", "application des styles...", "création du design...", "génération de l'agencement...", "affinage des détails...", "presque prêt..."],
-      "analyzing": ["analyse de l'image...", "examen des détails...", "identification des éléments...", "traitement des données visuelles...", "compréhension de l'espace...", "examen de la composition...", "étude de l'agencement...", "presque fini..."],
-      "welcome": ["préparation de votre accueil...", "préparation pour vous...", "mise en place...", "préparation d'un accueil chaleureux...", "tout préparer pour vous...", "presque prêt à vous accueillir...", "configuration de votre espace...", "préparation de quelque chose de spécial..."],
-      "general": ["réflexion...", "traitement de votre demande...", "analyse...", "examen des options...", "en cours...", "presque terminé...", "un instant...", "préparation de la réponse..."]
+      "generating": [
+        "génération de l'image...",
+        "création de votre image...",
+        "donne vie à votre vision...",
+        "élaboration des détails...",
+        "rendu en cours...",
+        "presque terminé...",
+        "finalisation des détails...",
+        "peaufinage du résultat...",
+        "un instant..."
+      ],
+      "staging": [
+        "mise en scène de votre pièce...",
+        "ajout du mobilier...",
+        "sélection de la décoration...",
+        "agencement des éléments...",
+        "application des styles...",
+        "création du design...",
+        "génération de l'agencement...",
+        "affinage des détails...",
+        "presque prêt..."
+      ],
+      "analyzing": [
+        "analyse de l'image...",
+        "examen des détails...",
+        "identification des éléments...",
+        "traitement des données visuelles...",
+        "compréhension de l'espace...",
+        "examen de la composition...",
+        "étude de l'agencement...",
+        "presque fini..."
+      ],
+      "welcome": [
+        "préparation de votre accueil...",
+        "préparation pour vous...",
+        "mise en place...",
+        "préparation d'un accueil chaleureux...",
+        "tout préparer pour vous...",
+        "presque prêt à vous accueillir...",
+        "configuration de votre espace...",
+        "préparation de quelque chose de spécial..."
+      ],
+      "general": [
+        "réflexion...",
+        "traitement de votre demande...",
+        "analyse...",
+        "examen des options...",
+        "en cours...",
+        "presque terminé...",
+        "un instant...",
+        "préparation de la réponse..."
+      ]
     },
     "emptyState": "Démarrez une conversation en saisissant un message ou en important un fichier",
     "welcomeFallback": "Bonjour ! Je suis votre Designer IA Stagify. Dites-moi ce que vous imaginez, ou téléchargez la photo d'une pièce, et nous la concevrons ensemble. Quelques choses que je peux faire :\n• **Aménager des pièces vides** : meublez un espace nu dans n'importe quel style\n• **Réaménager des pièces existantes** : changez le style, les meubles ou toute l'ambiance\n• **Plan → pièce** : transformez un plan en un rendu meublé et photoréaliste\n• **Affiner au fil de la discussion** : ajustez les couleurs, les éléments et l'agencement jusqu'à ce que ce soit parfait\nPar où souhaitez-vous commencer ?",
@@ -709,7 +761,6 @@
       "refineNote": "Peignez pour révéler davantage la modification, gommez pour la masquer — cela ne fait que recadrer, l'IA n'est pas relancée.",
       "refineHelp": "Cette étape ajuste simplement l'endroit où la modification de l'IA apparaît — elle ne relance pas l'IA. Peignez pour révéler davantage la modification, gommez pour la réduire. C'est un filet de sécurité : la modification ne touche que la zone que vous avez choisie et ne peut pas abîmer le reste de votre photo. L'aperçu atténué affiché par-dessus sert uniquement à voir toute la modification pendant que vous l'affinez ; il n'apparaîtra pas dans l'image finale.",
       "promptHint": "Soyez très précis sur l’emplacement et la disposition — par exemple : « placez le canapé contre le milieu du mur du fond ».",
-
       "refineHelpAria": "Ce que fait l'étape d'affinage",
       "loadApplying": "Application de votre modification…",
       "referenceLabel": "Photo de référence (facultatif)",
@@ -763,10 +814,10 @@
         "q": "Puis-je contrôler le mobilier et l'agencement ?",
         "a": "Oui. Avec <a href=\"stagify-plus.html\">Stagify+</a>, la barre de consignes vous permet de décrire des détails comme « ajouter un canapé d'angle et un grand tapis », et l'outil Mobilier intègre vos propres pièces. Si une seule zone semble incorrecte, masquez-la et régénérez uniquement cet endroit au lieu de refaire toute l'image."
       },
-    "masking": {
-      "title": "Meublez avec une précision exacte",
-      "subtitle": "Masquez les zones à refaire, ajoutez vos propres meubles, et tout le reste reste identique au pixel près. <em>(Exclusivité Stagify+)</em>"
-    },
+      "masking": {
+        "title": "Meublez avec une précision exacte",
+        "subtitle": "Masquez les zones à refaire, ajoutez vos propres meubles, et tout le reste reste identique au pixel près. <em>(Exclusivité Stagify+)</em>"
+      },
       "i4": {
         "q": "Comment meubler plusieurs zones à la fois ?",
         "a": "Avec Stagify+, le <a href=\"masking-studio.html\">Studio de masquage</a> vous permet de surligner jusqu'à six zones de couleurs différentes, de donner à chacune sa photo de meuble ou sa description, et de les meubler toutes en parallèle. Seuls les endroits surlignés peuvent changer, et chaque zone peut générer plusieurs versions pour garder la meilleure."
@@ -959,7 +1010,12 @@
     "toolWand": "Baguette",
     "wandHint": "Cliquez sur un objet de la photo pour le sélectionner.",
     "wandBusy": "Analyse de votre photo…",
-    "wandBusyMessages": ["Analyse de votre photo…","Recherche des objets de la pièce…","Délimitation des objets trouvés…","Presque terminé…"],
+    "wandBusyMessages": [
+      "Analyse de votre photo…",
+      "Recherche des objets de la pièce…",
+      "Délimitation des objets trouvés…",
+      "Presque terminé…"
+    ],
     "wandMiss": "Aucun objet trouvé à cet endroit. Essayez de cliquer au centre de l'objet, ou surlignez-le avec le pinceau.",
     "modeAria": "Ce qui se passe dans cette zone",
     "modeStage": "Ajouter un meuble",

@@ -69,6 +69,89 @@ guides) load small independent scripts (`carousel.js`, `home-reveal.js`, `count-
 the `language-*.js` i18n helpers, …). No entry/island structure — there is no app state
 to compose.
 
+### The custom select
+
+`initCustomSelect(rootSelector)`
+([`scripts/app/custom-select.js`](../../public/scripts/app/custom-select.js)) wires a
+`.custom-select` root — the room-type and furniture-style pickers in the stage modal. It
+is a plain exported function (no app state) returning `{ value, set }`, and yields a no-op
+handle when the root is absent, so pages without the modal keep working.
+
+The markup contract:
+
+```html
+<div id="room-type-select" class="custom-select" data-value="Bedroom">
+  <button class="select-trigger"><span class="select-value" data-lang="roomTypes.bedroom">Bedroom</span>…</button>
+  <div class="select-menu hidden" role="listbox">
+    <div class="option" data-value="Bedroom" data-lang="roomTypes.bedroom">Bedroom</div>
+  </div>
+</div>
+```
+
+**`data-value` is the wire value and stays untranslated** — `initCustomSelect` mirrors the
+picked option's `data-value` onto the root, and that is what gets submitted. `data-lang`
+controls only the visible label. Never derive a submitted value from displayed text.
+
+**Options with extra chrome** (the `New` badge on the Dorm room type) need a different
+shape, because `data-lang` sets `textContent` and would wipe any nested markup on every
+language switch. Put the badge *beside* a label span rather than inside it, and leave the
+option element itself without a `data-lang`:
+
+```html
+<div class="option option--with-badge" data-value="Dorm" role="option">
+  <span class="option-label" data-lang="roomTypes.dorm">Dorm</span>
+  <span class="option-badge" data-lang="common.newBadge">New</span>
+</div>
+```
+
+`initCustomSelect` reads `.option-label` when present (otherwise the whole option), so the
+trigger shows `Dorm` rather than `DormNew`, and copies that span's `data-lang` onto the
+trigger so a later language switch re-renders the *selected* room, not the authored
+default. The same sibling-span shape is what the SSR renderer needs — a `data-lang` on the
+wrapper would swallow the badge server-side too (see [`i18n.md`](i18n.md)). Covered by
+[`e2e/stage-room-type.spec.js`](../../e2e/stage-room-type.spec.js).
+
+### The download resolution menu
+
+`createDownloadMenu(deps)`
+([`scripts/app/download-menu.js`](../../public/scripts/app/download-menu.js)) owns **both**
+halves of the split button in the staged-result viewer: the plain `Download Result` button
+and the caret beside it that opens a size picker. It reuses the custom select's
+`.select-menu` / `.option` classes, but the rows are built in JS rather than authored in
+markup, because each one shows its own computed pixel dimensions.
+
+```html
+<div id="download-split" class="download-split">
+  <button id="download-btn" class="btn btn-primary" disabled>…</button>
+  <button id="download-size-toggle" class="btn btn-primary download-caret" disabled …>…</button>
+  <div id="download-size-menu" class="select-menu download-size-menu hidden" role="menu"></div>
+</div>
+```
+
+Four rules worth knowing before touching it:
+
+- **Both buttons ship `disabled` in the markup.** The island flips them on when a staged
+  result exists and back off on reset, driven by a `MutationObserver` on `canvas1`'s
+  `width` attribute — so the enable/disable rule lives in one place instead of being
+  threaded through every site in `app.js` that stages, resets, or switches version.
+- **Readiness is the width ATTRIBUTE, never `canvas.width`.** An unsized `<canvas>`
+  reports the HTML default `300x150`, not `0`, so `canvas.width > 0` is true on a blank
+  page. That is how the control first shipped enabled before anything was staged (and is
+  where a stray `300x150` download comes from). See `canvasIsReady`.
+- **`Original` matches the upload's long edge, not both dimensions.** The staged output's
+  aspect ratio is a snapped Gemini bucket and can differ from the upload's by a few
+  percent; forcing both would stretch the room. Each row therefore displays the size it
+  will actually deliver, which may not equal the upload's.
+- **Never use `img.decode()` to measure the upload.** It is tied to the rendering pipeline
+  and never settles in a backgrounded tab, which leaves the menu awaiting forever and
+  simply never opening — no error, no menu. `probeDimensions` uses `onload`/`onerror`
+  behind a timeout; a failed probe costs only the `Original` row.
+
+Sizes are multipliers of what the model actually produced. Upscaling is plain
+interpolation and adds no real detail, so rows state their true pixels rather than
+implying otherwise. Pure logic covered by
+[`test/download-menu.test.js`](../../test/download-menu.test.js).
+
 ### How to extend it
 
 - **New cohesive feature on an interactive page?** Add a factory island under

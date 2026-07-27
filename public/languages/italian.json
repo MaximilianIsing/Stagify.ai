@@ -359,7 +359,10 @@
           "Aggiungere gli ultimi ritocchi",
           "Dare vita alla tua visione"
         ]
-      }
+      },
+      "downloadSizeMenu": "Scegli la risoluzione di download",
+      "downloadOriginal": "Originale",
+      "downloadNative": "nativa"
     }
   },
   "roomTypes": {
@@ -369,7 +372,8 @@
     "kitchen": "Cucina",
     "bathroom": "Bagno",
     "office": "Ufficio",
-    "outdoors": "Esterni"
+    "outdoors": "Esterni",
+    "dorm": "Stanza universitaria"
   },
   "furnitureStyles": {
     "standard": "Standard",
@@ -531,7 +535,8 @@
   },
   "common": {
     "close": "Chiudi",
-    "selectLanguage": "Seleziona lingua"
+    "selectLanguage": "Seleziona lingua",
+    "newBadge": "Nuovo"
   },
   "footer": {
     "privacy": "Informativa sulla privacy",
@@ -608,11 +613,58 @@
     "title": "Designer IA",
     "description": "Converti i tuoi PDF di planimetrie CAD in visualizzazioni 3D fotorealistiche degli interni",
     "statusMessages": {
-      "generating": ["generazione dell'immagine...", "creazione della tua immagine...", "diamo vita alla tua visione...", "elaborazione dei dettagli...", "rendering in corso...", "ci siamo quasi...", "finalizzazione dei dettagli...", "rifinitura del risultato...", "un attimo..."],
-      "staging": ["allestimento della tua stanza...", "aggiunta dei mobili...", "selezione dell'arredo...", "disposizione degli elementi...", "applicazione degli stili...", "creazione del design...", "generazione della disposizione...", "rifinitura dei dettagli...", "quasi pronto..."],
-      "analyzing": ["analisi dell'immagine...", "esame dei dettagli...", "identificazione degli elementi...", "elaborazione dei dati visivi...", "comprensione dello spazio...", "revisione della composizione...", "studio della disposizione...", "quasi fatto..."],
-      "welcome": ["preparazione del tuo benvenuto...", "ci prepariamo per te...", "stiamo configurando tutto...", "preparazione di un caloroso benvenuto...", "prepariamo tutto per te...", "quasi pronti ad accoglierti...", "configurazione del tuo spazio...", "preparazione di qualcosa di speciale..."],
-      "general": ["sto pensando...", "elaborazione della tua richiesta...", "analisi in corso...", "valutazione delle opzioni...", "ci sto lavorando...", "ci siamo quasi...", "un attimo...", "preparazione della risposta..."]
+      "generating": [
+        "generazione dell'immagine...",
+        "creazione della tua immagine...",
+        "diamo vita alla tua visione...",
+        "elaborazione dei dettagli...",
+        "rendering in corso...",
+        "ci siamo quasi...",
+        "finalizzazione dei dettagli...",
+        "rifinitura del risultato...",
+        "un attimo..."
+      ],
+      "staging": [
+        "allestimento della tua stanza...",
+        "aggiunta dei mobili...",
+        "selezione dell'arredo...",
+        "disposizione degli elementi...",
+        "applicazione degli stili...",
+        "creazione del design...",
+        "generazione della disposizione...",
+        "rifinitura dei dettagli...",
+        "quasi pronto..."
+      ],
+      "analyzing": [
+        "analisi dell'immagine...",
+        "esame dei dettagli...",
+        "identificazione degli elementi...",
+        "elaborazione dei dati visivi...",
+        "comprensione dello spazio...",
+        "revisione della composizione...",
+        "studio della disposizione...",
+        "quasi fatto..."
+      ],
+      "welcome": [
+        "preparazione del tuo benvenuto...",
+        "ci prepariamo per te...",
+        "stiamo configurando tutto...",
+        "preparazione di un caloroso benvenuto...",
+        "prepariamo tutto per te...",
+        "quasi pronti ad accoglierti...",
+        "configurazione del tuo spazio...",
+        "preparazione di qualcosa di speciale..."
+      ],
+      "general": [
+        "sto pensando...",
+        "elaborazione della tua richiesta...",
+        "analisi in corso...",
+        "valutazione delle opzioni...",
+        "ci sto lavorando...",
+        "ci siamo quasi...",
+        "un attimo...",
+        "preparazione della risposta..."
+      ]
     },
     "emptyState": "Avvia una conversazione digitando un messaggio o caricando un file",
     "welcomeFallback": "Ciao! Sono il tuo Designer IA di Stagify. Dimmi cosa immagini, o carica la foto di una stanza, e la progetteremo insieme. Alcune cose che posso fare:\n• **Arredare stanze vuote**: arreda uno spazio spoglio in qualsiasi stile\n• **Riprogettare stanze esistenti**: cambia stile, sostituisci i mobili o modifica l'intera atmosfera\n• **Piantina → stanza**: trasforma una piantina in un render arredato e fotorealistico\n• **Perfezionare mentre chattiamo**: regola i colori, gli elementi e la disposizione finché non è perfetto\nDa dove vuoi iniziare?",
@@ -709,7 +761,6 @@
       "refineNote": "Dipingi per rivelare di più della modifica, cancella per nasconderla: questo ritaglia soltanto, non riesegue l'IA.",
       "refineHelp": "Questo passaggio regola soltanto dove appare la modifica dell'IA, non riesegue l'IA. Dipingi per rivelare di più della modifica, cancella per ridurla. È una rete di sicurezza, così la modifica tocca solo l'area che hai scelto e non può rovinare il resto della tua foto. L'anteprima sfumata mostrata sopra serve solo a farti vedere l'intera modifica mentre la perfezioni; non comparirà nell'immagine finale.",
       "promptHint": "Sii molto specifico su posizione e collocazione — per esempio: “metti il divano a filo contro il centro della parete di fondo.”",
-
       "refineHelpAria": "Cosa fa il passaggio di perfezionamento",
       "loadApplying": "Applicazione della tua modifica…",
       "referenceLabel": "Foto di riferimento (facoltativo)",
@@ -763,10 +814,10 @@
         "q": "Posso controllare i mobili e la disposizione?",
         "a": "Sì. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra delle istruzioni ti permette di descrivere dettagli come «aggiungi un divano ad angolo e un grande tappeto», e lo strumento Mobili inserisce i tuoi pezzi. Se solo un'area non va, mascherala e rigenera solo quel punto invece di rifare tutta l'immagine."
       },
-    "masking": {
-      "title": "Arreda con precisione esatta",
-      "subtitle": "Maschera le aree da rifare, aggiungi i tuoi mobili e tutto il resto resta identico al pixel. <em>(Esclusiva Stagify+)</em>"
-    },
+      "masking": {
+        "title": "Arreda con precisione esatta",
+        "subtitle": "Maschera le aree da rifare, aggiungi i tuoi mobili e tutto il resto resta identico al pixel. <em>(Esclusiva Stagify+)</em>"
+      },
       "i4": {
         "q": "Come arredo più aree contemporaneamente?",
         "a": "Con Stagify+, lo <a href=\"masking-studio.html\">Studio Maschere</a> ti permette di evidenziare fino a sei aree con colori diversi, assegnare a ciascuna la propria foto del mobile o descrizione e arredarle tutte in parallelo. Solo i punti evidenziati possono cambiare, e ogni area può generare più versioni per tenere la migliore."
@@ -959,7 +1010,12 @@
     "toolWand": "Bacchetta",
     "wandHint": "Clicca su un oggetto nella foto per selezionarlo.",
     "wandBusy": "Analisi della foto…",
-    "wandBusyMessages": ["Analisi della tua foto…","Ricerca degli oggetti nella stanza…","Delimitazione degli oggetti trovati…","Quasi fatto…"],
+    "wandBusyMessages": [
+      "Analisi della tua foto…",
+      "Ricerca degli oggetti nella stanza…",
+      "Delimitazione degli oggetti trovati…",
+      "Quasi fatto…"
+    ],
     "wandMiss": "Nessun oggetto trovato lì. Prova a cliccare al centro dell'oggetto oppure evidenzialo con il pennello.",
     "modeAria": "Cosa succede in quest'area",
     "modeStage": "Aggiungi mobile",

@@ -142,8 +142,9 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 
 | Module | Responsibility |
 |---|---|
-| `prompts.js` | Pure prompt/data constants for the AI Designer, staging, QA review, and image gatekeeping. Single source of truth for model-facing wording. |
-| `promptMatrix.js` | The room-type × furniture-style prompt templates used when staging. |
+| `prompts.js` | Pure prompt/data constants for the AI Designer, staging, QA review, and image gatekeeping. Single source of truth for model-facing wording. Also holds `generatePrompt()`, which assembles the staging prompt — see [Staging prompt assembly](#staging-prompt-assembly). |
+| `promptMatrix.js` | The room-type × furniture-style prompt templates used when staging — the **style** layer only (a shopping list of furniture and finishes). Non-negotiable per-room rules live in `room-constraints.js` instead. |
+| `room-constraints.js` | The **rules** layer: `ROOM_TYPE_CONSTRAINTS`, per-room hard limits that hold whatever style is picked (e.g. a dorm's fixed university-issued furniture and small-room scale). Separate from the matrix because two `generatePrompt` paths skip or outrank a matrix entry — see [Where per-room rules belong](#where-per-room-rules-belong). |
 | `staging-pipeline.js` | The generate-with-quality-retry loop (unit-testable, no real model calls). |
 | `staging-generation.js` | The Gemini image-generation pipeline lifted out of `server.js`: the positional quality-gate wrapper plus `processImageGeneration` (text-to-image) and `processStaging` (virtual staging). `processStaging` pins the output shape to the nearest supported ratio (`imageConfig.aspectRatio`) so re-staging a downloaded result doesn't accumulate an aspect-ratio stretch. Both generators run the quality-gate winner through the delivery upscale (`upscaleForDelivery`, WebP ~2×) before returning, so the served image is larger than the model's ~1 MP native output. |
 | `virtual-staging-handler.js` | The `/api/process-image` + `/api/stage-by-endpoint-key` multipart handler (`handleVirtualStagingMultipart`), lifted out of `server.js`: free-tier cap, two-stage furniture removal, per-variation staging, enterprise metering. |
@@ -299,6 +300,74 @@ between.
 > not planned); or measured load time becomes dominated by JS request count/size in a
 > way HTTP/2 + compression cannot fix. Absent one of those triggers, the answer to
 > "should we add a build step?" is **no** — don't re-litigate it per-PR.
+
+## Staging prompt assembly
+
+`generatePrompt(roomType, furnitureStyle, additionalPrompt, removeFurniture)` in
+[`lib/staging/prompts.js`](../../lib/staging/prompts.js) builds the text sent to the image
+model. It concatenates, **in this order**:
+
+1. **The removal clause** — either "remove all existing furniture first" or the
+   keep-existing-furniture block, depending on `removeFurniture`.
+2. **The base text** — `promptMatrix[roomType][furnitureStyle]`, falling back to that
+   room's `standard` entry, then to a generic `Stage this <roomType> professionally.`
+   **Exception:** when `furnitureStyle === 'custom'` and an `additionalPrompt` is present,
+   the user's own text replaces this entirely and the matrix is never consulted.
+3. **The keep-furniture clarifier** — reframes the matrix's shopping list as *style*
+   guidance so existing pieces aren't swapped out (omitted when removing).
+4. **`ROOM_TYPE_CONSTRAINTS[roomType]`** from
+   [`room-constraints.js`](../../lib/staging/room-constraints.js), if the room has one —
+   see below.
+5. **The global blocks** — preserve-architecture, defect-free staging, image framing,
+   targeted-edit rule.
+6. **The priority suffix** — a non-custom `additionalPrompt`, appended last.
+
+### Where per-room rules belong
+
+A room type's *style* text goes in `promptMatrix.js`. A room type's **hard rules** go in
+`ROOM_TYPE_CONSTRAINTS` in
+[`room-constraints.js`](../../lib/staging/room-constraints.js). The distinction is not
+cosmetic — two paths skip or outrank the matrix, and a constraint placed there is silently
+lost on both:
+
+- **Custom style bypasses the matrix** (step 2 above), so matrix-resident rules vanish
+  exactly when a user types a freeform request.
+- **The removal clause is prepended before the matrix text** (step 1), so
+  "remove all existing furniture" outranks anything the matrix says about keeping
+  something.
+
+`Dorm` is the worked example: a college dorm's university-issued desk, bed frame/posts,
+wardrobe and dresser cannot be changed by the student, so a staging that restyles them is
+useless. Those rules sit in `ROOM_TYPE_CONSTRAINTS` at step 4 — after the removal clause,
+and applied to every style — and say so explicitly ("overrides every other instruction
+above"). [`test/prompts.test.js`](../../test/prompts.test.js) pins both the custom-style
+and remove-furniture cases, including the block **ordering**.
+
+### Adding a room type
+
+A room type is a cross-cutting change. Miss a step and it fails *quietly* — the wrong
+prompt, or an English label, not an error:
+
+1. **[`lib/staging/promptMatrix.js`](../../lib/staging/promptMatrix.js)** — add the key
+   with **all 8 style entries** (`standard`, `modern`, `midcentury`, `scandinavian`,
+   `luxury`, `coastal`, `farmhouse`, `custom`) and extend the JSDoc union on the export.
+2. **[`lib/staging/room-constraints.js`](../../lib/staging/room-constraints.js)** — only
+   if the room has non-negotiable rules (see above). Most don't.
+3. **The AI Designer routing enum** — `DESIGNER_ROUTING_SCHEMA.properties.staging.items.properties.roomType.enum`
+   in `prompts.js`, **plus the same list spelled out in prose** in both
+   `buildChatSystemInstruction` and `buildChatUploadSystemInstruction`. Omitting it here
+   doesn't error: the model just picks `Other`, which has no matrix entry, so chat
+   requests for that room stage from the generic prompt.
+4. **[`public/index.html`](../../public/index.html)** — a `.option` in `#room-type-select`.
+   The `data-value` is the **English** key and is what the API receives; `data-lang` only
+   controls the visible label. See [`frontend.md`](frontend.md#the-custom-select).
+5. **All 11 language packs** — `roomTypes.<camelCaseKey>` in every
+   `public/languages/*.json`.
+6. **Tests** — [`test/room-types-i18n.test.js`](../../test/room-types-i18n.test.js) already
+   guards steps 1, 3, 4 and 5 against each other, so a missed step fails the build. Add
+   prompt-behavior tests to `test/prompts.test.js` if you added step 2.
+
+No rebuild is needed (`build-i18n-seo.js` covers locales and pages, not room types).
 
 ## Conventions & gotchas
 

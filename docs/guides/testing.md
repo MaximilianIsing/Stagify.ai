@@ -99,14 +99,18 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 | — | `uptime.test.js` | Pure math of the uptime monitor: window percentages, coverage, bucket classification, incident coalescing/pruning. |
 | 1 | `unstageable-message.test.js` | The browser's rejection-copy resolver (`public/scripts/unstageable-message.js`) against a stubbed `LanguageSystem`: a translated code wins, an untranslated one degrades to the server's English, and no input shape ever yields an empty message. |
 | — | `unstageable-i18n.test.js` | **Drift guard** between the rejection taxonomy (`lib/staging/unstageable.js`) and `public/languages/*.json`: every code is translated in **every** language, no pack carries a stale code, and no non-English pack still holds the English string. Needed because a missing key silently falls back to English rather than failing. |
+| 1 | `prompts.test.js` | The staging/chat prompt builders (`lib/staging/prompts.js`): the chat system instructions embed their context and JSON contract, and `generatePrompt` composes the matrix text with the keep/remove-furniture branches. Also pins the **`Dorm` constraints** — that the fixed university-furniture and small-room-scale rules survive a custom style (which bypasses the matrix) and a remove-furniture request (which would otherwise strip them), including the block **ordering** that makes the override work. Asserts structure, never exact prose. |
+| 1 | `download-menu.test.js` | The staged-result download sizes (`public/scripts/app/download-menu.js`) with `Image` stubbed: the readiness check (an unsized `<canvas>` reports the HTML default **300x150, not 0**, so the obvious `canvas.width > 0` reads "ready" on a blank page — that shipped once), `Original` matching the upload's **long edge** so a snapped-bucket aspect mismatch can't stretch the room, and the dimension probe resolving `null` on error/timeout instead of hanging (the first version used `img.decode()`, which never settles in a backgrounded tab, so the menu silently never opened). All three are quiet failures — nothing throws, the user just gets the wrong file or no menu. |
+| — | `room-types-i18n.test.js` | **Drift guard** across the four places a room type must exist at once: `promptMatrix`, the `#room-type-select` options in `index.html`, the AI Designer routing enum (schema **and** the prose copy of it in both system instructions), and `roomTypes.*` in all 11 packs. Every one of these fails quietly on its own — a missing routing enum entry just reroutes to `Other` and the generic prompt, which is exactly how `Outdoors` went unreachable from chat until this guard was added. |
 
 The table is a **representative selection**, not the full list — the suite has grown to
 ~65 files as `server.js` is extracted into `lib/` and pure frontend logic is pulled into
 testable helpers. Most `lib/` modules now have a matching `*.test.js` (e.g. `logger`,
 `logging`, `http-helpers`, `erase`, `image-review`, `image-annotation`, `hosted-images`),
 as do the extracted frontend helpers — the `masking-studio-*` islands plus pure slices like
-`heic-convert` (content-type sniffing), `count-up` (counter width/easing math), and
-`version-carousel` (version-history cap). Run `npm test` for the authoritative set.
+`heic-convert` (content-type sniffing), `count-up` (counter width/easing math),
+`version-carousel` (version-history cap), and `download-menu` (download-size maths and the
+staged-result readiness check). Run `npm test` for the authoritative set.
 
 ## Writing a new test
 
@@ -163,14 +167,17 @@ they can't be driven on a plain static server. [`e2e/fixtures.js`](../../e2e/fix
 /api/auth/me` → a Pro user, so the page reveals instead of redirecting. This is how gated
 flows (the mask editor, session resume) are exercised without a real account or backend auth.
 
-What's covered today (all green — 16 tests across 10 specs):
+What's covered today (all green — 24 tests across 13 specs):
 
 | Spec | Covers |
 |---|---|
 | `index.spec.js` | Home page load smoke — hero stats, the custom select, and the before/after controls. |
 | `stage-reject.spec.js` | Main tool — a rejected upload surfaces the **localized** reason in the stage modal's error viewer before any generation is spent, plus an approved-upload negative control. The masking studio's reject path is a different consumer, hence the separate spec below. |
+| `stage-room-type.spec.js` | Main tool — picking a room type end to end: the `Dorm` option renders its **New** badge without leaking it into the trigger (`initCustomSelect` reads `.option-label`, not the option's whole `textContent`), and the value that reaches `/api/process-image` is the selected one. Third test drives a **localized** page and asserts the untranslated English `data-value` goes on the wire while the label shows Spanish — a translated value would miss `promptMatrix` and stage generically. |
 | `ai-designer.spec.js` | Happy path — a chat turn renders the assistant text reply / a staged image. |
 | `ai-designer-errors.spec.js` | A failed `/api/chat` shows a **retryable** error bubble, Retry re-sends and recovers, and a 403 (not Stagify+) shows a **non-retryable** error. |
+| `ai-designer-mask-fit.spec.js` | Mask-editor sizing on a **short viewport** — regression for the dialog over-committing its height budget and clipping the photo with nothing to scroll. Asserts the whole image fits at 1280×620, still fits after entering the refine phase, and re-fits on resize. |
+| `stage-mask-fab-processing.spec.js` | Main tool — the paint-brush FAB while a staging run is **in flight**: it blurs with the photo and stops taking clicks (keyboard path guarded in JS, since `pointer-events` can't cover it), then is sharp and clickable again once the run ends. `/api/process-image` is held open, never fulfilled, so the in-flight state can be inspected. |
 | `masking-studio.spec.js` | Happy path — upload → paint a mask → prompt → Apply Edit renders a result. |
 | `masking-studio-errors.spec.js` | A 500 from `/api/mask-edit` flips the area to a visible **Failed** state with a retry. |
 | `masking-studio-reject.spec.js` | The stageability reject path: the photo enters the studio **immediately** (the response is gated open to prove it doesn't await the verdict), then is torn back out when the verdict lands. Also the browser-level proof that rejection copy is **localized** — the toast must show the language pack's wording for the returned `code`, not the server's English. |

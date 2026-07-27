@@ -83,6 +83,7 @@ const FIXTURE = `<!doctype html>
 <a href="https://example.com">External</a>
 <input type="text" data-lang="search.ph" placeholder="EN placeholder">
 <textarea data-lang="modal.ta">EN textarea body</textarea>
+<div class="option" data-value="Dorm"><span data-lang="roomTypes.dorm">Dorm</span><span data-lang="common.newBadge">New</span></div>
 </body>
 </html>`;
 
@@ -92,6 +93,8 @@ const FIXTURE_TR = {
   whyUs: { body: 'Nuevo <em>HTML</em>' },
   search: { ph: 'buscar' },
   modal: { ta: 'texto' },
+  roomTypes: { dorm: 'Habitación ES' },
+  common: { newBadge: 'Nuevo' },
 };
 
 test('renderer applies translations, SEO head, base, and link rewriting', () => {
@@ -117,6 +120,16 @@ test('renderer applies translations, SEO head, base, and link rewriting', () => 
   // data-lang-attr + JSON-LD-adjacent meta
   assert.ok(out.includes('content="Descripción ES"'), 'meta description not translated');
   assert.ok(out.includes('<title data-lang="meta.title">Título ES</title>'), 'title not translated');
+
+  // Sibling data-lang children under an untranslated wrapper are BOTH translated, and
+  // the wrapper's own attributes survive. This is the badged-option shape from the
+  // room-type dropdown (label span + "New" badge span inside a plain .option div):
+  // the renderer walks left-to-right and skips past replaced inner content, so getting
+  // this wrong drops the badge or eats the rest of the element.
+  assert.ok(out.includes('>Habitación ES</span><span data-lang="common.newBadge">Nuevo</span>'),
+    'sibling data-lang children not both translated');
+  assert.ok(out.includes('<div class="option" data-value="Dorm">'),
+    'wrapper attributes must survive — data-value is the untranslated API contract');
 
   // input/textarea are left for the client (placeholder, not content)
   assert.ok(out.includes('placeholder="EN placeholder"'), 'input placeholder should be untouched');

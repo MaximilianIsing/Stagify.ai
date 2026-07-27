@@ -121,12 +121,23 @@ three buckets — keep `robots.txt` and the canonical/sitemap in sync when addin
 | `POST` | `/api/process-image` | **Multipart** staging upload (`stagingProcessUpload`). **File:** at least `image` (see multer field names in server). **Typical body fields** (strings): `roomType`, `furnitureStyle`, `additionalPrompt`, `removeFurniture`, `userRole`, `userReferralSource`, `userEmail`, and for pro: `model`, `variationCount`, `furnitureImage` (repeat), `authToken`. **Rules:** Requires a signed-in session — **any** unauthenticated request gets `401` with `AUTH_REQUIRED` (there is no anonymous/mobile staging path; this closes the IP-rotation cost-abuse vector). For a signed-in **free** user the per-account daily cap (`FREE_DAILY_LIMIT`) is enforced *before* any AI spend; **pro** accounts are uncapped and **enterprise-domain** users are metered separately. On success, may return `user` with updated usage. **Errors:** `401` `AUTH_REQUIRED` (no session); `429` `DAILY_LIMIT_REACHED` + `dailyGenerationsUsed` / `dailyGenerationLimit` (free cap hit); `422` `NO_IMAGE_GENERATED`; `500` if AI not configured. **Success:** `image` or `images` plus `success: true` and often `user` after consumption. Each returned image is a **WebP** data URL, upscaled ~2× (≈4× the pixels) from the model's ~1 MP native output for delivery — interpolation only, not added detail. |
 | `POST` | `/api/stage-by-endpoint-key` | **Server integration staging** — same multipart shape as `/api/process-image`, but **no user session**. **Auth:** `LOGS_ACCESS_KEY` from `endpointkey.txt` or `process.env.endpoint_key`, passed in the **`X-Stagify-Endpoint-Key` header only** — **never** `?key=` on the URL (a key in the URL leaks via access logs, proxies, browser history, and `Referer`; the compare is constant-time). Same secret as log CSV exports and `/api/send-email` — **highly sensitive**; treat like a root credential. **Behavior:** Staging runs with **Stagify+-level options** (`model` `gpt-4o-mini` \| `gpt-5-mini`, `variationCount` 1–3, up to three `furnitureImage` files). **Does not** increment per-user or per-IP free-tier daily counters. **Success:** same JSON as process-image (`image` / `images`, `user` is `null`). **`403`** if key missing/wrong, **`500`** if key not configured on server. |
 
+**Room types.** `roomType` is a free-text string, but only the keys in
+[`lib/staging/promptMatrix.js`](../../lib/staging/promptMatrix.js) select a tailored
+prompt — currently **`Bedroom`, `Living room`, `Dining room`, `Kitchen`, `Office`,
+`Bathroom`, `Outdoors`, `Dorm`**. The value is **case- and space-sensitive** and is *not*
+localized: clients send the English key regardless of UI language. Anything unrecognized
+(including the AI Designer's `Other`) falls back to a generic
+`Stage this <roomType> professionally.` prompt rather than erroring. Default when the
+field is omitted: **`Living room`**. `Dorm` additionally applies fixed-furniture and
+small-room-scale constraints — see
+[`architecture.md`](../guides/architecture.md#staging-prompt-assembly).
+
 **`POST /api/stage-by-endpoint-key` field reference (multipart):**
 
 | Field | Notes |
 |--------|--------|
 | `image` | **Required.** One JPEG/JPG/PNG/WebP, same as public staging. |
-| `roomType`, `furnitureStyle`, `additionalPrompt`, `removeFurniture` | Same defaults and meaning as `/api/process-image`. |
+| `roomType`, `furnitureStyle`, `additionalPrompt`, `removeFurniture` | Same defaults and meaning as `/api/process-image` (see **Room types** above; `roomType` defaults to `Living room`). |
 | `userRole`, `userReferralSource`, `userEmail` | Optional analytics strings (default `unknown`). |
 | `model` | `gpt-4o-mini` or `gpt-5-mini` (invalid values fall back to `gpt-4o-mini`). |
 | `variationCount` | String or number `1`–`3`. |
@@ -154,7 +165,7 @@ Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagi
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/welcome-message` | **Auth:** **`requireProAccount`**. **Query (optional):** `userId`. Returns `{ message, isReturning }` for the AI Designer welcome, using optional stored “memories”. |
-| `POST` | `/api/chat` | **Auth:** **`requireProAccount`**. **Body:** JSON with `messages` (OpenAI-style array), optional `model`, `messageTag`. Long-running: staging/CAD/generation inside JSON tool contract. Respects user message limits (e.g. 20 user messages) and may return `contextLimitReached`. |
+| `POST` | `/api/chat` | **Auth:** **`requireProAccount`**. **Body:** JSON with `messages` (OpenAI-style array), optional `model`, `messageTag`. Long-running: staging/CAD/generation inside JSON tool contract. Respects user message limits (e.g. 20 user messages) and may return `contextLimitReached`. When the model routes a staging request it must pick `roomType` from a **fixed enum** (`DESIGNER_ROUTING_SCHEMA` in `lib/staging/prompts.js`): every room type in **Room types** above, plus `Other` for a room with no template. A room type missing from that enum is unreachable from chat — the model falls back to `Other` and the generic prompt. |
 | `POST` | `/api/chat-upload` | **Auth:** **`requireProAccount`**. **Multipart:** up to **5** files in field `files`, plus form fields (e.g. `conversationHistory`, `messageTag`). AI Designer flow with file attachments. Implemented in `routes/chat.js`. |
 
 ---
