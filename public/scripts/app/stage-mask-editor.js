@@ -215,6 +215,10 @@ export function createStageMaskEditor(deps) {
           helpIcon.classList.add('hidden');
           applyEditorCopy();
           if (noteEl) { noteEl.style.display = 'none'; noteEl.textContent = ''; }
+          // setControlsDisabled(false) above re-enables Submit unconditionally —
+          // re-apply the readiness gate, or a freshly-opened editor shows "Apply
+          // Edit" as clickable with no strokes and no prompt.
+          updateSubmitState();
         }
       }
 

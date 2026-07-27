@@ -2111,7 +2111,14 @@ body:has(.modal:not(.hidden)) .language-picker-container {
   }
   .stage-workspace {
     order:1;
-    padding:12px;
+    padding:12px
+  }
+  /* The workspace min-height only exists to give the upload area a usable target.
+     Keeping it once an image is loaded stretches this flex column past the media:
+     a wide (landscape) photo is short on a narrow screen, so the leftover height
+     shows up as a band of empty panel under the result. Scope it to the
+     pre-upload state — #stage-dropzone is what app.js hides on upload. */
+  .stage-workspace:has(#stage-dropzone:not(.hidden)) {
     min-height:min(52vh,480px)
   }
   .image-viewer {
@@ -2287,7 +2294,9 @@ body:has(.modal:not(.hidden)) .language-picker-container {
     padding:10px
   }
   .stage-workspace {
-    padding:10px;
+    padding:10px
+  }
+  .stage-workspace:has(#stage-dropzone:not(.hidden)) {
     min-height:min(48vh,420px)
   }
   .image-viewer {

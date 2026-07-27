@@ -384,6 +384,10 @@ export function createMaskEditor(deps) {
           if (help) help.classList.add('hidden');
           if (title) title.textContent = lang('pdf.maskEditor.title', 'Edit with Mask');
           if (note) { note.style.display = 'none'; note.textContent = ''; }
+          // maskSetControlsDisabled(false) above re-enables Apply Edit
+          // unconditionally — re-apply the readiness gate, or a freshly-opened
+          // editor shows it as clickable with no strokes and no prompt.
+          updateApplyButtonState();
         }
         // The refine phase adds a note row and swaps the buttons — re-measure so
         // the image gives back (or takes) the height that costs.
