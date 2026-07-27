@@ -232,7 +232,8 @@ senders use — never a copy — so a preview can't drift from what actually shi
 
 - Account mail lives in [`lib/services/email.js`](../../lib/services/email.js) as
   `renderRegistrationVerificationEmail` / `renderAccountExistsEmail` /
-  `renderPasswordResetEmail` (the senders and `routes/auth.js` build from these).
+  `renderPasswordResetEmail` / `renderPasswordChangedEmail` (the senders and
+  `routes/auth.js` build from these).
 - Trial mail lives in [`lib/services/lifecycle-emails.js`](../../lib/services/lifecycle-emails.js)
   as `renderTrialWelcomeEmail` / `…ActivationNudge…` / `…Value…` / `…Ending…` /
   `renderSubscriptionCanceledEmail`.

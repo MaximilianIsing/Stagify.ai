@@ -4,7 +4,7 @@ import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
 import path from 'path';
 import { logger } from '../lib/logger.js';
-import { renderPasswordResetEmail } from '../lib/services/email.js';
+import { renderPasswordResetEmail, renderPasswordChangedEmail } from '../lib/services/email.js';
 
 /**
  * Build the auth router (sign-up, email verification, login, Google sign-in,
@@ -292,7 +292,7 @@ router.post('/api/auth/forgot-password', emailLimiter, express.json(), async (re
   }
 });
 
-router.post('/api/auth/reset-password', authLimiter, express.json(), (req, res) => {
+router.post('/api/auth/reset-password', authLimiter, express.json(), async (req, res) => {
   try {
     const token = (req.body && req.body.token) || '';
     const password = (req.body && req.body.password) || '';
@@ -300,6 +300,37 @@ router.post('/api/auth/reset-password', authLimiter, express.json(), (req, res) 
     if (!out.ok) {
       return sendError(res, 400, out.error);
     }
+
+    // Notify the account owner, best-effort. The password is ALREADY changed and
+    // every session already revoked by the time we get here, so a mail failure
+    // must not turn into an error response: that would tell the user their reset
+    // didn't work and send them round the loop again for a password that does in
+    // fact work. Log it and return ok. Unlike forgot-password there is no
+    // enumeration concern — reaching this line requires a valid reset token.
+    if (resend && out.toEmail) {
+      const baseUrlRaw =
+        process.env.PUBLIC_APP_URL || process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+      const appUrl = String(baseUrlRaw).replace(/\/$/, '');
+      const recipient = EMAIL_DEBUG_MODE ? DEBUG_EMAIL : out.toEmail;
+      const debugNote = EMAIL_DEBUG_MODE ? ` (intended recipient: ${out.toEmail})` : '';
+      try {
+        const sendResult = await resend.emails.send({
+          from: RESEND_FROM_EMAIL,
+          to: recipient,
+          ...renderPasswordChangedEmail({ appUrl, debugNote }),
+        });
+        if (sendResult.error) {
+          const errMsg =
+            typeof sendResult.error?.message === 'string'
+              ? sendResult.error.message
+              : JSON.stringify(sendResult.error);
+          logger.error('[auth] Resend password-changed notice failed:', errMsg);
+        }
+      } catch (mailErr) {
+        logger.error('[auth] Resend password-changed notice threw:', mailErr);
+      }
+    }
+
     res.json({ ok: true });
   } catch (e) {
     logger.error('reset-password error', e);
