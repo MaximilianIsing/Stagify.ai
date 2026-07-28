@@ -86,8 +86,9 @@ export default function createBillingRouter(deps) {
     // Idempotency gate. Stripe delivers at-least-once (it retries anything that
     // did not answer 2xx, and can duplicate on its own), so an event is claimed
     // here before it is handled: a redelivery of something already handled is
-    // acked and dropped. The claim is released on failure so Stripe's retry of a
-    // genuinely-failed event still runs. See lib/data/stripe-events.js.
+    // acked and dropped. The claim is released whenever the event did not actually
+    // get handled — thrown or reported in-band (see below) — so a later delivery of
+    // it still runs. See lib/data/stripe-events.js.
     const claim = stripeEvents ? stripeEvents.claim(event) : { fresh: true, reason: 'untracked' };
     if (!claim.fresh) {
       logger.info('[stripe] Duplicate webhook ignored:', event.id, event.type, `(${claim.reason})`);
@@ -98,7 +99,26 @@ export default function createBillingRouter(deps) {
       if (!out.handled) {
         logger.info('[stripe] Unhandled event type (ok):', event.type);
       }
-      if (stripeEvents) stripeEvents.markDone(event.id);
+      // Only an event that actually did its job closes its ledger row. A handler
+      // can fail in-band as well as by throwing: it reports a mapping failure as
+      // `result.ok === false` ('no_user', 'email_match_would_reassign', …) and
+      // still returns normally, because those are 200-worthy — retrying them
+      // unchanged would not help, they need an operator. Marking them done
+      // deduped the one thing that operator reaches for: Stripe's "Resend event"
+      // button, whose redelivery would be dropped as a duplicate for the whole
+      // retention window, so the documented manual-reconciliation path did
+      // nothing. Hand the id back instead. This cannot cause a retry storm — the
+      // response below is still 200, so Stripe considers the delivery accepted;
+      // releasing only leaves the door open for a LATER delivery to run again.
+      //
+      // `out.handled === false` is different: an event type we do not dispatch at
+      // all has no outcome to reconcile and never will, so it stays done rather
+      // than being reprocessed on every duplicate delivery forever.
+      const mappingFailed = Boolean(out.result) && out.result.ok === false;
+      if (stripeEvents) {
+        if (mappingFailed) stripeEvents.release(event.id);
+        else stripeEvents.markDone(event.id);
+      }
       res.json({ received: true });
     } catch (e) {
       // Hand the event back before answering 500, or the retry Stripe is about to

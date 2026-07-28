@@ -137,6 +137,72 @@ test('a failed event releases its claim so the retry is not deduped away', async
   assert.equal(app.calls.handleStripeEvent.calls, 2);
 });
 
+test('an ok:false mapping outcome releases the claim so a dashboard resend reprocesses', async () => {
+  // The handler reports "money came in, nobody got a plan" in-band (ok:false) and still
+  // returns normally, because a blind retry would not help — the logging points an operator
+  // at Stripe's "Resend event" button. Marking that event done deduped exactly that resend
+  // for the whole retention window, so the documented repair path silently did nothing.
+  let outcome = { handled: true, result: { ok: false, reason: 'email_match_would_reassign' } };
+  app = await mountBilling({
+    constructEvent: () => ({ id: 'evt_unmapped', type: 'checkout.session.completed', data: { object: {} } }),
+    handleStripeEvent: async () => outcome,
+  });
+
+  const first = await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  assert.equal(first.status, 200, 'still acked — a refusal is not a delivery failure');
+  assert.deepEqual(await first.json(), { received: true });
+  assert.equal(app.calls.markDone.calls, 0, 'an unmapped checkout is not "handled"');
+  assert.equal(app.calls.release.calls, 1, 'the id is handed back');
+
+  // The operator fixes the account and hits Resend.
+  outcome = { handled: true, result: { ok: true, userId: 'u_1' } };
+  const resend = await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  assert.deepEqual(await resend.json(), { received: true }, 'not swallowed as a duplicate');
+  assert.equal(app.calls.handleStripeEvent.calls, 2, 'the resend really ran');
+  assert.equal(app.calls.markDone.calls, 1, 'and now that it succeeded, it is recorded');
+});
+
+test('a no_user subscription event is released too, but a successful one is marked done', async () => {
+  // 'no_user' is the quieter sibling of the refusal above and needs the same treatment:
+  // the subscription belongs to nobody we know, which is a reconciliation job, not a
+  // handled event.
+  let id = 0;
+  const outcomes = [
+    { handled: true, result: { ok: false, reason: 'no_user' } },
+    { handled: true, result: { ok: true, userId: 'u_1', plan: 'free' } },
+  ];
+  app = await mountBilling({
+    constructEvent: () => ({ id: `evt_sub_${++id}`, type: 'customer.subscription.deleted', data: { object: {} } }),
+    handleStripeEvent: async () => outcomes[id - 1],
+  });
+
+  await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  assert.equal(app.calls.release.calls, 1);
+  assert.equal(app.calls.markDone.calls, 0);
+
+  await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  assert.equal(app.calls.release.calls, 1, 'a success releases nothing');
+  assert.equal(app.calls.markDone.calls, 1);
+});
+
+test('an event type we do not handle stays done rather than being retried forever', async () => {
+  // `handled:false` carries no outcome to reconcile and never will, so it is a legitimate
+  // "nothing to do" — it must keep deduping, or every duplicate delivery of every event
+  // type we ignore would re-enter the dispatcher for the rest of Stripe's retry window.
+  app = await mountBilling({
+    constructEvent: () => ({ id: 'evt_ignored', type: 'invoice.upcoming', data: { object: {} } }),
+    handleStripeEvent: async () => ({ handled: false }),
+  });
+
+  await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  assert.equal(app.calls.markDone.calls, 1, 'nothing to do is still done');
+  assert.equal(app.calls.release.calls, 0);
+
+  const second = await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  assert.deepEqual(await second.json(), { received: true, duplicate: true });
+  assert.equal(app.calls.handleStripeEvent.calls, 1, 'and it stays deduped');
+});
+
 test('a duplicate never reaches the handlers', async () => {
   app = await mountBilling({
     constructEvent: () => ({ id: 'evt_same', type: 'customer.subscription.deleted', data: { object: {} } }),

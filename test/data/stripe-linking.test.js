@@ -44,6 +44,21 @@ function registerUser(store, email) {
   return store.completeRegistration(email, start.code).user;
 }
 
+// Seed a record directly (importStore REPLACES all state) so a grant can be given an
+// already-past expiry without waiting a month — the same trick test/data/pro-grant.test.js
+// uses. `plan:'pro'` + a past date is exactly what a lapsed grant leaves on disk: nothing
+// rewrites the row, applyGrantExpiry only downgrades `plan` on the way out.
+function seedUser(store, email, extra) {
+  store.importStore({
+    sessions: {},
+    mobileIpUsage: {},
+    passwordResetTokens: {},
+    pendingRegistrations: {},
+    users: [{ id: 'u_seed', email, plan: 'free', createdAt: '2026-01-01T00:00:00.000Z', ...extra }],
+  });
+  return store.findUserByEmail(email);
+}
+
 // ── matching ─────────────────────────────────────────────────────────────────
 
 test('a reference match wins over the email, and reports how it matched', () => {
@@ -144,6 +159,34 @@ test('email: refuses when the account holds an admin comp grant', () => {
   assert.equal(res.ok, false);
   assert.equal(res.reason, 'email_match_would_reassign');
   assert.ok(store.findUserByEmail(granted.email).proGrantExpiresAt, 'the grant survives');
+});
+
+test('email: a LAPSED comp grant does not block a genuine purchase', () => {
+  // The compounding half of the same false-positive. A grant that runs out is never
+  // rewritten — applyGrantExpiry flips `plan` to 'free' on read and only revokeProGrant
+  // ever nulls proGrantExpiresAt — so the date sits on the record forever. Reading it as
+  // a boolean meant "was ever comped" permanently disqualified an account from the email
+  // path: the buyer pays and gets nothing, months after a promo they no longer hold.
+  const store = freshStore();
+  const lapsed = seedUser(store, 'lapsed@example.com', {
+    plan: 'pro',
+    proGrantedAt: '2026-05-01T00:00:00.000Z',
+    proGrantExpiresAt: '2026-06-01T00:00:00.000Z', // in the past
+  });
+  assert.equal(lapsed.plan, 'free', 'precondition: the grant has already lapsed');
+  assert.ok(lapsed.proGrantExpiresAt, 'precondition: but the field is still populated');
+
+  const res = store.activateProFromStripeCheckout({
+    email: lapsed.email,
+    stripeCustomerId: 'cus_paid',
+    stripeSubscriptionId: 'sub_paid',
+  });
+
+  assert.equal(res.ok, true, 'an expired comp is not an entitlement to protect');
+  assert.equal(res.matchedBy, 'email');
+  const after = store.findUserByEmail('lapsed@example.com');
+  assert.equal(after.plan, 'pro');
+  assert.equal(after.stripeSubscriptionId, 'sub_paid');
 });
 
 test('email: a genuine re-purchase after a cancellation still goes through', () => {
