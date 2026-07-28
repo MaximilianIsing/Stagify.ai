@@ -163,5 +163,12 @@ design around them:
   does **not** add a column to a table that already exists, so a new user field either
   needs a hand-written `ALTER TABLE` or — the cheaper route, used by the comp-grant
   fields above — is simply left out of `KNOWN_USER_KEYS` and rides in `extra_json`,
-  which round-trips unknown keys verbatim.
+  which round-trips unknown keys verbatim. That route has one real cost: SQLite cannot
+  index or filter on a field *inside* the blob, so any query that selects on one has to
+  read and `JSON.parse` every candidate row. Keep such a query **narrowed on a real
+  column first** — `listTrialCandidates` (the hourly trial sweep) selects
+  `WHERE plan = 'pro'` and only parses those, the difference between reading every
+  account each hour and reading the few percent that could match. If a new field needs
+  to be *searched* rather than merely stored, that is the case for a real column (and
+  the `ALTER TABLE` that comes with it) instead of `extra_json`.
 - **CSV logs grow unbounded.** They're append-only (low risk), but nothing prunes them.
