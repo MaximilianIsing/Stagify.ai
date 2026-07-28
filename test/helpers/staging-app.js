@@ -16,6 +16,9 @@ export function baseDeps() {
     genAI: null,
     openai: null,
     genLimiter: pass,
+    // Pass-through so the many validate-image cases in one file don't share the real
+    // per-IP bucket. The armed default is asserted in staging-validate-image-limit.test.js.
+    validateImageLimiter: pass,
     stagingProcessUpload: pass,
     stagingEndpointKeyGuard: pass,
     DEBUG_MODE: false,
