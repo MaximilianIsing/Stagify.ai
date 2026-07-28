@@ -73,6 +73,17 @@ router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, 
 
 router.post('/api/validate-image', genLimiter, async (req, res) => {
   try {
+    // Signed-in only. Every accepted request spends a paid Gemini vision call, and
+    // genLimiter is a per-IP ceiling — a cost cap, not an identity — so anonymously
+    // this was free AI on rotating IPs. Nothing legitimate is lost: this is the
+    // pre-flight for staging, and staging itself has always required an account
+    // (/api/process-image 401s), so a caller who can't pass this gate could never
+    // have used the verdict. Both studios already send the session token, and both
+    // treat any non-2xx as "valid" (fail open), so a signed-out browser silently
+    // skips the pre-check and still meets the real gate one request later.
+    if (!getAuthUserFromRequest(req)) {
+      return sendError(res, 401, 'Please sign in to stage images', { code: 'AUTH_REQUIRED' });
+    }
     const { image } = req.body || {};
     if (!image || typeof image !== 'string' || !image.includes(',')) {
       return sendError(res, 400, 'Image is required');
