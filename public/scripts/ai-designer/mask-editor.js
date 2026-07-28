@@ -13,7 +13,7 @@
 // StagifyAuth, getSelectedModelApiName) are referenced directly.
 import { getRootBaseNameForImage } from './image-history.js';
 import { updateMaskEditorTranslations } from './mask-editor-i18n.js';
-import { createMaskFit } from './mask-fit.js';
+import { createMaskFit } from '../mask/fit.js';
 // Viewport pinning, the processing overlay and the reference photo are shared
 // with the main tool's stage mask editor (scripts/mask/). They used to live here
 // as ai-designer-only slices while stage-mask-editor.js kept its own inline copy
@@ -41,7 +41,16 @@ export function createMaskEditor(deps) {
   // The dialog is built lazily on first open, so the shared slices are handed
   // thunks rather than elements.
   const viewport = createMaskViewport({ getModal: () => document.getElementById('mask-editor-modal') });
-  const fit = createMaskFit();
+  // 20px modal padding, content capped at 90vw/90vh — see ai-designer.css.
+  const fit = createMaskFit({
+    getModal: () => document.getElementById('mask-editor-modal'),
+    contentSelector: '.mask-editor-content',
+    containerSelector: '.mask-editor-canvas-container',
+    canvasSelector: 'canvas.mask-editor-canvas',
+    modalPadding: 20,
+    widthShare: 0.9,
+    heightShare: 0.9,
+  });
   const overlay = createMaskOverlay({
     lang,
     getContainer: () => /** @type {HTMLElement} */ (document.querySelector('.mask-editor-canvas-container')),

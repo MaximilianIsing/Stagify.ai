@@ -2785,6 +2785,37 @@ html {
     flex:1
   }
 }
+/* Short windows: the chrome (header + tools + slider + prompt + reference +
+   buttons) is fixed-height, so on a short screen it eats the budget and the
+   image gets whatever is left — which is the wrong way round, since the photo
+   is the part you need to see to paint a mask. Tighten paddings and gaps (no
+   guidance text is removed) to hand ~50px back to it. mask/fit.js measures
+   whatever this block leaves, so the two stay in sync automatically. Mirrors
+   the same block for the AI Designer's editor in ai-designer.css. */
+@media (max-height:800px) {
+  .stage-mask-content {
+    padding:14px 16px 16px
+  }
+  .stage-mask-header {
+    margin-bottom:8px
+  }
+  .stage-mask-controls {
+    margin-top:6px;
+    gap:8px
+  }
+  .stage-mask-prompt-container {
+    gap:4px
+  }
+  .stage-mask-prompt-input {
+    padding:8px 10px
+  }
+  .stage-mask-ref-container {
+    margin-top:6px
+  }
+  .stage-mask-actions .btn {
+    padding:8px 16px
+  }
+}
 .stage-mask-fab {
   position:absolute;
   bottom:12px;
