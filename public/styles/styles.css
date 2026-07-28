@@ -2641,8 +2641,12 @@ html {
   border-radius:12px;
   overflow:hidden
 }
+/* While a masked edit is running. The blur used to be split in two: this rule at
+   2px, plus a 6px one injected from JS under a second `smask-busy` class, which
+   won on source order — so 2px was never what you actually saw. One class, one
+   rule, and the value that was really in effect. */
 .stage-mask-canvas-container.processing .stage-mask-canvas {
-  filter:blur(2px);
+  filter:blur(6px) brightness(.98);
   pointer-events:none
 }
 .stage-mask-canvas {

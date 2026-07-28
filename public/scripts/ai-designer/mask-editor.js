@@ -24,6 +24,7 @@ import { createMaskReference } from '../mask/reference.js';
 import { createMaskBrush } from '../mask/brush.js';
 import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
 import { requestMaskEdit } from '../mask/generate.js';
+import { maskCopy } from '../mask/copy.js';
 import { buildBlendMask, compositeMaskedEdit } from '../mask-core.js';
 
 export function createMaskEditor(deps) {
@@ -375,6 +376,7 @@ export function createMaskEditor(deps) {
       }
       function maskSetPhase(p) {
         maskPhase = p;
+        const copy = maskCopy(lang);
         const maskCanvas = document.getElementById('mask-editor-mask-canvas');
         const submitBtn = document.getElementById('mask-editor-submit');
         const clearBtn = document.getElementById('mask-editor-clear');
@@ -394,18 +396,18 @@ export function createMaskEditor(deps) {
         if (p === 'refine') {
           if (submitBtn) submitBtn.classList.add('hidden');
           if (clearBtn) clearBtn.classList.add('hidden');
-          if (rerunBtn) { rerunBtn.classList.remove('hidden'); rerunBtn.textContent = lang('pdf.maskEditor.rerun', 'Regenerate'); }
-          if (doneBtn) { doneBtn.classList.remove('hidden'); doneBtn.textContent = lang('pdf.maskEditor.done', 'Looks good'); }
-          if (title) title.textContent = lang('pdf.maskEditor.refineTitle', 'Refine the edit');
+          if (rerunBtn) { rerunBtn.classList.remove('hidden'); rerunBtn.textContent = copy.rerun; }
+          if (doneBtn) { doneBtn.classList.remove('hidden'); doneBtn.textContent = copy.done; }
+          if (title) title.textContent = copy.refineTitle;
           const help = document.getElementById('mask-editor-help');
           if (help) {
             help.classList.remove('hidden');
-            help.setAttribute('aria-label', lang('pdf.maskEditor.refineHelpAria', 'What the refine step does'));
+            help.setAttribute('aria-label', copy.refineHelpAria);
             const tip = help.querySelector('.smask-help__tip');
-            if (tip) tip.textContent = lang('pdf.maskEditor.refineHelp', "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining — it won't be in the final image.");
+            if (tip) tip.textContent = copy.refineHelp;
           }
           brush.recolor(brush.REFINE_COLOR);
-          if (note) { note.style.display = ''; note.textContent = lang('pdf.maskEditor.refineNote', "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI."); }
+          if (note) { note.style.display = ''; note.textContent = copy.refineNote; }
           updateApplyButtonState();
         } else {
           if (submitBtn) submitBtn.classList.remove('hidden');
@@ -414,7 +416,7 @@ export function createMaskEditor(deps) {
           if (doneBtn) doneBtn.classList.add('hidden');
           const help = document.getElementById('mask-editor-help');
           if (help) help.classList.add('hidden');
-          if (title) title.textContent = lang('pdf.maskEditor.title', 'Edit with Mask');
+          if (title) title.textContent = copy.title;
           if (note) { note.style.display = 'none'; note.textContent = ''; }
           // maskSetControlsDisabled(false) above re-enables Apply Edit
           // unconditionally — re-apply the readiness gate, or a freshly-opened
@@ -483,7 +485,7 @@ export function createMaskEditor(deps) {
           // Restore the draw-phase title/note for next time.
           const title = document.querySelector('.mask-editor-title');
           const note = /** @type {HTMLElement} */ (document.querySelector('.mask-editor-note'));
-          if (title) title.textContent = lang('pdf.maskEditor.title', 'Edit with Mask');
+          if (title) title.textContent = maskCopy(lang).title;
           if (note) { note.style.display = 'none'; note.textContent = ''; }
         }
       }

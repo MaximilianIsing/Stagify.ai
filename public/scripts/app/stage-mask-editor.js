@@ -20,6 +20,7 @@ import { createMaskOverlay } from '../mask/overlay.js';
 import { createMaskReference } from '../mask/reference.js';
 import { createMaskBrush } from '../mask/brush.js';
 import { createMaskFit } from '../mask/fit.js';
+import { maskCopy } from '../mask/copy.js';
 import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
 import { requestMaskEdit } from '../mask/generate.js';
 
@@ -96,17 +97,15 @@ export function createStageMaskEditor(deps) {
       const maskHeader = maskModal.querySelector('.stage-mask-header');
       if (maskHeader) maskHeader.insertBefore(helpIcon, maskHeader.querySelector('.stage-mask-close'));
 
-      // Shared overlay, with the two things that differ from the AI Designer's
-      // use of it: this editor marks the container `smask-busy` (it toggles
-      // `processing` separately, from setPhase), and it needs one extra rule to
-      // blur its own canvas class. `ensure()` runs now rather than on first use
-      // so the stylesheet lands at construction time, as it always has.
+      // Shared overlay. It marks the container `processing` — the same class the
+      // stylesheet blurs, isProcessing() reads and the brush treats as busy — so
+      // there is now one busy state rather than this editor's old pair of
+      // `processing` (set by the phase machine) and `smask-busy` (set here).
+      // ensure() runs now rather than on first use so the stylesheet lands at
+      // construction time, as it always has.
       const overlay = createMaskOverlay({
         lang: tx,
         getContainer: () => /** @type {HTMLElement} */ (canvasContainer),
-        busyClass: 'smask-busy',
-        extraCss: '.stage-mask-canvas-container.smask-busy .stage-mask-canvas{filter:blur(6px) brightness(.98);}',
-        extraCssId: 'stage-smask-styles',
       });
       overlay.ensure();
       const startOverlay = () => overlay.start();
@@ -163,15 +162,18 @@ export function createStageMaskEditor(deps) {
       function setPhase(p) {
         phase = p;
         const titleEl = maskModal.querySelector('.stage-mask-title');
+        const copy = maskCopy(tx);
         if (p === 'loading') {
-          if (canvasContainer) canvasContainer.classList.add('processing');
           setControlsDisabled(true);
+          // The overlay marks the container `processing` (its busy class), which
+          // is also what isProcessing() and the CSS blur key off — so the phase
+          // machine no longer toggles that class itself.
           startOverlay();
           drawCanvas.style.pointerEvents = 'none';
+          drawCanvas.style.cursor = 'not-allowed';
           return;
         }
         stopOverlay();
-        if (canvasContainer) canvasContainer.classList.remove('processing');
         setControlsDisabled(false);
         drawCanvas.style.pointerEvents = 'auto';
         drawCanvas.style.cursor = 'crosshair';
@@ -180,14 +182,14 @@ export function createStageMaskEditor(deps) {
           if (clearBtn) clearBtn.classList.add('hidden');
           rerunBtn.classList.remove('hidden');
           doneBtn.classList.remove('hidden');
-          rerunBtn.textContent = tx('pdf.maskEditor.rerun', 'Regenerate');
-          doneBtn.textContent = tx('pdf.maskEditor.done', 'Looks good');
-          if (titleEl) titleEl.textContent = tx('pdf.maskEditor.refineTitle', 'Refine the edit');
+          rerunBtn.textContent = copy.rerun;
+          doneBtn.textContent = copy.done;
+          if (titleEl) titleEl.textContent = copy.refineTitle;
           helpIcon.classList.remove('hidden');
-          helpIcon.setAttribute('aria-label', tx('pdf.maskEditor.refineHelpAria', 'What the refine step does'));
-          helpTip.textContent = tx('pdf.maskEditor.refineHelp', "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining — it won't be in the final image.");
+          helpIcon.setAttribute('aria-label', copy.refineHelpAria);
+          helpTip.textContent = copy.refineHelp;
           brush.recolor(brush.REFINE_COLOR);
-          if (noteEl) { noteEl.style.display = ''; noteEl.textContent = tx('pdf.maskEditor.refineNote', "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI."); }
+          if (noteEl) { noteEl.style.display = ''; noteEl.textContent = copy.refineNote; }
           updateSubmitState();
         } else { // draw
           if (submitBtn) submitBtn.classList.remove('hidden');
@@ -228,7 +230,7 @@ export function createStageMaskEditor(deps) {
           if (promptInput) promptInput.placeholder = tx('modal.staging.maskBeforePromptPlaceholder', 'e.g., remove the old sofa, clear the clutter, repaint the wall white');
           if (submitStrong) submitStrong.textContent = tx('modal.staging.maskBeforeApply', 'Apply edit');
         } else {
-          if (titleEl) titleEl.textContent = tx('pdf.maskEditor.title', 'Edit with Mask');
+          if (titleEl) titleEl.textContent = maskCopy(tx).title;
           if (labelEl) labelEl.textContent = tx('pdf.maskEditor.promptLabel', 'What would you like to change in the masked area?');
           if (promptInput) promptInput.placeholder = tx('pdf.maskEditor.promptPlaceholder', '');
           if (submitStrong) submitStrong.textContent = tx('pdf.maskEditor.applyEdit', 'Apply Edit');
@@ -317,7 +319,7 @@ export function createStageMaskEditor(deps) {
         rerunBtn.classList.add('hidden');
         doneBtn.classList.add('hidden');
         setControlsDisabled(false);
-        if (canvasContainer) canvasContainer.classList.remove('processing', 'smask-busy');
+        if (canvasContainer) canvasContainer.classList.remove('processing');
         if (processBtn) processBtn.disabled = false;
         if (typeof updateMaskButtonVisibility === 'function') updateMaskButtonVisibility();
       }
