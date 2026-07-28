@@ -19,8 +19,11 @@ import { openStageModalViaUI, roomPngBuffer, seedProSession, stubAnalytics } fro
 const IMG_W = 960;
 const IMG_H = 540; // 16:9 — the shape that showed the problem worst
 
-async function openMaskEditor(page, { width, height }) {
-  await page.setViewportSize({ width, height });
+// Pass a { width, height } to pin a window size; pass nothing to keep whatever the
+// project's device descriptor gave us (that is how the phone case below stays a
+// phone — setViewportSize would silently undo the mobile viewport).
+async function openMaskEditor(page, size) {
+  if (size) await page.setViewportSize(size);
   await page.route('**/api/validate-image', (route) =>
     route.fulfill({
       status: 200,
@@ -64,6 +67,15 @@ function boxes(page) {
 }
 
 test.describe('Main tool — mask editor fits short viewports', () => {
+  // Desktop-only for the same reason as its AI-Designer sibling: openMaskEditor()
+  // setViewportSize()s to a fixed desktop window (1280x620, 1000x560, 1280x1000)
+  // before every assertion, so under the mobile-chrome project these would measure
+  // a desktop layout and report it as mobile coverage. Skipped rather than
+  // parameterised — the thresholds below (a 300px image floor, "the dialog scrolls
+  // a little") are numbers chosen for a wide-and-short window and mean nothing at
+  // 393px.
+  test.skip(({ isMobile }) => !!isMobile, 'pins desktop window sizes; each case resizes to >=1000px wide.');
+
   test.beforeEach(async ({ page }) => {
     await seedProSession(page);
     await stubAnalytics(page);
@@ -189,6 +201,71 @@ test.describe('Main tool — mask editor fits short viewports', () => {
       const centre = ctx.getImageData(Math.round(c.width / 2), Math.round(c.height / 2), 1, 1).data[3];
       const corner = ctx.getImageData(2, 2, 1, 1).data[3];
       return { centre, corner };
+    });
+
+    expect(hit.centre).toBeGreaterThan(10);
+    expect(hit.corner).toBe(0);
+  });
+});
+
+// The mobile counterpart of the block above. The desktop cases are skipped under
+// mobile-chrome because they resize the phone away, which would have left the mask
+// editor with NO sizing coverage on a narrow viewport — the one shape where the
+// image, the brush row, the prompt and the Apply button compete hardest for space.
+// This runs at the device descriptor's own viewport and asserts the same contract
+// the desktop cases do (right shape, whole image, primary action reachable), with
+// the two extra failure modes a phone adds: sideways scroll, and a canvas squeezed
+// to nothing.
+test.describe('Main tool — mask editor fits a phone', () => {
+  test.skip(({ isMobile }) => !isMobile, 'measures the device descriptor viewport; desktop is covered above.');
+
+  test.beforeEach(async ({ page }) => {
+    await seedProSession(page);
+    await stubAnalytics(page);
+  });
+
+  test('the whole image, the prompt and Apply all fit a 393px-wide screen', async ({ page }) => {
+    await openMaskEditor(page); // no resize — stay on the phone viewport
+    const b = await boxes(page);
+    const overflow = await page.evaluate(() => ({
+      docScrollW: document.documentElement.scrollWidth,
+      docClientW: document.documentElement.clientWidth,
+      innerW: window.innerWidth,
+    }));
+
+    // Same shape as the source: a phone must letterbox the 16:9 room, not squash it.
+    expect(b.canvas.width / b.canvas.height).toBeCloseTo(IMG_W / IMG_H, 1);
+    // …and not shrink it to a token strip to make room for the controls.
+    expect(b.canvas.height).toBeGreaterThan(120);
+    // The bordered box is exactly as tall as the canvas inside it — nothing clipped.
+    expect(Math.abs(b.container.height - b.canvas.height)).toBeLessThanOrEqual(2);
+
+    // The image stays inside the screen and nothing pushes the page sideways —
+    // the classic phone regression a desktop-width test cannot see.
+    expect(b.canvas.width).toBeLessThanOrEqual(overflow.innerW);
+    expect(overflow.docScrollW).toBeLessThanOrEqual(overflow.docClientW + 1);
+
+    // The primary action is on screen, not below the fold behind a scroll the
+    // dialog gives no hint of.
+    expect(b.submitInView).toBe(true);
+    expect(b.submit.bottom).toBeLessThanOrEqual(b.viewportH);
+  });
+
+  test('a finger stroke paints where it touched, at the phone canvas scale', async ({ page }) => {
+    // The desktop file proves the pointer→canvas mapping survives a resize with the
+    // mouse. On a phone the same mapping runs through touch events AND a 2.75x
+    // device-pixel-ratio canvas, which is where an off-by-DPR bug would hide.
+    await openMaskEditor(page);
+    const box = await page.locator('#stage-mask-draw-canvas').boundingBox();
+    await page.touchscreen.tap(box.x + box.width * 0.5, box.y + box.height * 0.5);
+
+    const hit = await page.evaluate(() => {
+      const c = /** @type {HTMLCanvasElement} */ (document.getElementById('stage-mask-draw-canvas'));
+      const ctx = c.getContext('2d');
+      return {
+        centre: ctx.getImageData(Math.round(c.width / 2), Math.round(c.height / 2), 1, 1).data[3],
+        corner: ctx.getImageData(2, 2, 1, 1).data[3],
+      };
     });
 
     expect(hit.centre).toBeGreaterThan(10);

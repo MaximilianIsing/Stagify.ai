@@ -56,6 +56,16 @@ function boxes(page) {
 }
 
 test.describe('AI Designer — mask editor fits short viewports', () => {
+  // Desktop-only, and not because it fails on a phone — because it would not be a
+  // mobile test if it ran. Every case here calls openMaskEditor({ width: 1280, … }),
+  // i.e. it setViewportSize()s the phone straight back to a desktop window before
+  // asserting anything. Under the mobile-chrome project it would pass while
+  // measuring a 1280px layout, spending a minute to re-prove the desktop result and
+  // reporting mobile coverage that does not exist. The genuinely-narrow layout
+  // belongs in a dedicated spec, not in a file whose whole subject is "short but
+  // wide".
+  test.skip(({ isMobile }) => !!isMobile, 'pins desktop window heights; each case resizes to 1280px wide.');
+
   test.beforeEach(async ({ page }) => {
     await seedProSession(page);
   });
