@@ -12,7 +12,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { resolveDataDir } from '../../lib/data/data-dir.js';
+import { resolveDataDir, RENDER_DISK_MOUNT } from '../../lib/data/data-dir.js';
 
 const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -46,20 +46,53 @@ test('falls back to baseDir when the data dir cannot be created', () => {
   assert.equal(resolveDataDir(base), base);
 });
 
-test('RENDER alone does not divert writes — the disk must actually be mounted', (t) => {
-  if (fs.existsSync('/data')) {
-    t.skip('a real /data exists on this machine; the negative branch is unobservable');
-    return;
-  }
+// The mount point is injected rather than read from the real filesystem: '/data'
+// exists on some dev machines (on Windows it resolves to C:\data), which used to
+// make the "not mounted" case unobservable and skip the test on exactly the
+// machines where it would have failed. Both branches now run everywhere.
+function withRender(t) {
   const prev = process.env.RENDER;
   process.env.RENDER = 'true';
   t.after(() => {
     if (prev === undefined) delete process.env.RENDER;
     else process.env.RENDER = prev;
   });
+}
+
+test('the injected mount defaults to the real Render disk', () => {
+  // The parameter exists for the tests below; production must still get /data,
+  // so pin the default rather than letting the injection quietly redefine it.
+  assert.equal(RENDER_DISK_MOUNT, '/data');
+});
+
+test('RENDER plus a mounted disk diverts writes to the disk', (t) => {
+  withRender(t);
+  const mount = path.join(tempDir(), 'mnt');
+  fs.mkdirSync(mount);
   const base = tempDir();
-  assert.equal(resolveDataDir(base), path.join(base, 'data'),
+  assert.equal(resolveDataDir(base, mount), mount,
+    'with the disk mounted, state goes to it and not beside the app');
+  assert.ok(!fs.existsSync(path.join(base, 'data')),
+    'the local data dir is not created as a side effect');
+});
+
+test('RENDER alone does not divert writes — the disk must actually be mounted', (t) => {
+  withRender(t);
+  const mount = path.join(tempDir(), 'never-mounted'); // deliberately not created
+  const base = tempDir();
+  assert.equal(resolveDataDir(base, mount), path.join(base, 'data'),
     'without the mount, state stays local rather than going to a path that does not exist');
+});
+
+test('a mounted disk is ignored when RENDER is not set', (t) => {
+  const prev = process.env.RENDER;
+  delete process.env.RENDER;
+  t.after(() => { if (prev !== undefined) process.env.RENDER = prev; });
+  const mount = path.join(tempDir(), 'mnt');
+  fs.mkdirSync(mount);
+  const base = tempDir();
+  assert.equal(resolveDataDir(base, mount), path.join(base, 'data'),
+    'a stray /data on a dev box must not capture the app\'s writes');
 });
 
 test('DRIFT GUARD: only data-dir.js implements the Render-disk rule', () => {
