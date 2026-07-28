@@ -343,6 +343,44 @@ before paint so a non-Pro visitor never flashes the studio, and the entry script
 it once access is verified (with a ~6s safety-net redirect if the plan check stalls).
 This one style **must** stay inline — it has to apply before any external CSS loads.
 
+### `var` is an extraction artifact — sweep it, don't pick at it
+
+Much of `public/scripts/` still declares with `var`: **587 of them across 37 files** at the
+time of writing, left over from when these were classic `<script>` files (see the
+unminify/ESM-conversion history). `admin/renderers.js` has 88, `profile-menu/auth-modal.js`
+75, `status.js` 45. New code uses `const`/`let`.
+
+`eslint.config.js` sets `ecmaVersion: 2022` but enables **neither `no-var` nor
+`prefer-const`**, so `var` is currently legal rather than debt — worth knowing before
+filing it as a violation.
+
+**Convert them in one sweep, or not at all.** Modernizing a file or two on the way past
+trades "consistently old" for "randomly mixed", which is harder to read than either and
+makes the next reviewer file the same finding against whatever is left. The whole thing is
+one command plus four judgement calls:
+
+```bash
+npx eslint public/scripts --rule '{"no-var":"error","prefer-const":"error"}' --fix
+```
+
+That reports 589 problems and fixes **587 automatically** (585 `no-var` + both
+`prefer-const`). ESLint deliberately declines exactly **two**, and they are the only ones
+needing a human: `admin/helpers.js:43` (`export var ICONS` — an exported binding, so check
+no importer reassigns it before making it `const`) and
+`profile-menu/auth-modal.js:362`. Afterwards, add both rules to `eslint.config.js` so it cannot drift
+back, and verify with `npm run typecheck` — `checkJs` turns the two dangerous conversion
+mistakes (a `let` referenced outside the block it was declared in, and a redeclaration in
+one scope) into hard errors, which is what makes an otherwise-untested sweep safe.
+
+**Timing matters more than usual**: it rewrites 37 files at once, so run it when nobody
+else has work open under `public/scripts/`.
+
+While you are in there: `auth-modal.js` re-queries ~10 `getElementById`s per mode toggle.
+Caching them at module scope is *safe* — `ensureAuthModal()` early-returns if `#auth-modal`
+exists and nothing ever removes it, so the node identities are stable for the page's life —
+but it is worth doing for readability, not speed: those are O(1) id-map lookups on a human
+click, and the sign-in flow has no behavioural test coverage to catch a slip.
+
 ## Decision: vanilla ES-module islands, not a component framework
 
 **Stagify's frontend is hand-written HTML/CSS/vanilla JS organized into ES-module
