@@ -7,11 +7,34 @@
 // broken silently, because its elements are resolved from a dialog this file
 // builds at runtime rather than from static markup.
 //
-// Note the deliberate asymmetry with the stage editor: that one accepts a
-// dragged file, this one has never had drop zones and still doesn't. The shared
-// slice only wires them when asked (see `dropZones`).
+// Drag-and-drop was for a while the one asymmetry with the stage editor: this
+// editor had never accepted a dragged file. Now that both go through the same
+// slice, giving it the feature was one argument (`dropZones`) plus the matching
+// `.is-drag-over` rule in ai-designer.css, so the two editors behave the same.
 import { test, expect } from '@playwright/test';
 import { roomPngBuffer, seedProSession } from './fixtures.js';
+
+/**
+ * Drop a synthetic file on `selector`. Playwright cannot drive a real OS drag, so
+ * the DataTransfer is built in-page and the events dispatched directly — which is
+ * the path the listeners under test are attached to.
+ */
+async function dropFileOn(page, selector) {
+  const buffer = await roomPngBuffer(64, 64);
+  await page.evaluate(
+    async ({ selector: sel, bytes }) => {
+      const dt = new DataTransfer();
+      dt.items.add(new File([new Uint8Array(bytes)], 'ref.png', { type: 'image/png' }));
+      const el = document.querySelector(sel);
+      for (const kind of ['dragenter', 'dragover', 'drop']) {
+        const ev = new DragEvent(kind, { bubbles: true, cancelable: true });
+        Object.defineProperty(ev, 'dataTransfer', { value: dt });
+        el.dispatchEvent(ev);
+      }
+    },
+    { selector, bytes: [...buffer] },
+  );
+}
 
 async function openMaskEditor(page) {
   const png = await roomPngBuffer(640, 420);
@@ -62,6 +85,54 @@ test.describe('AI Designer — mask editor reference photo', () => {
     await page.locator('#mask-editor-ref-remove').click();
     await expect(page.locator('#mask-editor-ref-preview')).toHaveClass(/hidden/);
     await expect(page.locator('#mask-editor-ref-add')).not.toHaveClass(/hidden/);
+  });
+
+  test('dropping an image on "+ Add photo" attaches it', async ({ page }) => {
+    await openMaskEditor(page);
+    await dropFileOn(page, '#mask-editor-ref-add');
+    await expect(page.locator('#mask-editor-ref-preview')).not.toHaveClass(/hidden/);
+    await expect(page.locator('#mask-editor-ref-img')).toHaveAttribute('src', /^data:image\/png/);
+  });
+
+  test('dropping on the thumbnail replaces the current reference', async ({ page }) => {
+    await openMaskEditor(page);
+    await dropFileOn(page, '#mask-editor-ref-add');
+    await expect(page.locator('#mask-editor-ref-preview')).not.toHaveClass(/hidden/);
+
+    await dropFileOn(page, '#mask-editor-ref-preview');
+    await expect(page.locator('#mask-editor-ref-preview')).not.toHaveClass(/hidden/);
+    await expect(page.locator('#mask-editor-ref-img')).toHaveAttribute('src', /^data:image\/png/);
+  });
+
+  test('a dragged file highlights the drop target, and the highlight clears on drop', async ({ page }) => {
+    await openMaskEditor(page);
+    await page.evaluate(() => {
+      const dt = new DataTransfer();
+      Object.defineProperty(dt, 'types', { value: ['Files'] });
+      const ev = new DragEvent('dragenter', { bubbles: true, cancelable: true });
+      Object.defineProperty(ev, 'dataTransfer', { value: dt });
+      document.querySelector('#mask-editor-ref-add').dispatchEvent(ev);
+    });
+    await expect(page.locator('#mask-editor-ref-add')).toHaveClass(/is-drag-over/);
+
+    await dropFileOn(page, '#mask-editor-ref-add');
+    await expect(page.locator('#mask-editor-ref-add')).not.toHaveClass(/is-drag-over/);
+  });
+
+  // The highlight is only useful if it is actually styled — the class existed in
+  // index.css for the stage editor but had no counterpart here.
+  test('the drag-over highlight is visibly styled, not just a class', async ({ page }) => {
+    await openMaskEditor(page);
+    const before = await page.locator('#mask-editor-ref-add').evaluate(
+      (el) => getComputedStyle(el).boxShadow,
+    );
+    await page.locator('#mask-editor-ref-add').evaluate((el) => el.classList.add('is-drag-over'));
+    const after = await page.locator('#mask-editor-ref-add').evaluate(
+      (el) => getComputedStyle(el).boxShadow,
+    );
+
+    expect(after).not.toBe(before);
+    expect(after).not.toBe('none');
   });
 
   test('an unsupported file type is rejected and nothing is attached', async ({ page }) => {
