@@ -124,3 +124,36 @@ test('no second HTML escaper exists in public/scripts', () => {
     'these files hand-roll HTML escaping — import escapeHtml from scripts/escape-html.js instead',
   );
 });
+
+test('every translated string the profile menu interpolates goes through esc()', () => {
+  // profile-menu.js builds its dropdown as an innerHTML string, and every lang()
+  // value in the file lands in one — six in element content, two in `title=` /
+  // `aria-label=`. Translations are team-authored, so this is not XSS; it is a
+  // translator writing `&`, `<` or a quote and silently mangling the menu. The
+  // attribute pair was escaped first (they break most visibly); this pins the rest,
+  // because "escaped over here, bare over there" reads like a considered decision
+  // when it is really an oversight waiting to be copied into the next block.
+  //
+  // Scanned rather than rendered: the dropdown builder lives inside an IIFE with no
+  // export, and extracting it purely to test six wrappers would be a bigger and
+  // riskier change than the wrappers themselves.
+  const src = readFileSync(join(SCRIPTS_DIR, 'profile-menu.js'), 'utf8');
+
+  const bare = [];
+  // Tolerate whitespace after `esc(` so a reformat can't fail this for style.
+  const re = /(.{0,8})lang\(\s*(['"])([^'"]+)\2/g;
+  let m;
+  while ((m = re.exec(src)) !== null) {
+    if (!/esc\(\s*$/.test(m[1])) bare.push(m[3]);
+  }
+
+  assert.ok(
+    src.includes("esc(lang('profile.signOut'"),
+    'sanity: the scan is looking at a file that still builds the menu this way',
+  );
+  assert.deepEqual(
+    bare,
+    [],
+    'these lang() values reach innerHTML unescaped — wrap them in esc()',
+  );
+});
