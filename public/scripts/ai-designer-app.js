@@ -59,6 +59,12 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
       // ai-designer-model-selector.js, which can't reach this module's scope,
       // so expose the closer on window.
       window.closeImageModal = closeImageModal;
+      // Same trap, same fix: the bug-report form in that classic script needs the
+      // chat transcript for context. Naming `conversationHistory` there threw a
+      // ReferenceError that failed the whole report (this module's top-level `let`
+      // is not a global), so hand it over through an accessor rather than a
+      // snapshot — the array is reassigned on reset, so a value would go stale.
+      window.getConversationHistory = () => conversationHistory;
 
       // Chat-message island (scripts/ai-designer/chat-messages.js): message
       // bubbles, error bubbles with Retry, typing + image-loading indicators.
