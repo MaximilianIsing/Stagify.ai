@@ -15,106 +15,137 @@ import { localizedTarget } from '../i18n-routing.js';
  * @returns Auth-modal controls used by the profile dropdown.
  */
 export function createAuthModal({ onRefresh, onCloseDropdown }) {
-  var AUTH_BOUND = false;
-  var authModeRegister = true;
-  var authFlowForgot = false;
-  var authFlowVerify = false;
-  var authPendingEmail = '';
+  let AUTH_BOUND = false;
+  let authModeRegister = true;
+  let authFlowForgot = false;
+  let authFlowVerify = false;
+  let authPendingEmail = '';
 
   // Google Identity Services lives in its own island. It needs the modal's live
   // form mode (to hide its panel during forgot/verify) and a way to close the
   // modal on success; closeAuthModal is a hoisted declaration below.
-  var gsi = createGoogleSignIn({
-    getAuthFlow: function () {
-      return {
-        authModeRegister: authModeRegister,
-        authFlowForgot: authFlowForgot,
-        authFlowVerify: authFlowVerify,
-      };
-    },
-    closeAuthModal: closeAuthModal,
-    onRefresh: onRefresh,
+  const gsi = createGoogleSignIn({
+    getAuthFlow: () => ({ authModeRegister, authFlowForgot, authFlowVerify }),
+    closeAuthModal: () => closeAuthModal(),
+    onRefresh,
   });
 
   function ensureAuthModal() {
     if (document.getElementById('auth-modal')) return;
-    var wrap = document.createElement('div');
+    const wrap = document.createElement('div');
     wrap.innerHTML = AUTH_MODAL_HTML;
     document.body.insertBefore(wrap.firstElementChild, document.body.firstChild);
   }
 
+  // ── Element handles ─────────────────────────────────────────────────────────
+  // The modal's markup is inserted once by ensureAuthModal() and then lives for
+  // the page's lifetime, so the old code's ~20 getElementById calls per mode
+  // toggle re-found the same nodes every time. They are resolved once here.
+  //
+  // The cache is keyed on the modal root: one lookup per access confirms the
+  // cached handles still belong to the element currently in the document, so if
+  // anything ever replaces the modal (a re-render, a test) the handles rebuild
+  // instead of silently writing to a detached tree.
+  /** @type {Record<string, any> | null} */
+  let handles = null;
+
+  function els() {
+    const modal = document.getElementById('auth-modal');
+    if (!modal) return null;
+    if (handles && handles.modal === modal) return handles;
+    const byId = (id) => document.getElementById(id);
+    handles = {
+      modal,
+      backdrop: byId('auth-modal-backdrop'),
+      closeBtn: byId('auth-modal-close'),
+      title: byId('auth-modal-title'),
+      sub: byId('auth-modal-sub'),
+      error: byId('auth-error'),
+      form: byId('auth-form'),
+      email: /** @type {HTMLInputElement} */ (byId('auth-email')),
+      password: byId('auth-password'),
+      confirmRow: byId('auth-password-confirm-row'),
+      confirmInput: /** @type {HTMLInputElement} */ (byId('auth-password-confirm')),
+      standardPanel: byId('auth-standard-panel'),
+      forgotPanel: byId('auth-forgot-panel'),
+      verifyPanel: byId('auth-verify-panel'),
+      submitRow: byId('auth-submit-row'),
+      submitLabel: byId('auth-submit-label'),
+      toggleLabel: byId('auth-toggle-label'),
+      toggleBtn: byId('auth-mode-toggle'),
+      termsNotice: byId('auth-terms-notice'),
+      forgotLink: byId('auth-forgot-link'),
+      forgotBack: byId('auth-forgot-back'),
+      forgotSend: /** @type {HTMLButtonElement} */ (byId('auth-forgot-send')),
+      forgotFeedback: byId('auth-forgot-feedback'),
+      verifyCopy: byId('auth-verify-copy'),
+      verifyCode: /** @type {HTMLInputElement} */ (byId('auth-verify-code')),
+      verifyBack: byId('auth-verify-back'),
+      verifyResend: /** @type {HTMLButtonElement} */ (byId('auth-verify-resend')),
+      verifyFeedback: byId('auth-verify-feedback'),
+      toggleRow: document.querySelector('#auth-modal .auth-toggle'),
+    };
+    return handles;
+  }
+
+  /** Clear a feedback line and its success/warn styling. */
+  function clearFeedback(node) {
+    if (!node) return;
+    node.textContent = '';
+    node.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
+  }
+
   function refreshAuthModalLayout() {
-    var std = document.getElementById('auth-standard-panel');
-    var frg = document.getElementById('auth-forgot-panel');
-    var verify = document.getElementById('auth-verify-panel');
-    var submitRow = document.getElementById('auth-submit-row');
-    var tgl = document.querySelector('#auth-modal .auth-toggle');
-    var mainsub = document.getElementById('auth-modal-sub');
-    var title = document.getElementById('auth-modal-title');
-    var emailEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-email'));
-    var submitLabel = document.getElementById('auth-submit-label');
-    if (!std || !frg) return;
+    const e = els();
+    if (!e || !e.standardPanel || !e.forgotPanel) return;
+
     if (authModeRegister && authFlowVerify) {
-      std.classList.add('hidden');
-      frg.classList.add('hidden');
-      if (verify) verify.classList.remove('hidden');
-      if (submitRow) submitRow.classList.remove('hidden');
-      if (tgl) tgl.classList.add('hidden');
-      if (mainsub) mainsub.classList.add('hidden');
-      if (title) title.textContent = lang('auth.verifyTitle', 'Verify your email');
-      if (emailEl) emailEl.readOnly = true;
-      if (submitLabel) submitLabel.textContent = lang('auth.createAccount', 'Create account');
-      var verifyCopy = document.getElementById('auth-verify-copy');
-      if (verifyCopy) {
-        verifyCopy.textContent = lang('auth.verifyCopy', 'Enter the 6-digit code we sent to {email}.', {
+      e.standardPanel.classList.add('hidden');
+      e.forgotPanel.classList.add('hidden');
+      if (e.verifyPanel) e.verifyPanel.classList.remove('hidden');
+      if (e.submitRow) e.submitRow.classList.remove('hidden');
+      if (e.toggleRow) e.toggleRow.classList.add('hidden');
+      if (e.sub) e.sub.classList.add('hidden');
+      if (e.title) e.title.textContent = lang('auth.verifyTitle', 'Verify your email');
+      if (e.email) e.email.readOnly = true;
+      if (e.submitLabel) e.submitLabel.textContent = lang('auth.createAccount', 'Create account');
+      if (e.verifyCopy) {
+        e.verifyCopy.textContent = lang('auth.verifyCopy', 'Enter the 6-digit code we sent to {email}.', {
           email: authPendingEmail || lang('auth.yourEmail', 'your email'),
         });
       }
     } else if (authFlowForgot && !authModeRegister) {
-      std.classList.add('hidden');
-      frg.classList.remove('hidden');
-      if (verify) verify.classList.add('hidden');
-      if (submitRow) submitRow.classList.add('hidden');
-      if (tgl) tgl.classList.add('hidden');
-      if (mainsub) mainsub.classList.add('hidden');
-      if (title) title.textContent = lang('auth.resetTitle', 'Reset password');
-      if (emailEl) emailEl.readOnly = false;
+      e.standardPanel.classList.add('hidden');
+      e.forgotPanel.classList.remove('hidden');
+      if (e.verifyPanel) e.verifyPanel.classList.add('hidden');
+      if (e.submitRow) e.submitRow.classList.add('hidden');
+      if (e.toggleRow) e.toggleRow.classList.add('hidden');
+      if (e.sub) e.sub.classList.add('hidden');
+      if (e.title) e.title.textContent = lang('auth.resetTitle', 'Reset password');
+      if (e.email) e.email.readOnly = false;
     } else {
-      frg.classList.add('hidden');
-      std.classList.remove('hidden');
-      if (verify) verify.classList.add('hidden');
-      if (submitRow) submitRow.classList.remove('hidden');
-      if (tgl) tgl.classList.remove('hidden');
-      if (mainsub) mainsub.classList.remove('hidden');
-      if (emailEl) emailEl.readOnly = false;
-      var fb = document.getElementById('auth-forgot-feedback');
-      if (fb) {
-        fb.textContent = '';
-        fb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
-      }
-      var verifyFb = document.getElementById('auth-verify-feedback');
-      if (verifyFb) {
-        verifyFb.textContent = '';
-        verifyFb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
-      }
+      e.forgotPanel.classList.add('hidden');
+      e.standardPanel.classList.remove('hidden');
+      if (e.verifyPanel) e.verifyPanel.classList.add('hidden');
+      if (e.submitRow) e.submitRow.classList.remove('hidden');
+      if (e.toggleRow) e.toggleRow.classList.remove('hidden');
+      if (e.sub) e.sub.classList.remove('hidden');
+      if (e.email) e.email.readOnly = false;
+      clearFeedback(e.forgotFeedback);
+      clearFeedback(e.verifyFeedback);
     }
-    var termsNotice = document.getElementById('auth-terms-notice');
-    if (termsNotice) {
-      termsNotice.classList.toggle('hidden', !authModeRegister);
-    }
+
+    if (e.termsNotice) e.termsNotice.classList.toggle('hidden', !authModeRegister);
     gsi.updateGooglePanelVisibility();
   }
 
   function resetAuthVerificationFlow() {
     authFlowVerify = false;
     authPendingEmail = '';
-    var codeEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-verify-code'));
-    if (codeEl) codeEl.value = '';
-    var verifyFb = document.getElementById('auth-verify-feedback');
-    if (verifyFb) {
-      verifyFb.textContent = '';
-      verifyFb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
-    }
+    const e = els();
+    if (!e) return;
+    if (e.verifyCode) e.verifyCode.value = '';
+    clearFeedback(e.verifyFeedback);
   }
 
   function syncAuthFormMode() {
@@ -123,52 +154,63 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     } else {
       resetAuthVerificationFlow();
     }
-    var title = document.getElementById('auth-modal-title');
-    var sub = document.getElementById('auth-modal-sub');
-    var submitLabel = document.getElementById('auth-submit-label');
-    var toggleLabel = document.getElementById('auth-toggle-label');
-    var toggleBtn = document.getElementById('auth-mode-toggle');
-    var confirmRow = document.getElementById('auth-password-confirm-row');
-    var confirmInput = /** @type {HTMLInputElement} */ (document.getElementById('auth-password-confirm'));
-    var passInput = document.getElementById('auth-password');
+    const e = els();
+    if (!e) return;
+
     if (authModeRegister) {
-      if (title) title.textContent = lang('auth.registerTitle', 'Create your free account');
-      if (sub) sub.textContent = lang('auth.registerSub', 'Sign up to upload and stage images.');
-      if (submitLabel && !authFlowVerify) submitLabel.textContent = lang('auth.continue', 'Continue');
-      if (toggleLabel) toggleLabel.textContent = lang('auth.alreadyHaveAccount', 'Already have an account?');
-      if (toggleBtn) toggleBtn.textContent = lang('auth.signIn', 'Sign in');
-      if (confirmRow) confirmRow.classList.remove('hidden');
-      if (confirmInput) confirmInput.required = true;
-      if (passInput) passInput.setAttribute('autocomplete', 'new-password');
+      if (e.title) e.title.textContent = lang('auth.registerTitle', 'Create your free account');
+      if (e.sub) e.sub.textContent = lang('auth.registerSub', 'Sign up to upload and stage images.');
+      if (e.submitLabel && !authFlowVerify) e.submitLabel.textContent = lang('auth.continue', 'Continue');
+      if (e.toggleLabel) e.toggleLabel.textContent = lang('auth.alreadyHaveAccount', 'Already have an account?');
+      if (e.toggleBtn) e.toggleBtn.textContent = lang('auth.signIn', 'Sign in');
+      if (e.confirmRow) e.confirmRow.classList.remove('hidden');
+      if (e.confirmInput) e.confirmInput.required = true;
+      if (e.password) e.password.setAttribute('autocomplete', 'new-password');
     } else {
-      if (title) title.textContent = lang('auth.signInTitle', 'Sign in');
-      if (sub) sub.textContent = lang('auth.signInSub', 'Use your email and password to continue.');
-      if (submitLabel) submitLabel.textContent = lang('auth.signIn', 'Sign in');
-      if (toggleLabel) toggleLabel.textContent = lang('auth.newHere', 'New here?');
-      if (toggleBtn) toggleBtn.textContent = lang('auth.createAccount', 'Create account');
-      if (confirmRow) confirmRow.classList.add('hidden');
-      if (confirmInput) {
-        confirmInput.required = false;
-        confirmInput.value = '';
+      if (e.title) e.title.textContent = lang('auth.signInTitle', 'Sign in');
+      if (e.sub) e.sub.textContent = lang('auth.signInSub', 'Use your email and password to continue.');
+      if (e.submitLabel) e.submitLabel.textContent = lang('auth.signIn', 'Sign in');
+      if (e.toggleLabel) e.toggleLabel.textContent = lang('auth.newHere', 'New here?');
+      if (e.toggleBtn) e.toggleBtn.textContent = lang('auth.createAccount', 'Create account');
+      if (e.confirmRow) e.confirmRow.classList.add('hidden');
+      if (e.confirmInput) {
+        e.confirmInput.required = false;
+        e.confirmInput.value = '';
       }
-      if (passInput) passInput.setAttribute('autocomplete', 'current-password');
+      if (e.password) e.password.setAttribute('autocomplete', 'current-password');
     }
-    var flink = document.getElementById('auth-forgot-link');
-    if (flink) {
-      if (authModeRegister) flink.classList.add('hidden');
-      else flink.classList.remove('hidden');
-    }
+
+    if (e.forgotLink) e.forgotLink.classList.toggle('hidden', authModeRegister);
     refreshAuthModalLayout();
   }
 
   function closeAuthModal() {
-    var m = document.getElementById('auth-modal');
-    if (!m) return;
-    m.classList.add('hidden');
-    m.setAttribute('aria-hidden', 'true');
+    const e = els();
+    if (!e) return;
+    e.modal.classList.add('hidden');
+    e.modal.setAttribute('aria-hidden', 'true');
     window.__stagifyPendingStaging = false;
     window.__stagifyPendingPlusRedirect = false;
     resetAuthVerificationFlow();
+  }
+
+  /**
+   * Reveal the staging dialog the user was sent here from, if any.
+   *
+   * MUST be called with the flag read BEFORE closeAuthModal(), which clears both
+   * pending flags. Reading `window.__stagifyPendingStaging` after the close — as
+   * this did until 2026-07-28 — is always false, so signing in from "Stage this
+   * photo" dropped the user back on the page with nothing open and no error. The
+   * sibling `__stagifyPendingPlusRedirect` was already captured up-front for
+   * exactly this reason; the staging flag just never got the same treatment.
+   *
+   * @param {boolean} wasPending Flag value captured before the modal was closed.
+   */
+  function resumePendingStaging(wasPending) {
+    if (!wasPending) return;
+    window.__stagifyPendingStaging = false;
+    const stageModal = document.getElementById('stage-modal');
+    if (stageModal) stageModal.classList.remove('hidden');
   }
 
   function openAuthModal(forStaging) {
@@ -177,15 +219,20 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     authFlowForgot = false;
     resetAuthVerificationFlow();
     if (forStaging) window.__stagifyPendingStaging = true;
-    var m = document.getElementById('auth-modal');
-    if (!m) return;
-    var err = document.getElementById('auth-error');
-    if (err) err.textContent = '';
-    m.classList.remove('hidden');
-    m.setAttribute('aria-hidden', 'false');
+    const e = els();
+    if (!e) return;
+    if (e.error) e.error.textContent = '';
+    e.modal.classList.remove('hidden');
+    e.modal.setAttribute('aria-hidden', 'false');
     syncAuthFormMode();
     gsi.tryInitGoogleSignIn();
     onCloseDropdown();
+  }
+
+  /** Clear the modal-wide error line. */
+  function clearError() {
+    const e = els();
+    if (e && e.error) e.error.textContent = '';
   }
 
   function bindAuthOnce() {
@@ -194,65 +241,55 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     ensureAuthModal();
     AUTH_BOUND = true;
 
-    var backdrop = document.getElementById('auth-modal-backdrop');
-    var closeBtn = document.getElementById('auth-modal-close');
-    var toggle = document.getElementById('auth-mode-toggle');
-    var form = document.getElementById('auth-form');
+    const e = els();
+    if (!e) return;
 
-    if (backdrop) backdrop.addEventListener('click', closeAuthModal);
-    if (closeBtn) closeBtn.addEventListener('click', closeAuthModal);
-    if (toggle) {
-      toggle.addEventListener('click', function () {
+    if (e.backdrop) e.backdrop.addEventListener('click', closeAuthModal);
+    if (e.closeBtn) e.closeBtn.addEventListener('click', closeAuthModal);
+
+    if (e.toggleBtn) {
+      e.toggleBtn.addEventListener('click', () => {
         authModeRegister = !authModeRegister;
         authFlowForgot = false;
         resetAuthVerificationFlow();
         syncAuthFormMode();
-        var er = document.getElementById('auth-error');
-        if (er) er.textContent = '';
+        clearError();
       });
     }
-    var forgotLink = document.getElementById('auth-forgot-link');
-    if (forgotLink) {
-      forgotLink.addEventListener('click', function () {
+
+    if (e.forgotLink) {
+      e.forgotLink.addEventListener('click', () => {
         authFlowForgot = true;
         syncAuthFormMode();
-        var er = document.getElementById('auth-error');
-        if (er) er.textContent = '';
+        clearError();
       });
     }
-    var verifyBack = document.getElementById('auth-verify-back');
-    if (verifyBack) {
-      verifyBack.addEventListener('click', function () {
+
+    if (e.verifyBack) {
+      e.verifyBack.addEventListener('click', () => {
         resetAuthVerificationFlow();
         syncAuthFormMode();
-        var er = document.getElementById('auth-error');
-        if (er) er.textContent = '';
+        clearError();
       });
     }
-    var verifyResend = /** @type {HTMLButtonElement} */ (document.getElementById('auth-verify-resend'));
-    if (verifyResend) {
-      verifyResend.addEventListener('click', async function () {
-        var fb = document.getElementById('auth-verify-feedback');
-        var emailEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-email'));
-        var email = authPendingEmail || (emailEl ? emailEl.value.trim() : '');
-        if (fb) {
-          fb.textContent = '';
-          fb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
-        }
+
+    if (e.verifyResend) {
+      e.verifyResend.addEventListener('click', async () => {
+        const fb = e.verifyFeedback;
+        const email = authPendingEmail || (e.email ? e.email.value.trim() : '');
+        clearFeedback(fb);
         if (!email) {
           if (fb) fb.textContent = lang('auth.enterEmail', 'Enter your email address.');
           return;
         }
-        verifyResend.disabled = true;
+        e.verifyResend.disabled = true;
         try {
-          var r = await fetch('/api/auth/register/resend', {
+          const r = await fetch('/api/auth/register/resend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email }),
+            body: JSON.stringify({ email }),
           });
-          var data = await r.json().catch(function () {
-            return {};
-          });
+          const data = await r.json().catch(() => ({}));
           if (fb) {
             if (!r.ok) {
               fb.textContent = data.error || lang('auth.resendFailed', 'Could not resend code. Try again.');
@@ -265,39 +302,35 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
         } catch (err) {
           if (fb) fb.textContent = lang('auth.networkError', 'Network error. Please try again.');
         }
-        verifyResend.disabled = false;
+        e.verifyResend.disabled = false;
       });
     }
-    var forgotBack = document.getElementById('auth-forgot-back');
-    if (forgotBack) {
-      forgotBack.addEventListener('click', function () {
+
+    if (e.forgotBack) {
+      e.forgotBack.addEventListener('click', () => {
         authFlowForgot = false;
         syncAuthFormMode();
-        var er = document.getElementById('auth-error');
-        if (er) er.textContent = '';
+        clearError();
       });
     }
-    var forgotSend = /** @type {HTMLButtonElement} */ (document.getElementById('auth-forgot-send'));
-    if (forgotSend) {
-      forgotSend.addEventListener('click', async function () {
-        var fb = document.getElementById('auth-forgot-feedback');
-        var emailEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-email'));
-        var email = emailEl ? emailEl.value.trim() : '';
+
+    if (e.forgotSend) {
+      e.forgotSend.addEventListener('click', async () => {
+        const fb = e.forgotFeedback;
+        const email = e.email ? e.email.value.trim() : '';
         if (fb) fb.textContent = '';
         if (!email) {
           if (fb) fb.textContent = lang('auth.enterEmail', 'Enter your email address.');
           return;
         }
-        forgotSend.disabled = true;
+        e.forgotSend.disabled = true;
         try {
-          var r = await fetch('/api/auth/forgot-password', {
+          const r = await fetch('/api/auth/forgot-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email }),
+            body: JSON.stringify({ email }),
           });
-          var data = await r.json().catch(function () {
-            return {};
-          });
+          const data = await r.json().catch(() => ({}));
           if (fb) {
             fb.classList.remove('auth-forgot-feedback--success', 'auth-forgot-feedback--warn');
             if (!r.ok) {
@@ -318,128 +351,126 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
         } catch (err) {
           if (fb) fb.textContent = lang('auth.resetTryLater', 'Something went wrong. Try again later.');
         }
-        forgotSend.disabled = false;
+        e.forgotSend.disabled = false;
       });
     }
-    if (form) {
-      form.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        if (authFlowForgot) {
-          return;
-        }
-        var errEl = document.getElementById('auth-error');
-        var emailEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-email'));
-        var passEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-password'));
-        var confirmEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-password-confirm'));
-        var email = emailEl ? emailEl.value.trim() : '';
-        var password = passEl ? passEl.value : '';
-        if (errEl) errEl.textContent = '';
-        if (authModeRegister && authFlowVerify) {
-          var codeEl = /** @type {HTMLInputElement} */ (document.getElementById('auth-verify-code'));
-          var code = codeEl ? codeEl.value.trim() : '';
-          if (!/^\d{6}$/.test(code)) {
-            if (errEl) errEl.textContent = lang('auth.enterVerificationCode', 'Enter the 6-digit verification code from your email.');
-            return;
-          }
-          try {
-            var vr = await fetch('/api/auth/register/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: email, code: code }),
-            });
-            var vdata = await vr.json();
-            if (!vr.ok) {
-              if (errEl) errEl.textContent = vdata.error || lang('auth.verificationFailed', 'Verification failed');
-              return;
-            }
-            window.StagifyAuth.setToken(vdata.token);
-            await window.StagifyAuth.fetchMe();
-            var goPlusVerify = !!window.__stagifyPendingPlusRedirect;
-            window.StagifyAuth.applyUserToUI();
-            closeAuthModal();
-            if (window.__stagifyPendingStaging) {
-              window.__stagifyPendingStaging = false;
-              var stageModal = document.getElementById('stage-modal');
-              if (stageModal) stageModal.classList.remove('hidden');
-            }
-            onRefresh();
-            if (goPlusVerify) {
-              window.location.href = localizedTarget('stagify-plus.html');
-              return;
-            }
-          } catch (verr) {
-            if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
-          }
-          return;
-        }
-        if (authModeRegister) {
-          var confirmPass = confirmEl ? confirmEl.value : '';
-          if (password !== confirmPass) {
-            if (errEl) errEl.textContent = lang('auth.passwordsNoMatch', 'Passwords do not match.');
-            return;
-          }
-        }
-        var path = authModeRegister ? '/api/auth/register' : '/api/auth/login';
-        try {
-          var r = await fetch(path, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email, password: password }),
-          });
-          var data = await r.json();
-          if (!r.ok) {
-            if (errEl) errEl.textContent = data.error || lang('auth.somethingWrong', 'Something went wrong');
-            return;
-          }
-          if (authModeRegister && data.needsVerification) {
-            authFlowVerify = true;
-            authPendingEmail = email;
-            refreshAuthModalLayout();
-            var verifyFb = document.getElementById('auth-verify-feedback');
-            if (verifyFb) {
-              verifyFb.textContent = data.message || lang('auth.checkEmailForCode', 'Check your email for a verification code.');
-              verifyFb.classList.add('auth-forgot-feedback--success');
-            }
-            return;
-          }
-          window.StagifyAuth.setToken(data.token);
-          await window.StagifyAuth.fetchMe();
-          var goPlusLogin = !!window.__stagifyPendingPlusRedirect;
-          window.StagifyAuth.applyUserToUI();
-          closeAuthModal();
-          if (window.__stagifyPendingStaging) {
-            window.__stagifyPendingStaging = false;
-            stageModal = document.getElementById('stage-modal');
-            if (stageModal) stageModal.classList.remove('hidden');
-          }
-          onRefresh();
-          if (goPlusLogin) {
-            window.location.href = localizedTarget('stagify-plus.html');
-            return;
-          }
-        } catch (err) {
-          if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
-        }
-      });
-    }
+
+    if (e.form) e.form.addEventListener('submit', handleSubmit);
+
     gsi.tryInitGoogleSignIn();
   }
 
+  /**
+   * Finish a successful sign-in: store the session, refresh the UI, close the
+   * modal, and resume whatever the user was doing when they were asked to sign in.
+   *
+   * Both pending flags are read BEFORE closeAuthModal() clears them.
+   *
+   * @param {string} token Session token from the auth endpoint.
+   */
+  async function completeSignIn(token) {
+    window.StagifyAuth.setToken(token);
+    await window.StagifyAuth.fetchMe();
+    const goPlus = !!window.__stagifyPendingPlusRedirect;
+    const wasPendingStaging = !!window.__stagifyPendingStaging;
+    window.StagifyAuth.applyUserToUI();
+    closeAuthModal();
+    resumePendingStaging(wasPendingStaging);
+    onRefresh();
+    if (goPlus) window.location.href = localizedTarget('stagify-plus.html');
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    if (authFlowForgot) return;
+
+    const e = els();
+    if (!e) return;
+    const errEl = e.error;
+    const email = e.email ? e.email.value.trim() : '';
+    const password = /** @type {HTMLInputElement} */ (e.password)
+      ? /** @type {HTMLInputElement} */ (e.password).value
+      : '';
+    if (errEl) errEl.textContent = '';
+
+    if (authModeRegister && authFlowVerify) {
+      const code = e.verifyCode ? e.verifyCode.value.trim() : '';
+      if (!/^\d{6}$/.test(code)) {
+        if (errEl) {
+          errEl.textContent = lang('auth.enterVerificationCode', 'Enter the 6-digit verification code from your email.');
+        }
+        return;
+      }
+      try {
+        const vr = await fetch('/api/auth/register/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code }),
+        });
+        const vdata = await vr.json();
+        if (!vr.ok) {
+          if (errEl) errEl.textContent = vdata.error || lang('auth.verificationFailed', 'Verification failed');
+          return;
+        }
+        await completeSignIn(vdata.token);
+      } catch (verr) {
+        if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
+      }
+      return;
+    }
+
+    if (authModeRegister) {
+      const confirmPass = e.confirmInput ? e.confirmInput.value : '';
+      if (password !== confirmPass) {
+        if (errEl) errEl.textContent = lang('auth.passwordsNoMatch', 'Passwords do not match.');
+        return;
+      }
+    }
+
+    const path = authModeRegister ? '/api/auth/register' : '/api/auth/login';
+    try {
+      const r = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        if (errEl) errEl.textContent = data.error || lang('auth.somethingWrong', 'Something went wrong');
+        return;
+      }
+      if (authModeRegister && data.needsVerification) {
+        authFlowVerify = true;
+        authPendingEmail = email;
+        refreshAuthModalLayout();
+        if (e.verifyFeedback) {
+          e.verifyFeedback.textContent =
+            data.message || lang('auth.checkEmailForCode', 'Check your email for a verification code.');
+          e.verifyFeedback.classList.add('auth-forgot-feedback--success');
+        }
+        return;
+      }
+      await completeSignIn(data.token);
+    } catch (err) {
+      if (errEl) errEl.textContent = lang('auth.networkError', 'Network error. Please try again.');
+    }
+  }
+
   return {
-    openAuthModal: openAuthModal,
-    syncAuthFormMode: syncAuthFormMode,
-    bindAuthOnce: bindAuthOnce,
+    openAuthModal,
+    syncAuthFormMode,
+    bindAuthOnce,
     // Set the register/sign-in toggle without re-syncing (caller syncs next).
-    setAuthModeRegister: function (v) {
+    setAuthModeRegister(v) {
       authModeRegister = !!v;
     },
     // External entry points reset the forgot-password flow and re-sync in one step.
-    selectMode: function (v) {
+    selectMode(v) {
       authModeRegister = !!v;
       authFlowForgot = false;
       syncAuthFormMode();
     },
-    openForStaging: function () {
+    openForStaging() {
       authModeRegister = true;
       authFlowForgot = false;
       syncAuthFormMode();

@@ -345,10 +345,20 @@ This one style **must** stay inline — it has to apply before any external CSS 
 
 ### `var` is an extraction artifact — sweep it, don't pick at it
 
-Much of `public/scripts/` still declares with `var`: **587 of them across 37 files** at the
-time of writing, left over from when these were classic `<script>` files (see the
-unminify/ESM-conversion history). `admin/renderers.js` has 88, `profile-menu/auth-modal.js`
-75, `status.js` 45. New code uses `const`/`let`.
+Much of `public/scripts/` still declares with `var`, left over from when these were classic
+`<script>` files (see the unminify/ESM-conversion history): **491 across 34 files** as of
+2026-07-28, down from 587/37. `admin/renderers.js` has 88, `status.js` 45,
+`demo-player.js` 38. New code uses `const`/`let`.
+
+The 96 that went were `profile-menu.js` (21) and `profile-menu/auth-modal.js` (75) — **not**
+a counter-example to the sweep rule below. `auth-modal.js` was being rewritten anyway (the
+element-handle cache, and the sign-in hand-off bug in the next section), and new code is
+`const`/`let` by the same rule; `profile-menu.js` followed so the island isn't half-and-half
+with its own submodule. `profile-menu/google-signin.js` still has its `var`s and is left for
+the sweep. That is the shape of a legitimate exception: the file was open for a behavioural
+reason, and it came with the [first tests][pm-tests] this surface has ever had.
+
+[pm-tests]: ../../test/frontend/profile-menu/auth-modal.test.js
 
 `eslint.config.js` sets `ecmaVersion: 2022` but enables **neither `no-var` nor
 `prefer-const`**, so `var` is currently legal rather than debt — worth knowing before
@@ -375,11 +385,34 @@ one scope) into hard errors, which is what makes an otherwise-untested sweep saf
 **Timing matters more than usual**: it rewrites 37 files at once, so run it when nobody
 else has work open under `public/scripts/`.
 
-While you are in there: `auth-modal.js` re-queries ~10 `getElementById`s per mode toggle.
-Caching them at module scope is *safe* — `ensureAuthModal()` early-returns if `#auth-modal`
-exists and nothing ever removes it, so the node identities are stable for the page's life —
-but it is worth doing for readability, not speed: those are O(1) id-map lookups on a human
-click, and the sign-in flow has no behavioural test coverage to catch a slip.
+### The auth modal's element handles
+
+`auth-modal.js` used to re-query ~20 `getElementById`s per mode toggle. They are now
+resolved once by `els()`, which caches **keyed on the modal root**: one lookup per access
+confirms the cached handles still belong to the `#auth-modal` currently in the document, so
+if anything ever replaces the modal the handles rebuild instead of writing into a detached
+tree. A plain module-scope cache would have been fine today — nothing removes the node —
+but it would have been fine *by accident*, and this costs one lookup to not depend on that.
+
+Worth being straight about the payoff: those were O(1) id-map lookups on a human click, so
+**this bought readability, not speed**. The reason to do it was that the alternative —
+twenty `document.getElementById` calls interleaved with the logic — is what hid the
+`stageModal` assignment that relied on `var` hoisting reaching it from an earlier branch,
+and the dead `__stagifyPendingStaging` check described below.
+
+### The sign-in → staging hand-off
+
+`openAuthModal(true)` sets `window.__stagifyPendingStaging` so a visitor who clicked
+"Stage" while signed out gets the staging dialog back after authenticating. **The flag must
+be read before `closeAuthModal()`, which clears it.** All three success paths — password
+login, email verification, and Google sign-in — read it *after* the close until 2026-07-28,
+so the hand-off was dead: the modal shut and nothing opened, with no error. The sibling
+`__stagifyPendingPlusRedirect` was already captured up-front for exactly this reason, which
+is what makes the omission easy to miss on a read-through.
+
+If you add a fourth way to complete sign-in, route it through `completeSignIn()` in
+`auth-modal.js` rather than repeating the sequence; it captures both flags in the right
+order. Covered by `test/frontend/profile-menu/auth-modal.test.js`.
 
 ## Decision: vanilla ES-module islands, not a component framework
 

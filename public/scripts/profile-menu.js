@@ -2,20 +2,20 @@ import { createAuthModal } from './profile-menu/auth-modal.js';
 import { lang, esc } from './profile-menu/dom-utils.js';
 
 (function () {
-  var dropdownOpen = false;
+  let dropdownOpen = false;
   // Stripe Customer Portal login (Dashboard → Customer portal → link).
-  var STRIPE_CUSTOMER_PORTAL_LOGIN =
+  const STRIPE_CUSTOMER_PORTAL_LOGIN =
     'https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00';
-  var PORTAL_STRIPE_ICON =
+  const PORTAL_STRIPE_ICON =
     '<img src="media-webp/Stripe.webp" alt="" aria-hidden="true">';
 
   // The auth modal is its own island; it calls back here to refresh/close the
   // dropdown. Both callbacks are hoisted function declarations below.
-  var auth = createAuthModal({ onRefresh: refresh, onCloseDropdown: closeDropdown });
+  const auth = createAuthModal({ onRefresh: refresh, onCloseDropdown: closeDropdown });
 
   function closeDropdown() {
-    var dd = document.getElementById('profile-menu-dropdown');
-    var btn = document.getElementById('profile-menu-btn');
+    const dd = document.getElementById('profile-menu-dropdown');
+    const btn = document.getElementById('profile-menu-btn');
     dropdownOpen = false;
     if (dd) {
       dd.classList.add('hidden');
@@ -25,8 +25,8 @@ import { lang, esc } from './profile-menu/dom-utils.js';
   }
 
   function openDropdown() {
-    var dd = document.getElementById('profile-menu-dropdown');
-    var btn = document.getElementById('profile-menu-btn');
+    const dd = document.getElementById('profile-menu-dropdown');
+    const btn = document.getElementById('profile-menu-btn');
     if (!dd || !btn) return;
     refresh();
     dd.classList.remove('hidden');
@@ -43,11 +43,11 @@ import { lang, esc } from './profile-menu/dom-utils.js';
 
 
   function refresh() {
-    var dd = document.getElementById('profile-menu-dropdown');
+    const dd = document.getElementById('profile-menu-dropdown');
     if (!dd || !window.StagifyAuth) return;
 
-    var u = window.StagifyAuth.user;
-    var tok = window.StagifyAuth.getToken();
+    const u = window.StagifyAuth.user;
+    const tok = window.StagifyAuth.getToken();
 
     if (!tok || !u) {
       dd.classList.add('profile-menu-dropdown--guest');
@@ -62,10 +62,10 @@ import { lang, esc } from './profile-menu/dom-utils.js';
         '</div>';
     } else {
       dd.classList.remove('profile-menu-dropdown--guest');
-      var planLine;
+      let planLine;
       if (u.plan === 'pro') {
         // The "Stripe help center" button is hidden on the staging site.
-        var portalHelp = auth.isStagingMode()
+        const portalHelp = auth.isStagingMode()
           ? ''
           : '<a class="profile-menu__portal-help" href="' +
             STRIPE_CUSTOMER_PORTAL_LOGIN +
@@ -85,7 +85,7 @@ import { lang, esc } from './profile-menu/dom-utils.js';
       } else {
         planLine = '<div class="profile-menu__plan">' + esc(lang('profile.freePlan', 'Free Plan')) + '</div>';
       }
-      var plusRow = '';
+      let plusRow = '';
       if (u.plan !== 'pro') {
         plusRow =
           '<a href="stagify-plus.html" class="profile-menu__link profile-menu__link--plus">' +
@@ -93,7 +93,7 @@ import { lang, esc } from './profile-menu/dom-utils.js';
           esc(lang('profile.upgradeToPlus', 'Upgrade to Stagify+')) +
           '</a>';
       }
-      var manageRow = '';
+      let manageRow = '';
       if (u.plan === 'pro' && u.canManageSubscription) {
         manageRow =
           '<button type="button" class="profile-menu__item" data-profile-action="manage-subscription">' +
@@ -119,9 +119,9 @@ import { lang, esc } from './profile-menu/dom-utils.js';
   }
 
   function onDropdownClick(e) {
-    var t = e.target.closest('[data-profile-action]');
+    const t = e.target.closest('[data-profile-action]');
     if (!t) return;
-    var action = t.getAttribute('data-profile-action');
+    const action = t.getAttribute('data-profile-action');
     if (action === 'signin') {
       auth.setAuthModeRegister(false);
       auth.syncAuthFormMode();
@@ -146,13 +146,13 @@ import { lang, esc } from './profile-menu/dom-utils.js';
     if (action === 'signout') {
       e.preventDefault();
       closeDropdown();
-      var tok = window.StagifyAuth.getToken();
+      const tok = window.StagifyAuth.getToken();
       if (tok) {
         fetch('/api/auth/logout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ authToken: tok }),
-        }).catch(function () {});
+        }).catch(() => {});
       }
       window.StagifyAuth.clear();
       window.StagifyAuth.applyUserToUI();
@@ -166,7 +166,7 @@ import { lang, esc } from './profile-menu/dom-utils.js';
     closeDropdown();
   }
 
-  var docBound = false;
+  let docBound = false;
 
   function init() {
     if (!document.getElementById('profile-menu-btn')) return;
@@ -174,8 +174,8 @@ import { lang, esc } from './profile-menu/dom-utils.js';
     if (document.getElementById('auth-modal')) {
       auth.syncAuthFormMode();
     }
-    var btn = document.getElementById('profile-menu-btn');
-    var dd = document.getElementById('profile-menu-dropdown');
+    const btn = document.getElementById('profile-menu-btn');
+    const dd = document.getElementById('profile-menu-dropdown');
     btn.addEventListener('click', toggleDropdown);
     if (dd) dd.addEventListener('click', onDropdownClick);
     if (!docBound) {
@@ -184,7 +184,7 @@ import { lang, esc } from './profile-menu/dom-utils.js';
     }
 
     if (window.StagifyAuth) {
-      window.StagifyAuth.fetchMe().then(function () {
+      window.StagifyAuth.fetchMe().then(() => {
         window.StagifyAuth.applyUserToUI();
         refresh();
       });
@@ -193,9 +193,9 @@ import { lang, esc } from './profile-menu/dom-utils.js';
 
   window.StagifyProfileMenu = {
     openAuthModal: auth.openAuthModal,
-    refresh: refresh,
-    closeDropdown: closeDropdown,
-    setAuthModeRegister: function (v) {
+    refresh,
+    closeDropdown,
+    setAuthModeRegister(v) {
       auth.selectMode(v);
     },
   };
@@ -210,7 +210,7 @@ import { lang, esc } from './profile-menu/dom-utils.js';
     init();
   }
 
-  window.addEventListener('languagechange', function () {
+  window.addEventListener('languagechange', () => {
     auth.syncAuthFormMode();
     refresh();
   });

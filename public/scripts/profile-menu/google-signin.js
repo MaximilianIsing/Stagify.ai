@@ -69,9 +69,15 @@ export function createGoogleSignIn({ getAuthFlow, closeAuthModal, onRefresh }) {
       .then(function (user) {
         if (!user) return;
         var goPlus = !!window.__stagifyPendingPlusRedirect;
+        // Both pending flags MUST be read before closeAuthModal(), which clears
+        // them. Reading the staging one after the close — as this did until
+        // 2026-07-28 — is always false, so signing in with Google from "Stage this
+        // photo" dropped the user back on the page with nothing open. Same fix as
+        // the password paths in auth-modal.js.
+        var wasPendingStaging = !!window.__stagifyPendingStaging;
         window.StagifyAuth.applyUserToUI();
         closeAuthModal();
-        if (window.__stagifyPendingStaging) {
+        if (wasPendingStaging) {
           window.__stagifyPendingStaging = false;
           var stageModal = document.getElementById('stage-modal');
           if (stageModal) stageModal.classList.remove('hidden');
