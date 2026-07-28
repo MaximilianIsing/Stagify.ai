@@ -283,3 +283,66 @@ test('the migration is idempotent — reopening does not double-hash', () => {
   assert.deepEqual(s2.exportStore().sessions, first, 'already-hashed rows were left alone');
   assert.equal(s2.validateSession(reg.token)?.email, 'twice@example.com', 'the session survived a second open');
 });
+
+// ── indexes on the non-token lookups (session-tokens.js) ─────────────────────
+//
+// `sessions` and `password_reset_tokens` are keyed by token, so the PRIMARY KEY
+// covers every lookup that has one. The two that don't — by `user_id` (sign out
+// everywhere, on every password reset) and by `exp` (the pruners) — need their own
+// indexes or they read the whole table.
+
+/** The named (non-auto) indexes on a table, sorted. */
+const namedIndexes = (db, table) =>
+  db.prepare(`PRAGMA index_list(${table})`).all()
+    .map((r) => r.name)
+    .filter((n) => n.startsWith('idx_'))
+    .sort();
+
+test('the non-token session/reset lookups are indexed rather than full scans', () => {
+  const dir = tempDir();
+  storeAt(dir);
+  const raw = openDb(dbPathFor(dir));
+  // Assert the PLAN, not the schema: an index the planner declines to use is no
+  // index at all, and "SCAN" vs "SEARCH … USING INDEX" is exactly that difference.
+  const planFor = (sql, arg) =>
+    raw.prepare(`EXPLAIN QUERY PLAN ${sql}`).all(arg).map((r) => r.detail).join(' | ');
+
+  for (const [sql, arg] of [
+    ['DELETE FROM sessions WHERE user_id = ?', 'u_1'],
+    ['DELETE FROM sessions WHERE exp < ?', 1],
+    ['DELETE FROM password_reset_tokens WHERE user_id = ?', 'u_1'],
+    ['DELETE FROM password_reset_tokens WHERE exp < ?', 1],
+  ]) {
+    const detail = planFor(sql, arg);
+    assert.match(detail, /USING (COVERING )?INDEX idx_/, `${sql} → ${detail}`);
+    assert.doesNotMatch(detail, /\bSCAN\b/, `${sql} must not read the whole table → ${detail}`);
+  }
+  raw.close();
+});
+
+test('an existing database gains the indexes on the next open, without touching rows', () => {
+  const dir = tempDir();
+  const s1 = storeAt(dir);
+  const reg = verifyUser(s1, 'indexed@example.com');
+  s1.close();
+
+  // Emulate a database written before these indexes existed — which is every
+  // deployed copy. The claim under test is that opening IS the whole migration.
+  const before = openDb(dbPathFor(dir));
+  for (const name of ['idx_sessions_user', 'idx_sessions_exp', 'idx_resets_user', 'idx_resets_exp']) {
+    before.exec(`DROP INDEX IF EXISTS ${name}`);
+  }
+  assert.deepEqual(namedIndexes(before, 'sessions'), [], 'starting from the pre-index schema');
+  before.close();
+
+  const s2 = storeAt(dir);
+  const after = openDb(dbPathFor(dir));
+  assert.deepEqual(namedIndexes(after, 'sessions'), ['idx_sessions_exp', 'idx_sessions_user']);
+  assert.deepEqual(namedIndexes(after, 'password_reset_tokens'), ['idx_resets_exp', 'idx_resets_user']);
+  after.close();
+  assert.equal(
+    s2.validateSession(reg.token)?.email,
+    'indexed@example.com',
+    'building an index signs nobody out',
+  );
+});
