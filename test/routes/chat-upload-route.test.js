@@ -351,3 +351,31 @@ test('a clarifying-question response suppresses staging and returns plain JSON',
   assert.equal(app.calls.processStaging.calls, 0);
   assert.equal((await res.json()).stagedImage, undefined);
 });
+
+// ORDER GUARD (mirror of the one in chat-route.test.js). /api/chat-upload
+// dispatches STAGING before image GENERATION — the reverse of /api/chat. The two
+// handlers share lib/chat/chat-post-routing.js and differ only by the `order`
+// they pass in, so these two tests are the only thing pinning the difference.
+test('/api/chat-upload runs staging BEFORE image generation (the reverse of /api/chat)', async () => {
+  /** @type {string[]} */
+  const order = [];
+  app = await mountChat({
+    routing: {
+      ...STAGING_ROUTING,
+      response: 'Staged your room and drew some artwork.',
+      generate: [{ shouldGenerate: true, prompt: 'abstract artwork' }],
+    },
+    processStaging: async () => { order.push('staging'); return 'data:staged'; },
+    processImageGeneration: async () => { order.push('generate'); return 'data:generated'; },
+  });
+
+  const res = await postUpload(app.baseUrl, {
+    files: [pngFile()],
+    message: 'stage this room and make some artwork',
+  });
+
+  const body = await res.json();
+  assert.equal(body.stagedImage, 'data:staged');
+  assert.equal(body.generatedImage, 'data:generated');
+  assert.deepEqual(order, ['staging', 'generate']);
+});

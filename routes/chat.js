@@ -1,26 +1,36 @@
 // chat routes, extracted verbatim from server.js.
+//
+// Both handlers are orchestration only: each cohesive step lives in a module
+// under lib/chat/ (see chat-request-prep / chat-upload-prep / chat-upload-context
+// for preparation, chat-pipeline for dispatch, chat-post-routing for sequencing).
+//
+// ONE THING TO KNOW BEFORE EDITING: /api/chat and /api/chat-upload are NOT two
+// copies of the same flow. The post-routing dispatch runs generation BEFORE
+// staging on /api/chat and staging BEFORE generation on /api/chat-upload. That
+// order is passed into runPostRoutingDispatch explicitly by each handler
+// (GENERATE_THEN_STAGING vs STAGING_THEN_GENERATE); it decides which step's
+// text suffix lands first and which model call happens first, so collapsing the
+// two handlers — or defaulting the order — is a silent behaviour change.
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import createChatPipeline from '../lib/chat/chat-pipeline.js';
 import createUploadPrep from '../lib/chat/chat-upload-prep.js';
-import { buildChatSystemInstruction, buildChatUploadSystemInstruction, getStagifyDateContext } from '../lib/staging/prompts.js';
-import { deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext } from '../lib/chat/chat-history.js';
+import { buildChatSystemInstruction, getStagifyDateContext } from '../lib/staging/prompts.js';
+import { deduplicateMessages, filterConversationHistory, stripImagesFromHistory, parseBaseImageIndex, getBaseImageSelectionContext, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext } from '../lib/chat/chat-history.js';
 import { writeChatSseEvent } from '../lib/chat/chat-sse.js';
 import { sendError } from '../lib/http/http-helpers.js';
 import { reportError } from '../lib/http/error-ref.js';
 import createWelcomeMessageHandler from '../lib/chat/welcome-message-handler.js';
 import createChatRequestPrep from '../lib/chat/chat-request-prep.js';
-import { buildUnsupportedFileErrorBody } from '../lib/chat/chat-upload-error.js';
+import { resolveUploadErrorBody } from '../lib/chat/chat-upload-error.js';
+import { isContextLimitReached, buildContextLimitResponse } from '../lib/chat/chat-context-limit.js';
+import { logImageContextDebug } from '../lib/chat/chat-image-context-log.js';
+import { extractCurrentMessageImage } from '../lib/chat/chat-current-image.js';
+import { resolveHistoryFallbackImage, resolveCurrentUploadFallbackImage } from '../lib/chat/chat-staging-fallback.js';
+import { parseConversationHistory, buildUploadContext, appendSoleUploadNote, applyDefaultUserContentText } from '../lib/chat/chat-upload-context.js';
+import { resolveAddFurnitureStaging } from '../lib/chat/chat-furniture-staging.js';
+import { extractUploadImageAnnotations } from '../lib/chat/chat-upload-annotations.js';
+import createPostRoutingDispatch, { GENERATE_THEN_STAGING, STAGING_THEN_GENERATE } from '../lib/chat/chat-post-routing.js';
 import { resolveChatModel } from '../lib/config/model-config.js';
-import { logger } from '../lib/logger.js';
-
-// A single conversation is capped at this many user messages before the client
-// must start a fresh chat. Keeps the model's context window (and per-request
-// cost) bounded; the client resets by reloading the chat.
-const MAX_USER_MESSAGES = 20;
-const CONTEXT_LIMIT_MESSAGE =
-  `You've reached the maximum conversation context limit (${MAX_USER_MESSAGES} messages). ` +
-  'Please reload the chat by clicking the reload button (↻) to the left of the file upload ' +
-  'button to start a fresh conversation.';
 
 /**
  * Build the AI Designer chat router (/api/chat, /api/chat-upload,
@@ -62,6 +72,9 @@ export default function createChatRouter(deps) {
   const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting, logUploadDedupDiagnostics } = createUploadPrep(deps);
   const { handleWelcomeMessage } = createWelcomeMessageHandler(deps);
   const { logDedupDiagnostics, detectHistoryImage, applyMessageTag, buildChatMessages, logChatPayload, runChatRouting } = createChatRequestPrep(deps);
+  const { runPostRoutingDispatch } = createPostRoutingDispatch({
+    runStagingRequests, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests,
+  });
 
 router.get('/api/welcome-message', handleWelcomeMessage);
 
@@ -76,7 +89,7 @@ router.post('/api/chat', genLimiter, async (req, res) => {
 
     const { messages, model, messageTag, baseImageIndex: baseImageIndexRaw } = req.body;
     const baseImageIndex = parseBaseImageIndex(baseImageIndexRaw);
-    
+
     // Resolve the client-supplied model through the allow-list — this value is
     // forwarded to OpenAI verbatim. requireProAccount above already guarantees a
     // paid account, hence isPro: true.
@@ -92,13 +105,9 @@ router.post('/api/chat', genLimiter, async (req, res) => {
       logDedupDiagnostics(messages, deduplicatedMessages);
     }
 
-    // Check message limit (see MAX_USER_MESSAGES)
-    const userMessageCount = deduplicatedMessages.filter(msg => msg.role === 'user').length;
-    if (userMessageCount >= MAX_USER_MESSAGES) {
-      return res.json({
-        response: CONTEXT_LIMIT_MESSAGE,
-        contextLimitReached: true
-      });
+    // Check message limit (see lib/chat/chat-context-limit.js)
+    if (isContextLimitReached(deduplicatedMessages)) {
+      return res.json(buildContextLimitResponse());
     }
 
     // Key per-user data on the validated session account — NOT a client-supplied
@@ -111,35 +120,25 @@ router.post('/api/chat', genLimiter, async (req, res) => {
 
     // Build context about available images in history with annotations
     const { imageContext } = buildImageContext(deduplicatedMessages);
-    
-    // Log image context for debugging
-    if (DEBUG_MODE) {
-      if (imageContext) {
-        logger.debug('=== IMAGE CONTEXT SENT TO AI (CHAT) ===');
-        logger.debug(imageContext);
-        logger.debug('========================================');
-      } else {
-        logger.debug('[Image Context] No images in conversation history');
-      }
-    }
-    
+    logImageContextDebug({ imageContext, label: 'CHAT', debugMode: DEBUG_MODE });
+
     // Build system instruction with memories
-    let systemInstruction = buildChatSystemInstruction({ imageContext, memories, dateContext: getStagifyDateContext(), baseSelectionContext: getBaseImageSelectionContext(baseImageIndex, deduplicatedMessages) });
+    const systemInstruction = buildChatSystemInstruction({ imageContext, memories, dateContext: getStagifyDateContext(), baseSelectionContext: getBaseImageSelectionContext(baseImageIndex, deduplicatedMessages) });
 
     // Get the last user message
     const lastUserMessage = messages.filter(m => m.role === 'user').pop();
     const lastUserMessageText = lastUserMessage ? (typeof lastUserMessage.content === 'string' ? lastUserMessage.content : '') : '';
-    
+
     // Check if there are images in conversation history (from user uploads or staged images)
     const { imageFromHistory, isStagedImage } = detectHistoryImage(messages, deduplicatedMessages);
 
     // Strip images from conversation history (except current message) to prevent payload size issues
     // Only send text context, images will be requested via special mechanism if needed
     const strippedMessages = stripImagesFromHistory(deduplicatedMessages, true); // Keep images in current message only
-    
+
     // Apply middleman filter to remove unsupported files
     const filteredMessages = filterConversationHistory(strippedMessages);
-    
+
     // Add message tag to the last user message if provided
     applyMessageTag(filteredMessages, messageTag);
 
@@ -157,13 +156,8 @@ router.post('/api/chat', genLimiter, async (req, res) => {
         response: 'I apologize, but I encountered an error processing your request. Please try again.',
       });
     }
-    let text = routing.text;
-    const memoryActionsFromAI = routing.memoryActionsFromAI;
-    let stagingRequestFromAI = routing.stagingRequestFromAI;
-    const imageRequestFromAI = routing.imageRequestFromAI;
-    const recallRequestFromAI = routing.recallRequestFromAI;
-    let generateRequestFromAI = routing.generateRequestFromAI;
-    let cadRequestFromAI = routing.cadRequestFromAI;
+    const { text, memoryActionsFromAI, imageRequestFromAI, recallRequestFromAI } = routing;
+    let { stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI } = routing;
 
     ({ stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI } = applyPostRoutingSuppression({
       text,
@@ -192,93 +186,60 @@ router.post('/api/chat', genLimiter, async (req, res) => {
       stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI,
     });
 
-    // Image generation runs before staging in this endpoint (original order).
-    const generateOut = await runGenerateRequests({ generateRequestFromAI, req, selectedModel });
-    const generatedImages = generateOut.generatedImages;
-    if (generateOut.textSuffix) text = text + generateOut.textSuffix;
+    // The current-message image is loop-invariant AND shared by the staging and CAD
+    // steps (which used to re-scan lastUserMessage.content with identical
+    // predicates), so resolve it once up front.
+    const currentImage = extractCurrentMessageImage(lastUserMessage);
 
-    // Staging. The current-message image is loop-invariant, so resolve it once.
-    let currentMessageHasImageInChat = false;
-    let currentMessageImageBuffer = null;
-    if (lastUserMessage && Array.isArray(lastUserMessage.content)) {
-      const currentImageItem = lastUserMessage.content.find(
-        (item) => item.type === 'image_url' && item.image_url && item.image_url.url
-      );
-      if (currentImageItem) {
-        currentMessageHasImageInChat = true;
-        const b64 = currentImageItem.image_url.url.split(',')[1];
-        if (b64) currentMessageImageBuffer = Buffer.from(b64, 'base64');
-      }
-    }
-    const stagingOut = await runStagingRequests({
-      stagingRequestFromAI,
-      history: messages,
-      userMessageText: lastUserMessageText,
-      userId,
-      req,
-      selectedModel,
-      baseImageIndex,
-      currentMessageHasImage: currentMessageHasImageInChat,
-      currentImageBuffer: currentMessageImageBuffer,
-      applyOriginalKeywordFallback: true,
-      resolveDualUpload: () => resolveDualUploadFromMessageContent(
-        lastUserMessage && Array.isArray(lastUserMessage.content) ? lastUserMessage.content : null,
-        lastUserMessageText
-      ),
-      resolveFallbackImage: () => {
-        if (imageFromHistory) {
-          const base64Data = imageFromHistory.split(',')[1];
-          if (base64Data) {
-            return {
-              buffer: Buffer.from(base64Data, 'base64'),
-              source: isStagedImage ? 'staged image' : 'conversation history',
-              logMessage: '[Staging] Using image from conversation history (fallback)',
-            };
-          }
-        }
-        return null;
+    const dispatch = await runPostRoutingDispatch({
+      text,
+      // Image generation runs before staging in this endpoint (original order) —
+      // the OPPOSITE of /api/chat-upload. See lib/chat/chat-post-routing.js.
+      order: GENERATE_THEN_STAGING,
+      generateArgs: { generateRequestFromAI, req, selectedModel },
+      stagingArgs: {
+        stagingRequestFromAI,
+        history: messages,
+        userMessageText: lastUserMessageText,
+        userId,
+        req,
+        selectedModel,
+        baseImageIndex,
+        currentMessageHasImage: currentImage.hasImage,
+        currentImageBuffer: currentImage.buffer,
+        applyOriginalKeywordFallback: true,
+        resolveDualUpload: () => resolveDualUploadFromMessageContent(
+          lastUserMessage && Array.isArray(lastUserMessage.content) ? lastUserMessage.content : null,
+          lastUserMessageText
+        ),
+        resolveFallbackImage: () => resolveHistoryFallbackImage({ imageFromHistory, isStagedImage }),
+      },
+      recallArgs: { recallRequestFromAI, history: messages },
+      requestedArgs: {
+        imageRequestFromAI,
+        history: messages,
+        baseMessages: openaiMessages,
+        systemInstruction,
+        userMessageText: lastUserMessageText,
+        analysisUserText: lastUserMessageText,
+        selectedModel,
+      },
+      cadArgs: {
+        cadRequestFromAI,
+        history: messages,
+        baseImageIndex,
+        currentMessageHasImage: currentImage.hasImage,
       },
     });
-    const stagingResults = stagingOut.stagingResults;
-    if (stagingOut.textSuffix) text = (text || '') + stagingOut.textSuffix;
-
-    // Recall.
-    const recalledImageForDisplay = resolveRecalledImage({ recallRequestFromAI, history: messages });
-
-    // Image request (may re-run GPT to analyze, replacing text).
-    const requestedOut = await resolveRequestedImage({
-      imageRequestFromAI,
-      history: messages,
-      baseMessages: openaiMessages,
-      systemInstruction,
-      userMessageText: lastUserMessageText,
-      analysisUserText: lastUserMessageText,
-      selectedModel,
-      text,
-    });
-    const requestedImageForDisplay = requestedOut.requestedImageForDisplay;
-    text = requestedOut.text;
-
-    // CAD. Reuses the current-message image flag resolved above: the CAD step used
-    // to re-scan lastUserMessage.content with an identical predicate, which can
-    // only ever agree (nothing between the two mutates the content array).
-    const cadOut = await runCadRequests({
-      cadRequestFromAI,
-      history: messages,
-      baseImageIndex,
-      currentMessageHasImage: currentMessageHasImageInChat,
-    });
-    const cadResults = cadOut.cadResults;
-    if (cadOut.textSuffix) text = (text || '') + cadOut.textSuffix;
 
     const response = await buildDesignerResponse({
-      text,
+      text: dispatch.text,
       memoryActions,
-      stagingResults,
-      generatedImages,
-      requestedImageForDisplay,
-      recalledImageForDisplay,
-      cadResults,
+      stagingResults: dispatch.stagingResults,
+      generatedImages: dispatch.generatedImages,
+      requestedImageForDisplay: dispatch.requestedImageForDisplay,
+      recalledImageForDisplay: dispatch.recalledImageForDisplay,
+      cadResults: dispatch.cadResults,
     });
 
     sendChatResponse({ res, response, streamMode });
@@ -308,106 +269,60 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
 
     // Get message tag from form data
     const messageTag = req.body.messageTag;
-    
+
     // Key per-user data on the validated session account, never a body field (see /api/chat).
     const userId = proUser.id;
 
     // Load stored memories for this user
     let memories = loadMemories(userId);
 
-    // Build system instruction with memories (base instruction, will add image context after parsing conversationHistory)
-    let systemInstruction = buildChatUploadSystemInstruction({ memories, dateContext: getStagifyDateContext() });
-
     const { message = '', conversationHistory: conversationHistoryStr, model } = req.body;
-    const files = Array.isArray(req.files) ? req.files : [req.files];
-    
+    // `.array()` uploads give an array; the map-shaped `.fields()` fallback is
+    // any-cast here — at the entry — so every downstream module can name the
+    // UploadedFile[] it actually receives instead of widening its own contract.
+    /** @type {import('../lib/types/chat.js').UploadedFile[]} */
+    const files = Array.isArray(req.files) ? /** @type {any} */ (req.files) : /** @type {any} */ ([req.files]);
+
     // Allow-listed before it reaches OpenAI (see /api/chat); pro-gated above.
     const selectedModel = resolveChatModel(model, { isPro: true });
 
-    // Parse conversation history if provided
-    let conversationHistory = [];
-    if (conversationHistoryStr) {
-      try {
-        conversationHistory = typeof conversationHistoryStr === 'string' 
-          ? JSON.parse(conversationHistoryStr) 
-          : conversationHistoryStr;
-      } catch (error) {
-        logger.error('Error parsing conversation history:', error);
-        conversationHistory = [];
-      }
-    }
-    
-    // Deduplicate conversation history to prevent double counting
-    const originalHistory = conversationHistory;
-    conversationHistory = deduplicateMessages(conversationHistory);
+    // Parse conversation history if provided, then deduplicate it to prevent double counting
+    const originalHistory = parseConversationHistory(conversationHistoryStr);
+    const conversationHistory = deduplicateMessages(originalHistory);
     logUploadDedupDiagnostics(originalHistory, conversationHistory);
-    
-    // Check message limit (see MAX_USER_MESSAGES)
-    const userMessageCount = conversationHistory.filter(msg => msg.role === 'user').length;
-    if (userMessageCount >= MAX_USER_MESSAGES) {
-      return res.json({
-        response: CONTEXT_LIMIT_MESSAGE,
-        contextLimitReached: true
-      });
+
+    // Check message limit (see lib/chat/chat-context-limit.js)
+    if (isContextLimitReached(conversationHistory)) {
+      return res.json(buildContextLimitResponse());
     }
-    
-    // Build context about available images in history with annotations (now that conversationHistory is parsed)
-    const currentUploadFilenames = (files || []).map((f) => f.originalname).filter(Boolean);
-    const historyForImageContext = getPriorHistoryForImageContext(conversationHistory, currentUploadFilenames);
-    const { imageContext } = buildImageContext(historyForImageContext);
-    
-    // Log image context for debugging
-    if (DEBUG_MODE) {
-      if (imageContext) {
-        logger.debug('=== IMAGE CONTEXT SENT TO AI (CHAT-UPLOAD) ===');
-        logger.debug(imageContext);
-        logger.debug('===============================================');
-      } else {
-        logger.debug('[Image Context] No images in conversation history');
-      }
-    }
-    
-    if (imageContext) {
-      systemInstruction += imageContext;
-    }
+
+    // System instruction = base upload prompt + the image context of the history
+    // BEFORE this upload + the base-image selection context.
     const baseImageIndexUpload = parseBaseImageIndex(req.body.baseImageIndex);
-    systemInstruction += getBaseImageSelectionContext(baseImageIndexUpload, historyForImageContext);
+    const { systemInstruction: contextInstruction, historyForImageContext } = buildUploadContext({
+      memories,
+      files,
+      conversationHistory,
+      baseImageIndex: baseImageIndexUpload,
+      debugMode: DEBUG_MODE,
+    });
 
     const { userContent, fileInfo, hasImages, firstImageFile, unsupportedFiles } = buildUploadUserContent({ files, message, messageTag });
-    if (hasImages && collectImagesFromHistory(historyForImageContext).length === 0) {
-      systemInstruction +=
-        '\n\nCURRENT UPLOAD NOTE: The image(s) in THIS user message are the only image(s) in the conversation so far. Do not ask whether the user meant a first or second image — proceed with this upload.';
-    }
-    
-    // If there are unsupported files, ensure the AI acknowledges them
-    if (unsupportedFiles.length > 0) {
-      // The unsupported files are already mentioned in userContent, but make sure there's a clear message
-      if (!message || !message.trim()) {
-        // If no user message, add a prompt for the AI to acknowledge unsupported files
-        
-        if (userContent.length === 0 || (userContent.length === 1 && userContent[0].type === 'text' && !userContent[0].text.trim())) {
-          userContent.unshift({ type: 'text', text: `I uploaded ${unsupportedFiles.length > 1 ? 'some files' : 'a file'} but ${unsupportedFiles.length > 1 ? 'they are' : 'it is'} in an unsupported format.` });
-        }
-      }
-    } else if (userContent.length === 0 || (userContent.length === 1 && userContent[0].type === 'text' && !userContent[0].text)) {
-      // Only add default message if no unsupported files and no content
-      userContent.unshift({ type: 'text', text: 'Please analyze these files.' });
-    }
-    
+    const systemInstruction = appendSoleUploadNote({ systemInstruction: contextInstruction, hasImages, historyForImageContext });
+
+    // Make sure the model always has something to answer (unsupported-file
+    // acknowledgement, or a generic "analyze these files").
+    applyDefaultUserContentText({ userContent, message, unsupportedFiles });
+
     const { filteredUserContent, safeMessages, cleanedUserContent } = await buildUploadMessages({ systemInstruction, userContent, files, conversationHistory });
 
     // Use OpenAI GPT with vision support for images
     // Model is already set from req.body above
-    
+
     logUploadPayload({ safeMessages, selectedModel, hasImages });
     const routing = await runUploadRouting({ safeMessages, selectedModel, message, unsupportedFiles, conversationHistory, systemInstruction });
-    let text = routing.text;
-    const memoryActionsFromAI = routing.memoryActionsFromAI;
-    let stagingRequestFromAI = routing.stagingRequestFromAI;
-    const imageRequestFromAI = routing.imageRequestFromAI;
-    const recallRequestFromAI = routing.recallRequestFromAI;
-    let generateRequestFromAI = routing.generateRequestFromAI;
-    let cadRequestFromAI = routing.cadRequestFromAI;
+    const { text, memoryActionsFromAI, imageRequestFromAI, recallRequestFromAI } = routing;
+    let { stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI } = routing;
     ({ stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI } = applyPostRoutingSuppression({
       text,
       userMessageText: message,
@@ -433,105 +348,65 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     // Check if current message has an image
     const currentMessageHasImage = firstImageFile !== null;
 
-    if (
-      !stagingRequestFromAI &&
-      userWantsToAddFurnitureToRoom(message) &&
-      findMostRecentStagedImageIndex(conversationHistory) !== null
-    ) {
-      stagingRequestFromAI = {
-        shouldStage: true,
-        roomType: 'Other',
-        additionalPrompt: message || 'Add the uploaded furniture to the existing staged room.',
-        removeFurniture: false,
-        usePreviousImage: false,
-        furnitureImageIndex: null,
-      };
-    }
+    // Upload-only rescue: synthesize a staging request when the user is adding
+    // uploaded furniture to a room they already staged.
+    stagingRequestFromAI = resolveAddFurnitureStaging({ stagingRequestFromAI, message, conversationHistory });
 
     const streamModeUpload = beginChatStream({
       req, res, text, memoryActions,
       stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI,
     });
 
-    // Staging runs before generation in this endpoint (original order).
-    const stagingOut = await runStagingRequests({
-      stagingRequestFromAI,
-      history: conversationHistory,
-      userMessageText: message,
-      userId,
-      req,
-      selectedModel,
-      baseImageIndex: baseImageIndexUpload,
-      currentMessageHasImage,
-      currentImageBuffer: firstImageFile ? firstImageFile.buffer : null,
-      applyOriginalKeywordFallback: !currentMessageHasImage,
-      resolveDualUpload: () => resolveDualUploadStaging(files, cleanedUserContent, message),
-      resolveFallbackImage: () => {
-        if (firstImageFile && !userWantsToAddFurnitureToRoom(message)) {
-          return {
-            buffer: firstImageFile.buffer,
-            source: 'current message',
-            logMessage: '[Staging] Using image from current message',
-          };
-        }
-        return null;
+    const dispatch = await runPostRoutingDispatch({
+      text,
+      // Staging runs before generation in this endpoint (original order) — the
+      // OPPOSITE of /api/chat. See lib/chat/chat-post-routing.js.
+      order: STAGING_THEN_GENERATE,
+      stagingArgs: {
+        stagingRequestFromAI,
+        history: conversationHistory,
+        userMessageText: message,
+        userId,
+        req,
+        selectedModel,
+        baseImageIndex: baseImageIndexUpload,
+        currentMessageHasImage,
+        currentImageBuffer: firstImageFile ? firstImageFile.buffer : null,
+        applyOriginalKeywordFallback: !currentMessageHasImage,
+        resolveDualUpload: () => resolveDualUploadStaging(files, cleanedUserContent, message),
+        resolveFallbackImage: () => resolveCurrentUploadFallbackImage({ firstImageFile, message }),
+      },
+      generateArgs: { generateRequestFromAI, req, selectedModel },
+      recallArgs: { recallRequestFromAI, history: conversationHistory },
+      requestedArgs: {
+        imageRequestFromAI,
+        history: conversationHistory,
+        baseMessages: safeMessages,
+        systemInstruction,
+        userMessageText: (message || ''),
+        analysisUserText: (message || 'Please analyze this image.'),
+        selectedModel,
+      },
+      cadArgs: {
+        cadRequestFromAI,
+        history: conversationHistory,
+        baseImageIndex: baseImageIndexUpload,
+        currentMessageHasImage,
       },
     });
-    const stagingResults = stagingOut.stagingResults;
-    if (stagingOut.textSuffix) text = (text || '') + stagingOut.textSuffix;
-
-    // Image generation.
-    const generateOut = await runGenerateRequests({ generateRequestFromAI, req, selectedModel });
-    const generatedImages = generateOut.generatedImages;
-    if (generateOut.textSuffix) text = text + generateOut.textSuffix;
-
-    // Recall.
-    const recalledImageForDisplay = resolveRecalledImage({ recallRequestFromAI, history: conversationHistory });
-
-    // Image request (may re-run GPT to analyze, replacing text).
-    const requestedOut = await resolveRequestedImage({
-      imageRequestFromAI,
-      history: conversationHistory,
-      baseMessages: safeMessages,
-      systemInstruction,
-      userMessageText: (message || ''),
-      analysisUserText: (message || 'Please analyze this image.'),
-      selectedModel,
-      text,
-    });
-    const requestedImageForDisplay = requestedOut.requestedImageForDisplay;
-    text = requestedOut.text;
-
-    // CAD.
-    const cadOut = await runCadRequests({
-      cadRequestFromAI,
-      history: conversationHistory,
-      baseImageIndex: baseImageIndexUpload,
-      currentMessageHasImage,
-    });
-    const cadResults = cadOut.cadResults;
-    if (cadOut.textSuffix) text = (text || '') + cadOut.textSuffix;
 
     // Extract image annotations from cleanedUserContent to return to frontend
     // (uses the private _annotation property, which is never sent to OpenAI).
-    const imageAnnotations = {};
-    cleanedUserContent.forEach((item, idx) => {
-      if (item.type === 'image_url' && item._annotation) {
-        const filename = item._filename || (filteredUserContent[idx] && (filteredUserContent[idx].filename || filteredUserContent[idx].originalname));
-        if (filename) {
-          imageAnnotations[filename] = item._annotation;
-        }
-      }
-    });
+    const imageAnnotations = extractUploadImageAnnotations({ cleanedUserContent, filteredUserContent });
 
     const response = await buildDesignerResponse({
-      text,
+      text: dispatch.text,
       memoryActions,
-      stagingResults,
-      generatedImages,
-      requestedImageForDisplay,
-      recalledImageForDisplay,
-      cadResults,
+      stagingResults: dispatch.stagingResults,
+      generatedImages: dispatch.generatedImages,
+      requestedImageForDisplay: dispatch.requestedImageForDisplay,
+      recalledImageForDisplay: dispatch.recalledImageForDisplay,
+      cadResults: dispatch.cadResults,
       extraFields: { files: fileInfo },
       imageAnnotations,
     });
@@ -545,31 +420,13 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
       res.end();
       return;
     }
-    
+
     // Try to have the AI respond about the error, especially for unsupported file types
-    try {
-      const errorMessage = error.message || '';
-      const isFileTypeError = errorMessage.toLowerCase().includes('image') || 
-                             errorMessage.toLowerCase().includes('format') || 
-                             errorMessage.toLowerCase().includes('avif') ||
-                             errorMessage.toLowerCase().includes('unsupported');
-      
-      // Check if we have files in the request
-      // `.array()` uploads give an array; the map-shaped `.fields()` fallback is any-cast
-      // so the common File[] branch keeps its `.originalname`/`.mimetype` type checking.
-      /** @type {Express.Multer.File[]} */
-      const files = req.files ? (Array.isArray(req.files) ? req.files : /** @type {any} */ ([req.files])) : [];
-      
-      if ((isFileTypeError || files.length > 0) && openai) {
-        const errorBody = buildUnsupportedFileErrorBody(files);
-        if (errorBody) {
-          return res.json(errorBody);
-        }
-      }
-    } catch (aiError) {
-      logger.error('Error generating AI error response:', aiError);
+    const errorBody = resolveUploadErrorBody({ error, reqFiles: req.files, openai });
+    if (errorBody) {
+      return res.json(errorBody);
     }
-    
+
     // Fallback to generic error - always send a response to prevent hanging requests
     if (!res.headersSent) {
       sendError(res, 500, 'File processing failed', {
