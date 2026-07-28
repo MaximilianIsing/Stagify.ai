@@ -54,10 +54,10 @@ import { lang, esc } from './profile-menu/dom-utils.js';
       dd.innerHTML =
         '<div class="profile-menu__section">' +
         '<button type="button" class="profile-menu__item" data-profile-action="signin">' +
-        lang('profile.signIn', 'Sign in') +
+        esc(lang('profile.signIn', 'Sign in')) +
         '</button>' +
         '<button type="button" class="profile-menu__item" data-profile-action="signup">' +
-        lang('profile.createAccount', 'Create account') +
+        esc(lang('profile.createAccount', 'Create account')) +
         '</button>' +
         '</div>';
     } else {
@@ -83,21 +83,21 @@ import { lang, esc } from './profile-menu/dom-utils.js';
           portalHelp +
           '</div>';
       } else {
-        planLine = '<div class="profile-menu__plan">' + lang('profile.freePlan', 'Free Plan') + '</div>';
+        planLine = '<div class="profile-menu__plan">' + esc(lang('profile.freePlan', 'Free Plan')) + '</div>';
       }
       var plusRow = '';
       if (u.plan !== 'pro') {
         plusRow =
           '<a href="stagify-plus.html" class="profile-menu__link profile-menu__link--plus">' +
           '<img src="media-webp/logo/Pro32x32.webp" alt="" width="20" height="20" aria-hidden="true"> ' +
-          lang('profile.upgradeToPlus', 'Upgrade to Stagify+') +
+          esc(lang('profile.upgradeToPlus', 'Upgrade to Stagify+')) +
           '</a>';
       }
       var manageRow = '';
       if (u.plan === 'pro' && u.canManageSubscription) {
         manageRow =
           '<button type="button" class="profile-menu__item" data-profile-action="manage-subscription">' +
-          lang('profile.manageSubscription', 'Manage subscription') +
+          esc(lang('profile.manageSubscription', 'Manage subscription')) +
           '</button>';
       }
       dd.innerHTML =
@@ -112,7 +112,7 @@ import { lang, esc } from './profile-menu/dom-utils.js';
         plusRow +
         manageRow +
         '<button type="button" class="profile-menu__item profile-menu__item--danger" data-profile-action="signout">' +
-        lang('profile.signOut', 'Sign out') +
+        esc(lang('profile.signOut', 'Sign out')) +
         '</button>' +
         '</div>';
     }

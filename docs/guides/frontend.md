@@ -108,6 +108,13 @@ writing `esc(user.email)` and believing it was handled. **Do not add a fourth co
 `test/frontend/escape-html.test.js` walks `public/scripts/` and fails on any second
 hand-rolled escaper.
 
+**Translated strings count as data here too.** `lang(...)` values are team-authored, so
+this is not an XSS question — it is a translator writing `&`, `<`, or a quote and silently
+mangling the markup. Every `lang()` value that `profile-menu.js` concatenates into its
+dropdown is wrapped in `esc()`, attributes and element content alike, and the same spec
+scans that file and fails on a bare one. Escaping only the attribute sites reads like a
+considered decision when it is really the next oversight waiting to be copied.
+
 **Worked example — the admin dashboard.** `/admin` is the fullest instance of this
 pattern: an entry (`admin.js`) that owns auth and fetching, table islands
 (`admin/renderers.js`), two chart-panel islands (`admin/overview.js`, `admin/insights.js`),
