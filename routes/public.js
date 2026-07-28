@@ -2,6 +2,7 @@
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
 import { escapeCsvField } from '../lib/http/csv-escape.js';
+import { resolveDataDir } from '../lib/data/data-dir.js';
 import path from 'path';
 import fs from 'fs';
 import { logger } from '../lib/logger.js';
@@ -151,36 +152,7 @@ router.post('/api/log-contact', emailLimiter, (req, res) => {
       escapeCsvField(ipAddress),
     ].join(',') + '\n';
     
-    // Use mounted disk on Render, project data folder locally
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-      if (DEBUG_MODE) {
-        logger.debug('Using Render persistent disk for contact logs');
-      }
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-      
-      // Create data directory if it doesn't exist
-      if (!fs.existsSync(logDir)) {
-        try {
-          fs.mkdirSync(logDir, { recursive: true });
-          if (DEBUG_MODE) {
-            logger.debug('Created local data directory successfully');
-          }
-        } catch {
-          if (DEBUG_MODE) {
-            logger.debug('Error: Cannot create data directory, using project root');
-          }
-          logDir = __dirname;
-        }
-      }
-    }
-
-    const logFile = path.join(logDir, 'contact_logs.csv');
+    const logFile = path.join(resolveDataDir(__dirname), 'contact_logs.csv');
     
     // Check if file exists to add header if it's a new file
     const fileExists = fs.existsSync(logFile);
@@ -367,28 +339,7 @@ router.post('/api/bug-report', emailLimiter, async (req, res) => {
       escapeCsvField(conversationLog)
     ].join(',') + '\n';
     
-    // Use mounted disk on Render, project data folder locally
-    let logDir;
-    
-    if (process.env.RENDER && fs.existsSync('/data')) {
-      // Use Render's mounted disk
-      logDir = '/data';
-    } else {
-      // Use project data folder for local development
-      logDir = path.join(__dirname, 'data');
-      
-      // Create data directory if it doesn't exist
-      if (!fs.existsSync(logDir)) {
-        try {
-          fs.mkdirSync(logDir, { recursive: true });
-        } catch {
-          logger.info('Error: Cannot create data directory, using project root');
-          logDir = __dirname;
-        }
-      }
-    }
-    
-    const logFile = path.join(logDir, 'bug_reports.csv');
+    const logFile = path.join(resolveDataDir(__dirname), 'bug_reports.csv');
     
     // Check if file exists to add header if it's a new file
     const fileExists = fs.existsSync(logFile);

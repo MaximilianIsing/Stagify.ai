@@ -205,7 +205,7 @@ if (STATS_DEBUG) {
 // AI/email clients (genAI / openai / resend) + RESEND_FROM_EMAIL / APP_URL are
 // constructed above the billing router (the Stripe webhook needs the Resend client
 // for the trial-email lifecycle). Reused here for the remaining routers.
-const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile } = createLogging({ __dirname, DEBUG_MODE });
+const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile } = createLogging({ __dirname });
 const { logEmailOpenToFile, isConfirmedEmailClientOpen, sendRegistrationVerificationEmail, sendAccountExistsNotice } = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
 const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = createMemory({ __dirname, DEBUG_MODE, openai });
 

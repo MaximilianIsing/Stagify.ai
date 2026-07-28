@@ -25,7 +25,7 @@ function tmpDir() {
 // A fresh writer bound to its own temp __dirname → the CSVs live at <dir>/data/*.csv.
 function freshLogging() {
   const dir = tmpDir();
-  const logging = createLogging({ __dirname: dir, DEBUG_MODE: false });
+  const logging = createLogging({ __dirname: dir });
   return { logging, dataDir: path.join(dir, 'data') };
 }
 

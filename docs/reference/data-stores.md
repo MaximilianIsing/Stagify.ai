@@ -7,8 +7,12 @@ uploaded images alongside it as flat files.
 
 ## Where the data lives
 
-Resolved by `resolveDataDir()` ([`lib/data/db.js`](../../lib/data/db.js)) — the same rule for
-every store:
+Resolved by `resolveDataDir()` ([`lib/data/data-dir.js`](../../lib/data/data-dir.js)) — the
+one implementation of the rule, for every store **and** every CSV writer. It lives apart
+from `db.js` (which re-exports it) so the log writers can share it without pulling in
+`better-sqlite3`. Nothing else may re-derive this path; a drift test
+([`test/data/data-dir.test.js`](../../test/data/data-dir.test.js)) fails the build on a
+second copy, because ten hand-maintained copies is how it started:
 
 - **Render:** the mounted persistent disk at **`/data`** (survives deploys — see
   [`deployment.md`](../operations/deployment.md)).
