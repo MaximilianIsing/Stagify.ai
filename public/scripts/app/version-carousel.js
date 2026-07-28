@@ -5,13 +5,28 @@
 // version carousel arrows/dots, lifted verbatim from the entry. The entry
 // mutates the arrays only through the returned getters/setters/push helpers;
 // reads of entry-owned flags flow through injected callbacks.
-//
-// deps: { canvas1, stagePreview, toggleBeforeBtn, toggleAfterBtn,
-//         processingPlaceholder, imageViewerContainer, carouselPrev,
-//         carouselNext, carouselDots, maxVersions, getHasProcessedImage,
-//         updateMaskButtonVisibility, updateEmptyRoomButtonVisibility,
-//         updateStagedCanvasAria, getStagingAlt }
 
+/**
+ * @param {{
+ *   canvas1: HTMLCanvasElement,
+ *   stagePreview: HTMLImageElement | null,
+ *   toggleBeforeBtn: HTMLElement | null,
+ *   toggleAfterBtn: HTMLElement | null,
+ *   processingPlaceholder: HTMLElement | null,
+ *   imageViewerContainer: HTMLElement | null,
+ *   carouselPrev: HTMLButtonElement | null,
+ *   carouselNext: HTMLButtonElement | null,
+ *   carouselDots: HTMLElement | null,
+ *   maxVersions: number,
+ *   getHasProcessedImage: () => boolean,
+ *   updateMaskButtonVisibility: () => void,
+ *   updateEmptyRoomButtonVisibility: () => void,
+ *   updateStagedCanvasAria: (suffix?: string) => void,
+ *   getStagingAlt: (key: string, replacements?: Record<string, string | number>) => string,
+ * }} deps - The staged-result canvas and original-photo img, the Before/After
+ *   toggle and carousel chrome, the version cap, plus the entry-owned flags and
+ *   FAB/aria glue the carousel calls back into. Versions are image URLs.
+ */
 export function createVersionCarousel(deps) {
   const {
     canvas1,

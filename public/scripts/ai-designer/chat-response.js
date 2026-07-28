@@ -10,7 +10,24 @@ import { imageCountSuffix } from './format.js';
  * reset); the pending staging base-name via getter/setter. Chat-message,
  * image-viewer and thumbnail-strip island functions are injected.
  *
- * @param {any} deps
+ * @param {{
+ *   addMessage: (role: string, content: string, files?: File[] | null) => void,
+ *   addErrorMessage: (text: string, onRetry?: () => void) => void,
+ *   updateLastAssistantText: (text: string) => void,
+ *   getLastAssistantContentEl: () => HTMLElement | null,
+ *   showMessageImageLoading: (messageType: string) => void,
+ *   removeMessageImageLoading: () => void,
+ *   removeTypingIndicator: (id: string) => void,
+ *   createAIImageWithDownload: (imageSrc: string, altText: string, imageType?: string, baseName?: string) => HTMLElement,
+ *   syncImageThumbnailStrip: (options?: { preferNewest?: boolean }) => void,
+ *   collectImagesFromConversationHistory: () => import('./types.js').AdImage[],
+ *   getConversationHistory: () => import('./types.js').AdHistoryEntry[],
+ *   getPendingStagingRootBaseName: () => string | null,
+ *   setPendingStagingRootBaseName: (v: string | null) => void,
+ * }} deps - The chat-message, image-viewer and thumbnail-strip island APIs,
+ *   plus accessors for the two pieces of entry-owned state this needs: the live
+ *   conversation history (read through a getter because the entry REASSIGNS it
+ *   on reset) and the pending staging base name.
  * @returns {{ handleChatFetchResponse: (response: Response, typingId: string, messageType: string, onRetry: () => void) => Promise<void> }}
  */
 export function createChatResponse(deps) {

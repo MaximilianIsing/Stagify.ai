@@ -7,14 +7,17 @@
 // (getTypingStatusMessages / attachRotatingStatusText / clearRotatingStatusText)
 // stay internal — no external callers.
 //
-// deps: { chatMessages, openImageModal }  ->  returns { addMessage,
-//         addErrorMessage, showTypingIndicator, removeTypingIndicator,
-//         showMessageImageLoading, removeMessageImageLoading,
-//         getLastAssistantContentEl, updateLastAssistantText }
 // Window globals (LanguageSystem) are referenced directly.
 import { formatMarkdown } from './format.js';
 import { lang, getPdfAlt } from './i18n.js';
 
+/**
+ * @param {{
+ *   chatMessages: HTMLElement,
+ *   openImageModal: (imageSrc: string, altText?: string) => void,
+ * }} deps - The scrolling message list, and the lightbox opener that attached
+ *   image previews call on click.
+ */
 export function createChatMessages(deps) {
   const {
     chatMessages,
@@ -61,7 +64,7 @@ export function createChatMessages(deps) {
       }
 
       function getLastAssistantContentEl() {
-        return document.querySelector('.message.assistant:last-child .message-content');
+        return /** @type {HTMLElement | null} */ (document.querySelector('.message.assistant:last-child .message-content'));
       }
 
       function updateLastAssistantText(text) {
