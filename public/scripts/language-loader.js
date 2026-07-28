@@ -150,7 +150,21 @@ import { LANGUAGES } from './locale-data.js';
           });
         }
       });
-      if (needsApply) applyLanguageToElements();
+      if (needsApply) {
+        applyLanguageToElements();
+        // Drain the records our own pass just queued, or this observer feeds itself.
+        // Applying [data-lang-html] writes innerHTML, which is a childList mutation on
+        // the very subtree being watched — so the moment a translated value contains a
+        // data-lang, the check above would see our own output as new work and re-apply
+        // forever, hanging the tab. Nothing nests one today (all 9,680 values across the
+        // 11 packs were checked), which is the ONLY reason this has never fired; it is
+        // not a property a translator can be expected to preserve.
+        //
+        // takeRecords() empties the queue synchronously, so those records never reach
+        // the callback. Preferred over disconnect()/observe() because it cannot leave
+        // the observer switched off if the pass throws part-way.
+        observer.takeRecords();
+      }
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
