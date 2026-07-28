@@ -1,20 +1,17 @@
 // The mask-editor processing overlay: a spinner plus rotating status messages
 // shown over the canvas while the AI runs.
 //
-// Shared by both mask editors. The two copies were identical apart from three
-// things, all now parameters: which container to mount in, which class marks it
-// busy (the AI Designer uses `processing`, the stage editor `smask-busy`), and
-// one extra CSS rule the stage editor needs to blur its own canvas class.
+// Shared by both mask editors. Only the container differs between them; both
+// mark it `processing`, which is the class their stylesheets blur and their
+// brushes read as "busy". (The stage editor briefly also carried a second
+// `smask-busy` class with its own injected blur rule — one busy state now.)
 //
-// Worth knowing: both copies previously injected DIFFERENT stylesheet bodies
-// under the SAME `smask-refine-styles` id. That only ever worked because the two
-// editors live on different pages — on a shared page whichever loaded first would
-// have won. The common rules now live here under that id and are genuinely
-// identical for every consumer; anything page-specific goes through `extraCss`
-// under its own id.
+// Worth knowing: the two copies this replaced injected DIFFERENT stylesheet
+// bodies under the SAME `smask-refine-styles` id. That only ever worked because
+// the editors live on different pages — on a shared page whichever loaded first
+// would have won. The rules now live here under that id, identical for everyone.
 //
-//   createMaskOverlay({ lang, getContainer, busyClass?, extraCss?, extraCssId? })
-//     -> { start, stop, ensure }
+//   createMaskOverlay({ lang, getContainer, busyClass? }) -> { start, stop, ensure }
 
 const BASE_CSS_ID = 'smask-refine-styles';
 const BASE_CSS =
@@ -40,7 +37,7 @@ const LOAD_MESSAGES = [
 const ROTATE_MS = 2000;
 
 function injectCss(id, css) {
-  if (!css || document.getElementById(id)) return;
+  if (document.getElementById(id)) return;
   const st = document.createElement('style');
   st.id = id;
   st.textContent = css;
@@ -52,13 +49,11 @@ function injectCss(id, css) {
  *   lang: (key: string, fallback: string) => string,
  *   getContainer: () => HTMLElement | null,
  *   busyClass?: string,
- *   extraCss?: string,
- *   extraCssId?: string,
- * }} deps - i18n lookup, the canvas container to mount over, the class marking it
- *   busy, and any consumer-specific CSS.
+ * }} deps - i18n lookup, the canvas container to mount over, and the class that
+ *   marks it busy (both editors use the default).
  * @returns {{ start: () => void, stop: () => void, ensure: () => void }}
  */
-export function createMaskOverlay({ lang, getContainer, busyClass = 'processing', extraCss = '', extraCssId = '' }) {
+export function createMaskOverlay({ lang, getContainer, busyClass = 'processing' }) {
   let msgTimer = null;
   let overlayEl = null;
 
@@ -66,7 +61,6 @@ export function createMaskOverlay({ lang, getContainer, busyClass = 'processing'
     const container = getContainer();
     if (overlayEl || !container) return;
     injectCss(BASE_CSS_ID, BASE_CSS);
-    if (extraCss) injectCss(extraCssId || `${BASE_CSS_ID}-extra`, extraCss);
     // The overlay is absolutely positioned; a static parent would let it escape.
     if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
     overlayEl = document.createElement('div');

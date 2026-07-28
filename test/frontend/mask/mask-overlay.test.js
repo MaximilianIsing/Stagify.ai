@@ -1,12 +1,11 @@
 // Characterization tests for the mask editor's processing-overlay slice.
 //
-// Written before consolidating the two mask editors. The stage editor carries an
-// equivalent inline (ensureOverlay / startOverlay / stopOverlay + LOAD_MESSAGES),
-// with two deliberate differences the shared version must be able to express:
-// it marks the container busy with `smask-busy` rather than `processing`, and it
-// injects one extra CSS rule to blur its own canvas class. Both copies currently
-// write DIFFERENT stylesheet bodies under the SAME `smask-refine-styles` id,
-// which only works because they never share a page.
+// Written before consolidating the two mask editors, when the stage editor
+// carried an equivalent inline (ensureOverlay / startOverlay / stopOverlay +
+// LOAD_MESSAGES). The two copies wrote DIFFERENT stylesheet bodies under the
+// SAME `smask-refine-styles` id, which only worked because they never share a
+// page; there is one body now. Both editors also settled on `processing` as the
+// busy class — the stage editor briefly had a second one.
 //
 // The timer assertions use node:test mock timers — the message rotation is a
 // 2s setInterval and should not be tested by waiting.
