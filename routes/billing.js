@@ -28,9 +28,12 @@ import {
  *   handleStripeEvent: typeof import('../lib/services/stripe-webhooks.js').handleStripeEvent,
  *   getAuthUserFromRequest: (req: import('express').Request) => any,
  *   trialLifecycle?: ReturnType<typeof import('../lib/services/trial-lifecycle.js').createTrialLifecycle>,
+ *   stripeEvents?: ReturnType<typeof import('../lib/data/stripe-events.js').createStripeEventLog>,
  * }} deps - Injected Stripe client + config strings, the auth/enterprise stores,
- *   the webhook event handler, the session-user resolver, and the trial-email
- *   lifecycle (fires welcome/ending/win-back off Stripe events).
+ *   the webhook event handler, the session-user resolver, the trial-email
+ *   lifecycle (fires welcome/ending/win-back off Stripe events), and the
+ *   webhook-idempotency ledger (`stripeEvents`; omitted = no dedup, every
+ *   delivery handled).
  */
 export default function createBillingRouter(deps) {
   const {
@@ -43,6 +46,7 @@ export default function createBillingRouter(deps) {
     handleStripeEvent,
     getAuthUserFromRequest,
     trialLifecycle,
+    stripeEvents,
   } = deps;
 
   const router = createAsyncRouter();
@@ -66,13 +70,27 @@ export default function createBillingRouter(deps) {
       logger.error('[stripe] Webhook signature verification failed:', err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
+    // Idempotency gate. Stripe delivers at-least-once (it retries anything that
+    // did not answer 2xx, and can duplicate on its own), so an event is claimed
+    // here before it is handled: a redelivery of something already handled is
+    // acked and dropped. The claim is released on failure so Stripe's retry of a
+    // genuinely-failed event still runs. See lib/data/stripe-events.js.
+    const claim = stripeEvents ? stripeEvents.claim(event) : { fresh: true, reason: 'untracked' };
+    if (!claim.fresh) {
+      logger.info('[stripe] Duplicate webhook ignored:', event.id, event.type, `(${claim.reason})`);
+      return res.json({ received: true, duplicate: true });
+    }
     try {
       const out = await handleStripeEvent(event, authStore, { stripe, enterpriseStore, lifecycle: trialLifecycle });
       if (!out.handled) {
         logger.info('[stripe] Unhandled event type (ok):', event.type);
       }
+      if (stripeEvents) stripeEvents.markDone(event.id);
       res.json({ received: true });
     } catch (e) {
+      // Hand the event back before answering 500, or the retry Stripe is about to
+      // send would be deduped against this failed attempt and never processed.
+      if (stripeEvents) stripeEvents.release(event.id);
       logger.error('[stripe] Webhook handler error:', e);
       sendError(res, 500, 'Webhook handler failed');
     }

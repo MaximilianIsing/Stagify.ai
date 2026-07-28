@@ -81,6 +81,82 @@ test('a throwing event handler maps to 500 so Stripe retries', async () => {
   assert.equal(res.status, 500);
 });
 
+// ---- Webhook idempotency --------------------------------------------------
+// Stripe delivers at-least-once. The router claims each event id before handling
+// it (lib/data/stripe-events.js), so a redelivery is acked and dropped rather
+// than replayed through the handlers.
+
+test('a redelivered event is acked but handled only once', async () => {
+  app = await mountBilling({
+    constructEvent: () => ({ id: 'evt_1', type: 'checkout.session.completed', data: { object: {} } }),
+  });
+  const first = await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  const second = await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+
+  assert.equal(first.status, 200);
+  assert.deepEqual(await first.json(), { received: true });
+  assert.equal(second.status, 200, 'a duplicate must still be acked, or Stripe keeps retrying');
+  assert.deepEqual(await second.json(), { received: true, duplicate: true });
+  assert.equal(app.calls.handleStripeEvent.calls, 1, 'the event ran exactly once');
+  assert.equal(app.calls.markDone.calls, 1, 'success is recorded so later deliveries dedupe');
+});
+
+test('the claim is taken before dispatch, and the ledger keys on the event id', async () => {
+  let n = 0;
+  app = await mountBilling({
+    constructEvent: () => ({ id: `evt_${++n}`, type: 'customer.subscription.updated', data: { object: {} } }),
+  });
+  await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+
+  assert.equal(app.calls.claim.calls, 2);
+  assert.equal(app.calls.claim.lastArgs[0].id, 'evt_2', 'the verified event is what gets claimed');
+  assert.equal(app.calls.handleStripeEvent.calls, 2, 'distinct ids are distinct events');
+});
+
+test('a failed event releases its claim so the retry is not deduped away', async () => {
+  // Without the release, answering 500 would poison the id: Stripe retries, the
+  // ledger says "seen", and the event is silently dropped forever.
+  let fail = true;
+  app = await mountBilling({
+    constructEvent: () => ({ id: 'evt_boom', type: 'checkout.session.completed', data: { object: {} } }),
+    handleStripeEvent: async () => {
+      if (fail) throw new Error('db down');
+      return { handled: true };
+    },
+  });
+  const failed = await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  assert.equal(failed.status, 500);
+  assert.equal(app.calls.release.calls, 1, 'the claim is handed back on failure');
+  assert.equal(app.calls.markDone.calls, 0);
+
+  fail = false;
+  const retried = await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  assert.equal(retried.status, 200);
+  assert.deepEqual(await retried.json(), { received: true }, 'the retry really ran, not deduped');
+  assert.equal(app.calls.handleStripeEvent.calls, 2);
+});
+
+test('a duplicate never reaches the handlers', async () => {
+  app = await mountBilling({
+    constructEvent: () => ({ id: 'evt_same', type: 'customer.subscription.deleted', data: { object: {} } }),
+  });
+  for (let i = 0; i < 4; i += 1) {
+    await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  }
+  assert.equal(app.calls.handleStripeEvent.calls, 1, '4 deliveries, 1 execution');
+});
+
+test('without a ledger every delivery is handled (the dep is optional)', async () => {
+  app = await mountBilling({
+    stripeEvents: null,
+    constructEvent: () => ({ id: 'evt_1', type: 'checkout.session.completed', data: { object: {} } }),
+  });
+  await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  await postWebhook(app.baseUrl, {}, { 'stripe-signature': 'good' });
+  assert.equal(app.calls.handleStripeEvent.calls, 2, 'no ledger → no dedup, and no crash either');
+});
+
 // ---- Customer portal ------------------------------------------------------
 
 test('customer-portal → 503 when Stripe is not configured', async () => {

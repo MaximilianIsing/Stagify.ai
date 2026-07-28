@@ -22,13 +22,36 @@ function makeSpy(impl) {
   return fn;
 }
 
+// In-memory stand-in for lib/data/stripe-events.js — same claim/markDone/release
+// contract, same semantics (an id is fresh once; 'done' rows dedupe, 'processing'
+// rows read as in-flight, release() hands the id back). Route tests assert the
+// router's USE of the ledger; the real SQLite one is unit-tested in
+// test/data/stripe-events.test.js.
+function makeEventLedger() {
+  const seen = new Map();
+  const claim = makeSpy((event) => {
+    const id = event && event.id;
+    if (!id) return { fresh: true, reason: 'unidentified' };
+    const status = seen.get(id);
+    if (status === 'done') return { fresh: false, reason: 'duplicate' };
+    if (status === 'processing') return { fresh: false, reason: 'in_flight' };
+    seen.set(id, 'processing');
+    return { fresh: true, reason: 'new' };
+  });
+  const markDone = makeSpy((id) => { if (id) seen.set(id, 'done'); });
+  const release = makeSpy((id) => { seen.delete(id); });
+  return { claim, markDone, release, seen };
+}
+
 /**
  * Mount the billing router. `overrides` merges over the faked deps; the common ones:
  *   - `stripe: null`            → the "billing not configured" branch (503),
  *   - `authUser: {...}`         → what getAuthUserFromRequest resolves (default null),
  *   - `constructEvent`          → throw to simulate a bad signature,
  *   - `handleStripeEvent`       → assert dispatch / force a 500,
- *   - `enterpriseDomainEntry`   → the enterpriseStore.getDomainEntry result.
+ *   - `enterpriseDomainEntry`   → the enterpriseStore.getDomainEntry result,
+ *   - `stripeEvents`            → the webhook idempotency ledger. Defaults to an
+ *     in-memory one (see makeEventLedger); pass `null` for the un-deduped path,
  * Returns { baseUrl, calls, close } where `calls` exposes the spies to assert on.
  */
 export async function mountBilling(overrides = {}) {
@@ -38,8 +61,12 @@ export async function mountBilling(overrides = {}) {
     handleStripeEvent: handleStripeEventOver,
     enterpriseDomainEntry = null,
     stripe: stripeOver,
+    stripeEvents: stripeEventsOver,
     ...rest
   } = overrides;
+
+  const ledger = makeEventLedger();
+  const stripeEvents = stripeEventsOver !== undefined ? stripeEventsOver : ledger;
 
   const constructEventSpy = makeSpy(
     constructEvent || (() => ({ type: 'checkout.session.completed', data: { object: {} } })),
@@ -69,6 +96,7 @@ export async function mountBilling(overrides = {}) {
     enterpriseStore: { getDomainEntry },
     handleStripeEvent,
     getAuthUserFromRequest,
+    stripeEvents,
   };
 
   const app = express();
@@ -80,7 +108,17 @@ export async function mountBilling(overrides = {}) {
 
   return {
     baseUrl: `http://127.0.0.1:${port}`,
-    calls: { constructEvent: constructEventSpy, portalCreate, checkoutCreate, handleStripeEvent, getAuthUserFromRequest, getDomainEntry },
+    calls: {
+      constructEvent: constructEventSpy,
+      portalCreate,
+      checkoutCreate,
+      handleStripeEvent,
+      getAuthUserFromRequest,
+      getDomainEntry,
+      claim: ledger.claim,
+      markDone: ledger.markDone,
+      release: ledger.release,
+    },
     close: () => new Promise((r) => server.close(r)),
   };
 }

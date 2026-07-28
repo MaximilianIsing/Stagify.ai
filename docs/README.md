@@ -79,7 +79,7 @@ This README is the entry point for the `docs/` folder. See also:
 ├── lib/                     # Shared modules (factory + dependency-injection pattern)
 │   ├── logger.js            # Diagnostic logger — the single stdout/stderr funnel (LOG_LEVEL)
 │   ├── config/              # config.js (secrets), model-config.js, runtime-flags.js
-│   ├── data/                # db.js (shared SQLite conn), auth-store, enterprise-store, memory, counters, uptime-monitor
+│   ├── data/                # db.js (shared SQLite conn), auth-store, enterprise-store, stripe-events, memory, counters, uptime-monitor
 │   ├── http/                # async-router, http-helpers (sendError), http-guards, rate-limiters, uploads, app-middleware
 │   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images
 │   ├── services/            # ai-clients, auth-helpers, email, logging (CSV), stripe-webhooks
@@ -181,7 +181,7 @@ grouped into subdirectories by concern (full breakdown in
 | Area | Key modules |
 |---|---|
 | `lib/config/` | `config.js` (secrets, env → `.txt` fallback), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
-| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `enterprise-store.js`, `memory.js`, `counters.js`, `uptime-monitor.js`. |
+| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `enterprise-store.js`, `stripe-events.js` (webhook idempotency ledger), `memory.js`, `counters.js`, `uptime-monitor.js`. |
 | `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`). |
 | `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`. |
 | `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `auth-helpers.js`, `email.js`, `logging.js` (append-only **CSV** business logs), `stripe-webhooks.js`. |
