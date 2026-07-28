@@ -11,6 +11,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { createAuthStore } from '../../lib/data/auth-store.js';
 
 const tempDirs = [];
@@ -184,6 +185,53 @@ test('login gives one generic error for missing, wrong-password, and Google-only
   assert.equal(missing.error, wrongPw.error, 'missing vs wrong-password errors match');
   assert.equal(missing.error, googleOnly.error, 'a Google-only account is indistinguishable too');
   assert.equal(missing.error, 'Invalid email or password');
+});
+
+// The identical wording above is only half the defence. If the miss paths returned
+// before hashing, a stopwatch would still separate "no such user" (instant) from
+// "wrong password" (a scrypt), which is the enumeration hole the wording closes.
+// Counted rather than timed on purpose: a wall-clock assertion is flaky on shared
+// CI, while the call count is exactly the property we care about.
+test('login pays the same scrypt cost whether or not the account exists', () => {
+  const store = freshStore();
+  registerVerifiedUser(store, 'pw@example.com', 'CorrectHorse9!');
+  store.loginWithGoogle({ email: 'goog@example.com', googleSub: 'sub-xyz' });
+
+  const realScryptSync = crypto.scryptSync;
+  let calls = 0;
+  crypto.scryptSync = (...args) => {
+    calls += 1;
+    return realScryptSync(...args);
+  };
+  const hashesDuring = (fn) => {
+    calls = 0;
+    fn();
+    return calls;
+  };
+  try {
+    const baseline = hashesDuring(() => store.login('pw@example.com', 'wrong-password!'));
+    assert.equal(baseline, 1, 'a wrong password against a real account hashes once');
+    assert.equal(
+      hashesDuring(() => store.login('nobody@example.com', 'whatever!')),
+      baseline,
+      'an unknown email hashes too, instead of returning early',
+    );
+    assert.equal(
+      hashesDuring(() => store.login('goog@example.com', 'whatever!')),
+      baseline,
+      'a Google-only account hashes too',
+    );
+    // A wholly missing password must not become its own oracle either: it has to
+    // land on the same generic rejection for a real account and an unknown one.
+    assert.equal(
+      hashesDuring(() => store.login('nobody@example.com')),
+      baseline,
+      'an omitted password still hashes on the miss path',
+    );
+    assert.equal(store.login('pw@example.com').error, store.login('nobody@example.com').error);
+  } finally {
+    crypto.scryptSync = realScryptSync;
+  }
 });
 
 // The free-tier daily cap IS enforced server-side, before any paid AI call:
