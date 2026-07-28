@@ -7,9 +7,17 @@
 // token for an account that no longer exists — and `memories`, which is chat content
 // keyed to an id nothing can resolve back to a person to honour a second request.
 //
-// The last test is the one that keeps this working: it introspects the REAL schema
-// and fails if any table grows a user-keyed column that erasure does not cover. The
-// coverage list is easy to write once and easy to forget forever.
+// SQLite is only half of it. The data directory also holds the CSV logs and the
+// frozen legacy JSON stores each table was imported from — auth-store.json still has
+// the address, the scrypt hash and every session digest, memories.json still has the
+// chat content, email_opened.json is keyed by the address itself. Those files are
+// never written again, which is exactly why they are easy to forget.
+//
+// The drift guards at the bottom are what keep this working: one introspects the REAL
+// schema, the other discovers every path the app resolves inside the data dir. The
+// second one replaced a guard that grepped for /'([a-z_]+\.csv)'/ — a shape that could
+// only ever find .csv files, so it structurally could not notice that the JSON stores
+// were uncovered, and it passed green the whole time they were.
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,12 +27,15 @@ import path from 'node:path';
 import { createAuthStore } from '../../lib/data/auth-store.js';
 import { createMemory } from '../../lib/data/memory.js';
 import { getDb, closeDb } from '../../lib/data/db.js';
+import { resolveDataDir } from '../../lib/data/data-dir.js';
 import {
   createUserDeletion,
   USER_ID_TABLES,
   USER_EMAIL_TABLES,
   NOT_USER_KEYED,
   LOG_REDACTIONS,
+  JSON_REDACTIONS,
+  NOT_PERSONAL_DATA_FILES,
 } from '../../lib/data/user-deletion.js';
 import { REDACTED } from '../../lib/data/csv-redaction.js';
 
@@ -231,6 +242,167 @@ test('a log that cannot be rewritten does not roll back or throw the erasure', (
   assert.ok(failed.error, 'the operator is told which file still holds an identifier');
 });
 
+// ---- the frozen legacy JSON stores ----------------------------------------
+
+/** Write a JSON store into the data dir the way its owner would have left it. */
+function seedStore(logDir, file, doc) {
+  const full = path.join(logDir, file);
+  fs.writeFileSync(full, JSON.stringify(doc, null, 2));
+  return full;
+}
+
+test('the frozen auth-store.json fallback loses the address and every credential', () => {
+  // auth-store.js imports this file once and then only ever reads it, so an erasure
+  // that stops at SQLite leaves the whole account sitting here: address, scrypt hash,
+  // and session digests that would come back live if the fallback were replayed.
+  const { authStore, deleteUser, logDir } = setup();
+  const { user } = makeUser(authStore, 'legacy@example.com');
+  const file = seedStore(logDir, 'auth-store.json', {
+    users: [
+      {
+        id: user.id,
+        email: 'legacy@example.com',
+        passwordSalt: 'salt-of-the-erased',
+        passwordHash: 'scrypt-of-the-erased',
+        googleSub: 'google-sub-of-the-erased',
+        stripeCustomerId: 'cus_oftheerased',
+        plan: 'pro',
+        usageCount: 7,
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+      { id: 'u_bystander', email: 'stays@example.com', passwordHash: 'scrypt-of-the-bystander', plan: 'free' },
+    ],
+    sessions: {
+      digestoftheerased: { userId: user.id, exp: 1 },
+      digestofthebystander: { userId: 'u_bystander', exp: 2 },
+    },
+    passwordResetTokens: { resetoftheerased: { userId: user.id, exp: 3 } },
+    pendingRegistrations: { 'legacy@example.com': { passwordHash: 'pending-scrypt-of-the-erased' } },
+    mobileIpUsage: { '1.2.3.4': { day: '2026-01-01', count: 3 } },
+  });
+
+  const res = deleteUser({ userId: user.id });
+  assert.equal(res.ok, true);
+
+  const raw = fs.readFileSync(file, 'utf8');
+  assert.ok(!raw.includes('legacy@example.com'), 'the address is gone from the fallback');
+  assert.ok(!raw.includes('scrypt-of-the-erased'), 'so is the password hash');
+  assert.ok(!raw.includes('salt-of-the-erased'));
+  assert.ok(!raw.includes('google-sub-of-the-erased'));
+  assert.ok(!raw.includes('cus_oftheerased'));
+  assert.ok(!raw.includes('pending-scrypt-of-the-erased'), 'and the unverified signup credential');
+  assert.ok(!raw.includes('digestoftheerased'), 'a session digest is a live bearer token — it is dropped, not blanked');
+  assert.ok(!raw.includes('resetoftheerased'));
+
+  const doc = JSON.parse(raw);
+  assert.equal(doc.users.length, 2, 'the record is redacted in place, not dropped');
+  const erased = doc.users.find((u) => u.id === user.id);
+  assert.equal(erased.email, `${REDACTED}:${user.id}`, 'unique per id, because users.email is UNIQUE NOT NULL');
+  assert.equal(erased.plan, 'pro', 'non-identifying fields survive the redaction');
+  assert.equal(erased.usageCount, 7);
+  for (const key of ['passwordSalt', 'passwordHash', 'googleSub', 'stripeCustomerId']) {
+    assert.ok(!(key in erased), `${key} has no anonymised form — it is deleted outright`);
+  }
+
+  // Everyone else is untouched.
+  assert.equal(doc.users.find((u) => u.id === 'u_bystander').email, 'stays@example.com');
+  assert.deepEqual(Object.keys(doc.sessions), ['digestofthebystander']);
+  assert.deepEqual(doc.passwordResetTokens, {});
+  assert.deepEqual(doc.pendingRegistrations, {});
+  assert.deepEqual(doc.mobileIpUsage, { '1.2.3.4': { day: '2026-01-01', count: 3 } }, 'keyed by IP, not by account');
+
+  const report = res.logs.find((l) => l.file.endsWith('auth-store.json'));
+  assert.ok(report.matched >= 4, `the operator is told what changed, got ${report.matched}`);
+});
+
+test('erasing by address alone still reaches the legacy sessions of that account', () => {
+  // No `users` row exists (an unverified signup), so the erasure carries no id — the
+  // legacy users[] entry is the only thing that can supply one, and without it the
+  // session/reset maps keyed to that id would be unreachable.
+  const { authStore, deleteUser, logDir } = setup();
+  authStore.startRegistration('ghost@example.com', 'CorrectHorse9!');
+  const file = seedStore(logDir, 'auth-store.json', {
+    users: [{ id: 'u_ghost', email: 'ghost@example.com', passwordHash: 'scrypt-of-the-ghost' }],
+    sessions: { digestoftheghost: { userId: 'u_ghost', exp: 1 } },
+  });
+
+  const res = deleteUser({ email: 'Ghost@Example.com' });
+  assert.equal(res.ok, true);
+  assert.equal(res.userId, '', 'there was never an account id');
+
+  const raw = fs.readFileSync(file, 'utf8');
+  assert.ok(!raw.includes('ghost@example.com'));
+  assert.ok(!raw.includes('scrypt-of-the-ghost'));
+  assert.ok(!raw.includes('digestoftheghost'), 'the id came from the users[] entry matched by address');
+});
+
+test('the frozen memories.json fallback loses that user\'s bucket', () => {
+  const { authStore, memory, deleteUser, logDir } = setup();
+  const { user } = makeUser(authStore, 'remembered@example.com');
+  memory.saveMemories(user.id, [{ id: 'm1', content: 'lives in Berlin' }]);
+  // The real file on disk has keys that are the id JSON-stringified a second time —
+  // that is what the old writer produced, and a plain key === userId comparison walks
+  // straight past it, leaving the content behind.
+  const file = seedStore(logDir, 'memories.json', {
+    [JSON.stringify(user.id)]: [{ id: 'm1', content: 'lives in Berlin', userMessage: 'remember where I live' }],
+    u_bystander: [{ id: 'm2', content: 'someone else entirely' }],
+  });
+
+  deleteUser({ userId: user.id });
+
+  const raw = fs.readFileSync(file, 'utf8');
+  assert.ok(!raw.includes('lives in Berlin'), 'the chat content is gone');
+  assert.ok(!raw.includes(user.id), 'and so is the id that keyed it');
+  assert.deepEqual(Object.keys(JSON.parse(raw)), ['u_bystander'], 'nobody else lost their memories');
+});
+
+test('the email-open map loses the address it is keyed by', () => {
+  const { authStore, deleteUser, logDir } = setup();
+  makeUser(authStore, 'opened@example.com');
+  const file = seedStore(logDir, 'email_opened.json', {
+    'Opened@Example.com': '2026-01-01T00:00:00.000Z',
+    'other@example.com': '2026-01-02T00:00:00.000Z',
+  });
+
+  deleteUser({ email: 'opened@example.com' });
+
+  const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+  assert.deepEqual(Object.keys(doc), ['other@example.com'], 'the key is the address, so the entry goes');
+});
+
+test('a JSON store that is absent or holds nobody is a no-op, not an error', () => {
+  const { authStore, deleteUser, logDir } = setup();
+  const { user } = makeUser(authStore, 'nofiles@example.com');
+  // memories.json exists but names someone else: it must come out byte-identical.
+  const untouched = seedStore(logDir, 'memories.json', { u_bystander: [{ id: 'm1', content: 'not theirs' }] });
+  const before = fs.readFileSync(untouched, 'utf8');
+
+  const res = deleteUser({ userId: user.id });
+  assert.equal(res.ok, true);
+
+  for (const spec of JSON_REDACTIONS) {
+    const report = res.logs.find((l) => l.file.endsWith(spec.file));
+    assert.ok(report, `${spec.file} is reported even when it does not exist`);
+    assert.ok(!report.error, `${spec.file}: a missing store is a no-op, not a failure`);
+    assert.equal(report.matched, 0);
+  }
+  assert.equal(res.logs.find((l) => l.file.endsWith('auth-store.json')).present, false);
+  assert.ok(!fs.existsSync(path.join(logDir, 'auth-store.json')), 'a missing store is not created');
+  assert.equal(fs.readFileSync(untouched, 'utf8'), before, 'a store with no match is not rewritten at all');
+});
+
+test('an unreadable JSON store is reported, not thrown, like the CSVs', () => {
+  const { authStore, deleteUser, logDir } = setup();
+  const { user } = makeUser(authStore, 'broken@example.com');
+  fs.writeFileSync(path.join(logDir, 'memories.json'), '{ not json');
+  fs.mkdirSync(path.join(logDir, 'auth-store.json')); // reading a directory throws EISDIR
+
+  const res = deleteUser({ userId: user.id });
+  assert.equal(res.ok, true, 'the rows are the part that must be atomic');
+  assert.equal(res.logs.find((l) => l.file.endsWith('memories.json')).reason, 'not parseable as JSON');
+  assert.ok(res.logs.find((l) => l.file.endsWith('auth-store.json')).error, 'the operator is told which file to check');
+});
+
 // ---- drift guards ---------------------------------------------------------
 
 test('every user-keyed table in the real schema is covered by erasure', () => {
@@ -257,24 +429,125 @@ test('every user-keyed table in the real schema is covered by erasure', () => {
   }
 });
 
-test('every CSV log the app writes is either redacted or exempted', () => {
-  // Sources that name a CSV: the writers and the admin download routes.
-  const sources = ['lib/services/logging.js', 'lib/services/email.js', 'routes/public.js', 'routes/admin.js'];
-  const found = new Set();
-  for (const rel of sources) {
-    const text = fs.readFileSync(path.join(process.cwd(), rel), 'utf8');
-    for (const m of text.matchAll(/'([a-z_]+\.csv)'/g)) found.add(m[1]);
+/**
+ * Strip JS comments so a guard that greps source cannot be satisfied by prose. This
+ * repo has shipped a guard that passed with the fix deleted because the fix's own
+ * explanatory comment named the token the scan looked for.
+ */
+function stripComments(source) {
+  let out = '';
+  let i = 0;
+  let quote = ''; // '' | ' | " | `
+  while (i < source.length) {
+    const ch = source[i];
+    if (quote) {
+      if (ch === '\\') { out += source.slice(i, i + 2); i += 2; continue; }
+      if (ch === quote) quote = '';
+      out += ch; i += 1; continue;
+    }
+    if (ch === "'" || ch === '"' || ch === '`') { quote = ch; out += ch; i += 1; continue; }
+    if (ch === '/' && source[i + 1] === '/') {
+      while (i < source.length && source[i] !== '\n') i += 1;
+      continue;
+    }
+    if (ch === '/' && source[i + 1] === '*') {
+      i += 2;
+      while (i < source.length && !(source[i] === '*' && source[i + 1] === '/')) i += 1;
+      i += 2;
+      continue;
+    }
+    out += ch; i += 1;
   }
-  assert.ok(found.size >= 5, `sanity: expected to find the CSV logs, got ${[...found].join(', ')}`);
+  return out;
+}
 
-  const redacted = new Set(LOG_REDACTIONS.map((s) => s.file));
+/** Every .js file under the app's server-side source. */
+function serverSourceFiles() {
+  const files = [path.join(process.cwd(), 'server.js')];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.js')) files.push(full);
+    }
+  };
+  for (const root of ['lib', 'routes']) walk(path.join(process.cwd(), root));
+  return files;
+}
+
+/**
+ * Every path the app resolves INSIDE the data directory — the set of things an
+ * erasure has to have an answer for.
+ *
+ * Discovery is by construction, not by a hand-kept list: any `path.join(<a data
+ * dir>, '<name>')` in the server source counts, whatever the extension, so a new
+ * store, a new log or an extensionless directory is found the moment it is written.
+ * The real data dir is folded in as ground truth when one exists (CI starts without
+ * it — `/data/` is gitignored — so the source scan is what actually gates the build).
+ */
+function discoverDataDirTargets() {
+  const found = new Set();
+  for (const file of serverSourceFiles()) {
+    const text = stripComments(fs.readFileSync(file, 'utf8'));
+    for (const m of text.matchAll(/path\.join\(\s*([^,()]*(?:\([^()]*\))?[^,()]*)\s*,\s*'([^']+)'/g)) {
+      if (!/dataDir|dataLogDir|logDir|hostedImagesDir/i.test(m[1])) continue;
+      found.add(m[2]);
+    }
+  }
+  const real = resolveDataDir(process.cwd());
+  if (fs.existsSync(real)) {
+    for (const entry of fs.readdirSync(real)) {
+      if (/\.db-(wal|shm)$|\.redact-tmp$/.test(entry)) continue; // sqlite sidecars / our own tmp
+      found.add(entry);
+    }
+  }
+  return found;
+}
+
+test('every path the app resolves inside the data dir is redacted or exempted', () => {
+  const found = discoverDataDirTargets();
+
+  // Sanity: the scan has to actually see the data dir, and — the point of this
+  // rewrite — it has to see things that are NOT .csv. The guard this replaced matched
+  // /'([a-z_]+\.csv)'/, so it could not have failed these lines, which is exactly how
+  // the JSON stores below stayed uncovered.
+  assert.ok(found.size >= 12, `sanity: expected the data dir's contents, got ${[...found].sort().join(', ')}`);
+  for (const expected of [
+    'prompt_logs.csv',
+    'chat_logs.csv',
+    'auth-store.db',
+    'auth-store.json',
+    'memories.json',
+    'email_opened.json',
+    'enterprise-domains.json',
+    'uptime.json',
+    'hosted-images',
+  ]) {
+    assert.ok(found.has(expected), `sanity: discovery missed ${expected} — the scan, not the list, is the guard`);
+  }
+
+  const covered = new Set([...LOG_REDACTIONS, ...JSON_REDACTIONS].map((s) => s.file));
   for (const file of found) {
     assert.ok(
-      redacted.has(file),
-      `${file} is written by the app but lib/data/user-deletion.js#LOG_REDACTIONS does not redact it — ` +
-        'a new log means new personal data that survives an erasure request.',
+      covered.has(file) || Object.hasOwn(NOT_PERSONAL_DATA_FILES, file),
+      `"${file}" lives in the data directory but lib/data/user-deletion.js neither erases it (add it to ` +
+        'LOG_REDACTIONS or JSON_REDACTIONS) nor explains why it is exempt (add it to NOT_PERSONAL_DATA_FILES). ' +
+        'A data file nobody classified is the next place a "complete" erasure leaves personal data on disk.',
     );
   }
+});
+
+test('the file coverage lists name real data files', () => {
+  // A typo would otherwise pass the guard above while redacting nothing: the redaction
+  // opens a path that does not exist, gets ENOENT, and reports a cheerful no-op.
+  const found = discoverDataDirTargets();
+  for (const file of [...LOG_REDACTIONS.map((s) => s.file), ...JSON_REDACTIONS.map((s) => s.file)]) {
+    assert.ok(found.has(file), `"${file}" is redacted by user-deletion.js but the app never writes it — typo?`);
+  }
+  for (const file of Object.keys(NOT_PERSONAL_DATA_FILES)) {
+    assert.ok(found.has(file), `"${file}" is exempted but no longer exists — drop the stale exemption`);
+  }
+  assert.equal(JSON_REDACTIONS.length, new Set(JSON_REDACTIONS.map((s) => s.file)).size, 'no duplicate entries');
 });
 
 test('the coverage lists name real tables and real columns', () => {
