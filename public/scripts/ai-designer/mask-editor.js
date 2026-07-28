@@ -21,6 +21,10 @@ import { createMaskFit } from './mask-fit.js';
 import { createMaskViewport } from '../mask/viewport.js';
 import { createMaskOverlay } from '../mask/overlay.js';
 import { createMaskReference } from '../mask/reference.js';
+import { createMaskBrush } from '../mask/brush.js';
+import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
+import { requestMaskEdit } from '../mask/generate.js';
+import { buildBlendMask, compositeMaskedEdit } from '../mask-core.js';
 
 export function createMaskEditor(deps) {
   const {
@@ -134,9 +138,9 @@ export function createMaskEditor(deps) {
           existingModal.classList.add('active');
           viewport.bind();
           viewport.sync();
-          maskPainted = false;
+          brush.clear();
           setMaskTool('brush');
-          initMaskDrawing(maskCanvas);
+          brush.attach();
           
           // Clear prompt input and disable button initially
           if (promptInput) {
@@ -271,7 +275,7 @@ export function createMaskEditor(deps) {
         document.getElementById('mask-editor-erase-btn').addEventListener('click', () => setMaskTool('erase'));
         document.getElementById('mask-editor-brush-slider').addEventListener('input', (e) => {
           const slider = /** @type {HTMLInputElement} */ (e.target);
-          brushSize = parseInt(slider.value, 10);
+          brush.setSize(parseInt(slider.value, 10));
           document.getElementById('mask-editor-brush-size').textContent = slider.value + ' px';
         });
 
@@ -313,46 +317,44 @@ export function createMaskEditor(deps) {
         });
       }
       
-      let brushSize = 50;
-      let maskTool = 'brush';     // 'brush' adds to the selection, 'erase' removes
-      let maskPainted = false;    // any selection present? (hot path avoids scanning)
-      let maskDrawingInited = false;
+      // Shared brush. The dialog is built on first open, so the canvas is resolved
+      // lazily and attach() runs from openMaskEditor rather than here.
+      const brush = createMaskBrush({
+        getCanvas: () => /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas')),
+        getPhase: () => maskPhase,
+        isBusy: () => {
+          const container = document.querySelector('.mask-editor-canvas-container');
+          return !!container && container.classList.contains('processing');
+        },
+        onReadyChange: () => updateApplyButtonState(),
+        onRefineStroke: () => renderPreview(),
+      });
 
+      // The brush owns the tool; this only mirrors it onto the two buttons.
       function setMaskTool(t) {
-        maskTool = t === 'erase' ? 'erase' : 'brush';
+        brush.setTool(t);
+        const isBrush = brush.getTool() === 'brush';
         const b = document.getElementById('mask-editor-brush-btn');
         const e = document.getElementById('mask-editor-erase-btn');
-        if (b) { b.classList.toggle('is-active', maskTool === 'brush'); b.setAttribute('aria-pressed', maskTool === 'brush' ? 'true' : 'false'); }
-        if (e) { e.classList.toggle('is-active', maskTool === 'erase'); e.setAttribute('aria-pressed', maskTool === 'erase' ? 'true' : 'false'); }
+        if (b) { b.classList.toggle('is-active', isBrush); b.setAttribute('aria-pressed', isBrush ? 'true' : 'false'); }
+        if (e) { e.classList.toggle('is-active', !isBrush); e.setAttribute('aria-pressed', !isBrush ? 'true' : 'false'); }
       }
 
-      // ── Mask image-processing core (shared) ──────────────────────────────────
-      // The canvas math lives once in the ES module /scripts/mask-core.js and is
-      // shared with the main Stagify tool. These thin wrappers keep the call sites
-      // below unchanged; the module loads eagerly and is awaited in
-      // runMaskGenerate before its first use.
-      let _maskCore = null;
-      const _maskCoreReady = import('/scripts/mask-core.js').then((m) => (_maskCore = m, m));
-      _maskCoreReady.catch((e) => console.error('[mask] failed to load mask-core.js', e));
-      function maskBuildModelMask(drawSrc, w, h, grow) {
-        return _maskCore.buildModelMask(drawSrc, w, h, grow);
-      }
-      function maskBuildBlendMask(drawSrc, w, h, coreGrow, featherPx) {
-        return _maskCore.buildBlendMask(drawSrc, w, h, coreGrow, featherPx);
-      }
-      function maskCompositeEditCanvas(origCanvas, keepMask, editedImg, w, h) {
-        return _maskCore.compositeMaskedEditCanvas(origCanvas, keepMask, editedImg, w, h);
-      }
-      function maskCompositeEdit(origCanvas, keepMask, editedImg, w, h) {
-        return _maskCore.compositeMaskedEdit(origCanvas, keepMask, editedImg, w, h);
-      }
+      // The canvas maths lives once in /scripts/mask-core.js. It used to be
+      // reached here through a dynamic import plus four forwarding wrappers, which
+      // runMaskGenerate then had to await before first use; the shared refine and
+      // generate modules import it statically, so the wrappers and the await are
+      // gone and the module graph resolves before any of this runs.
 
       // ---- In-modal generate → refine flow (mirrors main Stagify) ----------
       // "Apply Edit" no longer closes the modal: it blurs the canvas while the AI
       // runs, then shows the result here so the user can repaint the outline.
       // Repainting only re-crops the already-generated image (instant, free).
       let maskPhase = 'draw';          // 'draw' | 'loading' | 'refine'
-      let maskRefineState = null;      // { originCanvas, imageSrc, w, h, coreGrow, featherPx, editedImg }
+      // Shape is shared with the stage editor and read by mask/refine.js — the
+      // snapshot key must stay `origCanvas` (it was `originCanvas` here, which
+      // silently handed the shared renderer an undefined image).
+      let maskRefineState = null;      // { origCanvas, imageSrc, w, h, coreGrow, featherPx, editedImg }
 
       function maskSetControlsDisabled(dis) {
         ['mask-editor-cancel','mask-editor-clear','mask-editor-submit','mask-editor-rerun','mask-editor-done','mask-editor-brush-btn','mask-editor-erase-btn','mask-editor-brush-slider','mask-editor-prompt','mask-editor-ref-add','mask-editor-ref-remove']
@@ -389,7 +391,7 @@ export function createMaskEditor(deps) {
             const tip = help.querySelector('.smask-help__tip');
             if (tip) tip.textContent = lang('pdf.maskEditor.refineHelp', "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining — it won't be in the final image.");
           }
-          maskRecolor('#16a34a');
+          brush.recolor(brush.REFINE_COLOR);
           if (note) { note.style.display = ''; note.textContent = lang('pdf.maskEditor.refineNote', "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI."); }
           updateApplyButtonState();
         } else {
@@ -410,163 +412,19 @@ export function createMaskEditor(deps) {
         // the image gives back (or takes) the height that costs.
         fit.fit();
       }
-      // Re-composite the already-generated AI output through the CURRENT strokes —
-      // instant, free, no API call.
-      function maskRenderRefinePreview() {
-        if (!maskRefineState) return;
-        const { originCanvas, w, h, coreGrow, featherPx, editedImg } = maskRefineState;
-        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
-        const baseCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-canvas'));
-        if (!maskCanvas || !baseCanvas) return;
-        const keep = maskBuildBlendMask(maskCanvas, w, h, coreGrow, featherPx);
-        const composed = maskCompositeEditCanvas(originCanvas, keep, editedImg, w, h);
-        const bctx = baseCanvas.getContext('2d');
-        bctx.clearRect(0, 0, w, h);
-        bctx.drawImage(composed, 0, 0);
-        // Ghost the FULL raw AI output on top at 55% so the user can see the entire
-        // generated region — including parts outside the current brush — and judge
-        // where to extend or trim the mask. Visual only: the committed result is
-        // re-composited cleanly from maskRefineState (see commitMaskEdit).
-        bctx.save();
-        bctx.globalAlpha = 0.55;
-        bctx.drawImage(editedImg, 0, 0, w, h);
-        bctx.restore();
-      }
+      const renderPreview = () => renderRefinePreview({
+        baseCanvas: /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-canvas')),
+        drawCanvas: /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas')),
+        state: maskRefineState,
+      });
 
-      // Recolor every painted stroke to `color` (keeps alpha) — purely cosmetic,
-      // used to switch the selection to the refine-phase color.
-      function maskRecolor(color) {
-        const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
-        if (!maskCanvas || !maskCanvas.width || !maskCanvas.height) return;
-        const ctx = maskCanvas.getContext('2d');
-        ctx.save();
-        ctx.globalCompositeOperation = 'source-in';
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
-        ctx.restore();
-      }
+      const clearMask = () => brush.clear();
 
-      // Accurate (expensive) scan — only on stroke end, never per-move.
-      function maskScanHasContent() {
-        const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
-        if (!maskCanvas || !maskCanvas.width || !maskCanvas.height) return false;
-        const d = maskCanvas.getContext('2d').getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
-        for (let i = 3; i < d.length; i += 4) { if (d[i] > 10) return true; }
-        return false;
-      }
-
-      function initMaskDrawing(maskCanvas) {
-        if (maskDrawingInited) return; // attach listeners once
-        maskDrawingInited = true;
-        const ctx = maskCanvas.getContext('2d');
-        let drawing = false;
-        let lastX = null;
-        let lastY = null;
-
-        function isProcessing() {
-          const canvasContainer = document.querySelector('.mask-editor-canvas-container');
-          return canvasContainer && canvasContainer.classList.contains('processing');
-        }
-        function pointFrom(e) {
-          // Derive the scale from the LIVE rendered size every time. The canvas's
-          // on-screen size is set by CSS and can differ from the display size we
-          // computed at load (e.g. a tall image gets width-clamped by the
-          // container). Using a stale stored scale shifts drawing sideways —
-          // reading getBoundingClientRect here keeps the brush under the cursor.
-          const rect = maskCanvas.getBoundingClientRect();
-          if (!rect.width || !rect.height) return { x: 0, y: 0 };
-          return {
-            x: (e.clientX - rect.left) * (maskCanvas.width / rect.width),
-            y: (e.clientY - rect.top) * (maskCanvas.height / rect.height)
-          };
-        }
-        function startDrawing(e) {
-          if (isProcessing()) return;
-          drawing = true;
-          lastX = null;
-          lastY = null;
-          draw(e);
-        }
-        function stopDrawing() {
-          if (!drawing) return;
-          drawing = false;
-          lastX = null;
-          lastY = null;
-          maskPainted = maskScanHasContent(); // recompute once (handles erasing it away)
-          updateApplyButtonState();
-          // In refine mode, re-crop the existing AI output through the new strokes —
-          // instant and free, no API call.
-          if (maskPhase === 'refine') maskRenderRefinePreview();
-        }
-        function draw(e) {
-          if (!drawing || isProcessing()) return;
-          const { x, y } = pointFrom(e);
-          // One continuous, fully-opaque stroke; erase mode removes via
-          // destination-out. Translucency comes from the canvas CSS opacity.
-          ctx.globalCompositeOperation = maskTool === 'erase' ? 'destination-out' : 'source-over';
-          // Refine phase uses a distinct color so it's clear you're adjusting the crop.
-          const brushColor = maskPhase === 'refine' ? '#16a34a' : '#2563eb';
-          ctx.strokeStyle = brushColor;
-          ctx.fillStyle = brushColor;
-          ctx.lineWidth = brushSize;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          if (lastX === null || lastY === null) {
-            ctx.beginPath();
-            ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
-            ctx.fill();
-          } else {
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(x, y);
-            ctx.stroke();
-          }
-          ctx.globalCompositeOperation = 'source-over';
-          lastX = x;
-          lastY = y;
-          if (maskTool === 'brush' && !maskPainted) {
-            maskPainted = true;
-            updateApplyButtonState();
-          }
-        }
-
-        maskCanvas.addEventListener('mousedown', startDrawing);
-        maskCanvas.addEventListener('mousemove', draw);
-        maskCanvas.addEventListener('mouseup', stopDrawing);
-        maskCanvas.addEventListener('mouseleave', stopDrawing);
-        maskCanvas.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          const t = e.touches[0];
-          startDrawing({ clientX: t.clientX, clientY: t.clientY });
-        });
-        maskCanvas.addEventListener('touchmove', (e) => {
-          e.preventDefault();
-          const t = e.touches[0];
-          draw({ clientX: t.clientX, clientY: t.clientY });
-        });
-        maskCanvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); });
-
-        maskCanvas.style.pointerEvents = 'auto';
-        maskCanvas.style.cursor = 'crosshair';
-      }
-      
-      function clearMask() {
-        const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
-        const ctx = maskCanvas.getContext('2d');
-        ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
-        maskPainted = false;
-        updateApplyButtonState();
-      }
-      
-      function checkMaskHasContent() {
-        const maskCanvas = /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas'));
-        if (!maskCanvas || maskCanvas.width === 0 || maskCanvas.height === 0) {
-          return false;
-        }
-        const maskCtx = maskCanvas.getContext('2d');
-        const imageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
-        return imageData.data.some((val, idx) => idx % 4 === 3 && val > 0); // Check alpha channel
-      }
+      // Was an independent full-canvas scan with a slightly different alpha
+      // threshold (>0) than the one the stroke-end check used (>10); both now go
+      // through the brush, so the submit gate and the button state can no longer
+      // disagree about whether anything is painted.
+      const checkMaskHasContent = () => brush.rescan();
       
       function checkPromptHasContent() {
         const promptInput = /** @type {HTMLInputElement} */ (document.getElementById('mask-editor-prompt'));
@@ -578,7 +436,7 @@ export function createMaskEditor(deps) {
         const rerunBtn = /** @type {HTMLButtonElement} */ (document.getElementById('mask-editor-rerun'));
         // Use the cheap flag (set while drawing, recomputed on stroke end) so this
         // never scans the whole canvas in the hot path.
-        const ready = maskPainted && checkPromptHasContent();
+        const ready = brush.hasContent() && checkPromptHasContent();
         if (submitBtn) submitBtn.disabled = !ready;
         if (rerunBtn) rerunBtn.disabled = !ready;
       }
@@ -617,39 +475,15 @@ export function createMaskEditor(deps) {
         }
       }
       
-      // POST the current strokes + prompt (+ optional reference) to the model and
-      // resolve to the raw edited Image. Throws on failure.
-      async function runMaskGenerate(imageSrc, w, h, prompt, coreGrow) {
-        await _maskCoreReady; // ensure the shared mask-core module is loaded before use
-        const maskCanvas = document.getElementById('mask-editor-mask-canvas');
-        const maskDataUrl = maskBuildModelMask(maskCanvas, w, h, coreGrow).toDataURL('image/png');
-        const selectedModel = window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini';
-        const maskAuthTok = window.StagifyAuth && window.StagifyAuth.getToken();
-        const response = await fetch('/api/mask-edit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(maskAuthTok ? { Authorization: 'Bearer ' + maskAuthTok } : {}),
-          },
-          body: JSON.stringify({
-            image: imageSrc,
-            mask: maskDataUrl,
-            prompt: prompt,
-            model: selectedModel,
-            authToken: maskAuthTok || undefined,
-            ...(reference.getDataUrl() ? { referenceImage: reference.getDataUrl() } : {}),
-          })
-        });
-        const data = await response.json();
-        if (!response.ok || !data.editedImage) {
-          throw new Error(data.error || 'Failed to process masked edit');
-        }
-        return await new Promise((resolve, reject) => {
-          const im = new Image();
-          im.crossOrigin = 'anonymous';
-          im.onload = () => resolve(im);
-          im.onerror = () => reject(new Error('Failed to load edited image'));
-          im.src = data.editedImage;
+      // POST the current strokes + prompt (+ optional reference) to the model.
+      // Model choice is this page's own control; everything else is shared.
+      function runMaskGenerate(imageSrc, w, h, prompt, coreGrow) {
+        return requestMaskEdit({
+          image: imageSrc,
+          drawCanvas: /** @type {HTMLCanvasElement} */ (document.getElementById('mask-editor-mask-canvas')),
+          w, h, prompt, coreGrow,
+          model: window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini',
+          referenceImage: reference.getDataUrl(),
         });
       }
 
@@ -670,23 +504,17 @@ export function createMaskEditor(deps) {
         const w = parseInt(canvas.dataset.originalWidth);
         const h = parseInt(canvas.dataset.originalHeight);
         const imageSrc = canvas.dataset.imageSrc;
-        const maxDim = Math.max(w, h);
-        // Secret brush expansion kept modest (~half what it used to be) now that the
-        // refine step lets users extend the mask themselves.
-        const coreGrow = Math.max(12, Math.round(maxDim * 0.02275));
-        const featherPx = Math.max(20, Math.round(maxDim * 0.04));
+        const { coreGrow, featherPx } = maskGrowths(w, h);
         // Snapshot the pristine source before refine overwrites the base canvas.
-        const originCanvas = document.createElement('canvas');
-        originCanvas.width = w; originCanvas.height = h;
-        originCanvas.getContext('2d').drawImage(canvas, 0, 0);
+        const origCanvas = snapshotCanvas(canvas, w, h);
         maskSetPhase('loading');
         try {
           const editedImg = await runMaskGenerate(imageSrc, w, h, prompt, coreGrow);
           const modal = document.getElementById('mask-editor-modal');
           if (!modal || !modal.classList.contains('active')) return; // closed mid-flight
-          maskRefineState = { originCanvas, imageSrc, w, h, coreGrow, featherPx, editedImg };
+          maskRefineState = { origCanvas, imageSrc, w, h, coreGrow, featherPx, editedImg };
           maskSetPhase('refine');
-          maskRenderRefinePreview();
+          renderPreview();
         } catch (error) {
           console.error('Error submitting mask edit:', error);
           showToast(lang('pdf.mask.failed', 'Failed to process masked edit. Please try again.'), 'error');
@@ -708,22 +536,22 @@ export function createMaskEditor(deps) {
           if (!modal || !modal.classList.contains('active')) return;
           maskRefineState.editedImg = editedImg;
           maskSetPhase('refine');
-          maskRenderRefinePreview();
+          renderPreview();
         } catch (error) {
           console.error('Mask re-run failed:', error);
           showToast(lang('pdf.mask.failed', 'Failed to process masked edit. Please try again.'), 'error');
           maskSetPhase('refine');
-          maskRenderRefinePreview();
+          renderPreview();
         }
       }
 
       // "Looks good" (refine phase): commit the current composite as a new version.
       async function commitMaskEdit() {
         if (!maskRefineState) { closeMaskEditor(); return; }
-        const { originCanvas, imageSrc, w, h, coreGrow, featherPx, editedImg } = maskRefineState;
+        const { origCanvas, imageSrc, w, h, coreGrow, featherPx, editedImg } = maskRefineState;
         const maskCanvas = document.getElementById('mask-editor-mask-canvas');
-        const keepMask = maskBuildBlendMask(maskCanvas, w, h, coreGrow, featherPx);
-        const finalEdited = maskCompositeEdit(originCanvas, keepMask, editedImg, w, h);
+        const keepMask = buildBlendMask(maskCanvas, w, h, coreGrow, featherPx);
+        const finalEdited = compositeMaskedEdit(origCanvas, keepMask, editedImg, w, h);
 
         // Resolve which carousel/container this image belongs to.
         const maskedImageSrc = imageSrc;

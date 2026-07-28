@@ -213,6 +213,44 @@ export function installFileStack({ width, height, failRead = false, failDecode =
   };
 }
 
+/**
+ * A real @napi-rs/canvas painted on by the brush, wearing the DOM clothes the
+ * brush needs: getBoundingClientRect (the pointer→canvas mapping reads it every
+ * stroke), event listeners, and a style bag. `rect` is the on-screen box, which
+ * is deliberately allowed to differ from the intrinsic w/h — that mismatch IS
+ * the mapping the brush has to get right.
+ */
+export function drawCanvas({ w = 200, h = 100, rect = { left: 0, top: 0, width: 200, height: 100 } } = {}) {
+  const c = createCanvas(w, h);
+  const listeners = new Map();
+  c.getBoundingClientRect = () => rect;
+  c.style = {};
+  c.addEventListener = (type, fn) => {
+    if (!listeners.has(type)) listeners.set(type, []);
+    listeners.get(type).push(fn);
+  };
+  c.emit = (type, event = {}) => {
+    (listeners.get(type) || []).forEach((fn) => fn(event));
+    return (listeners.get(type) || []).length;
+  };
+  c.listenerCount = (type) => (listeners.get(type) || []).length;
+  /** Alpha at an intrinsic-pixel coordinate. */
+  c.alphaAt = (x, y) => c.getContext('2d').getImageData(x, y, 1, 1).data[3];
+  /** Non-transparent pixel count. */
+  c.paintedPixels = () => {
+    const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let n = 0;
+    for (let i = 3; i < d.length; i += 4) if (d[i] > 10) n++;
+    return n;
+  };
+  /** RGB at an intrinsic-pixel coordinate, as #rrggbb. */
+  c.colorAt = (x, y) => {
+    const [r, g, b] = c.getContext('2d').getImageData(x, y, 1, 1).data;
+    return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
+  };
+  return c;
+}
+
 /** A File-shaped object; the slices only read `type` and `size`. */
 export function fakeFile({ type = 'image/png', size = 1000 } = {}) {
   return { type, size, name: 'ref.png' };
