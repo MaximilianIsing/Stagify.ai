@@ -77,8 +77,67 @@ test('passwords are stored salted + hashed, never in plaintext', () => {
   assert.ok(!raw.includes(password), 'raw store file must not contain the plaintext password');
 
   const user = store.findUserByEmail('carol@example.com');
-  assert.match(user.passwordHash, /^[0-9a-f]+$/i, 'passwordHash should be a hex digest');
+  // The hash carries the cost it was made at (lib/data/password-hash.js), so the
+  // scrypt parameters can be raised later without a forced reset for everyone.
+  assert.match(user.passwordHash, /^scrypt\$N=\d+,r=\d+,p=\d+,keylen=\d+\$[0-9a-f]+$/,
+    'passwordHash should be a parameter-tagged scrypt digest');
   assert.ok(user.passwordSalt && user.passwordSalt.length > 0, 'passwordSalt should be set');
+});
+
+// Seed one account whose password hash is in the pre-2026-07 form: a bare
+// crypto.scryptSync(password, salt, 64) hex digest, with no algorithm/cost
+// envelope. This is what every existing production row looks like, so it is the
+// state the upgrade path has to handle — written through importStore, the only
+// public door into a hand-built row.
+function seedLegacyPasswordRow(store, email, password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  store.importStore({
+    users: [{
+      id: 'u_legacy_pw',
+      email,
+      passwordSalt: salt,
+      passwordHash: crypto.scryptSync(password, salt, 64).toString('hex'),
+      plan: 'free',
+      createdAt: '2025-01-01T00:00:00.000Z',
+    }],
+    sessions: {}, mobileIpUsage: {}, passwordResetTokens: {}, pendingRegistrations: {},
+  });
+  const seeded = store.findUserByEmail(email);
+  assert.ok(!seeded.passwordHash.includes('$'), 'precondition: the row is in the legacy untagged form');
+  return seeded;
+}
+
+test('a legacy bare-hex password row still logs in, and is upgraded in place', () => {
+  // Existing accounts must not be signed out or forced through a reset by the
+  // format change; signing in is the one moment the plaintext is available to
+  // re-hash at the current cost.
+  const store = freshStore();
+  const password = 'LegacyRowPassw0rd!';
+  const before = seedLegacyPasswordRow(store, 'legacy@example.com', password);
+
+  const good = store.login('legacy@example.com', password);
+  assert.equal(good.ok, true, 'a legacy row must still authenticate');
+  assert.equal(good.user.id, 'u_legacy_pw');
+
+  const after = store.findUserByEmail('legacy@example.com');
+  assert.match(after.passwordHash, /^scrypt\$N=/, 'the row is rehashed into the tagged form on sign-in');
+  assert.notEqual(after.passwordSalt, before.passwordSalt, 'the rehash also rotates the salt');
+  assert.equal(store.login('legacy@example.com', password).ok, true, 'and the upgraded row still verifies');
+  assert.equal(store.login('legacy@example.com', 'wrong-password').ok, false);
+});
+
+test('a failed login never rewrites the stored hash', () => {
+  // The upgrade runs only after verification succeeds. Were it to run first, a wrong
+  // password would overwrite the row with a hash of whatever the attacker typed.
+  const store = freshStore();
+  const password = 'NoRewriteOnFailure!1';
+  seedLegacyPasswordRow(store, 'stable@example.com', password);
+  const legacyHash = store.findUserByEmail('stable@example.com').passwordHash;
+
+  assert.equal(store.login('stable@example.com', 'not-the-password').ok, false);
+  assert.equal(store.findUserByEmail('stable@example.com').passwordHash, legacyHash,
+    'the row is untouched by a failed attempt');
+  assert.equal(store.login('stable@example.com', password).ok, true, 'the real password still works');
 });
 
 test('sessions validate until logout, then are rejected', () => {
