@@ -3,50 +3,10 @@
 // this module lets the language scripts detect the URL's language and lets the
 // switcher (and the few in-app JS redirects) build the right localized URL.
 //
-// Keep PREFIX_TO_LANG / LOCALIZED_PATHS in sync with lib/i18n/locales.js (server).
-
-/** URL prefix → switcher language value (the languages/<lang>.json basename). */
-export const PREFIX_TO_LANG = {
-  es: 'spanish',
-  fr: 'french',
-  de: 'german',
-  zh: 'chinese',
-  ko: 'korean',
-  pt: 'portuguese',
-  ru: 'russian',
-  it: 'italian',
-  ja: 'japanese',
-  nl: 'dutch',
-};
-
-/** Language value → URL prefix ('' for English). */
-export const LANG_TO_PREFIX = {
-  english: '',
-  spanish: 'es',
-  french: 'fr',
-  german: 'de',
-  chinese: 'zh',
-  korean: 'ko',
-  portuguese: 'pt',
-  russian: 'ru',
-  italian: 'it',
-  japanese: 'ja',
-  dutch: 'nl',
-};
-
-/** Paths that have a localized variant (mirror LOCALIZED_PAGES in lib/i18n/locales.js). */
-const LOCALIZED_PATHS = new Set([
-  '/',
-  '/ai-designer.html',
-  '/masking-studio.html',
-  '/stagify-plus.html',
-  '/enterprise.html',
-  '/guides.html',
-  '/contact.html',
-  '/status',
-  '/privacy.html',
-  '/terms.html',
-]);
+// The language and page sets come from locale-data.js, which is GENERATED from
+// lib/i18n/locales.js (the server's source of truth) — these tables used to be
+// maintained here by hand, one of five frontend copies that nothing kept in sync.
+import { PREFIX_TO_LANG, LANG_TO_PREFIX, LOCALIZED_PATHS } from './locale-data.js';
 
 /**
  * Split a pathname into its locale prefix and the English-equivalent base path.

@@ -1,41 +1,20 @@
 import { urlLanguage } from "./i18n-routing.js";
+// Both tables are GENERATED from lib/i18n/locales.js. They used to be a hand-kept
+// BCP-47 map plus a hand-written switch, either of which could silently fall a
+// language behind the server's list.
+import { LANG_BCP47 as BCP47, PRIMARY_SUBTAG_TO_LANG } from "./locale-data.js";
 
 (() => {
   "use strict";
 
-  // Supported UI languages -> BCP-47 code used for the <html lang> attribute.
-  // Keep this list in sync with the options in the language switcher.
-  const BCP47 = {
-    english: "en",
-    spanish: "es",
-    chinese: "zh-Hans",
-    korean: "ko",
-    french: "fr",
-    german: "de",
-    dutch: "nl",
-    italian: "it",
-    portuguese: "pt-BR",
-    russian: "ru",
-    japanese: "ja",
-  };
-
   // Map a browser language tag (e.g. "fr-FR", "zh-TW") to a supported UI language,
-  // or null if we don't translate that language yet.
+  // or null if we don't translate that language yet. Only the primary subtag is
+  // consulted, so "zh-TW" and "zh-Hans" both resolve to chinese.
   function toSupported(tag) {
-    switch (String(tag || "").toLowerCase().split("-")[0]) {
-      case "es": return "spanish";
-      case "zh": return "chinese";
-      case "ko": return "korean";
-      case "fr": return "french";
-      case "de": return "german";
-      case "nl": return "dutch";
-      case "it": return "italian";
-      case "pt": return "portuguese";
-      case "ru": return "russian";
-      case "ja": return "japanese";
-      case "en": return "english";
-      default: return null;
-    }
+    const primary = String(tag || "").toLowerCase().split("-")[0];
+    return Object.prototype.hasOwnProperty.call(PRIMARY_SUBTAG_TO_LANG, primary)
+      ? PRIMARY_SUBTAG_TO_LANG[primary]
+      : null;
   }
 
   // Walk the visitor's ordered language preferences and pick the first we support.

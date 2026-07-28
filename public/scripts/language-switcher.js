@@ -1,36 +1,10 @@
+// Flag assets and <html lang> codes, GENERATED from lib/i18n/locales.js. These were
+// a second hand-maintained copy of the maps in language-detect.js; a language added
+// to one and not the other rendered with the wrong flag or the wrong lang attribute.
+import { LANG_FLAG as FLAGS, LANG_BCP47 as BCP47 } from "./locale-data.js";
+
 (() => {
   "use strict";
-
-  // Maps language value -> flag asset (paths are relative to the page in /public).
-  const FLAGS = {
-    english: "media-webp/flags/US.svg",
-    spanish: "media-webp/flags/Spain.svg",
-    chinese: "media-webp/flags/China.svg",
-    korean: "media-webp/flags/Korea.svg",
-    french: "media-webp/flags/France.svg",
-    german: "media-webp/flags/Germany.svg",
-    dutch: "media-webp/flags/Netherlands.svg",
-    italian: "media-webp/flags/Italy.svg",
-    portuguese: "media-webp/flags/Brazil.svg",
-    russian: "media-webp/flags/Russia.svg",
-    japanese: "media-webp/flags/Japan.svg",
-  };
-
-  // UI language -> BCP-47 code for the <html lang> attribute (mirrors
-  // language-detect.js). Keeps screen-reader pronunciation correct on switch.
-  const BCP47 = {
-    english: "en",
-    spanish: "es",
-    chinese: "zh-Hans",
-    korean: "ko",
-    french: "fr",
-    german: "de",
-    dutch: "nl",
-    italian: "it",
-    portuguese: "pt-BR",
-    russian: "ru",
-    japanese: "ja",
-  };
 
   function init() {
     // The native <select> stays in the DOM (visually hidden) as the source of
@@ -143,6 +117,6 @@
   }
 })();
 
-// Loaded as <script type="module">; this empty export marks the file as an ES
-// module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).
-export {};
+// The import above already makes this an ES module (it is loaded as
+// <script type="module">), so `eslint .` covers it via the auto-discovery in
+// eslint.config.js without the marker export this file used to carry.

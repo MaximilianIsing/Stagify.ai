@@ -5,6 +5,7 @@
 // app (carousel, mask editors, etc.). Loaded as <script type="module">, runs on every page.
 
 import { urlLanguage, hrefForLanguage, localizeLinks } from './i18n-routing.js';
+import { LANGUAGES } from './locale-data.js';
 
 (() => {
   'use strict';
@@ -171,12 +172,15 @@ import { urlLanguage, hrefForLanguage, localizeLinks } from './i18n-routing.js';
     });
   }
 
-  // The selector shows a flag icon via a language-specific class.
+  // The native selector shows its flag icon via a language-specific class. The
+  // class list is derived from the generated locale set rather than hard-coded:
+  // this used to name only spanish/chinese/korean, so it had already fallen eight
+  // languages behind and could not clear a class it did not know about. Languages
+  // without a matching CSS rule simply get the default styling, as before.
+  const FLAG_CLASSES = LANGUAGES.map((l) => l.lang);
   function updateSelectorFlag(select) {
-    select.classList.remove('spanish', 'chinese', 'korean');
-    if (select.value === 'spanish') select.classList.add('spanish');
-    else if (select.value === 'chinese') select.classList.add('chinese');
-    else if (select.value === 'korean') select.classList.add('korean');
+    select.classList.remove(...FLAG_CLASSES);
+    if (FLAG_CLASSES.includes(select.value)) select.classList.add(select.value);
   }
 
   window.LanguageSystem = {

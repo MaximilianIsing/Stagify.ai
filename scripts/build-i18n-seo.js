@@ -3,10 +3,12 @@
 //
 //   node scripts/build-i18n-seo.js
 //
-// It does two things, both derived from lib/i18n/locales.js so they can't drift:
+// It does three things, all derived from lib/i18n/locales.js so they can't drift:
 //   1. Bakes the full hreflang cluster into every indexable ENGLISH page (the
 //      localized pages get theirs at render time; English pages are static files).
 //   2. Regenerates public/sitemap.xml with a <url> per language + xhtml alternates.
+//   3. Regenerates public/scripts/locale-data.js — the browser's copy of the
+//      language set, which the frontend cannot import from lib/ directly.
 //
 // Idempotent: re-running removes the previously-injected cluster and rewrites it,
 // so it's safe to run any time. A test (test/i18n/i18n.test.js) asserts the committed
@@ -18,6 +20,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LOCALIZED_PAGES, buildHreflangCluster } from '../lib/i18n/locales.js';
 import { buildSitemap } from '../lib/i18n/sitemap.js';
+import { buildLocaleDataModule } from '../lib/i18n/locale-data.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, '..', 'public');
@@ -61,6 +64,16 @@ function run() {
   const sitemap = buildSitemap();
   fs.writeFileSync(path.join(PUBLIC, 'sitemap.xml'), sitemap);
   console.log(`sitemap.xml regenerated (${(sitemap.match(/<loc>/g) || []).length} URLs)`);
+
+  // Match the existing file's line endings, like the hreflang injector above: on a
+  // CRLF checkout an unconditional LF write would show up as a whole-file diff on
+  // every rebuild, with no content change behind it.
+  const localeDataPath = path.join(PUBLIC, 'scripts', 'locale-data.js');
+  const priorLocaleData = fs.existsSync(localeDataPath) ? fs.readFileSync(localeDataPath, 'utf8') : '';
+  const localeDataEol = priorLocaleData.includes('\r\n') ? '\r\n' : '\n';
+  fs.writeFileSync(localeDataPath, buildLocaleDataModule().split('\n').join(localeDataEol));
+  console.log('scripts/locale-data.js regenerated');
+
   console.log(`Done. ${changed} English page(s) updated.`);
 }
 
