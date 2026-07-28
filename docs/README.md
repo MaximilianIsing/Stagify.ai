@@ -181,7 +181,7 @@ grouped into subdirectories by concern (full breakdown in
 | Area | Key modules |
 |---|---|
 | `lib/config/` | `config.js` (secrets, env → `.txt` fallback), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
-| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `enterprise-store.js`, `stripe-events.js` (webhook idempotency ledger), `memory.js`, `counters.js`, `uptime-monitor.js`. |
+| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `password-hash.js` (the parameter-tagged password hash format + its rehash-on-login upgrade path), `enterprise-store.js`, `stripe-events.js` (webhook idempotency ledger), `memory.js`, `counters.js`, `uptime-monitor.js`. |
 | `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`). |
 | `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`. |
 | `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `auth-helpers.js`, `email.js`, `logging.js` (append-only **CSV** business logs), `stripe-webhooks.js`. |

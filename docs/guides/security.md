@@ -9,8 +9,10 @@ rationale behind the limits in the code — change them deliberately. Related:
 
 Backed by SQLite (`auth-store.db`, [`lib/data/auth-store.js`](../../lib/data/auth-store.js)):
 
-- **Passwords:** hashed with **scrypt** (`crypto.scryptSync`, 64-byte key) using a
-  per-user 16-byte random salt. Never stored or logged in plaintext.
+- **Passwords:** hashed with **scrypt** using a per-user 16-byte random salt, and
+  stored with the cost parameters that produced them — see
+  [Password hashes carry their cost](#password-hashes-carry-their-cost). Never
+  stored or logged in plaintext.
 - **Sessions:** random 30-day tokens, validated on each request until logout. Stored
   **SHA-256 hashed**, never raw — see [Tokens at rest](#tokens-at-rest).
 - **Registration:** email-verified — a code with a **15-minute expiry** and **max 5
@@ -101,6 +103,46 @@ Rules:
   redaction; unknown `extra_json` fields do not leak) and
   `test/routes/admin-route.test.js` (the route calls the redacted export and
   `exportStore` is never invoked).
+
+### Password hashes carry their cost
+
+A password hash is written as a self-describing string —
+`scrypt$N=16384,r=8,p=1,keylen=64$<hex>` — by
+[`lib/data/password-hash.js`](../../lib/data/password-hash.js), the single owner of
+the format, the verifier, and the parameters.
+
+**Why the parameters are in the value.** They used to be nowhere: the row held bare
+hex, so a hash made at any cost looked identical to one made at any other. That is
+fine right up to the day you want to raise `N` — at which point old and new rows are
+indistinguishable, nothing can report how many accounts are still on the weak cost,
+and the only migration available is forcing a password reset on every user.
+Verification now reads the cost off the row it is checking, so a store can hold a
+mix while accounts migrate. They live in the value rather than a column because a
+hash travels through `exportStore`/`importStore`, the frozen `auth-store.json`
+fallback, an R2 restore, and the short-lived `pending_registrations` row — each of
+which would otherwise have to carry and re-join a parallel column that can desync.
+
+**Raising the cost** is a one-line change to `PASSWORD_PARAMS`:
+
+1. Bump `N` (a power of two; cost is linear in it). Every new hash — sign-up,
+   password reset, and every rehash below — uses it immediately.
+2. Existing rows keep verifying under their own parameters, and are **re-hashed on
+   the owner's next successful sign-in**, with a fresh salt. That is the only moment
+   the plaintext exists, so the migration is lazy by design: accounts that never
+   sign in keep their old hash until they do.
+3. `maxmem` is derived from `N` and `r`, so you do not also hit Node's 32 MB scrypt
+   ceiling — the first raise past 16384 would otherwise fail with an opaque
+   "memory limit exceeded" rather than simply costing more.
+
+**The cost is also a DoS budget.** Login is unauthenticated and the memory cost is
+paid per in-flight attempt, so `N` and `RL_AUTH` (40 / 15 min / IP) move together.
+It sits at Node's default (N=16384, ~16 MB, ~100 ms) deliberately.
+
+Enforced by [`test/data/password-hash.test.js`](../../test/data/password-hash.test.js)
+(the envelope round-trips, a legacy bare-hex row still verifies, a row at a *different*
+cost verifies under its own, and `needsRehash` is never true on a failed attempt) and
+by `test/data/auth-store.test.js` (a legacy row signs in and is upgraded in place;
+a failed sign-in never rewrites the row).
 
 ### Tokens at rest
 
