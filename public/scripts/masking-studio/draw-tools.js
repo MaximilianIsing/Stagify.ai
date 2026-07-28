@@ -7,11 +7,40 @@
 // magic wand lives in its own island — wandClick/ensureSegCache come in as
 // late-bound callbacks so the pointerdown dispatch stays here.
 //
-// deps: { state, stack, baseCanvas, viewerEl, undoBtn, redoBtn, brushBtn,
-//         eraseBtn, rectBtn, wandBtn, brushRow, wandRow, brushSlider,
-//         brushSizeLabel, activeLayer, getLayer, layerColor, renderLayers,
-//         updateControls, scheduleSessionSave, updateStageBackdrop, setZoom,
-//         moveCompare, wandClick, ensureSegCache }
+/**
+ * @typedef {import('./types.js').MsState} MsState
+ * @typedef {import('./types.js').MsLayer} MsLayer
+ * @typedef {import('./types.js').MsSegItem} MsSegItem
+ */
+/**
+ * @param {{
+ *   state: MsState,
+ *   stack: HTMLElement,
+ *   baseCanvas: HTMLCanvasElement,
+ *   viewerEl: HTMLElement,
+ *   undoBtn: HTMLButtonElement,
+ *   redoBtn: HTMLButtonElement,
+ *   brushBtn: HTMLButtonElement,
+ *   eraseBtn: HTMLButtonElement,
+ *   rectBtn: HTMLButtonElement,
+ *   wandBtn: HTMLButtonElement,
+ *   brushRow: HTMLElement,
+ *   wandRow: HTMLElement,
+ *   brushSlider: HTMLInputElement,
+ *   brushSizeLabel: HTMLElement,
+ *   activeLayer: () => MsLayer | null,
+ *   getLayer: (id: string) => MsLayer | null,
+ *   layerColor: (layer: MsLayer) => string,
+ *   renderLayers: () => void,
+ *   updateControls: () => void,
+ *   scheduleSessionSave: () => void,
+ *   updateStageBackdrop: () => void,
+ *   setZoom: (nz: number, focal?: { x: number, y: number } | null) => void,
+ *   moveCompare: (e: PointerEvent) => void,
+ *   wandClick: (e: PointerEvent) => Promise<void>,
+ *   ensureSegCache: () => Promise<MsSegItem[] | null>,
+ * }} deps
+ */
 export function createDrawTools(deps) {
   const {
     state,
@@ -488,7 +517,11 @@ export function createDrawTools(deps) {
 
         function setTool(t) {
           tool = t === 'erase' ? 'erase' : t === 'rect' ? 'rect' : t === 'wand' ? 'wand' : 'brush';
-          [[brushBtn, 'brush'], [eraseBtn, 'erase'], [rectBtn, 'rect'], [wandBtn, 'wand']].forEach(([btn, name]) => {
+          // Annotated because TS widens a mixed literal array to
+          // (HTMLButtonElement|string)[] and then loses `btn`'s element-ness.
+          /** @type {Array<[HTMLButtonElement, string]>} */ ([
+            [brushBtn, 'brush'], [eraseBtn, 'erase'], [rectBtn, 'rect'], [wandBtn, 'wand'],
+          ]).forEach(([btn, name]) => {
             btn.classList.toggle('is-active', tool === name);
             btn.setAttribute('aria-pressed', tool === name ? 'true' : 'false');
           });

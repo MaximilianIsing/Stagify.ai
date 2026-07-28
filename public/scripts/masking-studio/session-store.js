@@ -8,10 +8,6 @@
 // mode, quota, old browsers). Lifted verbatim from the entry: this island owns
 // the transport, the canvas⇄Blob codecs, the save/restore choreography, and
 // the resume dialog; the pure shape projection stays in ./session.js.
-//
-// deps: { state, MAX_LAYERS, PALETTE, stack, resultCanvas, resumeEl,
-//         resumeYesBtn, resumeNoBtn, setBaseImage, addLayer, renderLayers,
-//         updateControls, showToast, tx }
 import {
   serializeLayer,
   serializeSession,
@@ -19,6 +15,28 @@ import {
   isRestorableSession,
 } from './session.js';
 
+/**
+ * @typedef {import('./types.js').MsState} MsState
+ * @typedef {import('./types.js').MsPaletteEntry} MsPaletteEntry
+ */
+/**
+ * @param {{
+ *   state: MsState,
+ *   MAX_LAYERS: number,
+ *   PALETTE: MsPaletteEntry[],
+ *   stack: HTMLElement,
+ *   resultCanvas: HTMLCanvasElement,
+ *   resumeEl: HTMLElement,
+ *   resumeYesBtn: HTMLButtonElement,
+ *   resumeNoBtn: HTMLButtonElement,
+ *   setBaseImage: (img: HTMLImageElement, opts?: { noLayer?: boolean }) => void,
+ *   addLayer: () => void,
+ *   renderLayers: () => void,
+ *   updateControls: () => void,
+ *   showToast: (message: string, type?: string) => void,
+ *   tx: (key: string, def: string) => string,
+ * }} deps
+ */
 export function createSessionStore(deps) {
   const {
     state,

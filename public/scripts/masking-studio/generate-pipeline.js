@@ -7,17 +7,39 @@
 // tool's renderRefinePreview. Lifted verbatim from the entry. Self-wires the
 // Apply Edit button; phase/view changes go through the injected setPhase/
 // setView so the entry keeps owning the phase machine.
-//
-// deps: { state, generateBtn, progressEl, progressBar, progressText,
-//         baseCanvas, resultCanvas, setPhase, setView, renderLayers,
-//         updateControls, renderBusyDots, hasAnyResults, getLayer,
-//         requestError, showToast, tx, loadImage }
 import { createPool, nearestAreaLabels } from './layers.js';
 import {
   regionNameFromBounds,
   buildAreaContext as _buildAreaContext,
 } from './generation.js';
 
+/**
+ * @typedef {import('./types.js').MsState} MsState
+ * @typedef {import('./types.js').MsLayer} MsLayer
+ */
+/**
+ * @param {{
+ *   state: MsState,
+ *   generateBtn: HTMLButtonElement,
+ *   progressEl: HTMLElement,
+ *   progressBar: HTMLElement,
+ *   progressText: HTMLElement,
+ *   baseCanvas: HTMLCanvasElement,
+ *   resultCanvas: HTMLCanvasElement,
+ *   setPhase: (p: MsState['phase']) => void,
+ *   setView: (v: MsState['view']) => void,
+ *   renderLayers: () => void,
+ *   updateControls: () => void,
+ *   renderBusyDots: (participating?: MsLayer[]) => void,
+ *   hasAnyResults: () => boolean,
+ *   getLayer: (id: string) => MsLayer | null,
+ *   requestError: (status: number, result: any) => string,
+ *   showToast: (message: string, type?: string) => void,
+ *   tx: (key: string, def: string) => string,
+ *   loadImage: (src: string) => Promise<HTMLImageElement>,
+ *   computeSpillForDone: (participating?: MsLayer[]) => number,
+ * }} deps
+ */
 export function createGeneratePipeline(deps) {
   const {
     state,

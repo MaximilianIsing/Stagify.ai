@@ -100,7 +100,11 @@ import { showToast } from './toast.js';
         const MAX_LAYERS = PALETTE.length;
 
         // One shared mutable store: every field is touched by the entry and at
-        // least one extracted island (see scripts/masking-studio/*.js).
+        // least one extracted island (see scripts/masking-studio/*.js). Its
+        // shape is written down once in masking-studio/types.d.ts and every
+        // island's `deps.state` is typed against it, so a field renamed here
+        // fails `npm run typecheck` at each island that still reads the old name.
+        /** @type {import('./masking-studio/types.js').MsState} */
         const state = {
           base: null,        // { w, h, canvas } — working-resolution room photo
           layers: [],        // area objects, in z-order

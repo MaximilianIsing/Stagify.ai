@@ -11,8 +11,13 @@
 // queue. Returns an enqueue(fn) that resolves/rejects with fn()'s result. Used
 // to cap in-flight /api/mask-edit calls (smoother on rate limits than firing
 // every area at once) while progressive compositing keeps the wait short.
+/**
+ * @param {number} size - Maximum jobs in flight at once.
+ * @returns {<T>(fn: () => Promise<T>) => Promise<T>} enqueue
+ */
 export function createPool(size) {
   let active = 0;
+  /** @type {Array<{ fn: () => Promise<any>, resolve: (v: any) => void, reject: (e: any) => void }>} */
   const queue = [];
   const next = () => {
     if (!queue.length || active >= size) return;
@@ -91,6 +96,10 @@ export function nextColorIdx(layers, paletteLength) {
 // backing <canvas> element; this just stamps out the bookkeeping fields so the
 // initial state lives in one place. `el` (the rendered card) is filled in later
 // by the renderer.
+/**
+ * @param {{ id: string, colorIdx: number, canvasEl: HTMLCanvasElement }} init
+ * @returns {import('./types.js').MsLayer}
+ */
 export function createLayer({ id, colorIdx, canvasEl }) {
   return {
     id: id,

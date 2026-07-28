@@ -7,6 +7,52 @@
 // updateChipbarVisibility, layerColor, layerTitle from layers-ui;
 // updateStageBackdrop from generate-pipeline; hideCursor from draw-tools) arrive
 // via `deps`.
+/**
+ * @typedef {import('./types.js').MsState} MsState
+ * @typedef {import('./types.js').MsLayer} MsLayer
+ */
+/**
+ * @param {{
+ *   state: MsState,
+ *   MAX_LAYERS: number,
+ *   stack: HTMLElement,
+ *   baseCanvas: HTMLCanvasElement,
+ *   resultCanvas: HTMLCanvasElement,
+ *   viewerEl: HTMLElement,
+ *   viewToggle: HTMLElement,
+ *   viewerHeader: HTMLElement,
+ *   viewerActions: HTMLElement,
+ *   editHighlightsBtn: HTMLButtonElement,
+ *   viewResultBtn: HTMLButtonElement,
+ *   downloadBtn: HTMLButtonElement,
+ *   toggleBeforeBtn: HTMLButtonElement,
+ *   toggleCompareBtn: HTMLButtonElement,
+ *   toggleAfterBtn: HTMLButtonElement,
+ *   compareEl: HTMLElement,
+ *   compareGrip: HTMLElement,
+ *   compareLabelBefore: HTMLElement,
+ *   compareLabelAfter: HTMLElement,
+ *   addLayerBtn: HTMLButtonElement,
+ *   replaceBtn: HTMLButtonElement,
+ *   brushSlider: HTMLInputElement,
+ *   brushBtn: HTMLButtonElement,
+ *   eraseBtn: HTMLButtonElement,
+ *   rectBtn: HTMLButtonElement,
+ *   wandBtn: HTMLButtonElement,
+ *   undoBtn: HTMLButtonElement,
+ *   redoBtn: HTMLButtonElement,
+ *   layerList: HTMLElement,
+ *   generateBtn: HTMLButtonElement,
+ *   ctaHint: HTMLElement,
+ *   tx: (key: string, def: string) => string,
+ *   renderLayers: () => void,
+ *   updateChipbarVisibility: () => void,
+ *   updateStageBackdrop: () => void,
+ *   hideCursor: () => void,
+ *   layerColor: (layer: MsLayer) => string,
+ *   layerTitle: (layer: MsLayer) => string,
+ * }} deps
+ */
 export function createViewer(deps) {
   const {
     state,
@@ -100,6 +146,7 @@ export function createViewer(deps) {
     setZoom(state.zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), { x: e.clientX, y: e.clientY });
   }, { passive: false });
 
+  /** @param {MsState['phase']} p */
   function setPhase(p) {
     state.phase = p;
     const inReview = p === 'review';
@@ -136,6 +183,7 @@ export function createViewer(deps) {
     updateControls();
   }
 
+  /** @param {MsState['view']} v */
   function setView(v) {
     state.view = v === 'before' ? 'before' : v === 'compare' ? 'compare' : 'after';
     toggleBeforeBtn.classList.toggle('active', state.view === 'before');
@@ -262,7 +310,9 @@ export function createViewer(deps) {
     redoBtn.disabled = generating || state.phase !== 'draw' || !state.redoStack.length;
     editHighlightsBtn.disabled = generating;
     downloadBtn.disabled = generating || !state.layers.some((l) => l.status === 'done');
-    layerList.querySelectorAll('textarea, button').forEach((el) => { el.disabled = generating; });
+    // Cast because a comma selector resolves to plain Element, which has no `disabled`.
+    /** @type {NodeListOf<HTMLTextAreaElement | HTMLButtonElement>} */
+    (layerList.querySelectorAll('textarea, button')).forEach((el) => { el.disabled = generating; });
 
     const painted = state.layers.filter((l) => l.painted);
     const allDetailed = painted.length > 0 && painted.every((l) => l.mode === 'remove' || l.prompt.trim() || l.furniture);
