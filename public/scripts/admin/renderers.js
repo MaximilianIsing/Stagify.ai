@@ -8,6 +8,7 @@ import { stripHeader } from './analytics.js';
 import { activityIndexFrom, lastActiveMs, daysSinceActive } from './analytics-users.js';
 import { createOverview } from './overview.js';
 import { createInsights } from './insights.js';
+import { showErrorToast } from '../toast.js';
 
 /**
  * All admin tab rendering plus the data-derived helpers, over a single shared
@@ -472,7 +473,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
       ctx.data.hostedImages=(ctx.data.hostedImages||[]).filter(function(x){return x.id!==img.id});
       updateTabCounts();renderHosting();
     }).catch(function(e){
-      alert('Delete failed: '+e.message);
+      showErrorToast('Delete failed: '+e.message);
       if(btn){btn.disabled=false;btn.textContent='Delete'}
     });
   }
@@ -505,7 +506,7 @@ export function createRenderers({ ctx, apiSend, secureBlobDownload }) {
         }).catch(function(){
           btn.innerHTML=ICONS.dl+' '+esc(f.label);
           btn.classList.remove('adm-dl-btn--downloading');
-          alert('Download failed for '+f.file);
+          showErrorToast('Download failed for '+f.file);
         });
       });
       grid.appendChild(btn);

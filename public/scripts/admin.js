@@ -1,6 +1,7 @@
 import { createRenderers } from './admin/renderers.js';
 import { createEmailsPanel } from './admin/emails.js';
 import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
+import { showErrorToast } from './toast.js';
 
 (function () {
   'use strict';
@@ -55,7 +56,11 @@ import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
   function checkSessionTimeout(){
     if(_sessionStart && Date.now()-_sessionStart > SESSION_TIMEOUT_MS){
       signOut();
-      alert('Session expired. Please sign in again.');
+      // signOut() re-shows the login form in place — it does not navigate or
+      // reload — so the non-blocking toast outlives it and stays readable. Nothing
+      // here depended on alert() halting the caller: _sessionStart is cleared above,
+      // so the sibling requests in a single loadAll() burst re-enter this and no-op.
+      showErrorToast('Session expired. Please sign in again.');
     }
   }
 
