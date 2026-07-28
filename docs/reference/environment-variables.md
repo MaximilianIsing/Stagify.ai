@@ -109,10 +109,12 @@ HIDE_STAGING_BANNER=false
 # Defaults to the incoming request's host. APP_URL is the fallback for PUBLIC_APP_URL.
 # PUBLIC_APP_URL=
 # APP_URL=
-# Rate limits: auth attempts / 15 min, emails / 15 min, AI generations / 5 min.
+# Rate limits: auth attempts / 15 min, emails / 15 min, AI generations / 5 min,
+# enterprise checkout sessions / 60 min (that endpoint is unauthenticated).
 # RL_AUTH=40
 # RL_EMAIL=6
 # RL_GEN=60
+# RL_CHECKOUT=10
 # Extra directory searched first for the stripe_*.txt secret files.
 # STRIPE_SECRETS_DIR=
 # Stripe meter event name for enterprise usage billing. Default user_generation.
