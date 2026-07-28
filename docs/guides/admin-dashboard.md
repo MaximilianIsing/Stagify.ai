@@ -26,7 +26,7 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 | [`scripts/admin/charts.js`](../../public/scripts/admin/charts.js) | **SVG chart primitives** — area, bar, ranked bars, donut, funnel, cohort grid, sparkline, card chrome. |
 | [`scripts/admin/grant.js`](../../public/scripts/admin/grant.js) | The comp-Stagify+ control inside the user detail drawer. |
 | [`scripts/admin/emails.js`](../../public/scripts/admin/emails.js) | The **Emails** tab: the preview gallery + per-template test send. Lazy-loaded on first open. |
-| [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. |
+| [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. `esc` is re-exported from the shared [`scripts/escape-html.js`](../../public/scripts/escape-html.js). |
 | [`styles/admin.css`](../../public/styles/admin.css) | Page styles, including everything the SVG charts are painted with. |
 
 State is one shared mutable `ctx` object created in the entry and handed to the islands by
@@ -267,7 +267,10 @@ an `id`, `label`, `category`, `description`, and a `render()` thunk supplying sa
 ## Conventions when editing
 
 - Build DOM with `helpers.js#el` and set `textContent`, never `innerHTML`, for anything
-  derived from logged data — prompts, emails and user agents are user-supplied.
+  derived from logged data — prompts, emails and user agents are user-supplied. If you
+  genuinely must assemble markup, `helpers.js#esc` is the shared
+  [`escapeHtml`](../../public/scripts/escape-html.js) (it was a no-op returning its input
+  until 2026-07-28 — anything written against the old behaviour is now escaped for real).
 - Style through a class in `admin.css`, not an inline `style` attribute. The tokens are
   declared once on `.page-admin`.
 - The 650-line ESLint cap applies here like everywhere else — split into a sibling island

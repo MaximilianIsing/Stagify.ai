@@ -42,11 +42,17 @@ test('parseCSV: CRLF and LF split the same, trailing newline adds no row', () =>
   assert.deepEqual(parseCSV('solo'), [['solo']]);
 });
 
-test('esc: coerces to string, nullish becomes empty', () => {
+test('esc: really escapes markup — it used to be a no-op named like an escaper', () => {
+  // `esc` was `String(s||'')` while feeding three innerHTML sinks in renderers.js.
+  // It is now the shared escapeHtml (public/scripts/escape-html.js); the full
+  // character-level contract lives in test/frontend/escape-html.test.js, so this
+  // just pins that the admin dashboard is on the real one.
   assert.equal(esc('hi'), 'hi');
+  assert.equal(esc('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
+  assert.equal(esc('a "b" & c'), 'a &quot;b&quot; &amp; c');
   assert.equal(esc(/** @type {any} */ (null)), '');
   assert.equal(esc(/** @type {any} */ (undefined)), '');
-  assert.equal(esc(/** @type {any} */ (0)), '');
+  assert.equal(esc(/** @type {any} */ (0)), '0', 'a zero count must render, not disappear');
   assert.equal(esc(/** @type {any} */ (7)), '7');
 });
 

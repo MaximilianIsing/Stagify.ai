@@ -32,8 +32,12 @@ test('imageCountSuffix: empty when singular, 1-based when multiple', () => {
   assert.equal(imageCountSuffix(2, 3), ' (3)');
 });
 
-test('escapeHtml: escapes &,<,> (not quotes), and null/undefined -> ""', () => {
-  assert.equal(escapeHtml('a & <b> "c"'), 'a &amp; &lt;b&gt; "c"');
+test('escapeHtml: escapes &,<,> and quotes, and null/undefined -> ""', () => {
+  // Re-exported from the shared public/scripts/escape-html.js. This file used to
+  // hold its own copy that left quotes alone; quotes are escaped now, which in
+  // the text context these strings land in renders identically to the reader.
+  assert.equal(escapeHtml('a & <b> "c"'), 'a &amp; &lt;b&gt; &quot;c&quot;');
+  assert.equal(escapeHtml("it's"), 'it&#39;s');
   assert.equal(escapeHtml(null), '');
   assert.equal(escapeHtml(undefined), '');
   assert.equal(escapeHtml(0), '0');

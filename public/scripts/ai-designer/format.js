@@ -1,10 +1,14 @@
 // Pure formatting / string helpers for the AI Designer chat UI.
 //
+// HTML escaping lives in the shared `scripts/escape-html.js`, not here.
+//
 // No DOM, no window, no i18n, no app state — every function is a deterministic
 // transform on its arguments, so these are unit-testable under `node --test`
 // with zero shim (see test/frontend/ai-designer/ai-designer-format.test.js). The browser entry
 // (scripts/ai-designer-app.js) imports these; each was lifted verbatim from
 // that file so behaviour is identical.
+
+import { escapeHtml } from '../escape-html.js';
 
 // Human-readable byte size (e.g. 1536 -> "1.5 KB").
 export function formatFileSize(bytes) {
@@ -20,14 +24,12 @@ export function imageCountSuffix(index, total) {
   return total > 1 ? ` (${index + 1})` : '';
 }
 
-// Escape HTML so model/user text can never inject markup. Returns a string
-// safe to drop into innerHTML BEFORE we add our own (bold/italic) tags.
-export function escapeHtml(str) {
-  return String(str == null ? '' : str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
+// Escape HTML so model/user text can never inject markup — the shared escaper,
+// re-exported here because this module's consumers import it from `format.js`.
+// It also escapes quotes now (this file's own copy did not); in the text context
+// these strings land in, `&quot;`/`&#39;` render as the plain characters, so what
+// the user sees is unchanged.
+export { escapeHtml };
 
 // Apply inline **bold** / *italic* to text that is ALREADY html-escaped.
 export function applyInlineFormatting(escaped) {
