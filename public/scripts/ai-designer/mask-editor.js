@@ -279,14 +279,18 @@ export function createMaskEditor(deps) {
           document.getElementById('mask-editor-brush-size').textContent = slider.value + ' px';
         });
 
-        // No dropZones: this editor has never accepted a dragged file, and the
-        // shared slice only wires them when asked. (The stage editor does.)
+        const refAddBtn = document.getElementById('mask-editor-ref-add');
+        const refPreview = document.getElementById('mask-editor-ref-preview');
         reference.wire({
           fileInput: document.getElementById('mask-editor-ref-file'),
-          addBtn: document.getElementById('mask-editor-ref-add'),
+          addBtn: refAddBtn,
           removeBtn: document.getElementById('mask-editor-ref-remove'),
-          preview: document.getElementById('mask-editor-ref-preview'),
+          preview: refPreview,
           img: document.getElementById('mask-editor-ref-img'),
+          // Drop a photo on "+ Add photo", or on the thumbnail to replace it —
+          // the same zones the stage editor has always offered. This editor could
+          // not accept a dragged file until the two shared one implementation.
+          dropZones: [refAddBtn, refPreview],
         });
 
         // Add event listener for prompt input changes

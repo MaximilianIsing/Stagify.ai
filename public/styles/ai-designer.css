@@ -1793,6 +1793,14 @@
         background: rgba(37, 99, 235, 0.12);
         border-color: #2563eb;
       }
+      /* Matches .stage-mask-ref-add.is-drag-over in index.css — the two buttons
+         are styled identically and now share the same drop behaviour. */
+      .mask-editor-ref-add.is-drag-over {
+        background: rgba(37, 99, 235, 0.16);
+        border-color: #2563eb;
+        border-style: solid;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+      }
       .mask-editor-ref-add.hidden {
         display: none;
       }
