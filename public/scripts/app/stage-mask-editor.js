@@ -11,6 +11,7 @@
 // (onMaskCommit(finalUrl, isBefore) applies the committed version to the entry's
 // shared before/after version state + display.)
 import { buildModelMask, buildBlendMask, compositeMaskedEditCanvas, compositeMaskedEdit } from '../mask-core.js';
+import { showErrorToast } from '../toast.js';
 
 export function createStageMaskEditor(deps) {
   const {
@@ -255,7 +256,7 @@ export function createStageMaskEditor(deps) {
       function atVersionLimit(kind) {
         const list = kind === 'before' ? getBeforeVersions() : getAfterVersions();
         if (list.length < maxVersions) return false;
-        alert(tx('modal.staging.maskLimitReached',
+        showErrorToast(tx('modal.staging.maskLimitReached',
           "You've reached the limit of " + maxVersions + ' versions for this image.'));
         return true;
       }
@@ -585,7 +586,7 @@ export function createStageMaskEditor(deps) {
         prep
           .then(prepareReferenceFile)
           .then(setMaskReference)
-          .catch((err) => { clearMaskReference(); alert(refErrorMessage(err)); });
+          .catch((err) => { clearMaskReference(); showErrorToast(refErrorMessage(err)); });
       }
       if (refAddBtn && refFileInput) {
         refAddBtn.addEventListener('click', () => refFileInput.click());
@@ -745,7 +746,7 @@ export function createStageMaskEditor(deps) {
           console.error('Mask edit failed:', err);
           setPhase('draw');
           if (processBtn) processBtn.disabled = false;
-          alert(err.message || 'Mask edit failed. Please try again.');
+          showErrorToast(err.message || 'Mask edit failed. Please try again.');
         }
       }
 
@@ -767,7 +768,7 @@ export function createStageMaskEditor(deps) {
           console.error('Mask re-run failed:', err);
           setPhase('refine'); // keep the previous result intact
           renderRefinePreview();
-          alert(err.message || 'Mask edit failed. Please try again.');
+          showErrorToast(err.message || 'Mask edit failed. Please try again.');
         }
       }
 

@@ -8,6 +8,7 @@ import { createLayersUi } from './masking-studio/layers-ui.js';
 import { createViewer } from './masking-studio/viewer.js';
 import { createUpload } from './masking-studio/upload.js';
 import { localizedTarget } from './i18n-routing.js';
+import { showToast } from './toast.js';
 
         // ---------------------------------------------------------------------
         // Access gate: Masking Studio is Stagify+ only. Anonymous visitors were
@@ -16,12 +17,11 @@ import { localizedTarget } from './i18n-routing.js';
         // page revealed *behind* the upgrade dialog.
         // ---------------------------------------------------------------------
         async function ensureStudioProAccess() {
-          // auth.js loads with `defer`, so wait for it before deciding.
-          let waited = 0;
-          while (!window.StagifyAuth && waited < 5000) {
-            await new Promise((r) => setTimeout(r, 50));
-            waited += 50;
-          }
+          // auth.js is a non-async module script earlier in masking-studio.html's
+          // document order, and it assigns window.StagifyAuth synchronously at top
+          // level — module scripts run in document order, so the global is already
+          // there. A missing global therefore means auth.js failed to load or threw,
+          // not that it is still coming; waiting cannot help. Bounce immediately.
           if (!window.StagifyAuth) {
             window.location.replace(localizedTarget('stagify-plus.html'));
             return false;
@@ -73,21 +73,6 @@ import { localizedTarget } from './i18n-routing.js';
         function tx(key, def) {
           const v = window.LanguageSystem && window.LanguageSystem.getText(key);
           return v && v !== 'Loading...' ? v : def;
-        }
-
-        function showToast(message, type) {
-          const host = document.getElementById('toast-host');
-          if (!host) return;
-          const el = document.createElement('div');
-          el.className = 'toast' + (type === 'error' ? ' toast--error' : type === 'success' ? ' toast--success' : '');
-          el.setAttribute('role', type === 'error' ? 'alert' : 'status');
-          el.textContent = message;
-          host.appendChild(el);
-          requestAnimationFrame(() => el.classList.add('toast--show'));
-          setTimeout(() => {
-            el.classList.remove('toast--show');
-            setTimeout(() => el.remove(), 300);
-          }, 4200);
         }
 
         function loadImage(src) {
