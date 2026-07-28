@@ -49,6 +49,15 @@ store factory. It began as the auth store, so the file is still named `auth-stor
   - `uptime_state` ([`lib/data/uptime-monitor.js`](../../lib/data/uptime-monitor.js)) — a single
     row: last heartbeat + coalesced downtime incidents (powers `/api/status`).
   - `meta` — key/value bookkeeping (e.g. the one-time-import guards).
+- **Indexes** cover the lookups a table actually performs, not just its primary key:
+  `users` by `email` / `google_sub` / both Stripe ids (in `auth-store.js`'s `SCHEMA`), and
+  `sessions` / `password_reset_tokens` by `user_id` and `exp` (in
+  [`session-tokens.js`](../../lib/data/session-tokens.js), next to the statements that use
+  them). Those two are the only lookups the token-keyed tables make *without* a token —
+  sign-out-everywhere on a password reset, and the expiry pruners — so without them both
+  read the whole table. Every one is `CREATE INDEX IF NOT EXISTS`, executed on **every**
+  open, so adding an index needs no migration step: a deployed database builds it on the
+  next boot and nobody is signed out.
 - **What's inside auth:** accounts (email, **scrypt-hashed + per-user-salted** passwords —
   never plaintext, Google `sub`, Stripe customer/subscription ids, Pro flag), 30-day
   sessions and single-use password-reset tokens (both **SHA-256 hashed at rest** —
