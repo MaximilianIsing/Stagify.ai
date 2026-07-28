@@ -11,10 +11,6 @@
 // reference photo, sizing, refine maths, the /api/mask-edit request and the
 // phase copy are all shared — see scripts/mask/.
 //
-// deps: { maskEditBtn, canvas1, stagePreview, processBtn, activeViewIsAfter,
-//         getBeforeVersions, getAfterVersions, maxVersions, onMaskCommit }
-// (onMaskCommit(finalUrl, isBefore) applies the committed version to the entry's
-// shared before/after version state + display.)
 import { buildBlendMask, compositeMaskedEdit } from '../mask-core.js';
 import { showErrorToast } from '../toast.js';
 // Everything under scripts/mask/ is shared with the AI Designer's mask editor.
@@ -29,6 +25,23 @@ import { maskCopy } from '../mask/copy.js';
 import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
 import { requestMaskEdit } from '../mask/generate.js';
 
+/**
+ * @param {{
+ *   maskEditBtn: HTMLElement | null,
+ *   canvas1: HTMLCanvasElement,
+ *   stagePreview: HTMLImageElement | null,
+ *   processBtn: HTMLButtonElement | null,
+ *   activeViewIsAfter: () => boolean,
+ *   getBeforeVersions: () => string[],
+ *   getAfterVersions: () => string[],
+ *   maxVersions: number,
+ *   onMaskCommit: (finalUrl: string, isBefore: boolean) => Promise<void>,
+ *   updateMaskButtonVisibility: () => void,
+ * }} deps - The trigger FAB, the two canvases the editor binds to, the entry's
+ *   view/version accessors, and the commit callback. `onMaskCommit(finalUrl,
+ *   isBefore)` applies the committed version to the entry's shared before/after
+ *   version state + display.
+ */
 export function createStageMaskEditor(deps) {
   const {
     maskEditBtn,

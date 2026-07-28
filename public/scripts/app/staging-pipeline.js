@@ -8,7 +8,32 @@ import { unstageableMessage } from '../unstageable-message.js';
  * (as getters), lastEmptyRoomUrl (as a setter) and the messaging helpers are all
  * injected.
  *
- * @param {any} deps
+ * @param {{
+ *   stagePreview: HTMLImageElement,
+ *   progress: HTMLElement | null,
+ *   progressBar: HTMLElement | null,
+ *   progressText: HTMLElement | null,
+ *   loadingMessage: HTMLElement | null,
+ *   processingPlaceholder: HTMLElement | null,
+ *   roomSelect: { value: string } | null,
+ *   styleSelect: { value: string } | null,
+ *   additionalPrompt: HTMLTextAreaElement | null,
+ *   furnitureRefs: { getFiles: () => File[], reset: () => void },
+ *   FURNITURE_LIMIT: number,
+ *   getStageValidation: () => Promise<{ valid: boolean, reason: string }> | null,
+ *   getStageValidationResult: () => { valid: boolean, reason: string } | null,
+ *   getHasProcessedImage: () => boolean,
+ *   setLastEmptyRoomUrl: (url: string) => void,
+ *   hideStagingLimitInViewer: () => void,
+ *   hideStagingError: () => void,
+ *   showBeforeView: () => void,
+ *   isProUser: () => boolean,
+ *   showStagingError: (message: string) => void,
+ *   messageForDailyLimitResponse: (errorData: any) => string,
+ *   showStagingLimitInViewer: (message: string) => void,
+ * }} deps - Progress/preview DOM, the room & style select handles, the
+ *   furniture-reference island's handle, the shared upload-validation state as
+ *   getters, and the entry's error/limit messaging helpers.
  * @returns {{ processWithAI: (imageFile: File) => Promise<string[]> }}
  */
 export function createStagingPipeline(deps) {

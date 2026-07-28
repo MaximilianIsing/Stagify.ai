@@ -322,26 +322,47 @@ island types its bag against it:
 export function createDrawTools(deps) {
 ```
 
-Two things to know before you write one:
+The AI Designer has no equivalent shared store — the entry hands each island getters and
+callbacks instead — but the conversation history and the image objects derived from it
+recur across its islands, so those live in
+[`scripts/ai-designer/types.d.ts`](../../public/scripts/ai-designer/types.d.ts)
+(`AdImage`, `AdHistoryEntry`). The `scripts/app/` islands needed no shared file at all:
+their bags are DOM refs and callbacks, typed inline.
+
+Three things to know before you write one:
 
 - **Derive the types from the implementations, not from the wiring comment.** The islands
-  used to carry a hand-maintained `// deps: { … }` header listing their keys. Three of the
-  eight had already drifted — `layers-ui`, `generate-pipeline`, and `upload` each took one
-  more dependency than their comment admitted. Those lists are gone now; the `@param` is
-  the contract, and unlike a comment it is checked. The header comments that survive
-  describe *what the island is for*, which is the part a type cannot say.
+  used to carry a hand-maintained `// deps: { … }` header listing their keys. Four had
+  already drifted — `layers-ui`, `generate-pipeline`, `upload` and `stage-mask-editor` each
+  took one more dependency than their comment admitted. Those lists are gone now; the
+  `@param` is the contract, and unlike a comment it is checked. The header comments that
+  survive describe *what the island is for*, which is the part a type cannot say.
 - **The layer shape has one producer.** `createLayer` in `layers.js` returns `MsLayer`, and
   `deserializeLayer` in `session.js` rehydrates through it. Keep those in step with the
   typedef rather than describing a layer a second time.
+- **Cast at the entry, not by loosening the island.** `document.getElementById` yields
+  `HTMLElement` and `querySelector` yields `Element`, so a bag that honestly wants an
+  `HTMLInputElement` will not accept them. Widening the island's type to match hides what
+  it actually needs; a `/** @type {HTMLInputElement} */ (…)` cast where the element is
+  resolved keeps the island's contract honest. That was already the house style in
+  `ai-designer-app.js` before this rule existed.
+
+Stay permissive where a union would only fight the code. `AdHistoryEntry.role` is `string`,
+not `'user' | 'assistant' | 'system'`, because entries are assembled from variables at
+half a dozen sites — the union produced widening errors at every construction and caught
+no real bug. The same reasoning is why `lib/types/*.d.ts` says it is permissive by design.
 
 [`test/frontend/island-deps-typed.test.js`](../../test/frontend/island-deps-typed.test.js)
 is the ratchet. It asks the real TypeScript checker for each factory's parameter type
 (not a grep for `@param` — a text scan is satisfied by any comment that mentions the
 token, so it would pass with the annotation deleted) and asserts set equality against a
-debt ledger of the factories still untyped. Adding an untyped factory fails it; typing a
-listed one fails it until you remove the entry. **Only ever shrink that list.** The eleven
-remaining entries are in `scripts/app/` and `scripts/ai-designer/` — the same fix applies
-there, it just has not been done yet.
+debt ledger of the factories still untyped. **That ledger is now empty**, and every
+injected factory under `public/scripts/` is typed — the studios, the shared `scripts/mask/`
+slices, the admin panels and the profile menu. Adding an entry is allowed but is a
+deliberate, reviewable act: it means shipping wiring that nothing checks.
+
+Because an empty ledger is also what a *broken scan* produces, a second assertion pins the
+whole factory population by name. Add a factory, add it there too.
 
 ### Dialogs built in JS need their ARIA written by hand
 

@@ -6,12 +6,16 @@
 // late-bound arrow because the mask-editor island is created after this one;
 // downloadImage stays module-internal (only createAIImageWithDownload calls it).
 //
-// deps: { openMaskEditor }  ->  returns { openImageModal, closeImageModal,
-//         createAIImageWithDownload, createOrUpdateMaskedImageCarousel }
 // Window globals (LanguageSystem, StagifyAuth, URL) are referenced directly.
 import { imageCountSuffix, slugifyName } from './format.js';
 import { getPdfAlt } from './i18n.js';
 
+/**
+ * @param {{
+ *   openMaskEditor: (imageSrc: string, imageType?: string) => void,
+ * }} deps - Late-bound arrow into the mask-editor island, which is constructed
+ *   after this one; it only fires on a click, long after boot.
+ */
 export function createImageViewer(deps) {
   const {
     openMaskEditor,

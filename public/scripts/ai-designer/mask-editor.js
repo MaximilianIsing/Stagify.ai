@@ -11,9 +11,6 @@
 // the /api/mask-edit request and the phase copy are all shared — see
 // scripts/mask/.
 //
-// deps: { lang, showToast, createOrUpdateMaskedImageCarousel, addMessage,
-//         syncImageThumbnailStrip, collectImagesFromConversationHistory,
-//         pushHistoryEntry }  ->  returns { openMaskEditor }
 // Window globals used directly: visualViewport / matchMedia (via the shared
 // viewport slice), LanguageSystem, and getSelectedModelApiName. StagifyHeic and
 // StagifyAuth are reached by scripts/mask/{reference,generate}.js, not here.
@@ -33,6 +30,25 @@ import { requestMaskEdit } from '../mask/generate.js';
 import { maskCopy } from '../mask/copy.js';
 import { buildBlendMask, compositeMaskedEdit } from '../mask-core.js';
 
+/**
+ * @typedef {import('./types.js').AdImage} AdImage
+ * @typedef {import('./types.js').AdHistoryEntry} AdHistoryEntry
+ */
+/**
+ * @param {{
+ *   lang: (key: string, fallback?: string) => string,
+ *   showToast: (message: string, type?: string) => void,
+ *   createOrUpdateMaskedImageCarousel: (originalSrc: string, maskedVersions: string[], originalContainer: HTMLElement) => HTMLElement,
+ *   addMessage: (role: string, content: string, files?: File[] | null) => void,
+ *   syncImageThumbnailStrip: (options?: { preferNewest?: boolean }) => void,
+ *   collectImagesFromConversationHistory: () => AdImage[],
+ *   pushHistoryEntry: (entry: AdHistoryEntry) => void,
+ * }} deps - Localized copy and the toast channel, plus the glue for committing
+ *   a finished edit back into the chat: the carousel that shows mask versions,
+ *   a chat bubble, the thumbnail strip, and an append onto the entry's live
+ *   conversation history.
+ * @returns {{ openMaskEditor: (imageSrc: string, imageType?: string) => void }}
+ */
 export function createMaskEditor(deps) {
   const {
     lang,

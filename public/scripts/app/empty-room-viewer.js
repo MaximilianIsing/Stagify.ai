@@ -5,7 +5,17 @@ import { roomDownloadSlug } from './helpers.js';
  * removal). Wires its own open/close/download listeners. Extracted from app.js;
  * DOM refs and the current empty-room URL (as a getter) are injected.
  *
- * @param {any} deps
+ * @param {{
+ *   emptyRoomModal: HTMLElement | null,
+ *   emptyRoomImage: HTMLImageElement | null,
+ *   emptyRoomClose: HTMLElement | null,
+ *   emptyRoomDownload: HTMLElement | null,
+ *   emptyRoomBtn: HTMLElement | null,
+ *   roomSelect: { value: string } | null,
+ *   getLastEmptyRoomUrl: () => string,
+ * }} deps - The modal and its controls, the room-type select handle (read for
+ *   the download filename slug), and a getter for the current empty-room URL.
+ *   Every element is optional: the island no-ops on pages without the markup.
  */
 export function createEmptyRoomViewer(deps) {
   const {

@@ -9,9 +9,6 @@
 // was redundant — while processing, updateSendButtonState re-asserts the same
 // enabled Stop-button state that setProcessing(true) pinned).
 //
-// deps: { selectedFiles, chatMessages, chatContainer, chatInput, fileInput,
-//         updateSendButtonState }  ->  returns { updateFilePreview }
-// selectedFiles is the entry's const array, mutated in place (push/splice).
 // Window globals (StagifyHeic) are referenced directly.
 import { formatFileSize } from './format.js';
 import { getPdfAlt } from './i18n.js';
@@ -23,6 +20,19 @@ import { showToast } from '../toast.js';
       const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
       const ALLOWED_UPLOAD_EXTS = ['.pdf', '.txt', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
+/**
+ * @param {{
+ *   selectedFiles: File[],
+ *   chatMessages: HTMLElement,
+ *   chatContainer: HTMLElement,
+ *   chatInput: HTMLTextAreaElement,
+ *   fileInput: HTMLInputElement,
+ *   updateSendButtonState: () => void,
+ * }} deps - `selectedFiles` is the ENTRY'S array, mutated in place
+ *   (push/splice) rather than replaced — the entry reads the same reference, so
+ *   reassigning it here would silently detach the two.
+ * @returns {{ updateFilePreview: () => void }}
+ */
 export function createFileIntake(deps) {
   const {
     selectedFiles,
@@ -155,9 +165,9 @@ export function createFileIntake(deps) {
 
       // File upload - add to preview instead of uploading immediately
       fileInput.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
+        const files = Array.from(/** @type {HTMLInputElement} */ (e.target).files);
         handleFiles(files);
-        e.target.value = ''; // Reset input
+        /** @type {HTMLInputElement} */ (e.target).value = ''; // Reset input
       });
 
       // Drag and drop functionality
@@ -225,7 +235,7 @@ export function createFileIntake(deps) {
         e.preventDefault();
         e.stopPropagation();
         // Only remove if we're leaving the container entirely
-        if (!chatContainer.contains(e.relatedTarget)) {
+        if (!chatContainer.contains(/** @type {Node} */ (e.relatedTarget))) {
           dragCounter = 0;
           chatMessages.classList.remove('drag-over');
           chatContainer.classList.remove('drag-over');

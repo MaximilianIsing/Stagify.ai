@@ -5,12 +5,20 @@
 // selectedImageIndex as private state; the entry reads/writes the selection
 // through the returned getter/setter. syncImageThumbnailStrip was lifted
 // verbatim from the entry (scripts/ai-designer-app.js).
-//
-// deps: { collectImagesFromConversationHistory }  ->  returns
-//   { syncImageThumbnailStrip, getSelectedImageIndex, setSelectedImageIndex }
 import { getThumbnailLabel } from './image-history.js';
 import { getPdfAlt } from './i18n.js';
 
+/**
+ * @param {{
+ *   collectImagesFromConversationHistory: () => import('./types.js').AdImage[],
+ * }} deps - Newest-first labelled image list for the live conversation. Bound
+ *   in the entry to the module-level history, so the strip never holds it.
+ * @returns {{
+ *   syncImageThumbnailStrip: (options?: { preferNewest?: boolean }) => void,
+ *   getSelectedImageIndex: () => number | null,
+ *   setSelectedImageIndex: (i: number | null) => void,
+ * }}
+ */
 export function createThumbnailStrip(deps) {
   const {
     collectImagesFromConversationHistory,

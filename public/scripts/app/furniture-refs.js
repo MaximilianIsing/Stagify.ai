@@ -5,13 +5,17 @@
 // the add button. Lifted verbatim from the entry into a factory that owns its
 // state; the entry reads the accumulated files via getFiles() and clears them
 // via reset(). Stays a working no-op API on pages without the elements.
-//
-// deps: { getStagingAlt }
 import { abbreviateFileName } from './helpers.js';
 import { showErrorToast } from '../toast.js';
 
 export const FURNITURE_LIMIT = 5;
 
+/**
+ * @param {{
+ *   getStagingAlt: (key: string, replacements?: Record<string, string | number>) => string,
+ * }} deps - Localized-copy lookup for the picker's labels and alt text.
+ * @returns {{ getFiles: () => File[], reset: () => void }}
+ */
 export function createFurnitureRefs(deps) {
   const { getStagingAlt } = deps;
 

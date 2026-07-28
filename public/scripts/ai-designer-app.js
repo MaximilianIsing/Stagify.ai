@@ -22,8 +22,8 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
       const chatMessages = document.getElementById('chat-messages');
       const chatInput = /** @type {HTMLTextAreaElement} */ (document.getElementById('chat-input'));
       const sendBtn = /** @type {HTMLButtonElement} */ (document.getElementById('send-btn'));
-      const fileInput = document.getElementById('file-input');
-      const chatContainer = document.querySelector('.chat-container');
+      const fileInput = /** @type {HTMLInputElement} */ (document.getElementById('file-input'));
+      const chatContainer = /** @type {HTMLElement} */ (document.querySelector('.chat-container'));
       
       let conversationHistory = [];
       const selectedFiles = []; // File-intake island mutates this in place
