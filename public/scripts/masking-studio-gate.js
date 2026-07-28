@@ -11,6 +11,12 @@
   // Classic (render-blocking) script — can't import the shared helper, so inline
   // the locale-prefix resolution: on a localized URL (/es, /fr/…) keep the visitor
   // in their language (<base href="/"> would otherwise drop them to English root).
+  //
+  // KEEP THE PREFIX LIST IN SYNC WITH lib/i18n/locales.js. It is duplicated here on
+  // purpose (an ES import would defer this script past the paint it exists to beat),
+  // and ai-designer-gate.js carries the identical copy. Both are guarded by
+  // test/i18n/locale-data.test.js, which runs this function against every prefix the
+  // server serves — adding a locale without touching both gates fails the build.
   function localeTarget(rel) {
     var m = location.pathname.match(/^\/(es|fr|de|zh|ko|pt|ru|it|ja|nl)(\/|$)/);
     if (!m) return rel;
