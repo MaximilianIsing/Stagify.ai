@@ -13,10 +13,14 @@
 // StagifyAuth, getSelectedModelApiName) are referenced directly.
 import { getRootBaseNameForImage } from './image-history.js';
 import { updateMaskEditorTranslations } from './mask-editor-i18n.js';
-import { createMaskViewport } from './mask-viewport.js';
 import { createMaskFit } from './mask-fit.js';
-import { createMaskOverlay } from './mask-overlay.js';
-import { createMaskReference } from './mask-reference.js';
+// Viewport pinning, the processing overlay and the reference photo are shared
+// with the main tool's stage mask editor (scripts/mask/). They used to live here
+// as ai-designer-only slices while stage-mask-editor.js kept its own inline copy
+// of each.
+import { createMaskViewport } from '../mask/viewport.js';
+import { createMaskOverlay } from '../mask/overlay.js';
+import { createMaskReference } from '../mask/reference.js';
 
 export function createMaskEditor(deps) {
   const {
@@ -30,12 +34,21 @@ export function createMaskEditor(deps) {
   } = deps;
 
   // Extracted mask-editor slices (self-contained; each owns its own DOM/state).
-  const viewport = createMaskViewport();
+  // The dialog is built lazily on first open, so the shared slices are handed
+  // thunks rather than elements.
+  const viewport = createMaskViewport({ getModal: () => document.getElementById('mask-editor-modal') });
   const fit = createMaskFit();
-  const overlay = createMaskOverlay({ lang });
+  const overlay = createMaskOverlay({
+    lang,
+    getContainer: () => /** @type {HTMLElement} */ (document.querySelector('.mask-editor-canvas-container')),
+  });
   // The reference thumbnail replaces the "+ Add photo" button, so showing or
   // hiding it changes the chrome height the image was sized against.
-  const reference = createMaskReference({ lang, showToast, onChange: () => fit.fit() });
+  const reference = createMaskReference({
+    lang,
+    showError: (message) => showToast(message, 'error'),
+    onChange: () => fit.fit(),
+  });
 
       // Mask editor functionality
       // Track original image containers and their masked versions
@@ -262,11 +275,15 @@ export function createMaskEditor(deps) {
           document.getElementById('mask-editor-brush-size').textContent = slider.value + ' px';
         });
 
-        reference.wire(
-          document.getElementById('mask-editor-ref-file'),
-          document.getElementById('mask-editor-ref-add'),
-          document.getElementById('mask-editor-ref-remove')
-        );
+        // No dropZones: this editor has never accepted a dragged file, and the
+        // shared slice only wires them when asked. (The stage editor does.)
+        reference.wire({
+          fileInput: document.getElementById('mask-editor-ref-file'),
+          addBtn: document.getElementById('mask-editor-ref-add'),
+          removeBtn: document.getElementById('mask-editor-ref-remove'),
+          preview: document.getElementById('mask-editor-ref-preview'),
+          img: document.getElementById('mask-editor-ref-img'),
+        });
 
         // Add event listener for prompt input changes
         const promptInput = document.getElementById('mask-editor-prompt');
