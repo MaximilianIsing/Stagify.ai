@@ -57,11 +57,26 @@ The entry resolves the page's DOM elements once, then constructs and wires the i
   [`scripts/masking-studio/session-store.js`](../../public/scripts/masking-studio/session-store.js)
   owns the IndexedDB save/restore choreography for the whole studio.
 
-**Cross-page shared modules** sit at `scripts/` root rather than under a `<page>/`
-folder, because more than one entry imports them: `toast.js`, `mask-core.js`,
-`heic-convert.js`, `i18n-routing.js`, `unstageable-message.js`. If a second page needs
-an island, promote it here rather than importing across `<page>/` folders — a
-`scripts/app/…` file importing from `scripts/ai-designer/…` is the shape to avoid.
+**Cross-page shared modules** live outside the `<page>/` folders, because more than one
+entry imports them. A `scripts/app/…` file importing from `scripts/ai-designer/…` is the
+shape to avoid; promote instead. Two shapes, by size:
+
+- **Single files at `scripts/` root** for one self-contained concern: `toast.js`,
+  `mask-core.js`, `heic-convert.js`, `i18n-routing.js`, `unstageable-message.js`, and the
+  generated `locale-data.js` (see [`i18n.md`](i18n.md) — do not edit it by hand).
+- **A `scripts/<subsystem>/` folder** when the shared thing is a cohesive set rather than
+  one file. [`scripts/mask/`](../../public/scripts/mask/) is the worked example: the mask
+  editor's brush, viewport pinning, processing overlay, reference photo, sizing, refine
+  maths, `/api/mask-edit` request and phase copy, shared by the main tool's
+  [`app/stage-mask-editor.js`](../../public/scripts/app/stage-mask-editor.js) and the AI
+  Designer's [`ai-designer/mask-editor.js`](../../public/scripts/ai-designer/mask-editor.js).
+  Eight files at `scripts/` root would have said nothing about belonging together.
+
+What stays per-page is what genuinely differs. The two mask editors keep their own DOM
+ownership (one builds its dialog at runtime, the other binds to static markup), their own
+commit destinations, and their own modes — and their own phase machines, which are mostly
+DOM toggling and would need about as much configuration as they'd save. Share the
+algorithms and the data; leave the wiring.
 
 **User-facing messages go through [`scripts/toast.js`](../../public/scripts/toast.js)**
 (`showToast(msg, type)` / `showErrorToast(msg)`) — the single message channel for all

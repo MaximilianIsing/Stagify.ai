@@ -48,8 +48,8 @@ so a new folder needs no registration — just drop the file in.
 | `test/services/` | AI clients, auth helpers, email + lifecycle emails, CSV logging, Stripe webhooks, trial lifecycle. | `lib/services/` |
 | `test/http/` | Async router, guards, helpers, rate limiters, uploads, CSV escaping. | `lib/http/` |
 | `test/config/` | Runtime flags, model config, the diagnostic logger. | `lib/config/`, `lib/logger.js` |
-| `test/i18n/` | The localized-URL layer **and** the translation **drift guards** (`room-types-i18n`, `unstageable-i18n`). | `lib/i18n/` |
-| `test/frontend/` | Browser logic, split **by area** rather than by exact path: `admin/`, `ai-designer/`, `app/`, `masking-studio/` (which also holds `mask-core`, the shared engine that lives a level up in the source). Standalone modules and page-level guards stay at the top: `count-up`, `heic-convert`, `unstageable-message`, `plus-welcome`, `classic-scripts-parse`. | `public/scripts/` |
+| `test/i18n/` | The localized-URL layer **and** the translation **drift guards** (`room-types-i18n`, `unstageable-i18n`, `locale-data`). | `lib/i18n/` |
+| `test/frontend/` | Browser logic, split **by area** rather than by exact path: `admin/`, `ai-designer/`, `app/`, `masking-studio/` (which also holds `mask-core`, the shared engine that lives a level up in the source), and `mask/` for the cross-page mask-editor subsystem (`public/scripts/mask/`). Standalone modules and page-level guards stay at the top: `count-up`, `heic-convert`, `unstageable-message`, `plus-welcome`, `classic-scripts-parse`. | `public/scripts/` |
 | `test/helpers/` | Shared harnesses — **not** specs. | — |
 
 Two rules of thumb when a spec could sit in two places — both are about **what is under
