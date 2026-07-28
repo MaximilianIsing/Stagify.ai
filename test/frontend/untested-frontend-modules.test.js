@@ -47,29 +47,20 @@ const EXCLUDED_PREFIXES = ['vendor/'];
 // ── the ledger ───────────────────────────────────────────────────────────────
 // public/scripts-relative paths, sorted. SHRINK ONLY. See the header.
 const UNTESTED = [
-  'admin.js',
-  'admin/emails.js',
-  'admin/insights.js',
-  'admin/overview.js',
-  'admin/renderers.js',
   'ai-designer-app.js',
   'ai-designer-gate.js',
   'ai-designer-model-selector.js',
   'ai-designer/chat-messages.js',
   'ai-designer/chat-response.js',
-  'ai-designer/file-intake.js',
   'ai-designer/image-viewer.js',
   'ai-designer/mask-editor.js',
   'ai-designer/thumbnail-strip.js',
   'app.js',
   'app/background-video.js',
-  'app/custom-select.js',
   'app/empty-room-viewer.js',
   'app/furniture-refs.js',
   'app/hero-stats.js',
   'app/stage-mask-editor.js',
-  'app/stage-validation.js',
-  'app/staging-pipeline.js',
   'app/tilt-effect.js',
   'aurora-scrollbar.js',
   'auth.js',
@@ -91,7 +82,6 @@ const UNTESTED = [
   'index-lazy-css.js',
   'language-detect.js',
   'language-switcher.js',
-  'mask/fit.js',
   'masking-studio-app.js',
   'masking-studio-gate.js',
   'masking-studio/draw-tools.js',
@@ -113,7 +103,6 @@ const UNTESTED = [
   'staging-studio.js',
   'star-border.js',
   'status.js',
-  'toast.js',
 ];
 
 // ── machinery ────────────────────────────────────────────────────────────────
