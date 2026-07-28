@@ -227,6 +227,52 @@ test('startRegistration does not reveal that an email is already taken', () => {
   );
 });
 
+// The byte-identical response above is only half the defence, exactly as with
+// login: the fresh path pays a ~100ms scrypt writing the pending row, so a
+// duplicate branch that returned before hashing would let a stopwatch answer
+// "does this email have an account?" — the very question the response body
+// refuses to answer. Counted, not timed: a wall-clock assertion is flaky on
+// shared CI, while the call count is precisely the property at stake.
+test('startRegistration pays the same scrypt cost whether or not the email is taken', () => {
+  const store = freshStore();
+  registerVerifiedUser(store, 'taken@example.com', 'CorrectHorse9!');
+
+  const realScryptSync = crypto.scryptSync;
+  let calls = 0;
+  crypto.scryptSync = (...args) => {
+    calls += 1;
+    return realScryptSync(...args);
+  };
+  const hashesDuring = (fn) => {
+    calls = 0;
+    const out = fn();
+    return { calls, out };
+  };
+  try {
+    const fresh = hashesDuring(() => store.startRegistration('brand-new@example.com', 'CorrectHorse9!'));
+    assert.equal(fresh.out.alreadyExists, undefined, 'sanity: this email is genuinely free');
+    assert.equal(fresh.calls, 1, 'a fresh sign-up hashes the password once');
+
+    const dup = hashesDuring(() => store.startRegistration('taken@example.com', 'Different0ne!'));
+    assert.equal(dup.out.alreadyExists, true, 'sanity: this email is genuinely taken');
+    assert.equal(
+      dup.calls,
+      fresh.calls,
+      'the already-taken branch must burn a hash too, instead of returning early',
+    );
+
+    // An invalid input is rejected before either branch, so it is not part of the
+    // pair being equalised — it cannot be reached with a well-formed probe.
+    assert.equal(
+      hashesDuring(() => store.startRegistration('taken@example.com', 'short')).calls,
+      0,
+      'sanity: the spy counts real work, not every call',
+    );
+  } finally {
+    crypto.scryptSync = realScryptSync;
+  }
+});
+
 test('login gives one generic error for missing, wrong-password, and Google-only accounts', () => {
   const store = freshStore();
   registerVerifiedUser(store, 'pw@example.com', 'CorrectHorse9!');
