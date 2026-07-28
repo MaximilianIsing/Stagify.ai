@@ -14,7 +14,7 @@
 // These assertions describe the fixed behaviour. /api/validate-image is mocked
 // and nothing is generated except in the refine test, so this costs nothing.
 import { test, expect } from '@playwright/test';
-import { roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
+import { openStageModalViaUI, roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
 
 const IMG_W = 960;
 const IMG_H = 540; // 16:9 — the shape that showed the problem worst
@@ -28,8 +28,7 @@ async function openMaskEditor(page, { width, height }) {
       body: JSON.stringify({ valid: true, code: null, reason: '' }),
     }),
   );
-  await page.goto('/index.html');
-  await page.evaluate(() => document.getElementById('stage-modal')?.classList.remove('hidden'));
+  await openStageModalViaUI(page);
   await page.locator('#stage-file-input').setInputFiles({
     name: 'room.png', mimeType: 'image/png', buffer: await roomPngBuffer(IMG_W, IMG_H),
   });

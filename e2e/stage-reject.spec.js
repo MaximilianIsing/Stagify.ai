@@ -14,7 +14,7 @@
 // /api/validate-image is mocked — no real Gemini call, no cost.
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
-import { roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
+import { openStageModalViaUI, roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
 
 const SERVER_ENGLISH = 'Server English that the pack should override.';
 const PACK_COPY = JSON.parse(fs.readFileSync('public/languages/english.json', 'utf8'))
@@ -35,14 +35,7 @@ test.describe('Main tool — stageability reject', () => {
       }),
     );
 
-    await page.goto('/index.html');
-
-    // Opening the modal through the UI requires the sign-in flow; lift `.hidden`
-    // exactly like the app's own openModal() does, as index.spec.js also does.
-    await page.evaluate(() => {
-      const modal = document.getElementById('stage-modal');
-      if (modal) modal.classList.remove('hidden');
-    });
+    await openStageModalViaUI(page);
 
     await page.locator('#stage-file-input').setInputFiles({
       name: 'room.png',
@@ -75,11 +68,7 @@ test.describe('Main tool — stageability reject', () => {
       }),
     );
 
-    await page.goto('/index.html');
-    await page.evaluate(() => {
-      const modal = document.getElementById('stage-modal');
-      if (modal) modal.classList.remove('hidden');
-    });
+    await openStageModalViaUI(page);
 
     await page.locator('#stage-file-input').setInputFiles({
       name: 'room.png',

@@ -1,5 +1,6 @@
 // Shared helpers for the studio e2e smoke tests. Not a spec (no .spec suffix), so
 // Playwright imports it but never runs it as a test.
+import { expect } from '@playwright/test';
 import sharp from 'sharp';
 
 // The /api/auth/me payload for a signed-in Pro user — shape from
@@ -59,28 +60,97 @@ export async function stubAnalytics(page) {
   );
 }
 
+// The staging banner (mounted client-side from /api/auth/config when the server runs
+// with IS_STAGING) is a max-z-index sticky bar that overlays the page and intercepts
+// pointer events. Neutralise it regardless of the server's env so clicks and the
+// mask-paint drag reach what they aim at.
+export async function hideStagingBanner(page) {
+  await page.addInitScript(() => {
+    try {
+      const s = document.createElement('style');
+      s.textContent = '#stagify-staging-banner{display:none !important}';
+      document.documentElement.appendChild(s);
+    } catch { /* ignore */ }
+  });
+}
+
 // Seed the render-blocking auth gate (a token must be in localStorage at first paint)
 // and mock GET /api/auth/me → Pro, so neither studio redirects to the upsell page.
 export async function seedProSession(page, { msHelpSeen = false } = {}) {
   await stubAnalytics(page);
+  await hideStagingBanner(page);
 
   await page.addInitScript((flags) => {
     try {
       localStorage.setItem('stagifyAuthToken', 'e2e-token');
       if (flags.msHelpSeen) localStorage.setItem('msHelpSeen', '1'); // suppress first-visit help dialog
     } catch { /* ignore private-mode storage errors */ }
-    // The staging banner (mounted client-side from /api/auth/config when the server
-    // runs with IS_STAGING) is a max-z-index sticky bar that overlays the studio and
-    // intercepts pointer events. Neutralise it regardless of the server's env so the
-    // mask-paint drag reaches #ms-stack.
-    try {
-      const s = document.createElement('style');
-      s.textContent = '#stagify-staging-banner{display:none !important}';
-      document.documentElement.appendChild(s);
-    } catch { /* ignore */ }
   }, { msHelpSeen });
 
   await page.route('**/api/auth/me', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(PRO_ME) }),
   );
+}
+
+/**
+ * Wait until `scripts/app.js` has finished evaluating.
+ *
+ * The home page's upload buttons are wired inside that module body, so a click
+ * that lands before it runs is silently a no-op (Playwright does not retry a
+ * click that hit nothing). `__stagifyUpdateHeroFreeGensLine` is assigned at the
+ * END of the same body — after the button wiring — so it is a readiness signal
+ * for "the entry flow is live", not merely "the DOM parsed".
+ */
+export function waitForHomeReady(page) {
+  return page.waitForFunction(() => typeof window.__stagifyUpdateHeroFreeGensLine === 'function');
+}
+
+/**
+ * Open the stage dialog the way a user does: click the hero upload button.
+ *
+ * Every spec used to lift `.hidden` off `#stage-modal` by hand, which skipped the
+ * one gate that decides whether the dialog may open at all (`openFilePicker()` —
+ * signed in → open, signed out → auth modal). Driving the button instead means
+ * the specs below cover the real entry point; `stage-signin-entry.spec.js` covers
+ * the signed-out half of that same gate.
+ *
+ * Requires a session (seedProSession) — without one this opens the auth modal.
+ */
+export async function openStageModalViaUI(page, path = '/index.html') {
+  await page.goto(path);
+  await waitForHomeReady(page);
+  const modal = page.locator('#stage-modal');
+  // Pre-condition: it really was closed, so "not hidden" below means the click
+  // opened it rather than it having been open all along.
+  await expect(modal).toHaveClass(/hidden/);
+  await page.locator('#hero-upload').click();
+  await expect(modal).not.toHaveClass(/hidden/);
+  return modal;
+}
+
+/**
+ * The signed-out counterpart of seedProSession: no token in localStorage, but every
+ * endpoint the auth modal talks to is mocked, so a spec can drive a real sign-in.
+ *
+ * `/api/auth/config` is stubbed with an empty client id so Google Identity Services
+ * is never fetched from accounts.google.com (the suite stays hermetic).
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {{token?: string, me?: object}} [opts]
+ */
+export async function stubAnonymousAuth(page, { token = 'e2e-token', me = PRO_ME } = {}) {
+  await stubAnalytics(page);
+  await hideStagingBanner(page);
+
+  await page.route('**/api/auth/config', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ googleClientId: '', isStaging: false }),
+    }),
+  );
+  await page.route('**/api/auth/me', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(me) }),
+  );
+  return { token };
 }
