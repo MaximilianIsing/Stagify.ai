@@ -4,11 +4,6 @@
 // builder, the quick-switch chip bar, and the add-layer button + languagechange
 // wiring. Lifted verbatim from the entry; cross-island collaborators arrive via
 // `deps` (late-bound where a sibling island is created after this one).
-//
-// deps: { state, MAX_LAYERS, PALETTE, layerList, chipbar, stack, resultCanvas,
-//         addLayerBtn, tx, showToast, updateControls, scheduleSessionSave,
-//         updateStageBackdrop, compositeAll, setPhase, snapshotForUndo,
-//         retryLayer, selectCandidate, wireFurnitureDrop, beginFurniturePick }
 import {
   nextColorIdx,
   createLayer,
@@ -18,6 +13,36 @@ import {
   statusChip as _statusChip,
 } from './layers.js';
 
+/**
+ * @typedef {import('./types.js').MsState} MsState
+ * @typedef {import('./types.js').MsLayer} MsLayer
+ * @typedef {import('./types.js').MsPaletteEntry} MsPaletteEntry
+ */
+/**
+ * @param {{
+ *   state: MsState,
+ *   MAX_LAYERS: number,
+ *   PALETTE: MsPaletteEntry[],
+ *   layerList: HTMLElement,
+ *   chipbar: HTMLElement,
+ *   stack: HTMLElement,
+ *   resultCanvas: HTMLCanvasElement,
+ *   addLayerBtn: HTMLButtonElement,
+ *   tx: (key: string, def: string) => string,
+ *   showToast: (message: string, type?: string) => void,
+ *   updateControls: () => void,
+ *   scheduleSessionSave: () => void,
+ *   updateStageBackdrop: () => void,
+ *   compositeAll: () => void,
+ *   setPhase: (p: MsState['phase']) => void,
+ *   snapshotForUndo: () => void,
+ *   retryLayer: (id: string) => Promise<void>,
+ *   selectCandidate: (layer: MsLayer, idx: number) => void,
+ *   wireFurnitureDrop: (zone: HTMLElement, layer: MsLayer) => void,
+ *   beginFurniturePick: (layerId: string) => void,
+ *   snapLayer: (id: string) => void,
+ * }} deps
+ */
 export function createLayersUi(deps) {
   const {
     state,
@@ -209,10 +234,12 @@ export function createLayersUi(deps) {
       modeRow.className = 'ms-mode-row';
       modeRow.setAttribute('role', 'group');
       modeRow.setAttribute('aria-label', tx('maskingStudio.modeAria', 'What happens in this area'));
-      [
+      // Annotated so `val` stays the 'stage'|'remove' union rather than widening
+      // to string — layer.mode is assigned from it below.
+      /** @type {Array<[MsLayer['mode'], string]>} */ ([
         ['stage', tx('maskingStudio.modeStage', 'Add furniture')],
         ['remove', tx('maskingStudio.modeRemove', 'Remove object')],
-      ].forEach(([val, label]) => {
+      ]).forEach(([val, label]) => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'ms-mode-btn' + (layer.mode === val ? ' is-on' : '');

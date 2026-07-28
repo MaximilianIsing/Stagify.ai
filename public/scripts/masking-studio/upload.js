@@ -4,12 +4,34 @@
 // and all the drop / paste / dropzone / replace wiring. Lifted verbatim from the
 // entry. The pendingFurnitureLayerId cursor is encapsulated here (via
 // beginFurniturePick) so it never becomes a cross-module shared var.
-//
-// deps: { state, dropzone, fileInput, furnitureInput, stack, replaceBtn, showToast,
-//         tx, loadImage, setBaseImage, requestDiscard, activeLayer, getLayer,
-//         renderLayers, updateControls, layerTitle, scheduleSessionSave }
 import { unstageableMessage } from '../unstageable-message.js';
 
+/**
+ * @typedef {import('./types.js').MsState} MsState
+ * @typedef {import('./types.js').MsLayer} MsLayer
+ */
+/**
+ * @param {{
+ *   state: MsState,
+ *   dropzone: HTMLElement,
+ *   fileInput: HTMLInputElement,
+ *   furnitureInput: HTMLInputElement,
+ *   stack: HTMLElement,
+ *   replaceBtn: HTMLButtonElement,
+ *   showToast: (message: string, type?: string) => void,
+ *   tx: (key: string, def: string) => string,
+ *   loadImage: (src: string) => Promise<HTMLImageElement>,
+ *   setBaseImage: (img: HTMLImageElement, opts?: { noLayer?: boolean }) => void,
+ *   clearBaseImage: () => void,
+ *   requestDiscard: (action: () => void, strict?: boolean) => void,
+ *   activeLayer: () => MsLayer | null,
+ *   getLayer: (id: string) => MsLayer | null,
+ *   renderLayers: () => void,
+ *   updateControls: () => void,
+ *   layerTitle: (layer: MsLayer) => string,
+ *   scheduleSessionSave: () => void,
+ * }} deps
+ */
 export function createUpload(deps) {
   const {
     state,

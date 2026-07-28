@@ -8,9 +8,24 @@
 // contract stays cross-module: the entry's setBaseImage bumps state.segToken
 // and nulls state.segCache; ensureSegCache captures the token before the
 // fetch and refuses to cache on mismatch.
-//
-// deps: { state, stack, wandBusyEl, activeLayer, canvasPoint, paintMaskIntoLayer,
-//         requestError, showToast, tx, loadImage }
+/**
+ * @typedef {import('./types.js').MsState} MsState
+ * @typedef {import('./types.js').MsLayer} MsLayer
+ */
+/**
+ * @param {{
+ *   state: MsState,
+ *   stack: HTMLElement,
+ *   wandBusyEl: HTMLElement,
+ *   activeLayer: () => MsLayer | null,
+ *   canvasPoint: (e: PointerEvent) => { x: number, y: number } | null,
+ *   paintMaskIntoLayer: (layer: MsLayer, maskCanvas: HTMLCanvasElement) => void,
+ *   requestError: (status: number, result: any) => string,
+ *   showToast: (message: string, type?: string) => void,
+ *   tx: (key: string, def: string) => string,
+ *   loadImage: (src: string) => Promise<HTMLImageElement>,
+ * }} deps
+ */
 export function createSegWand(deps) {
   const {
     state,

@@ -292,6 +292,56 @@ implying otherwise. Pure logic covered by
   the `{token}` interpolation and daily-limit message logic were hoisted out of
   `app.js` into `helpers.js` precisely so they could be tested.
 - **Cross-island state?** Reach for (or create) a shared store island, not globals.
+- **New factory island?** Type its `deps` bag — see the next section.
+
+### Type the dependency bag, or the wiring is unchecked
+
+`tsconfig.frontend.json` runs with `noImplicitAny: false` for the rollout, so a factory
+written as `createX(deps)` with no JSDoc gets `deps: any` — and every key destructured
+out of it is `any` too. That is not a cosmetic gap. It means `npm run typecheck`, which
+gates the deploy, proves **nothing** about the entry↔island seam: a renamed state field,
+a dropped dependency, or a callback invoked with the wrong arity all type-check clean and
+fail in the browser instead.
+
+The Masking Studio is the worked example, because it is the extreme case: eight islands
+share one mutable store and seven of them write to it. The shape is written down once in
+[`scripts/masking-studio/types.d.ts`](../../public/scripts/masking-studio/types.d.ts)
+(`MsState`, `MsLayer`, and friends — same `.d.ts` idiom as the backend's
+[`lib/types/`](../../lib/types)), the entry annotates its store literal with it, and each
+island types its bag against it:
+
+```js
+/**
+ * @param {{
+ *   state: import('./types.js').MsState,
+ *   baseCanvas: HTMLCanvasElement,
+ *   setZoom: (nz: number, focal?: { x: number, y: number } | null) => void,
+ *   …
+ * }} deps
+ */
+export function createDrawTools(deps) {
+```
+
+Two things to know before you write one:
+
+- **Derive the types from the implementations, not from the wiring comment.** The islands
+  used to carry a hand-maintained `// deps: { … }` header listing their keys. Three of the
+  eight had already drifted — `layers-ui`, `generate-pipeline`, and `upload` each took one
+  more dependency than their comment admitted. Those lists are gone now; the `@param` is
+  the contract, and unlike a comment it is checked. The header comments that survive
+  describe *what the island is for*, which is the part a type cannot say.
+- **The layer shape has one producer.** `createLayer` in `layers.js` returns `MsLayer`, and
+  `deserializeLayer` in `session.js` rehydrates through it. Keep those in step with the
+  typedef rather than describing a layer a second time.
+
+[`test/frontend/island-deps-typed.test.js`](../../test/frontend/island-deps-typed.test.js)
+is the ratchet. It asks the real TypeScript checker for each factory's parameter type
+(not a grep for `@param` — a text scan is satisfied by any comment that mentions the
+token, so it would pass with the annotation deleted) and asserts set equality against a
+debt ledger of the factories still untyped. Adding an untyped factory fails it; typing a
+listed one fails it until you remove the entry. **Only ever shrink that list.** The eleven
+remaining entries are in `scripts/app/` and `scripts/ai-designer/` — the same fix applies
+there, it just has not been done yet.
 
 ### Dialogs built in JS need their ARIA written by hand
 

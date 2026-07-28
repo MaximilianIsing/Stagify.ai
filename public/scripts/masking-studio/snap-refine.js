@@ -15,11 +15,19 @@
 // suggestion is always recoverable with one undo. The heavy pixel math lives in
 // the pure module; this island only downsamples canvases in and paints a mask
 // back out.
-//
-// deps: { state, paintMaskIntoLayer }
 import { nearestAreaLabels } from './layers.js';
 import { computeSpillFill } from './spill.js';
 
+/**
+ * @typedef {import('./types.js').MsState} MsState
+ * @typedef {import('./types.js').MsLayer} MsLayer
+ */
+/**
+ * @param {{
+ *   state: MsState,
+ *   paintMaskIntoLayer: (layer: MsLayer, maskCanvas: HTMLCanvasElement) => void,
+ * }} deps
+ */
 export function createSnapRefine(deps) {
   const { state, paintMaskIntoLayer } = deps;
 
