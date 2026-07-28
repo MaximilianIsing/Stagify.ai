@@ -1,16 +1,22 @@
 // Mask editor island for the AI Designer chat.
 //
-// The brush-mask "edit with AI" subsystem: its own modal DOM, canvas drawing,
-// phase state machine (draw -> loading -> refine), reference photo, the
-// /api/mask-edit call, and commit-back-to-carousel. Lifted verbatim from the
-// entry as a factory that closes over its own state and receives what it needs
-// from the entry via deps (so the entry sheds ~1000 lines of mask glue).
+// The brush-mask "edit with AI" subsystem. A factory that closes over its own
+// state and receives what it needs from the entry via deps (so the entry sheds
+// ~1000 lines of mask glue).
+//
+// What lives HERE is what differs from the main tool's stage mask editor:
+// building its own modal DOM at runtime, the draw/loading/refine phase machine,
+// and committing back into the image carousel + conversation history. The brush,
+// viewport pinning, processing overlay, reference photo, sizing, refine maths,
+// the /api/mask-edit request and the phase copy are all shared — see
+// scripts/mask/.
 //
 // deps: { lang, showToast, createOrUpdateMaskedImageCarousel, addMessage,
 //         syncImageThumbnailStrip, collectImagesFromConversationHistory,
 //         pushHistoryEntry }  ->  returns { openMaskEditor }
-// Window globals (visualViewport, matchMedia, LanguageSystem, StagifyHeic,
-// StagifyAuth, getSelectedModelApiName) are referenced directly.
+// Window globals used directly: visualViewport / matchMedia (via the shared
+// viewport slice), LanguageSystem, and getSelectedModelApiName. StagifyHeic and
+// StagifyAuth are reached by scripts/mask/{reference,generate}.js, not here.
 import { getRootBaseNameForImage } from './image-history.js';
 import { updateMaskEditorTranslations } from './mask-editor-i18n.js';
 import { createMaskFit } from '../mask/fit.js';

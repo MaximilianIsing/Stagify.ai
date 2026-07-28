@@ -1,10 +1,15 @@
 // Stage mask editor island for the main Stagify tool (scripts/app.js).
 //
 // The brush-mask "edit with AI" subsystem for the staging tool's Before/After
-// canvases: its own modal, canvas drawing, draw/loading/refine phase machine,
-// reference photo, /api/mask-edit call. Lifted verbatim from the former
-// setupStageMaskEditor IIFE into a factory that owns its state and receives the
-// glue it needs from the entry via deps. Self-wires its own trigger button.
+// canvases. A factory that owns its state and receives the glue it needs from
+// the entry via deps; self-wires its own trigger button.
+//
+// What lives HERE is what differs from the AI Designer's editor: binding to the
+// static #stage-mask-* markup in index.html, the before/after editor modes and
+// their version caps, the draw/loading/refine phase machine, and committing back
+// through onMaskCommit. The brush, viewport pinning, processing overlay,
+// reference photo, sizing, refine maths, the /api/mask-edit request and the
+// phase copy are all shared — see scripts/mask/.
 //
 // deps: { maskEditBtn, canvas1, stagePreview, processBtn, activeViewIsAfter,
 //         getBeforeVersions, getAfterVersions, maxVersions, onMaskCommit }
