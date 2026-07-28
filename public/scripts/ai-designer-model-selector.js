@@ -283,6 +283,50 @@
           });
         }
         
+        // The transcript itself lives in ai-designer-app.js, which the page loads as a
+        // <script type="module"> — a module's top-level bindings are not shared with a
+        // classic script like this one (the same scope trap spelled out for
+        // closeImageModal at the bottom of this file). Naming that binding here threw a
+        // ReferenceError from inside the submit handler, which failed the WHOLE report,
+        // so it is read through a window accessor: when none is exposed the report still
+        // goes out, just without a transcript.
+        function readConversationHistory() {
+          const accessor = window.getConversationHistory;
+          return typeof accessor === 'function' ? accessor() : [];
+        }
+        
+        // A bug report carries the chat transcript for context, but the transcript's
+        // image entries hold whole base64 data URLs — megabytes each — and the server
+        // never keeps those bytes: bug_reports.csv stores only a per-message image COUNT
+        // (lib/http/bug-report-row.js). Shipping them bought nothing and pushed the body
+        // past the 1MB JSON limit, so the report came back 413 exactly when the user
+        // needed the channel. Rebuild the transcript without the bytes: text parts
+        // verbatim, every other content item reduced to its bare type tag, which leaves
+        // the recorded image count — and the whole stored row — identical.
+        function summariseBugReportHistory(history) {
+          if (!Array.isArray(history)) return [];
+          return history.map(function (message) {
+            const entry = message || {};
+            const role = entry.role || 'unknown';
+            const content = entry.content;
+            if (Array.isArray(content)) {
+              return {
+                role: role,
+                content: content.map(function (item) {
+                  const part = item || {};
+                  return part.type === 'text'
+                    ? { type: 'text', text: String(part.text == null ? '' : part.text) }
+                    : { type: part.type };
+                }),
+              };
+            }
+            // Non-array content is flattened with String() server-side anyway, so doing
+            // it here keeps the stored row byte-identical while making it impossible for
+            // an object-shaped content to smuggle image bytes onto the wire.
+            return { role: role, content: String(content == null ? '' : content) };
+          });
+        }
+        
         // Handle form submission
         if (bugReportForm) {
           bugReportForm.addEventListener('submit', async function(e) {
@@ -315,7 +359,7 @@
                   userAgent: navigator.userAgent,
                   url: window.location.href,
                   timestamp: new Date().toISOString(),
-                  conversationHistory: conversationHistory
+                  conversationHistory: summariseBugReportHistory(readConversationHistory())
                 })
               });
               

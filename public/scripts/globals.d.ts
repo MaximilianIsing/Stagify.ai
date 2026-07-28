@@ -30,6 +30,9 @@ declare global {
     __stagifyOpenAuthForStaging?: (...args: any[]) => void;
     /** Closes the fullscreen image modal (ai-designer image viewer). */
     closeImageModal?: (...args: any[]) => void;
+    /** Returns the live AI Designer chat transcript (ai-designer-app.js), for the
+     *  bug-report form in the classic ai-designer-model-selector.js. */
+    getConversationHistory?: () => any[];
     /** Home hero text-animation controller installed by home-text-animate.js. */
     HomeTextAnimate?: any;
 
