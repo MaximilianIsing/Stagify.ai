@@ -12,6 +12,12 @@
 // shared before/after version state + display.)
 import { buildModelMask, buildBlendMask, compositeMaskedEditCanvas, compositeMaskedEdit } from '../mask-core.js';
 import { showErrorToast } from '../toast.js';
+// Viewport pinning, the processing overlay and the reference photo are shared
+// with the AI Designer's mask editor (scripts/mask/). Each of the three used to
+// exist twice — inline here, and as an ai-designer-only slice.
+import { createMaskViewport } from '../mask/viewport.js';
+import { createMaskOverlay } from '../mask/overlay.js';
+import { createMaskReference } from '../mask/reference.js';
 
 export function createStageMaskEditor(deps) {
   const {
@@ -55,7 +61,6 @@ export function createStageMaskEditor(deps) {
       let drawing = false;
       let lastX = null;
       let lastY = null;
-      let maskReferenceDataUrl = null;
       // 'brush' adds to the selection, 'erase' removes from it.
       let tool = 'brush';
       // Tracks whether anything has been painted this session, so the hot drawing
@@ -72,8 +77,6 @@ export function createStageMaskEditor(deps) {
       // never re-calls the API unless they press "Regenerate".
       let phase = 'draw';        // 'draw' | 'loading' | 'refine'
       let refineState = null;    // { origCanvas, w, h, coreGrow, featherPx, editedImg, isBefore }
-      let loadMsgTimer = null;
-      let loadingOverlay = null;
 
       // Refine-phase action buttons, created once and toggled by phase.
       const rerunBtn = document.createElement('button');
@@ -98,68 +101,35 @@ export function createStageMaskEditor(deps) {
       const maskHeader = maskModal.querySelector('.stage-mask-header');
       if (maskHeader) maskHeader.insertBefore(helpIcon, maskHeader.querySelector('.stage-mask-close'));
 
-      // One-time styles for the in-modal blur + spinner overlay (self-contained
-      // so the whole feature mirrors cleanly into the AI Designer).
-      if (!document.getElementById('smask-refine-styles')) {
-        const st = document.createElement('style');
-        st.id = 'smask-refine-styles';
-        st.textContent =
-          '.stage-mask-canvas-container.smask-busy .stage-mask-canvas{filter:blur(6px) brightness(.98);}' +
-          '.smask-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(255,255,255,.4);z-index:6;border-radius:inherit;}' +
-          '.smask-overlay__spin{width:46px;height:46px;border-radius:50%;border:4px solid rgba(37,99,235,.25);border-top-color:#2563eb;animation:smask-spin .9s linear infinite;}' +
-          '.smask-overlay__msg{font-weight:600;color:#1f2937;font-size:14px;text-align:center;max-width:80%;padding:0 12px;}' +
-          '.smask-help{position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid #94a3b8;color:#64748b;font-size:11px;font-weight:700;cursor:help;margin-left:6px;margin-right:auto;line-height:1;user-select:none;flex:0 0 auto;}' +
-          '.smask-help.hidden{display:none;}' +
-          '.smask-help__tip{position:absolute;top:140%;left:0;width:min(290px,72vw);background:#1f2937;color:#fff;font-size:12px;font-weight:400;line-height:1.45;padding:10px 12px;border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);opacity:0;visibility:hidden;transition:opacity .15s ease;z-index:30;text-align:left;pointer-events:none;white-space:normal;}' +
-          '.smask-help:hover .smask-help__tip,.smask-help:focus .smask-help__tip,.smask-help:focus-within .smask-help__tip{opacity:1;visibility:visible;}' +
-          '@keyframes smask-spin{to{transform:rotate(360deg);}}';
-        document.head.appendChild(st);
-      }
+      // Shared overlay, with the two things that differ from the AI Designer's
+      // use of it: this editor marks the container `smask-busy` (it toggles
+      // `processing` separately, from setPhase), and it needs one extra rule to
+      // blur its own canvas class. `ensure()` runs now rather than on first use
+      // so the stylesheet lands at construction time, as it always has.
+      const overlay = createMaskOverlay({
+        lang: tx,
+        getContainer: () => /** @type {HTMLElement} */ (canvasContainer),
+        busyClass: 'smask-busy',
+        extraCss: '.stage-mask-canvas-container.smask-busy .stage-mask-canvas{filter:blur(6px) brightness(.98);}',
+        extraCssId: 'stage-smask-styles',
+      });
+      overlay.ensure();
+      const startOverlay = () => overlay.start();
+      const stopOverlay = () => overlay.stop();
 
-      const LOAD_MESSAGES = [
-        'Applying your edit…',
-        'Reworking the masked area…',
-        'Blending in the new details…',
-        'Refining textures and lighting…',
-        'Adding finishing touches…',
-      ];
+      // Shared reference-photo slice. dropZones keeps this editor's drag-and-drop
+      // onto the "+ Add photo" button (and, once one is set, its thumbnail).
+      const reference = createMaskReference({ lang: tx, showError: showErrorToast });
+      reference.wire({
+        fileInput: refFileInput,
+        addBtn: refAddBtn,
+        removeBtn: refRemoveBtn,
+        preview: refPreview,
+        img: refImg,
+        dropZones: [refAddBtn, refPreview],
+      });
 
-      function ensureOverlay() {
-        if (loadingOverlay || !canvasContainer) return;
-        if (getComputedStyle(canvasContainer).position === 'static') {
-          canvasContainer.style.position = 'relative';
-        }
-        loadingOverlay = document.createElement('div');
-        loadingOverlay.className = 'smask-overlay hidden';
-        const spin = document.createElement('div');
-        spin.className = 'smask-overlay__spin';
-        const msg = document.createElement('div');
-        msg.className = 'smask-overlay__msg';
-        loadingOverlay.appendChild(spin);
-        loadingOverlay.appendChild(msg);
-        canvasContainer.appendChild(loadingOverlay);
-      }
-
-      function startOverlay() {
-        ensureOverlay();
-        if (canvasContainer) canvasContainer.classList.add('smask-busy');
-        if (!loadingOverlay) return;
-        loadingOverlay.classList.remove('hidden');
-        const msgEl = loadingOverlay.querySelector('.smask-overlay__msg');
-        let i = 0;
-        if (msgEl) msgEl.textContent = tx('pdf.maskEditor.loadApplying', LOAD_MESSAGES[0]);
-        if (loadMsgTimer) clearInterval(loadMsgTimer);
-        loadMsgTimer = setInterval(() => {
-          i = (i + 1) % LOAD_MESSAGES.length;
-          if (msgEl) msgEl.textContent = LOAD_MESSAGES[i];
-        }, 2000);
-      }
-
-      function stopOverlay() {
-        if (loadMsgTimer) { clearInterval(loadMsgTimer); loadMsgTimer = null; }
-        if (canvasContainer) canvasContainer.classList.remove('smask-busy');
-        if (loadingOverlay) loadingOverlay.classList.add('hidden');
-      }
+      const viewport = createMaskViewport({ getModal: () => maskModal });
 
       function setControlsDisabled(dis) {
         [cancelBtn, clearBtn, submitBtn, rerunBtn, doneBtn, brushToolBtn, eraseToolBtn, brushSlider, promptInput, refAddBtn, refRemoveBtn]
@@ -261,44 +231,6 @@ export function createStageMaskEditor(deps) {
         return true;
       }
 
-      // Pin the editor to the VISUAL viewport on mobile so its top/bottom never
-      // hide behind the browser's URL bar / toolbar (and it stays above the
-      // on-screen keyboard). Mirrors the AI Designer mask editor. Desktop untouched.
-      let viewportSyncHandler = null;
-      function syncEditorToViewport() {
-        if (!maskModal.classList.contains('active')) return;
-        const vv = window.visualViewport;
-        const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        if (!vv || !isMobile) {
-          maskModal.style.top = '';
-          maskModal.style.left = '';
-          maskModal.style.width = '';
-          maskModal.style.height = '';
-          return;
-        }
-        maskModal.style.top = vv.offsetTop + 'px';
-        maskModal.style.left = vv.offsetLeft + 'px';
-        maskModal.style.width = vv.width + 'px';
-        maskModal.style.height = vv.height + 'px';
-      }
-      function bindViewportSync() {
-        if (viewportSyncHandler || !window.visualViewport) return;
-        viewportSyncHandler = () => syncEditorToViewport();
-        window.visualViewport.addEventListener('resize', viewportSyncHandler);
-        window.visualViewport.addEventListener('scroll', viewportSyncHandler);
-      }
-      function unbindViewportSync() {
-        if (viewportSyncHandler && window.visualViewport) {
-          window.visualViewport.removeEventListener('resize', viewportSyncHandler);
-          window.visualViewport.removeEventListener('scroll', viewportSyncHandler);
-        }
-        viewportSyncHandler = null;
-        maskModal.style.top = '';
-        maskModal.style.left = '';
-        maskModal.style.width = '';
-        maskModal.style.height = '';
-      }
-
       // Shared: load a source image into the base/draw canvases and open the modal.
       function showInEditor(src) {
         const img = new Image();
@@ -337,8 +269,8 @@ export function createStageMaskEditor(deps) {
           setPhase('draw');
           maskModal.classList.add('active');
           maskModal.setAttribute('aria-hidden', 'false');
-          bindViewportSync();
-          syncEditorToViewport();
+          viewport.bind();
+          viewport.sync();
         };
         img.src = src;
       }
@@ -349,7 +281,7 @@ export function createStageMaskEditor(deps) {
         if (atVersionLimit('after')) return;
         editorMode = 'after';
         applyEditorCopy();
-        clearMaskReference();
+        reference.clear();
         if (promptInput) promptInput.value = '';
         showInEditor(canvas1.toDataURL('image/png'));
       }
@@ -361,70 +293,18 @@ export function createStageMaskEditor(deps) {
         if (atVersionLimit('before')) return;
         editorMode = 'before';
         applyEditorCopy();
-        clearMaskReference();
+        reference.clear();
         if (promptInput) promptInput.value = '';
         showInEditor(src);
-      }
-
-      function clearMaskReference() {
-        maskReferenceDataUrl = null;
-        if (refFileInput) refFileInput.value = '';
-        if (refPreview) refPreview.classList.add('hidden');
-        if (refImg) refImg.removeAttribute('src');
-        if (refAddBtn) refAddBtn.classList.remove('hidden');
-      }
-
-      function setMaskReference(dataUrl) {
-        maskReferenceDataUrl = dataUrl;
-        if (refImg) refImg.src = dataUrl;
-        if (refPreview) refPreview.classList.remove('hidden');
-        if (refAddBtn) refAddBtn.classList.add('hidden');
-      }
-
-      // Validate, downscale (max 1536px), and PNG-encode a chosen reference file so
-      // the payload is always small, clean, and a format the backend accepts.
-      // Resolves to a data URL; rejects with 'type' | 'size' | 'read' | 'decode'.
-      function prepareReferenceFile(file) {
-        return new Promise((resolve, reject) => {
-          if (!file || !/^image\/(jpeg|jpg|png|webp)$/i.test(file.type || '')) { reject(new Error('type')); return; }
-          if (file.size > 25 * 1024 * 1024) { reject(new Error('size')); return; }
-          const reader = new FileReader();
-          reader.onerror = () => reject(new Error('read'));
-          reader.onload = () => {
-            const img = new Image();
-            img.onerror = () => reject(new Error('decode'));
-            img.onload = () => {
-              const maxDim = 1536;
-              const scale = Math.min(1, maxDim / Math.max(img.width || 1, img.height || 1));
-              const w = Math.max(1, Math.round((img.width || 1) * scale));
-              const h = Math.max(1, Math.round((img.height || 1) * scale));
-              const c = document.createElement('canvas');
-              c.width = w; c.height = h;
-              c.getContext('2d').drawImage(img, 0, 0, w, h);
-              try { resolve(c.toDataURL('image/png')); } catch (e) { reject(new Error('decode')); }
-            };
-            img.src = /** @type {string} */ (reader.result);
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-
-      function refErrorMessage(err) {
-        const key = err && err.message === 'size' ? 'pdf.maskEditor.referenceTooLarge' : 'pdf.maskEditor.referenceInvalid';
-        const fallback = err && err.message === 'size'
-          ? 'That image is too large — please choose one under 25 MB.'
-          : 'Please choose a valid JPG, PNG, or WebP image.';
-        const t = window.LanguageSystem && window.LanguageSystem.getText(key);
-        return (t && t !== 'Loading...') ? t : fallback;
       }
 
       function closeEditor() {
         maskModal.classList.remove('active');
         maskModal.setAttribute('aria-hidden', 'true');
-        unbindViewportSync();
+        viewport.unbind();
         stopOverlay();
         clearDraw();
-        clearMaskReference();
+        reference.clear();
         refineState = null;
         phase = 'draw';
         if (submitBtn) submitBtn.classList.remove('hidden');
@@ -574,64 +454,6 @@ export function createStageMaskEditor(deps) {
       if (closeBtn) closeBtn.addEventListener('click', () => { if (phase !== 'loading') closeEditor(); });
       if (brushToolBtn) brushToolBtn.addEventListener('click', () => setTool('brush'));
       if (eraseToolBtn) eraseToolBtn.addEventListener('click', () => setTool('erase'));
-      // Accept a single reference file from either the picker or a drop: validate
-      // + downscale, then show it (or surface the error). Shared so both paths
-      // behave identically.
-      function acceptReferenceFile(file) {
-        if (!file) return;
-        // Convert HEIC/HEIF to JPEG first so it decodes and passes validation.
-        const prep = (window.StagifyHeic && window.StagifyHeic.isHeic(file))
-          ? window.StagifyHeic.toDisplayableFile(file)
-          : Promise.resolve(file);
-        prep
-          .then(prepareReferenceFile)
-          .then(setMaskReference)
-          .catch((err) => { clearMaskReference(); showErrorToast(refErrorMessage(err)); });
-      }
-      if (refAddBtn && refFileInput) {
-        refAddBtn.addEventListener('click', () => refFileInput.click());
-        refFileInput.addEventListener('change', () => {
-          const file = refFileInput.files && refFileInput.files[0];
-          refFileInput.value = ''; // allow re-selecting the same file later
-          acceptReferenceFile(file);
-        });
-      }
-      if (refRemoveBtn) refRemoveBtn.addEventListener('click', clearMaskReference);
-
-      // Drag-and-drop: drop an image onto the "+ Add photo" button (or, once one
-      // is set, onto its preview to replace it) — same path as picking a file.
-      // Highlights the button while a valid file-drag hovers a drop zone.
-      (function wireMaskRefDrop() {
-        const zones = [refAddBtn, refPreview].filter(Boolean);
-        if (!zones.length) return;
-        let dragDepth = 0;
-        const hasFiles = (e) =>
-          !!e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1;
-        zones.forEach((zone) => {
-          zone.addEventListener('dragenter', (e) => {
-            if (!hasFiles(e)) return;
-            e.preventDefault();
-            dragDepth++;
-            if (refAddBtn) refAddBtn.classList.add('is-drag-over');
-          });
-          zone.addEventListener('dragover', (e) => {
-            if (!hasFiles(e)) return;
-            e.preventDefault();
-            if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
-          });
-          zone.addEventListener('dragleave', () => {
-            dragDepth = Math.max(0, dragDepth - 1);
-            if (dragDepth === 0 && refAddBtn) refAddBtn.classList.remove('is-drag-over');
-          });
-          zone.addEventListener('drop', (e) => {
-            if (!hasFiles(e)) return;
-            e.preventDefault();
-            dragDepth = 0;
-            if (refAddBtn) refAddBtn.classList.remove('is-drag-over');
-            acceptReferenceFile(e.dataTransfer.files && e.dataTransfer.files[0]);
-          });
-        });
-      })();
       // Same paint-brush FAB on both views: edits the staged result on After,
       // or the original photo on Before.
       if (maskEditBtn) maskEditBtn.addEventListener('click', () => {
@@ -692,7 +514,7 @@ export function createStageMaskEditor(deps) {
         let selectedModel = 'gpt-4o-mini';
         const modelSel = /** @type {HTMLSelectElement} */ (document.getElementById('stagify-model-select'));
         if (modelSel && modelSel.value) selectedModel = modelSel.value;
-        const referenceImageForRequest = maskReferenceDataUrl;
+        const referenceImageForRequest = reference.getDataUrl();
         const tok = window.StagifyAuth && window.StagifyAuth.getToken();
         const response = await fetch('/api/mask-edit', {
           method: 'POST',
