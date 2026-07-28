@@ -5,6 +5,19 @@ import { reportError } from '../lib/http/error-ref.js';
 import { createMaskEditHandler } from '../lib/staging/mask-edit.js';
 import { createSegmentHandler } from '../lib/staging/segment.js';
 import { logger } from '../lib/logger.js';
+import { validateImageLimiter as defaultValidateImageLimiter } from '../lib/http/rate-limiters.js';
+
+// A validate-image payload must be a base64 image data URL — both studios build one
+// with canvas.toDataURL() — so anything else is not a real upload. Checking the shape
+// here costs a regex instead of a paid vision call.
+const IMAGE_DATA_URL_RE = /^data:image\/[a-z0-9.+-]+;base64,/i;
+
+// Ceiling on the DECODED image the pre-check will look at, enforced from the encoded
+// length so an oversized payload is refused before a buffer is allocated for it. The
+// studios downscale to a <=1024px JPEG (a few hundred KB) before posting; this leaves
+// generous room for the rare fallback that posts the original photo, while stopping a
+// caller from pushing the full 25MB JSON limit through a paid vision call.
+const MAX_VALIDATE_IMAGE_BYTES = 8 * 1024 * 1024;
 
 /**
  * Build the virtual-staging router. `deps` is the full injection bag shared by
@@ -14,6 +27,7 @@ import { logger } from '../lib/logger.js';
  * @param {{
  *   genAI: { getGenerativeModel: (options: any) => any } | null,
  *   genLimiter: import('express').RequestHandler,
+ *   validateImageLimiter?: import('express').RequestHandler,
  *   stagingProcessUpload: import('express').RequestHandler,
  *   stagingEndpointKeyGuard: import('express').RequestHandler,
  *   setSensitiveHeaders: (res: import('express').Response) => void,
@@ -40,13 +54,17 @@ import { logger } from '../lib/logger.js';
  *   helpers, image-pipeline primitives, the QA reviewer, CSV logging, the virtual-staging
  *   multipart handler, and route-tuning constants. Passed whole to the sibling
  *   mask-edit / segment factories, which each type their own slice.
+ *   `validateImageLimiter` is a test seam only: omitted (or null) it falls back to
+ *   the shared `validateImageLimiter`, so the pre-check is never mounted with
+ *   genLimiter as its only ceiling.
  */
 export default function createStagingRouter(deps) {
   // Names used by the handlers still inlined below. The /api/mask-edit and
   // /api/segment handlers are built by the sibling factories (which each
   // destructure their own slice of the full `deps`).
-  const { genLimiter, stagingProcessUpload, setSensitiveHeaders, getAuthUserFromRequest, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard } = deps;
+  const { genLimiter, validateImageLimiter, stagingProcessUpload, setSensitiveHeaders, getAuthUserFromRequest, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard } = deps;
   const router = createAsyncRouter();
+  const preCheckLimiter = validateImageLimiter ?? defaultValidateImageLimiter;
 
 router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, res) => {
   try {
@@ -74,7 +92,7 @@ router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, 
   }
 });
 
-router.post('/api/validate-image', genLimiter, async (req, res) => {
+router.post('/api/validate-image', genLimiter, preCheckLimiter, async (req, res) => {
   try {
     // Signed-in only. Every accepted request spends a paid Gemini vision call, and
     // genLimiter is a per-IP ceiling — a cost cap, not an identity — so anonymously
@@ -87,9 +105,17 @@ router.post('/api/validate-image', genLimiter, async (req, res) => {
     if (!getAuthUserFromRequest(req)) {
       return sendError(res, 401, 'Please sign in to stage images', { code: 'AUTH_REQUIRED' });
     }
+    // Cheap prechecks before the paid call: reject a payload that cannot be a real
+    // upload rather than paying Gemini to tell us so. Both studios treat any non-2xx
+    // as "valid" (fail open), so neither refusal can block a legitimate upload.
     const { image } = req.body || {};
-    if (!image || typeof image !== 'string' || !image.includes(',')) {
+    if (!image || typeof image !== 'string' || !IMAGE_DATA_URL_RE.test(image)) {
       return sendError(res, 400, 'Image is required');
+    }
+    // base64 carries 3 bytes per 4 characters, so the encoded length bounds the
+    // decoded size without decoding it first.
+    if ((image.length - image.indexOf(',') - 1) * 0.75 > MAX_VALIDATE_IMAGE_BYTES) {
+      return sendError(res, 413, 'Image is too large to pre-check');
     }
     // No "is a reviewer configured?" short-circuit here on purpose: this used to gate
     // on `openai`, which stopped being the reviewer's client when the grader moved to

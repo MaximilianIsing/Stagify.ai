@@ -5,6 +5,7 @@ import { reportError } from '../lib/http/error-ref.js';
 import { escapeCsvField } from '../lib/http/csv-escape.js';
 import { buildBugReportRow, BUG_REPORT_HEADER, bugReportLogCeiling } from '../lib/http/bug-report-row.js';
 import { resolveDataDir } from '../lib/data/data-dir.js';
+import { emailPixelLimiter as defaultEmailPixelLimiter, EMAIL_PIXEL_RATE_LIMITED } from '../lib/http/rate-limiters.js';
 import path from 'path';
 import fs from 'fs';
 import { logger } from '../lib/logger.js';
@@ -21,6 +22,7 @@ import { logger } from '../lib/logger.js';
  *   LOGS_ACCESS_KEY: string,
  *   endpointKeyMatches: (received: string, expected: string) => boolean,
  *   emailLimiter: import('express').RequestHandler,
+ *   emailPixelLimiter?: import('express').RequestHandler,
  *   RESEND_FROM_EMAIL: string,
  *   DEBUG_MODE: boolean,
  *   EMAIL_DEBUG_MODE: boolean,
@@ -39,10 +41,13 @@ import { logger } from '../lib/logger.js';
  *   __dirname: string,
  * }} deps - Stores, injected email client, the email rate-limit + health-check
  *   middleware, debug/stat flags, and hosted-image / logging / counter helpers.
+ *   `emailPixelLimiter` is a test seam only: omitted (or null) it falls back to the
+ *   shared `emailPixelLimiter`, so the open-tracking pixel is never mounted unlimited.
  */
 export default function createPublicRouter(deps) {
-  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
+  const { authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, emailPixelLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname } = deps;
   const router = createAsyncRouter();
+  const pixelLimiter = emailPixelLimiter ?? defaultEmailPixelLimiter;
 
 router.get('/robots.txt', (req, res) => {
   res.type('text/plain');
@@ -123,9 +128,16 @@ router.get('/i/:id', (req, res) => {
   return res.sendFile(path.resolve(filePath));
 });
 
-router.get('/email/logo.png', (req, res) => {
+// Email open-tracking pixel. Unauthenticated by construction — the caller is a mail
+// client's image proxy, not a browser — and `?email=` is attacker-controlled, so a
+// first-ever open APPENDS a row to email_open_logs.csv and rewrites email_opened.json,
+// both on the volume auth-store.db lives on. `pixelLimiter` bounds those writes per IP
+// and lib/services/email.js bounds their total. Past the limit the image is still sent
+// — it is the full logo PNG, so a 429 would render as a broken image — and only the
+// write is dropped, which is why the flag is read here rather than the limiter 429ing.
+router.get('/email/logo.png', pixelLimiter, (req, res) => {
   const rawEmail = req.query.email;
-  if (typeof rawEmail === 'string') {
+  if (typeof rawEmail === 'string' && !res.locals[EMAIL_PIXEL_RATE_LIMITED]) {
     const email = decodeURIComponent(rawEmail.trim().toLowerCase());
     if (email.includes('@') && email.length <= 254 && isConfirmedEmailClientOpen(req)) {
       logEmailOpenToFile(email, req);
