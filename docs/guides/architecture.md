@@ -106,6 +106,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `password-hash.js` | The password hash **format**, its verifier, and the cost parameters (`PASSWORD_PARAMS`). Hashes are stored as `scrypt$N=…,r=…,p=…,keylen=…$<hex>`, so raising the cost is a one-line change: existing rows keep verifying under their own parameters and are re-hashed on the owner's next sign-in. Bare-hex rows written before this still verify. See [`security.md`](security.md#password-hashes-carry-their-cost). |
 | `session-tokens.js` | The `sessions` + `password_reset_tokens` tables, end to end. Owns their statements and their **indexes** (`user_id` and `exp` — the only lookups these token-keyed tables make without a token), prunes them, and **hashes every token** (`sha256$…`) so the raw bearer value never reaches disk — the single chokepoint the auth-store writes through. Also carries the idempotent one-time migration that hashes pre-existing rows in place, keeping signed-in users signed in. See [`security.md`](security.md#tokens-at-rest). |
 | `pro-grants.js` | Admin **comp grants** — one calendar month of Stagify+ with no Stripe subscription behind it. Owns the month arithmetic and the grant/revoke rules; its `applyGrantExpiry` is called from the auth-store's `rowToUser`, so a lapsed grant is downgraded on **read** rather than by a sweep job. |
+| `stripe-linking.js` | Which account a Stripe subscription belongs to, and the plan that follows: `activateProFromStripeCheckout` (checkout → account) and `applyStripeSubscriptionState` (status → plan). The checkout mapping treats `client_reference_id` and `customer_email` as **unequally trustworthy** — an unverified email may start a billing relationship, never replace one. See [`security.md`](security.md#stagify-checkout-an-unverified-email-may-start-a-subscription-never-take-one-over). |
 | `enterprise-store.js` | Enterprise domain activation + metered usage, kept in sync with Stripe. Because an active domain is a blanket `pro` grant to every address under it, both `activateDomain` (write) and `isActiveDomain` (read) refuse public mailbox providers. |
 | `public-email-domains.js` | The list of free consumer + disposable mail domains that can **not** be sold as an enterprise domain, and the normalizing matcher (`isPublicEmailDomain`). Used by the enterprise store and `/api/enterprise/create-checkout` — **not** by signup. Rationale: [`security.md`](security.md#enterprise-domains-are-a-blanket-grant). |
 | `stripe-events.js` | The Stripe **webhook idempotency ledger** (`stripe_events`). Stripe delivers at-least-once, so `routes/billing.js` claims each `event.id` before handling it and drops a redelivery. A failed handler *releases* its claim (so Stripe's retry still runs), and a claim abandoned by a killed process becomes re-claimable after 5 minutes. |
@@ -119,6 +120,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 |---|---|
 | `async-router.js` | `createAsyncRouter()` — the async-safe `express.Router()` used by every route file (see [Error handling](#error-handling)). |
 | `http-helpers.js` | Small pure helpers: `sendError()` (the standard JSON error shape), `setSensitiveHeaders()`, client-IP + user-identifier helpers. |
+| `error-ref.js` | `reportError(context, err)` — logs a caught error under a random 8-char reference and returns it, so a 5xx body carries `{ ref }` instead of `error.message`. See [A caught exception never goes in the body](#a-caught-exception-never-goes-in-the-body). |
 | `http-guards.js` | The `endpoint_key` guards (`protectLogs`, `stagingEndpointKeyGuard`) and the `/health` handler. |
 | `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN` / `RL_CHECKOUT`). |
 | `uploads.js` | The multer upload configs (staging / chat / hosted-image). |
@@ -162,12 +164,12 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 
 | Module | Responsibility |
 |---|---|
-| `chat-upload-prep.js` | Pre-routing prep for `/api/chat-upload`: multipart upload → GPT-ready messages + routing completion. |
-| `chat-request-prep.js` | Pre-routing prep for `/api/chat` (the JSON mirror of `chat-upload-prep`): dedup diagnostics, history-image detection, message-tag application, OpenAI message assembly, payload logging. |
+| `chat-upload-prep.js` | Pre-routing prep for `/api/chat-upload`: multipart upload → GPT-ready messages + routing completion (`runUploadRouting`, which also owns the unsupported-image retry). |
+| `chat-request-prep.js` | Pre-routing prep for `/api/chat` (the JSON mirror of `chat-upload-prep`): dedup diagnostics, history-image detection, message-tag application, OpenAI message assembly, payload logging, and the routing call (`runChatRouting` — the counterpart to `runUploadRouting`, minus the image-format retry, which only makes sense where a file was uploaded). It returns `{ routingError }` rather than throwing, because `/api/chat` answers a model outage with its own 500 body carrying a user-facing `response` string. |
 | `welcome-message-handler.js` | The `GET /api/welcome-message` handler (generic vs. AI-personalized greeting). |
 | `chat-upload-error.js` | Pure helper building the "unsupported file type" body for the `/api/chat-upload` catch block. |
 | `chat-pipeline.js` | **Pure wiring**: composes the five dispatch sub-modules below into the 7-method interface both chat handlers consume (`applyMemoryActions` / `runGenerateRequests` / `resolveRecalledImage` / `resolveRequestedImage` / `runCadRequests` / `runStagingRequests` / `buildDesignerResponse`). |
-| `chat-memory.js` | Applies the model's memory store/forget decisions. |
+| `chat-memory.js` | Applies the model's memory store/forget decisions. **The routing model decides**: `memories: { stores, forgets }` is a required field of `DESIGNER_ROUTING_SCHEMA`, so remembering costs no extra model call. `lib/data/memory.js` is storage only — it once held a second OpenAI call for this and never used it. Change memory *behaviour* in the schema + system instruction, not in the store. |
 | `chat-image-retrieval.js` | Retrieves an existing history image by index (recall for display; request for optional GPT analysis). |
 | `chat-image-dispatch.js` | Produces new images: text-to-image generation and CAD blueprint → 3D render. |
 | `chat-staging.js` | Runs the model's staging request(s), with the chat-vs-upload divergence injected via callbacks. |
@@ -202,9 +204,37 @@ request hangs. Two pieces close that gap:
   Express's pipeline into a clean JSON `500`. Without it, an unhandled error falls through
   to Express's built-in handler, which renders the full stack trace to the client.
 
-Within a handler, emit error responses through **`sendError(res, status, msg, { code, details })`**
+Within a handler, emit error responses through **`sendError(res, status, msg, { code, details, ref })`**
 ([`lib/http/http-helpers.js`](../../lib/http/http-helpers.js)) so every error body has the same
-shape (`{ error }`, optionally `code` / `details`).
+shape (`{ error }`, optionally `code` / `details` / `ref`).
+
+### A caught exception never goes in the body
+
+A 5xx says *that* something broke, never *what*. `details` is for fixed strings written in
+the source (an operator hint, a validation reason); it is **not** a channel for
+`error.message`. That was the house style at ~19 sites, and it handed the caller whatever
+`sharp`, the Gemini/OpenAI SDKs, `better-sqlite3`, `fs` or Stripe had put there — absolute
+server paths, table names, model and quota state, upstream prose. The AI Designer's SSE
+error handler did not even read the field; it renders a fixed localized apology.
+
+Instead, log the error under a reference and return only the reference:
+
+```js
+} catch (error) {
+  sendError(res, 500, 'Failed to retrieve prompt logs', { ref: reportError('admin.promptlogs', error) });
+}
+```
+
+`reportError` ([`lib/http/error-ref.js`](../../lib/http/error-ref.js)) logs the error whole —
+stack included — beside a random 8-char reference and returns it, so the client gets
+`{ error, ref }`. It **replaces** the site's own `logger.error` call rather than joining it.
+A user quoting `ref 3f9a1c02` in a bug report is strictly more than `details` ever gave
+support: a bare message carried no request context and could not be located in the logs.
+
+`test/http/error-leak.test.js` scans every response-building call in `routes/` and `lib/`
+and fails the build on `.message` / `.stack` inside one, so the old form cannot come back
+in the next catch block. Multer's 400s are the documented exception (its fixed message
+table describes the caller's own upload) and are allowlisted there by exact snippet.
 
 ## Routers (`routes/`)
 

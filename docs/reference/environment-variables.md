@@ -83,10 +83,15 @@ DEBUG=false
 # (DEBUG on → debug, else info). Use LOG_LEVEL=warn to quiet a chatty deploy, or
 # LOG_LEVEL=silent to mute everything (e.g. in tests). Default (unset): info floor.
 # LOG_LEVEL=
-# Redirects ALL outbound email to the developer debug address instead of real
-# recipients — silently hides mail from real users, so keep this false in production.
+# Redirects ALL outbound email to DEBUG_EMAIL instead of real recipients —
+# silently hides mail from real users, so keep this false in production.
 # true/false. File fallback: emaildebug.txt
 EMAIL_DEBUG=false
+# The address EMAIL_DEBUG redirects to. Required whenever EMAIL_DEBUG is on: the
+# server refuses to boot with the flag enabled and no address rather than quietly
+# fall back to mailing the real recipients. Ignored when EMAIL_DEBUG is off, so it
+# stays commented out here. File fallback: debugemail.txt
+# DEBUG_EMAIL=you@example.com
 # Replaces the real home-page hero stats with the two values below. true/false.
 STATS_DEBUG=false
 # Only take effect when STATS_DEBUG=true (example values kept commented so they stay inert).
@@ -121,6 +126,10 @@ HIDE_STAGING_BANNER=false
 # ENTERPRISE_METER_EVENT_NAME=user_generation
 # "From" address for outbound Resend email. Default team@stagify.ai.
 # RESEND_FROM_EMAIL=team@stagify.ai
+# Size ceiling (bytes) for data/bug_reports.csv. /api/bug-report is unauthenticated
+# and appends to the same volume as the SQLite DB, so past this size it answers 503
+# instead of growing the file. Default 33554432 (32 MB); rotate the CSV to clear it.
+# BUG_REPORT_LOG_MAX_BYTES=33554432
 
 # --- Platform (set automatically — do not set these yourself) ---
 # RENDER is set by Render; the app reads it to use the /data persistent disk.

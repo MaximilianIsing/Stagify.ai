@@ -346,6 +346,51 @@ test('cad routing with streamResponse renders the blueprint and streams cadImage
   assert.equal(app.calls.processStaging.calls, 0);
 });
 
+// 8b ─ CAD base-image precedence: an image attached to the CURRENT message wins over
+//      an earlier thumbnail selection. resolveCadImageIndex returns the AI's own
+//      imageIndex (0 = most recent) instead of baseImageIndex when the current turn
+//      carries an image — otherwise attaching a new floorplan would silently render
+//      the one the user had selected before.
+//
+//      This also pins the flag routes/chat.js feeds runCadRequests. The handler used
+//      to compute it twice — once for staging, once again here with an identical
+//      predicate over the same array — and now passes the single resolved value. If
+//      the two ever diverge (or someone reinstates the second scan wrongly), this
+//      test fails: with the flag false, baseImageIndex 1 would win and the OLD
+//      blueprint would be rendered.
+test('a blueprint in the current message overrides an earlier baseImageIndex selection', async () => {
+  const OLD_BLUEPRINT = 'data:image/png;base64,' + Buffer.from('old-blueprint').toString('base64');
+  const NEW_BLUEPRINT = 'data:image/png;base64,' + Buffer.from('new-blueprint').toString('base64');
+
+  app = await mountChat({
+    routing: {
+      response: 'Here is your 3D render.',
+      cad: [{ shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: null, additionalPrompt: '' }],
+    },
+  });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [
+      { role: 'user', content: [{ type: 'image_url', image_url: { url: OLD_BLUEPRINT } }] },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'render this one instead' },
+          { type: 'image_url', image_url: { url: NEW_BLUEPRINT } },
+        ],
+      },
+    ],
+    // The user's earlier thumbnail pick — index 1 is the OLD blueprint
+    // (collectImagesFromHistory is most-recent-first).
+    baseImageIndex: 1,
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(app.calls.cad.length, 1);
+  // blueprintTo3D(imageBuffer, mimeType, furnitureImages, additionalPrompt)
+  assert.equal(app.calls.cad[0][0].toString(), 'new-blueprint');
+});
+
 // 9 ─ Multi-request staging: the router returns an ARRAY of two shouldStage
 //     requests. buildDesignerResponse switches to the plural shape (stagedImages /
 //     stagingParams arrays) and the pipeline runs processStaging once per request.

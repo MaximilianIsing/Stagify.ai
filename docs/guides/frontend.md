@@ -293,6 +293,91 @@ implying otherwise. Pure logic covered by
   `app.js` into `helpers.js` precisely so they could be tested.
 - **Cross-island state?** Reach for (or create) a shared store island, not globals.
 
+### Dialogs built in JS need their ARIA written by hand
+
+A dialog assembled in JavaScript gets none of the review attention the markup ones get:
+nobody reading the HTML sees it, and there is no jsdom in the test setup to render it.
+The AI Designer mask editor (`scripts/ai-designer/mask-editor.js`, built lazily on first
+open) shipped that way — no `role="dialog"`, no `aria-modal`, no `aria-labelledby`, and a
+close button whose only content was a `×`, so screen readers announced it as "times".
+
+A dialog here owes four things:
+
+1. `role="dialog"` + `aria-modal="true"` + `aria-labelledby` pointing at its heading's
+   `id`. (Toggling visibility with `display:none` already removes it from the
+   accessibility tree, so no `aria-hidden` juggling is needed on top.)
+2. An **`aria-label` on any glyph-only button**, with the glyph itself wrapped in
+   `aria-hidden="true"` so it isn't appended to the name. Use the `common.close` key —
+   it is already translated in all 11 packs. A JS-built dialog has no `data-lang-attr`
+   pass over it, so it has to look the key up itself (see `mask-editor-i18n.js`).
+3. **Focus moved into the dialog on open and restored to the opener on close.** Without
+   it, focus stays on the control behind the overlay: the dialog is never announced, and
+   Escape/Tab act on the page underneath. A Tab trap is not a substitute — it only reacts
+   once Tab is pressed. Guard the restore on `opener.isConnected`; committing an edit can
+   replace the element that opened the dialog.
+4. A test. `test/frontend/dialog-a11y.test.js` reads the source of every studio dialog
+   (markup and JS alike) and fails the deploy if any of this goes missing;
+   `e2e/ai-designer-a11y.spec.js` checks the live elements and the focus round-trips,
+   which source-reading cannot.
+
+All four studio dialogs now do this: both mask editors, `#bug-report-popup`, and
+`#image-modal`. The lightbox's close control had to become a `<button>` first — it was
+a `<span>`, so it was not keyboard-reachable at all.
+
+> **Adjacent gap:** the lightbox's *trigger* is a bare `<img>` with a click handler, so
+> the dialog still cannot be opened from the keyboard. Fixing that means making the
+> thumbnail a real control, which is a layout change rather than an attribute, so it is
+> deliberately not bundled with the dialog fix.
+
+### Classic scripts run before deferred modules
+
+`ai-designer.html` loads `scripts/ai-designer-model-selector.js` as a **classic**
+`<script>`, so it executes during parsing — *before* the deferred
+`<script type="module">` entry that defines the functions it wants to call. Anything the
+module exposes on `window` therefore does not exist yet when the classic file runs.
+
+The failure mode is quiet and specific: **passing a bare identifier as a callback
+evaluates it immediately.**
+
+```js
+closeBtn.addEventListener('click', closeImageModal);   // ReferenceError, right here
+closeBtn.addEventListener('click', function () {       // fine — resolved when clicked
+  if (typeof window.closeImageModal === 'function') window.closeImageModal();
+});
+```
+
+The first form threw before the listener was ever attached, so the lightbox's "×" did
+nothing for as long as it existed, while Escape and click-outside kept working (they
+resolve the name inside their own handler bodies). Because the file is classic — no
+`import`/`export` — it is **not linted**, so `no-undef` never flagged it. Two more of
+these are live in the same file today: `setTimeout(updateMaskEditorTranslations, …)` at
+two call sites, and the bug-report submit handler's references to `conversationHistory`,
+`lang` and `showToast`.
+
+### Nothing blocks the parser in `<head>` without a reason
+
+With no bundler, every page hand-lists its `<script>` tags, so a copy-pasted tag
+inherits whatever attributes the page it came from had — and a mistake propagates by
+duplication rather than showing up in one config file. A synchronous `<script src>` in
+`<head>` stops HTML parsing until it is fetched and executed, which also delays
+discovery of the stylesheet links below it.
+
+Exactly three scripts are allowed to do that, because they gate or redirect before
+anything paints: `ai-designer-gate.js`, `masking-studio-gate.js`, `faq-redirect.js`.
+Everything else in a `<head>` carries `defer`, `async`, or is a module.
+
+The Google Ads tag (`scripts/gtag.js`) was the exception that proved the rule: it sat
+synchronous and **first** in `<head>` on all 19 public pages, ahead of every stylesheet
+link, for a file that only queues two `dataLayer` entries and appends an already-async
+loader. It is `defer` now — and `defer` rather than `async` on purpose, because the tag
+is first in the document and defer preserves order, so `window.gtag` is guaranteed to
+exist before any other deferred or module script runs. That is the contract a future
+conversion snippet will depend on.
+
+`test/frontend/head-scripts.test.js` walks every page under `public/` and fails the
+deploy on an unexplained blocking tag; adding one means adding it to that file's
+allowlist with its reason.
+
 ## Styles
 
 CSS mirrors the JS split: one shared base plus per-page and per-feature files, linked
@@ -324,6 +409,55 @@ A given page therefore links `styles.css` + (usually) `auth.css` + its own `<pag
 + any feature files it needs. Overlap between base and page files is deliberate and tiny
 (a page-level `html`/`body`/scrollbar override for a full-bleed studio, a repeated
 `.hidden` utility) — not copied rule sets.
+
+### Design tokens — and the one rule about where they work
+
+The palette lives in `styles.css`'s `:root`. Use `var(--token)` for colour; do not write
+a hex literal that already has a token.
+
+**A token only works on a page that loads the sheet defining it.** This is the whole
+reason the rule needs stating: `color: var(--brand)` where `--brand` is undefined does
+not fall back — the **entire declaration is dropped**, silently, on that page only. Four
+sheets are served to pages that do *not* load `styles.css` and therefore keep literals on
+purpose:
+
+| Sheet | Served to |
+|---|---|
+| `legal.css` | `privacy.html`, `terms.html` |
+| `enterprise-msa.css` | `legal/enterprise-msa.html` |
+| `getpro.css` | `getpro.html` |
+| `blog.css` | the blog (it carries its own `:root`) |
+
+`demo-player.css` is excluded for a different reason: it is a **byte-identical copy of
+`to-build/demos/demo-player.css`**, so edits belong in the master and the next export
+overwrites the served file.
+
+A page file may still define local custom properties where its palette genuinely differs
+(`admin.css` does, on `.page-admin`). What it should not do is re-spell a shared value:
+`--adm-accent: var(--brand)` rather than `--adm-accent: #2563eb`.
+
+**The palette is descriptive.** It was rewritten from a survey of what the sheets already
+painted with, not chosen top-down. A review had flagged that the big sheets "ignore the
+tokens" — the real cause was that the tokens described a palette the app did not use:
+`#2563eb` appeared **183 times across 16 files with no token at all**, while
+`--primary` (`#1e40af`) appeared 22. `admin.css` had independently named the same two
+blues privately, which is why it alone looked tokenized. Adding `--brand*`, `--slate*`,
+`--muted-light` and `--danger` is what made the substitution possible; `--primary` was
+deliberately **not** redefined to `#2563eb`, since 22 existing `var(--primary)` uses
+would have changed colour.
+
+[`test/frontend/css-tokens.test.js`](../../test/frontend/css-tokens.test.js) enforces all
+of it: no hard-coded colour that has a token (in sheets where the palette is in scope),
+every `var()` resolving on every page that serves it, and the `demo-player.css` copy
+staying byte-identical. Custom properties set from JS (`el.style.setProperty('--ar', …)`)
+and `var(--x, fallback)` uses are exempt — neither can cause the silent drop.
+
+**Deliberately not enforced:** duplicate top-level selectors and `!important`. Both were
+in the same review finding, and both are usually legitimate here — `a,b { shared } b {
+specialize }` reads as a "duplicate" to any scanner, and `styles.css`'s machine-merged
+shape means one element's rules are grouped by value rather than by element. A test would
+report the cascade working as designed. The cost is readability, not correctness, and
+un-merging a 3,200-line sheet with no visual-regression coverage is not worth it.
 
 **Non-render-blocking (lazy) CSS.** The heavy home page (`index.html`) splits its
 stylesheets by criticality. `styles.css` / `carousel.css` / `home.css` load normally
@@ -412,7 +546,11 @@ is what makes the omission easy to miss on a read-through.
 
 If you add a fourth way to complete sign-in, route it through `completeSignIn()` in
 `auth-modal.js` rather than repeating the sequence; it captures both flags in the right
-order. Covered by `test/frontend/profile-menu/auth-modal.test.js`.
+order. Covered by `test/frontend/profile-menu/auth-modal.test.js` at the unit level and by
+`e2e/stage-signin-entry.spec.js` in a real browser — the latter drives the whole path the
+visitor takes (upload button → auth modal → sign in → stage dialog → a staged request),
+which is what the unit shim cannot: the flag has to survive two modules and reach the real
+`#stage-modal` on the page.
 
 ## Decision: vanilla ES-module islands, not a component framework
 

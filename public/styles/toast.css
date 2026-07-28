@@ -21,8 +21,8 @@
 
 .toast {
   pointer-events: auto;
-  background: #1e3a8a;
-  color: #fff;
+  background: var(--brand-deep);
+  color: var(--bg-elevated);
   padding: 11px 16px;
   border-radius: 10px;
   font-size: 14px;
@@ -35,7 +35,7 @@
 }
 
 .toast--show { opacity: 1; transform: translateY(0); }
-.toast--error { background: #b91c1c; box-shadow: 0 8px 24px rgba(185, 28, 28, 0.28); }
+.toast--error { background: var(--danger); box-shadow: 0 8px 24px rgba(185, 28, 28, 0.28); }
 .toast--success { background: #047857; box-shadow: 0 8px 24px rgba(4, 120, 87, 0.28); }
 
 @media (prefers-reduced-motion: reduce) {

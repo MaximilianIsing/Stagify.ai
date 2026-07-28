@@ -83,6 +83,13 @@ which also holds the three deliberate exemptions (the two redirect stubs below, 
 > `https://stagify.ai/plus-welcome.html` URL is registered as the Google Ads conversion
 > page. Renaming or removing `plus-welcome.html` therefore silently breaks the
 > post-checkout hand-off and ad conversion tracking (guarded by `test/frontend/plus-welcome.test.js`).
+>
+> Both parameters are buyer-editable, and `customer_email` is unverified by Stripe, so
+> the webhook treats them differently: an email match may **start** a Stagify+ billing
+> relationship but never replace one that already exists (a live subscription or an admin
+> comp grant). The button stays clickable while signed out, so a checkout with no
+> `client_reference_id` is an ordinary purchase and still activates. Rationale:
+> [`security.md`](../guides/security.md#stagify-checkout-an-unverified-email-may-start-a-subscription-never-take-one-over).
 
 ---
 
@@ -207,7 +214,7 @@ Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagi
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/bug-report` | **Body:** `description` (required), and optional `steps`, `email`, `userId`, `userAgent`, `url`, `timestamp`, `conversationHistory`. Appends to `bug_reports.csv`. |
+| `POST` | `/api/bug-report` | **Body:** `description` (required), and optional `steps`, `email`, `userId`, `userAgent`, `url`, `timestamp`, `conversationHistory`. Appends to `bug_reports.csv`. Unauthenticated and writing to the volume the SQLite DB lives on, so every field is clamped (`lib/http/bug-report-row.js`), only a **count** of any images in `conversationHistory` is stored, the body keeps the 1 MB limit, and the route answers `503` once the CSV reaches `BUG_REPORT_LOG_MAX_BYTES`. |
 | `POST` | `/api/mask-edit` | **Auth:** **`requireProAccount`**. **Body (JSON):** `image` and `mask` as data URLs, `prompt`, optional `model`, `referenceImage`, `seed`, `batch`. Uses Gemini for the region edit; returns `{ success, editedImage }` (data URL) or `4xx/500` errors. |
 | `POST` | `/api/segment` | **Auth:** **`requireProAccount`**. **Body (JSON):** `image` (data URL) + optional `query` (target a specific object; omitted → detect all movable objects in the room). Runs Gemini object detection for the Masking Studio "magic wand" and returns `{ success, items: [{ box_2d, label }] }` (boxes normalized 0–1000). `400` if no image, `500` if AI not configured. |
 
@@ -233,11 +240,12 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take
 | `GET` | `/email-open-logs` | Download `email_open_logs.csv` (email open-tracking rows; `404` if none yet). |
 | `GET` | `/enterprise-domains` | Download `enterprise-domains.json` (active enterprise domains + Stripe ids); `{ domains: [] }` if none yet. |
 | `POST` | `/api/admin/grant-plus` | **Comp Stagify+.** Body `{ userId }` or `{ email }`. Gives a **currently-free** account one calendar month of `plan: 'pro'` with **no Stripe subscription** — no card, no invoice, no webhook (`lib/data/pro-grants.js`). Refused (`400`) if the account already has Stagify+ or has a Stripe subscription. Returns `{ ok, userId, email, expiresAt }`. Expiry is enforced on **read**, so the account reverts to free by itself. |
+| `POST` | `/api/admin/delete-user` | **GDPR erasure.** Body `{ userId }` or `{ email }`, plus optional `force: true`. Erases the account row and **everything keyed to it** — sessions, password-reset tokens, memories, and a pending registration for the same address — in one transaction (this DB has no foreign keys, so nothing cascades on its own), then redacts that person's identifying cells in the CSV logs. An address with only an unverified signup can be erased on its own. **Refused with `400 ACTIVE_SUBSCRIPTION`** if a Stripe subscription is still attached — cancel it in Stripe first, or pass `force` once that is done out of band. `404 NOT_FOUND` for an unknown account, `400` with no identifier. Returns `{ ok, userId, email, rows, logs }` — per-table row counts and a per-file redaction report. Irreversible; see [`data-stores.md`](data-stores.md#erasing-one-persons-data). |
 | `POST` | `/api/admin/revoke-plus` | Body `{ userId }`. Ends a running comp grant immediately. Refused (`400`) if there is no active grant, or if the account is on a Stripe subscription (cancel that in Stripe). |
 | `GET` | `/api/admin/email-previews` | **Emails tab gallery.** Returns `{ emails: [{ id, label, category, description, subject, html, text }] }` — every user-facing email, built from the same renderers the senders use ([`lib/services/email-catalog.js`](../../lib/services/email-catalog.js)). Read-only; nothing is sent. |
 | `POST` | `/api/admin/email-test-send` | Body `{ id, email }`. Sends a live `[Test] <subject>` copy of catalog email `id` to `email` (the exact address given — no `EMAIL_DEBUG_MODE` redirect). `400` on a missing/invalid id or email; `503` if Resend is unconfigured. The recipient address is never logged. |
 | `GET` | `/memories` | Download AI Designer `memories` JSON. |
-| `GET` | `/resetmemories` | **Clears** the memories file (all users). Returns JSON success. |
+| `POST` | `/resetmemories` | **Clears** every user's AI Designer memories. Returns JSON success. **`POST`, not `GET`** — it mutates, so a retried or replayed request must not be able to wipe again; `GET` answers `405` with `Allow: POST` (behind the same key, so an unkeyed caller still just gets `403`). Matches `POST /api/status/reset`. |
 | `POST` | `/api/status/reset` | **Wipes** all recorded uptime history/incidents and restarts monitoring from now, via `uptimeMonitor.reset()` (rewrites the `uptime_state` row in `auth-store.db`). Backs the admin "Reset server status data" button and changes the public `/status` page immediately. Returns `{ success: true, message, snapshot }`. |
 
 `POST` `/api/send-email` uses the **same** `LOGS_ACCESS_KEY` (see above), not only for logs.
@@ -262,12 +270,17 @@ The admin dashboard (`admin.html`) collects the `LOGS_ACCESS_KEY` client-side an
 ## Notes
 
 - **CORS** is enabled globally.
-- **JSON body limit** is **1 MB** app-wide; only the five routes that carry base64 images
-  (`/api/chat`, `/api/mask-edit`, `/api/segment`, `/api/validate-image`, `/api/bug-report`)
+- **JSON body limit** is **1 MB** app-wide; only the four routes that carry base64 images
+  (`/api/chat`, `/api/mask-edit`, `/api/segment`, `/api/validate-image`)
   get **25 MB**. Oversized bodies get `400` (bad JSON) / `413` (too large) as JSON.
 - **Error shape** is uniform: failures return `{ error }` (plus optional machine-readable
-  `code` and diagnostic `details`) via `sendError()`. An unhandled error still returns a
-  clean JSON `500` — never a stack-trace page (catch-all in `server.js`).
+  `code`, a fixed-string `details` hint, and `ref`) via `sendError()`. An unhandled error
+  still returns a clean JSON `500` — never a stack-trace page (catch-all in `server.js`).
+- **`ref` on a 5xx** is an 8-char hex reference to the logged failure
+  (`lib/http/error-ref.js`), e.g. `{ "error": "Image processing failed", "ref": "3f9a1c02" }`.
+  A caught exception's message is **never** returned — quote the `ref` to support and the
+  operator finds the exact log line. `details` carries only fixed strings written in the
+  source, never exception text; a build-gating scan enforces that.
 - **Trust proxy** can be toggled with `TRUST_PROXY` (for real client IPs behind Render/nginx).
 
 If you add a route, append it to this file so operators can find auth and query requirements quickly.

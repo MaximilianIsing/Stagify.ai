@@ -210,11 +210,14 @@ test('mask-edit: a present-but-undecodable referenceImage is caught and the edit
 
 // ── error mapping ─────────────────────────────────────────────────────────────
 
-test('mask-edit: maps a thrown model-seam error to 500 with the error message as details', async () => {
+test('mask-edit: maps a thrown model-seam error to 500 with a reference, not the message', async () => {
+  // The thrown text stands in for what really lands here — sharp's decode errors,
+  // the Gemini SDK's quota prose, an fs path. The caller gets a reference to quote
+  // at support; only the log gets the message.
   app = await mountStaging({
     requireProAccount: proUser,
     genAI: {},
-    generateWithQualityRetry: async () => { throw new Error('boom'); },
+    generateWithQualityRetry: async () => { throw new Error('boom: /srv/app/secret/path'); },
   });
   const res = await postJson(app.baseUrl, '/api/mask-edit', {
     image: IMAGE,
@@ -224,7 +227,9 @@ test('mask-edit: maps a thrown model-seam error to 500 with the error message as
   assert.equal(res.status, 500);
   const body = await res.json();
   assert.equal(body.error, 'Failed to process masked edit');
-  assert.equal(body.details, 'boom');
+  assert.match(body.ref, /^[0-9a-f]{8}$/, 'a reference the operator can grep for');
+  assert.equal(body.details, undefined, 'no diagnostic channel is populated at all');
+  assert.doesNotMatch(JSON.stringify(body), /boom|secret/, 'the exception text never leaves the server');
 });
 
 test('mask-edit: an undecodable image passes the presence check but fails inside sharp → 500 (not 400)', async () => {

@@ -7,8 +7,8 @@
       }
       .sp-page {
         --sp-navy: #0f1f4b;
-        --sp-blue: #2563eb;
-        --sp-blue-dark: #1d4ed8;
+        --sp-blue: var(--brand);
+        --sp-blue-dark: var(--brand-strong);
         --sp-ink: #0f172a;
         --sp-muted: #51607a;
       }
@@ -60,7 +60,7 @@
             transparent 64%,
             transparent 100%
           ),
-          linear-gradient(100deg, #3b82f6, #1e3a8a 55%, #2563eb);
+          linear-gradient(100deg, var(--primary-light), var(--brand-deep) 55%, var(--brand));
         background-size: 280% 100%, 100% 100%;
         background-position: 100% center, center;
         -webkit-background-clip: text;
@@ -101,7 +101,7 @@
         margin: 0 0 0.55rem;
         font-size: 0.82rem;
         line-height: 1.5;
-        color: #475569;
+        color: var(--slate-deep);
         padding: 0.62rem 0.9rem;
         border-radius: 13px;
         background: rgba(255, 255, 255, 0.5);
@@ -203,7 +203,7 @@
         .bh-stage .sp-gradient-checkout-btn,
         .sp-hero h1 .sp-grad { animation: none; }
         .sp-hero h1 .sp-grad {
-          background-image: linear-gradient(100deg, #3b82f6, #1e3a8a 55%, #2563eb);
+          background-image: linear-gradient(100deg, var(--primary-light), var(--brand-deep) 55%, var(--brand));
           background-size: auto;
         }
       }
@@ -234,22 +234,22 @@
         display: block;
         text-align: center;
         text-decoration: none;
-        color: #fff !important;
+        color: var(--bg-elevated) !important;
         font-size: 17px;
         font-weight: 700;
         padding: 13px 18px;
         border-radius: 20px;
         position: relative;
         overflow: hidden;
-        background-color: #2563eb;
+        background-color: var(--brand);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         transition: background-color 0.18s ease, box-shadow 0.25s ease, transform 0.15s ease;
         min-width: 230px;
       }
       .sp-gradient-checkout-btn:hover {
-        color: #fff !important;
+        color: var(--bg-elevated) !important;
         text-decoration: none;
-        background-color: #1d4ed8;
+        background-color: var(--brand-strong);
       }
       .sp-gradient-checkout-btn::before {
         content: '';
@@ -274,12 +274,12 @@
       @media (min-width: 769px) {
         .sp-gradient-checkout-btn {
           background:
-            radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, #1d4ed8 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, #2563eb 0%, transparent 50%),
-            radial-gradient(circle at 0% 100%, #1e40af 0%, transparent 50%),
-            radial-gradient(circle at 100% 0%, #60a5fa 0%, transparent 50%),
-            #1e3a8a;
+            radial-gradient(circle at 20% 50%, var(--primary-light) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, var(--brand-strong) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, var(--brand) 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, var(--primary) 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%, var(--brand-soft) 0%, transparent 50%),
+            var(--brand-deep);
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
       }
@@ -331,12 +331,12 @@
         .sp-gradient-checkout-btn--subscribed,
         .sp-gradient-checkout-btn--subscribed:hover {
           background:
-            radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, #1d4ed8 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, #2563eb 0%, transparent 50%),
-            radial-gradient(circle at 0% 100%, #1e40af 0%, transparent 50%),
-            radial-gradient(circle at 100% 0%, #60a5fa 0%, transparent 50%),
-            #1e3a8a !important;
+            radial-gradient(circle at 20% 50%, var(--primary-light) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, var(--brand-strong) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, var(--brand) 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, var(--primary) 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%, var(--brand-soft) 0%, transparent 50%),
+            var(--brand-deep) !important;
         }
       }
 
@@ -377,7 +377,7 @@
         background: none;
         font: inherit;
         font-size: 0.78rem;
-        color: #64748b;
+        color: var(--slate);
         text-decoration: underline;
         text-underline-offset: 2px;
         cursor: pointer;
@@ -422,8 +422,8 @@
         border-radius: 12px;
         display: grid;
         place-items: center;
-        background: linear-gradient(135deg, #3b82f6, #1e3a8a);
-        color: #fff;
+        background: linear-gradient(135deg, var(--primary-light), var(--brand-deep));
+        color: var(--bg-elevated);
         margin-bottom: 0.8rem;
         box-shadow: 0 6px 16px -6px rgba(37, 99, 235, 0.6);
       }
@@ -532,7 +532,7 @@
         text-align: center;
         border-radius: 16px;
         font-size: 0.95rem;
-        color: #475569;
+        color: var(--slate-deep);
         line-height: 1.6;
       }
       .sp-enterprise-row a {
@@ -569,7 +569,7 @@
       .sp-footnote {
         margin: 0;
         font-size: 0.83rem;
-        color: #64748b;
+        color: var(--slate);
       }
       .sp-footnote a {
         color: var(--sp-blue);

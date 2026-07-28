@@ -1,7 +1,9 @@
 // public routes, extracted verbatim from server.js.
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
+import { reportError } from '../lib/http/error-ref.js';
 import { escapeCsvField } from '../lib/http/csv-escape.js';
+import { buildBugReportRow, BUG_REPORT_HEADER, bugReportLogCeiling } from '../lib/http/bug-report-row.js';
 import { resolveDataDir } from '../lib/data/data-dir.js';
 import path from 'path';
 import fs from 'fs';
@@ -236,8 +238,11 @@ router.post('/api/send-email', emailLimiter, async (req, res) => {
     if (result.error) {
       const errMsg =
         typeof result.error?.message === 'string' ? result.error.message : JSON.stringify(result.error);
-      logger.error('Resend send-email failed:', errMsg);
-      return sendError(res, 502, 'Failed to send email', { details: errMsg });
+      // The upstream text is an operator diagnostic, not a caller-facing one: it
+      // carries Resend's own prose about our account, domains and suppression list.
+      return sendError(res, 502, 'Failed to send email', {
+        ref: reportError('public.send-email.upstream', new Error(errMsg)),
+      });
     }
 
     if (DEBUG_MODE) {
@@ -252,8 +257,7 @@ router.post('/api/send-email', emailLimiter, async (req, res) => {
       id: result.data?.id,
     });
   } catch (error) {
-    logger.error('Error sending email:', error);
-    sendError(res, 500, 'Failed to send email', { details: error.message || 'An error occurred while sending the email' });
+    sendError(res, 500, 'Failed to send email', { ref: reportError('public.send-email', error) });
   }
 });
 
@@ -289,74 +293,48 @@ router.get('/api/contact-count', (req, res) => {
 
 router.post('/api/bug-report', emailLimiter, async (req, res) => {
   try {
-    const { description, steps, email, userId, userAgent, url, timestamp, conversationHistory } = req.body;
-    
-    if (!description || !description.trim()) {
+    const { description, userId } = req.body || {};
+
+    if (typeof description !== 'string' || !description.trim()) {
       return sendError(res, 400, 'Bug description is required');
     }
-    
-    const reportTimestamp = timestamp || new Date().toISOString();
+
     const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
-    
-    // Format conversation history as a readable string (single line for CSV)
-    let conversationLog = '';
-    if (conversationHistory && Array.isArray(conversationHistory) && conversationHistory.length > 0) {
-      const formattedMessages = conversationHistory.map((msg, index) => {
-        let content;
-        if (Array.isArray(msg.content)) {
-          // Handle array content (may contain images)
-          const textParts = msg.content
-            .filter(item => item.type === 'text')
-            .map(item => item.text);
-          const imageCount = msg.content.filter(item => item.type === 'image_url').length;
-          content = textParts.join(' ');
-          if (imageCount > 0) {
-            content += ` [${imageCount} image(s)]`;
-          }
-        } else {
-          content = String(msg.content || '');
-        }
-        // Replace any newlines in content with space to keep it on one line
-        content = content.replace(/\n/g, ' ').replace(/\r/g, ' ');
-        return `Message ${index + 1} [${msg.role.toUpperCase()}]: ${content}`;
-      });
-      // Join with separator instead of newline to keep on one CSV line
-      conversationLog = formattedMessages.join(' | ');
-    } else {
-      conversationLog = 'No conversation history';
-    }
-    
-    // Create CSV row
-    const csvRow = [
-      escapeCsvField(reportTimestamp),
-      escapeCsvField(description),
-      escapeCsvField(steps || ''),
-      escapeCsvField(email || ''),
-      escapeCsvField(userId || 'unknown'),
-      escapeCsvField(userAgent || 'unknown'),
-      escapeCsvField(url || 'unknown'),
-      escapeCsvField(ipAddress),
-      escapeCsvField(conversationLog)
-    ].join(',') + '\n';
-    
+
+    // Every field is clamped by the row builder: this endpoint is unauthenticated and
+    // writes to the same volume as auth-store.db, so an unbounded row is a disk-fill
+    // vector that takes SQLite down with it. See lib/http/bug-report-row.js.
+    const csvRow = buildBugReportRow(req.body, ipAddress);
+
     const logFile = path.join(resolveDataDir(__dirname), 'bug_reports.csv');
-    
-    // Check if file exists to add header if it's a new file
-    const fileExists = fs.existsSync(logFile);
-    
-    if (!fileExists) {
-      // Create new file with header and first row
-      const header = 'timestamp,description,stepsToReproduce,email,userId,userAgent,url,ipAddress,conversationHistory\n';
-      fs.writeFileSync(logFile, header + csvRow);
-    } else {
-      // Append to existing file
-      fs.appendFile(logFile, csvRow, (err) => {
-        if (err) {
-          logger.error('Error writing to bug report log:', err);
-        }
-      });
+
+    // Second, absolute ceiling: past it, stop appending rather than eat the volume
+    // the SQLite DB shares. A missing file just means this is the first report.
+    let fileExists = true;
+    let existingSize = 0;
+    try {
+      existingSize = fs.statSync(logFile).size;
+    } catch (err) {
+      if (/** @type {any} */ (err)?.code !== 'ENOENT') throw err;
+      fileExists = false;
     }
-    
+
+    const ceiling = bugReportLogCeiling();
+    if (existingSize >= ceiling) {
+      logger.error(
+        `Bug report dropped: ${logFile} is at its ${ceiling}-byte ceiling (${existingSize} bytes). Rotate or archive it.`
+      );
+      return sendError(res, 503, 'Bug reporting is temporarily unavailable');
+    }
+
+    // appendFile creates the file when it is missing, so the header and the first row
+    // go out in the same write — no exists-then-write race.
+    fs.appendFile(logFile, fileExists ? csvRow : BUG_REPORT_HEADER + csvRow, (err) => {
+      if (err) {
+        logger.error('Error writing to bug report log:', err);
+      }
+    });
+
     if (DEBUG_MODE) {
       logger.debug(`✓ Bug report submitted by user: ${userId || 'unknown'}`);
     }

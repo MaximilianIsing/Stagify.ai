@@ -2,6 +2,7 @@
 import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
+import { reportError } from '../lib/http/error-ref.js';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -20,6 +21,7 @@ import { logger } from '../lib/logger.js';
  *   setSensitiveHeaders: (res: import('express').Response) => void,
  *   exportAllMemories: Function,
  *   resetAllMemories: Function,
+ *   deleteUser: ReturnType<typeof import('../lib/data/user-deletion.js').createUserDeletion>['deleteUser'],
  *   getDataLogDir: ReturnType<typeof import('../lib/services/logging.js').createLogging>['getDataLogDir'],
  *   getHostedImagesDir: Function,
  *   readHostedImagesManifest: Function,
@@ -34,7 +36,7 @@ import { logger } from '../lib/logger.js';
  *   user-facing email catalog + test-send helper for the Emails tab.
  */
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail } = deps;
+  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail } = deps;
   const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
@@ -129,8 +131,7 @@ router.get('/authstore', protectLogs, (req, res) => {
     res.setHeader('Content-Disposition', 'inline; filename="auth-store.json"');
     res.send(JSON.stringify(snapshot, null, 2));
   } catch (error) {
-    logger.error('Error serving auth store snapshot:', error);
-    sendError(res, 500, 'Failed to retrieve auth store', { details: error.message });
+    sendError(res, 500, 'Failed to retrieve auth store', { ref: reportError('admin.authstore', error) });
   }
 });
 
@@ -146,8 +147,7 @@ router.get('/promptlogs', protectLogs, (req, res) => {
       sendError(res, 404, 'Log file not found', { details: 'No prompt logs are available yet' });
     }
   } catch (error) {
-    logger.error('Error serving prompt log file:', error);
-    sendError(res, 500, 'Failed to retrieve prompt logs', { details: error.message });
+    sendError(res, 500, 'Failed to retrieve prompt logs', { ref: reportError('admin.promptlogs', error) });
   }
 });
 
@@ -163,8 +163,7 @@ router.get('/contactlogs', protectLogs, (req, res) => {
       sendError(res, 404, 'Log file not found', { details: 'No contact logs are available yet' });
     }
   } catch (error) {
-    logger.error('Error serving contact log file:', error);
-    sendError(res, 500, 'Failed to retrieve contact logs', { details: error.message });
+    sendError(res, 500, 'Failed to retrieve contact logs', { ref: reportError('admin.contactlogs', error) });
   }
 });
 
@@ -180,8 +179,7 @@ router.get('/email-open-logs', protectLogs, (req, res) => {
       sendError(res, 404, 'Log file not found', { details: 'No email open logs are available yet' });
     }
   } catch (error) {
-    logger.error('Error serving email open log file:', error);
-    sendError(res, 500, 'Failed to retrieve email open logs', { details: error.message });
+    sendError(res, 500, 'Failed to retrieve email open logs', { ref: reportError('admin.email-open-logs', error) });
   }
 });
 
@@ -193,27 +191,41 @@ router.get('/memories', protectLogs, (req, res) => {
     res.setHeader('Content-Disposition', 'inline; filename="memories.json"');
     res.send(JSON.stringify(memories, null, 2));
   } catch (error) {
-    logger.error('Error serving memories file:', error);
-    sendError(res, 500, 'Failed to retrieve memories', { details: error.message });
+    sendError(res, 500, 'Failed to retrieve memories', { ref: reportError('admin.memories', error) });
   }
 });
 
-router.get('/resetmemories', protectLogs, (req, res) => {
+// POST, not GET: this wipes every user's memories, and a GET that mutates is one
+// retry away from doing it twice. `protectLogs` is header-only, so a crawler or link
+// prefetch could never have reached it — but anything that legitimately replays an
+// idempotent GET (an HTTP client's retry-on-reset, a devtools "replay request", a
+// future proxy) would. Matches the sibling wipe, POST /api/status/reset.
+router.post('/resetmemories', protectLogs, (req, res) => {
   try {
     resetAllMemories();
-    
+
     if (DEBUG_MODE) {
       logger.debug('✓ Successfully reset all memories');
     }
-    
-    res.status(200).json({ 
+
+    res.status(200).json({
       success: true,
       message: 'All memories have been reset successfully'
     });
   } catch (error) {
-    logger.error('Error resetting memories:', error);
-    sendError(res, 500, 'Failed to reset memories', { details: error.message });
+    sendError(res, 500, 'Failed to reset memories', { ref: reportError('admin.resetmemories', error) });
   }
+});
+
+// The old GET verb, kept as an explicit 405 so an operator running a stale command
+// gets told what changed instead of a bare 404 — and so a GET here stays SAFE
+// (no reset) rather than falling through to some other handler. Still behind
+// protectLogs: an unkeyed caller sees the same 403 as before, learning nothing.
+router.get('/resetmemories', protectLogs, (req, res) => {
+  res.set('Allow', 'POST');
+  sendError(res, 405, 'Method Not Allowed', {
+    details: 'Resetting memories is a POST — it mutates state. Retry with -X POST.',
+  });
 });
 
 // Wipe all recorded uptime/incident history (admin "reset server status" button).
@@ -223,8 +235,7 @@ router.post('/api/status/reset', protectLogs, (req, res) => {
     if (DEBUG_MODE) logger.debug('✓ Server status (uptime) history reset');
     res.status(200).json({ success: true, message: 'Server status history reset; monitoring restarted.', snapshot });
   } catch (error) {
-    logger.error('Error resetting server status:', error);
-    sendError(res, 500, error.message);
+    sendError(res, 500, 'Failed to reset server status', { ref: reportError('admin.status-reset', error) });
   }
 });
 
@@ -240,8 +251,7 @@ router.get('/chatlogs', protectLogs, (req, res) => {
       sendError(res, 404, 'Log file not found', { details: 'No chat logs are available yet' });
     }
   } catch (error) {
-    logger.error('Error serving chat log file:', error);
-    sendError(res, 500, 'Failed to retrieve chat logs', { details: error.message });
+    sendError(res, 500, 'Failed to retrieve chat logs', { ref: reportError('admin.chatlogs', error) });
   }
 });
 
@@ -257,8 +267,7 @@ router.get('/bugreports', protectLogs, (req, res) => {
       sendError(res, 404, 'Log file not found', { details: 'No bug reports are available yet' });
     }
   } catch (error) {
-    logger.error('Error serving bug reports file:', error);
-    sendError(res, 500, 'Failed to retrieve bug reports', { details: error.message });
+    sendError(res, 500, 'Failed to retrieve bug reports', { ref: reportError('admin.bugreports', error) });
   }
 });
 
@@ -274,8 +283,7 @@ router.get('/masklogs', protectLogs, (req, res) => {
       sendError(res, 404, 'Log file not found', { details: 'No mask logs are available yet' });
     }
   } catch (error) {
-    logger.error('Error serving mask logs file:', error);
-    sendError(res, 500, 'Failed to retrieve mask logs', { details: error.message });
+    sendError(res, 500, 'Failed to retrieve mask logs', { ref: reportError('admin.masklogs', error) });
   }
 });
 
@@ -293,6 +301,28 @@ router.post('/api/admin/grant-plus', protectLogs, express.json(), (req, res) => 
   }
   logger.info('[admin] granted 1 month of Stagify+ to', result.userId, '— expires', result.expiresAt);
   return res.json({ ok: true, userId: result.userId, email: result.email, expiresAt: result.expiresAt });
+});
+
+// GDPR erasure. Wipes the account row AND everything keyed to it (sessions, reset
+// tokens, memories, a pending registration for the same address) in one transaction,
+// then redacts the identifying cells of that person's rows in the CSV logs. There
+// are no foreign keys in this database, so nothing cascades on its own — the table
+// list lives in lib/data/user-deletion.js and is drift-tested.
+//
+// Irreversible, so it is POST-only, key-gated, and refuses an account that still has
+// a Stripe subscription unless `force` is passed.
+router.post('/api/admin/delete-user', protectLogs, express.json(), (req, res) => {
+  const { userId, email, force } = req.body || {};
+  if (!userId && !email) {
+    return sendError(res, 400, 'An email or userId is required');
+  }
+  const result = deleteUser({ userId, email, force: force === true });
+  if (!result.ok) {
+    return sendError(res, result.code === 'NOT_FOUND' ? 404 : 400, result.error || 'Could not delete the user', {
+      code: result.code,
+    });
+  }
+  return res.json({ ok: true, userId: result.userId, email: result.email, rows: result.rows, logs: result.logs });
 });
 
 // End a running comp grant early. Paying subscribers are refused — they have to be
@@ -350,8 +380,7 @@ router.get('/enterprise-domains', protectLogs, (req, res) => {
     res.setHeader('Content-Disposition', 'inline; filename="enterprise-domains.json"');
     res.send(JSON.stringify(enterpriseStore.exportStore(), null, 2));
   } catch (error) {
-    logger.error('Error serving enterprise domains file:', error);
-    sendError(res, 500, 'Failed to retrieve enterprise domains', { details: error.message });
+    sendError(res, 500, 'Failed to retrieve enterprise domains', { ref: reportError('admin.enterprise-domains', error) });
   }
 });
 

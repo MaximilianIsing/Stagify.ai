@@ -72,7 +72,7 @@ import { showToast } from './toast.js';
 
         function tx(key, def) {
           const v = window.LanguageSystem && window.LanguageSystem.getText(key);
-          return v && v !== 'Loading...' ? v : def;
+          return v || def;
         }
 
         function loadImage(src) {

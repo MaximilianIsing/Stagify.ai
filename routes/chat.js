@@ -2,11 +2,11 @@
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import createChatPipeline from '../lib/chat/chat-pipeline.js';
 import createUploadPrep from '../lib/chat/chat-upload-prep.js';
-import { DESIGNER_ROUTING_RESPONSE_FORMAT, buildChatSystemInstruction, buildChatUploadSystemInstruction, getStagifyDateContext } from '../lib/staging/prompts.js';
+import { buildChatSystemInstruction, buildChatUploadSystemInstruction, getStagifyDateContext } from '../lib/staging/prompts.js';
 import { deduplicateMessages, filterConversationHistory, stripImagesFromHistory, collectImagesFromHistory, getPriorHistoryForImageContext, parseBaseImageIndex, getBaseImageSelectionContext, findMostRecentStagedImageIndex, userWantsToAddFurnitureToRoom, resolveDualUploadStaging, resolveDualUploadFromMessageContent, buildImageContext } from '../lib/chat/chat-history.js';
-import { parseDesignerRoutingCompletion } from '../lib/chat/chat-routing.js';
 import { writeChatSseEvent } from '../lib/chat/chat-sse.js';
 import { sendError } from '../lib/http/http-helpers.js';
+import { reportError } from '../lib/http/error-ref.js';
 import createWelcomeMessageHandler from '../lib/chat/welcome-message-handler.js';
 import createChatRequestPrep from '../lib/chat/chat-request-prep.js';
 import { buildUnsupportedFileErrorBody } from '../lib/chat/chat-upload-error.js';
@@ -56,12 +56,12 @@ export default function createChatRouter(deps) {
   // (staging/generate/CAD/memory helpers, image resolution, CSV+debug logging,
   // SSE streaming, etc.) are consumed by createChatPipeline(deps) below rather
   // than referenced here.
-  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, getTemperatureForModel } = deps;
+  const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories } = deps;
   const router = createAsyncRouter();
   const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse, applyPostRoutingSuppression, logRoutingOutcome, beginChatStream, sendChatResponse } = createChatPipeline(deps);
   const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting, logUploadDedupDiagnostics } = createUploadPrep(deps);
   const { handleWelcomeMessage } = createWelcomeMessageHandler(deps);
-  const { logDedupDiagnostics, detectHistoryImage, applyMessageTag, buildChatMessages, logChatPayload } = createChatRequestPrep(deps);
+  const { logDedupDiagnostics, detectHistoryImage, applyMessageTag, buildChatMessages, logChatPayload, runChatRouting } = createChatRequestPrep(deps);
 
 router.get('/api/welcome-message', handleWelcomeMessage);
 
@@ -148,33 +148,22 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     // Debug logging - log what's being sent to AI (DEBUG_MODE only)
     logChatPayload({ openaiMessages });
 
-    // Use OpenAI GPT with JSON response format
-    let aiResponseJson;
-    let completion;
-    try {
-      completion = await openai.chat.completions.create({
-        model: selectedModel,
-        messages: openaiMessages,
-        temperature: getTemperatureForModel(selectedModel),
-        response_format: DESIGNER_ROUTING_RESPONSE_FORMAT
-      });
-
-      aiResponseJson = parseDesignerRoutingCompletion(completion);
-    } catch (gptError) {
-      logger.error('[GPT] Error calling OpenAI API:', gptError);
-      logger.error('[GPT] Error stack:', gptError.stack);
+    // Ask the model for a routing decision. A failed call is answered here (not by
+    // the outer catch) so the client still gets a user-facing `response` string.
+    const routing = await runChatRouting({ openaiMessages, selectedModel });
+    if (routing.routingError) {
       return sendError(res, 500, 'Failed to get AI response', {
         details: 'The AI service encountered an error. Please try again.',
         response: 'I apologize, but I encountered an error processing your request. Please try again.',
       });
     }
-    let text = aiResponseJson.response || completion.choices[0].message.content;
-    const memoryActionsFromAI = aiResponseJson.memories || { stores: [], forgets: [] };
-    let stagingRequestFromAI = aiResponseJson.staging || null;
-    const imageRequestFromAI = aiResponseJson.imageRequest || null;
-    const recallRequestFromAI = aiResponseJson.recall || null;
-    let generateRequestFromAI = aiResponseJson.generate || null;
-    let cadRequestFromAI = aiResponseJson.cad || null;
+    let text = routing.text;
+    const memoryActionsFromAI = routing.memoryActionsFromAI;
+    let stagingRequestFromAI = routing.stagingRequestFromAI;
+    const imageRequestFromAI = routing.imageRequestFromAI;
+    const recallRequestFromAI = routing.recallRequestFromAI;
+    let generateRequestFromAI = routing.generateRequestFromAI;
+    let cadRequestFromAI = routing.cadRequestFromAI;
 
     ({ stagingRequestFromAI, generateRequestFromAI, cadRequestFromAI } = applyPostRoutingSuppression({
       text,
@@ -270,19 +259,14 @@ router.post('/api/chat', genLimiter, async (req, res) => {
     const requestedImageForDisplay = requestedOut.requestedImageForDisplay;
     text = requestedOut.text;
 
-    // CAD.
-    const cadCurrentMessageHasImage = Boolean(
-      lastUserMessage &&
-        Array.isArray(lastUserMessage.content) &&
-        lastUserMessage.content.some(
-          (item) => item.type === 'image_url' && item.image_url && item.image_url.url
-        )
-    );
+    // CAD. Reuses the current-message image flag resolved above: the CAD step used
+    // to re-scan lastUserMessage.content with an identical predicate, which can
+    // only ever agree (nothing between the two mutates the content array).
     const cadOut = await runCadRequests({
       cadRequestFromAI,
       history: messages,
       baseImageIndex,
-      currentMessageHasImage: cadCurrentMessageHasImage,
+      currentMessageHasImage: currentMessageHasImageInChat,
     });
     const cadResults = cadOut.cadResults;
     if (cadOut.textSuffix) text = (text || '') + cadOut.textSuffix;
@@ -299,15 +283,12 @@ router.post('/api/chat', genLimiter, async (req, res) => {
 
     sendChatResponse({ res, response, streamMode });
   } catch (error) {
-    logger.error('Error in chat:', error);
+    const ref = reportError('chat', error);
     if (res.headersSent) {
-      writeChatSseEvent(res, 'error', {
-        error: 'Chat processing failed',
-        details: error.message,
-      });
+      writeChatSseEvent(res, 'error', { error: 'Chat processing failed', ref });
       res.end();
     } else {
-      sendError(res, 500, 'Chat processing failed', { details: error.message });
+      sendError(res, 500, 'Chat processing failed', { ref });
     }
   }
 });
@@ -557,14 +538,10 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
 
     sendChatResponse({ res, response, streamMode: streamModeUpload });
   } catch (error) {
-    logger.error('[Chat Upload] Fatal error in chat-upload endpoint:', error);
-    logger.error('[Chat Upload] Error stack:', error.stack);
-    
+    const ref = reportError('chat.upload', error);
+
     if (res.headersSent) {
-      writeChatSseEvent(res, 'error', {
-        error: 'Chat upload processing failed',
-        details: error.message,
-      });
+      writeChatSseEvent(res, 'error', { error: 'Chat upload processing failed', ref });
       res.end();
       return;
     }
@@ -597,6 +574,7 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     if (!res.headersSent) {
       sendError(res, 500, 'File processing failed', {
         details: 'An unexpected error occurred. Please try again.',
+        ref,
         response: 'I apologize, but I encountered an unexpected error processing your files. Please try again.',
       });
     }

@@ -152,10 +152,101 @@ test('enterprise-domains download serves the enterprise snapshot', async () => {
 
 test('resetmemories invokes the reset action and acks success', async () => {
   app = await mountAdmin();
-  const res = await fetch(app.baseUrl + '/resetmemories', { headers: auth });
+  const res = await fetch(app.baseUrl + '/resetmemories', { method: 'POST', headers: auth });
   assert.equal(res.status, 200);
   assert.equal((await res.json()).success, true);
   assert.equal(app.calls.resetAllMemories.calls, 1);
+});
+
+test('GET /resetmemories wipes nothing — a mutating GET is one retry from a double wipe', async () => {
+  app = await mountAdmin();
+  const res = await fetch(app.baseUrl + '/resetmemories', { headers: auth });
+  assert.equal(res.status, 405);
+  assert.equal(res.headers.get('allow'), 'POST');
+  // The property that matters: the store was never touched.
+  assert.equal(app.calls.resetAllMemories.calls, 0, 'a GET must never reset memories');
+});
+
+test('GET /resetmemories still 403s without the key, revealing nothing about the verb', async () => {
+  app = await mountAdmin();
+  const res = await fetch(app.baseUrl + '/resetmemories');
+  assert.equal(res.status, 403);
+  assert.equal(app.calls.resetAllMemories.calls, 0);
+});
+
+// ---- GDPR erasure ---------------------------------------------------------
+
+test('delete-user erases the account and reports what it removed', async () => {
+  app = await mountAdmin();
+  const res = await fetch(app.baseUrl + '/api/admin/delete-user', {
+    method: 'POST',
+    headers: { ...auth, 'content-type': 'application/json' },
+    body: JSON.stringify({ email: 'gone@example.com' }),
+  });
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.ok, true);
+  assert.deepEqual(body.rows, { users: 1, sessions: 2, memories: 1 }, 'the per-table counts reach the operator');
+  assert.equal(app.calls.deleteUser.calls, 1);
+  assert.deepEqual(app.calls.deleteUser.lastArgs[0], { userId: undefined, email: 'gone@example.com', force: false });
+});
+
+test('delete-user requires the admin key and an identifier, and never guesses force', async () => {
+  app = await mountAdmin();
+
+  const noKey = await fetch(app.baseUrl + '/api/admin/delete-user', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: 'gone@example.com' }),
+  });
+  assert.equal(noKey.status, 403);
+
+  const noId = await fetch(app.baseUrl + '/api/admin/delete-user', {
+    method: 'POST',
+    headers: { ...auth, 'content-type': 'application/json' },
+    body: '{}',
+  });
+  assert.equal(noId.status, 400);
+  assert.equal(app.calls.deleteUser.calls, 0, 'an irreversible action must not run on an empty body');
+
+  // Only a literal `true` forces past the live-subscription refusal — not "yes", not 1.
+  await fetch(app.baseUrl + '/api/admin/delete-user', {
+    method: 'POST',
+    headers: { ...auth, 'content-type': 'application/json' },
+    body: JSON.stringify({ userId: 'u_1', force: 'yes' }),
+  });
+  assert.equal(app.calls.deleteUser.lastArgs[0].force, false);
+});
+
+test('delete-user surfaces a refusal with its code (404 unknown, 400 still paying)', async () => {
+  app = await mountAdmin({ deleteUserResult: { ok: false, code: 'NOT_FOUND', error: 'No such user' } });
+  const missing = await fetch(app.baseUrl + '/api/admin/delete-user', {
+    method: 'POST',
+    headers: { ...auth, 'content-type': 'application/json' },
+    body: JSON.stringify({ userId: 'nope' }),
+  });
+  assert.equal(missing.status, 404);
+  await app.close();
+
+  app = await mountAdmin({
+    deleteUserResult: { ok: false, code: 'ACTIVE_SUBSCRIPTION', error: 'Cancel it in Stripe first' },
+  });
+  const paying = await fetch(app.baseUrl + '/api/admin/delete-user', {
+    method: 'POST',
+    headers: { ...auth, 'content-type': 'application/json' },
+    body: JSON.stringify({ userId: 'u_1' }),
+  });
+  assert.equal(paying.status, 400);
+  const body = await paying.json();
+  assert.equal(body.code, 'ACTIVE_SUBSCRIPTION', 'the caller can tell the two refusals apart');
+  assert.match(body.error, /Could not delete|Cancel it in Stripe/);
+});
+
+test('GET /api/admin/delete-user erases nothing', async () => {
+  app = await mountAdmin();
+  const res = await fetch(app.baseUrl + '/api/admin/delete-user', { headers: auth });
+  assert.equal(res.status, 404, 'no GET route is registered for it');
+  assert.equal(app.calls.deleteUser.calls, 0);
 });
 
 test('status/reset wipes uptime history and returns the fresh snapshot', async () => {

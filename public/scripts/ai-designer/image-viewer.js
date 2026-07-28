@@ -17,15 +17,25 @@ export function createImageViewer(deps) {
     openMaskEditor,
   } = deps;
 
+      // Where focus was when the lightbox opened — a thumbnail somewhere in the chat,
+      // so it has to be captured rather than looked up.
+      let imageModalOpener = null;
+
       // Image modal functions
       function openImageModal(imageSrc, altText) {
         const modal = document.getElementById('image-modal');
         const modalImg = /** @type {HTMLImageElement} */ (document.getElementById('image-modal-img'));
         if (modal && modalImg) {
+          imageModalOpener = /** @type {HTMLElement|null} */ (document.activeElement);
           modalImg.src = imageSrc;
           modalImg.alt = altText || getPdfAlt('enlargedImage');
           modal.classList.add('active');
           document.body.style.overflow = 'hidden'; // Prevent background scrolling
+          // Move focus in, or it stays on the thumbnail behind the overlay and the
+          // dialog is never announced. The close control is the only thing to land
+          // on — the rest of the lightbox is one image.
+          const closeBtn = /** @type {HTMLElement|null} */ (document.getElementById('image-modal-close'));
+          if (closeBtn) closeBtn.focus();
         }
       }
 
@@ -34,6 +44,18 @@ export function createImageViewer(deps) {
         if (modal) {
           modal.classList.remove('active');
           document.body.style.overflow = ''; // Restore scrolling
+          // Back to the thumbnail. Guarded on isConnected: the chat re-renders its
+          // image containers, and focusing a detached node drops focus to <body>.
+          // Skipping <body> matters here: the enlarge trigger is an <img> with a
+          // click handler, which is not focusable, so a mouse-opened lightbox
+          // captures <body> and "restoring" it would move focus rather than put it
+          // back. (That the trigger is unreachable by keyboard at all is a separate
+          // gap — see docs/guides/frontend.md.)
+          const opener = imageModalOpener;
+          imageModalOpener = null;
+          if (opener && opener !== document.body && opener.isConnected && typeof opener.focus === 'function') {
+            opener.focus();
+          }
         }
       }
 
@@ -95,7 +117,7 @@ export function createImageViewer(deps) {
         const downloadBtn = document.createElement('button');
         downloadBtn.className = 'ai-image-download-btn';
         const downloadLabel = (window.LanguageSystem && window.LanguageSystem.isLoaded())
-          ? window.LanguageSystem.getText('modal.staging.downloadIcon')
+          ? window.LanguageSystem.getText('modal.staging.downloadIcon', 'Download image')
           : 'Download image';
         downloadBtn.title = downloadLabel;
         downloadBtn.setAttribute('aria-label', downloadLabel);
@@ -117,7 +139,7 @@ export function createImageViewer(deps) {
           const maskBtn = document.createElement('button');
           maskBtn.className = 'ai-image-mask-btn';
           const maskLabel = (window.LanguageSystem && window.LanguageSystem.isLoaded())
-            ? window.LanguageSystem.getText('modal.staging.editWithMask')
+            ? window.LanguageSystem.getText('modal.staging.editWithMask', 'Edit selected area with mask tool')
             : 'Edit selected area with mask tool';
           maskBtn.title = maskLabel;
           maskBtn.setAttribute('aria-label', maskLabel);

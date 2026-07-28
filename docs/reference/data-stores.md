@@ -131,6 +131,39 @@ log doesn't mean unbounded memory, and falls back to a line count (with a warnin
 file's quotes don't balance, so a malformed row degrades the counter rather than
 collapsing it. Both initializers take an optional log-directory argument for tests.
 
+## Erasing one person's data
+
+There are **no foreign keys** in this database (see the note in `db.js`), so nothing
+cascades: deleting a `users` row on its own leaves that person's `sessions` (a live
+bearer token for an account that no longer exists), `password_reset_tokens` and
+`memories` behind. [`lib/data/user-deletion.js`](../../lib/data/user-deletion.js) is
+the single place that knows the full set, run by
+`POST /api/admin/delete-user` — see [`endpoints.md`](endpoints.md).
+
+- **SQLite** — one transaction over `sessions`, `password_reset_tokens`, `memories`,
+  `users` (last), plus `pending_registrations` for the same address (it holds a scrypt
+  hash for an unverified signup). An address with *only* a pending registration can be
+  erased on its own; otherwise the whole thing rolls back on failure, so an account is
+  never half-erased.
+- **CSV logs** — the identifying cells (`email` / `userId` / `ipAddress` / `userAgent`)
+  of that person's rows are replaced with `[erased]`; the rows themselves stay. That is
+  deliberate: the public "Rooms Staged" counter is a **record count** over
+  `prompt_logs.csv`, so dropping rows would move a public number, and the dashboard
+  reads these files positionally. Columns are matched by **name** against each file's
+  own header, so the append-only column rule above cannot shift a redaction.
+- **Not touched:** `mobile_ip_usage` (keyed by IP, no account link), `enterprise_domains`
+  (a company's own billing record), `stripe_events`, `uptime_state`. Each is listed with
+  its reason in `NOT_USER_KEYED`.
+
+`test/data/user-deletion.test.js` introspects the live schema and **fails the build** if
+a table grows a user-keyed column that is neither erased nor explicitly exempted, and if
+a new CSV log appears that nothing redacts. Add the table/file to the right list — the
+guard exists because this coverage is written once and forgotten forever.
+
+**Known gap:** free-text columns (`userMessage` / `aiResponse` in `chat_logs.csv`, the
+bug-report `description` and `conversationHistory`) can contain personal data a person
+typed about themselves. Nothing can match those automatically; they are left as-is.
+
 ## Uploaded images (`hosted-images/`)
 
 User-hosted images (`POST /api/host-image`) are written under

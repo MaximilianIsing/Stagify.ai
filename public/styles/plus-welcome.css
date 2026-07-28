@@ -5,8 +5,8 @@
          prefers-reduced-motion (see the block at the bottom). */
       .pw-page {
         --pw-navy: #0f1f4b;
-        --pw-blue: #2563eb;
-        --pw-blue-dark: #1d4ed8;
+        --pw-blue: var(--brand);
+        --pw-blue-dark: var(--brand-strong);
         --pw-muted: #51607a;
         min-height: calc(100vh - 200px);
         display: flex;
@@ -66,11 +66,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fff;
+        color: var(--bg-elevated);
         background:
-          radial-gradient(circle at 32% 26%, #60a5fa 0%, transparent 55%),
-          radial-gradient(circle at 74% 80%, #1e40af 0%, transparent 55%),
-          #2563eb;
+          radial-gradient(circle at 32% 26%, var(--brand-soft) 0%, transparent 55%),
+          radial-gradient(circle at 74% 80%, var(--primary) 0%, transparent 55%),
+          var(--brand);
         box-shadow: 0 14px 30px -8px rgba(37, 99, 235, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.5);
         animation: pw-badge-pop 0.6s cubic-bezier(0.18, 0.9, 0.32, 1.5) 0.12s both;
       }
@@ -82,7 +82,7 @@
       .pw-check-svg { width: 46px; height: 46px; }
       .pw-check-path {
         fill: none;
-        stroke: #fff;
+        stroke: var(--bg-elevated);
         stroke-width: 5;
         stroke-linecap: round;
         stroke-linejoin: round;
@@ -151,7 +151,7 @@
         animation: pw-rise 0.6s ease 0.34s both;
       }
       .pw-card h1 .pw-grad {
-        background: linear-gradient(90deg, #2563eb, #7eb3fc);
+        background: linear-gradient(90deg, var(--brand), #7eb3fc);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -182,15 +182,15 @@
         font-size: 1.2rem;
         font-weight: 800;
         letter-spacing: 0.01em;
-        color: #fff;
+        color: var(--bg-elevated);
         text-decoration: none;
         border-radius: 20px;
         background:
-          radial-gradient(circle at 18% 40%, #3b82f6 0%, transparent 55%),
-          radial-gradient(circle at 82% 25%, #1d4ed8 0%, transparent 55%),
-          radial-gradient(circle at 50% 85%, #2563eb 0%, transparent 55%),
-          radial-gradient(circle at 100% 0%, #60a5fa 0%, transparent 45%),
-          #1e3a8a;
+          radial-gradient(circle at 18% 40%, var(--primary-light) 0%, transparent 55%),
+          radial-gradient(circle at 82% 25%, var(--brand-strong) 0%, transparent 55%),
+          radial-gradient(circle at 50% 85%, var(--brand) 0%, transparent 55%),
+          radial-gradient(circle at 100% 0%, var(--brand-soft) 0%, transparent 45%),
+          var(--brand-deep);
         box-shadow: 0 12px 28px -8px rgba(30, 58, 138, 0.6);
         animation: pw-rise 0.6s ease 0.58s both;
         transition: transform 0.18s ease, box-shadow 0.18s ease;
@@ -226,11 +226,11 @@
         margin: 1.5rem 0 0;
         font-size: 0.8125rem;
         line-height: 1.55;
-        color: #64748b;
+        color: var(--slate);
         animation: pw-rise 0.6s ease 0.7s both;
       }
       .pw-note a {
-        color: #2563eb;
+        color: var(--brand);
         text-decoration: none;
         font-weight: 500;
       }

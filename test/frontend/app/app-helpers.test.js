@@ -63,21 +63,30 @@ test('dailyLimitMessage: defaults limit to 3 and used to limit when omitted', ()
   assert.equal(msg, '3/3');
 });
 
-test('dailyLimitMessage: falls back when template is missing or still "Loading..."', () => {
+test('dailyLimitMessage: falls back when the template is missing', () => {
   // No template -> server error string wins.
   assert.equal(
     dailyLimitMessage({ error: 'Slow down.' }, {}),
     'Slow down.',
   );
-  // The i18n "Loading..." sentinel is treated as no template.
+  // getText reports a miss as undefined — that is what "no template" looks like now.
   assert.equal(
-    dailyLimitMessage({ dailyGenerationLimit: 4 }, { template: 'Loading...' }),
+    dailyLimitMessage({ dailyGenerationLimit: 4 }, { template: undefined }),
     'Daily free limit reached (4 per day).',
   );
   // No template and no server error -> hard-coded English default at the limit.
   assert.equal(
     dailyLimitMessage(null),
     'Daily free limit reached (3 per day).',
+  );
+});
+
+test('dailyLimitMessage: uses a template whose real text is "Loading..."', () => {
+  // Regression guard: this string used to be i18n's miss sentinel, so a pack that
+  // legitimately translated the key to it would have been discarded as "not loaded".
+  assert.equal(
+    dailyLimitMessage({ dailyGenerationLimit: 4 }, { template: 'Loading...' }),
+    'Loading...',
   );
 });
 

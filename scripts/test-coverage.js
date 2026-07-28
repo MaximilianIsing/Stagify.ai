@@ -19,16 +19,32 @@
 // print — CI pins Node 22 (`.node-version`), which setup-node resolves to the
 // latest 22.x (>= 22.8.0), so the gate always holds there.
 //
-// Floors are product-source coverage as of 2026-07-10 (lines 79.6% / branches
-// 76.0% / functions 86.0%), rounded down 2-3 points to be a regression ratchet
-// rather than a wall — branch coverage gets the wider margin because it swings
-// most between runs and Node minors. Raise them as coverage improves; never
+// Floors are product-source coverage rounded down a few points, so they act as a
+// regression ratchet rather than a wall. Raise them as coverage improves; never
 // lower them to make a red build pass.
+//
+// Measured 2026-07-28 over a green suite (1221/1221): lines 88.09% / branches
+// 81.04% / functions 86.44%. Two consecutive runs agreed to within 0.03 points,
+// so the margins below absorb Node-minor drift, not measurement noise.
+//   lines     88.1 -> 85  (3.1 margin)
+//   branches  81.0 -> 77  (4.0 margin — branches swing most between Node minors)
+//   functions 86.4 -> 84  (2.4 margin — UNCHANGED on purpose: functions moved only
+//                          86.0 -> 86.4 since 2026-07-10, so 84 was never stale)
+// The wider margins vs. the original 2026-07-10 pass are deliberate: the numbers
+// above were taken locally on Node 22.2, while CI enforces on Node 22-latest, and
+// V8's line/branch attribution shifts slightly between minors.
+//
+// WHAT THESE FLOORS CANNOT SEE: V8 coverage only reports files the run actually
+// loaded, so a frontend module no test ever imports contributes to NEITHER the
+// numerator nor the denominator — it is invisible here, not averaged in. As of
+// 2026-07-28 that is 68 of 107 files under public/scripts/. Raising these floors
+// does not surface them; test/frontend/untested-frontend-modules.test.js is the
+// guard that does, by pinning that set so it can only shrink.
 
 import { spawn } from 'node:child_process';
 import process from 'node:process';
 
-const THRESHOLDS = { lines: 78, branches: 73, functions: 84 };
+const THRESHOLDS = { lines: 85, branches: 77, functions: 84 };
 
 const [major, minor] = process.versions.node.split('.').map(Number);
 const canEnforce = major > 22 || (major === 22 && minor >= 8);

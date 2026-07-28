@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
-    <script src="scripts/gtag.js"></script>
+    <script src="scripts/gtag.js" defer></script>
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
     <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
@@ -1356,10 +1356,10 @@
     </main>
 
     <!-- Mask editor modal for staged "After" images (pro only) -->
-    <div id="stage-mask-modal" class="stage-mask-modal" aria-hidden="true">
+    <div id="stage-mask-modal" class="stage-mask-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="stage-mask-title">
       <div class="stage-mask-content">
         <div class="stage-mask-header">
-          <h2 class="stage-mask-title" data-lang="pdf.maskEditor.title">Edit with Mask</h2>
+          <h2 class="stage-mask-title" id="stage-mask-title" data-lang="pdf.maskEditor.title">Edit with Mask</h2>
           <button class="stage-mask-close" id="stage-mask-close" data-lang-attr="common.close|aria-label" aria-label="Close">&times;</button>
         </div>
         <div class="stage-mask-canvas-container">

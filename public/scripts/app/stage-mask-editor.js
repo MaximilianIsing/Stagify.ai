@@ -220,7 +220,7 @@ export function createStageMaskEditor(deps) {
 
       function tx(key, def) {
         const v = window.LanguageSystem && window.LanguageSystem.getText(key);
-        return v && v !== 'Loading...' ? v : def;
+        return v || def;
       }
 
       // Swap the editor's title, prompt label/placeholder and submit label to
