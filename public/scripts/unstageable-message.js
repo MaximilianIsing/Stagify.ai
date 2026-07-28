@@ -24,6 +24,6 @@ export function unstageableMessage(result) {
   if (!code || !window.LanguageSystem) return english;
   // getText's second argument is returned verbatim when the key is missing OR the pack
   // has not loaded yet, so an untranslated language degrades to the server's English
-  // rather than to the 'Loading...' placeholder.
+  // rather than to undefined (getText's miss value).
   return window.LanguageSystem.getText('errors.unstageable.' + code, english);
 }

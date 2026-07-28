@@ -13,7 +13,6 @@ import { LANGUAGES } from './locale-data.js';
   const config = {
     defaultLanguage: 'english',
     languagePath: 'languages/',
-    fallbackText: 'Loading...',
   };
 
   let translations = null;
@@ -39,8 +38,24 @@ import { LANGUAGES } from './locale-data.js';
   }
 
   // Resolve a dot-path key (e.g. "hero.catchphrase") against the loaded
-  // translations, returning `fallback` if any segment is missing.
-  function getText(key, fallback = config.fallbackText) {
+  // translations, returning `fallback` if the pack has not loaded yet or any
+  // segment of the path is missing.
+  //
+  // A miss is `undefined` — a value no JSON pack can hold — and NOT a sentinel
+  // string. This used to return the literal 'Loading...', which six call sites
+  // then compared against to detect a miss, and that cost twice over:
+  //
+  //   1. It reserved a translation. Any string whose real text was "Loading..."
+  //      would have been thrown away as a miss. (No pack contains one today, so
+  //      this half was latent.)
+  //   2. It broke every `getText(key) || 'English default'` call — about twenty of
+  //      them. The sentinel is truthy, so `||` never fired and the page rendered
+  //      the literal "Loading..." instead of the default. That happened on any
+  //      missing key, and to *every* key during the window before the pack loads.
+  //
+  // Callers that want a specific miss value still pass one; `undefined` only
+  // applies when they don't.
+  function getText(key, fallback = undefined) {
     if (!translations) return fallback;
     const parts = key.split('.');
     let current = translations;
@@ -57,7 +72,7 @@ import { LANGUAGES } from './locale-data.js';
     // Text content (or placeholder for text inputs / textareas).
     document.querySelectorAll('[data-lang]').forEach((el) => {
       const value = getText(el.getAttribute('data-lang'));
-      if (value !== config.fallbackText) {
+      if (value !== undefined) {
         if (el.tagName === 'INPUT' && /** @type {HTMLInputElement} */ (el).type === 'text')
           /** @type {HTMLInputElement} */ (el).placeholder = value;
         else if (el.tagName === 'TEXTAREA') /** @type {HTMLTextAreaElement} */ (el).placeholder = value;
@@ -68,14 +83,14 @@ import { LANGUAGES } from './locale-data.js';
     // Raw HTML content.
     document.querySelectorAll('[data-lang-html]').forEach((el) => {
       const value = getText(el.getAttribute('data-lang-html'));
-      if (value !== config.fallbackText) el.innerHTML = value;
+      if (value !== undefined) el.innerHTML = value;
     });
 
     // Attribute values, encoded as "key|attribute".
     document.querySelectorAll('[data-lang-attr]').forEach((el) => {
       const [key, attr] = el.getAttribute('data-lang-attr').split('|');
       const value = getText(key);
-      if (value !== config.fallbackText) el.setAttribute(attr, value);
+      if (value !== undefined) el.setAttribute(attr, value);
     });
 
     updateTitle();
@@ -93,7 +108,7 @@ import { LANGUAGES } from './locale-data.js';
     const titleEl = document.querySelector('title[data-lang]');
     if (titleEl) {
       const value = getText(titleEl.getAttribute('data-lang'));
-      if (value !== config.fallbackText) document.title = value;
+      if (value !== undefined) document.title = value;
     }
   }
 
@@ -110,9 +125,9 @@ import { LANGUAGES } from './locale-data.js';
         descEl ? descEl.getAttribute('data-lang-attr').split('|')[0] : 'meta.description'
       );
       const keywords = getText('meta.keywords');
-      if (name !== config.fallbackText) data.name = name;
-      if (description !== config.fallbackText) data.description = description;
-      if (keywords !== config.fallbackText) data.keywords = keywords;
+      if (name !== undefined) data.name = name;
+      if (description !== undefined) data.description = description;
+      if (keywords !== undefined) data.keywords = keywords;
       ldEl.textContent = JSON.stringify(data);
     } catch (err) {
       console.error('Error updating structured data:', err);

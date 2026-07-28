@@ -3,8 +3,12 @@
 // migrates a legacy memories.json into SQLite exactly once. Regressions here either
 // clobber a user's memories or silently re-import stale JSON over live data.
 // Windows lock gotcha: close the DB handle before removing the temp dir.
-// NOTE: evaluateMemoryActions is intentionally untested — it needs a real OpenAI
-// client and is not wired into the live chat flow.
+//
+// This module is storage only. `evaluateMemoryActions` — a second OpenAI call that
+// decided what to remember — used to live here untested, because it was never wired
+// into the live chat flow; it has been deleted. The routing model emits
+// `memories: { stores, forgets }` itself and lib/chat/chat-memory.js applies it
+// (covered by test/chat/chat-pipeline.test.js).
 
 import { test, before, after, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -22,7 +26,8 @@ function newDir() {
   return d;
 }
 function mk(dir) {
-  const m = createMemory({ __dirname: dir, DEBUG_MODE: false, openai: null });
+  // No `openai` dep: this store makes no model calls.
+  const m = createMemory({ __dirname: dir, DEBUG_MODE: false });
   openMems.push(m);
   return m;
 }
@@ -39,6 +44,24 @@ after(() => { if (savedRender !== undefined) process.env.RENDER = savedRender; }
 afterEach(() => {
   while (openMems.length) { try { openMems.pop().close(); } catch { /* already closed */ } }
   while (tmps.length) { try { fs.rmSync(tmps.pop(), { recursive: true, force: true }); } catch { /* best effort */ } }
+});
+
+test('the store is storage-only — it takes no AI client and makes no model calls', () => {
+  // `evaluateMemoryActions` lived here: a second OpenAI call, with its own 55-line
+  // prompt, that classified a turn into stores/forgets. It was never invoked — the
+  // routing model emits `memories: { stores, forgets }` itself (DESIGNER_ROUTING_SCHEMA)
+  // and lib/chat/chat-memory.js applies it. Deciding what to remember belongs there,
+  // where one model call already happens; adding a second here doubles the per-turn
+  // cost and splits the rules across two prompts that will drift.
+  const { mem } = freshMemory();
+  assert.deepEqual(
+    Object.keys(mem).sort(),
+    ['close', 'exportAllMemories', 'loadAllMemories', 'loadMemories', 'resetAllMemories', 'saveMemories'],
+    'the memory store grew (or regrew) an API — model calls belong in lib/chat/',
+  );
+
+  const src = fs.readFileSync(new URL('../../lib/data/memory.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /chat\.completions|openai\./i, 'lib/data/memory.js must not call a model');
 });
 
 test('saveMemories/loadMemories: per-user rows are independent', () => {

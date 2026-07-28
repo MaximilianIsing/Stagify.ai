@@ -64,6 +64,52 @@ Enforced at three layers, deliberately overlapping:
 **Scope:** this list gates enterprise registration only. Ordinary signup must keep
 accepting gmail/yahoo/outlook addresses — do not wire it into the auth routes.
 
+## Stagify+ checkout: an unverified email may start a subscription, never take one over
+
+Stagify+ is a Stripe **Payment Link**, so the only things tying a completed checkout to
+an account are two query parameters that the buyer can edit
+([`public/scripts/stagify-plus.js`](../../public/scripts/stagify-plus.js) appends them).
+They are not equally trustworthy, and the difference is what it takes to aim one at
+somebody else:
+
+| Identifier | Why a buyer can set it | What it takes to target a victim |
+|---|---|---|
+| `client_reference_id` | URL parameter | The victim's `u_` + 24-hex account id — 96 bits, and nothing exposes it |
+| `customer_email` | Typed at Stripe checkout; Stripe never verifies ownership | Knowing their email address |
+
+The email fallback cannot simply be deleted: **"Start free trial" stays clickable when
+signed out**, so a checkout with no reference is an ordinary purchase, and removing the
+fallback would leave those buyers paying with no plan.
+
+What it must not do is *reassign* an entitlement. Before the guard in
+[`lib/data/stripe-linking.js`](../../lib/data/stripe-linking.js), checking out with a
+stranger's address overwrote their `stripeCustomerId` / `stripeSubscriptionId`. Two
+things followed: their billing portal opened the **buyer's** Stripe customer (invoices,
+card last-4, billing address), and — the real payoff — cancelling the buyer's own trial
+fired `customer.subscription.deleted` for a subscription id now recorded against the
+victim, **downgrading a paying customer who is still being billed**, for the price of a
+trial the attacker cancelled.
+
+So an email match may only *start* a billing relationship:
+
+- Refused (`email_match_would_reassign`) when the account already holds a **different
+  live subscription** or an **admin comp grant** — both are entitlements the new
+  subscription's buyer could later revoke.
+- Allowed when it holds neither, which is the ordinary signed-out purchase, a genuine
+  re-purchase after a cancellation (`subscription.deleted` clears the subscription id
+  but leaves the stale customer id, so "has a customer id" would wrongly refuse), and a
+  Stripe redelivery of the same checkout.
+- A `client_reference_id` match relinks freely. It is not a targeting vector.
+
+A refusal is a paid checkout that did not activate, so `stripe-webhooks.js` logs it at
+**error** level with the subscription and customer ids for manual reconciliation —
+deliberately louder than a routine unmapped checkout, since it is also the signature of
+someone checking out in another person's name.
+
+Covered by `test/data/stripe-linking.test.js` (the mapping rules, each refusal paired
+with the allow case it must not break) and `test/services/stripe-webhooks.test.js` (the
+attack as real events, through to the cancellation that used to downgrade the victim).
+
 ## Admin / log-export endpoints
 
 The log and data-export routes (`/promptlogs`, `/authstore`, `/api/getpro`, etc.) are
@@ -75,6 +121,12 @@ guarded by the **`endpoint_key`** (note the lowercase env name):
   query string**, so they can't leak via access logs, browser history, or `Referer`.
 - Responses carrying secrets/PII set `Cache-Control: no-store` and
   `Referrer-Policy: no-referrer` (`setSensitiveHeaders`).
+- **Destructive admin actions are `POST`, never `GET`** — `/resetmemories`,
+  `POST /api/status/reset`, `DELETE /api/hosted-images/:id`. The key guard is
+  header-only, so no crawler or link prefetch can reach them either way; the verb is
+  what stops a *legitimate* replay (an HTTP client retrying an idempotent GET after a
+  reset connection, a devtools "replay request", a caching proxy) from wiping twice.
+  A `GET` on `/resetmemories` answers `405` with `Allow: POST` and touches nothing.
 
 ### No credentials over HTTP — `exportStore` vs `exportRedacted`
 
@@ -310,9 +362,13 @@ Guarded by [`test/routes/billing-checkout-limit.test.js`](../../test/routes/bill
 
 The body parsers are the cheapest DoS surface, so they're **scoped**, not global:
 
-- **JSON (`express.json`):** app-wide limit is **1 MB**; only the five routes that
+- **JSON (`express.json`):** app-wide limit is **1 MB**; only the four routes that
   legitimately carry base64 images in JSON (`/api/chat`, `/api/mask-edit`,
-  `/api/segment`, `/api/validate-image`, `/api/bug-report`) get **25 MB**. This matters
+  `/api/segment`, `/api/validate-image`) get **25 MB**. `/api/bug-report` is
+  deliberately **not** among them — it is unauthenticated and appends its body to
+  `bug_reports.csv` on the same persistent volume as `auth-store.db`, so it keeps the
+  1 MB limit *and* clamps every field it stores (`lib/http/bug-report-row.js`), with an
+  absolute size ceiling on the file as a backstop. This matters
   because the parser runs before the per-route limiters and `JSON.parse` is
   **synchronous** — a large body on any path would otherwise buffer + block the event
   loop. Guarded by [`test/server/json-body-limit.test.js`](../../test/server/json-body-limit.test.js).
@@ -343,6 +399,27 @@ prevent that information leak:
   `{ error: 'Internal server error' }` `500` — the stack trace is logged server-side (and
   captured by Sentry), never sent to the client. Guarded by
   [`test/http/async-router.test.js`](../../test/http/async-router.test.js).
+
+That covered errors that *escaped* a handler. Errors a handler **caught** used to leak
+anyway: `sendError(res, 500, 'X failed', { details: error.message })` was the house style
+at ~19 sites across `routes/` and `lib/`, so whatever `sharp`, the Gemini/OpenAI SDKs,
+`better-sqlite3`, `fs` or Stripe wrote into `.message` went straight to the caller —
+absolute server paths, table and column names, model/quota state, upstream prose, and (on
+the public Stripe webhook) which half of a signature check a forger had got wrong.
+
+5xx bodies now carry a **reference** instead: `reportError(context, err)`
+([`lib/http/error-ref.js`](../../lib/http/error-ref.js)) logs the error whole under a random
+8-char id and returns just that id, so the client sees `{ error, ref }`. The reference is
+random rather than derived, so it describes nothing about the failure and cannot be probed;
+the operator greps it to find the exact log line. Support is better off than before — a
+bare message had no request context and could not be located in the logs at all.
+
+The one-time cleanup is not the protection; the guard is.
+[`test/http/error-leak.test.js`](../../test/http/error-leak.test.js) reads the source of every
+response-building call in `routes/` and `lib/` and fails the build if `.message` or
+`.stack` appears inside one. Multer's `400`s are allowlisted by exact snippet: its fixed
+message table ('File too large', 'Unexpected field') describes the caller's own upload and
+is written in this repo, not produced by a runtime exception.
 
 ## Transport & headers
 
@@ -393,6 +470,32 @@ payments. Ensure production does **not** set `IS_STAGING`. (See
 All live on the `/data` disk ([`data-stores.md`](../reference/data-stores.md)); the
 export endpoints that read them are `endpoint_key`-gated.
 
+### Erasure (the right to be forgotten)
+
+`POST /api/admin/delete-user` is the erasure path — it backs the "request account
+deletion" line in the privacy policy, which previously had nothing behind it.
+
+The thing to understand before touching it: **this database has no foreign keys**, so
+a `DELETE FROM users` cascades to nothing. The satellite rows that would survive are
+not inert — `sessions` holds a **live bearer token** for an account that no longer
+exists, and `memories` holds chat content keyed to an id that can no longer be
+resolved back to a person if they ask again. The full table set therefore lives in one
+place, [`lib/data/user-deletion.js`](../../lib/data/user-deletion.js), runs in a single
+transaction, and is enforced by a schema-introspecting drift test that fails the build
+when a new user-keyed table or CSV log appears uncovered.
+
+Two deliberate refusals:
+- An account with a **live Stripe subscription** is rejected (`ACTIVE_SUBSCRIPTION`).
+  Erasing it would keep the card being charged with nothing left to link the charge
+  to, and the cancellation webhook would no longer find a user. Cancel in Stripe
+  first; `force: true` is for when that has already been done.
+- The CSV logs are **redacted, not pruned** — see the storage doc for why row counts
+  have to stay put.
+
+Still open: free-text log columns (chat messages, bug-report descriptions) can contain
+personal data someone typed about themselves, and nothing can match those
+automatically.
+
 ## Known gaps / follow-ups
 
 - **Single instance only** — the flat-file/SQLite-single-writer design corrupts under
@@ -405,3 +508,9 @@ export endpoints that read them are `endpoint_key`-gated.
   fix, its true scope, and the CSRF surface it opens are written up under
   [Tokens in the browser](#tokens-in-the-browser-localstorage-not-a-cookie--accepted-risk).
   Deliberately deferred: it is a project, not a patch.
+- **Erasure is operator-mediated** — `POST /api/admin/delete-user` exists, but there is
+  no self-serve "delete my account" button in the product. Adding one is a product
+  decision (confirmation flow, Stripe cancellation, copy in 11 languages), not a data-
+  layer one.
+- **Erasure does not reach backups.** Litestream replicates `auth-store.db` to R2, so a
+  restored snapshot brings an erased account back. Retention there is a separate policy.

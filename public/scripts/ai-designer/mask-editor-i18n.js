@@ -19,6 +19,16 @@ export function updateMaskEditorTranslations() {
     title.textContent = getText('pdf.maskEditor.title');
   }
 
+  // The close button's only text is a "×" glyph, hidden from assistive tech, so its
+  // accessible name comes entirely from this label — without it the button announced
+  // as "times". `common.close` is the same key the Masking Studio's close buttons use
+  // (via data-lang-attr), so it is already translated in all 11 packs.
+  const closeBtn = document.getElementById('mask-editor-close');
+  if (closeBtn) {
+    const closeText = getText('common.close');
+    closeBtn.setAttribute('aria-label', closeText === 'common.close' ? 'Close' : closeText);
+  }
+
   // Update brush size label
   const brushLabel = document.querySelector('.mask-editor-brush-label');
   if (brushLabel) {

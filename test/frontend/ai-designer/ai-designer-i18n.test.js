@@ -24,11 +24,20 @@ test('lang: returns the localized value when LanguageSystem is loaded', () => {
   assert.equal(lang('pdf.retry', 'Retry'), 'Réessayer');
 });
 
-test('lang: ignores the "Loading..." placeholder and key echoes', () => {
+test('lang: falls back when getText reports a miss as undefined', () => {
+  globalThis.window.LanguageSystem = { isLoaded: () => true, getText: () => undefined };
+  assert.equal(lang('pdf.stop', 'Stop generating'), 'Stop generating');
+});
+
+test('lang: keeps a translation whose real text is "Loading..." or equals its key', () => {
+  // Both used to be discarded: getText's miss value was the literal 'Loading...',
+  // and lang() additionally rejected a value equal to the key. Neither is a miss —
+  // getText cannot return either one now — so both are ordinary translations.
   globalThis.window.LanguageSystem = { isLoaded: () => true, getText: () => 'Loading...' };
-  assert.equal(lang('pdf.stop', 'Stop generating'), 'Stop generating');
+  assert.equal(lang('pdf.loadingLabel', 'English default'), 'Loading...');
+
   globalThis.window.LanguageSystem = { isLoaded: () => true, getText: (key) => key };
-  assert.equal(lang('pdf.stop', 'Stop generating'), 'Stop generating');
+  assert.equal(lang('pdf.stop', 'Stop generating'), 'pdf.stop');
 });
 
 test('lang: swallows a throwing LanguageSystem and falls back', () => {

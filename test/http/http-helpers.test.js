@@ -85,3 +85,26 @@ test('sendError: code and details are included only when truthy', () => {
   sendError(bare.res, 500, 'Failed', { code: undefined, details: '' });
   assert.deepEqual(bare.rec.body, { error: 'Failed' });
 });
+
+test('sendError: ref rides in the body and is omitted when falsy', () => {
+  const withRef = mockRes();
+  sendError(withRef.res, 500, 'Image processing failed', { ref: '3f9a1c02' });
+  assert.deepEqual(withRef.rec.body, { error: 'Image processing failed', ref: '3f9a1c02' });
+
+  const withAll = mockRes();
+  sendError(withAll.res, 500, 'File processing failed', {
+    details: 'An unexpected error occurred. Please try again.',
+    ref: 'aabbccdd',
+    response: 'Sorry — please try again.',
+  });
+  assert.deepEqual(withAll.rec.body, {
+    error: 'File processing failed',
+    details: 'An unexpected error occurred. Please try again.',
+    ref: 'aabbccdd',
+    response: 'Sorry — please try again.',
+  });
+
+  const noRef = mockRes();
+  sendError(noRef.res, 500, 'Failed', { ref: '' });
+  assert.deepEqual(noRef.rec.body, { error: 'Failed' });
+});

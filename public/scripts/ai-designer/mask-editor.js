@@ -74,7 +74,13 @@ export function createMaskEditor(deps) {
       // Track original image containers and their masked versions
       const maskedImageData = new Map(); // Map<originalImageSrc, {container, originalSrc, maskedVersions: []}>
       
+      // Where focus was when the dialog opened, so closing can put it back. The
+      // opener is a per-image button rather than one fixed control (unlike the
+      // Masking Studio's help dialog), so it has to be captured, not looked up.
+      let maskEditorOpener = null;
+
       function openMaskEditor(imageSrc, imageType) {
+        maskEditorOpener = /** @type {HTMLElement|null} */ (document.activeElement);
         const modal = document.getElementById('mask-editor-modal');
         if (!modal) {
           createMaskEditorModal();
@@ -152,6 +158,13 @@ export function createMaskEditor(deps) {
           
           fit.setImage(img.width, img.height);
           existingModal.classList.add('active');
+          // Move focus into the dialog, same as the Masking Studio's help dialog:
+          // without this, focus stays on the button behind the overlay, so a screen
+          // reader never announces the dialog and Escape/Tab act on the page under it.
+          // (The Tab trap in ai-designer-app.js only pulls focus back once Tab is
+          // pressed — it cannot start it here.)
+          const closeBtn = /** @type {HTMLElement|null} */ (document.getElementById('mask-editor-close'));
+          if (closeBtn) closeBtn.focus();
           viewport.bind();
           viewport.sync();
           brush.clear();
@@ -188,12 +201,20 @@ export function createMaskEditor(deps) {
         const modal = document.createElement('div');
         modal.id = 'mask-editor-modal';
         modal.className = 'mask-editor-modal';
-        
+        // Announce as a modal dialog named by its heading. This element is built in
+        // JS rather than markup, which is exactly how it missed the roles every
+        // hand-written dialog in the app carries. `.mask-editor-modal` is
+        // `display:none` until `.active`, so it leaves the a11y tree on its own —
+        // no aria-hidden toggling needed here.
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'mask-editor-title');
+
         modal.innerHTML = `
           <div class="mask-editor-content">
             <div class="mask-editor-header">
-              <h2 class="mask-editor-title" data-i18n="pdf.maskEditor.title">Edit with Mask</h2>
-              <button class="mask-editor-close" id="mask-editor-close">&times;</button>
+              <h2 class="mask-editor-title" id="mask-editor-title" data-i18n="pdf.maskEditor.title">Edit with Mask</h2>
+              <button type="button" class="mask-editor-close" id="mask-editor-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="mask-editor-canvas-container">
               <canvas id="mask-editor-canvas" class="mask-editor-canvas"></canvas>
@@ -494,6 +515,12 @@ export function createMaskEditor(deps) {
           if (title) title.textContent = maskCopy(lang).title;
           if (note) { note.style.display = 'none'; note.textContent = ''; }
         }
+        // Put focus back where it came from. Guarded on isConnected because
+        // committing an edit replaces the image container the opener lived in —
+        // focusing a detached node silently drops focus to <body>.
+        const opener = maskEditorOpener;
+        maskEditorOpener = null;
+        if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
       }
       
       // POST the current strokes + prompt (+ optional reference) to the model.

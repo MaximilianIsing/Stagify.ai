@@ -31,6 +31,10 @@ test('JSON body limit is small by default — a >1MB body is rejected with 413',
   // a large buffer+parse just by picking any URL.
   assert.equal(await postJson(srv.baseUrl, '/api/log-contact'), 413);
   assert.equal(await postJson(srv.baseUrl, '/api/does-not-exist'), 413);
+  // /api/bug-report is unauthenticated and appends its body to a CSV on the same
+  // persistent volume as the SQLite DB, so it must NOT get the large limit — it
+  // stores only a count of any images in the history, never their bytes.
+  assert.equal(await postJson(srv.baseUrl, '/api/bug-report'), 413);
 });
 
 test('image/history routes accept a large JSON body (not 413)', async (t) => {
@@ -44,7 +48,6 @@ test('image/history routes accept a large JSON body (not 413)', async (t) => {
     '/api/mask-edit',
     '/api/segment',
     '/api/chat',
-    '/api/bug-report',
   ]) {
     const status = await postJson(srv.baseUrl, path);
     assert.notEqual(status, 413, `${path} should accept a 2MB body (got ${status})`);

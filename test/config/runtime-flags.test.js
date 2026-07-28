@@ -25,6 +25,9 @@
 
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { isTruthyFlag, parseStatOverride } from '../../lib/config/runtime-flags.js';
 
 // --- isTruthyFlag -----------------------------------------------------------
@@ -140,4 +143,100 @@ test('SHOW_STAGING_BANNER: true only when IS_STAGING is truthy and HIDE_STAGING_
 
   setEnv({ IS_STAGING: undefined, HIDE_STAGING_BANNER: undefined });
   assert.equal(await loadShowBanner('not-staging'), false);
+});
+
+// --- DEBUG_EMAIL / EMAIL_DEBUG_MODE -----------------------------------------
+// DEBUG_EMAIL is the address EMAIL_DEBUG redirects ALL outbound mail to. It used
+// to be a hardcoded developer address in this module, so every fork redirected its
+// debug mail into one person's inbox; it is now deployment config. The pair has a
+// safety property worth pinning: an enabled flag with no address must NOT resolve
+// to "send to the real recipients" — every consumer spells the redirect
+// `EMAIL_DEBUG_MODE ? DEBUG_EMAIL : toEmail`, so a silent fallback to false would
+// mail real users from a box the operator had explicitly put in debug mode. The
+// module throws at load instead, and these tests are what stop that regressing.
+//
+// Each case sets BOTH env vars explicitly (rather than deleting one and relying on
+// the ambient environment) so the .txt file fallbacks in the repo root cannot
+// influence the result — except the two "unset" cases, which must delete the var
+// by definition. Still no network, mailer or cost: this only reads exported
+// constants from a re-imported module.
+
+const EMAIL_KEYS = ['EMAIL_DEBUG', 'DEBUG_EMAIL'];
+const savedEmailEnv = Object.fromEntries(EMAIL_KEYS.map((k) => [k, process.env[k]]));
+
+after(() => {
+  for (const k of EMAIL_KEYS) {
+    if (savedEmailEnv[k] === undefined) delete process.env[k];
+    else process.env[k] = savedEmailEnv[k];
+  }
+});
+
+function setEmailEnv(vals) {
+  for (const k of EMAIL_KEYS) {
+    if (vals[k] === undefined) delete process.env[k];
+    else process.env[k] = vals[k];
+  }
+}
+
+const loadFlags = (tag) => import(`../../lib/config/runtime-flags.js?v=${tag}`);
+
+test('DEBUG_EMAIL: comes from the environment, trimmed — no address is baked into the module', async () => {
+  setEmailEnv({ EMAIL_DEBUG: 'true', DEBUG_EMAIL: '  sink@example.test  ' });
+  const mod = await loadFlags('debug-email-set');
+  assert.equal(mod.DEBUG_EMAIL, 'sink@example.test');
+  assert.equal(mod.EMAIL_DEBUG_MODE, true);
+});
+
+test('DEBUG_EMAIL: absent env leaves it an empty string, which is harmless while EMAIL_DEBUG is off', async () => {
+  setEmailEnv({ EMAIL_DEBUG: 'false', DEBUG_EMAIL: undefined });
+  const mod = await loadFlags('debug-email-unset');
+  assert.equal(mod.DEBUG_EMAIL, '');
+  assert.equal(mod.EMAIL_DEBUG_MODE, false);
+});
+
+test('EMAIL_DEBUG enabled with no DEBUG_EMAIL fails the boot instead of falling back to real recipients', async () => {
+  setEmailEnv({ EMAIL_DEBUG: 'true', DEBUG_EMAIL: undefined });
+  await assert.rejects(
+    () => loadFlags('debug-email-missing'),
+    /EMAIL_DEBUG is enabled but DEBUG_EMAIL is empty/,
+  );
+});
+
+test('EMAIL_DEBUG enabled with a whitespace-only DEBUG_EMAIL fails the same way', async () => {
+  // Trimming happens before the emptiness check, so "   " is not a usable address.
+  setEmailEnv({ EMAIL_DEBUG: 'true', DEBUG_EMAIL: '   ' });
+  await assert.rejects(
+    () => loadFlags('debug-email-blank'),
+    /EMAIL_DEBUG is enabled but DEBUG_EMAIL is empty/,
+  );
+});
+
+// --- Drift guard: no address may creep back into the source ------------------
+// The original bug was a literal address assigned to DEBUG_EMAIL. Comments are
+// stripped BEFORE scanning so that prose — the explanation above the constant, or a
+// future "e.g. you@example.com" — cannot fail the build for a line that ships no
+// address. Only executable source is scanned. The sanity assertion guards the scan
+// itself: if the file is renamed or the constant restructured away, the scan would
+// otherwise pass vacuously on source it never found.
+
+test('runtime-flags.js contains no hardcoded email address', () => {
+  const src = fs.readFileSync(
+    path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'lib', 'config', 'runtime-flags.js'),
+    'utf8',
+  );
+  const code = src
+    .replace(/\/\*[\s\S]*?\*\//g, '')   // block comments
+    .replace(/^[ \t]*\/\/.*$/gm, '')    // whole-line // comments
+    .replace(/([^:'"`])\/\/.*$/gm, '$1'); // trailing // comments
+
+  // Sanity: the scan is actually looking at the declaration it is meant to police.
+  assert.match(code, /export const DEBUG_EMAIL\s*=/);
+
+  const emailLiteral = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+  const hit = code.match(emailLiteral);
+  assert.equal(
+    hit,
+    null,
+    `runtime-flags.js must read the debug address from the environment, but the source contains ${hit?.[0]}`,
+  );
 });

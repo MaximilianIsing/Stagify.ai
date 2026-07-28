@@ -38,7 +38,8 @@ function makeSpy(impl) {
  *   - `uploadFile`  → the req.file the faked upload middleware injects,
  *   - `uploadError` → make the upload middleware fail (400 branch),
  *   - `dataLogFiles` → { 'prompt_logs.csv': 'contents' } seeded into the data-log dir,
- *   - `grantResult` / `revokeResult` → what the faked comp-grant store calls return.
+ *   - `grantResult` / `revokeResult` → what the faked comp-grant store calls return,
+ *   - `deleteUserResult` → what the faked GDPR-erasure helper returns.
  * Returns { baseUrl, key, calls, getManifest, hostedImagesDir, close }.
  */
 export async function mountAdmin(options = {}) {
@@ -47,6 +48,7 @@ export async function mountAdmin(options = {}) {
     grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
     revokeResult = { ok: true, userId: 'u_1', email: 'granted@example.com' },
     testSendResult = { ok: true },
+    deleteUserResult = { ok: true, userId: 'u_1', email: 'gone@example.com', rows: { users: 1, sessions: 2, memories: 1 }, logs: [] },
   } = options;
 
   const hostedImagesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-hosted-'));
@@ -68,6 +70,7 @@ export async function mountAdmin(options = {}) {
 
   const exportAllMemories = makeSpy(() => ({ 'user-1': [{ id: 'm1', text: 'remember me' }] }));
   const resetAllMemories = makeSpy(() => {});
+  const deleteUser = makeSpy(() => deleteUserResult);
   const uptimeMonitor = { reset: makeSpy(() => ({ up: true, since: 'now' })) };
   const authStore = {
     // exportStore (the credential-bearing backup shape) is deliberately NOT wired
@@ -96,6 +99,7 @@ export async function mountAdmin(options = {}) {
     setSensitiveHeaders,
     exportAllMemories,
     resetAllMemories,
+    deleteUser,
     getDataLogDir: () => dataLogDir,
     getHostedImagesDir: () => hostedImagesDir,
     readHostedImagesManifest,
@@ -117,7 +121,7 @@ export async function mountAdmin(options = {}) {
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     key: logsAccessKey,
-    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail },
+    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail, deleteUser },
     getManifest: () => manifest,
     hostedImagesDir,
     close: () =>

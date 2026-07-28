@@ -98,7 +98,10 @@ test('a Resend-rejected send returns 502, not a false success', async () => {
   assert.equal(res.status, 502);
   assert.equal(json.success, undefined);
   assert.equal(json.error, 'Failed to send email');
-  assert.match(json.details, /Invalid `to` field\./);
+  // Resend's prose describes OUR account, domains and suppression list, so it stays
+  // server-side: the caller gets a reference, the operator gets the text in the log.
+  assert.match(json.ref, /^[0-9a-f]{8}$/);
+  assert.doesNotMatch(JSON.stringify(json), /Invalid `to` field|validation_error/);
   // The send was still attempted — this is the response-handling bug, not a guard.
   assert.equal(app.sent.length, 1);
 });
@@ -107,9 +110,11 @@ test('a non-string Resend error is still surfaced as a 502', async () => {
   app = await mountPublicEmail({ data: null, error: { statusCode: 429 } });
 
   const res = await postEmail(app.baseUrl, BODY);
+  const json = await res.json();
 
   assert.equal(res.status, 502);
-  assert.match((await res.json()).details, /429/);
+  assert.match(json.ref, /^[0-9a-f]{8}$/, 'a stringified upstream object is still only a reference');
+  assert.doesNotMatch(JSON.stringify(json), /429/);
 });
 
 test('a successful send returns the id from the v6 data envelope', async () => {
@@ -133,7 +138,10 @@ test('a thrown transport error is still a 500 (unchanged)', async () => {
   });
 
   const res = await postEmail(app.baseUrl, BODY);
+  const json = await res.json();
 
   assert.equal(res.status, 500);
-  assert.match((await res.json()).details, /socket hang up/);
+  assert.equal(json.error, 'Failed to send email');
+  assert.match(json.ref, /^[0-9a-f]{8}$/);
+  assert.doesNotMatch(JSON.stringify(json), /socket hang up/, 'transport internals stay in the log');
 });

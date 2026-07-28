@@ -11,6 +11,16 @@
  * Deliberately a CLASSIC script (no import/export) so it exposes the global
  * `gtag()` that later conversion-event snippets call, and so it stays outside the
  * ESM lint/type-check scope. Keep the conversion ID in this one file.
+ *
+ * Its <script> tag is `defer`, not synchronous. This file only queues two dataLayer
+ * entries and appends an already-async loader — nothing below it in the document
+ * depends on it during parsing — so a blocking tag bought nothing and cost a parser
+ * stall at the very top of <head>, ahead of every stylesheet link, on all 19 public
+ * pages. `defer` rather than `async` because it keeps document order: this tag is
+ * first, so `window.gtag` is guaranteed to exist before any other deferred or module
+ * script runs, which is the contract a future conversion snippet will rely on.
+ * (A classic, non-deferred script would still run earlier — see
+ * test/frontend/head-scripts.test.js, which pins the render-blocking set.)
  */
 window.dataLayer = window.dataLayer || [];
 window.gtag =

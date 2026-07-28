@@ -244,15 +244,22 @@
         const bugReportForm = document.getElementById('bug-report-form');
         const bugReportSubmit = document.getElementById('bug-report-submit');
         
+        // Focus follows the dialog: without this it stays on the button behind the
+        // overlay, so the dialog is never announced and Tab walks the page under it.
         function openBugReport() {
           bugReportPopup.classList.add('active');
           document.body.style.overflow = 'hidden';
+          var description = document.getElementById('bug-report-description');
+          if (description) description.focus();
         }
-        
+
         function closeBugReport() {
           bugReportPopup.classList.remove('active');
           document.body.style.overflow = '';
           bugReportForm.reset();
+          // Always the same trigger here (unlike the per-image mask/lightbox
+          // openers), so it can just be looked up.
+          if (bugReportBtn && bugReportBtn.isConnected) bugReportBtn.focus();
         }
         
         if (bugReportBtn) {
@@ -360,6 +367,16 @@
         }
         
         if (closeBtn) {
-          closeBtn.addEventListener('click', closeImageModal);
+          // Called through window inside the handler, NOT passed as a bare
+          // identifier. `closeImageModal` is defined by ai-designer-app.js, which is
+          // a deferred <script type="module"> — so it does not exist yet when this
+          // classic script runs during parsing. Passing the reference directly threw
+          // a ReferenceError right here, which meant this listener was never
+          // attached at all: clicking the "×" did nothing, and the lightbox could
+          // only be dismissed with Escape or a click outside it (both of which
+          // resolve the name inside their handler body, so they were unaffected).
+          closeBtn.addEventListener('click', function () {
+            if (typeof window.closeImageModal === 'function') window.closeImageModal();
+          });
         }
       })();

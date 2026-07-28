@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
-    <script src="scripts/gtag.js"></script>
+    <script src="scripts/gtag.js" defer></script>
 
     <!-- AI Designer is Stagify+ only. Gate access before anything renders:
          anonymous visitors bounce straight to the homepage demo row, and
@@ -314,11 +314,11 @@
     </main>
     
     <!-- Bug Report Popup -->
-    <div class="bug-report-popup" id="bug-report-popup">
+    <div class="bug-report-popup" id="bug-report-popup" role="dialog" aria-modal="true" aria-labelledby="bug-report-popup-title">
       <div class="bug-report-popup-content">
         <div class="bug-report-popup-header">
-          <h2 class="bug-report-popup-title">Report a Bug</h2>
-          <button class="bug-report-popup-close" id="bug-report-popup-close">&times;</button>
+          <h2 class="bug-report-popup-title" id="bug-report-popup-title">Report a Bug</h2>
+          <button type="button" class="bug-report-popup-close" id="bug-report-popup-close" data-lang-attr="common.close|aria-label" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         </div>
         <form class="bug-report-form" id="bug-report-form">
           <div class="bug-report-form-group">
@@ -358,8 +358,13 @@
     <script type="module" src="scripts/ai-designer-app.js"></script>
     
     <!-- Image Modal/Lightbox -->
-    <div id="image-modal" class="image-modal">
-      <span id="image-modal-close" class="image-modal-close">&times;</span>
+    <!-- The lightbox has no heading to point aria-labelledby at, so it is named
+         directly. The close control is a <button>, not the <span> it used to be:
+         a span is unreachable by keyboard, so Escape and click-outside were the
+         only ways out. Its "×" comes from .image-modal-close::before in CSS, so
+         the element itself stays empty and the aria-label is the whole name. -->
+    <div id="image-modal" class="image-modal" role="dialog" aria-modal="true" data-lang-attr="pdf.alt.enlargedImage|aria-label" aria-label="Full-size view of design image">
+      <button type="button" id="image-modal-close" class="image-modal-close" data-lang-attr="common.close|aria-label" aria-label="Close"></button>
       <img id="image-modal-img" class="image-modal-content" src="" data-lang-attr="pdf.alt.enlargedImage|alt" alt="Full-size view of design image">
     </div>
     

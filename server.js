@@ -20,6 +20,7 @@ import createBillingRouter from './routes/billing.js';
 import { createEmail } from './lib/services/email.js';
 import { createLogging } from './lib/services/logging.js';
 import { createMemory } from './lib/data/memory.js';
+import { createUserDeletion } from './lib/data/user-deletion.js';
 import { createConfig } from './lib/config/config.js';
 import { maskReferencePromptSuffix } from './lib/staging/prompts.js';
 import { downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, downscaleImageForGPT, compositeForReview } from './lib/image/image-primitives.js';
@@ -212,7 +213,10 @@ if (STATS_DEBUG) {
 // for the trial-email lifecycle). Reused here for the remaining routers.
 const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile } = createLogging({ __dirname });
 const { logEmailOpenToFile, isConfirmedEmailClientOpen, sendRegistrationVerificationEmail, sendAccountExistsNotice } = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
-const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = createMemory({ __dirname, DEBUG_MODE, openai });
+const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = createMemory({ __dirname, DEBUG_MODE });
+// GDPR erasure. Built here (not inside a store) because it spans every store's
+// tables plus the CSV logs — see lib/data/user-deletion.js.
+const { deleteUser } = createUserDeletion({ baseDir: __dirname, getDataLogDir });
 
 // GPT-vision / Gemini helpers extracted to lib/, instantiated with this server's
 // AI clients (the pure helpers they call are direct imports inside each module).
@@ -290,7 +294,7 @@ const MAX_SEGMENT_QUERY_LENGTH = 200;
 app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, sendRegistrationVerificationEmail, sendAccountExistsNotice, __dirname, googleClientId }));
 
 // admin routes (routes/admin.js)
-app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail }));
+app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail }));
 
 // staging routes (routes/staging.js)
 app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));

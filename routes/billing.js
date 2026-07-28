@@ -7,6 +7,7 @@
 import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
+import { reportError } from '../lib/http/error-ref.js';
 import { checkoutLimiter as defaultCheckoutLimiter } from '../lib/http/rate-limiters.js';
 import { logger } from '../lib/logger.js';
 import {
@@ -76,8 +77,11 @@ export default function createBillingRouter(deps) {
     try {
       event = stripe.webhooks.constructEvent(req.body, sig, stripeWebhookSecret);
     } catch (err) {
-      logger.error('[stripe] Webhook signature verification failed:', err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+      // Stripe's own sample code echoes err.message back, but this endpoint is
+      // public: the message distinguishes "no matching signature" from "timestamp
+      // outside the tolerance zone", which tells a forger which half to fix.
+      const ref = reportError('stripe.webhook-signature', err);
+      return res.status(400).send(`Webhook Error (ref ${ref})`);
     }
     // Idempotency gate. Stripe delivers at-least-once (it retries anything that
     // did not answer 2xx, and can duplicate on its own), so an event is claimed

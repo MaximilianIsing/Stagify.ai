@@ -5,14 +5,16 @@
 // try/catch; `getPdfAlt` reads window.LanguageSystem bare, so node tests must
 // shim globalThis.window first (see test/frontend/ai-designer/ai-designer-i18n.test.js).
 
-      // Small translation helper with a safe fallback. getText() returns the
-      // placeholder "Loading..." (or echoes the key) for keys that aren't in the
-      // language files yet, so we ignore those and use the English fallback.
+      // Small translation helper with a safe fallback: getText() returns undefined
+      // for a key that isn't in the language files yet, so we use the English one.
+      // It used to return the string 'Loading...' and this checked for that, plus for
+      // the key itself — neither of which getText can produce any more, and both of
+      // which would have discarded a real translation that happened to equal them.
       export function lang(key, fallback) {
         try {
           if (window.LanguageSystem && window.LanguageSystem.isLoaded && window.LanguageSystem.isLoaded()) {
             const v = window.LanguageSystem.getText(key);
-            if (v && v !== key && v !== 'Loading...') return v;
+            if (v) return v;
           }
         } catch (e) {}
         return fallback;

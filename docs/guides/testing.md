@@ -44,12 +44,12 @@ so a new folder needs no registration — just drop the file in.
 | `test/chat/` | The AI Designer chat pipeline modules. | `lib/chat/` |
 | `test/staging/` | Prompt building, the staging pipeline/generation, CAD handling. | `lib/staging/` |
 | `test/image/` | Erase, annotation, review, primitives, hosted images. | `lib/image/` |
-| `test/data/` | Auth store, SQLite layer, enterprise store, memory, counters, uptime, pro grants, public-email-domain gate. | `lib/data/` |
+| `test/data/` | Auth store, SQLite layer, enterprise store, Stripe linking, memory, counters, uptime, pro grants, public-email-domain gate. | `lib/data/` |
 | `test/services/` | AI clients, auth helpers, email + lifecycle emails, CSV logging, Stripe webhooks, trial lifecycle. | `lib/services/` |
-| `test/http/` | Async router, guards, helpers, rate limiters, uploads, CSV escaping. | `lib/http/` |
+| `test/http/` | Async router, guards, helpers, error references + the error-leak scan, rate limiters, uploads, CSV escaping. | `lib/http/` |
 | `test/config/` | Runtime flags, model config, the diagnostic logger. | `lib/config/`, `lib/logger.js` |
 | `test/i18n/` | The localized-URL layer **and** the translation **drift guards** (`room-types-i18n`, `unstageable-i18n`, `locale-data`). | `lib/i18n/` |
-| `test/frontend/` | Browser logic, split **by area** rather than by exact path: `admin/`, `ai-designer/`, `app/`, `masking-studio/` (which also holds `mask-core`, the shared engine that lives a level up in the source), `mask/` for the cross-page mask-editor subsystem (`public/scripts/mask/`), and `profile-menu/` for the account dropdown + auth modal. Standalone modules and page-level guards stay at the top: `count-up`, `heic-convert`, `unstageable-message`, `escape-html`, `plus-welcome`, `classic-scripts-parse`. | `public/scripts/` |
+| `test/frontend/` | Browser logic, split **by area** rather than by exact path: `admin/`, `ai-designer/`, `app/`, `masking-studio/` (which also holds `mask-core`, the shared engine that lives a level up in the source), `mask/` for the cross-page mask-editor subsystem (`public/scripts/mask/`), and `profile-menu/` for the account dropdown + auth modal. Standalone modules and page-level guards stay at the top: `count-up`, `heic-convert`, `language-loader`, `unstageable-message`, `escape-html`, `css-tokens`, `plus-welcome`, `classic-scripts-parse`. | `public/scripts/` |
 | `test/helpers/` | Shared harnesses — **not** specs. | — |
 
 Two rules of thumb when a spec could sit in two places — both are about **what is under
@@ -83,6 +83,11 @@ varies with what's under test:
   webhook signature check + route control flow.
 - `admin-app.js` keeps the **real** `protectLogs` access-key guard (that gate is the
   router's whole security story) and fakes the stores behind an in-memory manifest + temp dir.
+- `chat-app.js` keeps **real multer** (memory storage) as the `chatUpload` dep, because
+  `/api/chat-upload` is multipart: a pass-through would leave `req.files` undefined and the
+  handler would 400 before reaching anything worth testing. Tests post a genuine `FormData`
+  body, so `req.files` carries real Buffers and the text fields (`conversationHistory` as a
+  JSON *string*, `streamResponse` as the *string* `'true'`) arrive exactly as from a browser.
 
 `fake-ai.js` provides the scripted AI stub the staging/chat harnesses use.
 
@@ -114,7 +119,8 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 | 2 | `data/auth-store-sqlite.test.js` | SQLite specifics: on-disk persistence, the one-time `auth-store.json` → SQLite migration (user-data safety), the `exportStore`/`importStore` round-trip behind the admin backup, the `exportRedacted` line (no credential survives redaction, and it's an allowlist), and **tokens at rest** — session/reset tokens are stored hashed, a stored digest is not replayable as a token, and the in-place hashing migration keeps existing sessions valid while staying idempotent across reopens. Also the **index** guards: `EXPLAIN QUERY PLAN` proves the four non-token session/reset lookups SEARCH rather than SCAN (asserting the plan, not the schema — an index the planner ignores is no index), and a database whose indexes are dropped rebuilds them on the next open without signing anyone out. |
 | 2 | `data/db.test.js` | The `lib/data/db.js` layer: the WAL/pragmas it sets and that data actually persists to disk. |
 | 2 | `data/stripe-events.test.js` | The webhook idempotency ledger: a redelivered event id is refused once handled (and while in flight), a **released** claim is claimable again so a failed event still gets Stripe's retry, an abandoned claim reclaims after the staleness window, an id-less event is never blocked, and dedup survives a restart. The two directions matter equally — catches both "double-applied event" and "event silently swallowed". |
-| 2 | `services/stripe-webhooks.test.js` | Billing lifecycle over hand-built events: checkout upgrades to Pro (by ref or email), `subscription.deleted` downgrades, `updated`→active restores Pro, enterprise routes to the enterprise store, and an enterprise checkout whose metadata names a **public email provider** activates nothing (acked, not applied — the case a replayed or dashboard-made subscription would hit). Catches "paid but no Pro" / "churned but still Pro". |
+| 2 | `services/stripe-webhooks.test.js` | Billing lifecycle over hand-built events: checkout upgrades to Pro (by ref or email), `subscription.deleted` downgrades, `updated`→active restores Pro, enterprise routes to the enterprise store, and an enterprise checkout whose metadata names a **public email provider** activates nothing (acked, not applied — the case a replayed or dashboard-made subscription would hit). Catches "paid but no Pro" / "churned but still Pro". Also carries the **account-takeover scenarios** end to end: a checkout in a paying customer’s name is refused, so the follow-up `subscription.deleted` for the attacker’s own cancelled trial can no longer downgrade them — plus the refusal’s error-level log (ids, not the typed address), and the ordinary signed-out purchase that must keep working. |
+| 2 | `data/stripe-linking.test.js` | The checkout → account mapping (`lib/data/stripe-linking.js`): reference beats email, matching is case/whitespace-insensitive, and the **email path may start a billing relationship but never replace one** — refused when the account holds a different live subscription or a comp grant, allowed for a fresh buyer, a genuine re-purchase after cancellation, and a Stripe redelivery of the same checkout. Every refusal case is paired with the allow case it must not break: too strict is the quieter failure (a real buyer pays and gets nothing). |
 | 2 | `data/enterprise-store.test.js` | Domain activation (idempotent, case-insensitive), subscription-state sync, usage counting, and the **public-provider gate**: `activateDomain` refuses to write a `gmail.com` row, `isActiveDomain` grants nothing even when such a row is already stored, and — wired to the real `auth-helpers` — a user on a public domain is never upgraded to `pro`. |
 | 2 | `routes/staging-endpoints.test.js` | Staging contracts without any AI call, against the real booted server: **both** paid entry points refuse an anonymous caller — `validate-image` answers `401` `AUTH_REQUIRED` (and does so *before* looking at the body, so a malformed anonymous request is a 401 and not a 400), and `process-image` requires a session for desktop. This tier can't hold a session (registration needs a mailed code), so the validator's own behaviour — 400 shapes, the `code`/`reason` relay, fail-open — is asserted in `routes/staging-routes.test.js` with the auth helper faked. Both AI keys stay blank as a belt-and-braces guard: a regressed gate would reach a disabled reviewer, not a live API (the grader is Gemini, so `GPT_KEY` alone is not enough). |
 | 2 | `server/public-endpoints.test.js` | Public surface smoke: JSON endpoint shapes, SEO/landing files serve, static content types, unknown routes 404, a helmet header is present. |
@@ -129,13 +135,18 @@ The files are informally tiered from cheapest/most-fundamental to broader:
 | 1 | `frontend/admin/admin-analytics-users.test.js` | The dashboard's per-account joins (`public/scripts/admin/analytics-users.js`): last-active resolved across BOTH identifiers (renders key on email, chat/mask on userId), the activation funnel's nesting invariant — with the live-data regression where paid accounts outnumbered activated ones and drew a funnel step wider than its parent — and cohort cells that keep "this month hasn't elapsed" distinct from a measured 0%. |
 | 1 | `frontend/admin/admin-charts.test.js` | The dashboard's SVG chart builders (`public/scripts/admin/charts.js`) against a stub `document`: one hover target per data point, geometry proportional to the values, a zero drawing nothing, axis labels thinned so they can't collide, and every chart degrading to a placeholder instead of an empty SVG. |
 | 1 | `frontend/admin/admin-grant-ui.test.js` | The dashboard's grant control (`public/scripts/admin/grant.js`) against a minimal fake DOM: which of the four states renders (free → grant button, active grant → expiry + revoke, Stripe subscriber and enterprise → read-only notes), the confirm gate, the request each button sends, and the failed-request path re-enabling the button. |
-| 2 | `routes/chat-route.test.js` | The `/api/chat` handler (faked OpenAI + image steps): the auth gate, the routing-completion parse, and the SSE-vs-`res.json` streamMode decision. |
+| 2 | `routes/chat-route.test.js` | The `/api/chat` handler (faked OpenAI + image steps): the auth gate, the routing-completion parse, and the SSE-vs-`res.json` streamMode decision. Also pins **CAD base-image precedence** — an image in the current message beats an earlier `baseImageIndex` thumbnail pick — which is the flag the handler now resolves once instead of re-scanning `lastUserMessage.content` a second time for the CAD step. |
+| 2 | `routes/chat-upload-route.test.js` | The `/api/chat-upload` handler, whose 280-line body had **no route-level coverage** — only its extracted units. Driven through real multer with a genuine `FormData` body, so it covers what only this endpoint owns: the no-files/auth/no-client guards, `conversationHistory` arriving as a JSON *string* (including the unparseable case falling back to empty rather than 500ing), `streamResponse:'true'` as a *string* form field opening SSE, the upload-only **staging synthesis** ("add this chair" + a staged image in history → stage anyway, and the mirror case that must not), the model allow-list, `imageAnnotations` keyed by filename, and an unsupported upload reaching the model as text with zero image items. |
 | — | `server/route-inventory.test.js` | Refactor safety net: asserts every **critical route is still registered** (responds with anything but 404 for its method). Guards the `server.js` → `routes/*` extraction. |
 | — | `http/async-router.test.js` | The `createAsyncRouter()` error-handling safety net: a rejecting async handler reaches the catch-all as a clean `500` instead of hanging the request. |
+| — | `http/error-leak.test.js` | **Drift guard** against exception text in a response body. Reads the source of every response-building call in `routes/` and `lib/` — `sendError`, `writeChatSseEvent`, and any `res`-rooted `.json(`/`.send(` chain — and fails on `.message`/`.stack` inside one. `sendError(…, { details: error.message })` was the house style at ~19 sites, so the one-time cleanup is worthless without this. Multer's `400`s are allowlisted by exact snippet. The detector is itself pinned by cases for each shape the codebase actually had (including `res.status(400).send(\`…${err.message}\`)`, which an earlier version missed) and for the safe replacements. |
+| — | `http/error-ref.test.js` | `reportError()`: the reference is random rather than derived (two identical errors differ, and it reveals nothing about the failure), while the log line carries the context, that same reference, and the error object whole so the stack survives. Both halves matter — a reference nobody can find in the logs would be worse than the `details` it replaced. |
 | — | `data/uptime.test.js` | Pure math of the uptime monitor: window percentages, coverage, bucket classification, incident coalescing/pruning. |
+| 1 | `frontend/language-loader.test.js` | `LanguageSystem.getText`'s **miss contract**, which ~20 call sites depend on and nothing covered before: a miss is `undefined`, an explicit fallback still wins (including before the pack loads — that branch runs once, so its test must be first in the file), falsy translations are real values, and `[data-lang]` / `-html` / `-attr` write hits while leaving misses' markup alone. The miss used to be the string `'Loading...'`, so both directions are pinned: that text now survives as a translation, **and** `getText(k) \|\| 'default'` reaches its default. Plus a **drift guard** that fails if any script in `public/scripts/` compares against the literal again — three of the six consumers have no unit tests, and mutation testing showed re-adding their comparison was otherwise invisible. |
 | 1 | `frontend/unstageable-message.test.js` | The browser's rejection-copy resolver (`public/scripts/unstageable-message.js`) against a stubbed `LanguageSystem`: a translated code wins, an untranslated one degrades to the server's English, and no input shape ever yields an empty message. |
 | 1 | `frontend/profile-menu/auth-modal.test.js` | The sign-in / create-account / forgot-password / verify-email modal (`profile-menu/auth-modal.js`) against a shim seeded from the **real template's ids** (`test/helpers/auth-modal-dom.js`), so the fixture can't drift from the markup. Written as **characterization tests before** the file was modernized, and unchanged after, which is what makes the refactor's "no behaviour change" claim checkable: mode-toggle copy and the confirm-password field (hidden *and* cleared *and* de-required), the forgot/verify panel swaps, mismatched passwords never reaching the network, and the success path storing the token exactly once. One of them started life failing — the `__stagifyPendingStaging` hand-off was dead, so signing in from "Stage this photo" opened nothing. |
 | 1 | `frontend/profile-menu/profile-menu.test.js` | The dropdown's four render branches (guest / free / pro / pro-with-subscription) and that the module's IIFE boots at all — the `var`→`const` conversion's real risk is a temporal-dead-zone throw, which in an IIFE means a blank menu on every page rather than a test failure. Also pins that the account email is escaped, and that `refresh()` no-ops on pages with no menu markup. |
+| 1 | `frontend/css-tokens.test.js` | The **design tokens** in `public/styles/`, as static analysis: no sheet hard-codes a colour that already has a token, every `var()` resolves to a token defined by a sheet that page also loads, and the served `demo-player.css` is still byte-identical to its `to-build/demos/` master. The scope check is the load-bearing one — an undefined `var()` does not fall back, it **drops the whole declaration**, silently and only on the page missing the defining sheet, which is exactly what a naive tokenization sweep causes in `legal.css` / `getpro.css` / `enterprise-msa.css` / `blog.css`. It found a live one on the way in: `styles.css` had `color: var(--text)`, a token that never existed. JS-set properties (`setProperty('--ar', …)`) and `var(--x, fallback)` are exempt. |
 | 1 | `frontend/escape-html.test.js` | The frontend's single HTML escaper (`public/scripts/escape-html.js`): each of the five markup characters (quotes included — the profile menu interpolates into `title="…"`, where escaping only `&<>` still lets a quote close the attribute), script-tag and attribute-breakout payloads, `&`-first ordering, `null`→`''` while `0`→`"0"`, and that the admin + AI Designer names are re-exports of this exact function rather than lookalikes. Plus a **drift guard** that walks `public/scripts/` for hand-rolled escapers (an `&`→`&amp;` replace chain, or a `textContent`→`innerHTML` round trip) and fails on any second implementation — the point being that `admin/helpers.js`'s `esc` was once `String(s||'')`, a no-op named like a security function and wired to three `innerHTML` sinks. A second scan covers `profile-menu.js`, where **every** `lang()` value reaches `innerHTML` and so must be wrapped in `esc()` — content sites as much as `title=` / `aria-label=`; it carries a sanity assertion so it fails loudly rather than silently passing if the menu stops being built that way. |
 | 1 | `frontend/language-loader-observer.test.js` | One guard: the i18n `MutationObserver` must drain its own records after re-applying, or a translated value containing a `data-lang` makes the pass re-trigger on its own `innerHTML` writes forever and hangs the tab. Scanned rather than driven — reaching that path needs a DOM, a `MutationObserver` and the module's `DOMContentLoaded` init, a harness larger than the line it protects. **Strips comments before scanning**: the fix's own comment names both `takeRecords()` and `disconnect()`, and the first version of this guard passed on that prose alone while the call was deleted. |
 | — | `i18n/unstageable-i18n.test.js` | **Drift guard** between the rejection taxonomy (`lib/staging/unstageable.js`) and `public/languages/*.json`: every code is translated in **every** language, no pack carries a stale code, and no non-English pack still holds the English string. Needed because a missing key silently falls back to English rather than failing. |
@@ -212,12 +223,22 @@ they can't be driven on a plain static server. [`e2e/fixtures.js`](../../e2e/fix
 /api/auth/me` → a Pro user, so the page reveals instead of redirecting. This is how gated
 flows (the mask editor, session resume) are exercised without a real account or backend auth.
 
-What's covered today (all green — 26 tests across 13 specs):
+**Opening the main tool's stage dialog.** Use `openStageModalViaUI(page)` — it clicks the
+real hero upload button and waits for `#stage-modal`. Do **not** lift `.hidden` off the
+modal with a `page.evaluate`: that was the house shortcut in nine specs, and it started
+every story *after* `openFilePicker()`, the one gate deciding whether the dialog may open
+(signed in → open, signed out → auth modal). Nothing drove that gate, which is how the
+sign-in → staging hand-off could sit **dead** in all three sign-in paths. The signed-out
+half now has its own spec, driven with `stubAnonymousAuth(page)` — the mirror of
+`seedProSession` that mocks the auth endpoints but seeds **no** token.
+
+What's covered today (all green — 79 tests across 23 specs):
 
 | Spec | Covers |
 |---|---|
 | `index.spec.js` | Home page load smoke — hero stats, the custom select, and the before/after controls. |
 | `i18n-observer-reentrancy.spec.js` | The i18n `MutationObserver` does not feed itself. Serves a doctored English pack whose `[data-lang-html]` value nests a `[data-lang]` span — the edit a translator could make — then inserts a translated node to kick the observer, and asserts the pass stays bounded. The **only** test that can prove this: the unit guard can scan for `takeRecords()` but not that draining stops the feedback, which needs a real DOM and a real observer. An init script wraps the `innerHTML` setter as a **circuit breaker** — after 400 writes it stops writing, so a runaway unwinds itself and fails as a clean assertion in ~6s instead of hanging the tab until the 45s timeout. Mutation-tested: deleting the drain fails it. |
+| `stage-signin-entry.spec.js` | Main tool — the **signed-out entry path**, which is the app's highest-value flow and was the one thing no browser test touched: click "Upload image for free" → the auth modal (create-account mode), **not** the uploader → sign in → the stage dialog opens with the visitor's intent intact → upload and stage from it. Covers both callers of `completeSignIn()` (password login and register + emailed code), a rejected sign-in as the negative control, and the signed-in branch of the same gate. Mutation-tested against the real regression: reading `__stagifyPendingStaging` *after* `closeAuthModal()` clears it — the shape the bug had until 2026-07-28 — leaves the dialog shut and fails these. |
 | `stage-reject.spec.js` | Main tool — a rejected upload surfaces the **localized** reason in the stage modal's error viewer before any generation is spent, plus an approved-upload negative control. The masking studio's reject path is a different consumer, hence the separate spec below. |
 | `stage-room-type.spec.js` (2nd describe) | Main tool — the **remove-furniture gate**: the control is offered on a normal room, withdrawn when `Dorm` is picked, and restored on the way back; and a box checked *before* the switch does not still submit `removeFurniture=true`. Proves the two owners (`auth.js` plan gate, `app.js` room-type gate) actually cooperate in a real browser. |
 | `stage-room-type.spec.js` | Main tool — picking a room type end to end: the `Dorm` option renders its **New** badge without leaking it into the trigger (`initCustomSelect` reads `.option-label`, not the option's whole `textContent`), and the value that reaches `/api/process-image` is the selected one. Third test drives a **localized** page and asserts the untranslated English `data-value` goes on the wire while the label shows Spanish — a translated value would miss `promptMatrix` and stage generically. |
@@ -235,7 +256,9 @@ What's covered today (all green — 26 tests across 13 specs):
 **Writing an e2e spec.** Name it `e2e/<thing>.spec.js`, call `seedProSession(page)` in a
 `beforeEach` if the page is gated, `page.route('**/api/…')` **every** backend call it makes
 (never hit a real provider), and assert on user-visible DOM. Reuse the room-photo and
-tiny-PNG fixtures from `e2e/fixtures.js`.
+tiny-PNG fixtures from `e2e/fixtures.js`, and reach the screen under test **through the UI**
+(`openStageModalViaUI`) rather than by unhiding it — a shortcut past the entry point is how
+that entry point ends up with no coverage at all.
 
 ## Type-checking
 
@@ -295,15 +318,55 @@ ESLint uses a flat config ([`eslint.config.js`](../../eslint.config.js)):
   empty `catch {}` and unused caught-error bindings (`no-empty {allowEmptyCatch}`,
   `no-unused-vars {caughtErrors:'none'}`) — deliberate best-effort swallows in the UI code.
 
+## Coverage
+
+`npm run test:coverage` ([`scripts/test-coverage.js`](../../scripts/test-coverage.js)) re-runs
+the suite under V8 coverage and fails if **product-source** coverage dips below the floors in
+that file. It runs in CI only — `npm test` (the deploy gate) does not measure coverage.
+
+- **The floors are a ratchet, not a target.** They sit a few points under measured coverage so
+  ordinary churn doesn't trip them. Raise them as coverage improves; **never lower them to make
+  a red build pass.** Current floors — lines 85 / branches 77 / functions 84 — were set on
+  2026-07-28 against a measured 88.09 / 81.04 / 86.44. Branches carry the widest margin because
+  V8's branch attribution shifts most between Node minors.
+- **Measure before you raise.** Node only enforces coverage thresholds on **>= 22.8**; on an
+  older local Node the script prints the report and skips enforcement (CI pins Node 22-latest,
+  so the gate always holds there). It also needs **>= 22.5** for `--test-coverage-exclude`, so on
+  an older Node the printed summary still includes `test/` rows and reads several points high.
+  To get the real number locally, emit lcov (`--test-reporter=lcov`) and sum `LF/LH`, `BRF/BRH`
+  and `FNF/FNH` across the records whose `SF:` path is **not** under `test/`.
+
+### The blind spot these floors have
+
+V8 coverage only reports files the run actually **loaded**. A module under `public/scripts/`
+that no test ever imports is in **neither the numerator nor the denominator** — it is invisible
+to the floors, not averaged into them. Raising the floors can never surface it, and a new
+untested frontend file lands without moving the aggregate at all.
+
+[`test/frontend/untested-frontend-modules.test.js`](../../test/frontend/untested-frontend-modules.test.js)
+is the guard for that. It walks the import graph from `test/` into `public/scripts/` and pins the
+exact set of never-loaded modules as a **debt ledger** (68 of 107 files as of 2026-07-28,
+excluding vendored bundles). The assertion is set equality, so it fails three ways:
+
+| Failure | What it means | What to do |
+| --- | --- | --- |
+| `newlyUntested` | A frontend module arrived that no test loads | Write a test, or add it to `UNTESTED` to record the debt deliberately |
+| `nowTestedOrGone` | A ledgered module gained a test, or was deleted/renamed | Remove it from `UNTESTED` — the ledger only ever shrinks |
+
+Adding an entry is allowed; it's meant to be a visible, reviewable act rather than a silent
+omission. The ledger is the thing that ratchets frontend coverage — the percentage floors can't.
+
 ## Continuous integration
 
 Two independent pipelines run on the default branch:
 
 - **GitHub Actions** ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)) — on
   every push and PR to `main`, in **two parallel jobs**:
-  - `test` — `npm ci`, then `npm test` (which type-checks **then** runs the unit suite),
-    then `npm run lint`. All blocking: a type error, a failing unit test, or any lint
-    warning/error (`--max-warnings=0`) fails the build.
+  - `test` — `npm ci`, then `npm test` (which type-checks **then** runs the unit suite), then
+    `npm run test:coverage` (the coverage floors above), then `npm run lint`, then
+    `npm audit --omit=dev --audit-level=high`. All blocking: a type error, a failing unit test,
+    a coverage dip, any lint warning/error (`--max-warnings=0`), or a new high/critical
+    advisory in a runtime dependency fails the build.
   - `e2e` — `npm ci`, installs Chromium (`npx playwright install --with-deps chromium`),
     then `npm run test:e2e`. Isolated in its own job so the heavier, occasionally-flaky
     browser run doesn't slow the fast unit gate. Blocking in CI, but see the deploy note.
@@ -312,6 +375,6 @@ Two independent pipelines run on the default branch:
   lint is part of the Render build.
 
 Net: a **type error or a red unit test** blocks both CI and the deploy (both run inside
-`npm test`). A lint finding or a failing **e2e** test blocks CI (so it can't reach a clean
-`main`) but does **not** block the Render deploy — by design, so browser flake can never
-wedge a release.
+`npm test`). A lint finding, a **coverage** dip, a dependency advisory, or a failing **e2e**
+test blocks CI (so it can't reach a clean `main`) but does **not** block the Render deploy —
+by design, so browser flake can never wedge a release.

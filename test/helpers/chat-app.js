@@ -1,10 +1,14 @@
 // Mounts the real AI Designer chat router (routes/chat.js) on a bare Express app
 // with fully faked dependencies, then listens on an ephemeral port. This mirrors
-// test/helpers/staging-app.js (mountStaging): it exercises the ACTUAL /api/chat
-// handler — auth gate, the routing-completion parse, the streamMode decision, and
-// the SSE-vs-res.json branch — with the OpenAI client and every slow image step
+// test/helpers/staging-app.js (mountStaging): it exercises the ACTUAL handlers —
+// auth gate, the routing-completion parse, the streamMode decision, and the
+// SSE-vs-res.json branch — with the OpenAI client and every slow image step
 // (processStaging / processImageGeneration / blueprintTo3D) swapped for
 // deterministic in-process fakes. No full server boot, no real network/model call.
+//
+// Covers BOTH chat endpoints. /api/chat is JSON; /api/chat-upload is multipart and
+// is driven through real multer (see below), so tests post a genuine FormData body
+// and the handler sees genuine req.files Buffers.
 //
 // The OpenAI client is scriptable: pass `routing` (a single routing object, or an
 // array used as a FIFO queue) and each `chat.completions.create` call returns
@@ -14,9 +18,18 @@
 // touching a model.
 
 import express from 'express';
+import multer from 'multer';
 import createChatRouter from '../../routes/chat.js';
 
 const pass = (req, res, next) => next();
+
+// /api/chat-upload is multipart, so the router's `chatUpload.array('files', 5)`
+// has to actually parse a body — a pass-through would leave req.files undefined
+// and the handler would 400 out before reaching anything worth testing. This is
+// REAL multer on memory storage (the same shape as lib/http/uploads.js, minus the
+// production size limits), so req.files carries genuine Buffers and the multipart
+// text fields land on req.body exactly as they do in production.
+const chatUpload = multer({ storage: multer.memoryStorage() });
 
 // Minimal call-counting spy. `fn.calls` is the invocation count; `fn.lastArgs`
 // is the most recent argument list. `impl` supplies the return value.
@@ -63,7 +76,7 @@ export async function mountChat(options = {}) {
     openai: { chat: { completions: { create: openaiCreate } } },
     genLimiter: pass,
     // Consumed at route-registration time (chatUpload.array('files', 5)).
-    chatUpload: { array: () => pass },
+    chatUpload,
     // Default: authorized. Return the validated user (the handler keys memories on
     // `user.id`) and DON'T touch res (matches the real requireProAccount guard).
     requireProAccount: () => ({ id: 'test', email: 'test@example.com', plan: 'pro' }),

@@ -1,6 +1,7 @@
 // staging routes, extracted verbatim from server.js.
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
+import { reportError } from '../lib/http/error-ref.js';
 import { createMaskEditHandler } from '../lib/staging/mask-edit.js';
 import { createSegmentHandler } from '../lib/staging/segment.js';
 import { logger } from '../lib/logger.js';
@@ -61,13 +62,15 @@ router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, 
       treatAsPro: false,
     });
   } catch (error) {
-    logger.error('Error processing image:', error);
+    // A model that returned no image is an expected outcome with its own 422 and
+    // code, not an internal failure — it gets no reference to quote.
     if (error.code === 'NO_IMAGE_GENERATED') {
+      logger.error('Error processing image:', error);
       return sendError(res, 422, 'This image couldn\'t be staged. Please try a different photo of an interior room.', {
         code: 'NO_IMAGE_GENERATED',
       });
     }
-    return sendError(res, 500, 'Image processing failed', { details: error.message });
+    return sendError(res, 500, 'Image processing failed', { ref: reportError('staging.process-image', error) });
   }
 });
 
@@ -120,9 +123,9 @@ router.post('/api/stage-by-endpoint-key', stagingEndpointKeyGuard, stagingProces
       treatAsPro: true,
     });
   } catch (error) {
-    logger.error('Error in stage-by-endpoint-key:', error);
+    const ref = reportError('staging.stage-by-endpoint-key', error);
     if (!res.headersSent) {
-      return sendError(res, 500, 'Image processing failed', { details: error.message });
+      return sendError(res, 500, 'Image processing failed', { ref });
     }
   }
 });

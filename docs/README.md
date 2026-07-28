@@ -79,7 +79,7 @@ This README is the entry point for the `docs/` folder. See also:
 ├── lib/                     # Shared modules (factory + dependency-injection pattern)
 │   ├── logger.js            # Diagnostic logger — the single stdout/stderr funnel (LOG_LEVEL)
 │   ├── config/              # config.js (secrets), model-config.js, runtime-flags.js
-│   ├── data/                # db.js (shared SQLite conn), auth-store, enterprise-store, stripe-events, memory, counters, uptime-monitor
+│   ├── data/                # db.js (shared SQLite conn), auth-store, enterprise-store, stripe-linking, stripe-events, memory, counters, uptime-monitor
 │   ├── http/                # async-router, http-helpers (sendError), http-guards, rate-limiters, uploads, app-middleware
 │   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images
 │   ├── services/            # ai-clients, auth-helpers, email, logging (CSV), stripe-webhooks
@@ -147,7 +147,8 @@ before any secret is read. The full, commented list lives in
 - **Auth:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
 - **Email:** `RESEND_API_KEY`.
 - **Admin:** `endpoint_key` (guards the log/admin endpoints — note the lowercase name).
-- **Debug:** `DEBUG`, `EMAIL_DEBUG`, `STATS_DEBUG` (+ `DEBUG_ROOMS` / `DEBUG_USERS`).
+- **Debug:** `DEBUG`, `EMAIL_DEBUG` (+ `DEBUG_EMAIL`, required when it is on),
+  `STATS_DEBUG` (+ `DEBUG_ROOMS` / `DEBUG_USERS`).
 
 Every secret has a `.txt` file fallback for local dev; the server reads the env var
 first, then the file.
@@ -181,8 +182,8 @@ grouped into subdirectories by concern (full breakdown in
 | Area | Key modules |
 |---|---|
 | `lib/config/` | `config.js` (secrets, env → `.txt` fallback), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
-| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `password-hash.js` (the parameter-tagged password hash format + its rehash-on-login upgrade path), `enterprise-store.js`, `stripe-events.js` (webhook idempotency ledger), `memory.js`, `counters.js`, `uptime-monitor.js`. |
-| `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`). |
+| `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `password-hash.js` (the parameter-tagged password hash format + its rehash-on-login upgrade path), `enterprise-store.js`, `stripe-linking.js` (which account a subscription attaches to), `stripe-events.js` (webhook idempotency ledger), `memory.js`, `counters.js`, `uptime-monitor.js`. |
+| `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `error-ref.js` (`reportError` — 5xx bodies carry a log reference, never the exception), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`). |
 | `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`. |
 | `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `auth-helpers.js`, `email.js`, `logging.js` (append-only **CSV** business logs), `stripe-webhooks.js`. |
 | `lib/staging/` | `prompts.js` (incl. `generatePrompt`), `promptMatrix.js` (room × style style-layer), `room-constraints.js` (per-room hard rules), `staging-pipeline.js` (quality-retry loop), `staging-generation.js` (`processStaging`/`processImageGeneration`) + `virtual-staging-handler.js` (from `server.js`), `mask-edit.js` / `segment.js` (from `routes/staging.js`), `cad-handling.js` (CAD/PDF → 3D). |

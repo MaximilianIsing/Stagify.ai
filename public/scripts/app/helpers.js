@@ -56,7 +56,7 @@ export function dailyLimitMessage(errorData, { template } = {}) {
   const data = errorData || {};
   const lim = data.dailyGenerationLimit != null ? data.dailyGenerationLimit : 3;
   const used = data.dailyGenerationsUsed != null ? data.dailyGenerationsUsed : lim;
-  if (template && template !== 'Loading...') {
+  if (template) {
     return fillTemplate(template, { limit: lim, used });
   }
   return data.error || `Daily free limit reached (${lim} per day).`;

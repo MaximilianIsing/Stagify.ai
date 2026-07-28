@@ -13,7 +13,7 @@ export function lang(key, fallback, vars) {
   var text = fallback;
   if (window.LanguageSystem && typeof window.LanguageSystem.getText === 'function') {
     var got = window.LanguageSystem.getText(key);
-    if (typeof got === 'string' && got !== 'Loading...') text = got;
+    if (typeof got === 'string') text = got;
   }
   if (vars) {
     Object.keys(vars).forEach(function (k) {
