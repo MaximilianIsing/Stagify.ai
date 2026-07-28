@@ -19,6 +19,7 @@ import { createMaskViewport } from '../mask/viewport.js';
 import { createMaskOverlay } from '../mask/overlay.js';
 import { createMaskReference } from '../mask/reference.js';
 import { createMaskBrush } from '../mask/brush.js';
+import { createMaskFit } from '../mask/fit.js';
 import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
 import { requestMaskEdit } from '../mask/generate.js';
 
@@ -125,6 +126,23 @@ export function createStageMaskEditor(deps) {
 
       const viewport = createMaskViewport({ getModal: () => maskModal });
 
+      // Sizes the canvases to the room the dialog actually has. This editor used
+      // to hand the image a flat 60% of the viewport height (50% on mobile) and
+      // let the rest overflow, which pushed the prompt and the Apply button below
+      // the fold on a short window. Caps come from .stage-mask-modal /
+      // .stage-mask-content in styles.css: 16px padding, max-width 920px,
+      // max-height calc(100vh - 32px) — hence heightShare 1 rather than 0.9.
+      const fit = createMaskFit({
+        getModal: () => maskModal,
+        contentSelector: '.stage-mask-content',
+        containerSelector: '.stage-mask-canvas-container',
+        canvasSelector: 'canvas.stage-mask-canvas',
+        modalPadding: 16,
+        widthShare: 1,
+        heightShare: 1,
+        maxContentWidth: 920,
+      });
+
       // Shared brush. It owns the stroke state (tool, size, whether anything is
       // painted); this file keeps only the button chrome that reflects it.
       const brush = createMaskBrush({
@@ -184,6 +202,9 @@ export function createStageMaskEditor(deps) {
           // Edit" as clickable with no strokes and no prompt.
           updateSubmitState();
         }
+        // The refine phase adds a note row and swaps the buttons — re-measure so
+        // the image gives back (or takes) the height that costs.
+        fit.fit();
       }
 
       function isProcessing() {
@@ -227,28 +248,15 @@ export function createStageMaskEditor(deps) {
       function showInEditor(src) {
         const img = new Image();
         img.onload = () => {
-          // On mobile use the visual viewport height and a smaller fraction so the
-          // image leaves room for the header + controls + buttons without clipping.
-          const isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
-          const viewportH = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-          const viewportW = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
-          const maxHeight = viewportH * (isMobileViewport ? 0.5 : 0.6);
-          const maxWidth = Math.min(viewportW * 0.85, 860);
-          let dispW = img.width;
-          let dispH = img.height;
-          if (dispH > maxHeight) { dispW = (maxHeight / dispH) * dispW; dispH = maxHeight; }
-          if (dispW > maxWidth) { dispH = (maxWidth / dispW) * dispH; dispW = maxWidth; }
-
+          // Display size is measured against the live dialog once it is visible
+          // (fit.fit() below) — never guessed from a fraction of the viewport,
+          // which pushed the prompt and Apply button off-screen on short windows.
           baseCanvas.width = img.width;
           baseCanvas.height = img.height;
-          baseCanvas.style.width = dispW + 'px';
-          baseCanvas.style.height = dispH + 'px';
           baseCanvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
 
           drawCanvas.width = img.width;
           drawCanvas.height = img.height;
-          drawCanvas.style.width = dispW + 'px';
-          drawCanvas.style.height = dispH + 'px';
           brush.clear();
           setTool('brush');
 
@@ -257,11 +265,16 @@ export function createStageMaskEditor(deps) {
           drawCanvas.style.cursor = 'crosshair';
           updateSubmitState();
           refineState = null;
+          fit.setImage(img.width, img.height);
           setPhase('draw');
           maskModal.classList.add('active');
           maskModal.setAttribute('aria-hidden', 'false');
           viewport.bind();
           viewport.sync();
+          // Last, once every row sharing the dialog's height budget is in its
+          // final state — fit() measures nothing until the modal is active.
+          fit.fit();
+          fit.bind();
         };
         img.src = src;
       }
@@ -293,6 +306,7 @@ export function createStageMaskEditor(deps) {
         maskModal.classList.remove('active');
         maskModal.setAttribute('aria-hidden', 'true');
         viewport.unbind();
+        fit.unbind();
         stopOverlay();
         clearDraw();
         reference.clear();
