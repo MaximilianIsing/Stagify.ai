@@ -31,6 +31,19 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // Mobile emulation. Pixel 5 is a CHROMIUM device descriptor on purpose: it is
+    // the only engine this repo installs (`npx playwright install chromium`), so an
+    // iPhone/WebKit project would fail to launch rather than fail an assertion.
+    // What it actually buys us over `setViewportSize({ width: 393 })` is the part
+    // the app branches on: isMobile (real mobile viewport meta + device scale
+    // factor) and hasTouch (pointer events arrive as touch, and `page.tap` works),
+    // which is what the studios' drawing/pan code and app.js's
+    // `isMobileStagingViewport()` (`matchMedia('(max-width: 768px)')`) react to.
+    //
+    // Specs that are inherently desktop-only opt out with
+    // `test.skip(({ isMobile }) => isMobile, '<reason>')`, and the mobile-only spec
+    // (e2e/stage-mobile-auth.spec.js) inverts that. Nothing is weakened to go green.
+    { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
   ],
   webServer: {
     command: 'node server.js',
