@@ -22,8 +22,11 @@ store factory. It began as the auth store, so the file is still named `auth-stor
 
 - **File:** `auth-store.db` (WAL mode adds `auth-store.db-wal` and `auth-store.db-shm`
   alongside it — don't copy the `.db` without them).
-- **Pragmas:** `journal_mode=WAL`, `synchronous=NORMAL`, `busy_timeout=5000`,
-  `foreign_keys=ON`. WAL + `busy_timeout` is a **single-writer** design — see caveats.
+- **Pragmas:** `journal_mode=WAL`, `synchronous=NORMAL`, `busy_timeout=5000`.
+  WAL + `busy_timeout` is a **single-writer** design — see caveats. `foreign_keys` is
+  **not set explicitly** — no table declares a `REFERENCES` clause, so there is nothing
+  to enforce, and better-sqlite3 turns the pragma on by default regardless. Enforcement
+  is therefore on and always was; the explicit call was just noise.
 - **Tables:**
   - Auth ([`lib/data/auth-store.js`](../../lib/data/auth-store.js)): `users`, `sessions`,
     `mobile_ip_usage` *(dormant — see below)*, `password_reset_tokens`, `pending_registrations`.
@@ -89,7 +92,7 @@ admin/log endpoints — see [`endpoints.md`](endpoints.md).
 
 | File | Header |
 |---|---|
-| `prompt_logs.csv` | `timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress` |
+| `prompt_logs.csv` | `timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress,status,durationMs,model,attempts,errorCode` |
 | `chat_logs.csv` | `timestamp,userId,userMessage,aiResponse,fileNames,fileTypes,ipAddress,userAgent` |
 | `mask_logs.csv` | `timestamp,prompt,model,geminiModel,imageWidth,imageHeight,userId,ipAddress,userAgent` |
 | `contact_logs.csv` | `timestamp,userRole,referralSource,email,userAgent,ipAddress` |
@@ -97,6 +100,23 @@ admin/log endpoints — see [`endpoints.md`](endpoints.md).
 | `email_open_logs.csv` | `timestamp,email,ipAddress,userAgent` |
 
 These contain **emails and IP addresses** — treat as PII.
+
+The last five `prompt_logs.csv` columns (`status` … `errorCode`) were **appended, never
+inserted**, because the admin dashboard reads these files **by column index** — a column
+added mid-row would silently re-label every historical render. Rows written before they
+existed simply end early, which reads as "outcome unknown". Append-only applies to the
+header as much as the data.
+
+**The public counters are seeded from two of these files at boot.**
+[`lib/data/counters.js`](../../lib/data/counters.js) counts the records in
+`prompt_logs.csv` (the home page's "Rooms Staged") and `contact_logs.csv`, then keeps
+counting in memory as requests arrive. `countCsvRecords` is quote-aware on purpose: the
+writer RFC-4180-quotes free-text user input, so a prompt containing a newline is one
+record spanning several physical lines, and counting lines instead of records
+**over-reports the public figure**. It streams the file in 64 KB chunks so an unbounded
+log doesn't mean unbounded memory, and falls back to a line count (with a warning) if a
+file's quotes don't balance, so a malformed row degrades the counter rather than
+collapsing it. Both initializers take an optional log-directory argument for tests.
 
 ## Uploaded images (`hosted-images/`)
 
