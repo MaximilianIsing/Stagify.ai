@@ -12,7 +12,7 @@
 // nothing. Geometry is deliberately not asserted (that lives in the fit spec);
 // this is about which controls are wired.
 import { test, expect } from '@playwright/test';
-import { roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
+import { openStageModalViaUI, roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
 
 async function openMaskEditor(page) {
   await page.route('**/api/validate-image', (route) =>
@@ -22,11 +22,7 @@ async function openMaskEditor(page) {
       body: JSON.stringify({ valid: true, code: null, reason: '' }),
     }),
   );
-  await page.goto('/index.html');
-  await page.evaluate(() => {
-    const modal = document.getElementById('stage-modal');
-    if (modal) modal.classList.remove('hidden');
-  });
+  await openStageModalViaUI(page);
   await page.locator('#stage-file-input').setInputFiles({
     name: 'room.png', mimeType: 'image/png', buffer: await roomPngBuffer(),
   });

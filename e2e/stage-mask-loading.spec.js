@@ -14,7 +14,7 @@
 //
 // /api/mask-edit is held open so the loading phase is observable, then released.
 import { test, expect } from '@playwright/test';
-import { roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
+import { openStageModalViaUI, roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
 
 async function openMaskEditor(page) {
   await page.route('**/api/validate-image', (route) =>
@@ -24,8 +24,7 @@ async function openMaskEditor(page) {
       body: JSON.stringify({ valid: true, code: null, reason: '' }),
     }),
   );
-  await page.goto('/index.html');
-  await page.evaluate(() => document.getElementById('stage-modal')?.classList.remove('hidden'));
+  await openStageModalViaUI(page);
   await page.locator('#stage-file-input').setInputFiles({
     name: 'room.png', mimeType: 'image/png', buffer: await roomPngBuffer(640, 420),
   });

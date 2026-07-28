@@ -18,20 +18,17 @@
 // /api/validate-image and /api/process-image are mocked — no real Gemini call, no cost.
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
-import { roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
+import { openStageModalViaUI, roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
 
 const PACKS = (lang) => JSON.parse(fs.readFileSync(`public/languages/${lang}.json`, 'utf8'));
 
-/** Open index.html with the stage modal lifted, exactly as the sibling specs do. */
-async function openStageModal(page, path = '/index.html') {
-  await page.goto(path);
-  // Opening the modal through the UI requires the sign-in flow; lift `.hidden` the
-  // way the app's own openModal() does.
-  await page.evaluate(() => {
-    const modal = document.getElementById('stage-modal');
-    if (modal) modal.classList.remove('hidden');
-  });
-}
+/**
+ * Open the stage dialog through the real hero-upload button (the signed-in branch
+ * of `openFilePicker()`). This used to lift `.hidden` off `#stage-modal` with a
+ * `page.evaluate`, which meant the app's actual entry gate was never driven by
+ * anything; `stage-signin-entry.spec.js` now covers its signed-out branch.
+ */
+const openStageModal = openStageModalViaUI;
 
 /** Pick a room type through the real dropdown wiring (trigger click → option click). */
 async function pickRoomType(page, value) {

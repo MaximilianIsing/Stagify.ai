@@ -9,7 +9,7 @@
 // /api/validate-image is mocked and /api/process-image is held open (never
 // fulfilled) so the in-flight state can be inspected — no real generation, no cost.
 import { test, expect } from '@playwright/test';
-import { roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
+import { openStageModalViaUI, roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
 
 async function startStaging(page) {
   await page.route('**/api/validate-image', (route) =>
@@ -28,13 +28,7 @@ async function startStaging(page) {
     await route.abort();
   });
 
-  await page.goto('/index.html');
-  // Opening the modal through the UI needs the sign-in flow; lift `.hidden` the
-  // way the app's own openModal() does (same shortcut as stage-reject.spec.js).
-  await page.evaluate(() => {
-    const modal = document.getElementById('stage-modal');
-    if (modal) modal.classList.remove('hidden');
-  });
+  await openStageModalViaUI(page);
 
   await page.locator('#stage-file-input').setInputFiles({
     name: 'room.png',
