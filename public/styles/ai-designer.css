@@ -1152,9 +1152,17 @@
         box-sizing: border-box;
       }
 
-      .empty-state h3 {
+      /* Was an h3; promoted to h2 so the page outline runs h1 -> h2 with no
+         skipped level (the h1 is the visually-hidden one in ai-designer.html).
+         Both size and top margin are pinned to what a UA gives an h3, so this is
+         a pure semantics change with no visual difference: styles.css sets h2 to
+         2.25rem, and the UA's own top margin differs between the two (0.83em for
+         h2, 1em for h3). Since the em resolves against this element's own
+         font-size, 1em here is the same pixel value the h3 had. */
+      .empty-state h2 {
         color: #1e3a8a;
-        margin-bottom: 8px;
+        font-size: 1.17em;
+        margin: 1em 0 8px;
       }
 
       /* AI-generated image container - relative positioning for download button */

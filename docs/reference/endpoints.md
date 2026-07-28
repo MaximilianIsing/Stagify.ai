@@ -55,6 +55,16 @@ three buckets — keep `robots.txt` and the canonical/sitemap in sync when addin
 - **Internal** — `noindex, nofollow`, **absent** from the sitemap, and listed under
   `Disallow:` in `robots.txt`: `admin.html` (`/admin`), `reset-password.html`,
   `getpro.html` (`/getpro`), `plus-welcome.html`, and everything under `legal/`.
+**Every page carries exactly one `<h1>`**, and it is the page's own subject rather than
+a section title — the crawler weighs it against the `<title>`, and a screen reader's
+"jump to heading 1" has nothing to land on without it. `ai-designer.html` is the awkward
+case and shows the rule: it is a full-height chat app with no title bar, so its `h1` is
+`sr-only`. The chat's visible "AI Designer" empty-state heading cannot serve — that node
+is removed on the first message, which would take the page's only `h1` with it.
+Enforced by [`test/server/heading-structure.test.js`](../../test/server/heading-structure.test.js),
+which also holds the three deliberate exemptions (the two redirect stubs below, and
+`admin.html`'s two mutually-exclusive view shells).
+
 - **Redirect stubs** — `pro.html` → `stagify-plus.html` and `faq.html` →
   `index.html#faq`, each a meta-refresh + `rel="canonical"` to its real page. These
   are deliberately **left out of `robots.txt`**: blocking them would stop crawlers

@@ -156,6 +156,14 @@
     </div>
 
     <main>
+      <!-- The page's one h1. Visually hidden because this page is a full-height
+           chat app with no title bar of its own: the studio fills the viewport by
+           design, so there is nowhere to put a visible heading without changing
+           the layout. It is NOT decorative — it gives assistive tech a level-1
+           landmark to jump to and crawlers the page's primary heading, matching
+           the <title>. The chat's "AI Designer" empty-state heading below cannot
+           serve this purpose: it is removed from the DOM on the first message. -->
+      <h1 class="sr-only" data-lang="pdf.title">AI Designer</h1>
       <div class="language-picker-container">
         <div class="language-selector">
           <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
@@ -199,7 +207,7 @@
         <div class="chat-container">
           <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation">
             <div class="empty-state">
-              <h3 data-lang="pdf.title">AI Designer</h3>
+              <h2 data-lang="pdf.title">AI Designer</h2>
               <p data-lang="pdf.emptyState">Start a conversation by typing a message or uploading a file</p>
             </div>
           </div>
