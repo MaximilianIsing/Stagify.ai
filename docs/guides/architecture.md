@@ -99,7 +99,8 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 
 | Module | Responsibility |
 |---|---|
-| `db.js` | The single shared `better-sqlite3` connection (WAL + pragmas) and `resolveDataDir()`. Every store opens through this. |
+| `db.js` | The single shared `better-sqlite3` connection (WAL + pragmas). Every store opens through this. Re-exports `resolveDataDir` for convenience. |
+| `data-dir.js` | The **one** implementation of "where durable state lives" (Render's `/data` vs `<baseDir>/data`). Separate from `db.js` so the CSV writers can import it without `better-sqlite3`. A drift test fails the build if any other file re-derives the path. |
 | `auth-store.js` | User accounts, salted+hashed passwords, 30-day sessions, email registration codes, free-tier usage. Imports a legacy `auth-store.json` once on first run. Session and reset tokens are delegated to `session-tokens.js` below, so this file never touches a token row. |
 | `session-tokens.js` | The `sessions` + `password_reset_tokens` tables, end to end. Owns their statements, prunes them, and **hashes every token** (`sha256$…`) so the raw bearer value never reaches disk — the single chokepoint the auth-store writes through. Also carries the idempotent one-time migration that hashes pre-existing rows in place, keeping signed-in users signed in. See [`security.md`](security.md#tokens-at-rest). |
 | `pro-grants.js` | Admin **comp grants** — one calendar month of Stagify+ with no Stripe subscription behind it. Owns the month arithmetic and the grant/revoke rules; its `applyGrantExpiry` is called from the auth-store's `rowToUser`, so a lapsed grant is downgraded on **read** rather than by a sweep job. |
