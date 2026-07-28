@@ -62,8 +62,9 @@ entry imports them. A `scripts/app/…` file importing from `scripts/ai-designer
 shape to avoid; promote instead. Two shapes, by size:
 
 - **Single files at `scripts/` root** for one self-contained concern: `toast.js`,
-  `mask-core.js`, `heic-convert.js`, `i18n-routing.js`, `unstageable-message.js`, and the
-  generated `locale-data.js` (see [`i18n.md`](i18n.md) — do not edit it by hand).
+  `escape-html.js`, `mask-core.js`, `heic-convert.js`, `i18n-routing.js`,
+  `unstageable-message.js`, and the generated `locale-data.js` (see
+  [`i18n.md`](i18n.md) — do not edit it by hand).
 - **A `scripts/<subsystem>/` folder** when the shared thing is a cohesive set rather than
   one file. [`scripts/mask/`](../../public/scripts/mask/) is the worked example: the mask
   editor's brush, viewport pinning, processing overlay, reference photo, sizing, refine
@@ -87,6 +88,25 @@ until recently was the main staging tool's entire error channel. The one deliber
 exception is `heic-convert.js`'s "Converting photo…" indicator — a reference-counted
 progress spinner of indefinite duration, which is a different thing from a transient
 message and stays separate.
+
+**Anything interpolated into an `innerHTML` string goes through
+[`scripts/escape-html.js`](../../public/scripts/escape-html.js)** (`escapeHtml(value)`) —
+the one escaper, re-exported under the names the call sites already used
+(`admin/helpers.js`'s `esc`, `profile-menu/dom-utils.js`'s `esc`,
+`ai-designer/format.js`'s `escapeHtml`). It escapes `&<>` **and both quote styles**,
+because values also land inside quoted attributes (`title="…"`, `aria-label="…"`) where
+a bare quote closes the attribute early.
+
+Prefer `textContent` or the `el()` builder when you are only inserting text — that
+needs no escaping and cannot be got wrong. Reach for `escapeHtml` when you are
+genuinely assembling markup.
+
+There were three implementations before, and the admin one was `String(s || '')` — a
+no-op wearing a security name, wired into three `innerHTML` sinks. Every argument
+happened to be a literal, so nothing was exploitable; the hazard was the next person
+writing `esc(user.email)` and believing it was handled. **Do not add a fourth copy** —
+`test/frontend/escape-html.test.js` walks `public/scripts/` and fails on any second
+hand-rolled escaper.
 
 **Worked example — the admin dashboard.** `/admin` is the fullest instance of this
 pattern: an entry (`admin.js`) that owns auth and fetching, table islands

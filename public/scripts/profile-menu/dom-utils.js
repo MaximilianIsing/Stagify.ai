@@ -23,15 +23,9 @@ export function lang(key, fallback, vars) {
   return text;
 }
 
-/**
- * HTML-escape a string by round-tripping through a detached element's
- * textContent. Returns '' for falsy input.
- * @param {string} s
- * @returns {string}
- */
-export function esc(s) {
-  if (!s) return '';
-  var d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
+// HTML escaping, re-exported under this module's historic name so the menu's
+// call sites are unchanged. It used to round-trip through a detached element's
+// textContent, which does not escape quotes — and the menu interpolates into
+// `title="…"` and `aria-label="…"`, where an apostrophe in a translated string
+// would have closed the attribute early.
+export { escapeHtml as esc } from '../escape-html.js';

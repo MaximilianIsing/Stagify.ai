@@ -10,7 +10,11 @@ export function el(tag,a,ch){
   if(ch)ch.forEach(function(c){if(typeof c==='string')e.appendChild(document.createTextNode(c));else if(c)e.appendChild(c)});
   return e;
 }
-export function esc(s){return String(s||'')} // textContent is already safe, this is for clarity
+// Real HTML escaping, shared with the rest of the frontend. This used to be
+// `String(s||'')` — a no-op wearing a security name — while feeding three
+// `innerHTML` sinks in renderers.js. Keep calling it for anything interpolated
+// into markup; use `el()`/textContent when you are only inserting text.
+export { escapeHtml as esc } from '../escape-html.js';
 
 // ── CSV parser (RFC 4180 compliant) ──
 
