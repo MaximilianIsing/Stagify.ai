@@ -26,8 +26,12 @@ const postJson = (base, path, body, headers = {}) =>
 
 // ── /api/validate-image ──────────────────────────────────────────────────────
 
+// The route is signed-in only — it spends a paid Gemini vision call — so the
+// behavioural tests below mount with a session. The gate itself is tested last.
+const SIGNED_IN = { getAuthUserFromRequest: () => ({ id: 'u_test', plan: 'free' }) };
+
 test('validate-image: 400 on a missing or malformed image', async () => {
-  app = await mountStaging({});
+  app = await mountStaging({ ...SIGNED_IN });
   assert.equal((await postJson(app.baseUrl, '/api/validate-image', {})).status, 400);
   assert.equal((await postJson(app.baseUrl, '/api/validate-image', { image: 'no-comma' })).status, 400);
 });
@@ -35,7 +39,7 @@ test('validate-image: 400 on a missing or malformed image', async () => {
 test('validate-image: relays an approving verdict as valid, with no code or copy', async () => {
   // The route has no "is a reviewer configured?" short-circuit of its own — a disabled
   // reviewer is validateStageableImage's business, and it reports that as valid.
-  app = await mountStaging({ validateStageableImage: async () => ({ valid: true, code: null, reason: '' }) });
+  app = await mountStaging({ ...SIGNED_IN, validateStageableImage: async () => ({ valid: true, code: null, reason: '' }) });
   const body = await (await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE })).json();
   assert.deepEqual(body, { valid: true, code: null, reason: '' });
 });
@@ -45,6 +49,7 @@ test('validate-image: runs the reviewer even with no OpenAI client (the grader i
   // which silently disabled a Gemini-powered check on an unrelated key.
   let called = false;
   app = await mountStaging({
+    ...SIGNED_IN,
     openai: null,
     validateStageableImage: async () => { called = true; return { valid: false, code: 'FOOD', reason: 'Not a room.' }; },
   });
@@ -55,6 +60,7 @@ test('validate-image: runs the reviewer even with no OpenAI client (the grader i
 
 test('validate-image: relays both the category code and the copy from the reviewer', async () => {
   app = await mountStaging({
+    ...SIGNED_IN,
     validateStageableImage: async () => ({ valid: false, code: 'FOOD', reason: 'This is not a room.' }),
   });
   const body = await (await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE })).json();
@@ -65,11 +71,36 @@ test('validate-image: relays both the category code and the copy from the review
 
 test('validate-image: fails open when the reviewer throws', async () => {
   app = await mountStaging({
+    ...SIGNED_IN,
     validateStageableImage: async () => { throw new Error('the grader exploded'); },
   });
   const res = await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE });
   assert.equal(res.status, 200);
   assert.deepEqual(await res.json(), { valid: true, code: null, reason: '' });
+});
+
+test('validate-image: an anonymous caller is rejected WITHOUT spending a vision call', async () => {
+  // genLimiter caps requests per IP, which bounds cost per address but not across
+  // rotating ones; only the session check stops an anonymous caller from spending
+  // the paid Gemini call at all. Asserting the reviewer never ran is the point —
+  // a 401 returned *after* the call would fix nothing.
+  let called = false;
+  app = await mountStaging({
+    getAuthUserFromRequest: () => null,
+    validateStageableImage: async () => { called = true; return { valid: true, code: null, reason: '' }; },
+  });
+  const res = await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE });
+  assert.equal(res.status, 401);
+  assert.equal((await res.json()).code, 'AUTH_REQUIRED', 'same code the studios already handle');
+  assert.equal(called, false, 'the reviewer must not run for an unauthenticated caller');
+});
+
+test('validate-image: the session check runs before body validation', async () => {
+  // Otherwise a malformed body would still be parsed and answered for anonymous
+  // callers, and the gate would be ordering-dependent rather than unconditional.
+  app = await mountStaging({ getAuthUserFromRequest: () => null });
+  const res = await postJson(app.baseUrl, '/api/validate-image', {});
+  assert.equal(res.status, 401, 'anonymous gets 401, not the 400 for a missing image');
 });
 
 // ── /api/process-image ───────────────────────────────────────────────────────
