@@ -106,6 +106,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `pro-grants.js` | Admin **comp grants** — one calendar month of Stagify+ with no Stripe subscription behind it. Owns the month arithmetic and the grant/revoke rules; its `applyGrantExpiry` is called from the auth-store's `rowToUser`, so a lapsed grant is downgraded on **read** rather than by a sweep job. |
 | `enterprise-store.js` | Enterprise domain activation + metered usage, kept in sync with Stripe. Because an active domain is a blanket `pro` grant to every address under it, both `activateDomain` (write) and `isActiveDomain` (read) refuse public mailbox providers. |
 | `public-email-domains.js` | The list of free consumer + disposable mail domains that can **not** be sold as an enterprise domain, and the normalizing matcher (`isPublicEmailDomain`). Used by the enterprise store and `/api/enterprise/create-checkout` — **not** by signup. Rationale: [`security.md`](security.md#enterprise-domains-are-a-blanket-grant). |
+| `stripe-events.js` | The Stripe **webhook idempotency ledger** (`stripe_events`). Stripe delivers at-least-once, so `routes/billing.js` claims each `event.id` before handling it and drops a redelivery. A failed handler *releases* its claim (so Stripe's retry still runs), and a claim abandoned by a killed process becomes re-claimable after 5 minutes. |
 | `memory.js` | Per-user AI-chat memory storage and LLM-driven memory-action evaluation. |
 | `counters.js` | The prompt/contact counters shown in the hero stats. |
 | `uptime-monitor.js` | Self-hosted uptime tracking (heartbeat → the `uptime_state` row in `auth-store.db`); powers `/api/status` and the status page. |
@@ -230,7 +231,7 @@ State lives under `data/` (or the Render `/data` disk when present, detected via
 
 - **SQLite (`better-sqlite3`, one shared connection via `lib/data/db.js`):** `auth-store.db`
   holds all structured state — auth (`users`, `sessions`, …; **sensitive**),
-  `enterprise_domains`, `memories`, `uptime_state`. WAL + transactions, so writes are
+  `enterprise_domains`, `memories`, `uptime_state`, `stripe_events`. WAL + transactions, so writes are
   atomic and per-row. Each store imports its legacy JSON (`auth-store.json`,
   `enterprise-domains.json`, `memories.json`, `uptime.json`) once on first boot, then
   keeps it as a frozen rollback fallback.

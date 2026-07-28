@@ -13,6 +13,7 @@ import Stripe from 'stripe';
 import { OAuth2Client } from 'google-auth-library';
 import { handleStripeEvent } from './lib/services/stripe-webhooks.js';
 import { createEnterpriseStore } from './lib/data/enterprise-store.js';
+import { createStripeEventLog } from './lib/data/stripe-events.js';
 import { createUptimeMonitor } from './lib/data/uptime-monitor.js';
 import { generateWithQualityRetry as runQualityRetry } from './lib/staging/staging-pipeline.js';
 import createBillingRouter from './routes/billing.js';
@@ -56,6 +57,9 @@ const { readStripeSecretKey, readStripeWebhookSecret, readStripePublishableKey, 
 const authStore = createAuthStore(__dirname);
 const enterpriseStore = createEnterpriseStore(__dirname);
 const uptimeMonitor = createUptimeMonitor(__dirname);
+// Webhook idempotency ledger — Stripe delivers at-least-once, so the billing
+// router claims each event id here before handling it.
+const stripeEvents = createStripeEventLog(__dirname);
 setInterval(() => authStore.pruneSessions(), 6 * 60 * 60 * 1000).unref?.();
 
 const stripeSecretKey = readStripeSecretKey();
@@ -177,6 +181,7 @@ app.use(
     handleStripeEvent,
     getAuthUserFromRequest,
     trialLifecycle,
+    stripeEvents,
   })
 );
 
