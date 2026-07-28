@@ -499,3 +499,52 @@ test('an allow-listed model is forwarded to OpenAI unchanged', async () => {
   assert.equal(res.status, 200);
   assert.equal(app.calls.openaiCreate.lastArgs[0].model, 'gpt-5-mini');
 });
+
+// 9 ─ ORDER GUARD. /api/chat dispatches image GENERATION before STAGING. That is
+//     the opposite of /api/chat-upload (see chat-upload-route.test.js for its
+//     mirror), and the difference is deliberate: the two endpoints hand the two
+//     steps to the model in different sequences and append their text suffixes in
+//     that same sequence. Both handlers now share lib/chat/chat-post-routing.js
+//     and differ ONLY by the `order` constant they pass, so this pair of tests is
+//     what stops a future "why are these two not the same?" cleanup from silently
+//     swapping them.
+test('/api/chat runs image generation BEFORE staging', async () => {
+  /** @type {string[]} */
+  const order = [];
+  app = await mountChat({
+    routing: {
+      response: 'Staged your room and drew some artwork.',
+      staging: [
+        {
+          shouldStage: true,
+          roomType: 'Living room',
+          additionalPrompt: 'warm modern',
+          removeFurniture: false,
+          usePreviousImage: false,
+          furnitureImageIndex: null,
+          styleReference: false,
+        },
+      ],
+      generate: [{ shouldGenerate: true, prompt: 'abstract artwork' }],
+    },
+    processStaging: async () => { order.push('staging'); return 'data:staged'; },
+    processImageGeneration: async () => { order.push('generate'); return 'data:generated'; },
+  });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'stage this room and make some artwork' },
+          { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+        ],
+      },
+    ],
+  });
+
+  const body = await res.json();
+  assert.equal(body.stagedImage, 'data:staged');
+  assert.equal(body.generatedImage, 'data:generated');
+  assert.deepEqual(order, ['generate', 'staging']);
+});
