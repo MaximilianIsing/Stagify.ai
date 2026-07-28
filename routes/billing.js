@@ -7,6 +7,7 @@
 import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
+import { checkoutLimiter as defaultCheckoutLimiter } from '../lib/http/rate-limiters.js';
 import { logger } from '../lib/logger.js';
 import {
   isPublicEmailDomain,
@@ -29,11 +30,14 @@ import {
  *   getAuthUserFromRequest: (req: import('express').Request) => any,
  *   trialLifecycle?: ReturnType<typeof import('../lib/services/trial-lifecycle.js').createTrialLifecycle>,
  *   stripeEvents?: ReturnType<typeof import('../lib/data/stripe-events.js').createStripeEventLog>,
+ *   checkoutLimiter?: import('express').RequestHandler,
  * }} deps - Injected Stripe client + config strings, the auth/enterprise stores,
  *   the webhook event handler, the session-user resolver, the trial-email
  *   lifecycle (fires welcome/ending/win-back off Stripe events), and the
  *   webhook-idempotency ledger (`stripeEvents`; omitted = no dedup, every
  *   delivery handled).
+ *   `checkoutLimiter` is a test seam only: omitted (or null) it falls back to the
+ *   shared `checkoutLimiter`, so the enterprise checkout is never mounted unlimited.
  */
 export default function createBillingRouter(deps) {
   const {
@@ -47,7 +51,12 @@ export default function createBillingRouter(deps) {
     getAuthUserFromRequest,
     trialLifecycle,
     stripeEvents,
+    checkoutLimiter,
   } = deps;
+
+  // `??` so an explicit null (a test asking for the production wiring) still gets
+  // the real limiter; only a deliberately injected middleware replaces it.
+  const enterpriseCheckoutLimiter = checkoutLimiter ?? defaultCheckoutLimiter;
 
   const router = createAsyncRouter();
 
@@ -132,7 +141,10 @@ export default function createBillingRouter(deps) {
     res.json({ publishableKey: stripePublishableKey || '' });
   });
 
-  router.post('/api/enterprise/create-checkout', express.json(), async (req, res) => {
+  // Deliberately unauthenticated: a company buys the enterprise plan before anyone
+  // on it has an account, so there is no session to require. The limiter runs BEFORE
+  // express.json so an over-ceiling caller never gets a body parsed either.
+  router.post('/api/enterprise/create-checkout', enterpriseCheckoutLimiter, express.json(), async (req, res) => {
     try {
       if (!stripe) {
         return sendError(res, 503, 'Billing not configured', { code: 'STRIPE_DISABLED' });
@@ -160,7 +172,16 @@ export default function createBillingRouter(deps) {
 
       const existing = enterpriseStore.getDomainEntry(cleanDomain);
       if (existing && (existing.status === 'active' || existing.status === 'trialing')) {
-        return sendError(res, 409, 'This domain already has an active enterprise plan');
+        // Worded so it does not confirm to an anonymous caller that this specific
+        // company is a customer — the route is public, so the old "already has an
+        // active enterprise plan" text made it a lookup service for our customer
+        // list. The branch is still distinguishable from a success; what actually
+        // bounds the probing is checkoutLimiter above.
+        return sendError(
+          res,
+          409,
+          'This domain is not available for self-serve checkout. Please contact support@stagify.ai to get set up.',
+        );
       }
 
       const baseUrlRaw =

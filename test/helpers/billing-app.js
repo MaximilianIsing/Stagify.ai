@@ -52,6 +52,10 @@ function makeEventLedger() {
  *   - `enterpriseDomainEntry`   → the enterpriseStore.getDomainEntry result,
  *   - `stripeEvents`            → the webhook idempotency ledger. Defaults to an
  *     in-memory one (see makeEventLedger); pass `null` for the un-deduped path,
+ *   - `checkoutLimiter`         → the enterprise-checkout rate limiter. Defaults to a
+ *     pass-through here so a file's many checkout cases don't share (and exhaust) one
+ *     real bucket; pass `null` to mount the router's REAL limiter, or your own
+ *     middleware to exercise a tight ceiling.
  * Returns { baseUrl, calls, close } where `calls` exposes the spies to assert on.
  */
 export async function mountBilling(overrides = {}) {
@@ -62,6 +66,7 @@ export async function mountBilling(overrides = {}) {
     enterpriseDomainEntry = null,
     stripe: stripeOver,
     stripeEvents: stripeEventsOver,
+    checkoutLimiter = (req, res, next) => next(),
     ...rest
   } = overrides;
 
@@ -97,6 +102,9 @@ export async function mountBilling(overrides = {}) {
     handleStripeEvent,
     getAuthUserFromRequest,
     stripeEvents,
+    // Destructured out of `overrides` above, so it must be re-passed explicitly —
+    // it would not reach the router via `...rest`.
+    checkoutLimiter,
   };
 
   const app = express();

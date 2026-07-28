@@ -187,6 +187,27 @@ it did not fix the admin auth model.
 | `RL_AUTH` | 40 / 15 min | sign-in / account actions (brute-force) |
 | `RL_EMAIL` | 6 / 15 min | anything that sends email (spam/abuse) |
 | `RL_GEN` | 60 / 5 min | paid AI generation (cost abuse) |
+| `RL_CHECKOUT` | 10 / 60 min | `POST /api/enterprise/create-checkout` (see below) |
+
+### The enterprise checkout is public on purpose
+
+`POST /api/enterprise/create-checkout` takes **no session**: a company buys the plan
+before anyone on it has an account, so there is nothing to authenticate. That makes
+`checkoutLimiter` (`RL_CHECKOUT`, per IP) the only thing bounding it, and it covers
+two distinct abuses:
+
+- **Stripe-session spam** — every accepted request creates a real Checkout Session.
+- **Customer enumeration** — the duplicate-domain branch answers differently from a
+  fresh domain, so an unlimited endpoint would be a lookup service for "is *company.com*
+  a Stagify enterprise customer?". The 409 no longer *says* so (it reads "not available
+  for self-serve checkout … contact support"), but the branch is still distinguishable;
+  the limiter is what makes probing a domain list impractical, not the wording.
+
+Unlike the other limiters, `checkoutLimiter` is imported by
+[`routes/billing.js`](../../routes/billing.js) directly rather than taken from the
+`server.js` dep bag, so an omitted dep cannot leave the endpoint unlimited. The
+`checkoutLimiter` dep is a **test seam only**; passing `null` mounts the real one.
+Guarded by [`test/routes/billing-checkout-limit.test.js`](../../test/routes/billing-checkout-limit.test.js).
 
 ## Request-size & DoS hardening
 

@@ -1,9 +1,10 @@
-// Behavioral test for lib/http/rate-limiters.js — the three express-rate-limit
-// middlewares (authLimiter / emailLimiter / genLimiter) that back the auth,
-// public, staging, and chat routers.
+// Behavioral test for lib/http/rate-limiters.js — the four express-rate-limit
+// middlewares (authLimiter / emailLimiter / genLimiter / checkoutLimiter) that back
+// the auth, public, staging, chat, and billing routers.
 //
-// WHY THIS IS SUBTLE: all three limiters live in ONE module and each reads its
-// ceiling from an env var (RL_AUTH / RL_EMAIL / RL_GEN, defaulting to 40 / 6 / 60)
+// WHY THIS IS SUBTLE: all four limiters live in ONE module and each reads its
+// ceiling from an env var (RL_AUTH / RL_EMAIL / RL_GEN / RL_CHECKOUT, defaulting to
+// 40 / 6 / 60 / 10)
 // exactly ONCE, at module-load time (`limit: Number(process.env.RL_GEN || 60)`).
 // By the time any test callback runs the values are already frozen into the
 // constructed limiters, so the only way to exercise a small, deterministic ceiling
@@ -33,21 +34,24 @@ import express from 'express';
 const RL_AUTH_SNAPSHOT = process.env.RL_AUTH;
 const RL_EMAIL_SNAPSHOT = process.env.RL_EMAIL;
 const RL_GEN_SNAPSHOT = process.env.RL_GEN;
+const RL_CHECKOUT_SNAPSHOT = process.env.RL_CHECKOUT;
 process.env.RL_AUTH = '2';
 process.env.RL_EMAIL = '2';
 process.env.RL_GEN = '2';
+process.env.RL_CHECKOUT = '2';
 
 // A single dynamic import, taken AFTER the env overrides above are in place. ESM
 // caches the module, so this one construction of the three limiters is shared by
 // every test below (a later `import()` of the same path would just return this
 // cached instance).
-const { authLimiter, emailLimiter, genLimiter } = await import('../../lib/http/rate-limiters.js');
+const { authLimiter, emailLimiter, genLimiter, checkoutLimiter } = await import('../../lib/http/rate-limiters.js');
 
 after(() => {
   for (const [key, snapshot] of [
     ['RL_AUTH', RL_AUTH_SNAPSHOT],
     ['RL_EMAIL', RL_EMAIL_SNAPSHOT],
     ['RL_GEN', RL_GEN_SNAPSHOT],
+    ['RL_CHECKOUT', RL_CHECKOUT_SNAPSHOT],
   ]) {
     if (snapshot === undefined) delete process.env[key];
     else process.env[key] = snapshot;
@@ -152,8 +156,39 @@ test('emailLimiter 429s past its RL_EMAIL ceiling with its exact "Too many reque
   }
 });
 
-test('the module exports authLimiter, emailLimiter, and genLimiter as callable middleware functions', async () => {
+test('checkoutLimiter 429s past its RL_CHECKOUT ceiling with its exact "Too many checkout attempts" message', async () => {
+  // Guards the unauthenticated enterprise checkout, where every request past the
+  // limiter mints a real Stripe Checkout Session (routes/billing.js).
+  const app = express();
+  app.use('/c', checkoutLimiter, (req, res) => res.json({ ok: true }));
+
+  const server = await listen(app);
+  try {
+    const { port } = server.address();
+    const url = `http://127.0.0.1:${port}/c`;
+
+    // With RL_CHECKOUT=2 the first two sequential requests are under the ceiling.
+    const r1 = await fetch(url);
+    assert.equal(r1.status, 200);
+    assert.deepEqual(await r1.json(), { ok: true });
+
+    const r2 = await fetch(url);
+    assert.equal(r2.status, 200);
+    assert.deepEqual(await r2.json(), { ok: true });
+
+    const r3 = await fetch(url);
+    assert.equal(r3.status, 429, 'the request past the RL_CHECKOUT ceiling is rejected');
+    assert.deepEqual(await r3.json(), {
+      error: 'Too many checkout attempts. Please wait a while and try again.',
+    });
+  } finally {
+    await close(server);
+  }
+});
+
+test('the module exports authLimiter, emailLimiter, genLimiter, and checkoutLimiter as callable middleware functions', async () => {
   assert.equal(typeof authLimiter, 'function', 'authLimiter is middleware');
   assert.equal(typeof emailLimiter, 'function', 'emailLimiter is middleware');
   assert.equal(typeof genLimiter, 'function', 'genLimiter is middleware');
+  assert.equal(typeof checkoutLimiter, 'function', 'checkoutLimiter is middleware');
 });

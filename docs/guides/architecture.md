@@ -71,7 +71,8 @@ mounted between them so the Stripe webhook still sees the raw body):
    `express.json()` so signature verification sees the exact bytes; everything else
    gets parsed JSON.
 4. **Rate limiters** (`express-rate-limit`) — applied to auth (`RL_AUTH`), email
-   (`RL_EMAIL`), and AI-generation (`RL_GEN`) routes.
+   (`RL_EMAIL`), AI-generation (`RL_GEN`), and enterprise-checkout (`RL_CHECKOUT`)
+   routes.
 5. **`express.static('public')`** — if a file matches the URL it is served here (with
    long-lived immutable cache headers for images/fonts/media, `no-cache` for
    html/css/js/json). This is why `/` serves `public/index.html`.
@@ -118,7 +119,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `async-router.js` | `createAsyncRouter()` — the async-safe `express.Router()` used by every route file (see [Error handling](#error-handling)). |
 | `http-helpers.js` | Small pure helpers: `sendError()` (the standard JSON error shape), `setSensitiveHeaders()`, client-IP + user-identifier helpers. |
 | `http-guards.js` | The `endpoint_key` guards (`protectLogs`, `stagingEndpointKeyGuard`) and the `/health` handler. |
-| `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN`). |
+| `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN` / `RL_CHECKOUT`). |
 | `uploads.js` | The multer upload configs (staging / chat / hosted-image). |
 | `app-middleware.js` | The base HTTP middleware, lifted out of `server.js`. `applyEdgeMiddleware(app)` (helmet/CSP, CORS allow-list, compression — mounted **before** the billing router) and `applyBodyAndStatic(app)` (JSON body parsing + its error handler, `express.static` — mounted **after**, so Stripe's webhook still sees the raw body). |
 
