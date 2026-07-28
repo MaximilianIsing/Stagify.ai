@@ -10,7 +10,7 @@ import {
 } from './ai-designer/image-history.js';
 import { lang } from './ai-designer/i18n.js';
 import { localizedTarget } from './i18n-routing.js';
-import { showToast } from './ai-designer/toast.js';
+import { showToast } from './toast.js';
 import { createMaskEditor } from './ai-designer/mask-editor.js';
 import { createImageViewer } from './ai-designer/image-viewer.js';
 import { createChatMessages } from './ai-designer/chat-messages.js';
@@ -108,15 +108,14 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
       }
 
       async function ensureDesignerProAccess() {
-        // auth.js is loaded with `defer`, so window.StagifyAuth may not exist yet
-        // when this inline script first runs during parsing. Wait for it before
-        // deciding — otherwise we'd wrongly bounce signed-in (incl. Pro) users to
-        // the demo row. Non-Pro and anonymous users still get sent there.
-        let waited = 0;
-        while (!window.StagifyAuth && waited < 5000) {
-          await new Promise((r) => setTimeout(r, 50));
-          waited += 50;
-        }
+        // window.StagifyAuth is guaranteed to exist by the time this runs: auth.js
+        // is a non-async module script earlier in ai-designer.html's document order
+        // than this one, module scripts execute in that order, and auth.js assigns
+        // the global synchronously at top level. So a missing global does not mean
+        // "not loaded yet" — it means auth.js failed to load or threw, and no amount
+        // of waiting will fix it. Bounce immediately rather than stalling behind the
+        // hidden page. (This replaced a 50ms poll that never once iterated on the
+        // happy path and cost a 5s stall on the unhappy one.)
         if (!window.StagifyAuth) {
           window.location.replace(localizedTarget('index.html#ai-designer-demo'));
           return false;

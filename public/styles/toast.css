@@ -1,0 +1,44 @@
+/* Toast notifications — the shared styling for scripts/toast.js.
+ *
+ * Extracted from ai-designer.css and masking-studio.css, which each carried a
+ * byte-identical copy of this block. Any page that imports scripts/toast.js must
+ * link this file, including the main studio pages, which previously used native
+ * alert() and so needed no toast styling at all. */
+
+#toast-host {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 10050;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+  max-width: min(92vw, 440px);
+}
+
+.toast {
+  pointer-events: auto;
+  background: #1e3a8a;
+  color: #fff;
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.28);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  max-width: 100%;
+}
+
+.toast--show { opacity: 1; transform: translateY(0); }
+.toast--error { background: #b91c1c; box-shadow: 0 8px 24px rgba(185, 28, 28, 0.28); }
+.toast--success { background: #047857; box-shadow: 0 8px 24px rgba(4, 120, 87, 0.28); }
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { transition: opacity 0.2s ease; transform: none; }
+  .toast--show { transform: none; }
+}

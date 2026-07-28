@@ -1,4 +1,5 @@
 import { dataURLToFile, fillTemplate, dailyLimitMessage, roomDownloadSlug } from './app/helpers.js';
+import { showErrorToast } from './toast.js';
 import { createStageMaskEditor } from './app/stage-mask-editor.js';
 import { initCustomSelect } from './app/custom-select.js';
 import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
@@ -249,20 +250,20 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
         try {
           file = await window.StagifyHeic.toDisplayableFile(file);
         } catch (e) {
-          alert(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn't read that HEIC photo. Please try a JPG or PNG.");
+          showErrorToast(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn't read that HEIC photo. Please try a JPG or PNG.");
           return;
         }
       }
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
-        alert(window.LanguageSystem?.getText('errors.fileType') || 'Please upload a PNG, JPG, JPEG, WebP, or GIF image file.');
+        showErrorToast(window.LanguageSystem?.getText('errors.fileType') || 'Please upload a PNG, JPG, JPEG, WebP, or GIF image file.');
         return;
       }
-      
+
       // Check file size (100MB limit)
       const maxSize = 100 * 1024 * 1024; // 100MB in bytes
       if (file.size > maxSize) {
-        alert(window.LanguageSystem?.getText('errors.fileTooLarge') || 'File is too large. Please upload an image smaller than 100MB.');
+        showErrorToast(window.LanguageSystem?.getText('errors.fileTooLarge') || 'File is too large. Please upload an image smaller than 100MB.');
         return;
       }
       
@@ -426,7 +427,7 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
   
     async function stageImage() {
       if (!currentImageFile) {
-        alert(window.LanguageSystem?.getText('errors.uploadFirst') || 'Please upload an image first');
+        showErrorToast(window.LanguageSystem?.getText('errors.uploadFirst') || 'Please upload an image first');
         return;
       }
 
@@ -531,7 +532,6 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
       buildFilename: (w, h) =>
         `stagify-${roomDownloadSlug(roomSelect?.value)}-${Date.now()}${w ? `-${w}x${h}` : ''}.jpg`,
     });
-
 
     // Empty-room viewer island (scripts/app/empty-room-viewer.js).
     createEmptyRoomViewer({

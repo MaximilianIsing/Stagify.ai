@@ -57,6 +57,22 @@ The entry resolves the page's DOM elements once, then constructs and wires the i
   [`scripts/masking-studio/session-store.js`](../../public/scripts/masking-studio/session-store.js)
   owns the IndexedDB save/restore choreography for the whole studio.
 
+**Cross-page shared modules** sit at `scripts/` root rather than under a `<page>/`
+folder, because more than one entry imports them: `toast.js`, `mask-core.js`,
+`heic-convert.js`, `i18n-routing.js`, `unstageable-message.js`. If a second page needs
+an island, promote it here rather than importing across `<page>/` folders — a
+`scripts/app/…` file importing from `scripts/ai-designer/…` is the shape to avoid.
+
+**User-facing messages go through [`scripts/toast.js`](../../public/scripts/toast.js)**
+(`showToast(msg, type)` / `showErrorToast(msg)`) — the single message channel for all
+three studios. It self-creates its `#toast-host`, so a page needs no markup for it, but
+it **does** need to link [`styles/toast.css`](../../public/styles/toast.css). Do not
+reach for native `alert()`: it blocks the page, ignores the language pack's styling, and
+until recently was the main staging tool's entire error channel. The one deliberate
+exception is `heic-convert.js`'s "Converting photo…" indicator — a reference-counted
+progress spinner of indefinite duration, which is a different thing from a transient
+message and stays separate.
+
 **Worked example — the admin dashboard.** `/admin` is the fullest instance of this
 pattern: an entry (`admin.js`) that owns auth and fetching, table islands
 (`admin/renderers.js`), two chart-panel islands (`admin/overview.js`, `admin/insights.js`),
@@ -258,8 +274,9 @@ gets the files as authored (same [no-build-step decision](architecture.md#decisi
   `admin.css` does, on `.page-admin`, for the dashboard's denser data UI.
 - **Shared feature CSS — opt-in per page.** Small files a page links only if it uses the
   feature: `auth.css` (nav + auth-modal UI, on ~10 pages), `carousel.css`,
-  `star-border.css`, `home-text-animate.css`, `demo-player.css`. A page pulls in only the
-  feature CSS it actually renders, so no page carries the whole site's styles.
+  `star-border.css`, `home-text-animate.css`, `demo-player.css`, `toast.css` (required by
+  any page importing `scripts/toast.js`). A page pulls in only the feature CSS it actually
+  renders, so no page carries the whole site's styles.
 
 A given page therefore links `styles.css` + (usually) `auth.css` + its own `<page>.css`
 + any feature files it needs. Overlap between base and page files is deliberate and tiny

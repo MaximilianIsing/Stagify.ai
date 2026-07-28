@@ -8,6 +8,7 @@
 //
 // deps: { getStagingAlt }
 import { abbreviateFileName } from './helpers.js';
+import { showErrorToast } from '../toast.js';
 
 export const FURNITURE_LIMIT = 5;
 
@@ -169,7 +170,7 @@ export function createFurnitureRefs(deps) {
             return window.StagifyHeic.isHeic(f) ? window.StagifyHeic.toDisplayableFile(f) : f;
           }));
         } catch (e) {
-          alert(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn't read that HEIC photo. Please try a JPG or PNG.");
+          showErrorToast(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn't read that HEIC photo. Please try a JPG or PNG.");
           return;
         }
       }

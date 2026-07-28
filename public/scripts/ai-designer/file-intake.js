@@ -15,7 +15,7 @@
 // Window globals (StagifyHeic) are referenced directly.
 import { formatFileSize } from './format.js';
 import { getPdfAlt } from './i18n.js';
-import { showToast } from './toast.js';
+import { showToast } from '../toast.js';
 
       const MAX_UPLOAD_FILES = 5;
       // Per-file size cap (mirrors the server's 50MB chat-upload limit, kept a
