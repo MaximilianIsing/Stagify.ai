@@ -78,6 +78,7 @@ const ALL_FACTORIES = [
   'app/empty-room-viewer.js#createEmptyRoomViewer',
   'app/furniture-refs.js#createFurnitureRefs',
   'app/stage-mask-editor.js#createStageMaskEditor',
+  'app/staging-failure.js#createStagingFailure',
   'app/staging-pipeline.js#createStagingPipeline',
   'app/version-carousel.js#createVersionCarousel',
   'mask/brush.js#createMaskBrush',
