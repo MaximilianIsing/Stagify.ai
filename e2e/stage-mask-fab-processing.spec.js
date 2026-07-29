@@ -82,20 +82,28 @@ test.describe('Main tool — mask FAB during staging', () => {
     release();
   });
 
-  test('is sharp and clickable again once the run ends', async ({ page }) => {
+  test('a run that dies mid-flight says so, and withdraws the FAB with the photo', async ({ page }) => {
+    // This used to assert the FAB was "sharp and clickable again once the run ends",
+    // and it passed for one reason: route.abort() is a DROPPED CONNECTION, and a
+    // dropped connection was one of the paths staging-pipeline.js threw bare and
+    // nothing surfaced. The run failed in total silence, so the page fell back to a
+    // usable idle state and the FAB came back. It was pinning the bug.
+    //
+    // scripts/app/staging-failure.js now surfaces it, and styles.css:2587 withdraws
+    // the FAB whenever an error viewer is up — you cannot mask-edit the result of a
+    // run that produced nothing. Both halves are asserted here so neither can regress
+    // back into silence.
     const { fab, release } = await startStaging(page);
     release();
 
     // The aborted request drops the page out of its processing state.
     await expect(page.locator('#stage-preview')).not.toHaveClass(/processing/);
 
-    // Fades back out over the same .3s.
-    await expect
-      .poll(() => fab.evaluate((el) => getComputedStyle(el).filter))
-      .not.toContain('blur(3px)');
-    expect(await fab.evaluate((el) => getComputedStyle(el).pointerEvents)).not.toBe('none');
+    // The failure is reported rather than swallowed.
+    await expect(page.locator('#staging-error-viewer')).toBeVisible();
 
-    await fab.click();
-    await expect(page.locator('#stage-mask-modal')).toHaveClass(/active/);
+    // And the FAB goes with it — withdrawn, not merely un-blurred.
+    await expect(fab).toBeHidden();
+    await expect(page.locator('#stage-mask-modal')).not.toHaveClass(/active/);
   });
 });
