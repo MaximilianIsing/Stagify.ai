@@ -12,7 +12,7 @@ Deployed on **Render** as a Node web service, defined by [`render.yaml`](../../r
 | Setting | Value |
 |---|---|
 | Service | `stagify-ai`, `env: node`, **`plan: standard`** (~2 GB RAM) |
-| Build | `sh scripts/build.sh` — `npm install` → `npm test` (**a failing test blocks the deploy**) → download the Litestream binary into `./bin` |
+| Build | `sh scripts/build.sh` — `npm ci` → `npm test` → `npm audit --omit=dev --audit-level=high` (**a failing test or a known-high advisory blocks the deploy**) → download the Litestream binary into `./bin` |
 | Start | `sh scripts/start.sh` — restore the DB from R2 if `/data` is empty, then run the app under `litestream replicate` (which execs `npm start` → `node --import ./instrument.js server.js`, so Sentry still loads first) |
 | Disk | `stagify-data` mounted at **`/data`**, 1 GB — all runtime state lives here |
 | **`autoDeploy`** | **`false`** |
@@ -27,9 +27,11 @@ Deployed on **Render** as a Node web service, defined by [`render.yaml`](../../r
 1. Merge/commit to the default branch as usual (push does nothing on its own).
 2. In the **Render dashboard** → the `stagify-ai` service → **Manual Deploy** →
    deploy the latest commit (or a specific one).
-3. Render runs the build (`sh scripts/build.sh` — install, the test gate, then the
-   Litestream binary). **If any test fails the deploy is aborted** — fix and retry. Keep
-   the suite green (see [`testing.md`](../guides/testing.md)).
+3. Render runs the build (`sh scripts/build.sh` — install, the test gate, the audit
+   gate, then the Litestream binary). **If any test fails the deploy is aborted** — fix
+   and retry. Keep the suite green (see [`testing.md`](../guides/testing.md)). The audit
+   step is why deploys are gated on advisories too: `autoDeploy` is off, so a manual
+   deploy would otherwise bypass the same check CI runs on the branch.
 4. Watch the deploy logs for `Server running on port …` and `AI configured: true`.
 
 > **Check the `e2e` CI job before deploying.** The Playwright studio smoke

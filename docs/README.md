@@ -65,7 +65,7 @@ This README is the entry point for the `docs/` folder. See also:
 ├── render.yaml              # Render deploy config (build/start run the scripts below)
 ├── litestream.yml           # Litestream config: replicate the SQLite DB to Cloudflare R2
 ├── scripts/                 # Deploy scripts
-│   ├── build.sh             # Render build: npm install → npm test (gate) → fetch litestream
+│   ├── build.sh             # Render build: npm ci → npm test (gate) → npm audit (gate) → fetch litestream
 │   └── start.sh             # Render start: restore DB from R2 if empty → replicate → run app
 ├── package.json             # Scripts, deps, Node engine
 ├── routes/                  # Express route modules, mounted by server.js
@@ -298,7 +298,7 @@ Full detail in [`guides/testing.md`](guides/testing.md):
 
 Deployed on **Render** as a single web service, configured by [`render.yaml`](../render.yaml):
 
-- **Build:** `sh scripts/build.sh` — `npm install`, the `npm test` gate, then downloads the Litestream backup binary.
+- **Build:** `sh scripts/build.sh` — `npm ci` (lockfile-exact, matching CI), the `npm test` gate, the `npm audit` gate, then downloads the Litestream backup binary.
 - **Start:** `sh scripts/start.sh` — restores the DB from Cloudflare R2 if the disk is empty, then runs the app under continuous Litestream replication (see [`operations/deployment.md`](operations/deployment.md)).
 - **Auto-deploy:** off (`autoDeploy: false`) — a push does **not** deploy on its own; deploys are triggered manually from the Render dashboard.
 - **Env:** environment variables (including secrets like `GOOGLE_AI_API_KEY`) are
@@ -337,7 +337,9 @@ around:
 - **Never commit secrets.** `.env` and the `*.txt` key files are gitignored; real
   secrets belong in the Render dashboard.
 - `data/auth-store.db` contains password hashes and (hashed) session tokens — handle with care.
-- Admin/log endpoints are protected by `endpoint_key`, compared in constant time.
+- Admin/log endpoints are protected by `endpoint_key`, compared in constant time, with
+  a per-IP ceiling on **wrong** keys (`RL_ENDPOINT_KEY`) so the shared secret can't be
+  brute-forced; a valid key never spends the bucket.
 - CSP is enforced via `helmet` (toggle with `DISABLE_CSP=1` only to debug a blocked
   resource); CORS is limited to `ALLOWED_ORIGINS`; auth/email/generation endpoints are
   rate-limited (`RL_AUTH` / `RL_EMAIL` / `RL_GEN`).

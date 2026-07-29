@@ -16,8 +16,8 @@ npm run lint     # eslint . --max-warnings=0  (backend + frontend ES modules —
 ```
 
 > **Tests gate deployment.** `render.yaml`'s build command is `sh scripts/build.sh`,
-> which runs `npm install` then `npm test`, so a failing test **blocks the Render
-> deploy**. Keep the suite green — a red test is a stuck release, not just a warning.
+> which runs `npm ci` (lockfile-exact, matching CI) then `npm test`, so a failing test
+> **blocks the Render deploy**. Keep the suite green — a red test is a stuck release, not just a warning.
 > Note `npm test` runs **`npm run typecheck` first** (`tsc --noEmit` + the frontend
 > checkJs pass), so a *type* error blocks the deploy exactly like a failing test does —
 > see [Type-checking](#type-checking). (Lint isn't part of the Render build, but it **is**
@@ -331,8 +331,9 @@ that file. It runs in CI only — `npm test` (the deploy gate) does not measure 
   2026-07-28 against a measured 88.09 / 81.04 / 86.44. Branches carry the widest margin because
   V8's branch attribution shifts most between Node minors.
 - **Measure before you raise.** Node only enforces coverage thresholds on **>= 22.8**; on an
-  older local Node the script prints the report and skips enforcement (CI pins Node 22-latest,
-  so the gate always holds there). It also needs **>= 22.5** for `--test-coverage-exclude`, so on
+  older local Node the script prints the report and skips enforcement (`.node-version` pins
+  an exact 22.x that CI installs via `node-version-file`, so the gate always holds there —
+  and fnm/nvm/Volta users get the same version locally). It also needs **>= 22.5** for `--test-coverage-exclude`, so on
   an older Node the printed summary still includes `test/` rows and reads several points high.
   To get the real number locally, emit lcov (`--test-reporter=lcov`) and sum `LF/LH`, `BRF/BRH`
   and `FNF/FNH` across the records whose `SF:` path is **not** under `test/`.

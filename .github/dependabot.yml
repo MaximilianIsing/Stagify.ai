@@ -1,0 +1,18 @@
+version: 2
+
+updates:
+  # Runtime + dev deps (package.json). Weekly, not daily — this is a one-person
+  # repo and a daily cadence would just be noise the maintainer has to triage.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # ci.yml pins actions/checkout@v4 and actions/setup-node@v4 — without this,
+  # those versions go stale silently since nothing else bumps them.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
