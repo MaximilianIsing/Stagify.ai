@@ -39,12 +39,15 @@ function makeSpy(impl) {
  *   - `uploadError` → make the upload middleware fail (400 branch),
  *   - `dataLogFiles` → { 'prompt_logs.csv': 'contents' } seeded into the data-log dir,
  *   - `grantResult` / `revokeResult` → what the faked comp-grant store calls return,
- *   - `deleteUserResult` → what the faked GDPR-erasure helper returns.
+ *   - `deleteUserResult` → what the faked GDPR-erasure helper returns,
+ *   - `referralSummary` → rows the faked referral store returns; pass `null` to omit
+ *     the store entirely and hit the "not configured" 500 branch.
  * Returns { baseUrl, key, calls, getManifest, hostedImagesDir, close }.
  */
 export async function mountAdmin(options = {}) {
   const {
     logsAccessKey = ADMIN_KEY, uploadFile, uploadError, dataLogFiles = {},
+    referralSummary = [{ slug: 'columbia', label: 'Columbia University', clicks: 3, series: [] }],
     grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
     revokeResult = { ok: true, userId: 'u_1', email: 'granted@example.com' },
     testSendResult = { ok: true },
@@ -88,6 +91,11 @@ export async function mountAdmin(options = {}) {
   const emailCatalog = createEmailCatalog({ appUrl: 'https://stagify.ai' });
   const sendTestEmail = makeSpy(async () => testSendResult);
 
+  // Faked campaign-link store. `referralSummary: null` leaves the dep off the bag
+  // entirely, which is how the "not configured" branch is reached.
+  const referralSummaryFn = makeSpy(() => referralSummary);
+  const referralLinks = referralSummary === null ? undefined : { summary: referralSummaryFn };
+
   const { protectLogs } = createHttpGuards({ genAI: null, LOGS_ACCESS_KEY: logsAccessKey, endpointKeyMatches });
 
   const deps = {
@@ -109,6 +117,7 @@ export async function mountAdmin(options = {}) {
     HOSTED_IMAGE_MIME_EXT: { 'image/png': 'png', 'image/jpeg': 'jpg' },
     emailCatalog,
     sendTestEmail,
+    referralLinks,
   };
 
   const app = express();
@@ -121,7 +130,7 @@ export async function mountAdmin(options = {}) {
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     key: logsAccessKey,
-    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail, deleteUser },
+    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail, deleteUser, referralSummary: referralSummaryFn },
     getManifest: () => manifest,
     hostedImagesDir,
     close: () =>

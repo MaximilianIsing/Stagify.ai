@@ -31,12 +31,14 @@ import { logger } from '../lib/logger.js';
  *   HOSTED_IMAGE_MIME_EXT: Record<string, string>,
  *   emailCatalog: ReturnType<typeof import('../lib/services/email-catalog.js').createEmailCatalog>,
  *   sendTestEmail: (arg: { id: string, toEmail: string }) => Promise<{ ok: boolean, status?: number, error?: string }>,
+ *   referralLinks?: ReturnType<typeof import('../lib/data/referral-links.js').createReferralLinks>,
  * }} deps - Stores, the hosted-image upload middleware + log-access guard, data-dir
- *   and manifest helpers, memory/uptime admin actions, the mime→ext map, and the
- *   user-facing email catalog + test-send helper for the Emails tab.
+ *   and manifest helpers, memory/uptime admin actions, the mime→ext map, the
+ *   user-facing email catalog + test-send helper for the Emails tab, and the
+ *   campaign-link hit store behind the Referrals tab.
  */
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail } = deps;
+  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks } = deps;
   const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
@@ -371,6 +373,26 @@ router.post('/api/admin/email-test-send', protectLogs, express.json(), async (re
   // Log the template but NOT the recipient address (PII).
   logger.info('[admin] test email sent:', String(id));
   return res.json({ ok: true });
+});
+
+// Referrals tab: click rollups for every campaign short-URL (/columbia, …). The
+// window is the trailing 30 days by default and `?days=` scopes only the chart and
+// the windowed figure — the lifetime totals ignore it. Read-only.
+router.get('/api/admin/referrals', protectLogs, (req, res) => {
+  if (!referralLinks || typeof referralLinks.summary !== 'function') {
+    return sendError(res, 500, 'Referral tracking is not configured');
+  }
+  const requested = Number(req.query.days);
+  // Clamped, not validated-and-rejected: `days` only sizes a chart, and the query
+  // reads every row in the window, so an unbounded value is a scan the caller picks.
+  const days = Number.isFinite(requested) ? Math.min(365, Math.max(7, Math.round(requested))) : 30;
+  try {
+    return res.json({ days, links: referralLinks.summary({ days }) });
+  } catch (error) {
+    return sendError(res, 500, 'Failed to retrieve referral stats', {
+      ref: reportError('admin.referrals', error),
+    });
+  }
 });
 
 router.get('/enterprise-domains', protectLogs, (req, res) => {

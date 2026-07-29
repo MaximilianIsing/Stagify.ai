@@ -1,5 +1,6 @@
 import { createRenderers } from './admin/renderers.js';
 import { createEmailsPanel } from './admin/emails.js';
+import { createReferralsPanel } from './admin/referrals.js';
 import { qs, qsa, el, parseCSV, copyToClipboard } from './admin/helpers.js';
 import { showErrorToast } from './toast.js';
 
@@ -25,6 +26,7 @@ import { showErrorToast } from './toast.js';
   var renderers = createRenderers({ ctx: ctx, apiSend: apiSend, secureBlobDownload: secureBlobDownload });
   var emailsPanel = createEmailsPanel({ apiSend: apiSend });
   emailsPanel.init();
+  var referralsPanel = createReferralsPanel({ apiSend: apiSend });
 
   // ── Secure fetch: key sent in header, not URL ──
 
@@ -106,6 +108,11 @@ import { showErrorToast } from './toast.js';
       renderers.updateTabCounts();
       renderers.renderAll();
       qs('#adm-last-refresh').textContent='Updated '+new Date().toLocaleTimeString();
+      // Referrals load lazily on tab open, so Refresh has to invalidate them
+      // explicitly — and refetch immediately if that is the tab being looked at.
+      referralsPanel.reset();
+      var refPanel=qs('#panel-referrals');
+      if(refPanel&&refPanel.classList.contains('active'))referralsPanel.ensureLoaded();
     }).catch(function(err){
       console.error('Load failed',err);
       if(String(err).indexOf('403')!==-1){signOut();return}
@@ -126,8 +133,10 @@ import { showErrorToast } from './toast.js';
     btn.classList.add('active');btn.setAttribute('aria-selected','true');
     qsa('.adm-panel').forEach(function(p){p.classList.remove('active')});
     var p=qs('#panel-'+btn.dataset.tab);if(p)p.classList.add('active');
-    // The Emails gallery is static — lazy-load it the first time the tab opens.
+    // The Emails gallery and the Referrals panel aren't part of the loadAll() burst
+    // — lazy-load each the first time its tab opens.
     if(btn.dataset.tab==='emails')emailsPanel.ensureLoaded();
+    if(btn.dataset.tab==='referrals')referralsPanel.ensureLoaded();
     // Panels are display:none while inactive, so a tab that was hidden during the
     // last render starts scrolled wherever the previous one was.
     window.scrollTo({top:0,behavior:'smooth'});
@@ -257,6 +266,7 @@ import { showErrorToast } from './toast.js';
     _key='';_sessionStart=0;
     sessionStorage.removeItem('adm_ts');
     emailsPanel.reset();
+    referralsPanel.reset();
     ctx.data={users:[],promptRows:[],chatRows:[],bugRows:[],maskRows:[],contactRows:[],emailOpenRows:[],enterprise:[],hostedImages:[]};
     qs('#adm-dash').classList.add('hidden');
     qs('#adm-login').style.display='';

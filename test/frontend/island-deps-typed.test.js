@@ -67,6 +67,7 @@ const ALL_FACTORIES = [
   'admin/grant.js#createGrantSection',
   'admin/insights.js#createInsights',
   'admin/overview.js#createOverview',
+  'admin/referrals.js#createReferralsPanel',
   'admin/renderers.js#createRenderers',
   'ai-designer/chat-messages.js#createChatMessages',
   'ai-designer/chat-response.js#createChatResponse',

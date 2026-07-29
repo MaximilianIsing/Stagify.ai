@@ -318,6 +318,37 @@ test('email-test-send: a sender failure surfaces its status', async () => {
   assert.equal(res.status, 503);
 });
 
+// ---- Referral link stats --------------------------------------------------
+
+test('referrals requires the key and returns the per-link rollup', async () => {
+  app = await mountAdmin();
+  const noKey = await fetch(app.baseUrl + '/api/admin/referrals');
+  assert.equal(noKey.status, 403);
+
+  const res = await fetch(app.baseUrl + '/api/admin/referrals', { headers: auth });
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.days, 30, 'the default window');
+  assert.equal(body.links[0].slug, 'columbia');
+  assert.deepEqual(app.calls.referralSummary.lastArgs, [{ days: 30 }]);
+});
+
+test('referrals clamps ?days= instead of passing it through', async () => {
+  // `days` sizes a chart AND decides how many rows the query walks, so an
+  // unbounded value would be a scan the caller picks.
+  app = await mountAdmin();
+  for (const [given, expected] of [['1', 7], ['90', 90], ['9999', 365], ['abc', 30], ['-5', 7]]) {
+    const res = await fetch(app.baseUrl + `/api/admin/referrals?days=${given}`, { headers: auth });
+    assert.equal((await res.json()).days, expected, `days=${given} → ${expected}`);
+  }
+});
+
+test('referrals fails loudly when the store is not wired up', async () => {
+  app = await mountAdmin({ referralSummary: null });
+  const res = await fetch(app.baseUrl + '/api/admin/referrals', { headers: auth });
+  assert.equal(res.status, 500, 'a silent empty list would read as "no clicks yet"');
+});
+
 // ---- CSV log downloads ----------------------------------------------------
 
 test('a present CSV log is served, a missing one → 404', async () => {

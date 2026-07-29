@@ -63,6 +63,7 @@
         <button class="adm-tab" data-tab="contacts">Contacts <span class="adm-tab-count" id="tc-contacts">0</span></button>
         <button class="adm-tab" data-tab="email-opens">Email Opens <span class="adm-tab-count" id="tc-email-opens">0</span></button>
         <button class="adm-tab" data-tab="emails">Emails</button>
+        <button class="adm-tab" data-tab="referrals">Referrals</button>
         <button class="adm-tab" data-tab="bugs">Bugs <span class="adm-tab-count" id="tc-bugs">0</span></button>
         <button class="adm-tab" data-tab="hosting">Image Hosting <span class="adm-tab-count" id="tc-hosting">0</span></button>
         <button class="adm-tab" data-tab="downloads">Downloads</button>
@@ -151,6 +152,15 @@
           </div>
           <div id="adm-email-gallery" class="adm-email-gallery"></div>
         </div>
+      </div>
+
+      <div class="adm-panel" id="panel-referrals">
+        <div class="adm-card">
+          <h2>Referral links</h2>
+          <p class="adm-card-sub">Campaign short-URLs that redirect to the home page while counting who arrives through them &mdash; hand one out per channel to see which is working. Automated traffic (Slack, iMessage and WhatsApp link previews, search crawlers) is detected and kept out of the click counts; it is reported separately per link. New links are added in <code class="adm-code">lib/data/referral-links.js</code>.</p>
+        </div>
+        <!-- One card per configured link, built by scripts/admin/referrals.js. -->
+        <div class="adm-referrals" id="adm-referrals"></div>
       </div>
 
       <div class="adm-panel" id="panel-bugs">
