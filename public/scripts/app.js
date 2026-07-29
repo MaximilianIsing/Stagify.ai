@@ -12,6 +12,7 @@ import { createFurnitureRefs, FURNITURE_LIMIT } from './app/furniture-refs.js';
 import { createVersionCarousel } from './app/version-carousel.js';
 import { createDownloadMenu } from './app/download-menu.js';
 import { createStagingPipeline } from './app/staging-pipeline.js';
+import { createStagingFailure } from './app/staging-failure.js';
 import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
 
     const $ = (sel) => document.querySelector(sel);
@@ -145,10 +146,6 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
     // masked edits of it; the after view holds the staged result(s) plus any
     // masked refinements. Each is capped so the 6th mask attempt is blocked.
     const MAX_MASK_VERSIONS = 6;
-
-    function isMobileStagingViewport() {
-      return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches;
-    }
 
     // ── Mask image-processing core (shared) ───────────────────────────────────
     // The mask canvas math (brush-grow, model mask, feathered blend mask,
@@ -413,6 +410,16 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
     // Staging generation + progress UI live in their own island
     // (scripts/app/staging-pipeline.js); the entry injects the DOM refs, the
     // shared upload/validation state (as getters) and the messaging helpers.
+    // What happens when staging throws (scripts/app/staging-failure.js): the sign-in
+    // prompt on an expired session, and a message for every failure the pipeline threw
+    // without painting one itself.
+    const { handleStagingFailure } = createStagingFailure({
+      showStagingError,
+      getProfileMenu: () => window.StagifyProfileMenu,
+      openAuthForStaging: () => window.__stagifyOpenAuthForStaging?.(),
+      getText: (key) => window.LanguageSystem?.getText(key),
+    });
+
     const { processWithAI } = createStagingPipeline({
       stagePreview, progress, progressBar, progressText, loadingMessage, processingPlaceholder,
       roomSelect, styleSelect, additionalPrompt, furnitureRefs, FURNITURE_LIMIT,
@@ -502,17 +509,7 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
         
        } catch (error) {
          processBtn.disabled = false;
-         if (error && error.code === 'AUTH_REQUIRED' && isMobileStagingViewport()) {
-           if (window.StagifyProfileMenu && window.StagifyProfileMenu.setAuthModeRegister) {
-             window.StagifyProfileMenu.setAuthModeRegister(true);
-           }
-           if (window.StagifyProfileMenu && window.StagifyProfileMenu.openAuthModal) {
-             window.StagifyProfileMenu.openAuthModal(true);
-           } else if (typeof window.__stagifyOpenAuthForStaging === 'function') {
-             window.__stagifyOpenAuthForStaging();
-           }
-           return;
-         }
+         handleStagingFailure(error);
        }
     }
   

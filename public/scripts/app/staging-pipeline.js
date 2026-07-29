@@ -131,6 +131,21 @@ export function createStagingPipeline(deps) {
       isProcessingPhase = false;
     }
 
+    // Which failures have already put something on the user's screen.
+    //
+    // Most paths below paint their own message and then throw only to unwind, so
+    // stageImage()'s catch must not paint a second one on top. The ones that throw
+    // SILENTLY (AUTH_REQUIRED, FILE_TOO_LARGE, "no image data", a bare network
+    // error) are the caller's to surface — and for years nothing did, so a desktop
+    // session expiring mid-stage just made the progress bar vanish. Marking the
+    // surfaced ones is what lets the catch tell the two apart, instead of guessing
+    // by code and going silent on every code nobody thought to list.
+    /** @param {any} err @returns {any} */
+    function markSurfaced(err) {
+      if (err && typeof err === 'object') err.stagingMessageShown = true;
+      return err;
+    }
+
     // Stageability pre-check came back invalid → tear the loading UI back down
     // and surface the reason. Thrown so stageImage()'s catch re-enables the
     // button; the message is already on screen via showStagingError.
@@ -147,7 +162,7 @@ export function createStagingPipeline(deps) {
       showStagingError(message);
       const err = /** @type {Error & { code?: string }} */ (new Error(message));
       err.code = 'NOT_STAGEABLE';
-      throw err;
+      throw markSurfaced(err);
     }
 
     // Fast path: if the pre-check already finished (the usual case — it starts
@@ -324,7 +339,7 @@ export function createStagingPipeline(deps) {
         showStagingLimitInViewer(limitMsg);
         const limitErr = /** @type {Error & { code?: string }} */ (new Error(limitMsg));
         limitErr.code = 'DAILY_LIMIT';
-        throw limitErr;
+        throw markSurfaced(limitErr);
       }
       if (errorData.code === 'FILE_TOO_LARGE') {
         throw new Error(
@@ -337,7 +352,7 @@ export function createStagingPipeline(deps) {
         showStagingError(msg);
         const noImgErr = /** @type {Error & { code?: string }} */ (new Error(msg));
         noImgErr.code = 'NO_IMAGE_GENERATED';
-        throw noImgErr;
+        throw markSurfaced(noImgErr);
       }
       const errMsg =
         response.status === 500
@@ -351,7 +366,7 @@ export function createStagingPipeline(deps) {
       progressText.textContent =
         (window.LanguageSystem?.getText('modal.staging.progress.error') || 'Error: ') + errMsg;
       setTimeout(() => progress.classList.add('hidden'), 3000);
-      throw new Error(errMsg);
+      throw markSurfaced(new Error(errMsg));
     }
 
     // Result gate: the pre-check ran concurrently with the (much longer)
