@@ -21,82 +21,14 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { makeDom } from '../../helpers/admin-dom.js';
 
 // ---- Minimal fake DOM ------------------------------------------------------
 // Only the surface admin.js, admin/renderers.js, admin/helpers.js#el and
 // scripts/toast.js touch. No jsdom, matching the other frontend-island suites.
-
-function makeClassList(node) {
-  const parts = () => (node.className || '').split(' ').filter(Boolean);
-  const write = (list) => { node.className = list.join(' '); };
-  return {
-    add(...cls) { const l = parts(); for (const c of cls) if (!l.includes(c)) l.push(c); write(l); },
-    remove(...cls) { write(parts().filter((c) => !cls.includes(c))); },
-    toggle(c, on) { if (on) this.add(c); else this.remove(c); },
-    contains(c) { return parts().includes(c); },
-  };
-}
-
-function makeEl(tag) {
-  const node = {
-    tagName: tag,
-    id: '',
-    className: '',
-    textContent: '',
-    disabled: false,
-    value: '',
-    style: /** @type {Record<string, string>} */ ({}),
-    dataset: /** @type {Record<string, string>} */ ({}),
-    attrs: /** @type {Record<string, string>} */ ({}),
-    children: /** @type {any[]} */ ([]),
-    handlers: /** @type {Record<string, Function[]>} */ ({}),
-    parent: /** @type {any} */ (null),
-    setAttribute(k, v) { this.attrs[k] = String(v); if (k === 'id') this.id = String(v); },
-    getAttribute(k) { return k in this.attrs ? this.attrs[k] : null; },
-    appendChild(c) { c.parent = this; this.children.push(c); return c; },
-    removeChild(c) { this.children = this.children.filter((x) => x !== c); return c; },
-    remove() { if (this.parent) this.parent.removeChild(this); this.parent = null; },
-    addEventListener(evt, fn) { (this.handlers[evt] = this.handlers[evt] || []).push(fn); },
-    click() { for (const fn of this.handlers.click || []) fn.call(this, { target: this }); },
-  };
-  // innerHTML is a real sink in renderers.js ("" to clear, markup to fill), so the
-  // setter must drop the children the way the browser does.
-  let html = '';
-  Object.defineProperty(node, 'innerHTML', {
-    get: () => html,
-    set: (v) => { html = String(v); node.children.length = 0; },
-  });
-  node.classList = makeClassList(node);
-  return node;
-}
-
-/**
- * A document whose `#id` lookups materialise on demand, so a test needs no page
- * markup. getElementById does NOT auto-create — toast.js relies on a genuine miss
- * for '#toast-host' the first time, and on a hit afterwards, which is how we can
- * assert it builds exactly one host.
- */
-function makeDom() {
-  const byId = /** @type {Record<string, any>} */ ({});
-  const body = makeEl('body');
-  const register = (node) => { if (node && node.id) byId[node.id] = node; };
-  const origAppend = body.appendChild.bind(body);
-  body.appendChild = (c) => { register(c); return origAppend(c); };
-  return {
-    byId,
-    body,
-    createElement: (tag) => makeEl(tag),
-    createTextNode: (t) => ({ textContent: String(t), children: [] }),
-    getElementById: (id) => byId[id] || null,
-    querySelector: (sel) => {
-      if (!sel.startsWith('#')) return null;
-      const id = sel.slice(1);
-      if (!byId[id]) { const n = makeEl('div'); n.id = id; byId[id] = n; }
-      return byId[id];
-    },
-    querySelectorAll: () => [],
-  };
-}
+// Shared with test/frontend/admin/admin-shell.test.js — see test/helpers/admin-dom.js.
+// `makeDom()` with no options keeps the behaviour this suite is calibrated against,
+// notably querySelectorAll returning [].
 
 // One live `document` whose backing DOM can be swapped between tests. admin.js
 // captures elements in its boot IIFE, so its DOM has to outlive the import.
