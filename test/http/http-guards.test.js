@@ -110,12 +110,26 @@ function makeNext() {
 const KEY = 'super-secret-endpoint-key';
 const plainMatches = (a, b) => a === b;
 
+/**
+ * Build guards with the per-IP key limiter stubbed to a pass-through.
+ *
+ * Both guards now run `endpointKeyLimiter` on their REJECT path, and the real one is
+ * a module-level singleton — left alone, every 403 case in this file would share a
+ * single 10-request bucket and the later ones would 429 instead of 403. These tests
+ * are about the KEY COMPARISON, so they opt out; the limiter wiring itself is pinned
+ * in test/http/endpoint-key-limit.test.js. `deps` can still override the stub.
+ */
+const passThroughLimiter = (req, res, next) => next();
+function guards(deps) {
+  return createHttpGuards({ endpointKeyLimiter: passThroughLimiter, ...deps });
+}
+
 // ===========================================================================
 // healthHandler
 // ===========================================================================
 
 test('healthHandler reports status "healthy" and aiConfigured true when genAI is a truthy client', () => {
-  const { healthHandler } = createHttpGuards({
+  const { healthHandler } = guards({
     genAI: { some: 'client' },
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -133,7 +147,7 @@ test('healthHandler reports status "healthy" and aiConfigured true when genAI is
 });
 
 test('healthHandler reports aiConfigured false when genAI is null', () => {
-  const { healthHandler } = createHttpGuards({
+  const { healthHandler } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -150,7 +164,7 @@ test('healthHandler reports aiConfigured false when genAI is null', () => {
 // ===========================================================================
 
 test('protectLogs returns 500 "Server configuration error" and does NOT call next when LOGS_ACCESS_KEY is undefined', () => {
-  const { protectLogs } = createHttpGuards({
+  const { protectLogs } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: undefined,
     endpointKeyMatches: plainMatches,
@@ -166,7 +180,7 @@ test('protectLogs returns 500 "Server configuration error" and does NOT call nex
 });
 
 test('protectLogs returns 500 when LOGS_ACCESS_KEY is the empty string (falsy key)', () => {
-  const { protectLogs } = createHttpGuards({
+  const { protectLogs } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: '',
     endpointKeyMatches: plainMatches,
@@ -181,7 +195,7 @@ test('protectLogs returns 500 when LOGS_ACCESS_KEY is the empty string (falsy ke
 });
 
 test('protectLogs still applies sensitive headers (no-store / no-referrer) even on the 500 config-error path', () => {
-  const { protectLogs } = createHttpGuards({
+  const { protectLogs } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: '',
     endpointKeyMatches: plainMatches,
@@ -195,7 +209,7 @@ test('protectLogs still applies sensitive headers (no-store / no-referrer) even 
 });
 
 test('protectLogs calls next() and sets no status when the correct key is in the X-Stagify-Endpoint-Key header', () => {
-  const { protectLogs } = createHttpGuards({
+  const { protectLogs } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -211,7 +225,7 @@ test('protectLogs calls next() and sets no status when the correct key is in the
 });
 
 test('protectLogs applies the sensitive headers on the authorized (next) path too', () => {
-  const { protectLogs } = createHttpGuards({
+  const { protectLogs } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -224,7 +238,7 @@ test('protectLogs applies the sensitive headers on the authorized (next) path to
 });
 
 test('protectLogs returns 403 "Access denied" when the header is missing entirely', () => {
-  const { protectLogs } = createHttpGuards({
+  const { protectLogs } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -240,7 +254,7 @@ test('protectLogs returns 403 "Access denied" when the header is missing entirel
 });
 
 test('protectLogs returns 403 when the header value is the wrong key', () => {
-  const { protectLogs } = createHttpGuards({
+  const { protectLogs } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -255,7 +269,7 @@ test('protectLogs returns 403 when the header value is the wrong key', () => {
 });
 
 test('SECURITY: protectLogs is header-only — a correct key supplied ONLY in ?key= (no header) is rejected with 403', () => {
-  const { protectLogs } = createHttpGuards({
+  const { protectLogs } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -276,7 +290,7 @@ test('protectLogs consults endpointKeyMatches as (headerValue, LOGS_ACCESS_KEY) 
     seen.push([a, b]);
     return a === b;
   };
-  const { protectLogs } = createHttpGuards({
+  const { protectLogs } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: spyMatches,
@@ -295,7 +309,7 @@ test('protectLogs consults endpointKeyMatches as (headerValue, LOGS_ACCESS_KEY) 
 test('protectLogs short-circuits an empty-string header to 403 WITHOUT consulting the comparator', () => {
   const seen = [];
   const spyMatches = (a, b) => { seen.push([a, b]); return a === b; };
-  const { protectLogs } = createHttpGuards({ genAI: null, LOGS_ACCESS_KEY: KEY, endpointKeyMatches: spyMatches });
+  const { protectLogs } = guards({ genAI: null, LOGS_ACCESS_KEY: KEY, endpointKeyMatches: spyMatches });
   const res = makeRes();
   const next = makeNext();
   // accessKey is '' (falsy), so `accessKey && endpointKeyMatches(...)` skips the compare.
@@ -311,7 +325,7 @@ test('protectLogs short-circuits an empty-string header to 403 WITHOUT consultin
 // ===========================================================================
 
 test('stagingEndpointKeyGuard returns 500 "Server configuration error" when LOGS_ACCESS_KEY is falsy', () => {
-  const { stagingEndpointKeyGuard } = createHttpGuards({
+  const { stagingEndpointKeyGuard } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: '',
     endpointKeyMatches: plainMatches,
@@ -327,7 +341,7 @@ test('stagingEndpointKeyGuard returns 500 "Server configuration error" when LOGS
 });
 
 test('stagingEndpointKeyGuard calls next() when the correct key arrives via the x-stagify-endpoint-key header', () => {
-  const { stagingEndpointKeyGuard } = createHttpGuards({
+  const { stagingEndpointKeyGuard } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -342,7 +356,7 @@ test('stagingEndpointKeyGuard calls next() when the correct key arrives via the 
 });
 
 test('stagingEndpointKeyGuard trims a whitespace-padded header value before comparing', () => {
-  const { stagingEndpointKeyGuard } = createHttpGuards({
+  const { stagingEndpointKeyGuard } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -356,7 +370,7 @@ test('stagingEndpointKeyGuard trims a whitespace-padded header value before comp
 });
 
 test('SECURITY: stagingEndpointKeyGuard is header-only — a correct key supplied ONLY in ?key= (no header) is rejected with 403', () => {
-  const { stagingEndpointKeyGuard } = createHttpGuards({
+  const { stagingEndpointKeyGuard } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -371,7 +385,7 @@ test('SECURITY: stagingEndpointKeyGuard is header-only — a correct key supplie
 });
 
 test('stagingEndpointKeyGuard returns 403 when the header key is wrong', () => {
-  const { stagingEndpointKeyGuard } = createHttpGuards({
+  const { stagingEndpointKeyGuard } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -387,7 +401,7 @@ test('stagingEndpointKeyGuard returns 403 when the header key is wrong', () => {
 });
 
 test('stagingEndpointKeyGuard returns 403 when neither header nor query carries a key', () => {
-  const { stagingEndpointKeyGuard } = createHttpGuards({
+  const { stagingEndpointKeyGuard } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -402,7 +416,7 @@ test('stagingEndpointKeyGuard returns 403 when neither header nor query carries 
 });
 
 test('stagingEndpointKeyGuard applies the sensitive headers (Cache-Control: no-store, Referrer-Policy: no-referrer) even on a 403', () => {
-  const { stagingEndpointKeyGuard } = createHttpGuards({
+  const { stagingEndpointKeyGuard } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: plainMatches,
@@ -422,7 +436,7 @@ test('stagingEndpointKeyGuard compares via the injected constant-time endpointKe
     seen.push(args);
     return false;
   };
-  const { stagingEndpointKeyGuard } = createHttpGuards({
+  const { stagingEndpointKeyGuard } = guards({
     genAI: null,
     LOGS_ACCESS_KEY: KEY,
     endpointKeyMatches: alwaysFalse,

@@ -15,6 +15,8 @@ import createAdminRouter from '../../routes/admin.js';
 import { createHttpGuards } from '../../lib/http/http-guards.js';
 import { setSensitiveHeaders } from '../../lib/http/http-helpers.js';
 import { createEmailCatalog } from '../../lib/services/email-catalog.js';
+import { createReferralLinks } from '../../lib/data/referral-links.js';
+import { closeDb } from '../../lib/data/db.js';
 
 export const ADMIN_KEY = 'test-endpoint-key';
 
@@ -40,14 +42,17 @@ function makeSpy(impl) {
  *   - `dataLogFiles` → { 'prompt_logs.csv': 'contents' } seeded into the data-log dir,
  *   - `grantResult` / `revokeResult` → what the faked comp-grant store calls return,
  *   - `deleteUserResult` → what the faked GDPR-erasure helper returns,
- *   - `referralSummary` → rows the faked referral store returns; pass `null` to omit
- *     the store entirely and hit the "not configured" 500 branch.
- * Returns { baseUrl, key, calls, getManifest, hostedImagesDir, close }.
+ *   - `withReferrals` (default true) → mount a REAL referral store on a temp data
+ *     dir; `false` omits the dep entirely to hit the "not configured" 500 branch,
+ *   - `realKeyLimiter` (default false) → wire the SHARED endpoint-key limiter, i.e.
+ *     production; by default a pass-through is injected so unrelated 403 cases in one
+ *     file don't share a bucket. `endpointKeyLimiter` injects a specific one.
+ * Returns { baseUrl, key, calls, getManifest, hostedImagesDir, referrals, close }.
  */
 export async function mountAdmin(options = {}) {
   const {
     logsAccessKey = ADMIN_KEY, uploadFile, uploadError, dataLogFiles = {},
-    referralSummary = [{ slug: 'columbia', label: 'Columbia University', clicks: 3, series: [] }],
+    withReferrals = true, realKeyLimiter = false, endpointKeyLimiter,
     grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
     revokeResult = { ok: true, userId: 'u_1', email: 'granted@example.com' },
     testSendResult = { ok: true },
@@ -91,12 +96,23 @@ export async function mountAdmin(options = {}) {
   const emailCatalog = createEmailCatalog({ appUrl: 'https://stagify.ai' });
   const sendTestEmail = makeSpy(async () => testSendResult);
 
-  // Faked campaign-link store. `referralSummary: null` leaves the dep off the bag
-  // entirely, which is how the "not configured" branch is reached.
-  const referralSummaryFn = makeSpy(() => referralSummary);
-  const referralLinks = referralSummary === null ? undefined : { summary: referralSummaryFn };
+  // REAL campaign-link store on a throwaway data dir — the referral endpoints are
+  // CRUD over SQLite, so a fake would assert nothing about what actually persists.
+  // `withReferrals: false` leaves the dep off the bag, which is how the
+  // "not configured" branch is reached.
+  const referralDir = withReferrals ? fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-adm-ref-')) : null;
+  const referralLinks = referralDir ? createReferralLinks(referralDir, { seed: false }) : undefined;
 
-  const { protectLogs } = createHttpGuards({ genAI: null, LOGS_ACCESS_KEY: logsAccessKey, endpointKeyMatches });
+  // A pass-through key limiter by default: this harness mounts a fresh app per test
+  // but the SHARED limiter is a module-level singleton, so the real one would carry
+  // one bucket across every 403 case in a file and they would start 429ing each other.
+  // `realKeyLimiter: true` (or an injected `endpointKeyLimiter`) opts a test back in.
+  const { protectLogs } = createHttpGuards({
+    genAI: null,
+    LOGS_ACCESS_KEY: logsAccessKey,
+    endpointKeyMatches,
+    endpointKeyLimiter: realKeyLimiter ? null : (endpointKeyLimiter ?? ((req, res, next) => next())),
+  });
 
   const deps = {
     authStore,
@@ -130,14 +146,20 @@ export async function mountAdmin(options = {}) {
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     key: logsAccessKey,
-    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail, deleteUser, referralSummary: referralSummaryFn },
+    calls: { exportAllMemories, resetAllMemories, uptimeReset: uptimeMonitor.reset, authExport: authStore.exportStore, authExportRedacted: authStore.exportRedacted, enterpriseExport: enterpriseStore.exportStore, writeHostedImagesManifest, grantProMonth: authStore.grantProMonth, revokeProGrant: authStore.revokeProGrant, sendTestEmail, deleteUser },
     getManifest: () => manifest,
     hostedImagesDir,
+    referrals: referralLinks,
     close: () =>
       new Promise((r) =>
         server.close(() => {
           fs.rmSync(hostedImagesDir, { recursive: true, force: true });
           fs.rmSync(dataLogDir, { recursive: true, force: true });
+          if (referralDir) {
+            // Close the shared connection first so Windows can unlink the .db files.
+            closeDb(referralDir);
+            fs.rmSync(referralDir, { recursive: true, force: true });
+          }
           r();
         }),
       ),

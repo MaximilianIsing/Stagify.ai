@@ -325,7 +325,9 @@ only the email says so.
 secret with no per-admin identity and no audit trail, and it also guards the CSV
 exports (customer emails, prompt text) and mutating routes like
 `/api/admin/grant-plus`. Redacting `/authstore` removed the worst blast radius;
-it did not fix the admin auth model.
+it did not fix the admin auth model. `RL_ENDPOINT_KEY` (below) now bounds how fast
+that secret can be *guessed*, which is a different problem from the one above —
+it does nothing about rotation, identity, or audit.
 
 ## Rate limiting
 
@@ -337,6 +339,38 @@ it did not fix the admin auth model.
 | `RL_EMAIL` | 6 / 15 min | anything that sends email (spam/abuse) |
 | `RL_GEN` | 60 / 5 min | paid AI generation (cost abuse) |
 | `RL_CHECKOUT` | 10 / 60 min | `POST /api/enterprise/create-checkout` (see below) |
+| `RL_ENDPOINT_KEY` | 10 / 15 min | **wrong** endpoint-access keys (see below) |
+
+### The endpoint-key limiter counts rejections, not requests
+
+The whole admin surface — every CSV export, `/authstore`, comp grants, GDPR erasure —
+plus `POST /api/stage-by-endpoint-key` sits behind one shared static secret with no
+accounts behind it. Guessing that secret is therefore the only way in, and nothing
+bounded the guess rate. The dashboard does show a lockout after a few bad tries, but
+that counter lives in the browser ([`public/scripts/admin.js`](../../public/scripts/admin.js)),
+so it protects nobody who skips the page and posts the header directly.
+
+Two design points worth not undoing:
+
+- **It counts only rejected attempts.** The limiter runs on the guards' failure path
+  only, so a request carrying the right key never touches the bucket. That is what
+  lets the ceiling be as low as 10: an operator working in the dashboard cannot
+  rate-limit themselves no matter how many requests the page makes. A limiter mounted
+  as ordinary middleware on `routes/admin.js` would count *every* request and would
+  have to be loose enough to be useless. The 500 "key not configured" path doesn't
+  count either — that is our misconfiguration, not somebody guessing.
+- **Both guards share ONE limiter instance.** `protectLogs` and
+  `stagingEndpointKeyGuard` check the same secret, so two buckets would hand an
+  attacker double the budget for alternating between an admin route and the staging
+  endpoint.
+
+It lives in [`lib/http/http-guards.js`](../../lib/http/http-guards.js) rather than on a
+router for the same reason: the guard is the only place that knows a key was actually
+*rejected*, and it is the one chokepoint every route holding the secret passes through.
+Imported directly (as `checkoutLimiter` is) so an omitted dep cannot leave the key
+unguarded; the `endpointKeyLimiter` dep is a **test seam only**, and `null` mounts the
+real one. Guarded by
+[`test/http/endpoint-key-limit.test.js`](../../test/http/endpoint-key-limit.test.js).
 
 ### The enterprise checkout is public on purpose
 

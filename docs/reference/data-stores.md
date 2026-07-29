@@ -48,6 +48,21 @@ store factory. It began as the auth store, so the file is still named `auth-stor
     user's AI-chat-assistant memories (a JSON array).
   - `uptime_state` ([`lib/data/uptime-monitor.js`](../../lib/data/uptime-monitor.js)) — a single
     row: last heartbeat + coalesced downtime incidents (powers `/api/status`).
+  - `referral_links` + `referral_hits` ([`lib/data/referral-links.js`](../../lib/data/referral-links.js)) —
+    campaign short-URLs (`/columbia`) and their click ledger. `referral_links` is one row
+    per campaign (`slug` PK, `label`, `note`, `active`, `created_at`, `deactivated_at`);
+    **retiring sets `active = 0`** rather than deleting, so a finished campaign keeps its
+    results and keeps owning its slug. `referral_hits` is one row per arrival
+    (`slug`, `ts`, `referer`, `is_bot`), indexed `(slug, ts)` — the shape of every read
+    (one slug, one window) and every prune (one slug, oldest first).
+    It is the only table written by **unauthenticated** requests, so it carries a ceiling:
+    hits older than 400 days and anything past 100k rows per slug are pruned every 500
+    inserts, on top of the per-IP `referralLimiter`. Deliberately **not** stored: the
+    visitor's IP, their user-agent (read in memory to set `is_bot`, then dropped), and the
+    referrer's query string (only `host/path` is kept — a referring URL routinely carries
+    the sending site's own tracking params). The pre-existing `/columbia` link is seeded
+    once behind a `meta` guard; without that guard, deleting it would resurrect it on the
+    next boot. See [`admin-dashboard.md`](../guides/admin-dashboard.md#referrals-tab).
   - `meta` — key/value bookkeeping (e.g. the one-time-import guards).
 - **Indexes** cover the lookups a table actually performs, not just its primary key:
   `users` by `email` / `google_sub` / both Stripe ids (in `auth-store.js`'s `SCHEMA`), and

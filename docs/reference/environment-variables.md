@@ -120,6 +120,24 @@ HIDE_STAGING_BANNER=false
 # RL_EMAIL=6
 # RL_GEN=60
 # RL_CHECKOUT=10
+# Upload pre-checks / 5 min. Each accepted call spends a paid Gemini vision request.
+# RL_VALIDATE_IMAGE=20
+# WRONG endpoint-access keys, per IP / 15 min. The whole admin surface plus
+# /api/stage-by-endpoint-key is gated by one shared static secret with no accounts
+# behind it, so guessing that secret is the only way in; this bounds the guess rate.
+# Only REJECTED attempts count -- a request carrying the right key never touches the
+# bucket, so an operator working in the dashboard can never rate-limit themselves,
+# which is why the ceiling can be this low. Raise it only if a shared office IP has
+# several people fat-fingering the key.
+# RL_ENDPOINT_KEY=10
+# The two limiters on UNAUTHENTICATED endpoints that write to disk. Neither answers
+# 429 past its ceiling -- the response is a real image / a redirect a stranger must
+# still receive -- so going over drops only the row that would have been recorded.
+# Email open-tracking pixel, per IP / 15 min:
+# RL_EMAIL_PIXEL=120
+# Referral campaign short-URLs (/columbia), per IP / 15 min. One university's NAT
+# gateway is a single IP carrying a whole campus's clicks, so keep this generous:
+# RL_REFERRAL=120
 # Extra directory searched first for the stripe_*.txt secret files.
 # STRIPE_SECRETS_DIR=
 # Stripe meter event name for enterprise usage billing. Default user_generation.

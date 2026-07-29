@@ -36,6 +36,13 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/getpro'],
   ['POST', '/api/admin/grant-plus'],
   ['POST', '/api/admin/revoke-plus'],
+  // Referral links. Every one is key-gated, so an unauthenticated probe is rejected
+  // at the guard (403) long before the handler — nothing is created or deleted here.
+  ['GET', '/api/admin/referrals'],
+  ['POST', '/api/admin/referrals'],
+  ['POST', '/api/admin/referrals/probe/deactivate'],
+  ['POST', '/api/admin/referrals/probe/activate'],
+  ['DELETE', '/api/admin/referrals/probe'],
   ['POST', '/api/billing/stripe-webhook'],
   ['POST', '/api/billing/customer-portal'],
   ['POST', '/api/enterprise/create-checkout'],
