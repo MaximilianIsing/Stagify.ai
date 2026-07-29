@@ -2,6 +2,9 @@
 import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError } from '../lib/http/http-helpers.js';
+// Imported directly (as routes/billing.js does with checkoutLimiter) so an omitted
+// dep cannot leave this route's key compare unlimited.
+import { rejectEndpointKey } from '../lib/http/http-guards.js';
 import path from 'path';
 import { logger } from '../lib/logger.js';
 import { renderPasswordResetEmail, renderPasswordChangedEmail } from '../lib/services/email.js';
@@ -42,7 +45,12 @@ router.get('/getpro', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'getpro.html'));
 });
 
-router.post('/api/getpro', (req, res) => {
+// Compares the endpoint key inline rather than via protectLogs, so a wrong key is
+// counted against the SHARED brute-force bucket explicitly (rejectEndpointKey). This
+// route holds the same secret as the admin dashboard and hands Pro to whoever gets it
+// right, so an unlimited compare here would simply move the guessing off the guarded
+// routes onto this one. See docs/guides/security.md ("the endpoint-key limiter").
+router.post('/api/getpro', (req, res, next) => {
   setSensitiveHeaders(res);
   try {
     if (!LOGS_ACCESS_KEY) {
@@ -50,7 +58,7 @@ router.post('/api/getpro', (req, res) => {
     }
     const provided = req.get('X-Stagify-Endpoint-Key') || '';
     if (!endpointKeyMatches(provided, LOGS_ACCESS_KEY)) {
-      return sendError(res, 403, 'Access denied');
+      return rejectEndpointKey(req, res, next);
     }
     const user = getAuthUserFromRequest(req);
     if (!user) {

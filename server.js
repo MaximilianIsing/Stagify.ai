@@ -313,13 +313,18 @@ app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requirePr
 // (/es, /fr, …) are disjoint from every other route and from the static files.
 app.use(createI18nRouter({ __dirname, DEBUG_MODE }));
 
-// referral/campaign short-URLs (routes/referrals.js) — /columbia and friends count
-// the arrival and 302 to the home page. Each slug is its own explicit route, so
-// these are disjoint from every other route and from the static files.
-app.use(createReferralRouter({ referralLinks }));
-
 // public routes (routes/public.js)
 app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));
+
+// Referral/campaign short-URLs (routes/referrals.js) — /columbia and anything else
+// created from the dashboard count the arrival and 302 to the home page.
+//
+// MOUNTED LAST, after every other router, and that placement is load-bearing: links
+// are operator-created data, so this router matches `/:slug` and looks the slug up
+// per request. Here it only ever sees paths nothing else claimed, which is what
+// makes it impossible for a dashboard-created link to shadow a real page. Anything
+// it does not recognise falls through to Express's 404 exactly as before.
+app.use(createReferralRouter({ referralLinks }));
 
 // Multer upload errors surface here — AFTER the routers that use multer, so Express
 // actually reaches this handler (it only runs error middleware registered after the

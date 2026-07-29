@@ -1,16 +1,22 @@
 // Tier: unit (real SQLite in a temp dir) — lib/data/referral-links.js.
 //
 // WHAT THIS COVERS
-// The campaign-link click store behind /columbia and the dashboard's Referrals tab:
+// The campaign-link store behind /columbia-style URLs and the dashboard's Referrals
+// tab. Links are operator-created data now, so the surface is CRUD plus the click
+// ledger:
+//   - creation validation, which is the difference between a working link and one
+//     that silently never fires (a slug like `pro` or `es`),
+//   - retire vs delete: retiring must stop the URL AND keep the history, since
+//     that distinction is the whole reason there are two buttons,
+//   - the one-time seed of the formerly-hardcoded /columbia link, which must not
+//     resurrect it after the operator deletes it,
 //   - the bot classifier, which is the difference between "42 people clicked" and
 //     "42 link-preview crawlers fetched the URL once each",
-//   - referer normalisation, which is where the privacy promise is kept (no query
-//     strings — those routinely carry the sending site's tracking params),
+//   - referer normalisation, where the privacy promise is kept (no query strings —
+//     those routinely carry the sending site's tracking params),
 //   - the daily series, including the empty days a chart needs,
-//   - retention + the per-slug row cap, since this table is written by
-//     unauthenticated requests onto the volume auth-store.db lives on,
-//   - the registry itself: slugs must be single lowercase segments and must not
-//     collide with a real page.
+//   - retention + the per-slug row cap, since referral_hits is written by
+//     unauthenticated requests onto the volume auth-store.db lives on.
 //
 // Runs against a throwaway data dir, so no real referral data is touched.
 
@@ -21,23 +27,43 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   createReferralLinks,
+  computeReservedSlugs,
   isBotUserAgent,
   normalizeReferer,
   buildDailySeries,
-  REFERRAL_LINKS,
-  SLUG_PATTERN,
+  RESERVED_ROUTE_ROOTS,
 } from '../../lib/data/referral-links.js';
 import { closeDb } from '../../lib/data/db.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
-const LINKS = [{ slug: 'columbia', label: 'Columbia University', note: 'Campus outreach' }];
+const REPO_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname).replace(/^\/([A-Za-z]:)/, '$1'), '..', '..');
 
 const dirs = [];
-function store(links = LINKS) {
+
+/**
+ * A store on a fresh data dir. `seed:false` by default so tests start empty; the
+ * seeding tests opt in. baseDir points at the REPO so the reserved-slug list is
+ * computed from the real public/ folder — that is what production does.
+ */
+function store({ seed = false } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-ref-'));
   dirs.push(dir);
-  return { dir, links: createReferralLinks(dir, { links }) };
+  // The data dir and the reserved-list dir are the same argument in production;
+  // here the temp dir has no public/, so a link named after a real page would be
+  // allowed. Copy in just enough to make the reserved list real.
+  fs.mkdirSync(path.join(dir, 'public'), { recursive: true });
+  for (const entry of fs.readdirSync(path.join(REPO_ROOT, 'public'))) {
+    if (entry.endsWith('.html')) fs.writeFileSync(path.join(dir, 'public', entry), '');
+  }
+  return { dir, links: createReferralLinks(dir, { seed }) };
+}
+
+/** Create a link and assert it worked — most tests need one to exist. */
+function seeded(links, over = {}) {
+  const result = links.createLink({ slug: 'columbia', label: 'Columbia University', note: 'Campus outreach', ...over });
+  assert.equal(result.ok, true, `precondition: createLink failed — ${result.error || ''}`);
+  return result.link;
 }
 
 afterEach(() => {
@@ -46,6 +72,180 @@ afterEach(() => {
     closeDb(dir);
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// ---- Creating links --------------------------------------------------------
+
+test('a created link is immediately live and listed', () => {
+  const { links } = store();
+  const link = seeded(links);
+  assert.equal(link.slug, 'columbia');
+  assert.equal(link.path, '/columbia');
+  assert.equal(link.active, true);
+  assert.equal(links.getActiveLink('columbia').slug, 'columbia', 'resolves for the redirect right away');
+  assert.deepEqual(links.listLinks().map((l) => l.slug), ['columbia']);
+});
+
+test('slugs are normalised and matched case-insensitively', () => {
+  const { links } = store();
+  const link = seeded(links, { slug: '  Columbia  ' });
+  assert.equal(link.slug, 'columbia', 'trimmed and lowercased on the way in');
+  assert.equal(links.getActiveLink('COLUMBIA').slug, 'columbia', 'a visitor typing caps still lands');
+});
+
+test('a malformed slug is refused with a reason', () => {
+  const { links } = store();
+  for (const bad of ['', ' ', 'a', 'has space', 'UPPER!', 'trailing-', '-leading', 'x'.repeat(32), 'sub/path']) {
+    const result = links.createLink({ slug: bad, label: 'X' });
+    assert.equal(result.ok, false, `should refuse ${JSON.stringify(bad)}`);
+    assert.ok(result.code && result.error, 'rejections carry a code and a message for the dashboard');
+  }
+  // A hyphen inside and digits are fine.
+  assert.equal(links.createLink({ slug: 'nyu-fall-26', label: 'NYU' }).ok, true);
+});
+
+test('a link with no name is refused', () => {
+  // The name is how you tell two campaigns apart three months later.
+  const { links } = store();
+  const result = links.createLink({ slug: 'nyu', label: '   ' });
+  assert.equal(result.ok, false);
+  assert.equal(result.code, 'LABEL_REQUIRED');
+});
+
+test('a slug that would collide with the real site is refused', () => {
+  // Not destructive — the resolver is mounted last, so such a link could never take
+  // a page off the site. It is refused because it would silently never count.
+  const { links } = store();
+  for (const taken of ['pro', 'admin', 'api', 'es', 'fr', 'guides', 'contact', 'blog', 'status']) {
+    const result = links.createLink({ slug: taken, label: 'X' });
+    assert.equal(result.ok, false, `/${taken} should be refused`);
+    assert.equal(result.code, 'SLUG_RESERVED', `/${taken} should be refused as reserved`);
+  }
+});
+
+test('a duplicate slug is refused, including against a retired link', () => {
+  const { links } = store();
+  seeded(links);
+  assert.equal(links.createLink({ slug: 'columbia', label: 'Again' }).code, 'SLUG_TAKEN');
+
+  // A retired link still owns its URL — reusing the slug would silently attach the
+  // new campaign's clicks to the old one's history.
+  links.deactivateLink('columbia');
+  assert.equal(links.createLink({ slug: 'columbia', label: 'Again' }).code, 'SLUG_TAKEN');
+});
+
+test('long labels and notes are clamped rather than rejected', () => {
+  const { links } = store();
+  const link = seeded(links, { slug: 'nyu', label: 'L'.repeat(200), note: 'N'.repeat(400) });
+  assert.equal(link.label.length, 60);
+  assert.equal(link.note.length, 120);
+});
+
+// ---- Retire vs delete ------------------------------------------------------
+
+test('retiring stops the URL resolving but keeps the link and its clicks', () => {
+  const { links } = store();
+  seeded(links);
+  const now = Date.UTC(2026, 6, 28, 12);
+  links.recordHit({ slug: 'columbia', userAgent: CHROME, now });
+  links.recordHit({ slug: 'columbia', userAgent: CHROME, now });
+
+  const result = links.deactivateLink('columbia', now);
+  assert.equal(result.ok, true);
+  assert.equal(result.link.active, false);
+  assert.equal(result.link.deactivatedAt, now);
+
+  assert.equal(links.getActiveLink('columbia'), null, 'the URL is a 404 now');
+  assert.equal(links.listLinks().length, 1, 'but it is still in the dashboard');
+  assert.equal(links.summary({ now })[0].clicks, 2, 'with its history intact');
+});
+
+test('a retired link records nothing, even if something still calls it', () => {
+  const { links } = store();
+  seeded(links);
+  links.deactivateLink('columbia');
+  assert.deepEqual(links.recordHit({ slug: 'columbia', userAgent: CHROME }), { ok: false, reason: 'unknown-slug' });
+  assert.equal(links.countAll(), 0, 'a stale cache or direct call cannot keep it accruing');
+});
+
+test('restoring puts a retired link back into service', () => {
+  const { links } = store();
+  seeded(links);
+  links.deactivateLink('columbia');
+  const result = links.activateLink('columbia');
+  assert.equal(result.ok, true);
+  assert.equal(result.link.active, true);
+  assert.equal(result.link.deactivatedAt, null, 'the retirement stamp is cleared');
+  assert.equal(links.recordHit({ slug: 'columbia', userAgent: CHROME }).ok, true);
+});
+
+test('deleting erases the link and every click it recorded', () => {
+  const { links } = store();
+  seeded(links);
+  const now = Date.UTC(2026, 6, 28, 12);
+  for (let i = 0; i < 3; i += 1) links.recordHit({ slug: 'columbia', userAgent: CHROME, now });
+  links.recordHit({ slug: 'columbia', userAgent: 'Slackbot-LinkExpanding 1.0', now });
+
+  const result = links.deleteLink('columbia');
+  assert.equal(result.ok, true);
+  assert.equal(result.hitsDeleted, 4, 'bot rows go too — the count is reported so the UI can warn');
+  assert.deepEqual(links.listLinks(), []);
+  assert.equal(links.countAll(), 0, 'no orphan hit rows left behind');
+});
+
+test('acting on a link that no longer exists is a clean NOT_FOUND', () => {
+  const { links } = store();
+  for (const fn of ['deactivateLink', 'activateLink', 'deleteLink']) {
+    const result = links[fn]('ghost');
+    assert.equal(result.ok, false, `${fn} should refuse`);
+    assert.equal(result.code, 'NOT_FOUND');
+  }
+});
+
+// ---- The one-time seed -----------------------------------------------------
+
+test('the formerly-hardcoded /columbia link is seeded once', () => {
+  const { dir, links } = store({ seed: true });
+  assert.deepEqual(links.listLinks().map((l) => l.slug), ['columbia'], 'the deployed URL survives the migration');
+
+  // Reopening must not duplicate it (PRIMARY KEY would throw) …
+  createReferralLinks(dir, { seed: true });
+  assert.equal(links.listLinks().length, 1);
+});
+
+test('a seeded link the operator deletes does not come back on the next boot', () => {
+  // The meta guard is the point: without it, every restart would resurrect a
+  // campaign that was deliberately retired.
+  const { dir, links } = store({ seed: true });
+  links.deleteLink('columbia');
+  const reopened = createReferralLinks(dir, { seed: true });
+  assert.deepEqual(reopened.listLinks(), []);
+});
+
+test('state survives a reopen of the same data dir', () => {
+  const { dir, links } = store();
+  seeded(links);
+  const now = Date.UTC(2026, 6, 28, 12);
+  links.recordHit({ slug: 'columbia', userAgent: CHROME, now });
+  links.recordHit({ slug: 'columbia', userAgent: CHROME, now });
+
+  const reopened = createReferralLinks(dir, { seed: false });
+  assert.equal(reopened.listLinks().length, 1);
+  assert.equal(reopened.summary({ now })[0].clicks, 2);
+});
+
+// ---- Reserved-slug computation --------------------------------------------
+
+test('the reserved set covers routes, locale prefixes and static pages', () => {
+  const reserved = computeReservedSlugs(REPO_ROOT);
+  for (const root of RESERVED_ROUTE_ROOTS) assert.ok(reserved.has(root), `missing route root: ${root}`);
+  for (const prefix of ['es', 'fr', 'de']) assert.ok(reserved.has(prefix), `missing locale prefix: ${prefix}`);
+  // Static pages, both with and without the extension.
+  assert.ok(reserved.has('pro.html') && reserved.has('pro'), 'a page is reserved with and without .html');
+  assert.ok(reserved.has('index.html') && reserved.has('index'));
+  // And it does not swallow everything.
+  assert.equal(reserved.has('columbia'), false);
+  assert.equal(reserved.has('nyu'), false);
 });
 
 // ---- Bot classification ---------------------------------------------------
@@ -134,6 +334,7 @@ test('the daily series includes the days with no clicks', () => {
 
 test('human hits count as clicks and bot hits are recorded separately', () => {
   const { links } = store();
+  seeded(links);
   const now = Date.UTC(2026, 6, 28, 12);
 
   assert.deepEqual(links.recordHit({ slug: 'columbia', userAgent: CHROME, now }), { ok: true, isBot: false });
@@ -142,22 +343,21 @@ test('human hits count as clicks and bot hits are recorded separately', () => {
 
   const [row] = links.summary({ now, days: 30 });
   assert.equal(row.slug, 'columbia');
-  assert.equal(row.path, '/columbia');
   assert.equal(row.clicks, 2, 'only the humans are clicks');
   assert.equal(row.botHits, 1, 'the crawler is reported, not silently dropped');
   assert.equal(row.lastClickAt, now);
   assert.equal(links.countAll(), 3, 'but every hit is on disk');
 });
 
-test('an unknown slug is refused rather than recorded', () => {
+test('a hit for a slug that was never created is refused', () => {
   const { links } = store();
-  const result = links.recordHit({ slug: 'not-a-campaign', userAgent: CHROME });
-  assert.deepEqual(result, { ok: false, reason: 'unknown-slug' });
+  assert.deepEqual(links.recordHit({ slug: 'not-a-campaign', userAgent: CHROME }), { ok: false, reason: 'unknown-slug' });
   assert.equal(links.countAll(), 0);
 });
 
 test('the summary window scopes the chart but not the lifetime total', () => {
   const { links } = store();
+  seeded(links);
   const now = Date.UTC(2026, 6, 28, 12);
 
   links.recordHit({ slug: 'columbia', userAgent: CHROME, now: now - 40 * DAY_MS }); // outside 30d
@@ -174,8 +374,22 @@ test('the summary window scopes the chart but not the lifetime total', () => {
   assert.equal(row.firstClickAt, now - 40 * DAY_MS);
 });
 
+test('each link is counted separately', () => {
+  const { links } = store();
+  seeded(links);
+  seeded(links, { slug: 'nyu', label: 'NYU', note: 'Instagram' });
+  const now = Date.UTC(2026, 6, 28, 12);
+
+  for (let i = 0; i < 5; i += 1) links.recordHit({ slug: 'columbia', userAgent: CHROME, now });
+  links.recordHit({ slug: 'nyu', userAgent: CHROME, now });
+
+  const bySlug = Object.fromEntries(links.summary({ now }).map((l) => [l.slug, l.clicks]));
+  assert.deepEqual(bySlug, { columbia: 5, nyu: 1 });
+});
+
 test('referrers are grouped by host+path, most-clicked first, bots excluded', () => {
   const { links } = store();
+  seeded(links);
   const now = Date.UTC(2026, 6, 28, 12);
 
   links.recordHit({ slug: 'columbia', userAgent: CHROME, referer: 'https://columbia.edu/housing?utm=a', now });
@@ -193,6 +407,7 @@ test('referrers are grouped by host+path, most-clicked first, bots excluded', ()
 
 test('a link with no hits still reports a full, zeroed series', () => {
   const { links } = store();
+  seeded(links);
   const now = Date.UTC(2026, 6, 28, 12);
   const [row] = links.summary({ now, days: 14 });
   assert.equal(row.clicks, 0);
@@ -206,6 +421,7 @@ test('a link with no hits still reports a full, zeroed series', () => {
 
 test('prune drops rows past the retention horizon and keeps the rest', () => {
   const { links } = store();
+  seeded(links);
   const now = Date.UTC(2026, 6, 28, 12);
 
   links.recordHit({ slug: 'columbia', userAgent: CHROME, now: now - 500 * DAY_MS });
@@ -216,28 +432,4 @@ test('prune drops rows past the retention horizon and keeps the rest', () => {
   assert.equal(links.prune(now), 2, 'both rows older than 400 days go');
   assert.equal(links.countAll(), 1);
   assert.equal(links.summary({ now, days: 365 })[0].clicks, 1);
-});
-
-test('the state survives a reopen of the same data dir', () => {
-  const { dir, links } = store();
-  const now = Date.UTC(2026, 6, 28, 12);
-  links.recordHit({ slug: 'columbia', userAgent: CHROME, now });
-  links.recordHit({ slug: 'columbia', userAgent: CHROME, now });
-
-  // Same shared connection, but a fresh store object: the CREATE TABLE IF NOT
-  // EXISTS path must not wipe or shadow what is already there.
-  const reopened = createReferralLinks(dir, { links: LINKS });
-  assert.equal(reopened.summary({ now, days: 30 })[0].clicks, 2);
-});
-
-// ---- The registry itself --------------------------------------------------
-
-test('every configured slug is a single lowercase URL segment', () => {
-  assert.ok(REFERRAL_LINKS.length > 0, 'the registry is populated — an empty one silently disables the feature');
-  for (const link of REFERRAL_LINKS) {
-    assert.match(link.slug, SLUG_PATTERN, `bad slug: ${link.slug}`);
-    assert.ok(link.label && link.label.trim(), `${link.slug} needs a dashboard label`);
-  }
-  const slugs = REFERRAL_LINKS.map((l) => l.slug);
-  assert.equal(new Set(slugs).size, slugs.length, 'slugs must be unique — the last route registered would win');
 });

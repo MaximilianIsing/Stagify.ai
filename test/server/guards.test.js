@@ -24,7 +24,15 @@ const DUMMY_KEY = 'test-guard-key-not-a-real-secret';
 
 let server;
 before(async () => {
-  server = await startServer({ endpoint_key: DUMMY_KEY, LOGS_ACCESS_KEY: DUMMY_KEY });
+  // RL_ENDPOINT_KEY is raised well above this file's request count on purpose. Every
+  // request here is a deliberately UNKEYED one, which is exactly what the per-IP
+  // endpoint-key limiter counts (lib/http/rate-limiters.js), and this file sends far
+  // more than the production ceiling of 10 from a single IP. At the default the later
+  // routes would answer 429 — still a rejection, but it would stop proving that the
+  // GUARD rejected them, which is the only thing this file exists to prove. Raising
+  // the ceiling keeps every assertion an exact 403. The limiter's own behaviour is
+  // covered in test/http/endpoint-key-limit.test.js.
+  server = await startServer({ endpoint_key: DUMMY_KEY, LOGS_ACCESS_KEY: DUMMY_KEY, RL_ENDPOINT_KEY: '1000' });
 });
 after(() => server?.close());
 

@@ -496,10 +496,48 @@ body.page-admin main { flex: 0 0 auto; overflow-x: hidden; overflow-y: visible; 
 .adm-email-send-msg--ok { color: #166534 }
 .adm-email-send-msg--err { color: #dc2626 }
 
-/* ── Referrals tab: one card per campaign short-URL ──────────────────────── */
-.adm-referrals { display: flex; flex-direction: column; gap: 1.1rem }
-/* The chart card nested inside brings its own surface and border, so it sits flush
-   rather than looking like a second panel floating in this one. */
+/* ── Referrals tab: create form, link list, per-link detail ──────────────── */
+
+/* Create form. The fields wrap onto their own rows on a narrow screen rather than
+   shrinking below a usable width. */
+.adm-ref-form { display: flex; align-items: flex-end; gap: .75rem; flex-wrap: wrap; margin: 1rem 0 .35rem }
+.adm-ref-field { display: flex; flex-direction: column; gap: .3rem; flex: 1 1 190px; min-width: 0 }
+.adm-ref-field-lbl { font-size: .7rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--adm-faint) }
+.adm-ref-optional { font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--adm-faint) }
+.adm-ref-slug-input { display: flex; align-items: center; gap: .3rem }
+.adm-ref-origin { font-size: .85rem; font-weight: 700; color: var(--adm-faint); font-family: ui-monospace, SFMono-Regular, Menlo, monospace }
+.adm-ref-slug-input .adm-search { flex: 1; min-width: 0 }
+.adm-ref-create-btn {
+  padding: .5rem 1.1rem; font-size: .82rem; font-weight: 700; color: var(--bg-elevated);
+  background: var(--adm-accent); border: none; border-radius: 8px; cursor: pointer;
+  font-family: inherit; transition: .18s; white-space: nowrap;
+}
+.adm-ref-create-btn:hover:not(:disabled) { background: var(--adm-accent-deep) }
+.adm-ref-create-btn:disabled { opacity: .5; cursor: not-allowed }
+.adm-ref-preview { margin: 0; font-size: .76rem; color: var(--adm-faint); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 1.1em }
+.adm-inline-msg--ok { color: #166534 }
+.adm-inline-msg--err { color: var(--danger) }
+#adm-ref-form-msg { margin: .4rem 0 0 }
+
+/* Link list. Rows are clickable — they open the detail card below the table. */
+.adm-ref-row { cursor: pointer }
+.adm-ref-row--on { background: var(--brand-wash) }
+.adm-ref-slug { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; color: var(--adm-accent-deep); margin-right: .4rem }
+.adm-ref-actions { display: flex; gap: .35rem; flex-wrap: wrap; justify-content: flex-end }
+.adm-ref-action {
+  padding: .25rem .55rem; font-size: .7rem; font-weight: 700; font-family: inherit;
+  border-radius: 6px; cursor: pointer; white-space: nowrap; border: 1px solid var(--adm-line);
+  background: var(--adm-surface-2); color: var(--adm-ink-2); transition: .16s;
+}
+.adm-ref-action--quiet:hover { background: var(--brand-tint); color: var(--adm-accent-deep); border-color: #bfdbfe }
+.adm-ref-action--warn { color: #92400e; border-color: #fde68a; background: #fffbeb }
+.adm-ref-action--warn:hover { background: #fef3c7 }
+.adm-ref-action--danger { color: #991b1b; border-color: #fecaca; background: #fef2f2 }
+.adm-ref-action--danger:hover { background: #fee2e2 }
+
+/* Per-link detail. The chart card nested inside brings its own surface and border,
+   so it sits flush rather than looking like a second panel floating in this one. */
+.adm-ref-card { margin-top: 1.1rem }
 .adm-ref-card .adm-chart-card { margin: 1rem 0 0; box-shadow: none }
 .adm-ref-card .adm-host-url-row { margin-bottom: 1rem }
 .adm-ref-card > h2 { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap }

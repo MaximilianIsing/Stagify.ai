@@ -318,35 +318,122 @@ test('email-test-send: a sender failure surfaces its status', async () => {
   assert.equal(res.status, 503);
 });
 
-// ---- Referral link stats --------------------------------------------------
+// ---- Referral links (CRUD over a real store) ------------------------------
 
-test('referrals requires the key and returns the per-link rollup', async () => {
+const jsonAuth = { ...auth, 'Content-Type': 'application/json' };
+const createLink = (base, body) =>
+  fetch(base + '/api/admin/referrals', { method: 'POST', headers: jsonAuth, body: JSON.stringify(body) });
+const listLinks = async (base) =>
+  (await (await fetch(base + '/api/admin/referrals', { headers: auth })).json()).links;
+
+test('every referral endpoint requires the access key', async () => {
   app = await mountAdmin();
-  const noKey = await fetch(app.baseUrl + '/api/admin/referrals');
-  assert.equal(noKey.status, 403);
+  const calls = [
+    ['GET', '/api/admin/referrals'],
+    ['POST', '/api/admin/referrals'],
+    ['POST', '/api/admin/referrals/columbia/deactivate'],
+    ['POST', '/api/admin/referrals/columbia/activate'],
+    ['DELETE', '/api/admin/referrals/columbia'],
+  ];
+  for (const [method, url] of calls) {
+    const res = await fetch(app.baseUrl + url, { method });
+    assert.equal(res.status, 403, `${method} ${url} should reject without a key`);
+  }
+});
 
-  const res = await fetch(app.baseUrl + '/api/admin/referrals', { headers: auth });
+test('creating a link returns it and makes it listable', async () => {
+  app = await mountAdmin();
+  const res = await createLink(app.baseUrl, { slug: 'columbia', label: 'Columbia University', note: 'Campus outreach' });
   assert.equal(res.status, 200);
   const body = await res.json();
-  assert.equal(body.days, 30, 'the default window');
-  assert.equal(body.links[0].slug, 'columbia');
-  assert.deepEqual(app.calls.referralSummary.lastArgs, [{ days: 30 }]);
+  assert.equal(body.link.slug, 'columbia');
+  assert.equal(body.link.path, '/columbia');
+  assert.equal(body.link.active, true);
+
+  const links = await listLinks(app.baseUrl);
+  assert.equal(links.length, 1);
+  assert.equal(links[0].clicks, 0);
+  assert.equal(links[0].series.length, 30, 'a chart series comes back even with no clicks');
+});
+
+test('a bad slug is a 400 and a taken or reserved one is a 409', async () => {
+  app = await mountAdmin();
+  await createLink(app.baseUrl, { slug: 'columbia', label: 'Columbia' });
+
+  const malformed = await createLink(app.baseUrl, { slug: 'not a slug', label: 'X' });
+  assert.equal(malformed.status, 400);
+  assert.equal((await malformed.json()).code, 'SLUG_INVALID');
+
+  const noLabel = await createLink(app.baseUrl, { slug: 'nyu', label: '' });
+  assert.equal(noLabel.status, 400);
+
+  const dupe = await createLink(app.baseUrl, { slug: 'columbia', label: 'Again' });
+  assert.equal(dupe.status, 409, 'a name already in use is a conflict, not a malformed request');
+
+  const reserved = await createLink(app.baseUrl, { slug: 'admin', label: 'Nope' });
+  assert.equal(reserved.status, 409);
+  assert.equal((await reserved.json()).code, 'SLUG_RESERVED');
+});
+
+test('deactivate keeps the link listed, delete removes it', async () => {
+  app = await mountAdmin();
+  await createLink(app.baseUrl, { slug: 'columbia', label: 'Columbia' });
+  app.referrals.recordHit({ slug: 'columbia', userAgent: 'Mozilla/5.0 Chrome/126.0 Safari/537.36' });
+
+  const off = await fetch(app.baseUrl + '/api/admin/referrals/columbia/deactivate', { method: 'POST', headers: auth });
+  assert.equal(off.status, 200);
+  assert.equal((await off.json()).link.active, false);
+
+  let links = await listLinks(app.baseUrl);
+  assert.equal(links.length, 1, 'still on the dashboard');
+  assert.equal(links[0].active, false);
+  assert.equal(links[0].clicks, 1, 'with its history');
+
+  const on = await fetch(app.baseUrl + '/api/admin/referrals/columbia/activate', { method: 'POST', headers: auth });
+  assert.equal((await on.json()).link.active, true, 'and it can be restored');
+
+  const gone = await fetch(app.baseUrl + '/api/admin/referrals/columbia', { method: 'DELETE', headers: auth });
+  assert.equal(gone.status, 200);
+  assert.equal((await gone.json()).hitsDeleted, 1, 'the caller is told what it destroyed');
+  links = await listLinks(app.baseUrl);
+  assert.deepEqual(links, []);
+});
+
+test('acting on a link that does not exist is a 404', async () => {
+  app = await mountAdmin();
+  for (const [method, url] of [
+    ['POST', '/api/admin/referrals/ghost/deactivate'],
+    ['POST', '/api/admin/referrals/ghost/activate'],
+    ['DELETE', '/api/admin/referrals/ghost'],
+  ]) {
+    const res = await fetch(app.baseUrl + url, { method, headers: auth });
+    assert.equal(res.status, 404, `${method} ${url}`);
+  }
 });
 
 test('referrals clamps ?days= instead of passing it through', async () => {
   // `days` sizes a chart AND decides how many rows the query walks, so an
   // unbounded value would be a scan the caller picks.
   app = await mountAdmin();
+  await createLink(app.baseUrl, { slug: 'columbia', label: 'Columbia' });
   for (const [given, expected] of [['1', 7], ['90', 90], ['9999', 365], ['abc', 30], ['-5', 7]]) {
     const res = await fetch(app.baseUrl + `/api/admin/referrals?days=${given}`, { headers: auth });
-    assert.equal((await res.json()).days, expected, `days=${given} → ${expected}`);
+    const body = await res.json();
+    assert.equal(body.days, expected, `days=${given} → ${expected}`);
+    assert.equal(body.links[0].series.length, expected, 'and the series actually follows it');
   }
 });
 
 test('referrals fails loudly when the store is not wired up', async () => {
-  app = await mountAdmin({ referralSummary: null });
-  const res = await fetch(app.baseUrl + '/api/admin/referrals', { headers: auth });
-  assert.equal(res.status, 500, 'a silent empty list would read as "no clicks yet"');
+  app = await mountAdmin({ withReferrals: false });
+  for (const [method, url] of [
+    ['GET', '/api/admin/referrals'],
+    ['POST', '/api/admin/referrals'],
+    ['DELETE', '/api/admin/referrals/columbia'],
+  ]) {
+    const res = await fetch(app.baseUrl + url, { method, headers: jsonAuth, body: method === 'POST' ? '{}' : undefined });
+    assert.equal(res.status, 500, `${method} ${url} — a silent empty list would read as "no clicks yet"`);
+  }
 });
 
 // ---- CSV log downloads ----------------------------------------------------

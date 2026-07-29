@@ -27,6 +27,7 @@ import { showErrorToast } from './toast.js';
   var emailsPanel = createEmailsPanel({ apiSend: apiSend });
   emailsPanel.init();
   var referralsPanel = createReferralsPanel({ apiSend: apiSend });
+  referralsPanel.init();
 
   // ── Secure fetch: key sent in header, not URL ──
 

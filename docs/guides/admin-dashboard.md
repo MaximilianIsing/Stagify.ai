@@ -269,16 +269,30 @@ an `id`, `label`, `category`, `description`, and a `render()` thunk supplying sa
 
 Campaign short-URLs — `stagify.ai/columbia` and any sibling — that **302 to the home page
 while counting the arrival**, so you can hand a different link to each channel and see which
-one works. One card per link: the copyable URL, lifetime / 30-day / 7-day click totals, a
-daily chart, and the referring sites.
+one works. Links are **created and retired from this tab**; there is no deploy in the loop.
+A compact list of every link, and selecting one opens its detail: chart, referring sites,
+copy button, and its actions.
 
-**How a hit becomes a click.** [`routes/referrals.js`](../../routes/referrals.js) registers
-one route per entry in `REFERRAL_LINKS` — explicitly, never a `/:slug` wildcard, which would
-swallow every unmatched path in the app — records a row through
-[`lib/data/referral-links.js`](../../lib/data/referral-links.js), and redirects. Counting is
-best-effort on purpose: the store swallows its own write errors and `referralLimiter` drops
-rows instead of answering 429, because a stranger opening the URL must reach the site whether
-or not the analytics write lands.
+**How a hit becomes a click.** [`routes/referrals.js`](../../routes/referrals.js) matches
+`/:slug` and resolves it against [`lib/data/referral-links.js`](../../lib/data/referral-links.js)
+per request, records a row, and redirects. Counting is best-effort on purpose: the store
+swallows its own write errors and `referralLimiter` drops rows instead of answering 429,
+because a stranger opening the URL must reach the site whether or not the analytics write
+lands. Unresolved slugs `next('route')` **before** the limiter, so the stray 404 traffic this
+route inevitably sees cannot exhaust the bucket protecting the real links.
+
+**Mount position is a safety property, not a style choice.** The router is mounted LAST in
+`server.js`, after every other route. A `/:slug` pattern matches anything, so this placement
+is the only reason an operator-typed slug cannot shadow a real page — mounted here it only
+ever sees paths nothing else claimed. `createLink` also refuses reserved names
+(`RESERVED_ROUTE_ROOTS` + locale prefixes + everything in `public/`), but that is a helpful
+error, not the guarantee. `test/routes/referral-route.test.js` pins both independently.
+
+**Retire vs delete.** Retiring sets `active = 0`: the URL 404s immediately, the row and its
+clicks stay on the dashboard, and the slug is still taken (reusing it would silently graft a
+new campaign onto an old one's history). Only a retired link offers **Delete permanently**,
+which drops the link and every hit it recorded in one transaction — so the irreversible
+button is never the one next to a live campaign.
 
 **Bots are flagged, not dropped.** A link pasted into Slack/iMessage/WhatsApp is fetched by
 that platform's unfurler before any human clicks it, so counting those would inflate a
@@ -289,14 +303,19 @@ bot (every real browser sends one). `HEAD` requests are redirected without being
 
 **What is not stored:** no IP address, no user-agent string (inspected in memory, then
 dropped), and no referrer query string — only `host/path`, since a referring URL routinely
-carries the sending site's own tracking params. Rows are pruned past 400 days and capped per
-slug; the table lives in the shared SQLite DB, so Litestream already backs it up.
+carries the sending site's own tracking params. Hits are pruned past 400 days and capped per
+slug; both tables live in the shared SQLite DB, so Litestream already backs them up.
 
-**Adding a link:** append one `{ slug, label, note }` entry to `REFERRAL_LINKS` in
-`lib/data/referral-links.js`. That is the whole change — the route, the dashboard card and
-the drift guards are all driven from it. `test/routes/referral-route.test.js` fails if the
-slug shadows an existing page, a locale prefix or an API route (a slug like `pro` or `es`
-would take the real page off the site while still answering 302).
+**Endpoints** (all behind `protectLogs`): `GET /api/admin/referrals?days=` for the rollup,
+`POST /api/admin/referrals` to create, `POST /api/admin/referrals/:slug/deactivate` and
+`…/activate`, `DELETE /api/admin/referrals/:slug`. A create rejection carries a `code`
+(`SLUG_INVALID`, `SLUG_RESERVED`, `SLUG_TAKEN`, `LABEL_REQUIRED`) and a message written for
+the operator — the panel shows it verbatim, because it is the only thing telling them what
+to type instead.
+
+**The one hardcoded thing left** is the seed: `/columbia` predates links being data, so it is
+inserted once behind a `meta` guard. The guard matters — without it, deleting that link would
+resurrect it on the next boot.
 
 ## Conventions when editing
 
