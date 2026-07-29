@@ -14,7 +14,7 @@
     "lint": "eslint . --max-warnings=0"
   },
   "author": "Maximilian Ising",
-  "license": "ISC",
+  "license": "UNLICENSED",
   "description": "AI virtual-staging web app (Node/Express).",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

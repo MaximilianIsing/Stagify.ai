@@ -72,7 +72,10 @@ mounted between them so the Stripe webhook still sees the raw body):
    gets parsed JSON.
 4. **Rate limiters** (`express-rate-limit`) — applied to auth (`RL_AUTH`), email
    (`RL_EMAIL`), AI-generation (`RL_GEN`), and enterprise-checkout (`RL_CHECKOUT`)
-   routes.
+   routes, among others; `lib/http/rate-limiters.js` holds the full set. The odd one
+   out is `RL_ENDPOINT_KEY`, which is applied inside the guards in
+   `lib/http/http-guards.js` rather than as route middleware, because it counts only
+   *rejected* admin-key attempts — see `docs/guides/security.md`.
 5. **`express.static('public')`** — if a file matches the URL it is served here (with
    long-lived immutable cache headers for images/fonts/media, `no-cache` for
    html/css/js/json). This is why `/` serves `public/index.html`.
@@ -122,7 +125,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `http-helpers.js` | Small pure helpers: `sendError()` (the standard JSON error shape), `setSensitiveHeaders()`, client-IP + user-identifier helpers. |
 | `error-ref.js` | `reportError(context, err)` — logs a caught error under a random 8-char reference and returns it, so a 5xx body carries `{ ref }` instead of `error.message`. See [A caught exception never goes in the body](#a-caught-exception-never-goes-in-the-body). |
 | `http-guards.js` | The `endpoint_key` guards (`protectLogs`, `stagingEndpointKeyGuard`) and the `/health` handler. |
-| `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN` / `RL_CHECKOUT`). |
+| `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN` / `RL_CHECKOUT` / `RL_ENDPOINT_KEY` / …). |
 | `uploads.js` | The multer upload configs (staging / chat / hosted-image). |
 | `app-middleware.js` | The base HTTP middleware, lifted out of `server.js`. `applyEdgeMiddleware(app)` (helmet/CSP, CORS allow-list, compression — mounted **before** the billing router) and `applyBodyAndStatic(app)` (JSON body parsing + its error handler, `express.static` — mounted **after**, so Stripe's webhook still sees the raw body). |
 
