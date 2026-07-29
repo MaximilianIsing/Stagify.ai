@@ -26,6 +26,7 @@ owns auth/fetch/wiring, each island owns one cohesive concern.
 | [`scripts/admin/charts.js`](../../public/scripts/admin/charts.js) | **SVG chart primitives** — area, bar, ranked bars, donut, funnel, cohort grid, sparkline, card chrome. |
 | [`scripts/admin/grant.js`](../../public/scripts/admin/grant.js) | The comp-Stagify+ control inside the user detail drawer. |
 | [`scripts/admin/emails.js`](../../public/scripts/admin/emails.js) | The **Emails** tab: the preview gallery + per-template test send. Lazy-loaded on first open. |
+| [`scripts/admin/referrals.js`](../../public/scripts/admin/referrals.js) | The **Referrals** tab: one card per campaign short-URL. Lazy-loaded on first open; `Refresh` invalidates it. |
 | [`scripts/admin/helpers.js`](../../public/scripts/admin/helpers.js) | DOM/format helpers + the icon set. `esc` is re-exported from the shared [`scripts/escape-html.js`](../../public/scripts/escape-html.js). |
 | [`styles/admin.css`](../../public/styles/admin.css) | Page styles, including everything the SVG charts are painted with. |
 
@@ -263,6 +264,39 @@ no script in the markup can run.
 `{ subject, html, text }`, then add one entry to the `defs` array in `email-catalog.js` with
 an `id`, `label`, `category`, `description`, and a `render()` thunk supplying sample data.
 `test/services/email-catalog.test.js` pins the roster, so update its `EXPECTED_IDS` too.
+
+## Referrals tab
+
+Campaign short-URLs — `stagify.ai/columbia` and any sibling — that **302 to the home page
+while counting the arrival**, so you can hand a different link to each channel and see which
+one works. One card per link: the copyable URL, lifetime / 30-day / 7-day click totals, a
+daily chart, and the referring sites.
+
+**How a hit becomes a click.** [`routes/referrals.js`](../../routes/referrals.js) registers
+one route per entry in `REFERRAL_LINKS` — explicitly, never a `/:slug` wildcard, which would
+swallow every unmatched path in the app — records a row through
+[`lib/data/referral-links.js`](../../lib/data/referral-links.js), and redirects. Counting is
+best-effort on purpose: the store swallows its own write errors and `referralLimiter` drops
+rows instead of answering 429, because a stranger opening the URL must reach the site whether
+or not the analytics write lands.
+
+**Bots are flagged, not dropped.** A link pasted into Slack/iMessage/WhatsApp is fetched by
+that platform's unfurler before any human clicks it, so counting those would inflate a
+campaign badly — but silently discarding them leaves you wondering where the hits went.
+`isBotUserAgent` classifies on the user-agent, and everything the dashboard calls a "click"
+is `is_bot = 0`; the excluded count is shown beside it. A **missing** user-agent counts as a
+bot (every real browser sends one). `HEAD` requests are redirected without being counted.
+
+**What is not stored:** no IP address, no user-agent string (inspected in memory, then
+dropped), and no referrer query string — only `host/path`, since a referring URL routinely
+carries the sending site's own tracking params. Rows are pruned past 400 days and capped per
+slug; the table lives in the shared SQLite DB, so Litestream already backs it up.
+
+**Adding a link:** append one `{ slug, label, note }` entry to `REFERRAL_LINKS` in
+`lib/data/referral-links.js`. That is the whole change — the route, the dashboard card and
+the drift guards are all driven from it. `test/routes/referral-route.test.js` fails if the
+slug shadows an existing page, a locale prefix or an API route (a slug like `pro` or `es`
+would take the real page off the site while still answering 302).
 
 ## Conventions when editing
 

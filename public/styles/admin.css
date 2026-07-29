@@ -495,3 +495,16 @@ body.page-admin main { flex: 0 0 auto; overflow-x: hidden; overflow-y: visible; 
 .adm-email-send-msg { font-size: .76rem; color: var(--adm-muted) }
 .adm-email-send-msg--ok { color: #166534 }
 .adm-email-send-msg--err { color: #dc2626 }
+
+/* ── Referrals tab: one card per campaign short-URL ──────────────────────── */
+.adm-referrals { display: flex; flex-direction: column; gap: 1.1rem }
+/* The chart card nested inside brings its own surface and border, so it sits flush
+   rather than looking like a second panel floating in this one. */
+.adm-ref-card .adm-chart-card { margin: 1rem 0 0; box-shadow: none }
+.adm-ref-card .adm-host-url-row { margin-bottom: 1rem }
+.adm-ref-card > h2 { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap }
+.adm-ref-sources { margin-top: 1.1rem }
+.adm-ref-sources-title {
+  margin: 0 0 .6rem; font-size: .78rem; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--adm-faint);
+}
