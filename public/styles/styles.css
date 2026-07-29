@@ -424,9 +424,9 @@ body {
   .nav .nav-center {
     grid-column:1/-1;
     grid-row:2;
-    display:flex!important;
-    justify-content:center!important;
-    align-items:center!important;
+    display:flex;
+    justify-content:center;
+    align-items:center;
     gap:8px 12px;
     flex-wrap:wrap;
     width:100%;
@@ -1331,7 +1331,7 @@ h2 {
   margin-bottom:0
 }
 #stage-title {
-  font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,"Apple Color Emoji","Segoe UI Emoji"!important
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,"Apple Color Emoji","Segoe UI Emoji"
 }
 .tool-row {
   margin-top:10px;
@@ -2207,8 +2207,8 @@ body:has(.modal:not(.hidden)) .language-picker-container {
     gap:12px
   }
   .advantages:hover,.contact-card:hover,.faq-item:hover,.faq:hover,.feature-card:hover,.testimonial:hover,.vs:hover,.vs>div:hover {
-    transform:none!important;
-    box-shadow:none!important
+    transform:none;
+    box-shadow:none
   }
   .contact-row {
     margin-bottom:8px
@@ -2219,6 +2219,9 @@ body:has(.modal:not(.hidden)) .language-picker-container {
     overflow-wrap:break-word
   }
   .contact-value a {
+  /* !important is load-bearing: contact.html sets style="font-size:18px" inline on
+     these links, and an author !important is the only thing that outranks an inline
+     style. Do not drop it without editing the markup. */
     font-size:16px!important;
     word-break:break-all
   }
@@ -2389,6 +2392,9 @@ body:has(.modal:not(.hidden)) .language-picker-container {
     hyphens:auto
   }
   .contact-value a {
+  /* !important is load-bearing: contact.html sets style="font-size:18px" inline on
+     these links, and an author !important is the only thing that outranks an inline
+     style. Do not drop it without editing the markup. */
     font-size:14px!important;
     word-break:break-all;
     display:inline-block;
@@ -2440,6 +2446,9 @@ body:has(.modal:not(.hidden)) .language-picker-container {
     font-size:13px
   }
   .contact-value a {
+  /* !important is load-bearing: contact.html sets style="font-size:18px" inline on
+     these links, and an author !important is the only thing that outranks an inline
+     style. Do not drop it without editing the markup. */
     font-size:13px!important
   }
   .contact-hero h1 {
