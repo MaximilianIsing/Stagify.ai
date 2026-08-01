@@ -121,7 +121,7 @@ import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
       // It reads the plan off window.StagifyAuth, which `u` already is.
       syncRemoveFurnitureRow();
 
-      document.querySelectorAll('.nav-ai-designer-pro, .nav-masking-studio-pro').forEach(function (el) {
+      document.querySelectorAll('.nav-ai-designer-pro, .nav-masking-studio-pro, .nav-listing-studio-pro').forEach(function (el) {
         if (u && u.plan === 'pro') {
           el.classList.remove('hidden');
         } else {

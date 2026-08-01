@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { openDb, resolveDataDir, getDb, closeDb } from '../../lib/data/db.js';
+import { openDb, resolveDataDir, getDb, closeDb, PRAGMAS, applyPragmas } from '../../lib/data/db.js';
 import { createAuthStore } from '../../lib/data/auth-store.js';
 
 const tempDirs = [];
@@ -35,6 +35,39 @@ test('openDb applies the expected pragmas (WAL, NORMAL sync, busy timeout)', () 
   assert.equal(db.pragma('journal_mode', { simple: true }), 'wal');
   assert.equal(db.pragma('synchronous', { simple: true }), 1, 'NORMAL');
   assert.ok(db.pragma('busy_timeout', { simple: true }) >= 5000);
+});
+
+test('busy_timeout is set BEFORE journal_mode, or the timeout does not cover the one statement that contends', () => {
+  // THE ORDER IS THE BUG, not the values above. A connection's busy timeout is 0 until it is
+  // set, so any pragma before it fails IMMEDIATELY on contention rather than waiting — and
+  // `journal_mode = WAL` is exactly the statement that contends, because switching journal
+  // modes needs a moment of exclusive access.
+  //
+  // With WAL first, a boot that overlapped ANY other process on the file (a deploy while the
+  // old instance drains, a Litestream restore, an operator with `sqlite3` open, or several
+  // test servers starting at once — which is how this was found) died at startup with an
+  // unhandled SqliteError out of better-sqlite3's pragma.js, instead of waiting the five
+  // seconds it was already configured to wait.
+  const busyAt = PRAGMAS.findIndex((p) => p.startsWith('busy_timeout'));
+  const walAt = PRAGMAS.findIndex((p) => p.startsWith('journal_mode'));
+  assert.notEqual(busyAt, -1, 'busy_timeout must be applied at all');
+  assert.notEqual(walAt, -1, 'journal_mode must be applied at all');
+  assert.ok(busyAt < walAt,
+    `busy_timeout (index ${busyAt}) must be applied before journal_mode (index ${walAt})`);
+  assert.equal(busyAt, 0, 'and first overall — nothing may run against a zero timeout');
+});
+
+test('applyPragmas applies exactly the declared list, in the declared order', () => {
+  // The list is only a guarantee if the code ITERATES it. Asserting the array's order alone
+  // would still pass if someone reintroduced three hand-written `db.pragma(...)` calls in
+  // the old order beside it — so this drives the real function with a recording fake, and
+  // compares what it actually did.
+  /** @type {string[]} */
+  const applied = [];
+  const recorder = { pragma: (/** @type {string} */ p) => { applied.push(p); return undefined; } };
+  const returned = applyPragmas(recorder);
+  assert.deepEqual(applied, [...PRAGMAS], 'applied order must equal the declared order');
+  assert.equal(returned, recorder, 'and the connection comes back for chaining');
 });
 
 // db.js no longer sets `foreign_keys` — see the note there. Two independent facts

@@ -1,0 +1,1000 @@
+/* Listing Studio (public/projects.html).
+ *
+ * Colours come from the shared design tokens in styles.css — which this page loads, so
+ * they are in scope (an out-of-scope var() silently DROPS its whole declaration; see
+ * test/frontend/css-tokens.test.js). The only literals below are the amber warning pair,
+ * which has no site-wide token, declared once here rather than sprinkled inline.
+ *
+ * THE GATE LIVES AT THE TOP OF THIS FILE ON PURPOSE. #pj-root is display:none until
+ * scripts/projects-app.js verifies the visitor's plan and sets `pj-ready` on <html>.
+ * That makes "hidden" the default state, so a stalled, failed or blocked plan check
+ * reveals nothing — which is the opposite failure mode from a JS-applied hide, and the
+ * reason this page needs no render-blocking gate script. */
+
+:root {
+  --pj-warn-ink: #b45309;
+  --pj-warn-bg: #fffbeb;
+  --pj-warn-edge: #fcd34d;
+}
+
+#pj-root {
+  display: none;
+}
+
+html.pj-ready #pj-root {
+  display: block;
+}
+
+html.pj-ready .pj-checking {
+  display: none;
+}
+
+.pj-checking {
+  margin: 80px auto;
+  max-width: 420px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ── Shell ─────────────────────────────────────────────────────────────────── */
+
+.pj-root {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+}
+
+.pj-intro h1 {
+  margin: 0 0 6px;
+  color: var(--text-heading);
+}
+
+.pj-lede {
+  margin: 0 0 24px;
+  max-width: 70ch;
+  color: var(--muted);
+}
+
+/* minmax(0, …) on both tracks: without it a wide thumbnail or a long room name
+   forces the grid wider than its container and scrolls the whole body sideways. */
+.pj-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.pj-panel {
+  box-sizing: border-box;
+  min-width: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+/* Nothing in this panel can be used until a listing is open, and the controls say so
+   by being disabled. The dashed edge is the at-a-glance version of that. */
+.pj-root:not(.has-project) .pj-panel--open {
+  border-style: dashed;
+}
+
+.btn.is-running {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.pj-panel h2,
+.pj-panel h3 {
+  color: var(--text-heading);
+  margin: 0 0 10px;
+}
+
+.pj-panel h3 {
+  margin-top: 22px;
+  font-size: 1rem;
+}
+
+.pj-hint {
+  margin: 8px 0 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+/* ── Forms ─────────────────────────────────────────────────────────────────── */
+
+.pj-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pj-form--stage {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.pj-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 180px;
+  font-size: 0.86rem;
+  color: var(--slate-deep);
+}
+
+.pj-field input,
+.pj-field select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 11px;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.pj-field input:focus-visible,
+.pj-field select:focus-visible,
+.pj-dropzone:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.pj-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--slate-deep);
+}
+
+/* ── Listing picker ────────────────────────────────────────────────────────── */
+
+.pj-picker {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 42vh;
+  overflow-y: auto;
+}
+
+.pj-picker__empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.pj-picker__btn {
+  width: 100%;
+  text-align: left;
+  padding: 9px 11px;
+  font: inherit;
+  color: var(--fg);
+  background: var(--brand-wash);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.pj-picker__btn:hover {
+  border-color: var(--brand-pale);
+}
+
+.pj-picker__btn.is-current {
+  background: var(--brand-tint);
+  border-color: var(--brand);
+  font-weight: 600;
+}
+
+/* ── Open listing header ───────────────────────────────────────────────────── */
+
+.pj-open__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.pj-open__address {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.pj-open__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pj-chip:not(:empty) {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  color: var(--brand-deep);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Dropzone + upload ─────────────────────────────────────────────────────── */
+
+.pj-dropzone {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  padding: 26px 16px;
+  text-align: center;
+  border: 2px dashed var(--brand-pale);
+  border-radius: 12px;
+  background: var(--brand-wash);
+  color: var(--slate-deep);
+  cursor: pointer;
+}
+
+.pj-dropzone.is-over {
+  border-color: var(--brand);
+  background: var(--brand-tint);
+}
+
+.pj-dropzone.is-busy {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.pj-dropzone__sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.pj-progress {
+  margin-top: 10px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.pj-progress__bar {
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand);
+  transition: width 0.25s ease;
+}
+
+/* ── Photo tray ────────────────────────────────────────────────────────────── */
+
+.pj-tray {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.pj-thumb {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--bg-elevated);
+}
+
+.pj-thumb.is-unstageable {
+  border-color: var(--pj-warn-edge);
+  background: var(--pj-warn-bg);
+}
+
+.pj-thumb__img,
+.pj-shot {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--brand-wash);
+}
+
+.pj-shot--loading,
+.pj-thumb__img--failed,
+.pj-shot--failed {
+  background: var(--border);
+}
+
+.pj-thumb__img--failed,
+.pj-shot--failed {
+  border: 1px dashed var(--muted-light);
+}
+
+.pj-thumb__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pj-thumb__room,
+.pj-thumb__type {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 5px 7px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--fg);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+
+.pj-thumb__action {
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--brand-deep);
+  background: var(--brand-wash);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.pj-thumb__action:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+/* "This frame will not be staged, and here is the control that changes that."
+ *
+ * INFORMATION, NOT AN ERROR — which is why it borrows the neutral brand wash of
+ * .pj-thumb__action rather than the amber .pj-warning pair. Every real shoot contains
+ * exteriors, so a run legitimately skips several frames of a 32-photo listing; six red
+ * badges on six perfectly good photographs would read as six failures and would train the
+ * operator to ignore the one place the tray explains itself. Sentence case and no
+ * uppercase tracking for the same reason: .pj-badge is a label, this is a sentence. */
+.pj-skip {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--brand-wash);
+  color: var(--brand-deep);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.pj-badge {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.pj-badge--hero {
+  background: var(--brand);
+  color: var(--bg-elevated);
+}
+
+.pj-badge--critical {
+  background: var(--pj-warn-edge);
+  color: var(--pj-warn-ink);
+}
+
+/* ── Warnings ──────────────────────────────────────────────────────────────── */
+
+.pj-warning {
+  margin: 6px 0 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--pj-warn-edge);
+  background: var(--pj-warn-bg);
+  color: var(--pj-warn-ink);
+  font-size: 0.82rem;
+}
+
+/* The missing-bible banner. Loud on purpose: the backend reports an unconditioned
+   room rather than hiding it, and this is the UI half of that promise. */
+.pj-warning--loud {
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-width: 2px;
+  padding: 10px 12px;
+}
+
+/* ── Results grid ──────────────────────────────────────────────────────────── */
+
+.pj-results {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1440px;
+  margin: 28px auto 0;
+}
+
+.pj-results h2 {
+  color: var(--text-heading);
+}
+
+.pj-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.pj-empty {
+  color: var(--muted);
+}
+
+.pj-room {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-elevated);
+}
+
+.pj-room__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.pj-room__title {
+  margin: 0;
+  color: var(--text-heading);
+  text-transform: capitalize;
+}
+
+.pj-room__count {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.pj-frames {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.pj-frame {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+}
+
+.pj-frame__head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pj-frame__title {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--slate-deep);
+}
+
+.pj-frame__error {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--danger);
+}
+
+.pj-compare {
+  display: flex;
+  gap: 6px;
+}
+
+.pj-compare__btn {
+  flex: 1 1 0;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--slate-deep);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.pj-compare__btn[aria-pressed='true'] {
+  background: var(--brand-tint);
+  border-color: var(--brand);
+  color: var(--brand-deep);
+  font-weight: 600;
+}
+
+.pj-scores {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 10px;
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.pj-scores dt {
+  color: var(--muted);
+}
+
+.pj-scores dd {
+  margin: 0;
+  color: var(--fg);
+}
+
+.pj-variants {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.pj-variants__btn {
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 0.76rem;
+  color: var(--brand-deep);
+  background: var(--brand-wash);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* ── Look bible panel ──────────────────────────────────────────────────────── */
+
+.pj-bible {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 11px;
+  background: var(--brand-wash);
+  border: 1px solid var(--brand-tint);
+}
+
+.pj-bible__title {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: var(--brand-deep);
+}
+
+.pj-bible__empty {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.pj-bible__facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 10px;
+  margin: 0 0 10px;
+  font-size: 0.84rem;
+}
+
+.pj-bible__facts dt {
+  color: var(--muted);
+}
+
+.pj-bible__facts dd {
+  margin: 0;
+  color: var(--fg);
+  text-transform: capitalize;
+}
+
+.pj-bible__negatives {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  color: var(--slate);
+}
+
+.pj-pieces {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pj-pieces__item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+
+.pj-pieces__item.is-critical {
+  border-color: var(--pj-warn-edge);
+}
+
+.pj-pieces__slot {
+  font-weight: 600;
+  color: var(--brand-deep);
+  text-transform: capitalize;
+}
+
+.pj-pieces__identity {
+  color: var(--fg);
+}
+
+.pj-pieces__placement {
+  color: var(--muted);
+}
+
+.pj-bible__regen {
+  margin-top: 10px;
+}
+
+/* ── Dialogs ───────────────────────────────────────────────────────────────── */
+
+.pj-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+  align-items: center;
+  justify-content: center;
+}
+
+.pj-modal.is-open {
+  display: flex;
+}
+
+.pj-modal__card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 460px;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--bg-elevated);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.3);
+}
+
+.pj-modal__card h2 {
+  margin: 0 0 8px;
+  color: var(--text-heading);
+}
+
+.pj-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* ── Share with your client ────────────────────────────────────────────────── */
+/* The same card treatment as .pj-panel / .pj-results, because sharing is the last step of
+   the same workflow rather than a bolted-on widget.
+ *
+ * Every rule below is scoped under .pj-share on purpose. `.pj-field--wide`, `.pj-field__note`
+ * and `textarea` are all used by the stage form above and have never carried a rule of their
+ * own; styling them globally here would silently restyle that form as a side effect of adding
+ * this panel. */
+
+.pj-share {
+  box-sizing: border-box;
+  min-width: 0;
+  margin-top: 20px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.pj-share h2,
+.pj-share h3 {
+  color: var(--text-heading);
+  margin: 0 0 10px;
+}
+
+.pj-share h3 {
+  margin-top: 22px;
+  font-size: 1rem;
+}
+
+.pj-share__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pj-share__actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* The one line in this panel that is NOT muted: it carries the panel's whole claim —
+   whether a link is live, and whether we can still show you its address. */
+.pj-share__status {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+  color: var(--text-heading);
+}
+
+.pj-share__url {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* Monospaced and scrollable rather than truncated: a half-shown address that looks
+   selectable but copies short is worse than one the operator has to scroll. */
+.pj-share__url-input {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 9px 11px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.pj-share__url-input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.pj-share .pj-form--share {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.pj-share .pj-field--wide {
+  flex: 1 1 100%;
+}
+
+.pj-share .pj-field__note {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.pj-share .pj-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 11px;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  resize: vertical;
+}
+
+.pj-share .pj-field textarea:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Its own row, so Save is never mistaken for the affordance of the field beside it. */
+.pj-share__save {
+  flex: 1 0 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* ── What the client sent back ─────────────────────────────────────────────── */
+/*
+ * The seller's sign-off, one row per room, most recent first.
+ *
+ * APPROVED AND NEEDS-CHANGES ARE NOT DISTINGUISHED BY COLOUR ALONE. Each row states its
+ * verdict in words ("Approved" / "Needs changes"), and the tint below is reinforcement on
+ * top of that — a broker reading this printed, in high contrast, or with a colour-vision
+ * deficiency still gets the answer. Do not "tidy" the verdict text away and leave the
+ * border doing the work.
+ *
+ * Amber is reused from the warning pair rather than given a colour of its own: "needs
+ * changes" is the same register as the page's other attention states, and a third palette
+ * would make the panel louder than the thing it is reporting. Approved borrows --secondary
+ * from styles.css, which the page loads.
+ */
+
+.pj-feedback {
+  margin-top: 22px;
+}
+
+.pj-feedback__summary {
+  margin: 0 0 10px;
+  color: var(--text-heading);
+  font-size: 0.95rem;
+}
+
+.pj-feedback__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pj-feedback__item {
+  box-sizing: border-box;
+  padding: 9px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 10px;
+}
+
+.pj-feedback__item.is-approved {
+  border-left-color: var(--secondary);
+}
+
+.pj-feedback__item.is-changes {
+  border-left-color: var(--pj-warn-edge);
+  background: var(--pj-warn-bg);
+}
+
+.pj-feedback__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pj-feedback__room {
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+/* Listing-level feedback is not a room, and must not be skimmed as one. */
+.pj-feedback__room--listing {
+  font-style: italic;
+}
+
+.pj-feedback__verdict {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.pj-feedback__verdict--approved {
+  background: var(--secondary);
+  color: var(--bg-elevated);
+}
+
+.pj-feedback__verdict--changes {
+  background: var(--pj-warn-edge);
+  color: var(--pj-warn-ink);
+}
+
+/* The client's own words. `pre-wrap` keeps the line breaks they typed; `overflow-wrap`
+   stops one unbroken URL from widening the whole panel. */
+.pj-feedback__note {
+  margin: 6px 0 0;
+  color: var(--fg);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.pj-feedback__by {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ── Narrow desktop windows ────────────────────────────────────────────────── */
+/* Between the desktop cutoff and a comfortable width, collapse to one column. This is for
+   a windowed browser on a laptop, NOT for phones — anything below the cutoff is refused
+   outright by the block after this one. */
+
+@media (max-width: 1200px) {
+  .pj-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pj-picker {
+    max-height: none;
+  }
+}
+
+/* ── DESKTOP ONLY ──────────────────────────────────────────────────────────────
+ *
+ * This page refuses small viewports instead of reflowing into them, and that is a product
+ * decision rather than an unfinished one. The Listing Studio is a bulk workstation tool:
+ * a 40-photo tray, a per-photo room/hero editor, and a multi-room results grid where the
+ * entire value is seeing frames of the same room next to each other to judge whether the
+ * furniture matches. On a phone that collapses to one column, every comparison becomes a
+ * scroll, and correcting the clustering on 32 photos becomes several minutes of thumb work.
+ * Shipping that would be worse than saying no.
+ *
+ * Enforced in CSS, not JS, for the same reason the plan gate is: it holds before first paint
+ * and survives a script that never runs. The cutoff sits at 1024px so phones and portrait
+ * tablets are refused while every real laptop is admitted.
+ *
+ * NOTE this deliberately overrides `html.pj-ready #pj-root`. Source order does the work —
+ * this block comes last, at equal specificity, so an entitled visitor on a phone still gets
+ * the notice rather than an unusable page. The single-photo stager and Masking Studio are
+ * unaffected and remain fully responsive. */
+
+.pj-too-narrow {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .pj-too-narrow {
+    display: block;
+    margin: 64px auto;
+    padding: 0 20px 64px;
+    max-width: 34rem;
+    text-align: center;
+  }
+
+  .pj-too-narrow h2 {
+    margin: 0 0 12px;
+  }
+
+  .pj-too-narrow p {
+    margin: 0 0 12px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .pj-too-narrow__hint {
+    font-size: 0.95rem;
+  }
+
+  .pj-too-narrow__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  /* Everything the studio would have shown, including the states the plan gate controls. */
+  html.pj-ready #pj-root,
+  #pj-root,
+  #pj-checking,
+  html.pj-ready .pj-checking,
+  #pj-gate {
+    display: none;
+  }
+}

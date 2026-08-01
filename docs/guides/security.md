@@ -530,13 +530,169 @@ Still open: free-text log columns (chat messages, bug-report descriptions) can c
 personal data someone typed about themselves, and nothing can match those
 automatically.
 
+## Listing Studio: the first store of user-owned files
+
+Everything else the app persists per user is text (rows, CSV cells). The Listing Studio
+stores a customer's **own photographs of a property** and every render made from them, which
+changes the blast radius of a mistake here — so three things are deliberate.
+
+**1. The byte-serve routes are session-gated, not unguessable-id public.**
+`GET /api/projects/:id/renders/:renderId/image` (and the photo equivalent) run
+`requireProAccount` and check ownership against the **validated session user's id** before
+streaming anything. Contrast `GET /i/:id`, which is intentionally public behind a random id
+— that store holds admin-uploaded marketing assets, so an unguessable URL is an appropriate
+control there. It is *not* appropriate for someone's home, so these routes do not copy that
+pattern. They also send `X-Content-Type-Options: nosniff` and a **`private`** cache directive
+(`private, max-age=31536000, immutable`) — `public` would let a shared proxy cache one
+customer's interior.
+
+**2. A foreign or unknown id answers `404`, never `403`.**
+A `403` confirms the resource exists. Across projects, photos and renders the answer is the
+same 404 whether the id is unknown, belongs to another project, or belongs to another
+account, so the API is not an existence oracle for other people's listings. This is the same
+reasoning as the enterprise checkout's 409 wording above. Cross-user isolation is pinned by
+tests on all four surfaces — project, photo, render, **and the render bytes** — because the
+byte route is the one that actually leaks pixels, and it is the easiest to forget.
+
+**3. Storage keys are a validated boundary, not a naming convention.**
+A `storage_key` from the database is resolved against the filesystem and then served over
+HTTP, so [`project-storage.js`](../../lib/data/project-storage.js) enforces a strict
+hex-only key shape **and** re-checks with `path.resolve` that the result stays inside the
+projects root. Both, deliberately: the regex is the contract and the containment check is the
+backstop, and traversal shapes (`..`, absolute paths, backslashes, encoded dots, null bytes)
+are tested individually. Nothing user-supplied is ever interpolated into a path — keys are
+built by `keyFor` from ids the server minted.
+
+**Erasure.** A user's project rows *and* their image bytes are destroyed on account deletion:
+`PROJECT_CHILD_TABLES` covers the tables that hang off a `projects` row (photos, bibles,
+renders — none of which carry a `user_id`, so the schema-introspecting drift guard cannot see
+them), and each project's blob directory is removed outright. The row-only version of this
+was a real bug caught in development: the rows went and the photographs stayed. See
+[`data-stores.md`](../reference/data-stores.md#erasing-one-persons-data).
+
+**The pro gate runs before multer.** Batch photo upload is the one route in `routes/projects.js`
+with auth in its middleware chain, and that is deliberate: multer buffers the entire multipart
+body into memory before any handler runs, so with the gate only inside the handler an
+anonymous request could make this single-instance process allocate `40 × 25 MB` — about a
+gigabyte — and be answered "sign in" *after* paying the RAM. `genLimiter` bounds the rate of
+those requests, not the cost of one, so it is not the answer. The handler still calls
+`requireProAccount` itself and that call remains the authority; the middleware is a pre-filter.
+A source-scanning test fails if either half is removed. A disallowed mimetype now answers
+`415 UNSUPPORTED_PHOTO_TYPE` rather than a 500 — multer forwards a `fileFilter` rejection as
+whatever object the callback was given, *not* as a `MulterError`, so a plain `Error` missed the
+router's branch, hit the app catch-all, and filed a Sentry report for a refusal that was
+working as designed.
+
+**Upload limits.** Batch photo upload accepts at most **40** files of **25 MB** each (pinned
+to `stagingProcessUpload`'s limit — three different numbers for one rule is how a 20 MB frame
+came to pass the browser check and then abort the whole batch), image mimetypes only, and
+each one still passes the same `validate-image` stageability pre-check as a single upload.
+HEIC is rejected client-side with an explicit reason rather than running the WASM converter
+40 times in a page.
+
+### Client share links: the one unauthenticated surface
+
+The studio itself is entirely Stagify+ gated, and was designed on the assumption that it
+would stay that way. **Share links break that assumption on purpose**, because the two people
+the output is for — the seller approving the staging, the buyer viewing the home — will never
+have an account. That makes `/s/:token` and the three `/api/share/:token` routes the highest-
+risk surface in the feature, and they are built accordingly.
+
+**The token is a credential and is stored like one.** 32 bytes of CSPRNG, base64url, and only
+its **sha256 digest** reaches disk — [`project-shares.js`](../../lib/data/project-shares.js)
+reuses `hashToken` from [`session-tokens.js`](../../lib/data/session-tokens.js) for exactly
+the reason that module exists: stored raw, anything that can read the database file (a stolen
+`/data` volume, a Litestream restore, a backup download) becomes a set of ready-to-use links
+into customers' listings. The plaintext is returned **once**, from the `POST`, and there is no
+read-back path — the store test greps the database file itself for the token rather than
+trusting a mapper to omit it, because a mapper-shaped assertion passes the moment someone adds
+a different field.
+
+**Every rejection is one indistinguishable `404`.** Unknown, revoked, expired, wrong project,
+unknown render, missing blob — one identical body. A `410 Gone` for a revoked link would be
+friendlier and would also confirm that the token was once real, which is a slow oracle over
+the keyspace; the store returns a reason code and the route deliberately throws it away.
+
+**A render id is re-checked against the token's project.** Resolving a token yields a
+`projectId`, and every byte request re-derives ownership from it. Without that check any
+valid link would serve any customer's pixels — the same class of bug as trusting `:photoId`
+in the authenticated routes, but with no session to narrow the blast radius.
+
+**The manifest is an allowlist by construction.** It is built field by field rather than by
+spreading a row, so `userId`, storage keys, prompt text, model names, quality and consistency
+scores, error codes and bible ids cannot reach a public URL because someone added a column.
+
+**Leak-through headers.** The token is a path segment, so all four routes send
+`Referrer-Policy: no-referrer` — otherwise a click on the agent's own website link would hand
+that site a working URL to the listing. All four also send `X-Robots-Tag: noindex, nofollow`,
+and the byte routes stay `private` in `Cache-Control`. Revocation and expiry are checked on
+**every** request, not cached in the page.
+
+**Erasure reaches it.** `project_shares` is erased by `user_id` in the same transaction as the
+account, *and* cascaded by `deleteProject`. A share row that outlives an erasure request is
+not an orphan record — it is the subject's home still on the internet after they asked for it
+to be gone.
+
+### Seller sign-off: an anonymous free-text write
+
+`POST /api/share/:token/feedback` is the only endpoint in this application where an
+**unauthenticated caller writes free text** to the volume the SQLite database and every
+customer's photographs live on. `referral_hits` is the only other anonymous write and it
+stores no caller-supplied string at all, so this is a category harder and is bounded four
+independent ways.
+
+**The ceilings are in the store, not the route** ([`share-feedback.js`](../../lib/data/share-feedback.js)).
+A second route — or a refactor of the one that exists — must not be able to write an
+unbounded row, so the note clamp, the verdict allowlist and the per-share cap all sit at the
+insert. In particular **`MAX_PER_SHARE` is checked inside the insert's own transaction**: two
+requests arriving together would otherwise both read 199 and both write, and a limit that can
+be raced is not a limit. The test asserts the row *count* after a refused write, not the
+return value.
+
+**`feedbackLimiter` is the outer bound only** (`RL_SHARE_FEEDBACK`, 30/15min — far tighter
+than `shareLimiter`, because the traffic shapes are opposite: reading a gallery legitimately
+fetches ~80 images, writing happens a dozen times and stops). A limiter is per IP and per
+window, so it cannot bound total growth and a distributed flood walks past it. Both, on
+purpose.
+
+**The listing is taken from the resolved share, never the request body.** A body-supplied
+`projectId` would let anyone holding any valid link write rows onto someone else's listing —
+the same class of bug as trusting `:photoId`, with no session to narrow it.
+
+**Nothing identifies the viewer.** No IP, no user-agent, no cookie; only a display name they
+may optionally type. This is a stronger version of the `referral_hits` posture and for a
+stronger reason: these people never agreed to anything, they were sent a link. The response
+to an anonymous caller is likewise built field by field and carries no `userId`, `projectId`
+or `shareId`.
+
+**A full link gets a calm coded refusal, not a 500.** A seller hitting a ceiling they cannot
+see must not be shown a crash.
+
+**`GET /api/share/:token/feedback` is scoped to the share, never the listing** — otherwise
+whoever holds today's rotated link reads what the previous holder wrote.
+
+**Still true:** this adds no new secret and no new key transport. `public/projects.html`
+remains `noindex` + `Disallow`ed with its gated state as the CSS default, so a stalled
+entitlement check reveals nothing.
+
 ## Known gaps / follow-ups
 
 - **Single instance only** — the flat-file/SQLite-single-writer design corrupts under
   horizontal scaling (see the storage doc). This is an availability *and* integrity
   constraint.
 - **`chat-upload` accepts any file type** (size-capped only).
-- **No at-rest encryption** for the `/data` files beyond the host disk.
+- **No at-rest encryption** for the `/data` files beyond the host disk. This matters more
+  now that `projects/` holds customers' own property photographs, not just text — the
+  Listing Studio raised the value of that disk without changing its protection.
+- **Nothing backs up `projects/`.** Litestream replicates the SQLite file only, so a lost
+  disk loses every uploaded photo and render while the rows describing them survive — the
+  worst of both states. Object storage is the fix and the adapter boundary is already in
+  place (`storage_key` is relative and backend-agnostic); it has not been done.
+- **Listing render throughput is one at a time, and unbounded per account.** The worker
+  leases a single render per instance, so any Stagify+ user can enqueue a 90-render listing
+  and occupy the queue for everyone. `genLimiter` caps request *rate*, not queued work.
+  There is no per-account concurrency cap or queue-depth limit yet; this is a fairness and
+  cost-exposure gap rather than a data one.
 - **Session token lives in `localStorage`, not an `httpOnly` cookie** — so an XSS is
   account takeover, and `connectSrc`/`imgSrc: 'https:'` won't stop exfiltration. The
   fix, its true scope, and the CSRF surface it opens are written up under

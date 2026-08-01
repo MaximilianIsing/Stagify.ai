@@ -8,7 +8,7 @@
     "start": "node --import ./instrument.js server.js",
     "dev": "nodemon --import ./instrument.js server.js",
     "typecheck": "tsc --noEmit && node scripts/typecheck-frontend.js",
-    "test": "npm run typecheck && node --test \"test/**/*.test.js\"",
+    "test": "npm run typecheck && node --test --test-concurrency=4 \"test/**/*.test.js\"",
     "test:coverage": "node scripts/test-coverage.js",
     "test:e2e": "playwright test",
     "lint": "eslint . --max-warnings=0"

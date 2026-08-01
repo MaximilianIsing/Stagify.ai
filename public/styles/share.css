@@ -1,0 +1,936 @@
+/* Public listing share page (public/listing-share.html, served at /s/<token>).
+ *
+ * MOBILE-FIRST, AND THAT IS THE WHOLE POINT. The Listing Studio this page's photographs
+ * come from (public/styles/projects.css) is deliberately DESKTOP-ONLY — it is an operator
+ * tool with a tray, a grid and a queue. This page is its opposite number: it is what a
+ * broker sends to a seller for sign-off and to a buyer to browse, neither of whom has an
+ * account and both of whom are, overwhelmingly, on a phone. Every rule below is written
+ * for a 375px viewport first and widened from there. Do NOT copy the studio's viewport
+ * gate into this file.
+ *
+ * IT LOADS NO OTHER SHEET. styles.css is not on this page — no navigation bar, no site
+ * chrome, nothing that would make a client's gallery look like an app screen. That means
+ * none of the shared design tokens are in scope here (an out-of-scope var() silently drops
+ * its whole declaration — see test/frontend/css-tokens.test.js), so this file declares its
+ * own palette below. The one colour taken from the brand is the focus ring.
+ *
+ * THE PALETTE IS PAPER, NOT PRODUCT. Warm off-white, a serif display face, a single muted
+ * brass accent, and generous space — the register of a printed brochure rather than a SaaS
+ * dashboard. The photographs are the only saturated thing on the page, which is the entire
+ * design brief.
+ */
+
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/inter-all-400-normal.woff2') format('woff2'), url('../fonts/inter-all-400-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/inter-all-600-normal.woff2') format('woff2'), url('../fonts/inter-all-600-normal.woff') format('woff');
+}
+
+:root {
+  --sh-paper: #faf8f5;
+  --sh-surface: #ffffff;
+  --sh-ink: #1c1917;
+  --sh-ink-soft: #57534e;
+  --sh-ink-faint: #767066;
+  --sh-rule: #e7e1d8;
+  --sh-accent: #7a5a33;
+  --sh-accent-wash: #f3ece1;
+
+  /* The ONE colour on this page that means "something went wrong", used by the sign-off
+     status line and nothing else. Kept warm rather than a signal red: the only failure it
+     ever reports is "that did not send, try again", which is not an alarm. */
+  --sh-alarm: #9f3a2c;
+  --sh-shadow: rgb(28 25 23 / 9%);
+  --sh-scrim: rgb(18 16 14 / 94%);
+
+  /* The full-screen viewer's backdrop is OPAQUE and identical in both schemes. --sh-scrim
+     is translucent because the pills that use it sit on photographs; reusing it here left
+     the gallery ghosting through at 4%, which reads as a rendering fault rather than as
+     depth (seen in preview). A viewer is a room with the lights off. */
+  --sh-veil: #0b0a09;
+  --sh-on-scrim: #f5f1ea;
+  --sh-focus: #2563eb;
+
+  --sh-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --sh-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+
+  --sh-gutter: 20px;
+  --sh-measure: 34rem;
+  --sh-radius: 4px;
+}
+
+/* Dark mode is a genuine second design, not an inversion: the paper goes to a warm
+   near-black so the photographs still read as the lit thing on the page. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sh-paper: #12100e;
+    --sh-surface: #1b1815;
+    --sh-ink: #f5f1ea;
+    --sh-ink-soft: #b8b0a5;
+    --sh-ink-faint: #8b8377;
+    --sh-rule: #2e2924;
+    --sh-accent: #c9a875;
+    --sh-accent-wash: #241f19;
+    --sh-alarm: #e8a091;
+    --sh-shadow: rgb(0 0 0 / 45%);
+    --sh-scrim: rgb(8 7 6 / 96%);
+    --sh-focus: #93c5fd;
+  }
+}
+
+/* ── Reset (local: this page loads no shared sheet) ─────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--sh-paper);
+  color: var(--sh-ink);
+  font-family: var(--sh-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+figure,
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+[hidden] {
+  display: none;
+}
+
+/* One focus style for the whole page, and it is never removed. The before/after handle in
+   particular is keyboard-operable, so a suppressed ring would make it unusable rather than
+   merely untidy. */
+:focus-visible {
+  outline: 3px solid var(--sh-focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── Shell ─────────────────────────────────────────────────────────────────── */
+
+.sh-root {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 0 64px;
+}
+
+/* The hero carries the only <h1>, whose text is a placeholder until the manifest lands.
+   Hiding it while loading is what stops that placeholder from being read aloud. */
+.sh-root[data-state="loading"] .sh-hero {
+  display: none;
+}
+
+.sh-hero {
+  padding: clamp(48px, 12vw, 96px) var(--sh-gutter) clamp(24px, 6vw, 40px);
+  text-align: center;
+}
+
+.sh-hero__title {
+  font-family: var(--sh-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 8.5vw, 3.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.sh-hero__address {
+  margin-top: 14px;
+  color: var(--sh-ink-soft);
+  font-size: 0.9375rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sh-hero__headline {
+  max-width: var(--sh-measure);
+  margin: 20px auto 0;
+  color: var(--sh-ink-soft);
+  font-size: 1.0625rem;
+  text-wrap: pretty;
+}
+
+.sh-body {
+  padding: 0 var(--sh-gutter);
+}
+
+.sh-loading {
+  padding: 96px 0;
+  color: var(--sh-ink-faint);
+  text-align: center;
+}
+
+.sh-noscript {
+  max-width: var(--sh-measure);
+  margin: 0 auto;
+  padding: 32px var(--sh-gutter);
+  color: var(--sh-ink-soft);
+  text-align: center;
+}
+
+/* ── Disclosure ────────────────────────────────────────────────────────────── */
+
+/* Sits above the photographs, in the reading column, at body size. A broker is legally on
+   the hook for this sentence; a 10px grey line in a footer would be technically present
+   and practically hidden, which helps nobody. */
+.sh-disclosure {
+  max-width: var(--sh-measure);
+  margin: 0 auto clamp(32px, 8vw, 56px);
+  padding: 18px 20px;
+  border: 1px solid var(--sh-rule);
+  border-left: 3px solid var(--sh-accent);
+  border-radius: var(--sh-radius);
+  background: var(--sh-accent-wash);
+}
+
+.sh-disclosure__label {
+  margin-bottom: 6px;
+  color: var(--sh-accent);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.sh-disclosure__text {
+  color: var(--sh-ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+/* ── Broker's note ─────────────────────────────────────────────────────────── */
+
+.sh-note {
+  max-width: var(--sh-measure);
+  margin: 0 auto clamp(24px, 6vw, 36px);
+  text-align: center;
+}
+
+.sh-note__text {
+  font-family: var(--sh-serif);
+  font-size: 1.125rem;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--sh-ink-soft);
+  text-wrap: pretty;
+}
+
+/* ── Summary line ──────────────────────────────────────────────────────────── */
+
+.sh-summary {
+  margin: 0 0 clamp(28px, 7vw, 44px);
+  color: var(--sh-ink-faint);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ── Rooms ─────────────────────────────────────────────────────────────────── */
+
+.sh-room {
+  margin-bottom: clamp(48px, 12vw, 88px);
+}
+
+.sh-room__head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--sh-rule);
+}
+
+.sh-room__label {
+  font-family: var(--sh-serif);
+  font-size: clamp(1.25rem, 5vw, 1.6rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.sh-room__count {
+  margin-left: auto;
+  color: var(--sh-ink-faint);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+}
+
+.sh-room__frames {
+  display: grid;
+  gap: clamp(16px, 4vw, 28px);
+  grid-template-columns: 1fr;
+}
+
+/* ── One frame ─────────────────────────────────────────────────────────────── */
+
+.sh-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--sh-radius);
+  background: var(--sh-surface);
+  box-shadow: 0 1px 2px var(--sh-shadow), 0 12px 32px -18px var(--sh-shadow);
+}
+
+.sh-frame__media {
+  display: block;
+}
+
+.sh-frame__plate,
+.sh-compare {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  background: var(--sh-accent-wash);
+}
+
+.sh-frame__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 44px is the smallest target a thumb hits reliably, and this one sits over a photograph
+   somebody may be dragging — it needs to be unmissable and unmistakable. */
+.sh-frame__zoom {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--sh-scrim);
+  color: var(--sh-on-scrim);
+  opacity: 0.82;
+  transition: opacity 140ms ease;
+}
+
+.sh-frame__zoom:hover,
+.sh-frame__zoom:focus-visible {
+  opacity: 1;
+}
+
+.sh-frame__zoom-glyph {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+/* ── Before / after ────────────────────────────────────────────────────────── */
+
+.sh-compare {
+  /* Declared here as well as being written at runtime by scripts/share/compare.js, so the
+     first paint is a 50/50 split even if the script has not run yet. */
+  --sh-pos: 50%;
+
+  /* pan-y, not none: a vertical swipe must still scroll the page — this control covers most
+     of a phone screen, and a gallery you cannot scroll past is worse than no slider. */
+  touch-action: pan-y;
+  cursor: ew-resize;
+}
+
+/* The ORIGINAL is the layer that gets clipped, so the staged photograph — the thing being
+   presented — is the one that survives at every divider position.
+   clip-path rather than a width: clipping leaves the image at its laid-out size, whereas
+   resizing the wrapper squashes it horizontally as the handle moves. */
+.sh-compare__before {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(100% - var(--sh-pos)) 0 0);
+}
+
+.sh-compare__tag {
+  position: absolute;
+  bottom: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--sh-scrim);
+  color: var(--sh-on-scrim);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.sh-compare__tag--before {
+  left: 12px;
+}
+
+.sh-compare__tag--after {
+  right: 12px;
+}
+
+.sh-compare__handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--sh-pos);
+  width: 48px;
+  transform: translateX(-50%);
+  touch-action: none;
+  cursor: ew-resize;
+}
+
+/* The divider line. */
+.sh-compare__handle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--sh-on-scrim);
+  box-shadow: 0 0 0 1px var(--sh-shadow);
+}
+
+/* The grip. Drawn in CSS rather than as an inline SVG: the CSP on this site forbids
+   inline scripts, and keeping the markup free of raw HTML strings is what lets the
+   renderer use textContent exclusively (see scripts/share/dom.js). */
+.sh-compare__handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 2px solid var(--sh-on-scrim);
+  border-radius: 50%;
+  background: var(--sh-scrim);
+}
+
+/* ── Sign-off ──────────────────────────────────────────────────────────────── */
+
+/* THE REPLY PATH, AND IT IS SIZED FOR A THUMB. Everything below assumes a seller standing
+   up, on a phone, reading a link a broker texted them. So: 44px minimum on every control
+   (the same floor the zoom button uses and for the same reason), full-width buttons that
+   stack at 375px and only sit side by side once there is room, and a 16px font on the
+   inputs — anything smaller makes iOS Safari zoom the viewport on focus, which throws the
+   reader out of the gallery mid-answer.
+
+   IT IS QUIETER THAN THE PHOTOGRAPHS ON PURPOSE. This is a brochure with a reply card in
+   it, not a form with pictures attached: no filled brand-coloured call to action, no card
+   shadow competing with the frames above. The accent appears on exactly one thing — the
+   approve button's border — and the panel's own surface is the same paper as the page. */
+
+.sh-signoff-slot:empty {
+  /* The mount point for the whole-listing panel. It is appended before the network call
+     that decides whether the panel exists at all, so on an older server (no /feedback
+     route) it stays empty forever — and must then occupy nothing and mean nothing. */
+  display: none;
+}
+
+.sh-signoff {
+  max-width: var(--sh-measure);
+  margin: clamp(20px, 5vw, 28px) auto 0;
+  padding: clamp(18px, 5vw, 26px);
+  border: 1px solid var(--sh-rule);
+  border-radius: var(--sh-radius);
+  background: var(--sh-surface);
+}
+
+.sh-signoff--listing {
+  margin-top: clamp(32px, 8vw, 56px);
+}
+
+/* Inside a room section the panel is a footnote to the photographs above it, not a second
+   card stacked on the first — so it loses the border and keeps only a rule. */
+.sh-signoff--room {
+  margin-top: clamp(16px, 4vw, 24px);
+  padding: 16px 0 0;
+  border: 0;
+  border-top: 1px solid var(--sh-rule);
+  border-radius: 0;
+  background: none;
+}
+
+.sh-signoff__heading {
+  font-family: var(--sh-serif);
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.sh-signoff--room .sh-signoff__heading {
+  font-family: var(--sh-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--sh-ink-faint);
+  text-transform: uppercase;
+}
+
+.sh-signoff__body {
+  margin-top: 14px;
+}
+
+.sh-signoff__choices,
+.sh-signoff__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Full width and stacked at 375px: two half-width buttons at that size are two 150px
+   targets side by side, which is exactly how a seller taps the wrong one. */
+.sh-signoff__btn {
+  flex: 1 1 100%;
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid var(--sh-rule);
+  border-radius: var(--sh-radius);
+  background: var(--sh-paper);
+  color: var(--sh-ink);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.sh-signoff__btn--yes {
+  border-color: var(--sh-accent);
+  background: var(--sh-accent-wash);
+  color: var(--sh-accent);
+}
+
+.sh-signoff__btn--quiet {
+  flex: 0 1 auto;
+  border-color: transparent;
+  background: none;
+  color: var(--sh-ink-soft);
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sh-signoff__btn[disabled] {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ── The note form and the name field ──────────────────────────────────────── */
+
+.sh-signoff__who {
+  margin-top: 14px;
+}
+
+.sh-signoff__label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--sh-ink-soft);
+  font-size: 0.875rem;
+}
+
+.sh-signoff__hint {
+  margin-top: 6px;
+  color: var(--sh-ink-faint);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.sh-signoff__name,
+.sh-signoff__field {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 12px;
+  border: 1px solid var(--sh-rule);
+  border-radius: var(--sh-radius);
+  background: var(--sh-paper);
+  color: var(--sh-ink);
+  font-family: inherit;
+
+  /* 16px exactly. Below it, iOS Safari zooms the page when the field takes focus and does
+     not zoom back out — the reader loses the gallery to answer one question. */
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.sh-signoff__field {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.sh-signoff__counter {
+  margin-top: 6px;
+  color: var(--sh-ink-faint);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.sh-signoff__actions {
+  margin-top: 12px;
+}
+
+/* ── The recorded answer, and the states with no controls ──────────────────── */
+
+.sh-signoff__verdict {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.sh-signoff__verdict[data-verdict="approved"] {
+  color: var(--sh-accent);
+}
+
+.sh-signoff__quote {
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--sh-rule);
+  color: var(--sh-ink-soft);
+  font-family: var(--sh-serif);
+  font-style: italic;
+  line-height: 1.55;
+
+  /* An operator-typed note is arbitrary text and may well contain a 400-character word. */
+  overflow-wrap: anywhere;
+}
+
+.sh-signoff__answer .sh-signoff__btn--quiet {
+  margin-top: 10px;
+  padding-left: 0;
+}
+
+.sh-signoff__full {
+  color: var(--sh-ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* The live region. Present from the first paint and empty rather than hidden: a region
+   that appears at the same moment its text does is one screen readers may not announce.
+   Empty, it has no box of its own, so it costs the layout nothing while it waits. */
+.sh-signoff__status {
+  margin-top: 10px;
+  color: var(--sh-ink-faint);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.sh-signoff__status:empty {
+  margin-top: 0;
+}
+
+.sh-signoff__status[data-tone="error"] {
+  color: var(--sh-alarm);
+}
+
+/* ── Agent card ────────────────────────────────────────────────────────────── */
+
+.sh-agent {
+  max-width: var(--sh-measure);
+  margin: clamp(16px, 5vw, 32px) auto 0;
+  padding: clamp(24px, 6vw, 36px);
+  border: 1px solid var(--sh-rule);
+  border-radius: var(--sh-radius);
+  background: var(--sh-surface);
+  text-align: center;
+}
+
+.sh-agent__heading {
+  font-family: var(--sh-serif);
+  font-size: 1.375rem;
+  font-weight: 400;
+}
+
+.sh-agent__name {
+  margin-top: 10px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.sh-agent__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.sh-agent__label {
+  color: var(--sh-ink-faint);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* These two links — the agent's email and phone — are the only things on this page a BUYER
+   is meant to act on, and the page is overwhelmingly opened on a phone from a text message.
+   At their natural line height they were 27px tall: above the WCAG 2.5.8 floor of 24px, but
+   well under the 44px this stylesheet holds every other control to, and a mis-tap here is
+   the lead the broker does not get.
+
+   PADDING, NOT `min-height`. `.sh-agent__row` aligns the label and the value on their shared
+   BASELINE; giving the link a height and centring inside it would drop the text relative to
+   the "EMAIL" beside it. Vertical padding grows the hit box while a baseline-aligned item
+   keeps its text where it was. Measured at 375px: 27px -> 45px, and the PHONE row — the one
+   that shares a line with its label — sits 2px above that label's bottom edge both before and
+   after, i.e. unmoved. The email is long enough to wrap onto its own line at this width (it
+   already did before this change), so there is no shared baseline to disturb there. */
+.sh-agent__link {
+  color: var(--sh-accent);
+  font-size: 1.0625rem;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  padding-block: 9px;
+}
+
+.sh-agent__plain {
+  color: var(--sh-ink-soft);
+  font-size: 1.0625rem;
+}
+
+/* ── Message states ────────────────────────────────────────────────────────── */
+
+.sh-message {
+  max-width: var(--sh-measure);
+  margin: clamp(40px, 12vw, 80px) auto;
+  text-align: center;
+}
+
+.sh-message__heading {
+  font-family: var(--sh-serif);
+  font-size: clamp(1.375rem, 6vw, 1.75rem);
+}
+
+.sh-message__body {
+  margin-top: 12px;
+  color: var(--sh-ink-soft);
+  text-wrap: pretty;
+}
+
+/* The unavailable state repeats the heading in the <h1> above, so the block itself is the
+   explanation only — no second headline shouting the same sentence twice. */
+.sh-message--gone .sh-message__heading {
+  display: none;
+}
+
+/* ── Colophon ──────────────────────────────────────────────────────────────── */
+
+.sh-colophon {
+  padding: 0 var(--sh-gutter) 48px;
+  text-align: center;
+}
+
+.sh-colophon__text {
+  color: var(--sh-ink-faint);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sh-colophon__link {
+  color: var(--sh-ink-soft);
+  text-underline-offset: 3px;
+}
+
+/* ── Lightbox ──────────────────────────────────────────────────────────────── */
+
+.sh-locked {
+  overflow: hidden;
+}
+
+/* THE `[hidden]` RULE NEAR THE TOP OF THIS FILE DOES NOT COVER THESE. Both this element
+   and the nav buttons below set a `display`, at the same (0,1,0) specificity as `[hidden]`
+   and LATER in the sheet — so the display wins and the "hidden" viewer paints over the
+   whole gallery from first load. Caught in preview, on the very first screenshot. Anything
+   in this file that sets `display` and is also toggled with the hidden attribute needs its
+   own `[hidden]` companion rule. */
+.sh-lightbox[hidden],
+.sh-lightbox__nav[hidden] {
+  display: none;
+}
+
+.sh-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  background: var(--sh-veil);
+  color: var(--sh-on-scrim);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.sh-lightbox__bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 14px 10px;
+}
+
+.sh-lightbox__meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.sh-lightbox__caption {
+  font-family: var(--sh-serif);
+  font-size: 1.125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sh-lightbox__counter {
+  /* NOT --sh-ink-faint: that token is calibrated against the page's paper, and the bar it
+     sits on is the dark scrim in both colour schemes. Reusing it here would be legible in
+     dark mode and 3:1 in light. */
+  color: var(--sh-on-scrim);
+  opacity: 0.72;
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.sh-lightbox__close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.sh-lightbox__stage {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 0 8px 12px;
+  touch-action: pan-y;
+}
+
+.sh-lightbox__img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* On a phone the swipe is the primary gesture, so the arrows sit at the bottom where a
+   thumb reaches; from tablet up they move to the sides, where a cursor expects them. */
+.sh-lightbox__nav {
+  position: absolute;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--sh-surface);
+  color: var(--sh-ink);
+  font-size: 1.6rem;
+  line-height: 1;
+  opacity: 0.92;
+}
+
+.sh-lightbox__nav--prev {
+  left: 16px;
+}
+
+.sh-lightbox__nav--next {
+  right: 16px;
+}
+
+/* ── Wider viewports ───────────────────────────────────────────────────────── */
+
+/* The first width at which two 44px-tall buttons genuinely fit side by side without the
+   labels wrapping. Below it they stay stacked — see the .sh-signoff__btn rule. */
+@media (min-width: 460px) {
+  /* The `:not()` matters: the quiet buttons ("Cancel", "Change your answer") are underlined
+     text, and a 168px minimum would stretch the underline halfway across the panel. */
+  .sh-signoff__btn:not(.sh-signoff__btn--quiet) {
+    flex: 0 1 auto;
+    min-width: 168px;
+  }
+}
+
+@media (min-width: 700px) {
+  :root {
+    --sh-gutter: 40px;
+  }
+
+  .sh-lightbox__nav {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+  }
+
+  .sh-lightbox__bar {
+    padding: 20px 24px 12px;
+  }
+
+  .sh-lightbox__stage {
+    padding: 0 84px 24px;
+  }
+}
+
+@media (min-width: 900px) {
+  .sh-room__frames {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* The first frame of a room is its hero shot and gets the full width — the studio picked
+     it, and a room that opens on two half-width thumbnails throws that away.
+     `:nth-last-child(odd)` on the FIRST child means "this room has an odd number of
+     frames", which is the condition under which promoting one still leaves an even number
+     to fill the two columns. Without it, a two-frame room renders one full-width photo and
+     one half-width one beside a hole. */
+  .sh-room__frames > .sh-frame:first-child:nth-last-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 1ms;
+  }
+}

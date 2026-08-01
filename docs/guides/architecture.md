@@ -114,6 +114,10 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `public-email-domains.js` | The list of free consumer + disposable mail domains that can **not** be sold as an enterprise domain, and the normalizing matcher (`isPublicEmailDomain`). Used by the enterprise store and `/api/enterprise/create-checkout` — **not** by signup. Rationale: [`security.md`](security.md#enterprise-domains-are-a-blanket-grant). |
 | `stripe-events.js` | The Stripe **webhook idempotency ledger** (`stripe_events`). Stripe delivers at-least-once, so `routes/billing.js` claims each `event.id` before handling it and drops a redelivery. A failed handler *releases* its claim (so Stripe's retry still runs), and a claim abandoned by a killed process becomes re-claimable after 5 minutes. |
 | `memory.js` | Per-user AI-chat memory storage and LLM-driven memory-action evaluation. |
+| `projects.js` / `project-renders.js` | The **Listing Studio** store: `projects`, `project_photos`, `design_bibles`, `renders`. Declares **no foreign keys** (the house rule — `test/data/db.test.js` asserts zero), so `deleteProject` cascades explicitly in one transaction. `claimNextRender` is a single atomic `UPDATE … RETURNING` carrying the worker's lease *and* the bible barrier. |
+| `project-storage.js` | Where a listing's **image bytes** live (`<dataDir>/projects/<id>/{src,out}/…`), deliberately outside SQLite. `storage_key` is stored relative and backend-agnostic so a move to S3/R2 is one adapter, not a data migration. Its key validator is a security boundary — these keys reach a byte-serving HTTP route. |
+| `share-feedback.js` | Seller sign-off coming BACK through a share link (`share_feedback`) — the only table an anonymous request can write **free text** to. Its ceilings (note clamp, verdict allowlist, per-share row cap **inside the insert's transaction**) live here rather than in the route, so a second route cannot write an unbounded row. Append-only; `latestByRoom` reduces. |
+| `project-shares.js` | The **client share links** into a listing (`project_shares`). Only the token's sha256 digest is stored — `hashToken` is reused from `session-tokens.js`, for the reason that module exists. Composed into `projects.js` (exposed as `projects.shares`) so a listing and its public links die in ONE transaction. `revoked_at` rather than a DELETE, so a killed link keeps its view history. |
 | `counters.js` | The prompt/contact counters shown in the hero stats. |
 | `uptime-monitor.js` | Self-hosted uptime tracking (heartbeat → the `uptime_state` row in `auth-store.db`); powers `/api/status` and the status page. |
 
@@ -161,6 +165,11 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `virtual-staging-handler.js` | The `/api/process-image` + `/api/stage-by-endpoint-key` multipart handler (`handleVirtualStagingMultipart`), lifted out of `server.js`: free-tier cap, two-stage furniture removal, per-variation staging, enterprise metering. |
 | `mask-edit.js` | The `/api/mask-edit` request pipeline (locator overlay, reference letterboxing, quality-retry review), lifted out of `routes/staging.js`. |
 | `segment.js` | The `/api/segment` magic-wand handler (Gemini box detection → normalized `box_2d`), lifted out of `routes/staging.js`. |
+| `design-bible.js` | Extracts a room's **design bible** from its hero render (one `gemini-2.5-flash` structured-output call per ROOM, not per frame). `normalizeBible` is the trust boundary over untrusted model output. Returns `null` rather than a guess — see [Design-bible conditioning](#design-bible-conditioning). |
+| `prompts-continuity.js` | The model-facing wording for design continuity: `designBiblePromptSuffix` (the third conditioning mode) and `CONSISTENCY_REVIEW_PROMPT` (the judge). Split from `prompts.js` at the 650-line ratchet. |
+| `room-clustering.js` | Groups a shoot's photos into rooms (a cheap per-photo `flash-lite` label pass) and picks each room's hero frame. `assignRoomKeys`/`pickHero` are pure; an unlabelled photo stays **unassigned** rather than being forced into a group, because a wrong grouping cross-contaminates two rooms' bibles. |
+| `projects-shared.js` *(routes/)* | The pure clamps every Listing Studio route shares — and `skipReasonFor`, **the single predicate that decides which photos get billed for a render**. `groupByRoom` is the chokepoint both the upload route (picking heroes) and the stage route (building the plan) group through, so the rule lives in exactly one place; the two disagreed once and that is why it is shared rather than inlined twice. Its `NOT_A_ROOM` branch is what stops every shoot's exteriors being staged. |
+| `listing-worker.js` | The serial, in-process render queue over the `renders` table. `tick()` processes at most one render and never throws — one poisoned photo must not strand a whole listing. It is also where **enterprise usage is metered** for this feature: `/stage` only enqueues, so there is no request in scope when the money is spent, and the two request-time meters (`virtual-staging-handler.js`, `mask-edit.js`) never see a listing render. Best-effort and after the commit — a metering outage must lose events, not re-queue a paid image. |
 | `cad-handling.js` | Converts CAD/PDF floor plans into photorealistic 3D renders (AI Designer), via Gemini. `createCadHandling({ genAI })` — takes the **shared** client from `server.js`; it must not build its own (it used to, from a `lib/staging/key.txt` that never existed). |
 
 **`lib/chat/`** — AI Designer chat orchestration
@@ -252,6 +261,9 @@ Each is a factory returning a router (built with `createAsyncRouter()`), mounted
 | `staging.js` | Core AI: `process-image`, `mask-edit`, `segment`, `validate-image`, `stage-by-endpoint-key`. |
 | `chat.js` | AI Designer chat: `/api/chat`, `/api/chat-upload`, `welcome-message`. |
 | `billing.js` | Stripe checkout, customer portal, `stripe-webhook`, enterprise checkout. |
+| `projects.js` | The **Listing Studio**: project CRUD, batch photo upload + room assignment, `/stage` enqueue, progress polling, bible regeneration, and the session-gated render byte serve. Stagify+ only; ownership is keyed on the validated session id and a foreign project answers 404. Registers three siblings on its own router — `projects-queue.js` (the queue), `projects-download.js` (`renders.zip`) and `projects-share.js` (the owner's share controls) — sharing the pure clamps in `projects-shared.js`. |
+| `share-feedback.js` | Seller sign-off: the anonymous write (`POST /api/share/:token/feedback`) and the owner's inbox (`GET /api/projects/:id/feedback`). Separate from `share-public.js` because one is a read surface and this is the app's only anonymous free-text write — see [`security.md`](security.md#seller-sign-off-an-anonymous-free-text-write). |
+| `share-public.js` | The **client share page** and its manifest/byte routes (`/s/:token`, `/api/share/:token/…`). The one **unauthenticated** surface of the Listing Studio: what a broker sends to a seller or a buyer. Mounted as its own router, deliberately not on `projects.js` — see [Client share links](#client-share-links). |
 
 ## Configuration & secrets
 
@@ -381,6 +393,116 @@ useless. Those rules sit in `ROOM_TYPE_CONSTRAINTS` at step 4 — after the remo
 and applied to every style — and say so explicitly ("overrides every other instruction
 above"). [`test/staging/prompts.test.js`](../../test/staging/prompts.test.js) pins both the custom-style
 and remove-furniture cases, including the block **ordering**.
+
+## Design-bible conditioning
+
+The extra-image channel that reaches `processStaging` has **three** meanings, selected in
+one branch in [`staging-generation.js`](../../lib/staging/staging-generation.js). Picking the
+wrong one does not merely under-instruct the model — it instructs it to do the opposite of
+what the caller wants:
+
+| `stagingParams` | Suffix | Says |
+|---|---|---|
+| *(neither flag)* | `furnitureReferencePromptSuffix` | "these are objects to place in the room" |
+| `styleReference: true` | `styleReferencePromptSuffix` | "match this look, **do NOT** copy its objects" |
+| `designBible: {…}` | `designBiblePromptSuffix` | "this is the same room already staged, from another angle — reproduce **these exact** pieces" |
+
+The third is the multi-photo listing path, and it is why the mode exists: conditioning a
+listing support frame with the *style* suffix explicitly tells the model to change the
+furniture, which is the drift the feature is built to eliminate. Its wording lives in
+[`prompts-continuity.js`](../../lib/staging/prompts-continuity.js) — split from `prompts.js`
+when that file hit the 650-line backend ratchet, the way `room-constraints.js` split from
+`promptMatrix.js`.
+
+**The bible** is a JSON document (`DesignBible` in
+[`projects.d.ts`](../../lib/types/projects.d.ts)) extracted from a room's hero render by
+[`design-bible.js`](../../lib/staging/design-bible.js). Furniture is a list of `pieces` keyed
+by **`slot`** rather than prose, and that shape is load-bearing: it is what lets the reviewer
+score "sofa: match / rug: mismatch" and a retry target the named piece. `normalizeBible` is
+the trust boundary — it takes untrusted model output and returns a valid bible or `null`, and
+it stamps `roomKey`/`roomType` from the *caller's* context, never from the model, so the
+model cannot redirect which room its bible belongs to.
+
+**Enforcement is worst-of, not average.** On the bible path `processStaging` composes two
+reviewers and returns the **loser's whole verdict**:
+
+```js
+const [quality, continuity] = await Promise.all([qualityOnly(url), reviewDesignConsistency(hero, url, bible)]);
+return continuity.score < quality.score ? continuity : quality;
+```
+
+Averaging would let a gorgeous render containing the wrong sofa through on the first attempt,
+and *beautiful but inconsistent* is precisely the failure being prevented. Returning the
+verdict rather than just the number also carries the losing reviewer's `WHY:` line into
+`qualityRetryFeedbackSuffix`, so the retry is told the sofa drifted instead of being nudged
+about generic quality. No change to `staging-pipeline.js` was needed — its retry loop already
+accepted an arbitrary `reviewFn` and already fed the previous verdict forward.
+
+Two subtleties worth not rediscovering:
+
+- **The hero reference is withheld from the quality reviewer.** Its furniture guide reads
+  "the remaining images are the furniture pieces the user uploaded — check it was
+  incorporated"; on this path that image is a whole *room*, so passing it asks the reviewer
+  to confirm a room-sized furniture piece was placed inside the room. It would fail every
+  support frame and burn the full retry budget. The continuity reviewer, which knows what
+  that image is, gets it instead.
+- **`consistencyScore` is `null`, not `100`, when no check ran.** "Unchecked" and "checked
+  and clean" must stay distinguishable, because the UI promises the user that continuity was
+  enforced — a defaulted score would let it make that promise about a frame nothing looked at.
+
+Scores and the prompt reach the caller through an optional `StagingOutcome` out-parameter
+(`processStaging`'s 6th argument): the retry loop returns only the winning image, and the
+listing worker has no `req` to hang metering off. Existing callers pass nothing.
+
+## Client share links
+
+The Listing Studio's output had exactly one way out of the app — a zip the account holder
+downloaded — which meant the two people the staging is *for* could never see it: the seller
+who has to approve it before the listing goes live, and the buyer who scrolls it on a phone.
+Share links are that path, and they are the only **unauthenticated** surface in the feature.
+
+The split is deliberate and mirrors the two audiences:
+
+| | Studio side | Public side |
+|---|---|---|
+| Router | [`routes/projects-share.js`](../../routes/projects-share.js), registered on the projects router | [`routes/share-public.js`](../../routes/share-public.js), **its own** router, mounted separately |
+| Auth | `requireProAccount` inside every handler | none, by design |
+| Page | `public/projects.html` — desktop-only | `public/listing-share.html` — **mobile-first** |
+| Store | `projects.shares` (composed into the project store) | the same store, through `resolveShare` only |
+
+**Why the public router is not registered on the projects router.** Every handler in
+`routes/projects.js` opens with `requireProAccount`, and the file's header states that as an
+invariant. Hanging four public routes off it would make that statement false, and would leave
+them one careless refactor away from inheriting a gate they must not have — or, worse, from a
+reviewer assuming they already have one. Separate mount, separate file, separate deps bag.
+
+**Why the share store is composed into the project store rather than injected on its own.**
+`getDb` returns one shared connection, so `shares.deleteForProject` called inside
+`lib/data/projects.js`'s `withTxn` is genuinely inside that transaction. That is the only
+arrangement in which a listing and its public links are guaranteed to die together; two
+independently-constructed instances would each work and would leave a window where the rows
+were gone and the link still resolved. `projects.shares` is namespaced rather than flattened
+(unlike the render queue) because it is a whole separate surface, and `projects.revokeShare`
+would read as though listings themselves were shareable.
+
+**The one-time token is a product decision, not just a security one.** Only the digest is
+stored, so the studio genuinely cannot show the URL again after a reload — it can only say a
+link is live, when it was created, and how many times it has been opened. The UI states that
+plainly and offers rotation, the same contract a personal access token has. The alternative
+(storing it recoverably) would make a database read equivalent to a set of live links into
+customers' listings, which is exactly what `session-tokens.js` exists to prevent.
+
+**The gallery shell answers 200 for any token.** `GET /s/:token` performs no lookup at all,
+so a live, revoked, expired and invented token receive byte-identical HTML; the page then
+fetches the manifest and renders "no longer available" off the single 404. The alternative —
+gating the HTML — would reintroduce a distinguishable surface. This is why that route is the
+only public share route in `test/server/route-inventory.test.js`: the other three answer the
+same uniform 404 whether they exist or not.
+
+See [`security.md`](security.md#client-share-links-the-one-unauthenticated-surface) for the
+full threat model, and `test/routes/share-flow.test.js` for the journey end to end — the two
+unit suites both pass with a token that never crosses between the routers, so the seam needs
+its own coverage.
 
 ### Adding a room type
 

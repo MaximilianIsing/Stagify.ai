@@ -34,6 +34,12 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/auth/login'],
   ['POST', '/api/auth/register'],
   ['POST', '/api/getpro'],
+  // Orphan-blob reclaim. Key-gated, so an unauthenticated probe is a 403 long before the
+  // sweep runs — nothing is scanned or deleted by this sweep of the routes.
+  ['POST', '/api/admin/blob-gc'],
+  // Listing Studio health — read-only, so GET; key-gated, so an unauthenticated probe is
+  // a 403 before any query runs.
+  ['GET', '/api/admin/listing-health'],
   ['POST', '/api/admin/grant-plus'],
   ['POST', '/api/admin/revoke-plus'],
   // Referral links. Every one is key-gated, so an unauthenticated probe is rejected
@@ -54,7 +60,55 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/chat-upload'],
   ['POST', '/api/send-email'],
   ['POST', '/api/stage-by-endpoint-key'],
+  // Listing Studio. Every one is Stagify+ gated inside its handler, so an
+  // unauthenticated probe is rejected (401/403) before the id in the path is ever
+  // looked up — nothing is created, staged, or deleted by this sweep. The byte-serve
+  // route is included deliberately: losing it would silently break every rendered
+  // image in the studio while the JSON endpoints all still answered.
+  ['POST', '/api/projects'],
+  ['GET', '/api/projects'],
+  ['GET', '/api/projects/probe'],
+  ['PATCH', '/api/projects/probe'],
+  ['DELETE', '/api/projects/probe'],
+  ['POST', '/api/projects/probe/photos'],
+  ['PATCH', '/api/projects/probe/photos/probe'],
+  ['DELETE', '/api/projects/probe/photos/probe'],
+  ['POST', '/api/projects/probe/stage'],
+  ['GET', '/api/projects/probe/progress'],
+  ['POST', '/api/projects/probe/rooms/living-room-1/bible/regenerate'],
+  ['GET', '/api/projects/probe/renders/probe/image'],
+  ['GET', '/api/projects/probe/photos/probe/image'],
+  // The three recovery/delivery routes. Each closes a defect that made the feature
+  // unusable rather than merely awkward, so losing one silently is worth failing on:
+  // renders.zip is the ONLY way to get the staged images out; retry is the only way to
+  // recover a single failed frame without re-running (and re-billing) a whole room; and
+  // cancel is the only way to stop a 90-render run short of deleting the listing.
+  ['GET', '/api/projects/probe/renders.zip'],
+  ['POST', '/api/projects/probe/renders/probe/retry'],
+  ['POST', '/api/projects/probe/cancel'],
+  // Client share links, owner side. Same gate as the rest of the studio, so an
+  // unauthenticated probe is a 401 and no link is minted or revoked by this sweep.
+  ['GET', '/api/projects/probe/share'],
+  ['POST', '/api/projects/probe/share'],
+  ['PATCH', '/api/projects/probe/share'],
+  ['DELETE', '/api/projects/probe/share'],
+  // The public gallery shell. It answers 200 for ANY token — including this nonsense one —
+  // on purpose: the HTML must not be an oracle for which tokens are real, so the page is
+  // byte-identical either way and the manifest fetch behind it is what refuses. That also
+  // makes it the one public share route this sweep can check, since the other three answer
+  // the same uniform 404 for a bad token as they would if they were deleted (see below).
+  ['GET', '/s/probe'],
+  // Seller sign-off, owner half. Same gate as the rest of the studio, so an unauthenticated
+  // probe is a 401 and no response is read.
+  ['GET', '/api/projects/probe/feedback'],
 ];
+
+// DELIBERATELY NOT LISTED: GET /api/share/:token, /api/share/:token/render/:id,
+// /api/share/:token/photo/:id and the two /api/share/:token/feedback routes. Every rejection on those routes is one indistinguishable
+// 404 — that is the point of them (a 410 for a revoked link would confirm the token was
+// once real) — so "route removed" and "route working correctly" are the same response here
+// and this sweep cannot tell them apart. Their coverage is behavioural, in
+// test/routes/share-public.test.js, which drives them with REAL tokens.
 
 test('every critical route is still registered (not 404)', async () => {
   const removed = [];

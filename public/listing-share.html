@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <!-- A PRIVATE, UNLISTED PAGE. It is reached only through a link the broker sends by
+         hand, at /s/<token>, and it shows somebody's home to somebody's client. It must
+         never be indexed, so: noindex/nofollow, no canonical, no hreflang cluster, not in
+         sitemap.xml, no data-lang attributes and no language-pack entries. That also keeps
+         scripts/build-i18n-seo.js and its drift tests out of this page entirely. It is
+         English-only for v1 — the language a link is sent in is the broker's choice, and
+         there is no place on a tokenised URL to express it. -->
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+
+    <!-- Replaced with the listing's own title once the manifest lands. The static value is
+         what a link preview shows, and it deliberately names no address. -->
+    <title>Listing gallery | Stagify.ai</title>
+    <!-- LINK PREVIEW: GENERIC ON PURPOSE — DO NOT "IMPROVE" THIS BY MAKING IT SPECIFIC.
+         These tags are static and Stagify-branded, and they must never carry the listing's
+         title, its address, the agent's name, or a staged photograph of the property. Two
+         separate hard requirements land on the same rule:
+
+         1. THE SHELL IS BYTE-IDENTICAL FOR EVERY TOKEN. A live token, a revoked one and one
+            somebody invented all get exactly this document; only the JSON fetched afterwards
+            differs, and it 404s identically for all three (see routes/share-public.js). That
+            is what stops the page being an oracle for "is this token real?". Rendering the
+            listing into <head> would restore the oracle in the one place a crawler, a chat
+            app and a proxy all read without being asked to.
+         2. A SELLER'S HOME MUST NOT AUTO-EXPAND IN A GROUP CHAT. A broker pastes this link
+            into iMessage, WhatsApp or Slack; every one of those unfurls it server-side, for
+            everyone in the thread, before anybody clicks. A generic card says "somebody
+            shared a Stagify gallery" and nothing more.
+
+         The link stays unindexed (robots noindex/nofollow above, plus X-Robots-Tag on the
+         server) — an unfurl is not indexing, and these tags do not change that. -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Stagify.ai">
+    <meta property="og:title" content="A private listing gallery | Stagify.ai">
+    <meta property="og:description" content="Someone has shared a set of virtually staged listing photographs with you. Open the link to view the gallery.">
+    <!-- The site root, NOT /s/<token>: the token is the credential, and an og:url is copied
+         verbatim into previews, bookmarks and analytics referrers. -->
+    <meta property="og:url" content="https://stagify.ai/">
+    <meta property="og:image" content="https://stagify.ai/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Stagify.ai — before and after AI virtual staging">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="A private listing gallery | Stagify.ai">
+    <meta name="twitter:description" content="Someone has shared a set of virtually staged listing photographs with you. Open the link to view the gallery.">
+    <meta name="twitter:image" content="https://stagify.ai/og-image.png">
+
+    <meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#12100e" media="(prefers-color-scheme: dark)">
+
+    <link rel="icon" type="image/webp" sizes="32x32" href="/media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="/media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="/media-webp/logo/Logo180x180.webp">
+
+    <!-- Root-absolute, not relative: this file is served at /s/<token>, so `styles/…` would
+         resolve against /s/ and 404. Its own sheet only — styles.css is not loaded here, so
+         none of the shared design tokens are in scope and share.css declares its own (see
+         test/frontend/css-tokens.test.js for why an out-of-scope var() is a silent bug). -->
+    <link rel="stylesheet" href="/styles/share.css">
+
+    <!-- The ONLY script on the page, and it is external and a module by necessity: the site
+         CSP forbids inline <script> and inline on* handlers, and an inline module script
+         fails silently rather than loudly. Modules are deferred, so the shell below is
+         parsed before it runs. -->
+    <script type="module" src="/scripts/share/main.js"></script>
+  </head>
+
+  <body>
+    <!-- data-state is the single switch share.css keys visibility off:
+         loading | ready | empty | unavailable. scripts/share/main.js owns it. -->
+    <main id="sh-root" class="sh-root" data-state="loading">
+      <header class="sh-hero">
+        <h1 id="sh-title" class="sh-hero__title">Listing gallery</h1>
+        <p id="sh-address" class="sh-hero__address" hidden></p>
+        <p id="sh-headline" class="sh-hero__headline" hidden></p>
+      </header>
+
+      <!-- Everything below the hero is built in JS. The placeholder is what a reader sees
+           on a slow connection; aria-live announces the change when the real content lands. -->
+      <div id="sh-body" class="sh-body" aria-live="polite" aria-busy="true">
+        <p class="sh-loading">Loading this listing…</p>
+      </div>
+
+      <noscript>
+        <p class="sh-noscript">This gallery needs JavaScript to display its photographs.
+          Please enable it, or ask whoever sent you this link for the photos directly.</p>
+      </noscript>
+    </main>
+
+    <footer class="sh-colophon">
+      <p class="sh-colophon__text">
+        Staged with <a class="sh-colophon__link" href="https://stagify.ai/" rel="noopener">Stagify.ai</a>
+      </p>
+    </footer>
+  </body>
+</html>

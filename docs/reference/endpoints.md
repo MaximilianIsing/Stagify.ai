@@ -211,6 +211,155 @@ Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagi
 
 ---
 
+## Listing Studio (multi-photo listing staging)
+
+`routes/projects.js`. **Every route is Stagify+ only** (`requireProAccount`, checked inside
+the handler — the middleware chain is not the gate) and scoped to the validated session
+user's `id`. A project, photo or render belonging to someone else answers **`404`, not
+`403`**, so the API is not an existence oracle for other people's listings. Page:
+`public/projects.html` (internal, `noindex`, `Disallow`ed in `robots.txt`, English-only and
+deliberately outside the localized page set).
+
+**Why this exists.** Staging one photo at a time makes a 24-photo listing 24 unrelated
+hallucinations — a grey sectional in the wide shot, a tan loveseat in the detail shot. Here
+one **hero** frame per room is staged normally, a **design bible** (the room's locked
+furniture identities, palette and lighting) is extracted from that render, and every other
+frame of that room is conditioned on it. See
+[`architecture.md`](../guides/architecture.md#design-bible-conditioning).
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/projects` | Create a listing. **Body:** `{ title, address }` (clamped 120 / 200 chars). Returns `{ project }`. |
+| `GET` | `/api/projects` | The session user's listings, newest first. `?limit=` clamped 1–100 (default 50). |
+| `GET` | `/api/projects/:id` | `{ project, photos, renders, bibles, progress }`. Why a frame will not be staged (`NOT_A_ROOM` / `NO_ROOM` / `EXCLUDED` / `UNSTAGEABLE`) is **not** on the wire: the studio derives it from the photo rows it already has, using its own copy of `skipReasonFor` that a drift test pins against the server's. Without that badge an operator uploads 32 photos, watches 6 never render, and concludes the product lost them. The studio computes the render count for its pre-flight confirm dialog client-side (`stagePlan` in `public/scripts/projects/summaries.js`), from the same `skipReasonFor` predicate the server groups by — a drift test pins the two copies against each other. |
+| `PATCH` | `/api/projects/:id` | Subset of `{ title, address, status }`. `status` is validated against `draft\|staging\|ready\|archived`; anything else is `400`. |
+| `DELETE` | `/api/projects/:id` | `{ ok, id, deleted }` where `deleted` is per-table row counts. **Rows first, then blobs** — a failed unlink must not leave rows the user can still see. |
+| `POST` | `/api/projects/:id/photos` | **Multipart**, field `photos`, up to **40** files (**25 MB** each, image mimetypes — pinned to `stagingProcessUpload`'s limit, which is what the dropzone advertises). Per photo: sha256 **of the bytes the client sent** (the dedup key), then the photo is **downscaled to 1920x1080 JPEG before it is stored** — `processStaging` downscales its input to the same bound anyway, so anything larger on disk is never seen by the model, and source photos WERE 82–85% of the data volume's footprint before this landed (see data-stores.md for the corrected table — they are no longer the larger half). Dimensions are recorded from the STORED bytes so the studio and share gallery reserve the right layout space. A photo sharp cannot process is stored as sent rather than dropped. Then dimensions + blob write, `validate-image` stageability pre-check, and a `gemini-2.5-flash-lite` room-label pass (bounded to **3** concurrent vision calls — 40 at once would be a thundering herd). Then rooms are assigned and a hero picked per room. Returns `{ photos, duplicates }`; a repeated `(project, sha256)` is idempotent, so re-uploading a shoot is safe. Deliberately slow. **The pro gate runs BEFORE multer on this one route** — the only auth in a middleware chain in that file — because multer buffers the whole body into memory first, so an anonymous request could otherwise make this single-instance process allocate ~1 GB and then be told to sign in. The handler still checks for itself; the middleware is a pre-filter, not a second auth model. A disallowed mimetype is **`415 UNSUPPORTED_PHOTO_TYPE`** (it used to be a 500: multer forwards a `fileFilter` rejection as a plain object, not a `MulterError`, so it missed the router's branch and reached the app catch-all). |
+| `PATCH` | `/api/projects/:id/photos/:photoId` | Operator override: `{ roomKey, roomType, frameRole, seq }`. `frameRole: 'hero'` routes through `setHero`, which demotes the room's previous hero in the same transaction. Auto-clustering is a first draft, not an authority. |
+| `DELETE` | `/api/projects/:id/photos/:photoId` | Row + every blob key the store reports (source *and* any orphaned renders). |
+| `POST` | `/api/projects/:id/stage` | **Body:** `{ furnitureStyle, removeFurniture, variationCount, additionalPrompt }`, persisted as `jobSettings` in the project's `extra_json`. Sets status `staging` and enqueues renders: each room's hero first (no `bibleId`), then its support frames. `variationCount` (1–3) applies to **support frames only** — the hero is always 1, because it defines the bible. Four distinct **`409`** codes, because the operator's next move differs completely between them: `NO_PHOTOS`, `NO_ROOM_ASSIGNMENTS` (the labeller has not answered yet — wait), `NO_INTERIOR_ROOMS` (the shoot is all exteriors — set a room type), `NO_STAGEABLE_PHOTOS` (every assigned frame is excluded or was rejected), plus `RENDERS_IN_FLIGHT`. |
+| `GET` | `/api/projects/:id/progress` | `{ progress, status, blockedByMissingBible }`. Cheap and pollable; `Cache-Control: no-store`. |
+| `POST` | `/api/projects/:id/rooms/:roomKey/bible/regenerate` | Supersedes that room's finished renders and re-enqueues its hero + support frames. Old renders become `superseded` rather than being deleted, so the UI can say "4 frames are out of date" instead of silently dropping work. |
+| `POST` | `/api/projects/:id/cancel` | Stops a run in flight — the only way to halt a 90-render job short of deleting the listing. Queued rows are settled; a render already claimed by the worker finishes (its lease is not stealable mid-generation). |
+| `POST` | `/api/projects/:id/renders/:renderId/retry` | Re-queues one failed frame. The only way to recover a single bad render without re-running — and re-billing — the whole room through `bible/regenerate`. |
+| `GET` | `/api/projects/:id/renders.zip` | **The bulk archive.** Streams a hand-rolled STORE-method zip of every `ok` render, one blob in memory at a time, named `<room>-<seq>-v<variation>.<ext>`. Leads with `DISCLOSURE.txt` (see below). `404 NO_RENDERS` when nothing has finished — an empty archive downloads as a file that looks like success. |
+| `GET` | `/api/projects/:id/renders/:renderId/image` | **Session-gated byte serve.** Streams the render with its real content type, `Cache-Control: private, max-age=31536000, immutable` and `X-Content-Type-Options: nosniff`. `404` for unknown, unowned, or not-yet-rendered. **Not public like `/i/:id`.** |
+| `GET` | `/api/projects/:id/photos/:photoId/image` | The original upload — tray thumbnails and the "before" pane. Session-gated identically: someone's *unstaged* house is as private as the render. |
+
+> **These endpoints never return image data URLs.** A 30-photo listing at 3 variations is
+> ~78 images (see [`data-stores.md`](data-stores.md) for the measured sizes); the JSON
+> carries render ids and the browser fetches bytes from the
+> serve route above. This is a deliberate break from `/api/process-image`'s data-URL
+> response shape, and the reason the frontend fetches blobs with the bearer header and
+> `URL.createObjectURL` rather than setting `src` directly.
+
+> **The queue.** Renders are rows in the `renders` table, not an in-memory job list, and
+> `lib/staging/listing-worker.js` leases one at a time (`claimNextRender`). Two invariants
+> live in that single atomic `UPDATE`, not in JS: only a `queued` row can be claimed, and a
+> **support frame is unclaimable until its room's bible exists** (`bible_id IS NOT NULL`, or
+> the photo is the hero). The DB is the only thing that survives a restart mid-listing, so
+> that barrier has to be enforced there. A lease abandoned by a killed process is reclaimed
+> after `DEFAULT_LEASE_MS`. Capacity is one render at a time per instance — this app is
+> single-instance by design (see the README's known limitations).
+
+> **Exteriors are never staged.** The clusterer labels a facade, garage or stairwell
+> `roomType: 'Other'`, and every real listing shoot has several. They used to be staged like
+> rooms — spending money putting furniture on a driveway, then stalling that room because
+> there was no furniture for a design bible to pin, and building the render from the generic
+> fallback prompt since `promptMatrix` has no `Other` entry. `skipReasonFor`
+> (`routes/projects-shared.js`) is the single predicate that decides, and `groupByRoom` — the
+> chokepoint BOTH the upload route (picking heroes) and the stage route (building the plan)
+> group through — routes through it, so the two cannot disagree again. **The one override is
+> the room-type control already on every tray thumbnail**: give the frame a real room type and
+> it stages. Promoting it to hero deliberately does *not* override, because a rule with two
+> escape hatches is a rule nobody can predict.
+
+> **When a bible cannot be extracted, the room's support frames stay blocked.** They are
+> *not* rendered unconditioned, and `blockedByMissingBible` reports it so the UI can say
+> consistency was not enforced for that room. Every other reviewer in this codebase fails
+> open silently because it is a *gate*; a bible is a *promise*, and silently shipping
+> inconsistent frames under a "consistent listing" label is the one outcome worth failing on.
+
+### Client share links
+
+`routes/projects-share.js` (owner controls) and `routes/share-public.js` (the public page).
+This is the **only unauthenticated surface** the Listing Studio has, and the only way the
+two people the output is actually for — the seller approving the staging, the buyer
+browsing the home — ever see it.
+
+**The token is a credential, and is treated exactly like a session token.** 32 bytes of
+CSPRNG, base64url; only its **sha256 digest** is stored (`lib/data/project-shares.js`
+reuses `hashToken` from `session-tokens.js`), so a stolen `/data` volume or a Litestream
+restore yields digests rather than a set of live links into customers' listings. It is
+returned in plaintext **exactly once**, from the `POST`. There is no read-back — an owner
+who loses the link rotates it, which is the same call.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/projects/:id/share` | `{ share, history }`. `share` is the live link or `null`; `history` is the audit trail including revoked ones. **Never carries the token.** |
+| `POST` | `/api/projects/:id/share` | Mint, and **rotate** whatever link the listing had, in one transaction — so a listing never has two live doors. Returns `{ share, token, url, replaced }`. **The only response that ever carries the token.** Body: `{ settings, expiresInDays }` (1–365, or `null` for never; out of range is a `400 BAD_EXPIRY` rather than a silent clamp). |
+| `PATCH` | `/api/projects/:id/share` | Replace the published settings and/or expiry **without rotating the token** — the link the broker already sent keeps working. `400 NO_SHARE` when there is no live link. |
+| `DELETE` | `/api/projects/:id/share` | Revoke. Idempotent. The row **stays**, so the view count from before the revoke survives as an audit trail. |
+
+Public side — no session, no cookie, rate-limited by `shareLimiter`:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/s/:token` | The gallery page (`public/listing-share.html`). **Mobile-first**, unlike the desktop-only studio — sellers and buyers are on phones. |
+| `GET` | `/api/share/:token` | The manifest: title, rooms, frame ids, the agent's contact card, and the disclosure. Built **field by field**, never by spreading a row, so no `userId`, storage key, prompt, model, score or timestamp can reach it by default. Counts one view (debounced 30 min). |
+| `GET` | `/api/share/:token/render/:renderId` | Staged bytes. The render must belong to **this token's project** and be `status: 'ok'`. |
+| `GET` | `/api/share/:token/photo/:photoId` | Original bytes, for the before/after slider. `404` unless the share publishes before/after. |
+
+> **Every rejection is the same `404`.** Unknown token, revoked, expired, wrong project,
+> unknown render, missing blob — one identical body. Distinguishing them would confirm that
+> a token was once real, which is a slow oracle over the keyspace. All four routes carry
+> `Referrer-Policy: no-referrer` (the token is in the path) and
+> `X-Robots-Tag: noindex, nofollow` — a seller's home must not land in a search index
+> because someone tweeted the link.
+
+### Seller sign-off
+
+`routes/share-feedback.js`. The answer coming **back** through a share link. Without it the
+loop closes in a text message the listing knows nothing about — "the bedroom's great, can the
+living room be warmer?" — which the broker then has to translate into which room, which frame,
+and re-run from memory.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/share/:token/feedback` | none | Body `{ roomKey?, verdict: 'approved'\|'changes', note?, viewerLabel? }`. `roomKey` omitted means the whole listing. |
+| `GET` | `/api/share/:token/feedback` | none | What **this link** has already said, so a returning viewer sees their own answers. Scoped to the share, never the listing — a rotated-in viewer must not read the previous holder's notes. |
+| `GET` | `/api/projects/:id/feedback` | Stagify+ | The owner's inbox for one listing, newest first. |
+
+> **This is the only endpoint in the app where an anonymous caller writes free text** to the
+> volume the database and every customer's photograph sits on. Four independent bounds, and
+> they live in the **store** (`lib/data/share-feedback.js`) rather than the route, so a second
+> route cannot write an unbounded row: the note is clamped and whitespace-collapsed, the
+> verdict is an allowlist, and **`MAX_PER_SHARE` (200) is checked inside the insert's own
+> transaction** — a limit that can be raced is not a limit. `feedbackLimiter` (`RL_SHARE_FEEDBACK`,
+> 30/15min) is the outer per-IP bound only; it cannot cap total growth, which is why both exist.
+> A full link answers `409 FEEDBACK_FULL` — a calm coded refusal, never a 500, because a
+> seller hitting a ceiling they cannot see must not be shown a crash. **The status is the
+> only signal**: `sendError` emits a fixed body shape, so there is no `allowance` in a 409
+> and a client that parses for one gets `full: false` and re-offers a form guaranteed to fail
+> again. Treat the 409 itself as "full".
+
+> **`projectId` and `userId` come from the resolved share, never the request body.** A
+> body-supplied listing id would let anyone holding any valid link write onto someone else's
+> listing. **Nothing identifies the viewer** — no IP, no user-agent, no cookie, only an
+> optional display name they typed. They never agreed to anything; they were sent a link.
+
+> **Rows are append-only and the latest per room wins.** A seller who asks for a change and
+> then approves it reads as approved, while the note explaining *why* the room was re-rendered
+> is still on record — which is exactly what the broker wants three days later.
+
+> **Every archive and every share page carries the virtual-staging disclosure**
+> (`lib/staging/staging-disclosure.js`). This is not decoration: NAR Article 12 and most
+> MLS rules require it, and it is the **listing agent** who gets cited for an undisclosed
+> altered photo. `DISCLOSURE.txt` is the archive's first entry; the same sentence renders
+> on the share page. Both resolve to one constant so the two copies cannot drift.
+
+---
+
 ## Bug reports & masking studio (mask edit + segment)
 
 | Method | Path | Description |
@@ -240,6 +389,8 @@ The same `LOGS_ACCESS_KEY` authenticates several endpoints. All of them now take
 | `GET` | `/masklogs` | Download `mask_logs.csv`. |
 | `GET` | `/email-open-logs` | Download `email_open_logs.csv` (email open-tracking rows; `404` if none yet). |
 | `GET` | `/enterprise-domains` | Download `enterprise-domains.json` (active enterprise domains + Stripe ids); `{ domains: [] }` if none yet. |
+| `GET` | `/api/admin/listing-health` | **Listing Studio support view.** `{ queue, stuck, storage, staleAfterMs }` — queue totals across every account, and every listing sitting in `staging` with no write for 30 minutes (worst first), each with its `queued`/`running`/**`blocked`**/`failed`/`ok` counts so the operator can see *why*. `?stale=<minutes>` overrides the threshold; `?storage=1` opts into a walk of the projects volume for bytes-per-account (left out by default — it is O(files)). **Ids and counts only**: no titles, addresses, storage keys or prompts, because this is a support tool and not a window into somebody's property. `503` when the store did not open. |
+| `POST` | `/api/admin/blob-gc` | **Orphan-blob reclaim.** Walks `<dataDir>/projects/` and reports every file no `project_photos`/`renders` row references. **Dry run by default** — pass `?apply=1` to delete. Returns `{ scanned, orphans, removed, bytes, tooYoung, skipped, sample }`. A candidate must also be older than one hour: the worker writes a render's blob *before* its row, so a younger unreferenced file may be a render a customer is waiting for (`tooYoung` counts those). Deleting a listing removes rows first and blobs second on purpose, so a crash or failed unlink between the two leaks disk — this is what reclaims it. `503` when the Listing Studio store did not open, since with no database every blob would look like an orphan. |
 | `POST` | `/api/admin/grant-plus` | **Comp Stagify+.** Body `{ userId }` or `{ email }`. Gives a **currently-free** account one calendar month of `plan: 'pro'` with **no Stripe subscription** — no card, no invoice, no webhook (`lib/data/pro-grants.js`). Refused (`400`) if the account already has Stagify+ or has a Stripe subscription. Returns `{ ok, userId, email, expiresAt }`. Expiry is enforced on **read**, so the account reverts to free by itself. |
 | `POST` | `/api/admin/delete-user` | **GDPR erasure.** Body `{ userId }` or `{ email }`, plus optional `force: true`. Erases the account row and **everything keyed to it** — sessions, password-reset tokens, memories, and a pending registration for the same address — in one transaction (this DB has no foreign keys, so nothing cascades on its own), then redacts that person's identifying cells in the CSV logs. An address with only an unverified signup can be erased on its own. **Refused with `400 ACTIVE_SUBSCRIPTION`** if a Stripe subscription is still attached — cancel it in Stripe first, or pass `force` once that is done out of band. `404 NOT_FOUND` for an unknown account, `400` with no identifier. Returns `{ ok, userId, email, rows, logs }` — per-table row counts and a per-file redaction report. Irreversible; see [`data-stores.md`](data-stores.md#erasing-one-persons-data). |
 | `POST` | `/api/admin/revoke-plus` | Body `{ userId }`. Ends a running comp grant immediately. Refused (`400`) if there is no active grant, or if the account is on a Stripe subscription (cancel that in Stripe). |

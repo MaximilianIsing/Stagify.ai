@@ -26,10 +26,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { createAuthStore } from '../../lib/data/auth-store.js';
 import { createMemory } from '../../lib/data/memory.js';
+import { createProjects } from '../../lib/data/projects.js';
+import { createProjectStorage } from '../../lib/data/project-storage.js';
 import { getDb, closeDb } from '../../lib/data/db.js';
 import { resolveDataDir } from '../../lib/data/data-dir.js';
 import {
   createUserDeletion,
+  PROJECT_CHILD_TABLES,
   USER_ID_TABLES,
   USER_EMAIL_TABLES,
   NOT_USER_KEYED,
@@ -49,10 +52,26 @@ function setup() {
   const authStore = createAuthStore(dir);
   stores.push(authStore);
   const memory = createMemory({ __dirname: dir, DEBUG_MODE: false });
+  // The Listing Studio store is built here for the same reason the auth and memory
+  // stores are: the drift guard below introspects the REAL schema, so a store missing
+  // from this fixture is a table the guard cannot see. `projects` is user-keyed, so
+  // leaving it out would have let it go uncovered exactly as the guard exists to prevent.
+  const projects = createProjects(dir);
   const logDir = path.join(dir, 'data'); // resolveDataDir(dir) — the CSVs live beside the db
   fs.mkdirSync(logDir, { recursive: true });
-  const { deleteUser } = createUserDeletion({ baseDir: dir, getDataLogDir: () => logDir });
-  return { dir, authStore, memory, logDir, deleteUser, db: getDb(dir) };
+  const storage = createProjectStorage({ baseDir: dir });
+  const removed = [];
+  const { deleteUser } = createUserDeletion({
+    baseDir: dir,
+    getDataLogDir: () => logDir,
+    // Mirrors the production wiring in server.js (a sync rm of the project's blob dir),
+    // and records what it was asked to remove so the disk pass can be asserted.
+    removeProjectFiles: (projectId) => {
+      removed.push(projectId);
+      fs.rmSync(path.join(storage.projectsRoot(), projectId), { recursive: true, force: true });
+    },
+  });
+  return { dir, authStore, memory, projects, storage, removed, logDir, deleteUser, db: getDb(dir) };
 }
 
 afterEach(() => {
@@ -401,6 +420,156 @@ test('an unreadable JSON store is reported, not thrown, like the CSVs', () => {
   assert.equal(res.ok, true, 'the rows are the part that must be atomic');
   assert.equal(res.logs.find((l) => l.file.endsWith('memories.json')).reason, 'not parseable as JSON');
   assert.ok(res.logs.find((l) => l.file.endsWith('auth-store.json')).error, 'the operator is told which file to check');
+});
+
+// ---- Listing Studio: rows AND bytes ---------------------------------------
+
+/**
+ * Build one project for `userId` with a source photo, a bible and a finished render,
+ * writing real bytes for the photo and the render so the disk pass has something to
+ * erase. Returns the ids plus the two storage keys.
+ * @param {{ projects: any, storage: any, userId: string, title: string }} arg - Store handles and who owns the project.
+ * @returns {Promise<any>} The seeded ids and storage keys.
+ */
+async function seedProject({ projects, storage, userId, title }) {
+  const project = projects.createProject({ userId, title, address: '1 Test St' });
+  // Storage keys are hex-only by design (the traversal guard in project-storage.js
+  // refuses anything else), so the fixture id has to be real hex, not a 'p'-prefixed label.
+  const photoId = Buffer.from(title).toString('hex').slice(0, 16).padEnd(16, '0');
+  const srcKey = storage.keyFor({ projectId: project.id, kind: 'src', id: photoId, ext: 'webp' });
+  await storage.write(srcKey, Buffer.from('SOURCE-PHOTO-OF-SOMEONES-HOME'));
+  const added = projects.addPhoto({
+    projectId: project.id,
+    storageKey: srcKey,
+    seq: 0,
+    sha256: 'a'.repeat(64),
+    width: 1600,
+    height: 1200,
+    roomType: 'Living room',
+    frameRole: 'hero',
+  });
+  const photo = added.photo;
+  projects.updatePhoto(photo.id, { roomKey: 'living-room-1' });
+  const render = projects.enqueueRender({ projectId: project.id, photoId: photo.id, variation: 1 });
+  const outKey = storage.keyFor({ projectId: project.id, kind: 'out', id: render.id, ext: 'webp' });
+  await storage.write(outKey, Buffer.from('RENDERED-STAGING-OF-SOMEONES-HOME'));
+  projects.completeRender(render.id, { storageKey: outKey, model: 'test', genAttempts: 1 });
+  const bible = projects.createBible({
+    projectId: project.id,
+    roomKey: 'living-room-1',
+    heroRenderId: render.id,
+    roomType: 'Living room',
+    furnitureStyle: 'midcentury',
+    doc: { pieces: [{ slot: 'sofa', identity: 'x', placement: 'y', critical: true }] },
+  });
+  return { project, photo, render, bible, srcKey, outKey };
+}
+
+test('erasing an account destroys its listing projects, photos, bibles and renders', async () => {
+  const ctx = setup();
+  const { projects, storage, deleteUser } = ctx;
+  const user = makeUser(ctx.authStore, 'seller@example.com').user;
+  const other = makeUser(ctx.authStore, 'keeper@example.com').user;
+
+  const mine = await seedProject({ projects, storage, userId: user.id, title: 'Mine' });
+  const theirs = await seedProject({ projects, storage, userId: other.id, title: 'Theirs' });
+
+  // Preconditions, so a test that silently seeds nothing cannot pass vacuously.
+  assert.equal(projects.listProjects(user.id).length, 1);
+  assert.equal(projects.listPhotos(mine.project.id).length, 1);
+  assert.equal(projects.listRenders(mine.project.id).length, 1);
+  assert.equal(projects.listBibles(mine.project.id).length, 1);
+
+  const res = deleteUser({ userId: user.id });
+  assert.equal(res.ok, true);
+
+  assert.equal(res.rows.projects, 1, 'the project row itself');
+  assert.equal(res.rows.project_photos, 1, 'its photo rows');
+  assert.equal(res.rows.renders, 1, 'its render rows');
+  assert.equal(res.rows.design_bibles, 1, 'its design bibles');
+  assert.equal(projects.getProject(mine.project.id), null);
+  assert.equal(projects.getPhoto(mine.photo.id), null);
+  assert.equal(projects.getRender(mine.render.id), null);
+  assert.equal(projects.getBible(mine.bible.id), null);
+
+  // Asserted FROM the coverage list, so adding a child table without erasing it fails
+  // here rather than shipping as a silent gap.
+  for (const { table, column } of PROJECT_CHILD_TABLES) {
+    const n = ctx.db.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE ${column} = ?`).get(mine.project.id).n;
+    assert.equal(n, 0, `${table} still holds rows for the erased project`);
+  }
+
+  // The other account is untouched — an erasure that truncated the tables would pass
+  // every assertion above.
+  assert.equal(projects.listProjects(other.id).length, 1, 'another user keeps their listing');
+  assert.ok(projects.getRender(theirs.render.id), 'and their renders');
+});
+
+test('the photo and render BYTES are removed from disk, not just their rows', async () => {
+  // The rows are the index; the images ARE the personal data. A row-only erasure would
+  // leave photographs of someone's home on disk with nothing left pointing at them.
+  const ctx = setup();
+  const { projects, storage, deleteUser, removed } = ctx;
+  const user = makeUser(ctx.authStore, 'seller@example.com').user;
+  const other = makeUser(ctx.authStore, 'keeper@example.com').user;
+  const mine = await seedProject({ projects, storage, userId: user.id, title: 'Mine' });
+  const theirs = await seedProject({ projects, storage, userId: other.id, title: 'Theirs' });
+
+  assert.ok(await storage.stat(mine.srcKey), 'precondition: the source photo is on disk');
+  assert.ok(await storage.stat(mine.outKey), 'precondition: the render is on disk');
+
+  const res = deleteUser({ userId: user.id });
+  assert.equal(res.ok, true);
+
+  assert.deepEqual(removed, [mine.project.id], 'exactly the erased account: no more, no fewer');
+  assert.deepEqual(res.projectFiles, [{ projectId: mine.project.id, removed: true }]);
+  assert.equal(await storage.stat(mine.srcKey), null, 'the source photo is gone from disk');
+  assert.equal(await storage.stat(mine.outKey), null, 'the render is gone from disk');
+  assert.ok(await storage.stat(theirs.srcKey), 'another user keeps their photos');
+  assert.ok(await storage.stat(theirs.outKey), 'and their renders');
+});
+
+test('a factory built without the removeProjectFiles seam reports the bytes as NOT removed', async () => {
+  // The dangerous outcome is a silent one: reporting a complete erasure while the images
+  // are still on disk. Without the seam every project must be listed as unremoved.
+  const ctx = setup();
+  const user = makeUser(ctx.authStore, 'seller@example.com').user;
+  const mine = await seedProject({ projects: ctx.projects, storage: ctx.storage, userId: user.id, title: 'Mine' });
+
+  const bare = createUserDeletion({ baseDir: ctx.dir, getDataLogDir: () => ctx.logDir });
+  const res = bare.deleteUser({ userId: user.id });
+  assert.equal(res.ok, true, 'the rows are still erased');
+  assert.deepEqual(res.projectFiles, [
+    { projectId: mine.project.id, removed: false, error: 'removeProjectFiles seam not wired' },
+  ]);
+  assert.ok(await ctx.storage.stat(mine.srcKey), 'and the caller is told the bytes remain');
+});
+
+test('a project directory that cannot be removed is reported, not thrown', async () => {
+  const ctx = setup();
+  const user = makeUser(ctx.authStore, 'seller@example.com').user;
+  const mine = await seedProject({ projects: ctx.projects, storage: ctx.storage, userId: user.id, title: 'Mine' });
+
+  const failing = createUserDeletion({
+    baseDir: ctx.dir,
+    getDataLogDir: () => ctx.logDir,
+    removeProjectFiles: () => { throw new Error('EBUSY'); },
+  });
+  const res = failing.deleteUser({ userId: user.id });
+  assert.equal(res.ok, true, 'the row erasure is not rolled back by a failed unlink');
+  assert.equal(res.projectFiles[0].removed, false);
+  assert.equal(res.projectFiles[0].projectId, mine.project.id);
+  assert.ok(res.projectFiles[0].error, 'the operator is told which directory to check');
+});
+
+test('an account with no projects reports an empty project-file list', async () => {
+  const ctx = setup();
+  const user = makeUser(ctx.authStore, 'nobody@example.com').user;
+  const res = ctx.deleteUser({ userId: user.id });
+  assert.equal(res.ok, true);
+  assert.deepEqual(res.projectFiles, []);
+  assert.equal(res.rows.projects, 0);
+  assert.deepEqual(ctx.removed, []);
 });
 
 // ---- drift guards ---------------------------------------------------------

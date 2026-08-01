@@ -67,10 +67,16 @@ test.describe('Home page — load smoke', () => {
     await roomSelect.locator('.select-trigger').click();
     await expect(menu).not.toHaveClass(/hidden/);
 
-    // No uncaught exceptions; no console errors beyond resource-load noise
-    // (e.g. an aborted media fetch logs "Failed to load resource").
+    // No uncaught exceptions; no console errors beyond two kinds of environmental noise.
+    //   * "Failed to load resource" — an aborted media/analytics fetch (stubAnalytics).
+    //   * "[GSI_LOGGER]: The given origin is not allowed for the given client ID." — Google
+    //     Sign-In refusing 127.0.0.1 on an EPHEMERAL port. A real OAuth client cannot
+    //     allowlist a port this suite picks per run, so this fires on every local e2e run and
+    //     says nothing about the page. It is filtered narrowly, by that exact sentence, so a
+    //     genuine GSI failure (a bad client id, a script that never loads) is still caught.
     expect(pageErrors).toEqual([]);
-    expect(consoleErrors.filter((t) => !/Failed to load resource/i.test(t))).toEqual([]);
+    const IGNORED = [/Failed to load resource/i, /GSI_LOGGER.*origin is not allowed/i];
+    expect(consoleErrors.filter((t) => !IGNORED.some((rx) => rx.test(t)))).toEqual([]);
   });
 
   test('the deferred Google Ads tag still initializes', async ({ page }) => {

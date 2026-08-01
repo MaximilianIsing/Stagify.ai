@@ -63,6 +63,36 @@ store factory. It began as the auth store, so the file is still named `auth-stor
     the sending site's own tracking params). The pre-existing `/columbia` link is seeded
     once behind a `meta` guard; without that guard, deleting it would resurrect it on the
     next boot. See [`admin-dashboard.md`](../guides/admin-dashboard.md#referrals-tab).
+  - **Listing Studio** ([`lib/data/projects.js`](../../lib/data/projects.js)) — `projects`
+    (one real-estate listing), `project_photos` (the uploaded frames, each with a room and
+    a `frame_role` of `hero`/`support`/`excluded`), `design_bibles` (the versioned per-room
+    description of the staged look) and `renders` (one row per photo × variation, and the
+    lease-based work queue itself, in
+    [`project-renders.js`](../../lib/data/project-renders.js)). The queue lives in the
+    **database rather than in memory** because it is the only thing that survives a restart
+    mid-listing; the rule that a support frame cannot be claimed before its room's bible
+    exists is a clause in the claim's single `UPDATE`, not JS around it.
+  - `project_shares` ([`lib/data/project-shares.js`](../../lib/data/project-shares.js)) —
+    the public client links into a listing. One row per link ever minted: minting rotates
+    the previous one out, and revoking sets `revoked_at` rather than deleting, so a broker
+    keeps the view count of the link they sent their seller in March. **Only the sha256
+    digest of the token is stored** (same `hashToken` as the session tables) — the
+    plaintext is returned once, at creation, and is unrecoverable afterwards. `user_id` is
+    denormalized onto the row on purpose: it is redundant with `projects.user_id`, and it
+    is what makes this table **visible to the erasure drift guard**, which finds user-keyed
+    tables by looking for exactly that column. The other three project children have no
+    such column and are therefore in that guard's blind spot, which is why they need
+    `PROJECT_CHILD_TABLES` and this one does not.
+  - `share_feedback` ([`lib/data/share-feedback.js`](../../lib/data/share-feedback.js)) —
+    seller sign-off coming back through a share link: `approved` / `changes` plus a note,
+    attached to the room it is about. **The only table an anonymous request can write FREE
+    TEXT to** (`referral_hits` is the only other anonymous write and stores no caller string
+    at all), so its ceilings live in the store rather than in the route — clamped note,
+    allowlisted verdict, and a per-share row cap enforced **inside the insert's transaction**,
+    because a limit that can be raced is not a limit. Rows are **append-only**: `latestByRoom`
+    reduces them, so the broker keeps the note explaining why a room was re-rendered after the
+    room is approved. `user_id` is the listing **owner's**, not the viewer's — nothing
+    identifies the viewer beyond an optional display name they typed.
   - `meta` — key/value bookkeeping (e.g. the one-time-import guards).
 - **Indexes** cover the lookups a table actually performs, not just its primary key:
   `users` by `email` / `google_sub` / both Stripe ids (in `auth-store.js`'s `SCHEMA`), and
@@ -112,7 +142,20 @@ read-only fallback — the app neither reads nor writes them anymore. Keep them 
 migration is confirmed good; they double as a rollback source.
 
 ## CSV logs (append-only)
+
 
+> **Every CSV here is bounded.** `prompt_logs.csv`, `chat_logs.csv` and `mask_logs.csv`
+> stop accepting new rows at `CSV_LOG_MAX_BYTES` (64 MB each, env-overridable) —
+> `bug_reports.csv` and `email_open_logs.csv` already had their own ceilings; these three
+> did not, and they share the volume with SQLite's WAL, so an unbounded log takes auth and
+> Stripe webhooks down with it. The Listing Studio made it urgent: one 30-photo listing at
+> three variations writes ~80 prompt rows where the single-photo stager wrote one.
+>
+> At the ceiling a log **stops growing** — it is never truncated and never rotated.
+> Truncation would drop history silently, and `prompt_logs.csv` is what seeds the public
+> "Rooms Staged" count at boot, so rewriting it would move a public number. A brand-new
+> file is always created regardless of the ceiling, and a stat failure fails OPEN: this
+> check must never be the reason a paid render goes unrecorded.
 Written by [`lib/services/logging.js`](../../lib/services/logging.js) (and the contact/bug handlers in
 [`routes/public.js`](../../routes/public.js)). Each is created with a header row on
 first write, then appended to. Exposed (read-only) through the `endpoint_key`-gated
@@ -156,10 +199,14 @@ the single place that knows the full set, run by
 `POST /api/admin/delete-user` — see [`endpoints.md`](endpoints.md).
 
 - **SQLite** — one transaction over `sessions`, `password_reset_tokens`, `memories`,
-  `users` (last), plus `pending_registrations` for the same address (it holds a scrypt
-  hash for an unverified signup). An address with *only* a pending registration can be
-  erased on its own; otherwise the whole thing rolls back on failure, so an account is
-  never half-erased.
+  `project_shares`, `share_feedback`, `projects` and their children (`renders`, `design_bibles`,
+  `project_photos`, via `PROJECT_CHILD_TABLES`), `users` (last), plus
+  `pending_registrations` for the same address (it holds a scrypt hash for an unverified
+  signup). An address with *only* a pending registration can be erased on its own;
+  otherwise the whole thing rolls back on failure, so an account is never half-erased.
+  **`project_shares` is erased first and by `user_id`**, because a surviving row there is
+  not a stray record — it is a live public URL to the erased person's home, and that is the
+  worst failure this path has.
 - **CSV logs** — the identifying cells (`email` / `userId` / `ipAddress` / `userAgent`)
   of that person's rows are replaced with `[erased]`; the rows themselves stay. That is
   deliberate: the public "Rooms Staged" counter is a **record count** over
@@ -186,6 +233,74 @@ User-hosted images (`POST /api/host-image`) are written under
 The uploader is capped at 25 MB and restricted to raster types (no SVG) — see
 [`security.md`](../guides/security.md).
 
+## Listing Studio images (`projects/`)
+
+> **Orphan blobs are reclaimed by a sweep, not by hope.** A listing delete removes rows first
+> and blobs second (deliberately), so a crash or a failed unlink between the two leaves files
+> nothing references. `POST /api/admin/blob-gc`
+> ([`project-blob-gc.js`](../../lib/data/project-blob-gc.js)) finds them by diffing the disk
+> against every `storage_key` in `project_photos` and `renders`. It is a **dry run unless
+> `?apply=1`**, and it refuses to touch anything younger than an hour — the worker writes a
+> render's blob before its row, so a fresh unreferenced file may be a live render, not garbage.
+
+The one place in the app where a **user's own** files are stored durably, and by far the
+largest thing on the disk:
+
+```
+<dataDir>/projects/<projectId>/src/<photoId>.<ext>   uploaded room photos
+<dataDir>/projects/<projectId>/out/<renderId>.<ext>  finished renders
+```
+
+Deliberately **not** in SQLite — but for a different reason than this section first claimed,
+and the correction matters because it changes where the disk actually goes.
+
+**Measured, not estimated.** A 30-photo listing at `variationCount: 3` produces **78** renders,
+not 90 (the queue enqueues one hero per *room* plus `variationCount` per *support* frame — not
+photos × variations), and each render lands at about **0.28 MB** after `upscaleForDelivery`,
+not "multi-MB". So the renders are the *small* half:
+
+| 30-photo listing, 3 variations, 6 rooms | bytes |
+|---|---|
+| source photographs, **as received** (30 × 2–6 MB) | ~120 MB |
+| source photographs, **as stored** (30 × ~0.35 MB) | **~10 MB** |
+| renders (78 × ~0.28 MB) | ~22 MB |
+| **total on disk** | **~32 MB** |
+
+**Sources used to be 82–85% of the footprint** — that measurement is what motivated
+downscaling them on upload, and it describes the volume BEFORE that landed. It no longer
+describes the volume today: once a source is capped at 1920×1080 the two rows are the same
+order of magnitude, and **renders are now the larger half**. A full-size 40-photo batch would
+otherwise have committed ~600 MB in a single request.
+
+> On the numbers: the render figure and the as-received range are measured. The **~0.35 MB
+> stored source is an ESTIMATE** — real room photography re-encodes to 91 KB at 900×600
+> (measured over the seven sample interiors in `public/media-webp/example/`), scaled by pixel
+> count to the 1920×1080 cap. Treat it as an order of magnitude, not a budget line. If you
+> need a real number, measure `<dataDir>/projects/*/src` on a live volume — or ask
+> `GET /api/admin/listing-health?storage=1`, which reports bytes per account. The one perverse case to know about: when `upscaleForDelivery`
+fails open to the model's native PNG, the stored file is ~1.6 MB — roughly 6× larger at a
+quarter of the delivered resolution.
+
+None of it belongs in a single-writer database that Litestream replicates row by row.
+The DB holds only the `storage_key`, and it is stored **relative and backend-agnostic**
+(`projects/<id>/out/<id>.webp`) so moving to S3/R2 is one adapter in
+[`project-storage.js`](../../lib/data/project-storage.js) rather than a data migration.
+
+Two things to know:
+
+- **The key validator is a security boundary, not tidiness.** These keys end up resolved
+  against the filesystem and served over HTTP (`GET /api/projects/:id/renders/:rid/image`),
+  so `isSafeStorageKey` enforces a strict hex-only shape *and* `absolutePathFor` re-checks
+  containment within the projects root. Both, on purpose.
+- **This is the storage-growth trigger.** Render's disk is finite and Litestream backs up
+  the DB only — not the CSVs, not `hosted-images/`, and not this. Listings are the first
+  feature whose bytes grow per customer per shoot, so this is the thing to watch before it
+  becomes the reason to adopt object storage.
+
+Erasure: a user's project directories are **removed outright** when their account is
+erased (see [Erasing one person's data](#erasing-one-persons-data)). The rows are the
+index; the images are the personal data.
+
 ## Caveats (design consequences)
 
 These follow directly from "one SQLite file + flat logs on one disk," and you must
@@ -198,6 +313,11 @@ design around them:
 - **Structured state is now transactional.** Accounts, sessions, enterprise domains,
   memories, and uptime all live in `auth-store.db` with WAL + transactions — atomic,
   per-row writes, no whole-file rewrite.
+- **The listing render queue inherits the single-instance limit.** `renders` rows are the
+  queue and `lib/staging/listing-worker.js` leases one at a time, so throughput is one
+  render per instance — and a second instance would not double it, it would corrupt the
+  database. The upside of putting the queue in SQLite is that all progress is durable: a
+  restart mid-listing resumes, and a lease abandoned by a killed process is reclaimed.
 - **The database is backed up off-disk.** In production, [Litestream](https://litestream.io)
   continuously replicates `auth-store.db` to Cloudflare R2 (config in `litestream.yml`,
   run by `scripts/start.sh`) and restores it on boot if the disk is lost — so a disk

@@ -148,6 +148,17 @@ HIDE_STAGING_BANNER=false
 # and appends to the same volume as the SQLite DB, so past this size it answers 503
 # instead of growing the file. Default 33554432 (32 MB); rotate the CSV to clear it.
 # BUG_REPORT_LOG_MAX_BYTES=33554432
+# Size ceiling (bytes) for EACH of data/prompt_logs.csv, chat_logs.csv and mask_logs.csv.
+# They share the volume with SQLite's WAL, so an unbounded log takes auth and Stripe
+# webhooks down with it — and one 30-photo listing at three variations writes ~80 prompt
+# rows. At the ceiling a log STOPS GROWING; it is never truncated or rotated (prompt_logs
+# seeds the public "Rooms Staged" count). Default 67108864 (64 MB); archive to clear.
+# CSV_LOG_MAX_BYTES=67108864
+# Overrides where durable state lives, for TESTS ONLY. The eight suites that spawn a real
+# server.js each point at their own temp dir with this, so they neither share one SQLite
+# file (which intermittently killed a boot with 'disk I/O error') nor write to your real
+# database. Checked AFTER the Render disk, so a deploy can never take it. Leave unset.
+# STAGIFY_DATA_DIR=
 
 # --- Platform (set automatically — do not set these yourself) ---
 # RENDER is set by Render; the app reads it to use the /data persistent disk.

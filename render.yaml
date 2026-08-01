@@ -10,5 +10,27 @@ services:
     disk:
       name: stagify-data
       mountPath: /data
-      sizeGB: 1
+      # 1 GB was sized for the SQLite file plus CSV logs — kilobytes and megabytes. The
+      # Listing Studio changed the shape of this volume: it stores customers' own property
+      # photographs, which WERE 82–85% of its footprint (measured: renders land at ~0.28 MB
+      # after the delivery upscale, sources at 2–6 MB each). At 1 GB a single 40-photo
+      # upload could commit over half the disk and 5–11 listings filled it.
+      #
+      # That mattered beyond the feature: SQLite's WAL lives on this same volume and needs
+      # room to commit, so a full disk took auth, sessions and Stripe webhooks down with the
+      # renders — the blast radius was the whole app.
+      #
+      # Raised with headroom, but the size is the backstop, not the fix. Two of the real
+      # controls now exist: source photos are downscaled to 1920x1080 on upload — which is
+      # also why that 82–85% share is now HISTORY rather than a description of the volume;
+      # see docs/reference/data-stores.md for the corrected table
+      # (routes/projects.js — processStaging downscales to the same bound anyway, so the
+      # full-size copy was never seen by the model), and the orphan sweep reclaims
+      # unreferenced blobs (POST /api/admin/blob-gc, lib/data/project-blob-gc.js).
+      #
+      # STILL MISSING: a per-account storage cap. Nothing stops one account committing the
+      # whole volume, and the blast radius is every other customer plus auth and Stripe.
+      # This comment claimed all three existed while none did; do not re-add the claim
+      # ahead of the code. See docs/reference/data-stores.md.
+      sizeGB: 20
     autoDeploy: false

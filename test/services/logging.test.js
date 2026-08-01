@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createLogging } from '../../lib/services/logging.js';
+import { createLogging, csvLogMaxBytes, CSV_LOG_MAX_BYTES } from '../../lib/services/logging.js';
 
 const tmps = [];
 function tmpDir() {
@@ -260,4 +260,102 @@ test('logChatToFile: no files → empty name/type columns, and a second call app
   const cells = l[1].split(',');
   assert.equal(cells[4], '', 'no files → empty fileNames');
   assert.equal(cells[5], '', 'no files → empty fileTypes');
+});
+
+// ── The absolute byte ceiling ────────────────────────────────────────────────
+// These three CSVs are append-only and were the only writers on the volume with no
+// bound at all — `bug_reports.csv` and `email_open_logs.csv` both got one years ago.
+// It matters more since the Listing Studio: one 30-photo listing at three variations
+// writes ~80 prompt rows where the single-photo stager wrote one. The volume also
+// holds SQLite's WAL, so an unbounded log takes auth and Stripe webhooks down with it.
+
+test('a log at its ceiling stops GROWING, and is never truncated or rotated', async () => {
+  // Truncation would silently drop history, and prompt_logs.csv is what seeds the public
+  // "Rooms Staged" count at boot — rewriting it would move a public number. Refusing to
+  // grow is the honest failure.
+  const { logging, dataDir } = freshLogging();
+  const file = path.join(dataDir, 'prompt_logs.csv');
+
+  logging.logPromptToFile('p', 'Living room', 'modern', '', false, 'pro', 'x', 'a@b.co', null);
+  await waitForLineCount(file, 2);
+  const before = readCsv(file);
+
+  process.env.CSV_LOG_MAX_BYTES = String(before.length);
+  try {
+    logging.logPromptToFile('p2', 'Bedroom', 'modern', '', false, 'pro', 'x', 'a@b.co', null);
+    // The refusal is synchronous, but give a real append the same chance to land.
+    await new Promise((r) => setTimeout(r, 60));
+    assert.equal(readCsv(file), before, 'the file is byte-identical — nothing added, nothing lost');
+  } finally {
+    delete process.env.CSV_LOG_MAX_BYTES;
+  }
+
+  // …and it resumes the moment the ceiling is raised again.
+  logging.logPromptToFile('p3', 'Kitchen', 'modern', '', false, 'pro', 'x', 'a@b.co', null);
+  await waitForLineCount(file, 3);
+  assert.equal(lines(file).length, 3);
+});
+
+test('the ceiling never stops a log from being CREATED', async () => {
+  // A new file is 0 bytes, so any ceiling is already "reached" by a naive check placed
+  // around the whole writer. That would mean logging never starts at all.
+  const { logging, dataDir } = freshLogging();
+  process.env.CSV_LOG_MAX_BYTES = '1';
+  try {
+    logging.logPromptToFile('p', 'Living room', 'modern', '', false, 'pro', 'x', 'a@b.co', null);
+    logging.logChatToFile('u1', 'hello', 'hi', [], '1.2.3.4', 'UA');
+    logging.logMaskEditToFile('prompt', 'm', 'gm', 10, 10, 'u1', null);
+    await waitForLineCount(path.join(dataDir, 'prompt_logs.csv'), 2);
+    assert.equal(lines(path.join(dataDir, 'prompt_logs.csv')).length, 2, 'header + the first row');
+    assert.equal(fs.existsSync(path.join(dataDir, 'chat_logs.csv')), true);
+    assert.equal(fs.existsSync(path.join(dataDir, 'mask_logs.csv')), true);
+  } finally {
+    delete process.env.CSV_LOG_MAX_BYTES;
+  }
+});
+
+test('all THREE logs are bounded, not just the prompt log', async () => {
+  // chat_logs.csv carries whole user messages and model replies, so it grows fastest of
+  // the three; covering only the prompt log would leave the worst offender unbounded.
+  const { logging, dataDir } = freshLogging();
+  const files = {
+    prompt: path.join(dataDir, 'prompt_logs.csv'),
+    chat: path.join(dataDir, 'chat_logs.csv'),
+    mask: path.join(dataDir, 'mask_logs.csv'),
+  };
+  logging.logPromptToFile('p', 'Living room', 'modern', '', false, 'pro', 'x', 'a@b.co', null);
+  logging.logChatToFile('u1', 'hello', 'hi', [], '1.2.3.4', 'UA');
+  logging.logMaskEditToFile('prompt', 'm', 'gm', 10, 10, 'u1', null);
+  for (const f of Object.values(files)) await waitForLineCount(f, 2);
+  const before = Object.fromEntries(Object.entries(files).map(([k, f]) => [k, readCsv(f)]));
+
+  process.env.CSV_LOG_MAX_BYTES = '1';
+  try {
+    logging.logPromptToFile('p2', 'Bedroom', 'modern', '', false, 'pro', 'x', 'a@b.co', null);
+    logging.logChatToFile('u1', 'again', 'hi', [], '1.2.3.4', 'UA');
+    logging.logMaskEditToFile('again', 'm', 'gm', 10, 10, 'u1', null);
+    await new Promise((r) => setTimeout(r, 60));
+    for (const [name, f] of Object.entries(files)) {
+      assert.equal(readCsv(f), before[name], `${name} must not have grown past its ceiling`);
+    }
+  } finally {
+    delete process.env.CSV_LOG_MAX_BYTES;
+  }
+});
+
+test('a nonsense CSV_LOG_MAX_BYTES falls back to the constant, never to unbounded', async () => {
+  const { logging, dataDir } = freshLogging();
+  const file = path.join(dataDir, 'prompt_logs.csv');
+  for (const bad of ['0', '-5', 'lots', '']) {
+    process.env.CSV_LOG_MAX_BYTES = bad;
+    try {
+      assert.equal(csvLogMaxBytes(), CSV_LOG_MAX_BYTES, `"${bad}" must fall back`);
+    } finally {
+      delete process.env.CSV_LOG_MAX_BYTES;
+    }
+  }
+  // …and with the default in force, writing still works.
+  logging.logPromptToFile('p', 'Living room', 'modern', '', false, 'pro', 'x', 'a@b.co', null);
+  await waitForLineCount(file, 2);
+  assert.equal(lines(file).length, 2);
 });

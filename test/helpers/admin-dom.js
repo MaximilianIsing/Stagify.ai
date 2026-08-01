@@ -35,7 +35,6 @@ export function makeEl(tag) {
     tagName: tag,
     id: '',
     className: '',
-    textContent: '',
     disabled: false,
     value: '',
     files: /** @type {any} */ (null),
@@ -65,6 +64,22 @@ export function makeEl(tag) {
     set: (v) => { html = String(v); node.children.length = 0; },
   });
   node.classList = makeClassList(node);
+  // Setting `textContent` DETACHES a node's children in a real browser, and redraw code
+  // across the app relies on exactly that to clear a container. Modelled as an accessor
+  // rather than a plain property: as a plain property the old children stayed attached,
+  // so a harness silently accumulated two draws and any "how many did it render" count
+  // measured both at once (found while driving the Listing Studio's grid).
+  let text = '';
+  Object.defineProperty(node, 'textContent', {
+    get: () => text,
+    set: (value) => {
+      text = value === null || value === undefined ? '' : String(value);
+      node.children.length = 0;
+    },
+    enumerable: true,
+    configurable: true,
+  });
+
   return node;
 }
 

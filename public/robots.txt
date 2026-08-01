@@ -11,6 +11,20 @@ Disallow: /getpro
 Disallow: /getpro.html
 Disallow: /plus-welcome.html
 
+# Listing Studio — a signed-in Stagify+ workspace, noindex. Deliberately kept out of
+# the localized page set too (no hreflang cluster, no language pack), which is why it
+# is English-only and absent from the sitemap.
+Disallow: /projects.html
+
+# Client share links (/s/<token>) are NOT listed here, on purpose. They must stay out of
+# search — a seller's home appearing in Google because someone forwarded the link is the
+# worst outcome this feature has — but a `Disallow` is the WRONG tool for it: a blocked URL
+# can still be indexed URL-only from an inbound link, and blocking the fetch is precisely
+# what stops a crawler ever reading the directive that would have excluded it. The share
+# routes therefore serve `X-Robots-Tag: noindex, nofollow` (routes/share-public.js) plus the
+# same meta on the page, which requires the crawl to work. Do NOT "tidy this up" by adding
+# `Disallow: /s/`; it would weaken the exclusion, not strengthen it.
+
 # Internal legal (noindex on page; keep out of crawl budget)
 Disallow: /legal/
 

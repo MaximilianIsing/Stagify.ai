@@ -233,11 +233,12 @@ sign-in → staging hand-off could sit **dead** in all three sign-in paths. The 
 half now has its own spec, driven with `stubAnonymousAuth(page)` — the mirror of
 `seedProSession` that mocks the auth endpoints but seeds **no** token.
 
-What's covered today (all green — 79 tests across 23 specs):
+What's covered today (all green — 173 tests across 24 specs, 11 skipped):
 
 | Spec | Covers |
 |---|---|
-| `index.spec.js` | Home page load smoke — hero stats, the custom select, and the before/after controls. |
+| `index.spec.js` | Home page load smoke — hero stats, the custom select, and the before/after controls. Two console messages are filtered as environmental: an aborted resource fetch, and `[GSI_LOGGER]: … origin is not allowed …` (Google Sign-In refusing 127.0.0.1 on the ephemeral port this suite picks per run — a real OAuth client cannot allowlist it). Both are matched by exact sentence so a genuine failure still fails. |
+| `listing-share.spec.js` | **The client share gallery** (`/s/<token>`) — the only surface a person without an account ever sees, and the only one nobody will report a bug on. Covers the mobile layout at 375 with no horizontal scroll, the **disclosure** being on the page, the before/after divider working by **keyboard** (not just drag), the lightbox opening/navigating and returning focus to its opener, the single indistinguishable "no longer available" state, the seller sign-off reaching the API, generic-only OG tags, and **zero CSP violations or console errors** — the last being why a fake-document unit test cannot replace this. Note the PAIRED privacy specs: "with before/after off the original is never requested" is only evidence alongside "with it on, it is" — otherwise a broken *before* layer reads as a privacy win. Mutation-tested against the real frontend (blanking the disclosure, stripping the `og:` tags). |
 | `i18n-observer-reentrancy.spec.js` | The i18n `MutationObserver` does not feed itself. Serves a doctored English pack whose `[data-lang-html]` value nests a `[data-lang]` span — the edit a translator could make — then inserts a translated node to kick the observer, and asserts the pass stays bounded. The **only** test that can prove this: the unit guard can scan for `takeRecords()` but not that draining stops the feedback, which needs a real DOM and a real observer. An init script wraps the `innerHTML` setter as a **circuit breaker** — after 400 writes it stops writing, so a runaway unwinds itself and fails as a clean assertion in ~6s instead of hanging the tab until the 45s timeout. Mutation-tested: deleting the drain fails it. |
 | `stage-signin-entry.spec.js` | Main tool — the **signed-out entry path**, which is the app's highest-value flow and was the one thing no browser test touched: click "Upload image for free" → the auth modal (create-account mode), **not** the uploader → sign in → the stage dialog opens with the visitor's intent intact → upload and stage from it. Covers both callers of `completeSignIn()` (password login and register + emailed code), a rejected sign-in as the negative control, and the signed-in branch of the same gate. Mutation-tested against the real regression: reading `__stagifyPendingStaging` *after* `closeAuthModal()` clears it — the shape the bug had until 2026-07-28 — leaves the dialog shut and fails these. |
 | `stage-reject.spec.js` | Main tool — a rejected upload surfaces the **localized** reason in the stage modal's error viewer before any generation is spent, plus an approved-upload negative control. The masking studio's reject path is a different consumer, hence the separate spec below. |
@@ -357,6 +358,37 @@ excluding vendored bundles). The assertion is set equality, so it fails three wa
 
 Adding an entry is allowed; it's meant to be a visible, reviewable act rather than a silent
 omission. The ledger is the thing that ratchets frontend coverage — the percentage floors can't.
+
+## Why `npm test` caps concurrency
+
+`npm test` runs `node --test --test-concurrency=4`, not the default (one worker per CPU).
+That flag is there for reliability, and it was measured, not guessed.
+
+At the default, the suite failed **5 runs out of 20** — a different unrelated file each time
+(`smoke`, `admin-route`, `stripe-webhooks`, `upload-limits`, `auth`), always with a
+connection-level `TypeError: fetch failed` or a spawned server reporting
+`SqliteError: disk I/O error` from `applyPragmas` before it ever listened. Every one of those
+files passes on its own. **`npm test` gates the Render deploy** (see `render.yaml`), so a 25%
+spurious failure rate is a quarter of deploys blocked for no reason.
+
+The cause is contention, not a bug in any test: **17 test files call `app.listen(0)` and 8
+more spawn a whole `server.js`** (better-sqlite3 + sharp + Stripe each). Measured, same
+suite, same machine:
+
+| `--test-concurrency` | failing runs | wall clock |
+|---|---|---|
+| default (CPU count) | **5 / 20** | ~8s |
+| 4 | **0 / 20** | ~23s |
+| 1 (serial) | 0 / 7 | ~90s |
+
+Four is the knee: it buys the reliability of serial for a quarter of the cost. Fifteen extra
+seconds on a deploy gate is a good trade for not blocking one deploy in four.
+
+Two honest caveats. 0/20 is not proof of zero — it bounds the rate low, it does not zero it.
+And this was all measured on **Windows**; Render's CI is Linux and may never have been
+affected. The flag costs little there either way.
+
+Do NOT "optimise" this back to the default without re-running the comparison above.
 
 ## Continuous integration
 

@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js.
+         `defer`, and first, exactly as every other page does it (see
+         test/frontend/head-scripts.test.js for why it must be defer and not async). -->
+    <script src="scripts/gtag.js" defer></script>
+
+    <!-- INTERNAL TOOL. noindex/nofollow, and deliberately NOT part of the i18n page
+         set: no canonical, no hreflang cluster, not in sitemap.xml, no data-lang
+         attributes and no language pack entries. That keeps scripts/build-i18n-seo.js
+         and its drift tests out of this page entirely. English-only for v1. -->
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>Listing Studio | Stagify.ai</title>
+    <meta name="description" content="Internal Stagify+ tool: stage a whole listing at once — batch-upload a shoot, correct the room clustering, and render every room against one consistent look.">
+    <meta name="theme-color" content="#2563eb">
+
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
+    <link rel="manifest" href="manifest.json">
+
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/toast.css">
+    <link rel="stylesheet" href="styles/projects.css">
+
+    <!-- auth.js installs window.StagifyAuth, which the access gate in
+         scripts/projects-app.js needs. Module scripts run in document order, so the
+         global is in place before the entry runs. There is NO render-blocking gate
+         script here on purpose: projects.css hides #pj-root until <html> gains
+         `pj-ready`, so the gated state is the default and JS opens it. -->
+    <script type="module" src="scripts/auth.js"></script>
+
+    <!-- heic-convert.js installs window.StagifyHeic. HEIC is the DEFAULT iPhone export, so
+         a shoot handed straight off a phone is HEIC — the tray converts the first few for
+         the operator instead of rejecting them with a message that named three formats and
+         omitted theirs. The ~1.3MB decoder itself is fetched lazily, only when a HEIC file
+         is actually picked, so this costs one small module on load. -->
+    <script type="module" src="scripts/heic-convert.js"></script>
+
+    <!-- The page itself is English-only (no data-lang anywhere, not in the i18n page set).
+         This is here for ONE reason: the unstageable rejection sentences already exist under
+         `errors.unstageable.*` in all 11 packs, and scripts/unstageable-message.js reads them
+         off window.LanguageSystem. Without the loader the tray falls back to the generic
+         English sentence for every category. No new keys are added, and with no [data-lang]
+         nodes on the page the loader's apply pass is a no-op. -->
+    <script type="module" src="scripts/language-loader.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav">
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong">Stagify</span><span class="brand-light">.ai</span></a>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="masking-studio.html" class="nav-link">Masking Studio</a>
+          <a href="ai-designer.html" class="nav-link">AI Designer</a>
+        </div>
+        <div class="nav-trailing"></div>
+      </nav>
+    </header>
+
+    <!-- DESKTOP ONLY, and enforced in CSS rather than JS so it holds before first paint and
+         cannot be defeated by a stalled script. The Listing Studio is a bulk workstation
+         tool: it puts a 40-thumbnail tray, a per-photo room/hero editor and a multi-room
+         results grid side by side, and every one of those is a comparison task that needs
+         the frames visible together. Shrunk to a phone it becomes a single column of
+         thumbnails an agent would have to scroll for several minutes per listing, which is
+         worse than honestly refusing. The other two studios stay mobile-friendly; this one
+         does not pretend. -->
+    <section id="pj-too-narrow" class="pj-too-narrow">
+      <h2>Listing Studio needs a desktop</h2>
+      <p>This tool lays out your whole shoot at once — the photo tray, the room grouping and every rendered frame side by side — so it needs a wide screen to be usable.</p>
+      <p class="pj-too-narrow__hint">Open <strong>stagify.ai/projects.html</strong> on a laptop or desktop to stage a listing. The single-photo stager and the Masking Studio both work fine on this device.</p>
+      <div class="pj-too-narrow__actions">
+        <a href="index.html" class="btn btn-primary btn-lg"><strong>Stage a single photo</strong></a>
+        <a href="masking-studio.html" class="btn btn-ghost btn-lg"><strong>Masking Studio</strong></a>
+      </div>
+    </section>
+
+    <!-- Shown until the plan check finishes. #pj-root stays hidden behind it, so a
+         stalled or failed check reveals nothing rather than everything. -->
+    <p id="pj-checking" class="pj-checking" role="status">Checking your Stagify+ access…</p>
+
+    <!-- Signed-in, but not on Stagify+. -->
+    <div id="pj-gate" class="pj-modal" role="dialog" aria-modal="true" aria-labelledby="pj-gate-title" aria-hidden="true">
+      <div class="pj-modal__card">
+        <h2 id="pj-gate-title">Listing Studio is a Stagify+ feature</h2>
+        <p>Stage an entire listing in one pass: batch-upload the shoot, let the rooms cluster themselves, then render every frame of every room against one consistent look.</p>
+        <div class="pj-modal__actions">
+          <a href="stagify-plus.html" class="btn btn-primary btn-lg"><strong>View Stagify+</strong></a>
+          <a href="index.html" class="btn btn-ghost btn-lg"><strong>Back to Home</strong></a>
+        </div>
+      </div>
+    </div>
+
+    <main id="pj-root" class="pj-root">
+      <div class="pj-intro">
+        <h1>Listing Studio</h1>
+        <p class="pj-lede">Upload a whole shoot, correct the room grouping if the clustering guessed wrong, and stage every room against one look bible so the frames match each other.</p>
+      </div>
+
+      <div class="pj-layout">
+        <!-- 1. Listings -->
+        <section class="pj-panel" aria-labelledby="pj-listings-title">
+          <h2 id="pj-listings-title">Listings</h2>
+          <div class="pj-form">
+            <label class="pj-field" for="pj-title">Title
+              <input type="text" id="pj-title" name="title" autocomplete="off" maxlength="120" placeholder="14 Rosedale Ave">
+            </label>
+            <!-- maxlength MUST match MAX_ADDRESS in routes/projects.js (200). It said 240,
+                 so 40 characters of a long address were accepted here and then silently
+                 clamped away by the server — the operator saw their own typing disappear
+                 on the next read with no message. -->
+            <label class="pj-field" for="pj-address">Address
+              <input type="text" id="pj-address" name="address" autocomplete="off" maxlength="200" placeholder="14 Rosedale Ave, Toronto ON">
+            </label>
+            <button type="button" id="pj-create" class="btn btn-primary"><strong>Create listing</strong></button>
+          </div>
+          <ul id="pj-project-list" class="pj-picker" aria-label="Your listings"></ul>
+        </section>
+
+        <!-- The open listing -->
+        <section class="pj-panel pj-panel--open" aria-labelledby="pj-open-title">
+          <div class="pj-open__head">
+            <div>
+              <h2 id="pj-open-title">No listing open</h2>
+              <p id="pj-open-address" class="pj-open__address"></p>
+            </div>
+            <div class="pj-open__meta">
+              <span id="pj-open-status" class="pj-chip"></span>
+              <button type="button" id="pj-delete" class="btn btn-ghost" disabled><strong>Delete listing</strong></button>
+            </div>
+          </div>
+
+          <!-- 2. Photo tray -->
+          <h3 id="pj-tray-title">Photos</h3>
+          <div id="pj-dropzone" class="pj-dropzone" role="button" tabindex="0" aria-label="Add photos — click, or drop files here">
+            <span class="pj-dropzone__text">Drop up to 40 photos here, or click to choose them</span>
+            <!-- The limits line is REWRITTEN from the constants in scripts/projects/intake.js
+                 on mount (`dropzoneHint`), because this markup advertised 25MB while the
+                 server was configured at 15 and nothing caught it. Treat the text below as a
+                 no-JS placeholder, not the source of truth. -->
+            <span id="pj-dropzone-hint" class="pj-dropzone__sub">JPEG, PNG or WebP · HEIC converted for you</span>
+          </div>
+          <input type="file" id="pj-file-input" class="sr-only" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple tabindex="-1" aria-hidden="true">
+          <div id="pj-upload-progress" class="pj-progress hidden" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="pj-upload-bar" class="pj-progress__bar"></div>
+          </div>
+          <p id="pj-tray-status" class="pj-hint" aria-live="polite">No photos yet.</p>
+          <!-- Multi-select actions. Hidden until something is selected; scripts/projects/bulk-bar.js owns it. -->
+          <div id="pj-bulk" class="pj-bulk hidden" role="group" aria-label="Actions for the selected photos"></div>
+          <ul id="pj-tray" class="pj-tray" aria-labelledby="pj-tray-title"></ul>
+
+          <!-- 3. Stage controls -->
+          <h3 id="pj-stage-title">Stage this listing</h3>
+          <div class="pj-form pj-form--stage" aria-labelledby="pj-stage-title">
+            <!-- EVERY `value` BELOW IS A `promptMatrix` KEY, VERBATIM (lib/staging/promptMatrix.js).
+                 The server resolves the prompt as `promptMatrix[roomType]?.[furnitureStyle]`,
+                 case-sensitively, and falls back to a generic sentence with no warning — so
+                 four of the nine options this select used to carry ('mid-century modern',
+                 'traditional', 'industrial', 'minimalist') silently degraded the entire
+                 listing to 'standard'. The canonical list is FURNITURE_STYLES in
+                 scripts/projects/vocab.js and a test compares the two. Change both. -->
+            <label class="pj-field" for="pj-style">Furniture style
+              <select id="pj-style">
+                <option value="standard">Standard (broad appeal)</option>
+                <option value="modern" selected>Modern</option>
+                <option value="midcentury">Mid-century modern</option>
+                <option value="scandinavian">Scandinavian</option>
+                <option value="luxury">Luxury</option>
+                <option value="coastal">Coastal</option>
+                <option value="farmhouse">Farmhouse</option>
+                <option value="custom">Custom — follow my instructions below</option>
+              </select>
+            </label>
+            <label class="pj-field" for="pj-variations">Variations per frame
+              <select id="pj-variations">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </label>
+            <label class="pj-check" for="pj-remove-furniture">
+              <input type="checkbox" id="pj-remove-furniture">
+              <span>Remove existing furniture first</span>
+            </label>
+            <!-- /stage has accepted and persisted `additionalPrompt` since it was written; the
+                 Listing Studio simply had no input for it, so it had no free-text control at
+                 all. 500 matches the route's clamp. -->
+            <label class="pj-field pj-field--wide" for="pj-extra">Additional instructions <span class="pj-field__note">(optional, 500 characters)</span>
+              <textarea id="pj-extra" rows="2" maxlength="500" placeholder="e.g. keep the artwork off the chimney breast; no rugs on the hardwood"></textarea>
+            </label>
+            <div class="pj-stage__actions">
+              <button type="button" id="pj-stage" class="btn btn-primary btn-lg" disabled><strong>Stage this listing</strong></button>
+              <button type="button" id="pj-cancel" class="btn btn-ghost btn-lg hidden"><strong>Cancel staging</strong></button>
+            </div>
+          </div>
+
+          <!-- 4. Progress -->
+          <div id="pj-progress" class="pj-progress hidden" role="progressbar" aria-label="Staging progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="pj-progress-bar" class="pj-progress__bar"></div>
+          </div>
+          <!-- NOT a live region. It is rewritten with the full counts every 2.5s, and with
+               aria-live on it a screen-reader user heard those counts read out continuously
+               for the whole 45-minute-to-two-hour run. The throttled announcements go to
+               #pj-progress-live below, which only speaks on real transitions
+               (`progressAnnouncement` in scripts/projects/summaries.js). -->
+          <p id="pj-progress-text" class="pj-hint"></p>
+          <p id="pj-blocked" class="pj-warning pj-warning--loud hidden" role="status"></p>
+          <p id="pj-progress-live" class="sr-only" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+
+      <!-- 5. Results, grouped by room -->
+      <section class="pj-results" aria-labelledby="pj-results-title">
+        <div class="pj-results__head">
+          <h2 id="pj-results-title">Results by room</h2>
+          <!-- The way the images get out. A render is served behind a bearer token, so it
+               cannot be an <a href> — the button fetches the zip with the header and saves
+               the blob. See scripts/projects/download.js. -->
+          <button type="button" id="pj-download-all" class="btn btn-secondary" disabled><strong>Download all</strong></button>
+        </div>
+        <div id="pj-grid" class="pj-grid"></div>
+      </section>
+
+      <!-- 6. Share with your client.
+           THE ADDRESS IS SHOWN ONCE AND ONLY ONCE. The link's token is hashed at rest
+           exactly like a password (lib/data/project-shares.js keeps only its digest), so
+           the plaintext URL exists solely in the POST response. #pj-share-url is filled
+           from memory right after minting and is EMPTY after a reload — at which point the
+           status line says so and offers a rotation instead. Nothing here may cache the
+           URL in storage or rebuild it from the share id; see scripts/projects/share-panel.js. -->
+      <section id="pj-share" class="pj-share" aria-labelledby="pj-share-title">
+        <div class="pj-share__head">
+          <h2 id="pj-share-title">Share with your client</h2>
+          <div class="pj-share__actions">
+            <!-- The label flips to "Create new link" once one is live, because the same
+                 button rotates it (and that rotation confirms first). The <strong> carries
+                 the id so the rewrite cannot drop the emphasis every other button has. -->
+            <button type="button" id="pj-share-create" class="btn btn-primary" disabled><strong id="pj-share-create-label">Create client link</strong></button>
+            <button type="button" id="pj-share-revoke" class="btn btn-ghost" disabled><strong>Revoke link</strong></button>
+          </div>
+        </div>
+        <p class="pj-hint">Anyone holding the link sees this listing's staged frames grouped by room — no sign-in, and nothing else from your account. The page carries the virtual-staging disclosure that marketing material is required to show.</p>
+
+        <p id="pj-share-status" class="pj-share__status" role="status">No client link yet.</p>
+        <p id="pj-share-meta" class="pj-hint"></p>
+
+        <!-- Readonly, and a real input rather than a <code> block: when the clipboard API is
+             unavailable (it is undefined on an insecure origin) or rejects, the fallback is
+             to select the text here so Ctrl/Cmd+C still works. -->
+        <div id="pj-share-url-row" class="pj-share__url hidden">
+          <label class="sr-only" for="pj-share-url">Client link</label>
+          <input type="text" id="pj-share-url" class="pj-share__url-input" readonly spellcheck="false" value="">
+          <button type="button" id="pj-share-copy" class="btn btn-secondary"><strong>Copy link</strong></button>
+        </div>
+
+        <p id="pj-share-error" class="pj-warning hidden" role="status"></p>
+        <p id="pj-share-live" class="sr-only" role="status" aria-live="polite"></p>
+
+        <h3 id="pj-share-settings-title">What the client sees</h3>
+        <div class="pj-form pj-form--share" aria-labelledby="pj-share-settings-title">
+          <label class="pj-check" for="pj-share-before">
+            <input type="checkbox" id="pj-share-before" checked>
+            <span>Show the original photo beside each staged frame</span>
+          </label>
+          <label class="pj-field pj-field--wide" for="pj-share-headline">Headline <span class="pj-field__note">(optional — replaces the listing title)</span>
+            <input type="text" id="pj-share-headline" maxlength="120" autocomplete="off" placeholder="Newly staged — 14 Rosedale Ave">
+          </label>
+          <label class="pj-field pj-field--wide" for="pj-share-note">Note to your client <span class="pj-field__note">(optional)</span>
+            <textarea id="pj-share-note" rows="2" maxlength="600" placeholder="e.g. Here's how the place looks furnished — happy to walk you through it this week."></textarea>
+          </label>
+          <label class="pj-field" for="pj-share-agent-name">Your name
+            <input type="text" id="pj-share-agent-name" maxlength="120" autocomplete="name">
+          </label>
+          <label class="pj-field" for="pj-share-agent-email">Your email
+            <input type="email" id="pj-share-agent-email" maxlength="200" autocomplete="email">
+          </label>
+          <label class="pj-field" for="pj-share-agent-phone">Your phone
+            <input type="tel" id="pj-share-agent-phone" maxlength="40" autocomplete="tel">
+          </label>
+          <!-- The window is counted from the SAVE, not from when the link was minted, and the
+               label says so. Re-opening the panel reads the choice back off the share's own
+               span (see `expirySelectValue`), so it shows the decision that was made rather
+               than a countdown that lands in a different bucket every day. -->
+          <label class="pj-field" for="pj-share-expiry">Link expires <span class="pj-field__note">(counted from when you save)</span>
+            <select id="pj-share-expiry">
+              <option value="" selected>Never</option>
+              <option value="7">In 7 days</option>
+              <option value="30">In 30 days</option>
+              <option value="90">In 90 days</option>
+            </select>
+          </label>
+          <div class="pj-share__save">
+            <button type="button" id="pj-share-save" class="btn btn-secondary" disabled><strong>Save share settings</strong></button>
+          </div>
+        </div>
+
+        <!-- WHAT CAME BACK. The seller marks each room approved or needs-changes with a note
+             on the shared page; this is the broker's end of that, so the sign-off stops
+             living in a text message.
+             The rows are APPEND-ONLY, so what is listed is the CURRENT position per room —
+             the newest response for each — rather than the whole history, and a response
+             about the WHOLE LISTING (roomKey null) is labelled distinctly from a room's.
+             Everything inside #pj-feedback-list is built by JS with createElement +
+             textContent: the note and the name are a stranger's text, and there is no
+             HTML-string sink in scripts/projects/share-feedback.js. -->
+        <section id="pj-feedback" class="pj-feedback" aria-labelledby="pj-feedback-title">
+          <h3 id="pj-feedback-title">What your client sent back</h3>
+          <p id="pj-feedback-summary" class="pj-feedback__summary hidden" role="status"></p>
+          <!-- Shown until something arrives. A plain sentence rather than an empty bordered
+               list, which would read as a panel that failed to load. -->
+          <p id="pj-feedback-empty" class="pj-hint">No responses yet. When your client approves a room or asks for changes on the shared page, it appears here.</p>
+          <ul id="pj-feedback-list" class="pj-feedback__list"></ul>
+          <p id="pj-feedback-error" class="pj-warning hidden" role="status"></p>
+        </section>
+      </section>
+    </main>
+
+    <!-- One confirm dialog, reused for the destructive actions (delete listing,
+         remove photo, regenerate a room's look). -->
+    <div id="pj-confirm" class="pj-modal" role="dialog" aria-modal="true" aria-labelledby="pj-confirm-title" aria-describedby="pj-confirm-body" aria-hidden="true">
+      <div class="pj-modal__card">
+        <h2 id="pj-confirm-title">Are you sure?</h2>
+        <p id="pj-confirm-body"></p>
+        <div class="pj-modal__actions">
+          <button type="button" id="pj-confirm-yes" class="btn btn-primary"><strong>Confirm</strong></button>
+          <button type="button" id="pj-confirm-no" class="btn btn-ghost"><strong>Cancel</strong></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-host" aria-live="polite" aria-atomic="false"></div>
+
+    <script type="module" src="scripts/projects-app.js"></script>
+  </body>
+</html>

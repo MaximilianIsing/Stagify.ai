@@ -27,6 +27,8 @@ import { logger } from '../lib/logger.js';
  *   readHostedImagesManifest: Function,
  *   writeHostedImagesManifest: Function,
  *   protectLogs: import('express').RequestHandler,
+ *   sweepProjectBlobs?: (opts: { apply?: boolean, minAgeMs?: number }) => Promise<any>,
+ *   listingHealth?: (opts: { staleAfterMs?: number, limit?: number, withStorage?: boolean }) => any,
  *   __dirname: string,
  *   HOSTED_IMAGE_MIME_EXT: Record<string, string>,
  *   emailCatalog: ReturnType<typeof import('../lib/services/email-catalog.js').createEmailCatalog>,
@@ -38,7 +40,7 @@ import { logger } from '../lib/logger.js';
  *   campaign-link hit store behind the Referrals tab.
  */
 export default function createAdminRouter(deps) {
-  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks } = deps;
+  const { authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, sweepProjectBlobs, listingHealth } = deps;
   const router = createAsyncRouter();
 
 router.get('/admin', (req, res) => {
@@ -231,6 +233,55 @@ router.get('/resetmemories', protectLogs, (req, res) => {
 });
 
 // Wipe all recorded uptime/incident history (admin "reset server status" button).
+// Listing Studio health (lib/data/project-insights.js) — the answer to "a broker says their
+// listing is stuck". GET, because it is READ-ONLY: it deletes nothing and starts nothing, so
+// the replay reasoning that makes the destructive routes POST does not apply here.
+//
+// `?storage=1` opts into a walk of the whole projects volume (bytes per account); it is left
+// out by default so a routine health check does not pay for it. `?stale=<minutes>` overrides
+// the idle threshold.
+router.get('/api/admin/listing-health', protectLogs, (req, res) => {
+  if (typeof listingHealth !== 'function') {
+    return res.status(503).json({ error: 'The Listing Studio store is unavailable.', code: 'LISTING_STUDIO_DISABLED' });
+  }
+  const staleMinutes = Number.parseInt(String(req.query?.stale ?? ''), 10);
+  try {
+    const report = listingHealth({
+      staleAfterMs: Number.isFinite(staleMinutes) && staleMinutes >= 0 ? staleMinutes * 60 * 1000 : undefined,
+      limit: Number.parseInt(String(req.query?.limit ?? ''), 10) || undefined,
+      withStorage: req.query?.storage === '1' || req.query?.storage === 'true',
+    });
+    setSensitiveHeaders(res);
+    return res.json({ ok: true, ...report });
+  } catch (err) {
+    logger.error('[listing-health] report failed', err);
+    return res.status(500).json({ error: 'Report failed', code: 'LISTING_HEALTH_FAILED' });
+  }
+});
+
+// Orphan-blob reclaim (lib/data/project-blob-gc.js). POST, not GET, for the same reason as
+// its destructive siblings above: the key guard is header-only so no crawler can reach it
+// either way, but the verb is what stops a legitimate replay from running it twice.
+//
+// DRY RUN UNLESS ASKED. `?apply=1` is required to delete anything; without it the operator
+// gets the count, the bytes and a sample of keys and nothing is touched. That default is the
+// point — this is the only endpoint in the app that deletes customers' photographs, and it
+// decides what to delete by ABSENCE of a database row.
+router.post('/api/admin/blob-gc', protectLogs, async (req, res) => {
+  if (typeof sweepProjectBlobs !== 'function') {
+    return res.status(503).json({ error: 'The Listing Studio store is unavailable.', code: 'LISTING_STUDIO_DISABLED' });
+  }
+  const apply = req.query?.apply === '1' || req.query?.apply === 'true';
+  try {
+    const report = await sweepProjectBlobs({ apply });
+    setSensitiveHeaders(res);
+    return res.json({ ok: true, applied: apply, ...report });
+  } catch (err) {
+    logger.error('[blob-gc] sweep failed', err);
+    return res.status(500).json({ error: 'Sweep failed', code: 'BLOB_GC_FAILED' });
+  }
+});
+
 router.post('/api/status/reset', protectLogs, (req, res) => {
   try {
     const snapshot = uptimeMonitor.reset();

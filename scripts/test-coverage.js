@@ -65,9 +65,16 @@ if (!canEnforce) {
   );
 }
 
+// `--test-concurrency=4` for the same reason package.json's `test` script carries it, and
+// it must be kept in step with that one: 17 specs call `app.listen(0)` and 8 spawn a whole
+// server.js, and at the default concurrency (one worker per core) that contention makes
+// unrelated route specs fail with `fetch failed` — measured at 5 runs in 20, versus 0 in 20
+// at 4. This spawn was MISSED when that flag was added to `npm test`, so the coverage job —
+// the one that actually enforces the floors in CI — kept flaking on its own. Two runs of
+// this script here, unchanged, gave 7 failures and then 0.
 const child = spawn(
   process.execPath,
-  ['--test', '--experimental-test-coverage', ...enforceArgs, 'test/**/*.test.js'],
+  ['--test', '--test-concurrency=4', '--experimental-test-coverage', ...enforceArgs, 'test/**/*.test.js'],
   { stdio: ['inherit', 'pipe', 'inherit'] },
 );
 

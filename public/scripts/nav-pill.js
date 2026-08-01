@@ -102,7 +102,7 @@
     // The AI Designer / Masking Studio links are revealed later for Pro users —
     // re-settle when one appears so the pill can land on it (and rest there on
     // its own page).
-    nav.querySelectorAll(".nav-ai-designer-pro, .nav-masking-studio-pro").forEach((proLink) => {
+    nav.querySelectorAll(".nav-ai-designer-pro, .nav-masking-studio-pro, .nav-listing-studio-pro").forEach((proLink) => {
       if (!("MutationObserver" in window)) return;
       let wasHidden = proLink.classList.contains("hidden");
       new MutationObserver(() => {

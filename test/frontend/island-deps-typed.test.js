@@ -98,6 +98,8 @@ const ALL_FACTORIES = [
   'masking-studio/upload.js#createUpload',
   'masking-studio/viewer.js#createViewer',
   'profile-menu/auth-modal.js#createAuthModal',
+  'share/compare.js#createCompare',
+  'share/lightbox.js#createLightbox',
   'profile-menu/google-signin.js#createGoogleSignIn',
 ];
 

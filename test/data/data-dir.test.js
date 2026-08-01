@@ -122,3 +122,58 @@ test('DRIFT GUARD: only data-dir.js implements the Render-disk rule', () => {
     'these files re-derive the data directory instead of importing resolveDataDir ' +
     'from lib/data/data-dir.js — see the header comment there for why that matters');
 });
+
+test('STAGIFY_DATA_DIR overrides the local path, and Render still wins over it', () => {
+  // The override exists so the eight test files that spawn a real `server.js` stop sharing
+  // one SQLite file — under parallel load that killed a boot outright with
+  // `SqliteError: disk I/O error`, which surfaced as a bare `fetch failed` in whichever
+  // file happened to be running. It must never be reachable in production, so the Render
+  // branch is checked FIRST and the ordering is asserted here rather than assumed.
+  const base = tempDir();
+  const override = path.join(tempDir(), 'elsewhere');
+  const mount = tempDir(); // stands in for a mounted /data
+
+  const prevRender = process.env.RENDER;
+  const prevOverride = process.env.STAGIFY_DATA_DIR;
+  try {
+    delete process.env.RENDER;
+    process.env.STAGIFY_DATA_DIR = override;
+    assert.equal(resolveDataDir(base, mount), override, 'the override is used off Render');
+    assert.equal(fs.existsSync(override), true, 'and created on demand');
+
+    process.env.RENDER = 'true';
+    assert.equal(resolveDataDir(base, mount), mount,
+      'but a mounted Render disk still wins — production can never take the override');
+  } finally {
+    if (prevRender === undefined) delete process.env.RENDER; else process.env.RENDER = prevRender;
+    if (prevOverride === undefined) delete process.env.STAGIFY_DATA_DIR; else process.env.STAGIFY_DATA_DIR = prevOverride;
+  }
+});
+
+test('an unusable STAGIFY_DATA_DIR falls through instead of failing the boot', () => {
+  // A misconfigured override must not be the reason the app cannot start.
+  const base = tempDir();
+  const prev = process.env.STAGIFY_DATA_DIR;
+  try {
+    // A path under an existing FILE cannot be created as a directory.
+    const file = path.join(base, 'not-a-dir');
+    fs.writeFileSync(file, 'x');
+    process.env.STAGIFY_DATA_DIR = path.join(file, 'nested');
+    assert.equal(resolveDataDir(base), path.join(base, 'data'), 'falls back to <baseDir>/data');
+  } finally {
+    if (prev === undefined) delete process.env.STAGIFY_DATA_DIR; else process.env.STAGIFY_DATA_DIR = prev;
+  }
+});
+
+test('an empty or whitespace override is ignored, not treated as a path', () => {
+  const base = tempDir();
+  const prev = process.env.STAGIFY_DATA_DIR;
+  try {
+    for (const blank of ['', '   ']) {
+      process.env.STAGIFY_DATA_DIR = blank;
+      assert.equal(resolveDataDir(base), path.join(base, 'data'), `"${blank}" must be ignored`);
+    }
+  } finally {
+    if (prev === undefined) delete process.env.STAGIFY_DATA_DIR; else process.env.STAGIFY_DATA_DIR = prev;
+  }
+});

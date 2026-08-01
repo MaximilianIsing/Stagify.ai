@@ -43,7 +43,7 @@ import { createHostedImages } from './lib/image/hosted-images.js';
 import { createHttpGuards } from './lib/http/http-guards.js';
 import { createAiClients } from './lib/services/ai-clients.js';
 import { stagingProcessUpload, chatUpload, hostImageUpload, HOSTED_IMAGE_MIME_EXT } from './lib/http/uploads.js';
-import { authLimiter, emailLimiter, genLimiter } from './lib/http/rate-limiters.js';
+import { authLimiter, emailLimiter, genLimiter, shareLimiter } from './lib/http/rate-limiters.js';
 import { logger } from './lib/logger.js';
 import { applyEdgeMiddleware, applyBodyAndStatic } from './lib/http/app-middleware.js';
 import { createStagingGeneration } from './lib/staging/staging-generation.js';
@@ -52,6 +52,15 @@ import { createLifecycleEmails } from './lib/services/lifecycle-emails.js';
 import { createTrialLifecycle } from './lib/services/trial-lifecycle.js';
 import { createEmailCatalog } from './lib/services/email-catalog.js';
 import { createReferralLinks } from './lib/data/referral-links.js';
+import { createProjects } from './lib/data/projects.js';
+import { createProjectStorage } from './lib/data/project-storage.js';
+import { createDesignBible } from './lib/staging/design-bible.js';
+import { createRoomClustering, assignRoomKeys, pickHero } from './lib/staging/room-clustering.js';
+import { createListingWorker } from './lib/staging/listing-worker.js';
+import createProjectsRouter from './routes/projects.js';
+import createSharePublicRouter from './routes/share-public.js';
+import { createProjectBlobGc } from './lib/data/project-blob-gc.js';
+import { createProjectInsights } from './lib/data/project-insights.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -67,6 +76,34 @@ const stripeEvents = createStripeEventLog(__dirname);
 // lib/data/referral-links.js for the registry that drives both the routes and the
 // dashboard panel.
 const referralLinks = createReferralLinks(__dirname);
+// Listing Studio: the projects/photos/bibles/renders store plus the blob store the
+// images themselves live in. Constructed here with the other stores so the tables exist
+// before anything (notably the GDPR erasure below) reaches for them. The blob store is
+// deliberately separate from SQLite — a 30-photo listing's renders and, far bigger, its
+// source photographs have no business in a single-writer DB that Litestream replicates
+// row by row.
+//
+// WRAPPED, unlike its neighbours, and that asymmetry is deliberate. The store prepares its
+// statements at construction, so a `renders` table missing a column this build expects
+// throws `no such column: …` right here — at module scope, before `app.listen`. This repo
+// has no migration runner (a documented decision), which makes a forgotten `ALTER TABLE` a
+// realistic future event; unguarded it would take auth, billing and every other route down
+// with the Listing Studio. Degrading one feature is the correct failure mode for a schema
+// the rest of the app does not read.
+/** @type {ReturnType<typeof createProjects> | null} */
+let projects = null;
+/** @type {ReturnType<typeof createProjectStorage> | null} */
+let projectStorage = null;
+try {
+  projects = createProjects(__dirname);
+  projectStorage = createProjectStorage({ baseDir: __dirname });
+} catch (err) {
+  logger.error(
+    '[listing-studio] DISABLED — its store could not be opened, so /api/projects will 503 while the rest of the app runs normally. ' +
+    'This is almost always schema drift: a column this build expects is missing from an existing database. Error:',
+    err && err.message ? err.message : err,
+  );
+}
 setInterval(() => authStore.pruneSessions(), 6 * 60 * 60 * 1000).unref?.();
 
 const stripeSecretKey = readStripeSecretKey();
@@ -222,12 +259,25 @@ const { logEmailOpenToFile, isConfirmedEmailClientOpen, forgetEmailOpenState, se
 const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = createMemory({ __dirname, DEBUG_MODE });
 // GDPR erasure. Built here (not inside a store) because it spans every store's
 // tables plus the CSV logs — see lib/data/user-deletion.js.
-const { deleteUser } = createUserDeletion({ baseDir: __dirname, getDataLogDir, forgetEmailOpenState });
+// `removeProjectFiles` is the erasure's hook into the blob store: deleteUser is one
+// synchronous transaction and cannot await, so it takes the sync remover. Passed as the
+// storage module's own function rather than a path built here — where a project's bytes
+// live is project-storage.js's business, and re-deriving it at the composition root is
+// exactly how the two would drift out of agreement.
+const { deleteUser } = createUserDeletion({
+  baseDir: __dirname,
+  getDataLogDir,
+  forgetEmailOpenState,
+  // Guarded because the blob store may have failed to open (above). If it did, erasure
+  // still removes every row, and the seam being absent is reported as `removed: false`
+  // rather than silently — see the warning path in user-deletion.js.
+  removeProjectFiles: projectStorage ? (projectId) => projectStorage.removeProjectSync(projectId) : undefined,
+});
 
 // GPT-vision / Gemini helpers extracted to lib/, instantiated with this server's
 // AI clients (the pure helpers they call are direct imports inside each module).
 const { annotateImage } = createImageAnnotation({ openai });
-const { reviewImageQuality, reviewMaskEdit, validateStageableImage } = createImageReview({ genAI });
+const { reviewImageQuality, reviewMaskEdit, validateStageableImage, reviewDesignConsistency } = createImageReview({ genAI });
 const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
 const { blueprintTo3D } = createCadHandling({ genAI });
 const { getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest } = createHostedImages({ getDataLogDir });
@@ -252,6 +302,11 @@ const { generateWithQualityRetry, processImageGeneration, processStaging } = cre
   DEBUG_MODE,
   runQualityRetry,
   reviewImageQuality,
+  // Design-continuity gate. Only consulted when a staging request carries a designBible
+  // (the multi-photo listing path), and combined WORST-OF with the quality verdict: a
+  // beautiful render containing the wrong sofa is the exact failure listing staging
+  // exists to prevent, so the two scores must not average each other out.
+  reviewDesignConsistency,
   QUALITY_MAX_ATTEMPTS,
   logPromptToFile,
 });
@@ -282,6 +337,50 @@ const { handleVirtualStagingMultipart } = createVirtualStagingHandler({
   processStaging,
 });
 
+// ── Listing Studio (multi-photo listing staging) ───────────────────────────
+// Built AFTER createStagingGeneration because the worker drives processStaging.
+//
+// The flow: a listing's photos are grouped into rooms (roomClustering), one hero frame
+// per room is staged normally, a design bible is extracted from that render, and every
+// remaining frame of the room is then conditioned on it. The bible is what makes the
+// same sofa appear in the wide shot and the detail shot — the problem no one-photo-at-
+// a-time stager solves.
+const { extractBible } = createDesignBible({ genAI });
+const roomClustering = createRoomClustering({ genAI });
+// One in-process serial worker. A 30-frame listing cannot run inside an HTTP request,
+// and this app is single-instance by design (SQLite is single-writer — see the README's
+// known limitations), so the queue lives in the `renders` table and the worker leases
+// one row at a time. Every bit of progress is therefore durable: a restart mid-listing
+// resumes rather than restarting, and a lease abandoned by a killed process is reclaimed.
+// Null when the store above failed to open, in which case the queue never runs.
+const listingWorker = projects && projectStorage
+  ? createListingWorker({
+      projects,
+      storage: projectStorage,
+      processStaging,
+      extractBible,
+      getGeminiImageModel,
+      // Makes a listing render attributable in prompt_logs.csv. Without it the worker (which
+      // has no request) wrote 'unknown' in the email cell, and LOG_REDACTIONS matches that
+      // file on email — so a GDPR erasure could never reach those rows, while the row itself
+      // carried the operator's free-text notes.
+      resolveOwnerEmail: (userId) => authStore.findUserById(userId)?.email || '',
+      // Meters listing renders against an enterprise domain. `/stage` only enqueues, and
+      // the renders happen later in the worker with no request in scope — which is exactly
+      // why this path was metering nothing at all: enterprise accounts are promoted to
+      // `plan: 'pro'`, so they passed the gate and staged whole listings free of charge.
+      // Resolved per render (not captured once) because a domain can be deactivated
+      // mid-listing, and `enterpriseDomainForUser` is the single place that decides whether
+      // an account bills to a domain or to its own Stripe subscription.
+      reportListingUsage: (userId, quantity) => {
+        const owner = authStore.findUserById(userId);
+        const domain = owner ? enterpriseDomainForUser(owner) : null;
+        if (domain) reportEnterpriseUsage(domain, quantity);
+      },
+      DEBUG_MODE,
+    })
+  : null;
+
 // Health check endpoints
 // healthHandler / protectLogs / stagingEndpointKeyGuard → lib/http/http-guards.js (instantiated above).
 
@@ -300,10 +399,49 @@ const MAX_SEGMENT_QUERY_LENGTH = 200;
 app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY, authLimiter, emailLimiter, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, SHOW_STAGING_BANNER, endpointKeyMatches, setSensitiveHeaders, getAuthUserFromRequest, toPublicAuthUser, sendRegistrationVerificationEmail, sendAccountExistsNotice, __dirname, googleClientId }));
 
 // admin routes (routes/admin.js)
-app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks }));
+// Orphan-blob reclaim, exposed to the admin key as POST /api/admin/blob-gc. Only built when
+// the Listing Studio store opened — with no database there is no set of live keys, and a
+// sweep that could not read one would classify EVERY blob as an orphan.
+const projectBlobGc = projects ? createProjectBlobGc({ baseDir: __dirname }) : null;
+// Read-only support visibility: which listings are stuck, is the queue moving, who is large.
+const projectInsights = projects ? createProjectInsights({ baseDir: __dirname }) : null;
+
+app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks, sweepProjectBlobs: projectBlobGc ? projectBlobGc.sweep : undefined, listingHealth: projectInsights ? projectInsights.health : undefined }));
 
 // staging routes (routes/staging.js)
 app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
+
+// Listing Studio routes (routes/projects.js) — the multi-photo listing workspace.
+// Every route is Stagify+ gated INSIDE its handler and scoped to the validated session
+// user's id; a project belonging to someone else answers 404 rather than 403, so the API
+// is not an existence oracle for other people's listings.
+if (projects && projectStorage && listingWorker) {
+  app.use(createProjectsRouter({ projects, storage: projectStorage, roomClustering, assignRoomKeys, pickHero, listingWorker, getAuthUserFromRequest, requireProAccount, validateStageableImage, setSensitiveHeaders, genLimiter, appUrl: APP_URL, DEBUG_MODE }));
+} else {
+  // The store did not open. Answer the Listing Studio's routes with a clean 503 rather than
+  // letting them fall through to the 404 handler, so a client can tell "temporarily
+  // unavailable" from "no such endpoint", and the failure shows up in the access log
+  // instead of being indistinguishable from a typo.
+  app.use('/api/projects', (req, res) => sendError(res, 503, 'The Listing Studio is temporarily unavailable.', { code: 'LISTING_STUDIO_DISABLED' }));
+}
+
+// Client share links (routes/share-public.js) — /s/:token and the three /api/share/:token
+// routes. UNAUTHENTICATED by design: this is what a broker sends to a seller or a buyer,
+// neither of whom has an account.
+//
+// Mounted as its OWN router rather than on the projects router, deliberately. The projects
+// router's every handler opens with `requireProAccount`, and its header says so; hanging a
+// public surface off it would make that statement false and would put these four routes one
+// careless refactor away from inheriting a gate they must not have — or, far worse, from a
+// reviewer assuming they already have one.
+//
+// Mounted BEFORE the referral router (which owns the root namespace and must stay last), so
+// /s/:token cannot be shadowed by a campaign slug.
+if (projects && projectStorage) {
+  app.use(createSharePublicRouter({
+    shares: projects.shares, projects, storage: projectStorage, shareLimiter, __dirname,
+  }));
+}
 
 // chat routes (routes/chat.js)
 app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
@@ -385,6 +523,17 @@ app.listen(PORT, () => {
       trialLifecycle.start();
     } catch (err) {
       logger.error('Trial-lifecycle sweep failed to start:', err.message);
+    }
+
+    // Listing-staging queue. Skipped under tests for the same reason as the two above:
+    // a suite that booted the real server would otherwise start rendering. Its interval
+    // is unref()'d, so it never holds the process open.
+    try {
+      // Optional-called: null when the Listing Studio's store failed to open (see above),
+      // in which case there is nothing for the queue to do and the rest of the app runs on.
+      listingWorker?.start();
+    } catch (err) {
+      logger.error('Listing worker failed to start:', err.message);
     }
   }
 
