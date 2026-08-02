@@ -69,9 +69,14 @@
     <link rel="alternate" hreflang="ja" href="https://stagify.ai/ja">
     <link rel="alternate" hreflang="nl" href="https://stagify.ai/nl">
     <link rel="alternate" hreflang="x-default" href="https://stagify.ai/">
-    <!-- Preload critical fonts -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+
+    <!-- Preload only the weights used above the fold: 400 (body) and 700 (h1).
+         The 600 face is NOT preloaded — it still loads from the @font-face in
+         styles.css with font-display:swap, so it costs a brief swap instead of
+         107 KB of Highest-priority bandwidth competing with the render-blocking
+         CSS and the LCP image. -->
     <link rel="preload" href="fonts/inter-all-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="fonts/inter-all-600-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/inter-all-700-normal.woff2" as="font" type="font/woff2" crossorigin>
     
     <!-- Preload critical carousel image -->
@@ -83,6 +88,11 @@
     <link rel="stylesheet" href="styles/toast.css">
     <link rel="stylesheet" href="styles/carousel.css">
     <link rel="stylesheet" href="styles/home.css">
+    <!-- index.css is render-blocking too, so it belongs here with the rest. It used to
+         sit below the module <script> tags, where the preload scanner reached it late
+         while first paint was already waiting on it. Verified cascade-safe: it shares
+         no selector with the four lazy sheets below. -->
+    <link rel="stylesheet" href="styles/index.css">
     <!-- Non-critical CSS (auth modals, decorative star-border, below-fold text animations) -->
     <!-- Loaded as print (non-render-blocking), then promoted to all once fetched. -->
     <!-- Swap is done in JS (not an inline onload= handler) so it passes the CSP's script-src-attr 'none'. -->
@@ -109,7 +119,6 @@
     <script type="module" src="scripts/app.js"></script>
     <script type="module" src="scripts/carousel.js"></script>
     <script type="module" src="scripts/index-inline.js"></script>
-    <link rel="stylesheet" href="styles/index.css">
     <script type="module" src="scripts/star-border.js"></script>
     <script type="module" src="scripts/sponsors-scroll.js"></script>
     <script type="module" src="scripts/home-reveal.js"></script>
@@ -121,378 +130,6 @@
     <script type="module" src="scripts/designer-demo.js"></script>
     <script type="module" src="scripts/hover-glow.js"></script>
     
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "@id": "https://stagify.ai/#webapp",
-      "name": "Stagify.ai",
-      "description": "Free AI home staging tool that transforms empty rooms with artificial intelligence. Upload photos and get professionally staged results in seconds.",
-      "url": "https://stagify.ai/",
-      "applicationCategory": "DesignApplication",
-      "operatingSystem": "Web Browser",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "creator": {
-        "@type": "Organization",
-        "name": "Stagify.ai",
-        "url": "https://stagify.ai/",
-        "logo": "https://stagify.ai/media-webp/logo/Logo180x180.webp",
-        "sameAs": [
-          "https://www.instagram.com/stagify.ai/",
-          "https://www.tiktok.com/@stagify.ai",
-          "https://www.linkedin.com/company/stagify-ai/",
-          "https://www.crunchbase.com/organization/stagify-ai",
-          "https://www.indiehackers.com/Stagify"
-        ]
-      },
-      "mentions": [
-        {
-          "@type": "Article",
-          "headline": "10 Best Virtual Staging AI Free Tools for 2026",
-          "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
-          "datePublished": "2026-05-31",
-          "author": {
-            "@type": "Organization",
-            "name": "Armox Labs",
-            "url": "https://armox.ai"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "I Never Meant to Start an AI Company",
-          "url": "https://medium.com/@ryancroman10/i-never-meant-to-start-an-ai-company-9115f58c0a3e",
-          "datePublished": "2026-06-26",
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman",
-            "url": "https://medium.com/@ryancroman10"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "I Never Meant to Start an AI Company",
-          "url": "https://activerain.com/blogsview/5938752/i-never-meant-to-start-an-ai-company",
-          "datePublished": "2026-06-26",
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "I Never Meant to Start an AI Company",
-          "url": "https://stagify.substack.com/p/i-never-meant-to-start-an-ai-company",
-          "datePublished": "2026-06-26",
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman",
-            "url": "https://stagify.substack.com"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
-          "url": "https://dev.to/ryan_croman_dc8f0b39757a6/the-room-doesnt-need-to-change-you-just-need-to-see-it-differently-4499",
-          "datePublished": "2026-07-22",
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman",
-            "url": "https://dev.to/ryan_croman_dc8f0b39757a6"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
-          "url": "https://stagify.substack.com/p/the-room-doesnt-need-to-change-you",
-          "datePublished": "2026-07-22",
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman",
-            "url": "https://stagify.substack.com"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
-          "url": "https://stagifyai.blogspot.com/2026/07/the-room-doesnt-need-to-change-you-just.html",
-          "datePublished": "2026-07-22",
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman",
-            "url": "https://stagifyai.blogspot.com"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
-          "url": "https://www.tumblr.com/stagify/822862652524167168/the-room-doesnt-need-to-change-you-just-need-to",
-          "datePublished": "2026-07-22",
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman",
-            "url": "https://www.tumblr.com/stagify"
-          }
-        }
-      ],
-      "keywords": "AI staging, home staging, real estate staging, virtual staging, property staging, AI-powered staging, machine learning staging, computer vision, property marketing, 3D rendering, CAD staging, floor plan staging, blueprint staging, architectural visualization, home decor, furniture placement, room redesign, interior styling, property presentation, real estate agent tools, staging software, free staging, online staging, automated staging, smart staging, digital staging, photo staging, image editing, room transformation"
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "@id": "https://stagify.ai/#organization",
-      "name": "Stagify.ai",
-      "url": "https://stagify.ai/",
-      "logo": "https://stagify.ai/media-webp/logo/Logo180x180.webp",
-      "description": "Free AI-powered virtual staging tool for real estate professionals",
-      "email": "team@stagify.ai",
-      "sameAs": [
-        "https://www.instagram.com/stagify.ai/",
-        "https://www.tiktok.com/@stagify.ai",
-        "https://www.linkedin.com/company/stagify-ai/",
-        "https://www.crunchbase.com/organization/stagify-ai",
-        "https://www.indiehackers.com/Stagify"
-      ],
-      "subjectOf": [
-        {
-          "@type": "Article",
-          "headline": "10 Best Virtual Staging AI Free Tools for 2026",
-          "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
-          "datePublished": "2026-05-31",
-          "author": {
-            "@type": "Organization",
-            "name": "Armox Labs",
-            "url": "https://armox.ai"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "I Never Meant to Start an AI Company",
-          "url": "https://medium.com/@ryancroman10/i-never-meant-to-start-an-ai-company-9115f58c0a3e",
-          "datePublished": "2026-06-26",
-          "publisher": {
-            "@type": "Organization",
-            "name": "Medium",
-            "url": "https://medium.com"
-          },
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman",
-            "url": "https://medium.com/@ryancroman10"
-          },
-          "about": {
-            "@id": "https://stagify.ai/#organization"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "I Never Meant to Start an AI Company",
-          "url": "https://activerain.com/blogsview/5938752/i-never-meant-to-start-an-ai-company",
-          "datePublished": "2026-06-26",
-          "publisher": {
-            "@type": "Organization",
-            "name": "ActiveRain",
-            "url": "https://activerain.com"
-          },
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman"
-          },
-          "about": {
-            "@id": "https://stagify.ai/#organization"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "I Never Meant to Start an AI Company",
-          "url": "https://stagify.substack.com/p/i-never-meant-to-start-an-ai-company",
-          "datePublished": "2026-06-26",
-          "publisher": {
-            "@type": "Organization",
-            "name": "Substack",
-            "url": "https://substack.com"
-          },
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman"
-          },
-          "about": {
-            "@id": "https://stagify.ai/#organization"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
-          "url": "https://dev.to/ryan_croman_dc8f0b39757a6/the-room-doesnt-need-to-change-you-just-need-to-see-it-differently-4499",
-          "datePublished": "2026-07-22",
-          "publisher": {
-            "@type": "Organization",
-            "name": "DEV Community",
-            "url": "https://dev.to"
-          },
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman"
-          },
-          "about": {
-            "@id": "https://stagify.ai/#organization"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
-          "url": "https://stagify.substack.com/p/the-room-doesnt-need-to-change-you",
-          "datePublished": "2026-07-22",
-          "publisher": {
-            "@type": "Organization",
-            "name": "Substack",
-            "url": "https://substack.com"
-          },
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman"
-          },
-          "about": {
-            "@id": "https://stagify.ai/#organization"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
-          "url": "https://stagifyai.blogspot.com/2026/07/the-room-doesnt-need-to-change-you-just.html",
-          "datePublished": "2026-07-22",
-          "publisher": {
-            "@type": "Organization",
-            "name": "Blogger",
-            "url": "https://www.blogger.com"
-          },
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman"
-          },
-          "about": {
-            "@id": "https://stagify.ai/#organization"
-          }
-        },
-        {
-          "@type": "Article",
-          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
-          "url": "https://www.tumblr.com/stagify/822862652524167168/the-room-doesnt-need-to-change-you-just-need-to",
-          "datePublished": "2026-07-22",
-          "publisher": {
-            "@type": "Organization",
-            "name": "Tumblr",
-            "url": "https://www.tumblr.com"
-          },
-          "author": {
-            "@type": "Person",
-            "name": "Ryan Croman"
-          },
-          "about": {
-            "@id": "https://stagify.ai/#organization"
-          }
-        }
-      ]
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "name": "10 Best Virtual Staging AI Free Tools for 2026",
-      "description": "Armox Labs editorial roundup of free AI virtual staging tools for 2026.",
-      "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
-      "numberOfItems": 10,
-      "author": {
-        "@type": "Organization",
-        "name": "Armox Labs",
-        "url": "https://armox.ai"
-      },
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 6,
-          "name": "Stagify.ai",
-          "item": {
-            "@type": "WebApplication",
-            "@id": "https://stagify.ai/#webapp",
-            "name": "Stagify.ai",
-            "url": "https://stagify.ai/"
-          }
-        }
-      ]
-    }
-    </script>
-    <script type="application/ld+json" id="faq-jsonld">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What is virtual staging?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled. Unlike traditional staging, it's faster, more cost-effective, and allows for multiple design options tailored to different buyer preferences. With high-quality visuals, virtual staging highlights the property's best features, making it easier for buyers to connect emotionally and imagine themselves living there."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How long does it take?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "On average, virtual staging takes around 8 seconds per photo to process, though the exact time can be a little shorter or longer depending on the complexity of the space and the design style chosen. The result is a quick, seamless transformation that makes your property photos stand out."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How do I select a custom theme?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "If you don't see the theme you want, you can select \"Custom\" and then add a specific prompt for the theme you want. We'll use your prompt to generate the theme you want."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What makes an ideal room for staging?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "An ideal room for staging should have good lighting, clear walls, and minimal clutter. Empty or sparsely furnished rooms work best, as they provide a clean canvas for the AI to add furniture and decor that matches your chosen style. Wider shots that capture more of the room are much better than tight or cropped angles, since they give the AI more context to stage the space realistically."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is my data private and secure?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. We use HTTPS encryption, do not permanently store uploaded images after processing, and do not sell your personal information. You retain ownership of your uploads and generated results. We share data only with service providers needed to run Stagify (such as AI and payment processors) as described in our Privacy Policy."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What makes Stagify different from other virtual staging tools?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "A few things. First, price: you can start staging for free, and Stagify+ is just $11.99/month for unlimited staging — while traditional staging can cost hundreds or thousands of dollars per room. Second, AI Designer lets you chat with our AI to redesign a whole room and refine the result conversationally, instead of only applying presets. Third, the Masking Studio gives you pixel-level precision — highlight exactly which areas of a photo can change and attach specific furniture to each one, so everything you don't select stays untouched. Most tools do just one of these well; Stagify brings affordability, creative control, and precision together."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I use virtually staged photos in my real estate listings?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Virtual staging is widely used and accepted across real estate listings and MLSs. The main rule is transparency: most MLSs and local regulations ask that you clearly disclose when a photo has been virtually staged, for example by labeling it \"virtually staged\" in the caption. Because Stagify only changes furniture and decor and never alters the actual structure of the room, your photos remain honest representations of the space. We always recommend adding a virtual-staging disclosure to stay compliant with your local MLS and real estate board."
-          }
-        }
-      ]
-    }
-    </script>
   </head>
   <body class="page-home">
     <!-- Sign in / Create account -->
@@ -618,17 +255,17 @@
               <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img loading="lazy" decoding="async" src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img loading="lazy" decoding="async" src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img loading="lazy" decoding="async" src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img loading="lazy" decoding="async" src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img loading="lazy" decoding="async" src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img loading="lazy" decoding="async" src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img loading="lazy" decoding="async" src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img loading="lazy" decoding="async" src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img loading="lazy" decoding="async" src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img loading="lazy" decoding="async" src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img loading="lazy" decoding="async" src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
             </ul>
           </div>
         </div>
@@ -679,64 +316,64 @@
             <div class="sponsors-track" id="sponsors-track">
               <!-- First set of sponsors -->
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>              <!-- Duplicate set for seamless loop -->
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" fetchpriority="high">
+                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
               </div>            </div>
           </div>
         </div>
@@ -1532,6 +1169,382 @@
 
       <script type="module" src="scripts/aurora-scrollbar.js"></script>
     <script type="module" src="scripts/card-spotlight.js"></script>
+    <!-- Structured Data. Deliberately at the end of <body> rather than in <head>: these
+         four blocks total ~19 KB, and in <head> they sat between the stylesheets and the
+         hero markup, delaying the parser reaching the LCP element. Google reads JSON-LD
+         anywhere in the document. Keep all four together and in THIS order -- 
+         language-loader.js takes the FIRST ld+json block in document order. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "@id": "https://stagify.ai/#webapp",
+      "name": "Stagify.ai",
+      "description": "Free AI home staging tool that transforms empty rooms with artificial intelligence. Upload photos and get professionally staged results in seconds.",
+      "url": "https://stagify.ai/",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Stagify.ai",
+        "url": "https://stagify.ai/",
+        "logo": "https://stagify.ai/media-webp/logo/Logo180x180.webp",
+        "sameAs": [
+          "https://www.instagram.com/stagify.ai/",
+          "https://www.tiktok.com/@stagify.ai",
+          "https://www.linkedin.com/company/stagify-ai/",
+          "https://www.crunchbase.com/organization/stagify-ai",
+          "https://www.indiehackers.com/Stagify"
+        ]
+      },
+      "mentions": [
+        {
+          "@type": "Article",
+          "headline": "10 Best Virtual Staging AI Free Tools for 2026",
+          "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
+          "datePublished": "2026-05-31",
+          "author": {
+            "@type": "Organization",
+            "name": "Armox Labs",
+            "url": "https://armox.ai"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://medium.com/@ryancroman10/i-never-meant-to-start-an-ai-company-9115f58c0a3e",
+          "datePublished": "2026-06-26",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://medium.com/@ryancroman10"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://activerain.com/blogsview/5938752/i-never-meant-to-start-an-ai-company",
+          "datePublished": "2026-06-26",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://stagify.substack.com/p/i-never-meant-to-start-an-ai-company",
+          "datePublished": "2026-06-26",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://stagify.substack.com"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
+          "url": "https://dev.to/ryan_croman_dc8f0b39757a6/the-room-doesnt-need-to-change-you-just-need-to-see-it-differently-4499",
+          "datePublished": "2026-07-22",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://dev.to/ryan_croman_dc8f0b39757a6"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
+          "url": "https://stagify.substack.com/p/the-room-doesnt-need-to-change-you",
+          "datePublished": "2026-07-22",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://stagify.substack.com"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
+          "url": "https://stagifyai.blogspot.com/2026/07/the-room-doesnt-need-to-change-you-just.html",
+          "datePublished": "2026-07-22",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://stagifyai.blogspot.com"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
+          "url": "https://www.tumblr.com/stagify/822862652524167168/the-room-doesnt-need-to-change-you-just-need-to",
+          "datePublished": "2026-07-22",
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://www.tumblr.com/stagify"
+          }
+        }
+      ],
+      "keywords": "AI staging, home staging, real estate staging, virtual staging, property staging, AI-powered staging, machine learning staging, computer vision, property marketing, 3D rendering, CAD staging, floor plan staging, blueprint staging, architectural visualization, home decor, furniture placement, room redesign, interior styling, property presentation, real estate agent tools, staging software, free staging, online staging, automated staging, smart staging, digital staging, photo staging, image editing, room transformation"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://stagify.ai/#organization",
+      "name": "Stagify.ai",
+      "url": "https://stagify.ai/",
+      "logo": "https://stagify.ai/media-webp/logo/Logo180x180.webp",
+      "description": "Free AI-powered virtual staging tool for real estate professionals",
+      "email": "team@stagify.ai",
+      "sameAs": [
+        "https://www.instagram.com/stagify.ai/",
+        "https://www.tiktok.com/@stagify.ai",
+        "https://www.linkedin.com/company/stagify-ai/",
+        "https://www.crunchbase.com/organization/stagify-ai",
+        "https://www.indiehackers.com/Stagify"
+      ],
+      "subjectOf": [
+        {
+          "@type": "Article",
+          "headline": "10 Best Virtual Staging AI Free Tools for 2026",
+          "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
+          "datePublished": "2026-05-31",
+          "author": {
+            "@type": "Organization",
+            "name": "Armox Labs",
+            "url": "https://armox.ai"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://medium.com/@ryancroman10/i-never-meant-to-start-an-ai-company-9115f58c0a3e",
+          "datePublished": "2026-06-26",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Medium",
+            "url": "https://medium.com"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman",
+            "url": "https://medium.com/@ryancroman10"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://activerain.com/blogsview/5938752/i-never-meant-to-start-an-ai-company",
+          "datePublished": "2026-06-26",
+          "publisher": {
+            "@type": "Organization",
+            "name": "ActiveRain",
+            "url": "https://activerain.com"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "I Never Meant to Start an AI Company",
+          "url": "https://stagify.substack.com/p/i-never-meant-to-start-an-ai-company",
+          "datePublished": "2026-06-26",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Substack",
+            "url": "https://substack.com"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
+          "url": "https://dev.to/ryan_croman_dc8f0b39757a6/the-room-doesnt-need-to-change-you-just-need-to-see-it-differently-4499",
+          "datePublished": "2026-07-22",
+          "publisher": {
+            "@type": "Organization",
+            "name": "DEV Community",
+            "url": "https://dev.to"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
+          "url": "https://stagify.substack.com/p/the-room-doesnt-need-to-change-you",
+          "datePublished": "2026-07-22",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Substack",
+            "url": "https://substack.com"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
+          "url": "https://stagifyai.blogspot.com/2026/07/the-room-doesnt-need-to-change-you-just.html",
+          "datePublished": "2026-07-22",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Blogger",
+            "url": "https://www.blogger.com"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
+        },
+        {
+          "@type": "Article",
+          "headline": "The Room Doesn't Need to Change. You Just Need to See It Differently.",
+          "url": "https://www.tumblr.com/stagify/822862652524167168/the-room-doesnt-need-to-change-you-just-need-to",
+          "datePublished": "2026-07-22",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Tumblr",
+            "url": "https://www.tumblr.com"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Ryan Croman"
+          },
+          "about": {
+            "@id": "https://stagify.ai/#organization"
+          }
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "10 Best Virtual Staging AI Free Tools for 2026",
+      "description": "Armox Labs editorial roundup of free AI virtual staging tools for 2026.",
+      "url": "https://armox.ai/blog/virtual-staging-ai-free#what-it-does-well",
+      "numberOfItems": 10,
+      "author": {
+        "@type": "Organization",
+        "name": "Armox Labs",
+        "url": "https://armox.ai"
+      },
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "name": "Stagify.ai",
+          "item": {
+            "@type": "WebApplication",
+            "@id": "https://stagify.ai/#webapp",
+            "name": "Stagify.ai",
+            "url": "https://stagify.ai/"
+          }
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json" id="faq-jsonld">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is virtual staging?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled. Unlike traditional staging, it's faster, more cost-effective, and allows for multiple design options tailored to different buyer preferences. With high-quality visuals, virtual staging highlights the property's best features, making it easier for buyers to connect emotionally and imagine themselves living there."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "On average, virtual staging takes around 8 seconds per photo to process, though the exact time can be a little shorter or longer depending on the complexity of the space and the design style chosen. The result is a quick, seamless transformation that makes your property photos stand out."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I select a custom theme?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If you don't see the theme you want, you can select \"Custom\" and then add a specific prompt for the theme you want. We'll use your prompt to generate the theme you want."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes an ideal room for staging?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An ideal room for staging should have good lighting, clear walls, and minimal clutter. Empty or sparsely furnished rooms work best, as they provide a clean canvas for the AI to add furniture and decor that matches your chosen style. Wider shots that capture more of the room are much better than tight or cropped angles, since they give the AI more context to stage the space realistically."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data private and secure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We use HTTPS encryption, do not permanently store uploaded images after processing, and do not sell your personal information. You retain ownership of your uploads and generated results. We share data only with service providers needed to run Stagify (such as AI and payment processors) as described in our Privacy Policy."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes Stagify different from other virtual staging tools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A few things. First, price: you can start staging for free, and Stagify+ is just $11.99/month for unlimited staging — while traditional staging can cost hundreds or thousands of dollars per room. Second, AI Designer lets you chat with our AI to redesign a whole room and refine the result conversationally, instead of only applying presets. Third, the Masking Studio gives you pixel-level precision — highlight exactly which areas of a photo can change and attach specific furniture to each one, so everything you don't select stays untouched. Most tools do just one of these well; Stagify brings affordability, creative control, and precision together."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use virtually staged photos in my real estate listings?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Virtual staging is widely used and accepted across real estate listings and MLSs. The main rule is transparency: most MLSs and local regulations ask that you clearly disclose when a photo has been virtually staged, for example by labeling it \"virtually staged\" in the caption. Because Stagify only changes furniture and decor and never alters the actual structure of the room, your photos remain honest representations of the space. We always recommend adding a virtual-staging disclosure to stay compliant with your local MLS and real estate board."
+          }
+        }
+      ]
+    }
+    </script>
 </body>
   </html>
 
