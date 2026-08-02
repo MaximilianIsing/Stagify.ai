@@ -53,6 +53,13 @@ export default [
       'routes/**/*.js',
       'lib/**/*.js',
       'test/**/*.js',
+      // Build/CI tooling. Matched no block until 2026-08-01, so `npx eslint
+      // --print-config scripts/test-coverage.js` reported ZERO rules and zero
+      // globals — no no-undef, no no-unused-vars, nothing — while `npm run lint`
+      // exited 0 without reading them. Uncomfortable in particular because
+      // scripts/collect-esm-frontend.js, imported at the top of THIS file to define
+      // the lint scope, was itself outside the lint scope.
+      'scripts/**/*.js',
     ],
     languageOptions: {
       ecmaVersion: 2022,
@@ -107,11 +114,16 @@ export default [
     //     before/beneath the logger (runtime-flags supplies the DEBUG_MODE the
     //     logger imports, so it cannot import the logger back without a cycle).
     //   - test/**                — tests print diagnostics freely.
+    //   - scripts/**             — build/CI tools, not the server. Their stdout IS
+    //     their interface (a build log, a coverage table), and routing it through
+    //     lib/logger.js would subject build output to the server's LOG_LEVEL and
+    //     DEBUG_MODE filtering, which is meaningless outside a running server.
     files: [
       'lib/logger.js',
       'lib/config/runtime-flags.js',
       'load-env.js',
       'test/**/*.js',
+      'scripts/**/*.js',
     ],
     rules: {
       'no-console': 'off',
@@ -168,14 +180,20 @@ export default [
 
   {
     // Grandfathered: cohesive-but-large modules that predate the 650-line ratchet
-    // above. Capped at 850 (today's worst is ~815) so they can't regress toward
-    // 1000, but not yet forced under 650. Debt: split each into islands (as was
-    // done for app.js / ai-designer-app.js / admin.js / profile-menu.js), then
-    // delete its entry here so the global 650 cap applies.
+    // above. Capped at 850 so they can't regress toward 1000, but not yet forced
+    // under 650. Debt: split each into islands (as was done for app.js /
+    // ai-designer-app.js / admin.js / profile-menu.js), then delete its entry here
+    // so the global 650 cap applies.
+    //
+    // The line counts below are CHECKED, not decorative —
+    // test/frontend/max-lines-grandfather.test.js fails when one drifts, and fails
+    // when a listed file drops under the global cap and should have been delisted.
+    // They had gone stale by up to 300 lines, which quietly re-opened the ratchet:
+    // a file already back under 650 was still licensed to grow to 850.
     files: [
-      'public/scripts/ai-designer/mask-editor.js',    // ~815
-      'public/scripts/app/stage-mask-editor.js',      // ~777
-      'public/scripts/masking-studio-app.js',         // ~690
+      'public/scripts/ai-designer/mask-editor.js',    // 718
+      'public/scripts/app/stage-mask-editor.js',      // 659
+      'public/scripts/masking-studio-app.js',         // 683
     ],
     rules: {
       'max-lines': ['error', 850],
