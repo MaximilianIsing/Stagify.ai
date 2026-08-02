@@ -760,6 +760,8 @@
       "brushAllNote": "マスクしたいエリア全体を必ず塗ってください。",
       "toolsAria": "マスクツール",
       "brushSize": "ブラシサイズ：",
+      "brushSmall": "小",
+      "brushLarge": "大",
       "promptLabel": "マスクしたエリアで何を変更しますか？",
       "promptPlaceholder": "例：壁の色を青に変更、ソファをモダンなチェアに置き換え...",
       "cancel": "キャンセル",

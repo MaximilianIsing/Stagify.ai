@@ -2,6 +2,7 @@ import { requestError as _requestError } from './masking-studio/generation.js';
 import { createSessionStore } from './masking-studio/session-store.js';
 import { createGeneratePipeline } from './masking-studio/generate-pipeline.js';
 import { createDrawTools } from './masking-studio/draw-tools.js';
+import { BRUSH_STEP_DEFAULT } from './mask/brush-scale.js';
 import { createSnapRefine } from './masking-studio/snap-refine.js';
 import { createSegWand } from './masking-studio/seg-wand.js';
 import { createLayersUi } from './masking-studio/layers-ui.js';
@@ -111,7 +112,7 @@ import { showToast } from './toast.js';
           activeId: null,    // selected area (receives brush strokes)
           phase: 'empty',    // 'empty' | 'draw' | 'generating' | 'review'
           view: 'after',     // review-phase viewer toggle
-          brushSize: 50,
+          brushStep: BRUSH_STEP_DEFAULT, // a step on the relative scale, not pixels
           layerSeq: 0,
           genRun: 0,         // ignore async completions from stale runs
           genMeta: null,     // { coreGrow, featherPx } of the last run
@@ -162,7 +163,6 @@ import { showToast } from './toast.js';
         const undoBtn = $('#ms-undo-btn');
         const redoBtn = $('#ms-redo-btn');
         const brushSlider = $('#ms-brush-slider');
-        const brushSizeLabel = $('#ms-brush-size');
         const generateBtn = $('#ms-generate');
         const progressEl = $('#ms-progress');
         const progressBar = $('#ms-progress-bar');
@@ -380,8 +380,8 @@ import { showToast } from './toast.js';
           else if (k === 'r') { setTool('rect'); }
           else if (k === 'w') { setTool('wand'); }
           else if (k === 'h') { if (!e.repeat && state.phase === 'draw') stack.classList.add('is-peek'); }
-          else if (e.key === '[') { setBrushSize(state.brushSize - 10); }
-          else if (e.key === ']') { setBrushSize(state.brushSize + 10); }
+          else if (e.key === '[') { setBrushStep(state.brushStep - 1); }
+          else if (e.key === ']') { setBrushStep(state.brushStep + 1); }
           else if (/^[1-6]$/.test(e.key)) {
             const layer = state.layers[parseInt(e.key, 10) - 1];
             if (layer) {
@@ -584,7 +584,7 @@ import { showToast } from './toast.js';
         // handling, cursor preview, tool switching.
         const {
           setTool,
-          setBrushSize,
+          setBrushStep,
           snapshotForUndo,
           undoStroke,
           redoStroke,
@@ -606,7 +606,6 @@ import { showToast } from './toast.js';
           brushRow,
           wandRow,
           brushSlider,
-          brushSizeLabel,
           activeLayer,
           getLayer,
           layerColor,

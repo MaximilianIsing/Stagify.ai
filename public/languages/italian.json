@@ -760,6 +760,8 @@
       "brushAllNote": "Assicurati di dipingere tutta l'area che vuoi mascherare.",
       "toolsAria": "Strumento maschera",
       "brushSize": "Dimensione pennello:",
+      "brushSmall": "Piccolo",
+      "brushLarge": "Grande",
       "promptLabel": "Cosa vorresti cambiare nell'area mascherata?",
       "promptPlaceholder": "es. cambia il colore della parete in blu, sostituisci il divano con una poltrona moderna...",
       "cancel": "Annulla",

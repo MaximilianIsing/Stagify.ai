@@ -130,6 +130,7 @@ export function installMaskDom({ mobile = false, visualViewport = null } = {}) {
     },
     getElementById(id) { return byId.get(id) || null; },
     querySelector(sel) { return body.querySelector(sel) || head.querySelector(sel); },
+    querySelectorAll(sel) { return [...body.querySelectorAll(sel), ...head.querySelectorAll(sel)]; },
     /** Register an element under an id so getElementById can find it. */
     _register(el, id) { el.id = id; byId.set(id, el); return el; },
   };

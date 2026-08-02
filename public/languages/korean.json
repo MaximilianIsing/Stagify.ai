@@ -760,6 +760,8 @@
       "brushAllNote": "마스킹하려는 영역 전체를 빠짐없이 칠하세요.",
       "toolsAria": "마스크 도구",
       "brushSize": "브러시 크기:",
+      "brushSmall": "작게",
+      "brushLarge": "크게",
       "promptLabel": "마스킹한 영역에서 무엇을 바꾸고 싶으신가요?",
       "promptPlaceholder": "예: 벽 색을 파란색으로, 소파를 모던한 의자로 교체...",
       "cancel": "취소",

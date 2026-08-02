@@ -20,6 +20,7 @@ import { createMaskViewport } from '../mask/viewport.js';
 import { createMaskOverlay } from '../mask/overlay.js';
 import { createMaskReference } from '../mask/reference.js';
 import { createMaskBrush } from '../mask/brush.js';
+import { BRUSH_STEP_MIN, BRUSH_STEP_MAX, BRUSH_STEP_DEFAULT } from '../mask/brush-scale.js';
 import { createMaskFit } from '../mask/fit.js';
 import { maskCopy } from '../mask/copy.js';
 import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
@@ -68,7 +69,6 @@ export function createStageMaskEditor(deps) {
       const baseCanvas = $('#stage-mask-base-canvas');
       const drawCanvas = $('#stage-mask-draw-canvas');
       const brushSlider = $('#stage-mask-brush-slider');
-      const brushSizeLabel = $('#stage-mask-brush-size');
       const promptInput = $('#stage-mask-prompt');
       const cancelBtn = $('#stage-mask-cancel');
       const closeBtn = $('#stage-mask-close');
@@ -198,6 +198,7 @@ export function createStageMaskEditor(deps) {
         isBusy: isProcessing,
         onReadyChange: () => updateSubmitState(),
         onRefineStroke: () => renderPreview(),
+        getCursorHost: () => canvasContainer,
       });
       brush.attach();
 
@@ -490,10 +491,16 @@ export function createStageMaskEditor(deps) {
         }
       }
 
-      if (brushSlider) brushSlider.addEventListener('input', (e) => {
-        brush.setSize(parseInt(e.target.value, 10));
-        if (brushSizeLabel) brushSizeLabel.textContent = brush.getSize() + ' px';
-      });
+      // The scale, not the markup, owns these bounds — so the slider cannot drift
+      // out of step with brush-scale.js.
+      if (brushSlider) {
+        brushSlider.min = String(BRUSH_STEP_MIN);
+        brushSlider.max = String(BRUSH_STEP_MAX);
+        brushSlider.value = String(BRUSH_STEP_DEFAULT);
+        brushSlider.addEventListener('input', (e) => {
+          brush.setSizeStep(parseInt(e.target.value, 10));
+        });
+      }
       if (promptInput) promptInput.addEventListener('input', updateSubmitState);
       if (clearBtn) clearBtn.addEventListener('click', clearDraw);
       if (cancelBtn) cancelBtn.addEventListener('click', closeEditor);

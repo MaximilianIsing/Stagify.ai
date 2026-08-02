@@ -760,6 +760,8 @@
       "brushAllNote": "Zorg dat je over het hele gebied schildert dat je gemaskeerd wilt hebben.",
       "toolsAria": "Maskeertool",
       "brushSize": "Penseelgrootte:",
+      "brushSmall": "Klein",
+      "brushLarge": "Groot",
       "promptLabel": "Wat wil je veranderen in het gemaskeerde gebied?",
       "promptPlaceholder": "bijv. verander de muurkleur in blauw, vervang de bank door een moderne stoel...",
       "cancel": "Annuleren",

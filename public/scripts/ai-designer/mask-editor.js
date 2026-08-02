@@ -25,6 +25,7 @@ import { createMaskViewport } from '../mask/viewport.js';
 import { createMaskOverlay } from '../mask/overlay.js';
 import { createMaskReference } from '../mask/reference.js';
 import { createMaskBrush } from '../mask/brush.js';
+import { BRUSH_STEP_MIN, BRUSH_STEP_MAX, BRUSH_STEP_DEFAULT } from '../mask/brush-scale.js';
 import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
 import { requestMaskEdit } from '../mask/generate.js';
 import { maskCopy } from '../mask/copy.js';
@@ -250,10 +251,14 @@ export function createMaskEditor(deps) {
               </div>
                 <p class="mask-editor-note" style="display:none"></p>
               </div>
+              <!-- A relative scale, not a pixel count — see scripts/mask/brush-scale.js.
+                   The bounds here are a pre-hydration placeholder; the module assigns
+                   the real ones when the slider is wired. -->
               <div class="mask-editor-brush-controls">
                 <label class="mask-editor-brush-label" data-i18n="pdf.maskEditor.brushSize">Brush Size:</label>
-                <input type="range" id="mask-editor-brush-slider" class="mask-editor-brush-slider" min="20" max="150" value="50">
-                <span id="mask-editor-brush-size" class="mask-editor-brush-size-display">50 px</span>
+                <span class="mask-editor-brush-end" data-i18n="pdf.maskEditor.brushSmall">Small</span>
+                <input type="range" id="mask-editor-brush-slider" class="mask-editor-brush-slider" min="1" max="16" value="6">
+                <span class="mask-editor-brush-end" data-i18n="pdf.maskEditor.brushLarge">Large</span>
               </div>
               <div class="mask-editor-prompt-container">
                 <label class="mask-editor-prompt-label" data-i18n="pdf.maskEditor.promptLabel">What would you like to change in the masked area?</label>
@@ -326,10 +331,14 @@ export function createMaskEditor(deps) {
         }
         document.getElementById('mask-editor-brush-btn').addEventListener('click', () => setMaskTool('brush'));
         document.getElementById('mask-editor-erase-btn').addEventListener('click', () => setMaskTool('erase'));
-        document.getElementById('mask-editor-brush-slider').addEventListener('input', (e) => {
-          const slider = /** @type {HTMLInputElement} */ (e.target);
-          brush.setSize(parseInt(slider.value, 10));
-          document.getElementById('mask-editor-brush-size').textContent = slider.value + ' px';
+        // The scale, not the markup, owns these bounds — so the slider cannot drift
+        // out of step with brush-scale.js.
+        const brushSlider = /** @type {HTMLInputElement} */ (document.getElementById('mask-editor-brush-slider'));
+        brushSlider.min = String(BRUSH_STEP_MIN);
+        brushSlider.max = String(BRUSH_STEP_MAX);
+        brushSlider.value = String(BRUSH_STEP_DEFAULT);
+        brushSlider.addEventListener('input', () => {
+          brush.setSizeStep(parseInt(brushSlider.value, 10));
         });
 
         const refAddBtn = document.getElementById('mask-editor-ref-add');
@@ -385,6 +394,7 @@ export function createMaskEditor(deps) {
         },
         onReadyChange: () => updateApplyButtonState(),
         onRefineStroke: () => renderPreview(),
+        getCursorHost: () => document.querySelector('.mask-editor-canvas-container'),
       });
 
       // The brush owns the tool; this only mirrors it onto the two buttons.
