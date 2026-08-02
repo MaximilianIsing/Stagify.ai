@@ -1,0 +1,181 @@
+/*
+ * The public share page.
+ *
+ * SELF-CONTAINED ON PURPOSE. styles.css is deliberately NOT loaded here: this page is
+ * opened by a stranger on a phone from a text message, it renders one image, and pulling
+ * in the whole site's stylesheet would be a large render-blocking download for a handful
+ * of rules. That means every custom property it uses must be declared HERE — an undefined
+ * var() does not fall back, it DROPS the declaration, so a token that lives only in
+ * styles.css would silently un-style this page. test/frontend/css-tokens.test.js enforces
+ * that a var() is in scope where it is used.
+ *
+ * MOBILE FIRST, and not as a slogan: the recipient is on a phone in a car park more often
+ * than at a desk. The desktop rules are the media query, not the default.
+ */
+
+:root {
+  --sh-bg: #0f1115;
+  --sh-surface: #171a21;
+  --sh-surface-2: #1f232c;
+  --sh-border: #2a2f3a;
+  --sh-text: #e9ecf1;
+  --sh-text-dim: #a3abba;
+  --sh-accent: #6ea8fe;
+  --sh-radius: 14px;
+  --sh-gap: 16px;
+  --sh-max: 900px;
+  /* 44px is the comfortable touch target; a link the recipient has to aim at on a phone
+     is a link that does not get tapped. */
+  --sh-tap: 44px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --sh-bg: #f6f7f9;
+    --sh-surface: #ffffff;
+    --sh-surface-2: #f0f2f5;
+    --sh-border: #dfe3e9;
+    --sh-text: #12151a;
+    --sh-text-dim: #5c6675;
+    --sh-accent: #1f6feb;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--sh-bg);
+  color: var(--sh-text);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The single visibility switch. Exactly one state is ever displayed, because the selector
+   is on the body attribute rather than on a class each state toggles for itself. */
+.sh-state { display: none; }
+body[data-state='loading'] .sh-state--loading { display: flex; }
+body[data-state='ready'] .sh-state--ready { display: block; }
+body[data-state='unavailable'] .sh-state--unavailable { display: block; }
+
+/* The shared h1 is hidden while loading — showing "Staged room" over a spinner reads as
+   a result that has already arrived. */
+body[data-state='loading'] .sh-headline { display: none; }
+body[data-state='unavailable'] .sh-headline { text-align: center; font-size: 1.35rem; }
+
+.sh-main {
+  max-width: var(--sh-max);
+  margin: 0 auto;
+  padding: var(--sh-gap);
+}
+
+/* ---- loading ---- */
+.sh-state--loading { justify-content: center; padding: 25vh 0; }
+.sh-spinner {
+  width: 28px; height: 28px;
+  border: 3px solid var(--sh-border);
+  border-top-color: var(--sh-accent);
+  border-radius: 50%;
+  animation: sh-spin 0.8s linear infinite;
+}
+@keyframes sh-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .sh-spinner { animation-duration: 3s; }
+}
+
+/* ---- unavailable ---- */
+.sh-state--unavailable { padding: 0 0 18vh; text-align: center; }
+.sh-unavailable__body { color: var(--sh-text-dim); margin: 10px auto 0; max-width: 34ch; }
+
+/* ---- ready ---- */
+.sh-header { margin: 6px 0 18px; }
+.sh-headline { font-size: 1.5rem; line-height: 1.25; margin: 0 0 10px; }
+.sh-note { color: var(--sh-text-dim); margin: 8px 0 0; white-space: pre-wrap; }
+
+.sh-gallery { display: grid; gap: var(--sh-gap); }
+
+.sh-frame {
+  background: var(--sh-surface);
+  border: 1px solid var(--sh-border);
+  border-radius: var(--sh-radius);
+  overflow: hidden;
+}
+.sh-frame__button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  /* The image box is reserved from the manifest's width/height, so the page does not
+     reflow when the bytes land — a jump on a phone reads as a broken page. */
+  aspect-ratio: var(--sh-ar, 3 / 2);
+}
+.sh-frame__img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sh-frame__label {
+  padding: 10px 14px;
+  color: var(--sh-text-dim);
+  font-size: 0.9rem;
+  border-top: 1px solid var(--sh-border);
+}
+
+/* ---- agent card ---- */
+.sh-agent {
+  margin-top: var(--sh-gap);
+  padding: 14px;
+  background: var(--sh-surface);
+  border: 1px solid var(--sh-border);
+  border-radius: var(--sh-radius);
+}
+.sh-agent__name { font-weight: 600; margin: 0 0 6px; }
+.sh-agent__links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0; padding: 0; list-style: none; }
+.sh-agent__link {
+  display: inline-flex;
+  align-items: center;
+  /* Padding rather than min-height: these sit on a baseline-aligned row, and a min-height
+     would push them out of alignment with the label beside them. */
+  padding: calc((var(--sh-tap) - 1.4em) / 2) 0;
+  color: var(--sh-accent);
+  text-decoration: none;
+  word-break: break-word;
+}
+.sh-agent__link:hover, .sh-agent__link:focus-visible { text-decoration: underline; }
+
+/* ---- footer ---- */
+.sh-footer { margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--sh-border); }
+.sh-disclosure { color: var(--sh-text-dim); font-size: 0.82rem; margin: 0 0 10px; }
+.sh-brand { color: var(--sh-text-dim); font-size: 0.82rem; margin: 0; }
+.sh-brand a { color: var(--sh-accent); text-decoration: none; }
+.sh-brand a:hover, .sh-brand a:focus-visible { text-decoration: underline; }
+
+/* ---- lightbox ---- */
+.sh-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+}
+.sh-lightbox[hidden] { display: none; }
+.sh-lightbox__img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.sh-lightbox__close {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: var(--sh-tap); height: var(--sh-tap);
+  font-size: 28px; line-height: 1;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+:focus-visible { outline: 2px solid var(--sh-accent); outline-offset: 2px; }
+
+@media (min-width: 720px) {
+  .sh-main { padding: 32px 24px 56px; }
+  .sh-headline { font-size: 1.9rem; }
+}

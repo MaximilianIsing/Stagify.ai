@@ -54,6 +54,23 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/chat-upload'],
   ['POST', '/api/send-email'],
   ['POST', '/api/stage-by-endpoint-key'],
+  // The gallery. Unauthenticated probes are refused at the top of each handler (401)
+  // long before anything is read or written.
+  ['GET', '/api/gallery'],
+  ['DELETE', '/api/gallery/probe'],
+  ['POST', '/api/gallery/probe/share'],
+  ['PATCH', '/api/gallery/probe/share'],
+  ['DELETE', '/api/gallery/probe/share'],
+  // The public share shell. It performs NO lookup, so any token — including this
+  // invented one — gets the same 200 shell.
+  ['GET', '/s/probe'],
+  // DELIBERATELY ABSENT: GET /api/share/:token.
+  //
+  // Its entire contract is a uniform 404 for unknown, revoked, expired, not-yours and
+  // not-yet-uploaded — that is what stops it being an oracle over the token keyspace
+  // (see routes/share-public.js). This test reads 404 as "route removed", so listing it
+  // here would fail the build for exactly the reason the route is correct. Its
+  // registration is covered in test/routes/share-public.test.js instead.
 ];
 
 test('every critical route is still registered (not 404)', async () => {

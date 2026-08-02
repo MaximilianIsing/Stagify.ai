@@ -99,6 +99,8 @@ const ALL_FACTORIES = [
   'masking-studio/viewer.js#createViewer',
   'profile-menu/auth-modal.js#createAuthModal',
   'profile-menu/google-signin.js#createGoogleSignIn',
+  'share/refresh.js#createRefresher',
+  'share/view.js#createLightbox',
 ];
 
 // Build a program over exactly the files `npm run typecheck` checks, with
