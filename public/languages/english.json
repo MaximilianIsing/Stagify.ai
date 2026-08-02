@@ -371,7 +371,10 @@
       "downloadOriginal": "Original",
       "downloadNative": "native",
       "uploadAnotherShort": "Reupload",
-      "downloadResultShort": "Download"
+      "downloadResultShort": "Download",
+      "savedToGallery": "Saved to your gallery.",
+      "galleryEvicted": "Older stagings were removed to make room — the free plan keeps your most recent ones.",
+      "galleryEvictedShared": "One of them had an active share link, which no longer works."
     }
   },
   "roomTypes": {
@@ -611,6 +614,7 @@
     "upgradeToPlus": "Upgrade to Stagify+",
     "manageSubscription": "Manage subscription",
     "signOut": "Sign out",
+    "yourGallery": "Your gallery",
     "manageBillingAria": "Manage billing in Stripe",
     "stripeHelp": "Stripe help center"
   },
