@@ -16,6 +16,12 @@ import { createHttpGuards } from '../../lib/http/http-guards.js';
 import { setSensitiveHeaders } from '../../lib/http/http-helpers.js';
 import { createEmailCatalog } from '../../lib/services/email-catalog.js';
 import { createReferralLinks } from '../../lib/data/referral-links.js';
+// The PRODUCTION multer instance, for `realUpload: true` — the point is to exercise
+// the real fileFilter and size limit, so this must not be rebuilt here.
+import {
+  hostImageUpload as realHostImageUpload,
+  HOSTED_IMAGE_MIME_EXT as REAL_HOSTED_IMAGE_MIME_EXT,
+} from '../../lib/http/uploads.js';
 import { closeDb } from '../../lib/data/db.js';
 
 export const ADMIN_KEY = 'test-endpoint-key';
@@ -52,7 +58,7 @@ function makeSpy(impl) {
 export async function mountAdmin(options = {}) {
   const {
     logsAccessKey = ADMIN_KEY, uploadFile, uploadError, dataLogFiles = {},
-    withReferrals = true, realKeyLimiter = false, endpointKeyLimiter,
+    withReferrals = true, realKeyLimiter = false, endpointKeyLimiter, realUpload = false,
     grantResult = { ok: true, userId: 'u_1', email: 'granted@example.com', expiresAt: '2026-08-22T00:00:00.000Z' },
     revokeResult = { ok: true, userId: 'u_1', email: 'granted@example.com' },
     testSendResult = { ok: true },
@@ -70,11 +76,21 @@ export async function mountAdmin(options = {}) {
   const readHostedImagesManifest = () => manifest;
   const writeHostedImagesManifest = makeSpy((next) => { manifest = next; });
 
-  const hostImageUpload = (req, res, cb) => {
-    if (uploadError) return cb(new Error(uploadError));
-    if (uploadFile) req.file = uploadFile;
-    cb();
-  };
+  // By default the upload middleware is faked, which keeps the many non-upload admin
+  // tests from having to build multipart bodies. That default HID a real gap: nothing
+  // asserted the production multer instance still carries `fileFilter:
+  // hostedImageFileFilter`, so deleting that line kept the whole suite green — and the
+  // route does not re-check the mime (routes/admin.js saves an unknown type as .bin
+  // and routes/public.js serves it back INLINE with that Content-Type). Pass
+  // `realUpload: true` to drive lib/http/uploads.js itself; see
+  // test/routes/admin-upload-filter.test.js.
+  const hostImageUpload = realUpload
+    ? realHostImageUpload
+    : (req, res, cb) => {
+      if (uploadError) return cb(new Error(uploadError));
+      if (uploadFile) req.file = uploadFile;
+      cb();
+    };
 
   const exportAllMemories = makeSpy(() => ({ 'user-1': [{ id: 'm1', text: 'remember me' }] }));
   const resetAllMemories = makeSpy(() => {});
@@ -130,7 +146,11 @@ export async function mountAdmin(options = {}) {
     writeHostedImagesManifest,
     protectLogs,
     __dirname: path.resolve('.'),
-    HOSTED_IMAGE_MIME_EXT: { 'image/png': 'png', 'image/jpeg': 'jpg' },
+    // The REAL map, not a two-entry stand-in. server.js injects lib/http/uploads.js's
+    // export; the trimmed copy that used to sit here disagreed with the filter beside
+    // it, so a webp or gif that multer ACCEPTS was saved as `.bin` under test while
+    // production named it correctly — a divergence that can only ever hide bugs.
+    HOSTED_IMAGE_MIME_EXT: REAL_HOSTED_IMAGE_MIME_EXT,
     emailCatalog,
     sendTestEmail,
     referralLinks,

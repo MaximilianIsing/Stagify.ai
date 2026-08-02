@@ -41,8 +41,13 @@ export default defineConfig({
     // `isMobileStagingViewport()` (`matchMedia('(max-width: 768px)')`) react to.
     //
     // Specs that are inherently desktop-only opt out with
-    // `test.skip(({ isMobile }) => isMobile, '<reason>')`, and the mobile-only spec
-    // (e2e/stage-mobile-auth.spec.js) inverts that. Nothing is weakened to go green.
+    // `test.skip(({ isMobile }) => isMobile, '<reason>')` — e2e/staging-nav.spec.js,
+    // e2e/basic-mask.spec.js and the two mask-fit specs, which pin desktop window
+    // sizes. Two invert it to assert the mobile half of a decision rather than skip
+    // it: e2e/staging-nav.spec.js ("the Staging menu is not shown on a phone") and
+    // e2e/stage-mask-fit.spec.js:220. Nothing is weakened to go green.
+    // (This used to name e2e/stage-mobile-auth.spec.js, which does not exist — so a
+    // reviewer asking whether this project earns its 2x runtime was sent to nothing.)
     { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
   ],
   webServer: {
