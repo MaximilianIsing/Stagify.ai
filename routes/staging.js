@@ -81,9 +81,17 @@ router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, 
       treatAsPro: false,
     });
   } catch (error) {
+    // Guard headersSent, as the endpoint-key twin below already does. Both call the
+    // same handleVirtualStagingMultipart, which answers the request itself on the
+    // happy path and on its own 429 — so anything thrown AFTER that point reached a
+    // sendError that threw ERR_HTTP_HEADERS_SENT, rejected the async handler, and
+    // ended at Express's default handler, which destroys the socket. The client saw
+    // a truncated response instead of the successful JSON it was already receiving.
+    if (res.headersSent) return undefined;
     // A model that returned no image is an expected outcome with its own 422 and
-    // code, not an internal failure — it gets no reference to quote.
-    if (error.code === 'NO_IMAGE_GENERATED') {
+    // code, not an internal failure — it gets no reference to quote. `error` may not
+    // be an object (a thrown string would make `.code` a second TypeError here).
+    if (error && /** @type {any} */ (error).code === 'NO_IMAGE_GENERATED') {
       logger.error('Error processing image:', error);
       return sendError(res, 422, 'This image couldn\'t be staged. Please try a different photo of an interior room.', {
         code: 'NO_IMAGE_GENERATED',
