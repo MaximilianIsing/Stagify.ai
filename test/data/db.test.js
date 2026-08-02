@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { openDb, resolveDataDir, getDb, closeDb } from '../../lib/data/db.js';
 import { createAuthStore } from '../../lib/data/auth-store.js';
 
@@ -35,6 +36,33 @@ test('openDb applies the expected pragmas (WAL, NORMAL sync, busy timeout)', () 
   assert.equal(db.pragma('journal_mode', { simple: true }), 'wal');
   assert.equal(db.pragma('synchronous', { simple: true }), 1, 'NORMAL');
   assert.ok(db.pragma('busy_timeout', { simple: true }) >= 5000);
+});
+
+// The assertion above reads the FINAL values, which are identical whatever order
+// applyPragmas issues the statements in — so it passed while busy_timeout was set
+// LAST, which is a real bug: `journal_mode = WAL` takes a brief exclusive lock, and
+// until busy_timeout is set SQLite's default is 0, i.e. fail immediately instead of
+// waiting. Under litestream (scripts/start.sh runs `litestream replicate -exec`)
+// two processes hold the file, so that raced at boot. Order is behaviour here, and
+// only a source scan can see it — the end state cannot.
+test('busy_timeout is set BEFORE the pragmas it protects', () => {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const src = fs.readFileSync(path.join(here, '..', '..', 'lib', 'data', 'db.js'), 'utf8');
+  // Strip comments first. The fix's own comment says "busy_timeout must come FIRST"
+  // and names all three pragmas, so a scan over raw source would happily pass with
+  // every db.pragma() call deleted.
+  const code = src
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .map((line) => line.replace(/(^|[^:])\/\/.*$/, '$1'))
+    .join('\n');
+
+  const order = [...code.matchAll(/\bdb\.pragma\(\s*'([a-z_]+)/g)].map((m) => m[1]);
+  assert.deepEqual(
+    order,
+    ['busy_timeout', 'journal_mode', 'synchronous'],
+    'applyPragmas must issue busy_timeout first — see the comment in lib/data/db.js'
+  );
 });
 
 // db.js no longer sets `foreign_keys` — see the note there. Two independent facts
