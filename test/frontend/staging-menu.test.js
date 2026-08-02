@@ -249,8 +249,14 @@ test('the old pro nav links are gone everywhere', () => {
 test('the menu labels resolve to keys that exist in every language pack', () => {
   const [{ html }] = navPages();
   const block = extractBlock(html);
-  const keys = [...block.matchAll(/data-lang(?:-html)?="([^"]+)"/g)].map((m) => m[1]);
-  assert.ok(keys.length >= 5, `expected the trigger plus four labels, found ${keys.length}`);
+  // data-lang-attr is included, and its `key|attribute` payload split: the
+  // Stagify+ mark is an <img> whose alt is translated that way, and the alt is
+  // the ONLY thing announcing the locked state (these rows carry no
+  // aria-disabled on purpose). A key-shaped regex alone would have quietly
+  // stopped covering it the moment the worded chip became a logo.
+  const keys = [...block.matchAll(/data-lang(?:-html|-attr)?="([^"]+)"/g)].map((m) => m[1].split('|')[0]);
+  assert.ok(keys.length >= 6, `expected the trigger, four labels and the Stagify+ alt, found ${keys.length}`);
+  assert.ok(keys.includes('navigation.plusBadge'), 'the Stagify+ mark must keep a translated alt');
 
   const dir = path.join(PUBLIC, 'languages');
   for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {

@@ -3165,9 +3165,9 @@ html {
 .staging-menu__label {
   flex:1 1 auto
 }
-/* Lock and chip ship in the markup on every Stagify+ row and are revealed by
-   the single class the plan writer toggles (scripts/staging-menu.js), so the
-   locked look is one class away rather than four DOM edits. */
+/* Lock and Stagify+ mark ship in the markup on every Stagify+ row and are
+   revealed by the single class the plan writer toggles (scripts/staging-menu.js),
+   so the locked look is one class away rather than four DOM edits. */
 .staging-menu__lock,
 .staging-menu__badge {
   display:none
@@ -3183,19 +3183,17 @@ html {
   transform:translateY(-50%);
   opacity:.75
 }
+/* The Stagify+ mark itself, not a worded chip. No pill chrome around it: the
+   logo is already a self-contained badge, and boxing it made the row read as
+   two competing labels. Its alt text is what carries "this is Stagify+" into
+   the accessibility tree — these rows deliberately do NOT use aria-disabled
+   (they are working links to the upgrade page), so the alt is the only thing
+   announcing the locked state. It must not become alt="". */
 .staging-menu__item.is-locked .staging-menu__badge {
-  display:inline-block;
+  display:block;
   flex:none;
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:.6px;
-  text-transform:uppercase;
-  line-height:1;
-  color:var(--brand);
-  background:var(--brand-tint);
-  border:1px solid var(--brand-pale);
-  padding:3px 7px;
-  border-radius:999px
+  width:18px;
+  height:18px
 }
 @media (prefers-reduced-motion:reduce) {
   .staging-menu__panel,
