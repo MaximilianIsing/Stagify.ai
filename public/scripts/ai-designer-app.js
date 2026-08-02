@@ -83,7 +83,7 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
         showMessageImageLoading,
         removeMessageImageLoading,
         getLastAssistantContentEl,
-        updateLastAssistantText,
+        updateLastAssistantText, resetChatMessages,
       } = createChatMessages({ chatMessages, openImageModal });
 
       // Thumbnail-strip island (scripts/ai-designer/thumbnail-strip.js): the
@@ -224,8 +224,8 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
         setSelectedImageIndex(null);
         syncImageThumbnailStrip();
         
-        // Clear chat messages
-        chatMessages.innerHTML = '';
+        // NOT innerHTML: that orphaned live intervals and object URLs (see its JSDoc).
+        resetChatMessages();
         
         // Clear file selection
         selectedFiles.length = 0;

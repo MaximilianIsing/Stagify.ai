@@ -171,6 +171,34 @@ export function createChatMessages(deps) {
         }
       }
 
+      /**
+       * Tear the transcript down: stop every timer, release every object URL, then
+       * empty the DOM.
+       *
+       * The "new chat" button used to do `chatMessages.innerHTML = ''` directly,
+       * which detaches #typing-indicator and #message-image-loading WITHOUT going
+       * through removeTypingIndicator / removeMessageImageLoading — the only two
+       * callers of clearRotatingStatusText. Each reset during a generation therefore
+       * left a 1.5s interval running forever against an orphaned node, and holding
+       * the reload button through long generations stacked them without bound.
+       *
+       * Attachment previews leak the same way: every file gets a createObjectURL
+       * whose registration outlives the <img>, pinning the decoded blob for the
+       * page's lifetime. Both are found by scanning the live DOM rather than by
+       * remembering ids, so anything that grows a rotating status or an object URL
+       * later is cleaned up here for free.
+       * @returns {void}
+       */
+      function resetChatMessages() {
+        for (const el of chatMessages.querySelectorAll('[data-interval-id]')) {
+          clearRotatingStatusText(/** @type {HTMLElement} */ (el));
+        }
+        for (const img of chatMessages.querySelectorAll('img[data-object-url]')) {
+          URL.revokeObjectURL(/** @type {HTMLImageElement} */ (img).src);
+        }
+        chatMessages.innerHTML = '';
+      }
+
       function showMessageImageLoading(messageType) {
         removeMessageImageLoading();
         const content = getLastAssistantContentEl();
@@ -251,6 +279,10 @@ export function createChatMessages(deps) {
               const img = document.createElement('img');
               const imageSrc = URL.createObjectURL(file);
               img.src = imageSrc;
+              // Marks this URL as ours to revoke — resetChatMessages finds it by
+              // scanning the DOM, so the blob is released instead of being pinned
+              // for the page's lifetime once the transcript is cleared.
+              img.dataset.objectUrl = '1';
               img.alt = getPdfAlt('uploadPreview', { filename: file.name });
               img.addEventListener('click', () => openImageModal(imageSrc, getPdfAlt('uploadPreview', { filename: file.name })));
               fileDiv.appendChild(img);
@@ -333,5 +365,6 @@ export function createChatMessages(deps) {
     removeMessageImageLoading,
     getLastAssistantContentEl,
     updateLastAssistantText,
+    resetChatMessages,
   };
 }
