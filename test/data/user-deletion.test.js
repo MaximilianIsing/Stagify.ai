@@ -36,7 +36,10 @@ import {
   LOG_REDACTIONS,
   JSON_REDACTIONS,
   NOT_PERSONAL_DATA_FILES,
+  BLOB_KEYED_TABLES,
+  NOT_BLOB_KEYED,
 } from '../../lib/data/user-deletion.js';
+import { R2_PREFIXES, keyForRender, keyForRef } from '../../lib/data/object-keys.js';
 import { REDACTED } from '../../lib/data/csv-redaction.js';
 
 const dirs = [];
@@ -443,6 +446,75 @@ test('every user-keyed table in the real schema is covered by erasure', () => {
         '(add it to USER_ID_TABLES / USER_EMAIL_TABLES) nor explains why it is exempt (add it to NOT_USER_KEYED). ' +
         'There are no foreign keys in this database, so an unlisted table outlives the account.',
     );
+  }
+});
+
+// Guard 3. The structural twin of the user_id scan above, for bytes that do not live in
+// this database at all.
+//
+// The existing data-dir guard finds targets by scanning for `path.join(<dataDir>, …)`.
+// Render bytes are in an R2 bucket, so that scan passes VACUOUSLY for them — it cannot
+// see what it cannot find a path.join for. Without this guard, adding a table that
+// points at object-store bytes would leave those bytes undeleted after an erasure and
+// nothing in the suite would notice.
+test('every table naming object-store bytes is tombstoned by erasure', () => {
+  const { db } = setup();
+  // Create a table shaped like one somebody might add later, so the scan has something
+  // to find even before Phase C's real tables exist. If the scan cannot fail, it is not
+  // a guard.
+  db.exec('CREATE TABLE IF NOT EXISTS render_blobs (render_id TEXT, role TEXT, storage_key TEXT, user_id TEXT)');
+
+  const covered = new Set(BLOB_KEYED_TABLES.map((t) => t.table));
+  const tables = db
+    .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
+    .all()
+    .map((r) => r.name);
+
+  let scanned = 0;
+  for (const table of tables) {
+    const columns = db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+    if (!columns.includes('storage_key')) continue;
+    scanned += 1;
+    assert.ok(
+      covered.has(table) || Object.hasOwn(NOT_BLOB_KEYED, table),
+      `Table "${table}" holds a storage_key but lib/data/user-deletion.js neither tombstones it ` +
+        '(add it to BLOB_KEYED_TABLES) nor explains why it is exempt (add it to NOT_BLOB_KEYED). ' +
+        'Those bytes are in an object store, so the data-dir guard cannot see them — an unlisted ' +
+        'table means an erased account whose room photographs stay in the bucket forever.',
+    );
+  }
+  assert.ok(scanned >= 2, `sanity: the scan must actually find storage_key tables, saw ${scanned}`);
+});
+
+// Guard 4. Every object-key SHAPE the app can mint has to have its erasure story
+// written down. BLOB_KEYED_TABLES covers "which rows name bytes"; this covers "which
+// bytes can exist at all", which is the half that catches a key minted by a code path
+// that forgot to record a row.
+test('every object-key prefix the app can mint is classified', () => {
+  const minted = [
+    keyForRender({ renderId: '0123456789abcdef0123456789abcdef', role: 'after' }),
+    keyForRender({ renderId: '0123456789abcdef0123456789abcdef', role: 'before' }),
+    keyForRender({ renderId: '0123456789abcdef0123456789abcdef', role: 'thumb' }),
+    keyForRef({ refHash: 'a'.repeat(64) }),
+  ];
+  const prefixes = new Set(Object.keys(R2_PREFIXES));
+  for (const key of minted) {
+    const prefix = [...prefixes].find((p) => key.startsWith(p));
+    assert.ok(
+      prefix,
+      `The app can mint the object key "${key}" but R2_PREFIXES in lib/data/object-keys.js does not ` +
+        'classify its prefix. Every shape of byte this app writes needs a written answer to "how does ' +
+        'an erasure reach it".',
+    );
+    assert.ok(
+      String(R2_PREFIXES[prefix]).length > 20,
+      `R2_PREFIXES["${prefix}"] needs a real explanation, not a placeholder`,
+    );
+  }
+  // ...and nothing may be classified that cannot actually be minted, or the map becomes
+  // documentation of a layout that no longer exists.
+  for (const prefix of prefixes) {
+    assert.ok(minted.some((k) => k.startsWith(prefix)), `R2_PREFIXES lists "${prefix}" but nothing mints it`);
   }
 });
 
