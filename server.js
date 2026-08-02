@@ -21,12 +21,14 @@ import { createEmail } from './lib/services/email.js';
 import { createLogging } from './lib/services/logging.js';
 import { createMemory } from './lib/data/memory.js';
 import { createUserDeletion } from './lib/data/user-deletion.js';
+import { createBlobTombstones, createBlobReaper } from './lib/data/blob-tombstones.js';
 import { createConfig } from './lib/config/config.js';
 import { maskReferencePromptSuffix } from './lib/staging/prompts.js';
 import { downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, downscaleImageForGPT, compositeForReview } from './lib/image/image-primitives.js';
 import createPublicRouter from './routes/public.js';
 import createI18nRouter from './routes/i18n.js';
 import createReferralRouter from './routes/referrals.js';
+import createObjectLocalRouter from './routes/object-local.js';
 import createChatRouter from './routes/chat.js';
 import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
@@ -36,6 +38,7 @@ import { setSensitiveHeaders, sendError } from './lib/http/http-helpers.js';
 import { getTemperatureForModel, getGeminiImageModel } from './lib/config/model-config.js';
 import { createAuthHelpers } from './lib/services/auth-helpers.js';
 import { getPromptCount, incPromptCount, getContactCount, incContactCount, initializePromptCount, initializeContactCount } from './lib/data/counters.js';
+import { createObjectStore } from './lib/data/object-store.js';
 import { createImageAnnotation } from './lib/image/image-annotation.js';
 import { createImageReview } from './lib/image/image-review.js';
 import { createErase } from './lib/image/erase.js';
@@ -67,6 +70,12 @@ const stripeEvents = createStripeEventLog(__dirname);
 // lib/data/referral-links.js for the registry that drives both the routes and the
 // dashboard panel.
 const referralLinks = createReferralLinks(__dirname);
+// Where the gallery's BYTES live — R2 in production, the local disk in dev/CI, and
+// deliberately DISABLED on Render when R2 is not configured rather than falling back
+// to the app volume (see lib/data/object-store.js for why that branch exists).
+// Never throws: a storage misconfiguration turns the gallery off and leaves staging
+// untouched, the same posture scripts/start.sh takes for a missing Litestream setup.
+const objectStore = createObjectStore({ baseDir: __dirname });
 setInterval(() => authStore.pruneSessions(), 6 * 60 * 60 * 1000).unref?.();
 
 const stripeSecretKey = readStripeSecretKey();
@@ -225,7 +234,20 @@ const { logEmailOpenToFile, isConfirmedEmailClientOpen, forgetEmailOpenState, se
 const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = createMemory({ __dirname, DEBUG_MODE });
 // GDPR erasure. Built here (not inside a store) because it spans every store's
 // tables plus the CSV logs — see lib/data/user-deletion.js.
-const { deleteUser } = createUserDeletion({ baseDir: __dirname, getDataLogDir, forgetEmailOpenState });
+// The queue of object-store bytes owed a deletion, and the worker that drains it.
+//
+// An erasure commits the OBLIGATION to delete inside its synchronous transaction and
+// returns; the bytes are in R2, so actually deleting them is async network work that
+// must not hold the write lock, must not be able to fail a right-to-erasure request,
+// and must survive the process dying. See lib/data/blob-tombstones.js.
+const blobTombstones = createBlobTombstones(__dirname);
+const blobReaper = createBlobReaper({ tombstones: blobTombstones, objectStore });
+// Same shape as the session prune above: a plain interval, unref'd so it cannot hold
+// the process open. Erasure and eviction both kick a drain themselves; this is the
+// backstop that finishes the work when R2 was down at the time.
+setInterval(() => { void blobReaper.drain().catch(() => {}); }, 5 * 60 * 1000).unref?.();
+
+const { deleteUser } = createUserDeletion({ baseDir: __dirname, getDataLogDir, forgetEmailOpenState, blobReaper });
 
 // GPT-vision / Gemini helpers extracted to lib/, instantiated with this server's
 // AI clients (the pure helpers they call are direct imports inside each module).
@@ -320,6 +342,16 @@ app.use(createI18nRouter({ __dirname, DEBUG_MODE }));
 
 // public routes (routes/public.js)
 app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));
+
+// Local gallery blobs (routes/object-local.js) — DEV AND CI ONLY, and mounted only
+// when the local backend actually answered. In production R2 presigns straight at the
+// bucket, so no render byte passes through this process; that is the whole reason the
+// bytes are not on the app disk. Mounting it unconditionally would create a
+// same-origin byte route in production that nothing needs and everything could grow to
+// depend on.
+if (objectStore.backend === 'local') {
+  app.use(createObjectLocalRouter({ objectStore: /** @type {any} */ (objectStore) }));
+}
 
 // Referral/campaign short-URLs (routes/referrals.js) — /columbia and anything else
 // created from the dashboard count the arrival and 302 to the home page.
