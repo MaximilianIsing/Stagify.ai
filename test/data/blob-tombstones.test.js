@@ -15,6 +15,7 @@ import { createAuthStore } from '../../lib/data/auth-store.js';
 import { createMemory } from '../../lib/data/memory.js';
 import { getDb, closeDb } from '../../lib/data/db.js';
 import { createBlobTombstones, createBlobReaper } from '../../lib/data/blob-tombstones.js';
+import { GALLERY_SCHEMA } from '../../lib/data/gallery-schema.js';
 import { createUserDeletion } from '../../lib/data/user-deletion.js';
 import { keyForRender, keyForRef } from '../../lib/data/object-keys.js';
 
@@ -41,12 +42,10 @@ function setup() {
   const logDir = path.join(dir, 'data');
   fs.mkdirSync(logDir, { recursive: true });
   const db = getDb(dir);
-  // The Phase C tables, created here so erasure has something to tombstone FROM. The
-  // shapes match lib/data/staged-renders.js; only the columns this path reads matter.
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS render_blobs (render_id TEXT, role TEXT, storage_key TEXT, bytes INTEGER, user_id TEXT);
-    CREATE TABLE IF NOT EXISTS ref_objects (ref_hash TEXT PRIMARY KEY, storage_key TEXT, user_id TEXT);
-  `);
+  // The gallery tables, so erasure has something to tombstone FROM. createUserDeletion
+  // execs this schema itself, but doing it here too lets a test insert rows before the
+  // deleter is built.
+  db.exec(GALLERY_SCHEMA);
   const tombstones = createBlobTombstones(dir);
   return { dir, db, authStore, logDir, tombstones };
 }
@@ -206,7 +205,7 @@ test('erasing an account tombstones every object it owns', () => {
     db.prepare('INSERT INTO render_blobs (render_id, role, storage_key, user_id) VALUES (?, ?, ?, ?)')
       .run(rid, role, keyForRender({ renderId: rid, role }), user.id);
   }
-  db.prepare('INSERT INTO ref_objects (ref_hash, storage_key, user_id) VALUES (?, ?, ?)')
+  db.prepare('INSERT INTO ref_objects (ref_hash, storage_key, created_at, user_id) VALUES (?, ?, 0, ?)')
     .run('c'.repeat(64), keyForRef({ refHash: 'c'.repeat(64) }), user.id);
   // Another account's bytes must be untouched.
   db.prepare('INSERT INTO render_blobs (render_id, role, storage_key, user_id) VALUES (?, ?, ?, ?)')
@@ -224,14 +223,16 @@ test('erasing an account tombstones every object it owns', () => {
   assert.ok(queued.includes(keyForRender({ renderId: rid, role: 'before' })));
   assert.ok(!queued.some((k) => k.includes('d'.repeat(32))), "another account's bytes must not be queued");
 
-  // NOTE: the render_blobs/ref_objects ROWS are not deleted here yet — those tables join
-  // USER_ID_TABLES in lib/data/staged-renders.js, which owns them. The existing
-  // "every user-keyed table in the real schema is covered by erasure" guard is what
-  // forces that, because both tables carry a user_id column; see
-  // test/data/staged-renders.test.js for the assertion that the rows go too.
-  // What this test pins is the ordering that makes it possible: the keys are captured
-  // INSIDE the transaction, so there is no interleaving where the rows are gone and
-  // nothing records which bytes they named.
+  // ...and the rows that named those keys really are gone. Together with the queue
+  // above, that is the ordering this whole design turns on: the keys are captured
+  // INSIDE the transaction, BEFORE the deletes, so there is no interleaving where the
+  // rows have vanished and nothing records which bytes they named.
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM render_blobs WHERE user_id = ?').get(user.id).n, 0);
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM ref_objects WHERE user_id = ?').get(user.id).n, 0);
+  assert.equal(
+    db.prepare('SELECT COUNT(*) AS n FROM render_blobs WHERE user_id = ?').get(other.id).n, 1,
+    "another account's rows are untouched",
+  );
 });
 
 test('an erasure still succeeds when the object store is unreachable', async () => {
@@ -264,7 +265,7 @@ test('a reference shared by two renders is queued once', () => {
   const { dir, db, authStore, logDir } = setup();
   const user = makeUser(authStore);
   const hash = 'f'.repeat(64);
-  db.prepare('INSERT INTO ref_objects (ref_hash, storage_key, user_id) VALUES (?, ?, ?)')
+  db.prepare('INSERT INTO ref_objects (ref_hash, storage_key, created_at, user_id) VALUES (?, ?, 0, ?)')
     .run(hash, keyForRef({ refHash: hash }), user.id);
   db.prepare('INSERT INTO render_blobs (render_id, role, storage_key, user_id) VALUES (?, ?, ?, ?)')
     .run('1'.repeat(32), 'after', keyForRef({ refHash: hash }), user.id);
