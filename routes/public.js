@@ -4,6 +4,7 @@ import { sendError } from '../lib/http/http-helpers.js';
 import { reportError } from '../lib/http/error-ref.js';
 import { escapeCsvField } from '../lib/http/csv-escape.js';
 import { buildBugReportRow, BUG_REPORT_HEADER, bugReportLogCeiling } from '../lib/http/bug-report-row.js';
+import { appendCsvRow } from '../lib/services/csv-append.js';
 import { resolveDataDir } from '../lib/data/data-dir.js';
 import { emailPixelLimiter as defaultEmailPixelLimiter, EMAIL_PIXEL_RATE_LIMITED } from '../lib/http/rate-limiters.js';
 import path from 'path';
@@ -156,6 +157,22 @@ router.get('/email/logo.png', pixelLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Logo Full.png'));
 });
 
+// Unauthenticated, and it writes to the same volume auth-store.db lives on — the
+// same threat model /api/bug-report documents in lib/http/bug-report-row.js, which
+// this endpoint was missing entirely. It had NO per-field cap and NO file ceiling,
+// while emailLimiter allows 6 requests / 15 min / IP against a 1 MB JSON parser: a
+// few IPs could fill the disk and take SQLite (auth, sessions, memories) down with
+// it. Fields are clamped here and the file carries the same absolute backstop.
+const CONTACT_LOG_HEADER = 'timestamp,userRole,referralSource,email,userAgent,ipAddress';
+// Generous enough that a real submission is never clipped, small enough that abuse
+// is bounded to a few KB per request rather than a megabyte.
+const CONTACT_LIMITS = { userRole: 64, referralSource: 128, email: 320, userAgent: 512 };
+/** @param {unknown} value @param {number} max @returns {string} */
+const clampContactField = (value, max) => {
+  const str = String(value ?? '');
+  return str.length <= max ? str : str.slice(0, max) + ' [truncated]';
+};
+
 router.post('/api/log-contact', emailLimiter, (req, res) => {
   try {
     const { userRole = 'unknown', referralSource = 'unknown', email = 'unknown', userAgent = 'unknown' } = req.body;
@@ -164,41 +181,44 @@ router.post('/api/log-contact', emailLimiter, (req, res) => {
 
     // Create CSV row. Every field is run through escapeCsvField so attacker-supplied
     // values (userRole/referralSource/email/userAgent) can neither break out of their
-    // column via an embedded quote/comma nor smuggle a spreadsheet formula (=,+,-,@).
+    // column via an embedded quote/comma nor smuggle a spreadsheet formula (=,+,-,@),
+    // and is clamped first so no single field can be megabytes long.
     const csvRow = [
       escapeCsvField(timestamp),
-      escapeCsvField(userRole),
-      escapeCsvField(referralSource),
-      escapeCsvField(email),
-      escapeCsvField(userAgent),
+      escapeCsvField(clampContactField(userRole, CONTACT_LIMITS.userRole)),
+      escapeCsvField(clampContactField(referralSource, CONTACT_LIMITS.referralSource)),
+      escapeCsvField(clampContactField(email, CONTACT_LIMITS.email)),
+      escapeCsvField(clampContactField(userAgent, CONTACT_LIMITS.userAgent)),
       escapeCsvField(ipAddress),
     ].join(',') + '\n';
-    
+
     const logFile = path.join(resolveDataDir(__dirname), 'contact_logs.csv');
-    
-    // Check if file exists to add header if it's a new file
-    const fileExists = fs.existsSync(logFile);
-    
-    if (!fileExists) {
-      // Create new file with header and first row
-      const header = 'timestamp,userRole,referralSource,email,userAgent,ipAddress\n';
-      fs.writeFileSync(logFile, header + csvRow);
-    } else {
-      // Append to existing file
-      fs.appendFile(logFile, csvRow, (err) => {
-        if (err) {
-          logger.error('Error writing to contact log:', err);
-        }
-      });
+
+    // Second, absolute ceiling — the same backstop /api/bug-report uses, for the
+    // same reason: past this size stop appending rather than eat the volume.
+    let existingSize = 0;
+    try {
+      existingSize = fs.statSync(logFile).size;
+    } catch (err) {
+      if (/** @type {any} */ (err)?.code !== 'ENOENT') throw err;
     }
-    
+    const ceiling = bugReportLogCeiling();
+    if (existingSize >= ceiling) {
+      logger.error(
+        `Contact log dropped: ${logFile} is at its ${ceiling}-byte ceiling (${existingSize} bytes). Rotate or archive it.`
+      );
+      return sendError(res, 503, 'Contact logging is temporarily unavailable');
+    }
+
+    appendCsvRow(logFile, CONTACT_LOG_HEADER, csvRow, 'contact log');
+
     // Increment contact count
     incContactCount();
-    
-    res.json({ success: true, message: 'Contact logged successfully' });
+
+    return res.json({ success: true, message: 'Contact logged successfully' });
   } catch (error) {
     logger.error('Error in contact logging:', error);
-    sendError(res, 500, 'Failed to log contact');
+    return sendError(res, 500, 'Failed to log contact');
   }
 });
 
