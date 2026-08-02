@@ -34,6 +34,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["server.js", "instrument.js", "load-env.js", "lib/**/*.js", "routes/**/*.js", "lib/types/**/*.d.ts"],
+  // scripts/** is included alongside the server: it was outside BOTH this list and
+  // the ESLint scope until 2026-08-01, so the build/CI tooling — including
+  // collect-esm-frontend.js, which defines the lint and type-check scopes — was
+  // neither linted nor type-checked.
+  "include": ["server.js", "instrument.js", "load-env.js", "lib/**/*.js", "routes/**/*.js", "scripts/**/*.js", "lib/types/**/*.d.ts"],
   "exclude": ["node_modules"]
 }

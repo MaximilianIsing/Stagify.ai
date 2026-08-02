@@ -30,7 +30,11 @@ fs.writeFileSync(
   JSON.stringify({ extends: path.join(rootDir, 'tsconfig.frontend.json'), files }, null, 2),
 );
 
-let status = 1;
+// No `= 1` initializer: it looked like a fail-closed default but could never be
+// read. The only path that skips the assignment below is spawnSync itself throwing,
+// and then the exception propagates past process.exit() — node already exits
+// non-zero. Assigned on the one path that reaches the exit.
+let status;
 try {
   const result = spawnSync('npx', ['tsc', '-p', generated], {
     cwd: rootDir,
