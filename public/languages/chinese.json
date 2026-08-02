@@ -371,7 +371,10 @@
       "downloadOriginal": "原始尺寸",
       "downloadNative": "原生",
       "uploadAnotherShort": "重传",
-      "downloadResultShort": "下载"
+      "downloadResultShort": "下载",
+      "savedToGallery": "已保存到你的图库。",
+      "galleryEvicted": "为腾出空间，较旧的效果图已被移除——免费方案仅保留最近的记录。",
+      "galleryEvictedShared": "其中一张带有有效的分享链接，该链接已失效。"
     }
   },
   "roomTypes": {
@@ -611,6 +614,7 @@
     "upgradeToPlus": "升级到 Stagify+",
     "manageSubscription": "管理订阅",
     "signOut": "退出登录",
+    "yourGallery": "我的图库",
     "manageBillingAria": "在 Stripe 中管理账单",
     "stripeHelp": "Stripe 帮助中心"
   },

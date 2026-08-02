@@ -371,7 +371,10 @@
       "downloadOriginal": "Originale",
       "downloadNative": "native",
       "uploadAnotherShort": "Changer",
-      "downloadResultShort": "Télécharger"
+      "downloadResultShort": "Télécharger",
+      "savedToGallery": "Enregistré dans votre galerie.",
+      "galleryEvicted": "D’anciens rendus ont été supprimés pour faire de la place : l’offre gratuite conserve les plus récents.",
+      "galleryEvictedShared": "L’un d’eux avait un lien de partage actif, qui ne fonctionne plus."
     }
   },
   "roomTypes": {
@@ -611,6 +614,7 @@
     "upgradeToPlus": "Passer à Stagify+",
     "manageSubscription": "Gérer l'abonnement",
     "signOut": "Se déconnecter",
+    "yourGallery": "Votre galerie",
     "manageBillingAria": "Gérer la facturation dans Stripe",
     "stripeHelp": "Centre d'aide Stripe"
   },

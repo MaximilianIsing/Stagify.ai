@@ -97,6 +97,7 @@ const ALL_FACTORIES = [
   'masking-studio/snap-refine.js#createSnapRefine',
   'masking-studio/upload.js#createUpload',
   'masking-studio/viewer.js#createViewer',
+  'app/gallery-notice.js#createGalleryNotice',
   'profile-menu/auth-modal.js#createAuthModal',
   'profile-menu/google-signin.js#createGoogleSignIn',
   'share/refresh.js#createRefresher',

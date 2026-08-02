@@ -371,7 +371,10 @@
       "downloadOriginal": "オリジナル",
       "downloadNative": "ネイティブ",
       "uploadAnotherShort": "再アップ",
-      "downloadResultShort": "保存"
+      "downloadResultShort": "保存",
+      "savedToGallery": "ギャラリーに保存しました。",
+      "galleryEvicted": "空きを作るため古いステージングを削除しました。無料プランでは最新のものだけが保持されます。",
+      "galleryEvictedShared": "そのうち 1 件に有効な共有リンクがあり、現在は使用できません。"
     }
   },
   "roomTypes": {
@@ -611,6 +614,7 @@
     "upgradeToPlus": "Stagify+にアップグレード",
     "manageSubscription": "サブスクリプションを管理",
     "signOut": "ログアウト",
+    "yourGallery": "マイギャラリー",
     "manageBillingAria": "Stripeで請求を管理",
     "stripeHelp": "Stripeヘルプセンター"
   },

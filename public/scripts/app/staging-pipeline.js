@@ -1,3 +1,4 @@
+import { createGalleryNotice } from './gallery-notice.js';
 import { unstageableMessage } from '../unstageable-message.js';
 
 // How long a single staging request may run before the client gives up on it.
@@ -46,11 +47,13 @@ const STAGING_TIMEOUT_MS = 180000;
  *   showStagingError: (message: string) => void,
  *   messageForDailyLimitResponse: (errorData: any) => string,
  *   showStagingLimitInViewer: (message: string) => void,
+ *   galleryNotice?: { show: (gallery: any) => void, clear: () => void } | null,
  *   stagingTimeoutMs?: number,
  * }} deps - Progress/preview DOM, the room & style select handles, the
  *   furniture-reference island's handle, the shared upload-validation state as
- *   getters, the entry's error/limit messaging helpers, and (optionally) the
- *   request ceiling, which only a test overrides.
+ *   getters, the entry's error/limit messaging helpers, the optional
+ *   saved-to-gallery notice, and (optionally) the request ceiling, which only a
+ *   test overrides.
  * @returns {{ processWithAI: (imageFile: File) => Promise<string[]> }}
  */
 export function createStagingPipeline(deps) {
@@ -60,6 +63,15 @@ export function createStagingPipeline(deps) {
     getStageValidation, getStageValidationResult, getHasProcessedImage, setLastEmptyRoomUrl,
     hideStagingLimitInViewer, hideStagingError, showBeforeView, isProUser,
     showStagingError, messageForDailyLimitResponse, showStagingLimitInViewer,
+    // Constructed here rather than injected from app.js, which is at 640 lines against a
+    // 650 cap — three lines of wiring is not worth spending a quarter of what is left.
+    // Still a dep, so a test injects a stub instead of needing the real viewer markup.
+    //
+    // The lookup is optional-chained because this default is evaluated at CONSTRUCTION,
+    // and the existing pipeline specs hand in a minimal document shim with no
+    // querySelector. A default parameter that reaches into the DOM has to survive the
+    // DOM not being there; the island itself already treats a null container as a no-op.
+    galleryNotice = createGalleryNotice({ container: document?.querySelector?.('.viewer-header') ?? null }),
     // Injectable so a test can drive the timeout without waiting three minutes.
     stagingTimeoutMs = STAGING_TIMEOUT_MS,
   } = deps;
@@ -509,6 +521,11 @@ export function createStagingPipeline(deps) {
 
     if (result.success && urls.length > 0) {
       hideStagingLimitInViewer();
+      // `result.gallery` is absent when the gallery is switched off (no object store) or
+      // the caller was anonymous, and the notice stays silent for both. It is NOT a share
+      // affordance: the bytes upload after this response, so the entry is still `pending`
+      // and a link minted now would 404 — see gallery-notice.js.
+      galleryNotice?.show(result.gallery);
       setTimeout(() => progress.classList.add('hidden'), 800);
       return urls;
     }

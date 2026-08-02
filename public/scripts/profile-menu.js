@@ -93,6 +93,19 @@ import { lang, esc } from './profile-menu/dom-utils.js';
           esc(lang('profile.upgradeToPlus', 'Upgrade to Stagify+')) +
           '</a>';
       }
+      // The saved-renders gallery. In the ACCOUNT menu rather than the Staging dropdown
+      // for two reasons: it is the user's own output, not a tool, and this dropdown is
+      // built here in one place while the Staging menu's markup is copied onto all nine
+      // nav-bearing pages — a link that has to be added nine times is a link that ends up
+      // on eight of them.
+      //
+      // Shown to FREE accounts too. Their gallery keeps the last twenty rather than
+      // everything, which is the upgrade prompt; hiding it entirely would just look like
+      // the renders were never saved.
+      const galleryRow =
+        '<a href="gallery.html" class="profile-menu__link">' +
+        esc(lang('profile.yourGallery', 'Your gallery')) +
+        '</a>';
       let manageRow = '';
       if (u.plan === 'pro' && u.canManageSubscription) {
         manageRow =
@@ -109,6 +122,7 @@ import { lang, esc } from './profile-menu/dom-utils.js';
         '</div>' +
         '<div class="profile-menu__divider"></div>' +
         '<div class="profile-menu__section">' +
+        galleryRow +
         plusRow +
         manageRow +
         '<button type="button" class="profile-menu__item profile-menu__item--danger" data-profile-action="signout">' +

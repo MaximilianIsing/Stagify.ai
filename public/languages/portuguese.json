@@ -371,7 +371,10 @@
       "downloadOriginal": "Original",
       "downloadNative": "nativa",
       "uploadAnotherShort": "Reenviar",
-      "downloadResultShort": "Baixar"
+      "downloadResultShort": "Baixar",
+      "savedToGallery": "Salvo na sua galeria.",
+      "galleryEvicted": "Montagens antigas foram removidas para abrir espaço — o plano gratuito mantém as mais recentes.",
+      "galleryEvictedShared": "Uma delas tinha um link de compartilhamento ativo, que não funciona mais."
     }
   },
   "roomTypes": {
@@ -611,6 +614,7 @@
     "upgradeToPlus": "Fazer upgrade para o Stagify+",
     "manageSubscription": "Gerenciar assinatura",
     "signOut": "Sair",
+    "yourGallery": "Sua galeria",
     "manageBillingAria": "Gerenciar cobrança no Stripe",
     "stripeHelp": "Central de ajuda do Stripe"
   },

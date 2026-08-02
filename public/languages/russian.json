@@ -371,7 +371,10 @@
       "downloadOriginal": "Оригинал",
       "downloadNative": "исходное",
       "uploadAnotherShort": "Заново",
-      "downloadResultShort": "Скачать"
+      "downloadResultShort": "Скачать",
+      "savedToGallery": "Сохранено в вашей галерее.",
+      "galleryEvicted": "Старые рендеры удалены, чтобы освободить место — бесплатный план хранит только последние.",
+      "galleryEvictedShared": "У одного из них была активная ссылка, которая больше не работает."
     }
   },
   "roomTypes": {
@@ -611,6 +614,7 @@
     "upgradeToPlus": "Перейти на Stagify+",
     "manageSubscription": "Управление подпиской",
     "signOut": "Выйти",
+    "yourGallery": "Ваша галерея",
     "manageBillingAria": "Управление оплатой в Stripe",
     "stripeHelp": "Центр помощи Stripe"
   },

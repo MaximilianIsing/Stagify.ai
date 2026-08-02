@@ -371,7 +371,10 @@
       "downloadOriginal": "Origineel",
       "downloadNative": "native",
       "uploadAnotherShort": "Opnieuw",
-      "downloadResultShort": "Download"
+      "downloadResultShort": "Download",
+      "savedToGallery": "Opgeslagen in je galerij.",
+      "galleryEvicted": "Oudere stagings zijn verwijderd om ruimte te maken — het gratis plan bewaart de meest recente.",
+      "galleryEvictedShared": "Eén ervan had een actieve deellink, die niet meer werkt."
     }
   },
   "roomTypes": {
@@ -611,6 +614,7 @@
     "upgradeToPlus": "Upgrade naar Stagify+",
     "manageSubscription": "Abonnement beheren",
     "signOut": "Uitloggen",
+    "yourGallery": "Jouw galerij",
     "manageBillingAria": "Facturering beheren in Stripe",
     "stripeHelp": "Stripe-helpcentrum"
   },
