@@ -19,4 +19,12 @@ Disallow: /legal/
 # would stop crawlers reading the canonical and folding the old URL into the new
 # one. Do NOT add them to the Disallow list.
 
+# NOTE: /s/ (client share links) is DELIBERATELY not listed, for the same class of
+# reason. Disallow stops the crawl, not the indexing — a crawler that is forbidden
+# from fetching the page never sees the `X-Robots-Tag: noindex` header it sends, so
+# a link forwarded into a public thread can still end up indexed as a bare URL with
+# no content. Letting it be crawled is what lets the noindex actually take effect.
+# The page also carries <meta name="robots" content="noindex, nofollow"> and
+# Referrer-Policy: no-referrer. Do NOT "fix" this by adding Disallow: /s/.
+
 Sitemap: https://stagify.ai/sitemap.xml

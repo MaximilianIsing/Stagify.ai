@@ -24,6 +24,9 @@ import { createUserDeletion } from './lib/data/user-deletion.js';
 import { createBlobTombstones, createBlobReaper } from './lib/data/blob-tombstones.js';
 import { createStagedRenders } from './lib/data/staged-renders.js';
 import { createRenderRefs } from './lib/data/render-refs.js';
+import { createGalleryShares } from './lib/data/gallery-shares.js';
+import createGalleryRouter from './routes/gallery.js';
+import createSharePublicRouter from './routes/share-public.js';
 import { createRenderPersistence } from './lib/staging/render-persistence.js';
 import { createConfig } from './lib/config/config.js';
 import { maskReferencePromptSuffix } from './lib/staging/prompts.js';
@@ -250,6 +253,7 @@ const blobReaper = createBlobReaper({ tombstones: blobTombstones, objectStore })
 // actually stored.
 const stagedRenders = createStagedRenders(__dirname);
 const renderRefs = createRenderRefs(__dirname);
+const galleryShares = createGalleryShares(__dirname);
 // Renders whose upload died mid-flight leave a `pending` row and possibly some orphan
 // bytes. Hourly is well inside the one-hour staleness floor, and the floor is measured
 // against each row's own created_at, so a restart cannot mark a live render failed.
@@ -362,6 +366,17 @@ app.use(createI18nRouter({ __dirname, DEBUG_MODE }));
 
 // public routes (routes/public.js)
 app.use(createPublicRouter({ authStore, uptimeMonitor, resend, LOGS_ACCESS_KEY, endpointKeyMatches, emailLimiter, RESEND_FROM_EMAIL, DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS, getHostedImagesDir, readHostedImagesManifest, logEmailOpenToFile, isConfirmedEmailClientOpen, healthHandler, getPromptCount, getContactCount, incContactCount , __dirname }));
+
+// The owner's gallery (routes/gallery.js) and the public share page
+// (routes/share-public.js). Two routers rather than one because they answer to very
+// different callers: a signed-in account, and an anonymous stranger holding a token.
+app.use(createGalleryRouter({
+  stagedRenders, renderRefs, shares: galleryShares, objectStore, getAuthUserFromRequest,
+  appOrigin: process.env.APP_ORIGIN || '',
+}));
+app.use(createSharePublicRouter({
+  shares: galleryShares, stagedRenders, objectStore, __dirname,
+}));
 
 // Local gallery blobs (routes/object-local.js) — DEV AND CI ONLY, and mounted only
 // when the local backend actually answered. In production R2 presigns straight at the

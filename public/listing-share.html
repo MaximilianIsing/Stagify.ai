@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!--
+  The public share page — what a seller or buyer opens from a text message.
+
+  THIS SHELL IS BYTE-IDENTICAL FOR EVERY TOKEN, including invented ones. routes/share-public.js
+  performs NO lookup before sending it, so the page itself cannot be used to sort real tokens
+  from junk. It then fetches its own manifest and renders the unavailable state for the single
+  404 that route can answer.
+
+  THE OG TAGS ARE GENERIC ON PURPOSE. A share link gets forwarded into group chats and
+  messaging apps that auto-unfurl. Putting the room, the address or the agent's name in a
+  meta tag would publish a private listing to every participant and every link-preview
+  crawler that touches it. The title says nothing about whose house this is.
+
+  NOT LOCALIZED, deliberately. It is absent from LOCALIZED_PAGES in lib/i18n/locales.js and
+  carries no data-lang attributes: a tokenized URL has nowhere to express a language, and
+  adding JS-side getText lookups here would pull in the 11-pack drift tests for a page with
+  no SEO value. Disallowed in robots.txt and served with X-Robots-Tag: noindex.
+
+  It loads its OWN stylesheet, not styles.css — see the top of share.css for why.
+-->
+<title>Staged room</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta property="og:title" content="Staged room">
+<meta property="og:description" content="A virtually staged room.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+
+<link rel="icon" type="image/webp" sizes="32x32" href="/media-webp/logo/Logo32x32.webp">
+<link rel="stylesheet" href="/styles/share.css">
+</head>
+
+<!--
+  `data-state` is the single visibility switch: loading | ready | unavailable. The stylesheet
+  keys off it, so there is exactly one place that decides what is on screen and no combination
+  of classes can leave two states visible at once.
+-->
+<body data-state="loading">
+
+<main class="sh-main">
+  <!--
+    ONE h1 for the whole page, outside the state blocks, whose text main.js sets per
+    state. Putting a heading inside each state would mean two h1s in the file — which
+    test/server/heading-structure.test.js rejects — and hiding one of them with CSS does
+    not change the document outline a screen reader builds.
+  -->
+  <h1 class="sh-headline" id="sh-headline">Staged room</h1>
+
+  <!-- Loading. No spinner text that could be mistaken for a result. -->
+  <div class="sh-state sh-state--loading" aria-hidden="true">
+    <div class="sh-spinner"></div>
+  </div>
+
+  <!-- Unavailable: the one 404 the manifest can answer, flattened from every cause. -->
+  <section class="sh-state sh-state--unavailable">
+    <p class="sh-unavailable__body">
+      The link may have been turned off by the person who sent it, or it may have expired.
+      Ask them for a new one.
+    </p>
+  </section>
+
+  <!-- Ready -->
+  <section class="sh-state sh-state--ready">
+    <header class="sh-header">
+      <p class="sh-note" id="sh-note" hidden></p>
+    </header>
+
+    <div class="sh-gallery" id="sh-gallery"></div>
+
+    <!-- The agent card. Built only when the share carries contact details. -->
+    <aside class="sh-agent" id="sh-agent" hidden></aside>
+
+    <!--
+      The MLS/NAR disclosure, shipped WITH the pixels from lib/staging/staging-disclosure.js.
+      A disclosure that lives only in the agent's own UI is one the buyer never reads.
+    -->
+    <footer class="sh-footer">
+      <p class="sh-disclosure" id="sh-disclosure"></p>
+      <p class="sh-brand">Staged with <a href="/" rel="noopener">Stagify</a></p>
+    </footer>
+  </section>
+</main>
+
+<!-- A lightbox, so a buyer can actually look at the room on a phone. -->
+<div class="sh-lightbox" id="sh-lightbox" hidden role="dialog" aria-modal="true" aria-label="Full size image">
+  <button type="button" class="sh-lightbox__close" id="sh-lightbox-close" aria-label="Close">&times;</button>
+  <img class="sh-lightbox__img" id="sh-lightbox-img" alt="">
+</div>
+
+<script type="module" src="/scripts/share/main.js"></script>
+</body>
+</html>
