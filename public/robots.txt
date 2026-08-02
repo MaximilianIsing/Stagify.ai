@@ -5,6 +5,11 @@ Allow: /
 Disallow: /admin
 Disallow: /admin.html
 Disallow: /reset-password.html
+# The owner's saved renders. Behind auth (a crawler only ever gets the signed-out
+# state) and not an SEO surface, so it is kept out of crawl budget entirely. This is
+# the OPPOSITE call from /s/ below, and deliberately: nothing links here publicly, so
+# there is no forwarded URL for a Disallow to strand un-noindexed.
+Disallow: /gallery.html
 
 # Account activation & post-purchase confirmation — internal, noindex
 Disallow: /getpro
