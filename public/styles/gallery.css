@@ -1,0 +1,99 @@
+/*
+ * The owner's gallery grid and detail panel.
+ *
+ * Unlike share.css this page DOES load styles.css first, so the site's tokens are in
+ * scope and this file only adds what the grid needs. That is why it uses var(--…) names
+ * it does not declare — they come from the shared sheet. An undefined var() DROPS the
+ * declaration rather than falling back, so anything new here must exist there.
+ */
+
+.gal-main { max-width: 1180px; margin: 0 auto; padding: 88px 20px 64px; }
+.gal-title { margin: 0 0 6px; }
+.gal-count { color: var(--muted); margin: 0 0 20px; }
+
+.gal-state { display: none; }
+body[data-state='loading'] .gal-state--loading { display: flex; justify-content: center; padding: 18vh 0; }
+body[data-state='ready'] .gal-state--ready { display: block; }
+body[data-state='empty'] .gal-state--empty { display: block; }
+body[data-state='off'] .gal-state--off { display: block; }
+body[data-state='signed-out'] .gal-state--signed-out { display: block; }
+
+.gal-spinner {
+  width: 28px; height: 28px;
+  border: 3px solid rgba(127, 127, 127, 0.25);
+  border-top-color: var(--accent, #1f6feb);
+  border-radius: 50%;
+  animation: gal-spin 0.8s linear infinite;
+}
+@keyframes gal-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .gal-spinner { animation-duration: 3s; } }
+
+.gal-link { color: var(--accent, #1f6feb); }
+
+/* auto-fill, not auto-fit: with one entry auto-fit stretches the single card to the full
+   width of the page, which looks like a bug rather than a gallery. */
+.gal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+
+.gal-card {
+  border: 1px solid rgba(127, 127, 127, 0.28);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(127, 127, 127, 0.06);
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.gal-card__img { display: block; width: 100%; aspect-ratio: var(--gal-ar, 3 / 2); object-fit: cover; }
+.gal-card__body { padding: 10px 12px; }
+.gal-card__room { font-weight: 600; }
+.gal-card__when { color: var(--muted); font-size: 0.85rem; }
+.gal-card__shared { color: var(--accent, #1f6feb); font-size: 0.8rem; }
+
+/* ---- detail ---- */
+.gal-detail {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 24px; overflow: auto;
+}
+.gal-detail[hidden] { display: none; }
+.gal-detail__panel {
+  position: relative;
+  background: var(--surface, #14171d);
+  color: var(--text, #e9ecf1);
+  border-radius: 14px;
+  padding: 20px;
+  max-width: 820px;
+  width: 100%;
+}
+.gal-detail__close {
+  position: absolute; top: 8px; right: 8px;
+  width: 44px; height: 44px; font-size: 26px; line-height: 1;
+  background: none; border: 0; color: inherit; cursor: pointer;
+}
+.gal-detail__title { margin: 0 0 14px; padding-right: 44px; }
+
+.gal-compare { position: relative; border-radius: 10px; overflow: hidden; }
+.gal-compare img { display: block; width: 100%; }
+.gal-compare__after { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; clip-path: inset(0 0 0 var(--gal-split, 50%)); }
+.gal-compare__range { width: 100%; margin-top: 10px; }
+
+.gal-meta { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 16px 0; }
+.gal-meta dt { color: var(--muted); }
+.gal-meta dd { margin: 0; }
+
+.gal-share { border-top: 1px solid rgba(127, 127, 127, 0.28); padding-top: 14px; }
+.gal-share__title { margin: 0 0 8px; font-size: 1rem; }
+.gal-share__row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.gal-share__url { flex: 1 1 260px; min-height: 40px; padding: 0 10px; }
+.gal-share__btn { min-height: 40px; padding: 0 14px; cursor: pointer; }
+.gal-share__note { color: var(--muted); font-size: 0.82rem; margin: 10px 0 0; }
+.gal-share__status { color: var(--muted); font-size: 0.85rem; margin: 0 0 8px; }
+
+.gal-detail__delete { margin-top: 18px; min-height: 40px; padding: 0 14px; cursor: pointer; }
+
+@media (max-width: 640px) {
+  .gal-main { padding-top: 72px; }
+  .gal-detail { padding: 12px; }
+}

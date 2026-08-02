@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!--
+  The owner's staged history.
+
+  BEHIND AUTH AND NOT AN SEO SURFACE, so it is deliberately absent from LOCALIZED_PAGES
+  in lib/i18n/locales.js and carries no data-lang attributes — adding lookups here would
+  pull in the eleven-pack drift tests for a page no crawler should reach. Disallowed in
+  robots.txt and noindex.
+
+  Unlike listing-share.html this page DOES load styles.css: it sits inside the signed-in
+  app, next to the studios, and should not look like a different product. gallery.css
+  only adds what the grid needs.
+-->
+<title>Your gallery — Stagify</title>
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" type="image/webp" sizes="32x32" href="/media-webp/logo/Logo32x32.webp">
+<link rel="stylesheet" href="/styles/styles.css">
+<link rel="stylesheet" href="/styles/gallery.css">
+</head>
+
+<!-- One state at a time: loading | ready | empty | off | signed-out. -->
+<body data-state="loading">
+
+<main class="gal-main">
+  <h1 class="gal-title">Your gallery</h1>
+
+  <div class="gal-state gal-state--loading" aria-hidden="true"><div class="gal-spinner"></div></div>
+
+  <section class="gal-state gal-state--signed-out">
+    <p>Sign in to see the rooms you have staged.</p>
+    <p><a class="gal-link" href="/">Go to Stagify</a></p>
+  </section>
+
+  <!--
+    The gallery is off when the object store is unconfigured (see lib/data/object-store.js
+    — on Render that is deliberate rather than a fallback onto the app volume). Saying so
+    beats an empty grid that looks like lost work.
+  -->
+  <section class="gal-state gal-state--off">
+    <p>Saved renders are not switched on for this deployment yet.</p>
+  </section>
+
+  <section class="gal-state gal-state--empty">
+    <p>Nothing staged yet. Your rooms will appear here after you stage one.</p>
+    <p><a class="gal-link" href="/">Stage a room</a></p>
+  </section>
+
+  <section class="gal-state gal-state--ready">
+    <p class="gal-count" id="gal-count"></p>
+    <div class="gal-grid" id="gal-grid"></div>
+  </section>
+</main>
+
+<!-- Detail: before/after, what was asked for, and the share controls. -->
+<div class="gal-detail" id="gal-detail" hidden role="dialog" aria-modal="true" aria-labelledby="gal-detail-title">
+  <div class="gal-detail__panel">
+    <button type="button" class="gal-detail__close" id="gal-detail-close" aria-label="Close">&times;</button>
+    <h2 class="gal-detail__title" id="gal-detail-title">Staged room</h2>
+
+    <div class="gal-compare" id="gal-compare"></div>
+
+    <dl class="gal-meta" id="gal-meta"></dl>
+
+    <section class="gal-share" id="gal-share">
+      <h3 class="gal-share__title">Share with a client</h3>
+      <p class="gal-share__status" id="gal-share-status"></p>
+      <div class="gal-share__row">
+        <input class="gal-share__url" id="gal-share-url" type="text" readonly hidden aria-label="Share link">
+        <button type="button" class="gal-share__btn" id="gal-share-create">Create link</button>
+        <button type="button" class="gal-share__btn gal-share__btn--quiet" id="gal-share-revoke" hidden>Turn off link</button>
+      </div>
+      <!--
+        The copy says "within 15 minutes", not "immediately", and that is not hedging:
+        image URLs are presigned, so one already handed out keeps working until it
+        expires. Saying "immediately" would be the actual bug.
+      -->
+      <p class="gal-share__note">
+        Turning a link off stops new visits within 15 minutes. To remove the images
+        straight away, delete the render instead.
+      </p>
+    </section>
+
+    <button type="button" class="gal-detail__delete" id="gal-delete">Delete this render</button>
+  </div>
+</div>
+
+<script type="module" src="/scripts/gallery-app.js"></script>
+</body>
+</html>
