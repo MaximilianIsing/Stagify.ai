@@ -53,3 +53,37 @@ test('image/history routes accept a large JSON body (not 413)', async (t) => {
     assert.notEqual(status, 413, `${path} should accept a 2MB body (got ${status})`);
   }
 });
+
+// Express routes non-strictly by default, so `POST /api/chat/` reaches the /api/chat
+// handler — but req.path is '/api/chat/', which was NOT in the large-limit set. The
+// route matched while the body limit did not: a conversation carrying base64 images
+// was rejected 413 before ever reaching the handler built for 25MB, and a 413 is a
+// confusing place to start debugging a trailing slash from.
+test('the large JSON limit survives a trailing slash, as the routing does', async (t) => {
+  const srv = await startServer();
+  t.after(() => srv.close());
+
+  for (const path of [
+    '/api/validate-image/',
+    '/api/mask-edit/',
+    '/api/segment/',
+    '/api/chat/',
+  ]) {
+    const status = await postJson(srv.baseUrl, path);
+    assert.notEqual(status, 413, `${path} should accept a 2MB body (got ${status})`);
+  }
+});
+
+test('the small default still applies to everything else, slash or not', async (t) => {
+  const srv = await startServer();
+  t.after(() => srv.close());
+
+  // Normalising the trailing slash must not accidentally widen the allowlist —
+  // a 2MB body anywhere else is still refused.
+  assert.equal(await postJson(srv.baseUrl, '/api/log-contact/'), 413);
+  assert.equal(await postJson(srv.baseUrl, '/api/does-not-exist/'), 413);
+  assert.equal(await postJson(srv.baseUrl, '/api/bug-report/'), 413);
+  // And a path that merely starts the same way gets no free pass.
+  assert.equal(await postJson(srv.baseUrl, '/api/chatter'), 413);
+  assert.equal(await postJson(srv.baseUrl, '/api/chat/extra'), 413);
+});

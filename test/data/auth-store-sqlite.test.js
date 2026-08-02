@@ -346,3 +346,52 @@ test('an existing database gains the indexes on the next open, without touching 
     'building an index signs nobody out',
   );
 });
+
+// users(email) has NO named index, on purpose. `email TEXT UNIQUE NOT NULL` already
+// builds one (sqlite_autoindex_users_2), and the planner picks THAT for
+// `WHERE email = ?` whether or not a second exists — so the old idx_users_email was
+// never read from and only cost another B-tree write on every insert and every
+// whole-row upsert. These two tests pin both halves: the lookup is still indexed,
+// and the redundant index does not come back.
+test('an email lookup is still index-driven with no named index on the column', () => {
+  const dir = tempDir();
+  storeAt(dir);
+  const raw = openDb(dbPathFor(dir));
+
+  const detail = raw.prepare('EXPLAIN QUERY PLAN SELECT * FROM users WHERE email = ?')
+    .all('a@b.com').map((r) => r.detail).join(' | ');
+  assert.match(detail, /USING (COVERING )?INDEX/, `email lookup must use an index → ${detail}`);
+  assert.doesNotMatch(detail, /\bSCAN\b/, `email lookup must not scan the table → ${detail}`);
+  // Specifically the UNIQUE constraint's own index, which is the whole argument.
+  assert.match(detail, /sqlite_autoindex_users/, `expected the UNIQUE autoindex → ${detail}`);
+
+  raw.close();
+});
+
+test('the redundant users(email) index is gone, and stays gone on an existing database', () => {
+  const dir = tempDir();
+  const s1 = storeAt(dir);
+  s1.close();
+
+  // Emulate a database created before the drop: re-add the index by hand, then
+  // reopen. CREATE INDEX IF NOT EXISTS would have left it in place forever, which is
+  // why the schema carries an explicit idempotent DROP.
+  const raw = openDb(dbPathFor(dir));
+  raw.exec('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)');
+  assert.ok(namedIndexes(raw, 'users').includes('idx_users_email'), 'precondition: the old index exists');
+  raw.close();
+
+  const s2 = storeAt(dir);
+  s2.close();
+  const reopened = openDb(dbPathFor(dir));
+  assert.ok(
+    !namedIndexes(reopened, 'users').includes('idx_users_email'),
+    'reopening must drop the redundant index, not preserve it',
+  );
+  // The other three are load-bearing and must survive that DROP.
+  const remaining = namedIndexes(reopened, 'users');
+  for (const keep of ['idx_users_google_sub', 'idx_users_stripe_cust', 'idx_users_stripe_sub']) {
+    assert.ok(remaining.includes(keep), `${keep} must survive → ${remaining.join(', ')}`);
+  }
+  reopened.close();
+});
