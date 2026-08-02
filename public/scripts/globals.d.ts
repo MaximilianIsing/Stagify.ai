@@ -39,6 +39,16 @@ declare global {
     /** Returns the live AI Designer chat transcript (ai-designer-app.js), for the
      *  bug-report form in the classic ai-designer-model-selector.js. */
     getConversationHistory?: () => any[];
+    /** Toast notifier (scripts/toast.js), bridged for the bug-report form in the
+     *  classic ai-designer-model-selector.js — without it that form gave no
+     *  feedback at all, on success or on a missing description. */
+    showToast?: (message: string, type?: string) => void;
+    /** AI Designer string lookup (ai-designer/i18n.js), bridged for the same form. */
+    lang?: (key: string, fallback?: string) => string;
+    /** Re-localises the mask-editor dialog (ai-designer/mask-editor-i18n.js).
+     *  Bridged because the classic script calls it from the language observer,
+     *  which runs on EVERY page load. */
+    updateMaskEditorTranslations?: () => void;
     /** Home hero text-animation controller installed by home-text-animate.js. */
     HomeTextAnimate?: any;
 

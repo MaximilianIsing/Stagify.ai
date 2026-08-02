@@ -12,6 +12,7 @@ import { lang } from './ai-designer/i18n.js';
 import { localizedTarget } from './i18n-routing.js';
 import { showToast } from './toast.js';
 import { createMaskEditor } from './ai-designer/mask-editor.js';
+import { updateMaskEditorTranslations } from './ai-designer/mask-editor-i18n.js'; // bridged onto window below
 import { createImageViewer } from './ai-designer/image-viewer.js';
 import { createChatMessages } from './ai-designer/chat-messages.js';
 import { createThumbnailStrip } from './ai-designer/thumbnail-strip.js';
@@ -65,6 +66,12 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
       // is not a global), so hand it over through an accessor rather than a
       // snapshot — the array is reassigned on reset, so a value would go stale.
       window.getConversationHistory = () => conversationHistory;
+      // Same trap a third time: the bug-report dialog gave no feedback at all, and
+      // updateMaskEditorTranslations threw on EVERY load.
+      // test/frontend/classic-script-globals.test.js pins these and explains why.
+      window.showToast = showToast;
+      window.lang = lang;
+      window.updateMaskEditorTranslations = updateMaskEditorTranslations;
 
       // Chat-message island (scripts/ai-designer/chat-messages.js): message
       // bubbles, error bubbles with Retry, typing + image-loading indicators.
@@ -207,6 +214,11 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
       // Reload button functionality
       const reloadBtn = document.getElementById('reload-btn');
       reloadBtn.addEventListener('click', function() {
+        // Abort FIRST. Stop and Ctrl+Q abort; this path did not, so the request stayed
+        // in flight — and the history is read through a LIVE getter, so the stale reply
+        // landed in the FRESH chat. Ctrl+Shift+Q clicks this button, so it inherited it.
+        abortCurrentGeneration();
+
         // Reset conversation history
         conversationHistory = [];
         setSelectedImageIndex(null);
