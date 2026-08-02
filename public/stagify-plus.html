@@ -108,8 +108,15 @@
         </a>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <a href="ai-designer.html" class="nav-link desktop-only nav-ai-designer-pro hidden" data-lang-html="navigation.pdfTo3d">AI Designer</a>
-          <a href="masking-studio.html" class="nav-link desktop-only nav-masking-studio-pro hidden" data-lang="navigation.maskingStudio">Masking Studio</a>
+          <div class="staging-menu desktop-only" data-staging-menu data-nav-group>
+            <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="staging-menu__panel" role="menu">
+              <a class="staging-menu__item" href="index.html#stage" role="menuitem" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span></a>
+              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" data-staging-open="basic-mask" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__badge" data-lang="navigation.plusBadge">Stagify+</span></a>
+              <a class="staging-menu__item is-locked" href="ai-designer.html" role="menuitem" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__badge" data-lang="navigation.plusBadge">Stagify+</span></a>
+              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__badge" data-lang="navigation.plusBadge">Stagify+</span></a>
+            </div>
+          </div>
           <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
           <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
           <div class="profile-menu-wrap">

@@ -92,6 +92,36 @@ export async function seedProSession(page, { msHelpSeen = false } = {}) {
   );
 }
 
+// The signed-in-but-FREE session — a token in localStorage, /api/auth/me → plan
+// 'free'. Until the Staging dropdown existed nothing in this suite covered this
+// visitor: the two pro nav links were simply hidden from them, so there was no
+// free-user UI to drive. Now there is (three locked rows), and "locked" is a
+// class rather than an absence, which is exactly the kind of thing that can
+// regress without anything else noticing.
+export const FREE_ME = {
+  user: {
+    id: 'u_e2e_free',
+    email: 'free@example.com',
+    plan: 'free',
+    dailyGenerationsUsed: 0,
+    dailyGenerationLimit: 3,
+    canManageSubscription: false,
+  },
+};
+
+export async function seedFreeSession(page) {
+  await stubAnalytics(page);
+  await hideStagingBanner(page);
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('stagifyAuthToken', 'e2e-token');
+    } catch { /* ignore private-mode storage errors */ }
+  });
+  await page.route('**/api/auth/me', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(FREE_ME) }),
+  );
+}
+
 /**
  * Wait until `scripts/app.js` has finished evaluating.
  *

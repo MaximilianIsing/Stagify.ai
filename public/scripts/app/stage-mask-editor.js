@@ -24,6 +24,7 @@ import { createMaskFit } from '../mask/fit.js';
 import { maskCopy } from '../mask/copy.js';
 import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
 import { requestMaskEdit } from '../mask/generate.js';
+import { readImageFile } from './image-file.js';
 
 /**
  * @param {{
@@ -41,6 +42,8 @@ import { requestMaskEdit } from '../mask/generate.js';
  *   view/version accessors, and the commit callback. `onMaskCommit(finalUrl,
  *   isBefore)` applies the committed version to the entry's shared before/after
  *   version state + display.
+ * @returns {{ openStandalone: () => void }} `openStandalone` is the nav's
+ *   "Basic Mask" entry: the same editor with no staging job behind it.
  */
 export function createStageMaskEditor(deps) {
   const {
@@ -58,7 +61,9 @@ export function createStageMaskEditor(deps) {
   const $ = (sel) => document.querySelector(sel);
 
       const maskModal = $('#stage-mask-modal');
-      if (!maskEditBtn || !maskModal) return;
+      // The FAB is optional now: Basic Mask opens this editor from the nav, with
+      // no staging job and therefore no FAB in play. Only the modal is required.
+      if (!maskModal) return { openStandalone() {} };
 
       const baseCanvas = $('#stage-mask-base-canvas');
       const drawCanvas = $('#stage-mask-draw-canvas');
@@ -79,10 +84,19 @@ export function createStageMaskEditor(deps) {
       const refRemoveBtn = $('#stage-mask-ref-remove');
       const noteEl = maskModal.querySelector('.stage-mask-note');
       const actionsRow = maskModal.querySelector('.stage-mask-actions');
+      const content = maskModal.querySelector('.stage-mask-content');
+      const uploadZone = $('#stage-mask-upload');
+      const uploadInput = /** @type {HTMLInputElement} */ ($('#stage-mask-upload-input'));
 
       // 'after' = refine an already-staged image; 'before' = edit the original
       // photo into a new unstaged variant. Both append to their carousel.
+      // 'standalone' = Basic Mask, opened from the nav with its own upload and
+      // no carousel to append to — its result is kept here instead.
       let editorMode = 'after';
+
+      // Standalone only: the most recently committed composite, offered as a
+      // download and used as the base for the next mask.
+      let standaloneUrl = null;
 
       // ---- In-modal generate → refine flow ---------------------------------
       // "Apply Edit" no longer closes the modal. We blur the canvas while the AI
@@ -101,7 +115,21 @@ export function createStageMaskEditor(deps) {
       doneBtn.type = 'button';
       doneBtn.id = 'stage-mask-done';
       doneBtn.className = 'btn btn-primary hidden';
-      if (actionsRow) { actionsRow.appendChild(rerunBtn); actionsRow.appendChild(doneBtn); }
+      // Standalone-only action buttons, same treatment: built once, shown by phase.
+      const anotherBtn = document.createElement('button');
+      anotherBtn.type = 'button';
+      anotherBtn.id = 'stage-mask-another';
+      anotherBtn.className = 'btn btn-ghost hidden';
+      const downloadBtn = document.createElement('button');
+      downloadBtn.type = 'button';
+      downloadBtn.id = 'stage-mask-download';
+      downloadBtn.className = 'btn btn-primary hidden';
+      if (actionsRow) {
+        actionsRow.appendChild(rerunBtn);
+        actionsRow.appendChild(doneBtn);
+        actionsRow.appendChild(anotherBtn);
+        actionsRow.appendChild(downloadBtn);
+      }
 
       // "?" help icon shown next to the title during the refine phase.
       const helpIcon = document.createElement('span');
@@ -172,8 +200,26 @@ export function createStageMaskEditor(deps) {
       brush.attach();
 
       function setControlsDisabled(dis) {
-        [cancelBtn, clearBtn, submitBtn, rerunBtn, doneBtn, brushToolBtn, eraseToolBtn, brushSlider, promptInput, refAddBtn, refRemoveBtn]
+        [cancelBtn, clearBtn, submitBtn, rerunBtn, doneBtn, anotherBtn, downloadBtn, brushToolBtn, eraseToolBtn, brushSlider, promptInput, refAddBtn, refRemoveBtn]
           .forEach((el) => { if (el) el.disabled = dis; });
+      }
+
+      // Basic Mask's two extra buttons. Derived from the phase rather than
+      // toggled at each call site, because the result that reveals Download
+      // arrives through showInEditor()'s async image load — there is no single
+      // moment after the commit at which to switch them on.
+      function syncStandaloneActions() {
+        const standaloneDraw = editorMode === 'standalone' && phase === 'draw';
+        anotherBtn.classList.toggle('hidden', !standaloneDraw);
+        downloadBtn.classList.toggle('hidden', !(standaloneDraw && standaloneUrl));
+        if (standaloneDraw) {
+          // The staging screen already says both of these, in all 11 packs —
+          // reuse its keys rather than adding two more that must be translated
+          // to the same words. (Not mask/copy.js: that is shared with the AI
+          // Designer's editor, which has no standalone mode to describe.)
+          anotherBtn.textContent = tx('modal.staging.uploadAnother', 'Upload Another');
+          downloadBtn.textContent = tx('modal.staging.downloadResultShort', 'Download');
+        }
       }
 
       // Switch the editor between drawing, loading and refine phases.
@@ -183,6 +229,7 @@ export function createStageMaskEditor(deps) {
         const copy = maskCopy(tx);
         if (p === 'loading') {
           setControlsDisabled(true);
+          syncStandaloneActions();
           // The overlay marks the container `processing` (its busy class), which
           // is also what isProcessing() and the CSS blur key off — so the phase
           // machine no longer toggles that class itself.
@@ -208,6 +255,7 @@ export function createStageMaskEditor(deps) {
           helpTip.textContent = copy.refineHelp;
           brush.recolor(brush.REFINE_COLOR);
           if (noteEl) { noteEl.style.display = ''; noteEl.textContent = copy.refineNote; }
+          syncStandaloneActions();
           updateSubmitState();
         } else { // draw
           if (submitBtn) submitBtn.classList.remove('hidden');
@@ -216,6 +264,7 @@ export function createStageMaskEditor(deps) {
           doneBtn.classList.add('hidden');
           helpIcon.classList.add('hidden');
           applyEditorCopy();
+          syncStandaloneActions();
           if (noteEl) { noteEl.style.display = 'none'; noteEl.textContent = ''; }
           // setControlsDisabled(false) above re-enables Submit unconditionally —
           // re-apply the readiness gate, or a freshly-opened editor shows "Apply
@@ -242,7 +291,12 @@ export function createStageMaskEditor(deps) {
         const titleEl = maskModal.querySelector('.stage-mask-title');
         const labelEl = maskModal.querySelector('.stage-mask-prompt-label');
         const submitStrong = submitBtn && submitBtn.querySelector('strong');
-        if (editorMode === 'before') {
+        if (editorMode === 'standalone') {
+          if (titleEl) titleEl.textContent = tx('modal.staging.basicMaskTitle', 'Basic Mask');
+          if (labelEl) labelEl.textContent = tx('modal.staging.maskBeforePromptLabel', 'What would you like to change in the painted area?');
+          if (promptInput) promptInput.placeholder = tx('modal.staging.maskBeforePromptPlaceholder', 'e.g., remove the old sofa, clear the clutter, repaint the wall white');
+          if (submitStrong) submitStrong.textContent = tx('modal.staging.maskBeforeApply', 'Apply edit');
+        } else if (editorMode === 'before') {
           if (titleEl) titleEl.textContent = tx('modal.staging.maskBeforeTitle', 'Mask & edit photo');
           if (labelEl) labelEl.textContent = tx('modal.staging.maskBeforePromptLabel', 'What would you like to change in the painted area?');
           if (promptInput) promptInput.placeholder = tx('modal.staging.maskBeforePromptPlaceholder', 'e.g., remove the old sofa, clear the clutter, repaint the wall white');
@@ -322,6 +376,47 @@ export function createStageMaskEditor(deps) {
         showInEditor(src);
       }
 
+      // ---- Basic Mask (standalone) -----------------------------------------
+      // Same editor, opened from the nav with no staging job behind it, so it
+      // brings its own uploader and keeps its own result. Everything below the
+      // image — brush, prompt, reference photo, generate, refine — is unchanged.
+
+      function setUploadState(on) {
+        if (content) content.classList.toggle('is-uploading', on);
+        if (on && uploadInput) uploadInput.value = '';
+      }
+
+      /** Open with nothing loaded: the uploader is the first thing they see. */
+      function openStandalone() {
+        editorMode = 'standalone';
+        standaloneUrl = null;
+        refineState = null;
+        reference.clear();
+        if (promptInput) promptInput.value = '';
+        brush.clear();
+        // Through setPhase rather than by assigning `phase`: the draw phase is
+        // also what re-applies the Apply-Edit readiness gate, and the shared
+        // closeEditor() before it left every control enabled. Skipping it showed
+        // "Apply edit" as clickable on an empty dialog — the same regression
+        // stage-mask-apply-gate.spec.js exists for on the staging path.
+        setPhase('draw');
+        setUploadState(true);
+        maskModal.classList.add('active');
+        maskModal.setAttribute('aria-hidden', 'false');
+        viewport.bind();
+        viewport.sync();
+      }
+
+      /** A file from the uploader's picker or a drop. */
+      async function acceptStandaloneFile(file) {
+        const read = await readImageFile(file, { showError: showErrorToast });
+        if (!read) return;
+        // No /api/validate-image here on purpose: Basic Mask edits any photo,
+        // not just a stageable room, and that check spends a paid vision call.
+        setUploadState(false);
+        showInEditor(read.dataUrl);
+      }
+
       function closeEditor() {
         maskModal.classList.remove('active');
         maskModal.setAttribute('aria-hidden', 'true');
@@ -336,6 +431,10 @@ export function createStageMaskEditor(deps) {
         if (clearBtn) clearBtn.classList.remove('hidden');
         rerunBtn.classList.add('hidden');
         doneBtn.classList.add('hidden');
+        anotherBtn.classList.add('hidden');
+        downloadBtn.classList.add('hidden');
+        standaloneUrl = null;
+        setUploadState(false);
         setControlsDisabled(false);
         if (canvasContainer) canvasContainer.classList.remove('processing');
         if (processBtn) processBtn.disabled = false;
@@ -463,6 +562,18 @@ export function createStageMaskEditor(deps) {
         const { origCanvas, w, h, coreGrow, featherPx, editedImg, isBefore } = refineState;
         const keep = buildBlendMask(drawCanvas, w, h, coreGrow, featherPx);
         const finalUrl = compositeMaskedEdit(origCanvas, keep, editedImg, w, h);
+        if (editorMode === 'standalone') {
+          // Basic Mask has no carousel to commit into. The result becomes the
+          // new base image so the next mask stacks on top of it, and Download
+          // appears alongside — see syncStandaloneActions(), which showInEditor's
+          // setPhase('draw') reaches on its own once the image has loaded.
+          standaloneUrl = finalUrl;
+          if (promptInput) promptInput.value = '';
+          reference.clear();
+          showInEditor(finalUrl);
+          if (processBtn) processBtn.disabled = false;
+          return;
+        }
         closeEditor();
         // Commit the new version into the entry's shared before/after state +
         // display. That state lives in app.js and is read/written in many other
@@ -473,4 +584,50 @@ export function createStageMaskEditor(deps) {
       if (submitBtn) submitBtn.addEventListener('click', submitEdit);
       rerunBtn.addEventListener('click', rerunAI);
       doneBtn.addEventListener('click', commitRefine);
+
+      // ---- Basic Mask wiring ------------------------------------------------
+      anotherBtn.addEventListener('click', () => {
+        standaloneUrl = null;
+        refineState = null;
+        reference.clear();
+        if (promptInput) promptInput.value = '';
+        brush.clear();
+        setPhase('draw');
+        setUploadState(true);
+      });
+
+      downloadBtn.addEventListener('click', () => {
+        if (!standaloneUrl) return;
+        const a = document.createElement('a');
+        a.href = standaloneUrl;
+        a.download = `stagify-basic-mask-${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+
+      if (uploadZone && uploadInput) {
+        uploadZone.addEventListener('click', () => uploadInput.click());
+        uploadZone.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); uploadInput.click(); }
+        });
+        uploadInput.addEventListener('change', (e) => {
+          const file = /** @type {HTMLInputElement} */ (e.target).files?.[0];
+          if (file) acceptStandaloneFile(file);
+        });
+        ['dragenter', 'dragover'].forEach((evt) => uploadZone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          uploadZone.classList.add('is-dragging');
+        }));
+        ['dragleave', 'drop'].forEach((evt) => uploadZone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          uploadZone.classList.remove('is-dragging');
+        }));
+        uploadZone.addEventListener('drop', (e) => {
+          const file = /** @type {DragEvent} */ (e).dataTransfer?.files?.[0];
+          if (file) acceptStandaloneFile(file);
+        });
+      }
+
+      return { openStandalone };
 }

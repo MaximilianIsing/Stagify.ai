@@ -23,12 +23,29 @@
 
     const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
 
+    // What page(s) a nav item stands for. Usually just its own href — but the
+    // "Staging" item is a <button> that opens a dropdown, so it stands for the
+    // pages its rows link to, and the pill rests on it while you're on one of
+    // them. Without this a hrefless element read as `""`, which matchesPage()
+    // treated as an in-page anchor and therefore as the CURRENT page — the pill
+    // would have claimed Staging was active on every page of the site.
+    function targetsOf(a) {
+      const group = a.closest("[data-nav-group]");
+      if (group) {
+        return Array.from(group.querySelectorAll("a[href]")).map((x) => x.getAttribute("href"));
+      }
+      const own = a.getAttribute("href");
+      return own === null ? [] : [own];
+    }
+
     function matchesPage(a) {
-      const path = (a.getAttribute("href") || "").split("#")[0];
-      // A pure in-page anchor (e.g. href="#contact") points at the current page.
-      if (path === "") return true;
-      const href = path.split("/").pop().toLowerCase();
-      return href === here || (here === "" && href === "index.html");
+      return targetsOf(a).some((raw) => {
+        const path = raw.split("#")[0];
+        // A pure in-page anchor (e.g. href="#contact") points at the current page.
+        if (path === "") return true;
+        const href = path.split("/").pop().toLowerCase();
+        return href === here || (here === "" && href === "index.html");
+      });
     }
     // A link counts as usable only if it's actually laid out (not display:none
     // via .hidden or the .desktop-only mobile rule).
@@ -41,18 +58,47 @@
 
     let active = pageActive();
 
+    // Offsets relative to nav-center, accumulated up the offsetParent chain.
+    // offset* is measured against the nearest POSITIONED ancestor, which used to
+    // always be nav-center itself — until the Staging item wrapped its trigger in
+    // a position:relative container (the dropdown panel anchors to it). Reading
+    // offsetLeft raw then measured from inside that wrapper, i.e. ~0, and parked
+    // the pill at the far left of the nav instead of on the trigger.
+    function offsetIn(el) {
+      let x = 0;
+      let y = 0;
+      for (let node = el; node && node !== nav; node = node.offsetParent) {
+        x += node.offsetLeft;
+        y += node.offsetTop;
+      }
+      return { x, y };
+    }
+
     function moveTo(el, lit) {
-      // offset* is relative to the positioned nav-center and unaffected by
-      // scroll/transforms, so it stays correct across clicks and navigation.
-      pill.style.setProperty("--pill-x", el.offsetLeft + "px");
+      // Unaffected by scroll/transforms, so it stays correct across clicks and
+      // navigation.
+      const { x, y } = offsetIn(el);
+      pill.style.setProperty("--pill-x", x + "px");
       pill.style.setProperty("--pill-w", el.offsetWidth + "px");
       pill.style.setProperty("--pill-h", el.offsetHeight + "px");
-      pill.style.setProperty("--pill-top", el.offsetTop + "px");
+      pill.style.setProperty("--pill-top", y + "px");
       pill.classList.add("is-active");
       links.forEach((l) => l.classList.toggle("is-lit", l === lit));
     }
 
+    // While a nav dropdown is open the pill belongs to its trigger, the way it
+    // belongs to a hovered link — a held state, not a new resting place.
+    function openTrigger() {
+      const group = nav.querySelector("[data-nav-group][data-open]");
+      return group ? group.querySelector(".nav-link") : null;
+    }
+
     function rest() {
+      const pinned = openTrigger();
+      if (pinned && isVisible(pinned)) {
+        moveTo(pinned, pinned);
+        return;
+      }
       if (!active || !isVisible(active)) active = pageActive();
       if (active && isVisible(active)) {
         moveTo(active, active);
@@ -69,10 +115,15 @@
       // On click, lock the pill to the clicked link so it doesn't snap back to
       // the old active item (matters for same-page anchors and slow navigations).
       a.addEventListener("click", () => {
-        if (isVisible(a)) {
-          active = a;
-          moveTo(a, a);
-        }
+        if (!isVisible(a)) return;
+        // ...but only for something that actually navigates. A dropdown trigger
+        // has no href; locking `active` onto it stranded the pill on "Staging"
+        // for the rest of the page's life, because rest() only recomputes
+        // `active` once it stops being visible. Its open state drives the pill
+        // instead, via the observer below.
+        if (a.getAttribute("href") === null) return;
+        active = a;
+        moveTo(a, a);
       });
     });
     nav.addEventListener("mouseleave", rest);
@@ -99,20 +150,23 @@
       setTimeout(rest, 60);
     });
 
-    // The AI Designer / Masking Studio links are revealed later for Pro users —
-    // re-settle when one appears so the pill can land on it (and rest there on
-    // its own page).
-    nav.querySelectorAll(".nav-ai-designer-pro, .nav-masking-studio-pro").forEach((proLink) => {
-      if (!("MutationObserver" in window)) return;
-      let wasHidden = proLink.classList.contains("hidden");
-      new MutationObserver(() => {
-        const h = proLink.classList.contains("hidden");
-        if (h !== wasHidden) {
-          wasHidden = h;
-          rest();
-        }
-      }).observe(proLink, { attributes: true, attributeFilter: ["class"] });
-    });
+    // Re-settle whenever a nav dropdown opens or closes: opening lends the pill
+    // to its trigger, closing gives it back to the current page's link. Driven
+    // off the attribute rather than the trigger's click so it also covers the
+    // ways a menu closes WITHOUT one — clicking away, or Escape.
+    //
+    // (The AI Designer / Masking Studio links used to be revealed here for Pro
+    // users, which needed a similar observer to re-settle the pill when one
+    // appeared. They now live inside this dropdown, so no nav item changes
+    // visibility on plan any more.)
+    if ("MutationObserver" in window) {
+      nav.querySelectorAll("[data-nav-group]").forEach((group) => {
+        new MutationObserver(rest).observe(group, {
+          attributes: true,
+          attributeFilter: ["data-open"],
+        });
+      });
+    }
 
     // Place it on the current page's link right away (transitions are off until
     // .is-ready is added, so it's steady on Home from the first paint), then
