@@ -19,6 +19,7 @@ import {
   upscaleForDelivery,
   nearestGeminiAspectRatio,
   cropToAspectRatio,
+  detectImageMimeType,
 } from '../../lib/image/image-primitives.js';
 
 // A solid-color PNG of the given size.
@@ -304,4 +305,32 @@ test('downscaleImageForGPT: passes through small/non-data-url input; re-encodes 
   assert.match(out, /^data:image\/jpeg;base64,/, 'large PNG is re-encoded to JPEG');
   const om = await meta(Buffer.from(out.split(',')[1], 'base64'));
   assert.ok(om.width <= 1024 && om.height <= 1024, 'long side clamped to 1024');
+});
+
+// ── detectImageMimeType ───────────────────────────────────────────────────────
+//
+// A model's output must never be labelled with its INPUT's type. The CAD path did
+// exactly that — a JPEG blueprint yielded `data:image/jpeg;base64,<PNG bytes>` —
+// and OpenAI vision validates the declared type against the bytes, so annotation
+// failed for every non-PNG blueprint (swallowed by its own .catch) and the user's
+// download carried the wrong extension.
+
+test('detectImageMimeType reads the format from the BYTES, not from any label', async () => {
+  const png = await sharp({ create: { width: 4, height: 4, channels: 3, background: { r: 1, g: 2, b: 3 } } })
+    .png().toBuffer();
+  const jpeg = await sharp({ create: { width: 4, height: 4, channels: 3, background: { r: 1, g: 2, b: 3 } } })
+    .jpeg().toBuffer();
+  const webp = await sharp({ create: { width: 4, height: 4, channels: 3, background: { r: 1, g: 2, b: 3 } } })
+    .webp().toBuffer();
+
+  assert.equal(await detectImageMimeType(png), 'image/png');
+  assert.equal(await detectImageMimeType(jpeg), 'image/jpeg');
+  assert.equal(await detectImageMimeType(webp), 'image/webp');
+});
+
+test('detectImageMimeType falls back to image/png rather than throwing on junk', async () => {
+  // A label is never worth failing a render over, and every Gemini image model
+  // returns PNG today — so an undecodable buffer degrades to the common case.
+  assert.equal(await detectImageMimeType(Buffer.from('not an image at all')), 'image/png');
+  assert.equal(await detectImageMimeType(Buffer.alloc(0)), 'image/png');
 });

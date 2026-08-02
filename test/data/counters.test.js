@@ -202,3 +202,84 @@ test('the two initializers seed independently', () => {
   assert.equal(getPromptCount(), 3);
   assert.equal(getContactCount(), 1);
 });
+
+// ── Rooms staged counts SUCCESSES, not rows ────────────────────────────────
+//
+// processStaging writes a prompt_logs.csv row on BOTH outcomes — logOutcome('ok')
+// and logOutcome('failed') — while incPromptCount() only fires on success. Seeding
+// from a plain record count therefore disagreed with the live counter: the public
+// "Rooms Staged" figure showed successes while the process was up, then jumped by
+// the cumulative failure count at the next restart, and never came back down.
+
+/** A prompt_logs row with an explicit outcome. @returns {string} */
+function outcomeRow(status, ts = '2026-07-27T10:00:00.000Z', errorCode = '') {
+  return `${ts},living_room,modern,"nice",false,agent,google,a@b.com,127.0.0.1,${status},1200,gemini,1,${errorCode}`;
+}
+/** A row from before the outcome columns existed — nine fields, no status. @returns {string} */
+function legacyRow(ts = '2026-07-27T10:00:00.000Z') {
+  return `${ts},living_room,modern,"nice",false,agent,google,a@b.com,127.0.0.1`;
+}
+const LEGACY_HEADER = 'timestamp,roomType,furnitureStyle,additionalPrompt,removeFurniture,userRole,referralSource,email,ipAddress';
+
+test('a failed render is logged but does not count as a room staged', () => {
+  const file = csv(`${HEADER}\n${outcomeRow('ok')}\n${outcomeRow('failed', '2026-07-27T10:01:00.000Z', 'ERROR')}\n`);
+  initializePromptCount(path.dirname(file));
+  assert.equal(getPromptCount(), 1, 'only the successful render counts');
+});
+
+test('the seed matches the live counter across a realistic mix of outcomes', () => {
+  const rows = [
+    outcomeRow('ok'), outcomeRow('failed', '2026-07-27T10:01:00.000Z', 'NO_IMAGE_GENERATED'),
+    outcomeRow('ok', '2026-07-27T10:02:00.000Z'), outcomeRow('failed', '2026-07-27T10:03:00.000Z', 'ERROR'),
+    outcomeRow('failed', '2026-07-27T10:04:00.000Z', 'ERROR'), outcomeRow('ok', '2026-07-27T10:05:00.000Z'),
+  ];
+  const file = csv(`${HEADER}\n${rows.join('\n')}\n`);
+  initializePromptCount(path.dirname(file));
+  assert.equal(getPromptCount(), 3, 'three ok rows out of six — a restart must not inflate the figure');
+});
+
+test('rows predating the outcome columns still count, header and all', () => {
+  // Only successes were written back then, so a legacy row IS a staged room. The
+  // legacy HEADER is nine fields too, and must not be mistaken for one of them.
+  const file = csv(`${LEGACY_HEADER}\n${legacyRow()}\n${legacyRow('2026-07-27T10:01:00.000Z')}\n`);
+  initializePromptCount(path.dirname(file));
+  assert.equal(getPromptCount(), 2);
+});
+
+test('a file part-upgraded to the outcome columns counts both vintages correctly', () => {
+  const file = csv(`${HEADER}\n${legacyRow()}\n${outcomeRow('ok', '2026-07-27T10:01:00.000Z')}\n`
+    + `${outcomeRow('failed', '2026-07-27T10:02:00.000Z', 'ERROR')}\n`);
+  initializePromptCount(path.dirname(file));
+  assert.equal(getPromptCount(), 2, 'legacy row + ok row, but not the failure');
+});
+
+test('a newline inside a prompt does not desync the status column', () => {
+  // The writer quotes free-text, and a prompt containing a line break spans several
+  // physical lines while still being ONE record. If the field walker loses count
+  // there, the status of the NEXT row is read from the wrong column.
+  const multi = `2026-07-27T10:00:00.000Z,living_room,modern,"line one\nline two",false,agent,google,a@b.com,127.0.0.1,failed,1200,gemini,1,ERROR`;
+  const file = csv(`${HEADER}\n${multi}\n${outcomeRow('ok', '2026-07-27T10:01:00.000Z')}\n`);
+  initializePromptCount(path.dirname(file));
+  assert.equal(getPromptCount(), 1, 'the multi-line row failed; only the following ok row counts');
+});
+
+test('a status written with surrounding quotes is still recognised', () => {
+  const quoted = `2026-07-27T10:00:00.000Z,living_room,modern,"nice",false,agent,google,a@b.com,127.0.0.1,"ok",1200,gemini,1,`;
+  const file = csv(`${HEADER}\n${quoted}\n`);
+  initializePromptCount(path.dirname(file));
+  assert.equal(getPromptCount(), 1);
+});
+
+test('a final row with no trailing newline is still classified', () => {
+  const file = csv(`${HEADER}\n${outcomeRow('ok')}\n${outcomeRow('failed', '2026-07-27T10:01:00.000Z', 'ERROR')}`);
+  initializePromptCount(path.dirname(file));
+  assert.equal(getPromptCount(), 1, 'the unterminated last record is a failure and must not count');
+});
+
+test('the contact counter is unfiltered — it has no status column to read', () => {
+  const file = csv('timestamp,userRole,referralSource,email,userAgent,ipAddress\n'
+    + '2026-07-27T10:00:00.000Z,agent,google,a@b.com,UA,127.0.0.1\n'
+    + '2026-07-27T10:01:00.000Z,buyer,direct,c@d.com,UA,127.0.0.1\n', 'contact_logs.csv');
+  initializeContactCount(path.dirname(file));
+  assert.equal(getContactCount(), 2);
+});
