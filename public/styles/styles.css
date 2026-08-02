@@ -2854,10 +2854,30 @@ html {
   max-width:260px;
   accent-color:var(--brand)
 }
-.stage-mask-brush-size {
+.stage-mask-brush-end {
   font-size:13px;
   color:var(--muted);
-  min-width:48px
+  white-space:nowrap
+}
+/* The brush's actual footprint, following the pointer over the photo. The slider
+   is a relative scale, so its position alone says nothing about how much of THIS
+   photo a stroke covers — this ring is what makes the size legible. Sized and
+   positioned by scripts/mask/brush.js; parented to .stage-mask-canvas-container,
+   which is already position:relative. */
+.mask-brush-cursor {
+  position:absolute;
+  border:2px solid var(--mask-cursor-color, var(--brand));
+  background:color-mix(in srgb, var(--mask-cursor-color, var(--brand)) 14%, transparent);
+  border-radius:50%;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  z-index:5;
+  display:none
+}
+.mask-brush-cursor.is-erase {
+  border-style:dashed;
+  border-color:var(--muted);
+  background:rgba(107,114,128,0.12)
 }
 .stage-mask-prompt-container {
   display:flex;

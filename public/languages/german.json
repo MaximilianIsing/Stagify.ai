@@ -760,6 +760,8 @@
       "brushAllNote": "Achten Sie darauf, den gesamten Bereich zu übermalen, den Sie maskieren möchten.",
       "toolsAria": "Maskenwerkzeug",
       "brushSize": "Pinselgröße:",
+      "brushSmall": "Klein",
+      "brushLarge": "Groß",
       "promptLabel": "Was möchten Sie im maskierten Bereich ändern?",
       "promptPlaceholder": "z. B. die Wandfarbe in Blau ändern, das Sofa durch einen modernen Sessel ersetzen...",
       "cancel": "Abbrechen",

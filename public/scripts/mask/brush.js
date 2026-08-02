@@ -6,8 +6,10 @@
 // phase it is in; everything else — the compositing modes, the stroke geometry,
 // the two-tier content check — was already the same on both sides.
 //
-//   createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, onRefineStroke })
-//     -> { attach, setTool, getTool, setSize, getSize, clear, recolor, hasContent, rescan }
+//   createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, onRefineStroke, getCursorHost })
+//     -> { attach, setTool, getTool, setSizeStep, getSizeStep, clear, recolor, hasContent, rescan }
+
+import { BRUSH_STEP_DEFAULT, brushPx } from './brush-scale.js';
 
 // Draw-phase blue and refine-phase green. The refine colour is a signal that the
 // strokes are now adjusting the crop of an existing result, not selecting a new area.
@@ -26,12 +28,14 @@ const ALPHA_THRESHOLD = 10;
  *   isBusy: () => boolean,
  *   onReadyChange?: () => void,
  *   onRefineStroke?: () => void,
+ *   getCursorHost?: () => HTMLElement | null,
  * }} deps - The draw canvas, the editor's phase, whether a run is in flight, and
  *   two notifications: readiness changed (refresh the Apply button) and a stroke
- *   finished while refining (re-crop the preview).
+ *   finished while refining (re-crop the preview). getCursorHost is the
+ *   positioned element the brush-size ring hangs off; omit it for no ring.
  */
-export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, onRefineStroke }) {
-  let size = 50;
+export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, onRefineStroke, getCursorHost }) {
+  let sizeStep = BRUSH_STEP_DEFAULT;
   let tool = 'brush'; // 'brush' adds to the selection, 'erase' removes from it
   let painted = false; // hot-path flag; the expensive scan runs only on stroke end
   let drawing = false;
@@ -55,6 +59,14 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
     };
   }
 
+  // The slider picks a step on a relative scale; how many pixels that is depends
+  // on the photo. Resolved per stroke rather than cached when the slider moves,
+  // because the dialog reopens on a different photo — and re-sizes the canvas to
+  // it — without the slider ever moving.
+  function brushWidth(canvas) {
+    return brushPx(sizeStep, canvas.width, canvas.height);
+  }
+
   function draw(e) {
     const canvas = getCanvas();
     if (!drawing || !canvas || isBusy()) return;
@@ -69,12 +81,13 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
     const color = getPhase() === 'refine' ? REFINE_COLOR : DRAW_COLOR;
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
-    ctx.lineWidth = size;
+    const width = brushWidth(canvas);
+    ctx.lineWidth = width;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     if (lastX === null || lastY === null) {
       ctx.beginPath();                                  // single tap: a round dot
-      ctx.arc(pt.x, pt.y, size / 2, 0, Math.PI * 2);
+      ctx.arc(pt.x, pt.y, width / 2, 0, Math.PI * 2);
       ctx.fill();
     } else {
       ctx.beginPath();
@@ -147,17 +160,60 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
     tool = t === 'erase' ? 'erase' : 'brush';
   }
 
+  // A ring under the pointer at the brush's true footprint. The slider is a
+  // relative scale now, so its position says nothing about how much of THIS
+  // photo a stroke will cover — the ring is what makes the size legible. The
+  // crosshair stays underneath it: the ring shows the extent, the crosshair the
+  // centre.
+  /** @type {HTMLElement | null} */
+  let cursorEl = null;
+
+  function hideCursor() {
+    if (cursorEl) cursorEl.style.display = 'none';
+  }
+
+  function updateCursor(e) {
+    const host = getCursorHost ? getCursorHost() : null;
+    const canvas = getCanvas();
+    if (!host || !canvas || !canvas.width) return;
+    if (!cursorEl) {
+      cursorEl = document.createElement('div');
+      cursorEl.className = 'mask-brush-cursor';
+      cursorEl.setAttribute('aria-hidden', 'true');
+      host.appendChild(cursorEl);
+    }
+    if (isBusy()) {
+      hideCursor();
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width) return;
+    const hostRect = host.getBoundingClientRect();
+    // Image pixels -> CSS pixels: the same ratio pointFrom inverts.
+    const shown = brushWidth(canvas) * (rect.width / canvas.width);
+    cursorEl.style.display = 'block';
+    cursorEl.style.width = shown + 'px';
+    cursorEl.style.height = shown + 'px';
+    cursorEl.style.left = (e.clientX - hostRect.left) + 'px';
+    cursorEl.style.top = (e.clientY - hostRect.top) + 'px';
+    cursorEl.style.setProperty('--mask-cursor-color', getPhase() === 'refine' ? REFINE_COLOR : DRAW_COLOR);
+    cursorEl.classList.toggle('is-erase', tool === 'erase');
+  }
+
   /** Attach the pointer listeners. Idempotent — the dialog may reopen many times. */
   function attach() {
     const canvas = getCanvas();
     if (attached || !canvas) return;
     attached = true;
     canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mousemove', (e) => { draw(e); updateCursor(e); });
+    canvas.addEventListener('mouseenter', updateCursor);
     canvas.addEventListener('mouseup', stop);
     canvas.addEventListener('mouseleave', stop);
+    canvas.addEventListener('mouseleave', hideCursor);
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      hideCursor();     // a finger has no hover position for the ring to track
       const t = e.touches[0];
       start({ clientX: t.clientX, clientY: t.clientY });
     });
@@ -175,8 +231,8 @@ export function createMaskBrush({ getCanvas, getPhase, isBusy, onReadyChange, on
     attach,
     setTool,
     getTool: () => tool,
-    setSize: (n) => { size = n; },
-    getSize: () => size,
+    setSizeStep: (n) => { sizeStep = n; },
+    getSizeStep: () => sizeStep,
     clear,
     recolor,
     hasContent: () => painted,

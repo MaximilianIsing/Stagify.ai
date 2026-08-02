@@ -98,7 +98,7 @@ test.describe('Main tool — mask editor brush engine', () => {
     // A fat eraser over the same line clears it; the flag is recomputed by a
     // full canvas scan on stroke end, not tracked incrementally.
     await page.locator('#stage-mask-erase-btn').click();
-    await page.locator('#stage-mask-brush-slider').fill('150');
+    await page.locator('#stage-mask-brush-slider').fill('16'); // widest step
     await strokeAcross(page, { fromX: 0.1, toX: 0.9, y: 0.5 });
     await strokeAcross(page, { fromX: 0.1, toX: 0.9, y: 0.45 });
     await strokeAcross(page, { fromX: 0.1, toX: 0.9, y: 0.55 });
@@ -107,20 +107,58 @@ test.describe('Main tool — mask editor brush engine', () => {
     await expect(page.locator('#stage-mask-submit')).toBeDisabled();
   });
 
-  test('brush size changes how much a stroke covers, and the label follows', async ({ page }) => {
+  // The slider is a relative scale (public/scripts/mask/brush-scale.js): step 1
+  // is 1% of the photo's long edge and step 16 is 15%, so the gap between the
+  // ends is a 15x change in width whatever photo is loaded.
+  test('brush size changes how much a stroke covers', async ({ page }) => {
     await openMaskEditor(page);
-    await page.locator('#stage-mask-brush-slider').fill('20');
-    await expect(page.locator('#stage-mask-brush-size')).toHaveText('20 px');
+    await page.locator('#stage-mask-brush-slider').fill('1');
     await strokeAcross(page, { fromX: 0.3, toX: 0.7, y: 0.3 });
     const thin = await paintedPixels(page);
 
     await page.locator('#stage-mask-clear').click();
-    await page.locator('#stage-mask-brush-slider').fill('150');
-    await expect(page.locator('#stage-mask-brush-size')).toHaveText('150 px');
+    await page.locator('#stage-mask-brush-slider').fill('16');
     await strokeAcross(page, { fromX: 0.3, toX: 0.7, y: 0.3 });
     const thick = await paintedPixels(page);
 
+    expect(thin).toBeGreaterThan(0);
     expect(thick).toBeGreaterThan(thin * 2);
+  });
+
+  // The bounds come from brush-scale.js, not the markup, so the module is what
+  // decides what "Large" means — the values in index.html are only a placeholder
+  // for the moment before the editor wires itself up.
+  test('the slider takes its range from the scale, and shows Small/Large ends', async ({ page }) => {
+    await openMaskEditor(page);
+    const slider = page.locator('#stage-mask-brush-slider');
+    await expect(slider).toHaveAttribute('min', '1');
+    await expect(slider).toHaveAttribute('max', '16');
+
+    const ends = page.locator('.stage-mask-brush-end');
+    await expect(ends).toHaveCount(2);
+    await expect(ends.first()).toHaveText('Small');
+    await expect(ends.last()).toHaveText('Large');
+    // The px readout it replaced would be lying: the same number means a
+    // different fraction of every photo.
+    await expect(page.locator('#stage-mask-brush-size')).toHaveCount(0);
+  });
+
+  // Nothing else tells you how big the brush is now that the number is gone.
+  test('a ring under the cursor shows the brush footprint, and tracks the slider', async ({ page }) => {
+    await openMaskEditor(page);
+    const box = await page.locator('#stage-mask-draw-canvas').boundingBox();
+    const ring = page.locator('.mask-brush-cursor');
+
+    await page.locator('#stage-mask-brush-slider').fill('1');
+    await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.5);
+    await expect(ring).toBeVisible();
+    const small = (await ring.boundingBox()).width;
+
+    await page.locator('#stage-mask-brush-slider').fill('16');
+    await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.45);
+    const large = (await ring.boundingBox()).width;
+
+    expect(large).toBeGreaterThan(small * 2);
   });
 
   test('a single click lays down a dot rather than nothing', async ({ page }) => {

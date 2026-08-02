@@ -97,7 +97,8 @@ export interface MsState {
   phase: 'empty' | 'draw' | 'generating' | 'review';
   /** Review-phase viewer toggle. */
   view: 'before' | 'compare' | 'after';
-  brushSize: number;
+  /** Brush size as a step on the relative scale in scripts/mask/brush-scale.js. */
+  brushStep: number;
   layerSeq: number;
   /** Bumped per run so stale async completions can be ignored. */
   genRun: number;

@@ -7,6 +7,10 @@
 // magic wand lives in its own island — wandClick/ensureSegCache come in as
 // late-bound callbacks so the pointerdown dispatch stays here.
 //
+// Brush size is a step on the scale shared with the two mask editors, not a
+// pixel count — see scripts/mask/brush-scale.js for why.
+import { BRUSH_STEP_MIN, BRUSH_STEP_MAX, BRUSH_STEP_DEFAULT, brushPx } from '../mask/brush-scale.js';
+
 /**
  * @typedef {import('./types.js').MsState} MsState
  * @typedef {import('./types.js').MsLayer} MsLayer
@@ -27,7 +31,6 @@
  *   brushRow: HTMLElement,
  *   wandRow: HTMLElement,
  *   brushSlider: HTMLInputElement,
- *   brushSizeLabel: HTMLElement,
  *   activeLayer: () => MsLayer | null,
  *   getLayer: (id: string) => MsLayer | null,
  *   layerColor: (layer: MsLayer) => string,
@@ -56,7 +59,6 @@ export function createDrawTools(deps) {
     brushRow,
     wandRow,
     brushSlider,
-    brushSizeLabel,
     activeLayer,
     getLayer,
     layerColor,
@@ -96,18 +98,28 @@ export function createDrawTools(deps) {
           };
         }
 
+        // The slider picks a step on a relative scale; how many pixels that is
+        // depends on the photo. Resolved per segment rather than cached when the
+        // slider moves, because loading a new photo re-sizes the base canvas
+        // without the slider ever moving.
+        function brushWidth() {
+          const base = state.base;
+          return brushPx(state.brushStep, base ? base.w : 0, base ? base.h : 0);
+        }
+
         // Apply one stroke segment to a canvas context (dot for taps, line for
         // moves). Solid pixels; the translucent look comes from CSS opacity.
         function strokeSegment(ctx, x, y, composite, color) {
+          const width = brushWidth();
           ctx.globalCompositeOperation = composite;
           ctx.strokeStyle = color;
           ctx.fillStyle = color;
-          ctx.lineWidth = state.brushSize;
+          ctx.lineWidth = width;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           if (lastX === null || lastY === null) {
             ctx.beginPath();
-            ctx.arc(x, y, state.brushSize / 2, 0, Math.PI * 2);
+            ctx.arc(x, y, width / 2, 0, Math.PI * 2);
             ctx.fill();
           } else {
             ctx.beginPath();
@@ -505,7 +517,7 @@ export function createDrawTools(deps) {
           const rect = baseCanvas.getBoundingClientRect();
           if (!rect.width) return;
           const stackRect = stack.getBoundingClientRect();
-          const size = state.brushSize * (rect.width / state.base.w);
+          const size = brushWidth() * (rect.width / state.base.w);
           cursorEl.style.display = 'block';
           cursorEl.style.width = size + 'px';
           cursorEl.style.height = size + 'px';
@@ -543,12 +555,18 @@ export function createDrawTools(deps) {
         rectBtn.addEventListener('click', () => setTool('rect'));
         wandBtn.addEventListener('click', () => setTool('wand'));
 
-        function setBrushSize(v) {
-          state.brushSize = Math.min(150, Math.max(20, v));
-          brushSlider.value = String(state.brushSize);
-          brushSizeLabel.textContent = state.brushSize + ' px';
+        // Clamped here as well as by the input, because the [ and ] shortcuts set
+        // the step directly and never pass through the slider's min/max.
+        function setBrushStep(v) {
+          state.brushStep = Math.min(BRUSH_STEP_MAX, Math.max(BRUSH_STEP_MIN, v));
+          brushSlider.value = String(state.brushStep);
         }
-        brushSlider.addEventListener('input', () => setBrushSize(parseInt(brushSlider.value, 10)));
+        // The scale, not the markup, owns these bounds — so the slider cannot
+        // drift out of step with brush-scale.js.
+        brushSlider.min = String(BRUSH_STEP_MIN);
+        brushSlider.max = String(BRUSH_STEP_MAX);
+        setBrushStep(BRUSH_STEP_DEFAULT);
+        brushSlider.addEventListener('input', () => setBrushStep(parseInt(brushSlider.value, 10)));
 
         // Entry-facing veil over the island-private cursor element (the phase
         // machine and the Space-pan shortcut both blank it).
@@ -558,7 +576,7 @@ export function createDrawTools(deps) {
 
   return {
     setTool,
-    setBrushSize,
+    setBrushStep,
     snapshotForUndo,
     undoStroke,
     redoStroke,

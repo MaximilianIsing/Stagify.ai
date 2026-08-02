@@ -760,6 +760,8 @@
       "brushAllNote": "Asegúrate de pintar toda el área que quieres enmascarar.",
       "toolsAria": "Herramienta de máscara",
       "brushSize": "Tamaño del Pincel:",
+      "brushSmall": "Pequeño",
+      "brushLarge": "Grande",
       "promptLabel": "¿Qué te gustaría cambiar en el área enmascarada?",
       "promptPlaceholder": "ej., cambiar el color de la pared a azul, reemplazar el sofá con una silla moderna...",
       "cancel": "Cancelar",

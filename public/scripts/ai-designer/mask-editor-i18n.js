@@ -35,6 +35,17 @@ export function updateMaskEditorTranslations() {
     brushLabel.textContent = getText('pdf.maskEditor.brushSize');
   }
 
+  // The Small/Large markers at each end of the brush slider. This dialog's markup
+  // is built at runtime, so its data-i18n attributes are inert — everything here
+  // is localized imperatively or not at all. Keyed off the attribute so the two
+  // ends need one loop, and falls back to the English in the markup rather than
+  // painting the raw key if a pack is behind.
+  document.querySelectorAll('.mask-editor-brush-end').forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    const text = key && getText(key);
+    if (text && text !== key) el.textContent = text;
+  });
+
   // Update tool toggle labels
   const brushToolText = document.querySelector('#mask-editor-brush-btn span');
   if (brushToolText) {

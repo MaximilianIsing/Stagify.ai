@@ -760,6 +760,8 @@
       "brushAllNote": "请确保涂抹所有想要遮罩的区域。",
       "toolsAria": "蒙版工具",
       "brushSize": "画笔大小：",
+      "brushSmall": "小",
+      "brushLarge": "大",
       "promptLabel": "您想在蒙版区域中更改什么？",
       "promptPlaceholder": "例如，将墙壁颜色改为蓝色，用现代椅子替换沙发...",
       "cancel": "取消",

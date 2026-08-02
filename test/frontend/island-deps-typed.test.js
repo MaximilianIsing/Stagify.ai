@@ -3,7 +3,7 @@
 //
 // WHY THIS EXISTS: the three studio entries wire their islands by injecting one
 // object literal per factory — `createDrawTools({ state, stack, baseCanvas, … })`,
-// 25 keys in the largest case. `tsconfig.frontend.json` deliberately runs with
+// 24 keys in the largest case. `tsconfig.frontend.json` deliberately runs with
 // `noImplicitAny: false` for the rollout, so a factory written as
 // `createX(deps)` with no JSDoc gets `deps: any` and EVERY key destructured out
 // of it is `any` too. `npm run typecheck` then proves nothing whatsoever about
@@ -201,7 +201,7 @@ test('the largest bag is typed against the real wiring', () => {
   assert.ok(keys.includes('state'), 'createDrawTools deps must carry the shared state');
   assert.equal(
     keys.length,
-    25,
-    `createDrawTools takes a 25-key bag; scan saw ${keys.length}. Update this if the wiring changes.`,
+    24,
+    `createDrawTools takes a 24-key bag; scan saw ${keys.length}. Update this if the wiring changes.`,
   );
 });

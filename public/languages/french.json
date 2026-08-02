@@ -760,6 +760,8 @@
       "brushAllNote": "Veillez à peindre toute la zone que vous souhaitez masquer.",
       "toolsAria": "Outil de masque",
       "brushSize": "Taille du pinceau :",
+      "brushSmall": "Petit",
+      "brushLarge": "Grand",
       "promptLabel": "Que souhaitez-vous changer dans la zone masquée ?",
       "promptPlaceholder": "ex. changer la couleur du mur en bleu, remplacer le canapé par un fauteuil moderne...",
       "cancel": "Annuler",

@@ -1468,10 +1468,15 @@
           </div>
             <p class="stage-mask-note" style="display:none"></p>
           </div>
+          <!-- A relative scale, not a pixel count — see scripts/mask/brush-scale.js.
+               Each step covers a fixed share of the photo, so the brush behaves the
+               same on a 1024px image and a 4032px one. The min/max/value below are a
+               pre-hydration placeholder; the module assigns the real bounds. -->
           <div class="stage-mask-brush-controls">
             <label class="stage-mask-brush-label" for="stage-mask-brush-slider" data-lang="pdf.maskEditor.brushSize">Brush Size:</label>
-            <input type="range" id="stage-mask-brush-slider" class="stage-mask-brush-slider" min="20" max="150" value="50">
-            <span id="stage-mask-brush-size" class="stage-mask-brush-size">50 px</span>
+            <span class="stage-mask-brush-end" data-lang="pdf.maskEditor.brushSmall">Small</span>
+            <input type="range" id="stage-mask-brush-slider" class="stage-mask-brush-slider" min="1" max="16" value="6">
+            <span class="stage-mask-brush-end" data-lang="pdf.maskEditor.brushLarge">Large</span>
           </div>
           <div class="stage-mask-prompt-container">
             <label class="stage-mask-prompt-label" for="stage-mask-prompt" data-lang="pdf.maskEditor.promptLabel">What would you like to change in the masked area?</label>

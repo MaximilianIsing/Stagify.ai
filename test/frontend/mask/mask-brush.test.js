@@ -8,6 +8,11 @@
 //
 // Strokes land on a real @napi-rs/canvas, so every assertion is about actual
 // pixels rather than call-shape.
+//
+// Sizes here are steps on the relative scale (public/scripts/mask/brush-scale.js),
+// not pixels — a step is a share of the photo's long edge. On the 200x100 harness
+// canvas that scale runs from the 6px floor up to 30px at step 16, which is why
+// the step numbers look large next to the pixel widths they produce.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createMaskBrush } from '../../../public/scripts/mask/brush.js';
@@ -35,7 +40,7 @@ const up = (c) => c.emit('mouseup', {});
 
 test('a click lays down a dot at the mapped canvas coordinate', () => {
   const { canvas, brush } = setup();
-  brush.setSize(20);
+  brush.setSizeStep(14);
   down(canvas, 100, 50);
   up(canvas);
 
@@ -50,7 +55,7 @@ test('scales pointer coordinates when the CSS box differs from the intrinsic siz
     w: 400, h: 200,
     rect: { left: 0, top: 0, width: 200, height: 100 }, // rendered at half size
   });
-  brush.setSize(10);
+  brush.setSizeStep(6);
   down(canvas, 100, 50); // centre of the CSS box
   up(canvas);
 
@@ -63,7 +68,7 @@ test('accounts for the canvas being offset from the viewport origin', () => {
     w: 200, h: 100,
     rect: { left: 50, top: 30, width: 200, height: 100 },
   });
-  brush.setSize(10);
+  brush.setSizeStep(10);
   down(canvas, 150, 80); // 100,50 within the canvas
   up(canvas);
 
@@ -72,7 +77,7 @@ test('accounts for the canvas being offset from the viewport origin', () => {
 
 test('a drag paints a connected stroke, not just its endpoints', () => {
   const { canvas, brush } = setup();
-  brush.setSize(12);
+  brush.setSizeStep(11);
   down(canvas, 40, 50);
   move(canvas, 160, 50);
   up(canvas);
@@ -84,7 +89,7 @@ test('a drag paints a connected stroke, not just its endpoints', () => {
 
 test('erase removes from the selection instead of adding', () => {
   const { canvas, brush } = setup();
-  brush.setSize(30);
+  brush.setSizeStep(16);
   down(canvas, 100, 50);
   up(canvas);
   const afterBrush = canvas.paintedPixels();
@@ -99,7 +104,7 @@ test('erase removes from the selection instead of adding', () => {
 
 test('the draw phase paints blue and the refine phase green', () => {
   const { canvas, brush, state } = setup();
-  brush.setSize(20);
+  brush.setSizeStep(14);
   down(canvas, 50, 50);
   up(canvas);
   assert.equal(canvas.colorAt(50, 50), '#2563eb');
@@ -114,7 +119,7 @@ test('readiness flips on the first mark and is rechecked on stroke end', () => {
   const { canvas, brush, calls } = setup();
   assert.equal(brush.hasContent(), false, 'nothing painted yet');
 
-  brush.setSize(20);
+  brush.setSizeStep(14);
   down(canvas, 100, 50);
   assert.equal(brush.hasContent(), true, 'the first mark enables Apply immediately');
   const afterFirstMark = calls.ready;
@@ -127,14 +132,14 @@ test('readiness flips on the first mark and is rechecked on stroke end', () => {
 
 test('erasing the whole selection away takes readiness back to false', () => {
   const { canvas, brush } = setup();
-  brush.setSize(40);
+  brush.setSizeStep(12);
   down(canvas, 100, 50);
   up(canvas);
   assert.equal(brush.hasContent(), true);
 
   // Erase generously over everything painted.
   brush.setTool('erase');
-  brush.setSize(150);
+  brush.setSizeStep(16);
   down(canvas, 40, 50);
   move(canvas, 160, 50);
   up(canvas);
@@ -146,7 +151,7 @@ test('erasing the whole selection away takes readiness back to false', () => {
 test('an erase stroke on an empty canvas never claims content', () => {
   const { canvas, brush } = setup();
   brush.setTool('erase');
-  brush.setSize(30);
+  brush.setSizeStep(16);
   down(canvas, 100, 50);
   up(canvas);
 
@@ -155,7 +160,7 @@ test('an erase stroke on an empty canvas never claims content', () => {
 
 test('clear wipes the canvas and reports the change', () => {
   const { canvas, brush, calls } = setup();
-  brush.setSize(30);
+  brush.setSizeStep(16);
   down(canvas, 100, 50);
   up(canvas);
   const before = calls.ready;
@@ -169,7 +174,7 @@ test('clear wipes the canvas and reports the change', () => {
 
 test('nothing paints while a run is in flight', () => {
   const { canvas, brush, state } = setup({ busy: true });
-  brush.setSize(30);
+  brush.setSizeStep(16);
   down(canvas, 100, 50);
   move(canvas, 120, 50);
   up(canvas);
@@ -184,7 +189,7 @@ test('nothing paints while a run is in flight', () => {
 
 test('a finished stroke re-crops only while refining', () => {
   const { canvas, brush, calls, state } = setup();
-  brush.setSize(20);
+  brush.setSizeStep(14);
   down(canvas, 100, 50);
   up(canvas);
   assert.equal(calls.refine, 0, 'no preview work in the draw phase');
@@ -197,7 +202,7 @@ test('a finished stroke re-crops only while refining', () => {
 
 test('recolor repaints existing strokes without changing coverage', () => {
   const { canvas, brush } = setup();
-  brush.setSize(30);
+  brush.setSizeStep(16);
   down(canvas, 100, 50);
   up(canvas);
   const coverage = canvas.paintedPixels();
@@ -219,7 +224,7 @@ test('attach is idempotent so reopening never doubles the listeners', () => {
 
 test('touch events draw the same way as the mouse', () => {
   const { canvas, brush } = setup();
-  brush.setSize(16);
+  brush.setSizeStep(12);
   const touch = (type, x, y) => canvas.emit(type, { preventDefault() {}, touches: [{ clientX: x, clientY: y }] });
 
   touch('touchstart', 40, 50);
@@ -228,6 +233,61 @@ test('touch events draw the same way as the mouse', () => {
 
   assert.ok(canvas.alphaAt(100, 50) > 10, 'the swipe painted a connected stroke');
   assert.equal(brush.hasContent(), true);
+});
+
+// The point of the whole scale, and the one property no test asserted before:
+// coverage was only ever checked by position, never by width, which is how a
+// pixel-valued brush stayed 15% of a 1024px photo and 3.7% of a 4032px one
+// without anything going red.
+test('one step covers the same share of a small photo and a large one', () => {
+  const shareOf = (w, h) => {
+    const { canvas, brush } = setup({ w, h, rect: { left: 0, top: 0, width: w, height: h } });
+    brush.setSizeStep(12);
+    down(canvas, w / 2, h / 2);
+    up(canvas);
+    return canvas.paintedPixels() / (w * h);
+  };
+
+  const small = shareOf(400, 200);
+  const large = shareOf(1600, 800); // 4x the long edge
+
+  assert.ok(small > 0 && large > 0, 'both photos were painted on');
+  const drift = Math.abs(small - large) / small;
+  assert.ok(drift < 0.05, `same share of each photo (small ${small}, large ${large}, drift ${drift})`);
+});
+
+test('a bigger photo gets a proportionally wider stroke at the same step', () => {
+  // Guards the direction as well as the ratio: a brush that ignored the canvas
+  // entirely would also pass the share test if both canvases were the same size.
+  const widthAt = (w, h) => {
+    const { canvas, brush } = setup({ w, h, rect: { left: 0, top: 0, width: w, height: h } });
+    brush.setSizeStep(16);
+    down(canvas, w / 2, h / 2);
+    up(canvas);
+    let painted = 0;
+    for (let y = 0; y < h; y++) if (canvas.alphaAt(Math.round(w / 2), y) > 10) painted++;
+    return painted;
+  };
+
+  const narrow = widthAt(400, 400);
+  const wide = widthAt(800, 800);
+
+  assert.ok(wide > narrow * 1.8, `doubling the photo roughly doubles the brush (${narrow} -> ${wide})`);
+});
+
+test('an out-of-range step is clamped, not obeyed', () => {
+  // The Masking Studio's [ and ] shortcuts set the step directly, so values
+  // outside the range reach the scale without an input's min/max to stop them.
+  const paintedAt = (step) => {
+    const { canvas, brush } = setup({ w: 400, h: 200, rect: { left: 0, top: 0, width: 400, height: 200 } });
+    brush.setSizeStep(step);
+    down(canvas, 200, 100);
+    up(canvas);
+    return canvas.paintedPixels();
+  };
+
+  assert.equal(paintedAt(999), paintedAt(16), 'a huge step paints exactly what the maximum does');
+  assert.equal(paintedAt(-5), paintedAt(1), 'and a negative one paints what the minimum does');
 });
 
 test('a zero-sized canvas is survived rather than crashed on', () => {

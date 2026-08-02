@@ -317,10 +317,14 @@
                     <span data-lang="maskingStudio.redo">Redo</span>
                   </button>
                 </div>
+                <!-- A relative scale, not a pixel count — see scripts/mask/brush-scale.js.
+                     The bounds here are a pre-hydration placeholder; draw-tools.js
+                     assigns the real ones when it wires the slider. -->
                 <div class="ms-brush-row" id="ms-brush-row">
                   <label for="ms-brush-slider" data-lang="pdf.maskEditor.brushSize">Brush Size:</label>
-                  <input type="range" id="ms-brush-slider" min="20" max="150" value="50">
-                  <span id="ms-brush-size" class="ms-brush-size">50 px</span>
+                  <span class="ms-brush-end" data-lang="pdf.maskEditor.brushSmall">Small</span>
+                  <input type="range" id="ms-brush-slider" min="1" max="16" value="6">
+                  <span class="ms-brush-end" data-lang="pdf.maskEditor.brushLarge">Large</span>
                 </div>
                 <div class="ms-wand-row hidden" id="ms-wand-row">
                   <p class="ms-wand-hint" data-lang="maskingStudio.wandHint">Click an object in the photo to select it.</p>

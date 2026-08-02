@@ -65,6 +65,47 @@ test('nothing is touched before the language pack has loaded', () => {
   assert.equal(close.getAttribute('aria-label'), 'Close', 'the template default survives');
 });
 
+/** The two markers flanking the brush slider, as the template builds them. */
+function buildBrushEnds() {
+  const make = (key, english) => {
+    const el = dom.el('span', null, 'mask-editor-brush-end');
+    el.setAttribute('data-i18n', key);
+    el.textContent = english;
+    return el;
+  };
+  return {
+    small: make('pdf.maskEditor.brushSmall', 'Small'),
+    large: make('pdf.maskEditor.brushLarge', 'Large'),
+  };
+}
+
+// The brush slider is a relative scale with no number beside it any more
+// (public/scripts/mask/brush-scale.js), so these two words are the only thing
+// saying which end is which. Their data-i18n attributes are inert — this dialog
+// is built at runtime, long after the attribute pass has run — so an untranslated
+// end label is a control with no legend at all in ten of the eleven languages.
+test('the brush slider ends are localized, despite their data-i18n being inert', () => {
+  buildDialog();
+  const { small, large } = buildBrushEnds();
+  withPack({ 'pdf.maskEditor.brushSmall': 'Petit', 'pdf.maskEditor.brushLarge': 'Grand' });
+
+  updateMaskEditorTranslations();
+
+  assert.equal(small.textContent, 'Petit');
+  assert.equal(large.textContent, 'Grand');
+});
+
+test('an end label falls back to its English, never the raw key', () => {
+  buildDialog();
+  const { small, large } = buildBrushEnds();
+  withPack({}); // every lookup echoes its key
+
+  updateMaskEditorTranslations();
+
+  assert.equal(small.textContent, 'Small', 'a key echo would render "pdf.maskEditor.brushSmall"');
+  assert.equal(large.textContent, 'Large');
+});
+
 test('a dialog that has not been built yet is a no-op, not a crash', () => {
   // updateMaskEditorTranslations() also runs on language change, which can happen
   // before the dialog has ever been opened (it is created lazily on first open).
