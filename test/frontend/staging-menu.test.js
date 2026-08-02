@@ -140,12 +140,18 @@ test('syncStagingMenu no-ops on pages with no menu', () => {
 
 // ---- The nav markup drift guard -------------------------------------------
 
-// The wrapper, matched in full: `<div class="staging-menu` alone also matches the
-// inner `staging-menu__panel`, which made the "exactly one menu" check below fire
-// on every page. Pinning the whole class list also asserts `desktop-only` is still
-// there — the menu is deliberately not shown on mobile, same as the two links it
-// replaced (.nav-center is overflow-x:clip below 768px, so the panel would clip).
-const MENU_OPEN = '<div class="staging-menu desktop-only"';
+// The wrapper, matched in full (with the closing quote): `<div class="staging-menu`
+// alone also matches the inner `staging-menu__panel`, which made the "exactly one
+// menu" check below fire on every page.
+//
+// It carried `desktop-only` until 2026-08-01. That hid the ENTIRE dropdown below
+// 768px — and since the dropdown is the only nav entry to Image Staging, Basic Mask,
+// the AI Designer and the Masking Studio, a phone had no nav path to any staging tool
+// at all, including the two features Stagify+ is sold on. The reason was real
+// (.nav-center is overflow-x:clip, so a trigger-anchored 224px panel got cut near
+// either edge); the fix was to anchor the panel to .nav-center itself so it is exactly
+// as wide as the clipping box. See the mobile block in styles.css.
+const MENU_OPEN = '<div class="staging-menu"';
 
 /**
  * Extract the staging-menu block by matching <div> depth, rather than by a

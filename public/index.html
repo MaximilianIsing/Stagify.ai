@@ -563,7 +563,7 @@
         <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <div class="staging-menu desktop-only" data-staging-menu data-nav-group>
+          <div class="staging-menu" data-staging-menu data-nav-group>
             <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
             <div class="staging-menu__panel" role="menu">
               <a class="staging-menu__item" href="index.html#stage" role="menuitem" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span></a>
@@ -1024,7 +1024,7 @@
       <section class="home-section home-plus" id="plans" aria-labelledby="plus-title">
         <div class="home-section__head reveal">
           <h2 class="home-section__title" id="plus-title" data-tx="shiny" data-lang="home.plus.title">Go further with Stagify+</h2>
-          <p class="home-section__sub" data-lang="home.plus.subtitle">Unlimited staging, higher-quality models, and pro tools, plus a usage-based plan built for whole teams.</p>
+          <p class="home-section__sub" data-lang="home.plus.subtitle">Furniture removal, the AI Designer and the Masking Studio, plus a usage-based plan built for whole teams.</p>
         </div>
         <div class="plus-grid">
           <article class="plus-card plus-card--pro reveal reveal--left">
@@ -1034,13 +1034,17 @@
               <span class="plus-card__badge" data-lang="home.plus.pro.tag">For individuals</span>
             </div>
             <div class="plus-price"><span class="plus-price__num">$11.99</span><span class="plus-price__per" data-lang="home.plus.pro.per">/ month</span></div>
+            <!-- Ordered by what free does NOT have. "Unlimited staging generations" led
+                 this list, but free already gets 50 a day — so the first thing a
+                 prospective subscriber read was the benefit least likely to make them
+                 pay. It stays (it is a real difference), just not first. -->
             <ul class="home-list">
-              <li data-lang="home.plus.pro.f1">Unlimited staging generations</li>
+              <li data-lang="home.plus.pro.f6">Remove existing furniture from rooms</li>
+              <li data-lang="home.plus.pro.f5">AI Designer: agentic staging process</li>
+              <li data-lang="home.plus.pro.f4">Masking tool to edit any area</li>
               <li data-lang="home.plus.pro.f2">Higher-quality image model</li>
               <li data-lang="home.plus.pro.f3">Multiple variations per generation</li>
-              <li data-lang="home.plus.pro.f4">Masking tool to edit any area</li>
-              <li data-lang="home.plus.pro.f5">AI Designer: agentic staging process</li>
-              <li data-lang="home.plus.pro.f6">Remove existing furniture from rooms</li>
+              <li data-lang="home.plus.pro.f1">Unlimited staging generations</li>
             </ul>
             <a class="plus-cta" href="stagify-plus.html" data-lang="home.plus.pro.cta">View Stagify+</a>
           </article>
@@ -1080,7 +1084,11 @@
             <ul class="whyus-list whyus-list--yes">
               <li data-lang-html="whyUs.stagify.features.instantResults"><strong>Instant results</strong>: ~8 seconds</li>
               <li data-lang-html="whyUs.stagify.features.oneClickStaging"><strong>One‑click staging</strong>: No hassle</li>
-              <li data-lang-html="whyUs.stagify.features.free"><strong>Unlimited generations</strong>: Totally free</li>
+              <!-- Was "Unlimited generations: Totally free", which is not true — the
+                   free plan is capped at FREE_DAILY_LIMIT (lib/data/auth-store.js) — and
+                   it told a prospective subscriber the paid tier's headline benefit was
+                   already free. -->
+              <li data-lang-html="whyUs.stagify.features.free"><strong>50 free generations a day</strong>: No card needed</li>
               <li data-lang-html="whyUs.stagify.features.noAds"><strong>Ad-free experience</strong>: No distractions</li>
               <li data-lang-html="whyUs.stagify.features.noLogin"><strong>Easy sign up</strong>: Start instantly</li>
               <li data-lang-html="whyUs.stagify.features.unlimited"><strong>Advanced image models</strong>: Higher quality</li>
@@ -1346,6 +1354,11 @@
                   <span id="progress-text" data-lang="modal.staging.progress.preparing">Preparing…</span>
                 </div>
                 <div id="loading-message" class="loading-message hidden" data-lang="modal.staging.progress.preparing">Preparing AI model</div>
+                <!-- A render had no timeout and no way out: the bar crept to 70% and
+                     stopped there for as long as the request hung, with nothing to
+                     click. The guides told people to refresh after a minute, which
+                     abandons renders that are still legitimately running. -->
+                <button type="button" id="stage-cancel-btn" class="stage-cancel-btn hidden" data-lang="modal.staging.progress.cancel">Cancel</button>
               </div>
 
               <div class="stage-workspace">

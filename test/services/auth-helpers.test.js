@@ -50,8 +50,8 @@ import { createAuthHelpers } from '../../lib/services/auth-helpers.js';
  * whose calls are recorded on `calls` for assertion.
  */
 function makeAuthStore(overrides = {}) {
-  const calls = { validateSession: [], findUserByEmail: [], publicUser: [] };
-  return {
+  const calls = { validateSession: [], findUserByEmail: [], publicUser: [], recordStagingActivity: [] };
+  const store = {
     calls,
     validateSession(token) {
       calls.validateSession.push(token);
@@ -65,7 +65,14 @@ function makeAuthStore(overrides = {}) {
       calls.publicUser.push(user);
       return overrides.publicUser ? overrides.publicUser(user) : { public: true, user };
     },
+    recordStagingActivity(userId) {
+      calls.recordStagingActivity.push(userId);
+    },
   };
+  // Older stores (and some mocks) predate the activity signal; `omitRecordStagingActivity`
+  // reproduces that so the guard can be tested.
+  if (overrides.omitRecordStagingActivity) delete store.recordStagingActivity;
+  return store;
 }
 
 /**
@@ -547,4 +554,58 @@ test('toPublicAuthUser runs the enterprise-enhanced user through authStore.publi
   assert.equal(authStore.calls.publicUser[0].enterpriseDomain, 'acme.com');
 
   assert.deepEqual(result, { email: 'worker@acme.com', plan: 'pro', enterpriseDomain: 'acme.com' });
+});
+
+// ---------------------------------------------------------------------------
+// recordStagingActivity — the trial-activation signal
+// ---------------------------------------------------------------------------
+// This is what `trial-lifecycle.js` reads to decide whether a trial user has
+// "activated" (lastStagedAt >= trialStart), which picks between the day-1
+// "you haven't staged anything yet" nudge and the mid-trial value email.
+//
+// The plan check lives in this helper rather than at each call site precisely so
+// the three paid surfaces (single-photo staging, the Masking Studio, the AI
+// Designer) cannot drift apart on what counts as activation — which is how the
+// two pro-only surfaces ended up writing no signal at all.
+
+test('recordStagingActivity writes the timestamp for a pro account', () => {
+  const authStore = makeAuthStore();
+  const { recordStagingActivity } = createAuthHelpers({
+    authStore, enterpriseStore: makeEnterpriseStore(), stripe: null, enterpriseMeterEventName: 'meter',
+  });
+
+  assert.equal(recordStagingActivity({ id: 'u_1', plan: 'pro' }), true);
+  assert.deepEqual(authStore.calls.recordStagingActivity, ['u_1']);
+});
+
+test('recordStagingActivity ignores a free account — it has no trial to activate', () => {
+  const authStore = makeAuthStore();
+  const { recordStagingActivity } = createAuthHelpers({
+    authStore, enterpriseStore: makeEnterpriseStore(), stripe: null, enterpriseMeterEventName: 'meter',
+  });
+
+  assert.equal(recordStagingActivity({ id: 'u_2', plan: 'free' }), false);
+  assert.deepEqual(authStore.calls.recordStagingActivity, []);
+});
+
+test('recordStagingActivity is a no-op for null/id-less users rather than throwing', () => {
+  const authStore = makeAuthStore();
+  const { recordStagingActivity } = createAuthHelpers({
+    authStore, enterpriseStore: makeEnterpriseStore(), stripe: null, enterpriseMeterEventName: 'meter',
+  });
+
+  assert.equal(recordStagingActivity(null), false);
+  assert.equal(recordStagingActivity(undefined), false);
+  assert.equal(recordStagingActivity({ plan: 'pro' }), false, 'no id means nothing to key on');
+  assert.deepEqual(authStore.calls.recordStagingActivity, []);
+});
+
+test('recordStagingActivity tolerates a store that does not implement it', () => {
+  // A render must never fail because the activity signal is missing.
+  const authStore = makeAuthStore({ omitRecordStagingActivity: true });
+  const { recordStagingActivity } = createAuthHelpers({
+    authStore, enterpriseStore: makeEnterpriseStore(), stripe: null, enterpriseMeterEventName: 'meter',
+  });
+
+  assert.equal(recordStagingActivity({ id: 'u_3', plan: 'pro' }), false);
 });

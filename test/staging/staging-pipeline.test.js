@@ -80,6 +80,51 @@ test('skips a null result without reviewing it', async () => {
   assert.equal(reviews, 1, 'the null attempt is not scored');
 });
 
+// ── Degraded (unreviewed) verdicts ───────────────────────────────────────────
+// The reviewer fails OPEN so an outage in the QA model never becomes a user-facing
+// outage. That is correct, but it used to be INDISTINGUISHABLE from a genuine pass:
+// a broken reviewer returned {perfect:true, score:100} and the render log recorded a
+// flawless run. `degraded` makes the difference observable.
+
+test('a degraded verdict accepts the image but reports it through onReviewDegraded', async () => {
+  const seen = [];
+  const gen = scriptedGen(['a', 'b', 'c']);
+  const url = await generateWithQualityRetry(gen, {
+    reviewFn: scriptedReview([{ perfect: true, score: 100, reason: 'reviewer error', degraded: true }]),
+    maxAttempts: 3,
+    onReviewDegraded: (attempt, review) => seen.push({ attempt, reason: review.reason }),
+  });
+  assert.equal(url, 'a', 'the image is still delivered — failing closed would be worse');
+  assert.deepEqual(seen, [{ attempt: 1, reason: 'reviewer error' }]);
+});
+
+test('a degraded verdict does NOT burn extra attempts against a broken reviewer', async () => {
+  const gen = scriptedGen(['a', 'b', 'c']);
+  await generateWithQualityRetry(gen, {
+    reviewFn: scriptedReview([{ perfect: true, score: 100, degraded: true }]),
+    maxAttempts: 3,
+  });
+  assert.equal(gen.calls.length, 1, 're-rolling cannot improve a review that never happened');
+});
+
+test('a genuine perfect verdict never fires onReviewDegraded', async () => {
+  let fired = 0;
+  await generateWithQualityRetry(scriptedGen(['a']), {
+    reviewFn: scriptedReview([{ perfect: true, score: 100 }]),
+    maxAttempts: 3,
+    onReviewDegraded: () => { fired += 1; },
+  });
+  assert.equal(fired, 0);
+});
+
+test('onReviewDegraded is optional — a degraded verdict without one still returns', async () => {
+  const url = await generateWithQualityRetry(scriptedGen(['a']), {
+    reviewFn: scriptedReview([{ perfect: true, score: 100, degraded: true }]),
+    maxAttempts: 2,
+  });
+  assert.equal(url, 'a');
+});
+
 test('rethrows the last generation error when nothing is ever produced', async () => {
   await assert.rejects(
     generateWithQualityRetry(scriptedGen([new Error('first'), new Error('second')]), {

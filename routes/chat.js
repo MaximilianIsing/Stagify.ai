@@ -46,6 +46,7 @@ import { resolveChatModel } from '../lib/config/model-config.js';
  *   chatUpload: import('multer').Multer,
  *   DEBUG_MODE: boolean,
  *   requireProAccount: (req: import('express').Request, res: import('express').Response) => any,
+ *   recordStagingActivity?: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['recordStagingActivity'],
  *   loadMemories: (userId: any) => any[],
  *   saveMemories: Function,
  *   getTemperatureForModel: (model: string) => number,
@@ -67,7 +68,26 @@ export default function createChatRouter(deps) {
   // SSE streaming, etc.) are consumed by createChatPipeline(deps) below rather
   // than referenced here.
   const { openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories } = deps;
+  const recordStagingActivity = deps.recordStagingActivity || (() => false);
   const router = createAsyncRouter();
+
+  /**
+   * Mark a trial/paid account as having actually used the AI Designer.
+   *
+   * The AI Designer is Stagify+ only, so every image it produces is trial usage — but
+   * it wrote no activity timestamp at all, so the lifecycle sweep classified a user who
+   * lived in this tool as "signed up but never staged". They were then sent the day-1
+   * "you haven't staged anything yet" nudge and never the mid-trial value email.
+   *
+   * Only image-producing turns count: a plain chat message is a conversation, not a
+   * render, and treating it as activation would make the signal meaningless.
+   * @param {any} user - The validated pro account for this request.
+   * @param {{ stagingResults?: any[], generatedImages?: any[] }} dispatch - The post-routing dispatch result.
+   */
+  function recordDesignerActivity(user, dispatch) {
+    const produced = (dispatch?.stagingResults?.length || 0) + (dispatch?.generatedImages?.length || 0);
+    if (produced > 0) recordStagingActivity(user);
+  }
   const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse, applyPostRoutingSuppression, logRoutingOutcome, beginChatStream, sendChatResponse } = createChatPipeline(deps);
   const { buildUploadUserContent, buildUploadMessages, logUploadPayload, runUploadRouting, logUploadDedupDiagnostics } = createUploadPrep(deps);
   const { handleWelcomeMessage } = createWelcomeMessageHandler(deps);
@@ -231,6 +251,8 @@ router.post('/api/chat', genLimiter, async (req, res) => {
         currentMessageHasImage: currentImage.hasImage,
       },
     });
+
+    recordDesignerActivity(proUser, dispatch);
 
     const response = await buildDesignerResponse({
       text: dispatch.text,
@@ -398,6 +420,8 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
     // Extract image annotations from cleanedUserContent to return to frontend
     // (uses the private _annotation property, which is never sent to OpenAI).
     const imageAnnotations = extractUploadImageAnnotations({ cleanedUserContent, filteredUserContent });
+
+    recordDesignerActivity(proUser, dispatch);
 
     const response = await buildDesignerResponse({
       text: dispatch.text,

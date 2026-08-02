@@ -14,8 +14,21 @@
 /** Types the browsers we support can decode onto a canvas. */
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
-/** 100 MB. Matches the server's upload ceiling. */
-export const MAX_IMAGE_BYTES = 100 * 1024 * 1024;
+/**
+ * 25 MB — the browser-side mirror of the server's real ceiling
+ * (`MAX_UPLOAD_BYTES` in lib/http/uploads.js, which is what multer enforces).
+ *
+ * This said 100 MB, with a comment claiming it matched the server. It did not: a
+ * 30 MB photo cleared this check, was uploaded in full, and was then refused by
+ * multer — after which the client showed "please upload an image smaller than
+ * 100MB", quoting the wrong number back at a file it had just accepted. The guides
+ * said 10 MB, a third figure. The frontend cannot import from lib/, so the value is
+ * mirrored and test/http/upload-limit-consistency.test.js fails if the two drift.
+ */
+export const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
+
+/** The ceiling as it appears in user-facing copy. Keep in step with MAX_IMAGE_BYTES. */
+export const MAX_IMAGE_MB = 25;
 
 /**
  * Decide whether a chosen file is usable, as a translation key suffix.
@@ -37,7 +50,7 @@ export function fileRejection(type, size) {
 const FALLBACK = {
   heicConvert: "We couldn't read that HEIC photo. Please try a JPG or PNG.",
   fileType: 'Please upload a PNG, JPG, JPEG, WebP, or GIF image file.',
-  fileTooLarge: 'File is too large. Please upload an image smaller than 100MB.',
+  fileTooLarge: 'File is too large. Please upload an image smaller than 25MB.',
 };
 
 /**

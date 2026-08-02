@@ -36,6 +36,8 @@ const MAX_VALIDATE_IMAGE_BYTES = 8 * 1024 * 1024;
  *   requireProAccount: (req: import('express').Request, res: import('express').Response) => any,
  *   enterpriseDomainForUser: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['enterpriseDomainForUser'],
  *   reportEnterpriseUsage: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['reportEnterpriseUsage'],
+ *   recordStagingActivity?: ReturnType<typeof import('../lib/services/auth-helpers.js').createAuthHelpers>['recordStagingActivity'],
+ *   logRejectionToFile?: ReturnType<typeof import('../lib/services/logging.js').createLogging>['logRejectionToFile'],
  *   validateStageableImage: (imageBuffer: Buffer) => Promise<{ valid: boolean, code: string | null, reason: string }>,
  *   handleVirtualStagingMultipart: (req: import('express').Request, res: import('express').Response, meta: import('../lib/types/staging.js').VirtualStagingMeta) => Promise<import('express').Response | void>,
  *   downscaleImage: typeof import('../lib/image/image-primitives.js').downscaleImage,
@@ -64,6 +66,9 @@ export default function createStagingRouter(deps) {
   // /api/segment handlers are built by the sibling factories (which each
   // destructure their own slice of the full `deps`).
   const { genLimiter, validateImageLimiter, stagingProcessUpload, setSensitiveHeaders, getAuthUserFromRequest, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard } = deps;
+  // Optional so every existing test harness can mount this router unchanged; a
+  // missing rejection log must never break a route.
+  const logRejection = deps.logRejectionToFile || (() => {});
   const router = createAsyncRouter();
   const preCheckLimiter = validateImageLimiter ?? defaultValidateImageLimiter;
 
@@ -111,7 +116,8 @@ router.post('/api/validate-image', genLimiter, preCheckLimiter, async (req, res)
     // have used the verdict. Both studios already send the session token, and both
     // treat any non-2xx as "valid" (fail open), so a signed-out browser silently
     // skips the pre-check and still meets the real gate one request later.
-    if (!getAuthUserFromRequest(req)) {
+    const preCheckUser = getAuthUserFromRequest(req);
+    if (!preCheckUser) {
       return sendError(res, 401, 'Please sign in to stage images', { code: 'AUTH_REQUIRED' });
     }
     // Cheap prechecks before the paid call: reject a payload that cannot be a real
@@ -139,6 +145,15 @@ router.post('/api/validate-image', genLimiter, preCheckLimiter, async (req, res)
       return sendError(res, 400, 'Invalid image data');
     }
     const { valid, code, reason } = await validateStageableImage(imageBuffer);
+    if (!valid) {
+      // The likeliest first-session abandonment there is: someone uploads the wrong
+      // kind of photo, is told no, and leaves. Nothing recorded it, so it was
+      // invisible in every funnel. Best-effort — a logging failure must not turn a
+      // clean rejection into a 500.
+      logRejection('unstageable', code || 'UNSTAGEABLE', reason || '', {
+        email: preCheckUser.email, userId: preCheckUser.id, req,
+      });
+    }
     setSensitiveHeaders(res);
     // `code` is the stable category the client localizes; `reason` is the canonical
     // English copy, and doubles as the client's fallback until a translation exists.

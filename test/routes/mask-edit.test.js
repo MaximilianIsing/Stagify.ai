@@ -191,6 +191,76 @@ test('mask-edit: returns the edited image on success, calling the model seam wit
   assert.equal(captured.label, 'mask-edit');
 });
 
+test('mask-edit: every area gets the SAME quality budget, however many were painted', async () => {
+  // Regression guard. The handler used to trim maxAttempts from QUALITY_MAX_ATTEMPTS
+  // to 2 whenever the client reported a fan-out of 3+ areas, as a cost guard. The
+  // effect was that the Masking Studio — a paid-only feature — silently produced
+  // lower-quality results the more areas a user painted, with nothing in the UI
+  // saying so. Quality must not depend on how hard the feature is used.
+  const budgets = [];
+  const captureBudget = async (_generateOnce, label, onImageProduced, _reviewFn, maxAttempts) => {
+    budgets.push(maxAttempts);
+    if (onImageProduced) onImageProduced();
+    return 'data:image/png;base64,AAAA';
+  };
+  // `batch` is no longer part of the contract; send it anyway to prove a stale client
+  // (or a replayed request) cannot reintroduce the downgrade.
+  for (const batch of [1, 3, 6, undefined]) {
+    app = await mountStaging({
+      requireProAccount: proUser,
+      genAI: {},
+      generateWithQualityRetry: captureBudget,
+    });
+    const res = await postJson(app.baseUrl, '/api/mask-edit', {
+      image: IMAGE, mask: MASK, prompt: 'add a rug', ...(batch === undefined ? {} : { batch }),
+    });
+    assert.equal(res.status, 200);
+    await app.close(); app = null;
+  }
+  assert.equal(budgets.length, 4);
+  assert.equal(new Set(budgets).size, 1, `all batch sizes must share one budget, got ${budgets.join(',')}`);
+  assert.ok(budgets[0] > 2, 'the shared budget is the full QUALITY_MAX_ATTEMPTS, not the trimmed 2');
+});
+
+test('mask-edit: a successful edit records trial activation for the pro account', async () => {
+  // The Masking Studio is Stagify+ only, so every edit here is trial/paid usage. It
+  // used to write NO activity timestamp, so the lifecycle sweep saw a heavy Masking
+  // Studio user as "signed up but never staged" and sent them the activation nudge.
+  const recorded = [];
+  app = await mountStaging({
+    requireProAccount: proUser,
+    genAI: {},
+    generateWithQualityRetry: fakeRetry({}, { produce: 1 }),
+    recordStagingActivity: (u) => { recorded.push(u.id); return true; },
+  });
+  const res = await postJson(app.baseUrl, '/api/mask-edit', {
+    image: IMAGE, mask: MASK, prompt: 'add a plant',
+  });
+  assert.equal(res.status, 200);
+  assert.deepEqual(recorded, ['u1']);
+});
+
+test('mask-edit: an enterprise-billed edit meters the domain instead of the trial signal', async () => {
+  // Enterprise seats are billed per generation and are not trialing, so the activity
+  // signal is deliberately not written for them.
+  const recorded = [];
+  const metered = [];
+  app = await mountStaging({
+    requireProAccount: proUser,
+    genAI: {},
+    generateWithQualityRetry: fakeRetry({}, { produce: 2 }),
+    enterpriseDomainForUser: () => 'acme.com',
+    reportEnterpriseUsage: (d, n) => metered.push({ d, n }),
+    recordStagingActivity: (u) => { recorded.push(u.id); return true; },
+  });
+  const res = await postJson(app.baseUrl, '/api/mask-edit', {
+    image: IMAGE, mask: MASK, prompt: 'add a plant',
+  });
+  assert.equal(res.status, 200);
+  assert.deepEqual(metered, [{ d: 'acme.com', n: 2 }]);
+  assert.deepEqual(recorded, []);
+});
+
 test('mask-edit: reports referenceUsed:true when a valid reference image is supplied', async () => {
   const captured = {};
   app = await mountStaging({

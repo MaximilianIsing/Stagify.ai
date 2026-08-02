@@ -43,7 +43,7 @@ import { createHostedImages } from './lib/image/hosted-images.js';
 import { createHttpGuards } from './lib/http/http-guards.js';
 import { createAiClients } from './lib/services/ai-clients.js';
 import { stagingProcessUpload, chatUpload, hostImageUpload, HOSTED_IMAGE_MIME_EXT } from './lib/http/uploads.js';
-import { authLimiter, emailLimiter, genLimiter } from './lib/http/rate-limiters.js';
+import { authLimiter, emailLimiter, genLimiter, setRateLimitRejectionLogger } from './lib/http/rate-limiters.js';
 import { logger } from './lib/logger.js';
 import { applyEdgeMiddleware, applyBodyAndStatic } from './lib/http/app-middleware.js';
 import { createStagingGeneration } from './lib/staging/staging-generation.js';
@@ -107,7 +107,7 @@ if (LOGS_ACCESS_KEY) {
 const enterpriseMeterEventName = readEnterpriseMeterEventName();
 
 // Auth/enterprise helpers (lib/services/auth-helpers.js), sharing this server's stores + Stripe.
-const { getAuthUserFromRequest, toPublicAuthUser, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount } = createAuthHelpers({ authStore, enterpriseStore, stripe, enterpriseMeterEventName });
+const { getAuthUserFromRequest, toPublicAuthUser, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount } = createAuthHelpers({ authStore, enterpriseStore, stripe, enterpriseMeterEventName });
 
 // Home-page counters (rooms staged / contacts) live in lib/data/counters.js — imported above.
 
@@ -217,7 +217,10 @@ if (STATS_DEBUG) {
 // AI/email clients (genAI / openai / resend) + RESEND_FROM_EMAIL / APP_URL are
 // constructed above the billing router (the Stripe webhook needs the Resend client
 // for the trial-email lifecycle). Reused here for the remaining routers.
-const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile } = createLogging({ __dirname });
+const { getDataLogDir, escapeCsvField, logPromptToFile, logMaskEditToFile, logChatToFile, logRejectionToFile } = createLogging({ __dirname });
+// The rate limiters are module singletons built at import time, before this factory
+// exists, so they take the rejection writer through a setter rather than a dep.
+setRateLimitRejectionLogger(logRejectionToFile);
 const { logEmailOpenToFile, isConfirmedEmailClientOpen, forgetEmailOpenState, sendRegistrationVerificationEmail, sendAccountExistsNotice } = createEmail({ resend, RESEND_FROM_EMAIL, EMAIL_DEBUG_MODE, DEBUG_EMAIL, escapeCsvField, getDataLogDir });
 const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = createMemory({ __dirname, DEBUG_MODE });
 // GDPR erasure. Built here (not inside a store) because it spans every store's
@@ -277,6 +280,8 @@ const { handleVirtualStagingMultipart } = createVirtualStagingHandler({
   toPublicAuthUser,
   enterpriseDomainForUser,
   reportEnterpriseUsage,
+  recordStagingActivity,
+  logRejectionToFile,
   roomIsAlreadyEmpty,
   eraseFurniture,
   processStaging,
@@ -303,10 +308,10 @@ app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY
 app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks }));
 
 // staging routes (routes/staging.js)
-app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, requireProAccount, logMaskEditToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
+app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount, logMaskEditToFile, logRejectionToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
 
 // chat routes (routes/chat.js)
-app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
+app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, recordStagingActivity, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
 
 // localized-page routes (routes/i18n.js) — /es, /fr/ai-designer.html, … rendered
 // server-side from the language JSON. Mounted before the public router; its prefixes

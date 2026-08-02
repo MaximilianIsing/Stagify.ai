@@ -185,7 +185,7 @@
     },
     "plus": {
       "title": "Gehen Sie weiter mit Stagify+",
-      "subtitle": "Unbegrenztes Staging, hochwertigere Modelle und Profi-Tools, plus ein nutzungsbasierter Tarif für ganze Teams.",
+      "subtitle": "Möbel entfernen, der KI-Designer und das Masking Studio – dazu ein nutzungsbasierter Tarif für ganze Teams.",
       "pro": {
         "name": "Stagify+",
         "tag": "Für Einzelpersonen",
@@ -364,7 +364,8 @@
           "Raumaufteilung und Fluss optimieren",
           "Letzte Feinheiten hinzufügen",
           "Ihre Vision zum Leben erwecken"
-        ]
+        ],
+        "cancel": "Abbrechen"
       },
       "downloadSizeMenu": "Download-Auflösung wählen",
       "downloadOriginal": "Original",
@@ -416,7 +417,7 @@
       "features": {
         "instantResults": "<strong>Sofortige Ergebnisse</strong>: ~8 Sekunden",
         "oneClickStaging": "<strong>Staging mit einem Klick</strong>: Kein Aufwand",
-        "free": "<strong>Unbegrenzte Generierungen</strong>: Völlig kostenlos",
+        "free": "<strong>50 kostenlose Generierungen pro Tag</strong>: Ohne Kreditkarte",
         "noAds": "<strong>Werbefreies Erlebnis</strong>: Keine Ablenkungen",
         "noLogin": "<strong>Einfache Anmeldung</strong>: Sofort loslegen",
         "unlimited": "<strong>Fortschrittliche Bildmodelle</strong>: Höhere Qualität",
@@ -532,14 +533,15 @@
     },
     "heicConvert": "Wir konnten dieses HEIC-Foto nicht lesen. Bitte versuchen Sie es mit JPG oder PNG.",
     "fileType": "Bitte laden Sie eine PNG-, JPG-, JPEG-, WebP- oder GIF-Bilddatei hoch.",
-    "fileTooLarge": "Die Datei ist zu groß. Bitte laden Sie ein Bild mit weniger als 100 MB hoch.",
+    "fileTooLarge": "Die Datei ist zu groß. Bitte laden Sie ein Bild unter 25 MB hoch.",
     "uploadFirst": "Bitte laden Sie zuerst ein Bild hoch",
     "badPrompt": "Ungültige Anweisung eingegeben",
     "processingFailed": "Verarbeitung fehlgeschlagen",
     "noImageData": "Keine Bilddaten empfangen",
     "dailyLimitFree": "Sie haben alle {limit} kostenlosen Staging-Durchläufe für heute genutzt (Zurücksetzung um Mitternacht UTC). Wechseln Sie zu Stagify+ für unbegrenztes Staging.",
     "dailyLimitAnonymous": "Sie haben das kostenlose Limit für dieses Netzwerk erreicht ({limit} Durchläufe pro Tag, UTC). Melden Sie sich an, um Staging mit Ihrem Konto zu verknüpfen, oder versuchen Sie es morgen erneut.",
-    "dailyLimitCta": "Stagify+ ansehen"
+    "dailyLimitCta": "Stagify+ ansehen",
+    "stagingTimeout": "Das dauert länger als üblich und wurde gestoppt. Bitte versuchen Sie es erneut."
   },
   "common": {
     "close": "Schließen",
@@ -801,7 +803,7 @@
       "title": "Upload & Dateien",
       "i1": {
         "q": "Mein Foto lässt sich nicht hochladen.",
-        "a": "Stellen Sie sicher, dass die Datei ein JPG, PNG oder WEBP unter 10 MB ist. Sehr große Handyfotos schlagen manchmal fehl – verkleinern Sie das Bild oder machen Sie einen Screenshot davon und laden Sie es erneut hoch. Falls es weiterhin fehlschlägt, aktualisieren Sie die Seite und versuchen Sie es erneut."
+        "a": "Achten Sie darauf, dass die Datei eine JPG, PNG oder WEBP unter 25 MB ist. Sehr große Handyfotos schlagen manchmal fehl – verkleinern Sie das Bild oder machen Sie einen Screenshot davon und laden Sie es erneut hoch. Wenn es weiterhin fehlschlägt, laden Sie die Seite neu und versuchen Sie es noch einmal."
       },
       "i2": {
         "q": "Welche Fotos funktionieren am besten?",
@@ -835,7 +837,7 @@
       "title": "Generierung & Ergebnisse",
       "i1": {
         "q": "Meine Generierung hängt oder dauert zu lange.",
-        "a": "Die meisten Bilder sind in etwa 8 Sekunden fertig. Wenn es länger als eine Minute dauert, ist möglicherweise Ihre Verbindung abgebrochen – aktualisieren Sie die Seite und versuchen Sie es erneut. Vermeiden Sie es, während des Vorgangs Tabs zu wechseln oder Ihr Handy zu sperren."
+        "a": "Die meisten Bilder sind in etwa 8 Sekunden fertig, aber ein Stagify+-Rendering mit mehreren Varianten – oder eines, bei dem die KI für ein besseres Ergebnis erneut ansetzt – darf länger dauern. Lassen Sie es laufen: Sie können jederzeit unter dem Fortschrittsbalken auf Abbrechen tippen, und wenn wirklich etwas schiefgeht, stoppen wir es und sagen Ihnen Bescheid. Wechseln Sie währenddessen nicht den Tab und sperren Sie das Telefon nicht."
       },
       "i2": {
         "q": "Das Ergebnis hat seltsame Möbel oder Artefakte.",
@@ -923,7 +925,7 @@
     },
     "stagifyPlus": {
       "title": "Stagify+ – Tarife & Preise | Stagify.ai",
-      "description": "Stagify+: unbegrenztes KI-Staging, hochwertigere Modelle, KI-Designer und das Maskierungstool. Tarife und Preise ansehen."
+      "description": "Stagify+: Möbel entfernen, der KI-Designer, das Masking Studio, hochwertigere Modelle und unbegrenztes Staging. Pläne und Preise ansehen."
     },
     "enterprise": {
       "title": "Stagify Enterprise – Nutzungsbasiertes KI-Staging für Teams",
@@ -1151,7 +1153,7 @@
   "stagifyPlus": {
     "hero": {
       "title": "Alles in Stagify, <span class=\"sp-grad\">freigeschaltet</span>.",
-      "subtitle": "Unbegrenztes hochwertiges Staging, der AI Designer, das Entfernen von Möbeln und alle professionellen Werkzeuge. Und das für weniger als die Kosten eines einzigen klassischen Stagings."
+      "subtitle": "Möbel entfernen, der KI-Designer, das Masking Studio und hochwertigere Modelle – alle Profi-Werkzeuge für weniger als ein einziges klassisches Home Staging."
     },
     "plan": {
       "hintSignIn": "Melden Sie sich zuerst über das Profilmenü an, damit die Zahlung mit Ihrem Stagify-Konto verknüpft werden kann.",
@@ -1212,7 +1214,8 @@
         "studio": "Masking Studio (mehrere Bereiche)",
         "variations": "Mehrere Variationen pro Generierung",
         "references": "Möbelreferenzen"
-      }
+      },
+      "freeCap": "50 / Tag"
     },
     "enterpriseRow": "Für Teams oder Unternehmen <a href=\"enterprise.html\">entdecken Sie unseren Enterprise-Plan</a> oder kontaktieren Sie <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> für individuelle Abo-Optionen.",
     "footLinks": {

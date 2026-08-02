@@ -17,11 +17,19 @@ export interface FurnitureImageDescriptor {
  * quality-retry loop. Merged from QualityReviewResult (perfect+score) and the
  * richer ImageReviewResult (adds `reason`); `reason` is optional so both call
  * sites type-check.
+ *
+ * `degraded` marks a verdict that was NOT actually measured — the reviewer was
+ * disabled or threw, and the image was accepted unreviewed. It is deliberately
+ * distinct from a genuine `perfect: true`: both accept the image, but only one of
+ * them means the image was looked at. Without it a reviewer outage is
+ * indistinguishable from a flawless run, so the quality gate can switch itself off
+ * and report 100% success.
  */
 export interface ImageReviewResult {
   perfect: boolean;
   score: number;
   reason?: string;
+  degraded?: boolean;
 }
 
 /**

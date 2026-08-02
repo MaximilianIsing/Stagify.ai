@@ -126,8 +126,22 @@ admin/log endpoints — see [`endpoints.md`](endpoints.md).
 | `contact_logs.csv` | `timestamp,userRole,referralSource,email,userAgent,ipAddress` |
 | `bug_reports.csv` | `timestamp,description,stepsToReproduce,email,userId,userAgent,url,ipAddress,conversationHistory` |
 | `email_open_logs.csv` | `timestamp,email,ipAddress,userAgent` |
+| `rejection_logs.csv` | `timestamp,kind,code,detail,email,userId,ipAddress,userAgent` |
 
 These contain **emails and IP addresses** — treat as PII.
+
+`rejection_logs.csv` records requests turned away **before any render happened**: an
+upload the stageability gate refused (`kind: 'unstageable'`, `code` = the
+[`unstageable.js`](../../lib/staging/unstageable.js) category), a free account at its
+daily cap (`daily_limit`), or a caller that hit a rate limiter (`rate_limit`, `code` =
+the limiter's name). None of these reach `processStaging`, so until this file existed
+none of them were written down anywhere — including the single likeliest first-session
+abandonment there is, where someone uploads the wrong kind of photo, is told no, and
+leaves.
+
+It is a **separate file rather than rows in `prompt_logs.csv` on purpose**: the dashboard
+counts every prompt-log row as a generation, so folding rejections in would inflate the
+headline volume and distort the success rate with work that never ran.
 
 The last five `prompt_logs.csv` columns (`status` … `errorCode`) were **appended, never
 inserted**, because the admin dashboard reads these files **by column index** — a column
@@ -166,6 +180,8 @@ the single place that knows the full set, run by
   `prompt_logs.csv`, so dropping rows would move a public number, and the dashboard
   reads these files positionally. Columns are matched by **name** against each file's
   own header, so the append-only column rule above cannot shift a redaction.
+  `rejection_logs.csv` is covered too — its `kind` / `code` / `detail` cells are
+  non-identifying and are left alone, so the drop-off analytics survive an erasure.
 - **Not touched:** `mobile_ip_usage` (keyed by IP, no account link), `enterprise_domains`
   (a company's own billing record), `stripe_events`, `uptime_state`. Each is listed with
   its reason in `NOT_USER_KEYED`.

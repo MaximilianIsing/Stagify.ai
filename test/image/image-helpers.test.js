@@ -96,16 +96,25 @@ test('reviewImageQuality: a not-perfect verdict with no SCORE token scores 0', a
   assert.equal(out.score, 0);
 });
 
-test('reviewImageQuality: a null openai client is treated as a disabled reviewer (perfect, score 100)', async () => {
+test('reviewImageQuality: a null openai client is treated as a disabled reviewer (perfect, score 100, DEGRADED)', async () => {
   const { reviewImageQuality } = createImageReview({ genAI: null });
   const out = await reviewImageQuality(REAL_DATA_URL);
-  assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer disabled' });
+  assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer disabled', degraded: true });
 });
 
-test('reviewImageQuality: a thrown create() fails OPEN (perfect, score 100, reason "reviewer error")', async () => {
+test('reviewImageQuality: a thrown create() fails OPEN but marks the verdict DEGRADED', async () => {
   const { reviewImageQuality } = createImageReview({ genAI: fakeGrader(new Error('OpenAI exploded')) });
   const out = await reviewImageQuality(REAL_DATA_URL);
-  assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer error' });
+  assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer error', degraded: true });
+});
+
+// The whole point of `degraded`: an unreviewed acceptance must not be mistakable for a
+// measured pass. Both accept the image; only one of them looked at it.
+test('reviewImageQuality: a genuine PERFECT verdict is NOT marked degraded', async () => {
+  const { reviewImageQuality } = createImageReview({ genAI: fakeGrader('PERFECT: true') });
+  const out = await reviewImageQuality(REAL_DATA_URL);
+  assert.equal(out.perfect, true);
+  assert.ok(!out.degraded, 'a reviewed pass must not carry degraded');
 });
 
 // ── B. reviewMaskEdit shares the same parse contract ──────────────────────────
@@ -131,16 +140,23 @@ test('reviewMaskEdit: an out-of-range "SCORE: 250" is clamped to 100', async () 
   assert.equal(out.score, 100);
 });
 
-test('reviewMaskEdit: a null openai client is treated as a disabled reviewer (perfect, score 100)', async () => {
+test('reviewMaskEdit: a null openai client is treated as a disabled reviewer (perfect, score 100, DEGRADED)', async () => {
   const { reviewMaskEdit } = createImageReview({ genAI: null });
   const out = await reviewMaskEdit(REAL_DATA_URL, REAL_DATA_URL);
-  assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer disabled' });
+  assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer disabled', degraded: true });
 });
 
-test('reviewMaskEdit: a thrown create() fails OPEN (perfect, score 100, reason "reviewer error")', async () => {
+test('reviewMaskEdit: a thrown create() fails OPEN but marks the verdict DEGRADED', async () => {
   const { reviewMaskEdit } = createImageReview({ genAI: fakeGrader(new Error('OpenAI exploded')) });
   const out = await reviewMaskEdit(REAL_DATA_URL, REAL_DATA_URL);
-  assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer error' });
+  assert.deepEqual(out, { perfect: true, score: 100, reason: 'reviewer error', degraded: true });
+});
+
+test('reviewMaskEdit: a genuine PERFECT verdict is NOT marked degraded', async () => {
+  const { reviewMaskEdit } = createImageReview({ genAI: fakeGrader('PERFECT: true') });
+  const out = await reviewMaskEdit(REAL_DATA_URL, REAL_DATA_URL);
+  assert.equal(out.perfect, true);
+  assert.ok(!out.degraded, 'a reviewed pass must not carry degraded');
 });
 
 // ── C. validateStageableImage ─────────────────────────────────────────────────

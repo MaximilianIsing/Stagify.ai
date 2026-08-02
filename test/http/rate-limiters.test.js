@@ -35,16 +35,25 @@ const RL_AUTH_SNAPSHOT = process.env.RL_AUTH;
 const RL_EMAIL_SNAPSHOT = process.env.RL_EMAIL;
 const RL_GEN_SNAPSHOT = process.env.RL_GEN;
 const RL_CHECKOUT_SNAPSHOT = process.env.RL_CHECKOUT;
+// Two more, for the rejection-logging tests at the bottom. They get their OWN
+// limiters so they never depend on how much of another test's bucket is left.
+const RL_VALIDATE_IMAGE_SNAPSHOT = process.env.RL_VALIDATE_IMAGE;
+const RL_ENDPOINT_KEY_SNAPSHOT = process.env.RL_ENDPOINT_KEY;
 process.env.RL_AUTH = '2';
 process.env.RL_EMAIL = '2';
 process.env.RL_GEN = '2';
 process.env.RL_CHECKOUT = '2';
+process.env.RL_VALIDATE_IMAGE = '2';
+process.env.RL_ENDPOINT_KEY = '1';
 
 // A single dynamic import, taken AFTER the env overrides above are in place. ESM
 // caches the module, so this one construction of the three limiters is shared by
 // every test below (a later `import()` of the same path would just return this
 // cached instance).
-const { authLimiter, emailLimiter, genLimiter, checkoutLimiter } = await import('../../lib/http/rate-limiters.js');
+const {
+  authLimiter, emailLimiter, genLimiter, checkoutLimiter,
+  validateImageLimiter, endpointKeyLimiter, setRateLimitRejectionLogger,
+} = await import('../../lib/http/rate-limiters.js');
 
 after(() => {
   for (const [key, snapshot] of [
@@ -52,6 +61,8 @@ after(() => {
     ['RL_EMAIL', RL_EMAIL_SNAPSHOT],
     ['RL_GEN', RL_GEN_SNAPSHOT],
     ['RL_CHECKOUT', RL_CHECKOUT_SNAPSHOT],
+    ['RL_VALIDATE_IMAGE', RL_VALIDATE_IMAGE_SNAPSHOT],
+    ['RL_ENDPOINT_KEY', RL_ENDPOINT_KEY_SNAPSHOT],
   ]) {
     if (snapshot === undefined) delete process.env[key];
     else process.env[key] = snapshot;
@@ -191,4 +202,80 @@ test('the module exports authLimiter, emailLimiter, genLimiter, and checkoutLimi
   assert.equal(typeof emailLimiter, 'function', 'emailLimiter is middleware');
   assert.equal(typeof genLimiter, 'function', 'genLimiter is middleware');
   assert.equal(typeof checkoutLimiter, 'function', 'checkoutLimiter is middleware');
+});
+
+// ── Recording who got turned away ────────────────────────────────────────────
+// A 429 is a user hitting a wall, and none of them were written down anywhere: the
+// request is refused by middleware, so it never reaches a handler that logs. That
+// made "people are bouncing off the rate limiter" unfalsifiable. The limiters are
+// module singletons built at import time, so the writer arrives through a setter.
+
+test('a 429 records a rate_limit rejection carrying the limiter name and the path', async () => {
+  const seen = [];
+  setRateLimitRejectionLogger((kind, code, detail, who) => seen.push({ kind, code, detail, hasReq: !!who?.req }));
+
+  const app = express();
+  app.use('/v', validateImageLimiter, (req, res) => res.json({ ok: true }));
+  const server = await listen(app);
+  try {
+    const { port } = server.address();
+    const url = `http://127.0.0.1:${port}/v`;
+    assert.equal((await fetch(url)).status, 200);
+    assert.equal((await fetch(url)).status, 200);
+    assert.deepEqual(seen, [], 'requests UNDER the ceiling are not rejections');
+
+    const over = await fetch(url);
+    assert.equal(over.status, 429);
+    // The response body must be untouched — adding the log changes what we KNOW,
+    // never what the caller receives.
+    assert.deepEqual(await over.json(), {
+      error: 'Too many image checks. Please wait a moment and try again.',
+    });
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0].kind, 'rate_limit');
+    assert.equal(seen[0].code, 'validate_image', 'the limiter that fired is identifiable');
+    assert.equal(seen[0].detail, '/v');
+    assert.equal(seen[0].hasReq, true, 'the request rides along for ip/user-agent');
+  } finally {
+    setRateLimitRejectionLogger(null);
+    await close(server);
+  }
+});
+
+test('a throwing rejection logger still returns a clean 429', async () => {
+  // Bookkeeping must never become a second failure for a user already turned away.
+  setRateLimitRejectionLogger(() => { throw new Error('disk full'); });
+
+  const app = express();
+  app.use('/k', endpointKeyLimiter, (req, res) => res.json({ ok: true }));
+  const server = await listen(app);
+  try {
+    const { port } = server.address();
+    const url = `http://127.0.0.1:${port}/k`;
+    assert.equal((await fetch(url)).status, 200, 'RL_ENDPOINT_KEY=1 → the first request passes');
+
+    const over = await fetch(url);
+    assert.equal(over.status, 429);
+    assert.deepEqual(await over.json(), {
+      error: 'Too many attempts. Please wait a few minutes and try again.',
+    });
+  } finally {
+    setRateLimitRejectionLogger(null);
+    await close(server);
+  }
+});
+
+test('with no logger installed the limiters still behave exactly as before', async () => {
+  // The default is a no-op, so nothing depends on server.js having wired the writer.
+  setRateLimitRejectionLogger(null);
+  const app = express();
+  app.use('/n', validateImageLimiter, (req, res) => res.json({ ok: true }));
+  const server = await listen(app);
+  try {
+    const { port } = server.address();
+    const res = await fetch(`http://127.0.0.1:${port}/n`);
+    assert.equal(res.status, 429, 'the validate-image bucket is spent by the test above');
+  } finally {
+    await close(server);
+  }
 });

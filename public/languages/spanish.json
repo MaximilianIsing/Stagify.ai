@@ -185,7 +185,7 @@
     },
     "plus": {
       "title": "Ve más lejos con Stagify+",
-      "subtitle": "Diseño ilimitado, modelos de mayor calidad y herramientas pro, además de un plan por uso pensado para equipos.",
+      "subtitle": "Eliminación de muebles, el Diseñador IA y el Estudio de Máscaras, además de un plan por uso pensado para equipos completos.",
       "pro": {
         "name": "Stagify+",
         "tag": "Para individuos",
@@ -364,7 +364,8 @@
           "Optimizando el diseño y flujo de la habitación",
           "Añadiendo toques finales",
           "Dando vida a tu visión"
-        ]
+        ],
+        "cancel": "Cancelar"
       },
       "downloadSizeMenu": "Elegir resolución de descarga",
       "downloadOriginal": "Original",
@@ -416,7 +417,7 @@
       "features": {
         "instantResults": "<strong>Resultados instantáneos</strong>: ~8 segundos",
         "oneClickStaging": "<strong>Crea un escenario con un solo clic</strong>: Sin complicaciones",
-        "free": "<strong>Generaciones ilimitadas</strong>: Totalmente gratis",
+        "free": "<strong>50 generaciones gratis al día</strong>: Sin tarjeta",
         "noAds": "<strong>Sin anuncios</strong>: Sin distracciones",
         "noLogin": "<strong>Registro fácil</strong>: Empieza al instante",
         "unlimited": "<strong>Modelos de imagen avanzados</strong>: Mayor calidad",
@@ -532,14 +533,15 @@
     },
     "heicConvert": "No pudimos leer esa foto HEIC. Prueba con un JPG o PNG.",
     "fileType": "Por favor sube un archivo de imagen PNG, JPG, JPEG, WebP o GIF.",
-    "fileTooLarge": "El archivo es demasiado grande. Por favor sube una imagen menor a 100MB.",
+    "fileTooLarge": "El archivo es demasiado grande. Sube una imagen de menos de 25 MB.",
     "uploadFirst": "Por favor sube una imagen primero",
     "badPrompt": "Prompt incorrecto ingresado",
     "processingFailed": "El procesamiento falló",
     "noImageData": "No se recibieron datos de imagen",
     "dailyLimitFree": "Has usado las {limit} generaciones gratuitas de hoy (se reinician a medianoche UTC). Pasa a Stagify+ para puesta en escena ilimitada.",
     "dailyLimitAnonymous": "Has alcanzado el límite gratuito en esta red ({limit} al día, UTC). Inicia sesión para vincularlo a tu cuenta o vuelve mañana.",
-    "dailyLimitCta": "Ver Stagify+"
+    "dailyLimitCta": "Ver Stagify+",
+    "stagingTimeout": "Esto está tardando más de lo habitual y se ha detenido. Inténtalo de nuevo."
   },
   "common": {
     "close": "Cerrar",
@@ -801,7 +803,7 @@
       "title": "Subir fotos y archivos",
       "i1": {
         "q": "Mi foto no se sube.",
-        "a": "Asegúrate de que el archivo sea JPG, PNG o WEBP y pese menos de 10 MB. Las fotos muy grandes del móvil a veces fallan: cambia el tamaño de la imagen o hazle una captura de pantalla y vuelve a subirla. Si sigue fallando, recarga la página e inténtalo de nuevo."
+        "a": "Asegúrate de que el archivo sea JPG, PNG o WEBP y pese menos de 25 MB. Las fotos de móvil muy grandes a veces fallan: redimensiona la imagen o haz una captura de pantalla y vuelve a subirla. Si sigue fallando, actualiza la página e inténtalo de nuevo."
       },
       "i2": {
         "q": "¿Qué fotos funcionan mejor?",
@@ -835,7 +837,7 @@
       "title": "Generación y resultados",
       "i1": {
         "q": "La generación se queda colgada o tarda demasiado.",
-        "a": "La mayoría de las imágenes terminan en unos 8 segundos. Si ha pasado más de un minuto, puede que se haya cortado la conexión: recarga la página e inténtalo otra vez. Evita cambiar de pestaña o bloquear el móvil mientras se procesa."
+        "a": "La mayoría de las imágenes terminan en unos 8 segundos, pero un montaje de Stagify+ con varias variaciones, o uno en el que la IA reintenta para mejorar el resultado, puede tardar más legítimamente. Déjalo funcionar: puedes pulsar Cancelar bajo la barra de progreso en cualquier momento y, si algo ha fallado de verdad, lo detenemos por ti y te lo indicamos. Evita cambiar de pestaña o bloquear el teléfono mientras se ejecuta."
       },
       "i2": {
         "q": "El resultado tiene muebles raros o defectos.",
@@ -923,7 +925,7 @@
     },
     "stagifyPlus": {
       "title": "Stagify+ — Planes y Precios | Stagify.ai",
-      "description": "Stagify+: staging con IA ilimitado, modelos de mayor calidad, AI Designer y herramienta de máscara. Consulta planes y precios."
+      "description": "Stagify+: eliminación de muebles, el Diseñador IA, el Estudio de Máscaras, modelos de mayor calidad y montaje ilimitado. Consulta planes y precios."
     },
     "enterprise": {
       "title": "Stagify Enterprise — Staging con IA por Uso para Equipos",
@@ -1151,7 +1153,7 @@
   "stagifyPlus": {
     "hero": {
       "title": "Todo en Stagify, <span class=\"sp-grad\">desbloqueado</span>.",
-      "subtitle": "Staging ilimitado de alta calidad, el AI Designer, la eliminación de muebles y todas las herramientas profesionales. Todo por menos de lo que cuesta un solo staging tradicional."
+      "subtitle": "Eliminación de muebles, el Diseñador IA, el Estudio de Máscaras y modelos de mayor calidad: todas las herramientas profesionales por menos de lo que cuesta un solo montaje tradicional."
     },
     "plan": {
       "hintSignIn": "Inicie sesión primero desde el menú de perfil para que el pago pueda vincularse a su cuenta de Stagify.",
@@ -1212,7 +1214,8 @@
         "studio": "Masking Studio (varias áreas)",
         "variations": "Varias variaciones por generación",
         "references": "Referencias de muebles"
-      }
+      },
+      "freeCap": "50 / día"
     },
     "enterpriseRow": "Para equipos o empresas, <a href=\"enterprise.html\">explore nuestro plan enterprise</a> o contacte con <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> para opciones de suscripción personalizadas.",
     "footLinks": {

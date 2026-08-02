@@ -996,6 +996,28 @@ main {
 .loading-message {
   opacity:.8
 }
+/* The way out of a render that is taking too long. Deliberately quiet — it sits under
+   a progress bar that is usually gone in seconds, and it must not read as the primary
+   action. Shown only while a request is actually in flight. */
+.stage-cancel-btn {
+  display:block;
+  margin:10px auto 0;
+  padding:6px 16px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:transparent;
+  color:var(--slate);
+  font:inherit;
+  font-size:.85rem;
+  cursor:pointer;
+  transition:background .2s,color .2s,border-color .2s
+}
+.stage-cancel-btn:hover,
+.stage-cancel-btn:focus-visible {
+  background:rgba(15,23,42,.05);
+  color:var(--brand-deep);
+  border-color:var(--primary-light)
+}
 .results,.stage {
   max-width:1100px;
   margin:20px auto;
@@ -3093,6 +3115,32 @@ html {
   opacity:1;
   transform:translateX(-50%) translateY(0) scale(1);
   pointer-events:auto
+}
+/* Staging dropdown on phones.
+   .nav-center is `overflow-x:clip` below 768px so the wrapping nav row can never push
+   the page sideways. A panel anchored to its own trigger is a fixed 224px centred on
+   that trigger, so wherever the wrap happens to put the trigger it can run past the
+   clip and lose a row — which is why this menu was `desktop-only`, and why a phone
+   had no nav path to ANY staging tool, including the two Stagify+ is sold on.
+   Anchoring the panel to .nav-center makes it exactly as wide as the box doing the
+   clipping, so there is nothing left to clip at any trigger position or width. Only
+   the X axis is clipped (overflow-y stays visible, which `clip` permits), so the
+   panel still hangs below the nav normally.
+   This block MUST stay after the base rules above: a media query adds no specificity,
+   so declaring it earlier in the file loses to `.staging-menu{position:relative}`. */
+@media (max-width:768px) {
+  .staging-menu {
+    position:static
+  }
+  .staging-menu__panel {
+    left:0;
+    right:0;
+    min-width:0;
+    transform:translateY(-6px) scale(.98)
+  }
+  .staging-menu[data-open] .staging-menu__panel {
+    transform:translateY(0) scale(1)
+  }
 }
 .staging-menu__item {
   position:relative;

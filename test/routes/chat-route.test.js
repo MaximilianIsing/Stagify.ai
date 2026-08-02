@@ -165,6 +165,59 @@ test('staging routing without streamResponse returns the staged image as applica
   assert.equal(app.calls.processStaging.calls, 1);
 });
 
+// 3b ─ Trial activation. The AI Designer is Stagify+ only, so an image produced here
+//      is trial usage — but it wrote NO activity timestamp, so trial-lifecycle.js
+//      classed a heavy AI Designer user as "signed up but never staged" and sent them
+//      the day-1 "you haven't staged anything yet" nudge instead of the value email.
+test('a staged image from the AI Designer records trial activation', async () => {
+  const recorded = [];
+  app = await mountChat({
+    routing: STAGING_ROUTING,
+    recordStagingActivity: (u) => { recorded.push(u.id); return true; },
+  });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: 'stage this' },
+        { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+      ],
+    }],
+  });
+
+  assert.equal(res.status, 200);
+  assert.deepEqual(recorded, ['test']);
+});
+
+test('a generated image from the AI Designer also records trial activation', async () => {
+  const recorded = [];
+  app = await mountChat({
+    routing: { response: 'Here you go.', generate: [{ shouldGenerate: true, prompt: 'a cozy nook' }] },
+    recordStagingActivity: (u) => { recorded.push(u.id); return true; },
+  });
+
+  const res = await postChat(app.baseUrl, { messages: [{ role: 'user', content: 'design me a nook' }] });
+
+  assert.equal(res.status, 200);
+  assert.deepEqual(recorded, ['test'], 'text-to-image is real paid usage too');
+});
+
+test('a plain conversational reply does NOT count as activation', async () => {
+  // Otherwise the signal means nothing: saying hello would mark a trial "activated"
+  // and silence the nudge for someone who never made an image.
+  const recorded = [];
+  app = await mountChat({
+    routing: { response: 'Hello! What room are we working on?' },
+    recordStagingActivity: (u) => { recorded.push(u.id); return true; },
+  });
+
+  const res = await postChat(app.baseUrl, { messages: [{ role: 'user', content: 'hi' }] });
+
+  assert.equal(res.status, 200);
+  assert.deepEqual(recorded, []);
+});
+
 // 4 ─ Generate is text-to-image (no room image required); streamed SSE carries the
 //     generated image in the "images" frame with a "generating" status.
 test('generate routing with streamResponse streams a generating status and the generated image', async () => {

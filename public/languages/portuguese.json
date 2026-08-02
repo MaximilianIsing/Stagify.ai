@@ -185,7 +185,7 @@
     },
     "plus": {
       "title": "Vá além com o Stagify+",
-      "subtitle": "Staging ilimitado, modelos de qualidade superior e ferramentas profissionais, além de um plano por uso feito para equipes inteiras.",
+      "subtitle": "Remoção de móveis, o Designer de IA e o Masking Studio, além de um plano por uso pensado para equipas inteiras.",
       "pro": {
         "name": "Stagify+",
         "tag": "Para pessoas físicas",
@@ -364,7 +364,8 @@
           "Otimizando o layout e a circulação do cômodo",
           "Adicionando os toques finais",
           "Dando vida à sua visão"
-        ]
+        ],
+        "cancel": "Cancelar"
       },
       "downloadSizeMenu": "Escolher resolução de download",
       "downloadOriginal": "Original",
@@ -416,7 +417,7 @@
       "features": {
         "instantResults": "<strong>Resultados instantâneos</strong>: ~8 segundos",
         "oneClickStaging": "<strong>Staging com um clique</strong>: sem complicação",
-        "free": "<strong>Gerações ilimitadas</strong>: totalmente grátis",
+        "free": "<strong>50 gerações grátis por dia</strong>: Sem cartão",
         "noAds": "<strong>Experiência sem anúncios</strong>: sem distrações",
         "noLogin": "<strong>Cadastro fácil</strong>: comece na hora",
         "unlimited": "<strong>Modelos de imagem avançados</strong>: qualidade superior",
@@ -532,14 +533,15 @@
     },
     "heicConvert": "Não foi possível ler essa foto HEIC. Tente um JPG ou PNG.",
     "fileType": "Envie um arquivo de imagem PNG, JPG, JPEG, WebP ou GIF.",
-    "fileTooLarge": "O arquivo é muito grande. Envie uma imagem menor que 100 MB.",
+    "fileTooLarge": "O ficheiro é demasiado grande. Carregue uma imagem com menos de 25 MB.",
     "uploadFirst": "Envie uma imagem primeiro",
     "badPrompt": "Instrução inválida inserida",
     "processingFailed": "Falha no processamento",
     "noImageData": "Nenhum dado de imagem recebido",
     "dailyLimitFree": "Você usou todas as {limit} execuções de staging gratuitas de hoje (reinicia à meia-noite UTC). Faça upgrade para o Stagify+ para staging ilimitado.",
     "dailyLimitAnonymous": "Você atingiu o limite gratuito para esta rede ({limit} execuções por dia, UTC). Faça login para vincular o staging à sua conta ou tente novamente amanhã.",
-    "dailyLimitCta": "Ver Stagify+"
+    "dailyLimitCta": "Ver Stagify+",
+    "stagingTimeout": "Está a demorar mais do que o habitual e foi interrompido. Tente novamente."
   },
   "common": {
     "close": "Fechar",
@@ -801,7 +803,7 @@
       "title": "Envio e arquivos",
       "i1": {
         "q": "Minha foto não envia.",
-        "a": "Certifique-se de que o arquivo seja um JPG, PNG ou WEBP com menos de 10 MB. Fotos de celular muito grandes às vezes falham: redimensione a imagem ou faça uma captura de tela dela e envie novamente. Se ainda falhar, atualize a página e tente de novo."
+        "a": "Certifique-se de que o ficheiro é um JPG, PNG ou WEBP com menos de 25 MB. Fotos de telemóvel muito grandes às vezes falham — redimensione a imagem ou tire uma captura de ecrã e carregue novamente. Se continuar a falhar, atualize a página e tente de novo."
       },
       "i2": {
         "q": "Quais fotos funcionam melhor?",
@@ -835,7 +837,7 @@
       "title": "Geração e resultados",
       "i1": {
         "q": "Minha geração travou ou está demorando muito.",
-        "a": "A maioria das imagens fica pronta em cerca de 8 segundos. Se demorar mais de um minuto, sua conexão pode ter caído: atualize a página e tente novamente. Evite trocar de aba ou bloquear o celular durante o processo."
+        "a": "A maioria das imagens fica pronta em cerca de 8 segundos, mas uma renderização Stagify+ com várias variações, ou uma em que a IA tenta de novo para obter um resultado melhor, pode legitimamente demorar mais. Deixe correr: pode carregar em Cancelar por baixo da barra de progresso a qualquer momento e, se algo tiver realmente corrido mal, paramos por si e avisamos. Evite mudar de separador ou bloquear o telemóvel enquanto decorre."
       },
       "i2": {
         "q": "O resultado tem móveis estranhos ou artefatos.",
@@ -923,7 +925,7 @@
     },
     "stagifyPlus": {
       "title": "Stagify+ – Planos e preços | Stagify.ai",
-      "description": "Stagify+: staging por IA ilimitado, modelos de qualidade superior, Designer IA e a ferramenta de máscara. Veja planos e preços."
+      "description": "Stagify+: remoção de móveis, o Designer de IA, o Masking Studio, modelos de maior qualidade e staging ilimitado. Veja planos e preços."
     },
     "enterprise": {
       "title": "Stagify Enterprise – Staging por IA por uso para equipes",
@@ -1151,7 +1153,7 @@
   "stagifyPlus": {
     "hero": {
       "title": "Tudo no Stagify, <span class=\"sp-grad\">desbloqueado</span>.",
-      "subtitle": "Staging ilimitado de alta qualidade, o AI Designer, a remoção de móveis e todas as ferramentas profissionais. Tudo por menos do que custa um único staging tradicional."
+      "subtitle": "Remoção de móveis, o Designer de IA, o Masking Studio e modelos de maior qualidade — todas as ferramentas profissionais por menos do que custa uma única decoração tradicional."
     },
     "plan": {
       "hintSignIn": "Entre primeiro pelo menu de perfil para que o pagamento possa ser vinculado à sua conta do Stagify.",
@@ -1212,7 +1214,8 @@
         "studio": "Masking Studio (várias áreas)",
         "variations": "Várias variações por geração",
         "references": "Referências de móveis"
-      }
+      },
+      "freeCap": "50 / dia"
     },
     "enterpriseRow": "Para equipes ou empresas, <a href=\"enterprise.html\">conheça nosso plano enterprise</a> ou fale com <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> para opções de assinatura personalizadas.",
     "footLinks": {

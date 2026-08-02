@@ -1,5 +1,20 @@
 import { unstageableMessage } from '../unstageable-message.js';
 
+// How long a single staging request may run before the client gives up on it.
+//
+// There was no client timeout and no `server.setTimeout` either, so a provider that
+// hung left the progress bar frozen at 70% for as long as the socket stayed open,
+// with nothing to click. Generous on purpose: a Pro render is up to three variations,
+// each of which may spend QUALITY_MAX_ATTEMPTS generations plus a vision review, and
+// killing real work is worse than waiting. This is the "something is wrong" ceiling,
+// not a target — the guides' old "refresh after a minute" advice was well inside the
+// window where renders still finish normally.
+//
+// Declared above the docblock below on purpose: anything between a factory's JSDoc
+// and its `export function` detaches the two, and test/frontend/island-deps-typed.js
+// then reports the bag as untyped.
+const STAGING_TIMEOUT_MS = 180000;
+
 /**
  * The staging generation pipeline: builds the multipart request, drives the
  * progress-bar / loading-message state machine, honours the stageability
@@ -31,9 +46,11 @@ import { unstageableMessage } from '../unstageable-message.js';
  *   showStagingError: (message: string) => void,
  *   messageForDailyLimitResponse: (errorData: any) => string,
  *   showStagingLimitInViewer: (message: string) => void,
+ *   stagingTimeoutMs?: number,
  * }} deps - Progress/preview DOM, the room & style select handles, the
  *   furniture-reference island's handle, the shared upload-validation state as
- *   getters, and the entry's error/limit messaging helpers.
+ *   getters, the entry's error/limit messaging helpers, and (optionally) the
+ *   request ceiling, which only a test overrides.
  * @returns {{ processWithAI: (imageFile: File) => Promise<string[]> }}
  */
 export function createStagingPipeline(deps) {
@@ -43,7 +60,11 @@ export function createStagingPipeline(deps) {
     getStageValidation, getStageValidationResult, getHasProcessedImage, setLastEmptyRoomUrl,
     hideStagingLimitInViewer, hideStagingError, showBeforeView, isProUser,
     showStagingError, messageForDailyLimitResponse, showStagingLimitInViewer,
+    // Injectable so a test can drive the timeout without waiting three minutes.
+    stagingTimeoutMs = STAGING_TIMEOUT_MS,
   } = deps;
+
+  const cancelBtn = /** @type {HTMLButtonElement | null} */ (document.getElementById('stage-cancel-btn'));
 
   async function processWithAI(imageFile) {
     hideStagingLimitInViewer();
@@ -202,6 +223,55 @@ export function createStagingPipeline(deps) {
       });
     }
 
+    // Three different things can abort this request and they must not be reported
+    // the same way: a photo the pre-check refused, a request that ran past the
+    // ceiling, and the user deciding to stop waiting. Without this the catch below
+    // turned all of them into one generic network error.
+    let timedOut = false;
+    let userCancelled = false;
+    const timeoutId = setTimeout(() => { timedOut = true; genAbort.abort(); }, stagingTimeoutMs);
+
+    const onCancelClick = () => { userCancelled = true; genAbort.abort(); };
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', onCancelClick);
+      cancelBtn.classList.remove('hidden');
+    }
+    /** Drop the timer and the button, whichever way this request ends. */
+    const endWait = () => {
+      clearTimeout(timeoutId);
+      if (cancelBtn) {
+        cancelBtn.removeEventListener('click', onCancelClick);
+        cancelBtn.classList.add('hidden');
+      }
+    };
+
+    /**
+     * Turn an aborted fetch into the RIGHT error, painting a message where one is
+     * wanted. Returns null when the caller already has its own handling.
+     * @param {any} e - The error fetch rejected with.
+     * @returns {any} The error to throw.
+     */
+    const explainAbort = (e) => {
+      if (validationRejection) return null; // caller runs rejectUnstageable instead
+      if (userCancelled) {
+        // The user asked for this, so it is not a failure — throw only to unwind,
+        // and mark it surfaced so the caller does not paint an error banner over a
+        // deliberate action.
+        const err = /** @type {Error & { code?: string }} */ (new Error('Staging cancelled.'));
+        err.code = 'STAGING_CANCELLED';
+        return markSurfaced(err);
+      }
+      if (timedOut) {
+        const message = window.LanguageSystem?.getText('errors.stagingTimeout')
+          || 'This is taking longer than usual and was stopped. Please try again.';
+        showStagingError(message);
+        const err = /** @type {Error & { code?: string }} */ (new Error(message));
+        err.code = 'STAGING_TIMEOUT';
+        return markSurfaced(err);
+      }
+      return e;
+    };
+
     let response;
     if (isProPlan) {
       progress.classList.remove('hidden');
@@ -267,12 +337,14 @@ export function createStagingPipeline(deps) {
       } catch (e) {
         // Aborted because the pre-check rejected the photo mid-generation →
         // stop the bar and show the reason instead of a generic network error.
+        // A timeout or a user cancel gets its own message for the same reason.
+        endWait();
         if (validationRejection) rejectUnstageable(validationRejection);
         clearStagingUiTimers();
         stagePreview.classList.remove('processing');
         loadingMessage.classList.add('hidden');
         progress.classList.add('hidden');
-        throw e;
+        throw explainAbort(e) || e;
       }
 
       if (aiProgressInterval) {
@@ -319,12 +391,14 @@ export function createStagingPipeline(deps) {
       } catch (e) {
         // Aborted because the pre-check rejected the photo mid-generation →
         // stop the bar and show the reason instead of a generic network error.
+        // A timeout or a user cancel gets its own message for the same reason.
+        endWait();
         if (validationRejection) rejectUnstageable(validationRejection);
         clearStagingUiTimers();
         stagePreview.classList.remove('processing');
         loadingMessage.classList.add('hidden');
         progress.classList.add('hidden');
-        throw e;
+        throw explainAbort(e) || e;
       }
 
       if (aiProgressInterval) {
@@ -334,6 +408,10 @@ export function createStagingPipeline(deps) {
       currentProgress = Math.max(currentProgress, 75);
       progressBar.style.width = '75%';
     }
+
+    // The request came back — whatever its status, the wait is over, so drop the
+    // timeout and take the cancel button away before the response is unpacked.
+    endWait();
 
     if (!response.ok) {
       clearStagingUiTimers();
@@ -357,7 +435,7 @@ export function createStagingPipeline(deps) {
       if (errorData.code === 'FILE_TOO_LARGE') {
         throw new Error(
           window.LanguageSystem?.getText('errors.fileTooLarge') ||
-            'File is too large. Please upload an image smaller than 100MB.'
+            'File is too large. Please upload an image smaller than 25MB.'
         );
       }
       if (errorData.code === 'NO_IMAGE_GENERATED' || response.status === 422) {
