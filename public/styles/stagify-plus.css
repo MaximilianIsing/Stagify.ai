@@ -519,17 +519,6 @@
         color: #cbd5e1;
         font-size: 1.15rem;
       }
-      /* A free-column cell that states the actual cap instead of a tick or a cross.
-         "Unlimited staging generations" was ✓ in BOTH columns, so the page's headline
-         claim read as something free already included; a bare ✗ would have been true
-         but still hid the number, which nothing showed until a user hit it. */
-      .sp-cap {
-        font-size: 0.85rem;
-        font-weight: 700;
-        line-height: 1;
-        color: var(--slate);
-        white-space: nowrap;
-      }
       .sp-feature-table tbody tr:last-child th,
       .sp-feature-table tbody tr:last-child td {
         border-bottom: none;

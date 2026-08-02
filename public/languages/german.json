@@ -1214,8 +1214,7 @@
         "studio": "Masking Studio (mehrere Bereiche)",
         "variations": "Mehrere Variationen pro Generierung",
         "references": "Möbelreferenzen"
-      },
-      "freeCap": "50 / Tag"
+      }
     },
     "enterpriseRow": "Für Teams oder Unternehmen <a href=\"enterprise.html\">entdecken Sie unseren Enterprise-Plan</a> oder kontaktieren Sie <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> für individuelle Abo-Optionen.",
     "footLinks": {

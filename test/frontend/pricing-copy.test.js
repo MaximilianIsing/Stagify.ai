@@ -1,15 +1,17 @@
 // Drift guard: the free tier's advertised cap vs the one the server actually enforces.
 //
 // WHY THIS EXISTS
-// The Stagify+ comparison table used to mark "Unlimited staging generations" with a ✓
-// in BOTH columns — the page's most prominent claim, labelled as something the free
-// plan already included. The homepage went further and said "Unlimited generations:
-// Totally free", which was simply untrue: free is capped at FREE_DAILY_LIMIT, and that
-// number appeared nowhere in the UI until a user hit it.
+// The homepage used to say "Unlimited generations: Totally free", which was simply
+// untrue — free is capped at FREE_DAILY_LIMIT, and that number appeared nowhere in the
+// UI until a user hit it. It now states the real figure, which creates a NEW failure
+// mode: change FREE_DAILY_LIMIT and the marketing quietly starts lying, in eleven
+// languages, with nothing to catch it. This test is that catch.
 //
-// The free column now states the real cap. That creates a NEW failure mode: change
-// FREE_DAILY_LIMIT and the marketing quietly starts lying, in eleven languages, with
-// nothing to catch it. This test is that catch.
+// NOTE ON THE COMPARISON TABLE: "Unlimited staging generations" is deliberately ticked
+// in BOTH columns on stagify-plus.html — a product decision (2026-08-01) that 50/day
+// reads as effectively unlimited and naming a cap there would scare people off. That is
+// why nothing here asserts on that row. The honest number lives on the homepage bullet
+// instead, and that is what is pinned below.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -39,32 +41,31 @@ const packs = () =>
     .filter((f) => f.endsWith('.json'))
     .map((name) => ({ name, json: JSON.parse(fs.readFileSync(path.join(LANGS, name), 'utf8')) }));
 
-test('every language pack advertises the free cap the server actually enforces', () => {
+test('every language pack states the free cap the server actually enforces', () => {
+  // The homepage's "why us" bullet is the one place the real figure is quoted, so it
+  // is the one that can go stale against FREE_DAILY_LIMIT.
   const limit = enforcedDailyLimit();
   const all = packs();
   assert.ok(all.length >= 11, `expected 11 language packs, found ${all.length}`);
 
   for (const { name, json } of all) {
-    const cap = at(json, 'stagifyPlus.compare.freeCap');
-    assert.equal(typeof cap, 'string', `${name} is missing stagifyPlus.compare.freeCap`);
+    const line = at(json, 'whyUs.stagify.features.free');
+    assert.equal(typeof line, 'string', `${name} is missing whyUs.stagify.features.free`);
     assert.ok(
-      cap.includes(String(limit)),
-      `${name} advertises the free cap as "${cap}" but the server enforces ${limit} ` +
-        '(lib/data/auth-store.js FREE_DAILY_LIMIT). Update the packs, or the pricing page lies.',
+      line.includes(String(limit)),
+      `${name} says "${line}" but the server enforces ${limit}/day ` +
+        '(lib/data/auth-store.js FREE_DAILY_LIMIT). Update the packs, or the homepage lies.',
     );
   }
 });
 
-test('the comparison table shows the cap in the free column, not a second tick', () => {
-  // The specific regression: `Unlimited staging generations` with ✓ in both columns.
-  // Assert on the rendered row so re-adding the tick fails here rather than in review.
-  const html = fs.readFileSync(path.join(PUBLIC, 'stagify-plus.html'), 'utf8').replace(/\r\n/g, '\n');
-  const row = /<th[^>]*stagifyPlus\.compare\.rows\.unlimited[^>]*>[\s\S]*?<\/tr>/.exec(html);
-  assert.ok(row, 'the unlimited-generations row is gone from stagify-plus.html');
-
-  const ticks = (row[0].match(/sp-mark--yes/g) || []).length;
-  assert.equal(ticks, 1, 'the free column must state its cap, not claim the paid tier\'s headline benefit');
-  assert.match(row[0], /stagifyPlus\.compare\.freeCap/, 'the free cell should render the localized cap');
+test('the English markup fallback quotes the same figure as the packs', () => {
+  // data-lang-html overwrites this at runtime, but it is what ships before the pack
+  // loads — and it drifted from the pack once already.
+  const limit = enforcedDailyLimit();
+  const html = fs.readFileSync(path.join(PUBLIC, 'index.html'), 'utf8');
+  const row = new RegExp(`whyUs\\.stagify\\.features\\.free[^>]*>[^<]*<strong>[^<]*${limit}[^<]*</strong>`);
+  assert.match(html, row, `index.html's free-tier bullet should quote ${limit}`);
 });
 
 test('no page still claims unlimited generations are free', () => {
