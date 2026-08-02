@@ -261,3 +261,85 @@ test('logChatToFile: no files → empty name/type columns, and a second call app
   assert.equal(cells[4], '', 'no files → empty fileNames');
   assert.equal(cells[5], '', 'no files → empty fileTypes');
 });
+
+// ── rejection_logs.csv ───────────────────────────────────────────────────────
+// Requests turned away BEFORE any render: refused uploads, free accounts at their
+// daily cap, rate-limited callers. None of these reach processStaging, so none of
+// them wrote a row anywhere — the most likely first-session abandonment (upload the
+// wrong photo, get refused, leave) left no evidence at all.
+
+test('logRejectionToFile: first call writes the header, then a row in column order', async () => {
+  const { logging, dataDir } = freshLogging();
+  const file = path.join(dataDir, 'rejection_logs.csv');
+
+  logging.logRejectionToFile('unstageable', 'ANIMAL', 'looks like a pet', {
+    email: 'u@x.com', userId: 'u_1', req: { ip: '9.9.9.9', get: () => 'Mozilla/5.0' },
+  });
+  await waitForLineCount(file, 2);
+
+  const [header, row] = lines(file);
+  assert.equal(header, 'timestamp,kind,code,detail,email,userId,ipAddress,userAgent');
+  const cells = row.split(',');
+  assert.equal(cells[1], 'unstageable');
+  assert.equal(cells[2], 'ANIMAL');
+  assert.equal(cells[3], 'looks like a pet');
+  assert.equal(cells[4], 'u@x.com');
+  assert.equal(cells[5], 'u_1');
+  assert.equal(cells[6], '9.9.9.9');
+  assert.equal(cells[7], 'Mozilla/5.0');
+  assert.ok(!Number.isNaN(Date.parse(cells[0])), 'timestamp is an ISO date');
+});
+
+test('logRejectionToFile: appends rather than replacing, so every rejection is kept', async () => {
+  const { logging, dataDir } = freshLogging();
+  const file = path.join(dataDir, 'rejection_logs.csv');
+
+  logging.logRejectionToFile('daily_limit', 'DAILY_LIMIT_REACHED', '50/50', { email: 'a@x.com', userId: 'u_a' });
+  await waitForLineCount(file, 2);
+  logging.logRejectionToFile('rate_limit', 'gen', '/api/process-image', {});
+  await waitForLineCount(file, 3);
+
+  const rows = lines(file).slice(1);
+  assert.equal(rows.length, 2);
+  assert.match(rows[0], /daily_limit/);
+  assert.match(rows[1], /rate_limit/);
+});
+
+test('logRejectionToFile: an anonymous rejection records "unknown" rather than dropping the row', async () => {
+  // A rate-limited caller often has no session at all. That is still a real bounce
+  // and must be counted — the row exists, the identity columns just say unknown.
+  const { logging, dataDir } = freshLogging();
+  const file = path.join(dataDir, 'rejection_logs.csv');
+
+  logging.logRejectionToFile('rate_limit', 'auth');
+  await waitForLineCount(file, 2);
+
+  const cells = lines(file)[1].split(',');
+  assert.equal(cells[3], '', 'no detail supplied');
+  assert.equal(cells[4], 'unknown');
+  assert.equal(cells[5], 'unknown');
+  assert.equal(cells[6], 'unknown');
+  assert.equal(cells[7], 'unknown');
+});
+
+test('logRejectionToFile: a detail containing a comma stays in ONE column', async () => {
+  const { logging, dataDir } = freshLogging();
+  const file = path.join(dataDir, 'rejection_logs.csv');
+
+  logging.logRejectionToFile('unstageable', 'DOCUMENT', 'a screenshot, not a room', {
+    email: 'u@x.com', userId: 'u_1',
+  });
+  await waitForLineCount(file, 2);
+
+  const row = lines(file)[1];
+  assert.match(row, /"a screenshot, not a room"/);
+  assert.match(row, /,u@x\.com,/, 'the email is still its own column');
+});
+
+test('logRejectionToFile: never throws, whatever it is handed', () => {
+  // Best-effort by design: failing to RECORD a rejection must not become a second
+  // failure for the user who was already turned away.
+  const { logging } = freshLogging();
+  assert.doesNotThrow(() => logging.logRejectionToFile('rate_limit', 'gen', undefined, { req: {} }));
+  assert.doesNotThrow(() => logging.logRejectionToFile(null, null, null, null));
+});

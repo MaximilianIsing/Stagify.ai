@@ -18,6 +18,7 @@ import {
 } from './analytics.js';
 import {
   activityIndexFrom, attributionCoverage, activationFunnel, paidConversion, cohortRetention,
+  trialOutcomes, trialEmailsSent,
 } from './analytics-users.js';
 import {
   areaChart as wideArea, barChart as wideBar,
@@ -291,6 +292,57 @@ export function createInsights({ ctx, effectivePlan }) {
       body: cohortGrid(cohortRetention(ctx.data.users || [], promptRows)),
       notes: [coverageNote].filter(Boolean),
       wide: true,
+    }));
+
+    // ── Trials ────────────────────────────────────────────────────────────────
+    // `plan` is only 'free' | 'pro' — trialing, active and past_due all collapse
+    // into 'pro', and a cancellation rewrites it back to 'free' and nulls the
+    // subscription id. So the account table alone cannot say how a trial ended.
+    // These two read `trialLifecycle`, whose `startAt` (checkout) and
+    // `sent.canceled` (win-back mail, sent only on subscription.deleted) are the
+    // only durable trial/churn timestamps stored locally.
+    const trials = trialOutcomes(ctx.data.users || []);
+    // Only the two steps that genuinely NEST go in the funnel. "Still paying" is
+    // reported beside it for the same reason paidConversion is: someone can convert
+    // without ever staging, so retained can exceed activated and would draw a step
+    // wider than its own parent — the regression funnelMonotonic exists to catch.
+    host.appendChild(chartCard({
+      title: 'Trials',
+      sub: 'How many trials were started, and how many of those people actually used the product.',
+      body: funnelChart([
+        { label: 'Trials started', value: trials.started, pctOfPrev: null, pctOfTop: 100 },
+        {
+          label: 'Used the product',
+          value: trials.activated,
+          pctOfPrev: trials.started ? trials.activationPct : null,
+          pctOfTop: trials.activationPct,
+        },
+      ]),
+      notes: [
+        fmtNum(trials.retained) + ' still paying past the trial window — tracked separately, it does not nest',
+        fmtNum(trials.running) + ' trial(s) still inside the 7-day window',
+        fmtNum(trials.cancelled) + ' cancelled (' + trials.cancelPct.toFixed(1) + '% of trials started)',
+        'Cancellations come from the win-back email, the only churn timestamp stored locally — a floor, not a count',
+      ],
+      wide: true,
+    }));
+
+    const mails = trialEmailsSent(ctx.data.users || []);
+    const endingSent = mails.find((m) => m.label === 'ending');
+    const welcomeSent = mails.find((m) => m.label === 'welcome');
+    host.appendChild(chartCard({
+      title: 'Trial emails sent',
+      sub: 'One bar per lifecycle email, counted from the per-user sent flags.',
+      body: rankedBars(mails),
+      notes: [
+        // The check worth surfacing: `ending` is the only one with no sweep
+        // fallback — it fires solely from the customer.subscription.trial_will_end
+        // webhook, which has to be switched on by hand in the Stripe dashboard.
+        welcomeSent && welcomeSent.value > 0 && endingSent && endingSent.value === 0
+          ? 'No trial-ending reminders have EVER been sent — enable customer.subscription.trial_will_end on the Stripe webhook endpoint'
+          : '',
+        'Only "ending" depends on a Stripe dashboard toggle; the rest have a sweep behind them',
+      ].filter(Boolean),
     }));
   }
 

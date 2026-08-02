@@ -185,7 +185,7 @@
     },
     "plus": {
       "title": "Go further with Stagify+",
-      "subtitle": "Unlimited staging, higher-quality models, and pro tools, plus a usage-based plan built for whole teams.",
+      "subtitle": "Furniture removal, the AI Designer and the Masking Studio, plus a usage-based plan built for whole teams.",
       "pro": {
         "name": "Stagify+",
         "tag": "For individuals",
@@ -364,7 +364,8 @@
           "Optimizing room layout and flow",
           "Adding finishing touches",
           "Bringing your vision to life"
-        ]
+        ],
+        "cancel": "Cancel"
       },
       "downloadSizeMenu": "Choose download resolution",
       "downloadOriginal": "Original",
@@ -416,7 +417,7 @@
       "features": {
         "instantResults": "<strong>Instant results</strong>: ~8 seconds",
         "oneClickStaging": "<strong>One‑click staging</strong>: No hassle",
-        "free": "<strong>Unlimited generations</strong>: Totally free",
+        "free": "<strong>50 free generations a day</strong>: No card needed",
         "noAds": "<strong>Ad-free experience</strong>: No distractions",
         "noLogin": "<strong>Easy sign up</strong>: Start instantly",
         "unlimited": "<strong>Advanced image models</strong>: Higher quality",
@@ -531,7 +532,7 @@
       "UNSTAGEABLE": "This doesn't look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you'd like to stage."
     },
     "fileType": "Please upload a PNG, JPG, JPEG, WebP, or GIF image file.",
-    "fileTooLarge": "File is too large. Please upload an image smaller than 100MB.",
+    "fileTooLarge": "File is too large. Please upload an image smaller than 25MB.",
     "heicConvert": "We couldn't read that HEIC photo. Please try a JPG or PNG.",
     "uploadFirst": "Please upload an image first",
     "badPrompt": "Bad prompt inputted",
@@ -539,7 +540,8 @@
     "noImageData": "No image data received",
     "dailyLimitFree": "You've used all {limit} free staging runs for today (resets at midnight UTC). Upgrade to Stagify+ for unlimited staging.",
     "dailyLimitAnonymous": "You've reached the free limit for this network ({limit} runs per day, UTC). Sign in to link staging to your account, or try again tomorrow.",
-    "dailyLimitCta": "View Stagify+"
+    "dailyLimitCta": "View Stagify+",
+    "stagingTimeout": "This is taking longer than usual and was stopped. Please try again."
   },
   "common": {
     "close": "Close",
@@ -801,7 +803,7 @@
       "title": "Uploading & files",
       "i1": {
         "q": "My photo won't upload.",
-        "a": "Make sure the file is a JPG, PNG, or WEBP under 10 MB. Very large phone photos sometimes fail — resize the image or take a screenshot of it, then upload again. If it still fails, refresh the page and retry."
+        "a": "Make sure the file is a JPG, PNG, or WEBP under 25 MB. Very large phone photos sometimes fail — resize the image or take a screenshot of it, then upload again. If it still fails, refresh the page and retry."
       },
       "i2": {
         "q": "Which photos work best?",
@@ -835,7 +837,7 @@
       "title": "Generating & results",
       "i1": {
         "q": "My generation is stuck or taking too long.",
-        "a": "Most images finish in about 8 seconds. If it's been more than a minute, your connection may have dropped — refresh the page and try again. Avoid switching tabs or locking your phone while it runs."
+        "a": "Most images finish in about 8 seconds, but a Stagify+ render with several variations, or one where the AI retries for a better result, can legitimately take longer. Leave it running — you can press Cancel under the progress bar at any time, and if something has genuinely gone wrong we stop it for you and say so. Avoid switching tabs or locking your phone while it runs."
       },
       "i2": {
         "q": "The result has odd furniture or artifacts.",
@@ -923,7 +925,7 @@
     },
     "stagifyPlus": {
       "title": "Stagify+ — Plans & Pricing | Stagify.ai",
-      "description": "Stagify+: unlimited AI staging, higher-quality models, AI Designer, and the masking tool. See plans and pricing."
+      "description": "Stagify+: furniture removal, the AI Designer, the Masking Studio, higher-quality models, and unlimited staging. See plans and pricing."
     },
     "enterprise": {
       "title": "Stagify Enterprise — Usage-Based AI Staging for Teams",
@@ -1151,7 +1153,7 @@
   "stagifyPlus": {
     "hero": {
       "title": "Everything in Stagify, <span class=\"sp-grad\">unlocked</span>.",
-      "subtitle": "Unlimited high-quality staging, the AI Designer, furniture removal, and every professional tool. All for less than the cost of one traditional staging."
+      "subtitle": "Furniture removal, the AI Designer, the Masking Studio, and higher-quality models — every professional tool, for less than the cost of one traditional staging."
     },
     "plan": {
       "hintSignIn": "Sign in from the profile menu first so checkout can link your payment to your Stagify account.",
@@ -1212,7 +1214,8 @@
         "studio": "Masking Studio (multi-area)",
         "variations": "Multiple variations per generation",
         "references": "Furniture references"
-      }
+      },
+      "freeCap": "50 / day"
     },
     "enterpriseRow": "For teams or enterprises, <a href=\"enterprise.html\">explore our enterprise plan</a> or contact <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> for personalized subscription options.",
     "footLinks": {

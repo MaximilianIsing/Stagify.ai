@@ -76,6 +76,17 @@ mounted between them so the Stripe webhook still sees the raw body):
    out is `RL_ENDPOINT_KEY`, which is applied inside the guards in
    `lib/http/http-guards.js` rather than as route middleware, because it counts only
    *rejected* admin-key attempts — see `docs/guides/security.md`.
+
+   Every limiter that actually **refuses** a request is built by `rejectingLimiter`,
+   which records the refusal to `rejection_logs.csv` before answering exactly as
+   express-rate-limit's default handler would. A 429 is a user hitting a wall, and none
+   of them were written down anywhere before — the request is turned away by middleware,
+   so it never reaches a handler that logs. The writer arrives through
+   `setRateLimitRejectionLogger` (a setter, not a dep) because these limiters are module
+   singletons constructed at import time, before the logging factory exists.
+   `emailPixelLimiter` and `referralLimiter` are deliberately excluded: neither refuses
+   anything — they flag the request and call `next()`, which is what makes them
+   write-ceilings rather than rate limits.
 5. **`express.static('public')`** — if a file matches the URL it is served here (with
    long-lived immutable cache headers for images/fonts/media, `no-cache` for
    html/css/js/json). This is why `/` serves `public/index.html`.

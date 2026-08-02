@@ -289,6 +289,25 @@ router.get('/masklogs', protectLogs, (req, res) => {
   }
 });
 
+// Requests turned away BEFORE any render — refused uploads, free accounts at their
+// daily cap, rate-limited callers. Its own file, not rows in prompt_logs.csv, because
+// the dashboard counts every prompt-log row as a generation.
+router.get('/rejectionlogs', protectLogs, (req, res) => {
+  try {
+    const logFile = path.join(getDataLogDir(), 'rejection_logs.csv');
+
+    if (fs.existsSync(logFile)) {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'inline; filename="rejection_logs.csv"');
+      res.sendFile(logFile);
+    } else {
+      sendError(res, 404, 'Log file not found', { details: 'No rejection logs are available yet' });
+    }
+  } catch (error) {
+    sendError(res, 500, 'Failed to retrieve rejection logs', { ref: reportError('admin.rejectionlogs', error) });
+  }
+});
+
 // Comp Stagify+: hand a currently-free account one month of pro with no Stripe
 // subscription behind it (see lib/data/pro-grants.js). protectLogs runs BEFORE the
 // body parser so an unauthenticated request is rejected without parsing its body.

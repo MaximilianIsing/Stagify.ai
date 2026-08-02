@@ -9,7 +9,7 @@
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Pro64x64.webp">
     <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Pro180x180.webp">
     <title data-lang="pageMeta.stagifyPlus.title">Stagify+ — Plans &amp; Pricing | Stagify.ai</title>
-    <meta name="description" data-lang-attr="pageMeta.stagifyPlus.description|content" content="Stagify+: unlimited AI staging, advanced models, AI Designer, masking, and more.">
+    <meta name="description" data-lang-attr="pageMeta.stagifyPlus.description|content" content="Stagify+: furniture removal, the AI Designer, the Masking Studio, higher-quality models, and unlimited staging.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://stagify.ai/stagify-plus.html">
     <link rel="alternate" hreflang="en" href="https://stagify.ai/stagify-plus.html">
@@ -39,7 +39,7 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Stagify+",
-      "description": "Stagify+ unlocks unlimited AI virtual staging, higher-quality models, the AI Designer, and the Masking Studio.",
+      "description": "Stagify+ unlocks furniture removal, the AI Designer, the Masking Studio, higher-quality models, and unlimited AI virtual staging.",
       "applicationCategory": "DesignApplication",
       "operatingSystem": "Web Browser",
       "url": "https://stagify.ai/stagify-plus.html",
@@ -72,7 +72,7 @@
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Stagify+ — Plans & Pricing">
-    <meta property="og:description" content="Unlimited AI staging, higher-quality models, AI Designer, and the masking tool. See plans and pricing.">
+    <meta property="og:description" content="Furniture removal, the AI Designer, the Masking Studio, and higher-quality models. See plans and pricing.">
     <meta property="og:url" content="https://stagify.ai/stagify-plus.html">
     <meta property="og:site_name" content="Stagify.ai">
     <meta property="og:image" content="https://stagify.ai/og-image.png">
@@ -84,7 +84,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Stagify+ — Plans & Pricing">
-    <meta name="twitter:description" content="Unlimited AI staging, higher-quality models, AI Designer, and the masking tool.">
+    <meta name="twitter:description" content="Furniture removal, the AI Designer, the Masking Studio, and higher-quality models.">
     <meta name="twitter:image" content="https://stagify.ai/og-image.png">
     <meta name="theme-color" content="#2563eb">
     <link rel="stylesheet" href="styles/styles.css">
@@ -108,7 +108,7 @@
         </a>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <div class="staging-menu desktop-only" data-staging-menu data-nav-group>
+          <div class="staging-menu" data-staging-menu data-nav-group>
             <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
             <div class="staging-menu__panel" role="menu">
               <a class="staging-menu__item" href="index.html#stage" role="menuitem" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span></a>
@@ -177,7 +177,7 @@
       <div class="sp-page__inner">
       <header class="sp-hero">
         <h1 data-lang-html="stagifyPlus.hero.title">Everything in Stagify, <span class="sp-grad">unlocked</span>.</h1>
-        <p data-lang="stagifyPlus.hero.subtitle">Unlimited high-quality staging, the AI Designer, furniture removal, and every professional tool. All for less than the cost of one traditional staging.</p>
+        <p data-lang="stagifyPlus.hero.subtitle">Furniture removal, the AI Designer, the Masking Studio, and higher-quality models — every professional tool, for less than the cost of one traditional staging.</p>
       </header>
 
       <section class="sp-plan-wrap" aria-label="Subscribe to Stagify+">
@@ -290,9 +290,15 @@
                   <td><span class="sp-mark sp-mark--yes" aria-label="Included" data-lang-attr="stagifyPlus.compare.included|aria-label">✓</span></td>
                   <td><span class="sp-mark sp-mark--yes" aria-label="Included" data-lang-attr="stagifyPlus.compare.included|aria-label">✓</span></td>
                 </tr>
+                <!-- The free column states the actual cap rather than a ✓. It read
+                     "Unlimited staging generations ✓ / ✓" — the page's most prominent
+                     claim, marked as something the free tier already includes, which
+                     answers "why would I pay?" with "no reason". Free is capped at
+                     FREE_DAILY_LIMIT (lib/data/auth-store.js), and that number was
+                     shown nowhere until a user hit it. -->
                 <tr>
                   <th scope="row" data-lang="stagifyPlus.compare.rows.unlimited">Unlimited staging generations</th>
-                  <td><span class="sp-mark sp-mark--yes" aria-label="Included" data-lang-attr="stagifyPlus.compare.included|aria-label">✓</span></td>
+                  <td><span class="sp-cap" data-lang="stagifyPlus.compare.freeCap">50 / day</span></td>
                   <td><span class="sp-mark sp-mark--yes" aria-label="Included" data-lang-attr="stagifyPlus.compare.included|aria-label">✓</span></td>
                 </tr>
                 <tr>

@@ -9,6 +9,10 @@ declare global {
       // Count of billable staging generations accumulated across a single request's
       // variations + quality-gate retries (server.js). Metered for enterprise usage.
       _stagingGenerations?: number;
+      // True when at least one image in this request was accepted WITHOUT a quality
+      // review (reviewer disabled or throwing). Recorded in the render log so a
+      // silent reviewer outage is visible instead of reading as a flawless run.
+      _qaDegraded?: boolean;
     }
   }
 }

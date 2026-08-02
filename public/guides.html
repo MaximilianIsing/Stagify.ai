@@ -127,7 +127,7 @@
         <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
-          <div class="staging-menu desktop-only" data-staging-menu data-nav-group>
+          <div class="staging-menu" data-staging-menu data-nav-group>
             <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
             <div class="staging-menu__panel" role="menu">
               <a class="staging-menu__item" href="index.html#stage" role="menuitem" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span></a>
@@ -360,7 +360,7 @@
               </details>
               <details class="faq-q">
                 <summary><span data-lang="techHelp.tips.i4.q">How do I stage several areas at once?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-                <p data-lang-html="techHelp.tips.i4.a">With Stagify+ the <a href="masking-studio.html">Masking Studio</a> lets you highlight up to six areas in different colors, give each one its own furniture photo or prompt, and stage them all in parallel. Only the highlighted spots can change, and every area can generate several versions so you keep the best one. It is a desktop tool.</p>
+                <p data-lang-html="techHelp.tips.i4.a">With Stagify+ the <a href="masking-studio.html">Masking Studio</a> lets you highlight up to six areas in different colors, give each one its own furniture photo or prompt, and stage them all in parallel. Only the highlighted spots can change, and every area can generate several versions so you keep the best one.</p>
               </details>
             </div>
           </article>
@@ -376,7 +376,10 @@
             <div class="faq-accordion">
               <details class="faq-q">
                 <summary><span data-lang="techHelp.upload.i1.q">My photo won't upload.</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-                <p data-lang="techHelp.upload.i1.a">Make sure the file is a JPG, PNG, or WEBP under 10 MB. Very large phone photos sometimes fail — resize the image or take a screenshot of it, then upload again. If it still fails, refresh the page and retry.</p>
+                <!-- 25 MB is the number multer actually enforces (MAX_UPLOAD_BYTES in
+                     lib/http/uploads.js). This said 10 MB while the browser refused at
+                     100 MB — three different limits, none of them the real one. -->
+                <p data-lang="techHelp.upload.i1.a">Make sure the file is a JPG, PNG, or WEBP under 25 MB. Very large phone photos sometimes fail — resize the image or take a screenshot of it, then upload again. If it still fails, refresh the page and retry.</p>
               </details>
               <details class="faq-q">
                 <summary><span data-lang="techHelp.upload.i2.q">Which photos work best?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
@@ -396,7 +399,12 @@
             <div class="faq-accordion">
               <details class="faq-q">
                 <summary><span data-lang="techHelp.generate.i1.q">My generation is stuck or taking too long.</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-                <p data-lang="techHelp.generate.i1.a">Most images finish in about 8 seconds. If it's been more than a minute, your connection may have dropped — refresh the page and try again. Avoid switching tabs or locking your phone while it runs.</p>
+                <!-- This used to say "if it's been more than a minute, refresh the page",
+                     which told people to throw away renders that were still legitimately
+                     running: a Stagify+ job can be several variations, each of which may
+                     retry for quality. There is now a real client-side ceiling and a
+                     Cancel button, so the honest advice is to wait. -->
+                <p data-lang="techHelp.generate.i1.a">Most images finish in about 8 seconds, but a Stagify+ render with several variations, or one where the AI retries for a better result, can legitimately take longer. Leave it running — you can press Cancel under the progress bar at any time, and if something has genuinely gone wrong we stop it for you and say so. Avoid switching tabs or locking your phone while it runs.</p>
               </details>
               <details class="faq-q">
                 <summary><span data-lang="techHelp.generate.i2.q">The result has odd furniture or artifacts.</span><span class="faq-q__icon" aria-hidden="true"></span></summary>

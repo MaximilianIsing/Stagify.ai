@@ -185,7 +185,7 @@
     },
     "plus": {
       "title": "用 Stagify+ 更进一步",
-      "subtitle": "无限装修、更高质量的模型和专业工具，还有为整个团队打造的按用量计费方案。",
+      "subtitle": "移除现有家具、AI 设计师与蒙版工作室，另有专为团队打造的按用量计费方案。",
       "pro": {
         "name": "Stagify+",
         "tag": "面向个人",
@@ -364,7 +364,8 @@
           "优化房间布局和流线",
           "添加最后的修饰",
           "实现您的愿景"
-        ]
+        ],
+        "cancel": "取消"
       },
       "downloadSizeMenu": "选择下载分辨率",
       "downloadOriginal": "原始尺寸",
@@ -416,7 +417,7 @@
       "features": {
         "instantResults": "<strong>即时结果</strong>：约8秒",
         "oneClickStaging": "<strong>一键装修</strong>：无麻烦",
-        "free": "<strong>无限次生成</strong>：完全免费",
+        "free": "<strong>每天 50 次免费生成</strong>：无需信用卡",
         "noAds": "<strong>无广告体验</strong>：无干扰",
         "noLogin": "<strong>轻松注册</strong>：立即开始",
         "unlimited": "<strong>高级图像模型</strong>：更高质量",
@@ -532,14 +533,15 @@
     },
     "heicConvert": "无法读取该 HEIC 照片。请尝试 JPG 或 PNG。",
     "fileType": "请上传PNG、JPG、JPEG、WebP或GIF图片文件。",
-    "fileTooLarge": "文件过大。请上传小于100MB的图片。",
+    "fileTooLarge": "文件太大。请上传小于 25MB 的图片。",
     "uploadFirst": "请先上传图片",
     "badPrompt": "输入了错误的提示",
     "processingFailed": "处理失败",
     "noImageData": "未接收到图片数据",
     "dailyLimitFree": "您已用完今日 {limit} 次免费虚拟布置（UTC 午夜重置）。升级 Stagify+ 可无限次使用。",
     "dailyLimitAnonymous": "本网络今日免费次数已用尽（每天 {limit} 次，按 UTC 计算）。请登录以关联账户，或明天再试。",
-    "dailyLimitCta": "了解 Stagify+"
+    "dailyLimitCta": "了解 Stagify+",
+    "stagingTimeout": "本次生成耗时超出预期，已停止。请重试。"
   },
   "common": {
     "close": "关闭",
@@ -801,7 +803,7 @@
       "title": "上传与文件",
       "i1": {
         "q": "我的照片无法上传。",
-        "a": "请确保文件为 JPG、PNG 或 WEBP 格式且小于 10 MB。手机拍摄的超大照片有时会失败——可缩小图片或对其截图后再次上传。如果仍然失败，请刷新页面后重试。"
+        "a": "请确认文件为 JPG、PNG 或 WEBP 格式且小于 25 MB。手机拍摄的超大照片有时会失败——请缩小图片或对其截图后重新上传。若仍然失败，请刷新页面再试。"
       },
       "i2": {
         "q": "哪种照片效果最好？",
@@ -835,7 +837,7 @@
       "title": "生成与结果",
       "i1": {
         "q": "生成卡住或耗时过长。",
-        "a": "大多数图片约 8 秒即可完成。如果已超过一分钟，可能是网络中断——请刷新页面后重试。处理过程中请勿切换标签页或锁定手机。"
+        "a": "大多数图片约 8 秒即可完成，但包含多个变体的 Stagify+ 生成，或 AI 为了更好的效果而重试的生成，用时更长属于正常情况。请让它继续运行：进度条下方随时可以点击「取消」；如果确实出了问题，我们会自动停止并告知你。运行期间请勿切换标签页或锁定手机。"
       },
       "i2": {
         "q": "结果中出现奇怪的家具或瑕疵。",
@@ -923,7 +925,7 @@
     },
     "stagifyPlus": {
       "title": "Stagify+ — 方案与定价 | Stagify.ai",
-      "description": "Stagify+：无限 AI 布置、更高质量的模型、AI Designer 和遮罩工具。查看方案与定价。"
+      "description": "Stagify+：移除家具、AI 设计师、蒙版工作室、更高质量的模型以及无限次虚拟软装。查看方案与价格。"
     },
     "enterprise": {
       "title": "Stagify Enterprise — 面向团队的按量计费 AI 布置",
@@ -1151,7 +1153,7 @@
   "stagifyPlus": {
     "hero": {
       "title": "Stagify 的一切，<span class=\"sp-grad\">全部解锁</span>。",
-      "subtitle": "无限量的高质量虚拟布置、AI Designer、家具移除以及所有专业工具。所有这些的花费还不到一次传统布置的成本。"
+      "subtitle": "移除现有家具、AI 设计师、蒙版工作室以及更高质量的模型——所有专业工具，费用低于一次传统软装的成本。"
     },
     "plan": {
       "hintSignIn": "请先从个人资料菜单登录，以便结账时将付款与您的 Stagify 账户关联。",
@@ -1212,7 +1214,8 @@
         "studio": "Masking Studio（多区域）",
         "variations": "每次生成多个变体",
         "references": "家具参考"
-      }
+      },
+      "freeCap": "50 / 天"
     },
     "enterpriseRow": "如果是团队或企业，<a href=\"enterprise.html\">了解我们的企业方案</a>，或联系 <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> 获取个性化的订阅方案。",
     "footLinks": {

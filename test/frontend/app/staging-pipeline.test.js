@@ -74,6 +74,7 @@ const REAL = {
   localStorage: globalThis.localStorage,
   fetch: globalThis.fetch,
   setTimeout: globalThis.setTimeout,
+  clearTimeout: globalThis.clearTimeout,
   setInterval: globalThis.setInterval,
 };
 
@@ -102,6 +103,7 @@ afterEach(() => {
  *   validationResult?: { valid: boolean, code?: string, reason?: string } | null,
  *   validationPromise?: Promise<any> | null,
  *   hasProcessedImage?: boolean,
+ *   stagingTimeoutMs?: number,
  * }} opts
  */
 function harness(opts = {}) {
@@ -114,6 +116,9 @@ function harness(opts = {}) {
     validationResult = null,
     validationPromise = null,
     hasProcessedImage = false,
+    // Default well above the shim's squash threshold so it never fires unless a
+    // test is deliberately exercising it.
+    stagingTimeoutMs = 180000,
   } = opts;
 
   const dom = {
@@ -132,6 +137,15 @@ function harness(opts = {}) {
   const keepEl = el();
   keepEl.value = keepFurniture;
   byId.set('keep-furniture', keepEl);
+  // The Cancel control under the progress bar. A minimal event-target stand-in:
+  // `click()` runs whatever the pipeline registered, so a test can press it.
+  const cancelBtn = el();
+  cancelBtn.listeners = new Set();
+  cancelBtn.addEventListener = (type, fn) => { if (type === 'click') cancelBtn.listeners.add(fn); };
+  cancelBtn.removeEventListener = (type, fn) => { if (type === 'click') cancelBtn.listeners.delete(fn); };
+  cancelBtn.click = () => { for (const fn of [...cancelBtn.listeners]) fn(); };
+  cancelBtn.classList.add('hidden');
+  byId.set('stage-cancel-btn', cancelBtn);
   if (proPanel !== 'absent') {
     const panel = el();
     if (proPanel === 'hidden-class') panel.classList.add('hidden');
@@ -151,6 +165,8 @@ function harness(opts = {}) {
     showBeforeView: 0,
     lastEmptyRoomUrl: undefined,
     furnitureReset: 0,
+    timeoutIds: [],
+    clearedTimeouts: [],
   };
 
   /** @type {{ resolve: (r: any) => void, reject: (e: any) => void } | null} */
@@ -158,7 +174,21 @@ function harness(opts = {}) {
 
   // See the header: delays are squashed, not faked. Ordering between two squashed
   // delays is not meaningful, and nothing here asserts on it.
-  globalThis.setTimeout = (fn, ms, ...rest) => REAL.setTimeout(fn, ms ? 1 : 0, ...rest);
+  //
+  // Only SHORT delays are squashed. The staging timeout is a three-minute "something
+  // has gone wrong" ceiling, and collapsing it to 1ms made it fire during every test,
+  // aborting each fetch before it could be settled. A test that wants to exercise the
+  // timeout passes a small `stagingTimeoutMs` instead, which lands under the threshold
+  // and is squashed like any other short delay.
+  const SQUASH_BELOW_MS = 10000;
+  globalThis.setTimeout = (fn, ms, ...rest) => {
+    const id = REAL.setTimeout(fn, ms && ms < SQUASH_BELOW_MS ? 1 : ms, ...rest);
+    // Remember which id was armed with the staging ceiling, so a test can prove it
+    // gets cleared rather than inferring it from timing (which is a race).
+    if (ms === stagingTimeoutMs) calls.timeoutIds.push(id);
+    return id;
+  };
+  globalThis.clearTimeout = (id) => { calls.clearedTimeouts.push(id); return REAL.clearTimeout(id); };
   globalThis.setInterval = (fn, ms, ...rest) => {
     const id = REAL.setInterval(fn, Math.max(1, Math.min(ms || 1, 5)), ...rest);
     openTimers.add(id);
@@ -204,11 +234,13 @@ function harness(opts = {}) {
     showStagingError: (m) => calls.showStagingError.push(m),
     messageForDailyLimitResponse: (d) => `limit: ${d.error || 'reached'}`,
     showStagingLimitInViewer: (m) => calls.showStagingLimitInViewer.push(m),
+    stagingTimeoutMs,
   });
 
   return {
     pipeline,
     dom,
+    cancelBtn,
     calls,
     /** The multipart body of the Nth (default first) fetch. */
     form: (n = 0) => /** @type {FormData} */ (calls.fetch[n].body),
@@ -476,4 +508,78 @@ timed('the success path leaves no spinner behind', async () => {
   await run(h, response({ body: OK_BODY }));
   assert.equal(h.dom.stagePreview.classList.has('processing'), false);
   assert.equal(h.dom.loadingMessage.classList.has('hidden'), true);
+});
+
+// ── the wait: a render that never comes back ─────────────────────────────────
+//
+// There was no client timeout and no server-side one either, so a hung provider
+// left the progress bar frozen at 70% for as long as the socket stayed open, with
+// nothing to click. The guides' answer was "refresh after a minute", which throws
+// away renders that are still legitimately running — a Stagify+ job is several
+// variations, each of which may retry for quality.
+//
+// Three aborts reach the same catch and MUST NOT be reported alike: a photo the
+// pre-check refused, the ceiling, and the user pressing Cancel.
+
+timed('a request that passes the ceiling is stopped and explained, not left spinning', async () => {
+  const h = harness({ stagingTimeoutMs: 5 });
+  const p = h.pipeline.processWithAI(h.file());
+  await assert.rejects(p, (err) => {
+    assert.equal(err.code, 'STAGING_TIMEOUT');
+    return true;
+  });
+  assert.equal(h.calls.showStagingError.length, 1, 'the user is told why it stopped');
+  assert.match(h.calls.showStagingError[0], /longer than usual/i);
+  assert.equal(h.dom.stagePreview.classList.has('processing'), false, 'the spinner is torn down');
+  assert.equal(h.dom.progress.classList.has('hidden'), true);
+});
+
+timed('pressing Cancel stops the request without painting an error', async () => {
+  const h = harness();
+  const p = h.pipeline.processWithAI(h.file());
+  await tick();
+  assert.equal(h.cancelBtn.classList.has('hidden'), false, 'the way out is offered while waiting');
+
+  h.cancelBtn.click();
+  await assert.rejects(p, (err) => {
+    assert.equal(err.code, 'STAGING_CANCELLED');
+    // Marked surfaced so the caller does not stack an error banner on top of
+    // something the user deliberately did.
+    assert.equal(err.stagingMessageShown, true);
+    return true;
+  });
+  assert.deepEqual(h.calls.showStagingError, [], 'a deliberate cancel is not a failure');
+  assert.equal(h.cancelBtn.classList.has('hidden'), true, 'the button goes away with the wait');
+});
+
+timed('a completed render clears the timeout and hides Cancel', async () => {
+  // The ceiling must not survive the request that armed it — a leaked timer would
+  // abort the NEXT render, and a leftover Cancel button would do nothing.
+  //
+  // Asserted by watching clearTimeout rather than by waiting for a short ceiling to
+  // not fire: that would be a race between the timer and the fetch settling.
+  const h = harness();
+  const urls = await run(h, response({ body: OK_BODY }));
+
+  assert.equal(urls.length, 2, 'the render still delivers normally');
+  assert.ok(h.calls.timeoutIds.length >= 1, 'a ceiling is armed for the request');
+  const leaked = h.calls.timeoutIds.filter((id) => !h.calls.clearedTimeouts.includes(id));
+  assert.deepEqual(leaked, [], 'every staging ceiling must be cleared once the response is in');
+  assert.equal(h.cancelBtn.classList.has('hidden'), true);
+  assert.deepEqual(h.calls.showStagingError, []);
+});
+
+timed('a pre-check rejection still wins over the timeout wording', async () => {
+  // Both abort the same fetch. The photo-specific reason is the useful one.
+  const v = deferred();
+  const h = harness({ validationPromise: v.promise, stagingTimeoutMs: 180000 });
+  const p = h.pipeline.processWithAI(h.file());
+  await tick();
+  v.resolve({ valid: false, code: 'ANIMAL', reason: 'This looks like a pet.' });
+  await assert.rejects(p, (err) => {
+    assert.equal(err.code, 'NOT_STAGEABLE');
+    return true;
+  });
+  assert.equal(h.calls.showStagingError.length, 1);
+  assert.match(h.calls.showStagingError[0], /pet/i);
 });

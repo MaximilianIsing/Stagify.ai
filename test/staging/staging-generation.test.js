@@ -146,6 +146,57 @@ test('processStaging: logs exactly one row, after success, with the outcome atta
   assert.ok(Number.isFinite(outcome.durationMs) && outcome.durationMs >= 0);
 });
 
+test('processStaging: attempts counts THIS render, not the request-wide running total', async () => {
+  // A multi-variation request shares one `req`, and every variation bumps
+  // req._stagingGenerations (that total is what enterprise billing meters). The row
+  // used to read that shared counter, so variation 3 reported the cost of all three —
+  // and once variations run concurrently, which total a row happened to observe was
+  // timing-dependent. A row must describe its own render.
+  const gen = makeGeneration(await png(80, 60));
+  const req = { body: {}, _stagingGenerations: 7 }; // two siblings already finished
+  await gen.processStaging(
+    await jpg(80, 60),
+    { roomType: 'Bedroom', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false },
+    req,
+  );
+
+  const { outcome } = loggedRow(gen.rows);
+  assert.equal(outcome.attempts, 1, 'its own generations, not 7 + 1');
+  assert.equal(req._stagingGenerations, 8, 'the request-wide billing counter still accumulates');
+});
+
+test('processStaging: an unreviewed acceptance is recorded on the request as _qaDegraded', async () => {
+  // The reviewer fails open so a QA outage never becomes a user outage — but the render
+  // must not then be indistinguishable from a clean one.
+  const degradingRetry = async (generateOnce, opts) => {
+    const url = await generateOnce(1, null);
+    if (opts && typeof opts.onImageProduced === 'function') opts.onImageProduced(1);
+    if (opts && typeof opts.onReviewDegraded === 'function') {
+      opts.onReviewDegraded(1, { perfect: true, score: 100, reason: 'reviewer error', degraded: true });
+    }
+    return url;
+  };
+  const gen = makeGeneration(await png(80, 60), { runQualityRetry: degradingRetry });
+  const req = { body: {} };
+  await gen.processStaging(
+    await jpg(80, 60),
+    { roomType: 'Kitchen', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false },
+    req,
+  );
+  assert.equal(req._qaDegraded, true);
+});
+
+test('processStaging: a normally reviewed render leaves _qaDegraded unset', async () => {
+  const gen = makeGeneration(await png(80, 60));
+  const req = { body: {} };
+  await gen.processStaging(
+    await jpg(80, 60),
+    { roomType: 'Kitchen', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false },
+    req,
+  );
+  assert.ok(!req._qaDegraded, 'a reviewed render must not be flagged as unreviewed');
+});
+
 test('processStaging: a failed render still logs one row, marked failed with its code', async () => {
   const modelPng = await png(800, 600);
   const boom = Object.assign(new Error('no image'), { code: 'NO_IMAGE_GENERATED' });

@@ -204,7 +204,7 @@ export function createGeneratePipeline(deps) {
           return mask;
         }
 
-        async function runLayer(layer, imageDataUrl, coreGrow, run, context, batchSize) {
+        async function runLayer(layer, imageDataUrl, coreGrow, run, context) {
           await maskCoreReady;
           const maskDataUrl = layerModelMask(layer, coreGrow).toDataURL('image/png');
           let prompt;
@@ -228,10 +228,8 @@ export function createGeneratePipeline(deps) {
             mask: maskDataUrl,
             prompt: prompt,
             authToken: tok || undefined,
-            // Best-effort reproducibility passthrough + retry-budget hint for
-            // multi-area batches (the server trims its quality retries).
+            // Best-effort reproducibility passthrough.
             seed: (Math.random() * 0x7fffffff) | 0,
-            batch: batchSize || 1,
             ...(layer.furniture && layer.mode !== 'remove' ? { referenceImage: layer.furniture } : {}),
           });
           let response, result;
@@ -336,7 +334,7 @@ export function createGeneratePipeline(deps) {
 
           let settled = 0;
           await Promise.all(participating.map((layer) =>
-            enqueueRun(() => runLayer(layer, imageDataUrl, coreGrow, run, buildAreaContext(layer, participating), participating.length))
+            enqueueRun(() => runLayer(layer, imageDataUrl, coreGrow, run, buildAreaContext(layer, participating)))
               .then(() => { if (run === state.genRun) layer.status = 'done'; })
               .catch((err) => {
                 if (run !== state.genRun) return;
@@ -413,7 +411,7 @@ export function createGeneratePipeline(deps) {
           renderLayers();
           updateControls();
           try {
-            await enqueueRun(() => runLayer(layer, roomPayload(), state.genMeta.coreGrow, run, buildAreaContext(layer, state.layers.filter((l) => l.painted)), 1));
+            await enqueueRun(() => runLayer(layer, roomPayload(), state.genMeta.coreGrow, run, buildAreaContext(layer, state.layers.filter((l) => l.painted))));
             if (run !== state.genRun) return;
             layer.status = 'done';
           } catch (err) {

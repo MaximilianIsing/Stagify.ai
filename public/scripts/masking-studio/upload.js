@@ -5,6 +5,7 @@
 // entry. The pendingFurnitureLayerId cursor is encapsulated here (via
 // beginFurniturePick) so it never becomes a cross-module shared var.
 import { unstageableMessage } from '../unstageable-message.js';
+import { MAX_IMAGE_BYTES } from '../app/image-file.js';
 
 /**
  * @typedef {import('./types.js').MsState} MsState
@@ -104,8 +105,10 @@ export function createUpload(deps) {
       showToast(tx('errors.fileType', 'Please upload a JPG, PNG, or WebP image.'), 'error');
       return;
     }
-    if (file.size > 100 * 1024 * 1024) {
-      showToast(tx('errors.fileTooLarge', 'That image is too large — please choose one under 100 MB.'), 'error');
+    // Same ceiling the staging studio uses, and the one multer actually enforces —
+    // this said 100 MB, so the Masking Studio accepted files the server would refuse.
+    if (file.size > MAX_IMAGE_BYTES) {
+      showToast(tx('errors.fileTooLarge', 'File is too large. Please upload an image smaller than 25MB.'), 'error');
       return;
     }
     const dataUrl = await new Promise((resolve, reject) => {

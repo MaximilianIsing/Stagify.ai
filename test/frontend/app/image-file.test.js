@@ -50,10 +50,14 @@ test('fileRejection reports the size only for an otherwise-valid file', () => {
   assert.equal(fileRejection('image/png', MAX_IMAGE_BYTES + 1), 'fileTooLarge');
 });
 
-test('fileRejection puts the boundary exactly at 100MB inclusive', () => {
-  assert.equal(MAX_IMAGE_BYTES, 100 * 1024 * 1024);
+test('fileRejection puts the boundary exactly at the cap, inclusive', () => {
+  // The cap itself is NOT restated here. It was 100 MB while the server refused at
+  // 25 MB, and pinning the wrong number in two places is how that survived — the
+  // number belongs to lib/http/uploads.js, and upload-limit-consistency.test.js is
+  // what holds the two together.
   assert.equal(fileRejection('image/png', MAX_IMAGE_BYTES), null, 'exactly at the cap is allowed');
   assert.equal(fileRejection('image/png', MAX_IMAGE_BYTES + 1), 'fileTooLarge');
+  assert.equal(fileRejection('image/png', MAX_IMAGE_BYTES - 1), null);
 });
 
 // ---- The async wrapper -----------------------------------------------------

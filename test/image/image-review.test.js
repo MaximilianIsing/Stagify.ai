@@ -33,9 +33,9 @@ function fakeGrader(content) {
 }
 
 // --- reviewImageQuality -----------------------------------------------------
-test('reviewImageQuality: disabled reviewer (no client) passes the image with score 100', async () => {
+test('reviewImageQuality: disabled reviewer (no client) passes the image with score 100, marked degraded', async () => {
   const { reviewImageQuality } = createImageReview({ genAI: null });
-  assert.deepEqual(await reviewImageQuality(TINY_PNG), { perfect: true, score: 100, reason: 'reviewer disabled' });
+  assert.deepEqual(await reviewImageQuality(TINY_PNG), { perfect: true, score: 100, reason: 'reviewer disabled', degraded: true });
 });
 
 test('reviewImageQuality: "PERFECT: true" → perfect with score 100', async () => {
@@ -61,9 +61,9 @@ test('reviewImageQuality: a not-perfect verdict with no SCORE ranks as 0', async
   assert.equal(r.score, 0);
 });
 
-test('reviewImageQuality: a thrown API error fails open (accept the image)', async () => {
+test('reviewImageQuality: a thrown API error fails open (accept the image) and marks it degraded', async () => {
   const r = await createImageReview({ genAI: fakeGrader(new Error('boom')) }).reviewImageQuality(TINY_PNG);
-  assert.deepEqual(r, { perfect: true, score: 100, reason: 'reviewer error' });
+  assert.deepEqual(r, { perfect: true, score: 100, reason: 'reviewer error', degraded: true });
 });
 
 test('reviewImageQuality: extra furniture reference URLs that fail to downscale are skipped, not fatal', async () => {
@@ -77,11 +77,12 @@ test('reviewImageQuality: extra furniture reference URLs that fail to downscale 
 test('reviewMaskEdit: disabled reviewer passes; parses score; fails open on error', async () => {
   assert.deepEqual(
     await createImageReview({ genAI: null }).reviewMaskEdit(TINY_PNG, TINY_PNG),
-    { perfect: true, score: 100, reason: 'reviewer disabled' },
+    { perfect: true, score: 100, reason: 'reviewer disabled', degraded: true },
   );
 
   const good = await createImageReview({ genAI: fakeGrader('PERFECT: true') }).reviewMaskEdit(TINY_PNG, TINY_PNG);
   assert.equal(good.perfect, true);
+  assert.ok(!good.degraded, 'a reviewed pass must not carry degraded');
 
   const scored = await createImageReview({ genAI: fakeGrader('PERFECT: false\nSCORE: 73') })
     .reviewMaskEdit(TINY_PNG, TINY_PNG, { instruction: 'remove the clutter' });
@@ -89,7 +90,7 @@ test('reviewMaskEdit: disabled reviewer passes; parses score; fails open on erro
   assert.equal(scored.score, 73);
 
   const failed = await createImageReview({ genAI: fakeGrader(new Error('nope')) }).reviewMaskEdit(TINY_PNG, TINY_PNG);
-  assert.deepEqual(failed, { perfect: true, score: 100, reason: 'reviewer error' });
+  assert.deepEqual(failed, { perfect: true, score: 100, reason: 'reviewer error', degraded: true });
 });
 
 // --- validateStageableImage (takes a Buffer, not a data URL) ----------------

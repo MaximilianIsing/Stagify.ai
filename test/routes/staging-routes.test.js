@@ -69,6 +69,48 @@ test('validate-image: relays both the category code and the copy from the review
   assert.equal(body.reason, 'This is not a room.');
 });
 
+test('validate-image: a refused upload is RECORDED as a rejection', async () => {
+  // This is the likeliest first-session abandonment there is — someone uploads the
+  // wrong kind of photo, is told no, and leaves — and it used to produce no data at
+  // all, in any log, making the drop-off unmeasurable.
+  const rejections = [];
+  app = await mountStaging({
+    getAuthUserFromRequest: () => ({ id: 'u_test', email: 'u@x.com', plan: 'free' }),
+    validateStageableImage: async () => ({ valid: false, code: 'ANIMAL', reason: 'This looks like a pet.' }),
+    logRejectionToFile: (kind, code, detail, who) => rejections.push({ kind, code, detail, email: who.email, userId: who.userId }),
+  });
+  const res = await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE });
+
+  assert.equal(res.status, 200, 'the verdict is still a normal 200 body');
+  assert.deepEqual(rejections, [{
+    kind: 'unstageable', code: 'ANIMAL', detail: 'This looks like a pet.',
+    email: 'u@x.com', userId: 'u_test',
+  }]);
+});
+
+test('validate-image: an ACCEPTED upload records nothing', async () => {
+  const rejections = [];
+  app = await mountStaging({
+    ...SIGNED_IN,
+    validateStageableImage: async () => ({ valid: true, code: null, reason: '' }),
+    logRejectionToFile: (...a) => rejections.push(a),
+  });
+  await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE });
+  assert.deepEqual(rejections, []);
+});
+
+test('validate-image: a logging failure never turns a clean rejection into a 500', async () => {
+  app = await mountStaging({
+    ...SIGNED_IN,
+    validateStageableImage: async () => ({ valid: false, code: 'FOOD', reason: 'Not a room.' }),
+    logRejectionToFile: () => { throw new Error('disk full'); },
+  });
+  const res = await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE });
+  // The route's catch-all fails OPEN, so the user is never blocked by our bookkeeping.
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).valid, true);
+});
+
 test('validate-image: fails open when the reviewer throws', async () => {
   app = await mountStaging({
     ...SIGNED_IN,

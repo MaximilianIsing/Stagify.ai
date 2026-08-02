@@ -249,6 +249,88 @@ export function cohortRetention(users, promptRows, now) {
   return { cohorts, maxOffset };
 }
 
+/**
+ * What happened to each trial, from the only trial state that exists locally.
+ *
+ * `plan` collapses trialing / active / past_due into `'pro'`, and a cancellation
+ * overwrites it back to `'free'` while nulling the subscription id — so the database
+ * cannot answer "how many trials converted". What it CAN answer comes from
+ * `trialLifecycle`: `startAt` is stamped at checkout, and `sent.canceled` is stamped
+ * when the win-back email goes out, which only happens on
+ * `customer.subscription.deleted`. That timestamp is the single durable churn signal
+ * the product has.
+ *
+ * Read these as a FLOOR, like the funnel above: a cancellation whose win-back email
+ * failed to send leaves no flag, so `cancelled` under-reports rather than invents.
+ * `activated` uses `lastStagedAt`, which every paid surface now writes.
+ *
+ * @param {any[]} users
+ * @param {number} [now] Epoch ms; injectable for tests.
+ * @param {number} [trialDays=7] Length of the trial, for the "still running" window.
+ * @returns {{started: number, activated: number, cancelled: number, running: number, retained: number, activationPct: number, cancelPct: number}}
+ */
+export function trialOutcomes(users, now, trialDays = 7) {
+  const ref = typeof now === 'number' ? now : Date.now();
+  const windowMs = trialDays * 24 * 60 * 60 * 1000;
+
+  let started = 0;
+  let activated = 0;
+  let cancelled = 0;
+  let running = 0;
+  let retained = 0;
+
+  for (const u of users || []) {
+    const tl = u && u.trialLifecycle;
+    const startMs = tl && tl.startAt ? Date.parse(tl.startAt) : NaN;
+    if (!Number.isFinite(startMs)) continue;
+    started += 1;
+
+    const stagedMs = u.lastStagedAt ? Date.parse(u.lastStagedAt) : NaN;
+    if (Number.isFinite(stagedMs) && stagedMs >= startMs) activated += 1;
+
+    const didCancel = Boolean(tl.sent && tl.sent.canceled);
+    if (didCancel) cancelled += 1;
+
+    const withinWindow = ref - startMs < windowMs;
+    if (!didCancel && withinWindow) running += 1;
+    // Past the window, still on pro, never cancelled → the trial converted and held.
+    if (!didCancel && !withinWindow && u.plan === 'pro') retained += 1;
+  }
+
+  return {
+    started,
+    activated,
+    cancelled,
+    running,
+    retained,
+    activationPct: started ? (activated / started) * 100 : 0,
+    cancelPct: started ? (cancelled / started) * 100 : 0,
+  };
+}
+
+/**
+ * Which lifecycle emails actually went out, as counts.
+ *
+ * The trial-ending reminder is the one worth watching: unlike the activation and
+ * value mails it has NO sweep fallback — it fires only from the
+ * `customer.subscription.trial_will_end` webhook, which has to be enabled on the
+ * Stripe endpoint by hand. A zero here next to a non-zero `welcome` means the
+ * highest-intent touch in the funnel is silently not being sent.
+ *
+ * @param {any[]} users
+ * @returns {Array<{label: string, value: number}>}
+ */
+export function trialEmailsSent(users) {
+  const keys = ['welcome', 'activation', 'value', 'ending', 'canceled'];
+  const counts = Object.fromEntries(keys.map((k) => [k, 0]));
+  for (const u of users || []) {
+    const sent = u && u.trialLifecycle && u.trialLifecycle.sent;
+    if (!sent) continue;
+    for (const k of keys) if (sent[k]) counts[k] += 1;
+  }
+  return keys.map((k) => ({ label: k, value: counts[k] }));
+}
+
 /** Whole months between two `YYYY-MM` keys. @returns {number} */
 function monthDiff(fromKey, toKey) {
   const [fy, fm] = String(fromKey).split('-').map(Number);

@@ -106,6 +106,22 @@ test('an upload with no files is rejected with 400 and never calls the model', a
   assert.equal(app.calls.processStaging.calls, 0);
 });
 
+// 1b ─ Trial activation. /api/chat-upload records it through the same helper as
+//      /api/chat, but from a SEPARATE call site — one that could be dropped on its
+//      own — so it gets its own guard.
+test('an upload that produces a staged image records trial activation', async () => {
+  const recorded = [];
+  app = await mountChat({
+    routing: STAGING_ROUTING,
+    recordStagingActivity: (u) => { recorded.push(u.id); return true; },
+  });
+
+  const res = await postUpload(app.baseUrl, { files: [pngFile()], message: 'stage this' });
+
+  assert.equal(res.status, 200);
+  assert.deepEqual(recorded, ['test']);
+});
+
 // 2 ─ Auth gate runs BEFORE the file check, so a rejected caller never reaches
 //     the pipeline even with a valid upload attached.
 test('an unauthenticated upload is rejected with 401 and never stages', async () => {

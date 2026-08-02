@@ -75,7 +75,8 @@ count in a readable 20–90 band at every scale.
 
 - **Reliability** — render outcomes · failed renders per day · failure reasons · render
   duration (p50/p90/p95 + histogram) · staging models.
-- **Lifecycle** — activation funnel · cohort retention (both full width).
+- **Lifecycle** — activation funnel · cohort retention · trials · trial emails sent
+  (the first three full width).
 - **Growth** — cumulative generations · total accounts over time · new signups per bucket.
 - **Composition** — plan mix · sign-in method · feature usage mix · furniture removal.
 - **What gets staged** — room types · furniture styles · referral sources · user roles ·
@@ -136,6 +137,28 @@ These are the invariants most likely to be broken by an innocent-looking edit:
 3. **Months that haven't elapsed.** A cohort three weeks old has no month-2 cell. The grid
    renders those blank (hatched), never 0% — 0% is a measured value and is drawn.
 
+### Trials
+
+`plan` is only `'free' | 'pro'` — `trialing`, `active` and `past_due` all collapse into
+`'pro'`, and a cancellation rewrites it back to `'free'` *and* nulls the subscription id.
+So the account table cannot say how a trial ended. Both trial cards read
+`trialLifecycle` instead, whose `startAt` is stamped at checkout and whose
+`sent.canceled` is stamped when the win-back email goes out — which only happens on
+`customer.subscription.deleted`. **That flag is the only durable churn timestamp stored
+locally**, so `cancelled` is a floor: a cancellation whose win-back mail failed to send
+leaves no trace at all.
+
+Same nesting rule as the funnel above, for the same reason: only **started → activated**
+is a subset relationship. "Still paying past the trial" is reported in the card's notes,
+because someone can convert without ever staging, which would draw a step wider than its
+parent.
+
+**"Trial emails sent" earns its place by what a zero means.** `ending` is the only one of
+the five with no sweep behind it — it fires solely from the
+`customer.subscription.trial_will_end` webhook, which has to be enabled by hand on the
+Stripe endpoint. A non-zero `welcome` beside a zero `ending` means the highest-intent
+touch in the funnel has never been sent, and the card says so in as many words.
+
 **Paid is not a funnel step.** `activationFunnel` is a strictly nested usage ladder
 (accounts → activated → repeat → power), so it can only narrow — `funnelMonotonic` asserts
 it. Paying doesn't nest: a subscriber whose renders all logged anonymously is paid but not
@@ -161,8 +184,9 @@ source of truth — if a writer gains a column, update `COL` and this table.
 
 | Endpoint | Written by | Columns |
 |---|---|---|
-| `/authstore` | `lib/data/auth-store.js` | JSON — `{users: [...]}`, **redacted** via `exportRedacted()`. Only `ADMIN_VISIBLE_USER_KEYS` are present; credentials and session/reset tokens are never sent (see the security guide). Need a new column here? Add it to that allowlist. |
+| `/authstore` | `lib/data/auth-store.js` | JSON — `{users: [...]}`, **redacted** via `exportRedacted()`. Only `ADMIN_VISIBLE_USER_KEYS` are present; credentials and session/reset tokens are never sent (see the security guide). Need a new column here? Add it to that allowlist. Trial state (`lifetimeStaged`, `lastStagedAt`, `trialLifecycle`) rides along — but `trialLifecycle` is **projected** through `ADMIN_VISIBLE_TRIAL_EMAILS`, not allowlisted wholesale, so a future field parked inside that bag is not auto-exported. |
 | `/promptlogs` | `lib/services/logging.js` | `timestamp, roomType, furnitureStyle, additionalPrompt, removeFurniture, userRole, referralSource, email, ipAddress, status, durationMs, model, attempts, errorCode` |
+| `/rejectionlogs` | `lib/services/logging.js` | `timestamp, kind, code, detail, email, userId, ipAddress, userAgent` — requests refused **before** a render. Deliberately NOT rows in `prompt_logs.csv`: every row there is counted as a generation, so folding rejections in would inflate the headline volume and the success rate with work that never ran. |
 | `/chatlogs` | `lib/services/logging.js` | `timestamp, userId, userMessage, aiResponse, fileNames, fileTypes, ipAddress, userAgent` |
 | `/masklogs` | `lib/services/logging.js` | `timestamp, prompt, model, geminiModel, imageWidth, imageHeight, userId, ipAddress, userAgent` |
 | `/contactlogs` | `routes/public.js` | `timestamp, userRole, referralSource, email, userAgent, ipAddress` |
@@ -192,7 +216,14 @@ Three conventions the aggregators depend on:
 `logPromptToFile` is called **once per render, after the model call settles** — from the
 success path and from the `catch` alike, guarded so only one row is written. It records
 `status`, `durationMs`, `model`, `attempts` (images produced, quality-gate retries
-included) and `errorCode`. Before this the row was written *before* the Gemini call, so it
+included) and `errorCode`.
+
+`attempts` counts **that render only**. It used to read `req._stagingGenerations`, the
+request-wide total across every variation, so in a 3-variation job each row reported the
+running total rather than its own cost — and now that variations run concurrently, which
+total a row happened to observe would be timing-dependent as well. The request-wide
+counter still exists and is still what enterprise billing meters; it just isn't what a
+single render's row should say. Before this the row was written *before* the Gemini call, so it
 counted attempts and carried no result: the dashboard could show volume but not whether
 staging actually worked. A failure that happens before the prompt is even assembled still
 logs a row, with an empty prompt, so it lands in the error rate.

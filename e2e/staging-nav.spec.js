@@ -229,13 +229,59 @@ test.describe('Staging dropdown — desktop', () => {
   });
 });
 
-test('the Staging menu is not shown on a phone', async ({ page, isMobile }) => {
-  test.skip(!isMobile, 'this is the mobile half of the desktop-only decision');
-  await seedProSession(page);
-  await page.goto('/index.html');
-  await waitForHomeReady(page);
-  // Present in the markup (it is the same file), but never laid out — .nav-center
-  // is overflow-x:clip below 768px, so the panel would be cut off.
-  await expect(page.locator(MENU)).toHaveCount(1);
-  await expect(page.locator(TRIGGER)).toBeHidden();
+test.describe('Staging dropdown — phone', () => {
+  test.skip(({ isMobile }) => !isMobile, 'this is the mobile half of the nav');
+
+  // The dropdown is the ONLY nav entry to Image Staging, Basic Mask, the AI Designer
+  // and the Masking Studio. It used to be `desktop-only`, so a phone had no nav path
+  // to any staging tool at all — including the two features Stagify+ is sold on, for
+  // someone already paying. These two tests are why it can be shown again.
+
+  test('a paying user can reach every staging tool from a phone', async ({ page }) => {
+    await seedProSession(page);
+    await page.goto('/index.html');
+    await waitForHomeReady(page);
+
+    await expect(page.locator(TRIGGER)).toBeVisible();
+    const items = await openMenu(page);
+    await expect(items).toHaveCount(4);
+    for (const name of ['Image Staging', 'Basic Mask', 'AI Designer', 'Masking Studio']) {
+      await expect(page.locator(ITEM).filter({ hasText: name })).toBeVisible();
+    }
+  });
+
+  test('the open panel is anchored to the clipping box, so it can never be cut off', async ({ page }) => {
+    // The reason the menu was hidden on phones: .nav-center clips the X axis, and a
+    // panel anchored to its own trigger is a fixed 224px centred on that trigger —
+    // so wherever the wrapping nav happens to put the trigger, the panel can run past
+    // the clip and lose a row.
+    //
+    // Asserting only "the panel is on screen" is NOT enough: at this particular
+    // viewport the trigger lands near the middle and 224px fits anyway, so that
+    // assertion passes with the fix reverted. What the fix actually guarantees is
+    // that the panel spans .nav-center — the very box doing the clipping — leaving
+    // nothing to clip at ANY trigger position or viewport width. Pin that.
+    await seedProSession(page);
+    await page.goto('/index.html');
+    await waitForHomeReady(page);
+    await openMenu(page);
+
+    // Compare LAYOUT geometry (offsetWidth/clientWidth), not boundingBox(): the panel
+    // animates in with a scale(.98)→scale(1) transition, and a transformed bounding
+    // box is a few px narrower until it settles — which is measurement noise, not the
+    // property under test. offsetWidth ignores transforms entirely.
+    const geom = await page.evaluate(() => {
+      const panel = document.querySelector('.staging-menu__panel');
+      const clip = document.querySelector('.nav-center');
+      return { panelWidth: panel.offsetWidth, clipWidth: clip.clientWidth };
+    });
+
+    // `left:0; right:0` against .nav-center makes the panel's border box exactly its
+    // padding box. Anchored to the trigger instead, it is a fixed 224px.
+    expect(geom.clipWidth).toBeGreaterThan(240);
+    expect(Math.abs(geom.panelWidth - geom.clipWidth)).toBeLessThanOrEqual(2);
+
+    // And it is genuinely usable, not merely laid out somewhere plausible.
+    await expect(page.locator(ITEM).filter({ hasText: 'Masking Studio' })).toBeInViewport();
+  });
 });

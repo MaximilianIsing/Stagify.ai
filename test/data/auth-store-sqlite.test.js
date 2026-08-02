@@ -11,6 +11,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createAuthStore } from '../../lib/data/auth-store.js';
 import { openDb, dbPathFor } from '../../lib/data/db.js';
+import { redactUser } from '../../lib/data/auth-redaction.js';
 
 const tempDirs = [];
 const openStores = [];
@@ -394,4 +395,75 @@ test('the redundant users(email) index is gone, and stays gone on an existing da
     assert.ok(remaining.includes(keep), `${keep} must survive → ${remaining.join(', ')}`);
   }
   reopened.close();
+});
+
+// ---- Trial state on the wire ------------------------------------------------
+// `plan` collapses trialing / active / past_due into 'pro', so without these
+// fields the dashboard could not tell a trial from a subscription, count the
+// trials that were running, or say whether a trial user had used the product at
+// all — the very question the lifecycle emails branch on. Widening an allowlist
+// is exactly the change that leaks something, so the shape is pinned.
+
+test('exportRedacted carries trial state, projected to a fixed shape', () => {
+  const s = storeAt(tempDir());
+  verifyUser(s, 'trial@example.com');
+  const user = s.findUserByEmail('trial@example.com');
+  s.beginTrial(user.id, '2026-07-25T00:00:00.000Z');
+  s.markTrialEmailSent(user.id, 'welcome');
+  s.recordStagingActivity(user.id);
+
+  const row = s.exportRedacted().users.find((u) => u.email === 'trial@example.com');
+
+  assert.equal(row.trialLifecycle.startAt, '2026-07-25T00:00:00.000Z');
+  assert.deepEqual(
+    Object.keys(row.trialLifecycle.sent).sort(),
+    ['activation', 'canceled', 'ending', 'value', 'welcome'],
+    'every lifecycle mail has a slot, so a never-sent one reads as null rather than being absent',
+  );
+  assert.ok(row.trialLifecycle.sent.welcome, 'the welcome send is timestamped');
+  assert.equal(row.trialLifecycle.sent.ending, null, 'a mail that never went out is null, not missing');
+  assert.equal(row.lifetimeStaged, 1);
+  assert.ok(row.lastStagedAt, 'the activity timestamp the sweep reads is visible to the operator');
+});
+
+test('the trial bag is PROJECTED, so nothing else parked in it can ship', () => {
+  // The bag lives in extra_json, which rowToUser spreads wholesale. Listing
+  // `trialLifecycle` in the key allowlist would therefore auto-export any field a
+  // future feature adds to it — the exact failure that allowlist exists to prevent.
+  // Driven through the pure projector: the store has no public writer for an
+  // arbitrary extra_json field, and this is the function that decides the shape.
+  const safe = redactUser({
+    id: 'u_1',
+    email: 'bag@example.com',
+    plan: 'pro',
+    passwordHash: 'HASH_SHOULD_NEVER_SHIP',
+    trialLifecycle: {
+      startAt: '2026-07-25T00:00:00.000Z',
+      secretToken: 'tok_should_never_ship',
+      sent: { welcome: '2026-07-25T01:00:00.000Z', somethingNew: '2026-07-26T00:00:00.000Z' },
+    },
+  });
+
+  const wire = JSON.stringify(safe);
+  assert.ok(!wire.includes('tok_should_never_ship'), 'an unknown field in the bag stays server-side');
+  assert.ok(!wire.includes('somethingNew'), 'an unknown sent-flag is not forwarded either');
+  assert.ok(!wire.includes('HASH_SHOULD_NEVER_SHIP'), 'and the credential rule still holds');
+  assert.equal(safe.trialLifecycle.startAt, '2026-07-25T00:00:00.000Z');
+  assert.equal(safe.trialLifecycle.sent.welcome, '2026-07-25T01:00:00.000Z');
+});
+
+test('a malformed trial bag degrades to absent rather than throwing', () => {
+  // extra_json is hand-editable and predates this shape.
+  assert.equal('trialLifecycle' in redactUser({ id: 'a', trialLifecycle: 'nonsense' }), false);
+  assert.equal('trialLifecycle' in redactUser({ id: 'a', trialLifecycle: null }), false);
+  const noSent = redactUser({ id: 'a', trialLifecycle: { startAt: null } });
+  assert.equal(noSent.trialLifecycle.startAt, null);
+  assert.equal(noSent.trialLifecycle.sent.welcome, null, 'a bag with no sent map still reports every slot');
+});
+
+test('exportRedacted omits trialLifecycle entirely for an account that never trialed', () => {
+  const s = storeAt(tempDir());
+  verifyUser(s, 'free@example.com');
+  const row = s.exportRedacted().users.find((u) => u.email === 'free@example.com');
+  assert.equal('trialLifecycle' in row, false, 'absent stays absent, rather than becoming an empty shell');
 });

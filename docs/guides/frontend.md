@@ -202,6 +202,28 @@ Two things worth knowing before touching it:
 
 To make another room type drop the control, add its key to `ROOM_TYPES_WITHOUT_REMOVAL`.
 
+### The staging wait: one abort, three meanings
+
+`staging-pipeline.js` arms a `STAGING_TIMEOUT_MS` (3 min) ceiling and shows
+`#stage-cancel-btn` for the life of the request. Before that there was neither — no
+client timeout and no `server.setTimeout` — so a provider that hung left the progress
+bar frozen at 70% for as long as the socket stayed open, with nothing to click. The
+guides answered that with "refresh after a minute", which throws away renders that are
+still legitimately running (a Stagify+ job is several variations, each of which may
+retry for quality).
+
+The subtle part is that **three different things abort the same fetch** and they must
+not be reported alike: a photo the stageability pre-check refused, the ceiling, and the
+user pressing Cancel. `explainAbort` is the one place that decides which — the
+pre-check's own reason wins, a timeout paints a message, and a cancel paints nothing at
+all and is marked `stagingMessageShown` so the caller doesn't stack an error banner over
+something the user deliberately did.
+
+The ceiling is injectable (`stagingTimeoutMs`) purely so a test can drive it. Note that
+`test/frontend/app/staging-pipeline.test.js` squashes timers, but only those **under
+10 s** — collapsing a three-minute ceiling to 1 ms made it fire during every test and
+abort each fetch before it could be settled.
+
 ### The download resolution menu
 
 `createDownloadMenu(deps)`

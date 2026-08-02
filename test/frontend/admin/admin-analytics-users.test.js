@@ -18,6 +18,7 @@ import assert from 'node:assert/strict';
 import {
   buildActivityIndex, activityIndexFrom, lastActiveMs, daysSinceActive,
   attributionCoverage, activationFunnel, funnelMonotonic, paidConversion, cohortRetention,
+  trialOutcomes, trialEmailsSent,
 } from '../../../public/scripts/admin/analytics-users.js';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -264,4 +265,117 @@ test('cohortRetention: no users at all yields an empty grid, not a crash', () =>
   const { cohorts, maxOffset } = cohortRetention([], [], Date.now());
   assert.deepEqual(cohorts, []);
   assert.equal(maxOffset, 0);
+});
+
+// ── Trials ───────────────────────────────────────────────────────────────────
+// `plan` is only 'free' | 'pro': trialing, active and past_due all collapse into
+// 'pro', and a cancellation rewrites it to 'free' AND nulls the subscription id.
+// So the account row cannot say how a trial ended. These read `trialLifecycle`,
+// whose startAt (checkout) and sent.canceled (win-back mail, sent only on
+// customer.subscription.deleted) are the only trial/churn timestamps kept locally.
+
+const TRIAL_NOW = Date.parse('2026-08-01T12:00:00.000Z');
+const ago = (days) => new Date(TRIAL_NOW - days * DAY).toISOString();
+
+/** @param {any} over */
+const trialUser = (over = {}) => ({
+  id: 'u', email: 'u@x.com', plan: 'pro',
+  trialLifecycle: { startAt: ago(30), sent: {} },
+  ...over,
+});
+
+test('trialOutcomes counts only accounts that actually started a trial', () => {
+  const out = trialOutcomes([
+    trialUser(),
+    { id: 'n1', email: 'n@x.com', plan: 'free' },                 // never subscribed
+    { id: 'n2', email: 'm@x.com', plan: 'pro', trialLifecycle: null },
+    { id: 'n3', email: 'k@x.com', plan: 'pro', trialLifecycle: { startAt: 'not-a-date', sent: {} } },
+  ], TRIAL_NOW);
+  assert.equal(out.started, 1, 'an unparsable startAt is not a trial');
+});
+
+test('trialOutcomes counts activation from lastStagedAt, not from signup', () => {
+  const out = trialOutcomes([
+    trialUser({ id: 'a', lastStagedAt: ago(29) }),                 // staged during the trial
+    trialUser({ id: 'b', lastStagedAt: ago(31) }),                 // staged BEFORE it began
+    trialUser({ id: 'c' }),                                        // never staged
+  ], TRIAL_NOW);
+  assert.equal(out.started, 3);
+  assert.equal(out.activated, 1, 'activity predating the trial does not activate it');
+  assert.equal(Math.round(out.activationPct), 33);
+});
+
+test('trialOutcomes reads cancellation from the win-back flag, whatever the plan now says', () => {
+  // The cancellation itself is destructive — plan goes back to 'free' — so the
+  // flag is the only thing left pointing at it.
+  const out = trialOutcomes([
+    trialUser({ id: 'x', plan: 'free', trialLifecycle: { startAt: ago(30), sent: { canceled: ago(20) } } }),
+    trialUser({ id: 'y' }),
+  ], TRIAL_NOW);
+  assert.equal(out.cancelled, 1);
+  assert.equal(out.cancelPct, 50);
+});
+
+test('trialOutcomes separates a trial still running from one that converted', () => {
+  const out = trialOutcomes([
+    trialUser({ id: 'fresh', trialLifecycle: { startAt: ago(2), sent: {} } }),   // day 2 of 7
+    trialUser({ id: 'held' }),                                                   // 30 days, still pro
+    trialUser({ id: 'gone', plan: 'free' }),                                     // 30 days, dropped to free
+  ], TRIAL_NOW);
+  assert.equal(out.running, 1);
+  assert.equal(out.retained, 1, 'past the window and still pro is a conversion that held');
+  assert.equal(out.started, 3);
+});
+
+test('trialOutcomes never reports a cancelled trial as still running', () => {
+  // Someone who cancels on day 2 is inside the window but is not a live trial.
+  const out = trialOutcomes([
+    trialUser({ trialLifecycle: { startAt: ago(2), sent: { canceled: ago(1) } } }),
+  ], TRIAL_NOW);
+  assert.equal(out.running, 0);
+  assert.equal(out.cancelled, 1);
+});
+
+test('trialOutcomes on no trials reports zeroes, not NaN', () => {
+  const out = trialOutcomes([], TRIAL_NOW);
+  assert.deepEqual(
+    { started: out.started, activationPct: out.activationPct, cancelPct: out.cancelPct },
+    { started: 0, activationPct: 0, cancelPct: 0 },
+  );
+});
+
+test('trialEmailsSent counts each lifecycle mail, keeping a never-sent one visible as zero', () => {
+  // "ending" reading 0 next to a non-zero "welcome" is the signal that the
+  // customer.subscription.trial_will_end webhook was never enabled — it has no
+  // sweep fallback, so nothing else would reveal it.
+  const rows = trialEmailsSent([
+    trialUser({ trialLifecycle: { startAt: ago(9), sent: { welcome: ago(9), activation: ago(8) } } }),
+    trialUser({ trialLifecycle: { startAt: ago(9), sent: { welcome: ago(9), value: ago(6) } } }),
+  ]);
+  assert.deepEqual(rows, [
+    { label: 'welcome', value: 2 },
+    { label: 'activation', value: 1 },
+    { label: 'value', value: 1 },
+    { label: 'ending', value: 0 },
+    { label: 'canceled', value: 0 },
+  ]);
+});
+
+test('the two nesting trial steps stay monotonic even when someone pays without staging', () => {
+  // The regression this mirrors is the one paidConversion was pulled out of the
+  // activation funnel for: converting is not a deeper stage of USING the product,
+  // so `retained` can exceed `activated` and must never be a funnel step under it.
+  const out = trialOutcomes([
+    trialUser({ id: 'p1' }), // pro, past the window, never staged → retained, not activated
+    trialUser({ id: 'p2' }),
+    trialUser({ id: 'p3', lastStagedAt: ago(29) }),
+  ], TRIAL_NOW);
+
+  assert.equal(out.retained, 3);
+  assert.equal(out.activated, 1);
+  assert.ok(out.retained > out.activated, 'precondition: this really can invert');
+  assert.ok(
+    funnelMonotonic([{ value: out.started }, { value: out.activated }]),
+    'started → activated is the only pair that nests, and it must stay monotonic',
+  );
 });
