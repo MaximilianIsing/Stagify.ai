@@ -1214,8 +1214,7 @@
         "studio": "Masking Studio (несколько областей)",
         "variations": "Несколько вариантов за генерацию",
         "references": "Референсы мебели"
-      },
-      "freeCap": "50 / день"
+      }
     },
     "enterpriseRow": "Для команд и компаний <a href=\"enterprise.html\">ознакомьтесь с нашим корпоративным планом</a> или напишите на <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>, чтобы обсудить индивидуальные варианты подписки.",
     "footLinks": {

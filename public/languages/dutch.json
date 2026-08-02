@@ -1214,8 +1214,7 @@
         "studio": "Masking Studio (meerdere gebieden)",
         "variations": "Meerdere variaties per generatie",
         "references": "Meubelreferenties"
-      },
-      "freeCap": "50 / dag"
+      }
     },
     "enterpriseRow": "Voor teams of ondernemingen <a href=\"enterprise.html\">ontdek je ons enterprise-abonnement</a> of neem contact op met <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> voor persoonlijke abonnementsopties.",
     "footLinks": {

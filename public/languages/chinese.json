@@ -1214,8 +1214,7 @@
         "studio": "Masking Studio（多区域）",
         "variations": "每次生成多个变体",
         "references": "家具参考"
-      },
-      "freeCap": "50 / 天"
+      }
     },
     "enterpriseRow": "如果是团队或企业，<a href=\"enterprise.html\">了解我们的企业方案</a>，或联系 <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> 获取个性化的订阅方案。",
     "footLinks": {

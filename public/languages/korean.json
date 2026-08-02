@@ -1214,8 +1214,7 @@
         "studio": "Masking Studio (다중 영역)",
         "variations": "생성당 여러 변형",
         "references": "가구 참고 이미지"
-      },
-      "freeCap": "50 / 일"
+      }
     },
     "enterpriseRow": "팀이나 기업이라면 <a href=\"enterprise.html\">엔터프라이즈 요금제를 확인하거나</a> <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>(으)로 문의해 맞춤 구독 옵션을 받아보세요.",
     "footLinks": {

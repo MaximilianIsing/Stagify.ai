@@ -1214,8 +1214,7 @@
         "studio": "Masking Studio（複数範囲）",
         "variations": "1 回の生成で複数バリエーション",
         "references": "家具リファレンス"
-      },
-      "freeCap": "50 / 日"
+      }
     },
     "enterpriseRow": "チームや企業の場合は、<a href=\"enterprise.html\">エンタープライズプランをご覧ください</a>。または <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> までご連絡いただければ、個別のサブスクリプションをご案内します。",
     "footLinks": {
