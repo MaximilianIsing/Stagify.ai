@@ -96,6 +96,32 @@ test('mask-edit: returns 400 when image, mask, or prompt are missing', async () 
   assert.equal((await res.json()).error, 'Image, mask, and prompt are required');
 });
 
+// A malformed payload is the CLIENT's fault and must read as one. Only truthiness
+// was checked here, so `image: 'x'` reached `Buffer.from(undefined, 'base64')` and
+// threw ERR_INVALID_ARG_TYPE — served as a 500 with an error ref, a full stack in
+// the log and a Sentry report. Every bad request looked like a production incident.
+// Note the deliberate split with the sharp test further down: a wrong SHAPE is a
+// 400 here; correct shape with undecodable BYTES stays a 500.
+test('mask-edit: a non-data-URL image or mask is a 400, not a 500', async () => {
+  const cases = [
+    { image: 'x', mask: MASK, what: 'a bare string image' },
+    { image: IMAGE, mask: 'y', what: 'a bare string mask' },
+    { image: 'https://example.com/a.png', mask: MASK, what: 'a plain URL' },
+    { image: 'data:text/html;base64,PGI+', mask: MASK, what: 'a non-image data URL' },
+    { image: 'data:image/png;base64,', mask: MASK, what: 'a data URL with an empty payload' },
+    { image: 42, mask: MASK, what: 'a non-string image' },
+  ];
+  for (const { image, mask, what } of cases) {
+    app = await mountStaging({ requireProAccount: proUser, genAI: {} });
+    const res = await postJson(app.baseUrl, '/api/mask-edit', { image, mask, prompt: 'add a lamp' });
+    assert.equal(res.status, 400, `${what} must be a 400`);
+    const body = await res.json();
+    assert.ok(!body.ref, `${what} must not be reported as a server error with an error ref`);
+    await app.close();
+    app = null;
+  }
+});
+
 test('mask-edit: a whitespace-only prompt is trimmed to empty and rejected with 400 (same as missing)', async () => {
   // The handler trims BEFORE the presence check (routes/staging.js ~266-268): prompt.trim()
   // collapses '   ' to '' and `!trimmedPrompt` fires, so a whitespace-only prompt takes the

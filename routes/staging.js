@@ -4,13 +4,14 @@ import { sendError } from '../lib/http/http-helpers.js';
 import { reportError } from '../lib/http/error-ref.js';
 import { createMaskEditHandler } from '../lib/staging/mask-edit.js';
 import { createSegmentHandler } from '../lib/staging/segment.js';
+import { IMAGE_DATA_URL_RE } from '../lib/staging/data-url.js';
 import { logger } from '../lib/logger.js';
 import { validateImageLimiter as defaultValidateImageLimiter } from '../lib/http/rate-limiters.js';
 
 // A validate-image payload must be a base64 image data URL — both studios build one
 // with canvas.toDataURL() — so anything else is not a real upload. Checking the shape
-// here costs a regex instead of a paid vision call.
-const IMAGE_DATA_URL_RE = /^data:image\/[a-z0-9.+-]+;base64,/i;
+// here costs a regex instead of a paid vision call. The definition is shared with
+// mask-edit and segment (lib/staging/data-url.js) so the three cannot drift apart.
 
 // Ceiling on the DECODED image the pre-check will look at, enforced from the encoded
 // length so an oversized payload is refused before a buffer is allocated for it. The

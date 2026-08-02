@@ -346,6 +346,47 @@ test('cad routing with streamResponse renders the blueprint and streams cadImage
   assert.equal(app.calls.processStaging.calls, 0);
 });
 
+// The CAD render must be labelled with ITS OWN format, never the blueprint's.
+// parseGeminiResponse throws away the Gemini part's mimeType, so the dispatch used
+// to reuse the INPUT's — a JPEG floor plan produced `data:image/jpeg;base64,<PNG
+// bytes>`. OpenAI vision validates the declared type against the bytes, so the
+// annotate call failed for every non-PNG blueprint, swallowed by its own .catch.
+test('the cad render is labelled from its own bytes, not from the blueprint mime', async () => {
+  const sharp = (await import('sharp')).default;
+  const realPng = await sharp({ create: { width: 4, height: 4, channels: 3, background: { r: 9, g: 9, b: 9 } } })
+    .png().toBuffer();
+
+  app = await mountChat({
+    routing: {
+      response: 'Here is your 3D render.',
+      cad: [{ shouldProcessCAD: true, imageIndex: 0, furnitureImageIndex: null, additionalPrompt: '' }],
+    },
+    blueprintTo3D: async () => realPng,
+  });
+
+  // A JPEG blueprint going in; a PNG render coming back.
+  const JPEG_BLUEPRINT = 'data:image/jpeg;base64,' + Buffer.from('jpeg-blueprint-bytes').toString('base64');
+  const res = await postChat(app.baseUrl, {
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'turn this floorplan into a 3D render' },
+          { type: 'image_url', image_url: { url: JPEG_BLUEPRINT } },
+        ],
+      },
+    ],
+    streamResponse: true,
+  });
+
+  const frames = parseSse(await res.text());
+  const byEvent = Object.fromEntries(frames.map((f) => [f.event, f.data]));
+  assert.ok(byEvent.images.cadImage.startsWith('data:image/png;base64,'),
+    'the render is a PNG and must say so — got ' + byEvent.images.cadImage.slice(0, 32));
+  assert.ok(!byEvent.images.cadImage.startsWith('data:image/jpeg'),
+    'the blueprint mime must not leak onto the render');
+});
+
 // 8b ─ CAD base-image precedence: an image attached to the CURRENT message wins over
 //      an earlier thumbnail selection. resolveCadImageIndex returns the AI's own
 //      imageIndex (0 = most recent) instead of baseImageIndex when the current turn
