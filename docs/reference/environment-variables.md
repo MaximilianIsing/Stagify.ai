@@ -151,5 +151,29 @@ HIDE_STAGING_BANNER=false
 
 # --- Platform (set automatically — do not set these yourself) ---
 # RENDER is set by Render; the app reads it to use the /data persistent disk.
-# NODE_ENV is set to "production" by render.yaml on deploy.
+# NODE_ENV is NOT set on deploy. See the note below before "fixing" that.
 ```
+
+### NODE_ENV is deliberately unset in production
+
+`render.yaml` declares no `envVars` at all, so the deployed app runs with
+`NODE_ENV` unset — **not** `"production"`. This file used to claim the opposite.
+
+That is safe today, and the code says so: the catch-all error handler in
+`server.js` exists precisely because `NODE_ENV` isn't `production`. Without it,
+Express's built-in handler would render a full stack trace as an HTML page to the
+client; the catch-all returns a clean JSON 500 instead. So the protection Express
+would give you at `NODE_ENV=production` is already provided explicitly.
+
+**Do not add `NODE_ENV=production` to `render.yaml` on its own.** `scripts/build.sh`
+runs `npm ci` and then `npm test`, and npm omits `devDependencies` when `NODE_ENV`
+is `production`. The very next line runs `npm run typecheck` → `tsc --noEmit`, with
+`typescript` no longer installed; `set -e` then aborts the build. The deploy gate
+would stop running — silently, in the sense that it fails for a reason unrelated to
+the tests it exists to run.
+
+If production mode is genuinely wanted, the two changes must land together: set the
+variable **and** make `build.sh` install dev dependencies explicitly (`npm ci
+--include=dev`). `test/config/node-env-build-coupling.test.js` fails if one is done
+without the other. Note that CI never executes `build.sh`, so this path is only
+ever exercised on Render — which is exactly why it is pinned by a test.
