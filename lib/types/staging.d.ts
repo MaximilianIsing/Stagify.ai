@@ -19,6 +19,23 @@ export interface StagingParams {
   furnitureImageIndex?: number | number[] | null;
   styleReference?: boolean;
   preserveExistingStaging?: boolean;
+  /**
+   * Hand the caller the model's NATIVE output before it is upscaled for delivery.
+   *
+   * processStaging returns only the delivery image — `upscaleForDelivery` enlarges the
+   * ~1 MP result to as much as 4096px so the downloaded JPEG looks bigger, and drops the
+   * original on the floor. The gallery must not store that: it is a lanczos upscale, so
+   * it carries no more information than the native buffer at roughly six times the
+   * bytes.
+   *
+   * An optional callback rather than a wider return type, because changing what
+   * processStaging returns ripples into routes/chat.js, lib/chat/chat-staging.js,
+   * chat-image-dispatch.js and every test that mounts them — a lot of blast radius for
+   * one buffer. Callers that do not pass it are completely unaffected.
+   *
+   * Must not throw and must not be slow: it runs inside the generation path.
+   */
+  onNative?: ((buffer: Buffer, meta: { format?: string }) => void) | null;
   [key: string]: unknown;
 }
 

@@ -22,6 +22,9 @@ import { createLogging } from './lib/services/logging.js';
 import { createMemory } from './lib/data/memory.js';
 import { createUserDeletion } from './lib/data/user-deletion.js';
 import { createBlobTombstones, createBlobReaper } from './lib/data/blob-tombstones.js';
+import { createStagedRenders } from './lib/data/staged-renders.js';
+import { createRenderRefs } from './lib/data/render-refs.js';
+import { createRenderPersistence } from './lib/staging/render-persistence.js';
 import { createConfig } from './lib/config/config.js';
 import { maskReferencePromptSuffix } from './lib/staging/prompts.js';
 import { downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, downscaleImageForGPT, compositeForReview } from './lib/image/image-primitives.js';
@@ -242,6 +245,17 @@ const { loadMemories, saveMemories, exportAllMemories, resetAllMemories } = crea
 // and must survive the process dying. See lib/data/blob-tombstones.js.
 const blobTombstones = createBlobTombstones(__dirname);
 const blobReaper = createBlobReaper({ tombstones: blobTombstones, objectStore });
+// The gallery's rows. Opened unconditionally — the tables are cheap and erasure needs
+// them present either way — while the object store above decides whether anything is
+// actually stored.
+const stagedRenders = createStagedRenders(__dirname);
+const renderRefs = createRenderRefs(__dirname);
+// Renders whose upload died mid-flight leave a `pending` row and possibly some orphan
+// bytes. Hourly is well inside the one-hour staleness floor, and the floor is measured
+// against each row's own created_at, so a restart cannot mark a live render failed.
+setInterval(() => {
+  try { stagedRenders.sweepStalePending(); } catch (error) { logger.error('[gallery] stale sweep failed:', error); }
+}, 60 * 60 * 1000).unref?.();
 // Same shape as the session prune above: a plain interval, unref'd so it cannot hold
 // the process open. Erasure and eviction both kick a drain themselves; this is the
 // backstop that finishes the work when R2 was down at the time.
@@ -295,6 +309,11 @@ const { generateWithQualityRetry, processImageGeneration, processStaging } = cre
 // The virtual-staging multipart handler → lib/staging/virtual-staging-handler.js.
 // Instantiated AFTER createStagingGeneration because it consumes processStaging;
 // keeps its (req, res, meta) signature so the staging router deps are unchanged.
+// Turns a finished render into a gallery entry: rows synchronously so the free-tier cap
+// is unraceable, bytes afterwards so nobody waits on an object store for a history
+// feature. A no-op whenever the object store is unconfigured.
+const renderPersistence = createRenderPersistence({ objectStore, stagedRenders, renderRefs, blobReaper });
+
 const { handleVirtualStagingMultipart } = createVirtualStagingHandler({
   genAI,
   DEBUG_MODE,
@@ -307,6 +326,7 @@ const { handleVirtualStagingMultipart } = createVirtualStagingHandler({
   roomIsAlreadyEmpty,
   eraseFurniture,
   processStaging,
+  renderPersistence,
 });
 
 // Health check endpoints
