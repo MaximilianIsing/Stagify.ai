@@ -31,6 +31,15 @@
  * outcome columns on a render row were APPENDED, so a row written before they
  * existed still reads correctly — its outcome cells are simply empty.
  * Documented in docs/guides/admin-dashboard.md.
+ *
+ * PROMPT.ROLE (5) and PROMPT.REFERRAL (6) are INERT — always 'unknown' and ''.
+ * public/scripts/app/staging-pipeline.js reads them from localStorage keys that
+ * nothing in public/ ever writes (see the note there), so they have never carried
+ * data. They keep their indices because this file reads the CSV positionally and
+ * removing a column would shift EMAIL out from 7 and corrupt every historical row.
+ * CONTACT.ROLE/REFERRAL are equally inert for a different reason: nothing in
+ * public/ posts to /api/log-contact at all, so contact_logs.csv has no writer.
+ * Treat all four as empty until an onboarding capture actually fills them.
  */
 export const COL = {
   PROMPT: { TS: 0, ROOM: 1, STYLE: 2, REMOVE: 4, ROLE: 5, REFERRAL: 6, EMAIL: 7, STATUS: 9, DURATION: 10, MODEL: 11, ATTEMPTS: 12, ERROR: 13 },

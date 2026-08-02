@@ -64,6 +64,19 @@ export function createStagingPipeline(deps) {
     const keepFurnitureEl = /** @type {HTMLTextAreaElement} */ (document.getElementById('keep-furniture'));
     formData.append('keepFurniture', (removeChecked && keepFurnitureEl?.value) ? keepFurnitureEl.value.trim() : '');
 
+    // INERT, deliberately kept. NOTHING writes these three localStorage keys — the
+    // only keys ever set anywhere in public/ are stagifyAuthToken, selectedModel,
+    // selectedLanguage, userId, msHelpSeen, stagifyBackgroundVideoTime and adm_ts —
+    // so userRole and userReferralSource always reach prompt_logs.csv as
+    // 'unknown'/'' and columns 5 and 6 (COL.PROMPT.ROLE / REFERRAL in
+    // public/scripts/admin/analytics.js) carry no signal. Do not read them as data.
+    //
+    // The columns STAY regardless: analytics.js reads that CSV positionally, so
+    // dropping them would shift EMAIL out from index 7 and corrupt every historical
+    // row. The reads stay too, as the hook-up for onboarding capture if it is ever
+    // built. `userEmail` is the exception that already works — the server overwrites
+    // it with the session's address (virtual-staging-handler.js sets
+    // req.body.authenticatedEmail), so the email column IS trustworthy.
     const userRole = localStorage.getItem('userRole') || 'unknown';
     const userReferralSource = localStorage.getItem('userReferralSource') || '';
     const userEmail = localStorage.getItem('userEmail') || '';
