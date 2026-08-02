@@ -50,7 +50,6 @@ const UNTESTED = [
   'ai-designer-app.js',
   'ai-designer-gate.js',
   'ai-designer-model-selector.js',
-  'ai-designer/chat-messages.js',
   'ai-designer/chat-response.js',
   'ai-designer/image-viewer.js',
   'ai-designer/mask-editor.js',
