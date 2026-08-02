@@ -161,15 +161,51 @@ test('onSubscriptionCanceled sends the win-back with access-until (once)', async
   assert.ok(emails.calls.canceled[0].accessUntil instanceof Date);
 });
 
+// This test used to end in `assert.ok(true)` under the same title — a does-not-throw
+// smoke test wearing a behavioural one. Deleting the "already running" guard (so
+// start() stacks a second timer) or gutting stop() into a no-op (so the interval
+// leaks) both kept it green. Each of the three claims is now actually checked.
 test('start() runs an immediate sweep and is idempotent; stop() clears the timer', async () => {
-  const store = freshStore(); // empty → the immediate sweep is a harmless no-op
+  const store = freshStore();
+  // A day-2 user who has not staged is due the activation nudge, so the immediate
+  // sweep is OBSERVABLE — with an empty store it was indistinguishable from no sweep.
+  const user = proUser(store, 'startsweep@example.com');
+  store.beginTrial(user.id, new Date(NOW - 2 * DAY).toISOString());
   const emails = fakeEmails();
   const life = createTrialLifecycle({ authStore: store, emails, now: () => NOW });
-  life.start(1_000_000);
-  life.start(1_000_000); // idempotent — hits the "already running" guard
-  life.stop();
-  life.stop(); // safe to call when already stopped
-  assert.ok(true);
+
+  const realSetInterval = globalThis.setInterval;
+  const realClearInterval = globalThis.clearInterval;
+  let started = 0;
+  let cleared = 0;
+  globalThis.setInterval = (...args) => { started += 1; return realSetInterval(...args); };
+  globalThis.clearInterval = (...args) => { cleared += 1; return realClearInterval(...args); };
+
+  try {
+    life.start(1_000_000);
+    // runSweep is async and start() does not await it; let it settle.
+    await new Promise((r) => setImmediate(r));
+    assert.equal(emails.calls.activation.length, 1, 'start() must run a sweep immediately, not only on the interval');
+    assert.equal(started, 1, 'exactly one timer armed');
+
+    life.start(1_000_000); // the "already running" guard
+    await new Promise((r) => setImmediate(r));
+    assert.equal(started, 1, 'a second start() must NOT arm a second timer');
+    assert.equal(emails.calls.activation.length, 1, 'and must not re-sweep, which would resend');
+
+    life.stop();
+    assert.equal(cleared, 1, 'stop() must clear the interval, not just drop the reference');
+    life.stop();
+    assert.equal(cleared, 1, 'stopping twice must not clear anything a second time');
+
+    // Proof the timer is really gone: start() would refuse if one were still held.
+    life.start(1_000_000);
+    assert.equal(started, 2, 'after stop(), start() must be able to arm a fresh timer');
+    life.stop();
+  } finally {
+    globalThis.setInterval = realSetInterval;
+    globalThis.clearInterval = realClearInterval;
+  }
 });
 
 test('sweep ignores users with no trial tracking', async () => {

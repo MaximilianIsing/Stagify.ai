@@ -20,13 +20,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+// IMPORTED, not re-declared. This regex decides which files eslint and tsc cover,
+// so a hand-copied twin here would silently police a different set the moment the
+// real one is tightened — and the export existed for exactly this, with no importer.
+import { ESM_MARKER } from '../../scripts/collect-esm-frontend.js';
 
 const rootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const scriptsDir = path.join(rootDir, 'public', 'scripts');
-
-// Same marker eslint.config.js uses: a top-level `export` or static/side-effect
-// `import … from` / `import '…'`. Files WITHOUT it are classic scripts (unlinted).
-const ESM_MARKER = /^\s*(?:export\b|import\s+(?:[^(;]*\sfrom\s|['"]))/m;
 
 function collectClassicScripts(dir) {
   const out = [];
