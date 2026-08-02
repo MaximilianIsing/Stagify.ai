@@ -14,6 +14,8 @@ import { createDownloadMenu } from './app/download-menu.js';
 import { createStagingPipeline } from './app/staging-pipeline.js';
 import { createStagingFailure } from './app/staging-failure.js';
 import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
+import { readImageFile } from './app/image-file.js';
+import { initStagingEntry } from './app/staging-entry.js';
 
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -241,71 +243,50 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
     let stageValidationResult = null;
 
     async function handleStageFile(file) {
-      // iPhone HEIC/HEIF photos aren't decodable by most browsers; convert to
-      // JPEG first so the preview and on-canvas editing work everywhere.
-      if (window.StagifyHeic && window.StagifyHeic.isHeic(file)) {
-        try {
-          file = await window.StagifyHeic.toDisplayableFile(file);
-        } catch (e) {
-          showErrorToast(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn't read that HEIC photo. Please try a JPG or PNG.");
-          return;
-        }
-      }
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-      if (!allowedTypes.includes(file.type)) {
-        showErrorToast(window.LanguageSystem?.getText('errors.fileType') || 'Please upload a PNG, JPG, JPEG, WebP, or GIF image file.');
-        return;
-      }
+      // HEIC conversion, the type allowlist and the 100MB ceiling live in
+      // app/image-file.js — the Basic Mask uploader applies the same three.
+      const read = await readImageFile(file, { showError: showErrorToast });
+      if (!read) return;
+      const { dataUrl } = read;
 
-      // Check file size (100MB limit)
-      const maxSize = 100 * 1024 * 1024; // 100MB in bytes
-      if (file.size > maxSize) {
-        showErrorToast(window.LanguageSystem?.getText('errors.fileTooLarge') || 'File is too large. Please upload an image smaller than 100MB.');
-        return;
-      }
-      
-      currentImageFile = file; // Store the file for processing
+      currentImageFile = read.file; // Store the file for processing
       hasProcessedImage = false; // Reset processing state for new image
       hideStagingLimitInViewer();
-      const reader = new FileReader();
-      reader.onload = () => {
-        stagePreview.src = reader.result;
-        // Seed the before carousel with the original photo; reset the after carousel.
-        setBeforeVersions([reader.result]);
-        setAfterVersions([]);
-        stagePreview.alt = getStagingAlt('uploadedRoomAlt', {
-          filenameSuffix: file.name ? ': ' + file.name : '',
-        });
-        // Show image viewer, hide upload zone
-        stageDropzone.classList.add('hidden');
-        imageViewerContainer.classList.remove('hidden');
-        // Hide placeholder and show the uploaded image
-        processingPlaceholder.style.display = 'none';
-        canvas1.classList.add('hidden');
-        // Reset to "Before" view
-        showBeforeView();
+      stagePreview.src = dataUrl;
+      // Seed the before carousel with the original photo; reset the after carousel.
+      setBeforeVersions([dataUrl]);
+      setAfterVersions([]);
+      stagePreview.alt = getStagingAlt('uploadedRoomAlt', {
+        filenameSuffix: read.file.name ? ': ' + read.file.name : '',
+      });
+      // Show image viewer, hide upload zone
+      stageDropzone.classList.add('hidden');
+      imageViewerContainer.classList.remove('hidden');
+      // Hide placeholder and show the uploaded image
+      processingPlaceholder.style.display = 'none';
+      canvas1.classList.add('hidden');
+      // Reset to "Before" view
+      showBeforeView();
 
-        // Kick off the stageability pre-check for this upload. It runs while the
-        // user reviews the photo and picks options, so it's normally done long
-        // before Process — and it runs concurrently with the generation anyway
-        // (see processWithAI), so it adds no wait. If it comes back invalid,
-        // surface the reason over the preview right away. Guard on the captured
-        // file so a fast re-upload can't show a stale rejection.
-        hideStagingError();
-        const checkForFile = file;
-        stageValidationResult = null;
-        stageValidation = validateStageableUpload(reader.result);
-        stageValidation.then((r) => {
-          const result = r || { valid: true, reason: '' };
-          if (currentImageFile === checkForFile) {
-            stageValidationResult = result;
-            if (result.valid === false) {
-              showStagingError(unstageableMessage(result));
-            }
+      // Kick off the stageability pre-check for this upload. It runs while the
+      // user reviews the photo and picks options, so it's normally done long
+      // before Process — and it runs concurrently with the generation anyway
+      // (see processWithAI), so it adds no wait. If it comes back invalid,
+      // surface the reason over the preview right away. Guard on the captured
+      // file so a fast re-upload can't show a stale rejection.
+      hideStagingError();
+      const checkForFile = read.file;
+      stageValidationResult = null;
+      stageValidation = validateStageableUpload(dataUrl);
+      stageValidation.then((r) => {
+        const result = r || { valid: true, reason: '' };
+        if (currentImageFile === checkForFile) {
+          stageValidationResult = result;
+          if (result.valid === false) {
+            showStagingError(unstageableMessage(result));
           }
-        });
-      };
-      reader.readAsDataURL(file);
+        }
+      });
     }
     // Toggle between Before and After views
     function isProUser() {
@@ -540,7 +521,7 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
     // Extracted island (scripts/app/stage-mask-editor.js): owns the modal + its
     // state machine; the entry injects the DOM/state glue plus a commit callback
     // that applies the new version to the shared before/after arrays + display.
-    createStageMaskEditor({
+    const maskEditor = createStageMaskEditor({
       maskEditBtn,
       canvas1,
       stagePreview,
@@ -574,6 +555,18 @@ import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
         loadHeroStats({ refresh: true });
       },
     });
+
+    // The top nav's "Staging" dropdown lives on nine pages; these two screens
+    // live only on this one. app/staging-entry.js publishes the hooks it calls
+    // when the visitor is already here, and consumes the #stage / #basic-mask
+    // fragment it navigates to when they aren't.
+    if (modal) {
+      initStagingEntry({
+        openStaging: openFilePicker,
+        openBasicMask: () => maskEditor.openStandalone(),
+        isPro: isProUser,
+      });
+    }
 
     if (newUploadBtn) newUploadBtn.addEventListener('click', () => {
       hideStagingLimitInViewer();

@@ -1,4 +1,5 @@
 import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
+import { syncStagingMenu } from './staging-menu.js';
 
 (function () {
   var TOKEN_KEY = 'stagifyAuthToken';
@@ -121,13 +122,12 @@ import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
       // It reads the plan off window.StagifyAuth, which `u` already is.
       syncRemoveFurnitureRow();
 
-      document.querySelectorAll('.nav-ai-designer-pro, .nav-masking-studio-pro').forEach(function (el) {
-        if (u && u.plan === 'pro') {
-          el.classList.remove('hidden');
-        } else {
-          el.classList.add('hidden');
-        }
-      });
+      // The top-nav "Staging" dropdown's three Stagify+ rows. Same deal as the
+      // row above: one idempotent writer owns the classes, so this call site
+      // doesn't need to know which rows exist or what "locked" looks like. It
+      // replaced a pair of nav links that were revealed by stripping `.hidden`,
+      // which left free users with no hint the studios existed at all.
+      syncStagingMenu();
 
       if (!u) {
         if (proPanel) proPanel.classList.add('hidden');

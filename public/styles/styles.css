@@ -1827,7 +1827,14 @@ h2 {
 .modal:not(.hidden) .modal-backdrop {
   animation:220ms fadeBackdrop
 }
-body:has(.modal:not(.hidden)) .language-picker-container {
+/* The floating language picker sits above the page at z-index 1100, so any
+   full-screen dialog has to take it down or it hovers over the top of them.
+   .stage-mask-modal is listed separately because it differs on both counts: a
+   different class, and it opens with `.active` rather than by dropping
+   `.hidden`. It only became visible once Basic Mask could open the mask editor
+   on its own — reached from the staging flow it is already covered by .modal. */
+body:has(.modal:not(.hidden)) .language-picker-container,
+body:has(.stage-mask-modal.active) .language-picker-container {
   display:none
 }
 .brand-logo {
@@ -2681,6 +2688,66 @@ html {
   border-radius:12px;
   overflow:hidden
 }
+/* Basic Mask's own uploader. This editor normally opens on an image the staging
+   flow already has; opened from the nav there is nothing loaded yet, so the
+   dialog shows a dropzone instead of the canvas and its controls. One class on
+   the content box swaps the whole body, rather than three separate toggles that
+   could disagree with each other. */
+.stage-mask-upload {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  /* Roughly the shape of the photo that will land in it. Left to fill the
+     dialog it stretched to ~880x260 — a 3.4:1 letterbox that looked nothing
+     like a room photo and put the hint text miles from the icon. */
+  width:100%;
+  max-width:560px;
+  margin:0 auto;
+  aspect-ratio:16 / 9;
+  padding:28px 20px;
+  border:2px dashed var(--border);
+  border-radius:12px;
+  background:var(--bg-elevated);
+  color:var(--fg);
+  text-align:center;
+  cursor:pointer;
+  transition:border-color .18s ease,background .18s ease
+}
+.stage-mask-content.is-uploading .stage-mask-upload {
+  display:flex
+}
+/* Shrink the dialog to its content while the uploader is showing. The 920px cap
+   is sized for the canvas and its controls; keeping it here left the dropzone
+   marooned in a wide empty field with nothing else in the dialog to justify it.
+   600 = the dropzone's 560 plus the content box's 20px side padding. */
+.stage-mask-content.is-uploading {
+  max-width:600px
+}
+.stage-mask-content.is-uploading .stage-mask-canvas-container,
+.stage-mask-content.is-uploading .stage-mask-controls {
+  display:none
+}
+.stage-mask-upload:hover,
+.stage-mask-upload:focus-visible,
+.stage-mask-upload.is-dragging {
+  border-color:var(--brand);
+  background:var(--brand-wash)
+}
+.stage-mask-upload__icon {
+  font-size:26px;
+  line-height:1;
+  color:var(--brand)
+}
+.stage-mask-upload__text {
+  font-weight:600
+}
+.stage-mask-upload__hint {
+  font-size:13px;
+  color:var(--muted);
+  max-width:38ch
+}
 /* While a masked edit is running. The blur used to be split in two: this rule at
    2px, plus a 6px one injected from JS under a second `smask-busy` class, which
    won on source order — so 2px was never what you actually saw. One class, one
@@ -2973,6 +3040,122 @@ html {
     transition:opacity .2s ease
   }
 }
+
+/* === Top-nav "Staging" dropdown ===========================================
+   The four staging tools under one nav item, replacing the pair of bare links
+   that were simply hidden from free users. Open state follows the language
+   switcher ([data-open] on the wrapper, so the panel can animate); the locked
+   rows follow .option--with-badge for the Stagify+ chip.
+
+   The wrapper MUST stay position:relative: .nav-center is itself positioned
+   (it hosts the sliding .nav-pill), so an unwrapped absolute panel would
+   anchor to the whole nav strip rather than to its own trigger. */
+.staging-menu {
+  position:relative;
+  display:inline-flex
+}
+.staging-menu__trigger {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  border:0;
+  background:none;
+  font:inherit;
+  cursor:pointer
+}
+.staging-menu__chevron {
+  flex:none;
+  transition:transform .18s ease
+}
+.staging-menu[data-open] .staging-menu__chevron {
+  transform:rotate(180deg)
+}
+.staging-menu__panel {
+  position:absolute;
+  top:calc(100% + 8px);
+  left:50%;
+  min-width:224px;
+  padding:6px;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(226,232,240,.9);
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(15,23,42,.14),0 2px 8px rgba(15,23,42,.08);
+  -webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);
+  opacity:0;
+  transform:translateX(-50%) translateY(-6px) scale(.98);
+  transform-origin:top center;
+  pointer-events:none;
+  transition:opacity .18s ease,transform .18s ease;
+  z-index:1100
+}
+.staging-menu[data-open] .staging-menu__panel {
+  opacity:1;
+  transform:translateX(-50%) translateY(0) scale(1);
+  pointer-events:auto
+}
+.staging-menu__item {
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  /* Left inset reserves the lock's gutter on EVERY row, so the labels line up
+     whether or not a row carries one — only the three Stagify+ rows have the
+     glyph, and in flow it shunted "Image Staging" out of column. */
+  padding:9px 10px 9px 30px;
+  border-radius:8px;
+  color:var(--brand-deep);
+  font-size:14px;
+  font-weight:600;
+  text-decoration:none;
+  white-space:nowrap
+}
+.staging-menu__item:hover,
+.staging-menu__item:focus-visible {
+  background:var(--brand-wash)
+}
+.staging-menu__label {
+  flex:1 1 auto
+}
+/* Lock and chip ship in the markup on every Stagify+ row and are revealed by
+   the single class the plan writer toggles (scripts/staging-menu.js), so the
+   locked look is one class away rather than four DOM edits. */
+.staging-menu__lock,
+.staging-menu__badge {
+  display:none
+}
+.staging-menu__item.is-locked {
+  color:var(--slate)
+}
+.staging-menu__item.is-locked .staging-menu__lock {
+  display:block;
+  position:absolute;
+  left:10px;
+  top:50%;
+  transform:translateY(-50%);
+  opacity:.75
+}
+.staging-menu__item.is-locked .staging-menu__badge {
+  display:inline-block;
+  flex:none;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  line-height:1;
+  color:var(--brand);
+  background:var(--brand-tint);
+  border:1px solid var(--brand-pale);
+  padding:3px 7px;
+  border-radius:999px
+}
+@media (prefers-reduced-motion:reduce) {
+  .staging-menu__panel,
+  .staging-menu__chevron {
+    transition:none
+  }
+}
+
 /* hero-content top spacing (desktop 2-col) */
 @media (min-width:901px) {
   .hero-content {

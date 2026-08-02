@@ -28,6 +28,12 @@ declare global {
     __stagifyUpdateHeroFreeGensLine?: (...args: any[]) => void;
     /** Opens the auth modal in the staging flow (app.js). */
     __stagifyOpenAuthForStaging?: (...args: any[]) => void;
+    /** Opens the home page's staging screen. Published by app/staging-entry.js
+     *  and called by the top-nav Staging dropdown when already on the home page;
+     *  absent on every other page, which is how the dropdown knows to navigate. */
+    __stagifyOpenStaging?: () => void;
+    /** Same, for the standalone Basic Mask editor. */
+    __stagifyOpenBasicMask?: () => void;
     /** Closes the fullscreen image modal (ai-designer image viewer). */
     closeImageModal?: (...args: any[]) => void;
     /** Returns the live AI Designer chat transcript (ai-designer-app.js), for the
