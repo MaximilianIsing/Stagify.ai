@@ -105,6 +105,8 @@ export function createStageMaskEditor(deps) {
       // never re-calls the API unless they press "Regenerate".
       let phase = 'draw';        // 'draw' | 'loading' | 'refine'
       let refineState = null;    // { origCanvas, w, h, coreGrow, featherPx, editedImg, isBefore }
+      /** @type {HTMLElement|null} */
+      let maskDialogOpener = null; // whatever had focus when the dialog opened
 
       // Refine-phase action buttons, created once and toggled by phase.
       const rerunBtn = document.createElement('button');
@@ -343,6 +345,7 @@ export function createStageMaskEditor(deps) {
           setPhase('draw');
           maskModal.classList.add('active');
           maskModal.setAttribute('aria-hidden', 'false');
+          focusMaskDialog();
           viewport.bind();
           viewport.sync();
           // Last, once every row sharing the dialog's height budget is in its
@@ -403,6 +406,7 @@ export function createStageMaskEditor(deps) {
         setUploadState(true);
         maskModal.classList.add('active');
         maskModal.setAttribute('aria-hidden', 'false');
+        focusMaskDialog();
         viewport.bind();
         viewport.sync();
       }
@@ -417,9 +421,31 @@ export function createStageMaskEditor(deps) {
         showInEditor(read.dataUrl);
       }
 
+      /**
+       * Move focus into the dialog on open, remembering where it came from.
+       *
+       * Both open paths (showInEditor and openStandalone) only toggled the class and
+       * aria-hidden, so focus stayed on the trigger BEHIND the overlay: activating
+       * the paint-brush FAB with Enter left the dialog unannounced and sent the next
+       * Tab into the page underneath. ai-designer/mask-editor.js focuses its close
+       * button for exactly this reason and says so; this is the same move.
+       * @returns {void}
+       */
+      function focusMaskDialog() {
+        maskDialogOpener = /** @type {HTMLElement|null} */ (document.activeElement);
+        const closeBtn = /** @type {HTMLElement|null} */ (document.getElementById('stage-mask-close'));
+        if (closeBtn && typeof closeBtn.focus === 'function') closeBtn.focus();
+      }
+
       function closeEditor() {
         maskModal.classList.remove('active');
         maskModal.setAttribute('aria-hidden', 'true');
+        // Hand focus back, guarded on isConnected — applying an edit can replace the
+        // element the opener lived in, and focusing a detached node drops focus to
+        // <body> silently.
+        const opener = maskDialogOpener;
+        maskDialogOpener = null;
+        if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
         viewport.unbind();
         fit.unbind();
         stopOverlay();

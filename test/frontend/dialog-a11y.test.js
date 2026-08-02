@@ -197,3 +197,96 @@ test('the AI Designer dialog moves focus in on open and restores it on close', (
   assert.match(src, /opener\.isConnected/,
     'restoring focus must skip a detached opener, or focus silently drops to <body>');
 });
+
+// ── Focus management ─────────────────────────────────────────────────────────
+//
+// role="dialog" only tells a screen reader WHAT the element is; it does nothing
+// unless focus actually moves into it. Two dialogs shipped with the attributes and
+// without the focus move, and the symptom is invisible to anyone using a mouse:
+// activating the trigger by keyboard left focus on the control BEHIND the overlay,
+// so the dialog was never announced and the next Tab walked the page underneath it.
+//
+// A Tab trap is NOT this. ai-designer-app.js has one, but it only pulls focus back
+// once Tab is pressed — it cannot put focus in the dialog to begin with.
+//
+// Scoped per function, comments stripped: these files EXPLAIN the fix in prose that
+// names focus(), so a whole-file grep would pass with the call deleted.
+
+/** Drop comment bodies so prose about focus() cannot satisfy a check for focus(). */
+function stripJsComments(src) {
+  let out = '';
+  let i = 0;
+  let quote = null;
+  while (i < src.length) {
+    const c = src[i];
+    const next = src[i + 1];
+    if (quote) {
+      if (c === '\\') { out += src.slice(i, i + 2); i += 2; continue; }
+      if (c === quote) quote = null;
+      out += c; i += 1; continue;
+    }
+    if (c === "'" || c === '"' || c === '`') { quote = c; out += c; i += 1; continue; }
+    if (c === '/' && next === '/') { while (i < src.length && src[i] !== '\n') i += 1; continue; }
+    if (c === '/' && next === '*') {
+      i += 2;
+      while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i += 1;
+      i += 2; continue;
+    }
+    out += c; i += 1;
+  }
+  return out;
+}
+
+/** The source between two markers, asserting both were found. */
+function between(src, startMarker, endMarker, label) {
+  const from = src.indexOf(startMarker);
+  assert.ok(from !== -1, `${label}: could not find ${startMarker} — update this guard`);
+  const to = src.indexOf(endMarker, from + startMarker.length);
+  assert.ok(to > from, `${label}: could not find ${endMarker} after it — update this guard`);
+  return src.slice(from, to);
+}
+
+const FOCUS_MANAGED = [
+  {
+    label: 'auth modal',
+    file: 'public/scripts/profile-menu/auth-modal.js',
+    open: ['function openAuthModal', '\n  }'],
+    close: ['function closeAuthModal', '\n  }'],
+  },
+  {
+    label: 'stage mask editor',
+    file: 'public/scripts/app/stage-mask-editor.js',
+    open: ['function focusMaskDialog', '\n      }'],
+    close: ['function closeEditor', '\n      }'],
+  },
+  {
+    label: 'AI Designer mask editor',
+    file: 'public/scripts/ai-designer/mask-editor.js',
+    open: ["existingModal.classList.add('active')", 'viewport.bind()'],
+    // `const opener = ...`, not `maskEditorOpener = null` — the latter matches the
+    // module-level declaration first, and the block after THAT happens to contain a
+    // focus() call, so the guard passed while proving nothing.
+    close: ['const opener = maskEditorOpener', '\n      }'],
+  },
+];
+
+for (const d of FOCUS_MANAGED) {
+  test(`${d.label}: moves focus into the dialog on open and restores it on close`, () => {
+    const src = stripJsComments(read(d.file));
+
+    const openBlock = between(src, d.open[0], d.open[1], `${d.label} open`);
+    assert.match(openBlock, /\.focus\(\)/, `${d.label}: opening must move focus into the dialog`);
+
+    const closeBlock = between(src, d.close[0], d.close[1], `${d.label} close`);
+    assert.match(closeBlock, /\.focus\(\)/, `${d.label}: closing must hand focus back to the opener`);
+    // Focusing a detached node silently drops focus to <body>, which is worse than
+    // leaving it where it was — every restore path guards on isConnected.
+    assert.match(closeBlock, /isConnected/, `${d.label}: the restore must guard on isConnected`);
+  });
+}
+
+test('the auth modal closes on Escape, like every other dialog', () => {
+  const src = stripJsComments(read('public/scripts/profile-menu/auth-modal.js'));
+  assert.match(src, /'Escape'/, 'no Escape handling at all');
+  assert.match(src, /closeAuthModal\(\)/, 'Escape must reach closeAuthModal');
+});

@@ -75,8 +75,13 @@ export function createImageViewer(deps) {
             a.download = filename || 'image.png';
             document.body.appendChild(a);
             a.click();
-            window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
+            // Revoke on a LATER task, not in this one. The browser queues the
+            // download asynchronously after click(), so revoking in the same tick can
+            // cancel it before it starts — the button then does nothing, with no
+            // error, on the engines that queue rather than copy (Firefox, Safari).
+            // The URL is still released; it just outlives the click that needs it.
+            setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
           })
           .catch(error => {
             console.error('Error downloading image:', error);
@@ -189,9 +194,15 @@ export function createImageViewer(deps) {
               }
               const maskedItem = document.createElement('div');
               maskedItem.className = 'masked-image-carousel-item';
+              // The slice above starts at currentItemCount - 1, so this item's true
+              // 0-based position in maskedVersions is that plus its loop index — NOT
+              // currentItemCount + index, which labelled the second mask edit "(3)"
+              // and every later one one too high. The create path below builds the
+              // same label with imageCountSuffix(index, …); these must agree.
+              const versionIndex = currentItemCount - 1 + index;
               const maskedImageContainer = createAIImageWithDownload(
                 maskedImage,
-                getPdfAlt('editedImage', { suffix: imageCountSuffix(currentItemCount + index, maskedVersions.length) }),
+                getPdfAlt('editedImage', { suffix: imageCountSuffix(versionIndex, maskedVersions.length) }),
                 'masked-edit'
               );
               maskedItem.appendChild(maskedImageContainer);

@@ -49,6 +49,10 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
   /** @type {Record<string, any> | null} */
   let handles = null;
 
+  /** Whatever had focus when the modal opened, so close() can hand it back. */
+  /** @type {HTMLElement | null} */
+  let authModalOpener = null;
+
   function els() {
     const modal = document.getElementById('auth-modal');
     if (!modal) return null;
@@ -192,6 +196,12 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     window.__stagifyPendingStaging = false;
     window.__stagifyPendingPlusRedirect = false;
     resetAuthVerificationFlow();
+    // Put focus back where it came from, guarded on isConnected: the opener can be
+    // re-rendered while the modal is up, and focusing a detached node silently drops
+    // focus to <body> — which is worse than leaving it alone.
+    const opener = authModalOpener;
+    authModalOpener = null;
+    if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
   }
 
   /**
@@ -222,11 +232,23 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
     const e = els();
     if (!e) return;
     if (e.error) e.error.textContent = '';
+    // Remember who opened it, so focus can go back there on close. Captured before
+    // the modal is shown, while document.activeElement is still the trigger.
+    authModalOpener = /** @type {HTMLElement|null} */ (document.activeElement);
     e.modal.classList.remove('hidden');
     e.modal.setAttribute('aria-hidden', 'false');
     syncAuthFormMode();
     gsi.tryInitGoogleSignIn();
     onCloseDropdown();
+    // Move focus INTO the dialog, the same way ai-designer/mask-editor.js and the
+    // Masking Studio's dialogs do. Without it, focus stayed on the button behind the
+    // overlay: a screen reader never announced the dialog, and Tab walked the page
+    // underneath it. This one is reached from "Upload image for free" while signed
+    // out, so it is the first dialog many keyboard users meet.
+    // The email field rather than the close button — it is what the user came to fill
+    // in, and it is inside the dialog either way.
+    const first = /** @type {HTMLElement|null} */ (e.email || e.closeBtn);
+    if (first && typeof first.focus === 'function') first.focus();
   }
 
   /** Clear the modal-wide error line. */
@@ -246,6 +268,18 @@ export function createAuthModal({ onRefresh, onCloseDropdown }) {
 
     if (e.backdrop) e.backdrop.addEventListener('click', closeAuthModal);
     if (e.closeBtn) e.closeBtn.addEventListener('click', closeAuthModal);
+
+    // Escape closes it, like every other dialog in the app. Bound here (inside the
+    // run-once guard) so it is attached exactly once for the page's lifetime, and it
+    // checks the visible state rather than tracking its own flag — the modal is only
+    // ever hidden via the `hidden` class.
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Escape') return;
+      const cur = els();
+      if (!cur || cur.modal.classList.contains('hidden')) return;
+      ev.preventDefault();
+      closeAuthModal();
+    });
 
     if (e.toggleBtn) {
       e.toggleBtn.addEventListener('click', () => {
