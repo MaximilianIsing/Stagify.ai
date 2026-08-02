@@ -138,7 +138,15 @@ router.get('/i/:id', (req, res) => {
 router.get('/email/logo.png', pixelLimiter, (req, res) => {
   const rawEmail = req.query.email;
   if (typeof rawEmail === 'string' && !res.locals[EMAIL_PIXEL_RATE_LIMITED]) {
-    const email = decodeURIComponent(rawEmail.trim().toLowerCase());
+    // NOT decoded again here. Express's qs parser has already percent-decoded the
+    // value, and on a malformed escape it hands back the raw string rather than
+    // throwing — so `?email=100%` arrived as the literal '100%' and a second
+    // decodeURIComponent threw URIError, turning this into a 500. That breaks the
+    // one promise this route makes (always serve the PNG: a mail client renders
+    // the failure as a broken image) and filed a Sentry event per open. Decoding
+    // twice was also wrong on its own: '%2540' collapsed to '@', so a single
+    // address could be tracked under several encodings.
+    const email = rawEmail.trim().toLowerCase();
     if (email.includes('@') && email.length <= 254 && isConfirmedEmailClientOpen(req)) {
       logEmailOpenToFile(email, req);
     }

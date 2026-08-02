@@ -150,11 +150,28 @@ test('an account can be erased by email as well as by id', () => {
   assert.equal(authStore.findUserByEmail('byemail@example.com'), null);
 });
 
+// routes/admin.js forwards BOTH fields straight from the dashboard body, so this is
+// the shape a real erasure request arrives in. The lookup used to be a ternary —
+// `userId ? findById : findByEmail` — so a stale id (the account was recreated) or a
+// typo meant the address was never tried and the operator got NOT_FOUND while every
+// row, CSV cell and legacy-JSON entry survived. Exactly the wrong answer to give
+// someone processing a right-to-erasure request.
+test('a stale id does not stop the erasure when a valid email came with it', () => {
+  const { authStore, deleteUser } = setup();
+  makeUser(authStore, 'both@example.com');
+  const res = deleteUser({ userId: 'stale-id-that-matches-nothing', email: 'Both@Example.com' });
+  assert.equal(res.ok, true, 'the email must be tried when the id resolves to nothing');
+  assert.equal(res.email, 'both@example.com');
+  assert.equal(authStore.findUserByEmail('both@example.com'), null, 'the account must actually be gone');
+});
+
 test('an unknown user and a missing identifier are refused, not silently "ok"', () => {
   const { deleteUser } = setup();
   assert.equal(deleteUser({ userId: 'nope' }).code, 'NOT_FOUND');
   assert.equal(deleteUser({ email: 'nobody@example.com' }).code, 'NOT_FOUND');
   assert.equal(deleteUser({}).code, 'NO_IDENTIFIER');
+  // Both wrong is still NOT_FOUND — the fallback must not invent a subject.
+  assert.equal(deleteUser({ userId: 'nope', email: 'nobody@example.com' }).code, 'NOT_FOUND');
 });
 
 test('an account with a live Stripe subscription is refused unless forced', () => {

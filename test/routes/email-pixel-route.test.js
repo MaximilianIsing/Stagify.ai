@@ -168,6 +168,45 @@ test('a genuine provider proxy still records the open', async () => {
   assert.ok(csv.includes('desk@example.com'));
 });
 
+// `?email=` is attacker-controlled and arrives from mail clients and proxies that
+// rewrite URLs, so a malformed percent-escape is a matter of when, not if. Express's
+// qs parser decodes the value and, when the escape is invalid, hands back the RAW
+// string — so a second decodeURIComponent in the handler threw URIError and the
+// catch-all turned it into a JSON 500. In an email that renders as a broken image,
+// and it filed a Sentry event on every open. The route's one promise is that the
+// PNG always goes out.
+test('a malformed percent-escape still serves the PNG instead of 500ing', async () => {
+  app = await mountPixel();
+
+  for (const raw of ['100%', '%zz', 'a%', '%E0%A4%A', '%']) {
+    // Deliberately NOT encodeURIComponent'd — the point is a broken escape on the wire.
+    const res = await fetch(`${app.baseUrl}/email/logo.png?email=${raw}`, {
+      headers: { 'user-agent': 'Mozilla/5.0 GoogleImageProxy' },
+    });
+    assert.equal(res.status, 200, `malformed escape ${JSON.stringify(raw)} must still return the logo`);
+    assert.equal(res.headers.get('content-type'), 'image/png');
+  }
+
+  // None of those is a real address, so nothing should have been recorded either.
+  await new Promise((r) => setTimeout(r, 50));
+  assert.equal(fs.existsSync(app.logFile), false, 'a malformed address records no open');
+});
+
+// Decoding a second time also collapsed '%2540' to '@', which let ONE mailbox be
+// tracked under several encodings. Post-fix the value is taken as qs decoded it, so
+// '%2540' stays the literal 'a%40b.com' — no '@', therefore not a trackable address.
+test('a double-encoded address is not collapsed back into a real one', async () => {
+  app = await mountPixel();
+
+  const res = await fetch(`${app.baseUrl}/email/logo.png?email=a%2540b.com`, {
+    headers: { 'user-agent': 'Mozilla/5.0 GoogleImageProxy' },
+  });
+  assert.equal(res.status, 200);
+  await new Promise((r) => setTimeout(r, 50));
+
+  assert.equal(app.hasOpened('a@b.com'), false, 'a%2540b.com must not be recorded as a@b.com');
+});
+
 test('past the rate limit the image still flows but the write is dropped', async () => {
   app = await mountPixel({ realLimiter: true });
   const UA = 'Mozilla/5.0 GoogleImageProxy';
