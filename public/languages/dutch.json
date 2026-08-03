@@ -372,9 +372,8 @@
       "downloadNative": "native",
       "uploadAnotherShort": "Opnieuw",
       "downloadResultShort": "Download",
-      "savedToGallery": "Opgeslagen in je galerij.",
       "galleryEvicted": "Oudere stagings zijn verwijderd om ruimte te maken — het gratis plan bewaart de meest recente.",
-      "galleryEvictedShared": "Eén ervan had een actieve deellink, die niet meer werkt."
+      "galleryEvictedShared": "Een oudere staging had een actieve deellink, die niet meer werkt."
     }
   },
   "roomTypes": {

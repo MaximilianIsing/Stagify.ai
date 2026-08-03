@@ -372,9 +372,8 @@
       "downloadNative": "native",
       "uploadAnotherShort": "Changer",
       "downloadResultShort": "Télécharger",
-      "savedToGallery": "Enregistré dans votre galerie.",
       "galleryEvicted": "D’anciens rendus ont été supprimés pour faire de la place : l’offre gratuite conserve les plus récents.",
-      "galleryEvictedShared": "L’un d’eux avait un lien de partage actif, qui ne fonctionne plus."
+      "galleryEvictedShared": "Un rendu plus ancien avait un lien de partage actif, qui ne fonctionne plus."
     }
   },
   "roomTypes": {

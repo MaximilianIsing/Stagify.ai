@@ -1,8 +1,8 @@
 // public/scripts/app/gallery-notice.js — the line under a finished render.
 //
-// Two things are worth pinning. It must stay SILENT when the response carried no gallery
-// payload, because that is what happens when the gallery is switched off and announcing
-// a feature that is not running is worse than saying nothing. And it must actually
+// The headline behaviour: saving is SILENT. There is no success confirmation at all — the
+// gallery is somewhere renders simply are afterwards, not something announced each time
+// it works. So the only thing that makes this speak is LOSS: it must actually
 // mention the broken share link when eviction took one out — that is the only place an
 // agent can learn a link they already sent a client has stopped working.
 import { test } from 'node:test';
@@ -39,17 +39,21 @@ function harness() {
   return { doc, container, notice: createGalleryNotice({ doc, container, lang }), registry };
 }
 
-test('a saved render says so, once', () => {
+test('a render that saved cleanly says NOTHING', () => {
+  // The common case, and the whole point: the gallery is somewhere renders simply are
+  // afterwards, not a feature the app announces every time it works. A confirmation on
+  // every success is noise the user cannot act on, sitting next to the Download button.
   const { notice, registry, container } = harness();
   notice.show({ ids: ['r1'], evicted: [] });
 
   const el = registry.get(NOTICE_ID);
-  assert.equal(el.textContent, 'Saved to your gallery.');
-  assert.equal(el.classList.contains('hidden'), false);
-
-  // Re-showing must not append a second notice.
+  if (el) {
+    assert.equal(el.textContent, '');
+    assert.equal(el.classList.contains('hidden'), true);
+  }
+  // ...and it must not have appended a second element either.
   notice.show({ ids: ['r2'], evicted: [] });
-  assert.equal(container.children.length, 1);
+  assert.ok(container.children.length <= 1);
 });
 
 test('no gallery payload means the notice stays silent', () => {
@@ -67,11 +71,12 @@ test('no gallery payload means the notice stays silent', () => {
 });
 
 test('eviction is stated, not left for the agent to discover', () => {
+  // Silence on success, a sentence on loss — this is the only thing that makes it speak.
   const { notice, registry } = harness();
   notice.show({ ids: ['r1'], evicted: [{ id: 'old', hadLiveShare: false }] });
   const text = registry.get(NOTICE_ID).textContent;
-  assert.match(text, /Saved to your gallery\./);
   assert.match(text, /Older stagings were removed/);
+  assert.ok(!/Saved to your gallery/i.test(text), 'the success line is gone for good');
   // Nothing was shared, so the harsher sentence must not appear.
   assert.ok(!/share link/i.test(text));
 });
@@ -79,12 +84,15 @@ test('eviction is stated, not left for the agent to discover', () => {
 test('a PRO eviction says nothing about the cap', () => {
   // Stagify+ is sold as unlimited staging — which it is — and the gallery's 200-entry
   // ceiling is deliberately not advertised. A pro eviction must not mention a plan
-  // limit, or the product contradicts its own pricing page.
+  // With the success line gone, a pro eviction that broke nothing is now COMPLETELY
+  // silent — there is no cap to mention and nothing the user could act on.
   const { notice, registry } = harness();
   notice.show({ ids: ['r1'], tier: 'pro', evicted: [{ id: 'old', hadLiveShare: false }] });
-  const text = registry.get(NOTICE_ID).textContent;
-  assert.equal(text, 'Saved to your gallery.');
-  assert.ok(!/removed|plan|limit/i.test(text));
+  const el = registry.get(NOTICE_ID);
+  if (el) {
+    assert.equal(el.textContent, '');
+    assert.equal(el.classList.contains('hidden'), true);
+  }
 });
 
 test('a pro eviction STILL reports a broken share link', () => {
@@ -113,11 +121,16 @@ test('a broken share link gets its own sentence', () => {
 });
 
 test('showing a clean render after an eviction clears the warning', () => {
-  // The notice element is reused, so a stale warning would sit under an unrelated render.
+  // The notice element is reused, so a stale warning would sit under an unrelated render
+  // — and with nothing else ever rendered there, a leftover would be the ONLY thing on
+  // screen. This is the case that would look most broken if it regressed.
   const { notice, registry } = harness();
   notice.show({ ids: ['r1'], evicted: [{ id: 'b', hadLiveShare: true }] });
+  assert.match(registry.get(NOTICE_ID).textContent, /share link/);
+
   notice.show({ ids: ['r2'], evicted: [] });
-  assert.equal(registry.get(NOTICE_ID).textContent, 'Saved to your gallery.');
+  assert.equal(registry.get(NOTICE_ID).textContent, '');
+  assert.equal(registry.get(NOTICE_ID).classList.contains('hidden'), true);
 });
 
 test('clear() hides it', () => {
@@ -150,7 +163,7 @@ test('every string it renders exists in the English pack', () => {
   const pack = JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'languages', 'english.json'), 'utf8'));
   const src = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'app', 'gallery-notice.js'), 'utf8');
   const keys = [...src.matchAll(/t\('modal\.staging\.(\w+)'/g)].map((m) => m[1]);
-  assert.ok(keys.length >= 3, `sanity: expected the notice's lookups, found ${keys.length}`);
+  assert.ok(keys.length >= 2, `sanity: expected the notice's lookups, found ${keys.length}`);
   for (const key of keys) {
     assert.ok(pack.modal.staging[key], `english.json is missing modal.staging.${key}`);
   }
@@ -162,7 +175,7 @@ test('all eleven packs carry those strings, not just English', () => {
   assert.equal(files.length, 11, 'sanity: eleven packs');
   for (const file of files) {
     const pack = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
-    for (const key of ['savedToGallery', 'galleryEvicted', 'galleryEvictedShared']) {
+    for (const key of ['galleryEvicted', 'galleryEvictedShared']) {
       assert.ok(pack.modal?.staging?.[key], `${file} is missing modal.staging.${key}`);
     }
     assert.ok(pack.profile?.yourGallery, `${file} is missing profile.yourGallery`);

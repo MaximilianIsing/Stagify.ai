@@ -372,9 +372,8 @@
       "downloadNative": "ネイティブ",
       "uploadAnotherShort": "再アップ",
       "downloadResultShort": "保存",
-      "savedToGallery": "ギャラリーに保存しました。",
       "galleryEvicted": "空きを作るため古いステージングを削除しました。無料プランでは最新のものだけが保持されます。",
-      "galleryEvictedShared": "そのうち 1 件に有効な共有リンクがあり、現在は使用できません。"
+      "galleryEvictedShared": "以前のステージングに有効な共有リンクがあり、現在は使用できません。"
     }
   },
   "roomTypes": {

@@ -372,9 +372,8 @@
       "downloadNative": "원본 크기",
       "uploadAnotherShort": "다시 업로드",
       "downloadResultShort": "다운로드",
-      "savedToGallery": "갤러리에 저장되었습니다.",
       "galleryEvicted": "공간 확보를 위해 오래된 스테이징이 삭제되었습니다. 무료 플랜은 최신 항목만 보관합니다.",
-      "galleryEvictedShared": "그중 하나에 활성 공유 링크가 있었으며, 이제 작동하지 않습니다."
+      "galleryEvictedShared": "이전 스테이징에 활성 공유 링크가 있었으며, 이제 작동하지 않습니다."
     }
   },
   "roomTypes": {
