@@ -83,6 +83,33 @@
       "title": "Meublez avec une précision exacte",
       "subtitle": "Masquez les zones à refaire, ajoutez vos propres meubles, et tout le reste reste identique au pixel près. <em>(Exclusivité Stagify+)</em>"
     },
+    "gallery": {
+      "title": "Chaque pièce que vous aménagez est conservée pour vous",
+      "subtitle": "Votre galerie conserve chaque pièce aménagée, les réglages qui l'ont produite et les liens que vous avez partagés avec vos clients.",
+      "mock": {
+        "title": "Votre galerie",
+        "count": "3 pièces aménagées"
+      },
+      "dates": {
+        "newest": "14 mars",
+        "mid": "13 mars",
+        "older": "11 mars"
+      },
+      "alts": {
+        "living": "Un salon aménagé avec un canapé d’angle gris, des poufs rayés, un tapis à motifs et une cheminée allumée",
+        "bedroom": "Une chambre aménagée avec un grand lit, une tête de lit capitonnée, un téléviseur mural et un meuble bas",
+        "dining": "Une salle à manger aménagée avec une table ovale en bois, six chaises, un lustre et des baies vitrées"
+      },
+      "eyebrow": "Votre galerie",
+      "panelTitle": "Réaménagez autant de fois que vous voulez. Rien n'est écrasé.",
+      "panelBody": "Pas de bouton d'enregistrement, pas de dossier à nommer. Aménagez une pièce et elle est dans votre galerie, la plus récente en tête, avant même que vous fermiez l'onglet. Ouvrez-la plus tard et vous retrouvez le comparateur avant/après ainsi que les réglages exacts qui l'ont produite : type de pièce, style, votre consigne supplémentaire, si vous avez retiré les meubles existants et les photos de meubles que vous avez jointes.",
+      "points": {
+        "auto": "Enregistré automatiquement. Aucune étape à oublier.",
+        "versions": "Chaque version est conservée : deux styles de la même pièce se retrouvent côte à côte.",
+        "private": "La photo d'origine, vide, reste la vôtre. Elle ne fait jamais partie de ce que voit un client.",
+        "share": "Partagez une pièce avec un client via son propre lien, et désactivez-le quand vous avez terminé."
+      }
+    },
     "info": {
       "eyebrow": "En bref",
       "title": "Ce qu'est le home staging virtuel, et pourquoi il fait vendre",

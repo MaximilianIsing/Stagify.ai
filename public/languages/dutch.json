@@ -83,6 +83,33 @@
       "title": "Style met exacte precisie",
       "subtitle": "In de nieuwe Maskeerstudio markeer je de gebieden om te herstylen, voeg je je eigen meubilair toe, en al het andere blijft pixel-perfect. <em>(Stagify+ Exclusief)</em>"
     },
+    "gallery": {
+      "title": "Elke kamer die je inricht wordt voor je bewaard",
+      "subtitle": "Je galerij bewaart elke ingerichte kamer, de instellingen die hem hebben gemaakt en de links die je met klanten hebt gedeeld.",
+      "mock": {
+        "title": "Jouw galerij",
+        "count": "3 ingerichte kamers"
+      },
+      "dates": {
+        "newest": "14 mrt",
+        "mid": "13 mrt",
+        "older": "11 mrt"
+      },
+      "alts": {
+        "living": "Een ingerichte woonkamer met een grijze hoekbank, gestreepte poefs, een gedessineerd vloerkleed en een brandende haard",
+        "bedroom": "Een ingerichte slaapkamer met een breed bed, gestoffeerd hoofdbord, wandtelevisie en een laag dressoir",
+        "dining": "Een ingerichte eetkamer met een ovale houten tafel, zes stoelen, een kroonluchter en erkerramen"
+      },
+      "eyebrow": "Jouw galerij",
+      "panelTitle": "Richt zo vaak opnieuw in als je wilt. Er wordt niets overschreven.",
+      "panelBody": "Er is geen opslaanknop en geen map die je een naam moet geven. Richt een kamer in en hij staat in je galerij, nieuwste eerst, nog voordat je het tabblad sluit. Open hem later en je krijgt de voor-en-naschuifbalk plus precies de instellingen erachter: type kamer, stijl, je extra prompt, of je de bestaande meubels hebt verwijderd, en eventuele meubelfoto's die je hebt toegevoegd.",
+      "points": {
+        "auto": "Wordt automatisch bewaard. Er is geen opslagstap die je kunt vergeten.",
+        "versions": "Elke versie blijft bewaard, dus twee stijlen van dezelfde kamer staan naast elkaar.",
+        "private": "De originele lege foto blijft alleen van jou. Die is nooit onderdeel van wat een klant ziet.",
+        "share": "Deel één kamer met een klant via een eigen link en zet de link uit als je klaar bent."
+      }
+    },
     "info": {
       "eyebrow": "De korte versie",
       "title": "Wat virtuele styling is, en waarom het verkoopt",

@@ -83,6 +83,33 @@
       "title": "Stage with exact precision",
       "subtitle": "In the new Masking Studio, highlight the areas to restage, add your own furniture, and everything else stays pixel-perfect. <em>(Stagify+ Exclusive)</em>"
     },
+    "gallery": {
+      "title": "Every room you stage is saved for you",
+      "subtitle": "Your gallery keeps every staged room, the settings that produced it, and the links you have shared with clients.",
+      "mock": {
+        "title": "Your gallery",
+        "count": "3 staged rooms"
+      },
+      "dates": {
+        "newest": "Mar 14",
+        "mid": "Mar 13",
+        "older": "Mar 11"
+      },
+      "alts": {
+        "living": "A staged living room with a grey sectional, striped ottomans, a patterned rug and a lit fireplace",
+        "bedroom": "A staged bedroom with a wide bed, an upholstered headboard, a wall-mounted TV and a low media console",
+        "dining": "A staged dining room with an oval wooden table, six chairs, a chandelier and bay windows"
+      },
+      "eyebrow": "Your gallery",
+      "panelTitle": "Re-stage as often as you like. Nothing gets overwritten.",
+      "panelBody": "There is no save button and no folder to name. Stage a room and it is in your gallery, newest first, before you close the tab. Open one later and you get the before-and-after slider plus the exact settings behind it: room type, style, your extra prompt, whether you removed the existing furniture, and any furniture photos you attached.",
+      "points": {
+        "auto": "Saved automatically. There is no save step to forget.",
+        "versions": "Every version is kept, so two styles of the same room sit side by side.",
+        "private": "The original empty photo stays yours alone. It is never part of what a client sees.",
+        "share": "Share one room with a client on its own link, and turn the link off when you are done."
+      }
+    },
     "info": {
       "eyebrow": "The short version",
       "title": "What virtual staging is, and why it sells",

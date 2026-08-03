@@ -83,6 +83,33 @@
       "title": "Einrichten mit exakter Präzision",
       "subtitle": "Maskieren Sie die Bereiche zum Neugestalten, fügen Sie eigene Möbel hinzu — alles andere bleibt pixelgenau. <em>(Stagify+ exklusiv)</em>"
     },
+    "gallery": {
+      "title": "Jeder Raum, den Sie einrichten, wird für Sie gespeichert",
+      "subtitle": "Ihre Galerie bewahrt jeden eingerichteten Raum auf, dazu die Einstellungen, die ihn erzeugt haben, und die Links, die Sie mit Kunden geteilt haben.",
+      "mock": {
+        "title": "Ihre Galerie",
+        "count": "3 eingerichtete Räume"
+      },
+      "dates": {
+        "newest": "14. März",
+        "mid": "13. März",
+        "older": "11. März"
+      },
+      "alts": {
+        "living": "Ein eingerichtetes Wohnzimmer mit grauer Polsterecke, gestreiften Hockern, gemustertem Teppich und brennendem Kamin",
+        "bedroom": "Ein eingerichtetes Schlafzimmer mit breitem Bett, gepolstertem Kopfteil, Wandfernseher und niedrigem Sideboard",
+        "dining": "Ein eingerichtetes Esszimmer mit ovalem Holztisch, sechs Stühlen, einem Kronleuchter und Erkerfenstern"
+      },
+      "eyebrow": "Ihre Galerie",
+      "panelTitle": "Richten Sie so oft neu ein, wie Sie möchten. Nichts wird überschrieben.",
+      "panelBody": "Es gibt keinen Speichern-Button und keinen Ordner, den Sie benennen müssten. Richten Sie einen Raum ein, und er ist in Ihrer Galerie, die neuesten zuerst, noch bevor Sie den Tab schließen. Öffnen Sie ihn später, und Sie erhalten den Vorher-Nachher-Regler sowie genau die Einstellungen dahinter: Raumtyp, Stil, Ihre zusätzliche Anweisung, ob Sie die vorhandenen Möbel entfernt haben, und alle Möbelfotos, die Sie angehängt haben.",
+      "points": {
+        "auto": "Wird automatisch gespeichert. Es gibt keinen Schritt, den man vergessen könnte.",
+        "versions": "Jede Version bleibt erhalten, sodass zwei Stile desselben Raums nebeneinander stehen.",
+        "private": "Das ursprüngliche leere Foto bleibt allein Ihres. Es ist nie Teil dessen, was ein Kunde sieht.",
+        "share": "Teilen Sie einen Raum über einen eigenen Link mit einem Kunden und schalten Sie den Link ab, wenn Sie fertig sind."
+      }
+    },
     "info": {
       "eyebrow": "Die Kurzfassung",
       "title": "Was virtuelles Home Staging ist und warum es verkauft",
