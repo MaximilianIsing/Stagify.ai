@@ -372,9 +372,8 @@
       "downloadNative": "nativa",
       "uploadAnotherShort": "Resubir",
       "downloadResultShort": "Descargar",
-      "savedToGallery": "Guardado en tu galería.",
       "galleryEvicted": "Se eliminaron montajes antiguos para hacer sitio: el plan gratuito conserva los más recientes.",
-      "galleryEvictedShared": "Uno de ellos tenía un enlace activo, que ya no funciona."
+      "galleryEvictedShared": "Un montaje anterior tenía un enlace de uso compartido activo, que ya no funciona."
     }
   },
   "roomTypes": {

@@ -372,9 +372,8 @@
       "downloadNative": "nativ",
       "uploadAnotherShort": "Neu laden",
       "downloadResultShort": "Download",
-      "savedToGallery": "In deiner Galerie gespeichert.",
       "galleryEvicted": "Ältere Renderings wurden entfernt, um Platz zu schaffen — der kostenlose Plan behält die neuesten.",
-      "galleryEvictedShared": "Eines davon hatte einen aktiven Freigabelink, der nicht mehr funktioniert."
+      "galleryEvictedShared": "Ein älteres Rendering hatte einen aktiven Freigabelink, der nicht mehr funktioniert."
     }
   },
   "roomTypes": {
