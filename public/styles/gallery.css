@@ -93,6 +93,10 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
 
 .gal-detail__delete { margin-top: 18px; min-height: 40px; padding: 0 14px; cursor: pointer; }
 
+/* Kept, not deleted, even though the page is PC-only (scripts/gallery-gate.js turns a
+   phone-sized viewport away at 768px). The gate fires on LOAD, so it is still possible
+   to be on this page at 640px — narrow a desktop window after arriving — and this is the
+   difference between a cramped layout and a broken one. It is two declarations. */
 @media (max-width: 640px) {
   .gal-main { padding-top: 72px; }
   .gal-detail { padding: 12px; }

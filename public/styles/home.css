@@ -1987,20 +1987,12 @@
     overflow-x: clip;
   }
 
-  .site-header .nav-center {
-    flex-wrap: wrap !important;
-    gap: 8px 10px !important;
-    padding: 0 6px !important;
-    max-width: 100% !important;
-  }
-
-  .site-header .nav-link {
-    white-space: normal !important;
-    min-width: 0 !important;
-    flex-shrink: 1 !important;
-    padding: 4px 8px !important;
-    font-size: 13px !important;
-  }
+  /* No .site-header .nav-center or .nav-link rules here on purpose. This file reaches
+     only index.html and guides.html, so a mobile nav rule here gives those two a header
+     no other page has — which is exactly what happened: `padding: 0 6px !important` was
+     added to cancel the 44px gutters auth.css reserved for the then-pinned profile icon,
+     and it silently cancelled them on two pages out of ten. The whole mobile nav row now
+     lives in styles.css, which every page loads eagerly. */
 
   .hero,
   .hero-content,

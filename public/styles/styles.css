@@ -313,7 +313,17 @@ body {
   width:100%;
   margin:0;
   padding:0;
-  overflow:visible
+  overflow:visible;
+  /* Below .site-header's 10, on purpose. This container is the first thing in
+     <main>, so it is a SIBLING of the header rather than part of it, and the
+     .language-selector inside it carries z-index:1000 — which used to be judged
+     against the header's 10 at the root and won. Nothing in the header could
+     out-stack it from inside: the Staging panel's own z-index:1100 is sealed in
+     the header's stacking context, so the language pill painted straight through
+     an open dropdown. Giving this container a z-index makes it a stacking context,
+     so that 1000 is now scoped to it and the whole pill sits under the header.
+     The pill's own menu opens DOWNWARD, away from the header, so it loses nothing. */
+  z-index:5
 }
 .language-picker-container .language-selector {
   position:absolute;
@@ -421,17 +431,39 @@ body {
     grid-column:1;
     grid-row:1
   }
+  /* MOBILE nav rhythm — the ONE owner of it, for the row AND the links (.nav-link below).
+     It lives here rather than in auth.css/home.css because styles.css is the only sheet
+     every page loads EAGERLY: index.html lazy-loads auth.css (media="print"
+     data-lazy-css), so a layout rule kept only there paints wrong until the swap lands,
+     and home.css reaches just index + guides, which is how these two ended up with a
+     mobile nav no other page had.
+
+     The profile icon is a normal flex item at the end of this row. It used to be pulled
+     out of flow and pinned right by auth.css, which is why this row reserved 44px of
+     padding on BOTH sides for something that only ever existed on one — and why the icon
+     sat outside the links' spacing rather than sharing it.
+
+     space-around, not space-between: with five items the row cannot fit on one line at
+     phone widths in every language (measured: English needs 358px, Spanish 397, Russian
+     475), so it WILL wrap, and wrapping is what makes the choice. space-between pins a
+     wrapped last line's single item hard against one edge with the whole row as a void
+     next to it — the same "the icon is off on its own" problem this change is fixing.
+     space-around gives the same equal gaps with half-width outer gutters when it fits,
+     and CENTRES a wrapped line instead of pinning it. `gap` is only the floor; the real
+     spacing is the leftover space-around distributes. Keep flex-wrap:wrap — nowrap makes
+     the row overflow, and .nav-center is overflow-x:clip, so the icon gets cut off. */
   .nav .nav-center {
     grid-column:1/-1;
     grid-row:2;
     display:flex;
-    justify-content:center;
+    justify-content:space-around;
     align-items:center;
-    gap:8px 12px;
+    gap:6px;
     flex-wrap:wrap;
     width:100%;
     margin:0 auto;
-    padding:0 8px;
+    padding-left:max(6px, env(safe-area-inset-left, 0px));
+    padding-right:max(6px, env(safe-area-inset-right, 0px));
     min-width:0;
     max-width:100%
   }
@@ -459,6 +491,9 @@ body {
   .brand {
     font-size:24px
   }
+  /* NB: the header's own padding/font-size for these links is NOT set here — this
+     selector is (0,1,0) and loses to `.site-header .nav-link` further down the file. The
+     mobile sizing lives with that rule; see the two media blocks under it. */
   .nav-link {
     background-color:transparent!important;
     color:var(--brand)!important;
@@ -487,14 +522,10 @@ body {
   .nav {
     padding:8px 12px
   }
-  .nav-center {
-    gap:6px 8px;
-    flex-wrap:wrap;
-    justify-content:center;
-    min-width:0;
-    flex-shrink:1;
-    max-width:100%
-  }
+  /* A `.nav-center` block used to sit here setting gap/justify-content. It was (0,1,0)
+     and always lost to `.nav .nav-center` above, so it never applied to anything —
+     removed rather than repaired, since the row is owned in one place now. The narrow
+     phone's link sizing is with `.site-header .nav-link` further down the file. */
   .language-picker-container {
     height:0;
     margin:0;
@@ -3047,6 +3078,27 @@ html {
   transform:none!important;
   transition:color .18s ease,background-color .18s ease,border-color .18s ease!important
 }
+/* Mobile sizing for those links. It MUST live here, after the rule above and with the
+   same `.site-header .nav-link` specificity: a media query adds none, so the (0,1,0)
+   `.nav-link` block up in the mobile section loses to it and its padding/font-size are
+   dead. This is the ONLY copy — auth.css and home.css each carried an identical block,
+   which is how a page's nav-link size came to depend on its stylesheet order, and why
+   deleting only auth.css's copy silently restored the 15px desktop size on phones. */
+@media (max-width:768px) {
+  .site-header .nav-link {
+    padding:4px 8px!important;
+    font-size:13px!important
+  }
+}
+/* One step down on a narrow phone so all five items — the four links and the profile
+   icon — still make a single row: this is what takes English from needing a 409px
+   viewport to needing 358px. */
+@media (max-width:480px) {
+  .site-header .nav-link {
+    padding:4px 6px!important;
+    font-size:12px!important
+  }
+}
 .site-header .nav-link::before,.site-header .nav-link::after {
   content:none!important;
   display:none!important;
@@ -3140,12 +3192,14 @@ html {
   left:50%;
   min-width:224px;
   padding:6px;
-  background:rgba(255,255,255,.92);
-  border:1px solid rgba(226,232,240,.9);
+  /* Fully opaque on purpose: the panel hangs over page content, and at .92 the
+     text behind it read through the rows. Nothing transparent is left for the
+     blur to sample, so the backdrop-filter that sold the frosted look goes with
+     it — the border loses its alpha too, or the 1px edge stays see-through. */
+  background:#fff;
+  border:1px solid #e2e8f0;
   border-radius:12px;
   box-shadow:0 10px 30px rgba(15,23,42,.14),0 2px 8px rgba(15,23,42,.08);
-  -webkit-backdrop-filter:blur(16px);
-  backdrop-filter:blur(16px);
   opacity:0;
   transform:translateX(-50%) translateY(-6px) scale(.98);
   transform-origin:top center;
@@ -3164,8 +3218,10 @@ html {
    that trigger, so wherever the wrap happens to put the trigger it can run past the
    clip and lose a row — which is why this menu was `desktop-only`, and why a phone
    had no nav path to ANY staging tool, including the two Stagify+ is sold on.
-   Anchoring the panel to .nav-center makes it exactly as wide as the box doing the
-   clipping, so there is nothing left to clip at any trigger position or width. Only
+   Anchoring the panel to .nav-center makes the box it is positioned in the very box
+   doing the clipping, so a width capped at 100% has nothing left to clip at any
+   trigger position or viewport width. (It used to FILL that box; it is now centred in
+   it at content width — full-bleed cleared the clip but spanned the whole phone.) Only
    the X axis is clipped (overflow-y stays visible, which `clip` permits), so the
    panel still hangs below the nav normally.
    This block MUST stay after the base rules above: a media query adds no specificity,
@@ -3175,9 +3231,26 @@ html {
     position:static
   }
   .staging-menu__panel {
+    /* left:0/right:0 keeps the CONTAINING BLOCK the clipping box (that is the part
+       that must not change), but stretching to fill it made a four-row menu span the
+       whole phone. Auto inline margins centre it in that box instead: an abs-pos box
+       with both offsets set and a definite width resolves the leftover space into the
+       auto margins. width:max-content sizes it to its widest row, max-width:100% caps
+       it at the clip box so no width can ever overflow, and the min-width floor keeps
+       it from looking cramped — as min(), not a flat 224px, since a bare min-width
+       BEATS max-width and would put the overflow straight back on a narrow phone.
+
+       The left margin is what aims the panel at its trigger: staging-menu.js
+       measures both against this same box on open and writes a clamped offset into
+       --staging-panel-shift. Unset it falls back to `auto auto`, i.e. centred in
+       the clip box — which is what a no-JS page and any measurement it declines to
+       make (see the desktop guard there) should get. */
     left:0;
     right:0;
-    min-width:0;
+    width:max-content;
+    min-width:min(224px,100%);
+    max-width:100%;
+    margin-inline:var(--staging-panel-shift,auto) auto;
     transform:translateY(-6px) scale(.98)
   }
   .staging-menu[data-open] .staging-menu__panel {

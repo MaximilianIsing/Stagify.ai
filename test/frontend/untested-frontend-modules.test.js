@@ -71,6 +71,7 @@ const UNTESTED = [
   'enterprise.js',
   'faq-redirect.js',
   'footer-year.js',
+  'gallery-gate.js',
   'getpro.js',
   'gtag.js',
   'guides.js',

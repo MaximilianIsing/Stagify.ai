@@ -55,6 +55,10 @@ async function openMaskEditor(page) {
 }
 
 test.describe('AI Designer — mask editor reference photo', () => {
+  // PC-only: a phone-sized viewport is redirected home before the editor exists.
+  // The mobile half is asserted in ai-designer.spec.js's "AI Designer — phone".
+  test.skip(({ isMobile }) => isMobile, 'the AI Designer is desktop-only by design');
+
   test.beforeEach(async ({ page }) => {
     await seedProSession(page);
   });
