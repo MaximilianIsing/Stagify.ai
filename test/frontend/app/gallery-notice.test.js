@@ -76,6 +76,34 @@ test('eviction is stated, not left for the agent to discover', () => {
   assert.ok(!/share link/i.test(text));
 });
 
+test('a PRO eviction says nothing about the cap', () => {
+  // Stagify+ is sold as unlimited staging — which it is — and the gallery's 200-entry
+  // ceiling is deliberately not advertised. A pro eviction must not mention a plan
+  // limit, or the product contradicts its own pricing page.
+  const { notice, registry } = harness();
+  notice.show({ ids: ['r1'], tier: 'pro', evicted: [{ id: 'old', hadLiveShare: false }] });
+  const text = registry.get(NOTICE_ID).textContent;
+  assert.equal(text, 'Saved to your gallery.');
+  assert.ok(!/removed|plan|limit/i.test(text));
+});
+
+test('a pro eviction STILL reports a broken share link', () => {
+  // This is where "do not advertise the cap" stops. The agent's client has a dead link
+  // and nowhere else to learn it. The sentence names the consequence without naming the
+  // limit, so both things can be true at once.
+  const { notice, registry } = harness();
+  notice.show({ ids: ['r1'], tier: 'pro', evicted: [{ id: 'old', hadLiveShare: true }] });
+  const text = registry.get(NOTICE_ID).textContent;
+  assert.match(text, /active share link, which no longer works/);
+  assert.ok(!/plan|limit/i.test(text), 'still no mention of the ceiling');
+});
+
+test('a FREE eviction does name the plan, because there it is the upgrade prompt', () => {
+  const { notice, registry } = harness();
+  notice.show({ ids: ['r1'], tier: 'free', evicted: [{ id: 'old', hadLiveShare: false }] });
+  assert.match(registry.get(NOTICE_ID).textContent, /free plan keeps your most recent/);
+});
+
 test('a broken share link gets its own sentence', () => {
   // This is the consequence that reaches OUTSIDE the app: a link the agent already sent
   // a client is now dead, and there is nowhere else they would find out.

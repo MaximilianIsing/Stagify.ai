@@ -18,6 +18,9 @@ second copy, because ten hand-maintained copies is how it started:
   [`deployment.md`](../operations/deployment.md)).
 - **Local:** **`./data`** in the project root.
 
+One category deliberately does **not** live there: the gallery's render bytes, which go
+to Cloudflare R2 — see [Object storage](#object-storage--gallery-render-bytes-r2).
+
 ## SQLite — the application database (`auth-store.db`)
 
 All structured state lives in **one SQLite database** (via `better-sqlite3`), opened
@@ -202,6 +205,61 @@ User-hosted images (`POST /api/host-image`) are written under
 The uploader is capped at 25 MB and restricted to raster types (no SVG) — see
 [`security.md`](../guides/security.md).
 
+## The gallery tables
+
+Six tables, all created from one schema constant in
+[`lib/data/gallery-schema.js`](../../lib/data/gallery-schema.js) rather than per-factory —
+the same reason `auth-store.js` holds the DDL for tables `session-tokens.js` queries: they
+reference each other across store boundaries, so per-factory creation would make
+construction **order** load-bearing.
+
+| Table | Owner | Holds |
+|---|---|---|
+| `staged_renders` | [`staged-renders.js`](../../lib/data/staged-renders.js) | one row per finished render: the prompt, room type, style, `status`, `evicted_at` |
+| `render_blobs` | same | `(render_id, role)` → `storage_key`; roles are `after` / `before` / `thumb` |
+| `ref_objects` | [`render-refs.js`](../../lib/data/render-refs.js) | one row per **distinct** furniture reference photo, content-addressed |
+| `render_refs` | same | which references a render used, in order |
+| `gallery_shares` | [`gallery-shares.js`](../../lib/data/gallery-shares.js) | share links: `token_hash` (never the token), view count, revocation |
+| `blob_tombstones` | [`blob-tombstones.js`](../../lib/data/blob-tombstones.js) | object keys owed a deletion |
+
+Three properties are load-bearing rather than stylistic:
+
+- **Every table carries `user_id`, even where it is derivable.** That column is what makes
+  the GDPR drift guard in `test/data/user-deletion.test.js` *see* the table. Without it a
+  table is invisible to the guard and its rows outlive the account.
+- **Both tiers are capped** — `FREE_GALLERY_LIMIT` (10) and `PRO_GALLERY_LIMIT` (200),
+  both env-overridable. Eviction runs **inside the insert transaction**, because a cap
+  checked in one statement and applied in another is not a cap. The Stagify+ ceiling is
+  deliberately not advertised (Stagify+ sells unlimited *staging*, which it is), but an
+  eviction that breaks a **live share link** is reported to the owner regardless.
+- **`blob_tombstones` has NO `user_id`, on purpose.** It holds keys whose owning rows are
+  *already* deleted. Giving it one would make the drift guard demand that an erasure
+  delete these rows — i.e. delete the record that the bytes still need deleting. That
+  exemption is only honest because object keys embed no account id either.
+
+## Object storage — gallery render bytes (R2)
+
+Rows describing renders are in SQLite; the **bytes** are in Cloudflare R2, behind
+[`lib/data/object-store.js`](../../lib/data/object-store.js). Two backends, one interface:
+R2 in production, the local disk (`<dataDir>/objects/`) in dev and CI, and **disabled** on
+Render when R2 is unconfigured — falling back to the disk there would put ~220 KB per
+render on the same 1 GB volume as `auth-store.db`, which is the failure the bucket exists
+to avoid.
+
+- **Keys carry no account id** — `renders/<renderId>/after.webp`, `refs/<sha256>.webp`.
+  A presigned URL is handed to a stranger, and tombstones outlive the owning row, so an
+  id in the key would leak through both.
+- **Reads never pass through this process.** Manifests mint short-TTL presigned URLs and
+  the browser fetches R2 directly. Consequence: **revocation is eventual** — a URL already
+  handed out works until it expires (≤15 min). Deleting the entry is the hard revoke,
+  because a presigned URL to a deleted object 404s regardless of signature.
+- **Deletion is a queue, not a call.** Erasure and eviction commit a *tombstone row* in
+  the same transaction as the row deletion; a reaper drains it against R2 and retries.
+  That is what lets `deleteUser` stay synchronous while the bytes live in someone else's
+  datacentre.
+- **Separate bucket and credentials from Litestream.** That token can overwrite the
+  replica of the entire database.
+
 ## Caveats (design consequences)
 
 These follow directly from "one SQLite file + flat logs on one disk," and you must
@@ -222,6 +280,12 @@ design around them:
   it) — recover the DB from the R2 replica instead.
 - **The CSV logs and `hosted-images/` are NOT replicated to R2** — they live only on the
   disk, so still **snapshot `/data`** before risky operations to protect those.
+- **Gallery render bytes have no second copy either.** The rows are in the replica, the
+  objects are only in `stagify-renders` and rely on R2's own durability. So a restore
+  from the Litestream replica brings back a gallery whose rows point at objects that
+  still exist — but if the *bucket* were lost, the rows would outlive their bytes and
+  every gallery entry would 404. Acceptable today; worth revisiting before the bucket
+  matters more than the database.
 - **No automatic schema migrations.** Table changes are additive (`CREATE TABLE IF NOT
   EXISTS`); a breaking shape change is manual. Note that `CREATE TABLE IF NOT EXISTS`
   does **not** add a column to a table that already exists, so a new user field either

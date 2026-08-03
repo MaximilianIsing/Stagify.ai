@@ -1,6 +1,6 @@
 // lib/data/staged-renders.js — the gallery's rows, and the cap that is the paywall.
 //
-// The eviction matrix below is the point of this file. "Free keeps your last 20" is a
+// The eviction matrix below is the point of this file. "Free keeps your last N" is a
 // billing boundary, so it has to be exact under every shape of over-cap: at the cap,
 // one over, many over, and the case that actually bites — a lapsed Pro account arriving
 // with hundreds. A cap that can be raced, or that only ever removes one row, is not a
@@ -12,7 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createAuthStore } from '../../lib/data/auth-store.js';
 import { getDb, closeDb } from '../../lib/data/db.js';
-import { createStagedRenders, FREE_GALLERY_LIMIT, DOWNGRADE_GRACE_MS } from '../../lib/data/staged-renders.js';
+import { createStagedRenders, FREE_GALLERY_LIMIT, PRO_GALLERY_LIMIT, DOWNGRADE_GRACE_MS, capFor } from '../../lib/data/staged-renders.js';
 import { keyForRender, newRenderId } from '../../lib/data/object-keys.js';
 
 const dirs = [];
@@ -125,7 +125,7 @@ test('an account far over the cap converges in ONE pass', () => {
   // catch up, and the user would sit permanently over their limit.
   const { renders, user } = setup();
   for (let i = 0; i < FREE_GALLERY_LIMIT + 30; i += 1) addRender(renders, user.id, { at: 1_000 + i, isPro: true });
-  assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT + 30, 'pro is uncapped');
+  assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT + 30, 'well under the pro cap');
 
   const evicted = renders.enforceCap({ userId: user.id, isPro: false, now: 50_000 });
   assert.equal(evicted.length, 30);
@@ -195,10 +195,37 @@ test('evicting a shared entry revokes its link in the same transaction', () => {
   assert.equal(share.revoked_at, 9_000);
 });
 
-test('a pro account is never capped', () => {
+test('a pro account is capped far higher, not never', () => {
+  // Stagify+ is sold as unlimited STAGING, which it is. The gallery keeps 200 finished
+  // renders, which is what stops per-account storage growing forever. Well past the free
+  // cap, so nothing a free user would notice applies here.
+  assert.ok(PRO_GALLERY_LIMIT > FREE_GALLERY_LIMIT * 5, 'the two tiers must not be close');
   const { renders, user } = setup();
   for (let i = 0; i < FREE_GALLERY_LIMIT + 15; i += 1) addRender(renders, user.id, { at: 1_000 + i, isPro: true });
-  assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT + 15);
+  assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT + 15, 'nowhere near the pro cap');
+});
+
+test('the pro cap DOES evict once it is reached', () => {
+  // The whole point of capping it: unbounded per-account storage was the one safeguard
+  // the plan left unbuilt. Driven at a lowered cap so the test does not have to create
+  // two hundred rows.
+  const { renders, user } = setup();
+  const cap = 5;
+  const ids = [];
+  for (let i = 0; i < cap; i += 1) ids.push(addRender(renders, user.id, { at: 1_000 + i, isPro: true }).id);
+  // enforceCap goes through the same evictBeyondCap path record() uses.
+  const evicted = renders.enforceCap({ userId: user.id, isPro: true, now: 9_000, cap });
+  assert.deepEqual(evicted, [], 'exactly at the cap loses nothing');
+
+  addRender(renders, user.id, { at: 9_100, isPro: true });
+  const over = renders.enforceCap({ userId: user.id, isPro: true, now: 9_200, cap });
+  assert.equal(over.length, 1, 'one over the cap evicts one');
+  assert.equal(over[0].id, ids[0], 'and it is the oldest');
+});
+
+test('capFor reports the tier ceilings', () => {
+  assert.equal(capFor(true), PRO_GALLERY_LIMIT);
+  assert.equal(capFor(false), FREE_GALLERY_LIMIT);
 });
 
 test('one account\'s cap never touches another\'s entries', () => {

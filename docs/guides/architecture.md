@@ -128,6 +128,20 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `counters.js` | The prompt/contact counters shown in the hero stats. |
 | `uptime-monitor.js` | Self-hosted uptime tracking (heartbeat → the `uptime_state` row in `auth-store.db`); powers `/api/status` and the status page. |
 
+**`lib/data/` — the gallery** (saved renders). Rows here, bytes in R2.
+
+| Module | Responsibility |
+|---|---|
+| `gallery-schema.js` | The DDL for **all six** gallery tables in one constant, plus `ensureColumn`/`tableExists`. One place rather than per-factory, for the same reason `auth-store.js` holds the DDL for tables `session-tokens.js` queries: these tables reference each other across store boundaries, so per-factory creation would make construction **order** load-bearing. |
+| `object-store.js` | Picks the byte backend at boot: **R2** when configured, the **local disk** off Render, and **disabled** on Render when unconfigured — falling back there would put render bytes on the same volume as `auth-store.db`. Never throws; a storage misconfiguration turns the gallery off rather than failing the boot. |
+| `object-store-r2.js` / `object-store-local.js` | The two backends behind one interface. `presignGet` is **pure and synchronous** on both — a manifest mints one URL per blob on the request path, and an async signature invites a cache, which would be a revocation bug. |
+| `s3-presign.js` | Synchronous SigV4 query-signing for GET only. Hand-rolled *because* it must be sync; kept honest by a differential test asserting byte-identical output to `aws4fetch` (which signs the network verbs, where async costs nothing). |
+| `object-keys.js` | The key layout and the traversal gate. **No account id appears in a key** — a presigned URL goes to a stranger, and tombstones outlive the owning row. |
+| `staged-renders.js` | The render rows, and the tier caps. Eviction runs **inside the insert transaction**; a cap applied in a second statement is not a cap. |
+| `render-refs.js` | Furniture reference photos, content-addressed and deduped per user. Their lifetime is **derived** (an indexed `NOT EXISTS`), never counted — a double-decrement would delete bytes a live entry still shows. |
+| `gallery-shares.js` | Share tokens: sha256 at rest, plaintext once, revoke-not-delete, one live link per render enforced in a transaction. |
+| `blob-tombstones.js` | The queue of object bytes owed a deletion, and the reaper that drains it. This is what lets `deleteUser` stay **synchronous** while the bytes live in someone else's datacentre: the transaction commits the *obligation*, not the deletion. |
+
 **`lib/http/`** — request/response plumbing
 
 | Module | Responsibility |
