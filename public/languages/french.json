@@ -100,6 +100,11 @@
         "bedroom": "Une chambre aménagée avec un grand lit, une tête de lit capitonnée, un téléviseur mural et un meuble bas",
         "dining": "Une salle à manger aménagée avec une table ovale en bois, six chaises, un lustre et des baies vitrées"
       },
+      "addresses": {
+        "one": "412 Rosewood Lane",
+        "two": "88 Harborview Drive",
+        "three": "1207 Ashford Court"
+      },
       "eyebrow": "Votre galerie",
       "panelTitle": "Réaménagez autant de fois que vous voulez. Rien n'est écrasé.",
       "panelBody": "Pas de bouton d'enregistrement, pas de dossier à nommer. Aménagez une pièce et elle est dans votre galerie, la plus récente en tête, avant même que vous fermiez l'onglet. Ouvrez-la plus tard et vous retrouvez le comparateur avant/après ainsi que les réglages exacts qui l'ont produite : type de pièce, style, votre consigne supplémentaire, si vous avez retiré les meubles existants et les photos de meubles que vous avez jointes.",

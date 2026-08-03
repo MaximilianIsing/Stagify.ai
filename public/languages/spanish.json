@@ -100,6 +100,11 @@
         "bedroom": "Un dormitorio preparado con una cama amplia, cabecero tapizado, televisor en la pared y un mueble bajo",
         "dining": "Un comedor preparado con una mesa ovalada de madera, seis sillas, una lámpara de araña y ventanales"
       },
+      "addresses": {
+        "one": "412 Rosewood Lane",
+        "two": "88 Harborview Drive",
+        "three": "1207 Ashford Court"
+      },
       "eyebrow": "Tu galería",
       "panelTitle": "Vuelve a prepararla tantas veces como quieras. No se sobrescribe nada.",
       "panelBody": "No hay botón de guardar ni carpeta que nombrar. Prepara una habitación y ya está en tu galería, de la más reciente a la más antigua, antes de que cierres la pestaña. Ábrela más tarde y tendrás el comparador de antes y después junto con los ajustes exactos que la crearon: tipo de habitación, estilo, tu instrucción adicional, si eliminaste los muebles existentes y las fotos de muebles que adjuntaste.",

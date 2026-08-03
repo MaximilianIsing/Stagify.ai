@@ -596,37 +596,39 @@
           </div>
           <!-- Three rooms, deliberately: one screenful of a gallery, not the gallery.
                Images live in media-webp/Homepage/Gallery/ and are used ONLY here, so
-               nothing else on this page repeats them. -->
+               nothing else on this page repeats them.
+
+               HEADS UP - the card titles are ADDRESSES, and the product does not have
+               them. staged_renders (lib/data/gallery-schema.js) stores room_type and no
+               address of any kind, and gallery/view.js renders entry.roomType into
+               .gal-card__room. So this mock is deliberately ahead of the shipped UI.
+               If addresses never land, these should go back to roomTypes.* keys.
+
+               The addresses are invented and street-only (no city, no state) so they
+               cannot resolve to a real property. Do not swap in a real listing. -->
           <div class="hgal-grid">
 
             <figure class="hgal-card">
               <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-living.webp" data-lang-attr="home.gallery.alts.living|alt" alt="A staged living room with a grey sectional, striped ottomans, a patterned rug and a lit fireplace" width="1200" height="800" loading="lazy" fetchpriority="low" decoding="async">
               <figcaption class="hgal-card__body">
-                <span class="hgal-card__room" data-lang="roomTypes.livingRoom">Living room</span>
-                <span class="hgal-card__meta">
-                  <span class="hgal-card__when" data-lang="home.gallery.dates.newest">Mar 14</span>
-                  <span class="hgal-card__shared" data-lang="gallery.linkOn">link on</span>
-                </span>
+                <span class="hgal-card__addr" data-lang="home.gallery.addresses.one">412 Rosewood Lane</span>
+                <span class="hgal-card__when" data-lang="home.gallery.dates.newest">Mar 14</span>
               </figcaption>
             </figure>
 
             <figure class="hgal-card">
               <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-bedroom.webp" data-lang-attr="home.gallery.alts.bedroom|alt" alt="A staged bedroom with a wide bed, an upholstered headboard, a wall-mounted TV and a low media console" width="1200" height="819" loading="lazy" fetchpriority="low" decoding="async">
               <figcaption class="hgal-card__body">
-                <span class="hgal-card__room" data-lang="roomTypes.bedroom">Bedroom</span>
-                <span class="hgal-card__meta">
-                  <span class="hgal-card__when" data-lang="home.gallery.dates.mid">Mar 13</span>
-                </span>
+                <span class="hgal-card__addr" data-lang="home.gallery.addresses.two">88 Harborview Drive</span>
+                <span class="hgal-card__when" data-lang="home.gallery.dates.mid">Mar 13</span>
               </figcaption>
             </figure>
 
             <figure class="hgal-card">
               <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-dining.webp" data-lang-attr="home.gallery.alts.dining|alt" alt="A staged dining room with an oval wooden table, six chairs, a chandelier and bay windows" width="1200" height="800" loading="lazy" fetchpriority="low" decoding="async">
               <figcaption class="hgal-card__body">
-                <span class="hgal-card__room" data-lang="roomTypes.diningRoom">Dining room</span>
-                <span class="hgal-card__meta">
-                  <span class="hgal-card__when" data-lang="home.gallery.dates.older">Mar 11</span>
-                </span>
+                <span class="hgal-card__addr" data-lang="home.gallery.addresses.three">1207 Ashford Court</span>
+                <span class="hgal-card__when" data-lang="home.gallery.dates.older">Mar 11</span>
               </figcaption>
             </figure>
 
