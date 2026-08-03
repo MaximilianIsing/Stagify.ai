@@ -2328,11 +2328,15 @@
   color: var(--muted);
 }
 
-/* auto-fill + 260px floor copied from .gal-grid, so the mock breaks columns at
-   the same content width the real grid does. */
+/* Three fixed columns — deliberately NOT the auto-fill this was copied from in
+   .gal-grid. auto-fill is correct there because the real gallery's card count is
+   whatever the account holds; here it is always exactly three, and a 260px floor
+   resolves to TWO columns everywhere from 769px to about 928px, stranding the
+   third card alone on a second row across the whole tablet range.
+   minmax(0, 1fr) rather than 1fr so a wide card can never push the grid out. */
 .hgal-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 
@@ -2437,15 +2441,31 @@
   .hgal-copy { grid-template-columns: 1fr; gap: 18px; margin-top: 22px; }
 }
 
-@media (max-width: 600px) {
+/* Phones get ONE card, not three.
+   768px is the site's own mobile line — the width `desktop-only` hides at, the
+   width gallery-gate.js turns visitors away at, and the width the blog teaser
+   cuts itself down to a single card at (see .home-blog__card above). Using the
+   same number keeps the page cutting over in one place instead of three. */
+@media (max-width: 768px) {
   .hgal-mock { padding: 10px 10px 12px; border-radius: 16px; }
   .hgal-mock__bar { padding: 2px 4px 10px; margin-bottom: 10px; }
   .hgal-mock__title { font-size: 14px; }
-  .hgal-mock__count { font-size: 11.5px; }
-  /* One column, pinned. Left on auto-fill the 260px floor gives two columns here,
-     which was right when the mock held six cards (three clean rows) but strands a
-     half-width orphan on row two now that it holds three. Stacked, each card is
-     ~349px wide — wider than the 325px it gets on desktop — so the card
-     typography needs no shrinking, and the photos stay legible on a phone. */
+
+  /* The single column is not optional here. Left on auto-fill the 260px floor
+     still resolves to two columns at this width, so the one surviving card
+     would sit in a half-width slot with dead space beside it. */
   .hgal-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+
+  /* Cards are ordered newest-first in the HTML, so this keeps 412 Rosewood Lane.
+     display:none (not visibility/opacity) is deliberate twice over: it drops the
+     hidden cards out of the a11y tree, and since their <img> is loading="lazy"
+     and now never enters a viewport, their bytes are never fetched on a phone —
+     roughly 242 KB saved on the connection least able to afford it. */
+  .hgal-card:nth-child(n + 2) { display: none; }
+
+  /* Hidden because it would otherwise read "3 staged rooms" above a single card.
+     The count describes the mock, not the product, so there is nothing to
+     recount — it just goes. .hgal-mock__bar is space-between with one child
+     left, which lands the title flush left exactly as intended. */
+  .hgal-mock__count { display: none; }
 }

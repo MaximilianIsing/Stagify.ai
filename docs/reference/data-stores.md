@@ -215,11 +215,11 @@ construction **order** load-bearing.
 
 | Table | Owner | Holds |
 |---|---|---|
-| `staged_renders` | [`staged-renders.js`](../../lib/data/staged-renders.js) | one row per finished render: the prompt, room type, style, `status`, `evicted_at` |
+| `staged_renders` | [`staged-renders.js`](../../lib/data/staged-renders.js) | one row per finished render: the prompt, room type, style, `status`, `evicted_at`, plus `custom_name` — the owner's own label, `NULL` until they type one, because the page derives `<Style> <Room type>` rather than freezing a default into the row |
 | `render_blobs` | same | `(render_id, role)` → `storage_key`; roles are `after` / `before` / `thumb` |
 | `ref_objects` | [`render-refs.js`](../../lib/data/render-refs.js) | one row per **distinct** furniture reference photo, content-addressed |
 | `render_refs` | same | which references a render used, in order |
-| `gallery_shares` | [`gallery-shares.js`](../../lib/data/gallery-shares.js) | share links: `token_hash` (never the token), view count, revocation |
+| `gallery_shares` | [`gallery-shares.js`](../../lib/data/gallery-shares.js) | share links, one per finished render and minted by the gallery listing: `token_hash` (the lookup key) plus `token_plain` (so the owner can copy the link again), view count, revocation |
 | `blob_tombstones` | [`blob-tombstones.js`](../../lib/data/blob-tombstones.js) | object keys owed a deletion |
 
 Three properties are load-bearing rather than stylistic:
@@ -250,9 +250,10 @@ to avoid.
   A presigned URL is handed to a stranger, and tombstones outlive the owning row, so an
   id in the key would leak through both.
 - **Reads never pass through this process.** Manifests mint short-TTL presigned URLs and
-  the browser fetches R2 directly. Consequence: **revocation is eventual** — a URL already
-  handed out works until it expires (≤15 min). Deleting the entry is the hard revoke,
-  because a presigned URL to a deleted object 404s regardless of signature.
+  the browser fetches R2 directly. Consequence: **a takedown is eventual** — a URL already
+  handed out works until it expires (≤15 min). Deleting the entry is the takedown, and the
+  hard part of it, because a presigned URL to a deleted object 404s regardless of
+  signature.
 - **Deletion is a queue, not a call.** Erasure and eviction commit a *tombstone row* in
   the same transaction as the row deletion; a reaper drains it against R2 and retries.
   That is what lets `deleteUser` stay synchronous while the bytes live in someone else's

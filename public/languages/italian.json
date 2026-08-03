@@ -96,7 +96,7 @@
         "older": "11 mar"
       },
       "alts": {
-        "living": "Un soggiorno allestito con divano angolare grigio, pouf a righe, tappeto fantasia e camino acceso",
+        "living": "Un soggiorno allestito con due poltrone blu di fronte a un divano bianco capitonné, un tappeto fantasia e un quadro dai toni marini",
         "bedroom": "Una camera da letto allestita con letto ampio, testiera imbottita, TV a parete e mobile basso",
         "dining": "Una sala da pranzo allestita con tavolo ovale in legno, sei sedie, un lampadario e finestre a bovindo"
       },
@@ -112,7 +112,7 @@
         "auto": "Salvata automaticamente. Non c'è nessun passaggio da ricordare.",
         "versions": "Ogni versione viene conservata, così due stili della stessa stanza restano affiancati.",
         "private": "La foto originale vuota resta solo tua. Non fa mai parte di ciò che vede il cliente.",
-        "share": "Condividi una stanza con un cliente tramite un link dedicato e disattivalo quando hai finito."
+        "share": "Ogni stanza ha il suo link per il cliente. Apri la stanza, copia il link e invialo."
       }
     },
     "info": {
@@ -1283,10 +1283,8 @@
   "gallery": {
     "pageTitle": "La tua galleria — Stagify",
     "title": "La tua galleria",
-    "lede": "Ogni stanza che hai arredato, con le impostazioni che l’hanno generata e i link che hai condiviso.",
+    "lede": "Ogni stanza che hai arredato, con le impostazioni che l’hanno generata e un link che puoi inviare.",
     "detailTitle": "Stanza arredata",
-    "untitledLower": "stanza arredata",
-    "linkOn": "link attivo",
     "more": "Carica altro",
     "moreLoading": "Caricamento…",
     "cardAlt": "{room}, arredata",
@@ -1337,26 +1335,28 @@
     "delete": "Elimina questo render",
     "share": {
       "title": "Condividi",
-      "note": "Disattivare un link ferma le nuove visite entro 15 minuti. Per rimuovere subito le immagini, elimina invece il render.",
+      "note": "Chiunque abbia questo link può aprire la foto arredata. Per rimuoverla elimina il render: le visite si fermano entro 15 minuti.",
       "urlLabel": "Link di condivisione",
-      "create": "Crea link",
-      "revoke": "Disattiva link",
       "copy": "Copia link",
-      "copied": "Copiato. Il link è negli appunti: non verrà mostrato di nuovo.",
+      "copied": "Copiato: il link è negli appunti.",
       "copyFailed": "Copia automatica non riuscita. Seleziona il link qui sopra e copialo.",
-      "none": "Ancora nessun link.",
-      "unreadable": "Questo link è stato creato prima che i link potessero essere riaperti. Disattivalo e creane uno nuovo per vederlo.",
-      "onNotOpened": "Link attivo · non ancora aperto",
-      "onOpened": {
-        "one": "Link attivo · aperto {count} volta",
-        "other": "Link attivo · aperto {count} volte"
+      "notOpened": "Non ancora aperto",
+      "opened": {
+        "one": "Aperto {count} volta",
+        "other": "Aperto {count} volte"
       },
-      "creating": "Creazione…",
-      "created": "Link creato. Resta qui: puoi copiarlo di nuovo quando vuoi.",
-      "createFailed": "Non è stato possibile creare il link. Riprova.",
-      "revoked": "Link disattivato. Le visite si fermano entro 15 minuti.",
-      "revokeFailed": "Non è stato possibile disattivare il link. Riprova.",
+      "unavailable": "Non è stato possibile caricare questo link. Ricarica la pagina e riprova.",
       "deleteFailed": "Non è stato possibile eliminare questo render."
+    },
+    "rename": {
+      "action": "Rinomina",
+      "label": "Assegna un nome a questo render",
+      "save": "Salva",
+      "cancel": "Annulla",
+      "saving": "Salvataggio…",
+      "saved": "Nome salvato.",
+      "cleared": "Ripristinato il nome predefinito.",
+      "failed": "Impossibile salvare questo nome. Riprova."
     }
   }
 }

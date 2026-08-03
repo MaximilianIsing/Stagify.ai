@@ -58,9 +58,12 @@ const CRITICAL_ROUTES = [
   // long before anything is read or written.
   ['GET', '/api/gallery'],
   ['DELETE', '/api/gallery/probe'],
-  ['POST', '/api/gallery/probe/share'],
   ['PATCH', '/api/gallery/probe/share'],
-  ['DELETE', '/api/gallery/probe/share'],
+  // DELIBERATELY ABSENT: POST and DELETE /api/gallery/:id/share.
+  //
+  // They minted and revoked a link back when a link was something an owner switched on
+  // for one render. Every finished render has one now, handed over with the listing, so
+  // both were removed rather than left mounted with nothing calling them.
   // The public share shell. It performs NO lookup, so any token — including this
   // invented one — gets the same 200 shell.
   ['GET', '/s/probe'],

@@ -99,6 +99,10 @@ router.get('/blog/dorm-room-design-ai-college-freshmen', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'blog', 'dorm-room-design-ai-college-freshmen.html'));
 });
 
+router.get('/blog/prepare-your-listing-for-the-fall-market', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'prepare-your-listing-for-the-fall-market.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));

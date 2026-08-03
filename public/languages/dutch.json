@@ -96,7 +96,7 @@
         "older": "11 mrt"
       },
       "alts": {
-        "living": "Een ingerichte woonkamer met een grijze hoekbank, gestreepte poefs, een gedessineerd vloerkleed en een brandende haard",
+        "living": "Een ingerichte woonkamer met twee blauwe fauteuils tegenover een witte gecapitonneerde bank, een gedessineerd vloerkleed en een kustschilderij",
         "bedroom": "Een ingerichte slaapkamer met een breed bed, gestoffeerd hoofdbord, wandtelevisie en een laag dressoir",
         "dining": "Een ingerichte eetkamer met een ovale houten tafel, zes stoelen, een kroonluchter en erkerramen"
       },
@@ -112,7 +112,7 @@
         "auto": "Wordt automatisch bewaard. Er is geen opslagstap die je kunt vergeten.",
         "versions": "Elke versie blijft bewaard, dus twee stijlen van dezelfde kamer staan naast elkaar.",
         "private": "De originele lege foto blijft alleen van jou. Die is nooit onderdeel van wat een klant ziet.",
-        "share": "Deel één kamer met een klant via een eigen link en zet de link uit als je klaar bent."
+        "share": "Elke kamer heeft zijn eigen klantlink. Open de kamer, kopieer de link en stuur hem door."
       }
     },
     "info": {
@@ -1283,10 +1283,8 @@
   "gallery": {
     "pageTitle": "Jouw galerij — Stagify",
     "title": "Jouw galerij",
-    "lede": "Elke ruimte die je hebt ingericht, met de instellingen die hem hebben gemaakt en de links die je hebt gedeeld.",
+    "lede": "Elke ruimte die je hebt ingericht, met de instellingen die hem hebben gemaakt en een link die je kunt versturen.",
     "detailTitle": "Ingerichte ruimte",
-    "untitledLower": "ingerichte ruimte",
-    "linkOn": "link actief",
     "more": "Meer laden",
     "moreLoading": "Laden…",
     "cardAlt": "{room}, ingericht",
@@ -1337,26 +1335,28 @@
     "delete": "Deze render verwijderen",
     "share": {
       "title": "Delen",
-      "note": "Een link uitzetten stopt nieuwe bezoeken binnen 15 minuten. Wil je de afbeeldingen meteen weghalen, verwijder dan de render zelf.",
+      "note": "Iedereen met deze link kan de ingerichte foto openen. Verwijder de render om hem weg te halen — bezoeken stoppen binnen 15 minuten.",
       "urlLabel": "Deellink",
-      "create": "Link maken",
-      "revoke": "Link uitzetten",
       "copy": "Link kopiëren",
-      "copied": "Gekopieerd. De link staat op je klembord — hij wordt niet nog een keer getoond.",
+      "copied": "Gekopieerd — de link staat op je klembord.",
       "copyFailed": "Automatisch kopiëren lukte niet. Selecteer de link hierboven en kopieer hem.",
-      "none": "Nog geen link.",
-      "unreadable": "Deze link is gemaakt voordat links opnieuw te bekijken waren. Zet hem uit en maak een nieuwe om hem te zien.",
-      "onNotOpened": "Link staat aan · nog niet geopend",
-      "onOpened": {
-        "one": "Link staat aan · {count} keer geopend",
-        "other": "Link staat aan · {count} keer geopend"
+      "notOpened": "Nog niet geopend",
+      "opened": {
+        "one": "{count} keer geopend",
+        "other": "{count} keer geopend"
       },
-      "creating": "Bezig met maken…",
-      "created": "Link gemaakt. Hij blijft hier staan — je kunt hem altijd opnieuw kopiëren.",
-      "createFailed": "Link kon niet worden gemaakt. Probeer het opnieuw.",
-      "revoked": "Link uitgezet. Bezoeken stoppen binnen 15 minuten.",
-      "revokeFailed": "Link kon niet worden uitgezet. Probeer het opnieuw.",
+      "unavailable": "Deze link kon niet worden geladen. Ververs de pagina en probeer het opnieuw.",
       "deleteFailed": "Deze render kon niet worden verwijderd."
+    },
+    "rename": {
+      "action": "Naam wijzigen",
+      "label": "Geef deze render een naam",
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "saving": "Opslaan…",
+      "saved": "Naam opgeslagen.",
+      "cleared": "Terug naar de standaardnaam.",
+      "failed": "Deze naam kon niet worden opgeslagen. Probeer het opnieuw."
     }
   }
 }
