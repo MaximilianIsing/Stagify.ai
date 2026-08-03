@@ -519,6 +519,18 @@
         color: #cbd5e1;
         font-size: 1.15rem;
       }
+      /* A numeric cell rather than a tick: same optical weight as .sp-mark so a row of
+         figures does not read as louder than the rows of ticks around it. Digits carry
+         across all eleven packs, so these cells are deliberately untranslated. */
+      .sp-value {
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--sp-muted);
+      }
+      .sp-value--pro {
+        color: var(--sp-navy);
+      }
       .sp-feature-table tbody tr:last-child th,
       .sp-feature-table tbody tr:last-child td {
         border-bottom: none;

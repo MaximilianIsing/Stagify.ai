@@ -1231,6 +1231,7 @@
         "customizable": "可自定义布置",
         "fastModel": "快速图像模型",
         "unlimited": "无限量布置生成",
+        "gallery": "图库中保存的房间数",
         "hqModel": "高质量图像模型",
         "remove": "移除现有家具",
         "designer": "AI Designer",
