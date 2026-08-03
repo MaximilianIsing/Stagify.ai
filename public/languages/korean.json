@@ -1231,6 +1231,7 @@
         "customizable": "맞춤형 스테이징",
         "fastModel": "빠른 이미지 모델",
         "unlimited": "무제한 스테이징 생성",
+        "gallery": "갤러리에 저장되는 방 개수",
         "hqModel": "고품질 이미지 모델",
         "remove": "기존 가구 제거",
         "designer": "AI Designer",

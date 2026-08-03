@@ -1231,6 +1231,7 @@
         "customizable": "カスタマイズ可能なステージング",
         "fastModel": "高速画像モデル",
         "unlimited": "無制限のステージング生成",
+        "gallery": "ギャラリーに保存される部屋数",
         "hqModel": "高品質画像モデル",
         "remove": "既存の家具を除去",
         "designer": "AI Designer",

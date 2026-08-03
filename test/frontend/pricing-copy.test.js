@@ -12,6 +12,11 @@
 // reads as effectively unlimited and naming a cap there would scare people off. That is
 // why nothing here asserts on that row. The honest number lives on the homepage bullet
 // instead, and that is what is pinned below.
+//
+// The gallery row above it is the opposite call (2026-08-03): both tiers quote a real
+// figure, so both can go stale against lib/data/staged-renders.js. Pinned at the bottom
+// of this file — including the exactness of the figure, since 200 is a ceiling and
+// anything like "200+" would invert its meaning.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -66,6 +71,59 @@ test('the English markup fallback quotes the same figure as the packs', () => {
   const html = fs.readFileSync(path.join(PUBLIC, 'index.html'), 'utf8');
   const row = new RegExp(`whyUs\\.stagify\\.features\\.free[^>]*>[^<]*<strong>[^<]*${limit}[^<]*</strong>`);
   assert.match(html, row, `index.html's free-tier bullet should quote ${limit}`);
+});
+
+/**
+ * A gallery cap's default, read from the source of truth. Only the DEFAULT can be
+ * pinned — both constants are `Number(process.env.X) || <default>`, so an operator who
+ * overrides the env var makes the page stale in a way no test can see. That is the
+ * accepted cost of the env override; the literal is what ships, and it is what drifts.
+ * @param {'FREE_GALLERY_LIMIT'|'PRO_GALLERY_LIMIT'} name
+ */
+function galleryLimit(name) {
+  const src = fs.readFileSync(path.join(ROOT, 'lib', 'data', 'staged-renders.js'), 'utf8');
+  const m = new RegExp(`export const ${name} = Number\\(process\\.env\\.${name}\\) \\|\\| (\\d+);`).exec(src);
+  assert.ok(m, `${name} is no longer a literal default in lib/data/staged-renders.js — update this guard`);
+  return Number(m[1]);
+}
+
+test('the compare table quotes the gallery caps the server actually enforces', () => {
+  // The row is the only place either number is advertised, and both columns carry one,
+  // so a change to either constant silently makes the pricing page wrong.
+  const free = galleryLimit('FREE_GALLERY_LIMIT');
+  const pro = galleryLimit('PRO_GALLERY_LIMIT');
+  assert.notEqual(free, pro, 'the row compares two tiers — identical caps make it pointless');
+
+  // Comments stripped first: a commented-out row still contains every token this
+  // matches on, so scanning the raw file would pass with the row invisible on the page.
+  const html = fs.readFileSync(path.join(PUBLIC, 'stagify-plus.html'), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+  const row = /stagifyPlus\.compare\.rows\.gallery[\s\S]{0,400}?<\/tr>/.exec(html);
+  assert.ok(row, 'stagify-plus.html no longer has a gallery row in the compare table');
+
+  const values = [...row[0].matchAll(/<span class="sp-value[^"]*">(\d+)<\/span>/g)].map((m) => Number(m[1]));
+  assert.deepEqual(
+    values,
+    [free, pro],
+    `the gallery row advertises ${JSON.stringify(values)} but the server enforces ` +
+      `${free} (free) and ${pro} (Stagify+) — see lib/data/staged-renders.js.`,
+  );
+});
+
+test('every language pack labels the gallery row', () => {
+  // No cross-pack parity guard covers the stagifyPlus namespace, so a key added to
+  // english.json alone ships green and the row renders untranslated in ten languages.
+  const all = packs();
+  assert.ok(all.length >= 11, `expected 11 language packs, found ${all.length}`);
+
+  for (const { name, json } of all) {
+    const label = at(json, 'stagifyPlus.compare.rows.gallery');
+    assert.equal(
+      typeof label,
+      'string',
+      `${name} is missing stagifyPlus.compare.rows.gallery — the row falls back to English there`,
+    );
+    assert.ok(label.trim().length > 0, `${name} has an empty stagifyPlus.compare.rows.gallery`);
+  }
 });
 
 test('no page still claims unlimited generations are free', () => {
