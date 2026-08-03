@@ -188,6 +188,51 @@ Example: `POST https://your-host/api/stage-by-endpoint-key` with header `X-Stagi
 
 ---
 
+## Gallery (the owner's saved renders)
+
+All authenticated via the session (`getAuthUserFromRequest` **inside** each handler, the
+house pattern — a route's middleware chain does not tell you whether it is gated).
+Ownership is keyed on the **validated session id**, never on a request body, and every
+"not yours" answers the same `404` as "does not exist" so the surface cannot be used to
+probe which render ids are real. Limiter: `galleryLimiter` (120 / 15 min / IP), imported
+directly rather than taken from the dep bag.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/gallery` | The caller's saved renders, newest first. `?offset=` pages by 60. Each entry carries the room type, style, the **prompt that produced it**, and short-TTL **presigned URLs** for `after` / `before` / `thumb` — bytes come straight from R2, never through this process. Returns `{ entries, total, offset, pageSize, enabled, urlTtlMs }`. **`enabled: false`** with an empty list when the object store is unconfigured (the gallery is off on Render without R2) — a `200`, not a `500`, so the page can explain itself. `401` `AUTH_REQUIRED` when signed out. |
+| `DELETE` | `/api/gallery/:id` | Delete one entry. This is the **hard revoke**: it tombstones the bytes, so any outstanding presigned URL starts 404ing as soon as the reaper runs. `404` if the render is not the caller's. |
+| `POST` | `/api/gallery/:id/share` | Mint a share link, revoking whatever link that render had (rotating and creating are the same call). **Returns the plaintext token exactly once** — there is no read-back route; an owner who loses it rotates. **Body:** `{ settings?: { headline, note, agentName, agentEmail, agentPhone }, expiresAt? }` — an allowlist, unknown keys are dropped. `404` for a render that is not the caller's *or* whose bytes have not finished uploading (`status !== 'ok'`), since a link to absent bytes would 404 for the recipient. |
+| `PATCH` | `/api/gallery/:id/share` | Edit a live link's presentation **without rotating it** — an agent fixing a typo in their own phone number must not invalidate the link they already sent. |
+| `DELETE` | `/api/gallery/:id/share` | Revoke. Idempotent (`200` even if already revoked). Stops **new** URLs being minted at once; already-minted image URLs work until they expire — see the caveat below. |
+
+## Client share links (public, no account)
+
+The only unauthenticated read surface the gallery has. **The token in the path is the
+entire credential**, which is why it is hashed at rest, returned once, and why the page
+sets `Referrer-Policy: no-referrer` (an outbound click or third-party image load would
+otherwise mail the live credential to a stranger in a `Referer` header). Limiter:
+`shareLimiter` (60 / 15 min / IP) — it can be tight because one viewer costs one request
+no matter how many images they scroll.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/s/:token` | The share page shell. **Performs no lookup at all**, so the response is byte-identical for a real token and an invented one — not because the comparison is careful, but because there is no comparison. Headers: `Referrer-Policy: no-referrer`, `X-Robots-Tag: noindex, nofollow`, `Cache-Control: private, no-store`. |
+| `GET` | `/api/share/:token` | The manifest: headline, note, agent card, the staged image as a **presigned R2 URL**, and the MLS/NAR disclosure. **One identical `404`** — same status, body *and* headers — for unknown, revoked, expired, cross-tenant, deleted and not-yet-uploaded. A caller who could tell "revoked" from "never existed" would have learned that a token was once real. Counts a view, debounced to once per 30 min. |
+
+> ⚠️ **Revocation is eventual for bytes.** Revoking stops new presigned URLs being minted
+> immediately, but one already handed out keeps working until it expires (≤15 min). UI
+> copy must say *"within 15 minutes"*, never *"immediately"*. **Deleting the entry** is
+> the hard revoke — a presigned URL to a deleted object 404s however valid its signature.
+>
+> The source ("before") photo is **never** published here. It exists for the owner's
+> private gallery only, and no setting can turn it on — the omission is structural, not a
+> flag.
+
+`GET /api/object/*` also exists in **dev and CI only**, mounted solely when the local
+object backend is active; in production nothing serves render bytes from this process.
+
+---
+
 ## Contact, email, and public counters
 
 | Method | Path | Description |

@@ -7,7 +7,32 @@ details: [`data-stores.md`](../reference/data-stores.md).
 
 ## Hosting at a glance
 
-Deployed on **Render** as a Node web service, defined by [`render.yaml`](../../render.yaml):
+> ### ⚠️ `render.yaml` is NOT authoritative — the dashboard is
+>
+> `render.yaml` is a **Blueprint** spec. It only applies if the service is *linked to a
+> Blueprint*. A service created by hand in the dashboard **ignores this file entirely**,
+> and it then sits in the repo looking official while nothing reads it.
+>
+> That is not hypothetical. It went unnoticed for a month:
+>
+> - the dashboard's **Root Directory** was set to `public`, so `sh scripts/build.sh`
+>   resolved to `public/scripts/build.sh` and did not exist;
+> - the dashboard's Build/Start commands were `npm install && npm test` and `npm start`,
+>   which **worked anyway** because npm walks *up* the tree to find `package.json` while
+>   `sh` takes a relative path literally;
+> - so **`scripts/start.sh` never ran once**, which meant **Litestream never replicated
+>   and the database had no off-disk backup at all**. Nothing reported this — `start.sh`
+>   is designed to fail safe, and "fails safe" was implemented as "fails silent".
+>
+> It was found by noticing the R2 bucket read `0 B`.
+>
+> **If you change anything below, change it in the dashboard**, or link the service to a
+> Blueprint so this file becomes real. Verify with the startup log, not with this table:
+> a healthy boot prints `[start] launching app under litestream replicate…`.
+
+Deployed on **Render** as a Node web service. These are the values
+[`render.yaml`](../../render.yaml) declares, and what the dashboard should be set to
+match:
 
 | Setting | Value |
 |---|---|
@@ -110,6 +135,54 @@ those, still **snapshot `/data`** (Render dashboard) before anything risky — a
 a manual data edit, deleting the service. ⚠️ Do **not** restore a Render disk snapshot
 *into* a live SQLite DB (it can corrupt it) — recover the DB from the R2 replica instead.
 
+Gallery render bytes are **not** on this disk and not in this replica — they live in
+their own R2 bucket, see below.
+
+#### Verifying replication actually runs
+
+Three of the four things that silently disable it are environment, not code, so check the
+**startup log** rather than assuming:
+
+```
+[start] launching app under litestream replicate…      ← the only healthy line
+[start] R2 credentials not set — starting WITHOUT replication.
+[start] litestream binary not found — starting WITHOUT replication.
+[start] IS_STAGING is set — Litestream DISABLED …
+```
+
+If none of these appear at all, `start.sh` is not your Start Command — see the warning at
+the top of this page.
+
+**A backup you have never restored is a hypothesis.** Prove it occasionally, from the
+Render Shell:
+
+```sh
+./bin/litestream snapshots -config litestream.yml /data/auth-store.db
+./bin/litestream restore -config litestream.yml -o /tmp/restore-test.db /data/auth-store.db
+node -e "const D=require('better-sqlite3');const d=new D('/tmp/restore-test.db',{readonly:true});\
+console.log('integrity:',d.pragma('integrity_check')[0].integrity_check,'users:',d.prepare('SELECT COUNT(*) n FROM users').get().n)"
+rm /tmp/restore-test.db
+```
+
+### Gallery render storage (Cloudflare R2, `stagify-renders`)
+
+Saved renders' **bytes** live in a second R2 bucket, separate from the backup one and
+with **separate credentials** — the Litestream token can overwrite the replica of the
+whole database, so an app-level bug writing a wrong key must not be able to reach it.
+Four settings, all in [`environment-variables.md`](../reference/environment-variables.md).
+
+Rows describing those bytes are in SQLite (and therefore *are* in the Litestream replica);
+the bytes themselves are not backed up beyond R2's own durability.
+
+- **Not configured, off Render** → the local disk is used (dev/CI).
+- **Not configured, ON Render** → the gallery is **disabled**, deliberately. Falling back
+  would write render bytes onto the same 1 GB volume as `auth-store.db` and its WAL,
+  which is the failure the bucket exists to avoid.
+- Verify with **`node scripts/check-r2.js`** — a real PUT → HEAD → presigned GET →
+  DELETE that names which setting is wrong. It checks the *presigned* fetch too (no
+  headers, exactly as a share-link viewer's browser does), so a signing mistake fails
+  there rather than as a broken image on a client's phone.
+
 ## Rolling back
 
 Because `autoDeploy` is off, you already control timing. To roll back a bad deploy:
@@ -132,6 +205,15 @@ every 60s, and
 
 ## Common gotchas
 
+- **The dashboard beats `render.yaml`** (see the warning at the top). Root Directory must
+  be **blank**. If it is set to a subfolder, every `sh scripts/…` command silently
+  resolves inside it and fails, while every `npm …` command keeps working because npm
+  searches upward for `package.json`. That asymmetry is what made the failure invisible.
+- **Verify Litestream from the LOG, not from the R2 dashboard.** A healthy boot prints
+  `[start] launching app under litestream replicate…` followed by `snapshot written` and
+  `wal segment written`. R2's bucket-size widget is computed from periodic metrics and
+  lags by hours — it can read `0 B` while replication is working fine. Use the bucket's
+  **Objects** tab instead.
 - **Push ≠ deploy** (above) — the running site can lag `main`.
 - **Case-sensitivity:** local dev is Windows (case-insensitive); Render is Linux
   (case-sensitive). An asset that loads locally can 404 in production if the path case

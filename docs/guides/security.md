@@ -329,6 +329,51 @@ it did not fix the admin auth model. `RL_ENDPOINT_KEY` (below) now bounds how fa
 that secret can be *guessed*, which is a different problem from the one above —
 it does nothing about rotation, identity, or audit.
 
+## Client share links — the one anonymous read surface
+
+`/s/:token` and `/api/share/:token` ([`routes/share-public.js`](../../routes/share-public.js))
+are the only part of the gallery reachable without an account. **The token in the path is
+the entire credential**, and everything else follows from that.
+
+**The token is treated exactly like a session token.** 32 bytes of CSPRNG, base64url;
+hashed with the same `hashToken` from
+[`session-tokens.js`](../../lib/data/session-tokens.js) before it touches disk, so a
+stolen `/data` volume or a Litestream restore yields digests, not live links into
+customers' homes; returned in plaintext **exactly once**, from the mint call. There is no
+read-back route — an owner who loses the link rotates it.
+
+**One 404 for everything.** `resolveShare` reports *why* it refused (unknown / revoked /
+expired), and the route throws that away on purpose. Unknown, revoked, expired,
+cross-tenant, deleted and not-yet-uploaded all answer the same status, the same body and
+the same headers. A surface that distinguishes them is a slow oracle over the token
+keyspace. The page route goes further and performs **no lookup at all**, so its response
+cannot vary by token even in timing.
+
+**`Referrer-Policy: no-referrer` is security here, not hygiene.** The token is in the
+path, and the page loads images from an R2 origin — without it, every image request would
+hand the live credential to Cloudflare in a `Referer` header.
+
+**Tenancy is one `===`.** A render is servable only after the token resolves to a share
+*and* the row's `user_id` matches that share's. Without that comparison any live link
+would serve any customer's pixels.
+
+**The manifest is an allowlist by construction** — built field by field, never a row
+spread, so `user_id`, storage keys, the model name and internal timestamps cannot leak
+the day somebody adds a column.
+
+**Revocation is EVENTUAL, and that is a real limitation.** Reads bypass this process
+entirely (presigned R2 URLs, so a viewer's bytes never touch the Node event loop), which
+means a URL already handed out works until it expires — at most 15 minutes. Revoking
+stops *new* URLs immediately. The hard revoke is deleting the entry, because a presigned
+URL to a deleted object 404s regardless of signature. **UI copy must say "within 15
+minutes"**; a test asserts the word "immediately" does not appear on the gallery page.
+Instant revocation would need a Cloudflare Worker in front of the bucket.
+
+**Object keys embed no account id** (`renders/<renderId>/after.webp`). A presigned URL is
+handed to a stranger, and `blob_tombstones` holds keys after the owning row is gone — an
+id in the key would leak through both, and would make the tombstone queue itself a record
+of erased people.
+
 ## Rate limiting
 
 `express-rate-limit`, tunable via env (see the env doc):
@@ -548,3 +593,20 @@ automatically.
   layer one.
 - **Erasure does not reach backups.** Litestream replicates `auth-store.db` to R2, so a
   restored snapshot brings an erased account back. Retention there is a separate policy.
+- **Share-link revocation is eventual (≤15 min)** — see the section above. Bounded and
+  documented, not unbounded, but it is not instant and the copy must not claim it is.
+- **Erasure of render bytes is a QUEUE, so it is eventually-consistent.** `deleteUser`
+  commits tombstones inside its transaction (durable, replicated, survives an R2 outage)
+  and a reaper drains them. So an erasure is *promised* atomically but *performed*
+  asynchronously; `blobsPending` in the response is the honest count still owed. A
+  reaper that never ran would leave bytes in the bucket with nothing else reporting it —
+  the admin dashboard has no backup/erasure indicator yet.
+- **No orphan-blob GC.** If the process dies between uploading an object and recording
+  its row, nothing points at that object and nothing will delete it. The stale-pending
+  sweep covers the common case; this is the narrow window between the two writes. A slow,
+  invisible leak rather than a correctness problem.
+- **Nothing in the app knows whether Litestream is running.** It fails safe and silent:
+  a misconfigured entrypoint meant the database had **no off-disk backup for a month**
+  and the only symptom was an R2 bucket reading `0 B`. See the warning at the top of
+  [`deployment.md`](../operations/deployment.md). A boot-time warning and a dashboard
+  indicator are the obvious fix and are not built.

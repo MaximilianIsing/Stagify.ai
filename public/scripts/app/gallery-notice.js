@@ -62,7 +62,9 @@ export function createGalleryNotice({ doc = document, container, lang }) {
      * configured) or the caller was anonymous, and announcing a feature that is not
      * running would be worse than saying nothing.
      *
-     * @param {{ ids?: string[], evicted?: { id: string, hadLiveShare: boolean }[] }} [gallery]
+     * @param {{ ids?: string[], tier?: 'free' | 'pro',
+     *   evicted?: { id: string, hadLiveShare: boolean }[] }} [gallery] - `tier` decides
+     *   whether the cap is named; see below.
      */
     show(gallery) {
       const el = node();
@@ -76,12 +78,19 @@ export function createGalleryNotice({ doc = document, container, lang }) {
       const parts = [t('modal.staging.savedToGallery', 'Saved to your gallery.')];
 
       if (evicted.length) {
-        parts.push(
-          t('modal.staging.galleryEvicted', 'Older stagings were removed to make room — the free plan keeps your most recent ones.'),
-        );
-        // Called out separately, because this one has a consequence outside the app: a
-        // link the agent already sent to a client has stopped working, and they cannot
-        // find that out from anywhere else.
+        // The cap is only NAMED for the free tier, where it is the upgrade prompt.
+        // Stagify+ is sold as unlimited staging — which it is — and its gallery ceiling
+        // (200) is deliberately not advertised, so a Pro eviction says nothing here.
+        if (gallery.tier !== 'pro') {
+          parts.push(
+            t('modal.staging.galleryEvicted', 'Older stagings were removed to make room — the free plan keeps your most recent ones.'),
+          );
+        }
+        // This one is said to BOTH tiers, and that is the line where "do not advertise
+        // the cap" stops. A link the agent already sent a client has stopped working;
+        // they cannot learn that anywhere else, and letting it die in silence is a
+        // broken product rather than discreet marketing. It names the consequence
+        // without naming the limit.
         if (evicted.some((e) => e.hadLiveShare)) {
           parts.push(
             t('modal.staging.galleryEvictedShared', 'One of them had an active share link, which no longer works.'),
