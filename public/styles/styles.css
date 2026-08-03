@@ -448,13 +448,41 @@ body {
 .site-header {
   position:sticky;
   top:0;
-  background:rgba(255,255,255,.6);
-  -webkit-backdrop-filter:saturate(180%) blur(10px);
-  backdrop-filter:saturate(180%) blur(10px);
+  /* The frosted background is NOT here — it is on the ::before below. Putting it
+     back on this element reintroduces an iPhone-only bug; read that comment first. */
   border-bottom:1px solid var(--border);
   box-shadow:0 1px 3px rgba(0,0,0,.08);
   z-index:10;
   flex-shrink:0
+}
+/* The header's frosted glass, carried by a pseudo-element rather than by the header.
+   Visually identical — same colour, same blur, same place. The reason is WebKit.
+
+   An element with backdrop-filter becomes a backdrop root, and WebKit rasterizes that
+   subtree into a layer bounded by the element's own box — so a descendant that hangs
+   OUTSIDE the box gets clipped away. Both of this header's dropdowns do exactly that:
+   the Staging panel is 135px tall and 134px of it hangs below the header, and
+   #profile-menu-dropdown is the same shape. On an iPhone the panel came up visibly
+   sliced and then vanished a beat later, once the compositor rasterized the blur
+   layer. Chromium does not do this, and neither does Playwright's WebKit build (it has
+   no iOS tile compositor), which is why 6 pages x 4 widths x 2 engines of emulation all
+   render it perfectly — do not trust a green e2e run to tell you this is safe.
+
+   Moving the filter to a childless pseudo-element keeps the look and removes the
+   hazard: the header is no longer a backdrop root, so it no longer bounds anything.
+   inset:0 resolves against the padding box, so border-bottom still draws outside it,
+   and z-index:-1 keeps it behind the nav while staying inside the header's own
+   stacking context (position:sticky + z-index:10), so it cannot fall behind the page.
+   Guarded by test/frontend/site-header-backdrop.test.js. */
+.site-header::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:rgba(255,255,255,.6);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);
+  backdrop-filter:saturate(180%) blur(10px);
+  pointer-events:none
 }
 #hero-upload,#hero-upload strong,.brand,.checkbox-input,.custom-select,.image-viewer,.language-selector,.nav-link,.progress,.sponsors,.sponsors-container,.sponsors-content {
   position:relative
