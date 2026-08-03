@@ -43,9 +43,14 @@ export default defineConfig({
     // Specs that are inherently desktop-only opt out with
     // `test.skip(({ isMobile }) => isMobile, '<reason>')` — e2e/staging-nav.spec.js,
     // e2e/basic-mask.spec.js and the two mask-fit specs, which pin desktop window
-    // sizes. Two invert it to assert the mobile half of a decision rather than skip
-    // it: e2e/staging-nav.spec.js ("the Staging menu is not shown on a phone") and
-    // e2e/stage-mask-fit.spec.js:220. Nothing is weakened to go green.
+    // sizes, plus the four AI Designer specs: that studio is a PC-only feature, and
+    // its head gate replaces a phone-sized viewport's URL with the home page before
+    // anything paints, so there is no UI on this project to drive.
+    // Four invert it to assert the mobile half of a decision rather than skip it:
+    // e2e/staging-nav.spec.js ("Staging dropdown — phone"), e2e/ai-designer.spec.js
+    // ("AI Designer — phone") and e2e/gallery-gate.spec.js — the last two prove the
+    // PC-only redirects actually fire, which is the half a stubbed matchMedia cannot
+    // show — plus e2e/stage-mask-fit.spec.js:220. Nothing is weakened to go green.
     // (This used to name e2e/stage-mobile-auth.spec.js, which does not exist — so a
     // reviewer asking whether this project earns its 2x runtime was sent to nothing.)
     { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },

@@ -3,9 +3,15 @@
 // The client branches on the RESPONSE content-type, so a plain JSON body takes the
 // non-SSE path — we assert the assistant bubble renders end-to-end.
 import { test, expect } from '@playwright/test';
-import { TINY_PNG_DATA_URL, seedProSession } from './fixtures.js';
+import { TINY_PNG_DATA_URL, seedProSession, waitForHomeReady } from './fixtures.js';
 
 test.describe('AI Designer — happy path', () => {
+  // The studio is PC-only: on a phone-sized viewport the head gate replaces the URL
+  // with the home page before anything paints, so there is no chat UI to drive. The
+  // mobile half of that decision is asserted at the bottom of this file rather than
+  // skipped — this is not weakened to go green.
+  test.skip(({ isMobile }) => isMobile, 'the AI Designer is desktop-only by design');
+
   test.beforeEach(async ({ page }) => {
     await seedProSession(page);
   });
@@ -53,5 +59,34 @@ test.describe('AI Designer — happy path', () => {
     const img = page.locator('.message.assistant .ai-image-container img.ai-generated-image').last();
     await expect(img).toBeAttached();
     await expect(img).toHaveAttribute('src', TINY_PNG_DATA_URL);
+  });
+});
+
+test.describe('AI Designer — phone', () => {
+  test.skip(({ isMobile }) => !isMobile, 'this is the mobile half of the desktop-only rule');
+
+  // The unit test (test/frontend/ai-designer/ai-designer-gate-mobile.test.js) runs the
+  // gate's source against a stubbed matchMedia. What it cannot show is the part that
+  // depends on the real page: that <meta name="viewport"> is parsed before the gate, so
+  // a real phone reports its device width rather than the ~980px desktop fallback. Get
+  // that ordering wrong and the redirect never fires for anybody, with every unit
+  // assertion still green.
+  test('a Pro user who opens the URL on a phone lands on the home page', async ({ page }) => {
+    await seedProSession(page);
+    await page.goto('/ai-designer.html');
+
+    await expect(page).toHaveURL(/\/(index\.html)?$/);
+    // Really the home page, not a blank document that merely has the right URL.
+    await expect(page.locator('.site-header')).toBeVisible();
+    await expect(page.locator('#chat-input')).toHaveCount(0);
+  });
+
+  test('and the nav stops offering the tool at all', async ({ page }) => {
+    await seedProSession(page);
+    await page.goto('/index.html');
+    await waitForHomeReady(page);
+
+    await page.locator('.staging-menu__trigger').click();
+    await expect(page.locator('.staging-menu__item[href="ai-designer.html"]')).toBeHidden();
   });
 });

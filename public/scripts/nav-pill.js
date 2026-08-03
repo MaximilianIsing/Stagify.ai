@@ -150,15 +150,27 @@
       setTimeout(rest, 60);
     });
 
+    // A nav item CAN still change visibility after load: the Gallery tab is hidden
+    // from signed-out visitors and revealed once /api/auth/me answers, which moves
+    // every link to its right. The ResizeObserver above won't necessarily catch that
+    // (.nav-center can keep its size while a child inside it appears), and observing
+    // the links' class attribute would loop, because moveTo() writes `is-lit` onto
+    // those same links. So gallery-tab.js announces it, and only when it really
+    // changed. The follow-up timeout catches the post-layout shift, same as the
+    // language switch above.
+    //
+    // (The AI Designer / Masking Studio links used to be revealed the same way for
+    // Pro users. They now live inside the Staging dropdown, so the plan no longer
+    // moves anything — but auth still does.)
+    document.addEventListener("stagify:navvisibility", () => {
+      rest();
+      setTimeout(rest, 60);
+    });
+
     // Re-settle whenever a nav dropdown opens or closes: opening lends the pill
     // to its trigger, closing gives it back to the current page's link. Driven
     // off the attribute rather than the trigger's click so it also covers the
     // ways a menu closes WITHOUT one — clicking away, or Escape.
-    //
-    // (The AI Designer / Masking Studio links used to be revealed here for Pro
-    // users, which needed a similar observer to re-settle the pill when one
-    // appeared. They now live inside this dropdown, so no nav item changes
-    // visibility on plan any more.)
     if ("MutationObserver" in window) {
       nav.querySelectorAll("[data-nav-group]").forEach((group) => {
         new MutationObserver(rest).observe(group, {

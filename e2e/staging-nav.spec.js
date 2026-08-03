@@ -28,9 +28,13 @@ async function openMenu(page) {
 }
 
 test.describe('Staging dropdown — desktop', () => {
-  // The menu carries `desktop-only` on purpose (see the mobile test at the end),
-  // so there is nothing to click below 768px.
-  test.skip(({ isMobile }) => isMobile, 'the Staging menu is desktop-only by design');
+  // These pin the DESKTOP shape of the menu — all four rows visible, and the sliding
+  // nav pill, which only exists on a pointer device. The phone shape is a different
+  // thing, not a weaker one: it has its own describe at the end of this file, where
+  // three rows show and the PC-only AI Designer row does not.
+  // (This used to say the whole menu was `desktop-only`. That was true until
+  // 2026-08-01 and left a phone with no nav path to any staging tool at all.)
+  test.skip(({ isMobile }) => isMobile, 'asserts the desktop layout; the phone half is below');
 
   test('lists the four tools in order and opens on click', async ({ page }) => {
     await seedProSession(page);
@@ -237,17 +241,41 @@ test.describe('Staging dropdown — phone', () => {
   // to any staging tool at all — including the two features Stagify+ is sold on, for
   // someone already paying. These two tests are why it can be shown again.
 
-  test('a paying user can reach every staging tool from a phone', async ({ page }) => {
+  test('a paying user can reach every phone-capable staging tool', async ({ page }) => {
     await seedProSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
 
     await expect(page.locator(TRIGGER)).toBeVisible();
     const items = await openMenu(page);
+    // All four rows stay in the DOM — one of them is hidden by CSS, not dropped, so
+    // the markup is identical on every page and at every width.
     await expect(items).toHaveCount(4);
-    for (const name of ['Image Staging', 'Basic Mask', 'AI Designer', 'Masking Studio']) {
+    for (const name of ['Image Staging', 'Basic Mask', 'Masking Studio']) {
       await expect(page.locator(ITEM).filter({ hasText: name })).toBeVisible();
     }
+
+    // The AI Designer is the exception, and deliberately: it is a PC-only tool whose
+    // page bounces a phone-sized viewport home before it paints (see
+    // e2e/ai-designer.spec.js's "AI Designer — phone"). Offering the row here would
+    // advertise a tool that answers a tap by undoing it. Asserted by href rather than
+    // by label, so a translated build fails for a real reason and not this one.
+    await expect(page.locator(`${ITEM}[href="ai-designer.html"]`)).toHaveCount(1);
+    await expect(page.locator(`${ITEM}[href="ai-designer.html"]`)).toBeHidden();
+  });
+
+  test('the hidden AI Designer row is out of the keyboard rotation', async ({ page }) => {
+    // A `display:none` row cannot take focus, so leaving it in the ArrowDown cycle
+    // makes one keypress look dead instead of moving on to the Masking Studio. This
+    // is reachable on a phone-sized viewport with a hardware keyboard attached.
+    await seedProSession(page);
+    await page.goto('/index.html');
+    await waitForHomeReady(page);
+    await openMenu(page); // opening focuses the first row
+
+    await page.keyboard.press('ArrowDown'); // Image Staging -> Basic Mask
+    await page.keyboard.press('ArrowDown'); // -> Masking Studio, NOT the hidden row
+    await expect(page.locator(`${ITEM}[href="masking-studio.html"]`)).toBeFocused();
   });
 
   test('the open panel is anchored to the clipping box, so it can never be cut off', async ({ page }) => {
@@ -259,8 +287,13 @@ test.describe('Staging dropdown — phone', () => {
     // Asserting only "the panel is on screen" is NOT enough: at this particular
     // viewport the trigger lands near the middle and 224px fits anyway, so that
     // assertion passes with the fix reverted. What the fix actually guarantees is
-    // that the panel spans .nav-center — the very box doing the clipping — leaving
-    // nothing to clip at ANY trigger position or viewport width. Pin that.
+    // that the panel is POSITIONED IN .nav-center — the very box doing the clipping —
+    // and never wider than it, leaving nothing to clip at ANY trigger position or
+    // viewport width. Pin both halves; neither alone is the property.
+    //
+    // It is deliberately no longer stretched to fill that box: spanning the whole
+    // phone for four rows is what this test used to require, so the width assertion
+    // below is upper AND lower bounded.
     await seedProSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
@@ -273,13 +306,51 @@ test.describe('Staging dropdown — phone', () => {
     const geom = await page.evaluate(() => {
       const panel = document.querySelector('.staging-menu__panel');
       const clip = document.querySelector('.nav-center');
-      return { panelWidth: panel.offsetWidth, clipWidth: clip.clientWidth };
+      return {
+        panelWidth: panel.offsetWidth,
+        clipWidth: clip.clientWidth,
+        offsetLeft: panel.offsetLeft,
+        // Same offsetParent as the panel below 768px (the wrapper is static there),
+        // so these two are directly comparable without touching bounding boxes.
+        triggerLeft: panel.parentElement.querySelector('.staging-menu__trigger').offsetLeft,
+        triggerWidth: panel.parentElement.querySelector('.staging-menu__trigger').offsetWidth,
+        // offsetLeft is measured from offsetParent's padding edge, and clientWidth IS
+        // the padding box — so these three compose only while offsetParent is the clip
+        // box. Assert that identity rather than assume it: put `position:relative` back
+        // on the wrapper and offsetLeft silently starts meaning "from the trigger",
+        // which reads as a comfortably-inset panel no matter where the panel really is.
+        anchoredToClipBox: panel.offsetParent === clip,
+      };
     });
 
-    // `left:0; right:0` against .nav-center makes the panel's border box exactly its
-    // padding box. Anchored to the trigger instead, it is a fixed 224px.
+    expect(geom.anchoredToClipBox).toBe(true);
     expect(geom.clipWidth).toBeGreaterThan(240);
-    expect(Math.abs(geom.panelWidth - geom.clipWidth)).toBeLessThanOrEqual(2);
+    // Never wider than the box that clips it, and wholly inside it.
+    expect(geom.panelWidth).toBeLessThanOrEqual(geom.clipWidth);
+    expect(geom.offsetLeft).toBeGreaterThanOrEqual(0);
+    expect(geom.offsetLeft + geom.panelWidth).toBeLessThanOrEqual(geom.clipWidth);
+    // ...but not full-bleed: content width, with real margin either side.
+    expect(geom.panelWidth).toBeLessThan(geom.clipWidth - 40);
+    expect(geom.offsetLeft).toBeGreaterThan(0);
+
+    // And it points at "Staging" rather than at the middle of the nav. Spanning the
+    // clip box cleared the clipping but left the panel visibly adrift from its own
+    // trigger; staging-menu.js re-aims it on open, clamped to the two bounds above.
+    //
+    // Assert the clamped aim, not bare centre-to-centre. The panel is 224px and the
+    // trigger is ~77px, so centring it only fits while the trigger sits far enough from
+    // either edge — and the nav row puts the trigger second of five items, close to the
+    // left. At this viewport centring wants a -1.5px offset, i.e. outside the box, so
+    // staging-menu.js correctly clamps to GAP and the two midpoints land ~9px apart.
+    // Recompute that same clamp here: where centring fits this reduces to the old
+    // exact-centre assertion, and a panel that ignored its trigger (the pre-fix
+    // behaviour: `margin-inline: auto auto`, centred in the clip box at offsetLeft 72)
+    // still fails it.
+    const GAP = 8; // staging-menu.js's own bound
+    const wantedShift = geom.triggerLeft + (geom.triggerWidth - geom.panelWidth) / 2;
+    const room = geom.clipWidth - geom.panelWidth;
+    const aimedLeft = Math.min(Math.max(wantedShift, GAP), room - GAP);
+    expect(Math.abs(geom.offsetLeft - aimedLeft)).toBeLessThanOrEqual(2);
 
     // And it is genuinely usable, not merely laid out somewhere plausible.
     await expect(page.locator(ITEM).filter({ hasText: 'Masking Studio' })).toBeInViewport();

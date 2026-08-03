@@ -60,6 +60,7 @@ test('there are classic scripts to guard, and the render-blocking ones stay cove
   // can't do — so they never reach the ESM linter. The parse net is their only guard.
   assert.ok(names.has('ai-designer-gate.js'), 'ai-designer-gate.js must stay in the parse net');
   assert.ok(names.has('masking-studio-gate.js'), 'masking-studio-gate.js must stay in the parse net');
+  assert.ok(names.has('gallery-gate.js'), 'gallery-gate.js must stay in the parse net');
   assert.ok(names.has('faq-redirect.js'), 'faq-redirect.js must stay in the parse net');
 });
 

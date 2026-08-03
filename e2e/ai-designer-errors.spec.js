@@ -7,6 +7,10 @@ import { test, expect } from '@playwright/test';
 import { seedProSession } from './fixtures.js';
 
 test.describe('AI Designer — error handling', () => {
+  // PC-only: a phone-sized viewport is redirected home before the chat UI exists.
+  // The mobile half is asserted in ai-designer.spec.js's "AI Designer — phone".
+  test.skip(({ isMobile }) => isMobile, 'the AI Designer is desktop-only by design');
+
   test.beforeEach(async ({ page }) => {
     await seedProSession(page);
   });

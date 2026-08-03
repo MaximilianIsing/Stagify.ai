@@ -27,6 +27,7 @@ const publicDir = path.join(root, 'public');
 const BLOCKING_ALLOWED = {
   'ai-designer-gate.js': 'redirects signed-out visitors before the studio paints',
   'masking-studio-gate.js': 'same gate for the Masking Studio',
+  'gallery-gate.js': 'PC-only feature — redirects a phone-sized viewport before the grid paints',
   'faq-redirect.js': 'meta-refresh stub — must redirect before anything renders',
 };
 

@@ -1,5 +1,6 @@
 import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
 import { syncStagingMenu } from './staging-menu.js';
+import { syncGalleryTab } from './gallery-tab.js';
 
 (function () {
   var TOKEN_KEY = 'stagifyAuthToken';
@@ -128,6 +129,11 @@ import { syncStagingMenu } from './staging-menu.js';
       // replaced a pair of nav links that were revealed by stripping `.hidden`,
       // which left free users with no hint the studios existed at all.
       syncStagingMenu();
+
+      // The top-nav "Gallery" tab, hidden from signed-out visitors. Called before
+      // the early return below on purpose: signing OUT has to put the tab away
+      // again, and that is the branch that runs when it does.
+      syncGalleryTab();
 
       if (!u) {
         if (proPanel) proPanel.classList.add('hidden');

@@ -80,15 +80,68 @@ function wireMenu(root) {
   const panel = root.querySelector('.staging-menu__panel');
   if (!trigger || !panel) return;
   /** @type {HTMLAnchorElement[]} */
-  const items = Array.from(panel.querySelectorAll('.staging-menu__item'));
+  const rows = Array.from(panel.querySelectorAll('.staging-menu__item'));
+
+  /**
+   * The rows a keyboard can actually reach, recomputed per keypress.
+   *
+   * The AI Designer row is `desktop-only` — a PC-only tool, so the stylesheet
+   * hides it below 768px (and ai-designer-gate.js sends a phone that reaches the
+   * URL anyway back to the home page). A `display:none` element cannot take
+   * focus, so leaving it in the rotation would make one ArrowDown press look
+   * dead instead of moving on to the Masking Studio. Read live rather than
+   * filtered once at wire time: the breakpoint flips under a rotation or a
+   * window resize, and this menu is wired exactly once per page load.
+   *
+   * Same predicate nav-pill.js uses for "is this link actually laid out".
+   *
+   * @returns {HTMLAnchorElement[]}
+   */
+  const items = () => rows.filter((el) => el.offsetParent !== null);
 
   const isOpen = () => root.hasAttribute('data-open');
 
+  /**
+   * Aim the panel at its trigger without letting it escape the box that clips it.
+   *
+   * Phones only, and the breakpoint is never named here — offsetParent is asked
+   * instead. Above 768px the wrapper is `position:relative`, so the panel is
+   * positioned in the wrapper and the stylesheet already centres it on the trigger
+   * with `left:50%`; there is nothing to compute. Below it the wrapper is static
+   * and the panel is positioned in `.nav-center`, the element with overflow-x:clip
+   * — spanning that box cleared the clipping but left the panel pointing at the
+   * middle of the nav rather than at "Staging".
+   *
+   * Both offsets are read against that same box, and the result is clamped to it,
+   * so aiming at the trigger can never reintroduce the clipping this replaced. If
+   * the panel is too wide to leave a gutter either side, the offset is dropped and
+   * the CSS falls back to centring — the best available answer at that width.
+   */
+  function alignPanel() {
+    // Cast at the use site, the way the rest of this file does: querySelector hands
+    // back an Element, and the offset* box metrics live on HTMLElement.
+    const box = /** @type {HTMLElement} */ (panel);
+    const btn = /** @type {HTMLElement} */ (trigger);
+    const clip = /** @type {HTMLElement | null} */ (box.offsetParent);
+    const clear = () => box.style.removeProperty('--staging-panel-shift');
+    if (!clip || clip === root) return clear();
+    const GAP = 8;
+    const room = clip.clientWidth - box.offsetWidth;
+    if (room <= GAP * 2) return clear();
+    const centred = btn.offsetLeft + (btn.offsetWidth - box.offsetWidth) / 2;
+    const shift = Math.min(Math.max(centred, GAP), room - GAP);
+    box.style.setProperty('--staging-panel-shift', `${Math.round(shift)}px`);
+  }
+
   function open() {
+    alignPanel();
     root.setAttribute('data-open', '');
     trigger.setAttribute('aria-expanded', 'true');
     document.addEventListener('pointerdown', onOutside, true);
     document.addEventListener('keydown', onKey);
+    // A rotation re-wraps the nav under an open menu, which moves the trigger and
+    // resizes the clip box — both inputs above.
+    window.addEventListener('resize', alignPanel);
   }
 
   function close() {
@@ -96,6 +149,7 @@ function wireMenu(root) {
     trigger.setAttribute('aria-expanded', 'false');
     document.removeEventListener('pointerdown', onOutside, true);
     document.removeEventListener('keydown', onKey);
+    window.removeEventListener('resize', alignPanel);
   }
 
   /** @param {Event} e */
@@ -113,10 +167,13 @@ function wireMenu(root) {
     }
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
     e.preventDefault();
-    const here = items.indexOf(/** @type {HTMLAnchorElement} */ (document.activeElement));
+    const reachable = items();
+    if (!reachable.length) return;
+    const here = reachable.indexOf(/** @type {HTMLAnchorElement} */ (document.activeElement));
     const step = e.key === 'ArrowDown' ? 1 : -1;
-    const next = here === -1 ? (step === 1 ? 0 : items.length - 1) : (here + step + items.length) % items.length;
-    if (items[next]) items[next].focus();
+    const last = reachable.length - 1;
+    const next = here === -1 ? (step === 1 ? 0 : last) : (here + step + reachable.length) % reachable.length;
+    reachable[next].focus();
   }
 
   trigger.addEventListener('click', (e) => {
@@ -124,7 +181,8 @@ function wireMenu(root) {
     if (isOpen()) close();
     else {
       open();
-      if (items[0]) items[0].focus();
+      const [first] = items();
+      if (first) first.focus();
     }
   });
 
