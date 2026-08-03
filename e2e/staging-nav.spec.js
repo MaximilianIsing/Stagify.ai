@@ -368,12 +368,21 @@ test.describe('Staging dropdown — phone', () => {
     //     shows/hides an 18px badge on three rows, so the panel's own max-content
     //     width changes) and gallery-tab.js dispatches "stagify:navvisibility".
     //
-    // --staging-panel-shift is a FIXED px left margin computed once in alignPanel()
-    // and clamped against the panel width and the clip box at that instant. Let the
-    // nav move underneath it and the clamp is stale: `shift + panelWidth` can exceed
-    // the clip box, and .nav-center is overflow-x:clip, so the right-hand side of the
-    // panel is simply cut away. nav-pill.js re-settles on all six of those signals
-    // for exactly this reason; alignPanel() listens to `resize` alone.
+    // --staging-panel-shift is a FIXED px left margin computed once in alignPanel(),
+    // which re-runs on `resize` ALONE — where nav-pill.js, solving the same "the row
+    // moves under me" problem in this very container, re-settles on six signals. So
+    // the shift genuinely does go stale here: this test measures the trigger sliding
+    // 73px -> 123px while `--staging-panel-shift` stays at its original 8px, i.e. the
+    // panel stops pointing at "Staging".
+    //
+    // That staleness is a MIS-AIM, not a clipping bug, and the distinction is the
+    // point of this test. The panel is pinned at its `min-width:min(224px,100%)` floor
+    // and capped at `max-width:100%`, so against a ~370px clip box there is ~145px of
+    // slack and the clamp's output can never push it past the edge. Measured, not
+    // assumed — an earlier reading of this code claimed a stale shift was what cut the
+    // phone menu off, and these numbers are what disproved it. Pin the containment so
+    // a future change to either bound (a flat 224px min-width beats max-width, which
+    // is the known trap) cannot quietly turn the mis-aim into a real clip.
     await seedProSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
@@ -421,11 +430,14 @@ test.describe('Staging dropdown — phone', () => {
     await page.waitForTimeout(250);
 
     const after = await read();
-    // Printed either way: if this test ever fails, the two rows are the diagnosis.
-    console.log('nav reflow under open menu:', JSON.stringify({ before, after }, null, 1));
 
     // The reflow must genuinely have moved the nav, or this test proves nothing.
-    expect(after.panelWidth).toBeGreaterThan(before.panelWidth);
+    // Asserted on the TRIGGER, not the panel width: the panel is at its min-width
+    // floor and German is not long enough to lift it off, so a width assertion here
+    // fails on a menu that is behaving perfectly.
+    expect(after.triggerLeft).toBeGreaterThan(before.triggerLeft);
+    // ...and the aim really is stale — this is the live (cosmetic) defect.
+    expect(after.shift).toBe(before.shift);
 
     // The same three invariants the test above pins at open time, now re-checked
     // AFTER the reflow. These are the property; the aim is a nicety on top of them.
