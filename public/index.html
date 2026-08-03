@@ -394,8 +394,13 @@
         </div>
         <div class="studio-shell">
           <div class="ba reveal reveal--left" data-lang-attr="home.studio.comparisonAria|aria-label" aria-label="Before and after staging comparison">
-            <img class="ba-after" src="media-webp/Homepage/BeforeAfter/After2.webp" alt="Living room after AI virtual staging with Stagify.ai" decoding="async">
-            <img class="ba-before" src="media-webp/Homepage/BeforeAfter/Before2.webp" alt="Empty living room before virtual staging" fetchpriority="high" decoding="async">
+            <!-- These alts describe the DEFAULT pair (Before2/After2), which is the
+                 Bedroom example — EXAMPLES[0] in staging-studio.js, matching the
+                 "Bedroom" tab below. show() swaps only src, never alt, so the alt goes
+                 stale once a visitor switches tabs; the load-time and no-JS state is
+                 what these describe. -->
+            <img class="ba-after" src="media-webp/Homepage/BeforeAfter/After2.webp" alt="Bedroom after AI virtual staging with Stagify.ai" decoding="async">
+            <img class="ba-before" src="media-webp/Homepage/BeforeAfter/Before2.webp" alt="Empty bedroom before virtual staging" fetchpriority="high" decoding="async">
             <span class="ba-tag ba-tag--before" data-lang="home.studio.beforeLabel">Before</span>
             <span class="ba-tag ba-tag--after" data-lang="home.studio.afterLabel">After</span>
             <div class="ba-handle" role="slider" tabindex="0" data-lang-attr="home.studio.revealSliderAria|aria-label" aria-label="Reveal slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
@@ -566,6 +571,80 @@
               <span class="designer-demo__spinner"></span>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- ===================== GALLERY (SAVED RENDERS) ===================== -->
+      <!-- A CSS/HTML mock of the signed-in gallery, not a screenshot. Deliberately
+           INERT: no <a>, no <button>, no JS. gallery.html redirects every signed-out
+           visitor and every viewport <=768px (scripts/gallery-gate.js), so a CTA here
+           would dead-end for the exact audience this section persuades.
+           NOT a Stagify+ feature - free accounts get a gallery too, which is why this
+           carries no "(Stagify+ Exclusive)" tag the way the two sections above do. -->
+      <section class="home-section home-gallery" id="gallery-showcase" aria-labelledby="gallery-title">
+        <div class="home-section__head reveal">
+          <h2 class="home-section__title" id="gallery-title" data-tx="slide" data-lang="home.gallery.title">Every room you stage is saved for you</h2>
+          <p class="home-section__sub" data-lang="home.gallery.subtitle">Your gallery keeps every staged room, the settings that produced it, and the links you have shared with clients.</p>
+        </div>
+
+        <div class="hgal-mock reveal">
+          <div class="hgal-mock__bar">
+            <span class="hgal-mock__title" data-lang="home.gallery.mock.title">Your gallery</span>
+            <!-- "3" describes the three cards below. Change the card count and this
+                 string changes too, in all eleven packs. -->
+            <span class="hgal-mock__count" data-lang="home.gallery.mock.count">3 staged rooms</span>
+          </div>
+          <!-- Three rooms, deliberately: one screenful of a gallery, not the gallery.
+               Images live in media-webp/Homepage/Gallery/ and are used ONLY here, so
+               nothing else on this page repeats them. -->
+          <div class="hgal-grid">
+
+            <figure class="hgal-card">
+              <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-living.webp" data-lang-attr="home.gallery.alts.living|alt" alt="A staged living room with a grey sectional, striped ottomans, a patterned rug and a lit fireplace" width="1200" height="800" loading="lazy" fetchpriority="low" decoding="async">
+              <figcaption class="hgal-card__body">
+                <span class="hgal-card__room" data-lang="roomTypes.livingRoom">Living room</span>
+                <span class="hgal-card__meta">
+                  <span class="hgal-card__when" data-lang="home.gallery.dates.newest">Mar 14</span>
+                  <span class="hgal-card__shared" data-lang="gallery.linkOn">link on</span>
+                </span>
+              </figcaption>
+            </figure>
+
+            <figure class="hgal-card">
+              <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-bedroom.webp" data-lang-attr="home.gallery.alts.bedroom|alt" alt="A staged bedroom with a wide bed, an upholstered headboard, a wall-mounted TV and a low media console" width="1200" height="819" loading="lazy" fetchpriority="low" decoding="async">
+              <figcaption class="hgal-card__body">
+                <span class="hgal-card__room" data-lang="roomTypes.bedroom">Bedroom</span>
+                <span class="hgal-card__meta">
+                  <span class="hgal-card__when" data-lang="home.gallery.dates.mid">Mar 13</span>
+                </span>
+              </figcaption>
+            </figure>
+
+            <figure class="hgal-card">
+              <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-dining.webp" data-lang-attr="home.gallery.alts.dining|alt" alt="A staged dining room with an oval wooden table, six chairs, a chandelier and bay windows" width="1200" height="800" loading="lazy" fetchpriority="low" decoding="async">
+              <figcaption class="hgal-card__body">
+                <span class="hgal-card__room" data-lang="roomTypes.diningRoom">Dining room</span>
+                <span class="hgal-card__meta">
+                  <span class="hgal-card__when" data-lang="home.gallery.dates.older">Mar 11</span>
+                </span>
+              </figcaption>
+            </figure>
+
+          </div>
+        </div>
+
+        <div class="hgal-copy">
+          <div class="hgal-copy__text reveal reveal--left">
+            <span class="hgal-copy__eyebrow" data-lang="home.gallery.eyebrow">Your gallery</span>
+            <h3 class="hgal-copy__title" data-tx="fade" data-lang="home.gallery.panelTitle">Re-stage as often as you like. Nothing gets overwritten.</h3>
+            <p class="hgal-copy__body" data-lang="home.gallery.panelBody">There is no save button and no folder to name. Stage a room and it is in your gallery, newest first, before you close the tab. Open one later and you get the before-and-after slider plus the exact settings behind it: room type, style, your extra prompt, whether you removed the existing furniture, and any furniture photos you attached.</p>
+          </div>
+          <ul class="home-list hgal-copy__points reveal reveal--right" style="--reveal-delay:90ms">
+            <li data-lang="home.gallery.points.auto">Saved automatically. There is no save step to forget.</li>
+            <li data-lang="home.gallery.points.versions">Every version is kept, so two styles of the same room sit side by side.</li>
+            <li data-lang="home.gallery.points.private">The original empty photo stays yours alone. It is never part of what a client sees.</li>
+            <li data-lang="home.gallery.points.share">Share one room with a client on its own link, and turn the link off when you are done.</li>
+          </ul>
         </div>
       </section>
 
