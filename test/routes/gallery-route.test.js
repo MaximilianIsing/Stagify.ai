@@ -37,7 +37,7 @@ after(() => {
  * Mount the real router over real stores. `as()` swaps the identity the fake auth
  * returns, so a test can change caller without a session.
  */
-async function mount({ objectStore: injected } = {}) {
+async function mount({ objectStore: injected, appOrigin = 'https://stagify.test' } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-galleryroute-'));
   dirs.push(dir);
   const shares = createGalleryShares(dir);
@@ -52,7 +52,7 @@ async function mount({ objectStore: injected } = {}) {
     stagedRenders, renderRefs, shares, objectStore,
     getAuthUserFromRequest: () => identity.current,
     galleryLimiter: (req, res, next) => next(),
-    appOrigin: 'https://stagify.test',
+    appOrigin,
   }));
   const server = await new Promise((resolve) => {
     const s = app.listen(0, '127.0.0.1', () => resolve(s));
@@ -174,7 +174,10 @@ test('an entry carries the settings that make the gallery worth having', async (
   assert.ok(entry.urls.thumb);
 });
 
-test('the owner manifest never carries the share token', async () => {
+test('the owner manifest carries the live link, so it survives a reload', async () => {
+  // It used to carry only `active: true`, on the reasoning that the token was handed out
+  // once. That made the owner's own copy of the link unrecoverable: close the panel and
+  // the URL you had just been given was gone for good.
   const { base, as, addRender } = await mount();
   const id = addRender('user-1');
   as('user-1');
@@ -182,11 +185,26 @@ test('the owner manifest never carries the share token', async () => {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
   }));
 
-  const body = await (await fetch(`${base}/api/gallery`)).text();
-  assert.ok(!body.includes(minted.token), 'the token is handed out ONCE, at mint time');
-  const [entry] = JSON.parse(body).entries;
-  assert.equal(entry.share.active, true, 'but the owner can still see that a link exists');
+  const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
+  assert.equal(entry.share.active, true);
+  assert.equal(entry.share.url, minted.url, 'the same link, not a new one');
   assert.equal(entry.share.viewCount, 0);
+});
+
+test('a signed-in stranger never sees another owner\'s link', async () => {
+  // The manifest now carries a live URL, so the tenancy check on the LISTING is load
+  // bearing in a way it was not when the field was absent.
+  const { base, as, addRender } = await mount();
+  const id = addRender('user-1');
+  as('user-1');
+  await fetch(`${base}/api/gallery/${id}/share`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+  });
+
+  as('user-2');
+  const body = await (await fetch(`${base}/api/gallery`)).text();
+  assert.ok(!body.includes('/s/'), 'user-2 must not be handed user-1\'s share URL');
+  assert.deepEqual(JSON.parse(body).entries, []);
 });
 
 // ---- sharing ------------------------------------------------------------------------
@@ -207,7 +225,41 @@ test('minting returns a pasteable absolute URL, once', async () => {
   assert.equal(body.share.settings.headline, 'Living room');
 });
 
-test('minting again rotates, and the old link stops resolving', async () => {
+test('an unconfigured origin still mints a PASTEABLE link, not a bare path', async () => {
+  // The bug this exists for: routes/gallery.js read an APP_ORIGIN that is set in no
+  // environment and no config file, and fell back to the empty string — so every link
+  // came back as `/s/<token>`. The token is shown exactly once and has no read-back, so
+  // an agent who copied one had to rotate to recover.
+  //
+  // Every other assertion in this file injects appOrigin, which is precisely why the
+  // empty case shipped: the fallback was never once exercised.
+  const saved = { pub: process.env.PUBLIC_APP_URL, app: process.env.APP_URL, origin: process.env.APP_ORIGIN };
+  delete process.env.PUBLIC_APP_URL;
+  delete process.env.APP_URL;
+  delete process.env.APP_ORIGIN;
+  try {
+    const { base, as, addRender } = await mount({ appOrigin: '' });
+    const id = addRender('user-1');
+    as('user-1');
+
+    const body = await fetch(`${base}/api/gallery/${id}/share`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+    }).then(json);
+
+    assert.ok(!body.url.startsWith('/s/'), `still a bare path: ${body.url}`);
+    assert.match(body.url, /^https?:\/\/127\.0\.0\.1:\d+\/s\/[A-Za-z0-9_-]{43}$/);
+    // It has to survive the round trip a person actually makes with it.
+    assert.equal(new URL(body.url).pathname, `/s/${body.token}`);
+  } finally {
+    if (saved.pub === undefined) delete process.env.PUBLIC_APP_URL; else process.env.PUBLIC_APP_URL = saved.pub;
+    if (saved.app === undefined) delete process.env.APP_URL; else process.env.APP_URL = saved.app;
+    if (saved.origin === undefined) delete process.env.APP_ORIGIN; else process.env.APP_ORIGIN = saved.origin;
+  }
+});
+
+test('minting twice returns the SAME link, so a sent URL is never invalidated', async () => {
+  // This endpoint used to rotate on every call, which made "create link" indistinguish-
+  // able from "break the link I already texted to somebody".
   const { base, as, addRender, shares } = await mount();
   const id = addRender('user-1');
   as('user-1');
@@ -217,8 +269,25 @@ test('minting again rotates, and the old link stops resolving', async () => {
 
   const first = await mint();
   const second = await mint();
-  assert.notEqual(first.token, second.token);
-  assert.equal(shares.resolveShare(first.token).ok, false);
+  assert.equal(second.token, first.token);
+  assert.equal(second.url, first.url);
+  assert.equal(shares.resolveShare(first.token).ok, true, 'the original link still works');
+});
+
+test('but a link turned off is not resurrected by creating another', async () => {
+  const { base, as, addRender, shares } = await mount();
+  const id = addRender('user-1');
+  as('user-1');
+  const mint = () => fetch(`${base}/api/gallery/${id}/share`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+  }).then(json);
+
+  const first = await mint();
+  await fetch(`${base}/api/gallery/${id}/share`, { method: 'DELETE' });
+  const second = await mint();
+
+  assert.notEqual(second.token, first.token);
+  assert.equal(shares.resolveShare(first.token).ok, false, 'the killed link stays dead');
   assert.equal(shares.resolveShare(second.token).ok, true);
 });
 

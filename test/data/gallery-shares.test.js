@@ -41,56 +41,98 @@ test('a token is CSPRNG, base64url, and one path segment', () => {
   }
 });
 
-test('the plaintext token NEVER reaches disk', () => {
-  // A stolen /data volume or a Litestream restore must yield digests, not a set of live
-  // links into customers' homes.
+test('the token IS stored, deliberately, and the digest stays the lookup key', () => {
+  // This reverses the module's original posture and is pinned so the reversal stays a
+  // decision rather than a drift. A share link is one-per-render and permanent, and the
+  // owner must be able to reopen the gallery next week and copy the link they already
+  // sent — which a write-only credential cannot do. See the header of gallery-shares.js
+  // for what it costs. The DIGEST still has to be the primary key, or resolveShare would
+  // be scanning plaintext.
   const { db, shares } = setup();
-  const { token } = shares.createShare({ renderId: RENDER, userId: USER });
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER });
 
-  const rows = db.prepare('SELECT * FROM gallery_shares').all();
-  const serialized = JSON.stringify(rows);
-  assert.ok(!serialized.includes(token), 'the raw token must not appear anywhere in the row');
-  assert.equal(rows[0].token_hash, hashToken(token));
+  const row = /** @type {any} */ (db.prepare('SELECT * FROM gallery_shares').get());
+  assert.equal(row.token_plain, token, 'the owner has to be able to read this back');
+  assert.equal(row.token_hash, hashToken(token), 'and lookup still goes through the digest');
+  assert.notEqual(row.token_hash, row.token_plain);
 });
 
-test('the token is returned exactly once and never read back', () => {
+test('session tokens are NOT in the same class — they stay digest-only', () => {
+  // The reason this file may store plaintext and session-tokens.js may not: these tokens
+  // authenticate nothing. Guarding it here so "the gallery does it" never becomes an
+  // argument for doing it to credentials that are account takeover.
+  const src = fs.readFileSync(new URL('../../lib/data/session-tokens.js', import.meta.url), 'utf8');
+  assert.ok(!/token_plain|plaintext_token/.test(src), 'session/reset tokens must never gain a plaintext column');
+});
+
+test('the live share carries its token, so the owner can see the link again', () => {
   const { shares } = setup();
-  const { token, share } = shares.createShare({ renderId: RENDER, userId: USER });
-  assert.ok(token);
-  // Neither the create result nor any later read may carry it — a shape that holds the
-  // token is one res.json away from publishing it.
-  assert.ok(!('token' in share));
-  assert.ok(!('tokenHash' in share));
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER });
+
   const active = shares.activeForRender(RENDER);
-  assert.ok(!('token' in active) && !('tokenHash' in active));
+  assert.equal(active.token, token, 'reopening the gallery must show the same link');
+  assert.ok(!('tokenHash' in active), 'the digest is still never mapped out');
 });
 
 test('resolving works, and counts as the same share', () => {
   const { shares } = setup();
-  const { token } = shares.createShare({ renderId: RENDER, userId: USER });
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER });
   const res = shares.resolveShare(token);
   assert.equal(res.ok, true);
   assert.equal(res.share.renderId, RENDER);
   assert.equal(res.share.userId, USER);
 });
 
-test('rotating replaces the live link in ONE transaction', () => {
-  // There must be no instant where a render has two live links or none.
+test('asking twice returns the SAME link rather than replacing it', () => {
+  // This used to rotate, which meant the button that created a link was also the button
+  // that invalidated one the owner had already texted to somebody. A render has one link
+  // for its lifetime.
   const { shares } = setup();
-  const first = shares.createShare({ renderId: RENDER, userId: USER, now: 1_000 });
-  const second = shares.createShare({ renderId: RENDER, userId: USER, now: 2_000 });
+  const first = shares.ensureShare({ renderId: RENDER, userId: USER, now: 1_000 });
+  const second = shares.ensureShare({ renderId: RENDER, userId: USER, now: 2_000 });
 
-  assert.notEqual(first.token, second.token);
-  assert.equal(shares.resolveShare(first.token).ok, false, 'the old link is dead');
+  assert.equal(second.token, first.token);
+  assert.equal(first.created, true);
+  assert.equal(second.created, false, 'the second call minted nothing');
+  assert.equal(shares.resolveShare(first.token).ok, true, 'the link already sent still works');
+  assert.equal(shares.activeForRender(RENDER).createdAt, 1_000, 'still the original link');
+});
+
+test('but a revoked link is never resurrected', () => {
+  // Turning a link off is a decision to kill that URL. Handing the same string back
+  // afterwards would undo it silently.
+  const { shares } = setup();
+  const first = shares.ensureShare({ renderId: RENDER, userId: USER, now: 1_000 });
+  assert.equal(shares.revoke(RENDER, 2_000), true);
+
+  const second = shares.ensureShare({ renderId: RENDER, userId: USER, now: 3_000 });
+  assert.notEqual(second.token, first.token);
+  assert.equal(second.created, true);
+  assert.equal(shares.resolveShare(first.token).ok, false, 'the killed link stays dead');
   assert.equal(shares.resolveShare(second.token).ok, true);
-  assert.equal(shares.activeForRender(RENDER).createdAt, 2_000, 'exactly one live link');
+  assert.equal(shares.activeForRender(RENDER).createdAt, 3_000, 'exactly one live link');
+});
+
+test('a link minted before token_plain existed is replaced, not shown', () => {
+  // Those tokens were only ever stored as a digest, so they genuinely cannot be read
+  // back. Replacing is the only way to give the owner a link they can see.
+  const { db, shares } = setup();
+  const legacy = shares.ensureShare({ renderId: RENDER, userId: USER, now: 1_000 });
+  db.prepare('UPDATE gallery_shares SET token_plain = NULL WHERE render_id = ?').run(RENDER);
+  assert.equal(shares.activeForRender(RENDER).token, null);
+
+  const replacement = shares.ensureShare({ renderId: RENDER, userId: USER, now: 2_000 });
+  assert.equal(replacement.created, true);
+  assert.notEqual(replacement.token, legacy.token);
+  assert.equal(shares.resolveShare(legacy.token).ok, false);
+  assert.equal(shares.activeForRender(RENDER).token, replacement.token);
 });
 
 test('a revoked share keeps its row, so the view count survives', () => {
   // The agent wants to see that the link they sent in March was opened before they
   // killed it. Revocation is a read-time check, not a delete.
   const { db, shares } = setup();
-  const { token } = shares.createShare({ renderId: RENDER, userId: USER, now: 1_000 });
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER, now: 1_000 });
   shares.recordView(token, 2_000);
   assert.equal(shares.revoke(RENDER, 3_000), true);
 
@@ -102,7 +144,7 @@ test('a revoked share keeps its row, so the view count survives', () => {
 
 test('revoke is idempotent', () => {
   const { shares } = setup();
-  shares.createShare({ renderId: RENDER, userId: USER });
+  shares.ensureShare({ renderId: RENDER, userId: USER });
   assert.equal(shares.revoke(RENDER), true);
   assert.equal(shares.revoke(RENDER), false, 'nothing live left to kill');
 });
@@ -113,11 +155,11 @@ test('every refusal is reported, so the route can flatten them into ONE 404', ()
   const { shares } = setup();
   assert.deepEqual(shares.resolveShare('not-a-real-token'), { ok: false, reason: 'unknown' });
 
-  const revoked = shares.createShare({ renderId: RENDER, userId: USER });
+  const revoked = shares.ensureShare({ renderId: RENDER, userId: USER });
   shares.revoke(RENDER);
   assert.deepEqual(shares.resolveShare(revoked.token), { ok: false, reason: 'revoked' });
 
-  const expiring = shares.createShare({ renderId: 'f'.repeat(32), userId: USER, expiresAt: 5_000 });
+  const expiring = shares.ensureShare({ renderId: 'f'.repeat(32), userId: USER, expiresAt: 5_000 });
   assert.equal(shares.resolveShare(expiring.token, 4_999).ok, true);
   assert.deepEqual(shares.resolveShare(expiring.token, 5_000), { ok: false, reason: 'expired' });
 });
@@ -132,7 +174,7 @@ test('resolving junk never throws', () => {
 
 test('an expired share is not "active" for its owner either', () => {
   const { shares } = setup();
-  shares.createShare({ renderId: RENDER, userId: USER, expiresAt: 5_000 });
+  shares.ensureShare({ renderId: RENDER, userId: USER, expiresAt: 5_000 });
   assert.ok(shares.activeForRender(RENDER, 4_999));
   assert.equal(shares.activeForRender(RENDER, 5_001), null);
 });
@@ -166,7 +208,7 @@ test('updating settings does NOT rotate the link', () => {
   // An agent fixing a typo in their own phone number must not invalidate the link they
   // already sent to a client.
   const { shares } = setup();
-  const { token } = shares.createShare({ renderId: RENDER, userId: USER, settings: { headline: 'first' } });
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER, settings: { headline: 'first' } });
   const updated = shares.updateSettings({ renderId: RENDER, settings: { headline: 'second' } });
 
   assert.equal(updated.settings.headline, 'second');
@@ -176,7 +218,7 @@ test('updating settings does NOT rotate the link', () => {
 
 test('corrupt settings degrade to defaults rather than 500ing a live link', () => {
   const { db, shares } = setup();
-  const { token } = shares.createShare({ renderId: RENDER, userId: USER });
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER });
   db.prepare('UPDATE gallery_shares SET settings_json = ?').run('{not json at all');
 
   const res = shares.resolveShare(token);
@@ -188,7 +230,7 @@ test('corrupt settings degrade to defaults rather than 500ing a live link', () =
 
 test('views are debounced, so a tab left open is one visit', () => {
   const { db, shares } = setup();
-  const { token } = shares.createShare({ renderId: RENDER, userId: USER, now: 0 });
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER, now: 0 });
 
   shares.recordView(token, 1_000);
   shares.recordView(token, 2_000);
@@ -201,7 +243,7 @@ test('views are debounced, so a tab left open is one visit', () => {
 
 test('a revoked link records no further views', () => {
   const { db, shares } = setup();
-  const { token } = shares.createShare({ renderId: RENDER, userId: USER, now: 0 });
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER, now: 0 });
   shares.revoke(RENDER, 1_000);
   shares.recordView(token, 2_000);
   assert.equal(db.prepare('SELECT view_count AS n FROM gallery_shares').get().n, 0);

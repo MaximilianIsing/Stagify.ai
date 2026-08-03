@@ -6,7 +6,7 @@
 // carry their own inline express.json.
 import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError } from '../lib/http/http-helpers.js';
+import { sendError, resolveAppOrigin } from '../lib/http/http-helpers.js';
 import { reportError } from '../lib/http/error-ref.js';
 import { checkoutLimiter as defaultCheckoutLimiter } from '../lib/http/rate-limiters.js';
 import { logger } from '../lib/logger.js';
@@ -146,9 +146,7 @@ export default function createBillingRouter(deps) {
           { code: 'NO_STRIPE_CUSTOMER' },
         );
       }
-      const baseUrlRaw =
-        process.env.PUBLIC_APP_URL || process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
-      const baseUrl = String(baseUrlRaw).replace(/\/$/, '');
+      const baseUrl = resolveAppOrigin(req);
       const returnUrl = `${baseUrl}/stagify-plus.html`;
       const session = await stripe.billingPortal.sessions.create({
         customer: user.stripeCustomerId,
@@ -208,9 +206,7 @@ export default function createBillingRouter(deps) {
         );
       }
 
-      const baseUrlRaw =
-        process.env.PUBLIC_APP_URL || process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
-      const baseUrl = String(baseUrlRaw).replace(/\/$/, '');
+      const baseUrl = resolveAppOrigin(req);
 
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',

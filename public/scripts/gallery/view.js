@@ -9,6 +9,9 @@ import { el, replaceChildren } from '../share/dom.js';
 import { LANG_BCP47 } from '../locale-data.js';
 import { t } from './i18n.js';
 
+/** 1x1 transparent GIF, so a failed tile has a valid src and no broken-image glyph. */
+const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
 /** The name to show when a render has no room type. */
 const untitled = () => t('gallery.detailTitle', 'Staged room');
 
@@ -71,6 +74,27 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
         decoding: 'async',
       },
     });
+    // A thumbnail that will not load currently paints its alt text across the tile, which
+    // reads as a broken page rather than a missing image. Fall back to the full render
+    // once — thumb and after are separate objects, so one can be missing while the other
+    // is fine — then give up quietly and let the card carry the name.
+    const fallbackSrc = entry.urls.after && entry.urls.after !== entry.urls.thumb ? entry.urls.after : '';
+    let swapped = false;
+    img.addEventListener('error', () => {
+      if (!swapped && fallbackSrc) {
+        swapped = true;
+        img.setAttribute('src', fallbackSrc);
+        return;
+      }
+      // The card's aria-label still names the room, so dropping the alt costs nothing
+      // and stops the tile filling with text. The transparent pixel is what removes the
+      // browser's own broken-image glyph — without a loadable src it draws one over the
+      // placeholder, which is the thing this is trying to get rid of.
+      img.setAttribute('alt', '');
+      img.setAttribute('src', TRANSPARENT_PIXEL);
+      img.className = 'gal-card__img gal-card__img--missing';
+    });
+
     const card = el('button', {
       doc,
       className: 'gal-card',

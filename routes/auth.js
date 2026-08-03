@@ -1,7 +1,7 @@
 // auth routes, extracted verbatim from server.js.
 import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError } from '../lib/http/http-helpers.js';
+import { sendError, resolveAppOrigin } from '../lib/http/http-helpers.js';
 // Imported directly (as routes/billing.js does with checkoutLimiter) so an omitted
 // dep cannot leave this route's key compare unlimited.
 import { rejectEndpointKey } from '../lib/http/http-guards.js';
@@ -236,9 +236,7 @@ router.post('/api/auth/forgot-password', emailLimiter, express.json(), async (re
   try {
     const email = (req.body && req.body.email) || '';
     const result = authStore.startPasswordReset(email);
-    const baseUrlRaw =
-      process.env.PUBLIC_APP_URL || process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
-    const baseUrl = String(baseUrlRaw).replace(/\/$/, '');
+    const baseUrl = resolveAppOrigin(req);
 
     // Anti-enumeration: one neutral response for BOTH an existing and a
     // non-existent account. The old code returned a distinct "there is no
@@ -316,9 +314,7 @@ router.post('/api/auth/reset-password', authLimiter, express.json(), async (req,
     // fact work. Log it and return ok. Unlike forgot-password there is no
     // enumeration concern — reaching this line requires a valid reset token.
     if (resend && out.toEmail) {
-      const baseUrlRaw =
-        process.env.PUBLIC_APP_URL || process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
-      const appUrl = String(baseUrlRaw).replace(/\/$/, '');
+      const appUrl = resolveAppOrigin(req);
       const recipient = EMAIL_DEBUG_MODE ? DEBUG_EMAIL : out.toEmail;
       const debugNote = EMAIL_DEBUG_MODE ? ` (intended recipient: ${out.toEmail})` : '';
       try {

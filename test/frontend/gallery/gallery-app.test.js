@@ -29,8 +29,15 @@ const ENTRY = {
   share: { active: false },
 };
 
+// Cloned, because the app MUTATES the entry it is given — minting writes the new link
+// onto `entry.share`. Handing every test the same module-level ENTRY object made one
+// test's link visible to the next, which is the sort of coupling that shows up as an
+// unrelated assertion failing three tests later.
 const listing = (entries, extra = {}) => ({
-  '/api/gallery': { status: 200, body: { entries, total: entries.length, enabled: true, ...extra } },
+  '/api/gallery': {
+    status: 200,
+    body: { entries: entries.map((e) => structuredClone(e)), total: entries.length, enabled: true, ...extra },
+  },
 });
 
 // ---- the state machine --------------------------------------------------------------
@@ -69,7 +76,7 @@ test('a 401 says signed out rather than showing an empty gallery', async () => {
 
 // ---- the share token is shown ONCE ---------------------------------------------------
 
-test('minting shows the link once and says so', async () => {
+test('minting shows the link and says it will stay', async () => {
   const { document, byId } = galleryDocument();
   const routes = fakeRoutes({
     ...listing([ENTRY]),
@@ -82,21 +89,38 @@ test('minting shows the link once and says so', async () => {
 
   assert.equal(byId('gal-share-url').value, 'https://stagify.test/s/TOKEN');
   assert.equal(byId('gal-share-url').hidden, false);
-  assert.match(byId('gal-share-status').textContent, /only shown once/i);
+  assert.match(byId('gal-share-status').textContent, /copy it again/i);
+  // And creating is withdrawn, because there is now exactly one link for this render.
+  assert.equal(byId('gal-share-create').hidden, true);
 });
 
-test('an entry that already has a live link shows that, but not the link', async () => {
-  // The server hands the token back once and has no read-back. A "copy link" button that
-  // could not work would be worse than telling the agent to create a new one.
+test('reopening an entry shows the link it already has', async () => {
+  // The whole point of storing the token: the owner comes back next week and copies the
+  // same URL they sent, rather than being told to rotate it.
   const { document, byId } = galleryDocument();
-  const shared = { ...ENTRY, share: { active: true, viewCount: 3 } };
+  const shared = { ...ENTRY, share: { active: true, viewCount: 3, url: 'https://stagify.test/s/LIVE' } };
   await start({ doc: document, fetchImpl: fakeRoutes(listing([shared])) });
 
   byId('gal-grid').children[0].fire('click');
-  assert.equal(byId('gal-share-url').hidden, true, 'no link is displayed');
+  assert.equal(byId('gal-share-url').value, 'https://stagify.test/s/LIVE');
+  assert.equal(byId('gal-share-url').hidden, false, 'the link must be visible on reopen');
+  assert.equal(byId('gal-share-copy').hidden, false, 'and copyable');
   assert.match(byId('gal-share-status').textContent, /opened 3 times/);
-  assert.equal(byId('gal-share-create').textContent, 'Create a new link');
+  assert.equal(byId('gal-share-create').hidden, true, 'one link per render — no rotating');
   assert.equal(byId('gal-share-revoke').hidden, false);
+});
+
+test('a live link with no readable URL offers a replacement instead of a dead box', async () => {
+  // Shares minted before the token was stored cannot be read back at all.
+  const { document, byId } = galleryDocument();
+  const legacy = { ...ENTRY, share: { active: true, viewCount: 1, url: '' } };
+  await start({ doc: document, fetchImpl: fakeRoutes(listing([legacy])) });
+
+  byId('gal-grid').children[0].fire('click');
+  assert.equal(byId('gal-share-url').hidden, true);
+  assert.equal(byId('gal-share-copy').hidden, true, 'nothing to copy');
+  assert.equal(byId('gal-share-create').hidden, false, 'the only way out is a new link');
+  assert.match(byId('gal-share-status').textContent, /before links could be reopened/i);
 });
 
 test('the revoke copy does NOT claim an instant cutoff', async () => {

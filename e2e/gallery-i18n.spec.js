@@ -80,7 +80,7 @@ test.describe('Gallery — language switching', () => {
 
     await page.locator('.gal-card').first().click();
     await expect(page.locator('#gal-detail')).toBeVisible();
-    await expect(page.locator('.gal-share__title')).toHaveText('Partager avec un client');
+    await expect(page.locator('.gal-share__title')).toHaveText('Partager');
     // #gal-meta is built by renderMeta() at open time, so it comes from the pack in JS
     // rather than from a [data-lang] sweep over the markup.
     await expect(page.locator('#gal-meta')).toContainText('Pièce');

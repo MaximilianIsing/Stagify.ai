@@ -22,7 +22,7 @@
 // the buyer sees the staged result. That asymmetry is the reason the two manifests are
 // built by two functions rather than one with a flag.
 import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError } from '../lib/http/http-helpers.js';
+import { sendError, resolveAppOrigin } from '../lib/http/http-helpers.js';
 import { galleryLimiter as defaultGalleryLimiter } from '../lib/http/rate-limiters.js';
 
 /** How long a presigned URL in the owner's manifest stays valid. */
@@ -38,10 +38,10 @@ export const PAGE_SIZE = 60;
  * timestamps, and a `...row` would publish whatever column somebody adds next.
  *
  * @param {{ render: any, blobs: { role: string, storage_key: string }[], refs: any[],
- *   share: any, presign: (key: string) => string }} arg
+ *   share: any, presign: (key: string) => string, shareOrigin?: string }} arg
  * @returns {any}
  */
-export function shapeEntry({ render, blobs, refs, share, presign }) {
+export function shapeEntry({ render, blobs, refs, share, presign, shareOrigin = '' }) {
   const byRole = Object.fromEntries(blobs.map((b) => [b.role, b.storage_key]));
   return {
     id: render.id,
@@ -61,9 +61,18 @@ export function shapeEntry({ render, blobs, refs, share, presign }) {
       thumb: byRole.thumb ? presign(byRole.thumb) : '',
     },
     references: (refs ?? []).map((r) => ({ url: presign(r.storage_key) })),
-    // Never the token — it was handed out once at mint time and there is no read-back.
+    // The URL rides along now, so reopening the gallery next week shows the link the
+    // owner already sent instead of only the fact that one exists. `url` is empty for a
+    // share minted before the token was retrievable — those cannot be read back at all.
     share: share
-      ? { active: true, createdAt: share.createdAt, viewCount: share.viewCount, lastViewedAt: share.lastViewedAt, settings: share.settings }
+      ? {
+        active: true,
+        url: share.token ? `${shareOrigin}/s/${share.token}` : '',
+        createdAt: share.createdAt,
+        viewCount: share.viewCount,
+        lastViewedAt: share.lastViewedAt,
+        settings: share.settings,
+      }
       : { active: false },
   };
 }
@@ -84,6 +93,14 @@ export default function createGalleryRouter(deps) {
   const router = createAsyncRouter();
 
   const presign = (key) => objectStore.presignGet(key, { ttlMs: GALLERY_URL_TTL_MS });
+
+  /**
+   * The origin every share URL this router emits is built on. An injected appOrigin wins;
+   * otherwise it resolves from config or the request — which is the fix for links that
+   * used to come back as a bare `/s/<token>` path.
+   * @param {any} req
+   */
+  const originFor = (req) => (appOrigin ? String(appOrigin).trim().replace(/\/+$/, '') : '') || resolveAppOrigin(req);
 
   /**
    * The signed-in account, or null.
@@ -125,12 +142,14 @@ export default function createGalleryRouter(deps) {
 
     const offset = Math.max(0, Number(req.query.offset) || 0);
     const rows = stagedRenders.listForUser({ userId: user.id, limit: PAGE_SIZE, offset });
+    const listOrigin = originFor(req);
     const entries = rows.map((render) => shapeEntry({
       render,
       blobs: stagedRenders.blobsFor(render.id),
       refs: renderRefs.forRender(render.id),
       share: shares.activeForRender(render.id),
       presign,
+      shareOrigin: listOrigin,
     }));
     return res.json({
       entries,
@@ -168,7 +187,9 @@ export default function createGalleryRouter(deps) {
     // hand somebody a URL that 404s.
     if (render.status !== 'ok') return notFound(res);
 
-    const { token, share } = shares.createShare({
+    // ensureShare, not create: a render has ONE link for its lifetime, so pressing this
+    // twice returns the same URL instead of invalidating one the owner already sent.
+    const { token, share } = shares.ensureShare({
       renderId: render.id,
       userId: user.id,
       settings: req.body?.settings,
@@ -176,9 +197,7 @@ export default function createGalleryRouter(deps) {
     });
     return res.json({
       success: true,
-      // Absolute when we know our own origin, so the agent can paste it straight into a
-      // text message rather than reconstructing it.
-      url: `${appOrigin ? String(appOrigin).replace(/\/+$/, '') : ''}/s/${token}`,
+      url: `${originFor(req)}/s/${token}`,
       token,
       share: { active: true, createdAt: share.createdAt, viewCount: 0, settings: share.settings },
     });

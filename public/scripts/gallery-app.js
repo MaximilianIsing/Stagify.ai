@@ -7,6 +7,7 @@
 import { listGallery, mintShare, revokeShare, deleteRender } from './gallery/api.js';
 import { renderGrid, renderCompare, renderMeta } from './gallery/view.js';
 import { t, plural } from './gallery/i18n.js';
+import { copyText } from './clipboard.js';
 
 /**
  * Boot the page.
@@ -55,6 +56,7 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
       byId('gal-detail-close'),
       compareRange,
       byId('gal-share-url'),
+      byId('gal-share-copy'),
       byId('gal-share-create'),
       byId('gal-share-revoke'),
       byId('gal-delete'),
@@ -106,27 +108,40 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
     const input = /** @type {any} */ (byId('gal-share-url'));
     const create = /** @type {any} */ (byId('gal-share-create'));
     const revoke = /** @type {any} */ (byId('gal-share-revoke'));
+    const copy = /** @type {any} */ (byId('gal-share-copy'));
     const active = !!entry?.share?.active;
+    // A render has ONE link for its lifetime, and the server now sends it back with the
+    // listing — so reopening this panel next week shows the same URL rather than only
+    // the fact that one exists. `url` is the freshly minted one, when we just made it.
+    const link = url || (active ? entry.share.url || '' : '');
 
     if (input) {
-      input.value = url;
-      input.hidden = !url;
+      input.value = link;
+      input.hidden = !link;
     }
+    if (copy) {
+      copy.hidden = !link;
+      copy.textContent = t('gallery.share.copy', 'Copy link');
+    }
+    // Creating is offered only when there is nothing to show. There is deliberately no
+    // "create a new link": that button rotated the token, so pressing it broke the URL
+    // the owner had already sent.
     if (create) {
-      create.textContent = active
-        ? t('gallery.share.createNew', 'Create a new link')
-        : t('gallery.share.create', 'Create link');
+      create.hidden = !!link;
+      create.textContent = t('gallery.share.create', 'Create link');
     }
     if (revoke) revoke.hidden = !active;
-    if (!url) {
-      if (!active) shareStatus(t('gallery.share.none', 'No link yet.'));
-      else if (!entry.share.viewCount) shareStatus(t('gallery.share.onNotOpened', 'Link is on · not opened yet'));
-      else {
-        shareStatus(plural('gallery.share.onOpened', entry.share.viewCount, {
-          one: 'Link is on · opened {count} time',
-          other: 'Link is on · opened {count} times',
-        }));
-      }
+
+    if (!active) shareStatus(t('gallery.share.none', 'No link yet.'));
+    else if (active && !link) {
+      // Minted before the token was retrievable, so it genuinely cannot be shown again.
+      shareStatus(t('gallery.share.unreadable', 'This link was created before links could be reopened. Turn it off and create a new one to see it.'));
+    } else if (!entry.share?.viewCount) shareStatus(t('gallery.share.onNotOpened', 'Link is on · not opened yet'));
+    else {
+      shareStatus(plural('gallery.share.onOpened', entry.share.viewCount, {
+        one: 'Link is on · opened {count} time',
+        other: 'Link is on · opened {count} times',
+      }));
     }
   }
 
@@ -242,10 +257,24 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
       shareStatus(t('gallery.share.createFailed', 'Could not create a link. Try again.'));
       return;
     }
-    current.share = res.body.share;
-    // Shown once, right here. Refreshing the page will not bring it back.
+    // Carry the URL on the entry, not just into the input: a language switch repaints
+    // from `entry.share`, and the link has to survive that.
+    current.share = { ...res.body.share, url: res.body.url };
     paintShare(current, res.body.url);
-    shareStatus(t('gallery.share.created', 'Link created. Copy it now — it is only shown once.'));
+    shareStatus(t('gallery.share.created', 'Link created. It stays here — you can copy it again any time.'));
+  });
+
+  byId('gal-share-copy')?.addEventListener('click', async () => {
+    const input = /** @type {any} */ (byId('gal-share-url'));
+    const value = input?.value || '';
+    if (!value) return;
+    // Reports what actually happened. Saying "copied" when the write was refused would
+    // cost the agent the link outright — there is no second chance to read this token.
+    const ok = await copyText(value, { doc });
+    shareStatus(ok
+      ? t('gallery.share.copied', 'Copied. The link is on your clipboard — it is not shown again.')
+      : t('gallery.share.copyFailed', 'Could not copy automatically. Select the link above and copy it.'));
+    if (!ok && typeof input.select === 'function') input.select();
   });
 
   byId('gal-share-revoke')?.addEventListener('click', async () => {
