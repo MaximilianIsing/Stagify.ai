@@ -18,6 +18,21 @@
         -webkit-backdrop-filter: blur(12px);
       }
       .ms-pro-gate.active { display: flex; }
+      /* Take the floating language pill down while any of these four dialogs is open.
+         It lives in <main> at z-index 1000, so it out-stacks this overlay's 300 on its
+         own; today it happens to lose anyway because .language-picker-container was made
+         a stacking context at z-index 5 — but that was done for the header dropdowns and
+         nothing ties it to this overlay, so relying on it is relying on a side effect.
+         Even behind the backdrop the pill still ghosts through the blur wherever the card
+         does not reach.
+
+         This is the site-wide answer to the pill, not a local trick: .modal and
+         .stage-mask-modal do it in styles.css, #auth-modal and #report-issue-modal in
+         auth.css — each in the sheet that owns the dialog, which is why it belongs here.
+         Keyed on `.active` because that is how all four ms-pro-gate dialogs open. The
+         overlap only becomes visible on a phone, where the card is wide enough to reach
+         under the pill's corner. */
+      body:has(.ms-pro-gate.active) .language-picker-container { display: none; }
       .ms-pro-gate__card {
         max-width: 480px;
         width: 100%;
@@ -505,7 +520,12 @@
         cursor: pointer;
       }
       .ms-help-close:hover { background: rgba(17, 24, 39, 0.06); color: var(--text-heading); }
-      .ms-help-done { margin-top: 18px; width: 100%; }
+      /* Block + auto side margins, not the default inline-block: below 480px the global
+         `.btn { max-width: 280px }` caps this button narrower than the card, and the card
+         is text-align:left — so as an inline-block it lands flush against the left edge.
+         The explicit text-align re-centres the label, which would otherwise inherit the
+         card's left alignment wherever the UA sheet does not centre button content. */
+      .ms-help-done { display: block; width: 100%; margin: 18px auto 0; text-align: center; }
 
       /* --- Keyboard shortcut hint (inside the help dialog) --------------------- */
       .ms-kbd-hint { margin: 10px 0 0; font-size: 11.5px; color: var(--muted); line-height: 1.9; }
@@ -812,6 +832,12 @@
 
       /* --- Phones: same tool, compact spacing (single column via ≤900px) ------- */
       @media (max-width: 768px) {
+        /* The title starts ~24px under the header on a phone (the hero's inline
+           20px padding plus .ms-intro's 4px), and the language pill floats over
+           that same band from the zero-height picker container above — so the
+           heading reads pinned to the nav. Breathing room here, not on .ms-intro,
+           so the studio itself drops with the title instead of only the text. */
+        .ms-shell { padding-top: 20px; }
         .ms-toolbar { padding: 14px; }
         .ms-workspace { padding: 12px; min-height: 0; }
         #ms-base-canvas { max-height: 52vh; }
@@ -819,4 +845,12 @@
         .ms-dropzone { min-height: 220px; }
         .ms-viewer-header { flex-wrap: wrap; row-gap: 8px; }
         .ms-tools { flex-wrap: wrap; }
+        /* No keyboard, so the whole shortcuts block is noise on a phone: the B/E/R/W
+           keys, the bracket pair, Ctrl+Z and hold-H are unreachable, and the zoom line
+           under the same heading is mostly mouse (Ctrl+scroll, Space, middle button).
+           Hidden here rather than in the app module because the JS already toggles this
+           element (`.hidden`, for the first-visit walkthrough) and a second owner of the
+           same visibility would fight it. Same 768px the rest of this file calls a
+           phone. */
+        #ms-help-shortcuts { display: none; }
       }

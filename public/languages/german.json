@@ -615,7 +615,26 @@
     "manageSubscription": "Abo verwalten",
     "signOut": "Abmelden",
     "manageBillingAria": "Abrechnung in Stripe verwalten",
-    "stripeHelp": "Stripe-Hilfecenter"
+    "stripeHelp": "Stripe-Hilfecenter",
+    "reportIssue": "Problem melden",
+    "report": {
+      "title": "Problem melden",
+      "intro": "Sagen Sie uns, was schiefgelaufen ist – wir sehen es uns an.",
+      "descriptionLabel": "Was ist passiert?",
+      "descriptionPlaceholder": "Beschreiben Sie das aufgetretene Problem…",
+      "stepsLabel": "Schritte zum Nachvollziehen (optional)",
+      "stepsPlaceholder": "1. Ich war auf…\n2. Ich habe auf … geklickt\n3. Statt X ist Y passiert",
+      "emailLabel": "E-Mail (optional)",
+      "emailPlaceholder": "sie@beispiel.de",
+      "cancel": "Abbrechen",
+      "submit": "Meldung senden",
+      "submitting": "Wird gesendet…",
+      "needDescription": "Bitte beschreiben Sie das Problem, bevor Sie es senden.",
+      "failed": "Ihre Meldung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+      "successTitle": "Danke — wir haben es erhalten.",
+      "successBody": "Unser Team sieht sich das an. Wenn Sie eine E-Mail-Adresse hinterlassen haben, melden wir uns dort.",
+      "done": "Fertig"
+    }
   },
   "pdf": {
     "meta": {

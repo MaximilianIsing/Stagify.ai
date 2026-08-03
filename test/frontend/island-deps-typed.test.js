@@ -100,6 +100,7 @@ const ALL_FACTORIES = [
   'app/gallery-notice.js#createGalleryNotice',
   'profile-menu/auth-modal.js#createAuthModal',
   'profile-menu/google-signin.js#createGoogleSignIn',
+  'profile-menu/report-issue-modal.js#createReportIssueModal',
   'share/refresh.js#createRefresher',
   'share/view.js#createLightbox',
 ];

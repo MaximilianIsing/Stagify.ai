@@ -295,38 +295,16 @@
           return typeof accessor === 'function' ? accessor() : [];
         }
         
-        // A bug report carries the chat transcript for context, but the transcript's
-        // image entries hold whole base64 data URLs — megabytes each — and the server
-        // never keeps those bytes: bug_reports.csv stores only a per-message image COUNT
-        // (lib/http/bug-report-row.js). Shipping them bought nothing and pushed the body
-        // past the 1MB JSON limit, so the report came back 413 exactly when the user
-        // needed the channel. Rebuild the transcript without the bytes: text parts
-        // verbatim, every other content item reduced to its bare type tag, which leaves
-        // the recorded image count — and the whole stored row — identical.
-        function summariseBugReportHistory(history) {
-          if (!Array.isArray(history)) return [];
-          return history.map(function (message) {
-            const entry = message || {};
-            const role = entry.role || 'unknown';
-            const content = entry.content;
-            if (Array.isArray(content)) {
-              return {
-                role: role,
-                content: content.map(function (item) {
-                  const part = item || {};
-                  return part.type === 'text'
-                    ? { type: 'text', text: String(part.text == null ? '' : part.text) }
-                    : { type: part.type };
-                }),
-              };
-            }
-            // Non-array content is flattened with String() server-side anyway, so doing
-            // it here keeps the stored row byte-identical while making it impossible for
-            // an object-shaped content to smuggle image bytes onto the wire.
-            return { role: role, content: String(content == null ? '' : content) };
-          });
-        }
-        
+        // summariseBugReportHistory strips the transcript's base64 image bytes before
+        // the POST — without it a report filed after a render 413'd on the 1MB JSON
+        // limit, exactly when the channel was needed. It now lives in the ES module
+        // public/scripts/bug-report-history.js, because the account menu's "Report an
+        // issue" dialog posts the same body and a second copy would drift; the module
+        // is bridged onto window by ai-designer-app.js, which is what makes the bare
+        // name below resolve here (the same classic-vs-module scope trap as
+        // getConversationHistory above). Why it strips what it strips is documented
+        // there, and pinned by test/frontend/ai-designer/bug-report-history.test.js.
+
         // Handle form submission
         if (bugReportForm) {
           bugReportForm.addEventListener('submit', async function(e) {
