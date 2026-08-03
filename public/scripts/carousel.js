@@ -1,7 +1,8 @@
 // Carousel — the homepage hero "example styles" slider. Renders its own markup
 // from an items array, supports mouse/touch drag, clickable indicators,
-// pause-on-hover and autoplay. Defines the global `Carousel` (for classic consumers)
-// and self-initialises against `.carousel-container` on load.
+// pause-on-hover and autoplay. Self-initialises against `.carousel-container` as soon as
+// the module runs (see the note above the IIFE at the bottom — the timing is load-bearing
+// for LCP). The class is module-scoped; nothing reads a `window.Carousel` global.
 
 class Carousel {
   constructor(container, options = {}) {
@@ -235,7 +236,13 @@ class Carousel {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// Runs immediately, NOT on DOMContentLoaded. The <img> this injects is the page's LCP
+// element, and DOMContentLoaded waits for all ~58 module files to download AND execute —
+// which was pinning the LCP paint. Module scripts run after the document is parsed, so
+// `.carousel-container` (static markup in index.html) is already present, and the
+// render-blocking stylesheets are all above the script tags, so offsetWidth is valid.
+// The one external dependency, window.LanguageSystem, is guarded in createCarousel().
+(() => {
   const container = /** @type {HTMLElement} */ (document.querySelector('.carousel-container'));
   if (!container) return;
 
@@ -301,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     round: false,
     gap: 21,
   });
-});
+})();
 
 // Loaded as <script type="module">; this empty export marks the file as an ES
 // module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).

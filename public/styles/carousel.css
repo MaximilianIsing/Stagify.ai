@@ -1,7 +1,16 @@
 .carousel-container,.carousel-item {
   position:relative;
-  backdrop-filter:blur(10px);
   overflow:hidden
+}
+/* Only the container is blurred. .carousel-item deliberately is NOT: each item is fully
+   covered by its own object-fit:cover image (.carousel-item-image is absolutely positioned
+   at 100%x100%), so the item's blurred backdrop is painted over and never visible. It was
+   not merely wasted, it was wasted per frame — #background-video is a fixed full-viewport
+   autoplaying layer, so every backdrop-filter re-snapshots and re-blurs on each video
+   frame, and this is exactly where the LCP image paints. Same call as the
+   `backdrop-filter:none` on .sponsors-container in home.css. */
+.carousel-container {
+  backdrop-filter:blur(10px)
 }
 .carousel-container {
   border:1px solid var(--border);

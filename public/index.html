@@ -108,6 +108,13 @@
       <link rel="stylesheet" href="styles/demo-player.css">
     </noscript>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <!-- carousel.js is FIRST on purpose. It builds the hero carousel, whose <img> is the
+         LCP element, and it has zero imports — so as the first module tag it runs as soon
+         as the document is parsed. Listed after app.js (its old position) it had to wait
+         for that 18-deep import graph to execute first, because modules run in document
+         order. Paired with the direct init() call in carousel.js; moving the tag alone
+         does nothing. -->
+    <script type="module" src="scripts/carousel.js"></script>
     <script type="module" src="scripts/language-detect.js"></script>
     <script type="module" src="scripts/language-loader.js"></script>
     <script type="module" src="scripts/language-switcher.js"></script>
@@ -117,7 +124,6 @@
     <script type="module" src="scripts/plus-cta-auth.js"></script>
     <script type="module" src="scripts/heic-convert.js"></script>
     <script type="module" src="scripts/app.js"></script>
-    <script type="module" src="scripts/carousel.js"></script>
     <script type="module" src="scripts/index-inline.js"></script>
     <script type="module" src="scripts/star-border.js"></script>
     <script type="module" src="scripts/sponsors-scroll.js"></script>

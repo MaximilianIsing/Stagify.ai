@@ -2578,10 +2578,18 @@ body:has(.stage-mask-modal.active) .language-picker-container {
     opacity:.7
   }
 }
-body:not(.language-loaded) [data-lang-attr],body:not(.language-loaded) [data-lang-html],body:not(.language-loaded) [data-lang] {
+/* Hide text that is about to be replaced by the language pack, so there is no flash of
+   the wrong language. [data-lang-attr] is deliberately NOT in this list: it only ever
+   sets alt, aria-label, content and title (no placeholder anywhere in the repo), none of
+   which render as visible text — so hiding those elements prevented a flash that cannot
+   happen, while costing real paints. It was hiding 34 elements on the homepage, including
+   the hero carousel <img> that is the LCP element and the nav logo. An element carrying
+   ONLY data-lang-attr has static text by definition; one that also has translatable text
+   still matches the [data-lang] half below. */
+body:not(.language-loaded) [data-lang-html],body:not(.language-loaded) [data-lang] {
   visibility:hidden
 }
-body.language-loaded [data-lang-attr],body.language-loaded [data-lang-html],body.language-loaded [data-lang] {
+body.language-loaded [data-lang-html],body.language-loaded [data-lang] {
   visibility:visible
 }
 * {
