@@ -59,8 +59,11 @@
 
   <!-- Unavailable: the one 404 the manifest can answer, flattened from every cause. -->
   <section class="sh-state sh-state--unavailable">
+    <!-- "taken down", not "turned off": a link is not something its owner switches off any
+         more (see lib/data/gallery-shares.js). What actually gets somebody here is the
+         render being deleted, the link expiring, or a token that was never real. -->
     <p class="sh-unavailable__body">
-      The link may have been turned off by the person who sent it, or it may have expired.
+      The person who sent it may have taken the photo down, or the link may have expired.
       Ask them for a new one.
     </p>
   </section>

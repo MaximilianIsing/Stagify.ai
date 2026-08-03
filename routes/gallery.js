@@ -161,7 +161,14 @@ export default function createGalleryRouter(deps) {
     }
 
     const offset = Math.max(0, Number(req.query.offset) || 0);
-    const rows = stagedRenders.listForUser({ userId: user.id, limit: PAGE_SIZE, offset });
+    // Searching is a Stagify+ feature, so the SERVER decides whether the query counts —
+    // and says so in the response rather than trusting the page to have hidden the box.
+    // A free account's `q` is dropped, not refused: the listing itself is theirs, and a
+    // 403 for a parameter they cannot even see on screen would be a worse answer than
+    // their own gallery.
+    const isPro = user.plan === 'pro';
+    const q = isPro ? String(req.query.q ?? '') : '';
+    const rows = stagedRenders.listForUser({ userId: user.id, limit: PAGE_SIZE, offset, q });
     const listOrigin = originFor(req);
     // The mint. `listForUser` returns finished renders only, which is the same bar the
     // old create button enforced — a link to bytes that never landed would 404 for
@@ -178,11 +185,18 @@ export default function createGalleryRouter(deps) {
     }));
     return res.json({
       entries,
-      total: stagedRenders.countForUser(user.id),
+      // The MATCHING total while a search is on, never the account's whole count: the
+      // page prints this above the grid, and "3 of 47" over three tiles is the listing
+      // contradicting itself.
+      total: stagedRenders.countForUser(user.id, { q }),
       offset,
       pageSize: PAGE_SIZE,
       enabled: true,
       urlTtlMs: GALLERY_URL_TTL_MS,
+      // `enabled` is what reveals the box — one source of truth for a paid feature, so
+      // the page cannot offer a search the server would then ignore. `q` echoes what was
+      // actually applied, which is '' for a free caller who sent one anyway.
+      search: { enabled: isPro, q },
     });
   });
 

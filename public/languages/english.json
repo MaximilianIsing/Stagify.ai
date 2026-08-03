@@ -105,7 +105,6 @@
         "two": "88 Harborview Drive",
         "three": "1207 Ashford Court"
       },
-      "eyebrow": "Your gallery",
       "panelTitle": "Re-stage as often as you like. Nothing gets overwritten.",
       "panelBody": "There is no save button and no folder to name. Stage a room and it is in your gallery, newest first, before you close the tab. Open one later and you get the before-and-after slider plus the exact settings behind it: room type, style, your extra prompt, whether you removed the existing furniture, and any furniture photos you attached.",
       "points": {
@@ -1259,6 +1258,7 @@
       "free": "Free",
       "included": "Included",
       "notIncluded": "Not included",
+      "unlimitedValue": "Unlimited",
       "rows": {
         "customizable": "Customizable staging",
         "fastModel": "Fast image model",
@@ -1357,6 +1357,24 @@
       "saved": "Name saved.",
       "cleared": "Back to the default name.",
       "failed": "Could not save that name. Try again."
+    },
+    "search": {
+      "label": "Search your gallery",
+      "placeholder": "Search by name, room, style or prompt",
+      "clear": "Clear search",
+      "results": {
+        "one": "{count} match",
+        "other": "{count} matches"
+      },
+      "showing": {
+        "one": "Showing {loaded} of {count} match",
+        "other": "Showing {loaded} of {count} matches"
+      },
+      "none": {
+        "title": "No rooms match that",
+        "body": "Nothing in your gallery matches “{q}”.",
+        "cta": "Clear search"
+      }
     }
   }
 }

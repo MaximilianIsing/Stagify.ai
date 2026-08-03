@@ -105,7 +105,6 @@
         "two": "88 Harborview Drive",
         "three": "1207 Ashford Court"
       },
-      "eyebrow": "내 갤러리",
       "panelTitle": "몇 번이든 다시 스테이징하세요. 덮어쓰지 않습니다.",
       "panelBody": "저장 버튼도, 이름을 붙일 폴더도 없습니다. 방을 스테이징하면 탭을 닫기도 전에 최신순으로 갤러리에 들어갑니다. 나중에 열어보면 전후 비교 슬라이더와 함께 그것을 만든 설정이 그대로 남아 있습니다. 방 종류, 스타일, 추가로 입력한 프롬프트, 기존 가구 제거 여부, 그리고 첨부한 가구 사진까지.",
       "points": {
@@ -1259,6 +1258,7 @@
       "free": "무료",
       "included": "포함",
       "notIncluded": "미포함",
+      "unlimitedValue": "무제한",
       "rows": {
         "customizable": "맞춤형 스테이징",
         "fastModel": "빠른 이미지 모델",
@@ -1357,6 +1357,24 @@
       "saved": "이름을 저장했습니다.",
       "cleared": "기본 이름으로 되돌렸습니다.",
       "failed": "이름을 저장하지 못했습니다. 다시 시도해 주세요."
+    },
+    "search": {
+      "label": "갤러리 검색",
+      "placeholder": "이름, 공간, 스타일 또는 프롬프트로 검색",
+      "clear": "검색 지우기",
+      "results": {
+        "one": "{count}개 결과",
+        "other": "{count}개 결과"
+      },
+      "showing": {
+        "one": "{count}개 중 {loaded}개 표시 중",
+        "other": "{count}개 중 {loaded}개 표시 중"
+      },
+      "none": {
+        "title": "일치하는 공간이 없습니다",
+        "body": "갤러리에 “{q}”과(와) 일치하는 항목이 없습니다.",
+        "cta": "검색 지우기"
+      }
     }
   }
 }

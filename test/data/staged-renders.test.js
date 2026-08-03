@@ -14,6 +14,7 @@ import { createAuthStore } from '../../lib/data/auth-store.js';
 import { getDb, closeDb } from '../../lib/data/db.js';
 import {
   createStagedRenders, FREE_GALLERY_LIMIT, PRO_GALLERY_LIMIT, DOWNGRADE_GRACE_MS, capFor, MAX_RENDER_NAME,
+  searchTerms, MAX_SEARCH_TERMS, MAX_SEARCH_QUERY,
 } from '../../lib/data/staged-renders.js';
 import { keyForRender, newRenderId } from '../../lib/data/object-keys.js';
 
@@ -210,6 +211,152 @@ test('the name survives a reopen of the store', () => {
   assert.equal(reopened.get(id).custom_name, '412 Rosewood Lane');
 });
 
+// ---- search --------------------------------------------------------------------------
+//
+// Searching is the Stagify+ half of the gallery, and it runs in SQL rather than over the
+// loaded page: the route pages at 60 while the Pro cap is 200, so a filter applied in the
+// browser would quietly only ever look at the first screenful.
+
+/** Add one finished render with searchable fields set. */
+function addSearchable(renders, userId, fields, at = 1_000) {
+  const id = newRenderId();
+  renders.record({ render: { id, userId, ...fields }, isPro: true, now: at });
+  renders.markOk(id);
+  return id;
+}
+
+const namesOf = (renders, userId, q) => renders
+  .listForUser({ userId, q })
+  .map((r) => r.custom_name ?? `${r.furniture_style} ${r.room_type}`);
+
+test('a term matches the room type, the style, the name or the prompt', () => {
+  const { renders, user } = setup();
+  addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' }, 1_000);
+  addSearchable(renders, user.id, { roomType: 'Kitchen', furnitureStyle: 'coastal' }, 2_000);
+  const named = addSearchable(renders, user.id, { roomType: 'Office', furnitureStyle: 'modern' }, 3_000);
+  renders.rename({ id: named, userId: user.id, name: '412 Rosewood Lane' });
+  const prompted = addSearchable(renders, user.id, { roomType: 'Bathroom', additionalPrompt: 'keep the skylight' }, 4_000);
+
+  assert.deepEqual(namesOf(renders, user.id, 'kitchen'), ['coastal Kitchen']);
+  assert.deepEqual(namesOf(renders, user.id, 'luxury'), ['luxury Bedroom']);
+  assert.deepEqual(namesOf(renders, user.id, 'rosewood'), ['412 Rosewood Lane']);
+  assert.deepEqual(renders.listForUser({ userId: user.id, q: 'skylight' }).map((r) => r.id), [prompted]);
+});
+
+test('the DERIVED default name is searchable, which a per-column match would not be', () => {
+  // The card for an unnamed render reads "Luxury Bedroom". Neither column contains that
+  // string, so matching the whole phrase against each one in turn finds nothing — and
+  // typing what is on the card and getting no results is what makes a search feel broken.
+  const { renders, user } = setup();
+  addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+  addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'coastal' });
+
+  assert.deepEqual(namesOf(renders, user.id, 'luxury bedroom'), ['luxury Bedroom']);
+  // Every term has to land, so the second render is excluded rather than matched on
+  // "bedroom" alone.
+  assert.equal(renders.countForUser(user.id, { q: 'luxury bedroom' }), 1);
+});
+
+test('terms are ANDed, and their order does not matter', () => {
+  const { renders, user } = setup();
+  addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+
+  assert.equal(renders.countForUser(user.id, { q: 'bedroom luxury' }), 1, 'order must not matter');
+  assert.equal(renders.countForUser(user.id, { q: 'lux bed' }), 1, 'partial words still match');
+  assert.equal(renders.countForUser(user.id, { q: 'luxury kitchen' }), 0, 'one missing term excludes the row');
+});
+
+test('matching ignores ASCII case', () => {
+  const { renders, user } = setup();
+  addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+  for (const q of ['BEDROOM', 'BeDrOoM', 'bedroom']) {
+    assert.equal(renders.countForUser(user.id, { q }), 1, q);
+  }
+});
+
+test('LIKE wildcards in the query are literal, not a match-everything', () => {
+  // Unescaped, `%` matches every row and `_` matches any character — so a user typing
+  // punctuation would silently get the wrong set rather than no set.
+  const { renders, user } = setup();
+  const pct = addSearchable(renders, user.id, { roomType: 'Office', additionalPrompt: '100% linen' }, 1_000);
+  addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' }, 2_000);
+
+  // `%` finds the row that literally CONTAINS a percent sign, and only that one. Two
+  // matches here would mean the wildcard leaked through and matched everything.
+  assert.deepEqual(renders.listForUser({ userId: user.id, q: '%' }).map((r) => r.id), [pct]);
+  assert.deepEqual(renders.listForUser({ userId: user.id, q: '100%' }).map((r) => r.id), [pct]);
+  assert.equal(renders.countForUser(user.id, { q: 'b_droom' }), 0, '_ matched any character');
+  assert.equal(renders.countForUser(user.id, { q: '\\' }), 0, 'a lone backslash must not break the pattern');
+});
+
+test('an empty or blank query is not a search at all', () => {
+  const { renders, user } = setup();
+  addSearchable(renders, user.id, { roomType: 'Bedroom' }, 1_000);
+  addSearchable(renders, user.id, { roomType: 'Kitchen' }, 2_000);
+
+  for (const q of ['', '   ', undefined, null, 42]) {
+    assert.equal(renders.listForUser({ userId: user.id, q }).length, 2, `${JSON.stringify(q)} narrowed the list`);
+    assert.equal(renders.countForUser(user.id, { q }), 2);
+  }
+});
+
+test('search respects tenancy, so it cannot read across accounts', () => {
+  const { renders, user } = setup();
+  addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+  addSearchable(renders, 'someone-else', { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+
+  assert.equal(renders.countForUser(user.id, { q: 'bedroom' }), 1);
+  assert.equal(renders.countForUser('someone-else', { q: 'bedroom' }), 1);
+});
+
+test('search sees neither evicted nor unfinished renders', () => {
+  // The same two predicates the plain listing uses. A search that surfaced a render the
+  // grid cannot show would be a result you can never open.
+  const { renders, user } = setup();
+  const gone = addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' }, 1_000);
+  renders.remove({ id: gone, userId: user.id });
+  const pendingId = newRenderId();
+  renders.record({ render: { id: pendingId, userId: user.id, roomType: 'Bedroom', furnitureStyle: 'luxury' }, isPro: true });
+
+  assert.equal(renders.countForUser(user.id, { q: 'bedroom' }), 0);
+  assert.deepEqual(renders.listForUser({ userId: user.id, q: 'bedroom' }), []);
+});
+
+test('search pages, and its count is the MATCHING total', () => {
+  // The count sits above the grid. Printing the account's whole total over a filtered grid
+  // would be the page contradicting itself.
+  const { renders, user } = setup();
+  for (let i = 0; i < 5; i += 1) addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' }, 1_000 + i);
+  addSearchable(renders, user.id, { roomType: 'Kitchen', furnitureStyle: 'coastal' }, 9_000);
+
+  assert.equal(renders.countForUser(user.id), 6, 'the unfiltered total');
+  assert.equal(renders.countForUser(user.id, { q: 'bedroom' }), 5);
+  assert.equal(renders.listForUser({ userId: user.id, q: 'bedroom', limit: 2 }).length, 2);
+  assert.equal(renders.listForUser({ userId: user.id, q: 'bedroom', limit: 2, offset: 4 }).length, 1);
+  // Newest first, exactly as the unfiltered listing orders.
+  const page = renders.listForUser({ userId: user.id, q: 'bedroom', limit: 5 });
+  assert.deepEqual([...page].sort((a, b) => b.created_at - a.created_at).map((r) => r.id), page.map((r) => r.id));
+});
+
+test('a query past the term cap still searches, on the terms it kept', () => {
+  // The WHERE grows one LIKE per term, so an unbounded query is an unbounded statement
+  // built from user input. Terms past the cap are dropped, never the whole search.
+  const { renders, user } = setup();
+  addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+
+  assert.equal(searchTerms('a b c d e f g h i j k').length, MAX_SEARCH_TERMS);
+  const many = `luxury ${Array.from({ length: 20 }, (_, i) => `t${i}`).join(' ')}`;
+  assert.equal(searchTerms(many).length, MAX_SEARCH_TERMS);
+  assert.doesNotThrow(() => renders.countForUser(user.id, { q: many }));
+});
+
+test('a query past the length cap is truncated rather than refused', () => {
+  const { renders, user } = setup();
+  addSearchable(renders, user.id, { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+  assert.equal(searchTerms('x'.repeat(MAX_SEARCH_QUERY + 40))[0].length, MAX_SEARCH_QUERY);
+  assert.equal(renders.countForUser(user.id, { q: 'x'.repeat(MAX_SEARCH_QUERY + 40) }), 0);
+});
+
 // ---- the eviction matrix ----------------------------------------------------------
 
 test('a free account exactly at the cap loses nothing', () => {
@@ -305,25 +452,47 @@ test('evicting a shared entry revokes its link in the same transaction', () => {
   assert.equal(share.revoked_at, 9_000);
 });
 
-test('a pro account is capped far higher, not never', () => {
-  // Stagify+ is sold as unlimited STAGING, which it is. The gallery keeps 200 finished
-  // renders, which is what stops per-account storage growing forever. Well past the free
-  // cap, so nothing a free user would notice applies here.
-  assert.ok(PRO_GALLERY_LIMIT > FREE_GALLERY_LIMIT * 5, 'the two tiers must not be close');
+test('a pro gallery is never evicted from, at any size', () => {
+  // Stagify+ keeps every finished render — the compare table on stagify-plus.html says
+  // "Unlimited" and this is the assertion behind that word.
+  //
+  // The count deliberately runs well past the FREE cap rather than past some pro figure,
+  // because there is no pro figure to run past: what is being asserted is that no number
+  // of renders reaches a ceiling. A test that stopped at 199 would have passed against
+  // the old 200 too, and would therefore have proved nothing about this change.
+  assert.equal(PRO_GALLERY_LIMIT, Infinity, 'the paid gallery has no ceiling');
   const { renders, user } = setup();
-  for (let i = 0; i < FREE_GALLERY_LIMIT + 15; i += 1) addRender(renders, user.id, { at: 1_000 + i, isPro: true });
-  assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT + 15, 'nowhere near the pro cap');
+  const ids = [];
+  for (let i = 0; i < FREE_GALLERY_LIMIT * 4; i += 1) {
+    const res = addRender(renders, user.id, { at: 1_000 + i, isPro: true });
+    ids.push(res.id);
+    assert.deepEqual(res.evicted, [], `insert ${i} evicted something from an uncapped gallery`);
+  }
+  assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT * 4);
+  // The FIRST render — the one any finite cap would have taken first — is still there.
+  assert.equal(renders.get(ids[0]).evicted_at, null, 'the oldest entry survives');
 });
 
-test('the pro cap DOES evict once it is reached', () => {
-  // The whole point of capping it: unbounded per-account storage was the one safeguard
-  // the plan left unbuilt. Driven at a lowered cap so the test does not have to create
-  // two hundred rows.
+test('enforceCap on a pro account is a no-op however much history it has', () => {
+  // The other entry point. A grace window closing calls this directly, and a pro account
+  // that lapsed and then RESUBSCRIBED inside the window would go through it as pro.
+  const { renders, user } = setup();
+  for (let i = 0; i < FREE_GALLERY_LIMIT + 40; i += 1) addRender(renders, user.id, { at: 1_000 + i, isPro: true });
+
+  assert.deepEqual(renders.enforceCap({ userId: user.id, isPro: true, now: 9_000 }), []);
+  assert.equal(renders.countForUser(user.id), FREE_GALLERY_LIMIT + 40);
+});
+
+test('an explicit cap still evicts — the operator override has to work', () => {
+  // PRO_GALLERY_LIMIT is env-overridable precisely so a ceiling can be re-imposed without
+  // a deploy if one account's history ever threatens the storage bill. That path shares
+  // evictBeyondCap with the free tier, and this is what keeps it exercised now that no
+  // default sends a pro account through it. Driven at a lowered cap so the test does not
+  // have to create hundreds of rows.
   const { renders, user } = setup();
   const cap = 5;
   const ids = [];
   for (let i = 0; i < cap; i += 1) ids.push(addRender(renders, user.id, { at: 1_000 + i, isPro: true }).id);
-  // enforceCap goes through the same evictBeyondCap path record() uses.
   const evicted = renders.enforceCap({ userId: user.id, isPro: true, now: 9_000, cap });
   assert.deepEqual(evicted, [], 'exactly at the cap loses nothing');
 
@@ -335,7 +504,9 @@ test('the pro cap DOES evict once it is reached', () => {
 
 test('capFor reports the tier ceilings', () => {
   assert.equal(capFor(true), PRO_GALLERY_LIMIT);
+  assert.equal(capFor(true), Infinity, 'Stagify+ is uncapped');
   assert.equal(capFor(false), FREE_GALLERY_LIMIT);
+  assert.ok(Number.isFinite(capFor(false)), 'the free tier is still capped');
 });
 
 test('one account\'s cap never touches another\'s entries', () => {

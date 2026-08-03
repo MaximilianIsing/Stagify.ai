@@ -105,7 +105,6 @@
         "two": "88 Harborview Drive",
         "three": "1207 Ashford Court"
       },
-      "eyebrow": "La tua galleria",
       "panelTitle": "Riallestisci quante volte vuoi. Non si sovrascrive nulla.",
       "panelBody": "Non c'è nessun pulsante di salvataggio né cartelle da nominare. Allestisci una stanza ed è già nella tua galleria, dalla più recente, prima ancora che tu chiuda la scheda. Riaprila più tardi e trovi il cursore prima/dopo insieme alle impostazioni esatte che l'hanno prodotta: tipo di stanza, stile, il tuo prompt aggiuntivo, se hai rimosso i mobili esistenti e le eventuali foto di mobili che hai allegato.",
       "points": {
@@ -1259,6 +1258,7 @@
       "free": "Gratis",
       "included": "Incluso",
       "notIncluded": "Non incluso",
+      "unlimitedValue": "Illimitate",
       "rows": {
         "customizable": "Staging personalizzabile",
         "fastModel": "Modello di immagini veloce",
@@ -1357,6 +1357,24 @@
       "saved": "Nome salvato.",
       "cleared": "Ripristinato il nome predefinito.",
       "failed": "Impossibile salvare questo nome. Riprova."
+    },
+    "search": {
+      "label": "Cerca nella tua galleria",
+      "placeholder": "Cerca per nome, stanza, stile o istruzione",
+      "clear": "Cancella la ricerca",
+      "results": {
+        "one": "{count} risultato",
+        "other": "{count} risultati"
+      },
+      "showing": {
+        "one": "Visualizzati {loaded} di {count} risultato",
+        "other": "Visualizzati {loaded} di {count} risultati"
+      },
+      "none": {
+        "title": "Nessuna stanza corrisponde",
+        "body": "Nulla nella tua galleria corrisponde a «{q}».",
+        "cta": "Cancella la ricerca"
+      }
     }
   }
 }

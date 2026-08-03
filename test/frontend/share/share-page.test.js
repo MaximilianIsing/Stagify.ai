@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { parseShareToken, manifestUrl } from '../../../public/scripts/share/token.js';
 import { fetchManifest } from '../../../public/scripts/share/api.js';
 import { contactHref, el, replaceChildren } from '../../../public/scripts/share/dom.js';
-import { renderAgent, renderGallery } from '../../../public/scripts/share/view.js';
+import { renderAgent, renderGallery, shareTitle, formatStagedAt } from '../../../public/scripts/share/view.js';
 import { createRefresher, MAX_ATTEMPTS } from '../../../public/scripts/share/refresh.js';
 import { start } from '../../../public/scripts/share/main.js';
 import { shareDocument, fakeFetch, pageSource } from '../../helpers/share-dom.js';
@@ -22,6 +22,10 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..',
 const MANIFEST = {
   headline: 'Living room, staged',
   note: 'Let me know what you think',
+  name: '',
+  roomType: 'Living room',
+  furnitureStyle: 'modern',
+  stagedAt: Date.UTC(2026, 7, 1, 15, 30),
   agent: { name: 'A. Broker', email: 'a@example.com', phone: '+1 555 0100' },
   rooms: [{
     key: 'room',
@@ -31,6 +35,9 @@ const MANIFEST = {
   frameCount: 1,
   disclosure: 'Photos on this page have been virtually staged.',
 };
+
+/** The same manifest with no agent headline, which is what the server actually sends. */
+const UNHEADLINED = { ...MANIFEST, headline: '' };
 
 // ---- the token ---------------------------------------------------------------------
 
@@ -168,8 +175,115 @@ test('a frame reserves its aspect ratio before the bytes land', () => {
   const button = gallery.children[0].children[0];
   assert.equal(button.style.props['--sh-ar'], '1024 / 683');
   assert.equal(images.length, 1);
-  assert.equal(images[0].getAttribute('src'), MANIFEST.rooms[0].frames[0].thumbUrl, 'thumb first');
   assert.match(images[0].getAttribute('alt'), /Living room/);
+});
+
+test('the frame shows the FULL render, not the 480px thumbnail', () => {
+  // The bug this exists for: the page painted the thumbnail across a box up to 852px wide
+  // (and the whole width of a phone at 2-3x), so the photo looked soft — and sharpened the
+  // instant the lightbox opened the full URL. The thumb is still offered through srcset,
+  // where the browser can weigh it against the viewport it can actually see.
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  const [img] = renderGallery({ gallery, manifest: MANIFEST, doc: document, onOpen: () => {} });
+  const frame = MANIFEST.rooms[0].frames[0];
+
+  assert.equal(img.getAttribute('src'), frame.url, 'the visible photo must be the full render');
+  assert.equal(img.getAttribute('srcset'), `${frame.thumbUrl} 480w, ${frame.url} 1024w`);
+  // A `sizes` that does not match the layout makes the browser's choice wrong in exactly
+  // the way this is fixing, so it is pinned to what share.css lays out.
+  assert.equal(img.getAttribute('sizes'), '(min-width: 720px) 852px, 100vw');
+});
+
+test('a frame with no thumbnail offers no srcset rather than a one-candidate one', () => {
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  const [img] = renderGallery({
+    gallery,
+    doc: document,
+    manifest: { ...MANIFEST, rooms: [{ label: 'Living room', frames: [{ renderId: 'a', url: '/after.webp', width: 1024, height: 683 }] }] },
+    onOpen: () => {},
+  });
+  assert.equal(img.getAttribute('src'), '/after.webp');
+  assert.equal(img.getAttribute('srcset'), null);
+});
+
+test('the lightbox opens the same URL the page is already showing', () => {
+  // They were different — that is the whole reason the photo appeared to sharpen on tap.
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  const opened = [];
+  const images = renderGallery({
+    gallery, manifest: MANIFEST, doc: document, onOpen: (url) => opened.push(url),
+  });
+  gallery.children[0].children[0].fire('click');
+  assert.deepEqual(opened, [images[0].getAttribute('src')]);
+});
+
+// ---- what the photo is ---------------------------------------------------------------
+
+test('the page is headed with the SAME title the owner sees in their gallery', () => {
+  // "<Style> <Room type>", from scripts/render-name.js — the module the gallery derives
+  // its own card and dialog headings from, so the two cannot drift.
+  assert.equal(shareTitle(UNHEADLINED), 'Modern Living room');
+  // The owner's own name for the render wins over the derived default...
+  assert.equal(shareTitle({ ...UNHEADLINED, name: '412 Rosewood — living room' }), '412 Rosewood — living room');
+  // ...and an agent headline written for this page specifically wins over both.
+  assert.equal(shareTitle(MANIFEST), 'Living room, staged');
+  // Nothing at all still says something.
+  assert.equal(shareTitle({}), 'Staged room');
+});
+
+test('the section under the photo carries the style, the room and the date', () => {
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  renderGallery({ gallery, manifest: UNHEADLINED, doc: document, onOpen: () => {} });
+
+  const facts = gallery.children[0].children[1];
+  assert.equal(facts.tagName, 'DL');
+  const text = facts.textContent;
+  // The slug is capitalised, so this does not say "Style: modern" under "Modern Living
+  // room". The date is formatted in the reader's locale, so only the year is asserted.
+  assert.match(text, /Style\s*Modern/);
+  assert.match(text, /Room\s*Living room/);
+  assert.match(text, /Staged/);
+  assert.match(text, /2026/);
+});
+
+test('a missing field is skipped rather than printed blank', () => {
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  renderGallery({
+    gallery,
+    doc: document,
+    manifest: { ...UNHEADLINED, furnitureStyle: '', stagedAt: null },
+    onOpen: () => {},
+  });
+
+  const text = gallery.children[0].children[1].textContent;
+  assert.ok(!/Style/.test(text), '"Style: —" is noise');
+  assert.ok(!/Staged/.test(text), 'a render with no timestamp has no date to give');
+  assert.match(text, /Room\s*Living room/);
+});
+
+test('a render with nothing to say about it renders no facts block at all', () => {
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  renderGallery({
+    gallery,
+    doc: document,
+    manifest: { rooms: MANIFEST.rooms },
+    onOpen: () => {},
+  });
+  // The figure holds the photo and nothing else — not an empty bordered strip.
+  assert.equal(gallery.children[0].children.length, 1);
+});
+
+test('an unusable timestamp formats as empty rather than "Invalid Date"', () => {
+  assert.equal(formatStagedAt(NaN), '');
+  assert.equal(formatStagedAt(undefined), '');
+  assert.equal(formatStagedAt(null), '');
+  assert.ok(formatStagedAt(Date.UTC(2026, 7, 1)).length > 0);
 });
 
 test('a frame with no URL is skipped rather than rendered broken', () => {
@@ -297,6 +411,27 @@ test('the page shell leaks nothing about whose listing it is', () => {
   for (const value of og) {
     assert.ok(/^(Staged room|A virtually staged room\.|website)$/.test(value), `og content "${value}" is too specific`);
   }
+});
+
+test('both pages take the render\'s name from ONE module', () => {
+  // The share link's heading is the label the owner sees over the same photo in their own
+  // gallery. That only stays true if there is one derivation: a second copy of
+  // "<Style> <Room type>" drifts the first time either page is touched, and the drift is
+  // invisible from inside either one.
+  const read = (rel) => fs.readFileSync(path.join(ROOT, 'public', 'scripts', rel), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/[^\n]*/g, '');
+
+  for (const file of ['gallery/view.js', 'share/view.js']) {
+    const src = read(file);
+    assert.match(src, /from '\.\.\/render-name\.js'/, `${file} no longer imports the shared naming rule`);
+    // The join itself, in either order, is what a re-implementation looks like.
+    assert.ok(!/\$\{\s*(style|room)\s*\}\s+\$\{\s*(style|room)\s*\}/.test(src), `${file} rebuilt the name locally`);
+  }
+  // And the module it defers to really does hold the rule, or the assertions above pass
+  // against a file that no longer decides anything.
+  const shared = read('render-name.js');
+  assert.match(shared, /\$\{style\}\s\$\{room\}/, 'render-name.js no longer joins style and room');
 });
 
 test('the page carries no data-lang attributes', () => {
