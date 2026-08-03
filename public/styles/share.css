@@ -11,17 +11,32 @@
  *
  * MOBILE FIRST, and not as a slogan: the recipient is on a phone in a car park more often
  * than at a desk. The desktop rules are the media query, not the default.
+ *
+ * LIGHT, IN STAGIFY'S OWN BLUES, AND ONLY THAT. This page used to default to a near-black
+ * shell and flip to light on `prefers-color-scheme` — so the first thing most recipients
+ * saw of the product was a dark page that looks like nothing else Stagify serves. It is
+ * now the same palette as the app: the blues below are styles.css's --brand / --brand-deep
+ * / --brand-wash and its neutrals, copied as literals BECAUSE styles.css is deliberately
+ * not loaded here (see above) and a var() pointing at a token out of scope drops the whole
+ * declaration. There is no dark variant on purpose — a staged photograph is the content,
+ * and it is lit for a white page.
  */
 
 :root {
-  --sh-bg: #0f1115;
-  --sh-surface: #171a21;
-  --sh-surface-2: #1f232c;
-  --sh-border: #2a2f3a;
-  --sh-text: #e9ecf1;
-  --sh-text-dim: #a3abba;
-  --sh-accent: #6ea8fe;
-  --sh-radius: 14px;
+  /* The site's own light palette. Values, not var()s: styles.css is not in scope here.
+     --sh-bg is a wash of --brand-wash rather than flat white, so the white photo cards
+     read as cards; the gallery gets the same effect from the background video. */
+  --sh-bg: #f5f8ff;
+  --sh-surface: #ffffff;
+  --sh-surface-2: #eff6ff;
+  --sh-border: #dbeafe;
+  --sh-border-soft: #e5e7eb;
+  --sh-text: #1f2937;
+  --sh-text-dim: #64748b;
+  --sh-heading: #1e3a8a;
+  --sh-accent: #2563eb;
+  --sh-accent-strong: #1d4ed8;
+  --sh-radius: 16px;
   --sh-gap: 16px;
   --sh-max: 900px;
   /* 44px is the comfortable touch target; a link the recipient has to aim at on a phone
@@ -29,23 +44,17 @@
   --sh-tap: 44px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --sh-bg: #f6f7f9;
-    --sh-surface: #ffffff;
-    --sh-surface-2: #f0f2f5;
-    --sh-border: #dfe3e9;
-    --sh-text: #12151a;
-    --sh-text-dim: #5c6675;
-    --sh-accent: #1f6feb;
-  }
-}
-
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
+  min-height: 100vh;
   background: var(--sh-bg);
+  /* A single soft brand wash at the top, so the page has the app's depth without asking a
+     phone to composite anything. `no-repeat` + the flat fallback above means it does not
+     tile down a long page. */
+  background-image: radial-gradient(120% 60% at 50% 0%, #e8f0ff 0%, rgba(232, 240, 255, 0) 70%);
+  background-repeat: no-repeat;
   color: var(--sh-text);
   font: 16px/1.55 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -61,7 +70,7 @@ body[data-state='unavailable'] .sh-state--unavailable { display: block; }
 /* The shared h1 is hidden while loading — showing "Staged room" over a spinner reads as
    a result that has already arrived. */
 body[data-state='loading'] .sh-headline { display: none; }
-body[data-state='unavailable'] .sh-headline { text-align: center; font-size: 1.35rem; }
+body[data-state='unavailable'] .sh-headline { text-align: center; font-size: 1.35rem; color: var(--sh-text); }
 
 .sh-main {
   max-width: var(--sh-max);
@@ -89,16 +98,29 @@ body[data-state='unavailable'] .sh-headline { text-align: center; font-size: 1.3
 
 /* ---- ready ---- */
 .sh-header { margin: 6px 0 18px; }
-.sh-headline { font-size: 1.5rem; line-height: 1.25; margin: 0 0 10px; }
+/* The app's heading ink (--brand-deep), at the app's weight and tracking. Solid rather
+   than the gradient .gal-title uses: that treatment needs background-clip:text, which
+   clips descenders at a tight line-height and is a trap to leave on a page nobody who
+   works here will ever look at again. */
+.sh-headline {
+  margin: 0 0 10px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--sh-heading);
+}
 .sh-note { color: var(--sh-text-dim); margin: 8px 0 0; white-space: pre-wrap; }
 
 .sh-gallery { display: grid; gap: var(--sh-gap); }
 
 .sh-frame {
+  margin: 0;
   background: var(--sh-surface);
   border: 1px solid var(--sh-border);
   border-radius: var(--sh-radius);
   overflow: hidden;
+  box-shadow: 0 10px 28px rgba(30, 58, 138, 0.1);
 }
 .sh-frame__button {
   display: block;
@@ -112,22 +134,44 @@ body[data-state='unavailable'] .sh-headline { text-align: center; font-size: 1.3
   aspect-ratio: var(--sh-ar, 3 / 2);
 }
 .sh-frame__img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.sh-frame__label {
-  padding: 10px 14px;
-  color: var(--sh-text-dim);
-  font-size: 0.9rem;
+
+/* ---- what the photo is ---- */
+/* Two columns, label then value, so three short rows read as a spec rather than a
+   sentence. `max-content` keeps the labels tight against their values instead of leaving
+   a channel of empty page between them. */
+.sh-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 12px 16px 14px;
   border-top: 1px solid var(--sh-border);
+  background: var(--sh-surface-2);
+  font-size: 0.92rem;
 }
+.sh-facts__label {
+  color: var(--sh-text-dim);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  /* The labels sit on a smaller font than their values, so without this they ride high
+     against the line they belong to. */
+  align-self: baseline;
+  padding-top: 2px;
+}
+.sh-facts__value { margin: 0; color: var(--sh-text); font-weight: 600; }
 
 /* ---- agent card ---- */
 .sh-agent {
   margin-top: var(--sh-gap);
-  padding: 14px;
+  padding: 16px;
   background: var(--sh-surface);
   border: 1px solid var(--sh-border);
   border-radius: var(--sh-radius);
+  box-shadow: 0 6px 18px rgba(30, 58, 138, 0.07);
 }
-.sh-agent__name { font-weight: 600; margin: 0 0 6px; }
+.sh-agent__name { font-weight: 700; color: var(--sh-heading); margin: 0 0 6px; }
 .sh-agent__links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0; padding: 0; list-style: none; }
 .sh-agent__link {
   display: inline-flex;
@@ -142,17 +186,22 @@ body[data-state='unavailable'] .sh-headline { text-align: center; font-size: 1.3
 .sh-agent__link:hover, .sh-agent__link:focus-visible { text-decoration: underline; }
 
 /* ---- footer ---- */
-.sh-footer { margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--sh-border); }
+/* --sh-border-soft, not the brand tint the cards use: this rule is a separator inside the
+   page's own background rather than the edge of a surface, and the blue reads as a second
+   card starting. */
+.sh-footer { margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--sh-border-soft); }
 .sh-disclosure { color: var(--sh-text-dim); font-size: 0.82rem; margin: 0 0 10px; }
 .sh-brand { color: var(--sh-text-dim); font-size: 0.82rem; margin: 0; }
 .sh-brand a { color: var(--sh-accent); text-decoration: none; }
 .sh-brand a:hover, .sh-brand a:focus-visible { text-decoration: underline; }
 
 /* ---- lightbox ---- */
+/* The one dark surface left, and deliberately: a full-bleed photograph is judged against
+   what surrounds it, and a white scrim throws its own light onto the room. */
 .sh-lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(15, 23, 42, 0.92);
   display: flex;
   align-items: center;
   justify-content: center;

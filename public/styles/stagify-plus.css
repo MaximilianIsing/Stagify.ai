@@ -519,9 +519,11 @@
         color: #cbd5e1;
         font-size: 1.15rem;
       }
-      /* A numeric cell rather than a tick: same optical weight as .sp-mark so a row of
-         figures does not read as louder than the rows of ticks around it. Digits carry
-         across all eleven packs, so these cells are deliberately untranslated. */
+      /* A value cell rather than a tick: same optical weight as .sp-mark so it does not
+         read as louder than the rows of ticks around it. The free column is a figure, but
+         the Stagify+ one is the word "Unlimited" and IS translated, so this has to survive
+         a cell several times wider than "200" — hence no width or nowrap here, and the
+         table's own .sp-compare-scroll for the narrow-viewport case. */
       .sp-value {
         font-size: 0.95rem;
         font-weight: 700;

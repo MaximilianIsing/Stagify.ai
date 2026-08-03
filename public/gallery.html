@@ -162,6 +162,33 @@
     <h1 class="gal-title" data-lang="gallery.title">Your gallery</h1>
     <p class="gal-lede" data-lang="gallery.lede">Every room you have staged, with the settings that produced it and a link you can send.</p>
 
+    <!--
+      Searching is a Stagify+ feature, and the SERVER decides: gallery-app.js sets
+      data-gal-search="on" on <body> from `search.enabled` in the listing, never from a
+      client-side plan check. One source of truth means the page cannot offer a box the
+      server would then ignore.
+
+      It sits outside the state sections on purpose. A search that matches nothing switches
+      the page to the no-matches state below, and a box that vanished with the grid would
+      leave no way to clear the query that emptied it.
+    -->
+    <form class="gal-search" id="gal-search" role="search" autocomplete="off">
+      <label class="sr-only" for="gal-search-input" data-lang="gallery.search.label">Search your gallery</label>
+      <span class="gal-search__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </span>
+      <!-- maxlength matches MAX_SEARCH_QUERY in lib/data/staged-renders.js. A courtesy —
+           the store slices whatever arrives. `type=search` would add a second, unstyleable
+           clear affordance next to the one below, so this stays a text input. -->
+      <input class="gal-search__input" id="gal-search-input" type="text" maxlength="80" spellcheck="false"
+             placeholder="Search by name, room, style or prompt"
+             data-lang-attr="gallery.search.placeholder|placeholder">
+      <!-- Ships hidden: there is nothing to clear until something is typed. -->
+      <button type="button" class="gal-search__clear" id="gal-search-clear" hidden aria-label="Clear search" data-lang-attr="gallery.search.clear|aria-label">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </form>
+
     <div class="gal-state gal-state--loading" aria-hidden="true"><div class="gal-spinner"></div></div>
 
     <section class="gal-state gal-state--signed-out">
@@ -216,6 +243,24 @@
              generic wording, and a re-apply would flatten that back to the generic. -->
         <p class="gal-panel__body" id="gal-error-detail">Your renders are safe — this is the list failing to load, not the images.</p>
         <button type="button" class="btn btn-primary" id="gal-retry" data-lang="gallery.error.retry">Try again</button>
+      </div>
+    </section>
+
+    <!--
+      "No matches" is NOT "nothing staged yet", and it gets its own state for the same
+      reason the error panel does: landing a search on the empty state tells an agent who
+      has staged two hundred rooms that they have staged none.
+    -->
+    <section class="gal-state gal-state--no-results">
+      <div class="gal-panel">
+        <span class="gal-panel__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </span>
+        <h2 class="gal-panel__title" data-lang="gallery.search.none.title">No rooms match that</h2>
+        <!-- No data-lang: gallery-app.js writes the query the visitor typed into it, and a
+             language re-apply would flatten it back to this static English. -->
+        <p class="gal-panel__body" id="gal-no-results-detail">Nothing in your gallery matches that search.</p>
+        <button type="button" class="btn btn-primary" id="gal-search-reset" data-lang="gallery.search.none.cta">Clear search</button>
       </div>
     </section>
 

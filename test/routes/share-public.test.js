@@ -61,7 +61,7 @@ async function mount() {
   const addRender = (userId, { status = 'ok' } = {}) => {
     const id = newRenderId();
     stagedRenders.record({
-      render: { id, userId, roomType: 'Living room', model: 'gemini-secret-model-name' },
+      render: { id, userId, roomType: 'Living room', furnitureStyle: 'modern', model: 'gemini-secret-model-name' },
       blobs: [
         { role: 'after', storageKey: keyForRender({ renderId: id, role: 'after' }), bytes: 1 },
         { role: 'thumb', storageKey: keyForRender({ renderId: id, role: 'thumb' }), bytes: 1 },
@@ -173,6 +173,28 @@ test('a junk token never 500s', async () => {
 });
 
 // ---- the manifest ------------------------------------------------------------------
+
+test('the manifest says what the photo is, so the page can head itself with it', async () => {
+  // The page shows the SAME label the owner sees in their gallery, and the settings behind
+  // the render under the photo. Without these four fields it can only say "Staged room",
+  // which leaves the recipient asking the questions the page exists to answer.
+  const { base, shares, stagedRenders, addRender } = await mount();
+  const id = addRender('user-1');
+  const { token } = shares.ensureShare({ renderId: id, userId: 'user-1' });
+
+  const manifest = await (await fetch(`${base}/api/share/${token}`)).json();
+  assert.equal(manifest.roomType, 'Living room');
+  assert.equal(manifest.furnitureStyle, 'modern');
+  assert.ok(Number.isFinite(manifest.stagedAt), 'the date it was staged, as ms for the page to format');
+  assert.equal(manifest.name, '', 'unnamed, so the page derives "<Style> <Room type>"');
+
+  // The owner's own name for the render IS published — a deliberate reversal, argued in
+  // the header of routes/share-public.js. It is the caption they typed onto a photo they
+  // are sending to a client.
+  stagedRenders.rename({ id, userId: 'user-1', name: '412 Rosewood — living room' });
+  const named = await (await fetch(`${base}/api/share/${token}`)).json();
+  assert.equal(named.name, '412 Rosewood — living room');
+});
 
 test('a live share returns the render, its disclosure, and nothing internal', async () => {
   const { base, shares, addRender } = await mount();

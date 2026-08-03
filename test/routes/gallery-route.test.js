@@ -59,10 +59,10 @@ async function mount({ objectStore: injected, appOrigin = 'https://stagify.test'
   });
   servers.push(server);
 
-  const addRender = (userId, { status = 'ok' } = {}) => {
+  const addRender = (userId, { status = 'ok', roomType = 'Bedroom', furnitureStyle, additionalPrompt = 'keep the desk' } = {}) => {
     const id = newRenderId();
     stagedRenders.record({
-      render: { id, userId, roomType: 'Bedroom', additionalPrompt: 'keep the desk' },
+      render: { id, userId, roomType, furnitureStyle, additionalPrompt },
       blobs: [
         { role: 'after', storageKey: keyForRender({ renderId: id, role: 'after' }), bytes: 1 },
         { role: 'before', storageKey: keyForRender({ renderId: id, role: 'before' }), bytes: 1 },
@@ -76,7 +76,9 @@ async function mount({ objectStore: injected, appOrigin = 'https://stagify.test'
 
   return {
     base: `http://127.0.0.1:${server.address().port}`,
-    as: (id) => { identity.current = id ? { id, plan: 'pro' } : null; },
+    // `plan` is what the route reads to decide whether searching is offered, so it has to
+    // be settable — every other assertion in this file runs as a Pro account.
+    as: (id, plan = 'pro') => { identity.current = id ? { id, plan } : null; },
     shares, stagedRenders, addRender,
   };
 }
@@ -181,6 +183,94 @@ test("deleting another account's render leaves it entirely alone", async () => {
   as('user-2');
   assert.equal((await json(await fetch(`${base}/api/gallery`))).total, 1, 'still there');
   assert.equal(stagedRenders.get(theirs).evicted_at, null);
+});
+
+// ---- search (Stagify+) --------------------------------------------------------------
+//
+// The gate is the point. The page hides the box for a free account, but the box is not the
+// enforcement — `?q=` is a URL anyone can type, and the SERVER has to be what decides.
+
+const search = (base, q) => fetch(`${base}/api/gallery?q=${encodeURIComponent(q)}`).then(json);
+
+test('a Stagify+ caller can narrow the listing', async () => {
+  const { base, as, addRender } = await mount();
+  addRender('user-1', { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+  addRender('user-1', { roomType: 'Kitchen', furnitureStyle: 'coastal' });
+  as('user-1');
+
+  const body = await search(base, 'kitchen');
+  assert.equal(body.entries.length, 1);
+  assert.equal(body.entries[0].roomType, 'Kitchen');
+  assert.equal(body.search.enabled, true);
+  assert.equal(body.search.q, 'kitchen');
+});
+
+test('the total is the MATCHING count, not the size of the gallery', async () => {
+  // The page prints this above the grid. "1 of 2" over one tile is the listing
+  // contradicting itself.
+  const { base, as, addRender } = await mount();
+  addRender('user-1', { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+  addRender('user-1', { roomType: 'Kitchen', furnitureStyle: 'coastal' });
+  as('user-1');
+
+  assert.equal((await search(base, 'kitchen')).total, 1);
+  assert.equal((await json(await fetch(`${base}/api/gallery`))).total, 2, 'unfiltered is still both');
+});
+
+test('a FREE caller is told searching is off, and their query is ignored', async () => {
+  // Not a 403: the listing itself is theirs, and refusing a parameter they cannot see on
+  // screen would be a worse answer than their own gallery. But it must not silently look
+  // like a search that matched everything either — hence the flag.
+  const { base, as, addRender } = await mount();
+  addRender('user-1', { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+  addRender('user-1', { roomType: 'Kitchen', furnitureStyle: 'coastal' });
+  as('user-1', 'free');
+
+  const body = await search(base, 'kitchen');
+  assert.equal(body.search.enabled, false, 'a free account must not be offered the box');
+  assert.equal(body.search.q, '', 'the query must not be echoed back as if it were applied');
+  assert.equal(body.entries.length, 2, 'they get their whole gallery, not a filtered one');
+  assert.equal(body.total, 2);
+});
+
+test('an enterprise-domain account searches too — it is the same plan', async () => {
+  // getAuthUserFromRequest rewrites an active enterprise domain to plan 'pro' before the
+  // route ever sees it, so this must not be gated on anything narrower.
+  const { base, as, addRender } = await mount();
+  addRender('user-1', { roomType: 'Kitchen', furnitureStyle: 'coastal' });
+  as('user-1', 'pro');
+  assert.equal((await search(base, 'kitchen')).search.enabled, true);
+});
+
+test('search never reaches across accounts', async () => {
+  const { base, as, addRender } = await mount();
+  addRender('user-2', { roomType: 'Kitchen', furnitureStyle: 'coastal' });
+  as('user-1');
+
+  const body = await search(base, 'kitchen');
+  assert.deepEqual(body.entries, []);
+  assert.equal(body.total, 0);
+});
+
+test('a plain listing reports search as available without applying one', async () => {
+  const { base, as, addRender } = await mount();
+  addRender('user-1');
+  as('user-1');
+
+  const body = await json(await fetch(`${base}/api/gallery`));
+  assert.deepEqual(body.search, { enabled: true, q: '' });
+  assert.equal(body.entries.length, 1);
+});
+
+test('search pages on the matching set', async () => {
+  const { base, as, addRender } = await mount();
+  for (let i = 0; i < 3; i += 1) addRender('user-1', { roomType: 'Bedroom', furnitureStyle: 'luxury' });
+  addRender('user-1', { roomType: 'Kitchen', furnitureStyle: 'coastal' });
+  as('user-1');
+
+  const body = await json(await fetch(`${base}/api/gallery?q=bedroom&offset=2`));
+  assert.equal(body.total, 3, 'the total stays the matching count on a later page');
+  assert.equal(body.entries.length, 1, 'and the offset applies within the matches');
 });
 
 // ---- naming -------------------------------------------------------------------------
@@ -315,6 +405,10 @@ test('an entry carries no `active` flag, because there is no inactive state', as
   addRender('user-1');
   as('user-1');
   const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
+  // Asserted before the `in` check rather than left to throw a TypeError: a listing that
+  // came back with no share at all is a different failure from one carrying the old flag,
+  // and reading `'active' in null` reports neither.
+  assert.ok(entry.share, 'the entry arrived with no link');
   assert.ok(!('active' in entry.share), 'the flag is gone; the URL is the answer');
 });
 

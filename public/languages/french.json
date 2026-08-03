@@ -105,7 +105,6 @@
         "two": "88 Harborview Drive",
         "three": "1207 Ashford Court"
       },
-      "eyebrow": "Votre galerie",
       "panelTitle": "Réaménagez autant de fois que vous voulez. Rien n'est écrasé.",
       "panelBody": "Pas de bouton d'enregistrement, pas de dossier à nommer. Aménagez une pièce et elle est dans votre galerie, la plus récente en tête, avant même que vous fermiez l'onglet. Ouvrez-la plus tard et vous retrouvez le comparateur avant/après ainsi que les réglages exacts qui l'ont produite : type de pièce, style, votre consigne supplémentaire, si vous avez retiré les meubles existants et les photos de meubles que vous avez jointes.",
       "points": {
@@ -1259,6 +1258,7 @@
       "free": "Gratuit",
       "included": "Inclus",
       "notIncluded": "Non inclus",
+      "unlimitedValue": "Illimitées",
       "rows": {
         "customizable": "Home staging personnalisable",
         "fastModel": "Modèle d’image rapide",
@@ -1357,6 +1357,24 @@
       "saved": "Nom enregistré.",
       "cleared": "Retour au nom par défaut.",
       "failed": "Impossible d'enregistrer ce nom. Réessayez."
+    },
+    "search": {
+      "label": "Rechercher dans votre galerie",
+      "placeholder": "Rechercher par nom, pièce, style ou consigne",
+      "clear": "Effacer la recherche",
+      "results": {
+        "one": "{count} résultat",
+        "other": "{count} résultats"
+      },
+      "showing": {
+        "one": "Affichage de {loaded} résultat sur {count}",
+        "other": "Affichage de {loaded} résultats sur {count}"
+      },
+      "none": {
+        "title": "Aucune pièce ne correspond",
+        "body": "Rien dans votre galerie ne correspond à « {q} ».",
+        "cta": "Effacer la recherche"
+      }
     }
   }
 }

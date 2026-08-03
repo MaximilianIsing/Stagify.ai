@@ -35,9 +35,19 @@ async function call(url, init = {}, fetchImpl = fetch) {
   }
 }
 
-/** @param {{ offset?: number }} [arg] @param {typeof fetch} [fetchImpl] */
-export function listGallery({ offset = 0 } = {}, fetchImpl = fetch) {
-  return call(`/api/gallery?offset=${encodeURIComponent(String(offset))}`, { method: 'GET' }, fetchImpl);
+/**
+ * One page of the gallery, optionally narrowed by a search.
+ *
+ * `q` is sent only when there is something to search for, so an ordinary load stays the
+ * same URL it always was — which is what keeps the fixture routing in the specs, and any
+ * cache in front of this, matching on the plain path.
+ *
+ * @param {{ offset?: number, q?: string }} [arg] @param {typeof fetch} [fetchImpl]
+ */
+export function listGallery({ offset = 0, q = '' } = {}, fetchImpl = fetch) {
+  const query = `offset=${encodeURIComponent(String(offset))}`
+    + (q ? `&q=${encodeURIComponent(q)}` : '');
+  return call(`/api/gallery?${query}`, { method: 'GET' }, fetchImpl);
 }
 
 // There is no mint and no revoke here because there are no such routes: a link arrives

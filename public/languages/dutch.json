@@ -105,7 +105,6 @@
         "two": "88 Harborview Drive",
         "three": "1207 Ashford Court"
       },
-      "eyebrow": "Jouw galerij",
       "panelTitle": "Richt zo vaak opnieuw in als je wilt. Er wordt niets overschreven.",
       "panelBody": "Er is geen opslaanknop en geen map die je een naam moet geven. Richt een kamer in en hij staat in je galerij, nieuwste eerst, nog voordat je het tabblad sluit. Open hem later en je krijgt de voor-en-naschuifbalk plus precies de instellingen erachter: type kamer, stijl, je extra prompt, of je de bestaande meubels hebt verwijderd, en eventuele meubelfoto's die je hebt toegevoegd.",
       "points": {
@@ -1259,6 +1258,7 @@
       "free": "Gratis",
       "included": "Inbegrepen",
       "notIncluded": "Niet inbegrepen",
+      "unlimitedValue": "Onbeperkt",
       "rows": {
         "customizable": "Aanpasbare styling",
         "fastModel": "Snel beeldmodel",
@@ -1357,6 +1357,24 @@
       "saved": "Naam opgeslagen.",
       "cleared": "Terug naar de standaardnaam.",
       "failed": "Deze naam kon niet worden opgeslagen. Probeer het opnieuw."
+    },
+    "search": {
+      "label": "Zoek in je galerie",
+      "placeholder": "Zoek op naam, ruimte, stijl of prompt",
+      "clear": "Zoekopdracht wissen",
+      "results": {
+        "one": "{count} resultaat",
+        "other": "{count} resultaten"
+      },
+      "showing": {
+        "one": "{loaded} van {count} resultaat wordt getoond",
+        "other": "{loaded} van {count} resultaten worden getoond"
+      },
+      "none": {
+        "title": "Geen ruimtes komen overeen",
+        "body": "Niets in je galerie komt overeen met “{q}”.",
+        "cta": "Zoekopdracht wissen"
+      }
     }
   }
 }

@@ -199,7 +199,7 @@ directly rather than taken from the dep bag.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/gallery` | The caller's saved renders, newest first. `?offset=` pages by 60. Each entry carries the room type, style, the **prompt that produced it**, the owner's `name` for it (`''` when unnamed — see below), short-TTL **presigned URLs** for `after` / `before` / `thumb` — bytes come straight from R2, never through this process — and `share.url`, the render's client link. Returns `{ entries, total, offset, pageSize, enabled, urlTtlMs }`. **`enabled: false`** with an empty list when the object store is unconfigured (the gallery is off on Render without R2) — a `200`, not a `500`, so the page can explain itself. `401` `AUTH_REQUIRED` when signed out. |
+| `GET` | `/api/gallery` | The caller's saved renders, newest first. `?offset=` pages by 60. Each entry carries the room type, style, the **prompt that produced it**, the owner's `name` for it (`''` when unnamed — see below), short-TTL **presigned URLs** for `after` / `before` / `thumb` — bytes come straight from R2, never through this process — and `share.url`, the render's client link. Returns `{ entries, total, offset, pageSize, enabled, urlTtlMs, search }`. **`?q=` searches (Stagify+ only — see below).** **`enabled: false`** with an empty list when the object store is unconfigured (the gallery is off on Render without R2) — a `200`, not a `500`, so the page can explain itself. `401` `AUTH_REQUIRED` when signed out. |
 | `DELETE` | `/api/gallery/:id` | Delete one entry, and **the only way to take a link down**: it tombstones the bytes, so any outstanding presigned URL starts 404ing as soon as the reaper runs. `404` if the render is not the caller's. |
 | `PATCH` | `/api/gallery/:id` | Name one render. **Body:** `{ name: string }` — required and required to be a *string*; anything else is a `400` `INVALID_NAME` rather than a silent clear. `name: ""` is a **reset**, storing `NULL` so the page goes back to deriving the default. The store trims, collapses whitespace, strips control characters and clamps to **80 code points**, and the response returns `{ success, name }` with what was actually **stored** — not what was submitted. `404` if the render is not the caller's, or has been evicted. |
 | `PATCH` | `/api/gallery/:id/share` | Edit a link's presentation **without rotating it** — an agent fixing a typo in their own phone number must not invalidate the link they already sent. **Body:** `{ settings?: { headline, note, agentName, agentEmail, agentPhone } }` — an allowlist, unknown keys are dropped. |
@@ -211,6 +211,26 @@ directly rather than taken from the dep bag.
 > `DELETE /api/gallery/:id/share` — mint and revoke — were removed with the buttons that
 > called them. `listForUser` returns finished renders only, so nothing is minted for bytes
 > that never landed, which is the bar the old `POST` enforced with `status !== 'ok'`.
+
+> **Searching is a Stagify+ feature, and the SERVER is the gate.** `?q=` on the listing is
+> honoured only when `user.plan === 'pro'`; for a free account it is **dropped, not
+> refused** — the listing itself is theirs, and a `403` for a parameter they cannot see on
+> screen would be a worse answer than their own gallery. Either way the response carries
+> `search: { enabled, q }`: `enabled` is what reveals the box on the page (never a
+> client-side plan check, so the box cannot be offered for a filter the server will ignore),
+> and `q` echoes what was actually **applied** — `''` for a free caller who sent one anyway.
+> `total` is the **matching** count while a search is on, so the count line above the grid
+> cannot contradict the tiles under it.
+>
+> Matching runs in **SQL, not over the loaded page** — the route pages at 60 while the Pro
+> cap is 200, so a client-side filter would only ever look at the first screenful. The query
+> is split on whitespace and every term must appear somewhere in `custom_name`, `room_type`,
+> `furniture_style` or `additional_prompt`, **joined** — that concatenation is what makes the
+> *derived* default name searchable, since neither column on its own contains "Luxury
+> Bedroom". `%` and `_` are escaped, so punctuation is literal rather than a wildcard.
+> Bounded at **80 characters and 8 terms** (each term is another `LIKE` in the `WHERE`).
+> Case-insensitivity is SQLite's own `LIKE`, i.e. **ASCII-only** — a Cyrillic or Greek name
+> matches case-sensitively.
 
 > **A render's name is derived, not stored, until somebody types one.** `staged_renders`
 > has a nullable `custom_name`; `shapeEntry` publishes it as `name` and does **not**
@@ -233,7 +253,7 @@ no matter how many images they scroll.
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/s/:token` | The share page shell. **Performs no lookup at all**, so the response is byte-identical for a real token and an invented one — not because the comparison is careful, but because there is no comparison. Headers: `Referrer-Policy: no-referrer`, `X-Robots-Tag: noindex, nofollow`, `Cache-Control: private, no-store`. |
-| `GET` | `/api/share/:token` | The manifest: headline, note, agent card, the staged image as a **presigned R2 URL**, and the MLS/NAR disclosure. **One identical `404`** — same status, body *and* headers — for unknown, revoked, expired, cross-tenant, deleted and not-yet-uploaded. A caller who could tell "revoked" from "never existed" would have learned that a token was once real. Counts a view, debounced to once per 30 min. |
+| `GET` | `/api/share/:token` | The manifest: headline, note, agent card, the staged image as a **presigned R2 URL**, the MLS/NAR disclosure, and what the photo is — `name` (the owner's own label, so the page heads itself with the same title their gallery shows), `roomType`, `furnitureStyle` and `stagedAt`. The **prompt** behind the render stays out. **One identical `404`** — same status, body *and* headers — for unknown, revoked, expired, cross-tenant, deleted and not-yet-uploaded. A caller who could tell "revoked" from "never existed" would have learned that a token was once real. Counts a view, debounced to once per 30 min. |
 
 > ⚠️ **A takedown is eventual for bytes.** Deleting the entry stops the manifest at once,
 > but a presigned image URL already handed out keeps working until it expires (≤15 min).

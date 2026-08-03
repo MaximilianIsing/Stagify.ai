@@ -227,11 +227,16 @@ Three properties are load-bearing rather than stylistic:
 - **Every table carries `user_id`, even where it is derivable.** That column is what makes
   the GDPR drift guard in `test/data/user-deletion.test.js` *see* the table. Without it a
   table is invisible to the guard and its rows outlive the account.
-- **Both tiers are capped** — `FREE_GALLERY_LIMIT` (10) and `PRO_GALLERY_LIMIT` (200),
-  both env-overridable. Eviction runs **inside the insert transaction**, because a cap
-  checked in one statement and applied in another is not a cap. The Stagify+ ceiling is
-  deliberately not advertised (Stagify+ sells unlimited *staging*, which it is), but an
-  eviction that breaks a **live share link** is reported to the owner regardless.
+- **Only the free tier is capped** — `FREE_GALLERY_LIMIT` (10). `PRO_GALLERY_LIMIT`
+  defaults to `Infinity`: a Stagify+ gallery keeps every render, which is what the compare
+  table on `stagify-plus.html` advertises. Eviction runs **inside the insert transaction**,
+  because a cap checked in one statement and applied in another is not a cap; an uncapped
+  tier reuses that same path rather than getting its own, since `evictBeyondCap` returns
+  early on a non-finite cap (the door the downgrade grace window already used). Both
+  constants stay env-overridable — setting `PRO_GALLERY_LIMIT` re-imposes a ceiling
+  without a deploy if per-account storage ever threatens the R2 bill, at the cost of making
+  the pricing page wrong. An eviction that breaks a **live share link** is reported to the
+  owner regardless of tier.
 - **`blob_tombstones` has NO `user_id`, on purpose.** It holds keys whose owning rows are
   *already* deleted. Giving it one would make the drift guard demand that an erasure
   delete these rows — i.e. delete the record that the bytes still need deleting. That

@@ -105,7 +105,6 @@
         "two": "88 Harborview Drive",
         "three": "1207 Ashford Court"
       },
-      "eyebrow": "Ihre Galerie",
       "panelTitle": "Richten Sie so oft neu ein, wie Sie möchten. Nichts wird überschrieben.",
       "panelBody": "Es gibt keinen Speichern-Button und keinen Ordner, den Sie benennen müssten. Richten Sie einen Raum ein, und er ist in Ihrer Galerie, die neuesten zuerst, noch bevor Sie den Tab schließen. Öffnen Sie ihn später, und Sie erhalten den Vorher-Nachher-Regler sowie genau die Einstellungen dahinter: Raumtyp, Stil, Ihre zusätzliche Anweisung, ob Sie die vorhandenen Möbel entfernt haben, und alle Möbelfotos, die Sie angehängt haben.",
       "points": {
@@ -1259,6 +1258,7 @@
       "free": "Kostenlos",
       "included": "Enthalten",
       "notIncluded": "Nicht enthalten",
+      "unlimitedValue": "Unbegrenzt",
       "rows": {
         "customizable": "Anpassbares Staging",
         "fastModel": "Schnelles Bildmodell",
@@ -1357,6 +1357,24 @@
       "saved": "Name gespeichert.",
       "cleared": "Zurück zum Standardnamen.",
       "failed": "Dieser Name konnte nicht gespeichert werden. Bitte erneut versuchen."
+    },
+    "search": {
+      "label": "Galerie durchsuchen",
+      "placeholder": "Nach Name, Raum, Stil oder Prompt suchen",
+      "clear": "Suche zurücksetzen",
+      "results": {
+        "one": "{count} Treffer",
+        "other": "{count} Treffer"
+      },
+      "showing": {
+        "one": "{loaded} von {count} Treffer wird angezeigt",
+        "other": "{loaded} von {count} Treffern werden angezeigt"
+      },
+      "none": {
+        "title": "Keine passenden Räume",
+        "body": "Nichts in Ihrer Galerie passt zu „{q}“.",
+        "cta": "Suche zurücksetzen"
+      }
     }
   }
 }

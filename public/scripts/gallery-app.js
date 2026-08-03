@@ -1,9 +1,15 @@
 // The owner's gallery page.
 //
-// One writer of the page state (loading | ready | empty | off | error | signed-out), so no
-// combination of failures can leave two on screen. The detail panel is opened from a card
-// and shows the share link for whichever entry is open — every entry has one, so the panel
-// paints it rather than negotiating for it.
+// One writer of the page state (loading | ready | empty | no-results | off | error |
+// signed-out), so no combination of failures can leave two on screen. The detail panel is
+// opened from a card and shows the share link for whichever entry is open — every entry
+// has one, so the panel paints it rather than negotiating for it.
+//
+// SEARCH IS A STAGIFY+ FEATURE AND THE SERVER SAYS SO. The box is revealed from
+// `search.enabled` in the listing, never from a plan read off window.StagifyAuth: the same
+// response decides whether `q` is honoured, so the two cannot disagree. That also means the
+// filtering is SQL, not a filter over the loaded page — the route pages at 60 while the Pro
+// cap is 200, so a client-side search would quietly only look at the first screenful.
 
 import { listGallery, deleteRender, renameRender } from './gallery/api.js';
 import { renderGrid, renderCompare, renderMeta, entryName, defaultName } from './gallery/view.js';
@@ -11,11 +17,25 @@ import { t, plural } from './gallery/i18n.js';
 import { copyText } from './clipboard.js';
 
 /**
- * Boot the page.
- * @param {{ doc?: Document, fetchImpl?: typeof fetch }} [deps] - Injectable for tests.
- * @returns {Promise<'ready' | 'empty' | 'off' | 'error' | 'signed-out'>} The state it settled on.
+ * How long to wait after the last keystroke before searching.
+ *
+ * Sized against the limiter, not against feel: `galleryLimiter` allows 120 requests per 15
+ * minutes per IP, so a request per keystroke would exhaust an agent's whole window inside
+ * one query and answer 429 to their next page load. A pause this long collapses a typed
+ * word into one request, and `runSearch` drops a query identical to the one already on
+ * screen so backspacing to where you were costs nothing.
  */
-export async function start({ doc = document, fetchImpl = fetch } = {}) {
+const SEARCH_DEBOUNCE_MS = 350;
+
+/**
+ * Boot the page.
+ * @param {{ doc?: Document, fetchImpl?: typeof fetch, searchDelayMs?: number }} [deps] -
+ *   Injectable for tests. `searchDelayMs` is the debounce; the specs drive it to 0 so a
+ *   spec can await a search rather than sleep through one.
+ * @returns {Promise<'ready' | 'empty' | 'no-results' | 'off' | 'error' | 'signed-out' | 'stale'>}
+ *   The state it settled on.
+ */
+export async function start({ doc = document, fetchImpl = fetch, searchDelayMs = SEARCH_DEBOUNCE_MS } = {}) {
   /** @param {string} state */
   const setState = (state) => doc.body.setAttribute('data-state', state);
   const byId = (id) => doc.getElementById(id);
@@ -38,6 +58,19 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
   let total = 0;
   /** The last failure's status, so a language switch can restate it. */
   let errorStatus = -1;
+  /** The query the grid on screen was built from — '' when nothing is being searched. */
+  let query = '';
+  /** The pending debounce, so a second keystroke replaces the first rather than queueing. */
+  /** @type {any} */
+  let searchTimer = null;
+  /**
+   * Which search the newest request belongs to.
+   *
+   * Two searches can be in flight when a slow request for "bed" is overtaken by a fast one
+   * for "bedroom"; without this the slow response lands last and paints results for a query
+   * the box no longer holds. Compared on arrival, and a stale response is dropped.
+   */
+  let searchSeq = 0;
 
   /** @param {string} text */
   const shareStatus = (text) => {
@@ -249,6 +282,20 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
   function paintCount() {
     const node = byId('gal-count');
     if (!node) return;
+    // While a search is on, both numbers are about the MATCHES — the route counts the
+    // filtered set — so saying "staged rooms" here would read as the size of the gallery.
+    if (query) {
+      node.textContent = loaded < total
+        ? plural('gallery.search.showing', total, {
+          one: 'Showing {loaded} of {count} match',
+          other: 'Showing {loaded} of {count} matches',
+        }, { loaded })
+        : plural('gallery.search.results', total, {
+          one: '{count} match',
+          other: '{count} matches',
+        });
+      return;
+    }
     node.textContent = loaded < total
       ? plural('gallery.showing', total, {
         one: 'Showing {loaded} of {count} staged room',
@@ -258,6 +305,41 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
         one: '{count} staged room',
         other: '{count} staged rooms',
       });
+  }
+
+  /** Name the query in the no-matches panel, so it is obvious what was searched for. */
+  function paintNoResults() {
+    const node = byId('gal-no-results-detail');
+    if (node) {
+      node.textContent = t('gallery.search.none.body', 'Nothing in your gallery matches “{q}”.', { q: query });
+    }
+  }
+
+  /**
+   * Show the × exactly when there is text to clear.
+   *
+   * Driven by the BOX, never by `query`: text that has been typed but not yet searched for
+   * is still text the visitor wants a way to remove, and clearing it has to hide the button
+   * even when no request was ever made. Reading `query` here left the × on screen after the
+   * box was emptied, because the search that would have repainted it was skipped as a no-op.
+   */
+  function paintClearButton() {
+    const input = /** @type {any} */ (byId('gal-search-input'));
+    const clear = /** @type {any} */ (byId('gal-search-clear'));
+    if (clear) clear.hidden = !input?.value;
+  }
+
+  /**
+   * Reflect the applied query in the box.
+   *
+   * The input's own value is only written when it DIFFERS — assigning to `value` moves the
+   * caret to the end in every browser, so repainting on each keystroke would reverse typing
+   * in the middle of a word.
+   */
+  function paintSearch() {
+    const input = /** @type {any} */ (byId('gal-search-input'));
+    if (input && input.value !== query) input.value = query;
+    paintClearButton();
   }
 
   /**
@@ -277,9 +359,12 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
     }
   }
 
-  /** @param {{ append?: boolean }} [arg] */
-  async function load({ append = false } = {}) {
-    const res = await listGallery({ offset: append ? loaded : 0 }, fetchImpl);
+  /** @param {{ append?: boolean, seq?: number }} [arg] */
+  async function load({ append = false, seq = searchSeq } = {}) {
+    const res = await listGallery({ offset: append ? loaded : 0, q: query }, fetchImpl);
+    // A response for a query the box no longer holds must not paint. Checked before ANY
+    // state is written, so an overtaken request cannot even flip the page to 'error'.
+    if (seq !== searchSeq) return 'stale';
     if (res.status === 401) { setState('signed-out'); return 'signed-out'; }
     // A failure is NOT an empty account. Every non-401 error used to land on "Nothing
     // staged yet", which tells someone looking for work they know they did that they
@@ -287,8 +372,29 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
     if (!res.ok || !res.body) { paintError(res.status); setState('error'); return 'error'; }
     if (res.body.enabled === false) { setState('off'); return 'off'; }
 
+    // The server decides whether searching is offered — it is the same answer that decides
+    // whether `q` is honoured, so the box cannot be shown for a filter that will be ignored.
+    doc.body.setAttribute('data-gal-search', res.body.search?.enabled ? 'on' : 'off');
+    if (!res.body.search?.enabled && query) {
+      // A free account that somehow carried a query: the server returned the whole gallery,
+      // so the page must stop claiming it is showing matches.
+      query = '';
+      paintSearch();
+    }
+
     const page = res.body.entries ?? [];
-    if (!append && !page.length) { setState('empty'); return 'empty'; }
+    // "Nothing matched" is not "nothing staged". Landing a search on the empty state tells
+    // an agent with two hundred rooms that they have none — and hides the box that would
+    // let them clear it.
+    if (!append && !page.length) {
+      errorStatus = -1;
+      entries = [];
+      loaded = 0;
+      total = 0;
+      if (query) { paintNoResults(); setState('no-results'); return 'no-results'; }
+      setState('empty');
+      return 'empty';
+    }
 
     errorStatus = -1;
     entries = append ? entries.concat(page) : page;
@@ -350,6 +456,72 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
   // wait for the retry instead of racing it.
   byId('gal-retry')?.addEventListener('click', () => load());
 
+  /**
+   * Run a search, from the first page.
+   *
+   * `searchSeq` is bumped BEFORE the request so any response already in flight is stale on
+   * arrival — the fix for a slow "bed" landing after a fast "bedroom" and painting results
+   * for a query the box no longer holds.
+   *
+   * @param {string} next - The raw query. Trimmed here, so trailing spaces from typing do
+   *   not count as a different search.
+   * @returns {Promise<string>}
+   */
+  function runSearch(next) {
+    const wanted = String(next ?? '').trim();
+    // Backspacing to a query already on screen must not cost a request — which matters
+    // against a limiter of 120 per 15 minutes.
+    if (wanted === query) return Promise.resolve('unchanged');
+    query = wanted;
+    searchSeq += 1;
+    paintSearch();
+    return load({ seq: searchSeq });
+  }
+
+  /** Cancel any pending debounce — a submit or a clear must not be re-run by it after. */
+  function cancelPendingSearch() {
+    if (searchTimer === null) return;
+    clearTimeout(searchTimer);
+    searchTimer = null;
+  }
+
+  byId('gal-search-input')?.addEventListener('input', () => {
+    const input = /** @type {any} */ (byId('gal-search-input'));
+    // Repainted immediately rather than waiting out the debounce.
+    paintClearButton();
+    cancelPendingSearch();
+    searchTimer = setTimeout(() => {
+      searchTimer = null;
+      void runSearch(input?.value ?? '');
+    }, searchDelayMs);
+  });
+
+  // Enter searches now instead of waiting out the debounce. The <form> would otherwise
+  // reload the page, which on this URL means losing the session-scoped state entirely.
+  byId('gal-search')?.addEventListener('submit', (event) => {
+    /** @type {any} */ (event).preventDefault?.();
+    cancelPendingSearch();
+    return runSearch(/** @type {any} */ (byId('gal-search-input'))?.value ?? '');
+  });
+
+  // Two ways back to the whole gallery: the × in the box, and the button on the panel that
+  // says nothing matched. Both go through the same call, so they cannot diverge.
+  for (const id of ['gal-search-clear', 'gal-search-reset']) {
+    byId(id)?.addEventListener('click', () => {
+      cancelPendingSearch();
+      const input = /** @type {any} */ (byId('gal-search-input'));
+      if (input) input.value = '';
+      // Before runSearch, which skips a query identical to the one already applied — so
+      // emptying a box that was typed into but never searched must not depend on it.
+      paintClearButton();
+      const done = runSearch('');
+      // Focus follows the clear back to the box, so the next query can just be typed —
+      // and because the reset button is about to be hidden with its own state.
+      if (input && typeof input.focus === 'function') input.focus();
+      return done;
+    });
+  }
+
   byId('gal-more')?.addEventListener('click', async () => {
     const more = /** @type {any} */ (byId('gal-more'));
     if (more) { more.disabled = true; more.textContent = t('gallery.moreLoading', 'Loading…'); }
@@ -403,6 +575,9 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('languagechange', () => {
       if (errorStatus >= 0) paintError(errorStatus);
+      // Before the entries guard: the no-matches panel is a state with NO entries, and its
+      // one JS-owned line would otherwise be the only English left on a translated page.
+      if (query) paintNoResults();
       if (!entries.length) return;
       paintCount();
       const more = /** @type {any} */ (byId('gal-more'));

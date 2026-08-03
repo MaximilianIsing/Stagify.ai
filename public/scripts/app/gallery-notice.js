@@ -6,11 +6,17 @@
 // it competes with the Download button it sits beside.
 //
 // SO THIS ONLY EVER SPEAKS WHEN SOMETHING WAS LOST. A free account keeps its last
-// FREE_GALLERY_LIMIT entries and a Stagify+ account its last PRO_GALLERY_LIMIT, so a new
-// render can push an older one out — and if that older one had a live share link, a
-// client's link just stopped working. The staging response carries `gallery.evicted`
-// precisely so that is something the app SAYS rather than something the agent discovers
-// when a seller tells them the link is dead. Silence on success, a sentence on loss.
+// FREE_GALLERY_LIMIT entries, so a new render can push an older one out — and if that
+// older one had a live share link, a client's link just stopped working. The staging
+// response carries `gallery.evicted` precisely so that is something the app SAYS rather
+// than something the agent discovers when a seller tells them the link is dead. Silence
+// on success, a sentence on loss.
+//
+// A Stagify+ gallery is UNLIMITED, so in practice the pro branch below is unreachable —
+// but it is deliberately kept rather than deleted. PRO_GALLERY_LIMIT is still
+// env-overridable so a ceiling can be re-imposed in a storage incident, and the day that
+// happens is not the day to discover this file assumed it never would. See
+// lib/data/staged-renders.js.
 //
 // WHY THERE IS NO SHARE BUTTON HERE
 // The obvious thing to put beside a finished render is "Share this". It would not work.
@@ -83,9 +89,10 @@ export function createGalleryNotice({ doc = document, container, lang }) {
       }
 
       const parts = [];
-      // The cap is only NAMED for the free tier, where it is the upgrade prompt.
-      // Stagify+ is sold as unlimited staging — which it is — and its gallery ceiling
-      // is deliberately not advertised, so a Pro eviction says nothing about it.
+      // The cap is only NAMED for the free tier, where it is the upgrade prompt. A pro
+      // gallery is advertised as unlimited, so on the one path that can still evict from
+      // one (an operator override) the last thing to do is announce a ceiling the page
+      // says does not exist — the share-link sentence below covers what actually matters.
       if (gallery.tier !== 'pro') {
         parts.push(
           t('modal.staging.galleryEvicted', 'Older stagings were removed to make room — the free plan keeps your most recent ones.'),

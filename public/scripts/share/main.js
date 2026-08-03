@@ -6,7 +6,7 @@
 
 import { parseShareToken, manifestUrl } from './token.js';
 import { fetchManifest } from './api.js';
-import { renderGallery, renderAgent, createLightbox } from './view.js';
+import { renderGallery, renderAgent, createLightbox, shareTitle } from './view.js';
 import { createRefresher } from './refresh.js';
 
 /**
@@ -53,7 +53,9 @@ export async function start({ doc = document, fetchImpl = fetch, pathname } = {}
    */
   function draw(manifest) {
     const headline = doc.getElementById('sh-headline');
-    if (headline) headline.textContent = manifest.headline || 'Staged room';
+    // The same title the owner sees over this photo in their gallery. `shareTitle` owns
+    // the precedence so the heading, the alt text and the lightbox cannot disagree.
+    if (headline) headline.textContent = shareTitle(manifest);
 
     const note = doc.getElementById('sh-note');
     if (note) {
