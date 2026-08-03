@@ -1,7 +1,7 @@
 // admin routes, extracted verbatim from server.js.
 import express from 'express';
 import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError } from '../lib/http/http-helpers.js';
+import { sendError, resolveAppOrigin } from '../lib/http/http-helpers.js';
 import { reportError } from '../lib/http/error-ref.js';
 import path from 'path';
 import fs from 'fs';
@@ -71,10 +71,10 @@ router.post('/api/host-image', protectLogs, (req, res) => {
       const manifest = readHostedImagesManifest();
       manifest.push(entry);
       writeHostedImagesManifest(manifest);
-      const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'https')
-        .split(',')[0]
-        .trim();
-      const url = proto + '://' + req.get('host') + '/i/' + id;
+      // Was hand-parsing x-forwarded-proto. `trust proxy` (server.js:132) already
+      // resolves that into req.protocol, and doing it by hand is the same mistake
+      // getStagingClientIp warns about for X-Forwarded-For.
+      const url = resolveAppOrigin(req) + '/i/' + id;
       logger.info('[host-image] hosted', file, '(' + entry.size + ' bytes)');
       return res.json({ ok: true, id, path: '/i/' + id, url, entry });
     } catch (e) {

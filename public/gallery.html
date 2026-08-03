@@ -242,10 +242,16 @@
     <dl class="gal-meta" id="gal-meta"></dl>
 
     <section class="gal-share" id="gal-share">
-      <h3 class="gal-share__title" data-lang="gallery.share.title">Share with a client</h3>
+      <!-- "Share", not "Share with a client": plenty of these accounts are not selling
+           anything, and naming the recipient guesses wrong for them. -->
+      <h3 class="gal-share__title" data-lang="gallery.share.title">Share</h3>
       <p class="gal-share__status" id="gal-share-status" aria-live="polite"></p>
       <div class="gal-share__row">
         <input class="gal-share__url" id="gal-share-url" type="text" readonly hidden aria-label="Share link" data-lang-attr="gallery.share.urlLabel|aria-label">
+        <!-- Shown only while a freshly minted link is on screen, because that is the
+             only moment there is anything to copy: the server returns the token once
+             and has no read-back. -->
+        <button type="button" class="btn gal-share__btn gal-share__copy" id="gal-share-copy" hidden data-lang="gallery.share.copy">Copy link</button>
         <!-- No data-lang: this button reads "Create a new link" once one is live. -->
         <button type="button" class="btn btn-primary gal-share__btn" id="gal-share-create">Create link</button>
         <button type="button" class="btn gal-share__btn gal-share__btn--quiet" id="gal-share-revoke" hidden data-lang="gallery.share.revoke">Turn off link</button>

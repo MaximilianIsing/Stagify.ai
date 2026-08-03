@@ -98,7 +98,7 @@ test('the page shell is byte-identical for a real token and an invented one', as
   // the comparison is careful, but because there is no comparison.
   const { base, addRender, shares } = await mount();
   const id = addRender('user-1');
-  const { token } = shares.createShare({ renderId: id, userId: 'user-1' });
+  const { token } = shares.ensureShare({ renderId: id, userId: 'user-1' });
 
   const real = await fetch(`${base}/s/${token}`);
   const fake = await fetch(`${base}/s/ZZZZinventedZZZZinventedZZZZ`);
@@ -124,21 +124,21 @@ test('every refusal is byte-identical, headers included', async () => {
   const { base, shares, stagedRenders, addRender } = await mount();
 
   const revokedId = addRender('user-1');
-  const revoked = shares.createShare({ renderId: revokedId, userId: 'user-1' });
+  const revoked = shares.ensureShare({ renderId: revokedId, userId: 'user-1' });
   shares.revoke(revokedId);
 
   const expiredId = addRender('user-1');
-  const expired = shares.createShare({ renderId: expiredId, userId: 'user-1', expiresAt: 1 });
+  const expired = shares.ensureShare({ renderId: expiredId, userId: 'user-1', expiresAt: 1 });
 
   // Someone else's render behind a share that claims it.
   const otherId = addRender('user-2');
-  const crossTenant = shares.createShare({ renderId: otherId, userId: 'user-1' });
+  const crossTenant = shares.ensureShare({ renderId: otherId, userId: 'user-1' });
 
   const pendingId = addRender('user-1', { status: 'pending' });
-  const pending = shares.createShare({ renderId: pendingId, userId: 'user-1' });
+  const pending = shares.ensureShare({ renderId: pendingId, userId: 'user-1' });
 
   const deletedId = addRender('user-1');
-  const deleted = shares.createShare({ renderId: deletedId, userId: 'user-1' });
+  const deleted = shares.ensureShare({ renderId: deletedId, userId: 'user-1' });
   stagedRenders.remove({ id: deletedId, userId: 'user-1' });
 
   const cases = {
@@ -177,7 +177,7 @@ test('a junk token never 500s', async () => {
 test('a live share returns the render, its disclosure, and nothing internal', async () => {
   const { base, shares, addRender } = await mount();
   const id = addRender('user-1');
-  const { token } = shares.createShare({
+  const { token } = shares.ensureShare({
     renderId: id,
     userId: 'user-1',
     settings: { headline: 'Living room', agentName: 'A. Broker', agentEmail: 'a@example.com' },
@@ -217,7 +217,7 @@ test('the source photo is never published, and no setting can publish it', async
   // flag to flip, which is why the settings allowlist drops one if somebody sends it.
   const { base, shares, addRender } = await mount();
   const id = addRender('user-1');
-  const { token } = shares.createShare({
+  const { token } = shares.ensureShare({
     renderId: id, userId: 'user-1', settings: { showBefore: true },
   });
 
@@ -232,7 +232,7 @@ test('image URLs point at the object store, not at this origin', async () => {
   // buying nothing and the single Node event loop would be serving a buyer's scrolling.
   const { base, shares, addRender } = await mount();
   const id = addRender('user-1');
-  const { token } = shares.createShare({ renderId: id, userId: 'user-1' });
+  const { token } = shares.ensureShare({ renderId: id, userId: 'user-1' });
 
   const manifest = await (await fetch(`${base}/api/share/${token}`)).json();
   const url = manifest.rooms[0].frames[0].url;
@@ -246,7 +246,7 @@ test('image URLs point at the object store, not at this origin', async () => {
 test('a view is counted once, and only for a manifest that was actually served', async () => {
   const { base, shares, addRender } = await mount();
   const id = addRender('user-1');
-  const { token } = shares.createShare({ renderId: id, userId: 'user-1' });
+  const { token } = shares.ensureShare({ renderId: id, userId: 'user-1' });
 
   await fetch(`${base}/api/share/${token}`);
   await fetch(`${base}/api/share/${token}`);
@@ -259,7 +259,7 @@ test('a view is counted once, and only for a manifest that was actually served',
 test('revoking stops the manifest immediately', async () => {
   const { base, shares, addRender } = await mount();
   const id = addRender('user-1');
-  const { token } = shares.createShare({ renderId: id, userId: 'user-1' });
+  const { token } = shares.ensureShare({ renderId: id, userId: 'user-1' });
   assert.equal((await fetch(`${base}/api/share/${token}`)).status, 200);
 
   shares.revoke(id);
