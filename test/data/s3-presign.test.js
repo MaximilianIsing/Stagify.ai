@@ -179,3 +179,65 @@ test('amzDates produces the two forms SigV4 needs', () => {
   assert.equal(amzDate, '20260802T183005Z');
   assert.equal(dateStamp, '20260802');
 });
+
+// ---- the memoized signing key ---------------------------------------------------------
+//
+// `signingKey` caches its four-HMAC derivation, because a gallery page mints ~180 URLs and
+// was re-deriving four constant values for every one of them. The cache is keyed on
+// (secret, dateStamp, region, service) — these are the cases a cache keyed on too little
+// would pass silently, and each is still asserted against the aws4fetch oracle rather than
+// against our own previous answer, so a wrong cached key cannot agree with itself.
+//
+// The DATE half of this is already covered by 'matches aws4fetch across a range of signing
+// clocks' above, which signs either side of midnight UTC in this same process.
+
+test('a rotated credential never reuses the old signing key', async () => {
+  // The failure mode if the cache were keyed on date alone: the second secret silently
+  // signs with the first one's key. Both are minted back to back in ONE process, which is
+  // the only way to catch it — a per-file cache looks fine when each test forks.
+  const other = {
+    accessKeyId: 'AKIAI44QH8DHBEXAMPLE',
+    secretAccessKey: 'je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY',
+  };
+  const objectPath = `/renders/${RID}/after.webp`;
+  const url = `${ORIGIN}/${BUCKET}${objectPath}`;
+
+  const first = new URL(presignGetUrl({ url, ...CRED, expiresSec: 900, now: NOW }))
+    .searchParams.get('X-Amz-Signature');
+  const second = new URL(presignGetUrl({ url, ...other, expiresSec: 900, now: NOW }))
+    .searchParams.get('X-Amz-Signature');
+  // And back to the first, so a single-entry cache is exercised in both directions.
+  const third = new URL(presignGetUrl({ url, ...CRED, expiresSec: 900, now: NOW }))
+    .searchParams.get('X-Amz-Signature');
+
+  assert.notEqual(first, second, 'two different secrets must not produce one signature');
+  assert.equal(first, third, 'and coming back to the first secret must still be correct');
+
+  const oracle = new AwsClient({ ...other, service: 's3', region: 'auto' });
+  const signed = await oracle.sign(`${url}?X-Amz-Expires=900`, {
+    method: 'GET',
+    aws: { signQuery: true, datetime: amzDates(NOW).amzDate },
+  });
+  assert.equal(second, new URL(signed.url).searchParams.get('X-Amz-Signature'));
+});
+
+test('a different region derives a different signing key', async () => {
+  // R2 is always `auto`, so this is the parameter most likely to be dropped from a cache
+  // key on the grounds that it never varies. It is in the credential scope, so it must not
+  // be — and the day it does vary, a stale key would be an unexplainable 403.
+  const objectPath = `/renders/${RID}/after.webp`;
+  const url = `${ORIGIN}/${BUCKET}${objectPath}`;
+
+  const auto = new URL(presignGetUrl({ url, ...CRED, expiresSec: 900, now: NOW }))
+    .searchParams.get('X-Amz-Signature');
+  const useast = new URL(presignGetUrl({ url, ...CRED, region: 'us-east-1', expiresSec: 900, now: NOW }))
+    .searchParams.get('X-Amz-Signature');
+  assert.notEqual(auto, useast);
+
+  const oracle = new AwsClient({ ...CRED, service: 's3', region: 'us-east-1' });
+  const signed = await oracle.sign(`${url}?X-Amz-Expires=900`, {
+    method: 'GET',
+    aws: { signQuery: true, datetime: amzDates(NOW).amzDate },
+  });
+  assert.equal(useast, new URL(signed.url).searchParams.get('X-Amz-Signature'));
+});

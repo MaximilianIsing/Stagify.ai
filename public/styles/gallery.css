@@ -200,6 +200,12 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
    width of the page, which looks like a bug rather than a gallery. */
 .gal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
 
+/* The role="listitem" wrapper each card sits in (see renderGrid). It IS the grid item —
+   .gal-card is display:block/width:100%, so it fills this and the layout is byte-identical
+   to when the button was the grid item directly. Deliberately not display:contents, which
+   has a history of dropping the role it is carrying. */
+.gal-card-wrap { display: block; min-width: 0; }
+
 .gal-card {
   display: block;
   width: 100%;
@@ -213,9 +219,12 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
      everything around it is Inter. */
   font: inherit;
   color: inherit;
-  background: rgba(255, 255, 255, 0.55);
-  -webkit-backdrop-filter: blur(16px) saturate(170%);
-  backdrop-filter: blur(16px) saturate(170%);
+  /* No backdrop-filter, unlike .gal-panel / .gal-search / .gal-detail. Those are ONE
+     element each; this is sixty, every one compositing a blur over a fullscreen
+     autoplaying video, and a Pro account pages to 120 of them. home.css:2354 declined it
+     on the homepage's mock cards for exactly this reason and made exactly this
+     substitution — the extra background opacity reads as the same glass. */
+  background: rgba(255, 255, 255, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 0 10px 28px rgba(30, 58, 138, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.72);
   transition: transform 0.22s cubic-bezier(0.16, 0.84, 0.44, 1), box-shadow 0.22s ease, border-color 0.22s ease;
@@ -579,6 +588,57 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
 .gal-detail__delete:hover {
   background: color-mix(in srgb, var(--danger) 8%, white);
   border-color: var(--danger);
+}
+
+/* ---- the two-step delete -----------------------------------------------------------
+   The confirm row needs BOTH a display and an explicit [hidden] rule: `display: flex`
+   beats the browser's `[hidden] { display: none }` on specificity, so without the second
+   line the confirmation would be permanently on screen. Same pairing as
+   .gal-search__clear[hidden] above, and for the same reason. */
+.gal-delete-row { margin-top: 22px; }
+.gal-delete-row .gal-detail__delete { margin-top: 0; }
+.gal-delete-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--danger) 6%, white);
+  border: 1px solid color-mix(in srgb, var(--danger) 24%, white);
+}
+.gal-delete-confirm[hidden] { display: none; }
+.gal-delete-confirm__warn {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.gal-delete-confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/* The destructive choice is the FILLED one, so the two buttons cannot be told apart by
+   shape alone — a confirmation whose options look identical is a coin toss. */
+.gal-delete-confirm__yes.btn {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--bg-elevated);
+}
+.gal-delete-confirm__yes.btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 85%, black);
+  border-color: color-mix(in srgb, var(--danger) 85%, black);
+}
+.gal-delete-confirm__no.btn { background: none; }
+.gal-delete-confirm .btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.gal-delete-status {
+  margin: 10px 0 0;
+  min-height: 1.2em;
+  font-size: 0.88rem;
+  color: var(--muted);
 }
 
 /* ---- modal scroll lock -------------------------------------------------------------

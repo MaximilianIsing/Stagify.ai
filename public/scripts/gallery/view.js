@@ -85,12 +85,40 @@ function dateLocale() {
 export function formatWhen(ms) {
   if (!Number.isFinite(ms)) return '';
   try {
-    return new Date(ms).toLocaleString(dateLocale(), {
-      year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-    });
+    return whenFormatter().format(new Date(ms));
   } catch {
     return '';
   }
+}
+
+/** The last formatter, and the tag it was built for. @type {{ tag: string | undefined, fmt: Intl.DateTimeFormat } | null} */
+let whenFmt = null;
+
+/**
+ * The date formatter for the reader's current language.
+ *
+ * Keyed on the resolved TAG rather than cached outright, which is what makes it survive
+ * the in-place language switch: a formatter pinned at boot would print English dates under
+ * a Spanish grid, and this page swaps its pack without navigating.
+ *
+ * Worth caching because `toLocaleString` constructs a new Intl.DateTimeFormat on every
+ * call, and every card calls it TWICE — once for the visible text and once for the
+ * aria-label. At a page of 60 that was ~120 formatters and 120 localStorage reads, and the
+ * whole lot again on every language switch. Reading `selectedLanguage` per call is the
+ * cheap half; building the formatter is not.
+ *
+ * @returns {Intl.DateTimeFormat}
+ */
+function whenFormatter() {
+  const tag = dateLocale();
+  if (whenFmt && whenFmt.tag === tag) return whenFmt.fmt;
+  whenFmt = {
+    tag,
+    fmt: new Intl.DateTimeFormat(tag, {
+      year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+    }),
+  };
+  return whenFmt.fmt;
 }
 
 /**
@@ -107,10 +135,14 @@ export function formatWhen(ms) {
  * re-point at the same entry's card instead.
  *
  * @param {{ grid: Element | null, entries: any[], doc?: Document,
- *   onOpen: (entry: any, trigger: any) => void, append?: boolean }} arg
+ *   onOpen: (entry: any, trigger: any) => void, append?: boolean,
+ *   onImage?: (img: any) => void }} arg - `onImage` sees every <img> as it is built, so
+ *   the page can hand it to the expiry refresher. A callback rather than a second return
+ *   value because the return type is load-bearing: it is the CARDS, index-aligned with
+ *   `entries`, and the focus-restore logic depends on that.
  * @returns {any[]} The cards built by THIS call — the appended ones only, when appending.
  */
-export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
+export function renderGrid({ grid, entries, doc, onOpen, append = false, onImage }) {
   const cards = entries.map((entry) => {
     const img = el('img', {
       doc,
@@ -122,10 +154,17 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
         decoding: 'async',
       },
     });
+    onImage?.(img);
     // A thumbnail that will not load currently paints its alt text across the tile, which
     // reads as a broken page rather than a missing image. Fall back to the full render
     // once — thumb and after are separate objects, so one can be missing while the other
     // is fine — then give up quietly and let the card carry the name.
+    //
+    // This still earns its place for a genuinely missing object, but it CANNOT rescue an
+    // expired URL: thumb and after are presigned in the same response, at the same instant,
+    // with the same TTL, so when one has aged out so has the other. That case is the
+    // refresher's (onImage above); the placeholder shows for one debounce interval and is
+    // then repainted with a fresh URL.
     const fallbackSrc = entry.urls.after && entry.urls.after !== entry.urls.thumb ? entry.urls.after : '';
     let swapped = false;
     img.addEventListener('error', () => {
@@ -183,11 +222,27 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
     card.addEventListener('click', () => onOpen(entry, card));
     return card;
   });
+
+  // Each card gets a role="listitem" wrapper, because #gal-grid carries role="list" and a
+  // list whose children are buttons is invalid ARIA — some readers announce "list, 0
+  // items", which is worse than the bare run of buttons it replaced. The wrapper becomes
+  // the CSS grid item and .gal-card is already display:block/width:100%, so it fills it
+  // and the layout is unchanged; NOT display:contents, which has a history of dropping
+  // the very role it would be carrying.
+  const items = cards.map((card) => el('div', {
+    doc,
+    className: 'gal-card-wrap',
+    attrs: { role: 'listitem' },
+    children: [card],
+  }));
+
   if (append) {
-    for (const card of cards) grid?.appendChild(card);
+    for (const item of items) grid?.appendChild(item);
     return cards;
   }
-  replaceChildren(grid, cards);
+  replaceChildren(grid, items);
+  // The CARDS, never the wrappers: the caller focuses these and compares them against the
+  // node the panel was opened from.
   return cards;
 }
 
@@ -202,14 +257,18 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
  * The slider is returned rather than looked up again: it is the one control in the panel
  * with no id, and handing it back keeps the caller off querySelectorAll.
  *
- * @param {{ container: Element | null, entry: any, doc?: Document }} arg
+ * @param {{ container: Element | null, entry: any, doc?: Document,
+ *   onImage?: (img: any) => void }} arg - `onImage` sees both images, so an expired panel
+ *   recovers the same way the grid does. Both, not just `after`: they are presigned in the
+ *   same response and age out together.
  * @returns {any} The range input, or null when there is nothing to compare.
  */
-export function renderCompare({ container, entry, doc }) {
+export function renderCompare({ container, entry, doc, onImage }) {
   const after = el('img', {
     doc,
     attrs: { src: entry.urls.after, alt: stagedAlt(entry) },
   });
+  onImage?.(after);
   if (!entry.urls.before) {
     replaceChildren(container, [after]);
     return null;
@@ -219,7 +278,11 @@ export function renderCompare({ container, entry, doc }) {
     doc,
     attrs: { src: entry.urls.before, alt: t('gallery.compare.beforeAlt', 'The room before staging') },
   });
+  onImage?.(before);
   after.className = 'gal-compare__after';
+  // A bare number is what a screen reader announces for a range without this — "50",
+  // with no unit and no clue which half of the comparison it refers to.
+  const valueText = (v) => t('gallery.compare.rangeValue', '{percent}% staged', { percent: v });
   const range = el('input', {
     doc,
     className: 'gal-compare__range',
@@ -229,10 +292,13 @@ export function renderCompare({ container, entry, doc }) {
       max: '100',
       value: '50',
       'aria-label': t('gallery.compare.rangeLabel', 'Reveal the staged room'),
+      'aria-valuetext': valueText('50'),
     },
   });
   range.addEventListener('input', () => {
-    /** @type {any} */ (container).style.setProperty('--gal-split', `${/** @type {any} */ (range).value}%`);
+    const value = /** @type {any} */ (range).value;
+    /** @type {any} */ (container).style.setProperty('--gal-split', `${value}%`);
+    range.setAttribute('aria-valuetext', valueText(value));
   });
   replaceChildren(container, [before, after, range]);
   return range;

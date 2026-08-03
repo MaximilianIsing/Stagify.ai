@@ -1299,7 +1299,8 @@
     },
     "compare": {
       "beforeAlt": "La pièce avant l’aménagement",
-      "rangeLabel": "Révéler la pièce aménagée"
+      "rangeLabel": "Révéler la pièce aménagée",
+      "rangeValue": "{percent} % aménagé"
     },
     "meta": {
       "room": "Pièce",
@@ -1332,7 +1333,14 @@
       "rateLimited": "Trop de requêtes pour le moment. Patientez un instant et réessayez.",
       "retry": "Réessayer"
     },
-    "delete": "Supprimer ce rendu",
+    "delete": {
+      "action": "Supprimer ce rendu",
+      "warn": "Cette action supprime définitivement le rendu ainsi que le lien que vous avez déjà partagé. Elle est irréversible.",
+      "confirm": "Supprimer définitivement",
+      "cancel": "Le conserver",
+      "busy": "Suppression…",
+      "failed": "Impossible de supprimer ce rendu."
+    },
     "share": {
       "title": "Partager",
       "note": "Toute personne disposant de ce lien peut ouvrir la photo aménagée. Pour la retirer, supprimez le rendu : les visites s’arrêtent sous 15 minutes.",
@@ -1345,8 +1353,7 @@
         "one": "Ouvert {count} fois",
         "other": "Ouvert {count} fois"
       },
-      "unavailable": "Ce lien n’a pas pu être chargé. Rechargez la page et réessayez.",
-      "deleteFailed": "Impossible de supprimer ce rendu."
+      "unavailable": "Ce lien n’a pas pu être chargé. Rechargez la page et réessayez."
     },
     "rename": {
       "action": "Renommer",
@@ -1375,6 +1382,7 @@
         "body": "Rien dans votre galerie ne correspond à « {q} ».",
         "cta": "Effacer la recherche"
       }
-    }
+    },
+    "loading": "Chargement de votre galerie…"
   }
 }
