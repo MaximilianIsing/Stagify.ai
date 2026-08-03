@@ -74,10 +74,17 @@
     <!-- Preload only the weights used above the fold: 400 (body) and 700 (h1).
          The 600 face is NOT preloaded — it still loads from the @font-face in
          styles.css with font-display:swap, so it costs a brief swap instead of
-         107 KB of Highest-priority bandwidth competing with the render-blocking
-         CSS and the LCP image. -->
-    <link rel="preload" href="fonts/inter-all-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="fonts/inter-all-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+         Highest-priority bandwidth competing with the render-blocking CSS and the
+         LCP image.
+         And only the LATIN subset of each. `as=font` is fetched at Chrome's Highest
+         priority — above the LCP image — so what goes here has to be the minimum that
+         renders the hero. The fused `inter-all-*` files these replaced were 98 KB and
+         107 KB; latin is ~24 KB each. Every other script still resolves, just on
+         demand: styles.css declares all seven subsets with unicode-range, so /ru pulls
+         cyrillic when it paints Cyrillic and nobody else pays for it. Do not "helpfully"
+         preload more subsets — that re-creates the exact problem. -->
+    <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
     
     <!-- Preload critical carousel image -->
     <link rel="preload" as="image" href="media-webp/example/Original.webp" fetchpriority="high">
@@ -197,8 +204,19 @@
     </div>
 
     <!-- Background Video -->
+    <!-- The `media` attribute is the whole mobile LCP story: background.mp4 is 1.25 MB,
+         and PageSpeed's mobile profile throttles to ~200 KB/s, so on a phone this one
+         decorative layer was ~6 s of the download budget — spent on a fixed, z-index:-1,
+         opacity:.8 backdrop. A <source> whose media query does not match is never
+         selected (video.networkState becomes 3, NETWORK_NO_SOURCE) and NOTHING is
+         fetched, so phones get the 12 KB `poster` instead and look near-identical.
+         769px is the far side of the site's own 768px mobile line (.desktop-only,
+         styles.css). Deliberately markup, not JS: the CSP has no 'unsafe-inline' for
+         scripts, and this way the gate survives the SSR locale homepages
+         (lib/i18n/render-page.js) for free. A browser that ignores `media` on <source>
+         just behaves as it did before — it fetches the video. -->
     <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
-      <source src="background.mp4" type="video/mp4">
+      <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
     </video>
 
     <header class="site-header">
@@ -320,67 +338,75 @@
         <div class="sponsors-content">
           <h2 class="sponsors-title" data-lang="sponsors.title">Trusted by agents at:</h2>
           <div class="sponsors-container">
+            <!-- fetchpriority="low" rather than loading="lazy", deliberately. These 20
+                 tags are 10 unique logos duplicated for the marquee loop, and
+                 sponsors-scroll.js computes its wrap point by summing
+                 `items[i].offsetWidth` over the first half — lazy images have no
+                 intrinsic width until they load, which would corrupt that measurement
+                 and break the loop. Native lazy-loading is also unreliable for content
+                 moved only by a rAF transform. Low priority yields the bandwidth to the
+                 LCP image without touching the geometry. -->
             <div class="sponsors-track" id="sponsors-track">
               <!-- First set of sponsors -->
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>              <!-- Duplicate set for seamless loop -->
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Rock Solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Tahari Capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/267 Fifth Avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Mid Town Loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Thurman Services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
               <div class="sponsor-item">
-                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async">
+                <img src="media-webp/sponsors/Brown Harris Stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>            </div>
           </div>
         </div>
@@ -399,8 +425,14 @@
                  "Bedroom" tab below. show() swaps only src, never alt, so the alt goes
                  stale once a visitor switches tabs; the load-time and no-JS state is
                  what these describe. -->
-            <img class="ba-after" src="media-webp/Homepage/BeforeAfter/After2.webp" alt="Bedroom after AI virtual staging with Stagify.ai" decoding="async">
-            <img class="ba-before" src="media-webp/Homepage/BeforeAfter/Before2.webp" alt="Empty bedroom before virtual staging" fetchpriority="high" decoding="async">
+            <!-- Both lazy, and neither is fetchpriority=high. This widget is below the
+                 fold; .ba-before used to claim `high`, which put 71 KB ahead of the
+                 actual LCP element (the hero carousel image) in the fetch queue. Lazy is
+                 layout-safe here because .ba is `aspect-ratio: 3/2` and `.ba img` is
+                 `position:absolute; inset:0` (home.css) — the box does not depend on the
+                 images having loaded, so there is no CLS to trade away. -->
+            <img class="ba-after" src="media-webp/Homepage/BeforeAfter/After2.webp" alt="Bedroom after AI virtual staging with Stagify.ai" loading="lazy" decoding="async">
+            <img class="ba-before" src="media-webp/Homepage/BeforeAfter/Before2.webp" alt="Empty bedroom before virtual staging" loading="lazy" decoding="async">
             <span class="ba-tag ba-tag--before" data-lang="home.studio.beforeLabel">Before</span>
             <span class="ba-tag ba-tag--after" data-lang="home.studio.afterLabel">After</span>
             <div class="ba-handle" role="slider" tabindex="0" data-lang-attr="home.studio.revealSliderAria|aria-label" aria-label="Reveal slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
@@ -430,7 +462,7 @@
         <div class="info-rows">
           <div class="info-row">
             <figure class="info-row__media reveal reveal--left">
-              <img src="media-webp/Homepage/Meeting2.webp" alt="Stagify.ai founder demonstrating the product at a Compass real estate office" loading="eager" fetchpriority="low" decoding="async">
+              <img src="media-webp/Homepage/Meeting2.webp" alt="Stagify.ai founder demonstrating the product at a Compass real estate office" loading="lazy" fetchpriority="low" decoding="async">
               <figcaption data-lang="home.info.rows.why.caption">Demoing Stagify at a Compass office in New York</figcaption>
             </figure>
             <div class="info-row__text reveal reveal--right" style="--reveal-delay:90ms">

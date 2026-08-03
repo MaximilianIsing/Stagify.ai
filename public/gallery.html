@@ -59,12 +59,16 @@
 
 <!-- The same backdrop every other nav-bearing page carries. Not decoration here: the
      grid and its panels are frosted glass, and glass over a flat fill just looks grey. -->
-<video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
-  <source src="background.mp4" type="video/mp4">
+<video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
+  <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
 </video>
 
 <header class="site-header">
-      <nav class="nav">
+      <!-- id on the <nav>, deliberately NOT on <header class="site-header">: two guards
+           (staging-menu.test.js, desktop-only-gates.test.js) match that opening tag
+           literally across every page, and an attribute on it would break the byte
+           comparison. gallery-app.js marks this inert while the detail panel is open. -->
+      <nav class="nav" id="gal-nav">
         <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
         <div class="nav-center">
           <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
@@ -100,7 +104,7 @@
       </nav>
     </header>
 
-<main class="gal-main">
+<main class="gal-main" id="gal-main">
   <!--
     `data-lang-inplace` is the one thing here that is not a copy of the other pages.
 
@@ -189,7 +193,17 @@
       </button>
     </form>
 
-    <div class="gal-state gal-state--loading" aria-hidden="true"><div class="gal-spinner"></div></div>
+    <!--
+      role="status" rather than aria-hidden. The spinner itself is decoration and stays
+      hidden, but "we are fetching your gallery" is information, and it was the one thing
+      assistive tech was told nothing about — between page load and the first #gal-count
+      announcement a screen reader got silence. The label is JS-owned (no data-lang) for
+      the usual reason: an in-place language re-apply would overwrite live state.
+    -->
+    <div class="gal-state gal-state--loading" role="status">
+      <div class="gal-spinner" aria-hidden="true"></div>
+      <span class="sr-only" id="gal-loading-label"></span>
+    </div>
 
     <section class="gal-state gal-state--signed-out">
       <div class="gal-panel">
@@ -240,8 +254,14 @@
         </span>
         <h2 class="gal-panel__title" data-lang="gallery.error.title">We could not load your gallery</h2>
         <!-- No data-lang: gallery-app.js chooses between the offline / rate-limited /
-             generic wording, and a re-apply would flatten that back to the generic. -->
-        <p class="gal-panel__body" id="gal-error-detail">Your renders are safe — this is the list failing to load, not the images.</p>
+             generic wording, and a re-apply would flatten that back to the generic.
+
+             aria-live because a retry that fails again changes only this line, and focus
+             stays on the button — without it nothing at all is announced. Note the honest
+             limit: a retry failing with the IDENTICAL wording does not re-announce,
+             because the content did not change. The button's disabled flicker is what
+             says something happened. -->
+        <p class="gal-panel__body" id="gal-error-detail" aria-live="polite">Your renders are safe — this is the list failing to load, not the images.</p>
         <button type="button" class="btn btn-primary" id="gal-retry" data-lang="gallery.error.retry">Try again</button>
       </div>
     </section>
@@ -266,7 +286,10 @@
 
     <section class="gal-state gal-state--ready">
       <p class="gal-count" id="gal-count" aria-live="polite"></p>
-      <div class="gal-grid" id="gal-grid"></div>
+      <!-- role="list" so a reader announces "list, 60 items" and can jump between them,
+           instead of an undifferentiated run of buttons. renderGrid wraps every card in a
+           role="listitem"; buttons cannot be list children directly. -->
+      <div class="gal-grid" id="gal-grid" role="list"></div>
       <!-- The route pages at 60 while the Pro cap is 200, so the count above can name
            more rooms than the grid holds. This is how the rest are reached. -->
       <button type="button" class="btn btn-secondary gal-more" id="gal-more" hidden>Load more</button>
@@ -336,7 +359,33 @@
       </p>
     </section>
 
-    <button type="button" class="btn gal-detail__delete" id="gal-delete" data-lang="gallery.delete">Delete this render</button>
+    <!--
+      The takedown is irreversible, and it is the ONLY control on this panel that is, so it
+      ships as a two-step: the button arms a confirm row, exactly as Rename does.
+
+      A row rather than window.confirm for two reasons — the specs drive a document
+      stand-in that has no window dialogs, and a native prompt can be neither styled nor
+      translated, so the one destructive question on the page would be the one asked in
+      the browser's language instead of the reader's.
+    -->
+    <div class="gal-delete-row">
+      <button type="button" class="btn gal-detail__delete" id="gal-delete"
+              aria-expanded="false" aria-controls="gal-delete-confirm"
+              data-lang="gallery.delete.action">Delete this render</button>
+      <!-- Ships hidden, so test/helpers/gallery-dom.js starts it hidden too. -->
+      <div class="gal-delete-confirm" id="gal-delete-confirm" hidden>
+        <p class="gal-delete-confirm__warn" data-lang="gallery.delete.warn">
+          This permanently deletes the render and the link you have already shared. It cannot be undone.
+        </p>
+        <div class="gal-delete-confirm__actions">
+          <button type="button" class="btn gal-delete-confirm__yes" id="gal-delete-yes" data-lang="gallery.delete.confirm">Delete permanently</button>
+          <button type="button" class="btn gal-delete-confirm__no" id="gal-delete-cancel" data-lang="gallery.delete.cancel">Keep it</button>
+        </div>
+      </div>
+      <!-- No data-lang: gallery-app.js writes the busy and failed wording here, and an
+           in-place language re-apply would overwrite whatever it had just said. -->
+      <p class="gal-delete-status" id="gal-delete-status" aria-live="polite"></p>
+    </div>
   </div>
 </div>
 

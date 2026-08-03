@@ -35,6 +35,54 @@ class Carousel {
     this.setupEventListeners();
     this.updateSlidePosition();
     this.startAutoplay();
+    this.scheduleImageHydration();
+  }
+
+  /**
+   * Give a slide's <img> its real `src`, if it is still deferred.
+   *
+   * Slides 1..n ship with `data-src` instead of `src` (see the items array at the
+   * bottom of this file) so that the seven example photos — 666 KB, six of which are
+   * behind `.carousel-track { overflow:hidden }` and invisible at first paint — do not
+   * contend with slide 0, which IS the page's LCP element.
+   *
+   * @param {number} index
+   */
+  promoteImage(index) {
+    const item = this.items && this.items[index];
+    if (!item) return;
+    const img = /** @type {HTMLImageElement | null} */ (item.querySelector('img[data-src]'));
+    if (!img) return;
+    img.src = img.dataset.src || '';
+    delete img.dataset.src;
+  }
+
+  /**
+   * Load the deferred slides once the page has finished its own critical work.
+   *
+   * Deliberately NOT `loading="lazy"`: the track is an `overflow:hidden` box moved by a
+   * transform, so the lazy heuristic is unreliable here and a slide could stay blank
+   * forever. Autoplay advances every 3 s and `load` fires well before that, but
+   * updateSlidePosition() promotes on demand anyway, so a slow connection degrades to a
+   * late image rather than a missing one.
+   */
+  scheduleImageHydration() {
+    // Slide 1 is warmed off slide 0's OWN load event rather than `load`, because
+    // autoplay advances at 3 s (options.autoplayDelay) and on a throttled phone the
+    // window `load` event can land after that. Chaining it to the LCP image guarantees
+    // the fetch cannot start until the byte that matters is already off the wire.
+    const first = this.items[0] && this.items[0].querySelector('img');
+    if (first && /** @type {HTMLImageElement} */ (first).complete) this.promoteImage(1);
+    else if (first) first.addEventListener('load', () => this.promoteImage(1), { once: true });
+
+    const hydrate = () => {
+      const idle = window.requestIdleCallback || ((/** @type {() => void} */ cb) => setTimeout(cb, 1));
+      idle(() => {
+        for (let i = 0; i < this.items.length; i++) this.promoteImage(i);
+      });
+    };
+    if (document.readyState === 'complete') hydrate();
+    else window.addEventListener('load', hydrate, { once: true });
   }
 
   createCarousel() {
@@ -203,6 +251,12 @@ class Carousel {
   }
 
   updateSlidePosition() {
+    // Only the slide being shown, never the one after it. This also runs once from
+    // init(), where currentIndex is 0 — and slide 0 is the LCP image, which already has
+    // a real `src`, so this is a no-op there. Prefetching the *next* slide here would
+    // pull 96 KB into the LCP window, which is the thing this whole file is avoiding;
+    // bulk loading is scheduleImageHydration()'s job, after `load`.
+    this.promoteImage(this.currentIndex);
     const base = -this.currentIndex * this.trackItemOffset;
     const nudge = window.innerWidth <= 768 ? 6 : 0;
     this.track.style.transform = `translateX(${base + nudge}px)`;
@@ -246,6 +300,12 @@ class Carousel {
   const container = /** @type {HTMLElement} */ (document.querySelector('.carousel-container'));
   if (!container) return;
 
+  // Slide 0 keeps a real `src` — it is the LCP element, and this URL matches the
+  // <link rel="preload" as="image"> in index.html byte-for-byte so the preload is
+  // reused rather than refetched. Every OTHER slide carries `data-src`: they sit
+  // inside `overflow:hidden` and are invisible at first paint, but as plain `src`
+  // they still queued 592 KB against the LCP image on a throttled phone.
+  // Carousel.promoteImage() swaps them in after `load`.
   const items = [
     {
       key: 'original',
@@ -259,42 +319,42 @@ class Carousel {
       title: 'Modern',
       description: 'Clean lines and contemporary furniture',
       image:
-        '<img src="media-webp/example/Modern.webp" data-lang-attr="carouselItems.modernPhotoAlt|alt" alt="Example room with modern virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
+        '<img data-src="media-webp/example/Modern.webp" fetchpriority="low" decoding="async" data-lang-attr="carouselItems.modernPhotoAlt|alt" alt="Example room with modern virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
     },
     {
       key: 'scandinavian',
       title: 'Scandinavian',
       description: 'Minimalist design with natural materials',
       image:
-        '<img src="media-webp/example/Scandinavian.webp" data-lang-attr="carouselItems.scandinavianPhotoAlt|alt" alt="Example room with Scandinavian virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
+        '<img data-src="media-webp/example/Scandinavian.webp" fetchpriority="low" decoding="async" data-lang-attr="carouselItems.scandinavianPhotoAlt|alt" alt="Example room with Scandinavian virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
     },
     {
       key: 'luxury',
       title: 'Luxury',
       description: 'High-end finishes and elegant furnishings',
       image:
-        '<img src="media-webp/example/Luxury.webp" data-lang-attr="carouselItems.luxuryPhotoAlt|alt" alt="Example room with luxury virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
+        '<img data-src="media-webp/example/Luxury.webp" fetchpriority="low" decoding="async" data-lang-attr="carouselItems.luxuryPhotoAlt|alt" alt="Example room with luxury virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
     },
     {
       key: 'coastal',
       title: 'Coastal',
       description: 'Beach-inspired colors and relaxed vibes',
       image:
-        '<img src="media-webp/example/Coastal.webp" data-lang-attr="carouselItems.coastalPhotoAlt|alt" alt="Example room with coastal virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
+        '<img data-src="media-webp/example/Coastal.webp" fetchpriority="low" decoding="async" data-lang-attr="carouselItems.coastalPhotoAlt|alt" alt="Example room with coastal virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
     },
     {
       key: 'midcentury',
       title: 'Midcentury',
       description: 'Retro design with bold colors and shapes',
       image:
-        '<img src="media-webp/example/Midcentury.webp" data-lang-attr="carouselItems.midcenturyPhotoAlt|alt" alt="Example room with mid-century virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
+        '<img data-src="media-webp/example/Midcentury.webp" fetchpriority="low" decoding="async" data-lang-attr="carouselItems.midcenturyPhotoAlt|alt" alt="Example room with mid-century virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
     },
     {
       key: 'farmhouse',
       title: 'Farmhouse',
       description: 'Rustic charm with vintage elements',
       image:
-        '<img src="media-webp/example/Farmhouse.webp" data-lang-attr="carouselItems.farmhousePhotoAlt|alt" alt="Example room with farmhouse virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
+        '<img data-src="media-webp/example/Farmhouse.webp" fetchpriority="low" decoding="async" data-lang-attr="carouselItems.farmhousePhotoAlt|alt" alt="Example room with farmhouse virtual staging style" style="width: 100%; height: 100%; object-fit: cover;">',
     },
   ];
 

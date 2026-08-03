@@ -17,7 +17,7 @@ import assert from 'node:assert/strict';
 import { start } from '../../../public/scripts/gallery-app.js';
 import { copyText } from '../../../public/scripts/clipboard.js';
 import { renderGrid } from '../../../public/scripts/gallery/view.js';
-import { galleryDocument, fakeRoutes } from '../../helpers/gallery-dom.js';
+import { galleryDocument, fakeRoutes, cards } from '../../helpers/gallery-dom.js';
 
 const LINK = 'https://stagify.test/s/TOKEN';
 
@@ -39,7 +39,7 @@ const routes = (entry = ENTRY) => fakeRoutes({
 async function openCard(entry) {
   const ctx = galleryDocument();
   await start({ doc: ctx.document, fetchImpl: routes(entry) });
-  ctx.byId('gal-grid').children[0].fire('click');
+  cards(ctx.byId)[0].fire('click');
   return ctx;
 }
 
@@ -116,14 +116,14 @@ test('a thumbnail that will not load falls back to the full render', async () =>
   // Distinct objects in the store, so one can be missing while the other is fine.
   const { document } = galleryDocument();
   const grid = document.createElement('div');
-  renderGrid({
+  const [card] = renderGrid({
     grid,
     doc: document,
     entries: [{ ...ENTRY, urls: { thumb: '/gone.webp', after: '/there.webp', before: '' } }],
     onOpen: () => {},
   });
 
-  const img = grid.children[0].children[0];
+  const img = card.children[0];
   assert.equal(img.getAttribute('src'), '/gone.webp');
   img.fire('error');
   assert.equal(img.getAttribute('src'), '/there.webp', 'it should try the full render');
@@ -133,14 +133,14 @@ test('and when that fails too it degrades quietly instead of printing its alt te
   // The failure the user saw: a broken tile filled with "Bedroom, staged".
   const { document } = galleryDocument();
   const grid = document.createElement('div');
-  renderGrid({
+  const [card] = renderGrid({
     grid,
     doc: document,
     entries: [{ ...ENTRY, urls: { thumb: '/gone.webp', after: '/also-gone.webp', before: '' } }],
     onOpen: () => {},
   });
 
-  const img = grid.children[0].children[0];
+  const img = card.children[0];
   img.fire('error');
   img.fire('error');
 
@@ -148,7 +148,7 @@ test('and when that fails too it degrades quietly instead of printing its alt te
   assert.match(img.className, /gal-card__img--missing/);
   assert.match(img.getAttribute('src'), /^data:image\/gif/, 'a valid src, or the browser draws its own broken glyph');
   // The room is still identifiable — the card, not the image, carries the name.
-  assert.match(grid.children[0].getAttribute('aria-label'), /Bedroom/);
+  assert.match(card.getAttribute('aria-label'), /Bedroom/);
 });
 
 test('the copy button is reachable by keyboard inside the panel', async () => {

@@ -13,7 +13,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { start } from '../../../public/scripts/gallery-app.js';
-import { galleryDocument, fakeRoutes } from '../../helpers/gallery-dom.js';
+import { galleryDocument, fakeRoutes, cards } from '../../helpers/gallery-dom.js';
 
 const ENTRY = {
   id: 'r1',
@@ -31,7 +31,7 @@ const listing = (entries) => ({
 async function openFirstCard(overrides = {}) {
   const ctx = galleryDocument();
   await start({ doc: ctx.document, fetchImpl: fakeRoutes(listing([{ ...ENTRY, ...overrides }])) });
-  const card = ctx.byId('gal-grid').children[0];
+  const card = cards(ctx.byId)[0];
   card.fire('click');
   return { ...ctx, card };
 }
@@ -172,6 +172,35 @@ test('the modal marks the body so the page behind it stops scrolling', async () 
   byId('gal-detail-close').fire('click');
   assert.equal(body.getAttribute('data-gal-modal'), null, 'the scroll lock outlived the modal');
   assert.ok(document.activeElement);
+});
+
+test('the page behind the panel is inert, not merely untabbable', async () => {
+  // aria-modal only tells a screen reader the dialog is modal. Without inert, its virtual
+  // cursor still reads the grid and the nav underneath — so the panel was modal to a
+  // keyboard and porous to a reader. The manual Tab trap is exactly why nobody noticed.
+  const { byId } = await openFirstCard();
+  assert.equal(byId('gal-nav').getAttribute('inert'), '', 'the nav is still readable behind the overlay');
+  assert.equal(byId('gal-main').getAttribute('inert'), '');
+
+  byId('gal-detail-close').fire('click');
+  assert.equal(byId('gal-nav').getAttribute('inert'), null, 'inert outlived the panel');
+  assert.equal(byId('gal-main').getAttribute('inert'), null);
+});
+
+test('every way out of the panel lifts inert again', async () => {
+  // Three dismissals, one of which (the backdrop) does not go through the close button.
+  // A page left permanently inert is unusable in a way that is very hard to diagnose.
+  for (const dismiss of [
+    (byId, doc) => doc.fire('keydown', { key: 'Escape' }),
+    (byId) => byId('gal-detail').fire('click', { target: byId('gal-detail') }),
+    (byId) => byId('gal-detail-close').fire('click'),
+  ]) {
+    const { document, byId } = await openFirstCard();
+    assert.equal(byId('gal-main').getAttribute('inert'), '');
+    dismiss(byId, document);
+    assert.equal(byId('gal-main').getAttribute('inert'), null);
+    assert.equal(byId('gal-nav').getAttribute('inert'), null);
+  }
 });
 
 test('Tab does nothing special while the panel is closed', async () => {

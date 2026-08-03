@@ -1299,7 +1299,8 @@
     },
     "compare": {
       "beforeAlt": "Der Raum vor der Gestaltung",
-      "rangeLabel": "Den gestalteten Raum einblenden"
+      "rangeLabel": "Den gestalteten Raum einblenden",
+      "rangeValue": "{percent} % eingerichtet"
     },
     "meta": {
       "room": "Raum",
@@ -1332,7 +1333,14 @@
       "rateLimited": "Zu viele Anfragen im Moment. Warten Sie einen Augenblick und versuchen Sie es erneut.",
       "retry": "Erneut versuchen"
     },
-    "delete": "Dieses Rendering löschen",
+    "delete": {
+      "action": "Dieses Rendering löschen",
+      "warn": "Damit werden das Rendering und der bereits geteilte Link dauerhaft gelöscht. Das lässt sich nicht rückgängig machen.",
+      "confirm": "Endgültig löschen",
+      "cancel": "Behalten",
+      "busy": "Wird gelöscht…",
+      "failed": "Dieses Rendering konnte nicht gelöscht werden."
+    },
     "share": {
       "title": "Teilen",
       "note": "Wer diesen Link hat, kann das gestaltete Foto öffnen. Zum Zurückziehen löschen Sie das Rendering – Besuche werden innerhalb von 15 Minuten gestoppt.",
@@ -1345,8 +1353,7 @@
         "one": "{count}-mal geöffnet",
         "other": "{count}-mal geöffnet"
       },
-      "unavailable": "Dieser Link konnte nicht geladen werden. Laden Sie die Seite neu und versuchen Sie es erneut.",
-      "deleteFailed": "Dieses Rendering konnte nicht gelöscht werden."
+      "unavailable": "Dieser Link konnte nicht geladen werden. Laden Sie die Seite neu und versuchen Sie es erneut."
     },
     "rename": {
       "action": "Umbenennen",
@@ -1375,6 +1382,7 @@
         "body": "Nichts in Ihrer Galerie passt zu „{q}“.",
         "cta": "Suche zurücksetzen"
       }
-    }
+    },
+    "loading": "Deine Galerie wird geladen…"
   }
 }

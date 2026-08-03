@@ -31,13 +31,25 @@
     const exBtns = Array.from(studio.querySelectorAll(".studio-ex"));
     if (!ba || !handle) return;
 
-    // Preload every variant so toggling is instant.
-    EXAMPLES.forEach((e) =>
-      [e.before, e.after].forEach((s) => {
-        const i = new Image();
-        i.src = s;
-      })
-    );
+    // Preload every variant so toggling is instant — but NOT at init.
+    //
+    // media-webp/Homepage/BeforeAfter/ is 511 KB across the six files, and this used to
+    // fire on DOMContentLoaded, i.e. squarely inside the LCP window. On PageSpeed's
+    // mobile profile (~200 KB/s) that is ~2.5 s of bandwidth taken from the hero image,
+    // for a widget that is below the fold and cannot be clicked until it is on screen.
+    // Deferring costs nothing: show() already loads the pair it needs and only swaps
+    // after both decode, so a cold tab click still renders correctly, just a beat later.
+    let preloaded = false;
+    function preloadVariants() {
+      if (preloaded) return;
+      preloaded = true;
+      EXAMPLES.forEach((e) =>
+        [e.before, e.after].forEach((s) => {
+          const i = new Image();
+          i.src = s;
+        })
+      );
+    }
 
     /* ---- before/after wipe ---- */
     let pos = 50;
@@ -141,7 +153,11 @@
       }
       requestAnimationFrame(frame);
     }
-    if ("IntersectionObserver" in window) {
+    // `typeof IntersectionObserver !== "undefined"` rather than the usual
+    // `"IntersectionObserver" in window`: the `in` form narrows `window` to `never` in
+    // the else branch (the property is declared non-optional on Window), so the
+    // no-IntersectionObserver fallback below would not typecheck.
+    if (typeof IntersectionObserver !== "undefined") {
       const io = new IntersectionObserver(
         (entries, obs) => {
           entries.forEach((en) => {
@@ -154,7 +170,32 @@
         { threshold: 0.4 }
       );
       io.observe(ba);
+
+      // Separate observer, deliberately: this one fires a screenful EARLY (rootMargin)
+      // and at threshold 0, so the variants are warm by the time the widget is usable —
+      // whereas the sweep above must wait until it is 40% visible to be seen at all.
+      const preloadIo = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((en) => {
+            if (en.isIntersecting) {
+              preloadVariants();
+              obs.unobserve(en.target);
+            }
+          });
+        },
+        { rootMargin: "600px 0px" }
+      );
+      preloadIo.observe(ba);
+    } else {
+      // No IntersectionObserver: fall back to warming after the page has settled, which
+      // is still off the LCP critical path.
+      window.addEventListener("load", preloadVariants, { once: true });
     }
+
+    // Whatever happens above, a click must never wait on the observer.
+    exBtns.forEach((btn) =>
+      /** @type {Element} */ (btn).addEventListener("pointerenter", preloadVariants, { once: true })
+    );
   }
 
   if (document.readyState === "loading") {

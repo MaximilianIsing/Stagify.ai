@@ -32,7 +32,7 @@
 // the buyer sees the staged result. That asymmetry is the reason the two manifests are
 // built by two functions rather than one with a flag.
 import { createAsyncRouter } from '../lib/http/async-router.js';
-import { sendError, resolveAppOrigin } from '../lib/http/http-helpers.js';
+import { sendError, resolveAppOrigin, setSensitiveHeaders } from '../lib/http/http-helpers.js';
 import { galleryLimiter as defaultGalleryLimiter } from '../lib/http/rate-limiters.js';
 
 /** How long a presigned URL in the owner's manifest stays valid. */
@@ -40,6 +40,36 @@ export const GALLERY_URL_TTL_MS = 15 * 60 * 1000;
 
 /** Entries per page. The grid is thumbnails, so this is a screenful or three. */
 export const PAGE_SIZE = 60;
+
+/**
+ * The deepest page this endpoint will look at.
+ *
+ * No account can have a row out here — PRO_GALLERY_LIMIT is 200 — so a larger number is a
+ * typo or a probe, not a deeper page. Clamping rather than refusing keeps the shape of the
+ * answer the same for every input: a page, possibly empty.
+ */
+export const MAX_OFFSET = 100_000;
+
+/**
+ * The page offset, in a form SQLite will actually bind.
+ *
+ * `Math.max(0, Number(raw) || 0)` was not enough. better-sqlite3 binds `LIMIT ? OFFSET ?`
+ * straight through and REFUSES a non-integer or out-of-range number from inside the
+ * statement ("datatype mismatch"), so `?offset=1.5` and `?offset=1e21` were a 500 on an
+ * authenticated endpoint rather than a bad page. Floor, finite-check and clamp.
+ *
+ * Forgiving rather than a 400, matching how the rest of this route treats its query
+ * string: junk means the first page. Note `?offset=1&offset=2` reaches Express as an
+ * array, and `Number([...])` is NaN, which lands on the same first page.
+ *
+ * @param {unknown} raw - Whatever arrived in the query string.
+ * @returns {number} A non-negative safe integer at or below MAX_OFFSET.
+ */
+export function parseOffset(raw) {
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.min(MAX_OFFSET, Math.floor(n));
+}
 
 /**
  * Shape one gallery row for the owner.
@@ -112,6 +142,23 @@ export default function createGalleryRouter(deps) {
   const limiter = deps.galleryLimiter ?? defaultGalleryLimiter;
   const router = createAsyncRouter();
 
+  // Every response from this router carries either a presigned R2 URL or a live
+  // /s/<token>, and both are bearer credentials that happen to live in a URL. `no-store`
+  // keeps them out of intermediaries and out of the browser's back/forward cache, where a
+  // replayed 15-minute-old page would be a screenful of 404s; `no-referrer` stops the
+  // gallery URL travelling onward. The share routes have said this since they shipped —
+  // this was the one surface handling the same class of data that said nothing at all.
+  //
+  // Mounted ON THE PATH, deliberately not bare: server.js mounts this router with
+  // `app.use(createGalleryRouter(...))` and no prefix, so an unpathed use() here would
+  // decorate every response the app sends. The prefix still covers /api/gallery/:id and
+  // /api/gallery/:id/share, and it runs before the handlers, so the 401 and the 404 carry
+  // the headers too — they must not depend on reaching a handler body.
+  router.use('/api/gallery', (req, res, next) => {
+    setSensitiveHeaders(res);
+    next();
+  });
+
   const presign = (key) => objectStore.presignGet(key, { ttlMs: GALLERY_URL_TTL_MS });
 
   /**
@@ -160,7 +207,7 @@ export default function createGalleryRouter(deps) {
       return res.json({ entries: [], total: 0, enabled: false });
     }
 
-    const offset = Math.max(0, Number(req.query.offset) || 0);
+    const offset = parseOffset(req.query.offset);
     // Searching is a Stagify+ feature, so the SERVER decides whether the query counts —
     // and says so in the response rather than trusting the page to have hidden the box.
     // A free account's `q` is dropped, not refused: the listing itself is theirs, and a

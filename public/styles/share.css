@@ -136,31 +136,32 @@ body[data-state='unavailable'] .sh-headline { text-align: center; font-size: 1.3
 .sh-frame__img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 /* ---- what the photo is ---- */
-/* Two columns, label then value, so three short rows read as a spec rather than a
-   sentence. `max-content` keeps the labels tight against their values instead of leaving
-   a channel of empty page between them. */
+/* ONE horizontal line: style · room · staged date, reading as a caption strip rather than
+   a form. `flex-wrap` is the last resort for a long room type in a large font size — the
+   line fits unwrapped at 360px, which is the width this is usually read at. */
 .sh-facts {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 4px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 0;
   margin: 0;
-  padding: 12px 16px 14px;
+  padding: 11px 16px 13px;
   border-top: 1px solid var(--sh-border);
   background: var(--sh-surface-2);
-  font-size: 0.92rem;
+  color: var(--sh-text);
+  font-size: 0.87rem;
+  font-weight: 600;
 }
-.sh-facts__label {
+/* `nowrap` so a two-word room type breaks the LINE rather than itself. */
+.sh-facts__item { white-space: nowrap; }
+.sh-facts__item:not(:first-child)::before {
+  /* The separator lives here rather than in the text: nothing reads it aloud, nothing
+     copies it, and an item that is skipped takes its own dot with it. */
+  content: '·';
+  margin: 0 7px;
   color: var(--sh-text-dim);
-  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  /* The labels sit on a smaller font than their values, so without this they ride high
-     against the line they belong to. */
-  align-self: baseline;
-  padding-top: 2px;
 }
-.sh-facts__value { margin: 0; color: var(--sh-text); font-weight: 600; }
 
 /* ---- agent card ---- */
 .sh-agent {

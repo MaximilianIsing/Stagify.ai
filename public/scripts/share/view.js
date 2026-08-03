@@ -50,29 +50,38 @@ export function formatStagedAt(ms) {
 }
 
 /**
- * The rows under the photo: what it was made from and when.
+ * The strip under the photo: what it was made from and when, on ONE line.
  *
  * A share page that says only "Staged room" leaves the recipient asking the questions it
  * exists to answer. Empty fields are skipped rather than printed with a blank value —
  * "Style: —" is noise, and a render staged before the column existed has no date.
  *
+ * THE VALUES CARRY THEMSELVES, with no "STYLE" / "ROOM" / "STAGED" labels in front of
+ * them. This was a labelled two-column list, and then a labelled row; both wrapped at
+ * 360px — the low end of the phones this page is actually read on — and a wrapped row is
+ * the stack it was supposed to replace. "Midcentury · Living room · Aug 1, 2026" fits with
+ * room to spare, and a style name, a room name and a date need no column headings on a
+ * page whose entire subject is one staged photograph.
+ *
+ * The separator is drawn by CSS rather than pushed into the text, so it is never read
+ * aloud, never selected with a copy, and an omitted field takes its own dot with it.
+ *
  * @param {{ manifest: any, doc?: Document }} arg @returns {Element | null}
  */
 function renderFacts({ manifest, doc }) {
-  const rows = [];
-  const add = (label, value) => {
+  const items = [];
+  const add = (value) => {
     if (!value) return;
-    rows.push(el('dt', { doc, className: 'sh-facts__label', text: label }));
-    rows.push(el('dd', { doc, className: 'sh-facts__value', text: value }));
+    items.push(el('span', { doc, className: 'sh-facts__item', text: value }));
   };
   // Style, then room, then date. `styleLabel` rather than the raw slug, so this says
-  // "Modern" under a heading that says "Modern Bedroom" — and it is the gallery's own
-  // function, not a second copy of the capitalisation rule.
-  add('Style', styleLabel(manifest.furnitureStyle));
-  add('Room', typeof manifest.roomType === 'string' ? manifest.roomType.trim() : '');
-  add('Staged', formatStagedAt(manifest.stagedAt));
-  if (!rows.length) return null;
-  return el('dl', { doc, className: 'sh-facts', children: rows });
+  // "Midcentury" under a heading that says "Midcentury Living room" — and it is the
+  // gallery's own function, not a second copy of the capitalisation rule.
+  add(styleLabel(manifest.furnitureStyle));
+  add(typeof manifest.roomType === 'string' ? manifest.roomType.trim() : '');
+  add(formatStagedAt(manifest.stagedAt));
+  if (!items.length) return null;
+  return el('p', { doc, className: 'sh-facts', children: items });
 }
 
 /**

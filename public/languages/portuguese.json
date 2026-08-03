@@ -1299,7 +1299,8 @@
     },
     "compare": {
       "beforeAlt": "O ambiente antes da decoração",
-      "rangeLabel": "Revelar o ambiente decorado"
+      "rangeLabel": "Revelar o ambiente decorado",
+      "rangeValue": "{percent}% decorado"
     },
     "meta": {
       "room": "Ambiente",
@@ -1332,7 +1333,14 @@
       "rateLimited": "Muitas solicitações agora. Espere um instante e tente de novo.",
       "retry": "Tentar de novo"
     },
-    "delete": "Excluir esta renderização",
+    "delete": {
+      "action": "Excluir esta renderização",
+      "warn": "Isto exclui permanentemente a renderização e o link que você já compartilhou. Não é possível desfazer.",
+      "confirm": "Excluir permanentemente",
+      "cancel": "Manter",
+      "busy": "Excluindo…",
+      "failed": "Não foi possível excluir esta renderização."
+    },
     "share": {
       "title": "Compartilhar",
       "note": "Qualquer pessoa com este link pode abrir a foto decorada. Para tirá-la do ar, exclua a renderização: as visitas param em até 15 minutos.",
@@ -1345,8 +1353,7 @@
         "one": "Aberto {count} vez",
         "other": "Aberto {count} vezes"
       },
-      "unavailable": "Não foi possível carregar este link. Recarregue a página e tente de novo.",
-      "deleteFailed": "Não foi possível excluir esta renderização."
+      "unavailable": "Não foi possível carregar este link. Recarregue a página e tente de novo."
     },
     "rename": {
       "action": "Renomear",
@@ -1375,6 +1382,7 @@
         "body": "Nada na sua galeria corresponde a «{q}».",
         "cta": "Limpar a pesquisa"
       }
-    }
+    },
+    "loading": "Carregando sua galeria…"
   }
 }

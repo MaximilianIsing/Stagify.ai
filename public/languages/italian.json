@@ -1299,7 +1299,8 @@
     },
     "compare": {
       "beforeAlt": "La stanza prima dell’arredamento",
-      "rangeLabel": "Mostra la stanza arredata"
+      "rangeLabel": "Mostra la stanza arredata",
+      "rangeValue": "{percent}% arredato"
     },
     "meta": {
       "room": "Stanza",
@@ -1332,7 +1333,14 @@
       "rateLimited": "Troppe richieste in questo momento. Attendi un istante e riprova.",
       "retry": "Riprova"
     },
-    "delete": "Elimina questo render",
+    "delete": {
+      "action": "Elimina questo render",
+      "warn": "Questa operazione elimina definitivamente il render e il link che hai già condiviso. Non è reversibile.",
+      "confirm": "Elimina definitivamente",
+      "cancel": "Conservalo",
+      "busy": "Eliminazione…",
+      "failed": "Non è stato possibile eliminare questo render."
+    },
     "share": {
       "title": "Condividi",
       "note": "Chiunque abbia questo link può aprire la foto arredata. Per rimuoverla elimina il render: le visite si fermano entro 15 minuti.",
@@ -1345,8 +1353,7 @@
         "one": "Aperto {count} volta",
         "other": "Aperto {count} volte"
       },
-      "unavailable": "Non è stato possibile caricare questo link. Ricarica la pagina e riprova.",
-      "deleteFailed": "Non è stato possibile eliminare questo render."
+      "unavailable": "Non è stato possibile caricare questo link. Ricarica la pagina e riprova."
     },
     "rename": {
       "action": "Rinomina",
@@ -1375,6 +1382,7 @@
         "body": "Nulla nella tua galleria corrisponde a «{q}».",
         "cta": "Cancella la ricerca"
       }
-    }
+    },
+    "loading": "Caricamento della galleria…"
   }
 }

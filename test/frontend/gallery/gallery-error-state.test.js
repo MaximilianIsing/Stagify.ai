@@ -14,7 +14,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { start } from '../../../public/scripts/gallery-app.js';
-import { galleryDocument, fakeRoutes } from '../../helpers/gallery-dom.js';
+import { galleryDocument, fakeRoutes, cards } from '../../helpers/gallery-dom.js';
 
 const ENTRY = {
   id: 'r1',
@@ -120,5 +120,67 @@ test('retrying after a transient failure recovers to the grid', async () => {
   const recovered = await byId('gal-retry').fire('click');
   assert.equal(recovered, 'ready');
   assert.equal(body.getAttribute('data-state'), 'ready');
-  assert.equal(byId('gal-grid').children.length, 1);
+  assert.equal(cards(byId).length, 1);
+});
+
+// ---- announcing to assistive tech -------------------------------------------------------
+
+test('the error text is written AFTER the section is shown', async () => {
+  // #gal-error-detail is an aria-live region, and a live region whose content changes
+  // while it is still display:none does not announce. paintError ran first, so the one
+  // line describing the failure was silent by construction. The state attribute is what
+  // reveals the section, so it has to be set first.
+  const { document, byId } = galleryDocument();
+  /** @type {string[]} */
+  const order = [];
+  const detail = byId('gal-error-detail');
+  // A body whose data-state write is recorded, and a detail node whose text write is too.
+  const realSet = document.body.setAttribute.bind(document.body);
+  document.body.setAttribute = (name, value) => {
+    if (name === 'data-state' && value === 'error') order.push('state');
+    return realSet(name, value);
+  };
+  Object.defineProperty(detail, 'textContent', {
+    configurable: true,
+    get() { return this._text; },
+    set(v) { if (v) order.push('text'); this._text = String(v); },
+  });
+
+  await start({ doc: document, fetchImpl: fakeRoutes({ '/api/gallery': { status: 500, body: null } }) });
+
+  assert.deepEqual(order, ['state', 'text'], 'the live region was written while it was hidden');
+});
+
+test('the loading state says so out loud', async () => {
+  // The spinner is decoration and stays aria-hidden; between page load and the first
+  // #gal-count announcement a screen reader used to get nothing at all.
+  const { document, byId } = galleryDocument();
+  await start({ doc: document, fetchImpl: fakeRoutes({ '/api/gallery': { status: 200, body: { entries: [ENTRY], total: 1, enabled: true } } }) });
+  assert.match(byId('gal-loading-label').textContent, /Loading your gallery/);
+});
+
+test('the retry button cannot be double-pressed into two listings', async () => {
+  // Against a limiter that allows 120 requests per 15 minutes, and it is also the only
+  // feedback a retry gives when it fails twice with identical wording — an aria-live
+  // region cannot announce text it already holds.
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  const calls = [];
+  const fetchImpl = Object.assign(async () => {
+    calls.push(1);
+    if (calls.length > 1) await gate;
+    return { ok: false, status: 500, json: async () => null };
+  }, { calls });
+
+  const { document, byId } = galleryDocument();
+  await start({ doc: document, fetchImpl });
+  assert.equal(calls.length, 1);
+
+  const first = byId('gal-retry').fire('click');
+  const second = byId('gal-retry').fire('click');
+  release();
+  await Promise.all([first, second]);
+
+  assert.equal(calls.length, 2, 'the second press must not stack another listing');
+  assert.equal(byId('gal-retry').disabled, false, 're-enabled once the retry settled');
 });

@@ -1299,7 +1299,8 @@
     },
     "compare": {
       "beforeAlt": "De ruimte vóór het inrichten",
-      "rangeLabel": "De ingerichte ruimte tonen"
+      "rangeLabel": "De ingerichte ruimte tonen",
+      "rangeValue": "{percent}% ingericht"
     },
     "meta": {
       "room": "Ruimte",
@@ -1332,7 +1333,14 @@
       "rateLimited": "Te veel verzoeken op dit moment. Wacht even en probeer het opnieuw.",
       "retry": "Opnieuw proberen"
     },
-    "delete": "Deze render verwijderen",
+    "delete": {
+      "action": "Deze render verwijderen",
+      "warn": "Hiermee verwijder je de render en de link die je al hebt gedeeld definitief. Dit kan niet ongedaan worden gemaakt.",
+      "confirm": "Definitief verwijderen",
+      "cancel": "Behouden",
+      "busy": "Verwijderen…",
+      "failed": "Deze render kon niet worden verwijderd."
+    },
     "share": {
       "title": "Delen",
       "note": "Iedereen met deze link kan de ingerichte foto openen. Verwijder de render om hem weg te halen — bezoeken stoppen binnen 15 minuten.",
@@ -1345,8 +1353,7 @@
         "one": "{count} keer geopend",
         "other": "{count} keer geopend"
       },
-      "unavailable": "Deze link kon niet worden geladen. Ververs de pagina en probeer het opnieuw.",
-      "deleteFailed": "Deze render kon niet worden verwijderd."
+      "unavailable": "Deze link kon niet worden geladen. Ververs de pagina en probeer het opnieuw."
     },
     "rename": {
       "action": "Naam wijzigen",
@@ -1375,6 +1382,7 @@
         "body": "Niets in je galerie komt overeen met “{q}”.",
         "cta": "Zoekopdracht wissen"
       }
-    }
+    },
+    "loading": "Je galerij wordt geladen…"
   }
 }
