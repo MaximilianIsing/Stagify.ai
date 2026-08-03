@@ -20,7 +20,7 @@ const ENTRY = {
   createdAt: Date.UTC(2026, 7, 1),
   roomType: 'Bedroom',
   urls: { after: '/a.webp', before: '/b.webp', thumb: '/t.webp' },
-  share: { active: false },
+  share: { url: 'https://stagify.test/s/TOKEN', viewCount: 0 },
 };
 
 const listing = (entries) => ({
@@ -83,20 +83,42 @@ test('a card that is gone by close time does not get focus thrown at it', async 
 test('Tab cycles the panel controls instead of escaping to the page behind', async () => {
   const { document, byId } = await openFirstCard();
 
-  // close → the compare slider → create → delete, then back round. The share URL and the
-  // revoke button ship hidden for an unshared entry and must be skipped.
+  // close → rename → the compare slider → the link box → copy → delete, then back round.
   tab(document);
   assert.notEqual(document.activeElement, byId('gal-detail-close'), 'Tab did not move at all');
+  assert.equal(document.activeElement, byId('gal-rename'));
+
+  tab(document);
   assert.equal(document.activeElement.getAttribute('type'), 'range', 'the slider is next in the panel');
 
   tab(document);
-  assert.equal(document.activeElement, byId('gal-share-create'));
+  assert.equal(document.activeElement, byId('gal-share-url'));
+
+  tab(document);
+  assert.equal(document.activeElement, byId('gal-share-copy'));
 
   tab(document);
   assert.equal(document.activeElement, byId('gal-delete'));
 
   tab(document);
   assert.equal(document.activeElement, byId('gal-detail-close'), 'the last control must wrap to the first');
+});
+
+test('the rename box joins the cycle only while it is open', async () => {
+  // The two modes are exclusive — the trigger hides while the row is open — so a tab order
+  // that included both would always walk onto something not on screen.
+  const { document, byId } = await openFirstCard();
+  byId('gal-rename').fire('click');
+
+  assert.equal(byId('gal-rename').hidden, true, 'the trigger is replaced, not duplicated');
+  assert.equal(document.activeElement, byId('gal-rename-input'), 'opening puts the caret in the box');
+
+  tab(document);
+  assert.equal(document.activeElement, byId('gal-rename-save'));
+  tab(document);
+  assert.equal(document.activeElement, byId('gal-rename-cancel'));
+  tab(document);
+  assert.equal(document.activeElement.getAttribute('type'), 'range', 'and out into the rest of the panel');
 });
 
 test('Shift+Tab from the first control wraps to the last', async () => {
@@ -106,17 +128,17 @@ test('Shift+Tab from the first control wraps to the last', async () => {
   assert.equal(document.activeElement, byId('gal-delete'));
 });
 
-test('hidden controls are skipped, and a revealed one joins the cycle', async () => {
-  // The revoke button is the one control whose presence depends on the entry. A tab order
-  // built once at open would strand it.
-  const { document, byId } = await openFirstCard({ share: { active: true, viewCount: 2 } });
-  assert.equal(byId('gal-share-revoke').hidden, false, 'fixture check: this entry has a live link');
+test('controls hidden for this entry are skipped rather than stranding the cycle', async () => {
+  // The link box and copy button are the pair whose presence depends on the entry: an
+  // entry that came back without a URL hides both. A tab order built once at open would
+  // walk onto them anyway.
+  const { document, byId } = await openFirstCard({ share: null });
+  assert.equal(byId('gal-share-copy').hidden, true, 'fixture check: this entry has no link to copy');
 
   tab(document);
   tab(document);
-  assert.equal(document.activeElement, byId('gal-share-create'));
   tab(document);
-  assert.equal(document.activeElement, byId('gal-share-revoke'), 'a visible control was skipped');
+  assert.equal(document.activeElement, byId('gal-delete'), 'tabbed onto a control that is not on screen');
 });
 
 test('an entry with no before image has no slider to tab to', async () => {
@@ -124,7 +146,23 @@ test('an entry with no before image has no slider to tab to', async () => {
   const { document, byId } = await openFirstCard({ urls: { after: '/a.webp', before: '', thumb: '' } });
 
   tab(document);
-  assert.equal(document.activeElement, byId('gal-share-create'), 'tabbed onto a control that was never rendered');
+  tab(document);
+  assert.equal(document.activeElement, byId('gal-share-url'), 'tabbed onto a control that was never rendered');
+});
+
+test('Escape backs out of the rename box before it closes the panel', async () => {
+  // Otherwise one key throws away both what was typed AND the render they were looking at,
+  // when all they asked for was to stop renaming.
+  const { document, byId } = await openFirstCard();
+  byId('gal-rename').fire('click');
+
+  document.fire('keydown', { key: 'Escape' });
+  assert.equal(byId('gal-rename-row').hidden, true, 'the box stayed open');
+  assert.equal(byId('gal-detail').hidden, false, 'the panel must survive the first Escape');
+  assert.equal(document.activeElement, byId('gal-rename'), 'focus was left in a hidden box');
+
+  document.fire('keydown', { key: 'Escape' });
+  assert.equal(byId('gal-detail').hidden, true, 'the second Escape closes the panel');
 });
 
 test('the modal marks the body so the page behind it stops scrolling', async () => {

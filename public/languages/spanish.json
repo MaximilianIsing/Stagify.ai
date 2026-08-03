@@ -96,7 +96,7 @@
         "older": "11 mar"
       },
       "alts": {
-        "living": "Un salón preparado con un sofá seccional gris, taburetes de rayas, una alfombra estampada y una chimenea encendida",
+        "living": "Un salón preparado con dos sillones azules frente a un sofá blanco capitoné, una alfombra estampada y un cuadro de temática costera",
         "bedroom": "Un dormitorio preparado con una cama amplia, cabecero tapizado, televisor en la pared y un mueble bajo",
         "dining": "Un comedor preparado con una mesa ovalada de madera, seis sillas, una lámpara de araña y ventanales"
       },
@@ -112,7 +112,7 @@
         "auto": "Se guarda automáticamente. No hay ningún paso que se te pueda olvidar.",
         "versions": "Se conservan todas las versiones, así dos estilos de la misma habitación quedan uno al lado del otro.",
         "private": "La foto original vacía es solo tuya. Nunca forma parte de lo que ve un cliente.",
-        "share": "Comparte una habitación con un cliente mediante su propio enlace y desactívalo cuando termines."
+        "share": "Cada habitación viene con su propio enlace para clientes. Ábrela, copia el enlace y envíalo."
       }
     },
     "info": {
@@ -1283,10 +1283,8 @@
   "gallery": {
     "pageTitle": "Tu galería — Stagify",
     "title": "Tu galería",
-    "lede": "Cada estancia que has amueblado, con los ajustes que la generaron y los enlaces que has compartido.",
+    "lede": "Cada estancia que has amueblado, con los ajustes que la generaron y un enlace que puedes enviar.",
     "detailTitle": "Estancia amueblada",
-    "untitledLower": "estancia amueblada",
-    "linkOn": "enlace activo",
     "more": "Cargar más",
     "moreLoading": "Cargando…",
     "cardAlt": "{room}, amueblada",
@@ -1337,26 +1335,28 @@
     "delete": "Eliminar este render",
     "share": {
       "title": "Compartir",
-      "note": "Desactivar un enlace detiene las visitas nuevas en un plazo de 15 minutos. Para retirar las imágenes de inmediato, elimina el render.",
+      "note": "Cualquier persona con este enlace puede abrir la foto amueblada. Para retirarla, elimina el render: las visitas se detienen en un plazo de 15 minutos.",
       "urlLabel": "Enlace para compartir",
-      "create": "Crear enlace",
-      "revoke": "Desactivar enlace",
       "copy": "Copiar enlace",
-      "copied": "Copiado. El enlace está en tu portapapeles: no se vuelve a mostrar.",
+      "copied": "Copiado: el enlace está en tu portapapeles.",
       "copyFailed": "No se ha podido copiar automáticamente. Selecciona el enlace de arriba y cópialo.",
-      "none": "Todavía no hay enlace.",
-      "unreadable": "Este enlace se creó antes de que los enlaces se pudieran volver a consultar. Desactívalo y crea uno nuevo para verlo.",
-      "onNotOpened": "Enlace activo · aún no se ha abierto",
-      "onOpened": {
-        "one": "Enlace activo · abierto {count} vez",
-        "other": "Enlace activo · abierto {count} veces"
+      "notOpened": "Aún no se ha abierto",
+      "opened": {
+        "one": "Abierto {count} vez",
+        "other": "Abierto {count} veces"
       },
-      "creating": "Creando…",
-      "created": "Enlace creado. Se queda aquí: puedes copiarlo de nuevo cuando quieras.",
-      "createFailed": "No se ha podido crear el enlace. Inténtalo de nuevo.",
-      "revoked": "Enlace desactivado. Las visitas se detienen en un plazo de 15 minutos.",
-      "revokeFailed": "No se ha podido desactivar el enlace. Inténtalo de nuevo.",
+      "unavailable": "No se ha podido cargar este enlace. Recarga la página e inténtalo de nuevo.",
       "deleteFailed": "No se ha podido eliminar este render."
+    },
+    "rename": {
+      "action": "Cambiar nombre",
+      "label": "Nombra esta imagen",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "saving": "Guardando…",
+      "saved": "Nombre guardado.",
+      "cleared": "Se ha restaurado el nombre predeterminado.",
+      "failed": "No se pudo guardar ese nombre. Inténtalo de nuevo."
     }
   }
 }

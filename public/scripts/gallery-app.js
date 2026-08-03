@@ -1,11 +1,12 @@
 // The owner's gallery page.
 //
 // One writer of the page state (loading | ready | empty | off | error | signed-out), so no
-// combination of failures can leave two on screen. The detail panel is opened from a
-// card and owns the share controls for whichever entry is open.
+// combination of failures can leave two on screen. The detail panel is opened from a card
+// and shows the share link for whichever entry is open — every entry has one, so the panel
+// paints it rather than negotiating for it.
 
-import { listGallery, mintShare, revokeShare, deleteRender } from './gallery/api.js';
-import { renderGrid, renderCompare, renderMeta } from './gallery/view.js';
+import { listGallery, deleteRender, renameRender } from './gallery/api.js';
+import { renderGrid, renderCompare, renderMeta, entryName, defaultName } from './gallery/view.js';
 import { t, plural } from './gallery/i18n.js';
 import { copyText } from './clipboard.js';
 
@@ -44,23 +45,130 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
     if (node) node.textContent = text;
   };
 
+  /** @param {string} text */
+  const renameStatus = (text) => {
+    const node = byId('gal-rename-status');
+    if (node) node.textContent = text;
+  };
+
   /**
    * The panel's focusable controls, in DOM order, skipping the hidden ones.
    *
    * Built by id rather than a query so it works against the document stand-in the specs
    * drive, which has getElementById and no querySelectorAll. The slider is the exception
    * — renderCompare hands it back for exactly this reason.
+   *
+   * The rename controls sit between the heading and the comparison in exactly one of two
+   * modes, and which one is decided HERE rather than by the filter below. `hidden` on the
+   * row does not set `.hidden` on the controls inside it, so filtering per node would keep
+   * the input and its two buttons in the cycle while the row was closed — and this trap
+   * calls focus() explicitly after preventDefault(), so Tab would land on something that
+   * is not on screen instead of the browser simply skipping it.
    */
   function panelControls() {
+    const renaming = !(/** @type {any} */ (byId('gal-rename-row'))?.hidden ?? true);
     return [
       byId('gal-detail-close'),
+      renaming ? byId('gal-rename-input') : byId('gal-rename'),
+      renaming ? byId('gal-rename-save') : null,
+      renaming ? byId('gal-rename-cancel') : null,
       compareRange,
       byId('gal-share-url'),
       byId('gal-share-copy'),
-      byId('gal-share-create'),
-      byId('gal-share-revoke'),
       byId('gal-delete'),
     ].filter((node) => node && !(/** @type {any} */ (node).hidden));
+  }
+
+  /**
+   * Put the rename control back to "not editing".
+   *
+   * Called on open and on cancel as well as after a save, so no combination of leaving a
+   * panel mid-edit and opening another can show one render's name over another's photo.
+   * @param {{ status?: string }} [arg] - Wording to leave behind; cleared by default.
+   */
+  function closeRename({ status = '' } = {}) {
+    const row = /** @type {any} */ (byId('gal-rename-row'));
+    const trigger = /** @type {any} */ (byId('gal-rename'));
+    if (row) row.hidden = true;
+    if (trigger) {
+      trigger.hidden = false;
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+    renameStatus(status);
+  }
+
+  /**
+   * Start editing the open render's name.
+   *
+   * The box is seeded with the owner's OWN name only — never the derived default — and
+   * the default goes in as the placeholder instead. Prefilling "Modern Bedroom" would
+   * make saving unchanged text convert a derived label into a stored one, and the render
+   * would then keep that name after the default changed. An empty box that shows what it
+   * will fall back to says "type something or leave it" without lying about state.
+   */
+  function openRename() {
+    if (!current) return;
+    const row = /** @type {any} */ (byId('gal-rename-row'));
+    const trigger = /** @type {any} */ (byId('gal-rename'));
+    const input = /** @type {any} */ (byId('gal-rename-input'));
+    if (row) row.hidden = false;
+    if (trigger) {
+      trigger.hidden = true;
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+    if (input) {
+      input.value = String(current.name ?? '');
+      input.setAttribute('placeholder', defaultName(current));
+      input.focus();
+      if (typeof input.select === 'function') input.select();
+    }
+    renameStatus('');
+  }
+
+  /**
+   * Send the typed name and repaint everything that shows it.
+   *
+   * The name that lands on the entry is the SERVER's, not the box's: the store trims and
+   * clamps, so painting what was typed would show a name the next page load contradicts.
+   */
+  async function saveRename() {
+    if (!current) return;
+    const input = /** @type {any} */ (byId('gal-rename-input'));
+    const typed = String(input?.value ?? '');
+    renameStatus(t('gallery.rename.saving', 'Saving…'));
+    const res = await renameRender(current.id, typed, fetchImpl);
+    if (!res.ok) {
+      renameStatus(t('gallery.rename.failed', 'Could not save that name. Try again.'));
+      return;
+    }
+    current.name = String(res.body?.name ?? '');
+    const title = byId('gal-detail-title');
+    if (title) title.textContent = entryName(current);
+    // The card behind the panel carries the name too, so it has to be rebuilt — its alt
+    // text and aria-label are built from the same string.
+    repaintGrid();
+    closeRename({
+      status: current.name
+        ? t('gallery.rename.saved', 'Name saved.')
+        : t('gallery.rename.cleared', 'Back to the default name.'),
+    });
+    const trigger = byId('gal-rename');
+    if (trigger) trigger.focus();
+  }
+
+  /**
+   * Rebuild the grid and keep the focus-restore target valid.
+   *
+   * A re-render replaces every card node, so the one held in `opener` is detached the
+   * moment this runs — and closeDetail's isConnected guard would then drop focus to
+   * <body>. Re-pointing at the new card for the same entry is what keeps closing the
+   * panel returning focus to the tile it was opened from.
+   */
+  function repaintGrid() {
+    const cards = renderGrid({ grid: byId('gal-grid'), entries, doc, onOpen: openDetail });
+    if (!current) return;
+    const at = entries.findIndex((entry) => entry.id === current.id);
+    if (at >= 0 && cards[at]) opener = cards[at];
   }
 
   function closeDetail() {
@@ -82,10 +190,11 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
     current = entry;
     opener = trigger ?? null;
     const title = byId('gal-detail-title');
-    if (title) title.textContent = entry.roomType || t('gallery.detailTitle', 'Staged room');
+    if (title) title.textContent = entryName(entry);
+    closeRename();
     compareRange = renderCompare({ container: byId('gal-compare'), entry, doc });
     renderMeta({ container: byId('gal-meta'), entry, doc });
-    paintShare(entry, '');
+    paintShare(entry);
     if (detail) /** @type {any} */ (detail).hidden = false;
     doc.body.setAttribute('data-gal-modal', 'open');
     // role="dialog" only says WHAT the element is. Without this the dialog is never
@@ -95,25 +204,17 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
   }
 
   /**
-   * Reflect the share state.
+   * Show the entry's link.
    *
-   * The URL input is only populated from a MINT — the server hands the token back once
-   * and there is no read-back, so an entry that already has a live link shows that it is
-   * on without being able to show the link itself. That is the honest UI for a
-   * write-only credential; offering a "copy link" button that could not work would be
-   * worse than saying "create a new one".
-   * @param {any} entry @param {string} url
+   * There is no state to reflect beyond the URL and whether anyone has opened it: every
+   * render has a link, the listing carries it, and the only control is copy. Nothing here
+   * creates or withdraws one, which is why this takes an entry and no second argument.
+   * @param {any} entry
    */
-  function paintShare(entry, url) {
+  function paintShare(entry) {
     const input = /** @type {any} */ (byId('gal-share-url'));
-    const create = /** @type {any} */ (byId('gal-share-create'));
-    const revoke = /** @type {any} */ (byId('gal-share-revoke'));
     const copy = /** @type {any} */ (byId('gal-share-copy'));
-    const active = !!entry?.share?.active;
-    // A render has ONE link for its lifetime, and the server now sends it back with the
-    // listing — so reopening this panel next week shows the same URL rather than only
-    // the fact that one exists. `url` is the freshly minted one, when we just made it.
-    const link = url || (active ? entry.share.url || '' : '');
+    const link = entry?.share?.url || '';
 
     if (input) {
       input.value = link;
@@ -123,24 +224,18 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
       copy.hidden = !link;
       copy.textContent = t('gallery.share.copy', 'Copy link');
     }
-    // Creating is offered only when there is nothing to show. There is deliberately no
-    // "create a new link": that button rotated the token, so pressing it broke the URL
-    // the owner had already sent.
-    if (create) {
-      create.hidden = !!link;
-      create.textContent = t('gallery.share.create', 'Create link');
-    }
-    if (revoke) revoke.hidden = !active;
 
-    if (!active) shareStatus(t('gallery.share.none', 'No link yet.'));
-    else if (active && !link) {
-      // Minted before the token was retrievable, so it genuinely cannot be shown again.
-      shareStatus(t('gallery.share.unreadable', 'This link was created before links could be reopened. Turn it off and create a new one to see it.'));
-    } else if (!entry.share?.viewCount) shareStatus(t('gallery.share.onNotOpened', 'Link is on · not opened yet'));
-    else {
-      shareStatus(plural('gallery.share.onOpened', entry.share.viewCount, {
-        one: 'Link is on · opened {count} time',
-        other: 'Link is on · opened {count} times',
+    if (!link) {
+      // Not a state the owner can be in on purpose any more — the listing mints one for
+      // every finished render — so it is reported as the failure it is rather than as
+      // "no link yet", which would invite a wait that never ends.
+      shareStatus(t('gallery.share.unavailable', 'This link could not be loaded. Reload the page and try again.'));
+    } else if (!entry.share?.viewCount) {
+      shareStatus(t('gallery.share.notOpened', 'Not opened yet'));
+    } else {
+      shareStatus(plural('gallery.share.opened', entry.share.viewCount, {
+        one: 'Opened {count} time',
+        other: 'Opened {count} times',
       }));
     }
   }
@@ -224,7 +319,20 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
   doc.addEventListener('keydown', (event) => {
     const key = /** @type {any} */ (event).key;
     if (!detail || /** @type {any} */ (detail).hidden) return;
-    if (key === 'Escape') { closeDetail(); return; }
+    if (key === 'Escape') {
+      // Escape backs out of the innermost thing first. Closing the whole panel from an
+      // open rename box would throw away what was typed AND the render they were looking
+      // at, when all they asked for was to stop renaming.
+      const renaming = !(/** @type {any} */ (byId('gal-rename-row'))?.hidden ?? true);
+      if (renaming) {
+        closeRename();
+        const trigger = byId('gal-rename');
+        if (trigger) trigger.focus();
+        return;
+      }
+      closeDetail();
+      return;
+    }
     if (key !== 'Tab') return;
     // Keep Tab inside the panel. This cannot open the dialog's focus — openDetail does
     // that — it only stops the next press escaping to the page underneath.
@@ -249,44 +357,35 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
     if (more) { more.disabled = false; more.textContent = t('gallery.more', 'Load more'); }
   });
 
-  byId('gal-share-create')?.addEventListener('click', async () => {
-    if (!current) return;
-    shareStatus(t('gallery.share.creating', 'Creating…'));
-    const res = await mintShare(current.id, {}, fetchImpl);
-    if (!res.ok || !res.body?.url) {
-      shareStatus(t('gallery.share.createFailed', 'Could not create a link. Try again.'));
-      return;
-    }
-    // Carry the URL on the entry, not just into the input: a language switch repaints
-    // from `entry.share`, and the link has to survive that.
-    current.share = { ...res.body.share, url: res.body.url };
-    paintShare(current, res.body.url);
-    shareStatus(t('gallery.share.created', 'Link created. It stays here — you can copy it again any time.'));
+  byId('gal-rename')?.addEventListener('click', openRename);
+  byId('gal-rename-cancel')?.addEventListener('click', () => {
+    closeRename();
+    const trigger = byId('gal-rename');
+    if (trigger) trigger.focus();
+  });
+  // Returns the promise so a caller can await the save rather than race it, exactly as
+  // the retry button does.
+  byId('gal-rename-save')?.addEventListener('click', () => saveRename());
+  byId('gal-rename-input')?.addEventListener('keydown', (event) => {
+    // Enter commits. The row is not a <form> — it sits inside no form on this page — so
+    // without this the key does nothing and the box looks broken.
+    if (/** @type {any} */ (event).key !== 'Enter') return;
+    /** @type {any} */ (event).preventDefault?.();
+    return saveRename();
   });
 
   byId('gal-share-copy')?.addEventListener('click', async () => {
     const input = /** @type {any} */ (byId('gal-share-url'));
     const value = input?.value || '';
     if (!value) return;
-    // Reports what actually happened. Saying "copied" when the write was refused would
-    // cost the agent the link outright — there is no second chance to read this token.
+    // Reports what actually happened. The link is on screen either way now, so a false
+    // "Copied" costs a paste rather than the link — but it still sends somebody off to
+    // paste an empty clipboard into a message to their client.
     const ok = await copyText(value, { doc });
     shareStatus(ok
-      ? t('gallery.share.copied', 'Copied. The link is on your clipboard — it is not shown again.')
+      ? t('gallery.share.copied', 'Copied — the link is on your clipboard.')
       : t('gallery.share.copyFailed', 'Could not copy automatically. Select the link above and copy it.'));
     if (!ok && typeof input.select === 'function') input.select();
-  });
-
-  byId('gal-share-revoke')?.addEventListener('click', async () => {
-    if (!current) return;
-    const res = await revokeShare(current.id, fetchImpl);
-    if (!res.ok) { shareStatus(t('gallery.share.revokeFailed', 'Could not turn the link off. Try again.')); return; }
-    current.share = { active: false };
-    paintShare(current, '');
-    // Deliberately "within 15 minutes": image URLs are presigned, so one already handed
-    // out keeps working until it expires. Saying "immediately" would be untrue — and
-    // that constraint binds every translation of this key, not just the English.
-    shareStatus(t('gallery.share.revoked', 'Link turned off. Visits stop within 15 minutes.'));
   });
 
   byId('gal-delete')?.addEventListener('click', async () => {
@@ -309,8 +408,10 @@ export async function start({ doc = document, fetchImpl = fetch } = {}) {
       const more = /** @type {any} */ (byId('gal-more'));
       if (more && !more.disabled) more.textContent = t('gallery.more', 'Load more');
       // Re-rendered rather than patched: the cards' alt and aria-label are built from
-      // the pack too, and they are the half nobody would notice staying English.
-      renderGrid({ grid: byId('gal-grid'), entries, doc, onOpen: openDetail });
+      // the pack too, and they are the half nobody would notice staying English. Through
+      // repaintGrid, so the open panel's focus-restore target survives the rebuild —
+      // this used to hand openDetail the card it had just detached.
+      repaintGrid();
       if (detail && !(/** @type {any} */ (detail).hidden) && current) openDetail(current, opener);
     });
   }

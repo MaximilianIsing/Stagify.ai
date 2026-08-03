@@ -99,8 +99,8 @@ test('asking twice returns the SAME link rather than replacing it', () => {
 });
 
 test('but a revoked link is never resurrected', () => {
-  // Turning a link off is a decision to kill that URL. Handing the same string back
-  // afterwards would undo it silently.
+  // Nothing an owner can press revokes a link any more, but deleting a render does.
+  // Handing the same string back afterwards would undo that silently.
   const { shares } = setup();
   const first = shares.ensureShare({ renderId: RENDER, userId: USER, now: 1_000 });
   assert.equal(shares.revoke(RENDER, 2_000), true);
@@ -126,6 +126,69 @@ test('a link minted before token_plain existed is replaced, not shown', () => {
   assert.notEqual(replacement.token, legacy.token);
   assert.equal(shares.resolveShare(legacy.token).ok, false);
   assert.equal(shares.activeForRender(RENDER).token, replacement.token);
+});
+
+// ---- the page mint ------------------------------------------------------------------
+//
+// How a link comes to exist at all now: the owner's gallery lists a page of renders and
+// every one of them comes back with a URL. There is no create button, so a render with no
+// link is a render the owner cannot share at all.
+
+test('a page of renders comes back with a link each', () => {
+  const { shares } = setup();
+  const rows = ['a', 'b', 'c'].map((c) => ({ id: c.repeat(32), user_id: USER }));
+
+  const links = shares.ensureForRenders({ renders: rows });
+  assert.equal(links.size, 3);
+  const tokens = rows.map((r) => links.get(r.id).token);
+  assert.equal(new Set(tokens).size, 3, 'one token per render, not one shared between them');
+  for (const token of tokens) assert.equal(shares.resolveShare(token).ok, true);
+});
+
+test('listing the same page again hands back the same links', () => {
+  // The listing runs on every page load and every "load more". If this rotated, every
+  // reload would break whatever the owner had already sent.
+  const { db, shares } = setup();
+  const rows = [{ id: RENDER, user_id: USER }];
+
+  const first = shares.ensureForRenders({ renders: rows, now: 1_000 });
+  const second = shares.ensureForRenders({ renders: rows, now: 2_000 });
+  assert.equal(second.get(RENDER).token, first.get(RENDER).token);
+  assert.equal(second.get(RENDER).createdAt, 1_000, 'the original row, not a replacement');
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM gallery_shares').get().n, 1, 'and no row per view');
+});
+
+test('each share is stamped with the owner of the row it was minted from', () => {
+  // `user_id` is denormalized onto the share, and it is what lets the GDPR drift guard
+  // see this table. Taking it from the render row is what keeps two accounts' renders in
+  // one call from being attributed to whoever asked first.
+  const { shares } = setup();
+  const mine = { id: 'a'.repeat(32), user_id: USER };
+  const theirs = { id: 'b'.repeat(32), user_id: 'user-2' };
+
+  const links = shares.ensureForRenders({ renders: [mine, theirs] });
+  assert.equal(links.get(mine.id).userId, USER);
+  assert.equal(links.get(theirs.id).userId, 'user-2');
+});
+
+test('a render whose link was killed gets a genuinely new one, not the old string back', () => {
+  const { shares } = setup();
+  const rows = [{ id: RENDER, user_id: USER }];
+  const original = shares.ensureForRenders({ renders: rows, now: 1_000 }).get(RENDER).token;
+  shares.revoke(RENDER, 2_000);
+
+  const replacement = shares.ensureForRenders({ renders: rows, now: 3_000 }).get(RENDER).token;
+  assert.notEqual(replacement, original);
+  assert.equal(shares.resolveShare(original).ok, false, 'the killed link stays dead');
+  assert.equal(shares.resolveShare(replacement).ok, true);
+});
+
+test('an empty page is not an error', () => {
+  // A gallery with nothing in it, and the defensive case: the route hands over whatever
+  // the store returned, and a `.map` on nothing must not become a throw on the listing.
+  const { shares } = setup();
+  assert.equal(shares.ensureForRenders({ renders: [] }).size, 0);
+  assert.equal(shares.ensureForRenders({ renders: /** @type {any} */ (undefined) }).size, 0);
 });
 
 test('a revoked share keeps its row, so the view count survives', () => {

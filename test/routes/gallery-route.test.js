@@ -2,11 +2,11 @@
 //
 // The owner's own history. Two properties carry the weight:
 //   - TENANCY. A render id in the path is untrusted input. User A must not be able to
-//     read, delete, share or revoke user B's render, and "not yours" must be
-//     indistinguishable from "does not exist" or the surface becomes a way to probe
-//     which ids are real.
-//   - THE TOKEN COMES BACK ONCE. Minting returns the plaintext link; nothing else ever
-//     does, so an owner who loses it has to rotate.
+//     read, delete or edit user B's render, and "not yours" must be indistinguishable
+//     from "does not exist" or the surface becomes a way to probe which ids are real.
+//   - EVERY ENTRY ARRIVES WITH ITS LINK. There is no create call and no off switch: the
+//     listing mints what is missing, so opening a card and copying is the whole flow. A
+//     listing that came back without a URL would leave the owner with no way to get one.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
@@ -93,19 +93,32 @@ test('every route refuses an anonymous caller', async () => {
   const calls = [
     ['GET', `${base}/api/gallery`],
     ['DELETE', `${base}/api/gallery/${id}`],
-    ['POST', `${base}/api/gallery/${id}/share`],
+    ['PATCH', `${base}/api/gallery/${id}`],
     ['PATCH', `${base}/api/gallery/${id}/share`],
-    ['DELETE', `${base}/api/gallery/${id}/share`],
   ];
   for (const [method, url] of calls) {
     const res = await fetch(url, {
       method,
       headers: { 'content-type': 'application/json' },
-      body: method === 'POST' || method === 'PATCH' ? '{}' : undefined,
+      // A name, so the rename route cannot answer 401 merely because the body was wrong —
+      // the auth check has to be what refuses it.
+      body: method === 'PATCH' ? '{"name":"x"}' : undefined,
     });
     assert.equal(res.status, 401, `${method} ${url}`);
     assert.equal((await json(res)).code, 'AUTH_REQUIRED');
   }
+});
+
+test('the routes that minted and killed a link are gone, not merely unused', () => {
+  // Removing the buttons without removing the endpoints would leave a mint and a revoke
+  // reachable by anyone with a session and curl, for a model that no longer has either.
+  const src = fs.readFileSync(new URL('../../routes/gallery.js', import.meta.url), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/[^\n]*/g, '');
+  assert.ok(!/router\.post\(/.test(src), 'a POST is mounted again — there is no link to create');
+  assert.ok(!/router\.delete\(\s*'\/api\/gallery\/:id\/share'/.test(src), 'the revoke route is back');
+  // The delete-the-render route is the takedown and must stay.
+  assert.match(src, /router\.delete\(\s*'\/api\/gallery\/:id'/);
 });
 
 // ---- tenancy ------------------------------------------------------------------------
@@ -134,15 +147,29 @@ test("another account's render id is a 404 on every route, not a 403", async () 
 
   const invented = newRenderId();
   for (const id of [theirs, invented]) {
-    for (const [method, suffix] of [['DELETE', ''], ['POST', '/share'], ['PATCH', '/share'], ['DELETE', '/share']]) {
+    for (const [method, suffix, body] of [['DELETE', ''], ['PATCH', '', '{"name":"Mine now"}'], ['PATCH', '/share', '{}']]) {
       const res = await fetch(`${base}/api/gallery/${id}${suffix}`, {
         method,
         headers: { 'content-type': 'application/json' },
-        body: method === 'POST' || method === 'PATCH' ? '{}' : undefined,
+        body,
       });
       assert.equal(res.status, 404, `${method} ${id}${suffix}`);
     }
   }
+});
+
+test("naming another account's render leaves it entirely alone", async () => {
+  // The 404 above proves the ANSWER. This proves the write did not happen anyway, which is
+  // the half a status code cannot show — the id and the user id go into one UPDATE's WHERE
+  // precisely so there is no check-then-write to get out of step.
+  const { base, as, addRender, stagedRenders } = await mount();
+  const theirs = addRender('user-2');
+  as('user-1');
+
+  await fetch(`${base}/api/gallery/${theirs}`, {
+    method: 'PATCH', headers: { 'content-type': 'application/json' }, body: '{"name":"Mine now"}',
+  });
+  assert.equal(stagedRenders.get(theirs).custom_name, null);
 });
 
 test("deleting another account's render leaves it entirely alone", async () => {
@@ -154,6 +181,85 @@ test("deleting another account's render leaves it entirely alone", async () => {
   as('user-2');
   assert.equal((await json(await fetch(`${base}/api/gallery`))).total, 1, 'still there');
   assert.equal(stagedRenders.get(theirs).evicted_at, null);
+});
+
+// ---- naming -------------------------------------------------------------------------
+
+test('an entry starts with no name, so the page derives one', async () => {
+  // '' rather than a server-built "Modern Bedroom": the default is derived on read, so it
+  // is not frozen into rows staged before the wording last changed.
+  const { base, as, addRender } = await mount();
+  addRender('user-1');
+  as('user-1');
+
+  const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
+  assert.equal(entry.name, '');
+});
+
+test('a name round-trips through the listing', async () => {
+  const { base, as, addRender } = await mount();
+  const id = addRender('user-1');
+  as('user-1');
+
+  const res = await fetch(`${base}/api/gallery/${id}`, {
+    method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: '412 Rosewood Lane' }),
+  });
+  assert.equal(res.status, 200);
+  assert.equal((await json(res)).name, '412 Rosewood Lane');
+
+  const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
+  assert.equal(entry.name, '412 Rosewood Lane');
+});
+
+test('the response carries the STORED name, not the submitted one', async () => {
+  // The store trims and clamps at 80. Echoing the submission would let the page paint a
+  // name the next load contradicts.
+  const { base, as, addRender } = await mount();
+  const id = addRender('user-1');
+  as('user-1');
+
+  const body = await json(await fetch(`${base}/api/gallery/${id}`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ name: `   ${'x'.repeat(200)}   ` }),
+  }));
+  assert.equal(body.name.length, 80);
+  assert.ok(!body.name.startsWith(' '));
+});
+
+test('an empty name clears it rather than being refused', async () => {
+  const { base, as, addRender, stagedRenders } = await mount();
+  const id = addRender('user-1');
+  as('user-1');
+  const patch = (name) => fetch(`${base}/api/gallery/${id}`, {
+    method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name }),
+  });
+
+  await patch('Wilson viewing');
+  const res = await patch('');
+  assert.equal(res.status, 200, 'clearing is the reset, not a validation failure');
+  assert.equal((await json(res)).name, '');
+  assert.equal(stagedRenders.get(id).custom_name, null, 'stored a blank instead of NULL');
+});
+
+test('a body with no name at all is a 400, not a silent clear', async () => {
+  // The difference between "clear it" and a client that sent the wrong shape. Answering
+  // 200 to the second would wipe a name nobody asked to remove.
+  const { base, as, addRender, stagedRenders } = await mount();
+  const id = addRender('user-1');
+  as('user-1');
+  await fetch(`${base}/api/gallery/${id}`, {
+    method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Wilson viewing' }),
+  });
+
+  for (const body of ['{}', '{"name":null}', '{"name":42}', '{"name":{"toString":1}}']) {
+    const res = await fetch(`${base}/api/gallery/${id}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' }, body,
+    });
+    assert.equal(res.status, 400, `body ${body}`);
+    assert.equal((await json(res)).code, 'INVALID_NAME');
+  }
+  assert.equal(stagedRenders.get(id).custom_name, 'Wilson viewing', 'a malformed body wiped the name');
 });
 
 // ---- the manifest -------------------------------------------------------------------
@@ -174,32 +280,51 @@ test('an entry carries the settings that make the gallery worth having', async (
   assert.ok(entry.urls.thumb);
 });
 
-test('the owner manifest carries the live link, so it survives a reload', async () => {
-  // It used to carry only `active: true`, on the reasoning that the token was handed out
-  // once. That made the owner's own copy of the link unrecoverable: close the panel and
-  // the URL you had just been given was gone for good.
-  const { base, as, addRender } = await mount();
-  const id = addRender('user-1');
+test('every entry arrives with a pasteable link, without anybody creating one', async () => {
+  // The whole model: there is no create call to make, so a listing that came back with
+  // `active: true` and no URL — which is what this used to do — left the owner holding a
+  // link they could not read and no way to reach it.
+  const { base, as, addRender, shares } = await mount();
+  addRender('user-1');
   as('user-1');
-  const minted = await json(await fetch(`${base}/api/gallery/${id}/share`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-  }));
 
   const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
-  assert.equal(entry.share.active, true);
-  assert.equal(entry.share.url, minted.url, 'the same link, not a new one');
+  assert.match(entry.share.url, /^https:\/\/stagify\.test\/s\/[A-Za-z0-9_-]{43}$/);
   assert.equal(entry.share.viewCount, 0);
+  // And it is a real one, not a URL shape: the public route has to be able to resolve it.
+  assert.equal(shares.resolveShare(new URL(entry.share.url).pathname.slice('/s/'.length)).ok, true);
+});
+
+test('reloading the gallery hands back the SAME link, not a fresh one', async () => {
+  // The listing is where links are minted, so it runs on every page load and every "load
+  // more". Rotating there would break whatever the owner sent, silently, on a reload.
+  const { base, as, addRender } = await mount();
+  addRender('user-1');
+  as('user-1');
+
+  const first = (await json(await fetch(`${base}/api/gallery`))).entries[0].share;
+  const second = (await json(await fetch(`${base}/api/gallery`))).entries[0].share;
+  assert.equal(second.url, first.url);
+  assert.equal(second.createdAt, first.createdAt, 'the original row, not a replacement');
+});
+
+test('an entry carries no `active` flag, because there is no inactive state', async () => {
+  // A boolean that is true on every row ever serialized is a field the page can only
+  // learn the wrong lesson from — the old UI hid the link behind exactly that check.
+  const { base, as, addRender } = await mount();
+  addRender('user-1');
+  as('user-1');
+  const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
+  assert.ok(!('active' in entry.share), 'the flag is gone; the URL is the answer');
 });
 
 test('a signed-in stranger never sees another owner\'s link', async () => {
-  // The manifest now carries a live URL, so the tenancy check on the LISTING is load
-  // bearing in a way it was not when the field was absent.
+  // The manifest carries a live URL for every entry, which makes the tenancy check on the
+  // LISTING load bearing in a way it was not when the field was absent.
   const { base, as, addRender } = await mount();
-  const id = addRender('user-1');
+  addRender('user-1');
   as('user-1');
-  await fetch(`${base}/api/gallery/${id}/share`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-  });
+  await fetch(`${base}/api/gallery`);
 
   as('user-2');
   const body = await (await fetch(`${base}/api/gallery`)).text();
@@ -209,27 +334,21 @@ test('a signed-in stranger never sees another owner\'s link', async () => {
 
 // ---- sharing ------------------------------------------------------------------------
 
-test('minting returns a pasteable absolute URL, once', async () => {
-  const { base, as, addRender } = await mount();
-  const id = addRender('user-1');
+test('a render whose bytes never landed gets no link at all', async () => {
+  // Minting for it would hand somebody a URL that 404s. `listForUser` is the gate — it
+  // returns finished renders only — which is the same bar the old create route enforced.
+  const { base, as, addRender, shares } = await mount();
+  const pending = addRender('user-1', { status: 'pending' });
   as('user-1');
 
-  const res = await fetch(`${base}/api/gallery/${id}/share`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ settings: { headline: 'Living room', agentEmail: 'a@example.com' } }),
-  });
-  const body = await json(res);
-  assert.equal(res.status, 200);
-  assert.match(body.url, /^https:\/\/stagify\.test\/s\/[A-Za-z0-9_-]{43}$/);
-  assert.equal(body.share.settings.headline, 'Living room');
+  assert.deepEqual((await json(await fetch(`${base}/api/gallery`))).entries, []);
+  assert.equal(shares.activeForRender(pending), null, 'and nothing was minted behind it');
 });
 
-test('an unconfigured origin still mints a PASTEABLE link, not a bare path', async () => {
+test('an unconfigured origin still yields a PASTEABLE link, not a bare path', async () => {
   // The bug this exists for: routes/gallery.js read an APP_ORIGIN that is set in no
   // environment and no config file, and fell back to the empty string — so every link
-  // came back as `/s/<token>`. The token is shown exactly once and has no read-back, so
-  // an agent who copied one had to rotate to recover.
+  // came back as `/s/<token>`, which is not something anyone can open.
   //
   // Every other assertion in this file injects appOrigin, which is precisely why the
   // empty case shipped: the fallback was never once exercised.
@@ -239,17 +358,14 @@ test('an unconfigured origin still mints a PASTEABLE link, not a bare path', asy
   delete process.env.APP_ORIGIN;
   try {
     const { base, as, addRender } = await mount({ appOrigin: '' });
-    const id = addRender('user-1');
+    addRender('user-1');
     as('user-1');
 
-    const body = await fetch(`${base}/api/gallery/${id}/share`, {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-    }).then(json);
-
-    assert.ok(!body.url.startsWith('/s/'), `still a bare path: ${body.url}`);
-    assert.match(body.url, /^https?:\/\/127\.0\.0\.1:\d+\/s\/[A-Za-z0-9_-]{43}$/);
+    const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
+    assert.ok(!entry.share.url.startsWith('/s/'), `still a bare path: ${entry.share.url}`);
+    assert.match(entry.share.url, /^https?:\/\/127\.0\.0\.1:\d+\/s\/[A-Za-z0-9_-]{43}$/);
     // It has to survive the round trip a person actually makes with it.
-    assert.equal(new URL(body.url).pathname, `/s/${body.token}`);
+    assert.doesNotThrow(() => new URL(entry.share.url));
   } finally {
     if (saved.pub === undefined) delete process.env.PUBLIC_APP_URL; else process.env.PUBLIC_APP_URL = saved.pub;
     if (saved.app === undefined) delete process.env.APP_URL; else process.env.APP_URL = saved.app;
@@ -257,58 +373,13 @@ test('an unconfigured origin still mints a PASTEABLE link, not a bare path', asy
   }
 });
 
-test('minting twice returns the SAME link, so a sent URL is never invalidated', async () => {
-  // This endpoint used to rotate on every call, which made "create link" indistinguish-
-  // able from "break the link I already texted to somebody".
-  const { base, as, addRender, shares } = await mount();
-  const id = addRender('user-1');
-  as('user-1');
-  const mint = () => fetch(`${base}/api/gallery/${id}/share`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-  }).then(json);
-
-  const first = await mint();
-  const second = await mint();
-  assert.equal(second.token, first.token);
-  assert.equal(second.url, first.url);
-  assert.equal(shares.resolveShare(first.token).ok, true, 'the original link still works');
-});
-
-test('but a link turned off is not resurrected by creating another', async () => {
-  const { base, as, addRender, shares } = await mount();
-  const id = addRender('user-1');
-  as('user-1');
-  const mint = () => fetch(`${base}/api/gallery/${id}/share`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-  }).then(json);
-
-  const first = await mint();
-  await fetch(`${base}/api/gallery/${id}/share`, { method: 'DELETE' });
-  const second = await mint();
-
-  assert.notEqual(second.token, first.token);
-  assert.equal(shares.resolveShare(first.token).ok, false, 'the killed link stays dead');
-  assert.equal(shares.resolveShare(second.token).ok, true);
-});
-
-test('a render whose bytes never landed cannot be shared', async () => {
-  // Minting for it would hand somebody a URL that 404s.
-  const { base, as, addRender } = await mount();
-  const pending = addRender('user-1', { status: 'pending' });
-  as('user-1');
-  const res = await fetch(`${base}/api/gallery/${pending}/share`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-  });
-  assert.equal(res.status, 404);
-});
-
 test('editing settings does not rotate the link', async () => {
   const { base, as, addRender, shares } = await mount();
   const id = addRender('user-1');
   as('user-1');
-  const { token } = await fetch(`${base}/api/gallery/${id}/share`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-  }).then(json);
+  // The listing is the mint, so a link exists before anything is edited.
+  await fetch(`${base}/api/gallery`);
+  const token = shares.activeForRender(id).token;
 
   await fetch(`${base}/api/gallery/${id}/share`, {
     method: 'PATCH',
@@ -321,44 +392,36 @@ test('editing settings does not rotate the link', async () => {
   assert.equal(resolved.share.settings.headline, 'Corrected');
 });
 
-test('revoking is idempotent', async () => {
-  const { base, as, addRender } = await mount();
-  const id = addRender('user-1');
-  as('user-1');
-  await fetch(`${base}/api/gallery/${id}/share`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-  });
-
-  for (let i = 0; i < 2; i += 1) {
-    const res = await fetch(`${base}/api/gallery/${id}/share`, { method: 'DELETE' });
-    assert.equal(res.status, 200, '"make sure this link is dead" is what the caller wants');
-  }
-});
-
-test('deleting an entry is the HARD revoke', async () => {
+test('deleting an entry is the takedown — and it is the ONLY one', async () => {
+  // With no off switch, this is what an owner does about a link that went further than
+  // they meant it to. It is also the stronger of the two: revoking only stopped new
+  // presigned URLs being minted, while this tombstones the bytes.
   const { base, as, addRender, shares } = await mount();
   const id = addRender('user-1');
   as('user-1');
-  const { token } = await fetch(`${base}/api/gallery/${id}/share`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
-  }).then(json);
+  const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
+  const token = new URL(entry.share.url).pathname.slice('/s/'.length);
 
   await fetch(`${base}/api/gallery/${id}`, { method: 'DELETE' });
   assert.equal(shares.resolveShare(token).ok, false);
   assert.equal((await json(await fetch(`${base}/api/gallery`))).total, 0);
 });
 
-// ---- the off switch -----------------------------------------------------------------
+// ---- the gallery being switched off --------------------------------------------------
 
 test('a disabled object store answers an empty gallery, not a 500', async () => {
   // On Render with no R2 the gallery is off by design. The page renders its empty state
   // and says why; a 500 would look like a broken account.
-  const { base, as, addRender } = await mount({ objectStore: createDisabledObjectStore() });
-  addRender('user-1');
+  const { base, as, addRender, shares } = await mount({ objectStore: createDisabledObjectStore() });
+  const id = addRender('user-1');
   as('user-1');
   const res = await fetch(`${base}/api/gallery`);
   assert.equal(res.status, 200);
   const body = await json(res);
   assert.deepEqual(body.entries, []);
   assert.equal(body.enabled, false);
+  // And it mints nothing on the way out. The listing writes now, so the early return has
+  // to happen BEFORE that — a deployment with no bucket would otherwise fill the table
+  // with links to bytes it cannot serve.
+  assert.equal(shares.activeForRender(id), null);
 });

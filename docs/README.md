@@ -336,9 +336,10 @@ around:
   through this process. The rows describing them *are* in SQLite and therefore in the
   Litestream replica; the objects rely on R2's own durability. See
   [`data-stores.md`](reference/data-stores.md#object-storage--gallery-render-bytes-r2).
-- **Share-link revocation is eventual (≤15 min).** Revoking stops new presigned URLs
-  immediately; one already handed out lives until it expires. Deleting the entry is the
-  hard revoke. Product copy must not claim otherwise.
+- **Taking a share link down is eventual (≤15 min).** Deleting the entry stops the
+  manifest at once, but a presigned image URL already handed out lives until it expires.
+  There is no other takedown — links are not created and cannot be switched off — and
+  product copy must not claim an instant cutoff.
 - **The Render dashboard overrides `render.yaml`.** That file is a Blueprint spec and is
   ignored unless the service is Blueprint-linked. A `Root Directory` set to a subfolder
   silently breaks every `sh scripts/…` command while every `npm …` command keeps working

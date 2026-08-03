@@ -96,7 +96,7 @@
         "older": "11 mars"
       },
       "alts": {
-        "living": "Un salon aménagé avec un canapé d’angle gris, des poufs rayés, un tapis à motifs et une cheminée allumée",
+        "living": "Un salon aménagé avec deux fauteuils bleus face à un canapé blanc capitonné, un tapis à motifs et une toile aux tons marins",
         "bedroom": "Une chambre aménagée avec un grand lit, une tête de lit capitonnée, un téléviseur mural et un meuble bas",
         "dining": "Une salle à manger aménagée avec une table ovale en bois, six chaises, un lustre et des baies vitrées"
       },
@@ -112,7 +112,7 @@
         "auto": "Enregistré automatiquement. Aucune étape à oublier.",
         "versions": "Chaque version est conservée : deux styles de la même pièce se retrouvent côte à côte.",
         "private": "La photo d'origine, vide, reste la vôtre. Elle ne fait jamais partie de ce que voit un client.",
-        "share": "Partagez une pièce avec un client via son propre lien, et désactivez-le quand vous avez terminé."
+        "share": "Chaque pièce est livrée avec son propre lien client. Ouvrez la pièce, copiez le lien, envoyez-le."
       }
     },
     "info": {
@@ -1283,10 +1283,8 @@
   "gallery": {
     "pageTitle": "Votre galerie — Stagify",
     "title": "Votre galerie",
-    "lede": "Chaque pièce que vous avez aménagée, avec les réglages qui l’ont produite et les liens que vous avez partagés.",
+    "lede": "Chaque pièce que vous avez aménagée, avec les réglages qui l’ont produite et un lien que vous pouvez envoyer.",
     "detailTitle": "Pièce aménagée",
-    "untitledLower": "pièce aménagée",
-    "linkOn": "lien actif",
     "more": "Charger plus",
     "moreLoading": "Chargement…",
     "cardAlt": "{room}, aménagée",
@@ -1337,26 +1335,28 @@
     "delete": "Supprimer ce rendu",
     "share": {
       "title": "Partager",
-      "note": "Désactiver un lien arrête les nouvelles visites sous 15 minutes. Pour retirer les images immédiatement, supprimez plutôt le rendu.",
+      "note": "Toute personne disposant de ce lien peut ouvrir la photo aménagée. Pour la retirer, supprimez le rendu : les visites s’arrêtent sous 15 minutes.",
       "urlLabel": "Lien de partage",
-      "create": "Créer un lien",
-      "revoke": "Désactiver le lien",
       "copy": "Copier le lien",
-      "copied": "Copié. Le lien est dans votre presse-papiers : il ne sera plus affiché.",
+      "copied": "Copié : le lien est dans votre presse-papiers.",
       "copyFailed": "Copie automatique impossible. Sélectionnez le lien ci-dessus et copiez-le.",
-      "none": "Pas encore de lien.",
-      "unreadable": "Ce lien a été créé avant que les liens puissent être réaffichés. Désactivez-le et créez-en un nouveau pour le voir.",
-      "onNotOpened": "Lien actif · pas encore ouvert",
-      "onOpened": {
-        "one": "Lien actif · ouvert {count} fois",
-        "other": "Lien actif · ouvert {count} fois"
+      "notOpened": "Pas encore ouvert",
+      "opened": {
+        "one": "Ouvert {count} fois",
+        "other": "Ouvert {count} fois"
       },
-      "creating": "Création…",
-      "created": "Lien créé. Il reste ici : vous pouvez le recopier à tout moment.",
-      "createFailed": "Impossible de créer le lien. Réessayez.",
-      "revoked": "Lien désactivé. Les visites s’arrêtent sous 15 minutes.",
-      "revokeFailed": "Impossible de désactiver le lien. Réessayez.",
+      "unavailable": "Ce lien n’a pas pu être chargé. Rechargez la page et réessayez.",
       "deleteFailed": "Impossible de supprimer ce rendu."
+    },
+    "rename": {
+      "action": "Renommer",
+      "label": "Nommer ce rendu",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "saved": "Nom enregistré.",
+      "cleared": "Retour au nom par défaut.",
+      "failed": "Impossible d'enregistrer ce nom. Réessayez."
     }
   }
 }

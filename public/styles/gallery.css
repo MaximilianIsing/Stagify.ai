@@ -196,18 +196,17 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
   background-size: cover, 30px 30px;
 }
 .gal-card__meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
-.gal-card__when { font-size: 12.5px; color: var(--muted); }
-.gal-card__shared {
-  flex: 0 0 auto;
-  padding: 3px 9px;
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--brand);
-  background: var(--brand-wash);
-  border: 1px solid var(--brand-tint);
-  border-radius: 999px;
+/* The timestamp carries a time as well as a date now ("Aug 1, 2026, 3:42 PM"), which is
+   long enough to matter in a 200px card in a language with a written-out month. One line,
+   ellipsised — a date that wraps pushes the card taller than its neighbours and breaks the
+   grid's rhythm, which is worse than losing the year on the narrowest tile. */
+.gal-card__when {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gal-more { display: block; margin: 28px auto 0; }
@@ -265,14 +264,84 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
 .gal-detail__close:hover { background: var(--brand-wash); color: var(--brand-deep); }
 .gal-detail__close:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.5); outline-offset: 2px; }
 
-.gal-detail__title {
+/* The heading and its rename trigger on one baseline. `align-items: baseline` rather than
+   center: the trigger is small text next to a 1.4rem heading, and centring it leaves it
+   floating above the heading's own baseline. The right padding clears the close button,
+   which is absolutely positioned over this corner — it used to sit on the h2 itself. */
+.gal-detail__head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
   margin: 0 0 16px;
   padding-right: 52px;
+}
+.gal-detail__title {
+  margin: 0;
+  /* min-width:0 is what lets a long name ellipsise instead of pushing the trigger out of
+     the panel — a flex item's default min-width is auto, i.e. its content. */
+  min-width: 0;
   font-size: 1.4rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--brand-deep);
 }
+/* Quiet until wanted: naming a render is useful and occasional, and a filled button beside
+   the heading would compete with the two controls that matter (copy the link, delete). */
+.gal-detail__rename {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--slate-deep);
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+.gal-detail__rename:hover {
+  color: var(--brand-deep);
+  background: var(--brand-wash);
+  border-color: var(--brand-pale);
+}
+.gal-detail__rename:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.5); outline-offset: 2px; }
+.gal-detail__rename[hidden] { display: none; }
+
+.gal-rename-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 14px; }
+.gal-rename-row[hidden] { display: none; }
+.gal-rename-row__input {
+  flex: 1 1 260px;
+  min-height: 42px;
+  padding: 0 12px;
+  /* styles.css has no bare input{} rule — it styles by class — so without `font: inherit`
+     this renders in the UA's form face beside a panel set in Inter. */
+  font: inherit;
+  font-size: 14px;
+  color: var(--fg);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.gal-rename-row__input:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.45); outline-offset: 1px; }
+.gal-rename-row__btn { flex: 0 0 auto; }
+.gal-rename-row__btn--quiet {
+  background: none;
+  color: var(--slate-deep);
+  border-color: var(--border);
+}
+.gal-rename-row__btn--quiet:hover {
+  background: var(--brand-wash);
+  color: var(--brand-deep);
+  border-color: var(--brand-pale);
+}
+/* Empty for most of the panel's life, so it must not reserve a line when it says nothing —
+   :empty keeps the heading tight against the comparison until there is something to say. */
+.gal-rename-status { margin: 0 0 14px; font-size: 13px; color: var(--slate-deep); }
+.gal-rename-status:empty { display: none; }
 
 /* ---- before / after --------------------------------------------------------------- */
 
@@ -420,10 +489,9 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
 
 .gal-share__btn[hidden] { display: none; }
 
-/* Solid brand fill rather than .btn-secondary's outline. While a freshly minted token is
-   on screen this is the most important control on the page — it is the only moment the
-   link can be taken away, since the server never returns it again — and the outline
-   variant sat on a pale panel at a contrast that read as disabled. */
+/* Solid brand fill rather than .btn-secondary's outline. It is now the only control in
+   the share section and the reason the panel is open at all, and the outline variant sat
+   on a pale panel at a contrast that read as disabled. */
 .gal-share__copy.btn {
   background: var(--brand);
   border-color: var(--brand);
@@ -434,20 +502,6 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
   border-color: var(--brand-strong);
   color: var(--bg-elevated);
 }
-/* This modifier shipped on the revoke button with no rule behind it anywhere. Turning
-   the link off is the reversible, secondary action next to "create" — it should read
-   that way rather than compete. */
-.gal-share__btn--quiet {
-  background: none;
-  color: var(--slate-deep);
-  border-color: var(--border);
-}
-.gal-share__btn--quiet:hover {
-  background: var(--brand-wash);
-  color: var(--brand-deep);
-  border-color: var(--brand-pale);
-}
-
 .gal-detail__delete {
   margin-top: 22px;
   background: none;

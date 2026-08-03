@@ -40,16 +40,22 @@ export function listGallery({ offset = 0 } = {}, fetchImpl = fetch) {
   return call(`/api/gallery?offset=${encodeURIComponent(String(offset))}`, { method: 'GET' }, fetchImpl);
 }
 
-/** @param {string} id @param {any} [settings] @param {typeof fetch} [fetchImpl] */
-export function mintShare(id, settings, fetchImpl = fetch) {
-  return call(`/api/gallery/${encodeURIComponent(id)}/share`, {
-    method: 'POST', body: JSON.stringify({ settings: settings ?? {} }),
-  }, fetchImpl);
-}
+// There is no mint and no revoke here because there are no such routes: a link arrives
+// with the listing, for every entry, and deleting the render is what takes one down.
 
-/** @param {string} id @param {typeof fetch} [fetchImpl] */
-export function revokeShare(id, fetchImpl = fetch) {
-  return call(`/api/gallery/${encodeURIComponent(id)}/share`, { method: 'DELETE' }, fetchImpl);
+/**
+ * Name a render, or clear the name it has.
+ *
+ * An empty string is the reset, not a validation failure — the server stores NULL and the
+ * page goes back to deriving `<Style> <Room type>`. The ceiling and the trimming are the
+ * store's job, so this sends what was typed and reads back what was kept.
+ *
+ * @param {string} id @param {string} name @param {typeof fetch} [fetchImpl]
+ */
+export function renameRender(id, name, fetchImpl = fetch) {
+  return call(`/api/gallery/${encodeURIComponent(id)}`, {
+    method: 'PATCH', body: JSON.stringify({ name }),
+  }, fetchImpl);
 }
 
 /** @param {string} id @param {typeof fetch} [fetchImpl] */

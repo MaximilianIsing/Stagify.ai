@@ -199,11 +199,27 @@ directly rather than taken from the dep bag.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/gallery` | The caller's saved renders, newest first. `?offset=` pages by 60. Each entry carries the room type, style, the **prompt that produced it**, and short-TTL **presigned URLs** for `after` / `before` / `thumb` — bytes come straight from R2, never through this process. Returns `{ entries, total, offset, pageSize, enabled, urlTtlMs }`. **`enabled: false`** with an empty list when the object store is unconfigured (the gallery is off on Render without R2) — a `200`, not a `500`, so the page can explain itself. `401` `AUTH_REQUIRED` when signed out. |
-| `DELETE` | `/api/gallery/:id` | Delete one entry. This is the **hard revoke**: it tombstones the bytes, so any outstanding presigned URL starts 404ing as soon as the reaper runs. `404` if the render is not the caller's. |
-| `POST` | `/api/gallery/:id/share` | Mint a share link, revoking whatever link that render had (rotating and creating are the same call). **Returns the plaintext token exactly once** — there is no read-back route; an owner who loses it rotates. **Body:** `{ settings?: { headline, note, agentName, agentEmail, agentPhone }, expiresAt? }` — an allowlist, unknown keys are dropped. `404` for a render that is not the caller's *or* whose bytes have not finished uploading (`status !== 'ok'`), since a link to absent bytes would 404 for the recipient. |
-| `PATCH` | `/api/gallery/:id/share` | Edit a live link's presentation **without rotating it** — an agent fixing a typo in their own phone number must not invalidate the link they already sent. |
-| `DELETE` | `/api/gallery/:id/share` | Revoke. Idempotent (`200` even if already revoked). Stops **new** URLs being minted at once; already-minted image URLs work until they expire — see the caveat below. |
+| `GET` | `/api/gallery` | The caller's saved renders, newest first. `?offset=` pages by 60. Each entry carries the room type, style, the **prompt that produced it**, the owner's `name` for it (`''` when unnamed — see below), short-TTL **presigned URLs** for `after` / `before` / `thumb` — bytes come straight from R2, never through this process — and `share.url`, the render's client link. Returns `{ entries, total, offset, pageSize, enabled, urlTtlMs }`. **`enabled: false`** with an empty list when the object store is unconfigured (the gallery is off on Render without R2) — a `200`, not a `500`, so the page can explain itself. `401` `AUTH_REQUIRED` when signed out. |
+| `DELETE` | `/api/gallery/:id` | Delete one entry, and **the only way to take a link down**: it tombstones the bytes, so any outstanding presigned URL starts 404ing as soon as the reaper runs. `404` if the render is not the caller's. |
+| `PATCH` | `/api/gallery/:id` | Name one render. **Body:** `{ name: string }` — required and required to be a *string*; anything else is a `400` `INVALID_NAME` rather than a silent clear. `name: ""` is a **reset**, storing `NULL` so the page goes back to deriving the default. The store trims, collapses whitespace, strips control characters and clamps to **80 code points**, and the response returns `{ success, name }` with what was actually **stored** — not what was submitted. `404` if the render is not the caller's, or has been evicted. |
+| `PATCH` | `/api/gallery/:id/share` | Edit a link's presentation **without rotating it** — an agent fixing a typo in their own phone number must not invalidate the link they already sent. **Body:** `{ settings?: { headline, note, agentName, agentEmail, agentPhone } }` — an allowlist, unknown keys are dropped. |
+
+> **A share link is not created and cannot be switched off.** Every finished render has
+> one for its lifetime, minted by `GET /api/gallery` (`shares.ensureForRenders`, one
+> transaction per page) and carried on the entry, so the panel copies a URL it already
+> holds instead of round-tripping for it. That is why a GET here writes. `POST` and
+> `DELETE /api/gallery/:id/share` — mint and revoke — were removed with the buttons that
+> called them. `listForUser` returns finished renders only, so nothing is minted for bytes
+> that never landed, which is the bar the old `POST` enforced with `status !== 'ok'`.
+
+> **A render's name is derived, not stored, until somebody types one.** `staged_renders`
+> has a nullable `custom_name`; `shapeEntry` publishes it as `name` and does **not**
+> substitute a default. The page builds `<Style> <Room type>` — "Luxury Bedroom" — from
+> `furnitureStyle` and `roomType` at render time (`defaultName()` in
+> `public/scripts/gallery/view.js`), so changing that wording re-labels every unnamed
+> render rather than only the ones staged afterwards. The name is also **owner-only**: the
+> public share page has its own `settings.headline`, and folding the two together would
+> publish whatever private note a render was filed under to whoever holds the link.
 
 ## Client share links (public, no account)
 
@@ -219,10 +235,10 @@ no matter how many images they scroll.
 | `GET` | `/s/:token` | The share page shell. **Performs no lookup at all**, so the response is byte-identical for a real token and an invented one — not because the comparison is careful, but because there is no comparison. Headers: `Referrer-Policy: no-referrer`, `X-Robots-Tag: noindex, nofollow`, `Cache-Control: private, no-store`. |
 | `GET` | `/api/share/:token` | The manifest: headline, note, agent card, the staged image as a **presigned R2 URL**, and the MLS/NAR disclosure. **One identical `404`** — same status, body *and* headers — for unknown, revoked, expired, cross-tenant, deleted and not-yet-uploaded. A caller who could tell "revoked" from "never existed" would have learned that a token was once real. Counts a view, debounced to once per 30 min. |
 
-> ⚠️ **Revocation is eventual for bytes.** Revoking stops new presigned URLs being minted
-> immediately, but one already handed out keeps working until it expires (≤15 min). UI
-> copy must say *"within 15 minutes"*, never *"immediately"*. **Deleting the entry** is
-> the hard revoke — a presigned URL to a deleted object 404s however valid its signature.
+> ⚠️ **A takedown is eventual for bytes.** Deleting the entry stops the manifest at once,
+> but a presigned image URL already handed out keeps working until it expires (≤15 min).
+> UI copy must say *"within 15 minutes"*, never *"immediately"*. It is still the hard
+> option — a presigned URL to a deleted object 404s however valid its signature is.
 >
 > The source ("before") photo is **never** published here. It exists for the owner's
 > private gallery only, and no setting can turn it on — the omission is structural, not a

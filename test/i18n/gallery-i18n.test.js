@@ -130,7 +130,7 @@ test('non-English packs are actually translated, not copies of the English copy'
   }
 });
 
-test('every language states the 15-minute delay on revoking a share link', () => {
+test('every language states the 15-minute delay on taking a share link down', () => {
   // The English copy says "within 15 minutes", never "immediately", because image URLs
   // are presigned and one already handed out keeps working until it expires — there is a
   // test in gallery-app.test.js pinning that. A translation that rounded it to "at once"
@@ -138,9 +138,20 @@ test('every language states the 15-minute delay on revoking a share link', () =>
   // Checking for the digits is crude, but it is language-independent and it is the part
   // that must survive translation.
   for (const lang of LANGS) {
+    assert.match(packFor(lang).gallery.share.note, /15/, `${lang}.json: gallery.share.note drops the 15-minute delay`);
+  }
+});
+
+test('no pack still offers to create a link or turn one off', () => {
+  // The keys are gone from english.json, so the stale-key test above already fails a pack
+  // that keeps them — this states WHY, and catches the reverse mistake of somebody adding
+  // the copy back to English on the way to rebuilding the buttons.
+  for (const lang of LANGS) {
     const share = packFor(lang).gallery.share;
-    assert.match(share.revoked, /15/, `${lang}.json: gallery.share.revoked drops the 15-minute delay`);
-    assert.match(share.note, /15/, `${lang}.json: gallery.share.note drops the 15-minute delay`);
+    for (const dead of ['create', 'creating', 'created', 'createFailed', 'revoke', 'revoked', 'revokeFailed', 'none', 'unreadable']) {
+      assert.ok(!(dead in share), `${lang}.json: gallery.share.${dead} describes a control that no longer exists`);
+    }
+    assert.ok(!('linkOn' in packFor(lang).gallery), `${lang}.json: the "link on" badge is gone from the grid`);
   }
 });
 

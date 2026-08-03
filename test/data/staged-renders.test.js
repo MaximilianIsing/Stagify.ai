@@ -12,7 +12,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { createAuthStore } from '../../lib/data/auth-store.js';
 import { getDb, closeDb } from '../../lib/data/db.js';
-import { createStagedRenders, FREE_GALLERY_LIMIT, PRO_GALLERY_LIMIT, DOWNGRADE_GRACE_MS, capFor } from '../../lib/data/staged-renders.js';
+import {
+  createStagedRenders, FREE_GALLERY_LIMIT, PRO_GALLERY_LIMIT, DOWNGRADE_GRACE_MS, capFor, MAX_RENDER_NAME,
+} from '../../lib/data/staged-renders.js';
 import { keyForRender, newRenderId } from '../../lib/data/object-keys.js';
 
 const dirs = [];
@@ -98,6 +100,114 @@ test('the prompt and settings are kept, which is what the gallery is for', () =>
   assert.equal(row.additional_prompt, 'keep the desk');
   assert.equal(row.remove_furniture, 1);
   assert.equal(row.model, 'gemini-3.1-flash-image');
+});
+
+// ---- the owner's own name ----------------------------------------------------------
+//
+// A render starts unnamed and the PAGE derives `<Style> <Room type>` from the two columns
+// above. So the only thing stored here is a name somebody typed, and NULL has to keep
+// meaning "unnamed" — a rename that wrote '' would freeze every reset render into a row
+// the gallery then labels with an empty string.
+
+test('a render starts with no name of its own', () => {
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id);
+  assert.equal(renders.get(id).custom_name, null, 'the default is derived, never stored');
+});
+
+test('naming a render keeps what was typed', () => {
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id);
+
+  const res = renders.rename({ id, userId: user.id, name: '412 Rosewood Lane' });
+  assert.deepEqual(res, { ok: true, name: '412 Rosewood Lane' });
+  assert.equal(renders.get(id).custom_name, '412 Rosewood Lane');
+  assert.equal(renders.listForUser({ userId: user.id })[0].custom_name, '412 Rosewood Lane');
+});
+
+test('an empty name is a RESET, not a render called ""', () => {
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id);
+  renders.rename({ id, userId: user.id, name: 'Wilson viewing' });
+
+  for (const blank of ['', '   ', '\t\n']) {
+    renders.rename({ id, userId: user.id, name: 'Wilson viewing' });
+    const res = renders.rename({ id, userId: user.id, name: blank });
+    assert.deepEqual(res, { ok: true, name: '' }, `${JSON.stringify(blank)} should clear it`);
+    assert.equal(renders.get(id).custom_name, null, `${JSON.stringify(blank)} stored a blank instead of NULL`);
+  }
+});
+
+test('a name is trimmed, collapsed and stripped of control characters', () => {
+  // It goes into the grid, the dialog heading and a card's aria-label. A newline or a bidi
+  // override in any of those is a display bug at best.
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id);
+
+  const { name } = renders.rename({ id, userId: user.id, name: '  412  Rosewood\nLane‮  ' });
+  assert.equal(name, '412 Rosewood Lane');
+  assert.equal(renders.get(id).custom_name, '412 Rosewood Lane');
+});
+
+test('a name is clamped at MAX_RENDER_NAME, by code point', () => {
+  // `.slice()` would cut an astral character between its surrogates and store half of it.
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id);
+
+  const long = `${'a'.repeat(MAX_RENDER_NAME - 1)}🏠 and a great deal more text`;
+  const { name } = renders.rename({ id, userId: user.id, name: long });
+  assert.equal([...name].length, MAX_RENDER_NAME);
+  assert.ok(name.endsWith('🏠'), 'the last code point was split');
+  assert.equal([...renders.get(id).custom_name].length, MAX_RENDER_NAME);
+});
+
+test('a non-string name clears rather than storing "[object Object]"', () => {
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id);
+  renders.rename({ id, userId: user.id, name: 'Wilson viewing' });
+
+  for (const junk of [null, undefined, 42, {}, ['a']]) {
+    assert.equal(renders.rename({ id, userId: user.id, name: junk }).name, '');
+    assert.equal(renders.get(id).custom_name, null);
+    renders.rename({ id, userId: user.id, name: 'Wilson viewing' });
+  }
+});
+
+test("one account cannot name another's render", () => {
+  // `user_id` is in the UPDATE's WHERE, so there is no check-then-write to disagree with.
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id);
+
+  const res = renders.rename({ id, userId: 'someone-else', name: 'Mine now' });
+  assert.equal(res.ok, false, 'reported a write that did not happen');
+  assert.equal(renders.get(id).custom_name, null, 'a stranger renamed a render');
+});
+
+test('renaming a render that does not exist reports it rather than throwing', () => {
+  const { renders, user } = setup();
+  assert.equal(renders.rename({ id: newRenderId(), userId: user.id, name: 'Ghost' }).ok, false);
+});
+
+test('an evicted render cannot be renamed', () => {
+  // It is gone from the gallery, so a successful rename would report a write against a row
+  // nothing can show.
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id);
+  assert.equal(renders.remove({ id, userId: user.id }), true);
+
+  assert.equal(renders.rename({ id, userId: user.id, name: 'Too late' }).ok, false);
+  assert.equal(renders.get(id).custom_name, null);
+});
+
+test('the name survives a reopen of the store', () => {
+  // The guarded ALTER runs on every open. A second open must not lose the column or the
+  // rows in it — which is the failure mode `ensureColumn`'s PRAGMA check exists to avoid.
+  const { dir, renders, user } = setup();
+  const { id } = addRender(renders, user.id);
+  renders.rename({ id, userId: user.id, name: '412 Rosewood Lane' });
+
+  const reopened = createStagedRenders(dir);
+  assert.equal(reopened.get(id).custom_name, '412 Rosewood Lane');
 });
 
 // ---- the eviction matrix ----------------------------------------------------------

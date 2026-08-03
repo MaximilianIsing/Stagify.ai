@@ -96,7 +96,7 @@
         "older": "11 de mar"
       },
       "alts": {
-        "living": "Uma sala de estar preparada com sofá de canto cinza, pufes listrados, tapete estampado e lareira acesa",
+        "living": "Uma sala de estar preparada com duas poltronas azuis de frente para um sofá branco capitonê, tapete estampado e um quadro de temática litorânea",
         "bedroom": "Um quarto preparado com cama ampla, cabeceira estofada, TV na parede e um rack baixo",
         "dining": "Uma sala de jantar preparada com mesa oval de madeira, seis cadeiras, lustre e janelas em sacada"
       },
@@ -112,7 +112,7 @@
         "auto": "Salvo automaticamente. Não há etapa de salvar para esquecer.",
         "versions": "Todas as versões ficam guardadas, então dois estilos do mesmo ambiente aparecem lado a lado.",
         "private": "A foto original vazia continua sendo só sua. Ela nunca faz parte do que o cliente vê.",
-        "share": "Compartilhe um ambiente com um cliente por um link próprio e desligue o link quando terminar."
+        "share": "Cada ambiente vem com seu próprio link para o cliente. Abra o ambiente, copie o link e envie."
       }
     },
     "info": {
@@ -1283,10 +1283,8 @@
   "gallery": {
     "pageTitle": "Sua galeria — Stagify",
     "title": "Sua galeria",
-    "lede": "Cada ambiente que você decorou, com as configurações que o geraram e os links que você compartilhou.",
+    "lede": "Cada ambiente que você decorou, com as configurações que o geraram e um link que você pode enviar.",
     "detailTitle": "Ambiente decorado",
-    "untitledLower": "ambiente decorado",
-    "linkOn": "link ativo",
     "more": "Carregar mais",
     "moreLoading": "Carregando…",
     "cardAlt": "{room}, decorado",
@@ -1337,26 +1335,28 @@
     "delete": "Excluir esta renderização",
     "share": {
       "title": "Compartilhar",
-      "note": "Desativar um link interrompe novas visitas em até 15 minutos. Para remover as imagens imediatamente, exclua a renderização.",
+      "note": "Qualquer pessoa com este link pode abrir a foto decorada. Para tirá-la do ar, exclua a renderização: as visitas param em até 15 minutos.",
       "urlLabel": "Link de compartilhamento",
-      "create": "Criar link",
-      "revoke": "Desativar link",
       "copy": "Copiar link",
-      "copied": "Copiado. O link está na área de transferência: ele não aparece de novo.",
+      "copied": "Copiado: o link está na área de transferência.",
       "copyFailed": "Não foi possível copiar automaticamente. Selecione o link acima e copie.",
-      "none": "Ainda não há link.",
-      "unreadable": "Este link foi criado antes de os links poderem ser reabertos. Desative-o e crie um novo para vê-lo.",
-      "onNotOpened": "Link ativo · ainda não foi aberto",
-      "onOpened": {
-        "one": "Link ativo · aberto {count} vez",
-        "other": "Link ativo · aberto {count} vezes"
+      "notOpened": "Ainda não foi aberto",
+      "opened": {
+        "one": "Aberto {count} vez",
+        "other": "Aberto {count} vezes"
       },
-      "creating": "Criando…",
-      "created": "Link criado. Ele fica aqui: você pode copiá-lo de novo quando quiser.",
-      "createFailed": "Não foi possível criar o link. Tente de novo.",
-      "revoked": "Link desativado. As visitas param em até 15 minutos.",
-      "revokeFailed": "Não foi possível desativar o link. Tente de novo.",
+      "unavailable": "Não foi possível carregar este link. Recarregue a página e tente de novo.",
       "deleteFailed": "Não foi possível excluir esta renderização."
+    },
+    "rename": {
+      "action": "Renomear",
+      "label": "Dê um nome a esta imagem",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "saving": "A guardar…",
+      "saved": "Nome guardado.",
+      "cleared": "De volta ao nome predefinido.",
+      "failed": "Não foi possível guardar esse nome. Tente novamente."
     }
   }
 }
