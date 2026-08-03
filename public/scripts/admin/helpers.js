@@ -2,6 +2,8 @@
 // import from both the shell (admin.js) and the renderers island. Extracted from
 // admin.js verbatim.
 
+import { copyText } from '../clipboard.js';
+
 export function qs(s){return document.querySelector(s)}
 export function qsa(s){return document.querySelectorAll(s)}
 export function el(tag,a,ch){
@@ -76,20 +78,11 @@ export function fmtBytes(n){
   return (n/1048576).toFixed(1)+' MB';
 }
 
-export function fallbackCopy(text){
-  try{
-    var ta=document.createElement('textarea');
-    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
-    document.body.appendChild(ta);ta.focus();ta.select();
-    document.execCommand('copy');document.body.removeChild(ta);
-  }catch(e){}
-}
-
+// The two-path copy itself now lives in scripts/clipboard.js, shared with the gallery's
+// share-link button. This keeps the (text, btn) call shape the four admin call sites use.
 export function copyToClipboard(text,btn){
   var done=function(){if(!btn)return;var o=btn.textContent;btn.textContent='Copied!';setTimeout(function(){btn.textContent=o},1200)};
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(done).catch(function(){fallbackCopy(text);done()});
-  }else{fallbackCopy(text);done()}
+  copyText(text).then(done,done);
 }
 
 export function fullHostUrl(img){return location.origin+(img.path||('/i/'+img.id))}
