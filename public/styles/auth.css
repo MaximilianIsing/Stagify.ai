@@ -589,38 +589,16 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   gap: 8px;
   font-weight: 600;
 }
-/* Mobile: profile pinned to far right of header bar; links scroll in .nav-center */
+/* Mobile: the profile icon is an ordinary flex item at the end of .nav-center, so it
+   shares the nav row's spacing with the links instead of floating over it. It used to be
+   `position: absolute; right: 6px; bottom: 0`, with this rule padding .nav-center by 44px
+   on BOTH sides to keep clear of it — dead space on the left, and the icon was never part
+   of the row's rhythm either way. Leaving .profile-menu-wrap on its base `position:
+   relative` puts it back in flow AND keeps it the dropdown's anchor.
+   The row's distribution, gutters and gap now live in ONE place, styles.css's
+   `@media (max-width:768px) .nav .nav-center` — not here, because index.html lazy-loads
+   this file, so a layout rule kept here paints wrong on the home page until it swaps in. */
 @media (max-width: 768px) {
-  .nav {
-    position: relative;
-  }
-  .nav .nav-center {
-    gap: 8px 10px;
-    flex-wrap: wrap;
-    padding-left: max(44px, env(safe-area-inset-left, 0px));
-    padding-right: max(44px, env(safe-area-inset-right, 0px));
-    overflow-x: clip;
-    justify-content: center;
-    max-width: 100%;
-  }
-  .nav .nav-center::-webkit-scrollbar {
-    display: none;
-  }
-  /* Keep the nav links compact so they fit one row on every page (not just the
-     home page, where home.css used to be the only place this lived). */
-  .site-header .nav-link {
-    white-space: normal !important;
-    min-width: 0 !important;
-    flex-shrink: 1 !important;
-    padding: 4px 8px !important;
-    font-size: 13px !important;
-  }
-  .nav .nav-center .profile-menu-wrap {
-    position: absolute;
-    right: max(6px, env(safe-area-inset-right));
-    bottom: 0;
-    z-index: 25;
-  }
   .nav .nav-trailing {
     grid-column: 3;
     grid-row: 1;

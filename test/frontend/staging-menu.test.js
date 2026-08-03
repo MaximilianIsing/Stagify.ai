@@ -237,6 +237,38 @@ test('the staging menu lists the four tools in order, with the right three locke
   assert.ok(!block.includes('aria-disabled'), 'a locked row is still an operable link');
 });
 
+test('the AI Designer row — and only it — is hidden on phones', () => {
+  // The AI Designer is a PC-only tool. Offering it in the nav on a phone is a dead
+  // end: public/scripts/ai-designer-gate.js bounces a phone-sized viewport straight
+  // back to the home page, so the row would advertise a tool that answers a tap by
+  // undoing it. The other three rows must stay — a phone had NO nav path to any
+  // staging tool until 2026-08-01 (see the header above), and that is not being
+  // re-introduced one row at a time.
+  //
+  // One page is enough: the byte-identical guard above proves all nine agree.
+  const [{ html }] = navPages();
+  const block = extractBlock(html);
+  const rows = [...block.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]);
+
+  const hidden = rows.filter((r) => /\bdesktop-only\b/.test(r));
+  assert.equal(hidden.length, 1, 'exactly one row is desktop-only');
+  assert.match(hidden[0], /href="ai-designer\.html"/, 'and it is the AI Designer row');
+  // Added to the class list, not swapped in for it: the row is still a Stagify+ row
+  // on the desktop widths where it does show.
+  assert.match(hidden[0], /\bis-locked\b/, 'the AI Designer row must stay locked for free users');
+
+  // The class only means something because styles.css acts on it. The exact
+  // breakpoint is tied to the page gate's in
+  // test/frontend/ai-designer/ai-designer-gate-mobile.test.js; this asserts the
+  // rule exists at all, so deleting it cannot leave the row silently visible.
+  const css = fs.readFileSync(path.join(PUBLIC, 'styles', 'styles.css'), 'utf8').replace(/\s+/g, '');
+  assert.match(
+    css,
+    /@media\(max-width:\d+px\)\{\.desktop-only\{display:none!important\}/,
+    'styles.css must still hide .desktop-only below the mobile breakpoint',
+  );
+});
+
 test('the old pro nav links are gone everywhere', () => {
   // They were toggled by a selector in auth.js that no longer exists; a leftover
   // copy would be a permanently invisible link.
@@ -273,18 +305,37 @@ test('the menu labels resolve to keys that exist in every language pack', () => 
 // header is copied onto every nav-bearing page rather than templated, so a link added by
 // hand lands on eight of nine and nobody notices which one was missed. `navPages()` finds
 // the pages by their markup, so a NEW page with a nav is covered the day it is added.
+// The tab opens with the class attribute up to but not including its closing quote, so
+// this matches whatever else joins `nav-link` in it (`desktop-only` does, below) while
+// still being anchored to the Gallery link specifically.
+const GALLERY_TAB = 'href="gallery.html" class="nav-link';
+
 test('every nav-bearing page carries the Gallery tab, between Staging and Guides', () => {
   const pages = navPages();
   assert.ok(pages.length >= 9, `expected the nav on at least 9 pages, found ${pages.length}`);
 
   const missing = [];
   const misplaced = [];
+  const shown = [];
   for (const { name, html } of pages) {
-    const gallery = html.indexOf('href="gallery.html" class="nav-link"');
+    const gallery = html.indexOf(GALLERY_TAB);
     if (gallery === -1) { missing.push(name); continue; }
+    // Hidden twice over, and both are load-bearing:
+    //   `desktop-only` — PC-only, like the AI Designer row above it;
+    //   `hidden`       — signed-out visitors, stripped by scripts/gallery-tab.js once
+    //                    /api/auth/me answers. It must SHIP hidden, or every visitor
+    //                    sees the tab for a moment and then has it taken away.
+    // gallery-gate.js turns both of those visitors away from the URL as well, so a
+    // tab that showed for either would advertise a page that answers a click by
+    // undoing it. `data-nav-gallery` is the hook the writer selects on — without it
+    // the tab is hidden for everyone, forever, and nothing else notices.
+    //
+    // Collected across all pages rather than asserted per page: "eight of nine got
+    // it" is the failure mode this whole test exists for.
+    if (!html.startsWith(`${GALLERY_TAB} desktop-only hidden" data-nav-gallery`, gallery)) shown.push(name);
     assert.equal(
-      html.indexOf('href="gallery.html" class="nav-link"'),
-      html.lastIndexOf('href="gallery.html" class="nav-link"'),
+      html.indexOf(GALLERY_TAB),
+      html.lastIndexOf(GALLERY_TAB),
       `${name} has more than one Gallery tab`,
     );
     // Order is the requirement, not just presence: after the Staging menu closes, before
@@ -297,6 +348,12 @@ test('every nav-bearing page carries the Gallery tab, between Staging and Guides
 
   assert.deepEqual(missing, [], `page(s) with a nav but no Gallery tab: ${missing.join(', ')}`);
   assert.deepEqual(misplaced, [], `Gallery tab not between Staging and Guides on: ${misplaced.join(', ')}`);
+  assert.deepEqual(
+    shown,
+    [],
+    'Gallery tab must ship `class="nav-link desktop-only hidden" data-nav-gallery` — ' +
+      `wrong on: ${shown.join(', ')}`,
+  );
 });
 
 test('the Gallery tab is translated everywhere it claims to be', () => {
@@ -306,7 +363,7 @@ test('the Gallery tab is translated everywhere it claims to be', () => {
   // true if plus-welcome is ever added to the localized set.
   for (const { name, html } of navPages()) {
     const guidesLocalized = html.includes('href="guides.html" class="nav-link" data-lang="navigation.guides"');
-    const galleryLocalized = html.includes('href="gallery.html" class="nav-link" data-lang="navigation.gallery"');
+    const galleryLocalized = html.includes(`${GALLERY_TAB} desktop-only hidden" data-nav-gallery data-lang="navigation.gallery"`);
     assert.equal(galleryLocalized, guidesLocalized, `${name}: Gallery and Guides disagree about being localized`);
   }
 

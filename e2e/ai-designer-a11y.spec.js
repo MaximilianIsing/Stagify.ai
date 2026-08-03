@@ -31,6 +31,10 @@ async function openMaskEditor(page) {
 }
 
 test.describe('AI Designer — mask editor accessibility', () => {
+  // PC-only: a phone-sized viewport is redirected home before any of these dialogs
+  // exist. The mobile half is asserted in ai-designer.spec.js's "AI Designer — phone".
+  test.skip(({ isMobile }) => isMobile, 'the AI Designer is desktop-only by design');
+
   test.beforeEach(async ({ page }) => {
     await seedProSession(page);
   });
@@ -85,6 +89,8 @@ test.describe('AI Designer — mask editor accessibility', () => {
 });
 
 test.describe('AI Designer — bug-report dialog accessibility', () => {
+  test.skip(({ isMobile }) => isMobile, 'the AI Designer is desktop-only by design');
+
   test.beforeEach(async ({ page }) => {
     // The chat UI (and the bug-report button with it) sits behind the pro gate.
     await seedProSession(page);
@@ -118,6 +124,8 @@ test.describe('AI Designer — bug-report dialog accessibility', () => {
 });
 
 test.describe('AI Designer — image lightbox accessibility', () => {
+  test.skip(({ isMobile }) => isMobile, 'the AI Designer is desktop-only by design');
+
   test.beforeEach(async ({ page }) => {
     await seedProSession(page);
   });
