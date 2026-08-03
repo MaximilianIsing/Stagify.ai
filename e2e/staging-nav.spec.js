@@ -355,4 +355,97 @@ test.describe('Staging dropdown — phone', () => {
     // And it is genuinely usable, not merely laid out somewhere plausible.
     await expect(page.locator(ITEM).filter({ hasText: 'Masking Studio' })).toBeInViewport();
   });
+
+  test('the panel stays inside the clip box when the nav reflows UNDER an open menu', async ({ page }) => {
+    // The test above opens the menu only after waitForHomeReady(), i.e. once every
+    // late layout change has already landed — so it pins the geometry at open time
+    // and structurally cannot see this. On a phone the nav is still moving for
+    // seconds after the tap, and NONE of it fires `resize`:
+    //   - the Inter woff2 subsets swap in and every label's width changes;
+    //   - the language pack resolves, applyLanguageToElements() rewrites every
+    //     [data-lang] textContent and dispatches "languagechange";
+    //   - /api/auth/me resolves, syncStagingMenu() re-toggles `is-locked` (which
+    //     shows/hides an 18px badge on three rows, so the panel's own max-content
+    //     width changes) and gallery-tab.js dispatches "stagify:navvisibility".
+    //
+    // --staging-panel-shift is a FIXED px left margin computed once in alignPanel(),
+    // which re-runs on `resize` ALONE — where nav-pill.js, solving the same "the row
+    // moves under me" problem in this very container, re-settles on six signals. So
+    // the shift genuinely does go stale here: this test measures the trigger sliding
+    // 73px -> 123px while `--staging-panel-shift` stays at its original 8px, i.e. the
+    // panel stops pointing at "Staging".
+    //
+    // That staleness is a MIS-AIM, not a clipping bug, and the distinction is the
+    // point of this test. The panel is pinned at its `min-width:min(224px,100%)` floor
+    // and capped at `max-width:100%`, so against a ~370px clip box there is ~145px of
+    // slack and the clamp's output can never push it past the edge. Measured, not
+    // assumed — an earlier reading of this code claimed a stale shift was what cut the
+    // phone menu off, and these numbers are what disproved it. Pin the containment so
+    // a future change to either bound (a flat 224px min-width beats max-width, which
+    // is the known trap) cannot quietly turn the mis-aim into a real clip.
+    await seedProSession(page);
+    await page.goto('/index.html');
+    await waitForHomeReady(page);
+    await openMenu(page);
+
+    const read = () => page.evaluate(() => {
+      const panel = document.querySelector('.staging-menu__panel');
+      const clip = document.querySelector('.nav-center');
+      const trigger = document.querySelector('.staging-menu__trigger');
+      return {
+        panelWidth: panel.offsetWidth,
+        clipWidth: clip.clientWidth,
+        offsetLeft: panel.offsetLeft,
+        triggerLeft: trigger.offsetLeft,
+        triggerWidth: trigger.offsetWidth,
+        shift: panel.style.getPropertyValue('--staging-panel-shift'),
+        anchoredToClipBox: panel.offsetParent === clip,
+      };
+    });
+
+    const before = await read();
+
+    // Now do to the nav exactly what the language pack does when it lands: rewrite
+    // the [data-lang] labels and announce it. German is not arbitrary — it is the
+    // real pack with the longest nav labels, and language-detect.js picks it from the
+    // browser's own tag, so a German phone gets this on the FIRST load with no
+    // interaction at all. Both halves matter: the nav links move the trigger, and the
+    // menu's own rows widen the panel, which is what eats the clamp's headroom.
+    await page.evaluate(() => {
+      const german = {
+        'navigation.home': 'Startseite',
+        'navigation.staging': 'Inszenierung',
+        'navigation.guides': 'Anleitungen',
+        'navigation.contactUs': 'Kontaktieren Sie uns',
+        'navigation.imageStaging': 'Bildinszenierung',
+        'navigation.basicMask': 'Einfache Maske',
+        'navigation.maskingStudio': 'Maskierungsstudio',
+      };
+      for (const [key, value] of Object.entries(german)) {
+        for (const el of document.querySelectorAll(`[data-lang="${key}"]`)) el.textContent = value;
+      }
+      window.dispatchEvent(new Event('languagechange'));
+    });
+    // The re-settle is rAF-debounced with a 60ms follow-up, same shape as nav-pill's.
+    await page.waitForTimeout(250);
+
+    const after = await read();
+
+    // The reflow must genuinely have moved the nav, or this test proves nothing.
+    // Asserted on the TRIGGER, not the panel width: the panel is at its min-width
+    // floor and German is not long enough to lift it off, so a width assertion here
+    // fails on a menu that is behaving perfectly.
+    expect(after.triggerLeft).toBeGreaterThan(before.triggerLeft);
+    // ...and the aim really is stale — this is the live (cosmetic) defect.
+    expect(after.shift).toBe(before.shift);
+
+    // The same three invariants the test above pins at open time, now re-checked
+    // AFTER the reflow. These are the property; the aim is a nicety on top of them.
+    expect(after.anchoredToClipBox).toBe(true);
+    expect(after.offsetLeft).toBeGreaterThanOrEqual(0);
+    expect(after.offsetLeft + after.panelWidth).toBeLessThanOrEqual(after.clipWidth);
+
+    // And the last row is still reachable rather than clipped away.
+    await expect(page.locator(ITEM).filter({ hasText: 'Maskierungsstudio' })).toBeInViewport();
+  });
 });
