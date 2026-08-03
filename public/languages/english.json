@@ -1246,5 +1246,81 @@
       "questions": "Questions before you buy?",
       "footnote": "Teams, invoicing, or custom terms: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
     }
+  },
+  "gallery": {
+    "pageTitle": "Your gallery — Stagify",
+    "title": "Your gallery",
+    "lede": "Every room you have staged, with the settings that produced it and the links you have shared.",
+    "detailTitle": "Staged room",
+    "untitledLower": "staged room",
+    "linkOn": "link on",
+    "more": "Load more",
+    "moreLoading": "Loading…",
+    "cardAlt": "{room}, staged",
+    "cardOpen": "Open {room} from {when}",
+    "count": {
+      "one": "{count} staged room",
+      "other": "{count} staged rooms"
+    },
+    "showing": {
+      "one": "Showing {loaded} of {count} staged room",
+      "other": "Showing {loaded} of {count} staged rooms"
+    },
+    "compare": {
+      "beforeAlt": "The room before staging",
+      "rangeLabel": "Reveal the staged room"
+    },
+    "meta": {
+      "room": "Room",
+      "style": "Style",
+      "prompt": "Extra prompt",
+      "removed": "Removed furniture",
+      "staged": "Staged",
+      "references": "Furniture photos",
+      "yes": "Yes",
+      "referenceCount": "{count} attached"
+    },
+    "signedOut": {
+      "title": "You are signed out",
+      "body": "Sign in to see the rooms you have staged.",
+      "cta": "Go to Stagify"
+    },
+    "off": {
+      "title": "Saved renders are switched off",
+      "body": "This deployment cannot store renders yet, so there is nothing to show here. Your staging still works — the images just are not kept."
+    },
+    "empty": {
+      "title": "Nothing staged yet",
+      "body": "Your rooms will appear here after you stage one, along with the settings that produced them.",
+      "cta": "Stage a room"
+    },
+    "error": {
+      "title": "We could not load your gallery",
+      "generic": "Your renders are safe — this is the list failing to load, not the images.",
+      "offline": "We could not reach Stagify. Check your connection and try again.",
+      "rateLimited": "Too many requests just now. Give it a moment and try again.",
+      "retry": "Try again"
+    },
+    "delete": "Delete this render",
+    "share": {
+      "title": "Share with a client",
+      "note": "Turning a link off stops new visits within 15 minutes. To remove the images straight away, delete the render instead.",
+      "urlLabel": "Share link",
+      "create": "Create link",
+      "createNew": "Create a new link",
+      "revoke": "Turn off link",
+      "none": "No link yet.",
+      "onNotOpened": "Link is on · not opened yet",
+      "onOpened": {
+        "one": "Link is on · opened {count} time",
+        "other": "Link is on · opened {count} times"
+      },
+      "creating": "Creating…",
+      "created": "Link created. Copy it now — it is only shown once.",
+      "createFailed": "Could not create a link. Try again.",
+      "revoked": "Link turned off. Visits stop within 15 minutes.",
+      "revokeFailed": "Could not turn the link off. Try again.",
+      "deleteFailed": "Could not delete this render."
+    }
   }
 }

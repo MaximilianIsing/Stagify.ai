@@ -17,6 +17,27 @@ export function pageIds() {
   return [...fs.readFileSync(PAGE, 'utf8').matchAll(/id="([^"]+)"/g)].map((m) => m[1]);
 }
 
+/**
+ * The ids that ship with a bare `hidden` attribute, read from the page rather than
+ * listed here.
+ *
+ * This used to be a hard-coded array of three, which is a drift bug waiting to happen:
+ * add a control that ships hidden — the pager did — and the shim starts it VISIBLE while
+ * the browser starts it hidden, so a spec asserting "it is revealed" passes against a
+ * fixture that was never in the state the assertion describes.
+ *
+ * `\shidden` and not `hidden`: `aria-hidden="true"` is a different attribute and appears
+ * all over the page's SVGs.
+ */
+export function hiddenPageIds() {
+  const src = fs.readFileSync(PAGE, 'utf8');
+  return new Set(
+    [...src.matchAll(/<[a-z]+\b[^>]*\bid="([^"]+)"[^>]*>/g)]
+      .filter((m) => /\shidden[\s>=]/.test(m[0]))
+      .map((m) => m[1]),
+  );
+}
+
 class FakeEl {
   constructor(tag = 'div', id = '') {
     this.tagName = String(tag).toUpperCase();
@@ -30,6 +51,10 @@ class FakeEl {
     this._text = '';
     this.style = { props: {}, setProperty(name, v) { this.props[name] = v; } };
     this.dataset = {};
+    // The real property, because the modal's focus-restore guards on it: focusing a
+    // detached node drops focus to <body>. Left undefined, that branch could never run
+    // and a focus test would pass without proving anything.
+    this.isConnected = true;
   }
 
   get textContent() {
@@ -47,7 +72,13 @@ class FakeEl {
   removeAttribute(name) { delete this.attrs[name]; }
   appendChild(node) { this.children.push(node); return node; }
   addEventListener(type, fn) { (this.listeners[type] ||= []).push(fn); }
-  focus() {}
+
+  /**
+   * Record the focus rather than swallow it. A no-op here made every assertion about
+   * focus management vacuously true — which is the failure mode the guard in
+   * test/frontend/dialog-a11y.test.js exists to catch in the source.
+   */
+  focus() { if (this.ownerDocument) this.ownerDocument.activeElement = this; }
 
   /**
    * Invoke the listeners for `type`. Returns whatever the last one returned, so a spec
@@ -67,6 +98,7 @@ export function galleryDocument() {
   const registry = new Map();
   const docListeners = {};
   const doc = {
+    activeElement: null,
     createElement(tag) {
       const node = new FakeEl(tag);
       node.ownerDocument = doc;
@@ -77,11 +109,12 @@ export function galleryDocument() {
     fire(type, event = {}) { for (const fn of docListeners[type] ?? []) fn(event); },
   };
 
+  const shipsHidden = hiddenPageIds();
   for (const id of pageIds()) {
     const node = new FakeEl('div', id);
     node.ownerDocument = doc;
-    // The elements the page ships hidden.
-    if (['gal-detail', 'gal-share-url', 'gal-share-revoke'].includes(id)) node.hidden = true;
+    // The elements the page ships hidden, read from the page itself.
+    if (shipsHidden.has(id)) node.hidden = true;
     registry.set(id, node);
   }
 

@@ -1246,5 +1246,81 @@
       "questions": "¿Preguntas antes de comprar?",
       "footnote": "Equipos, facturación o condiciones a medida: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
     }
+  },
+  "gallery": {
+    "pageTitle": "Tu galería — Stagify",
+    "title": "Tu galería",
+    "lede": "Cada estancia que has amueblado, con los ajustes que la generaron y los enlaces que has compartido.",
+    "detailTitle": "Estancia amueblada",
+    "untitledLower": "estancia amueblada",
+    "linkOn": "enlace activo",
+    "more": "Cargar más",
+    "moreLoading": "Cargando…",
+    "cardAlt": "{room}, amueblada",
+    "cardOpen": "Abrir {room} del {when}",
+    "count": {
+      "one": "{count} estancia amueblada",
+      "other": "{count} estancias amuebladas"
+    },
+    "showing": {
+      "one": "Mostrando {loaded} de {count} estancia amueblada",
+      "other": "Mostrando {loaded} de {count} estancias amuebladas"
+    },
+    "compare": {
+      "beforeAlt": "La estancia antes de amueblarla",
+      "rangeLabel": "Mostrar la estancia amueblada"
+    },
+    "meta": {
+      "room": "Estancia",
+      "style": "Estilo",
+      "prompt": "Indicación adicional",
+      "removed": "Muebles eliminados",
+      "staged": "Amueblada",
+      "references": "Fotos de muebles",
+      "yes": "Sí",
+      "referenceCount": "{count} adjuntas"
+    },
+    "signedOut": {
+      "title": "Has cerrado sesión",
+      "body": "Inicia sesión para ver las estancias que has amueblado.",
+      "cta": "Ir a Stagify"
+    },
+    "off": {
+      "title": "Los renders guardados están desactivados",
+      "body": "Esta instalación todavía no puede guardar renders, así que no hay nada que mostrar aquí. Amueblar sigue funcionando: simplemente no se conservan las imágenes."
+    },
+    "empty": {
+      "title": "Todavía no has amueblado nada",
+      "body": "Tus estancias aparecerán aquí en cuanto amuebles una, junto con los ajustes que las generaron.",
+      "cta": "Amueblar una estancia"
+    },
+    "error": {
+      "title": "No hemos podido cargar tu galería",
+      "generic": "Tus renders están a salvo: lo que falla es la lista, no las imágenes.",
+      "offline": "No hemos podido conectar con Stagify. Comprueba tu conexión e inténtalo de nuevo.",
+      "rateLimited": "Demasiadas solicitudes ahora mismo. Espera un momento e inténtalo de nuevo.",
+      "retry": "Reintentar"
+    },
+    "delete": "Eliminar este render",
+    "share": {
+      "title": "Compartir con un cliente",
+      "note": "Desactivar un enlace detiene las visitas nuevas en un plazo de 15 minutos. Para retirar las imágenes de inmediato, elimina el render.",
+      "urlLabel": "Enlace para compartir",
+      "create": "Crear enlace",
+      "createNew": "Crear un enlace nuevo",
+      "revoke": "Desactivar enlace",
+      "none": "Todavía no hay enlace.",
+      "onNotOpened": "Enlace activo · aún no se ha abierto",
+      "onOpened": {
+        "one": "Enlace activo · abierto {count} vez",
+        "other": "Enlace activo · abierto {count} veces"
+      },
+      "creating": "Creando…",
+      "created": "Enlace creado. Cópialo ahora: solo se muestra una vez.",
+      "createFailed": "No se ha podido crear el enlace. Inténtalo de nuevo.",
+      "revoked": "Enlace desactivado. Las visitas se detienen en un plazo de 15 minutos.",
+      "revokeFailed": "No se ha podido desactivar el enlace. Inténtalo de nuevo.",
+      "deleteFailed": "No se ha podido eliminar este render."
+    }
   }
 }

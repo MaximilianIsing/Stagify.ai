@@ -1246,5 +1246,81 @@
       "questions": "购买前还有疑问？",
       "footnote": "团队、开票或定制条款：<a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
     }
+  },
+  "gallery": {
+    "pageTitle": "您的图库 — Stagify",
+    "title": "您的图库",
+    "lede": "您布置过的每个房间，以及生成它的设置和您分享过的链接。",
+    "detailTitle": "已布置的房间",
+    "untitledLower": "已布置的房间",
+    "linkOn": "链接已开启",
+    "more": "加载更多",
+    "moreLoading": "加载中…",
+    "cardAlt": "{room}，已布置",
+    "cardOpen": "打开 {room}（{when}）",
+    "count": {
+      "one": "{count} 个已布置的房间",
+      "other": "{count} 个已布置的房间"
+    },
+    "showing": {
+      "one": "已显示 {count} 个中的 {loaded} 个已布置房间",
+      "other": "已显示 {count} 个中的 {loaded} 个已布置房间"
+    },
+    "compare": {
+      "beforeAlt": "布置前的房间",
+      "rangeLabel": "显示布置后的房间"
+    },
+    "meta": {
+      "room": "房间",
+      "style": "风格",
+      "prompt": "补充说明",
+      "removed": "已移除家具",
+      "staged": "布置时间",
+      "references": "家具照片",
+      "yes": "是",
+      "referenceCount": "已附加 {count} 张"
+    },
+    "signedOut": {
+      "title": "您已退出登录",
+      "body": "登录后即可查看您布置过的房间。",
+      "cta": "前往 Stagify"
+    },
+    "off": {
+      "title": "已关闭保存渲染图",
+      "body": "此部署环境尚无法保存渲染图，因此这里没有内容可显示。布置功能仍然可用，只是图片不会被保留。"
+    },
+    "empty": {
+      "title": "还没有布置过任何房间",
+      "body": "当您布置第一个房间后，它就会出现在这里，并附带生成它的设置。",
+      "cta": "布置一个房间"
+    },
+    "error": {
+      "title": "无法加载您的图库",
+      "generic": "您的渲染图安然无恙——加载失败的是列表，不是图片。",
+      "offline": "无法连接到 Stagify。请检查网络连接后重试。",
+      "rateLimited": "当前请求过于频繁。请稍候片刻再试。",
+      "retry": "重试"
+    },
+    "delete": "删除这张渲染图",
+    "share": {
+      "title": "分享给客户",
+      "note": "关闭链接后，新的访问会在 15 分钟内停止。若要立即移除图片，请改为删除该渲染图。",
+      "urlLabel": "分享链接",
+      "create": "创建链接",
+      "createNew": "创建新链接",
+      "revoke": "关闭链接",
+      "none": "尚未创建链接。",
+      "onNotOpened": "链接已开启 · 尚未被打开",
+      "onOpened": {
+        "one": "链接已开启 · 已被打开 {count} 次",
+        "other": "链接已开启 · 已被打开 {count} 次"
+      },
+      "creating": "正在创建…",
+      "created": "链接已创建。请立即复制——它只会显示这一次。",
+      "createFailed": "无法创建链接。请重试。",
+      "revoked": "链接已关闭。访问将在 15 分钟内停止。",
+      "revokeFailed": "无法关闭链接。请重试。",
+      "deleteFailed": "无法删除这张渲染图。"
+    }
   }
 }

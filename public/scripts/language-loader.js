@@ -194,10 +194,25 @@ import { LANGUAGES } from './locale-data.js';
     // URL of the current page (a full load that the server renders in-language)
     // instead of swapping strings in place. This keeps the URL, canonical, and
     // hreflang consistent with what the visitor sees.
+    //
+    // EXCEPT on a page that has no localized URL. hrefForLanguage() sends those to the
+    // locale HOME (i18n-routing.js:59), which is right for a link but wrong for a
+    // switcher: the visitor asked to read THIS page in another language and would be
+    // silently moved off it. Such a page opts out with [data-lang-inplace] and gets the
+    // pack swapped underneath it instead. Only the gallery does this today; every other
+    // page carrying a switcher is in LOCALIZED_PAGES, so none of them change behaviour.
+    const inPlace = !!document.querySelector('[data-lang-inplace]');
     select.addEventListener('change', (e) => {
       const lang = /** @type {HTMLSelectElement} */ (e.target).value;
       try { localStorage.setItem('selectedLanguage', lang); } catch (err) { /* ignore */ }
-      window.location.assign(hrefForLanguage(lang));
+      if (!inPlace) {
+        window.location.assign(hrefForLanguage(lang));
+        return;
+      }
+      updateSelectorFlag(select);
+      // applyLanguageToElements() fires "languagechange", which is how the custom
+      // switcher re-syncs and how a page repaints strings its own JS owns.
+      void loadLanguage(lang).then(applyLanguageToElements);
     });
   }
 

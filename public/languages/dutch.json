@@ -1246,5 +1246,81 @@
       "questions": "Vragen voordat je koopt?",
       "footnote": "Teams, facturering of maatwerkvoorwaarden: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
     }
+  },
+  "gallery": {
+    "pageTitle": "Jouw galerij — Stagify",
+    "title": "Jouw galerij",
+    "lede": "Elke ruimte die je hebt ingericht, met de instellingen die hem hebben gemaakt en de links die je hebt gedeeld.",
+    "detailTitle": "Ingerichte ruimte",
+    "untitledLower": "ingerichte ruimte",
+    "linkOn": "link actief",
+    "more": "Meer laden",
+    "moreLoading": "Laden…",
+    "cardAlt": "{room}, ingericht",
+    "cardOpen": "{room} van {when} openen",
+    "count": {
+      "one": "{count} ingerichte ruimte",
+      "other": "{count} ingerichte ruimtes"
+    },
+    "showing": {
+      "one": "{loaded} van {count} ingerichte ruimte weergegeven",
+      "other": "{loaded} van {count} ingerichte ruimtes weergegeven"
+    },
+    "compare": {
+      "beforeAlt": "De ruimte vóór het inrichten",
+      "rangeLabel": "De ingerichte ruimte tonen"
+    },
+    "meta": {
+      "room": "Ruimte",
+      "style": "Stijl",
+      "prompt": "Extra aanwijzing",
+      "removed": "Meubels verwijderd",
+      "staged": "Ingericht",
+      "references": "Meubelfoto’s",
+      "yes": "Ja",
+      "referenceCount": "{count} bijgevoegd"
+    },
+    "signedOut": {
+      "title": "Je bent afgemeld",
+      "body": "Meld je aan om de ruimtes te zien die je hebt ingericht.",
+      "cta": "Ga naar Stagify"
+    },
+    "off": {
+      "title": "Opgeslagen renders staan uit",
+      "body": "Deze omgeving kan renders nog niet bewaren, dus er is hier niets te tonen. Inrichten werkt gewoon – de afbeeldingen worden alleen niet bewaard."
+    },
+    "empty": {
+      "title": "Nog niets ingericht",
+      "body": "Je ruimtes verschijnen hier zodra je er een hebt ingericht, samen met de instellingen die ze hebben gemaakt.",
+      "cta": "Een ruimte inrichten"
+    },
+    "error": {
+      "title": "We konden je galerij niet laden",
+      "generic": "Je renders zijn veilig – het is de lijst die niet laadt, niet de afbeeldingen.",
+      "offline": "We konden Stagify niet bereiken. Controleer je verbinding en probeer het opnieuw.",
+      "rateLimited": "Te veel verzoeken op dit moment. Wacht even en probeer het opnieuw.",
+      "retry": "Opnieuw proberen"
+    },
+    "delete": "Deze render verwijderen",
+    "share": {
+      "title": "Delen met een klant",
+      "note": "Een link uitzetten stopt nieuwe bezoeken binnen 15 minuten. Wil je de afbeeldingen meteen weghalen, verwijder dan de render zelf.",
+      "urlLabel": "Deellink",
+      "create": "Link maken",
+      "createNew": "Nieuwe link maken",
+      "revoke": "Link uitzetten",
+      "none": "Nog geen link.",
+      "onNotOpened": "Link staat aan · nog niet geopend",
+      "onOpened": {
+        "one": "Link staat aan · {count} keer geopend",
+        "other": "Link staat aan · {count} keer geopend"
+      },
+      "creating": "Bezig met maken…",
+      "created": "Link gemaakt. Kopieer hem nu – hij wordt maar één keer getoond.",
+      "createFailed": "Link kon niet worden gemaakt. Probeer het opnieuw.",
+      "revoked": "Link uitgezet. Bezoeken stoppen binnen 15 minuten.",
+      "revokeFailed": "Link kon niet worden uitgezet. Probeer het opnieuw.",
+      "deleteFailed": "Deze render kon niet worden verwijderd."
+    }
   }
 }

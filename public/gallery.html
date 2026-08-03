@@ -28,7 +28,7 @@
      and above that tag a phone reports ~980px and is never redirected. -->
 <script src="scripts/gallery-gate.js"></script>
 
-<title>Your gallery — Stagify</title>
+<title data-lang="gallery.pageTitle">Your gallery — Stagify</title>
 <meta name="robots" content="noindex, nofollow">
 
 <link rel="icon" type="image/webp" sizes="32x32" href="/media-webp/logo/Logo32x32.webp">
@@ -54,8 +54,14 @@
 <script type="module" src="scripts/profile-menu.js"></script>
 </head>
 
-<!-- One state at a time: loading | ready | empty | off | signed-out. -->
+<!-- One state at a time: loading | ready | empty | off | error | signed-out. -->
 <body data-state="loading">
+
+<!-- The same backdrop every other nav-bearing page carries. Not decoration here: the
+     grid and its panels are frosted glass, and glass over a flat fill just looks grey. -->
+<video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+  <source src="background.mp4" type="video/mp4">
+</video>
 
 <header class="site-header">
       <nav class="nav">
@@ -95,39 +101,140 @@
     </header>
 
 <main class="gal-main">
-  <h1 class="gal-title">Your gallery</h1>
+  <!--
+    `data-lang-inplace` is the one thing here that is not a copy of the other pages.
 
-  <div class="gal-state gal-state--loading" aria-hidden="true"><div class="gal-spinner"></div></div>
-
-  <section class="gal-state gal-state--signed-out">
-    <p>Sign in to see the rooms you have staged.</p>
-    <p><a class="gal-link" href="/">Go to Stagify</a></p>
-  </section>
+    The switcher normally NAVIGATES to the localized URL of the current page, and this
+    page has none — it is deliberately absent from LOCALIZED_PAGES — so hrefForLanguage()
+    would fall back to the locale HOME and a visitor picking Español would be thrown off
+    their gallery onto the marketing page. The marker tells language-loader.js to reload
+    the pack and re-apply in place instead. No other page carries it, and no page that
+    could is affected: every page with a switcher today HAS a localized URL.
+  -->
+  <div class="language-picker-container" data-lang-inplace>
+    <div class="language-selector">
+      <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
+      <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
+        <option value="english" selected>EN</option>
+        <option value="german">DE</option>
+        <option value="dutch">NL</option>
+        <option value="spanish">ES</option>
+        <option value="french">FR</option>
+        <option value="italian">IT</option>
+        <option value="portuguese">PT</option>
+        <option value="russian">RU</option>
+        <option value="chinese">中文</option>
+        <option value="japanese">日本語</option>
+        <option value="korean">한국어</option>
+      </select>
+      <div class="lang-switch" data-lang-switch>
+        <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+          <img class="lang-switch__flag" src="media-webp/flags/US.svg" alt="" width="20" height="14" />
+          <span class="lang-switch__label">English</span>
+          <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+          <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
   <!--
-    The gallery is off when the object store is unconfigured (see lib/data/object-store.js
-    — on Render that is deliberate rather than a fallback onto the app volume). Saying so
-    beats an empty grid that looks like lost work.
+    NOTHING gallery-app.js writes textContent to may carry data-lang, and that is a rule
+    rather than an oversight: applyLanguageToElements() runs again on every in-place
+    language switch, so a data-lang on a JS-owned node would silently overwrite live
+    state — the open room's name back to "Staged room", a specific error back to the
+    generic one, "Create a new link" back to "Create link". Those nodes take their
+    strings from the pack in JS instead (scripts/gallery/i18n.js). One writer each.
   -->
-  <section class="gal-state gal-state--off">
-    <p>Saved renders are not switched on for this deployment yet.</p>
-  </section>
+  <div class="gal-inner">
+    <h1 class="gal-title" data-lang="gallery.title">Your gallery</h1>
+    <p class="gal-lede" data-lang="gallery.lede">Every room you have staged, with the settings that produced it and the links you have shared.</p>
 
-  <section class="gal-state gal-state--empty">
-    <p>Nothing staged yet. Your rooms will appear here after you stage one.</p>
-    <p><a class="gal-link" href="/">Stage a room</a></p>
-  </section>
+    <div class="gal-state gal-state--loading" aria-hidden="true"><div class="gal-spinner"></div></div>
 
-  <section class="gal-state gal-state--ready">
-    <p class="gal-count" id="gal-count"></p>
-    <div class="gal-grid" id="gal-grid"></div>
-  </section>
+    <section class="gal-state gal-state--signed-out">
+      <div class="gal-panel">
+        <span class="gal-panel__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <h2 class="gal-panel__title" data-lang="gallery.signedOut.title">You are signed out</h2>
+        <p class="gal-panel__body" data-lang="gallery.signedOut.body">Sign in to see the rooms you have staged.</p>
+        <a class="btn btn-primary" href="/" data-lang="gallery.signedOut.cta">Go to Stagify</a>
+      </div>
+    </section>
+
+    <!--
+      The gallery is off when the object store is unconfigured (see lib/data/object-store.js
+      — on Render that is deliberate rather than a fallback onto the app volume). Saying so
+      beats an empty grid that looks like lost work.
+    -->
+    <section class="gal-state gal-state--off">
+      <div class="gal-panel">
+        <span class="gal-panel__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>
+        </span>
+        <h2 class="gal-panel__title" data-lang="gallery.off.title">Saved renders are switched off</h2>
+        <p class="gal-panel__body" data-lang="gallery.off.body">This deployment cannot store renders yet, so there is nothing to show here. Your staging still works — the images just are not kept.</p>
+      </div>
+    </section>
+
+    <section class="gal-state gal-state--empty">
+      <div class="gal-panel">
+        <span class="gal-panel__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        </span>
+        <h2 class="gal-panel__title" data-lang="gallery.empty.title">Nothing staged yet</h2>
+        <p class="gal-panel__body" data-lang="gallery.empty.body">Your rooms will appear here after you stage one, along with the settings that produced them.</p>
+        <a class="btn btn-primary" href="/" data-lang="gallery.empty.cta">Stage a room</a>
+      </div>
+    </section>
+
+    <!--
+      A failure is NOT an empty account. Every non-401 error used to land on the empty
+      state above, which told someone looking for work they knew they had done that they
+      had never done any. Nothing is more alarming, and nothing is less true.
+    -->
+    <section class="gal-state gal-state--error">
+      <div class="gal-panel gal-panel--warn">
+        <span class="gal-panel__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        </span>
+        <h2 class="gal-panel__title" data-lang="gallery.error.title">We could not load your gallery</h2>
+        <!-- No data-lang: gallery-app.js chooses between the offline / rate-limited /
+             generic wording, and a re-apply would flatten that back to the generic. -->
+        <p class="gal-panel__body" id="gal-error-detail">Your renders are safe — this is the list failing to load, not the images.</p>
+        <button type="button" class="btn btn-primary" id="gal-retry" data-lang="gallery.error.retry">Try again</button>
+      </div>
+    </section>
+
+    <section class="gal-state gal-state--ready">
+      <p class="gal-count" id="gal-count" aria-live="polite"></p>
+      <div class="gal-grid" id="gal-grid"></div>
+      <!-- The route pages at 60 while the Pro cap is 200, so the count above can name
+           more rooms than the grid holds. This is how the rest are reached. -->
+      <button type="button" class="btn btn-secondary gal-more" id="gal-more" hidden>Load more</button>
+    </section>
+  </div>
 </main>
 
 <!-- Detail: before/after, what was asked for, and the share controls. -->
 <div class="gal-detail" id="gal-detail" hidden role="dialog" aria-modal="true" aria-labelledby="gal-detail-title">
   <div class="gal-detail__panel">
-    <button type="button" class="gal-detail__close" id="gal-detail-close" aria-label="Close">&times;</button>
+    <button type="button" class="gal-detail__close" id="gal-detail-close" aria-label="Close" data-lang-attr="common.close|aria-label">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
     <h2 class="gal-detail__title" id="gal-detail-title">Staged room</h2>
 
     <div class="gal-compare" id="gal-compare"></div>
@@ -135,28 +242,32 @@
     <dl class="gal-meta" id="gal-meta"></dl>
 
     <section class="gal-share" id="gal-share">
-      <h3 class="gal-share__title">Share with a client</h3>
-      <p class="gal-share__status" id="gal-share-status"></p>
+      <h3 class="gal-share__title" data-lang="gallery.share.title">Share with a client</h3>
+      <p class="gal-share__status" id="gal-share-status" aria-live="polite"></p>
       <div class="gal-share__row">
-        <input class="gal-share__url" id="gal-share-url" type="text" readonly hidden aria-label="Share link">
-        <button type="button" class="gal-share__btn" id="gal-share-create">Create link</button>
-        <button type="button" class="gal-share__btn gal-share__btn--quiet" id="gal-share-revoke" hidden>Turn off link</button>
+        <input class="gal-share__url" id="gal-share-url" type="text" readonly hidden aria-label="Share link" data-lang-attr="gallery.share.urlLabel|aria-label">
+        <!-- No data-lang: this button reads "Create a new link" once one is live. -->
+        <button type="button" class="btn btn-primary gal-share__btn" id="gal-share-create">Create link</button>
+        <button type="button" class="btn gal-share__btn gal-share__btn--quiet" id="gal-share-revoke" hidden data-lang="gallery.share.revoke">Turn off link</button>
       </div>
       <!--
         The copy says "within 15 minutes", not "immediately", and that is not hedging:
         image URLs are presigned, so one already handed out keeps working until it
         expires. Saying "immediately" would be the actual bug.
       -->
-      <p class="gal-share__note">
+      <p class="gal-share__note" data-lang="gallery.share.note">
         Turning a link off stops new visits within 15 minutes. To remove the images
         straight away, delete the render instead.
       </p>
     </section>
 
-    <button type="button" class="gal-detail__delete" id="gal-delete">Delete this render</button>
+    <button type="button" class="btn gal-detail__delete" id="gal-delete" data-lang="gallery.delete">Delete this render</button>
   </div>
 </div>
 
 <script type="module" src="scripts/gallery-app.js"></script>
+<!-- The site's custom scrollbar, anchored to <main>'s right edge. Every other real page
+     loads it; this one was the lone exception. -->
+<script type="module" src="scripts/aurora-scrollbar.js"></script>
 </body>
 </html>
