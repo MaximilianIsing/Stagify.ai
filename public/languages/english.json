@@ -1231,6 +1231,7 @@
         "customizable": "Customizable staging",
         "fastModel": "Fast image model",
         "unlimited": "Unlimited staging generations",
+        "gallery": "Rooms saved in your gallery",
         "hqModel": "High quality image model",
         "remove": "Remove existing furniture",
         "designer": "AI Designer",
