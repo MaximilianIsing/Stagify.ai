@@ -13,7 +13,7 @@ import { start } from '../../../public/scripts/gallery-app.js';
 import {
   formatWhen, renderGrid, renderCompare, renderMeta, entryName, defaultName,
 } from '../../../public/scripts/gallery/view.js';
-import { galleryDocument, fakeRoutes } from '../../helpers/gallery-dom.js';
+import { galleryDocument, fakeRoutes, cards } from '../../helpers/gallery-dom.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
@@ -50,7 +50,7 @@ test('a populated gallery settles on ready and renders a card per entry', async 
   const state = await start({ doc: document, fetchImpl: fakeRoutes(listing([ENTRY, { ...ENTRY, id: 'r2' }])) });
   assert.equal(state, 'ready');
   assert.equal(document.body.getAttribute('data-state'), 'ready');
-  assert.equal(byId('gal-grid').children.length, 2);
+  assert.equal(cards(byId).length, 2);
   assert.match(byId('gal-count').textContent, /2 staged rooms/);
 });
 
@@ -86,7 +86,7 @@ test('opening a card shows its link, with nothing to press first', async () => {
   const routes = fakeRoutes(listing([ENTRY]));
   await start({ doc: document, fetchImpl: routes });
 
-  byId('gal-grid').children[0].fire('click');
+  cards(byId)[0].fire('click');
 
   assert.equal(byId('gal-share-url').value, 'https://stagify.test/s/TOKEN');
   assert.equal(byId('gal-share-url').hidden, false);
@@ -102,7 +102,7 @@ test('the status counts visits without dressing them up as link state', async ()
   const seen = { ...ENTRY, share: { url: 'https://stagify.test/s/LIVE', viewCount: 3 } };
   await start({ doc: document, fetchImpl: fakeRoutes(listing([seen])) });
 
-  byId('gal-grid').children[0].fire('click');
+  cards(byId)[0].fire('click');
   assert.equal(byId('gal-share-url').value, 'https://stagify.test/s/LIVE');
   const status = byId('gal-share-status').textContent;
   assert.match(status, /opened 3 times/i);
@@ -117,7 +117,7 @@ test('an entry that came back without a URL says so instead of showing an empty 
   const broken = { ...ENTRY, share: null };
   await start({ doc: document, fetchImpl: fakeRoutes(listing([broken])) });
 
-  byId('gal-grid').children[0].fire('click');
+  cards(byId)[0].fire('click');
   assert.equal(byId('gal-share-url').hidden, true);
   assert.equal(byId('gal-share-copy').hidden, true, 'nothing to copy');
   assert.match(byId('gal-share-status').textContent, /could not be loaded/i);
@@ -150,7 +150,7 @@ test('nothing on the page offers to create or turn off a link', async () => {
 test('opening a card fills the detail panel with what was asked for', async () => {
   const { document, byId } = galleryDocument();
   await start({ doc: document, fetchImpl: fakeRoutes(listing([ENTRY])) });
-  byId('gal-grid').children[0].fire('click');
+  cards(byId)[0].fire('click');
 
   assert.equal(byId('gal-detail').hidden, false);
   assert.equal(byId('gal-detail-title').textContent, 'Modern Bedroom');
@@ -166,7 +166,7 @@ test('opening a card fills the detail panel with what was asked for', async () =
 test('the backdrop closes the panel, the panel itself does not', async () => {
   const { document, byId } = galleryDocument();
   await start({ doc: document, fetchImpl: fakeRoutes(listing([ENTRY])) });
-  byId('gal-grid').children[0].fire('click');
+  cards(byId)[0].fire('click');
 
   const detail = byId('gal-detail');
   detail.fire('click', { target: byId('gal-detail-title') });
@@ -192,6 +192,51 @@ test('a render with a before gets a slider', () => {
   renderCompare({ container, doc: document, entry: ENTRY });
   assert.equal(container.children.length, 3, 'before, after, range');
   assert.equal(container.children[2].getAttribute('type'), 'range');
+});
+
+test('the slider announces what its number MEANS, not just the number', () => {
+  // A range with only an aria-label announces "50" — no unit, and no clue which half of
+  // the comparison it refers to.
+  const { document } = galleryDocument();
+  const container = document.createElement('div');
+  const range = renderCompare({ container, doc: document, entry: ENTRY });
+
+  assert.equal(range.getAttribute('aria-valuetext'), '50% staged');
+  range.value = '80';
+  range.fire('input');
+  assert.equal(range.getAttribute('aria-valuetext'), '80% staged', 'it has to track the drag');
+});
+
+// ---- list semantics ----------------------------------------------------------------------
+
+test('the grid is a list of items, not a run of loose buttons', () => {
+  // role="list" on #gal-grid lets a reader announce "list, N items" and jump between
+  // them. Buttons cannot be list children directly — a role="list" whose children are
+  // buttons is invalid ARIA, and some readers report "list, 0 items", which is worse than
+  // the undifferentiated run it replaced. Hence a wrapper per card.
+  const { document } = galleryDocument();
+  const grid = document.createElement('div');
+  const cardList = renderGrid({ grid, doc: document, entries: [ENTRY, { ...ENTRY, id: 'r2' }], onOpen: () => {} });
+
+  assert.equal(grid.children.length, 2);
+  for (const [i, wrap] of grid.children.entries()) {
+    assert.equal(wrap.getAttribute('role'), 'listitem');
+    assert.equal(wrap.children.length, 1, 'exactly one card per item');
+    assert.equal(wrap.children[0], cardList[i], 'and renderGrid still returns the CARDS');
+    assert.equal(wrap.children[0].tagName, 'BUTTON');
+  }
+});
+
+test('appending a page keeps every card wrapped', () => {
+  // The pager appends rather than replacing, and an unwrapped card would be an invalid
+  // child of the list — visible only to a screen reader, and only past the first page.
+  const { document } = galleryDocument();
+  const grid = document.createElement('div');
+  renderGrid({ grid, doc: document, entries: [ENTRY], onOpen: () => {} });
+  renderGrid({ grid, doc: document, entries: [{ ...ENTRY, id: 'r2' }], onOpen: () => {}, append: true });
+
+  assert.equal(grid.children.length, 2);
+  assert.ok(grid.children.every((w) => w.getAttribute('role') === 'listitem'), 'the appended card lost its wrapper');
 });
 
 // ---- misc ------------------------------------------------------------------------------
@@ -234,6 +279,31 @@ test('the timestamp carries the time of day, not just the date', () => {
   assert.ok(!/Invalid/i.test(when));
 });
 
+test('the cached formatter follows the language, rather than freezing at boot', () => {
+  // formatWhen memoizes its Intl.DateTimeFormat — every card calls it twice (visible text
+  // and aria-label), so a page of 60 was building ~120 of them. The cache is keyed on the
+  // resolved tag precisely because this page swaps language IN PLACE: one pinned at boot
+  // would print English dates under a Spanish grid, and nothing would fail.
+  const at = Date.UTC(2026, 7, 1, 15, 42);
+  const original = globalThis.window;
+  /** @param {string} lang */
+  const as = (lang) => {
+    globalThis.window = /** @type {any} */ ({ localStorage: { getItem: () => lang } });
+    return formatWhen(at);
+  };
+  try {
+    const de = as('german');
+    const en = as('english');
+    const deAgain = as('german');
+
+    assert.notEqual(de, en, 'the formatter did not follow the language switch');
+    assert.equal(de, deAgain, 'and switching back is still correct');
+    assert.match(de, /2026/);
+  } finally {
+    globalThis.window = original;
+  }
+});
+
 // ---- what a render is called ----------------------------------------------------------
 
 test('an unnamed render is called after its style and room type', () => {
@@ -266,7 +336,7 @@ async function openRename(entry = ENTRY, rename = { status: 200, body: { success
   const ctx = galleryDocument();
   const routes = fakeRoutes({ ...listing([entry]), '/api/gallery/r1': rename });
   await start({ doc: ctx.document, fetchImpl: routes });
-  ctx.byId('gal-grid').children[0].fire('click');
+  cards(ctx.byId)[0].fire('click');
   ctx.byId('gal-rename').fire('click');
   return { ...ctx, routes };
 }
@@ -294,7 +364,7 @@ test('saving repaints the heading and the card behind it', async () => {
   assert.equal(byId('gal-detail-title').textContent, 'Wilson viewing');
   // The card carries the name too — and its alt text and aria-label are built from the
   // same string, which is why the tile is rebuilt rather than patched.
-  assert.match(byId('gal-grid').children[0].textContent, /Wilson viewing/);
+  assert.match(cards(byId)[0].textContent, /Wilson viewing/);
   assert.equal(byId('gal-rename-row').hidden, true, 'the box closes on success');
   assert.match(byId('gal-rename-status').textContent, /saved/i);
 });
@@ -361,12 +431,12 @@ test('opening another card does not carry the last one\'s open rename box', asyn
   const second = { ...ENTRY, id: 'r2', roomType: 'Kitchen' };
   await start({ doc: document, fetchImpl: fakeRoutes(listing([ENTRY, second])) });
 
-  byId('gal-grid').children[0].fire('click');
+  cards(byId)[0].fire('click');
   byId('gal-rename').fire('click');
   assert.equal(byId('gal-rename-row').hidden, false);
 
   byId('gal-detail-close').fire('click');
-  byId('gal-grid').children[1].fire('click');
+  cards(byId)[1].fire('click');
   assert.equal(byId('gal-rename-row').hidden, true, 'one render\'s name box over another\'s photo');
   assert.equal(byId('gal-rename').hidden, false, 'and the trigger has to come back');
 });
@@ -376,8 +446,9 @@ test('the card and its accessible name agree on what the render is called', () =
   // mismatch only a screen reader notices, which is why both go through entryName.
   const { document } = galleryDocument();
   const grid = document.createElement('div');
-  renderGrid({ grid, doc: document, entries: [{ ...ENTRY, name: 'Wilson viewing' }], onOpen: () => {} });
-  const card = grid.children[0];
+  // The return value, not grid.children[0] — that is now the role="listitem" wrapper, and
+  // renderGrid hands back the cards precisely so callers need not know about it.
+  const [card] = renderGrid({ grid, doc: document, entries: [{ ...ENTRY, name: 'Wilson viewing' }], onOpen: () => {} });
   assert.match(card.textContent, /Wilson viewing/);
   assert.match(card.getAttribute('aria-label'), /Wilson viewing/);
   assert.ok(!/Modern Bedroom/.test(card.getAttribute('aria-label')), 'the default must not linger beside the name');

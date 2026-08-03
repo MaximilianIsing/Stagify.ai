@@ -48,30 +48,45 @@ export function initBackgroundVideoSync() {
         const video = $('#background-video');
         if (video) {
             const storedTime = localStorage.getItem(BACKGROUND_VIDEO_KEY);
-            
+
+            // A <video> whose only <source> carries a non-matching media query selects
+            // nothing — networkState settles at NETWORK_NO_SOURCE (3) and it can never
+            // play. That is the NORMAL state on every phone: index.html gates
+            // background.mp4 behind `media="(min-width: 769px)"` so mobile never spends
+            // 1.25 MB on a decorative layer, and there the `poster` IS the intended
+            // visual. So the "playback failed, fall back to a solid colour" paths below
+            // must not fire — hiding the element would throw the poster away and leave a
+            // flat #b2c4f6 page. Asked lazily, not once up front, because resource
+            // selection is a queued task that may not have settled at DOMContentLoaded.
+            const hasSource = () => video.networkState !== 3;
+            const fallBackToSolid = () => {
+                if (!hasSource()) return;
+                video.style.display = 'none';
+                document.body.style.background = '#b2c4f6';
+            };
+
             // Handle smooth video loading transition
             video.addEventListener('loadeddata', () => {
                 video.classList.add('loaded');
             });
-            
+
             // Ensure video starts playing smoothly
             video.addEventListener('canplay', () => {
                 video.play().catch(() => {
                     // Handle autoplay restrictions gracefully - fallback to solid background
-                    video.style.display = 'none';
-                    document.body.style.background = '#b2c4f6';
+                    fallBackToSolid();
                 });
             });
-  
+
             // Handle mobile autoplay restrictions
             const attemptPlay = () => {
+                if (!hasSource()) return;
                 if (video.paused) {
                     video.play().catch(() => {
                         // Still failed, keep trying on user interaction
                         // If this is the final attempt, hide video and show solid background
                         if (playAttempts >= maxAttempts - 1) {
-                            video.style.display = 'none';
-                            document.body.style.background = '#b2c4f6';
+                            fallBackToSolid();
                         }
                     });
                 }
@@ -86,6 +101,11 @@ export function initBackgroundVideoSync() {
             let playAttempts = 0;
             const maxAttempts = 1;
             const playInterval = setInterval(() => {
+                if (!hasSource()) {
+                    // Mobile, by design — nothing to play and nothing to fall back from.
+                    clearInterval(playInterval);
+                    return;
+                }
                 if (video.paused && playAttempts < maxAttempts) {
                     attemptPlay();
                     playAttempts++;
@@ -93,8 +113,7 @@ export function initBackgroundVideoSync() {
                     clearInterval(playInterval);
                     // If we've exhausted all attempts, hide video and show solid background
                     if (video.paused) {
-                        video.style.display = 'none';
-                        document.body.style.background = '#b2c4f6';
+                        fallBackToSolid();
                     }
                 }
             }, 1000);

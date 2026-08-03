@@ -14,6 +14,10 @@
 import { listGallery, deleteRender, renameRender } from './gallery/api.js';
 import { renderGrid, renderCompare, renderMeta, entryName, defaultName } from './gallery/view.js';
 import { t, plural } from './gallery/i18n.js';
+import { createRenameRow } from './gallery/rename.js';
+import { createDeleteConfirm } from './gallery/delete-confirm.js';
+import { createSharePanel } from './gallery/share-panel.js';
+import { createRefresher, REFRESH_DEBOUNCE_MS } from './share/refresh.js';
 import { copyText } from './clipboard.js';
 
 /**
@@ -29,13 +33,17 @@ const SEARCH_DEBOUNCE_MS = 350;
 
 /**
  * Boot the page.
- * @param {{ doc?: Document, fetchImpl?: typeof fetch, searchDelayMs?: number }} [deps] -
- *   Injectable for tests. `searchDelayMs` is the debounce; the specs drive it to 0 so a
- *   spec can await a search rather than sleep through one.
+ * @param {{ doc?: Document, fetchImpl?: typeof fetch, searchDelayMs?: number,
+ *   refreshDelayMs?: number }} [deps] - Injectable for tests. `searchDelayMs` is the search
+ *   debounce and `refreshDelayMs` the expiry-recovery one; the specs drive both to 0 so a
+ *   spec can await the work rather than sleep through it.
  * @returns {Promise<'ready' | 'empty' | 'no-results' | 'off' | 'error' | 'signed-out' | 'stale'>}
  *   The state it settled on.
  */
-export async function start({ doc = document, fetchImpl = fetch, searchDelayMs = SEARCH_DEBOUNCE_MS } = {}) {
+export async function start({
+  doc = document, fetchImpl = fetch,
+  searchDelayMs = SEARCH_DEBOUNCE_MS, refreshDelayMs = REFRESH_DEBOUNCE_MS,
+} = {}) {
   /** @param {string} state */
   const setState = (state) => doc.body.setAttribute('data-state', state);
   const byId = (id) => doc.getElementById(id);
@@ -72,17 +80,57 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
    */
   let searchSeq = 0;
 
-  /** @param {string} text */
-  const shareStatus = (text) => {
-    const node = byId('gal-share-status');
-    if (node) node.textContent = text;
-  };
+  // The share section is its own island: it paints a link the listing already handed
+  // over, and nothing in it reaches back into the grid or the pager.
+  const share = createSharePanel({ byId, t, plural, copyText, doc });
 
-  /** @param {string} text */
-  const renameStatus = (text) => {
-    const node = byId('gal-rename-status');
-    if (node) node.textContent = text;
-  };
+  // The rename row is its own island (gallery/rename.js) — a two-mode widget whose only
+  // coupling to this file is which mode it is in. `currentEntry` is a getter rather than a
+  // captured value because the panel is reused for every card.
+  const rename = createRenameRow({
+    byId,
+    t,
+    renameRender,
+    fetchImpl,
+    defaultName,
+    entryName,
+    currentEntry: () => current,
+    onRenamed: () => repaintGrid(),
+  });
+
+  // The takedown, also its own island. `onDeleted` closes the panel BEFORE dropping the
+  // entry: closeDetail nulls `current`, which is what stops repaintGrid re-pointing the
+  // focus-restore target at a card for a render that no longer exists.
+  const del = createDeleteConfirm({
+    byId,
+    t,
+    deleteRender,
+    fetchImpl,
+    currentEntry: () => current,
+    onDeleted: (id) => { closeDetail(); dropEntry(id); },
+  });
+
+  /**
+   * Re-mint image URLs that have expired.
+   *
+   * The listing's URLs are presigned with a 15-minute TTL (GALLERY_URL_TTL_MS, echoed to
+   * the page as `urlTtlMs`), and thumb/after/before are signed in the SAME response at the
+   * same instant — so when one ages out they all have. The card's thumb→after fallback
+   * therefore cannot rescue an expiry: it swaps to a URL that is equally dead, and every
+   * tile ends up a transparent pixel. A tab left open over lunch was a page of blank rooms
+   * with no way back short of a reload nobody thinks to do.
+   *
+   * Same mechanism the public share page has used since it shipped, and the same module.
+   *
+   * `urlTtlMs` is deliberately NOT used to pre-empt this on a timer: every path that would
+   * notice an expiry — lazy-scrolling to a tile, waking the tab, opening the panel —
+   * raises an `error` event, which is what drives this. A timer would add a second way to
+   * be wrong about the clock for no benefit.
+   * @type {any}
+   */
+  let refresher = null;
+  /** @param {any} img */
+  const onImage = (img) => refresher?.attach([img]);
 
   /**
    * The panel's focusable controls, in DOM order, skipping the hidden ones.
@@ -92,101 +140,22 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
    * — renderCompare hands it back for exactly this reason.
    *
    * The rename controls sit between the heading and the comparison in exactly one of two
-   * modes, and which one is decided HERE rather than by the filter below. `hidden` on the
-   * row does not set `.hidden` on the controls inside it, so filtering per node would keep
-   * the input and its two buttons in the cycle while the row was closed — and this trap
-   * calls focus() explicitly after preventDefault(), so Tab would land on something that
-   * is not on screen instead of the browser simply skipping it.
+   * modes, and which one is decided by the island rather than by the filter below.
+   * `hidden` on the row does not set `.hidden` on the controls inside it, so filtering per
+   * node would keep the input and its two buttons in the cycle while the row was closed —
+   * and this trap calls focus() explicitly after preventDefault(), so Tab would land on
+   * something that is not on screen instead of the browser simply skipping it.
    */
   function panelControls() {
-    const renaming = !(/** @type {any} */ (byId('gal-rename-row'))?.hidden ?? true);
     return [
       byId('gal-detail-close'),
-      renaming ? byId('gal-rename-input') : byId('gal-rename'),
-      renaming ? byId('gal-rename-save') : null,
-      renaming ? byId('gal-rename-cancel') : null,
+      ...rename.controls(),
       compareRange,
       byId('gal-share-url'),
       byId('gal-share-copy'),
       byId('gal-delete'),
+      ...del.controls(),
     ].filter((node) => node && !(/** @type {any} */ (node).hidden));
-  }
-
-  /**
-   * Put the rename control back to "not editing".
-   *
-   * Called on open and on cancel as well as after a save, so no combination of leaving a
-   * panel mid-edit and opening another can show one render's name over another's photo.
-   * @param {{ status?: string }} [arg] - Wording to leave behind; cleared by default.
-   */
-  function closeRename({ status = '' } = {}) {
-    const row = /** @type {any} */ (byId('gal-rename-row'));
-    const trigger = /** @type {any} */ (byId('gal-rename'));
-    if (row) row.hidden = true;
-    if (trigger) {
-      trigger.hidden = false;
-      trigger.setAttribute('aria-expanded', 'false');
-    }
-    renameStatus(status);
-  }
-
-  /**
-   * Start editing the open render's name.
-   *
-   * The box is seeded with the owner's OWN name only — never the derived default — and
-   * the default goes in as the placeholder instead. Prefilling "Modern Bedroom" would
-   * make saving unchanged text convert a derived label into a stored one, and the render
-   * would then keep that name after the default changed. An empty box that shows what it
-   * will fall back to says "type something or leave it" without lying about state.
-   */
-  function openRename() {
-    if (!current) return;
-    const row = /** @type {any} */ (byId('gal-rename-row'));
-    const trigger = /** @type {any} */ (byId('gal-rename'));
-    const input = /** @type {any} */ (byId('gal-rename-input'));
-    if (row) row.hidden = false;
-    if (trigger) {
-      trigger.hidden = true;
-      trigger.setAttribute('aria-expanded', 'true');
-    }
-    if (input) {
-      input.value = String(current.name ?? '');
-      input.setAttribute('placeholder', defaultName(current));
-      input.focus();
-      if (typeof input.select === 'function') input.select();
-    }
-    renameStatus('');
-  }
-
-  /**
-   * Send the typed name and repaint everything that shows it.
-   *
-   * The name that lands on the entry is the SERVER's, not the box's: the store trims and
-   * clamps, so painting what was typed would show a name the next page load contradicts.
-   */
-  async function saveRename() {
-    if (!current) return;
-    const input = /** @type {any} */ (byId('gal-rename-input'));
-    const typed = String(input?.value ?? '');
-    renameStatus(t('gallery.rename.saving', 'Saving…'));
-    const res = await renameRender(current.id, typed, fetchImpl);
-    if (!res.ok) {
-      renameStatus(t('gallery.rename.failed', 'Could not save that name. Try again.'));
-      return;
-    }
-    current.name = String(res.body?.name ?? '');
-    const title = byId('gal-detail-title');
-    if (title) title.textContent = entryName(current);
-    // The card behind the panel carries the name too, so it has to be rebuilt — its alt
-    // text and aria-label are built from the same string.
-    repaintGrid();
-    closeRename({
-      status: current.name
-        ? t('gallery.rename.saved', 'Name saved.')
-        : t('gallery.rename.cleared', 'Back to the default name.'),
-    });
-    const trigger = byId('gal-rename');
-    if (trigger) trigger.focus();
   }
 
   /**
@@ -198,10 +167,65 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
    * panel returning focus to the tile it was opened from.
    */
   function repaintGrid() {
-    const cards = renderGrid({ grid: byId('gal-grid'), entries, doc, onOpen: openDetail });
+    const cards = renderGrid({ grid: byId('gal-grid'), entries, doc, onOpen: openDetail, onImage });
     if (!current) return;
     const at = entries.findIndex((entry) => entry.id === current.id);
     if (at >= 0 && cards[at]) opener = cards[at];
+  }
+
+  /**
+   * Take one entry off the page without re-fetching it.
+   *
+   * This used to be `await load()`, which reset `entries`, `loaded` and the grid to page
+   * one — so an agent who had pressed "Load more" twice lost 120 of their 180 cards, and
+   * their scroll position, for deleting a single render. The row is already gone
+   * server-side and the page knows exactly which one, so it can drop it locally and stay
+   * where it was.
+   *
+   * `total` comes down with it, because the count above the grid is the account's total
+   * (or the match count during a search) and re-reading it would cost the round-trip this
+   * exists to avoid.
+   * @param {string} id
+   */
+  function dropEntry(id) {
+    const before = entries.length;
+    entries = entries.filter((entry) => entry.id !== id);
+    if (entries.length === before) return;
+    loaded = entries.length;
+    total = Math.max(0, total - 1);
+    if (!entries.length) {
+      // "Nothing matched" is not "nothing staged" — deleting the last match of a search
+      // must not claim the gallery is empty.
+      if (query) { paintNoResults(); setState('no-results'); return; }
+      setState('empty');
+      return;
+    }
+    paintCount();
+    repaintGrid();
+    const more = /** @type {any} */ (byId('gal-more'));
+    if (more) more.hidden = loaded >= total;
+  }
+
+  /**
+   * Take the page behind the overlay out of the accessibility tree and the tab order.
+   *
+   * `aria-modal` only tells a screen reader that the dialog is modal; without this its
+   * virtual cursor still reads the whole grid and the nav underneath, so the panel was
+   * modal to a keyboard and porous to a reader. The manual Tab trap kept KEYBOARD focus
+   * in, which is exactly why nobody noticed.
+   *
+   * By id and via setAttribute, because the specs drive a document stand-in with
+   * getElementById and no querySelectorAll. `inert` is a boolean content attribute, so
+   * the empty string is the correct value.
+   * @param {boolean} on
+   */
+  function inertBackground(on) {
+    for (const id of ['gal-nav', 'gal-main']) {
+      const node = byId(id);
+      if (!node) continue;
+      if (on) node.setAttribute('inert', '');
+      else node.removeAttribute('inert');
+    }
   }
 
   function closeDetail() {
@@ -209,6 +233,7 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
     // An attribute, not a class: the CSS locks main's scroll off it, and it is the one
     // form both the browser and the test document agree on.
     doc.body.removeAttribute('data-gal-modal');
+    inertBackground(false);
     current = null;
     compareRange = null;
     const back = opener;
@@ -224,54 +249,20 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
     opener = trigger ?? null;
     const title = byId('gal-detail-title');
     if (title) title.textContent = entryName(entry);
-    closeRename();
-    compareRange = renderCompare({ container: byId('gal-compare'), entry, doc });
+    rename.close();
+    del.reset();
+    compareRange = renderCompare({ container: byId('gal-compare'), entry, doc, onImage });
     renderMeta({ container: byId('gal-meta'), entry, doc });
-    paintShare(entry);
+    share.paint(entry);
     if (detail) /** @type {any} */ (detail).hidden = false;
     doc.body.setAttribute('data-gal-modal', 'open');
+    inertBackground(true);
     // role="dialog" only says WHAT the element is. Without this the dialog is never
     // announced and the next Tab walks the page behind the overlay.
     const first = byId('gal-detail-close');
     if (first) first.focus();
   }
 
-  /**
-   * Show the entry's link.
-   *
-   * There is no state to reflect beyond the URL and whether anyone has opened it: every
-   * render has a link, the listing carries it, and the only control is copy. Nothing here
-   * creates or withdraws one, which is why this takes an entry and no second argument.
-   * @param {any} entry
-   */
-  function paintShare(entry) {
-    const input = /** @type {any} */ (byId('gal-share-url'));
-    const copy = /** @type {any} */ (byId('gal-share-copy'));
-    const link = entry?.share?.url || '';
-
-    if (input) {
-      input.value = link;
-      input.hidden = !link;
-    }
-    if (copy) {
-      copy.hidden = !link;
-      copy.textContent = t('gallery.share.copy', 'Copy link');
-    }
-
-    if (!link) {
-      // Not a state the owner can be in on purpose any more — the listing mints one for
-      // every finished render — so it is reported as the failure it is rather than as
-      // "no link yet", which would invite a wait that never ends.
-      shareStatus(t('gallery.share.unavailable', 'This link could not be loaded. Reload the page and try again.'));
-    } else if (!entry.share?.viewCount) {
-      shareStatus(t('gallery.share.notOpened', 'Not opened yet'));
-    } else {
-      shareStatus(plural('gallery.share.opened', entry.share.viewCount, {
-        one: 'Opened {count} time',
-        other: 'Opened {count} times',
-      }));
-    }
-  }
 
   /**
    * The count line.
@@ -361,7 +352,15 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
 
   /** @param {{ append?: boolean, seq?: number }} [arg] */
   async function load({ append = false, seq = searchSeq } = {}) {
+    // Said out loud rather than only spun: the spinner is decoration, and between page
+    // load and the first #gal-count announcement a screen reader heard nothing at all.
+    // Written every time because the pack can change under an in-place language switch.
+    const loadingLabel = byId('gal-loading-label');
+    if (loadingLabel) loadingLabel.textContent = t('gallery.loading', 'Loading your gallery…');
+    const main = byId('gal-main');
+    if (main) main.setAttribute('aria-busy', 'true');
     const res = await listGallery({ offset: append ? loaded : 0, q: query }, fetchImpl);
+    if (main) main.removeAttribute('aria-busy');
     // A response for a query the box no longer holds must not paint. Checked before ANY
     // state is written, so an overtaken request cannot even flip the page to 'error'.
     if (seq !== searchSeq) return 'stale';
@@ -369,7 +368,10 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
     // A failure is NOT an empty account. Every non-401 error used to land on "Nothing
     // staged yet", which tells someone looking for work they know they did that they
     // never did any.
-    if (!res.ok || !res.body) { paintError(res.status); setState('error'); return 'error'; }
+    // setState BEFORE paintError, and the order is load-bearing: #gal-error-detail is an
+    // aria-live region, and a live region whose content changes while it is still
+    // display:none does not announce. Painting first was silent by construction.
+    if (!res.ok || !res.body) { setState('error'); paintError(res.status); return 'error'; }
     if (res.body.enabled === false) { setState('off'); return 'off'; }
 
     // The server decides whether searching is offered — it is the same answer that decides
@@ -402,7 +404,7 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
     loaded = append ? loaded + page.length : page.length;
 
     paintCount();
-    renderGrid({ grid: byId('gal-grid'), entries: page, doc, onOpen: openDetail, append });
+    renderGrid({ grid: byId('gal-grid'), entries: page, doc, onOpen: openDetail, append, onImage });
     const more = /** @type {any} */ (byId('gal-more'));
     // Guarding on the page size too: a page that comes back empty while `total` still
     // claims more would otherwise leave a button that can never finish.
@@ -417,6 +419,57 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
     return 'ready';
   }
 
+  /**
+   * Re-fetch every page currently on screen, not just the first.
+   *
+   * A plain `load()` would drop pages two and three — the exact failure the pager exists to
+   * prevent, and it would be worse here because the reader did not ask for anything: their
+   * gallery would silently shrink while they were looking at it. So it walks forward until
+   * it has back what it had.
+   *
+   * The seq is pinned to the CURRENT search so a re-mint mid-search cannot resurrect the
+   * unfiltered grid.
+   * @returns {Promise<any[] | null>} The fresh entries, or null when there is nothing to
+   *   show — which is what makes the refresher count an attempt and eventually stop.
+   */
+  async function refetchLoaded() {
+    const want = loaded;
+    const seq = searchSeq;
+    let state = await load({ seq });
+    while (state === 'ready' && loaded < want && loaded < total) {
+      state = await load({ append: true, seq });
+    }
+    return state === 'ready' && entries.length ? entries : null;
+  }
+
+  /**
+   * Re-point the open panel's comparison at the fresh URLs.
+   *
+   * Deliberately NOT openDetail(): that moves focus to the close button, and a re-mint the
+   * reader never asked for must not move their focus out from under them. Reassigning
+   * `compareRange` keeps the Tab trap pointing at the slider actually on screen — the old
+   * one is detached by now.
+   */
+  function repaintOpenPanel() {
+    if (!current) return;
+    const fresh = entries.find((entry) => entry.id === current.id);
+    if (!fresh) return;
+    current = fresh;
+    compareRange = renderCompare({ container: byId('gal-compare'), entry: fresh, doc, onImage });
+  }
+
+  // Seeded empty: every image reaches it through `onImage` as it is built, including the
+  // ones a later page appends, so there is no list to keep in sync.
+  refresher = createRefresher({
+    images: [],
+    debounceMs: refreshDelayMs,
+    reload: async () => {
+      const fresh = await refetchLoaded();
+      if (fresh) repaintOpenPanel();
+      return fresh;
+    },
+  });
+
   byId('gal-detail-close')?.addEventListener('click', closeDetail);
   detail?.addEventListener('click', (event) => {
     // Backdrop only — clicking inside the panel must not dismiss it.
@@ -426,12 +479,18 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
     const key = /** @type {any} */ (event).key;
     if (!detail || /** @type {any} */ (detail).hidden) return;
     if (key === 'Escape') {
-      // Escape backs out of the innermost thing first. Closing the whole panel from an
-      // open rename box would throw away what was typed AND the render they were looking
-      // at, when all they asked for was to stop renaming.
-      const renaming = !(/** @type {any} */ (byId('gal-rename-row'))?.hidden ?? true);
-      if (renaming) {
-        closeRename();
+      // Escape backs out of the innermost thing first, and there are two things it can be
+      // inside of. Closing the whole panel from an open rename box would throw away what
+      // was typed AND the render they were looking at, when all they asked for was to stop
+      // renaming; backing out of "are you sure" must likewise leave the panel standing.
+      if (del.isArmed()) {
+        del.reset();
+        const trigger = byId('gal-delete');
+        if (trigger) trigger.focus();
+        return;
+      }
+      if (rename.isOpen()) {
+        rename.close();
         const trigger = byId('gal-rename');
         if (trigger) trigger.focus();
         return;
@@ -454,7 +513,21 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
 
   // Returns the promise rather than discarding it, so a caller — the spec, today — can
   // wait for the retry instead of racing it.
-  byId('gal-retry')?.addEventListener('click', () => load());
+  //
+  // Disabled for the duration, which is doing two jobs: it stops a second press stacking
+  // another listing onto a limiter that allows 120 per 15 minutes, and it is the only
+  // feedback a retry gives when it fails with the same wording twice — the aria-live
+  // region cannot announce text identical to what it already holds.
+  byId('gal-retry')?.addEventListener('click', async () => {
+    const retry = /** @type {any} */ (byId('gal-retry'));
+    if (retry?.disabled) return;
+    if (retry) retry.disabled = true;
+    try {
+      return await load();
+    } finally {
+      if (retry) retry.disabled = false;
+    }
+  });
 
   /**
    * Run a search, from the first page.
@@ -529,44 +602,11 @@ export async function start({ doc = document, fetchImpl = fetch, searchDelayMs =
     if (more) { more.disabled = false; more.textContent = t('gallery.more', 'Load more'); }
   });
 
-  byId('gal-rename')?.addEventListener('click', openRename);
-  byId('gal-rename-cancel')?.addEventListener('click', () => {
-    closeRename();
-    const trigger = byId('gal-rename');
-    if (trigger) trigger.focus();
-  });
-  // Returns the promise so a caller can await the save rather than race it, exactly as
-  // the retry button does.
-  byId('gal-rename-save')?.addEventListener('click', () => saveRename());
-  byId('gal-rename-input')?.addEventListener('keydown', (event) => {
-    // Enter commits. The row is not a <form> — it sits inside no form on this page — so
-    // without this the key does nothing and the box looks broken.
-    if (/** @type {any} */ (event).key !== 'Enter') return;
-    /** @type {any} */ (event).preventDefault?.();
-    return saveRename();
-  });
+  rename.bind();
 
-  byId('gal-share-copy')?.addEventListener('click', async () => {
-    const input = /** @type {any} */ (byId('gal-share-url'));
-    const value = input?.value || '';
-    if (!value) return;
-    // Reports what actually happened. The link is on screen either way now, so a false
-    // "Copied" costs a paste rather than the link — but it still sends somebody off to
-    // paste an empty clipboard into a message to their client.
-    const ok = await copyText(value, { doc });
-    shareStatus(ok
-      ? t('gallery.share.copied', 'Copied — the link is on your clipboard.')
-      : t('gallery.share.copyFailed', 'Could not copy automatically. Select the link above and copy it.'));
-    if (!ok && typeof input.select === 'function') input.select();
-  });
+  share.bind();
 
-  byId('gal-delete')?.addEventListener('click', async () => {
-    if (!current) return;
-    const res = await deleteRender(current.id, fetchImpl);
-    if (!res.ok) { shareStatus(t('gallery.share.deleteFailed', 'Could not delete this render.')); return; }
-    closeDetail();
-    await load();
-  });
+  del.bind();
 
   // Switching language on this page swaps the pack in place rather than navigating (see
   // the [data-lang-inplace] note in gallery.html), so the strings JS owns have to be

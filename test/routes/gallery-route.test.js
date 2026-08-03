@@ -13,7 +13,7 @@ import express from 'express';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import createGalleryRouter from '../../routes/gallery.js';
+import createGalleryRouter, { MAX_OFFSET, PAGE_SIZE } from '../../routes/gallery.js';
 import { createGalleryShares } from '../../lib/data/gallery-shares.js';
 import { createStagedRenders } from '../../lib/data/staged-renders.js';
 import { createRenderRefs } from '../../lib/data/render-refs.js';
@@ -499,6 +499,136 @@ test('deleting an entry is the takedown — and it is the ONLY one', async () =>
   await fetch(`${base}/api/gallery/${id}`, { method: 'DELETE' });
   assert.equal(shares.resolveShare(token).ok, false);
   assert.equal((await json(await fetch(`${base}/api/gallery`))).total, 0);
+});
+
+// ---- paging ---------------------------------------------------------------------------
+//
+// `offset` is the only number this route takes off the query string, and better-sqlite3
+// binds it straight into `LIMIT ? OFFSET ?`. It refuses a non-integer or out-of-range
+// value from INSIDE the statement, so a coercion that lets one through is not a bad page —
+// it is a 500 on an authenticated endpoint. `?offset=1.5` and `?offset=1e21` both were.
+
+test('a fractional offset floors instead of throwing', async () => {
+  const { base, as, addRender } = await mount();
+  as('user-1');
+  addRender('user-1', { roomType: 'Bedroom' });
+  addRender('user-1', { roomType: 'Kitchen' });
+
+  const all = (await json(await fetch(`${base}/api/gallery`))).entries;
+  const res = await fetch(`${base}/api/gallery?offset=1.5`);
+  assert.equal(res.status, 200, 'a fractional offset used to reach SQLite and 500');
+  const body = await json(res);
+  assert.equal(body.offset, 1);
+  // Floored to 1, so it starts at the SECOND entry — not merely "did not crash".
+  assert.deepEqual(body.entries.map((e) => e.id), all.slice(1).map((e) => e.id));
+});
+
+test('an offset past every row answers an empty page with the total intact', async () => {
+  const { base, as, addRender } = await mount();
+  as('user-1');
+  addRender('user-1');
+
+  // 1e21 is finite but far outside SQLite's integer range, which is the other half of the
+  // same crash: `Number('1e21')` is a perfectly good float and a hopeless bind parameter.
+  const res = await fetch(`${base}/api/gallery?offset=1e21`);
+  assert.equal(res.status, 200);
+  const body = await json(res);
+  assert.deepEqual(body.entries, []);
+  assert.equal(body.offset, MAX_OFFSET, 'clamped, and the response says so');
+  assert.equal(body.total, 1, 'the account still has its render');
+});
+
+test('junk and negative offsets land on the first page', async () => {
+  const { base, as, addRender } = await mount();
+  as('user-1');
+  addRender('user-1');
+  const first = (await json(await fetch(`${base}/api/gallery`))).entries;
+
+  // The last case is `?offset=1&offset=2`, which Express hands over as an ARRAY. Number()
+  // of that is NaN, so it lands here with everything else rather than binding an object.
+  for (const qs of ['offset=-5', 'offset=abc', 'offset=', 'offset=NaN', 'offset=1&offset=2']) {
+    const res = await fetch(`${base}/api/gallery?${qs}`);
+    assert.equal(res.status, 200, qs);
+    const body = await json(res);
+    assert.equal(body.offset, 0, qs);
+    assert.deepEqual(body.entries.map((e) => e.id), first.map((e) => e.id), qs);
+  }
+});
+
+test('a hostile offset is just as safe with a search on', async () => {
+  // The search path binds `limit, offset` through a DIFFERENT prepared statement in
+  // lib/data/staged-renders.js, so it has the identical hazard and needs the identical
+  // proof — fixing only the listing would leave the crash one query parameter away.
+  const { base, as, addRender } = await mount();
+  as('user-1', 'pro');
+  addRender('user-1', { roomType: 'Bedroom' });
+
+  for (const qs of ['offset=1.5&q=bedroom', 'offset=1e21&q=bedroom', 'offset=abc&q=bedroom']) {
+    const res = await fetch(`${base}/api/gallery?${qs}`);
+    assert.equal(res.status, 200, qs);
+    assert.equal((await json(res)).search.q, 'bedroom', qs);
+  }
+});
+
+test('the page size is the server\'s to decide', async () => {
+  // The client cannot ask for a bigger page; `limit` is not read at all. Pinned because a
+  // caller-controlled limit is how an offset clamp gets quietly routed around.
+  const { base, as, addRender } = await mount();
+  as('user-1');
+  addRender('user-1');
+  const body = await json(await fetch(`${base}/api/gallery?limit=5000&pageSize=5000`));
+  assert.equal(body.pageSize, PAGE_SIZE);
+});
+
+// ---- caching --------------------------------------------------------------------------
+
+test('every gallery response forbids caching', async () => {
+  // The body carries presigned R2 URLs and a live /s/<token> — bearer credentials that
+  // happen to live in a URL. Without `no-store` an intermediary may hold them, and the
+  // back/forward cache will happily replay a 15-minute-old page as a screen of 404s.
+  const { base, as, addRender } = await mount();
+  const id = addRender('user-1');
+  as('user-1');
+
+  for (const [method, url] of [
+    ['GET', `${base}/api/gallery`],
+    ['DELETE', `${base}/api/gallery/${id}`],
+  ]) {
+    const res = await fetch(url, { method });
+    assert.equal(res.headers.get('cache-control'), 'no-store', `${method} ${url}`);
+    assert.equal(res.headers.get('referrer-policy'), 'no-referrer', `${method} ${url}`);
+  }
+});
+
+test('the refusals carry the headers too', async () => {
+  // Set before any handler runs, so a 401 and a 404 are protected as well as a 200. A
+  // header applied inside the success path is one early return away from being absent.
+  const { base, as, addRender } = await mount();
+  const id = addRender('user-1');
+
+  as(null);
+  const anon = await fetch(`${base}/api/gallery`);
+  assert.equal(anon.status, 401);
+  assert.equal(anon.headers.get('cache-control'), 'no-store');
+
+  as('user-2');
+  const notMine = await fetch(`${base}/api/gallery/${id}`, { method: 'DELETE' });
+  assert.equal(notMine.status, 404);
+  assert.equal(notMine.headers.get('cache-control'), 'no-store');
+  assert.equal(notMine.headers.get('referrer-policy'), 'no-referrer');
+});
+
+test('nothing here is ever publicly cacheable', async () => {
+  // Deliberately asserts PRESENCE before content. "No cache-control at all" satisfies
+  // "not public" while being the exact bug this section exists to catch — a response with
+  // no directive is heuristically cacheable, which is worse than one that says `public`.
+  const { base, as, addRender } = await mount();
+  addRender('user-1');
+  as('user-1');
+  const res = await fetch(`${base}/api/gallery`);
+  const cc = res.headers.get('cache-control');
+  assert.ok(cc, 'no cache-control at all is the failure mode, not a pass');
+  assert.ok(!/public|max-age=[1-9]/.test(cc), `cache-control was ${cc}`);
 });
 
 // ---- the gallery being switched off --------------------------------------------------

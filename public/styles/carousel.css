@@ -8,7 +8,13 @@
    not merely wasted, it was wasted per frame — #background-video is a fixed full-viewport
    autoplaying layer, so every backdrop-filter re-snapshots and re-blurs on each video
    frame, and this is exactly where the LCP image paints. Same call as the
-   `backdrop-filter:none` on .sponsors-container in home.css. */
+   `backdrop-filter:none` on .sponsors-container in home.css.
+
+   Note the per-frame part is now DESKTOP-ONLY: index.html gates the video's <source>
+   behind `media="(min-width: 769px)"`, so below that there is no video, only the static
+   poster, and this blur costs one composite instead of one per frame. That is why it is
+   left on for mobile rather than being zeroed out in a media query — the expense the
+   paragraph above describes no longer applies there. */
 .carousel-container {
   backdrop-filter:blur(10px)
 }

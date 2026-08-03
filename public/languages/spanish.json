@@ -1299,7 +1299,8 @@
     },
     "compare": {
       "beforeAlt": "La estancia antes de amueblarla",
-      "rangeLabel": "Mostrar la estancia amueblada"
+      "rangeLabel": "Mostrar la estancia amueblada",
+      "rangeValue": "{percent} % con decoración"
     },
     "meta": {
       "room": "Estancia",
@@ -1332,7 +1333,14 @@
       "rateLimited": "Demasiadas solicitudes ahora mismo. Espera un momento e inténtalo de nuevo.",
       "retry": "Reintentar"
     },
-    "delete": "Eliminar este render",
+    "delete": {
+      "action": "Eliminar este render",
+      "warn": "Esto elimina de forma permanente el render y el enlace que ya has compartido. No se puede deshacer.",
+      "confirm": "Eliminar definitivamente",
+      "cancel": "Conservarlo",
+      "busy": "Eliminando…",
+      "failed": "No se ha podido eliminar este render."
+    },
     "share": {
       "title": "Compartir",
       "note": "Cualquier persona con este enlace puede abrir la foto amueblada. Para retirarla, elimina el render: las visitas se detienen en un plazo de 15 minutos.",
@@ -1345,8 +1353,7 @@
         "one": "Abierto {count} vez",
         "other": "Abierto {count} veces"
       },
-      "unavailable": "No se ha podido cargar este enlace. Recarga la página e inténtalo de nuevo.",
-      "deleteFailed": "No se ha podido eliminar este render."
+      "unavailable": "No se ha podido cargar este enlace. Recarga la página e inténtalo de nuevo."
     },
     "rename": {
       "action": "Cambiar nombre",
@@ -1375,6 +1382,7 @@
         "body": "Nada en tu galería coincide con «{q}».",
         "cta": "Borrar la búsqueda"
       }
-    }
+    },
+    "loading": "Cargando tu galería…"
   }
 }

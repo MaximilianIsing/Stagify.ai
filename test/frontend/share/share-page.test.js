@@ -234,20 +234,24 @@ test('the page is headed with the SAME title the owner sees in their gallery', (
   assert.equal(shareTitle({}), 'Staged room');
 });
 
-test('the section under the photo carries the style, the room and the date', () => {
+test('the strip under the photo carries the style, the room and the date, in that order', () => {
   const { document } = shareDocument();
   const gallery = document.createElement('div');
   renderGallery({ gallery, manifest: UNHEADLINED, doc: document, onOpen: () => {} });
 
   const facts = gallery.children[0].children[1];
-  assert.equal(facts.tagName, 'DL');
-  const text = facts.textContent;
-  // The slug is capitalised, so this does not say "Style: modern" under "Modern Living
-  // room". The date is formatted in the reader's locale, so only the year is asserted.
-  assert.match(text, /Style\s*Modern/);
-  assert.match(text, /Room\s*Living room/);
-  assert.match(text, /Staged/);
-  assert.match(text, /2026/);
+  const items = facts.children.map((n) => n.textContent);
+  // Three siblings, not one string: they are what CSS lays out on one line and what the
+  // separator is drawn between, so a joined string would take both away.
+  assert.equal(items.length, 3);
+  // The slug is capitalised, so this does not say "modern" under a heading that says
+  // "Modern Living room". The date is formatted in the reader's locale, so only the year
+  // is asserted.
+  assert.equal(items[0], 'Modern');
+  assert.equal(items[1], 'Living room');
+  assert.match(items[2], /2026/);
+  // The separator is CSS, so it is never read aloud and never comes along with a copy.
+  assert.ok(!/·/.test(facts.textContent), 'the dot must not be in the text');
 });
 
 test('a missing field is skipped rather than printed blank', () => {
@@ -260,10 +264,10 @@ test('a missing field is skipped rather than printed blank', () => {
     onOpen: () => {},
   });
 
-  const text = gallery.children[0].children[1].textContent;
-  assert.ok(!/Style/.test(text), '"Style: —" is noise');
-  assert.ok(!/Staged/.test(text), 'a render with no timestamp has no date to give');
-  assert.match(text, /Room\s*Living room/);
+  // One item, so the CSS separator — drawn on every item but the first — leaves no
+  // dangling dot where the style and the date would have been.
+  const facts = gallery.children[0].children[1];
+  assert.deepEqual(facts.children.map((n) => n.textContent), ['Living room']);
 });
 
 test('a render with nothing to say about it renders no facts block at all', () => {

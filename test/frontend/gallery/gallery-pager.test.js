@@ -13,7 +13,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { start } from '../../../public/scripts/gallery-app.js';
-import { galleryDocument } from '../../helpers/gallery-dom.js';
+import { galleryDocument, cards } from '../../helpers/gallery-dom.js';
 
 const PAGE_SIZE = 60;
 
@@ -47,7 +47,7 @@ test('a partial gallery names both numbers instead of only the larger one', asyn
   await start({ doc: document, fetchImpl: pagingServer({ total: 200 }) });
 
   assert.equal(byId('gal-count').textContent, 'Showing 60 of 200 staged rooms');
-  assert.equal(byId('gal-grid').children.length, 60);
+  assert.equal(cards(byId).length, 60);
   assert.equal(byId('gal-more').hidden, false, 'there are 140 more rooms and no way to them');
 });
 
@@ -61,11 +61,11 @@ test('the pager appends the next page rather than replacing the first', async ()
   await byId('gal-more').fire('click');
 
   assert.deepEqual(fetchImpl.calls, [0, 60], 'the second request must ask for the next offset');
-  assert.equal(byId('gal-grid').children.length, 120);
+  assert.equal(cards(byId).length, 120);
   assert.equal(byId('gal-count').textContent, 'Showing 120 of 200 staged rooms');
 
   // 120 DISTINCT rooms. An append that re-served page one would still show 120 cards.
-  const labels = byId('gal-grid').children.map((c) => c.getAttribute('aria-label'));
+  const labels = cards(byId).map((c) => c.getAttribute('aria-label'));
   assert.equal(new Set(labels).size, 120, 'the appended page repeated rooms already on screen');
   assert.match(labels[119], /Room 119/);
 });
@@ -79,7 +79,7 @@ test('once everything is on screen the pager goes away and the count drops the p
 
   await byId('gal-more').fire('click');
   assert.equal(byId('gal-more').hidden, true);
-  assert.equal(byId('gal-grid').children.length, 100);
+  assert.equal(cards(byId).length, 100);
   assert.equal(byId('gal-count').textContent, '100 staged rooms');
 });
 
@@ -120,7 +120,7 @@ test('a page that comes back empty retires the pager instead of looping forever'
   await byId('gal-more').fire('click');
   assert.equal(calls, 2);
   assert.equal(byId('gal-more').hidden, true, 'a button that can never finish is worse than none');
-  assert.equal(byId('gal-grid').children.length, 60);
+  assert.equal(cards(byId).length, 60);
 });
 
 test('the pager button lives outside the grid, where it cannot be counted as a card', async () => {

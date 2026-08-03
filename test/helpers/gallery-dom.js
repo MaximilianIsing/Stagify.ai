@@ -133,6 +133,22 @@ export function galleryDocument() {
 }
 
 /**
+ * The card buttons in the grid, unwrapped.
+ *
+ * #gal-grid carries role="list", so renderGrid wraps every card in a role="listitem"
+ * div — a list whose children are buttons is invalid ARIA. That put one node between the
+ * grid and each card, and specs care about the CARD: its aria-label, its image, and
+ * clicking it. Going through here rather than reaching for `.children` twice keeps the
+ * wrapper an implementation detail of the view.
+ *
+ * @param {(id: string) => any} byId
+ * @returns {any[]} The card buttons, in grid order.
+ */
+export function cards(byId) {
+  return (byId('gal-grid')?.children ?? []).map((wrap) => wrap.children[0]);
+}
+
+/**
  * A fetch stand-in routed by pathname.
  * @param {Record<string, { status: number, body: any }>} routes
  */

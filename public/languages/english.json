@@ -1299,7 +1299,8 @@
     },
     "compare": {
       "beforeAlt": "The room before staging",
-      "rangeLabel": "Reveal the staged room"
+      "rangeLabel": "Reveal the staged room",
+      "rangeValue": "{percent}% staged"
     },
     "meta": {
       "room": "Room",
@@ -1332,7 +1333,14 @@
       "rateLimited": "Too many requests just now. Give it a moment and try again.",
       "retry": "Try again"
     },
-    "delete": "Delete this render",
+    "delete": {
+      "action": "Delete this render",
+      "warn": "This permanently deletes the render and the link you have already shared. It cannot be undone.",
+      "confirm": "Delete permanently",
+      "cancel": "Keep it",
+      "busy": "Deleting…",
+      "failed": "Could not delete this render."
+    },
     "share": {
       "title": "Share",
       "note": "Anyone with this link can open the staged photo. Deleting the render is what takes it down, and visits stop within 15 minutes.",
@@ -1345,8 +1353,7 @@
         "one": "Opened {count} time",
         "other": "Opened {count} times"
       },
-      "unavailable": "This link could not be loaded. Reload the page and try again.",
-      "deleteFailed": "Could not delete this render."
+      "unavailable": "This link could not be loaded. Reload the page and try again."
     },
     "rename": {
       "action": "Rename",
@@ -1375,6 +1382,7 @@
         "body": "Nothing in your gallery matches “{q}”.",
         "cta": "Clear search"
       }
-    }
+    },
+    "loading": "Loading your gallery…"
   }
 }

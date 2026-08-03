@@ -279,6 +279,36 @@ test('updating settings does NOT rotate the link', () => {
   assert.equal(shares.resolveShare(token).share.settings.headline, 'second');
 });
 
+test('updating settings leaves the expiry alone', () => {
+  // REGRESSION. `expiresAt` used to default to null and the UPDATE writes `expires_at = ?`
+  // unconditionally, so every settings edit silently un-expired the link it was editing.
+  // Nothing sets an expiry today, which is exactly why it was invisible — the trap was
+  // armed for whoever added the first one.
+  const { shares } = setup();
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER, expiresAt: 5_000 });
+
+  shares.updateSettings({ renderId: RENDER, settings: { headline: 'second' } });
+
+  // The property that actually matters is not the column — it is that the link still dies.
+  assert.deepEqual(shares.resolveShare(token, 5_000), { ok: false, reason: 'expired' });
+  assert.equal(shares.activeForRender(RENDER, 5_001), null);
+  assert.equal(shares.activeForRender(RENDER, 4_999).expiresAt, 5_000);
+});
+
+test('an expiry can still be set and cleared on purpose', () => {
+  // `undefined` means keep, so the two deliberate operations must remain reachable —
+  // otherwise the fix above would have traded one silent behaviour for another.
+  const { shares } = setup();
+  const { token } = shares.ensureShare({ renderId: RENDER, userId: USER, expiresAt: 5_000 });
+
+  shares.updateSettings({ renderId: RENDER, settings: {}, expiresAt: null });
+  assert.equal(shares.resolveShare(token, 9_999).ok, true, 'explicitly cleared');
+
+  shares.updateSettings({ renderId: RENDER, settings: {}, expiresAt: 8_000 });
+  assert.equal(shares.resolveShare(token, 7_999).ok, true);
+  assert.deepEqual(shares.resolveShare(token, 8_000), { ok: false, reason: 'expired' });
+});
+
 test('corrupt settings degrade to defaults rather than 500ing a live link', () => {
   const { db, shares } = setup();
   const { token } = shares.ensureShare({ renderId: RENDER, userId: USER });
