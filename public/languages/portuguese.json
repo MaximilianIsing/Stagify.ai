@@ -100,6 +100,11 @@
         "bedroom": "Um quarto preparado com cama ampla, cabeceira estofada, TV na parede e um rack baixo",
         "dining": "Uma sala de jantar preparada com mesa oval de madeira, seis cadeiras, lustre e janelas em sacada"
       },
+      "addresses": {
+        "one": "412 Rosewood Lane",
+        "two": "88 Harborview Drive",
+        "three": "1207 Ashford Court"
+      },
       "eyebrow": "Sua galeria",
       "panelTitle": "Prepare de novo quantas vezes quiser. Nada é sobrescrito.",
       "panelBody": "Não há botão de salvar nem pasta para nomear. Prepare um ambiente e ele já está na sua galeria, do mais recente para o mais antigo, antes mesmo de você fechar a aba. Abra depois e você tem o comparador de antes e depois mais as configurações exatas por trás dele: tipo de ambiente, estilo, seu comando extra, se você removeu os móveis existentes e as fotos de móveis que anexou.",

@@ -100,6 +100,11 @@
         "bedroom": "A staged bedroom with a wide bed, an upholstered headboard, a wall-mounted TV and a low media console",
         "dining": "A staged dining room with an oval wooden table, six chairs, a chandelier and bay windows"
       },
+      "addresses": {
+        "one": "412 Rosewood Lane",
+        "two": "88 Harborview Drive",
+        "three": "1207 Ashford Court"
+      },
       "eyebrow": "Your gallery",
       "panelTitle": "Re-stage as often as you like. Nothing gets overwritten.",
       "panelBody": "There is no save button and no folder to name. Stage a room and it is in your gallery, newest first, before you close the tab. Open one later and you get the before-and-after slider plus the exact settings behind it: room type, style, your extra prompt, whether you removed the existing furniture, and any furniture photos you attached.",

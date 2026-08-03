@@ -100,6 +100,11 @@
         "bedroom": "Een ingerichte slaapkamer met een breed bed, gestoffeerd hoofdbord, wandtelevisie en een laag dressoir",
         "dining": "Een ingerichte eetkamer met een ovale houten tafel, zes stoelen, een kroonluchter en erkerramen"
       },
+      "addresses": {
+        "one": "412 Rosewood Lane",
+        "two": "88 Harborview Drive",
+        "three": "1207 Ashford Court"
+      },
       "eyebrow": "Jouw galerij",
       "panelTitle": "Richt zo vaak opnieuw in als je wilt. Er wordt niets overschreven.",
       "panelBody": "Er is geen opslaanknop en geen map die je een naam moet geven. Richt een kamer in en hij staat in je galerij, nieuwste eerst, nog voordat je het tabblad sluit. Open hem later en je krijgt de voor-en-naschuifbalk plus precies de instellingen erachter: type kamer, stijl, je extra prompt, of je de bestaande meubels hebt verwijderd, en eventuele meubelfoto's die je hebt toegevoegd.",
