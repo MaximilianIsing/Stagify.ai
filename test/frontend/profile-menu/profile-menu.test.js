@@ -65,6 +65,37 @@ test('free plan: shows the upgrade row, not the manage-subscription row', () => 
   assert.equal(dropdown.classList.contains('profile-menu-dropdown--guest'), false);
 });
 
+test('every signed-in menu offers the bug channel, in the row above Sign out', () => {
+  // /api/bug-report was reachable from ONE control in the app (the AI Designer's bug
+  // button), so a problem anywhere else had nowhere to go. Position is part of the
+  // fix: the report row has to sit above Sign out, or it is the row people hit while
+  // reaching for the destructive one — and vice versa.
+  for (const user of [
+    { email: 'free@example.com', plan: 'free' },
+    { email: 'pro@example.com', plan: 'pro' },
+    { email: 'pro@example.com', plan: 'pro', canManageSubscription: true },
+  ]) {
+    const html = renderFor(user);
+    const report = html.indexOf('data-profile-action="report-issue"');
+    const signout = html.indexOf('data-profile-action="signout"');
+    assert.notEqual(report, -1, `no report row for ${JSON.stringify(user)}`);
+    assert.ok(report < signout, 'the report row belongs directly above Sign out');
+    // From just past the report row's own marker, so only a THIRD row trips this.
+    assert.ok(!html.slice(report + 1, signout).includes('data-profile-action='),
+      'nothing may come between them');
+    assert.ok(html.includes('Report an issue'));
+  }
+});
+
+test('the report row is a plain item, not styled as the destructive one', () => {
+  // .profile-menu__item--danger is red — reserved for Sign out. A red "Report an
+  // issue" reads as "delete my account", which is a click nobody wants to guess at.
+  const html = renderFor({ email: 'free@example.com', plan: 'free' });
+  const row = html.slice(html.indexOf('data-profile-action="report-issue"') - 200,
+    html.indexOf('data-profile-action="report-issue"'));
+  assert.ok(!row.includes('profile-menu__item--danger'));
+});
+
 test('pro plan: shows the plan badge and hides the upgrade row', () => {
   const html = renderFor({ email: 'pro@example.com', plan: 'pro' });
 

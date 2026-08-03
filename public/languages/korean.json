@@ -615,7 +615,26 @@
     "manageSubscription": "구독 관리",
     "signOut": "로그아웃",
     "manageBillingAria": "Stripe에서 결제 관리",
-    "stripeHelp": "Stripe 고객센터"
+    "stripeHelp": "Stripe 고객센터",
+    "reportIssue": "문제 신고",
+    "report": {
+      "title": "문제 신고",
+      "intro": "무엇이 잘못되었는지 알려주시면 확인하겠습니다.",
+      "descriptionLabel": "어떤 문제가 있었나요?",
+      "descriptionPlaceholder": "발생한 문제를 설명해 주세요…",
+      "stepsLabel": "재현 단계 (선택)",
+      "stepsPlaceholder": "1. …에 접속함\n2. …을(를) 클릭함\n3. X 대신 Y가 발생함",
+      "emailLabel": "이메일 (선택)",
+      "emailPlaceholder": "you@example.com",
+      "cancel": "취소",
+      "submit": "신고 보내기",
+      "submitting": "보내는 중…",
+      "needDescription": "보내기 전에 문제를 설명해 주세요.",
+      "failed": "신고를 보내지 못했습니다. 다시 시도해 주세요.",
+      "successTitle": "감사합니다. 접수되었습니다.",
+      "successBody": "담당 팀이 확인하겠습니다. 이메일을 남기셨다면 그쪽으로 연락드리겠습니다.",
+      "done": "완료"
+    }
   },
   "pdf": {
     "meta": {

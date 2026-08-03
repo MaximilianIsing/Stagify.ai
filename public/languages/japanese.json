@@ -615,7 +615,26 @@
     "manageSubscription": "サブスクリプションを管理",
     "signOut": "ログアウト",
     "manageBillingAria": "Stripeで請求を管理",
-    "stripeHelp": "Stripeヘルプセンター"
+    "stripeHelp": "Stripeヘルプセンター",
+    "reportIssue": "問題を報告",
+    "report": {
+      "title": "問題を報告",
+      "intro": "何が起きたかをお知らせください。確認いたします。",
+      "descriptionLabel": "何が起きましたか？",
+      "descriptionPlaceholder": "発生した問題をご記入ください…",
+      "stepsLabel": "再現手順（任意）",
+      "stepsPlaceholder": "1. …を開いた\n2. …をクリックした\n3. X ではなく Y になった",
+      "emailLabel": "メールアドレス（任意）",
+      "emailPlaceholder": "you@example.com",
+      "cancel": "キャンセル",
+      "submit": "報告を送信",
+      "submitting": "送信中…",
+      "needDescription": "送信する前に問題の内容をご記入ください。",
+      "failed": "報告を送信できませんでした。もう一度お試しください。",
+      "successTitle": "ありがとうございます。受け付けました。",
+      "successBody": "担当チームが確認いたします。メールアドレスをご記入いただいた場合は、そちらにご連絡します。",
+      "done": "完了"
+    }
   },
   "pdf": {
     "meta": {

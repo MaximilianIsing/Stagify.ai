@@ -1,4 +1,5 @@
 import { createAuthModal } from './profile-menu/auth-modal.js';
+import { createReportIssueModal } from './profile-menu/report-issue-modal.js';
 import { lang, esc } from './profile-menu/dom-utils.js';
 
 (function () {
@@ -12,6 +13,11 @@ import { lang, esc } from './profile-menu/dom-utils.js';
   // The auth modal is its own island; it calls back here to refresh/close the
   // dropdown. Both callbacks are hoisted function declarations below.
   const auth = createAuthModal({ onRefresh: refresh, onCloseDropdown: closeDropdown });
+
+  // The bug channel's site-wide entry point. It used to exist only inside the AI
+  // Designer, so a problem anywhere else — the home page's staging flow, checkout,
+  // the Masking Studio — had nowhere to go. Its own island; this file only opens it.
+  const reportIssue = createReportIssueModal({ onCloseDropdown: closeDropdown });
 
   function closeDropdown() {
     const dd = document.getElementById('profile-menu-dropdown');
@@ -116,6 +122,10 @@ import { lang, esc } from './profile-menu/dom-utils.js';
         '<div class="profile-menu__section">' +
         plusRow +
         manageRow +
+        // Directly above Sign out: the last thing in the menu that is not leaving it.
+        '<button type="button" class="profile-menu__item" data-profile-action="report-issue">' +
+        esc(lang('profile.reportIssue', 'Report an issue')) +
+        '</button>' +
         '<button type="button" class="profile-menu__item profile-menu__item--danger" data-profile-action="signout">' +
         esc(lang('profile.signOut', 'Sign out')) +
         '</button>' +
@@ -139,6 +149,13 @@ import { lang, esc } from './profile-menu/dom-utils.js';
       auth.syncAuthFormMode();
       closeDropdown();
       auth.openAuthModal(false);
+      return;
+    }
+    if (action === 'report-issue') {
+      e.preventDefault();
+      // Focus comes back to the account button, not to `t`: opening the dialog closes
+      // this dropdown, and a hidden row cannot take focus — it would land on <body>.
+      reportIssue.open(document.getElementById('profile-menu-btn'));
       return;
     }
     if (action === 'manage-subscription') {

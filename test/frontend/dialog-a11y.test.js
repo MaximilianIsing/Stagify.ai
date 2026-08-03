@@ -73,6 +73,22 @@ const DIALOGS = [
     scope: tagWithId('bug-report-popup'),
   },
   {
+    label: 'account menu "Report an issue" dialog',
+    // Authored as a JS template string, like the auth modal's, because it is injected
+    // into whichever of the ten nav-bearing pages the user is on rather than written
+    // into any of them. Same reason the mask editor escaped notice: reading the HTML
+    // never shows it.
+    file: 'public/scripts/profile-menu/report-issue-template.js',
+    titleId: 'report-issue-title',
+    attr: markupAttr,
+    // The outer #report-issue-modal is the overlay; the dialog is the panel inside it.
+    scope: (src) => {
+      const tag = src.match(/<div class="report-modal__dialog"[^>]*>/);
+      assert.ok(tag, 'the report dialog element moved — update this guard');
+      return tag[0];
+    },
+  },
+  {
     label: 'AI Designer image lightbox',
     file: 'public/ai-designer.html',
     // No heading to point at — a lightbox is one image — so it is named directly
@@ -115,6 +131,11 @@ for (const d of DIALOGS) {
 const CLOSE_BUTTONS = [
   { label: 'bug-report popup', file: 'public/ai-designer.html', id: 'bug-report-popup-close' },
   { label: 'image lightbox', file: 'public/ai-designer.html', id: 'image-modal-close' },
+  {
+    label: 'account menu "Report an issue" dialog',
+    file: 'public/scripts/profile-menu/report-issue-template.js',
+    id: 'report-issue-close',
+  },
 ];
 
 for (const c of CLOSE_BUTTONS) {
@@ -254,6 +275,12 @@ const FOCUS_MANAGED = [
     close: ['function closeAuthModal', '\n  }'],
   },
   {
+    label: 'account menu "Report an issue" dialog',
+    file: 'public/scripts/profile-menu/report-issue-modal.js',
+    open: ['function openReportModal', '\n  }'],
+    close: ['function closeReportModal', '\n  }'],
+  },
+  {
     label: 'stage mask editor',
     file: 'public/scripts/app/stage-mask-editor.js',
     open: ['function focusMaskDialog', '\n      }'],
@@ -289,4 +316,10 @@ test('the auth modal closes on Escape, like every other dialog', () => {
   const src = stripJsComments(read('public/scripts/profile-menu/auth-modal.js'));
   assert.match(src, /'Escape'/, 'no Escape handling at all');
   assert.match(src, /closeAuthModal\(\)/, 'Escape must reach closeAuthModal');
+});
+
+test('the report dialog closes on Escape too — it is raised from the same menu', () => {
+  const src = stripJsComments(read('public/scripts/profile-menu/report-issue-modal.js'));
+  assert.match(src, /'Escape'/, 'no Escape handling at all');
+  assert.match(src, /closeReportModal\(\)/, 'Escape must reach closeReportModal');
 });

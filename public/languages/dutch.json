@@ -615,7 +615,26 @@
     "manageSubscription": "Abonnement beheren",
     "signOut": "Uitloggen",
     "manageBillingAria": "Facturering beheren in Stripe",
-    "stripeHelp": "Stripe-helpcentrum"
+    "stripeHelp": "Stripe-helpcentrum",
+    "reportIssue": "Een probleem melden",
+    "report": {
+      "title": "Een probleem melden",
+      "intro": "Vertel ons wat er misging, dan kijken we ernaar.",
+      "descriptionLabel": "Wat is er gebeurd?",
+      "descriptionPlaceholder": "Beschrijf het probleem dat je tegenkwam…",
+      "stepsLabel": "Stappen om het te herhalen (optioneel)",
+      "stepsPlaceholder": "1. Ik ging naar…\n2. Ik klikte op…\n3. In plaats van X gebeurde Y",
+      "emailLabel": "E-mail (optioneel)",
+      "emailPlaceholder": "jij@voorbeeld.com",
+      "cancel": "Annuleren",
+      "submit": "Melding versturen",
+      "submitting": "Versturen…",
+      "needDescription": "Beschrijf het probleem voordat je het verstuurt.",
+      "failed": "We konden je melding niet versturen. Probeer het opnieuw.",
+      "successTitle": "Bedankt — we hebben het ontvangen.",
+      "successBody": "Ons team kijkt ernaar. Als je een e-mailadres hebt achtergelaten, reageren we daar.",
+      "done": "Klaar"
+    }
   },
   "pdf": {
     "meta": {

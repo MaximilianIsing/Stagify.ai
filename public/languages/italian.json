@@ -615,7 +615,26 @@
     "manageSubscription": "Gestisci abbonamento",
     "signOut": "Esci",
     "manageBillingAria": "Gestisci la fatturazione in Stripe",
-    "stripeHelp": "Centro assistenza Stripe"
+    "stripeHelp": "Centro assistenza Stripe",
+    "reportIssue": "Segnala un problema",
+    "report": {
+      "title": "Segnala un problema",
+      "intro": "Raccontaci cosa non ha funzionato e daremo un’occhiata.",
+      "descriptionLabel": "Cosa è successo?",
+      "descriptionPlaceholder": "Descrivi il problema che hai riscontrato…",
+      "stepsLabel": "Passaggi per riprodurlo (facoltativo)",
+      "stepsPlaceholder": "1. Sono andato su…\n2. Ho fatto clic su…\n3. Invece di X è successo Y",
+      "emailLabel": "Email (facoltativa)",
+      "emailPlaceholder": "tu@esempio.com",
+      "cancel": "Annulla",
+      "submit": "Invia segnalazione",
+      "submitting": "Invio in corso…",
+      "needDescription": "Descrivi il problema prima di inviarlo.",
+      "failed": "Non è stato possibile inviare la segnalazione. Riprova.",
+      "successTitle": "Grazie, l’abbiamo ricevuta.",
+      "successBody": "Il nostro team la esaminerà. Se hai lasciato un’email, ti risponderemo lì.",
+      "done": "Fatto"
+    }
   },
   "pdf": {
     "meta": {

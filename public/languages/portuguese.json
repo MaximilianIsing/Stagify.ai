@@ -615,7 +615,26 @@
     "manageSubscription": "Gerenciar assinatura",
     "signOut": "Sair",
     "manageBillingAria": "Gerenciar cobrança no Stripe",
-    "stripeHelp": "Central de ajuda do Stripe"
+    "stripeHelp": "Central de ajuda do Stripe",
+    "reportIssue": "Relatar um problema",
+    "report": {
+      "title": "Relatar um problema",
+      "intro": "Conte para a gente o que deu errado e vamos analisar.",
+      "descriptionLabel": "O que aconteceu?",
+      "descriptionPlaceholder": "Descreva o problema que você encontrou…",
+      "stepsLabel": "Passos para reproduzir (opcional)",
+      "stepsPlaceholder": "1. Fui para…\n2. Cliquei em…\n3. Em vez de X, aconteceu Y",
+      "emailLabel": "E-mail (opcional)",
+      "emailPlaceholder": "voce@exemplo.com",
+      "cancel": "Cancelar",
+      "submit": "Enviar relato",
+      "submitting": "Enviando…",
+      "needDescription": "Descreva o problema antes de enviar.",
+      "failed": "Não foi possível enviar seu relato. Tente novamente.",
+      "successTitle": "Obrigado — recebemos.",
+      "successBody": "Nossa equipe vai analisar. Se você deixou um e-mail, responderemos por lá.",
+      "done": "Concluído"
+    }
   },
   "pdf": {
     "meta": {

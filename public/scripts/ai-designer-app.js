@@ -11,6 +11,7 @@ import {
 import { lang } from './ai-designer/i18n.js';
 import { localizedTarget } from './i18n-routing.js';
 import { showToast } from './toast.js';
+import { summariseBugReportHistory } from './bug-report-history.js'; // bridged onto window below
 import { createMaskEditor } from './ai-designer/mask-editor.js';
 import { updateMaskEditorTranslations } from './ai-designer/mask-editor-i18n.js'; // bridged onto window below
 import { createImageViewer } from './ai-designer/image-viewer.js';
@@ -56,19 +57,17 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
       } = createImageViewer({
         openMaskEditor: (imageSrc, imageType) => openMaskEditor(imageSrc, imageType),
       });
-      // The image modal's close handlers live in the classic (non-module)
-      // ai-designer-model-selector.js, which can't reach this module's scope,
-      // so expose the closer on window.
-      window.closeImageModal = closeImageModal;
-      // Same trap, same fix: the bug-report form in that classic script needs the
-      // chat transcript for context. Naming `conversationHistory` there threw a
-      // ReferenceError that failed the whole report (this module's top-level `let`
-      // is not a global), so hand it over through an accessor rather than a
-      // snapshot — the array is reassigned on reset, so a value would go stale.
-      window.getConversationHistory = () => conversationHistory;
-      // Same trap a third time: the bug-report dialog gave no feedback at all, and
-      // updateMaskEditorTranslations threw on EVERY load.
+      // Everything the classic (non-module) ai-designer-model-selector.js needs from
+      // this module's scope, which it cannot reach: the lightbox closer, the bug
+      // form's transcript + the summariser that strips its image bytes, and the
+      // feedback/i18n helpers. Naming any of them there is a ReferenceError that kills
+      // the feature silently — the "x" stops working, the whole report is lost, the
+      // dialog reports nothing. The transcript goes over as an ACCESSOR, not a
+      // snapshot: the array is reassigned on reset, so a value would go stale.
       // test/frontend/classic-script-globals.test.js pins these and explains why.
+      window.closeImageModal = closeImageModal;
+      window.getConversationHistory = () => conversationHistory;
+      window.summariseBugReportHistory = summariseBugReportHistory;
       window.showToast = showToast;
       window.lang = lang;
       window.updateMaskEditorTranslations = updateMaskEditorTranslations;

@@ -11,16 +11,24 @@
 //      lib/http/bug-report-row.js builds from it is byte-identical to the row it
 //      would have built from the raw transcript, image COUNT included.
 //
-// The file is a classic <script> (no import/export), so it can't be imported. As in
-// test/i18n/locale-data.test.js, the shipped function is extracted from the source by
-// brace-matching and compiled with `new Function` — these tests run the real code, not
-// a copy of it, so reverting the fix fails them.
+// The summariser itself now lives in the ES module public/scripts/bug-report-history.js
+// and is imported here, because the account menu's "Report an issue" dialog posts the
+// same body from every other page and a second copy would drift. The classic script
+// reaches it through the `window.summariseBugReportHistory` bridge that
+// ai-designer-app.js installs — see test/frontend/classic-script-globals.test.js for
+// why that bridge is the fragile part, and the SOURCE GUARD at the bottom of this file
+// for the call itself.
+//
+// readConversationHistory is still the classic file's own, so it is still extracted
+// from the source by brace-matching and compiled with `new Function` (as in
+// test/i18n/locale-data.test.js) — that runs the real shipped code, not a copy.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { flattenConversationHistory } from '../../../lib/http/bug-report-row.js';
+import { summariseBugReportHistory as summarise } from '../../../public/scripts/bug-report-history.js';
 
 const rootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const SELECTOR_SRC = path.join(rootDir, 'public', 'scripts', 'ai-designer-model-selector.js');
@@ -47,7 +55,6 @@ function extractFunction(name) {
 
 // `window` is a free variable inside readConversationHistory, so passing it as a
 // parameter shadows the (absent) global and lets the test supply a fake.
-const summarise = new Function(`${extractFunction('summariseBugReportHistory')}; return summariseBugReportHistory;`)();
 const readHistory = new Function('window', `${extractFunction('readConversationHistory')}; return readConversationHistory;`);
 
 /** A data URL the size the studio really produces for a rendered room. */
@@ -201,4 +208,21 @@ test('SOURCE GUARD: the bug-report POST sends the summary, not the raw transcrip
     !/conversationHistory:\s*conversationHistory\b/.test(code),
     'the raw transcript is being posted again — this is the 413 regression'
   );
+});
+
+test('SOURCE GUARD: the summariser the classic script calls is actually bridged onto window', () => {
+  // The classic script names `summariseBugReportHistory` as a bare identifier; it
+  // resolves only because ai-designer-app.js assigns it to window. Drop that line and
+  // the call throws a ReferenceError from inside the submit handler, which loses the
+  // WHOLE report — the exact failure that has hit this file three times.
+  // classic-script-globals.test.js proves *some* module bridges the name; this proves
+  // it is the one the AI Designer always loads.
+  const entry = fs
+    .readFileSync(path.join(rootDir, 'public', 'scripts', 'ai-designer-app.js'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('//'))
+    .join('\n');
+  assert.match(entry, /window\.summariseBugReportHistory\s*=\s*summariseBugReportHistory/);
+  assert.match(entry, /import\s*\{\s*summariseBugReportHistory\s*\}\s*from\s*'\.\/bug-report-history\.js'/);
 });

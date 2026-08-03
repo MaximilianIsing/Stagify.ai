@@ -633,3 +633,136 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   }
 }
 
+
+/* ── "Report an issue" dialog (account menu) ─────────────────────────────────
+   The site-wide half of the bug channel, opened from the profile dropdown on
+   every nav-bearing page. Deliberately the auth modal's glass-blue shell — it is
+   raised from the same menu, one row apart — but its own class block: sharing
+   .auth-modal__* would have tied a bug form's layout to the sign-in form's.
+   Markup: scripts/profile-menu/report-issue-template.js. */
+.report-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.report-modal.hidden {
+  display: none !important;
+}
+/* The language pill sits in <main> at z-index 1000 and so paints OVER any header
+   overlay; the auth modal hides it for the same reason, one rule above. */
+body:has(#report-issue-modal:not(.hidden)) .language-picker-container {
+  display: none !important;
+}
+.report-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 58, 138, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.report-modal__dialog {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  padding: 28px 24px 22px;
+  box-shadow: 0 20px 50px rgba(30, 58, 138, 0.25);
+  /* Two textareas make this the tallest dialog in the app; on a short viewport it
+     scrolls itself rather than overflowing off-screen with the buttons unreachable. */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+.report-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--accent);
+}
+.report-modal__close:hover {
+  background: #f3f4f6;
+}
+.report-modal h2 {
+  margin: 0 0 6px;
+  font-size: 1.35rem;
+  color: var(--brand-deep);
+  text-align: center;
+}
+.report-modal__sub {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.45;
+}
+/* .auth-field styles the label + input; the textareas need the same treatment,
+   which that block does not cover (it selects `input` only). */
+.report-modal .auth-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.45;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.report-modal .auth-field textarea:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.report-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+.report-modal__actions .btn {
+  max-width: none;
+}
+.report-modal__cancel {
+  background: none;
+  border: none;
+  padding: 12px 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+}
+.report-modal__cancel:hover {
+  color: var(--brand-deep);
+  text-decoration: underline;
+}
+.report-modal__success {
+  text-align: center;
+}
+.report-modal__success.hidden {
+  display: none !important;
+}
+.report-modal__success-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--brand-deep);
+}
+.report-modal__success .report-modal__actions {
+  justify-content: center;
+  margin-top: 16px;
+}

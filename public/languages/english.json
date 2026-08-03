@@ -615,7 +615,26 @@
     "manageSubscription": "Manage subscription",
     "signOut": "Sign out",
     "manageBillingAria": "Manage billing in Stripe",
-    "stripeHelp": "Stripe help center"
+    "stripeHelp": "Stripe help center",
+    "reportIssue": "Report an issue",
+    "report": {
+      "title": "Report an issue",
+      "intro": "Tell us what went wrong and we’ll take a look.",
+      "descriptionLabel": "What happened?",
+      "descriptionPlaceholder": "Describe the problem you ran into…",
+      "stepsLabel": "Steps to reproduce (optional)",
+      "stepsPlaceholder": "1. Went to…\n2. Clicked…\n3. Instead of X, Y happened",
+      "emailLabel": "Email (optional)",
+      "emailPlaceholder": "you@example.com",
+      "cancel": "Cancel",
+      "submit": "Send report",
+      "submitting": "Sending…",
+      "needDescription": "Please describe the problem before sending.",
+      "failed": "We couldn’t send your report. Please try again.",
+      "successTitle": "Thanks — we got it.",
+      "successBody": "Our team will look into this. If you left an email, we’ll follow up there.",
+      "done": "Done"
+    }
   },
   "pdf": {
     "meta": {
