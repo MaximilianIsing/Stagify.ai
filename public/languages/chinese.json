@@ -19,6 +19,7 @@
     "brand": "Stagify",
     "brandSuffix": ".ai",
     "techHelp": "技术帮助",
+    "gallery": "图库",
     "guides": "指南",
     "logoAlt": "Stagify.ai 标志 — 返回首页"
   },
@@ -613,7 +614,6 @@
     "upgradeToPlus": "升级到 Stagify+",
     "manageSubscription": "管理订阅",
     "signOut": "退出登录",
-    "yourGallery": "我的图库",
     "manageBillingAria": "在 Stripe 中管理账单",
     "stripeHelp": "Stripe 帮助中心"
   },
