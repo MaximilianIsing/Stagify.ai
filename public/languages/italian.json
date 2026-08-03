@@ -83,6 +83,33 @@
       "title": "Arreda con precisione esatta",
       "subtitle": "Maschera le aree da rifare, aggiungi i tuoi mobili e tutto il resto resta identico al pixel. <em>(Esclusiva Stagify+)</em>"
     },
+    "gallery": {
+      "title": "Ogni stanza che allestisci viene salvata per te",
+      "subtitle": "La tua galleria conserva ogni stanza allestita, le impostazioni che l'hanno prodotta e i link che hai condiviso con i clienti.",
+      "mock": {
+        "title": "La tua galleria",
+        "count": "3 stanze allestite"
+      },
+      "dates": {
+        "newest": "14 mar",
+        "mid": "13 mar",
+        "older": "11 mar"
+      },
+      "alts": {
+        "living": "Un soggiorno allestito con divano angolare grigio, pouf a righe, tappeto fantasia e camino acceso",
+        "bedroom": "Una camera da letto allestita con letto ampio, testiera imbottita, TV a parete e mobile basso",
+        "dining": "Una sala da pranzo allestita con tavolo ovale in legno, sei sedie, un lampadario e finestre a bovindo"
+      },
+      "eyebrow": "La tua galleria",
+      "panelTitle": "Riallestisci quante volte vuoi. Non si sovrascrive nulla.",
+      "panelBody": "Non c'è nessun pulsante di salvataggio né cartelle da nominare. Allestisci una stanza ed è già nella tua galleria, dalla più recente, prima ancora che tu chiuda la scheda. Riaprila più tardi e trovi il cursore prima/dopo insieme alle impostazioni esatte che l'hanno prodotta: tipo di stanza, stile, il tuo prompt aggiuntivo, se hai rimosso i mobili esistenti e le eventuali foto di mobili che hai allegato.",
+      "points": {
+        "auto": "Salvata automaticamente. Non c'è nessun passaggio da ricordare.",
+        "versions": "Ogni versione viene conservata, così due stili della stessa stanza restano affiancati.",
+        "private": "La foto originale vuota resta solo tua. Non fa mai parte di ciò che vede il cliente.",
+        "share": "Condividi una stanza con un cliente tramite un link dedicato e disattivalo quando hai finito."
+      }
+    },
     "info": {
       "eyebrow": "In breve",
       "title": "Cos'è il home staging virtuale e perché fa vendere",

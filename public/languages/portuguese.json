@@ -83,6 +83,33 @@
       "title": "Decore com precisão exata",
       "subtitle": "Mascare as áreas a refazer, adicione seus próprios móveis e todo o resto fica idêntico ao pixel. <em>(Exclusivo do Stagify+)</em>"
     },
+    "gallery": {
+      "title": "Cada ambiente que você prepara fica guardado para você",
+      "subtitle": "A sua galeria guarda cada ambiente preparado, as configurações que o geraram e os links que você compartilhou com clientes.",
+      "mock": {
+        "title": "Sua galeria",
+        "count": "3 ambientes preparados"
+      },
+      "dates": {
+        "newest": "14 de mar",
+        "mid": "13 de mar",
+        "older": "11 de mar"
+      },
+      "alts": {
+        "living": "Uma sala de estar preparada com sofá de canto cinza, pufes listrados, tapete estampado e lareira acesa",
+        "bedroom": "Um quarto preparado com cama ampla, cabeceira estofada, TV na parede e um rack baixo",
+        "dining": "Uma sala de jantar preparada com mesa oval de madeira, seis cadeiras, lustre e janelas em sacada"
+      },
+      "eyebrow": "Sua galeria",
+      "panelTitle": "Prepare de novo quantas vezes quiser. Nada é sobrescrito.",
+      "panelBody": "Não há botão de salvar nem pasta para nomear. Prepare um ambiente e ele já está na sua galeria, do mais recente para o mais antigo, antes mesmo de você fechar a aba. Abra depois e você tem o comparador de antes e depois mais as configurações exatas por trás dele: tipo de ambiente, estilo, seu comando extra, se você removeu os móveis existentes e as fotos de móveis que anexou.",
+      "points": {
+        "auto": "Salvo automaticamente. Não há etapa de salvar para esquecer.",
+        "versions": "Todas as versões ficam guardadas, então dois estilos do mesmo ambiente aparecem lado a lado.",
+        "private": "A foto original vazia continua sendo só sua. Ela nunca faz parte do que o cliente vê.",
+        "share": "Compartilhe um ambiente com um cliente por um link próprio e desligue o link quando terminar."
+      }
+    },
     "info": {
       "eyebrow": "Em resumo",
       "title": "O que é o home staging virtual e por que ele vende",

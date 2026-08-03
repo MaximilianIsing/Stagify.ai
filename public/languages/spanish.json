@@ -83,6 +83,33 @@
       "title": "Prepara con precisión exacta",
       "subtitle": "Enmascara las áreas a rehacer, añade tus propios muebles y todo lo demás queda idéntico al píxel. <em>(Exclusivo de Stagify+)</em>"
     },
+    "gallery": {
+      "title": "Cada habitación que preparas se guarda para ti",
+      "subtitle": "Tu galería guarda cada habitación preparada, los ajustes que la crearon y los enlaces que has compartido con tus clientes.",
+      "mock": {
+        "title": "Tu galería",
+        "count": "3 habitaciones preparadas"
+      },
+      "dates": {
+        "newest": "14 mar",
+        "mid": "13 mar",
+        "older": "11 mar"
+      },
+      "alts": {
+        "living": "Un salón preparado con un sofá seccional gris, taburetes de rayas, una alfombra estampada y una chimenea encendida",
+        "bedroom": "Un dormitorio preparado con una cama amplia, cabecero tapizado, televisor en la pared y un mueble bajo",
+        "dining": "Un comedor preparado con una mesa ovalada de madera, seis sillas, una lámpara de araña y ventanales"
+      },
+      "eyebrow": "Tu galería",
+      "panelTitle": "Vuelve a prepararla tantas veces como quieras. No se sobrescribe nada.",
+      "panelBody": "No hay botón de guardar ni carpeta que nombrar. Prepara una habitación y ya está en tu galería, de la más reciente a la más antigua, antes de que cierres la pestaña. Ábrela más tarde y tendrás el comparador de antes y después junto con los ajustes exactos que la crearon: tipo de habitación, estilo, tu instrucción adicional, si eliminaste los muebles existentes y las fotos de muebles que adjuntaste.",
+      "points": {
+        "auto": "Se guarda automáticamente. No hay ningún paso que se te pueda olvidar.",
+        "versions": "Se conservan todas las versiones, así dos estilos de la misma habitación quedan uno al lado del otro.",
+        "private": "La foto original vacía es solo tuya. Nunca forma parte de lo que ve un cliente.",
+        "share": "Comparte una habitación con un cliente mediante su propio enlace y desactívalo cuando termines."
+      }
+    },
     "info": {
       "eyebrow": "En resumen",
       "title": "Qué es el diseño virtual y por qué vende",
