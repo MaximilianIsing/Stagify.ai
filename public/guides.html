@@ -261,44 +261,62 @@
               <h3 class="guides-heading" id="guides-walkthrough-title" data-lang="guides.walkthroughsTitle">Step-by-step walkthroughs</h3>
             </div>
 
+          <!--
+            A real ARIA tablist: each tab NAMES the panel it controls, each panel points
+            back at its tab, and only the selected tab is a tab stop (scripts/guides.js
+            moves the 0 as you arrow between them). Without aria-controls/-labelledby the
+            role tells a screen reader these are tabs while giving it no way to say which
+            panel belongs to which — six unrelated buttons announced as a tablist.
+          -->
           <div class="guide-demo-picker" role="tablist" aria-label="Choose a walkthrough">
-            <button type="button" class="guide-demo-picker__btn guide-demo-picker__btn--active" role="tab" aria-selected="true" data-demo="free">
+            <button type="button" id="guide-tab-free" class="guide-demo-picker__btn guide-demo-picker__btn--active" role="tab" aria-selected="true" aria-controls="guide-demo-free" tabindex="0" data-demo="free">
               <img src="media-webp/logo/Logo64x64.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerFree">Free</span>
             </button>
-            <button type="button" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" data-demo="plus">
+            <button type="button" id="guide-tab-plus" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-plus" tabindex="-1" data-demo="plus">
               <img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerPlus">Stagify+</span>
             </button>
-            <button type="button" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" data-demo="designer">
+            <button type="button" id="guide-tab-designer" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-designer" tabindex="-1" data-demo="designer">
               <img src="media-webp/guides/AI Designer.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerDesigner">AI Designer</span>
             </button>
-            <button type="button" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" data-demo="masking">
+            <button type="button" id="guide-tab-masking" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-masking" tabindex="-1" data-demo="masking">
               <img src="media-webp/guides/Masking Studio.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerMasking">Masking Studio</span>
             </button>
-            <button type="button" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" data-demo="prompt">
+            <button type="button" id="guide-tab-prompt" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-prompt" tabindex="-1" data-demo="prompt">
               <img src="media-webp/guides/Prompt Bar.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerPromptBar">Prompt Bar</span>
             </button>
-            <button type="button" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" data-demo="furniture">
+            <button type="button" id="guide-tab-furniture" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-furniture" tabindex="-1" data-demo="furniture">
               <img src="media-webp/guides/Furniture.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerFurniture">Furniture</span>
             </button>
           </div>
 
+          <!--
+            These ids are PUBLISHED: the HowTo structured data above advertises
+            guides.html#guide-demo-<key> as the URL of every step, so a search result can
+            drop a visitor straight onto one. scripts/guides.js reads that hash and opens
+            the matching tab — without it the deep link resolves to a hidden element, the
+            browser scrolls nowhere, and the visitor is shown the Free walkthrough
+            regardless of which one they clicked. Renaming one of these breaks a link
+            Google is already serving.
+          -->
           <div class="guide-demo-stage">
             <div
               id="guide-demo-free"
               class="guide-demo-panel is-active"
               role="tabpanel"
+              aria-labelledby="guide-tab-free"
               data-demo="free"
             ></div>
             <div
               id="guide-demo-plus"
               class="guide-demo-panel"
               role="tabpanel"
+              aria-labelledby="guide-tab-plus"
               hidden
               data-demo="plus"
             ></div>
@@ -306,6 +324,7 @@
               id="guide-demo-designer"
               class="guide-demo-panel"
               role="tabpanel"
+              aria-labelledby="guide-tab-designer"
               hidden
               data-demo="designer"
             ></div>
@@ -313,6 +332,7 @@
               id="guide-demo-masking"
               class="guide-demo-panel"
               role="tabpanel"
+              aria-labelledby="guide-tab-masking"
               hidden
               data-demo="masking"
             ></div>
@@ -320,6 +340,7 @@
               id="guide-demo-prompt"
               class="guide-demo-panel"
               role="tabpanel"
+              aria-labelledby="guide-tab-prompt"
               hidden
               data-demo="prompt"
             ></div>
@@ -327,6 +348,7 @@
               id="guide-demo-furniture"
               class="guide-demo-panel"
               role="tabpanel"
+              aria-labelledby="guide-tab-furniture"
               hidden
               data-demo="furniture"
             ></div>
