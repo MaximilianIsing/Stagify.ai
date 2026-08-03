@@ -85,15 +85,16 @@ class Carousel {
     else window.addEventListener('load', hydrate, { once: true });
   }
 
-  createCarousel() {
-    const itemWidth = this.options.baseWidth - 32;
-    const trackItemOffset = itemWidth + this.options.gap;
-
-    this.container.innerHTML = `
-      <div class="carousel-track" style="width: ${itemWidth}px; gap: ${this.options.gap}px;">
-        ${this.options.items
-          .map(
-            (item) => `
+  /**
+   * Markup for one slide. Extracted so the adopt path and the from-scratch path
+   * below cannot drift apart — there is already one copy of slide 0 in index.html,
+   * and a second divergent copy in here would be two too many.
+   *
+   * @param {{ key: string, title: string, image?: string }} item
+   * @param {number} itemWidth
+   */
+  slideMarkup(item, itemWidth) {
+    return `
           <div class="carousel-item" style="width: ${itemWidth}px; height: 100%;">
             <div class="carousel-item-image">
               ${item.image || '<div class="carousel-image-placeholder"></div>'}
@@ -102,10 +103,12 @@ class Carousel {
               <div class="carousel-item-title" data-lang="carouselItems.${item.key}">${item.title}</div>
             </div>
           </div>
-        `
-          )
-          .join('')}
-      </div>
+        `;
+  }
+
+  /** The dot row. Same reasoning as slideMarkup(): one copy, used by both paths. */
+  indicatorsMarkup() {
+    return `
       <div class="carousel-indicators-container">
         <div class="carousel-indicators">
           ${this.options.items
@@ -117,8 +120,71 @@ class Carousel {
             .join('')}
         </div>
       </div>
+    `;
+  }
+
+  createCarousel() {
+    const staticTrack = this.container.querySelector('.carousel-track');
+    const staticSlide = staticTrack && staticTrack.querySelector('.carousel-item');
+
+    // `baseWidth - 32` assumes the container's content box is its offsetWidth minus
+    // 16px of padding a side. That is not true: .carousel-container also has a 1px
+    // border, and the mobile media queries change the padding. Measured at 412px the
+    // computed value is 14px narrower than the box the slide actually occupies.
+    //
+    // That did not matter while the whole carousel was built at once — nothing had
+    // painted yet, so there was nothing to shift. It matters now: slide 0 ships in the
+    // HTML at width:100% and is ALREADY PAINTED when this runs, so writing a different
+    // pixel width onto it moves rendered content and books a layout shift against CLS.
+    // So on the adopt path, measure the painted box instead of predicting it — setting
+    // the element to the width it already has is a no-op by construction. Module
+    // scripts run after the stylesheets, so this measurement is valid.
+    const measured = staticSlide ? staticSlide.getBoundingClientRect().width : 0;
+    const itemWidth = measured > 0 ? measured : this.options.baseWidth - 32;
+    const trackItemOffset = itemWidth + this.options.gap;
+
+    if (staticTrack && staticSlide) {
+      // ADOPT PATH (the homepage). index.html ships slide 0 — track, item, and the
+      // LCP <img> — so the image can paint without waiting for this file at all.
+      // We therefore APPEND slides 1..n around it and must never re-create it:
+      // replacing the node, even with an identical src, restarts the browser's LCP
+      // candidate at the later time and silently undoes the whole optimisation.
+      //
+      // itemWidth here is the slide's MEASURED width (see above), so these three
+      // writes set each element to the size it already renders at — a no-op in layout
+      // terms, and therefore free of layout shift. Do not swap it back for a computed
+      // value; that is a 14px shift on mobile.
+      /** @type {HTMLElement} */ (staticTrack).style.width = `${itemWidth}px`;
+      /** @type {HTMLElement} */ (staticTrack).style.gap = `${this.options.gap}px`;
+      /** @type {HTMLElement} */ (staticSlide).style.width = `${itemWidth}px`;
+      /** @type {HTMLElement} */ (staticSlide).style.height = '100%';
+
+      staticTrack.insertAdjacentHTML(
+        'beforeend',
+        this.options.items
+          .slice(1)
+          .map((item) => this.slideMarkup(item, itemWidth))
+          .join('')
+      );
+      // Between the track and the note, matching the from-scratch order below.
+      staticTrack.insertAdjacentHTML('afterend', this.indicatorsMarkup());
+
+      // Makes "did we adopt?" observable from outside, which is the only way to guard
+      // it honestly. A source-scanning unit test cannot tell that this branch became
+      // unreachable — stub the querySelector above to null and every string it greps
+      // for is still present in now-dead code. e2e/index.spec.js asserts this attribute
+      // in a real browser, where an unreachable branch simply never sets it.
+      this.container.setAttribute('data-carousel-adopted', '');
+    } else {
+      // FROM-SCRATCH PATH — any consumer whose container is empty. Unchanged.
+      this.container.innerHTML = `
+      <div class="carousel-track" style="width: ${itemWidth}px; gap: ${this.options.gap}px;">
+        ${this.options.items.map((item) => this.slideMarkup(item, itemWidth)).join('')}
+      </div>
+      ${this.indicatorsMarkup()}
       <div class="carousel-note" data-lang="hero.carouselNote">Example preview — upload your photo to stage</div>
     `;
+    }
 
     this.track = this.container.querySelector('.carousel-track');
     this.items = this.container.querySelectorAll('.carousel-item');

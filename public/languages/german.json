@@ -21,7 +21,13 @@
     "techHelp": "Technische Hilfe",
     "gallery": "Galerie",
     "guides": "Anleitungen",
-    "logoAlt": "Stagify.ai-Logo – zur Startseite"
+    "logoAlt": "Stagify.ai-Logo – zur Startseite",
+    "tips": {
+      "imageStaging": "Möbliert einen ganzen Raum aus einem einzigen Foto: Raumtyp und Möbelstil wählen, den Rest übernimmt die KI. Ideal für leere oder fast leere Räume, wenn es schnell und komplett gehen soll.",
+      "basicMask": "Übermalen Sie eine Stelle des Fotos und beschreiben Sie die gewünschte Änderung. Ideal für kleine Korrekturen – Sofa tauschen, Arbeitsplatte leeren –, wenn der Rest des Bildes schon stimmt.",
+      "pdfTo3d": "Chatten Sie mit einem KI-Designer, der einen Raum einrichtet, umgestaltet und gemeinsam mit Ihnen weiterentwickelt. Ideal, wenn Sie Stile erkunden statt ein einzelnes Foto fertigzustellen. Nur am Desktop.",
+      "maskingStudio": "Markieren Sie mehrere Bereiche in verschiedenen Farben, geben Sie jedem ein eigenes Möbelfoto oder einen Prompt und stagen Sie alle auf einmal. Ideal, wenn Sie exakte Kontrolle brauchen – alles außerhalb Ihrer Markierungen bleibt pixelgenau."
+    }
   },
   "hero": {
     "catchphrase": "Hochladen. Einrichten.",

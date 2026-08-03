@@ -21,7 +21,13 @@
     "techHelp": "Tech Help",
     "gallery": "Gallery",
     "guides": "Guides",
-    "logoAlt": "Stagify.ai logo — go to homepage"
+    "logoAlt": "Stagify.ai logo — go to homepage",
+    "tips": {
+      "imageStaging": "Stages a whole room from one photo: pick a room type and a furniture style and the AI furnishes it. Best for empty or nearly empty rooms when you want a fast, complete result.",
+      "basicMask": "Paint over one part of a photo, then describe the change you want. Best for small fixes — swap a sofa, clear a countertop — when the rest of the shot is already right.",
+      "pdfTo3d": "Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.",
+      "maskingStudio": "Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control — everything outside your highlights stays pixel-perfect."
+    }
   },
   "hero": {
     "catchphrase": "Upload. Stage. Imagine.",
