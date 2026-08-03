@@ -39,6 +39,10 @@ declare global {
     /** Returns the live AI Designer chat transcript (ai-designer-app.js), for the
      *  bug-report form in the classic ai-designer-model-selector.js. */
     getConversationHistory?: () => any[];
+    /** Strips image bytes out of that transcript before it is posted
+     *  (scripts/bug-report-history.js), bridged by ai-designer-app.js for the same
+     *  classic form. Without it the report 413s on the 1MB JSON body limit. */
+    summariseBugReportHistory?: (history: any) => any[];
     /** Toast notifier (scripts/toast.js), bridged for the bug-report form in the
      *  classic ai-designer-model-selector.js — without it that form gave no
      *  feedback at all, on success or on a missing description. */

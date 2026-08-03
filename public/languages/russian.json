@@ -615,7 +615,26 @@
     "manageSubscription": "Управление подпиской",
     "signOut": "Выйти",
     "manageBillingAria": "Управление оплатой в Stripe",
-    "stripeHelp": "Центр помощи Stripe"
+    "stripeHelp": "Центр помощи Stripe",
+    "reportIssue": "Сообщить о проблеме",
+    "report": {
+      "title": "Сообщить о проблеме",
+      "intro": "Расскажите, что пошло не так, и мы разберёмся.",
+      "descriptionLabel": "Что произошло?",
+      "descriptionPlaceholder": "Опишите проблему, с которой вы столкнулись…",
+      "stepsLabel": "Шаги для воспроизведения (необязательно)",
+      "stepsPlaceholder": "1. Открыл…\n2. Нажал…\n3. Вместо X произошло Y",
+      "emailLabel": "Эл. почта (необязательно)",
+      "emailPlaceholder": "vy@primer.com",
+      "cancel": "Отмена",
+      "submit": "Отправить",
+      "submitting": "Отправка…",
+      "needDescription": "Опишите проблему перед отправкой.",
+      "failed": "Не удалось отправить сообщение. Попробуйте ещё раз.",
+      "successTitle": "Спасибо — мы получили сообщение.",
+      "successBody": "Наша команда разберётся. Если вы оставили эл. почту, мы ответим на неё.",
+      "done": "Готово"
+    }
   },
   "pdf": {
     "meta": {

@@ -615,7 +615,26 @@
     "manageSubscription": "管理订阅",
     "signOut": "退出登录",
     "manageBillingAria": "在 Stripe 中管理账单",
-    "stripeHelp": "Stripe 帮助中心"
+    "stripeHelp": "Stripe 帮助中心",
+    "reportIssue": "报告问题",
+    "report": {
+      "title": "报告问题",
+      "intro": "告诉我们出了什么问题，我们会尽快查看。",
+      "descriptionLabel": "发生了什么？",
+      "descriptionPlaceholder": "请描述您遇到的问题…",
+      "stepsLabel": "重现步骤（可选）",
+      "stepsPlaceholder": "1. 打开了…\n2. 点击了…\n3. 结果不是 X，而是 Y",
+      "emailLabel": "电子邮箱（可选）",
+      "emailPlaceholder": "you@example.com",
+      "cancel": "取消",
+      "submit": "发送报告",
+      "submitting": "发送中…",
+      "needDescription": "请先描述问题再发送。",
+      "failed": "无法发送您的报告，请重试。",
+      "successTitle": "谢谢，我们已收到。",
+      "successBody": "我们的团队会进行核查。如果您留下了邮箱，我们会通过邮箱回复您。",
+      "done": "完成"
+    }
   },
   "pdf": {
     "meta": {
