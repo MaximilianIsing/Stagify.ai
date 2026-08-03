@@ -181,10 +181,32 @@ function wireMenu(root) {
     if (isOpen()) close();
     else {
       open();
-      const [first] = items();
-      if (first) first.focus();
+      // Move focus into the panel for KEYBOARD opens only. A button activated by
+      // Enter/Space reports detail 0; a real click or tap reports 1 or more, which
+      // is the standard way to tell them apart without sniffing pointer types.
+      //
+      // Focusing on a tap is actively harmful on a phone. The panel lives in a
+      // position:sticky header, and focus() asks the browser to scroll the focused
+      // element into view — against a dynamic URL bar and a sticky ancestor that is
+      // a scroll the page did not ask for. It also arms
+      // `.staging-menu__item:focus-visible .staging-menu__tip`, which paints a dark
+      // tooltip over the rows below the one it belongs to. Neither is wanted by
+      // someone who just tapped; a keyboard user needs the focus and gets it.
+      if (/** @type {MouseEvent} */ (e).detail === 0) {
+        const [first] = items();
+        if (first) first.focus();
+      }
     }
   });
+
+  // Temporary: ?navdebug=1 paints an on-page event log, because this menu has a
+  // real-phone-only misbehaviour that no emulator here reproduces. Dynamic import so
+  // a normal load never fetches it. Remove with staging-menu-debug.js once solved.
+  if (/[?&]navdebug=1(&|$)/.test(window.location.search)) {
+    import('./staging-menu-debug.js')
+      .then((m) => m.installStagingMenuDebug(root, panel))
+      .catch(() => {});
+  }
 
   panel.addEventListener('click', (e) => {
     const item = /** @type {HTMLElement | null} */ (e.target).closest?.('.staging-menu__item');
