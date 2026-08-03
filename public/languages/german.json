@@ -1246,5 +1246,81 @@
       "questions": "Noch Fragen vor dem Kauf?",
       "footnote": "Teams, Rechnungsstellung oder individuelle Konditionen: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
     }
+  },
+  "gallery": {
+    "pageTitle": "Ihre Galerie — Stagify",
+    "title": "Ihre Galerie",
+    "lede": "Jeder Raum, den Sie gestaltet haben – mit den Einstellungen, die ihn erzeugt haben, und den Links, die Sie geteilt haben.",
+    "detailTitle": "Gestalteter Raum",
+    "untitledLower": "gestalteten Raum",
+    "linkOn": "Link aktiv",
+    "more": "Mehr laden",
+    "moreLoading": "Wird geladen…",
+    "cardAlt": "{room}, gestaltet",
+    "cardOpen": "{room} vom {when} öffnen",
+    "count": {
+      "one": "{count} gestalteter Raum",
+      "other": "{count} gestaltete Räume"
+    },
+    "showing": {
+      "one": "Angezeigt: {loaded} von {count} gestaltetem Raum",
+      "other": "Angezeigt: {loaded} von {count} gestalteten Räumen"
+    },
+    "compare": {
+      "beforeAlt": "Der Raum vor der Gestaltung",
+      "rangeLabel": "Den gestalteten Raum einblenden"
+    },
+    "meta": {
+      "room": "Raum",
+      "style": "Stil",
+      "prompt": "Zusätzlicher Hinweis",
+      "removed": "Möbel entfernt",
+      "staged": "Gestaltet",
+      "references": "Möbelfotos",
+      "yes": "Ja",
+      "referenceCount": "{count} angehängt"
+    },
+    "signedOut": {
+      "title": "Sie sind abgemeldet",
+      "body": "Melden Sie sich an, um Ihre gestalteten Räume zu sehen.",
+      "cta": "Zu Stagify"
+    },
+    "off": {
+      "title": "Gespeicherte Renderings sind deaktiviert",
+      "body": "Diese Installation kann Renderings noch nicht speichern, daher gibt es hier nichts zu zeigen. Ihre Gestaltung funktioniert weiterhin – die Bilder werden nur nicht aufbewahrt."
+    },
+    "empty": {
+      "title": "Noch nichts gestaltet",
+      "body": "Ihre Räume erscheinen hier, sobald Sie einen gestaltet haben – zusammen mit den Einstellungen, die sie erzeugt haben.",
+      "cta": "Einen Raum gestalten"
+    },
+    "error": {
+      "title": "Ihre Galerie konnte nicht geladen werden",
+      "generic": "Ihre Renderings sind sicher – nur die Liste lässt sich nicht laden, nicht die Bilder.",
+      "offline": "Stagify ist nicht erreichbar. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "rateLimited": "Zu viele Anfragen im Moment. Warten Sie einen Augenblick und versuchen Sie es erneut.",
+      "retry": "Erneut versuchen"
+    },
+    "delete": "Dieses Rendering löschen",
+    "share": {
+      "title": "Mit Kunden teilen",
+      "note": "Wenn Sie einen Link deaktivieren, werden neue Besuche innerhalb von 15 Minuten gestoppt. Um die Bilder sofort zu entfernen, löschen Sie stattdessen das Rendering.",
+      "urlLabel": "Freigabelink",
+      "create": "Link erstellen",
+      "createNew": "Neuen Link erstellen",
+      "revoke": "Link deaktivieren",
+      "none": "Noch kein Link.",
+      "onNotOpened": "Link ist aktiv · noch nicht geöffnet",
+      "onOpened": {
+        "one": "Link ist aktiv · {count}-mal geöffnet",
+        "other": "Link ist aktiv · {count}-mal geöffnet"
+      },
+      "creating": "Wird erstellt…",
+      "created": "Link erstellt. Kopieren Sie ihn jetzt – er wird nur einmal angezeigt.",
+      "createFailed": "Link konnte nicht erstellt werden. Bitte erneut versuchen.",
+      "revoked": "Link deaktiviert. Besuche werden innerhalb von 15 Minuten gestoppt.",
+      "revokeFailed": "Link konnte nicht deaktiviert werden. Bitte erneut versuchen.",
+      "deleteFailed": "Dieses Rendering konnte nicht gelöscht werden."
+    }
   }
 }

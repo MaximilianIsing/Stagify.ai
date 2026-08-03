@@ -89,6 +89,13 @@ const DIALOGS = [
     },
   },
   {
+    label: 'gallery detail panel',
+    file: 'public/gallery.html',
+    titleId: 'gal-detail-title',
+    attr: markupAttr,
+    scope: tagWithId('gal-detail'),
+  },
+  {
     label: 'AI Designer image lightbox',
     file: 'public/ai-designer.html',
     // No heading to point at — a lightbox is one image — so it is named directly
@@ -285,6 +292,12 @@ const FOCUS_MANAGED = [
     file: 'public/scripts/app/stage-mask-editor.js',
     open: ['function focusMaskDialog', '\n      }'],
     close: ['function closeEditor', '\n      }'],
+  },
+  {
+    label: 'gallery detail panel',
+    file: 'public/scripts/gallery-app.js',
+    open: ['function openDetail', '\n  }'],
+    close: ['function closeDetail', '\n  }'],
   },
   {
     label: 'AI Designer mask editor',
