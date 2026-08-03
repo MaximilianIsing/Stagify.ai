@@ -178,6 +178,6 @@ test('all eleven packs carry those strings, not just English', () => {
     for (const key of ['galleryEvicted', 'galleryEvictedShared']) {
       assert.ok(pack.modal?.staging?.[key], `${file} is missing modal.staging.${key}`);
     }
-    assert.ok(pack.profile?.yourGallery, `${file} is missing profile.yourGallery`);
+    assert.ok(pack.navigation?.gallery, `${file} is missing navigation.gallery`);
   }
 });

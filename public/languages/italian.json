@@ -19,6 +19,7 @@
     "brand": "Stagify",
     "brandSuffix": ".ai",
     "techHelp": "Aiuto tecnico",
+    "gallery": "Galleria",
     "guides": "Guide",
     "logoAlt": "Logo Stagify.ai – vai alla home"
   },
@@ -613,7 +614,6 @@
     "upgradeToPlus": "Passa a Stagify+",
     "manageSubscription": "Gestisci abbonamento",
     "signOut": "Esci",
-    "yourGallery": "La tua galleria",
     "manageBillingAria": "Gestisci la fatturazione in Stripe",
     "stripeHelp": "Centro assistenza Stripe"
   },

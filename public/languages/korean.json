@@ -19,6 +19,7 @@
     "brand": "Stagify",
     "brandSuffix": ".ai",
     "techHelp": "기술 지원",
+    "gallery": "갤러리",
     "guides": "가이드",
     "logoAlt": "Stagify.ai 로고 — 홈페이지로 이동"
   },
@@ -613,7 +614,6 @@
     "upgradeToPlus": "Stagify+로 업그레이드",
     "manageSubscription": "구독 관리",
     "signOut": "로그아웃",
-    "yourGallery": "내 갤러리",
     "manageBillingAria": "Stripe에서 결제 관리",
     "stripeHelp": "Stripe 고객센터"
   },

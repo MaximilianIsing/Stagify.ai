@@ -19,6 +19,7 @@
     "brand": "Stagify",
     "brandSuffix": ".ai",
     "techHelp": "Technische hulp",
+    "gallery": "Galerij",
     "guides": "Handleidingen",
     "logoAlt": "Stagify.ai-logo — ga naar de startpagina"
   },
@@ -613,7 +614,6 @@
     "upgradeToPlus": "Upgrade naar Stagify+",
     "manageSubscription": "Abonnement beheren",
     "signOut": "Uitloggen",
-    "yourGallery": "Jouw galerij",
     "manageBillingAria": "Facturering beheren in Stripe",
     "stripeHelp": "Stripe-helpcentrum"
   },

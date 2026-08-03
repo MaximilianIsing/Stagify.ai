@@ -268,3 +268,53 @@ test('the menu labels resolve to keys that exist in every language pack', () => 
     }
   }
 });
+
+// The Gallery tab has exactly the same drift problem as the Staging menu above: the site
+// header is copied onto every nav-bearing page rather than templated, so a link added by
+// hand lands on eight of nine and nobody notices which one was missed. `navPages()` finds
+// the pages by their markup, so a NEW page with a nav is covered the day it is added.
+test('every nav-bearing page carries the Gallery tab, between Staging and Guides', () => {
+  const pages = navPages();
+  assert.ok(pages.length >= 9, `expected the nav on at least 9 pages, found ${pages.length}`);
+
+  const missing = [];
+  const misplaced = [];
+  for (const { name, html } of pages) {
+    const gallery = html.indexOf('href="gallery.html" class="nav-link"');
+    if (gallery === -1) { missing.push(name); continue; }
+    assert.equal(
+      html.indexOf('href="gallery.html" class="nav-link"'),
+      html.lastIndexOf('href="gallery.html" class="nav-link"'),
+      `${name} has more than one Gallery tab`,
+    );
+    // Order is the requirement, not just presence: after the Staging menu closes, before
+    // Guides. Compared by position rather than by a regex over the whole nav, so a
+    // reflow of the surrounding markup does not make this pass by accident.
+    const staging = html.indexOf('data-staging-menu');
+    const guides = html.indexOf('href="guides.html" class="nav-link"');
+    if (!(staging < gallery && gallery < guides)) misplaced.push(name);
+  }
+
+  assert.deepEqual(missing, [], `page(s) with a nav but no Gallery tab: ${missing.join(', ')}`);
+  assert.deepEqual(misplaced, [], `Gallery tab not between Staging and Guides on: ${misplaced.join(', ')}`);
+});
+
+test('the Gallery tab is translated everywhere it claims to be', () => {
+  // plus-welcome.html is the one page that omits data-lang on its nav links, because it
+  // is not in LOCALIZED_PAGES. That is convention, not drift — so the assertion is
+  // "every page that DOES localize its Guides link also localizes Gallery", which stays
+  // true if plus-welcome is ever added to the localized set.
+  for (const { name, html } of navPages()) {
+    const guidesLocalized = html.includes('href="guides.html" class="nav-link" data-lang="navigation.guides"');
+    const galleryLocalized = html.includes('href="gallery.html" class="nav-link" data-lang="navigation.gallery"');
+    assert.equal(galleryLocalized, guidesLocalized, `${name}: Gallery and Guides disagree about being localized`);
+  }
+
+  const dir = path.join(PUBLIC, 'languages');
+  const packs = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
+  assert.equal(packs.length, 11, 'sanity: eleven packs');
+  for (const file of packs) {
+    const pack = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+    assert.ok(pack.navigation?.gallery?.trim(), `${file} is missing navigation.gallery`);
+  }
+});
