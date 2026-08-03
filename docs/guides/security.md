@@ -335,12 +335,24 @@ it does nothing about rotation, identity, or audit.
 are the only part of the gallery reachable without an account. **The token in the path is
 the entire credential**, and everything else follows from that.
 
-**The token is treated exactly like a session token.** 32 bytes of CSPRNG, base64url;
+**The token is generated exactly like a session token.** 32 bytes of CSPRNG, base64url,
 hashed with the same `hashToken` from
-[`session-tokens.js`](../../lib/data/session-tokens.js) before it touches disk, so a
-stolen `/data` volume or a Litestream restore yields digests, not live links into
-customers' homes; returned in plaintext **exactly once**, from the mint call. There is no
-read-back route — an owner who loses the link rotates it.
+[`session-tokens.js`](../../lib/data/session-tokens.js) — the digest is the lookup key, so
+`resolveShare` never scans.
+
+**It is ALSO stored in plaintext, deliberately, and every finished render has one.** Both
+halves of that reverse an earlier posture and are argued in the header of
+[`gallery-shares.js`](../../lib/data/gallery-shares.js). The owner has to be able to reopen
+their gallery next week and copy the link they already sent, which a write-only credential
+cannot do; and since there is no create button, the link exists whether or not it was ever
+sent to anyone. The cost is bounded and stated: anything that can read the database can
+read live share URLs for the whole gallery. These tokens **authenticate nothing** — they
+name one staged photo and the agent's own contact details — and session and password-reset
+tokens stay digest-only, with a test in
+[`gallery-shares.test.js`](../../test/data/gallery-shares.test.js) asserting they never
+gain a plaintext column. The proper fix is encrypting that column with a key from the
+environment; this app has no general-purpose server secret today, and a key stored on the
+volume it protects buys nothing.
 
 **One 404 for everything.** `resolveShare` reports *why* it refused (unknown / revoked /
 expired), and the route throws that away on purpose. Unknown, revoked, expired,
@@ -361,13 +373,19 @@ would serve any customer's pixels.
 spread, so `user_id`, storage keys, the model name and internal timestamps cannot leak
 the day somebody adds a column.
 
-**Revocation is EVENTUAL, and that is a real limitation.** Reads bypass this process
+**A TAKEDOWN IS DELETING THE RENDER — there is no off switch.** Owners do not create links
+and cannot revoke them; the listing mints one per finished render and the panel copies it.
+Deleting the entry stops the manifest at once and tombstones the bytes, which is the
+stronger of the two things revoke used to do. `revoked_at` is still read on every resolve,
+because deletes write it.
+
+**And it is EVENTUAL for bytes, which is a real limitation.** Reads bypass this process
 entirely (presigned R2 URLs, so a viewer's bytes never touch the Node event loop), which
-means a URL already handed out works until it expires — at most 15 minutes. Revoking
-stops *new* URLs immediately. The hard revoke is deleting the entry, because a presigned
-URL to a deleted object 404s regardless of signature. **UI copy must say "within 15
-minutes"**; a test asserts the word "immediately" does not appear on the gallery page.
-Instant revocation would need a Cloudflare Worker in front of the bucket.
+means a URL already handed out works until it expires — at most 15 minutes. A presigned
+URL to a deleted object 404s regardless of signature, so the delete is what closes it.
+**UI copy must say "within 15 minutes"**; a test asserts the word "immediately" does not
+appear on the gallery page. Instant cutoff would need a Cloudflare Worker in front of the
+bucket.
 
 **Object keys embed no account id** (`renders/<renderId>/after.webp`). A presigned URL is
 handed to a stranger, and `blob_tombstones` holds keys after the owning row is gone — an

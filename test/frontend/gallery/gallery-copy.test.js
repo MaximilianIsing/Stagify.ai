@@ -1,15 +1,15 @@
 // Copying the share link.
 //
 // WHAT THIS COVERS
-// The share token is returned by the server exactly once and has no read-back, so the
-// copy button guards the only moment the link exists in a form a person can take away.
-// Two properties follow from that and neither is cosmetic:
+// Copy is the only control the share panel has left: every entry arrives with a link, so
+// there is nothing to create and nothing to switch off. Two properties follow and neither
+// is cosmetic:
 //
-//   1. The button exists only while the link is on screen. Offering "copy" when there is
+//   1. The button exists only while a link is on screen. Offering "copy" when there is
 //      nothing to copy invites a click that silently does nothing.
 //   2. It reports what ACTUALLY happened. Clipboard writes are refused outside a secure
-//      context and in some webviews; saying "Copied" anyway would cost the agent the
-//      link outright, since there is no second chance to read the token.
+//      context and in some webviews; saying "Copied" anyway sends the agent off to paste
+//      an empty clipboard into a message to their client.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,28 +19,26 @@ import { copyText } from '../../../public/scripts/clipboard.js';
 import { renderGrid } from '../../../public/scripts/gallery/view.js';
 import { galleryDocument, fakeRoutes } from '../../helpers/gallery-dom.js';
 
+const LINK = 'https://stagify.test/s/TOKEN';
+
 const ENTRY = {
   id: 'r1',
   createdAt: Date.UTC(2026, 7, 1),
   roomType: 'Bedroom',
   urls: { after: '/a.webp', before: '/b.webp', thumb: '/t.webp' },
-  share: { active: false },
+  share: { url: LINK, viewCount: 0 },
 };
 
-const LINK = 'https://stagify.test/s/TOKEN';
-
-// Cloned: minting writes the new link onto `entry.share`, so a shared fixture object
-// would carry one test's link into the next.
-const routes = (extra = {}) => fakeRoutes({
-  '/api/gallery': { status: 200, body: { entries: [structuredClone(ENTRY)], total: 1, enabled: true } },
-  '/api/gallery/r1/share': { status: 200, body: { url: LINK, share: { active: true, viewCount: 0 } } },
-  ...extra,
+// Cloned: the app holds onto the entry it is given, so a shared fixture object would
+// carry one test's state into the next.
+const routes = (entry = ENTRY) => fakeRoutes({
+  '/api/gallery': { status: 200, body: { entries: [structuredClone(entry)], total: 1, enabled: true } },
 });
 
 /** Boot, open the card, and hand back the context. */
-async function openCard() {
+async function openCard(entry) {
   const ctx = galleryDocument();
-  await start({ doc: ctx.document, fetchImpl: routes() });
+  await start({ doc: ctx.document, fetchImpl: routes(entry) });
   ctx.byId('gal-grid').children[0].fire('click');
   return ctx;
 }
@@ -86,33 +84,20 @@ function fakeCopyDoc({ execCommandResult = true }) {
 
 // ---- the button -----------------------------------------------------------------------
 
-test('there is nothing to copy until a link has been minted', async () => {
+test('the link and its button are both there the moment a card opens', async () => {
   const ctx = await openCard();
-  assert.equal(ctx.byId('gal-share-copy').hidden, true);
-  assert.equal(ctx.byId('gal-share-url').hidden, true);
-});
-
-test('minting reveals the link and the button together', async () => {
-  const ctx = await openCard();
-  await ctx.byId('gal-share-create').fire('click');
-
   assert.equal(ctx.byId('gal-share-url').value, LINK);
   assert.equal(ctx.byId('gal-share-url').hidden, false);
   assert.equal(ctx.byId('gal-share-copy').hidden, false);
 });
 
-test('an entry with a live link but no token on screen offers no copy button', async () => {
-  // Reopening a shared render shows THAT it is shared without showing the link, because
-  // the server cannot hand the token back. A copy button there would copy an empty box.
-  const ctx = galleryDocument();
-  const shared = { ...ENTRY, share: { active: true, viewCount: 3 } };
-  await start({
-    doc: ctx.document,
-    fetchImpl: fakeRoutes({ '/api/gallery': { status: 200, body: { entries: [shared], total: 1, enabled: true } } }),
-  });
-  ctx.byId('gal-grid').children[0].fire('click');
+test('an entry that came back without a URL offers no copy button', async () => {
+  // The listing mints for every finished render, so this is the server having failed
+  // rather than a state the owner put the render in. A copy button would copy an empty
+  // box and report success.
+  const ctx = await openCard({ ...ENTRY, share: null });
 
-  assert.equal(ctx.byId('gal-share-copy').hidden, true, 'nothing to copy — the token is not re-issued');
+  assert.equal(ctx.byId('gal-share-copy').hidden, true, 'nothing to copy');
   assert.equal(ctx.byId('gal-share-url').hidden, true);
 });
 
@@ -120,12 +105,11 @@ test('a copy that did not happen says so, instead of claiming success', async ()
   // The stand-in document has no clipboard and no execCommand, so both paths fail —
   // which is exactly the situation the honest message exists for.
   const ctx = await openCard();
-  await ctx.byId('gal-share-create').fire('click');
   await ctx.byId('gal-share-copy').fire('click');
 
   const status = ctx.byId('gal-share-status').textContent;
   assert.match(status, /could not copy/i);
-  assert.ok(!/copied\./i.test(status), 'must not claim the link is on the clipboard');
+  assert.ok(!/copied/i.test(status), 'must not claim the link is on the clipboard');
 });
 
 test('a thumbnail that will not load falls back to the full render', async () => {
@@ -168,10 +152,9 @@ test('and when that fails too it degrades quietly instead of printing its alt te
 });
 
 test('the copy button is reachable by keyboard inside the panel', async () => {
-  // It sits between the link box and "create", so tabbing from the close button reaches
-  // it without leaving the dialog.
+  // It sits between the link box and delete, so tabbing from the close button reaches it
+  // without leaving the dialog.
   const ctx = await openCard();
-  await ctx.byId('gal-share-create').fire('click');
 
   const tab = () => ctx.document.fire('keydown', { key: 'Tab', preventDefault() {} });
   ctx.byId('gal-detail-close').focus();

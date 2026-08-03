@@ -25,7 +25,10 @@ const ENTRY = {
     thumb: '/media-webp/Homepage/BeforeAfter/After1.webp',
   },
   references: [],
-  share: { active: false },
+  // Every finished render arrives with its link — there is no `active` flag any more, and
+  // an entry without a `url` is now the FAILURE case (gallery.share.unavailable), so a
+  // fixture missing it would test the wrong string.
+  share: { url: 'https://stagify.test/s/TOKEN', viewCount: 0 },
 };
 
 /** Pick a language through the custom switcher, the way a visitor does. */
@@ -84,7 +87,36 @@ test.describe('Gallery — language switching', () => {
     // #gal-meta is built by renderMeta() at open time, so it comes from the pack in JS
     // rather than from a [data-lang] sweep over the markup.
     await expect(page.locator('#gal-meta')).toContainText('Pièce');
-    await expect(page.locator('#gal-share-status')).toHaveText('Pas encore de lien.');
+    await expect(page.locator('#gal-share-status')).toHaveText('Pas encore ouvert');
+    // The heading is JS-owned and built from the pack too. The NAME is deliberately not
+    // translated — style and room type are the server's own vocabulary, and the owner can
+    // replace the whole thing by renaming — so this is the one string here that stays put.
+    await expect(page.locator('#gal-detail-title')).toHaveText('Modern Living room');
+  });
+
+  test('a render can be renamed, and the card follows', async ({ page }) => {
+    await page.route('**/api/gallery/r1', (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: true, name: '412 Rosewood Lane' }),
+    }));
+    await page.goto('/gallery.html');
+
+    await page.locator('.gal-card').first().click();
+    await expect(page.locator('#gal-detail-title')).toHaveText('Modern Living room');
+
+    await page.locator('#gal-rename').click();
+    // Empty, with the derived name only as a placeholder — saving unchanged text must not
+    // silently freeze the default into the row.
+    await expect(page.locator('#gal-rename-input')).toHaveValue('');
+    await expect(page.locator('#gal-rename-input')).toHaveAttribute('placeholder', 'Modern Living room');
+
+    await page.locator('#gal-rename-input').fill('412 Rosewood Lane');
+    await page.locator('#gal-rename-save').click();
+
+    await expect(page.locator('#gal-detail-title')).toHaveText('412 Rosewood Lane');
+    await expect(page.locator('#gal-rename-row')).toBeHidden();
+    await expect(page.locator('.gal-card').first()).toContainText('412 Rosewood Lane');
   });
 
   test('the language pill is hidden behind the detail panel, not dimmed under it', async ({ page }) => {

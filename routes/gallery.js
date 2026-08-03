@@ -1,4 +1,12 @@
-// The owner's own gallery: their staged history, and the links they mint from it.
+// The owner's own gallery: their staged history, and the link that comes with every
+// entry in it.
+//
+// THERE IS NO CREATE STEP AND NO OFF SWITCH. A link is not a thing the owner makes for a
+// chosen render; every finished render has one, minted by the LISTING below and carried on
+// the entry, so opening a card and pressing copy is the whole interaction. That is why a
+// GET here writes: the alternative is a panel that has to round-trip before it can show
+// the one thing it exists to show. Deleting the render is the takedown, and it is a better
+// one than revoking was — it tombstones the bytes too.
 //
 // Everything here is authenticated. The public half is routes/share-public.js, and the
 // two files deliberately share no handler — one is read by an anonymous stranger holding
@@ -8,8 +16,10 @@
 // OWNERSHIP IS KEYED ON THE VALIDATED SESSION, NEVER ON A BODY
 // Every mutating route resolves the user with `getAuthUserFromRequest` and passes THAT id
 // into the store, where it is part of the WHERE clause. A render id in the path is
-// untrusted input: `remove` and the share routes all answer the same 404 for "does not
-// exist" and "is not yours", so this surface cannot be used to probe which ids are real.
+// untrusted input: `remove` and the share route answer the same 404 for "does not exist"
+// and "is not yours", so this surface cannot be used to probe which ids are real. The
+// listing does not take an id at all — it mints for the rows the store handed back for
+// THIS session, so no caller can steer it at a render they do not own.
 //
 // THE MANIFEST MINTS PRESIGNED URLS
 // Bytes never pass through this process — the browser fetches R2 directly. That is the
@@ -50,6 +60,15 @@ export function shapeEntry({ render, blobs, refs, share, presign, shareOrigin = 
     height: render.height ?? null,
     roomType: render.room_type ?? '',
     furnitureStyle: render.furniture_style ?? '',
+    // The owner's own label, or '' when they have not given one. Deliberately NOT
+    // defaulted here: the page derives `<Style> <Room type>` from the two fields above,
+    // so an unnamed render picks up the reader's own copy of that wording rather than a
+    // string frozen into the row on the day it was staged.
+    //
+    // It is also owner-only. The public share page has its own `settings.headline`, and
+    // collapsing the two would publish whatever private note an agent filed a render
+    // under ("Wilson viewing, redo the lighting") to whoever holds the link.
+    name: render.custom_name ?? '',
     // The prompt is what makes the gallery useful rather than decorative: it is the
     // answer to "what did I actually ask for", and the seed for running it again.
     additionalPrompt: render.additional_prompt ?? '',
@@ -61,19 +80,20 @@ export function shapeEntry({ render, blobs, refs, share, presign, shareOrigin = 
       thumb: byRole.thumb ? presign(byRole.thumb) : '',
     },
     references: (refs ?? []).map((r) => ({ url: presign(r.storage_key) })),
-    // The URL rides along now, so reopening the gallery next week shows the link the
-    // owner already sent instead of only the fact that one exists. `url` is empty for a
-    // share minted before the token was retrievable — those cannot be read back at all.
+    // The URL itself, not a flag saying one exists: the panel's job is to hand it over,
+    // and it has nowhere else to get it from. There is no `active` — every entry has a
+    // link, so a boolean would be true on every row ever serialized here. `url` is empty
+    // only for a share minted before the token was retrievable, which the mint on the
+    // listing replaces the moment it sees one.
     share: share
       ? {
-        active: true,
         url: share.token ? `${shareOrigin}/s/${share.token}` : '',
         createdAt: share.createdAt,
         viewCount: share.viewCount,
         lastViewedAt: share.lastViewedAt,
         settings: share.settings,
       }
-      : { active: false },
+      : null,
   };
 }
 
@@ -143,11 +163,16 @@ export default function createGalleryRouter(deps) {
     const offset = Math.max(0, Number(req.query.offset) || 0);
     const rows = stagedRenders.listForUser({ userId: user.id, limit: PAGE_SIZE, offset });
     const listOrigin = originFor(req);
+    // The mint. `listForUser` returns finished renders only, which is the same bar the
+    // old create button enforced — a link to bytes that never landed would 404 for
+    // whoever received it. One transaction for the page, and a no-op for every render
+    // that already has a link, so this is a read in the steady state.
+    const links = shares.ensureForRenders({ renders: rows });
     const entries = rows.map((render) => shapeEntry({
       render,
       blobs: stagedRenders.blobsFor(render.id),
       refs: renderRefs.forRender(render.id),
-      share: shares.activeForRender(render.id),
+      share: links.get(render.id) ?? null,
       presign,
       shareOrigin: listOrigin,
     }));
@@ -159,6 +184,32 @@ export default function createGalleryRouter(deps) {
       enabled: true,
       urlTtlMs: GALLERY_URL_TTL_MS,
     });
+  });
+
+  // ── Name one entry ─────────────────────────────────────────────────────────
+  //
+  // The only field of a render the owner can edit. `name: ''` is a RESET, not a rejection:
+  // it stores NULL and the page goes back to deriving `<Style> <Room type>`, so there is
+  // one control rather than a rename box plus a "use the default" button.
+  //
+  // The trimming and the 80-character ceiling are in the store, not here — every writer
+  // goes through `rename`, so a second caller cannot skip them. This handler's own job is
+  // to refuse a body that is not a string at all, which is the difference between "clear
+  // it" and a client sending an object by mistake.
+  router.patch('/api/gallery/:id', limiter, async (req, res) => {
+    const user = userFor(req);
+    if (!user) return unauthorized(res);
+    if (typeof req.body?.name !== 'string') {
+      return sendError(res, 400, 'A name is required', { code: 'INVALID_NAME' });
+    }
+    // No ownedRender() call first: the id and the user id go into the UPDATE's WHERE
+    // together, so a check-then-write cannot disagree with the write, and "not yours"
+    // answers the same 404 as "does not exist".
+    const { ok, name } = stagedRenders.rename({ id: String(req.params.id || ''), userId: user.id, name: req.body.name });
+    if (!ok) return notFound(res);
+    // The stored value, not the submitted one — it may have been trimmed or truncated,
+    // and the page paints what it gets back so the two cannot drift apart on screen.
+    return res.json({ success: true, name });
   });
 
   // ── Delete one entry ───────────────────────────────────────────────────────
@@ -173,37 +224,11 @@ export default function createGalleryRouter(deps) {
     return res.json({ success: true });
   });
 
-  // ── Mint or rotate a share link ────────────────────────────────────────────
-  //
-  // The plaintext token comes back EXACTLY ONCE, here. There is no read-back route: an
-  // owner who loses the link calls this again, which rotates it — which is also the
-  // behaviour you want from a "the seller forwarded it to the whole street" button.
-  router.post('/api/gallery/:id/share', limiter, async (req, res) => {
-    const user = userFor(req);
-    if (!user) return unauthorized(res);
-    const render = ownedRender(req, user);
-    if (!render) return notFound(res);
-    // A render whose bytes never landed has nothing to show; minting a link for it would
-    // hand somebody a URL that 404s.
-    if (render.status !== 'ok') return notFound(res);
-
-    // ensureShare, not create: a render has ONE link for its lifetime, so pressing this
-    // twice returns the same URL instead of invalidating one the owner already sent.
-    const { token, share } = shares.ensureShare({
-      renderId: render.id,
-      userId: user.id,
-      settings: req.body?.settings,
-      expiresAt: Number.isFinite(Number(req.body?.expiresAt)) ? Number(req.body.expiresAt) : null,
-    });
-    return res.json({
-      success: true,
-      url: `${originFor(req)}/s/${token}`,
-      token,
-      share: { active: true, createdAt: share.createdAt, viewCount: 0, settings: share.settings },
-    });
-  });
-
   // ── Edit a live link's presentation, without rotating it ───────────────────
+  //
+  // The only write left on a share. There is no POST minting one — the listing does that
+  // for every render — and no DELETE turning one off; both were removed with the buttons
+  // that called them, rather than left mounted for nothing.
   router.patch('/api/gallery/:id/share', limiter, async (req, res) => {
     const user = userFor(req);
     if (!user) return unauthorized(res);
@@ -213,19 +238,7 @@ export default function createGalleryRouter(deps) {
     // already sent, so this deliberately does not mint a new token.
     const share = shares.updateSettings({ renderId: render.id, settings: req.body?.settings });
     if (!share) return notFound(res);
-    return res.json({ success: true, share: { active: true, createdAt: share.createdAt, viewCount: share.viewCount, settings: share.settings } });
-  });
-
-  // ── Revoke ─────────────────────────────────────────────────────────────────
-  router.delete('/api/gallery/:id/share', limiter, async (req, res) => {
-    const user = userFor(req);
-    if (!user) return unauthorized(res);
-    const render = ownedRender(req, user);
-    if (!render) return notFound(res);
-    shares.revoke(render.id);
-    // Idempotent: "make sure this link is dead" is what the caller wants, so revoking a
-    // link that was already revoked is a success, not a 404.
-    return res.json({ success: true });
+    return res.json({ success: true, share: { createdAt: share.createdAt, viewCount: share.viewCount, settings: share.settings } });
   });
 
   return router;

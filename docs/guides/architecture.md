@@ -139,7 +139,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `object-keys.js` | The key layout and the traversal gate. **No account id appears in a key** — a presigned URL goes to a stranger, and tombstones outlive the owning row. |
 | `staged-renders.js` | The render rows, and the tier caps. Eviction runs **inside the insert transaction**; a cap applied in a second statement is not a cap. |
 | `render-refs.js` | Furniture reference photos, content-addressed and deduped per user. Their lifetime is **derived** (an indexed `NOT EXISTS`), never counted — a double-decrement would delete bytes a live entry still shows. |
-| `gallery-shares.js` | Share tokens: sha256 at rest, plaintext once, revoke-not-delete, one live link per render enforced in a transaction. |
+| `gallery-shares.js` | Share tokens: sha256 for lookup, plaintext alongside it so the owner can copy the link again, one live link per render enforced in a transaction. Minted a page at a time by the gallery listing — there is no create step and no off switch — and revoked rather than deleted, because a delete would take the view count with it. |
 | `blob-tombstones.js` | The queue of object bytes owed a deletion, and the reaper that drains it. This is what lets `deleteUser` stay **synchronous** while the bytes live in someone else's datacentre: the transaction commits the *obligation*, not the deletion. |
 
 **`lib/http/`** — request/response plumbing

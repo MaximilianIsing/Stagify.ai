@@ -96,7 +96,7 @@
         "older": "Mar 11"
       },
       "alts": {
-        "living": "A staged living room with a grey sectional, striped ottomans, a patterned rug and a lit fireplace",
+        "living": "A staged living room with two blue armchairs facing a white tufted sofa, a patterned rug and coastal artwork",
         "bedroom": "A staged bedroom with a wide bed, an upholstered headboard, a wall-mounted TV and a low media console",
         "dining": "A staged dining room with an oval wooden table, six chairs, a chandelier and bay windows"
       },
@@ -112,7 +112,7 @@
         "auto": "Saved automatically. There is no save step to forget.",
         "versions": "Every version is kept, so two styles of the same room sit side by side.",
         "private": "The original empty photo stays yours alone. It is never part of what a client sees.",
-        "share": "Share one room with a client on its own link, and turn the link off when you are done."
+        "share": "Every room comes with its own client link. Open the room, copy the link, send it."
       }
     },
     "info": {
@@ -1283,10 +1283,8 @@
   "gallery": {
     "pageTitle": "Your gallery — Stagify",
     "title": "Your gallery",
-    "lede": "Every room you have staged, with the settings that produced it and the links you have shared.",
+    "lede": "Every room you have staged, with the settings that produced it and a link you can send.",
     "detailTitle": "Staged room",
-    "untitledLower": "staged room",
-    "linkOn": "link on",
     "more": "Load more",
     "moreLoading": "Loading…",
     "cardAlt": "{room}, staged",
@@ -1337,26 +1335,28 @@
     "delete": "Delete this render",
     "share": {
       "title": "Share",
-      "note": "Turning a link off stops new visits within 15 minutes. To remove the images straight away, delete the render instead.",
+      "note": "Anyone with this link can open the staged photo. Deleting the render is what takes it down, and visits stop within 15 minutes.",
       "urlLabel": "Share link",
-      "create": "Create link",
-      "revoke": "Turn off link",
       "copy": "Copy link",
-      "copied": "Copied. The link is on your clipboard — it is not shown again.",
+      "copied": "Copied — the link is on your clipboard.",
       "copyFailed": "Could not copy automatically. Select the link above and copy it.",
-      "none": "No link yet.",
-      "unreadable": "This link was created before links could be reopened. Turn it off and create a new one to see it.",
-      "onNotOpened": "Link is on · not opened yet",
-      "onOpened": {
-        "one": "Link is on · opened {count} time",
-        "other": "Link is on · opened {count} times"
+      "notOpened": "Not opened yet",
+      "opened": {
+        "one": "Opened {count} time",
+        "other": "Opened {count} times"
       },
-      "creating": "Creating…",
-      "created": "Link created. It stays here — you can copy it again any time.",
-      "createFailed": "Could not create a link. Try again.",
-      "revoked": "Link turned off. Visits stop within 15 minutes.",
-      "revokeFailed": "Could not turn the link off. Try again.",
+      "unavailable": "This link could not be loaded. Reload the page and try again.",
       "deleteFailed": "Could not delete this render."
+    },
+    "rename": {
+      "action": "Rename",
+      "label": "Name this render",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "saved": "Name saved.",
+      "cleared": "Back to the default name.",
+      "failed": "Could not save that name. Try again."
     }
   }
 }

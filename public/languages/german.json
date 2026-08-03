@@ -96,7 +96,7 @@
         "older": "11. März"
       },
       "alts": {
-        "living": "Ein eingerichtetes Wohnzimmer mit grauer Polsterecke, gestreiften Hockern, gemustertem Teppich und brennendem Kamin",
+        "living": "Ein eingerichtetes Wohnzimmer mit zwei blauen Sesseln gegenüber einem weißen Chesterfield-Sofa, einem gemusterten Teppich und einem Bild in Küstenoptik",
         "bedroom": "Ein eingerichtetes Schlafzimmer mit breitem Bett, gepolstertem Kopfteil, Wandfernseher und niedrigem Sideboard",
         "dining": "Ein eingerichtetes Esszimmer mit ovalem Holztisch, sechs Stühlen, einem Kronleuchter und Erkerfenstern"
       },
@@ -112,7 +112,7 @@
         "auto": "Wird automatisch gespeichert. Es gibt keinen Schritt, den man vergessen könnte.",
         "versions": "Jede Version bleibt erhalten, sodass zwei Stile desselben Raums nebeneinander stehen.",
         "private": "Das ursprüngliche leere Foto bleibt allein Ihres. Es ist nie Teil dessen, was ein Kunde sieht.",
-        "share": "Teilen Sie einen Raum über einen eigenen Link mit einem Kunden und schalten Sie den Link ab, wenn Sie fertig sind."
+        "share": "Zu jedem Raum gehört ein eigener Kundenlink. Raum öffnen, Link kopieren, verschicken."
       }
     },
     "info": {
@@ -1283,10 +1283,8 @@
   "gallery": {
     "pageTitle": "Ihre Galerie — Stagify",
     "title": "Ihre Galerie",
-    "lede": "Jeder Raum, den Sie gestaltet haben – mit den Einstellungen, die ihn erzeugt haben, und den Links, die Sie geteilt haben.",
+    "lede": "Jeder Raum, den Sie gestaltet haben – mit den Einstellungen, die ihn erzeugt haben, und einem Link, den Sie verschicken können.",
     "detailTitle": "Gestalteter Raum",
-    "untitledLower": "gestalteten Raum",
-    "linkOn": "Link aktiv",
     "more": "Mehr laden",
     "moreLoading": "Wird geladen…",
     "cardAlt": "{room}, gestaltet",
@@ -1337,26 +1335,28 @@
     "delete": "Dieses Rendering löschen",
     "share": {
       "title": "Teilen",
-      "note": "Wenn Sie einen Link deaktivieren, werden neue Besuche innerhalb von 15 Minuten gestoppt. Um die Bilder sofort zu entfernen, löschen Sie stattdessen das Rendering.",
+      "note": "Wer diesen Link hat, kann das gestaltete Foto öffnen. Zum Zurückziehen löschen Sie das Rendering – Besuche werden innerhalb von 15 Minuten gestoppt.",
       "urlLabel": "Freigabelink",
-      "create": "Link erstellen",
-      "revoke": "Link deaktivieren",
       "copy": "Link kopieren",
-      "copied": "Kopiert. Der Link ist in der Zwischenablage – er wird nicht erneut angezeigt.",
+      "copied": "Kopiert – der Link ist in der Zwischenablage.",
       "copyFailed": "Automatisches Kopieren nicht möglich. Markieren Sie den Link oben und kopieren Sie ihn.",
-      "none": "Noch kein Link.",
-      "unreadable": "Dieser Link entstand, bevor Links erneut angezeigt werden konnten. Deaktivieren Sie ihn und erstellen Sie einen neuen, um ihn zu sehen.",
-      "onNotOpened": "Link ist aktiv · noch nicht geöffnet",
-      "onOpened": {
-        "one": "Link ist aktiv · {count}-mal geöffnet",
-        "other": "Link ist aktiv · {count}-mal geöffnet"
+      "notOpened": "Noch nicht geöffnet",
+      "opened": {
+        "one": "{count}-mal geöffnet",
+        "other": "{count}-mal geöffnet"
       },
-      "creating": "Wird erstellt…",
-      "created": "Link erstellt. Er bleibt hier – Sie können ihn jederzeit erneut kopieren.",
-      "createFailed": "Link konnte nicht erstellt werden. Bitte erneut versuchen.",
-      "revoked": "Link deaktiviert. Besuche werden innerhalb von 15 Minuten gestoppt.",
-      "revokeFailed": "Link konnte nicht deaktiviert werden. Bitte erneut versuchen.",
+      "unavailable": "Dieser Link konnte nicht geladen werden. Laden Sie die Seite neu und versuchen Sie es erneut.",
       "deleteFailed": "Dieses Rendering konnte nicht gelöscht werden."
+    },
+    "rename": {
+      "action": "Umbenennen",
+      "label": "Dieses Rendering benennen",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "saving": "Wird gespeichert…",
+      "saved": "Name gespeichert.",
+      "cleared": "Zurück zum Standardnamen.",
+      "failed": "Dieser Name konnte nicht gespeichert werden. Bitte erneut versuchen."
     }
   }
 }

@@ -12,13 +12,67 @@ import { t } from './i18n.js';
 /** 1x1 transparent GIF, so a failed tile has a valid src and no broken-image glyph. */
 const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
-/** The name to show when a render has no room type. */
+/** The name to show when a render has neither a name of its own nor a room type. */
 const untitled = () => t('gallery.detailTitle', 'Staged room');
 
-/** A photo's alt text. `roomType` is server data and is never translated. */
-const stagedAlt = (roomType) => (roomType
-  ? t('gallery.cardAlt', '{room}, staged', { room: roomType })
-  : t('gallery.detailTitle', 'Staged room'));
+/**
+ * A furniture style as a person would write it.
+ *
+ * The stored value is a slug (`luxury`, `midcentury`), because that is what the studio's
+ * <select> submits and what promptMatrix.js keys off. Printing it raw is how the detail
+ * panel came to say "Style: modern" under a heading that says "Modern Bedroom".
+ *
+ * Capitalised rather than looked up in the pack, and that is the deliberate half: this
+ * string is joined to `roomType`, which is server data and never translated. "Lujo
+ * Bedroom" is a worse answer than "Luxury Bedroom" — half a name in each language reads
+ * like a bug, where one consistent language reads like a default the owner can replace.
+ * Renaming is the feature that makes that acceptable.
+ *
+ * @param {string} [style] @returns {string}
+ */
+export function styleLabel(style) {
+  const slug = String(style ?? '').trim();
+  if (!slug) return '';
+  return slug.charAt(0).toUpperCase() + slug.slice(1);
+}
+
+/**
+ * What to call this render when its owner has not named it.
+ *
+ * `<Style> <Room type>` — "Luxury Bedroom" — because those are the two things the owner
+ * chose, and together they are the shortest phrase that distinguishes two renders of the
+ * same room. Degrades a term at a time: no style leaves the room type alone, neither
+ * leaves the generic heading.
+ *
+ * Derived on read rather than stored at insert, so it is not frozen: restyling the
+ * default later re-labels every unnamed render instead of only the new ones.
+ *
+ * @param {any} entry @returns {string}
+ */
+export function defaultName(entry) {
+  const style = styleLabel(entry?.furnitureStyle);
+  const room = String(entry?.roomType ?? '').trim();
+  if (style && room) return `${style} ${room}`;
+  return room || untitled();
+}
+
+/**
+ * What this render is called: the owner's own name, or the derived default.
+ *
+ * ONE definition, used by the card, the dialog heading and both alt texts. They disagreed
+ * for a while — the card printed the room type and the aria-label printed something else
+ * — and a card whose accessible name is not its visible name is the kind of thing only a
+ * screen reader notices.
+ *
+ * @param {any} entry @returns {string}
+ */
+export function entryName(entry) {
+  const own = String(entry?.name ?? '').trim();
+  return own || defaultName(entry);
+}
+
+/** A photo's alt text. Built from the same name the card shows. */
+const stagedAlt = (entry) => t('gallery.cardAlt', '{room}, staged', { room: entryName(entry) });
 
 /**
  * The BCP-47 tag for the language the page is being read in, or undefined to let the
@@ -39,14 +93,26 @@ function dateLocale() {
 }
 
 /**
- * A short, local date. Deliberately not relative ("3 days ago"): an agent looking for the
- * render they did for a specific viewing wants the date.
+ * A short, local date AND time. Deliberately not relative ("3 days ago"): an agent looking
+ * for the render they did for a specific viewing wants the timestamp.
+ *
+ * The time is here because the date alone cannot separate the six renders of one listing
+ * that all happened on a Tuesday afternoon, which is what a session with this product
+ * actually looks like — variations, retries, a second style. `toLocaleString`, not
+ * `toLocaleDateString`, so each language gets its own order and its own 12/24-hour clock
+ * from the tag `dateLocale()` resolved.
+ *
+ * Seconds are omitted on purpose: they make the string longer than the card can hold and
+ * answer a question nobody asks.
+ *
  * @param {number} ms @returns {string}
  */
 export function formatWhen(ms) {
   if (!Number.isFinite(ms)) return '';
   try {
-    return new Date(ms).toLocaleDateString(dateLocale(), { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date(ms).toLocaleString(dateLocale(), {
+      year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+    });
   } catch {
     return '';
   }
@@ -59,8 +125,15 @@ export function formatWhen(ms) {
  * replace it. It defaults to false so the plain re-render — which is what a delete does —
  * stays the obvious behaviour.
  *
+ * Returns the cards it built, index-aligned with `entries`. The caller needs them because
+ * a re-render DETACHES every existing card: the detail panel holds the one that opened it
+ * so it can hand focus back, and a detached node fails closeDetail's isConnected guard and
+ * silently drops focus to <body>. Handing the new nodes back is what lets a repaint
+ * re-point at the same entry's card instead.
+ *
  * @param {{ grid: Element | null, entries: any[], doc?: Document,
  *   onOpen: (entry: any, trigger: any) => void, append?: boolean }} arg
+ * @returns {any[]} The cards built by THIS call — the appended ones only, when appending.
  */
 export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
   const cards = entries.map((entry) => {
@@ -69,7 +142,7 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
       className: 'gal-card__img',
       attrs: {
         src: entry.urls.thumb || entry.urls.after,
-        alt: stagedAlt(entry.roomType),
+        alt: stagedAlt(entry),
         loading: 'lazy',
         decoding: 'async',
       },
@@ -101,7 +174,7 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
       attrs: {
         type: 'button',
         'aria-label': t('gallery.cardOpen', 'Open {room} from {when}', {
-          room: entry.roomType || t('gallery.untitledLower', 'staged room'),
+          room: entryName(entry),
           when: formatWhen(entry.createdAt),
         }),
       },
@@ -111,21 +184,18 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
           doc,
           className: 'gal-card__body',
           children: [
-            el('span', { doc, className: 'gal-card__room', text: entry.roomType || untitled() }),
-            // Room on its own line, then date and status on a row beneath it. These used
-            // to be three inline spans joined by " · ", which wrapped into one run-on
-            // line at every card width the grid actually produces.
+            el('span', { doc, className: 'gal-card__room', text: entryName(entry) }),
+            // The name on its own line, then the date beneath it. These used to be three
+            // inline spans joined by " · ", which wrapped into one run-on line at every
+            // card width the grid actually produces — and the third was a "link on" pill,
+            // which meant something while a link was a thing you switched on for chosen
+            // rooms. Every entry has one now, so a badge on every tile said only that the
+            // gallery had tiles.
             el('span', {
               doc,
               className: 'gal-card__meta',
               children: [
                 el('span', { doc, className: 'gal-card__when', text: formatWhen(entry.createdAt) }),
-                // A visible marker, because a shared entry behaves differently: the
-                // free-tier cap protects it, and turning the link off is a thing the
-                // agent may need to find later.
-                entry.share?.active
-                  ? el('span', { doc, className: 'gal-card__shared', text: t('gallery.linkOn', 'link on') })
-                  : null,
               ],
             }),
           ],
@@ -140,9 +210,10 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
   });
   if (append) {
     for (const card of cards) grid?.appendChild(card);
-    return;
+    return cards;
   }
   replaceChildren(grid, cards);
+  return cards;
 }
 
 /**
@@ -162,7 +233,7 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false }) {
 export function renderCompare({ container, entry, doc }) {
   const after = el('img', {
     doc,
-    attrs: { src: entry.urls.after, alt: stagedAlt(entry.roomType) },
+    attrs: { src: entry.urls.after, alt: stagedAlt(entry) },
   });
   if (!entry.urls.before) {
     replaceChildren(container, [after]);
@@ -204,9 +275,12 @@ export function renderMeta({ container, entry, doc }) {
     rows.push(el('dd', { doc, text: value }));
   };
   // The LABELS translate; the VALUES are the agent's own words and the server's room
-  // type, so they stay exactly as they were typed.
+  // type, so they stay exactly as they were typed. The style is the one exception, and
+  // only cosmetically: it is stored as the <select>'s slug, so it is capitalised through
+  // the same helper the heading uses rather than printed as "modern" beneath a panel
+  // titled "Modern Bedroom".
   add(t('gallery.meta.room', 'Room'), entry.roomType);
-  add(t('gallery.meta.style', 'Style'), entry.furnitureStyle);
+  add(t('gallery.meta.style', 'Style'), styleLabel(entry.furnitureStyle));
   add(t('gallery.meta.prompt', 'Extra prompt'), entry.additionalPrompt);
   add(t('gallery.meta.removed', 'Removed furniture'), entry.removeFurniture ? t('gallery.meta.yes', 'Yes') : '');
   add(t('gallery.meta.staged', 'Staged'), formatWhen(entry.createdAt));
