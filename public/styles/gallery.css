@@ -64,10 +64,78 @@
 
 /* ---- states ----------------------------------------------------------------------- */
 
+/* ---- search (Stagify+) -------------------------------------------------------------
+   Hidden by default and revealed by an attribute gallery-app.js sets from the LISTING's
+   `search.enabled`, never from a client-side plan check — the same response decides
+   whether `q` is honoured, so the box cannot be offered for a filter the server ignores.
+
+   Shown for the two states that have something to search or something to clear. Not for
+   `empty` (nothing to search), and not for `off`/`error`/`signed-out`, where a search box
+   over a failure panel would suggest the page is working. */
+.gal-search { display: none; }
+body[data-gal-search='on'][data-state='ready'] .gal-search,
+body[data-gal-search='on'][data-state='no-results'] .gal-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 460px;
+  margin: 0 0 20px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow: 0 8px 22px rgba(30, 58, 138, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+/* The ring goes on the WRAPPER, because the input inside it is borderless — focusing the
+   field would otherwise show no ring at all on a control that is entirely keyboard-driven. */
+.gal-search:focus-within {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22), 0 8px 22px rgba(30, 58, 138, 0.12);
+}
+.gal-search__icon { display: flex; flex: 0 0 auto; color: var(--slate); }
+.gal-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  /* styles.css styles inputs by class and has no bare input{} rule, so without these the
+     field renders as a raw OS widget inside its own frosted wrapper. */
+  font: inherit;
+  font-size: 14px;
+  color: var(--fg);
+  background: none;
+  border: 0;
+}
+.gal-search__input:focus { outline: none; }
+.gal-search__input::placeholder { color: var(--muted); }
+.gal-search__clear {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--slate);
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.gal-search__clear:hover { background: var(--brand-wash); color: var(--brand-deep); }
+.gal-search__clear:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.5); outline-offset: 1px; }
+.gal-search__clear[hidden] { display: none; }
+
 .gal-state { display: none; }
 body[data-state='loading'] .gal-state--loading { display: flex; justify-content: center; padding: 18vh 0; }
 body[data-state='ready'] .gal-state--ready { display: block; }
 body[data-state='empty'] .gal-state--empty { display: block; }
+body[data-state='no-results'] .gal-state--no-results { display: block; }
 body[data-state='off'] .gal-state--off { display: block; }
 body[data-state='error'] .gal-state--error { display: block; }
 body[data-state='signed-out'] .gal-state--signed-out { display: block; }

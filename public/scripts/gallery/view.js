@@ -7,6 +7,7 @@
 
 import { el, replaceChildren } from '../share/dom.js';
 import { LANG_BCP47 } from '../locale-data.js';
+import { styleLabel, defaultName as baseDefaultName, entryName as baseEntryName } from '../render-name.js';
 import { t } from './i18n.js';
 
 /** 1x1 transparent GIF, so a failed tile has a valid src and no broken-image glyph. */
@@ -16,59 +17,33 @@ const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAA
 const untitled = () => t('gallery.detailTitle', 'Staged room');
 
 /**
- * A furniture style as a person would write it.
+ * The naming rule itself lives in scripts/render-name.js, because the PUBLIC share page
+ * shows the same label over the same photo and two copies of "<Style> <Room type>" would
+ * drift the first time either page was touched. These two wrappers exist only to bind the
+ * translated fallback, which is the one part the share page cannot share (it loads no
+ * language pack at all).
  *
- * The stored value is a slug (`luxury`, `midcentury`), because that is what the studio's
- * <select> submits and what promptMatrix.js keys off. Printing it raw is how the detail
- * panel came to say "Style: modern" under a heading that says "Modern Bedroom".
- *
- * Capitalised rather than looked up in the pack, and that is the deliberate half: this
- * string is joined to `roomType`, which is server data and never translated. "Lujo
- * Bedroom" is a worse answer than "Luxury Bedroom" — half a name in each language reads
- * like a bug, where one consistent language reads like a default the owner can replace.
- * Renaming is the feature that makes that acceptable.
- *
- * @param {string} [style] @returns {string}
+ * ONE definition matters within this file too: the card, the dialog heading and both alt
+ * texts all call `entryName`. They disagreed for a while — the card printed the room type
+ * and the aria-label printed something else — and a card whose accessible name is not its
+ * visible name is the kind of thing only a screen reader notices.
  */
-export function styleLabel(style) {
-  const slug = String(style ?? '').trim();
-  if (!slug) return '';
-  return slug.charAt(0).toUpperCase() + slug.slice(1);
-}
+export { styleLabel };
 
 /**
  * What to call this render when its owner has not named it.
- *
- * `<Style> <Room type>` — "Luxury Bedroom" — because those are the two things the owner
- * chose, and together they are the shortest phrase that distinguishes two renders of the
- * same room. Degrades a term at a time: no style leaves the room type alone, neither
- * leaves the generic heading.
- *
- * Derived on read rather than stored at insert, so it is not frozen: restyling the
- * default later re-labels every unnamed render instead of only the new ones.
- *
  * @param {any} entry @returns {string}
  */
 export function defaultName(entry) {
-  const style = styleLabel(entry?.furnitureStyle);
-  const room = String(entry?.roomType ?? '').trim();
-  if (style && room) return `${style} ${room}`;
-  return room || untitled();
+  return baseDefaultName(entry, untitled());
 }
 
 /**
  * What this render is called: the owner's own name, or the derived default.
- *
- * ONE definition, used by the card, the dialog heading and both alt texts. They disagreed
- * for a while — the card printed the room type and the aria-label printed something else
- * — and a card whose accessible name is not its visible name is the kind of thing only a
- * screen reader notices.
- *
  * @param {any} entry @returns {string}
  */
 export function entryName(entry) {
-  const own = String(entry?.name ?? '').trim();
-  return own || defaultName(entry);
+  return baseEntryName(entry, untitled());
 }
 
 /** A photo's alt text. Built from the same name the card shows. */

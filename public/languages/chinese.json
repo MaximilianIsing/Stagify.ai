@@ -105,7 +105,6 @@
         "two": "88 Harborview Drive",
         "three": "1207 Ashford Court"
       },
-      "eyebrow": "您的图库",
       "panelTitle": "想重新布置多少次都可以，不会覆盖任何内容。",
       "panelBody": "没有保存按钮，也不需要命名文件夹。布置好一个房间，在您关闭标签页之前，它就已经按最新在前的顺序进入了您的图库。之后打开它，您会看到前后对比滑块，以及生成它的确切设置：房间类型、风格、您的额外提示词、是否移除了原有家具，以及您上传的任何家具照片。",
       "points": {
@@ -1259,6 +1258,7 @@
       "free": "免费",
       "included": "包含",
       "notIncluded": "不包含",
+      "unlimitedValue": "无限",
       "rows": {
         "customizable": "可自定义布置",
         "fastModel": "快速图像模型",
@@ -1357,6 +1357,24 @@
       "saved": "名称已保存。",
       "cleared": "已恢复默认名称。",
       "failed": "无法保存该名称，请重试。"
+    },
+    "search": {
+      "label": "搜索您的图库",
+      "placeholder": "按名称、房间、风格或提示词搜索",
+      "clear": "清除搜索",
+      "results": {
+        "one": "{count} 个结果",
+        "other": "{count} 个结果"
+      },
+      "showing": {
+        "one": "显示 {count} 个结果中的 {loaded} 个",
+        "other": "显示 {count} 个结果中的 {loaded} 个"
+      },
+      "none": {
+        "title": "没有匹配的房间",
+        "body": "您的图库中没有与“{q}”匹配的内容。",
+        "cta": "清除搜索"
+      }
     }
   }
 }

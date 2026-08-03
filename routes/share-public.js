@@ -25,6 +25,18 @@
 // none of which a buyer may see, and all of which a `...row` would publish the day
 // somebody adds a column. Adding a field here has to be a deliberate line of code.
 //
+// FOUR OF THOSE LINES DESCRIBE THE PHOTO: `name`, `roomType`, `furnitureStyle` and
+// `stagedAt`. They are here so the page can head itself with the SAME label the owner sees
+// in their own gallery and print what was made, when — a share page that says only "Staged
+// room" makes the recipient ask the questions the page exists to answer.
+//
+// `name` is the owner's own label, and publishing it is a deliberate reversal: it used to
+// be gallery-only, on the reasoning that somebody might file a render under "Wilson
+// viewing, redo the lighting". Whoever opens the link already has the link, the OG tags
+// stay generic so no unfurl crawler sees any of it, and a name the owner typed onto a photo
+// they are sending to a client is a caption more often than a note. The prompt behind the
+// render — the other free-text field on the row — stays out.
+//
 // NO BYTES PASS THROUGH THIS PROCESS
 // The parked version served blobs from disk. Here the manifest carries short-TTL
 // PRESIGNED URLs and the browser fetches R2 directly — which is the entire reason the
@@ -125,6 +137,15 @@ export function buildManifest({ render, blobs, share, presign }) {
   return {
     headline: text(settings.headline, 120),
     note: text(settings.note, 600),
+    // What the photo is, in the owner's own words and the studio's. The page heads itself
+    // with `name` when there is one and derives "<Style> <Room type>" when there is not —
+    // the same rule, from the same module, as the owner's gallery.
+    name: text(render.custom_name, MAX_LABEL),
+    roomType: text(render.room_type, MAX_LABEL),
+    furnitureStyle: text(render.furniture_style, MAX_LABEL),
+    // Milliseconds, formatted in the reader's own locale by the page. A date formatted
+    // here would be formatted in the SERVER's, which is nobody's.
+    stagedAt: Number.isFinite(render.created_at) ? render.created_at : null,
     agent: {
       name: text(settings.agentName, 120),
       email: text(settings.agentEmail, 120),

@@ -2196,6 +2196,12 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
+  /* Two stacked quote cards run about two screens tall on a phone. Cards are in
+     document order, so this keeps Justin S. and drops Andy E.; display:none (not
+     visibility/opacity) also drops the hidden card out of the a11y tree. */
+  .tw-card:nth-child(n + 2) {
+    display: none;
+  }
   .tw-card:hover {
     transform: none;
   }
@@ -2408,15 +2414,10 @@
   align-items: start;
   margin-top: 28px;
 }
-.hgal-copy__eyebrow {
-  display: inline-block;
-  margin-bottom: 9px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 1.3px;
-  text-transform: uppercase;
-  color: var(--brand);
-}
+/* No eyebrow above this heading. Every other section on the page has one, but
+   this one's would have read "YOUR GALLERY" barely a card-grid away from the
+   mock bar that already says "Your gallery" — the same two words twice, in one
+   sightline. The mock's copy wins because it is imitating real UI. */
 .hgal-copy__title {
   margin: 0 0 11px;
   font-size: clamp(19px, 2.1vw, 25px);
