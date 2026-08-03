@@ -74,7 +74,6 @@ const UNTESTED = [
   'gallery-gate.js',
   'getpro.js',
   'gtag.js',
-  'guides.js',
   'home-reveal.js',
   'home-text-animate.js',
   'hover-glow.js',
