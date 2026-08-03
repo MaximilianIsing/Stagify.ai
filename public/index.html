@@ -128,20 +128,17 @@
     <script type="module" src="scripts/nav-pill.js"></script>
     <script type="module" src="scripts/auth.js"></script>
     <script type="module" src="scripts/profile-menu.js"></script>
-    <script type="module" src="scripts/plus-cta-auth.js"></script>
     <script type="module" src="scripts/heic-convert.js"></script>
     <script type="module" src="scripts/app.js"></script>
-    <script type="module" src="scripts/index-inline.js"></script>
-    <script type="module" src="scripts/star-border.js"></script>
-    <script type="module" src="scripts/sponsors-scroll.js"></script>
-    <script type="module" src="scripts/home-reveal.js"></script>
-    <script type="module" src="scripts/home-text-animate.js"></script>
-    <script type="module" src="scripts/staging-studio.js"></script>
     <script type="module" src="scripts/count-up.js"></script>
-    <script src="scripts/demo-data.js" defer></script>
-    <script src="scripts/demo-player.js" defer></script>
-    <script type="module" src="scripts/designer-demo.js"></script>
-    <script type="module" src="scripts/hover-glow.js"></script>
+    <!-- Everything with no hero dependency now loads from index-deferred.js, after
+         `load`: demo-data, demo-player, designer-demo, staging-studio, home-reveal,
+         home-text-animate, sponsors-scroll, star-border, plus-cta-auth, index-inline,
+         hover-glow, aurora-scrollbar, card-spotlight. They were ~100 KB of source being
+         parsed on a throttled CPU while the browser was trying to paint the hero.
+         Add new below-fold scripts to that file's list, NOT here — and read its header
+         first: anything loaded after `load` must not register on DOMContentLoaded. -->
+    <script type="module" src="scripts/index-deferred.js"></script>
     
   </head>
   <body class="page-home">
@@ -227,10 +224,10 @@
           <div class="staging-menu" data-staging-menu data-nav-group>
             <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
             <div class="staging-menu__panel" role="menu">
-              <a class="staging-menu__item" href="index.html#stage" role="menuitem" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span></a>
-              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" data-staging-open="basic-mask" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><img class="staging-menu__badge" src="media-webp/logo/Pro64x64.webp" width="18" height="18" data-lang-attr="navigation.plusBadge|alt" alt="Stagify+" loading="lazy" decoding="async"></a>
-              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><img class="staging-menu__badge" src="media-webp/logo/Pro64x64.webp" width="18" height="18" data-lang-attr="navigation.plusBadge|alt" alt="Stagify+" loading="lazy" decoding="async"></a>
-              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><img class="staging-menu__badge" src="media-webp/logo/Pro64x64.webp" width="18" height="18" data-lang-attr="navigation.plusBadge|alt" alt="Stagify+" loading="lazy" decoding="async"></a>
+              <a class="staging-menu__item" href="index.html#stage" role="menuitem" aria-describedby="staging-menu-tip-stage" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-stage" aria-hidden="true" data-lang="navigation.tips.imageStaging">Stages a whole room from one photo: pick a room type and a furniture style and the AI furnishes it. Best for empty or nearly empty rooms when you want a fast, complete result.</span></a>
+              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><img class="staging-menu__badge" src="media-webp/logo/Pro64x64.webp" width="18" height="18" data-lang-attr="navigation.plusBadge|alt" alt="Stagify+" loading="lazy" decoding="async"><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes — swap a sofa, clear a countertop — when the rest of the shot is already right.</span></a>
+              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><img class="staging-menu__badge" src="media-webp/logo/Pro64x64.webp" width="18" height="18" data-lang-attr="navigation.plusBadge|alt" alt="Stagify+" loading="lazy" decoding="async"><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
+              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><img class="staging-menu__badge" src="media-webp/logo/Pro64x64.webp" width="18" height="18" data-lang-attr="navigation.plusBadge|alt" alt="Stagify+" loading="lazy" decoding="async"><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control — everything outside your highlights stays pixel-perfect.</span></a>
             </div>
           </div>
           <a href="gallery.html" class="nav-link desktop-only hidden" data-nav-gallery data-lang="navigation.gallery">Gallery</a>
@@ -315,7 +312,38 @@
           </div>
         </div>
         <div class="hero-media">
+          <!-- Slide 0 is STATIC, and that is load-bearing for LCP. This <img> is the
+               page's LCP element; when the whole carousel was built by JS its paint was
+               chained behind 128 KB of HTML parsing, five render-blocking stylesheets,
+               and carousel.js's own download+execute, all while ~60 module files parsed
+               on a throttled CPU. In the markup it is found by the preload scanner in
+               the first packet and paints as soon as the CSSOM is ready.
+
+               Two rules for anyone editing this:
+               1. The <img> must stay byte-identical to items[0].image in
+                  scripts/carousel.js (same src, same data-lang-attr, fetchpriority=high)
+                  so it also matches the <link rel="preload" as="image"> in <head> and
+                  the preload is reused rather than duplicated. There is a drift test.
+               2. width:100% on the track and item is NOT cosmetic. createCarousel()
+                  later writes `container.offsetWidth - 32` as an inline pixel width, and
+                  the container is border-box with `padding:16px 16px 8px`, so that value
+                  IS the content-box width. 100% resolves to the same used width, which
+                  is what keeps the JS hand-off from shifting layout (CLS).
+
+               carousel.js ADOPTS this subtree — it appends slides 1..6 around it and
+               never re-creates this node. Replacing it, even with an identical src,
+               would restart the LCP candidate at the later time. -->
           <div class="carousel-container">
+            <div class="carousel-track" style="width: 100%;">
+              <div class="carousel-item" style="width: 100%; height: 100%;">
+                <div class="carousel-item-image">
+                  <img src="media-webp/example/Original.webp" data-lang-attr="carouselItems.originalPhotoAlt|alt" alt="Example empty room before virtual staging" style="width: 100%; height: 100%; object-fit: cover;" fetchpriority="high">
+                </div>
+                <div class="carousel-item-overlay">
+                  <div class="carousel-item-title" data-lang="carouselItems.original">Original</div>
+                </div>
+              </div>
+            </div>
             <div class="carousel-note" data-lang="hero.carouselNote">Example preview. Upload your photo to stage</div>
           </div>
           <div class="hero-stats" id="hero-stats">
@@ -1294,8 +1322,8 @@
       © <span id="year"></span> <span data-lang="footer.copyright">Stagify.ai</span>
     </footer>
 
-      <script type="module" src="scripts/aurora-scrollbar.js"></script>
-    <script type="module" src="scripts/card-spotlight.js"></script>
+    <!-- aurora-scrollbar.js and card-spotlight.js used to sit here; both are
+         pointer:fine-only decoration and now load from scripts/index-deferred.js. -->
     <!-- Structured Data. Deliberately at the end of <body> rather than in <head>: these
          four blocks total ~19 KB, and in <head> they sat between the stylesheets and the
          hero markup, delaying the parser reaching the LCP element. Google reads JSON-LD

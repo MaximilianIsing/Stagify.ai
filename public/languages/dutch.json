@@ -21,7 +21,13 @@
     "techHelp": "Technische hulp",
     "gallery": "Galerij",
     "guides": "Handleidingen",
-    "logoAlt": "Stagify.ai-logo — ga naar de startpagina"
+    "logoAlt": "Stagify.ai-logo — ga naar de startpagina",
+    "tips": {
+      "imageStaging": "Richt een hele kamer in vanaf één foto: kies een kamertype en meubelstijl, de AI doet de rest. Ideaal voor lege of bijna lege kamers als het snel en compleet moet.",
+      "basicMask": "Schilder over één deel van de foto en beschrijf de wijziging die je wilt. Ideaal voor kleine correcties – een bank vervangen, een aanrecht leegmaken – als de rest van de foto al klopt.",
+      "pdfTo3d": "Chat met een AI-designer die een kamer inricht, herontwerpt en samen met jou blijft bijschaven. Ideaal als je stijlen verkent in plaats van één foto afmaakt. Alleen op desktop.",
+      "maskingStudio": "Markeer meerdere gebieden in verschillende kleuren, geef elk gebied een eigen meubelfoto of prompt en stage ze allemaal tegelijk. Ideaal als je exacte controle wilt – alles buiten je markeringen blijft pixelperfect."
+    }
   },
   "hero": {
     "catchphrase": "Upload. Style. Verbeeld.",

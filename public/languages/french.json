@@ -21,7 +21,13 @@
     "techHelp": "Aide technique",
     "gallery": "Galerie",
     "guides": "Guides",
-    "logoAlt": "Logo Stagify.ai — aller à l'accueil"
+    "logoAlt": "Logo Stagify.ai — aller à l'accueil",
+    "tips": {
+      "imageStaging": "Meuble une pièce entière à partir d'une seule photo : choisissez le type de pièce et le style de mobilier, l'IA s'occupe du reste. Idéal pour les pièces vides ou presque vides quand vous voulez un résultat rapide et complet.",
+      "basicMask": "Peignez sur une partie de la photo, puis décrivez la modification souhaitée. Idéal pour les petites retouches — changer un canapé, dégager un plan de travail — quand le reste de l'image convient déjà.",
+      "pdfTo3d": "Discutez avec un designer IA qui aménage une pièce, la redessine et la fait évoluer avec vous. Idéal pour explorer des styles plutôt que finaliser une seule photo. Ordinateur uniquement.",
+      "maskingStudio": "Surlignez plusieurs zones dans des couleurs différentes, donnez à chacune sa photo de mobilier ou sa consigne, puis aménagez-les toutes en même temps. Idéal quand il vous faut un contrôle exact : tout ce qui est hors de vos zones reste au pixel près."
+    }
   },
   "hero": {
     "catchphrase": "Importez. Aménagez.",

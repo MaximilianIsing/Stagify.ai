@@ -21,7 +21,13 @@
     "techHelp": "Aiuto tecnico",
     "gallery": "Galleria",
     "guides": "Guide",
-    "logoAlt": "Logo Stagify.ai – vai alla home"
+    "logoAlt": "Logo Stagify.ai – vai alla home",
+    "tips": {
+      "imageStaging": "Arreda un'intera stanza da una sola foto: scegli il tipo di ambiente e lo stile d'arredo, al resto pensa l'IA. Ideale per stanze vuote o quasi vuote quando vuoi un risultato rapido e completo.",
+      "basicMask": "Dipingi su una parte della foto e descrivi la modifica che desideri. Ideale per piccoli ritocchi — cambiare un divano, liberare un piano — quando il resto dell'immagine va già bene.",
+      "pdfTo3d": "Chatta con un designer IA che arreda, ridisegna e continua a rifinire una stanza insieme a te. Ideale quando esplori idee invece di completare una singola foto. Solo da computer.",
+      "maskingStudio": "Evidenzia più aree con colori diversi, assegna a ciascuna la sua foto d'arredo o istruzione e arredale tutte in una volta. Ideale quando serve un controllo esatto: tutto ciò che resta fuori dalle evidenziazioni non cambia di un pixel."
+    }
   },
   "hero": {
     "catchphrase": "Carica. Arreda. Immagina.",
