@@ -25,6 +25,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+// Shared with site-header-parity.test.js so the two markup guards can never disagree
+// about WHICH pages carry the nav — a narrower list in one of them would keep passing
+// while checking fewer files.
+import { navPages } from '../helpers/nav-pages.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
@@ -172,14 +176,7 @@ function extractBlock(html) {
   return null;
 }
 
-/** Every public/*.html that actually carries nav links. */
-function navPages() {
-  return fs
-    .readdirSync(PUBLIC)
-    .filter((f) => f.endsWith('.html'))
-    .map((name) => ({ name, html: fs.readFileSync(path.join(PUBLIC, name), 'utf8').replace(/\r\n/g, '\n') }))
-    .filter((p) => p.html.includes('<header class="site-header">') && p.html.includes('class="nav-link'));
-}
+// navPages() now comes from ../helpers/nav-pages.js (imported above).
 
 test('every nav-bearing page carries the staging menu, byte-identical', () => {
   const pages = navPages();
@@ -374,4 +371,110 @@ test('the Gallery tab is translated everywhere it claims to be', () => {
     const pack = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
     assert.ok(pack.navigation?.gallery?.trim(), `${file} is missing navigation.gallery`);
   }
+});
+
+// ---- The per-row info tips -------------------------------------------------
+//
+// The four rows are four different tools, and the labels alone do not separate them —
+// "Basic Mask" and "Masking Studio" read as the same feature twice. Each row therefore
+// carries an info icon and a hover tip saying what the tool is and when to reach for it.
+//
+// Both are aria-hidden decoration INSIDE the <a>, which is the only placement that does
+// not disturb the widget: the panel is role="menu" and the rows are role="menuitem", so
+// a sibling <button> would need a non-menuitem wrapper, and a focusable control inside a
+// row would add a tab stop to a menu driven by arrow keys. Assistive tech gets the same
+// sentence from aria-describedby instead — hence the pairing asserted below.
+
+test('every Staging row carries an info icon and a tip wired to its own aria-describedby', () => {
+  const [{ html }] = navPages();
+  const rows = extractBlock(html).split('<a class="staging-menu__item').slice(1);
+  assert.equal(rows.length, 4, 'sanity: four rows');
+
+  const ids = [];
+  for (const row of rows) {
+    const label = /data-lang(?:-html)?="(navigation\.[a-zA-Z0-9]+)"/.exec(row)?.[1];
+    assert.ok(label, 'sanity: every row still has a label key');
+
+    assert.equal(
+      (row.match(/class="staging-menu__info"/g) || []).length,
+      1,
+      `${label} must carry exactly one info icon`,
+    );
+
+    // The description and the reference that points at it, matched as a pair. Split into
+    // two lookups on purpose: a tip whose id nobody references is invisible to a screen
+    // reader while looking perfectly fine on screen, which is precisely the regression a
+    // "does the markup contain a tip" check would wave through.
+    const described = /aria-describedby="([^"]+)"/.exec(row)?.[1];
+    const tip = new RegExp(`<span class="staging-menu__tip" id="([^"]+)"([^>]*)>`).exec(row);
+    assert.ok(tip, `${label} must carry a tip`);
+    assert.equal(described, tip[1], `${label}: aria-describedby must name its own tip`);
+    ids.push(tip[1]);
+
+    // Load-bearing, not decoration-for-decoration's-sake: name-from-content SKIPS an
+    // aria-hidden descendant while aria-describedby still reads a directly-referenced
+    // hidden node. Drop the attribute and the link stops being announced as "Basic Mask,
+    // Stagify+" and starts being announced as the whole paragraph.
+    assert.match(tip[2], /\baria-hidden="true"/, `${label}: the tip must stay aria-hidden`);
+    assert.match(
+      row,
+      /<span class="staging-menu__info" aria-hidden="true">/,
+      `${label}: the info icon must stay aria-hidden`,
+    );
+
+    // Localized like every other string in this block. The "keys exist in every pack"
+    // test above sweeps whatever data-lang keys it finds, so naming the namespace here
+    // is what stops a tip from shipping as hard-coded English.
+    assert.match(
+      tip[2],
+      /data-lang="navigation\.tips\.[a-zA-Z0-9]+"/,
+      `${label}: the tip must resolve from navigation.tips.*`,
+    );
+  }
+
+  assert.equal(new Set(ids).size, 4, `each row needs its own tip id, got: ${ids.join(', ')}`);
+});
+
+test('the stylesheet still reveals a tip on icon-hover and on row-focus', () => {
+  // The markup is inert without these two rules, and inert markup fails silently: the
+  // icon renders, the hover does nothing, and no other test notices. Focus is the half
+  // that gets dropped — it is the ONLY way a keyboard reaches the tip, since the icon
+  // is not focusable and arrowing down the menu lands on the row.
+  // Comments stripped BEFORE the match, not just whitespace. The block these
+  // selectors live in explains itself at length and names its own declarations in
+  // prose — scanning the raw file would let every assertion below pass against the
+  // commentary describing a rule that had been deleted.
+  const css = fs
+    .readFileSync(path.join(PUBLIC, 'styles', 'styles.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, '');
+
+  // Matched as a rule that DOES something, not as selector text that exists. The
+  // desktop placement below re-states the tip selector to flip which way it slides
+  // in from, so a bare "does this selector appear anywhere" grep is satisfied by that
+  // copy even with the rule that actually reveals anything deleted.
+  const reveal = [...css.matchAll(/([^{}]*)\{([^{}]*)\}/g)].find(
+    ([, selectors, body]) =>
+      selectors.includes('.staging-menu__info:hover~.staging-menu__tip') &&
+      selectors.includes('.staging-menu__item:focus-visible.staging-menu__tip') &&
+      body.includes('opacity:1'),
+  );
+  assert.ok(
+    reveal,
+    'one rule must reveal the tip from BOTH entry points: hovering the icon (mouse) ' +
+      'and focusing the row (keyboard — the icon is not focusable)',
+  );
+  // opacity alone leaves an invisible box over the page, still swallowing nothing but
+  // still there; visibility is what takes it out of the a11y tree and hit-testing.
+  assert.match(reveal[2], /visibility:visible/, 'the tip must become visible, not just opaque');
+
+  // Scoped to the tip's own declaration block, not searched for loose in the file:
+  // `position:absolute` and `pointer-events:none` are two of the commonest strings in
+  // this stylesheet, and a file-wide match would be satisfied by any other rule.
+  const tipRule = /\.staging-menu__tip\{([^}]*)\}/.exec(css)?.[1];
+  assert.ok(tipRule, 'the tip needs a rule of its own');
+  // Out of flow, or a shown tip shoves the rows below it down the panel.
+  assert.match(tipRule, /position:absolute/, 'the tip must not take part in layout');
+  // It overlays the rows beneath it; without this it would eat their hover and clicks.
+  assert.match(tipRule, /pointer-events:none/, 'the tip must not intercept the pointer');
 });

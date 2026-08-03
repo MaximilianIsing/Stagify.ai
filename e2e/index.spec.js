@@ -73,6 +73,43 @@ test.describe('Home page — load smoke', () => {
     expect(consoleErrors.filter((t) => !/Failed to load resource/i.test(t))).toEqual([]);
   });
 
+  test('the hero carousel adopts the static LCP slide instead of re-creating it', async ({ page }) => {
+    // The homepage's LCP element is the `<img>` in `.carousel-container`, and it ships
+    // in index.html so it can paint without waiting for the module graph. carousel.js
+    // must therefore APPEND the other six slides around it — replacing the node, even
+    // with an identical src, restarts the browser's LCP candidate at the later time and
+    // silently undoes the optimisation while looking perfect.
+    //
+    // This lives in e2e and not in a unit test on purpose: the failure mode is an
+    // unreachable code path, and a source scan cannot see reachability. Stubbing the
+    // adopt branch to `null` leaves every greppable string intact in dead code — that
+    // mutant survived a source-scanning test. In a real browser it cannot: an
+    // unreachable branch never sets the attribute.
+    await page.goto('/index.html');
+
+    const container = page.locator('.carousel-container');
+    await expect(
+      container,
+      'carousel.js did not take the adopt path — the static slide 0 was overwritten'
+    ).toHaveAttribute('data-carousel-adopted', '');
+
+    // The adopted slide plus the six appended ones.
+    await expect(container.locator('.carousel-item')).toHaveCount(7);
+
+    // Slide 0 is still the preloaded LCP image, and still first.
+    await expect(container.locator('.carousel-item').first().locator('img')).toHaveAttribute(
+      'src',
+      'media-webp/example/Original.webp'
+    );
+
+    // Slides 1..6 ship with `data-src` so their 592 KB stays out of the LCP window, and
+    // are hydrated after `load`. page.goto() resolves on `load`, so by now hydration has
+    // run — assert it COMPLETED. The failure this catches is the deferral silently
+    // stranding them: a carousel that rotates onto permanently blank slides.
+    await expect(container.locator('.carousel-item img[src]')).toHaveCount(7);
+    await expect(container.locator('.carousel-item img[data-src]')).toHaveCount(0);
+  });
+
   test('the deferred Google Ads tag still initializes', async ({ page }) => {
     // scripts/gtag.js is `defer` so it stops blocking the parser ahead of every
     // stylesheet. The risk of that change is silent: the tag would simply stop

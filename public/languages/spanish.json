@@ -21,7 +21,13 @@
     "techHelp": "Ayuda Técnica",
     "gallery": "Galería",
     "guides": "Guías",
-    "logoAlt": "Logo de Stagify.ai — ir al inicio"
+    "logoAlt": "Logo de Stagify.ai — ir al inicio",
+    "tips": {
+      "imageStaging": "Amuebla una habitación entera a partir de una sola foto: elige el tipo de estancia y el estilo de mobiliario y la IA la decora. Ideal para habitaciones vacías o casi vacías cuando quieres un resultado rápido y completo.",
+      "basicMask": "Pinta sobre una parte de la foto y describe el cambio que quieres. Ideal para retoques pequeños —cambiar un sofá, despejar una encimera— cuando el resto de la imagen ya está bien.",
+      "pdfTo3d": "Chatea con un diseñador de IA que amuebla, rediseña y sigue iterando contigo sobre una estancia. Ideal cuando exploras estilos en lugar de rematar una sola foto. Solo en ordenador.",
+      "maskingStudio": "Marca varias zonas en colores distintos, da a cada una su propia foto de mobiliario o instrucción y decóralas todas a la vez. Ideal cuando necesitas control exacto: todo lo que quede fuera de tus marcas se mantiene idéntico."
+    }
   },
   "hero": {
     "catchphrase": "Sube. Diseña. Imagina.",

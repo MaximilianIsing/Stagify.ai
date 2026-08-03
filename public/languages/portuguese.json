@@ -21,7 +21,13 @@
     "techHelp": "Ajuda técnica",
     "gallery": "Galeria",
     "guides": "Guias",
-    "logoAlt": "Logo da Stagify.ai – ir para a página inicial"
+    "logoAlt": "Logo da Stagify.ai – ir para a página inicial",
+    "tips": {
+      "imageStaging": "Mobilia um cômodo inteiro a partir de uma única foto: escolha o tipo de ambiente e o estilo do mobiliário e a IA cuida do resto. Ideal para ambientes vazios ou quase vazios quando você quer um resultado rápido e completo.",
+      "basicMask": "Pinte sobre uma parte da foto e descreva a mudança que deseja. Ideal para ajustes pequenos — trocar um sofá, limpar uma bancada — quando o restante da imagem já está bom.",
+      "pdfTo3d": "Converse com um designer de IA que mobilia, redesenha e continua refinando um ambiente com você. Ideal quando você está explorando estilos em vez de finalizar uma única foto. Apenas no computador.",
+      "maskingStudio": "Destaque várias áreas em cores diferentes, dê a cada uma sua própria foto de mobiliário ou instrução e mobilie todas de uma vez. Ideal quando você precisa de controle exato: tudo o que ficar fora dos seus destaques continua idêntico."
+    }
   },
   "hero": {
     "catchphrase": "Carregue. Decore.",

@@ -84,7 +84,15 @@ function cleanupSponsorsScroll() {
   sponsorsInitialized = false;
 }
 
-document.addEventListener('DOMContentLoaded', initSponsorsScroll);
+// Guarded rather than a bare DOMContentLoaded listener: index-deferred.js injects this
+// file after `load`, by which point that event has already fired and a plain listener
+// would never run. The failure would be silent — no error, the marquee simply never
+// starts. Same shape as staging-studio.js and home-reveal.js.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSponsorsScroll);
+} else {
+  initSponsorsScroll();
+}
 window.addEventListener('beforeunload', cleanupSponsorsScroll);
 
 // Loaded as <script type="module">; this empty export marks the file as an ES

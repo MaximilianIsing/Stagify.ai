@@ -12,7 +12,7 @@
     var el = document.getElementById('ai-designer-demo');
     if (el) el.scrollIntoView({ block: 'start' });
   }
-  window.addEventListener('load', function () {
+  function afterLoad() {
     scrollToDemo();
     // Re-assert once after late content (images/fonts) settles, but bail
     // if the visitor has already started scrolling themselves.
@@ -26,7 +26,12 @@
       if (!cancelled) scrollToDemo();
       evs.forEach(function (ev) { window.removeEventListener(ev, cancel); });
     }, 350);
-  });
+  }
+  // Guarded rather than a bare `load` listener: index-deferred.js injects this file
+  // after `load`, so the event has already fired and the deep link would silently stop
+  // working — the visitor would land on the homepage top instead of the demo row.
+  if (document.readyState === 'complete') afterLoad();
+  else window.addEventListener('load', afterLoad, { once: true });
 })();
 
 // 2) Spotlight glass: point a soft light at the cursor for each testimonial

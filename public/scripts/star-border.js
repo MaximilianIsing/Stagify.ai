@@ -51,12 +51,22 @@ class StarBorder {
   }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+function mountStarBorders() {
   const pills = document.querySelectorAll('.stat-pill');
   pills.forEach((pill) => {
     new StarBorder(pill, { color: '#70a7ff', speed: '6s', thickness: 5 });
   });
-});
+}
+
+// Guarded rather than a bare DOMContentLoaded listener: index-deferred.js injects this
+// file after `load`, when that event has already fired. Without the guard the glow ring
+// would simply never mount — silently, since index.css carries fallback styling for
+// exactly this case and the pills still look fine.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', mountStarBorders);
+} else {
+  mountStarBorders();
+}
 
 // Loaded as <script type="module">; this empty export marks the file as an ES
 // module so it is covered by `eslint .` (see the auto-discovery in eslint.config.js).

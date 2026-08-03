@@ -3470,9 +3470,111 @@ html {
   width:18px;
   height:18px
 }
+/* Per-row "what is this, and when would I use it" hint.
+   The four rows are four different tools and the labels alone do not separate
+   them — "Basic Mask" and "Masking Studio" in particular read as the same
+   feature twice. The icon is the affordance; the tip is the answer.
+
+   Both live INSIDE the <a>, which is what keeps this out of the ARIA menu
+   structure: the panel is role="menu" and the rows are role="menuitem", so a
+   sibling <button> would need a wrapper that is not a menuitem, and a focusable
+   control inside a menu row would add a tab stop to a widget driven by arrow
+   keys. As aria-hidden decoration they are invisible to that tree, and the row
+   carries the same text for assistive tech via aria-describedby — which DOES
+   read a directly-referenced hidden node, while name-from-content skips it, so
+   the link is still announced as "Basic Mask, Stagify+" and not as a paragraph. */
+.staging-menu__info {
+  flex:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--slate);
+  opacity:.55;
+  transition:opacity .15s ease,color .15s ease
+}
+.staging-menu__info:hover {
+  opacity:1;
+  color:var(--brand)
+}
+/* No hover, no tip — so do not draw an affordance that says "hover me". Keyed on
+   the input device rather than a width, because that is the actual condition;
+   it also buys back ~26px per row on the phone panel, which is capped at the
+   width of the clipping box (see the mobile block above). Keyboard users still
+   get the tip from the row's own focus, and screen readers from the
+   aria-describedby, neither of which is tied to this icon. */
+@media (hover:none) {
+  .staging-menu__info {
+    display:none
+  }
+}
+/* The base placement is the one a phone can survive: under the row, no wider than
+   the row. Below 768px the panel is positioned in .nav-center, which is
+   overflow-x:clip, so anything hung off its side would be cut — and max-width:100%
+   resolves against the row, which is exactly the panel's inner width, so the tip
+   cannot be the thing that overflows.
+   Out of flow and pointer-events:none: it overlays what is beneath rather than
+   pushing the rows down, and it cannot steal the hover that is showing it. */
+.staging-menu__tip {
+  position:absolute;
+  top:calc(100% - 2px);
+  left:0;
+  z-index:2;
+  width:max-content;
+  max-width:100%;
+  padding:9px 11px;
+  border-radius:9px;
+  background:var(--brand-deep);
+  color:var(--bg-elevated);
+  font-size:12px;
+  font-weight:500;
+  line-height:1.45;
+  letter-spacing:.1px;
+  /* The row is white-space:nowrap so the labels never break; the tip is prose. */
+  white-space:normal;
+  text-align:left;
+  box-shadow:0 10px 26px rgba(15,23,42,.26);
+  opacity:0;
+  visibility:hidden;
+  /* The direction it slides in from is the one thing the desktop placement below
+     changes about the animation. Carried as a variable so the reveal stays ONE
+     rule: duplicating the selector list into the media query would mean a copy
+     that still matched after the real rule was deleted. */
+  --tip-slide:translateY(-4px);
+  transform:var(--tip-slide);
+  transition:opacity .16s ease,transform .16s ease,visibility .16s;
+  pointer-events:none
+}
+/* Desktop puts it beside the row instead, because under the row it covered the
+   rows below it — in a four-row menu a three-line tip hides the rest of the menu
+   you are still choosing from.
+   RIGHT, not left, and that is measured rather than guessed: .nav-center is
+   justify-content:flex-end with a fixed margin-right, so the gap between the panel
+   and the right edge of the viewport is a CONSTANT (~600px in English) — it is set
+   by the links after "Staging", not by the window width. The gap on the left is
+   what the viewport size lands on, and it drops under 200px on a 1024px screen.
+   So the left is the side that runs out of room on a narrow desktop; the right
+   cannot, at any width this branch applies to. */
+@media (min-width:769px) {
+  .staging-menu__tip {
+    top:-4px;
+    left:calc(100% + 12px);
+    max-width:270px;
+    --tip-slide:translateX(-4px)
+  }
+}
+/* Two ways in, and the second is not optional: the icon cannot be hovered by a
+   keyboard, and arrowing down the menu is how the rows are meant to be walked. */
+.staging-menu__info:hover ~ .staging-menu__tip,
+.staging-menu__item:focus-visible .staging-menu__tip {
+  opacity:1;
+  visibility:visible;
+  transform:none
+}
 @media (prefers-reduced-motion:reduce) {
   .staging-menu__panel,
-  .staging-menu__chevron {
+  .staging-menu__chevron,
+  .staging-menu__info,
+  .staging-menu__tip {
     transition:none
   }
 }
