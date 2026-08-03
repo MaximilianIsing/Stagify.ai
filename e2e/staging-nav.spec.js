@@ -271,11 +271,41 @@ test.describe('Staging dropdown — phone', () => {
     await seedProSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
-    await openMenu(page); // opening focuses the first row
+
+    // Opened FROM THE KEYBOARD, which is the only way the menu now moves focus into
+    // the panel on open — a tap must not, because focus() asks a phone to scroll a
+    // sticky-header element into view. Enter on a focused button reports detail 0,
+    // which is what staging-menu.js keys off.
+    await page.locator(TRIGGER).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator(MENU)).toHaveAttribute('data-open', '');
+    await expect(page.locator(ITEM).first()).toBeFocused();
 
     await page.keyboard.press('ArrowDown'); // Image Staging -> Basic Mask
     await page.keyboard.press('ArrowDown'); // -> Masking Studio, NOT the hidden row
     await expect(page.locator(`${ITEM}[href="masking-studio.html"]`)).toBeFocused();
+  });
+
+  test('a TAP does not pull focus into the panel', async ({ page }) => {
+    // The other half of the gate above, and the reason it exists. On a phone,
+    // focus() on a row inside the position:sticky header asks the browser to scroll
+    // it into view, and it arms `.staging-menu__item:focus-visible .staging-menu__tip`
+    // — a dark tooltip painted over the rows below its own. A tap wants neither.
+    //
+    // page.tap() is a real touch on this project (Pixel 5, hasTouch), so this is the
+    // gesture the fix is about rather than a mouse click standing in for one.
+    await seedProSession(page);
+    await page.goto('/index.html');
+    await waitForHomeReady(page);
+
+    await page.tap(TRIGGER);
+    await expect(page.locator(MENU)).toHaveAttribute('data-open', '');
+    await expect(page.locator(ITEM).first()).not.toBeFocused();
+
+    // Still fully operable by keyboard afterwards: with focus outside the rows,
+    // ArrowDown enters at the top rather than doing nothing.
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator(ITEM).first()).toBeFocused();
   });
 
   test('the open panel is anchored to the clipping box, so it can never be cut off', async ({ page }) => {
