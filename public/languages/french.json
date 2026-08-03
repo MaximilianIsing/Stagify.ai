@@ -1246,5 +1246,81 @@
       "questions": "Des questions avant d’acheter ?",
       "footnote": "Équipes, facturation ou conditions sur mesure : <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
     }
+  },
+  "gallery": {
+    "pageTitle": "Votre galerie — Stagify",
+    "title": "Votre galerie",
+    "lede": "Chaque pièce que vous avez aménagée, avec les réglages qui l’ont produite et les liens que vous avez partagés.",
+    "detailTitle": "Pièce aménagée",
+    "untitledLower": "pièce aménagée",
+    "linkOn": "lien actif",
+    "more": "Charger plus",
+    "moreLoading": "Chargement…",
+    "cardAlt": "{room}, aménagée",
+    "cardOpen": "Ouvrir {room} du {when}",
+    "count": {
+      "one": "{count} pièce aménagée",
+      "other": "{count} pièces aménagées"
+    },
+    "showing": {
+      "one": "{loaded} pièce aménagée sur {count} affichée",
+      "other": "{loaded} pièces aménagées sur {count} affichées"
+    },
+    "compare": {
+      "beforeAlt": "La pièce avant l’aménagement",
+      "rangeLabel": "Révéler la pièce aménagée"
+    },
+    "meta": {
+      "room": "Pièce",
+      "style": "Style",
+      "prompt": "Consigne supplémentaire",
+      "removed": "Meubles retirés",
+      "staged": "Aménagée",
+      "references": "Photos de meubles",
+      "yes": "Oui",
+      "referenceCount": "{count} jointes"
+    },
+    "signedOut": {
+      "title": "Vous êtes déconnecté",
+      "body": "Connectez-vous pour voir les pièces que vous avez aménagées.",
+      "cta": "Aller sur Stagify"
+    },
+    "off": {
+      "title": "Les rendus enregistrés sont désactivés",
+      "body": "Cette installation ne peut pas encore conserver les rendus, il n’y a donc rien à afficher ici. L’aménagement fonctionne toujours : les images ne sont simplement pas conservées."
+    },
+    "empty": {
+      "title": "Rien d’aménagé pour l’instant",
+      "body": "Vos pièces apparaîtront ici dès que vous en aurez aménagé une, avec les réglages qui les ont produites.",
+      "cta": "Aménager une pièce"
+    },
+    "error": {
+      "title": "Impossible de charger votre galerie",
+      "generic": "Vos rendus sont intacts : c’est la liste qui ne se charge pas, pas les images.",
+      "offline": "Impossible de joindre Stagify. Vérifiez votre connexion et réessayez.",
+      "rateLimited": "Trop de requêtes pour le moment. Patientez un instant et réessayez.",
+      "retry": "Réessayer"
+    },
+    "delete": "Supprimer ce rendu",
+    "share": {
+      "title": "Partager avec un client",
+      "note": "Désactiver un lien arrête les nouvelles visites sous 15 minutes. Pour retirer les images immédiatement, supprimez plutôt le rendu.",
+      "urlLabel": "Lien de partage",
+      "create": "Créer un lien",
+      "createNew": "Créer un nouveau lien",
+      "revoke": "Désactiver le lien",
+      "none": "Pas encore de lien.",
+      "onNotOpened": "Lien actif · pas encore ouvert",
+      "onOpened": {
+        "one": "Lien actif · ouvert {count} fois",
+        "other": "Lien actif · ouvert {count} fois"
+      },
+      "creating": "Création…",
+      "created": "Lien créé. Copiez-le maintenant : il n’est affiché qu’une seule fois.",
+      "createFailed": "Impossible de créer le lien. Réessayez.",
+      "revoked": "Lien désactivé. Les visites s’arrêtent sous 15 minutes.",
+      "revokeFailed": "Impossible de désactiver le lien. Réessayez.",
+      "deleteFailed": "Impossible de supprimer ce rendu."
+    }
   }
 }

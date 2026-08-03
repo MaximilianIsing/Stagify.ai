@@ -73,16 +73,25 @@ test('the manifest request sends no credentials', async () => {
 
 // ---- nothing is ever written as HTML ------------------------------------------------
 
-test('no module in public/scripts/share assigns innerHTML', () => {
+test('no module in public/scripts/share or public/scripts/gallery assigns innerHTML', () => {
   // The whole reason dom.js exists. Every string this page renders is typed by an account
   // holder and read by a stranger who is not signed in; textContent makes the injection
   // class unreachable rather than escaped.
-  const dir = path.join(ROOT, 'public', 'scripts', 'share');
-  for (const file of fs.readdirSync(dir)) {
-    const src = fs.readFileSync(path.join(dir, file), 'utf8');
-    assert.ok(!/\.innerHTML\s*=/.test(src), `${file} assigns innerHTML`);
-    assert.ok(!/\.outerHTML\s*=/.test(src), `${file} assigns outerHTML`);
-    assert.ok(!/insertAdjacentHTML/.test(src), `${file} uses insertAdjacentHTML`);
+  //
+  // The gallery is swept too, and not because it is a second public surface — it is the
+  // owner's own page. It renders the SAME account-typed strings (room type, the extra
+  // prompt) through the SAME dom.js, and the two halves have to agree: a value that goes
+  // in as text on the share page and as HTML here is still one stored payload away from
+  // mattering. The sweep covered only `share/` while gallery/view.js's no-innerHTML
+  // property rested entirely on nobody deciding otherwise.
+  for (const folder of ['share', 'gallery']) {
+    const dir = path.join(ROOT, 'public', 'scripts', folder);
+    for (const file of fs.readdirSync(dir)) {
+      const src = fs.readFileSync(path.join(dir, file), 'utf8');
+      assert.ok(!/\.innerHTML\s*=/.test(src), `${folder}/${file} assigns innerHTML`);
+      assert.ok(!/\.outerHTML\s*=/.test(src), `${folder}/${file} assigns outerHTML`);
+      assert.ok(!/insertAdjacentHTML/.test(src), `${folder}/${file} uses insertAdjacentHTML`);
+    }
   }
 });
 

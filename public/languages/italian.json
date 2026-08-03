@@ -1246,5 +1246,81 @@
       "questions": "Domande prima di acquistare?",
       "footnote": "Team, fatturazione o condizioni su misura: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
     }
+  },
+  "gallery": {
+    "pageTitle": "La tua galleria — Stagify",
+    "title": "La tua galleria",
+    "lede": "Ogni stanza che hai arredato, con le impostazioni che l’hanno generata e i link che hai condiviso.",
+    "detailTitle": "Stanza arredata",
+    "untitledLower": "stanza arredata",
+    "linkOn": "link attivo",
+    "more": "Carica altro",
+    "moreLoading": "Caricamento…",
+    "cardAlt": "{room}, arredata",
+    "cardOpen": "Apri {room} del {when}",
+    "count": {
+      "one": "{count} stanza arredata",
+      "other": "{count} stanze arredate"
+    },
+    "showing": {
+      "one": "Mostrate {loaded} di {count} stanza arredata",
+      "other": "Mostrate {loaded} di {count} stanze arredate"
+    },
+    "compare": {
+      "beforeAlt": "La stanza prima dell’arredamento",
+      "rangeLabel": "Mostra la stanza arredata"
+    },
+    "meta": {
+      "room": "Stanza",
+      "style": "Stile",
+      "prompt": "Indicazione aggiuntiva",
+      "removed": "Mobili rimossi",
+      "staged": "Arredata",
+      "references": "Foto di mobili",
+      "yes": "Sì",
+      "referenceCount": "{count} allegate"
+    },
+    "signedOut": {
+      "title": "Hai effettuato la disconnessione",
+      "body": "Accedi per vedere le stanze che hai arredato.",
+      "cta": "Vai a Stagify"
+    },
+    "off": {
+      "title": "I render salvati sono disattivati",
+      "body": "Questa installazione non può ancora conservare i render, quindi qui non c’è nulla da mostrare. L’arredamento funziona comunque: semplicemente le immagini non vengono conservate."
+    },
+    "empty": {
+      "title": "Non hai ancora arredato nulla",
+      "body": "Le tue stanze compariranno qui non appena ne avrai arredata una, insieme alle impostazioni che le hanno generate.",
+      "cta": "Arreda una stanza"
+    },
+    "error": {
+      "title": "Non siamo riusciti a caricare la tua galleria",
+      "generic": "I tuoi render sono al sicuro: è l’elenco che non si carica, non le immagini.",
+      "offline": "Non siamo riusciti a raggiungere Stagify. Controlla la connessione e riprova.",
+      "rateLimited": "Troppe richieste in questo momento. Attendi un istante e riprova.",
+      "retry": "Riprova"
+    },
+    "delete": "Elimina questo render",
+    "share": {
+      "title": "Condividi con un cliente",
+      "note": "Disattivare un link ferma le nuove visite entro 15 minuti. Per rimuovere subito le immagini, elimina invece il render.",
+      "urlLabel": "Link di condivisione",
+      "create": "Crea link",
+      "createNew": "Crea un nuovo link",
+      "revoke": "Disattiva link",
+      "none": "Ancora nessun link.",
+      "onNotOpened": "Link attivo · non ancora aperto",
+      "onOpened": {
+        "one": "Link attivo · aperto {count} volta",
+        "other": "Link attivo · aperto {count} volte"
+      },
+      "creating": "Creazione…",
+      "created": "Link creato. Copialo ora: viene mostrato una sola volta.",
+      "createFailed": "Non è stato possibile creare il link. Riprova.",
+      "revoked": "Link disattivato. Le visite si fermano entro 15 minuti.",
+      "revokeFailed": "Non è stato possibile disattivare il link. Riprova.",
+      "deleteFailed": "Non è stato possibile eliminare questo render."
+    }
   }
 }

@@ -1,103 +1,463 @@
 /*
  * The owner's gallery grid and detail panel.
  *
- * Unlike share.css this page DOES load styles.css first, so the site's tokens are in
- * scope and this file only adds what the grid needs. That is why it uses var(--…) names
- * it does not declare — they come from the shared sheet. An undefined var() DROPS the
- * declaration rather than falling back, so anything new here must exist there.
+ * gallery.html loads styles.css first, so the site palette is in scope and this sheet
+ * only adds what the grid needs.
+ *
+ * NOTE, because this file got it wrong for a while: `var(--x, fallback)` does NOT drop
+ * the declaration when --x is undefined — the fallback quietly wins. This sheet used to
+ * paint `var(--surface, #14171d)` and `var(--text, #e9ecf1)`, neither token existing
+ * anywhere, which is how a dark share-page panel came to float over a light blue site
+ * without anything complaining. Prefer a BARE var(): test/frontend/css-tokens.test.js
+ * fails loudly on one that cannot resolve, and failing loudly is the whole point.
  */
 
-.gal-main { max-width: 1180px; margin: 0 auto; padding: 88px 20px 64px; }
-.gal-title { margin: 0 0 6px; }
-.gal-count { color: var(--muted); margin: 0 0 20px; }
+/* ---- shell ------------------------------------------------------------------------ */
+
+/* <main> is the scroll container (styles.css: `body,main{overflow-y:auto}`) and
+   aurora-scrollbar.js anchors to its right edge, so the width limit belongs on an inner
+   wrapper rather than on main itself — the same shape as .sp-page__inner/.status-inner. */
+.gal-main { width: 100%; }
+/* 32px, not the 88px this page used to carry: .site-header is `position:sticky` and a
+   sibling of <main> (body is a flex column), so it already occupies flow and main
+   starts below it. The extra 56px was a band of empty page. status.css:19 uses 32. */
+/* `width:100%` is load-bearing, not belt-and-braces: styles.css:676 makes <main> a
+   column flexbox, and an auto cross-axis margin on a flex item cancels the default
+   `stretch`. Without it .gal-inner shrink-wraps to its widest child, so the heading sat
+   at a different x in every state — centred under an empty panel, left-aligned over a
+   full grid. */
+.gal-inner { width: 100%; max-width: 1180px; margin: 0 auto; padding: 32px 24px 88px; }
+
+.gal-title {
+  margin: 0 0 4px;
+  font-size: clamp(30px, 5vw, 42px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand) 55%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* #46557d is home.css's section-sub ink. It has no token, so the literal is correct
+   here — test/frontend/css-tokens.test.js only rejects hexes that DO have one. */
+.gal-lede { margin: 0 0 26px; max-width: 640px; font-size: clamp(14.5px, 1.4vw, 16.5px); line-height: 1.55; color: #46557d; }
+.gal-count { margin: 0 0 18px; font-size: 13px; font-weight: 600; color: var(--slate); }
+
+/* The site's default buttons shout in uppercase. Inside the gallery they are tool
+   controls sitting next to photographs, so sentence case — exactly what the masking
+   studio does to the same classes. */
+.gal-inner .btn,
+.gal-detail .btn {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 11px 18px;
+  border-radius: 10px;
+}
+
+/* ---- states ----------------------------------------------------------------------- */
 
 .gal-state { display: none; }
 body[data-state='loading'] .gal-state--loading { display: flex; justify-content: center; padding: 18vh 0; }
 body[data-state='ready'] .gal-state--ready { display: block; }
 body[data-state='empty'] .gal-state--empty { display: block; }
 body[data-state='off'] .gal-state--off { display: block; }
+body[data-state='error'] .gal-state--error { display: block; }
 body[data-state='signed-out'] .gal-state--signed-out { display: block; }
 
 .gal-spinner {
-  width: 28px; height: 28px;
-  border: 3px solid rgba(127, 127, 127, 0.25);
-  border-top-color: var(--accent, #1f6feb);
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(30, 58, 138, 0.18);
+  border-top-color: var(--brand);
   border-radius: 50%;
   animation: gal-spin 0.8s linear infinite;
 }
 @keyframes gal-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .gal-spinner { animation-duration: 3s; } }
 
-.gal-link { color: var(--accent, #1f6feb); }
+/* One panel for all four non-ready states, so "nothing here yet", "switched off",
+   "signed out" and "that failed" cannot drift apart visually. */
+.gal-panel {
+  max-width: 520px;
+  margin: 6vh auto 0;
+  padding: 36px 32px 34px;
+  text-align: center;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(18px) saturate(175%);
+  backdrop-filter: blur(18px) saturate(175%);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow: 0 16px 44px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.gal-panel__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  color: var(--brand);
+  background: var(--brand-wash);
+  border: 1px solid var(--brand-tint);
+}
+.gal-panel__title {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--brand-deep);
+}
+.gal-panel__body { margin: 0 0 18px; font-size: 14.5px; line-height: 1.55; color: var(--slate-deep); }
+.gal-panel__body:last-child { margin-bottom: 0; }
+.gal-panel .btn { display: inline-block; text-decoration: none; }
+
+/* A failure is not a state of the account, so it does not get the brand-blue chip. */
+.gal-panel--warn .gal-panel__icon {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, white);
+  border-color: color-mix(in srgb, var(--danger) 22%, white);
+}
+
+/* ---- grid ------------------------------------------------------------------------- */
 
 /* auto-fill, not auto-fit: with one entry auto-fit stretches the single card to the full
    width of the page, which looks like a bug rather than a gallery. */
-.gal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.gal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
 
 .gal-card {
-  border: 1px solid rgba(127, 127, 127, 0.28);
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(127, 127, 127, 0.06);
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
+  display: block;
   width: 100%;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 16px;
+  /* A <button> does not inherit the page font, and styles.css only sets font-family on
+     body — without this the card metadata renders in the UA's button face while
+     everything around it is Inter. */
+  font: inherit;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 28px rgba(30, 58, 138, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  transition: transform 0.22s cubic-bezier(0.16, 0.84, 0.44, 1), box-shadow 0.22s ease, border-color 0.22s ease;
 }
-.gal-card__img { display: block; width: 100%; aspect-ratio: var(--gal-ar, 3 / 2); object-fit: cover; }
-.gal-card__body { padding: 10px 12px; }
-.gal-card__room { font-weight: 600; }
-.gal-card__when { color: var(--muted); font-size: 0.85rem; }
-.gal-card__shared { color: var(--accent, #1f6feb); font-size: 0.8rem; }
+.gal-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 18px 40px rgba(30, 58, 138, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+/* The card IS the only way into the detail panel, so it needs a real keyboard ring. */
+.gal-card:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.55); outline-offset: 2px; }
 
-/* ---- detail ---- */
+.gal-card__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--gal-ar, 3 / 2);
+  object-fit: cover;
+  background: rgba(30, 58, 138, 0.06);
+}
+.gal-card__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 12px 14px 14px;
+}
+.gal-card__room {
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--brand-deep);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.gal-card__meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
+.gal-card__when { font-size: 12.5px; color: var(--muted); }
+.gal-card__shared {
+  flex: 0 0 auto;
+  padding: 3px 9px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brand);
+  background: var(--brand-wash);
+  border: 1px solid var(--brand-tint);
+  border-radius: 999px;
+}
+
+.gal-more { display: block; margin: 28px auto 0; }
+.gal-more[hidden] { display: none; }
+
+/* ---- detail ----------------------------------------------------------------------- */
+
 .gal-detail {
-  position: fixed; inset: 0; z-index: 60;
-  background: rgba(0, 0, 0, 0.72);
-  display: flex; align-items: flex-start; justify-content: center;
-  padding: 24px; overflow: auto;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 28px;
+  overflow: auto;
+  background: rgba(15, 23, 42, 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 .gal-detail[hidden] { display: none; }
+
 .gal-detail__panel {
   position: relative;
-  background: var(--surface, #14171d);
-  color: var(--text, #e9ecf1);
-  border-radius: 14px;
-  padding: 20px;
-  max-width: 820px;
+  /* auto rather than a fixed alignment: centres a short panel, still scrolls a tall one. */
+  margin: auto;
   width: 100%;
+  max-width: 860px;
+  padding: 24px 24px 22px;
+  border-radius: 20px;
+  background: var(--bg-elevated);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
 }
 .gal-detail__close {
-  position: absolute; top: 8px; right: 8px;
-  width: 44px; height: 44px; font-size: 26px; line-height: 1;
-  background: none; border: 0; color: inherit; cursor: pointer;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  font: inherit;
+  font-size: 24px;
+  line-height: 1;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: var(--slate);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
 }
-.gal-detail__title { margin: 0 0 14px; padding-right: 44px; }
+.gal-detail__close:hover { background: var(--brand-wash); color: var(--brand-deep); }
+.gal-detail__close:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.5); outline-offset: 2px; }
 
-.gal-compare { position: relative; border-radius: 10px; overflow: hidden; }
+.gal-detail__title {
+  margin: 0 0 16px;
+  padding-right: 52px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--brand-deep);
+}
+
+/* ---- before / after --------------------------------------------------------------- */
+
+.gal-compare {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 18px 48px rgba(30, 58, 138, 0.24);
+  user-select: none;
+  touch-action: pan-y;
+}
 .gal-compare img { display: block; width: 100%; }
-.gal-compare__after { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; clip-path: inset(0 0 0 var(--gal-split, 50%)); }
-.gal-compare__range { width: 100%; margin-top: 10px; }
+.gal-compare__after {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  clip-path: inset(0 0 0 var(--gal-split, 50%));
+}
 
-.gal-meta { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 16px 0; }
-.gal-meta dt { color: var(--muted); }
-.gal-meta dd { margin: 0; }
+/* The range input is a TRANSPARENT, full-bleed hit layer; the divider and the grip you
+   actually see are pseudo-elements positioned from the same --gal-split the clip-path
+   reads. That is the point: a native thumb is inset by half its own width, so at 0% and
+   100% it sits visibly off the seam it is supposed to be dragging. Driving both from one
+   variable makes them incapable of disagreeing.
+   Keeping the native control rather than a mousedown-driven <div> is also what keeps the
+   comparison operable from the keyboard — and it holds renderCompare's output at exactly
+   [before, after, range], which the specs pin. */
+.gal-compare__range {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: ew-resize;
+}
+.gal-compare__range:focus { outline: none; }
+.gal-compare__range::-webkit-slider-runnable-track { height: 100%; background: transparent; border: 0; }
+.gal-compare__range::-moz-range-track { height: 100%; background: transparent; border: 0; }
+.gal-compare__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 46px;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+}
+.gal-compare__range::-moz-range-thumb {
+  width: 46px;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: ew-resize;
+}
 
-.gal-share { border-top: 1px solid rgba(127, 127, 127, 0.28); padding-top: 14px; }
-.gal-share__title { margin: 0 0 8px; font-size: 1rem; }
-.gal-share__row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.gal-share__url { flex: 1 1 260px; min-height: 40px; padding: 0 10px; }
-.gal-share__btn { min-height: 40px; padding: 0 14px; cursor: pointer; }
-.gal-share__note { color: var(--muted); font-size: 0.82rem; margin: 10px 0 0; }
-.gal-share__status { color: var(--muted); font-size: 0.85rem; margin: 0 0 8px; }
+/* Divider and grip. `:has()` gates both on the range existing: a render whose source
+   failed to encode degrades to the staged image alone, and a seam drawn across a single
+   photo would be claiming a comparison that is not there. */
+.gal-compare:has(.gal-compare__range)::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--gal-split, 50%);
+  z-index: 1;
+  width: 2px;
+  margin-left: -1px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(30, 58, 138, 0.25);
+  pointer-events: none;
+}
+.gal-compare:has(.gal-compare__range)::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: var(--gal-split, 50%);
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94) no-repeat center / 20px 20px
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m9 7-5 5 5 5'/%3e%3cpath d='m15 7 5 5-5 5'/%3e%3c/svg%3e");
+  border: 2px solid var(--brand);
+  box-shadow: 0 8px 22px rgba(30, 58, 138, 0.32);
+  pointer-events: none;
+}
+.gal-compare:has(.gal-compare__range:focus-visible)::before {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.5), 0 8px 22px rgba(30, 58, 138, 0.32);
+}
 
-.gal-detail__delete { margin-top: 18px; min-height: 40px; padding: 0 14px; cursor: pointer; }
+/* ---- what was asked for ----------------------------------------------------------- */
+
+.gal-meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 10px 20px;
+  align-items: baseline;
+  margin: 20px 0 4px;
+}
+.gal-meta dt {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--slate);
+}
+.gal-meta dd { margin: 0; font-size: 14.5px; color: var(--fg); }
+
+/* ---- share ------------------------------------------------------------------------ */
+
+.gal-share { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
+.gal-share__title {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--brand-deep);
+}
+.gal-share__status { margin: 0 0 12px; font-size: 13.5px; color: var(--slate-deep); }
+.gal-share__row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.gal-share__url {
+  flex: 1 1 280px;
+  min-height: 42px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--fg);
+  background: var(--brand-wash);
+  border: 1px solid var(--brand-tint);
+  border-radius: 10px;
+}
+.gal-share__url:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.45); outline-offset: 1px; }
+.gal-share__url[hidden] { display: none; }
+.gal-share__note { margin: 12px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+
+.gal-share__btn[hidden] { display: none; }
+/* This modifier shipped on the revoke button with no rule behind it anywhere. Turning
+   the link off is the reversible, secondary action next to "create" — it should read
+   that way rather than compete. */
+.gal-share__btn--quiet {
+  background: none;
+  color: var(--slate-deep);
+  border-color: var(--border);
+}
+.gal-share__btn--quiet:hover {
+  background: var(--brand-wash);
+  color: var(--brand-deep);
+  border-color: var(--brand-pale);
+}
+
+.gal-detail__delete {
+  margin-top: 22px;
+  background: none;
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 32%, white);
+}
+.gal-detail__delete:hover {
+  background: color-mix(in srgb, var(--danger) 8%, white);
+  border-color: var(--danger);
+}
+
+/* ---- modal scroll lock -------------------------------------------------------------
+   An attribute rather than a class: test/helpers/gallery-dom.js's FakeEl implements
+   setAttribute but has no classList, so this is the form the behaviour can be tested in.
+   <main> needs its own rule because it, not <body>, is the site's scroll container. */
+body[data-gal-modal] { overflow: hidden; }
+body[data-gal-modal] .gal-main { overflow: hidden; }
+
+/* The language pill is absolutely positioned in <main> and would sit dimmed under the
+   overlay, still reading as a control. styles.css:1903 already hides it for .modal and
+   the stage mask editor; this is the same rule for this dialog, off the attribute the
+   panel already sets rather than a second :has() selector. */
+body[data-gal-modal] .language-picker-container { display: none; }
+
+/* ---- motion ----------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .gal-spinner { animation-duration: 3s; }
+  .gal-card,
+  .gal-detail__close { transition: none; }
+  .gal-card:hover { transform: none; }
+}
 
 /* Kept, not deleted, even though the page is PC-only (scripts/gallery-gate.js turns a
    phone-sized viewport away at 768px). The gate fires on LOAD, so it is still possible
    to be on this page at 640px — narrow a desktop window after arriving — and this is the
-   difference between a cramped layout and a broken one. It is two declarations. */
+   difference between a cramped layout and a broken one. */
 @media (max-width: 640px) {
-  .gal-main { padding-top: 72px; }
+  .gal-inner { padding-top: 72px; }
+  .gal-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
   .gal-detail { padding: 12px; }
+  .gal-detail__panel { padding: 20px 16px 18px; }
 }

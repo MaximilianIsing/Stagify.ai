@@ -1246,5 +1246,81 @@
       "questions": "구매 전 궁금한 점이 있으신가요?",
       "footnote": "팀, 인보이스 또는 맞춤 조건: <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a>"
     }
+  },
+  "gallery": {
+    "pageTitle": "내 갤러리 — Stagify",
+    "title": "내 갤러리",
+    "lede": "지금까지 가구를 배치한 모든 공간을 생성 설정과 공유한 링크와 함께 보여줍니다.",
+    "detailTitle": "가구를 배치한 공간",
+    "untitledLower": "가구를 배치한 공간",
+    "linkOn": "링크 활성",
+    "more": "더 불러오기",
+    "moreLoading": "불러오는 중…",
+    "cardAlt": "{room}, 가구 배치됨",
+    "cardOpen": "{room}({when}) 열기",
+    "count": {
+      "one": "배치한 공간 {count}개",
+      "other": "배치한 공간 {count}개"
+    },
+    "showing": {
+      "one": "{count}개 중 {loaded}개 표시 중",
+      "other": "{count}개 중 {loaded}개 표시 중"
+    },
+    "compare": {
+      "beforeAlt": "가구를 배치하기 전의 공간",
+      "rangeLabel": "가구를 배치한 공간 보기"
+    },
+    "meta": {
+      "room": "공간",
+      "style": "스타일",
+      "prompt": "추가 지시",
+      "removed": "가구 제거함",
+      "staged": "생성일",
+      "references": "가구 사진",
+      "yes": "예",
+      "referenceCount": "{count}장 첨부"
+    },
+    "signedOut": {
+      "title": "로그아웃되었습니다",
+      "body": "로그인하면 가구를 배치한 공간을 볼 수 있습니다.",
+      "cta": "Stagify로 이동"
+    },
+    "off": {
+      "title": "결과 저장이 꺼져 있습니다",
+      "body": "이 환경에서는 아직 결과물을 보관할 수 없어 보여드릴 것이 없습니다. 배치 기능은 정상적으로 작동하며, 이미지가 보관되지 않을 뿐입니다."
+    },
+    "empty": {
+      "title": "아직 배치한 공간이 없습니다",
+      "body": "첫 공간에 가구를 배치하면 생성에 사용한 설정과 함께 여기에 표시됩니다.",
+      "cta": "공간에 가구 배치하기"
+    },
+    "error": {
+      "title": "갤러리를 불러오지 못했습니다",
+      "generic": "생성한 이미지는 안전합니다. 불러오지 못한 것은 목록이지 이미지가 아닙니다.",
+      "offline": "Stagify에 연결하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.",
+      "rateLimited": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+      "retry": "다시 시도"
+    },
+    "delete": "이 이미지 삭제",
+    "share": {
+      "title": "고객에게 공유",
+      "note": "링크를 끄면 새로운 방문이 15분 이내에 중단됩니다. 이미지를 즉시 내리려면 이미지 자체를 삭제하세요.",
+      "urlLabel": "공유 링크",
+      "create": "링크 만들기",
+      "createNew": "새 링크 만들기",
+      "revoke": "링크 끄기",
+      "none": "아직 링크가 없습니다.",
+      "onNotOpened": "링크 활성 · 아직 열람되지 않음",
+      "onOpened": {
+        "one": "링크 활성 · {count}회 열람됨",
+        "other": "링크 활성 · {count}회 열람됨"
+      },
+      "creating": "만드는 중…",
+      "created": "링크를 만들었습니다. 한 번만 표시되니 지금 복사하세요.",
+      "createFailed": "링크를 만들지 못했습니다. 다시 시도해 주세요.",
+      "revoked": "링크를 껐습니다. 방문은 15분 이내에 중단됩니다.",
+      "revokeFailed": "링크를 끄지 못했습니다. 다시 시도해 주세요.",
+      "deleteFailed": "이 이미지를 삭제하지 못했습니다."
+    }
   }
 }
