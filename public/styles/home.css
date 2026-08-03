@@ -2371,7 +2371,11 @@
   gap: 5px;
   padding: 12px 14px 14px;
 }
-.hgal-card__room {
+/* Geometry copied from .gal-card__room, but named for what it holds: the mock
+   titles cards by ADDRESS, which the product does not store yet. nowrap +
+   ellipsis matters more here than it did for a room type — an address is longer
+   and far more variable. */
+.hgal-card__addr {
   max-width: 100%;
   overflow: hidden;
   font-size: 14.5px;
@@ -2382,30 +2386,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.hgal-card__meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-}
 /* The real card's date includes the year (gallery/view.js). The mock drops it so
-   it never goes visibly stale — intentional, do not "fix" it back. */
+   it never goes visibly stale — intentional, do not "fix" it back.
+   No .hgal-card__meta wrapper and no share pill: the date is the only thing left
+   on this row, so a flex row that exists to space two children apart would be
+   dead structure. .hgal-card__body already stacks it. */
 .hgal-card__when {
   font-size: 12.5px;
   color: var(--muted);
-}
-.hgal-card__shared {
-  flex: 0 0 auto;
-  padding: 3px 9px;
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--brand);
-  background: var(--brand-wash);
-  border: 1px solid var(--brand-tint);
-  border-radius: 999px;
 }
 
 /* --- supporting copy beneath the mock ------------------------------------ */
