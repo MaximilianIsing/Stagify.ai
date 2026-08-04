@@ -3478,11 +3478,21 @@ html {
 .staging-menu__label {
   flex:1 1 auto
 }
-/* Lock and Stagify+ mark ship in the markup on every Stagify+ row and are
-   revealed by the single class the plan writer toggles (scripts/staging-menu.js),
-   so the locked look is one class away rather than four DOM edits. */
-.staging-menu__lock,
-.staging-menu__badge {
+/* The lock ships in the markup on every Stagify+ row and is revealed by the single
+   class the plan writer toggles (scripts/staging-menu.js), so the locked look is one
+   class away rather than a DOM edit per row.
+
+   It is the ONLY mark of the locked state, deliberately: the row also carried an
+   18px Stagify+ logo until 2026-08-03, which said the same thing twice on a 14px
+   row. That logo's alt was doing a second job though — these rows carry no
+   aria-disabled on purpose (they are working links to the upgrade page), so it was
+   the only thing announcing the state. The lock took that over: it is no longer
+   aria-hidden decoration but a role="img" with a translated aria-label, so a locked
+   row is still announced as "Basic Mask, Stagify+". display:none for a Pro user
+   takes it out of the accessibility tree too, so an unlocked row is announced as
+   plain "Basic Mask". The label must not become empty and the lock must not go back
+   to aria-hidden — test/frontend/staging-menu.test.js fails if either happens. */
+.staging-menu__lock {
   display:none
 }
 .staging-menu__item.is-locked {
@@ -3495,18 +3505,6 @@ html {
   top:50%;
   transform:translateY(-50%);
   opacity:.75
-}
-/* The Stagify+ mark itself, not a worded chip. No pill chrome around it: the
-   logo is already a self-contained badge, and boxing it made the row read as
-   two competing labels. Its alt text is what carries "this is Stagify+" into
-   the accessibility tree — these rows deliberately do NOT use aria-disabled
-   (they are working links to the upgrade page), so the alt is the only thing
-   announcing the locked state. It must not become alt="". */
-.staging-menu__item.is-locked .staging-menu__badge {
-  display:block;
-  flex:none;
-  width:18px;
-  height:18px
 }
 /* Per-row "what is this, and when would I use it" hint.
    The four rows are four different tools and the labels alone do not separate

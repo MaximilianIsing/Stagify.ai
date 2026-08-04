@@ -7,7 +7,7 @@
 //
 //  1. THE LOCK. The three Stagify+ rows are now VISIBLE to free users rather than
 //     hidden, so "locked" has to actually mean something: the one class the
-//     stylesheet dims and reveals the "Stagify+" chip with. A regression here is
+//     stylesheet dims the row and reveals the lock with. A regression here is
 //     silent — the rows still render, they just stop looking locked, and the only
 //     thing standing between a free user and the studios is each studio's own
 //     head-gate.
@@ -230,8 +230,45 @@ test('the staging menu lists the four tools in order, with the right three locke
 
   // NOT aria-disabled. A locked row is a working link to the Stagify+ page, so
   // announcing it as disabled would be false AND would stop assistive tech from
-  // following it. The visible "Stagify+" chip carries the state instead.
+  // following it. The lock glyph carries the state instead — see the test below.
   assert.ok(!block.includes('aria-disabled'), 'a locked row is still an operable link');
+});
+
+test('the lock is the only Stagify+ mark, and it is what announces the state', () => {
+  const [{ html }] = navPages();
+  const block = extractBlock(html);
+  const rows = block.split('<a class="staging-menu__item').slice(1);
+  assert.equal(rows.length, 4, 'sanity: four rows');
+
+  // Until 2026-08-03 a locked row carried an 18px Stagify+ logo NEXT TO the lock,
+  // which said the same thing twice on a 14px row. Dropping it is only safe because
+  // the lock took over the half of the job the logo's alt was doing: these rows carry
+  // no aria-disabled on purpose, so with an aria-hidden lock and no logo a locked row
+  // and an unlocked one would be announced identically.
+  assert.ok(!block.includes('staging-menu__badge'), 'the redundant Stagify+ logo is gone');
+
+  const locks = rows.map((row) => /<svg class="staging-menu__lock"[^>]*>/.exec(row)?.[0] || null);
+  assert.deepEqual(
+    locks.map(Boolean),
+    [false, true, true, true],
+    'the three Stagify+ rows, and only those, carry a lock',
+  );
+
+  for (const lock of locks.slice(1)) {
+    // role="img" is what makes the label count: an <svg> with no role contributes
+    // nothing to the link's name-from-content, aria-label or not.
+    assert.match(lock, /\brole="img"/, 'the lock must expose itself as an image');
+    assert.match(
+      lock,
+      /\bdata-lang-attr="navigation\.plusBadge\|aria-label"/,
+      'the lock label must be translated, not hard-coded English',
+    );
+    assert.match(lock, /\baria-label="[^"]+"/, 'and it must not be empty');
+    assert.ok(
+      !/\baria-hidden/.test(lock),
+      'the lock is no longer decoration — it is the only mark of the locked state',
+    );
+  }
 });
 
 test('the AI Designer row — and only it — is hidden on phones', () => {
@@ -278,14 +315,14 @@ test('the old pro nav links are gone everywhere', () => {
 test('the menu labels resolve to keys that exist in every language pack', () => {
   const [{ html }] = navPages();
   const block = extractBlock(html);
-  // data-lang-attr is included, and its `key|attribute` payload split: the
-  // Stagify+ mark is an <img> whose alt is translated that way, and the alt is
-  // the ONLY thing announcing the locked state (these rows carry no
-  // aria-disabled on purpose). A key-shaped regex alone would have quietly
-  // stopped covering it the moment the worded chip became a logo.
+  // data-lang-attr is included, and its `key|attribute` payload split: the locked
+  // state is announced by the lock's aria-label, translated that way, and it is the
+  // ONLY thing announcing it (these rows carry no aria-disabled on purpose). A
+  // key-shaped regex alone would have quietly stopped covering it each time that
+  // mark changed shape — worded chip, then logo alt, now the lock's own label.
   const keys = [...block.matchAll(/data-lang(?:-html|-attr)?="([^"]+)"/g)].map((m) => m[1].split('|')[0]);
-  assert.ok(keys.length >= 6, `expected the trigger, four labels and the Stagify+ alt, found ${keys.length}`);
-  assert.ok(keys.includes('navigation.plusBadge'), 'the Stagify+ mark must keep a translated alt');
+  assert.ok(keys.length >= 6, `expected the trigger, four labels and the lock's label, found ${keys.length}`);
+  assert.ok(keys.includes('navigation.plusBadge'), 'the lock must keep a translated label');
 
   const dir = path.join(PUBLIC, 'languages');
   for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
