@@ -148,3 +148,91 @@ test('validateStageableImage: a thrown error fails open (allow the upload)', asy
   const { validateStageableImage } = createImageReview({ genAI: fakeGrader(new Error('vision down')) });
   assert.deepEqual(await validateStageableImage(await roomBuffer()), VALID);
 });
+
+// --- validateExteriorImage --------------------------------------------------
+//
+// The Exterior Studio's own gate. Same taxonomy, same fail-open rules, one hard
+// difference: it can never reject with VEHICLE, because a car on the driveway is the
+// single most common thing this tool is asked to remove.
+
+test('validateExteriorImage: asks the grader the EXTERIOR question, not the interior one', async () => {
+  // The two prompts share a digit table, so pointing this gate at the wrong prompt would
+  // still parse, still return a plausible verdict, and still reject facades.
+  const seen = [];
+  const genAI = {
+    getGenerativeModel: () => ({
+      generateContent: async (parts) => { seen.push(parts[0].text); return { response: { text: () => 'CODE: 0' } }; },
+    }),
+  };
+  const { validateExteriorImage, validateStageableImage } = createImageReview({ genAI });
+  await validateExteriorImage(await roomBuffer());
+  await validateStageableImage(await roomBuffer());
+  assert.match(seen[0], /EXTERIOR photographs/, 'the exterior gate uses the exterior prompt');
+  assert.notEqual(seen[0], seen[1], 'and it is not the interior one');
+});
+
+test('validateExteriorImage: a VEHICLE verdict is IGNORED, not honoured', async () => {
+  // The prompt does not offer digit 5, but a grader answering from the interior taxonomy
+  // it has seen a thousand times would reject a kerbside photo of a house. That would
+  // look like a random flake rather than a bug, so the reviewer drops it outright.
+  const { validateExteriorImage } = createImageReview({ genAI: fakeGrader('CODE: 5') });
+  assert.deepEqual(await validateExteriorImage(await roomBuffer()), VALID);
+
+  // ...and the interior gate must keep honouring it — this is a per-gate rule, not a
+  // change to what digit 5 means.
+  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('CODE: 5') });
+  const interior = await validateStageableImage(await roomBuffer());
+  assert.equal(interior.valid, false);
+  assert.equal(interior.code, 'VEHICLE');
+});
+
+test('validateExteriorImage: still rejects the categories it shares, with the same codes', async () => {
+  // No new codes means no new errors.unstageable.* keys in eleven language packs — the
+  // browser localizes these exactly as it already does.
+  for (const [digit, expected] of [['1', 'PERSON_PORTRAIT'], ['2', 'ANIMAL'], ['3', 'FOOD'], ['4', 'DOCUMENT'], ['6', 'UNRELATED_OBJECT']]) {
+    const { validateExteriorImage } = createImageReview({ genAI: fakeGrader(`CODE: ${digit}`) });
+    const r = await validateExteriorImage(await roomBuffer());
+    assert.equal(r.valid, false, `digit ${digit} must still reject`);
+    assert.equal(r.code, expected);
+    assert.equal(r.reason, UNSTAGEABLE_CODES[digit].message, 'and reuse the shared English copy');
+  }
+});
+
+test('validateExteriorImage: fails OPEN on a null client, an unreadable reply, and a throw', async () => {
+  assert.deepEqual(await createImageReview({ genAI: null }).validateExteriorImage(await roomBuffer()), VALID);
+  assert.deepEqual(await createImageReview({ genAI: fakeGrader('no idea') }).validateExteriorImage(await roomBuffer()), VALID);
+  assert.deepEqual(await createImageReview({ genAI: fakeGrader(new Error('down')) }).validateExteriorImage(await roomBuffer()), VALID);
+});
+
+// --- the reviewImageQuality rubric seam -------------------------------------
+
+test('reviewImageQuality: basePrompt replaces the interior rubric but keeps the reply contract', async () => {
+  // The retry loop parses PERFECT/SCORE and folds WHY into the next attempt, so the
+  // suffixes must survive whatever rubric is swapped in.
+  let sent = '';
+  const genAI = {
+    getGenerativeModel: () => ({
+      generateContent: async (parts) => { sent = parts[0].text; return { response: { text: () => 'PERFECT: true' } }; },
+    }),
+  };
+  const { reviewImageQuality } = createImageReview({ genAI });
+  await reviewImageQuality(TINY_PNG, { basePrompt: 'RUBRIC-XYZ', instruction: 'make it sunny' });
+  assert.ok(sent.startsWith('RUBRIC-XYZ'), 'the caller\'s rubric leads');
+  assert.ok(!sent.includes('interior real-estate'), 'and the default is gone, not merely appended to');
+  assert.match(sent, /make it sunny/, 'the instruction clause still lands');
+  assert.match(sent, /WHY:/, 'and the WHY suffix the retry loop needs');
+});
+
+test('reviewImageQuality: an absent or empty basePrompt keeps the interior default', async () => {
+  // Every pre-existing caller passes nothing. This is the no-op half of the seam.
+  for (const opts of [{}, { basePrompt: null }, { basePrompt: '' }]) {
+    let sent = '';
+    const genAI = {
+      getGenerativeModel: () => ({
+        generateContent: async (parts) => { sent = parts[0].text; return { response: { text: () => 'PERFECT: true' } }; },
+      }),
+    };
+    await createImageReview({ genAI }).reviewImageQuality(TINY_PNG, opts);
+    assert.match(sent, /interior real-estate/, `default rubric expected for ${JSON.stringify(opts)}`);
+  }
+});

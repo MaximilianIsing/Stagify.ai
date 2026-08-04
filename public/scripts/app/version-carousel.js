@@ -213,5 +213,10 @@ export function createVersionCarousel(deps) {
         return afterVersions;
       },
       setAfterIndex(i) { afterIndex = i; },
+      // Which variation is on screen. Read by the Masking Studio handoff, which has to send
+      // the render id of the image the user is actually LOOKING at — `gallery.ids` is
+      // index-aligned with the variations, so handing over ids[0] while variation 3 is
+      // showing would silently refine the wrong render.
+      getAfterIndex: () => afterIndex,
     };
 }

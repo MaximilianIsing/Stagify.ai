@@ -12,6 +12,7 @@ import {
   serializeLayer,
   serializeSession,
   deserializeLayer,
+  deserializeOrigin,
   isRestorableSession,
 } from './session.js';
 
@@ -29,7 +30,7 @@ import {
  *   resumeEl: HTMLElement,
  *   resumeYesBtn: HTMLButtonElement,
  *   resumeNoBtn: HTMLButtonElement,
- *   setBaseImage: (img: HTMLImageElement, opts?: { noLayer?: boolean }) => void,
+ *   setBaseImage: (img: HTMLImageElement, opts?: import('./types.js').MsBaseImageOpts) => void,
  *   addLayer: () => void,
  *   renderLayers: () => void,
  *   updateControls: () => void,
@@ -122,7 +123,10 @@ export function createSessionStore(deps) {
             // A clear/reset while we were encoding wins — never resurrect a
             // session the user just discarded.
             if (seq !== saveSeq) return;
-            await sessionSave(serializeSession(baseBlob, layerData, Date.now()));
+            await sessionSave(serializeSession(baseBlob, layerData, Date.now(), {
+              sourceRenderId: state.sourceRenderId,
+              sourceName: state.sourceName,
+            }));
           } catch (e) {}
         }
 
@@ -156,7 +160,15 @@ export function createSessionStore(deps) {
 
         async function restoreSessionInner(saved) {
           const img = await blobToImage(saved.baseBlob);
-          setBaseImage(img, { noLayer: true });
+          // The origin has to be restored WITH the photo. setBaseImage clears both fields
+          // by default, so without this a resumed refine would forget it was a refine and
+          // fork a second gallery entry on Looks Good instead of updating the original.
+          const origin = deserializeOrigin(saved);
+          setBaseImage(img, {
+            noLayer: true,
+            sourceRenderId: origin.sourceRenderId,
+            sourceName: origin.sourceName,
+          });
           for (const ld of saved.layers || []) {
             if (state.layers.length >= MAX_LAYERS) break;
             const c = document.createElement('canvas');

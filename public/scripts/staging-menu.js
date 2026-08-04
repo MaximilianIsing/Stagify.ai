@@ -228,7 +228,15 @@ function wireMenu(root) {
     // Locked: send them to the Stagify+ page instead of the tool. Both studios
     // would bounce them there anyway (their own head-gates do it before paint),
     // so this only makes the outcome immediate and honest.
-    if (item.classList.contains('is-locked')) {
+    //
+    // ...UNLESS the row says its own page handles non-Pro visitors. A page carrying
+    // `data-staging-preview` has a public view — it explains the tool and makes the
+    // Stagify+ case itself, so bouncing a curious visitor to the pricing table instead
+    // skips the pitch and shows them the price. The row still LOOKS locked (that is the
+    // `is-locked` class, and it stays), because the tool really does need Stagify+;
+    // only the destination differs. Its own head has no redirect gate, which is what
+    // makes the public view reachable — and indexable — at all.
+    if (item.classList.contains('is-locked') && !item.hasAttribute('data-staging-preview')) {
       e.preventDefault();
       close();
       window.location.href = localizedTarget(PLUS_PAGE);

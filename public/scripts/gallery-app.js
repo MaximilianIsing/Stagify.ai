@@ -8,8 +8,9 @@
 // SEARCH IS A STAGIFY+ FEATURE AND THE SERVER SAYS SO. The box is revealed from
 // `search.enabled` in the listing, never from a plan read off window.StagifyAuth: the same
 // response decides whether `q` is honoured, so the two cannot disagree. That also means the
-// filtering is SQL, not a filter over the loaded page — the route pages at 60 while the Pro
-// cap is 200, so a client-side search would quietly only look at the first screenful.
+// filtering is SQL, not a filter over the loaded page — the route pages at 60 and a Pro
+// gallery is uncapped, so a client-side search would quietly only look at the first
+// screenful of a set with no upper bound at all.
 
 import { listGallery, deleteRender, renameRender } from './gallery/api.js';
 import { renderGrid, renderCompare, renderMeta, entryName, defaultName } from './gallery/view.js';
@@ -19,6 +20,7 @@ import { createDeleteConfirm } from './gallery/delete-confirm.js';
 import { createSharePanel } from './gallery/share-panel.js';
 import { createRefresher, REFRESH_DEBOUNCE_MS } from './share/refresh.js';
 import { copyText } from './clipboard.js';
+import { createRefineButton } from './gallery/refine.js';
 
 /**
  * How long to wait after the last keystroke before searching.
@@ -58,14 +60,16 @@ export async function start({
   /** @type {any} */
   let compareRange = null;
 
-  // How much of the gallery is on screen. The route pages at 60 while the Pro cap is
-  // 200, so `total` on its own is a number the grid cannot back up.
+  // How much of the gallery is on screen. The route pages at 60 and a Pro gallery has no
+  // cap at all, so `total` on its own is a number the grid cannot back up.
   /** @type {any[]} */
   let entries = [];
   let loaded = 0;
   let total = 0;
   /** The last failure's status, so a language switch can restate it. */
   let errorStatus = -1;
+  /** Stagify+, as the LISTING reported it (see the header). False until the first response. */
+  let isPro = false;
   /** The query the grid on screen was built from — '' when nothing is being searched. */
   let query = '';
   /** The pending debounce, so a second keystroke replaces the first rather than queueing. */
@@ -80,9 +84,10 @@ export async function start({
    */
   let searchSeq = 0;
 
-  // The share section is its own island: it paints a link the listing already handed
-  // over, and nothing in it reaches back into the grid or the pager.
+  // The share section is its own island: it paints a link the listing already handed over.
   const share = createSharePanel({ byId, t, plural, copyText, doc });
+  // "Refine in Masking Studio" (gallery/refine.js).
+  const refine = createRefineButton({ byId, getCurrent: () => current, isPro: () => isPro });
 
   // The rename row is its own island (gallery/rename.js) — a two-mode widget whose only
   // coupling to this file is which mode it is in. `currentEntry` is a getter rather than a
@@ -140,11 +145,11 @@ export async function start({
    * — renderCompare hands it back for exactly this reason.
    *
    * The rename controls sit between the heading and the comparison in exactly one of two
-   * modes, and which one is decided by the island rather than by the filter below.
-   * `hidden` on the row does not set `.hidden` on the controls inside it, so filtering per
-   * node would keep the input and its two buttons in the cycle while the row was closed —
-   * and this trap calls focus() explicitly after preventDefault(), so Tab would land on
-   * something that is not on screen instead of the browser simply skipping it.
+   * modes, decided by the island rather than by the filter below. `hidden` on the row does
+   * not set `.hidden` on the controls inside it, so filtering per node would keep the input
+   * and its two buttons in the cycle while the row was closed — and this trap calls focus()
+   * explicitly after preventDefault(), so Tab would land on something not on screen instead
+   * of the browser simply skipping it.
    */
   function panelControls() {
     return [
@@ -153,6 +158,7 @@ export async function start({
       compareRange,
       byId('gal-share-url'),
       byId('gal-share-copy'),
+      byId('gal-refine'),
       byId('gal-delete'),
       ...del.controls(),
     ].filter((node) => node && !(/** @type {any} */ (node).hidden));
@@ -254,6 +260,7 @@ export async function start({
     compareRange = renderCompare({ container: byId('gal-compare'), entry, doc, onImage });
     renderMeta({ container: byId('gal-meta'), entry, doc });
     share.paint(entry);
+    refine.paint(entry);
     if (detail) /** @type {any} */ (detail).hidden = false;
     doc.body.setAttribute('data-gal-modal', 'open');
     inertBackground(true);
@@ -377,6 +384,9 @@ export async function start({
     // The server decides whether searching is offered — it is the same answer that decides
     // whether `q` is honoured, so the box cannot be shown for a filter that will be ignored.
     doc.body.setAttribute('data-gal-search', res.body.search?.enabled ? 'on' : 'off');
+    // The Masking Studio handoff is Stagify+ too, and this is the same answer — off the
+    // listing rather than a plan on window.StagifyAuth, for the reason in the header.
+    isPro = !!res.body.search?.enabled;
     if (!res.body.search?.enabled && query) {
       // A free account that somehow carried a query: the server returned the whole gallery,
       // so the page must stop claiming it is showing matches.
@@ -602,11 +612,11 @@ export async function start({
     if (more) { more.disabled = false; more.textContent = t('gallery.more', 'Load more'); }
   });
 
+  // Each detail-panel island wires its own listeners; none of them touch each other's.
   rename.bind();
-
   share.bind();
-
   del.bind();
+  refine.bind();
 
   // Switching language on this page swaps the pack in place rather than navigating (see
   // the [data-lang-inplace] note in gallery.html), so the strings JS owns have to be

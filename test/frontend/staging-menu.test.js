@@ -203,15 +203,15 @@ test('every nav-bearing page carries the staging menu, byte-identical', () => {
   );
 });
 
-test('the staging menu lists the four tools in order, with the right three locked', () => {
+test('the staging menu lists the five tools in order, with the right four locked', () => {
   const [{ html }] = navPages();
   const block = extractBlock(html);
 
   const hrefs = [...block.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(
     hrefs,
-    ['index.html#stage', 'index.html#basic-mask', 'ai-designer.html', 'masking-studio.html'],
-    'order is product-visible: Image Staging, Basic Mask, AI Designer, Masking Studio',
+    ['index.html#stage', 'index.html#basic-mask', 'ai-designer.html', 'masking-studio.html', 'exterior-studio.html'],
+    'order is product-visible: Image Staging, Basic Mask, AI Designer, Masking Studio, Exterior Studio',
   );
 
   // Relative and un-prefixed, so the locale rewriters (lib/i18n/render-page.js's
@@ -220,7 +220,7 @@ test('the staging menu lists the four tools in order, with the right three locke
   for (const href of hrefs) assert.ok(!href.startsWith('/'), `${href} must stay relative`);
 
   const rows = [...block.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]);
-  assert.equal(rows.filter((r) => r.includes('data-staging-pro')).length, 3);
+  assert.equal(rows.filter((r) => r.includes('data-staging-pro')).length, 4);
   assert.ok(!rows[0].includes('data-staging-pro'), 'Image Staging is free');
 
   // Ships locked: free/anonymous is the no-JS default, so a Pro user is unlocked
@@ -238,7 +238,7 @@ test('the lock is the only Stagify+ mark, and it is what announces the state', (
   const [{ html }] = navPages();
   const block = extractBlock(html);
   const rows = block.split('<a class="staging-menu__item').slice(1);
-  assert.equal(rows.length, 4, 'sanity: four rows');
+  assert.equal(rows.length, 5, 'sanity: five rows');
 
   // Until 2026-08-03 a locked row carried an 18px Stagify+ logo NEXT TO the lock,
   // which said the same thing twice on a 14px row. Dropping it is only safe because
@@ -250,8 +250,8 @@ test('the lock is the only Stagify+ mark, and it is what announces the state', (
   const locks = rows.map((row) => /<svg class="staging-menu__lock"[^>]*>/.exec(row)?.[0] || null);
   assert.deepEqual(
     locks.map(Boolean),
-    [false, true, true, true],
-    'the three Stagify+ rows, and only those, carry a lock',
+    [false, true, true, true, true],
+    'the four Stagify+ rows, and only those, carry a lock',
   );
 
   for (const lock of locks.slice(1)) {
@@ -303,6 +303,39 @@ test('the AI Designer row — and only it — is hidden on phones', () => {
   );
 });
 
+test('a `data-staging-preview` row is locked, has a page, and that page has NO redirect gate', () => {
+  // The attribute means "my own page handles non-Pro visitors", so the click handler
+  // sends them to the page instead of the pricing table. That is only true — and only
+  // safe — if three things hold together, and none of them fails loudly alone:
+  //
+  //   1. the row still LOOKS locked (the tool really does need Stagify+; only the
+  //      destination differs);
+  //   2. the page actually exists;
+  //   3. the page has NO render-blocking *-gate.js in its <head>. Every other Stagify+
+  //      page has one, and it `location.replace`s a visitor with no token. Add one here
+  //      and the click handler hands the visitor to a page that instantly bounces them —
+  //      the same dead end the attribute exists to avoid, plus Googlebot never sees the
+  //      public view the page was made indexable for.
+  const [{ html }] = navPages();
+  const block = extractBlock(html);
+  const rows = [...block.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]);
+
+  const preview = rows.filter((r) => r.includes('data-staging-preview'));
+  assert.equal(preview.length, 1, 'exactly one preview row today — revisit this guard when a second lands');
+
+  assert.match(preview[0], /\bis-locked\b/, 'a preview row is still a Stagify+ row');
+  assert.match(preview[0], /\bdata-staging-pro\b/, 'and still locks for non-Pro visitors');
+  assert.ok(!/\bdesktop-only\b/.test(preview[0]), 'a page meant to be found must not be hidden on phones');
+
+  const href = /href="([^"]+)"/.exec(preview[0])[1];
+  const pagePath = path.join(PUBLIC, href);
+  assert.ok(fs.existsSync(pagePath), `${href} must be a real page`);
+
+  const head = fs.readFileSync(pagePath, 'utf8').split('</head>')[0];
+  const blockingGate = /<script(?![^>]*\b(?:defer|async|type="module")\b)[^>]*\bsrc="[^"]*-gate\.js"/.exec(head);
+  assert.equal(blockingGate, null, `${href} must not load a redirect gate — it is the public preview`);
+});
+
 test('the old pro nav links are gone everywhere', () => {
   // They were toggled by a selector in auth.js that no longer exists; a leftover
   // copy would be a permanently invisible link.
@@ -321,7 +354,7 @@ test('the menu labels resolve to keys that exist in every language pack', () => 
   // key-shaped regex alone would have quietly stopped covering it each time that
   // mark changed shape — worded chip, then logo alt, now the lock's own label.
   const keys = [...block.matchAll(/data-lang(?:-html|-attr)?="([^"]+)"/g)].map((m) => m[1].split('|')[0]);
-  assert.ok(keys.length >= 6, `expected the trigger, four labels and the lock's label, found ${keys.length}`);
+  assert.ok(keys.length >= 7, `expected the trigger, five labels and the lock's label, found ${keys.length}`);
   assert.ok(keys.includes('navigation.plusBadge'), 'the lock must keep a translated label');
 
   const dir = path.join(PUBLIC, 'languages');
@@ -425,7 +458,7 @@ test('the Gallery tab is translated everywhere it claims to be', () => {
 test('every Staging row carries an info icon and a tip wired to its own aria-describedby', () => {
   const [{ html }] = navPages();
   const rows = extractBlock(html).split('<a class="staging-menu__item').slice(1);
-  assert.equal(rows.length, 4, 'sanity: four rows');
+  assert.equal(rows.length, 5, 'sanity: five rows');
 
   const ids = [];
   for (const row of rows) {
@@ -469,7 +502,7 @@ test('every Staging row carries an info icon and a tip wired to its own aria-des
     );
   }
 
-  assert.equal(new Set(ids).size, 4, `each row needs its own tip id, got: ${ids.join(', ')}`);
+  assert.equal(new Set(ids).size, 5, `each row needs its own tip id, got: ${ids.join(', ')}`);
 });
 
 test('the stylesheet still reveals a tip on icon-hover and on row-focus', () => {

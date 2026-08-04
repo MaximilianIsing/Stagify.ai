@@ -8,6 +8,8 @@ import { createSegWand } from './masking-studio/seg-wand.js';
 import { createLayersUi } from './masking-studio/layers-ui.js';
 import { createViewer } from './masking-studio/viewer.js';
 import { createUpload } from './masking-studio/upload.js';
+import { createGallerySave } from './masking-studio/gallery-save.js';
+import { receiveHandoff } from './masking-handoff.js';
 import { localizedTarget } from './i18n-routing.js';
 import { showToast } from './toast.js';
 
@@ -124,6 +126,9 @@ import { showToast } from './toast.js';
           zoom: 1,           // 1 = fit to view, up to 4x
           spaceDown: false,  // Space held → pan mode
           panning: false,
+          sourceRenderId: null, // gallery render this photo came from (handoff), else null
+          sourceName: '',    // the photo's filename, for the gallery entry's name
+          savedDigest: '',   // pixel digest of the last composite saved to the gallery
         };
 
         // ---------------------------------------------------------------------
@@ -198,6 +203,17 @@ import { showToast } from './toast.js';
           c.getContext('2d').drawImage(img, 0, 0, w, h);
           state.base = { w: w, h: h, canvas: c };
 
+          // WHERE THIS PHOTO CAME FROM — and note that both DEFAULT TO CLEARED.
+          // `sourceRenderId` decides whether "Looks Good" REPLACES an existing gallery
+          // entry or creates a new one, so a stale one is the difference between saving
+          // this photo and overwriting an unrelated render the owner still wants. Only the
+          // handoff and a restored session pass one; a fresh upload must not inherit the
+          // last one, and the default here is what guarantees that for every future caller
+          // rather than for the three that exist today.
+          state.sourceRenderId = (opts && opts.sourceRenderId) || null;
+          state.sourceName = (opts && opts.sourceName) || '';
+          state.savedDigest = '';
+
           baseCanvas.width = w;
           baseCanvas.height = h;
           baseCanvas.getContext('2d').drawImage(c, 0, 0);
@@ -242,6 +258,10 @@ import { showToast } from './toast.js';
           state.redoStack = [];
           state.segCache = null;
           state.segToken++;
+          // The photo is gone, so nothing here belongs to a gallery entry any more.
+          state.sourceRenderId = null;
+          state.sourceName = '';
+          state.savedDigest = '';
           resetZoom();
 
           baseCanvas.getContext('2d').clearRect(0, 0, baseCanvas.width, baseCanvas.height);
@@ -429,6 +449,12 @@ import { showToast } from './toast.js';
           compositeAll();
           setPhase('review');
           setView('after');
+          // THE ONLY gallery write in this studio, and the only call site of saveToGallery
+          // anywhere. Accepting the result is what means "keep this" — Download is a second,
+          // later press and saving there too would double-fire, while an Apply Edit or a
+          // retry is a step on the way rather than an outcome. Fire-and-forget: showing the
+          // user their result above is this handler's actual job.
+          void saveToGallery();
         });
 
         downloadBtn.addEventListener('click', () => {
@@ -554,6 +580,28 @@ import { showToast } from './toast.js';
           tx,
         });
 
+        // Sending an accepted composite to the gallery. Deliberately NOT wired into the
+        // generation pipeline below — see the header of masking-studio/gallery-save.js for
+        // why keeping it out of reach of retry/selectCandidate/snap is the guarantee.
+        const { saveToGallery } = createGallerySave({
+          state,
+          resultCanvas,
+          authToken: () => (window.StagifyAuth && window.StagifyAuth.getToken()) || '',
+          // The ONE thing worth interrupting for, and the same sentence the staging studio
+          // shows for it (scripts/app/gallery-notice.js): a link the agent already sent a
+          // client has stopped working. The cap itself is never named here — this studio is
+          // Pro-only and a Stagify+ gallery is sold as unlimited, so an eviction can only
+          // happen under an operator's storage override, and announcing a ceiling the
+          // pricing page denies would be worse than saying nothing.
+          onEvicted: (gallery) => {
+            if (!(gallery.evicted || []).some((e) => e.hadLiveShare)) return;
+            showToast(
+              tx('modal.staging.galleryEvictedShared', 'An older staging had an active share link, which no longer works.'),
+              'error',
+            );
+          },
+        });
+
         // Generation pipeline: parallel per-area mask edits, compositing, and
         // the refine-phase ghost backdrop.
         const { compositeAll, updateStageBackdrop, selectCandidate, retryLayer } =
@@ -665,11 +713,26 @@ import { showToast } from './toast.js';
         });
 
         // ---------------------------------------------------------------------
+        // ---------------------------------------------------------------------
         // Boot
         // ---------------------------------------------------------------------
         setPhase('empty');
         ensureStudioProAccess().then(async (isPro) => {
           if (!isPro) return;
+          // "Refine in Masking Studio" from the gallery or the staging studio. Consumed
+          // BEFORE the resume prompt and, when it lands, instead of it: the user just
+          // clicked a button naming a specific render, and offering to restore a different
+          // photo on top of that would be answering a question they did not ask.
+          const handedOff = await receiveHandoff({
+            loadImage,
+            setBaseImage,
+            authToken: () => (window.StagifyAuth && window.StagifyAuth.getToken()) || '',
+            onError: () => showToast(
+              tx('maskingStudio.handoffFailed', "We couldn't open that render. Please upload the photo instead."),
+              'error',
+            ),
+          });
+          if (handedOff) return;
           // A saved session takes priority over the first-visit walkthrough.
           const offeredResume = await maybeOfferResume();
           if (offeredResume) return;

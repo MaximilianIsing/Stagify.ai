@@ -621,3 +621,115 @@ test('the sweep is measured against the row, not process uptime', () => {
   assert.equal(renders.sweepStalePending({ now: 1_000_500 }), 0);
   assert.equal(renders.get(id).status, 'pending');
 });
+
+// ── replaceResult: refining a render in place ────────────────────────────────
+//
+// The Masking Studio's "Looks Good" lands here when the photo it was given came out of the
+// gallery. NOTHING ABOUT THE ENTRY MAY CHANGE except the pixels — see the method's own
+// header for the full list, each item of which is asserted below.
+
+test('replaceResult swaps the bytes and the dimensions, and nothing else', () => {
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id, { at: 1_000, isPro: true });
+  renders.rename({ id, userId: user.id, name: '412 Rosewood Lane' });
+  const before = renders.get(id);
+
+  const ok = renders.replaceResult({
+    id,
+    userId: user.id,
+    width: 1920,
+    height: 1080,
+    blobs: [{ role: 'after', storageKey: keyForRender({ renderId: id, role: 'after' }), bytes: 90_000 }],
+  });
+
+  assert.equal(ok, true);
+  const after = renders.get(id);
+  assert.equal(after.width, 1920, 'the composite can differ in size from the original render');
+  assert.equal(after.height, 1080);
+  assert.equal(after.created_at, before.created_at, 'a refine must not jump the render to the top');
+  assert.equal(after.custom_name, '412 Rosewood Lane', 'if they named it, it keeps its name');
+  assert.equal(after.status, 'ok');
+  assert.equal(after.extra_json, before.extra_json,
+    'a refined INTERIOR render stays "Luxury Bedroom", never "Masking Studio — 3 areas"');
+  assert.equal(
+    renders.blobsFor(id).find((b) => b.role === 'after').bytes, 90_000,
+    'byte accounting follows the bytes, or usage drifts on every refine',
+  );
+});
+
+test("replaceResult refuses another account's render", () => {
+  // Ownership is in the WHERE, never a check-then-write. A guessed id must change nothing.
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id, { isPro: true });
+  assert.equal(renders.replaceResult({ id, userId: 'u_someone_else', width: 1, height: 1 }), false);
+  assert.equal(renders.get(id).width, 1024, 'untouched');
+});
+
+test('replaceResult refuses a render that is still uploading its first bytes', () => {
+  // Its uploadInBackground is in flight and would markOk over the replacement moments later.
+  const { renders, user } = setup();
+  const id = newRenderId();
+  renders.record({ render: { id, userId: user.id }, isPro: true, now: 1_000 });
+  assert.equal(renders.get(id).status, 'pending');
+  assert.equal(renders.replaceResult({ id, userId: user.id, width: 1, height: 1 }), false);
+});
+
+test('replaceResult cannot resurrect an evicted row', () => {
+  const { renders, user } = setup();
+  const { id } = addRender(renders, user.id, { isPro: false });
+  for (let i = 0; i < FREE_GALLERY_LIMIT + 1; i++) addRender(renders, user.id, { at: 2_000 + i, isPro: false });
+  assert.ok(renders.get(id).evicted_at, 'the cap took it');
+  assert.equal(renders.replaceResult({ id, userId: user.id, width: 1, height: 1 }), false);
+});
+
+test('replaceResult refuses a render that does not exist', () => {
+  const { renders, user } = setup();
+  assert.equal(renders.replaceResult({ id: newRenderId(), userId: user.id, width: 1, height: 1 }), false);
+});
+
+test('replaceResult never runs eviction — no row was added', () => {
+  // Running the cap here would delete somebody's oldest render as a side effect of an edit.
+  const { renders, user } = setup();
+  const ids = [];
+  for (let i = 0; i < FREE_GALLERY_LIMIT; i++) ids.push(addRender(renders, user.id, { at: 1_000 + i }).id);
+  const countBefore = renders.countForUser(user.id);
+  renders.replaceResult({ id: ids[ids.length - 1], userId: user.id, width: 800, height: 600 });
+  assert.equal(renders.countForUser(user.id), countBefore, 'a full gallery stays exactly as full');
+  assert.ok(!renders.get(ids[0]).evicted_at, 'and the oldest entry survives');
+});
+
+// ── the naming payload is searchable ─────────────────────────────────────────
+
+test('a render is findable by its stored qualifier and its source filename', () => {
+  // The card reads "Exterior — Golden hour · 412-rosewood-front". Typing what is on the
+  // card and getting no results is the failure that makes a search box feel broken, and
+  // neither term is in any of the columns the haystack used to cover.
+  const { renders, user } = setup();
+  const id = newRenderId();
+  renders.record({
+    render: {
+      id,
+      userId: user.id,
+      roomType: 'Exterior',
+      extra: { source: 'exterior', qualifier: 'Golden hour', sourceName: '412-rosewood-front' },
+    },
+    isPro: true,
+    now: 1_000,
+  });
+  renders.markOk(id, { width: 1, height: 1 });
+
+  assert.equal(renders.countForUser(user.id, { q: 'Golden hour' }), 1, 'by the qualifier');
+  assert.equal(renders.countForUser(user.id, { q: 'rosewood' }), 1, 'by the source photo');
+  assert.equal(renders.countForUser(user.id, { q: 'exterior' }), 1, 'and by the studio that made it');
+  assert.equal(renders.countForUser(user.id, { q: 'nothing-like-this' }), 0);
+});
+
+test('a damaged extra_json cannot break the listing or the search', () => {
+  // json_extract would RAISE on this, 500-ing a whole page of the gallery over one row.
+  // A LIKE against the raw text has no error mode at all, which is why it is a LIKE.
+  const { renders, db, user } = setup();
+  const { id } = addRender(renders, user.id, { isPro: true });
+  db.prepare('UPDATE staged_renders SET extra_json = ? WHERE id = ?').run('{not json', id);
+  assert.doesNotThrow(() => renders.listForUser({ userId: user.id, limit: 10, offset: 0 }));
+  assert.doesNotThrow(() => renders.countForUser(user.id, { q: 'bedroom' }));
+});

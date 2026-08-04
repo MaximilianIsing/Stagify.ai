@@ -26,8 +26,10 @@
       "imageStaging": "Richt een hele kamer in vanaf één foto: kies een kamertype en meubelstijl, de AI doet de rest. Ideaal voor lege of bijna lege kamers als het snel en compleet moet.",
       "basicMask": "Schilder over één deel van de foto en beschrijf de wijziging die je wilt. Ideaal voor kleine correcties – een bank vervangen, een aanrecht leegmaken – als de rest van de foto al klopt.",
       "pdfTo3d": "Chat met een AI-designer die een kamer inricht, herontwerpt en samen met jou blijft bijschaven. Ideaal als je stijlen verkent in plaats van één foto afmaakt. Alleen op desktop.",
-      "maskingStudio": "Markeer meerdere gebieden in verschillende kleuren, geef elk gebied een eigen meubelfoto of prompt en stage ze allemaal tegelijk. Ideaal als je exacte controle wilt – alles buiten je markeringen blijft pixelperfect."
-    }
+      "maskingStudio": "Markeer meerdere gebieden in verschillende kleuren, geef elk gebied een eigen meubelfoto of prompt en stage ze allemaal tegelijk. Ideaal als je exacte controle wilt – alles buiten je markeringen blijft pixelperfect.",
+      "exteriorStudio": "Werkt de buitenfoto van een woning bij: verander het tijdstip, maak de lucht helder en verwijder geparkeerde auto’s en rommel. Ideaal voor de voorgevel, tuin en straatbeeld — precies de foto’s die de stagingtools bewust nooit aanraken."
+    },
+    "exteriorStudio": "Buitenstudio"
   },
   "hero": {
     "catchphrase": "Upload. Style. Verbeeld.",
@@ -88,6 +90,24 @@
     "masking": {
       "title": "Style met exacte precisie",
       "subtitle": "In de nieuwe Maskeerstudio markeer je de gebieden om te herstylen, voeg je je eigen meubilair toe, en al het andere blijft pixel-perfect. <em>(Stagify+ Exclusief)</em>"
+    },
+    "exterior": {
+      "title": "Herstel de foto waarmee de advertentie opent",
+      "subtitle": "De Buitenstudio verandert het tijdstip, klaart de lucht op en haalt auto’s en containers weg. De woning blijft onaangeroerd. <em>(Stagify+ Exclusief)</em>",
+      "kicker": "Uitstraling",
+      "panelTitle": "De foto die je niet overdoet",
+      "panelBody": "Elke advertentie opent met de buitenkant, de ene foto die je niet overdoet als het weer omslaat.",
+      "points": {
+        "light": "Fotografeer overdag, publiceer in het gouden uur.",
+        "sky": "Vlak grijs wordt helderblauw of licht bewolkt.",
+        "clutter": "Auto’s, containers, slangen en borden verdwijnen.",
+        "honest": "Geen nieuw gazon, geen verf, geen nieuwe oprit."
+      },
+      "comparisonAria": "Vergelijking van de buitenfoto voor en na de verbetering",
+      "alts": {
+        "before": "Een woning gefotografeerd onder een vlakke grijze lucht, met een auto op de oprit, containers aan de stoeprand en een slang op het gazon",
+        "after": "Dezelfde woning in het gouden uur onder een helderblauwe lucht, zonder de geparkeerde auto, de containers en de slang"
+      }
     },
     "gallery": {
       "title": "Elke kamer die je inricht wordt voor je bewaard",
@@ -361,6 +381,8 @@
       "uploadArea": "Upload een afbeelding of sleep en zet neer",
       "before": "Voor",
       "after": "Na",
+      "refineInStudio": "Verfijnen in de Masking Studio",
+      "refineInStudioShort": "Verfijnen",
       "downloadResult": "Resultaat downloaden",
       "uploadAnother": "Nog een uploaden",
       "noProcessedImage": "Je gestylede resultaat verschijnt hier",
@@ -553,11 +575,11 @@
         "photoAlt": "Portret van Ryan Croman, medeoprichter en Hoofd Outreach bij Stagify.ai"
       },
       "emil": {
-        "name": "Emil Volvosky",
+        "name": "Emil Volvovsky",
         "email": "emvolvovsky@gmail.com",
         "phone": "(917) 691-2013",
         "title": "Statistisch marketinganalist",
-        "photoAlt": "Portret van Emil Volvosky, statistisch marketinganalist bij Stagify.ai"
+        "photoAlt": "Portret van Emil Volvovsky, statistisch marketinganalist bij Stagify.ai"
       }
     }
   },
@@ -996,6 +1018,11 @@
       "title": "Maskeerstudio | Stagify.ai - Multi-gebied precisie virtuele styling",
       "description": "Markeer meerdere gebieden van één kamerfoto in verschillende kleuren, koppel aan elk een meubelfoto en style ze allemaal tegelijk. Alleen de gemarkeerde gebieden kunnen veranderen — de rest van je foto blijft pixel-perfect.",
       "keywords": "maskeerstudio, virtuele styling masker, precisie virtuele styling, multi-gebied styling, AI-meubelplaatsing, gemaskeerde fotobewerking, gebiedsbewerking, vastgoedfoto-styling, voor-na-vergelijking, Stagify"
+    },
+    "exteriorStudio": {
+      "title": "Buitenstudio | Stagify.ai - AI-fotoverbetering voor de voorgevel",
+      "description": "Maak van een grauwe, rommelige buitenfoto het beeld dat de advertentie verdient. Verander het tijdstip, maak de lucht helder en verwijder auto’s en containers — terwijl de woning zelf precies blijft zoals gefotografeerd.",
+      "keywords": "uitstraling voorgevel, buitenfoto bewerken, vastgoedfoto verbeteren, lucht vervangen, auto’s uit foto verwijderen, schemerfoto vastgoed, gouden uur, AI-fotobewerking, gevel, Stagify"
     }
   },
   "maskingStudio": {
@@ -1076,6 +1103,7 @@
     "resumeNo": "Opnieuw beginnen",
     "helpStep5": "Niet tevreden met een gebied? Gebruik Probeer een andere versie om meer opties te genereren en ertussen te wisselen.",
     "promptIdeas": "Toon prompt-ideeën",
+    "handoffFailed": "We konden die render niet openen. Upload de foto in plaats daarvan.",
     "looksGood": "Ziet er goed uit",
     "redo": "Opnieuw",
     "toolWand": "Magisch",
@@ -1233,10 +1261,6 @@
     },
     "features": {
       "heading": "Alles wat je nodig hebt om als een pro te stylen",
-      "model": {
-        "title": "Hoogwaardig model",
-        "desc": "Ons meest geavanceerde model levert scherpere, realistischere meubels, materialen en verlichting."
-      },
       "remove": {
         "title": "Bestaande meubels verwijderen",
         "desc": "Wis meubels, rommel en decoratie en stijl de lege ruimte helemaal opnieuw."
@@ -1256,6 +1280,10 @@
       "references": {
         "title": "Meubelreferenties",
         "desc": "Upload productfoto’s om ruimtes te stylen met specifieke meubelstukken die jij kiest."
+      },
+      "exterior": {
+        "title": "Buitenstudio",
+        "desc": "Herstel de foto waarmee elke advertentie opent. Verander het tijdstip, maak een grauwe lucht helder en verwijder auto’s en containers — terwijl de woning zelf precies blijft zoals gefotografeerd."
       }
     },
     "compare": {
@@ -1276,7 +1304,8 @@
         "masking": "Maskergereedschap",
         "studio": "Masking Studio (meerdere gebieden)",
         "variations": "Meerdere variaties per generatie",
-        "references": "Meubelreferenties"
+        "references": "Meubelreferenties",
+        "exterior": "Buitenstudio (uitstraling)"
       }
     },
     "enterpriseRow": "Voor teams of ondernemingen <a href=\"enterprise.html\">ontdek je ons enterprise-abonnement</a> of neem contact op met <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> voor persoonlijke abonnementsopties.",
@@ -1309,6 +1338,7 @@
       "rangeValue": "{percent}% ingericht"
     },
     "meta": {
+      "source": "Gemaakt met",
       "room": "Ruimte",
       "style": "Stijl",
       "prompt": "Extra aanwijzing",
@@ -1339,6 +1369,7 @@
       "rateLimited": "Te veel verzoeken op dit moment. Wacht even en probeer het opnieuw.",
       "retry": "Opnieuw proberen"
     },
+    "refine": "Verfijnen in de Masking Studio",
     "delete": {
       "action": "Deze render verwijderen",
       "warn": "Hiermee verwijder je de render en de link die je al hebt gedeeld definitief. Dit kan niet ongedaan worden gemaakt.",
@@ -1390,5 +1421,84 @@
       }
     },
     "loading": "Je galerij wordt geladen…"
+  },
+  "exteriorStudio": {
+    "title": "Uitstraling, met één klik",
+    "subtitle": "De eerste foto van elke advertentie is de buitenkant van het huis — en dat is de ene opname die je niet opnieuw maakt als het weer omslaat. Upload hem hier en krijg de versie van een mooiere dag.",
+    "ctaUpgrade": "Krijg Stagify+ om het te gebruiken",
+    "features": {
+      "title": "Wat het verandert — en wat het nooit aanraakt",
+      "light": {
+        "title": "Tijdstip van de dag",
+        "body": "Fotografeer op het middaguur, publiceer in het gouden uur. Ochtend, middag, gouden uur of schemering, met schaduwen en raamlicht die kloppen met de gekozen zon."
+      },
+      "sky": {
+        "title": "Lucht en weer",
+        "body": "Een vlakke grijze lucht wordt helderblauw, licht bewolkt of juist dramatischer — afgestemd op het licht dat al op het pand valt, met schone randen langs de daklijn."
+      },
+      "clutter": {
+        "title": "Auto's, rommel en sneeuw",
+        "body": "Het busje van de buren op de oprit, de containers die buiten staan, de tuinslang op het gazon, de voorbijganger — en de sneeuw, regen en plassen die er toevallig lagen op de dag van de opname. Tijdelijke dingen verdwijnen, en het oppervlak eronder wordt passend hersteld."
+      },
+      "honest": {
+        "title": "Het huis blijft het huis",
+        "body": "Geen nieuw gazon, geen weggepoetste stroomkabels, geen nieuwe oprit, geen overgeschilderde muren. Wie aan de stoep staat ziet wat de foto liet zien — en daardoor blijft de foto bruikbaar in een advertentie."
+      }
+    },
+    "upload": {
+      "title": "Sleep hier een buitenfoto naartoe",
+      "hint": "JPG, PNG, WebP of HEIC. De voorgevel, de achtertuin, de oprit — elke foto die buiten is gemaakt.",
+      "button": "Kies een foto",
+      "replace": "Andere foto gebruiken"
+    },
+    "controls": {
+      "timeOfDay": "Tijdstip",
+      "sky": "Lucht",
+      "removeLegend": "Uit de foto verwijderen",
+      "removeVehicles": "Auto's",
+      "removeClutter": "Containers & rommel",
+      "removePeople": "Mensen",
+      "removeSnow": "Sneeuw",
+      "removeWetWeather": "Regen & plassen",
+      "notes": "Nog iets anders?",
+      "notesPlaceholder": "bijv. laat de vlag op de veranda staan"
+    },
+    "time": {
+      "morning": "Ochtend",
+      "midday": "Heldere middag",
+      "goldenHour": "Gouden uur",
+      "dusk": "Schemering"
+    },
+    "skyOptions": {
+      "clearBlue": "Helderblauw",
+      "lightClouds": "Lichte bewolking",
+      "dramatic": "Dramatisch"
+    },
+    "actions": {
+      "enhance": "Buitenkant verbeteren",
+      "working": "Bezig…",
+      "download": "Downloaden",
+      "startOver": "Opnieuw beginnen"
+    },
+    "result": {
+      "title": "Voor en na",
+      "hint": "Sleep de schuifregelaar om te vergelijken."
+    },
+    "errors": {
+      "generic": "Deze foto kon niet worden verbeterd. Probeer een andere opname van de buitenkant.",
+      "network": "De verbinding viel weg voordat de foto terugkwam. Je upload staat er nog — probeer het opnieuw."
+    },
+    "gate": {
+      "title": "De Buitenstudio hoort bij Stagify+",
+      "body": "Je account zit op het gratis plan. Stagify+ ontgrendelt de Buitenstudio, samen met de Maskeerstudio, de AI-ontwerper en onbeperkt stagen.",
+      "cta": "Bekijk Stagify+",
+      "secondary": "Terug naar home"
+    },
+    "stepPhoto": "Buitenfoto",
+    "stepPhotoHint": "Upload een foto in het werkgebied rechts.",
+    "replacePhoto": "Foto vervangen",
+    "stepChanges": "Wat moet er veranderen?",
+    "stepChangesHint": "Vink alleen aan wat je wilt veranderen. Alles wat je niet aanvinkt blijft precies zoals gefotografeerd.",
+    "enhanceHint": "Kies minstens één wijziging, of beschrijf er één hierboven."
   }
 }

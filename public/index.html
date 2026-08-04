@@ -232,6 +232,7 @@
               <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.</span></a>
               <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
               <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.</span></a>
+              <a class="staging-menu__item is-locked" href="exterior-studio.html" role="menuitem" aria-describedby="staging-menu-tip-exterior" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.exteriorStudio">Exterior Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-exterior" aria-hidden="true" data-lang="navigation.tips.exteriorStudio">Cleans up an exterior photo of a property: change the time of day, clear the sky, and remove parked cars and clutter. Best for the front elevation, yard and street shots, the ones the staging tools deliberately never touch.</span></a>
             </div>
           </div>
           <a href="gallery.html" class="nav-link desktop-only hidden" data-nav-gallery data-lang="navigation.gallery">Gallery</a>
@@ -638,6 +639,76 @@
         </div>
       </section>
 
+      <!-- ===================== EXTERIOR STUDIO (STAGIFY+) ===================== -->
+      <!-- A real before/after pair, not a mock. Both frames live in
+           media-webp/Homepage/Exterior/ and are used ONLY here.
+
+           PROVENANCE, because it matters for what this section is allowed to claim:
+           the "before" is a generated stand-in for an ordinary agent's phone snap
+           (flat overcast sky, car on the drive, bins at the kerb, hose on the lawn).
+           The "after" is that exact file put through the SHIPPED Exterior Studio
+           prompt — buildExteriorPrompt({timeOfDay:'goldenHour', sky:'clearBlue',
+           removeVehicles:true, removeClutter:true}) from lib/staging/exterior-prompts.js
+           — so the transformation on show is the product's real output for the four
+           controls this section's copy promises, not an illustration of it. Re-shoot
+           the pair the same way if the prompt changes, or the claim goes stale.
+
+           Both files are 1408x768 and MUST stay identical in size: .ba wipes one
+           over the other with clip-path, so a mismatch shows as a seam at the
+           reveal edge. The frame is kept at the native ratio rather than the 3:2
+           the other .ba uses — a centre-crop to 3:2 cut the bins off the left edge
+           of the very photo whose job is to show them.
+
+           The drag behaviour is the same widget as the staging comparison above:
+           scripts/staging-studio.js mounts BOTH roots off one shared function.
+
+           No CTA, matching the gallery section below. The Staging nav menu is the
+           way in; exterior-studio.html is marked `data-staging-preview`
+           (scripts/staging-menu.js), so signed-out and free visitors reaching it
+           from there land on the public explainer rather than a redirect. -->
+      <section class="home-section home-exterior" id="exterior-studio-demo" aria-labelledby="exterior-title">
+        <div class="home-section__head reveal">
+          <h2 class="home-section__title" id="exterior-title" data-tx="wave" data-tx-stagger="22" data-lang="home.exterior.title">Fix the photo the listing opens with</h2>
+          <p class="home-section__sub" data-lang-html="home.exterior.subtitle">The Exterior Studio changes the time of day, clears grey skies and takes out cars and bins. The house stays untouched. <em>(Stagify+ Exclusive)</em></p>
+        </div>
+
+        <div class="hex-shell">
+          <div class="ba reveal reveal--left" data-lang-attr="home.exterior.comparisonAria|aria-label" aria-label="Before and after exterior enhancement comparison">
+            <!-- No width/height attrs, matching the staging comparison above: .ba is
+                 aspect-ratio'd and .ba img is inset-0/height:100%, so the box does not
+                 depend on the images having loaded and there is no CLS to trade away.
+                 (width/height here would resolve as a presentational height and make
+                 the container's aspect-ratio a no-op.) Lazy and not fetchpriority=high
+                 — this sits well below the hero, which owns the LCP. -->
+            <img class="ba-after" src="media-webp/Homepage/Exterior/After.webp" data-lang-attr="home.exterior.alts.after|alt" alt="The same house at golden hour under a clear blue sky, with the parked car, bins and hose removed" loading="lazy" decoding="async">
+            <img class="ba-before" src="media-webp/Homepage/Exterior/Before.webp" data-lang-attr="home.exterior.alts.before|alt" alt="A suburban house photographed under a flat grey sky, with a car on the driveway, bins at the kerb and a hose on the lawn" loading="lazy" decoding="async">
+            <span class="ba-tag ba-tag--before" data-lang="home.studio.beforeLabel">Before</span>
+            <span class="ba-tag ba-tag--after" data-lang="home.studio.afterLabel">After</span>
+            <div class="ba-handle" role="slider" tabindex="0" data-lang-attr="home.studio.revealSliderAria|aria-label" aria-label="Reveal slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+              <span class="ba-handle__grip" aria-hidden="true">‹›</span>
+            </div>
+          </div>
+
+          <aside class="hex-copy reveal reveal--right" style="--reveal-delay:90ms">
+            <div class="hex-copy__kicker" data-lang="home.exterior.kicker">Curb appeal</div>
+            <h3 class="hex-copy__title" data-tx="fade" data-lang="home.exterior.panelTitle">The one shot you cannot reshoot</h3>
+            <p class="hex-copy__body" data-lang="home.exterior.panelBody">Every listing opens with the outside of the property, the one photo you cannot retake once the weather turns.</p>
+            <!-- Kept deliberately terse: the panel is a grid item that stretches to the
+                 row, and the photo beside it is align-self:center at a fixed 1408/768,
+                 so the two boxes only match in height while this copy stays SHORTER
+                 than the photo. Measured budget at the shipped 1044px shell: title 1
+                 line, body 2, every bullet 1. A single extra wrapped line in ANY of
+                 the 11 packs makes the panel the taller box again. -->
+            <ul class="home-list">
+              <li data-lang="home.exterior.points.light">Shoot at noon, publish at golden hour.</li>
+              <li data-lang="home.exterior.points.sky">Flat grey sky becomes clear blue or soft cloud.</li>
+              <li data-lang="home.exterior.points.clutter">Cars, bins, hoses and signage come out.</li>
+              <li data-lang="home.exterior.points.honest">No re-laid lawn, no repaint, no new driveway.</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
       <!-- ===================== GALLERY (SAVED RENDERS) ===================== -->
       <!-- A CSS/HTML mock of the signed-in gallery, not a screenshot. Deliberately
            INERT: no <a>, no <button>, no JS. gallery.html redirects every signed-out
@@ -891,7 +962,7 @@
               <li data-lang-html="whyUs.others.features.slowResults"><strong>Slow results: </strong>Days of waiting</li>
               <li data-lang-html="whyUs.others.features.longProcess"><strong>Long Process: </strong>Tedious back‑and‑forth</li>
               <li data-lang-html="whyUs.others.features.expensive"><strong>Expensive: </strong>Costly, per‑image fees</li>
-              <li data-lang-html="whyUs.others.features.adsAndCookies"><strong>Ads and cookies: </strong>Instrusive experience</li>
+              <li data-lang-html="whyUs.others.features.adsAndCookies"><strong>Ads and cookies: </strong>Intrusive</li>
               <li data-lang-html="whyUs.others.features.accountRequired"><strong>Long Signup Process: </strong>Frustrating start</li>
               <li data-lang-html="whyUs.others.features.limitedGenerations"><strong>Legacy, Cheaper models: </strong>Lower quality</li>
               <li data-lang-html="whyUs.others.features.unclearCopyright"><strong>Unclear copyright: </strong>Legal liability</li>
@@ -1176,6 +1247,16 @@
                     </div>
                     <div class="viewer-actions">
                       <button id="new-upload" class="btn btn-ghost"><strong class="label-full" data-lang="modal.staging.uploadAnother">Upload Another</strong><strong class="label-short" data-lang="modal.staging.uploadAnotherShort">Reupload</strong></button>
+                      <!--
+                        Take the finished render into the Masking Studio instead of
+                        downloading it and uploading it again. Ships hidden and is revealed
+                        by staging-pipeline.js only when the render actually reached the
+                        gallery: the handoff carries a render ID, so with no entry there is
+                        nothing to hand over. That one rule is why there is no free/pro
+                        branch here — a free account's render gets an entry too, and the
+                        studio's own gate is where the paid boundary lives.
+                      -->
+                      <button id="refine-mask-btn" class="btn btn-ghost hidden" type="button"><strong class="label-full" data-lang="modal.staging.refineInStudio">Refine in Masking Studio</strong><strong class="label-short" data-lang="modal.staging.refineInStudioShort">Refine</strong></button>
                       <div id="download-split" class="download-split">
                         <button id="download-btn" class="btn btn-primary" disabled><strong class="label-full" data-lang="modal.staging.downloadResult">Download Result</strong><strong class="label-short" data-lang="modal.staging.downloadResultShort">Download</strong></button>
                         <button id="download-size-toggle" class="btn btn-primary download-caret" type="button" disabled aria-haspopup="menu" aria-expanded="false" data-lang-attr="modal.staging.downloadSizeMenu|aria-label" aria-label="Choose download resolution">

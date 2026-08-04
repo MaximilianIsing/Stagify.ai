@@ -212,6 +212,70 @@ test('references are deduped across the variations of one request', async () => 
 
 // ---- the off switch ---------------------------------------------------------------
 
+// ---- extra_json: the naming payload ------------------------------------------------
+
+test('recordPending SANITIZES extra, so no call site can skip it', async () => {
+  // Every writer goes through this one door, which is where the cleaning belongs — the
+  // same argument rename() makes in lib/data/staged-renders.js. Here the handler passes a
+  // raw filename with a path and a hostile character, and neither survives.
+  const { persistence, stagedRenders, user } = setup();
+  const pending = persistence.recordPending({
+    user,
+    isPro: true,
+    natives: [{ buffer: await png() }],
+    params: {},
+    extra: {
+      source: 'exterior',
+      qualifier: 'Golden\u202Ehour',
+      sourceName: 'C:\\Users\\agent\\Pictures\\412-rosewood.jpg',
+    },
+  });
+  const row = stagedRenders.get(pending.entries[0].id);
+  assert.deepEqual(JSON.parse(row.extra_json), {
+    source: 'exterior',
+    qualifier: 'Golden hour',
+    sourceName: '412-rosewood',
+  });
+});
+
+test('an unrecognised source costs the render its NAME, never its row', async () => {
+  const { persistence, stagedRenders, user } = setup();
+  const pending = persistence.recordPending({
+    user,
+    isPro: true,
+    natives: [{ buffer: await png() }],
+    params: {},
+    extra: { source: 'listing-studio', sourceName: 'house.jpg' },
+  });
+  assert.equal(pending.entries.length, 1, 'the render is still recorded');
+  assert.equal(stagedRenders.get(pending.entries[0].id).extra_json, null);
+});
+
+test('a writer that passes no extra at all still records the render', async () => {
+  // Back-compat with every row already in production, and the shape a fifth writer will
+  // have on the day someone forgets. The drift guard is what catches the omission; this
+  // asserts it is not ALSO a crash.
+  const { persistence, stagedRenders, user } = setup();
+  const pending = persistence.recordPending({ user, isPro: true, natives: [{ buffer: await png() }], params: {} });
+  assert.equal(stagedRenders.get(pending.entries[0].id).extra_json, null);
+});
+
+test('variationBase offsets the variation column for a multi-call batch', async () => {
+  // The AI Designer stages up to three DIFFERENT photos per turn, so it calls this once per
+  // result rather than once with three natives. Without the offset all three would land as
+  // variation 0 of the same batch.
+  const { persistence, stagedRenders, user } = setup();
+  const ids = [];
+  for (let i = 0; i < 3; i++) {
+    const pending = persistence.recordPending({
+      user, isPro: true, natives: [{ buffer: await png() }], params: {}, batchId: 'turn-1', variationBase: i,
+    });
+    ids.push(pending.entries[0].id);
+  }
+  assert.deepEqual(ids.map((id) => stagedRenders.get(id).variation), [0, 1, 2]);
+  assert.deepEqual([...new Set(ids.map((id) => stagedRenders.get(id).batch_id))], ['turn-1']);
+});
+
 test('a disabled object store makes the whole thing a no-op', async () => {
   // On Render with no R2 the store is disabled. Persistence must not write rows for
   // bytes that will never exist.

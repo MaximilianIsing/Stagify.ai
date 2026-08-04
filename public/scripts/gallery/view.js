@@ -7,7 +7,7 @@
 
 import { el, replaceChildren } from '../share/dom.js';
 import { LANG_BCP47 } from '../locale-data.js';
-import { styleLabel, defaultName as baseDefaultName, entryName as baseEntryName } from '../render-name.js';
+import { styleLabel, sourceLabel, defaultName as baseDefaultName, entryName as baseEntryName } from '../render-name.js';
 import { t } from './i18n.js';
 
 /** 1x1 transparent GIF, so a failed tile has a valid src and no broken-image glyph. */
@@ -216,7 +216,14 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false, onImage
         }),
       ],
     });
-    if (entry.width && entry.height) card.style.setProperty('--gal-ar', `${entry.width} / ${entry.height}`);
+    // No per-card aspect ratio. This used to set `--gal-ar` from entry.width/height, so
+    // every tile was sized to its own photo — a 3:2 DSLR shot next to a 4:3 phone shot
+    // next to a portrait, in a grid whose rows top-align, which left a ragged run of
+    // different-height cards with dead space under the short ones. The tile is a
+    // THUMBNAIL, not the photo: gallery.css pins it to one ratio and object-fit:cover
+    // does the rest, and the detail panel is where the render is seen uncropped.
+    // (test/frontend/gallery/gallery-tile-ratio.test.js fails if this comes back.)
+    //
     // The card is handed back so the detail panel can return focus to whichever one
     // opened it, rather than dropping it on <body>.
     card.addEventListener('click', () => onOpen(entry, card));
@@ -320,6 +327,13 @@ export function renderMeta({ container, entry, doc }) {
   // only cosmetically: it is stored as the <select>'s slug, so it is capitalised through
   // the same helper the heading uses rather than printed as "modern" beneath a panel
   // titled "Modern Bedroom".
+  //
+  // "Made with" is first because it frames the two rows under it: on an Exterior Studio or
+  // Masking Studio entry those are both EMPTY — neither tool asks for a room type or a
+  // furniture style — and a panel that opens straight into "Extra prompt" leaves the reader
+  // working out what they are looking at. `sourceLabel` returns '' for interior renders, so
+  // the row simply does not appear where Room and Style already answer the question.
+  add(t('gallery.meta.source', 'Made with'), sourceLabel(entry.source));
   add(t('gallery.meta.room', 'Room'), entry.roomType);
   add(t('gallery.meta.style', 'Style'), styleLabel(entry.furnitureStyle));
   add(t('gallery.meta.prompt', 'Extra prompt'), entry.additionalPrompt);

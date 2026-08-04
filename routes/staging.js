@@ -6,7 +6,10 @@ import { createMaskEditHandler } from '../lib/staging/mask-edit.js';
 import { createSegmentHandler } from '../lib/staging/segment.js';
 import { IMAGE_DATA_URL_RE } from '../lib/staging/data-url.js';
 import { logger } from '../lib/logger.js';
-import { validateImageLimiter as defaultValidateImageLimiter } from '../lib/http/rate-limiters.js';
+import {
+  validateImageLimiter as defaultValidateImageLimiter,
+  galleryImportLimiter as defaultGalleryImportLimiter,
+} from '../lib/http/rate-limiters.js';
 
 // A validate-image payload must be a base64 image data URL — both studios build one
 // with canvas.toDataURL() — so anything else is not a real upload. Checking the shape
@@ -40,6 +43,9 @@ const MAX_VALIDATE_IMAGE_BYTES = 8 * 1024 * 1024;
  *   logRejectionToFile?: ReturnType<typeof import('../lib/services/logging.js').createLogging>['logRejectionToFile'],
  *   validateStageableImage: (imageBuffer: Buffer) => Promise<{ valid: boolean, code: string | null, reason: string }>,
  *   handleVirtualStagingMultipart: (req: import('express').Request, res: import('express').Response, meta: import('../lib/types/staging.js').VirtualStagingMeta) => Promise<import('express').Response | void>,
+ *   handleExteriorMultipart: (req: import('express').Request, res: import('express').Response, user: any) => Promise<import('express').Response | void>,
+ *   handleMaskingSave: (req: import('express').Request, res: import('express').Response, user: any) => Promise<import('express').Response | void>,
+ *   galleryImportLimiter?: import('express').RequestHandler,
  *   downscaleImage: typeof import('../lib/image/image-primitives.js').downscaleImage,
  *   padBufferToAspectRatio: typeof import('../lib/image/image-primitives.js').padBufferToAspectRatio,
  *   buildMarkedRoomImage: typeof import('../lib/image/image-primitives.js').buildMarkedRoomImage,
@@ -65,12 +71,13 @@ export default function createStagingRouter(deps) {
   // Names used by the handlers still inlined below. The /api/mask-edit and
   // /api/segment handlers are built by the sibling factories (which each
   // destructure their own slice of the full `deps`).
-  const { genLimiter, validateImageLimiter, stagingProcessUpload, setSensitiveHeaders, getAuthUserFromRequest, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard } = deps;
+  const { genLimiter, validateImageLimiter, galleryImportLimiter: injectedGalleryImportLimiter, stagingProcessUpload, setSensitiveHeaders, getAuthUserFromRequest, requireProAccount, validateStageableImage, handleVirtualStagingMultipart, handleExteriorMultipart, handleMaskingSave, stagingEndpointKeyGuard } = deps;
   // Optional so every existing test harness can mount this router unchanged; a
   // missing rejection log must never break a route.
   const logRejection = deps.logRejectionToFile || (() => {});
   const router = createAsyncRouter();
   const preCheckLimiter = validateImageLimiter ?? defaultValidateImageLimiter;
+  const galleryImportLimiter = injectedGalleryImportLimiter ?? defaultGalleryImportLimiter;
 
 router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, res) => {
   try {
@@ -165,6 +172,30 @@ router.post('/api/validate-image', genLimiter, preCheckLimiter, async (req, res)
   }
 });
 
+router.post('/api/enhance-exterior', genLimiter, stagingProcessUpload, async (req, res) => {
+  try {
+    // Stagify+ only, and this is the real gate — the Exterior Studio page reveals its
+    // controls from JS, which is a UI affordance, not a boundary. requireProAccount
+    // answers 401 AUTH_REQUIRED / 403 PRO_REQUIRED itself and returns null.
+    const proUser = requireProAccount(req, res);
+    if (!proUser) return undefined;
+
+    await handleExteriorMultipart(req, res, proUser);
+  } catch (error) {
+    // Same headersSent guard as /api/process-image above, for the same reason: the
+    // handler answers the request itself, so anything thrown after that point would
+    // otherwise reach Express's default handler and destroy a socket mid-response.
+    if (res.headersSent) return undefined;
+    if (error && /** @type {any} */ (error).code === 'NO_IMAGE_GENERATED') {
+      logger.error('Error enhancing exterior:', error);
+      return sendError(res, 422, 'This photo couldn\'t be enhanced. Please try a different photo of the property exterior.', {
+        code: 'NO_IMAGE_GENERATED',
+      });
+    }
+    return sendError(res, 500, 'Exterior enhancement failed', { ref: reportError('staging.enhance-exterior', error) });
+  }
+});
+
 router.post('/api/stage-by-endpoint-key', stagingEndpointKeyGuard, stagingProcessUpload, async (req, res) => {
   try {
     await handleVirtualStagingMultipart(req, res, {
@@ -177,6 +208,37 @@ router.post('/api/stage-by-endpoint-key', stagingEndpointKeyGuard, stagingProces
     if (!res.headersSent) {
       return sendError(res, 500, 'Image processing failed', { ref });
     }
+  }
+});
+
+// The Masking Studio's "Looks Good" → a gallery entry. Mounted HERE rather than in
+// routes/gallery.js on purpose: this router already owns every surface that produces
+// pixels, already has genLimiter and requireProAccount, and gallery.js's own limiter is a
+// page-listing budget rather than a byte budget.
+//
+// Named for the surface, not generically. The requirement is that the basic mask editor and
+// the AI Designer's mask editor never write to the gallery, and an `/api/gallery-import`
+// would be an open invitation to wire them up to it.
+//
+// TWO limiters: genLimiter for the session-wide budget and galleryImportLimiter for the
+// bytes. See lib/http/rate-limiters.js for why this one endpoint earns its own ceiling.
+//
+// NOTE that `deps` here does NOT contain renderPersistence — handleMaskingSave arrives
+// pre-built from server.js, exactly as handleExteriorMultipart does. That is what keeps
+// createMaskEditHandler(deps) below structurally unable to reach the gallery.
+router.post('/api/masking-studio/save', galleryImportLimiter, genLimiter, async (req, res) => {
+  try {
+    // Stagify+ only, and this is the real gate — the studio page reveals itself from JS,
+    // which is a UI affordance and not a boundary.
+    const proUser = requireProAccount(req, res);
+    if (!proUser) return undefined;
+
+    await handleMaskingSave(req, res, proUser);
+  } catch (error) {
+    if (res.headersSent) return undefined;
+    return sendError(res, 500, 'Could not save that to your gallery', {
+      ref: reportError('staging.masking-save', error),
+    });
   }
 });
 

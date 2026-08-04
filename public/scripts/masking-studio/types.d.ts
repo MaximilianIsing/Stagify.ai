@@ -13,6 +13,22 @@
 // The layer defaults are single-sourced in `layers.js` (`createLayer`); keep
 // MsLayer in step with it.
 
+/**
+ * Options for `setBaseImage`.
+ *
+ * `sourceRenderId` and `sourceName` DEFAULT TO CLEARED when omitted, which is what stops a
+ * fresh upload from inheriting the last photo's gallery identity and overwriting an
+ * unrelated render on "Looks Good". Callers that mean to keep them must say so.
+ */
+export interface MsBaseImageOpts {
+  /** Skip creating the first area layer — used when a restore is about to add its own. */
+  noLayer?: boolean;
+  /** The gallery render this photo came from, when it was handed off from one. */
+  sourceRenderId?: string | null;
+  /** The photo's filename, for the gallery entry's name. */
+  sourceName?: string;
+}
+
 /** Working-resolution room photo. Null until a photo is accepted. */
 export interface MsBase {
   w: number;
@@ -117,6 +133,21 @@ export interface MsState {
   /** Space held → pan mode. */
   spaceDown: boolean;
   panning: boolean;
+  /**
+   * The gallery render this photo was handed off from, or null when it came off disk.
+   *
+   * Decides whether "Looks Good" REPLACES that entry or creates a new one, which makes a
+   * stale value the difference between saving this photo and overwriting an unrelated
+   * render. `setBaseImage` therefore CLEARS it unless explicitly given one.
+   */
+  sourceRenderId: string | null;
+  /** The photo's filename, for the gallery entry's name. Cleared with the photo. */
+  sourceName: string;
+  /**
+   * Pixel digest of the last composite that was saved, so pressing Looks Good twice on an
+   * unchanged result does not create a second entry — and so a genuinely refined one does.
+   */
+  savedDigest: string;
 }
 
 /** A palette slot. The set is fixed in the entry; `colorIdx` indexes into it. */

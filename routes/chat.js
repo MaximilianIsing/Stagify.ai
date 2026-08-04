@@ -58,9 +58,15 @@ import { resolveChatModel } from '../lib/config/model-config.js';
  *   logChatToFile: ReturnType<typeof import('../lib/services/logging.js').createLogging>['logChatToFile'],
  *   blueprintTo3D: ReturnType<typeof import('../lib/staging/cad-handling.js').createCadHandling>['blueprintTo3D'],
  *   incPromptCount: typeof import('../lib/data/counters.js').incPromptCount,
+ *   renderPersistence?: ReturnType<typeof import('../lib/staging/render-persistence.js').createRenderPersistence>,
  * }} deps - Injected OpenAI client, rate-limit + upload middleware, the pro gate,
  *   memory load/save, model resolvers, the image annotation/downscale/staging/
- *   generation/CAD helpers, chat CSV logging, and the prompt counter.
+ *   generation/CAD helpers, chat CSV logging, the prompt counter, and the gallery
+ *   writer. The bag is forwarded wholesale to createChatPipeline, so `renderPersistence`
+ *   reaches lib/chat/chat-staging.js without this file naming it again — only the
+ *   STAGING path uses it. Image GENERATION deliberately writes nothing: a text-to-image
+ *   reply is a conversational artifact, not a render of a property, and it carries no
+ *   room type, no style and no source photo to name an entry by.
  */
 export default function createChatRouter(deps) {
   // Direct deps used by the handlers. The post-routing dispatch deps
@@ -233,6 +239,9 @@ router.post('/api/chat', genLimiter, async (req, res) => {
           lastUserMessageText
         ),
         resolveFallbackImage: () => resolveHistoryFallbackImage({ imageFromHistory, isStagedImage }),
+        // The account the resulting gallery entries belong to. The whole user, not just
+        // `userId` above, because renderPersistence needs the plan to apply the cap.
+        user: proUser,
       },
       recallArgs: { recallRequestFromAI, history: messages },
       requestedArgs: {
@@ -397,6 +406,8 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
         applyOriginalKeywordFallback: !currentMessageHasImage,
         resolveDualUpload: () => resolveDualUploadStaging(files, cleanedUserContent, message),
         resolveFallbackImage: () => resolveCurrentUploadFallbackImage({ firstImageFile, message }),
+        // See the /api/chat handler above — same reason, and the two must stay in step.
+        user: proUser,
       },
       generateArgs: { generateRequestFromAI, req, selectedModel },
       recallArgs: { recallRequestFromAI, history: conversationHistory },

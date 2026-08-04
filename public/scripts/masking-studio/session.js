@@ -30,8 +30,28 @@ export function serializeLayer(layer, maskBlob) {
 // Envelope wrapping the base-photo Blob and the serialized layers with a save
 // timestamp. `savedAt` is supplied by the caller (Date.now()) so this stays pure
 // and deterministic under test.
-export function serializeSession(baseBlob, layerData, savedAt) {
-  return { savedAt: savedAt, baseBlob: baseBlob, layers: layerData };
+//
+// `origin` carries where the photo came from: the gallery render it was handed off from
+// (if any) and its filename. Both have to survive a restore or "resume, then press Looks
+// Good" would silently FORK a second gallery entry instead of updating the one the user
+// opened the studio on — the restored session would have forgotten it was a refine.
+export function serializeSession(baseBlob, layerData, savedAt, origin) {
+  return {
+    savedAt: savedAt,
+    baseBlob: baseBlob,
+    layers: layerData,
+    sourceRenderId: (origin && origin.sourceRenderId) || null,
+    sourceName: (origin && origin.sourceName) || '',
+  };
+}
+
+// The origin fields out of a stored session, defaulted for records written before they
+// existed. Kept beside serializeSession so the two halves of the envelope stay together.
+export function deserializeOrigin(saved) {
+  return {
+    sourceRenderId: (saved && saved.sourceRenderId) || null,
+    sourceName: (saved && saved.sourceName) || '',
+  };
 }
 
 // Rebuild a live layer object from its stored projection. The caller creates the

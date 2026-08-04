@@ -58,10 +58,12 @@ async function mount() {
   const base = `http://127.0.0.1:${server.address().port}`;
 
   /** A finished, publishable render owned by `userId`. */
-  const addRender = (userId, { status = 'ok' } = {}) => {
+  const addRender = (userId, { status = 'ok', extra } = {}) => {
     const id = newRenderId();
     stagedRenders.record({
-      render: { id, userId, roomType: 'Living room', furnitureStyle: 'modern', model: 'gemini-secret-model-name' },
+      render: {
+        id, userId, roomType: 'Living room', furnitureStyle: 'modern', model: 'gemini-secret-model-name', extra,
+      },
       blobs: [
         { role: 'after', storageKey: keyForRender({ renderId: id, role: 'after' }), bytes: 1 },
         { role: 'thumb', storageKey: keyForRender({ renderId: id, role: 'thumb' }), bytes: 1 },
@@ -231,6 +233,41 @@ test('a live share returns the render, its disclosure, and nothing internal', as
   const url = manifest.rooms[0].frames[0].url;
   assert.match(url, /renders\/[a-f0-9]+\/after\.webp/, 'sanity: the URL really does name the object');
   assert.ok(!url.includes('user-1'), 'and the key must never carry the account it belongs to');
+});
+
+test('the studio and its setting ARE published, so both pages say the same thing', async () => {
+  // Without these the share page would head an exterior render "Staged room" where its
+  // owner sees "Exterior — Golden hour". The two pages agreeing is the entire reason
+  // public/scripts/render-name.js exists as a shared module.
+  const { base, shares, addRender } = await mount();
+  const id = addRender('user-1', {
+    extra: { source: 'exterior', qualifier: 'Golden hour', sourceName: '412-rosewood-front' },
+  });
+  const { token } = shares.ensureShare({ renderId: id, userId: 'user-1' });
+  const manifest = await (await fetch(`${base}/api/share/${token}`)).json();
+  assert.equal(manifest.source, 'exterior');
+  assert.equal(manifest.qualifier, 'Golden hour');
+});
+
+test('the source photo FILENAME is never published to a stranger', async () => {
+  // Listing photos are named "412-rosewood-ln-master.jpg" or "smith-listing-REDO". Handing
+  // the stem to whoever holds the link leaks the property address and the agent's private
+  // filing — so `sourceName` is structurally absent from buildManifest, the same way the
+  // `before` blob is. The owner's own gallery card still shows it.
+  //
+  // Asserted against the SERIALIZED manifest rather than a key check, so it also catches
+  // the stem leaking through rooms[].label or a future headline default.
+  const { base, shares, addRender } = await mount();
+  const id = addRender('user-1', {
+    extra: { source: 'exterior', qualifier: 'Golden hour', sourceName: '412-rosewood-ln' },
+  });
+  const { token } = shares.ensureShare({ renderId: id, userId: 'user-1' });
+  const manifest = await (await fetch(`${base}/api/share/${token}`)).json();
+  assert.ok(
+    !JSON.stringify(manifest).includes('412-rosewood-ln'),
+    'the share manifest leaked the source photo filename',
+  );
+  assert.equal(manifest.sourceName, undefined);
 });
 
 test('the source photo is never published, and no setting can publish it', async () => {

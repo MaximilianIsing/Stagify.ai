@@ -36,6 +36,44 @@ export interface StagingParams {
    * Must not throw and must not be slow: it runs inside the generation path.
    */
   onNative?: ((buffer: Buffer, meta: { format?: string }) => void) | null;
+  /**
+   * Supply the whole generation prompt, instead of having processStaging build one from
+   * roomType/furnitureStyle via generatePrompt().
+   *
+   * For a caller whose request is not a room-type + furniture-style combination — the
+   * Exterior Studio relights a facade and removes parked cars; there is no room and no
+   * furniture. Everything else processStaging does (the EXIF-oriented aspect-ratio pin,
+   * the quality-retry loop, per-attempt metering, the prompt_logs.csv row, the crop
+   * safety net, the delivery upscale, the onNative gallery hook) applies unchanged, so
+   * this is an optional field rather than a second pipeline.
+   *
+   * Same shape of decision as `onNative` above: callers that do not pass it are
+   * completely unaffected.
+   */
+  promptOverride?: string | null;
+  /**
+   * Replace the QA reviewer's rubric (QUALITY_REVIEW_PROMPT).
+   *
+   * That default opens with "AI-generated interior real-estate photos" and enumerates
+   * interior failures. Pointed at another subject it grades against the wrong criteria
+   * AND says nothing about the defects that render really produces. The reply format is
+   * still contractual — the retry loop parses PERFECT/SCORE and forwards WHY.
+   */
+  reviewBasePrompt?: string | null;
+  /**
+   * Turn the self-check quality gate off for this render.
+   *
+   * The gate pays a vision review per attempt and regenerates up to QUALITY_MAX_ATTEMPTS
+   * times chasing a better score. That is worth it when the model is INVENTING a room —
+   * a melted sofa is a real, catchable defect. It is not worth it for an edit that only
+   * relights or cleans up a photograph it was handed: a re-roll returns a different sky,
+   * not a better one, for three times the cost and three times the wait.
+   *
+   * The retry on a thrown provider error is unaffected; only the review-and-reshoot loop
+   * is. The render is NOT marked `_qaDegraded`, because that flag means the reviewer
+   * broke.
+   */
+  skipQualityReview?: boolean;
   [key: string]: unknown;
 }
 

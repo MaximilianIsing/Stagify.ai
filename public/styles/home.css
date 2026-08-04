@@ -334,6 +334,86 @@
 }
 
 /* ==========================================================================
+   1c. Exterior Studio (Stagify+)
+   A real before/after pair, so this reuses the .ba wipe from section 1 verbatim
+   — same markup, same handle, same JS (scripts/staging-studio.js mounts both
+   roots off one function). Only the frame ratio and the two-column shell are
+   specific to this section.
+   ========================================================================== */
+.hex-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(260px, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* The exterior pair is 1408x768 (~1.83), not the 3/2 the staging comparison
+   uses, so the frame has to be re-declared or the photo letterboxes inside it.
+   Scoped by id so the other .ba is untouched — the same approach as
+   `#masking-studio-demo .designer-demo` above.
+
+   align-self:center rather than inheriting the shell's stretch: a stretched grid
+   item is sized by the row, which beats aspect-ratio and would squash the photo
+   to whatever height the copy column happens to be. */
+#exterior-studio-demo .ba {
+  aspect-ratio: 1408 / 768;
+  align-self: center;
+}
+
+/* --- The copy beside it --- */
+.hex-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  /* 20px, not the 24px the other glass cards use: the panel stretches to the
+     photo's row and centres its content, so the real breathing room is
+     (row - content) / 2 and this value only acts as a floor. Trimming it buys
+     8px of wrap headroom for the longer language packs at zero visual cost. */
+  padding: 20px;
+  box-shadow: 0 12px 34px rgba(30, 58, 138, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.hex-copy__kicker {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 6px;
+}
+.hex-copy__title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--brand-deep);
+  margin: 0 0 9px;
+  line-height: 1.25;
+}
+.hex-copy__body {
+  margin: 0;
+  color: #46557d;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+/* Stacks at 1140px, not the 900px the other two-column blocks use, because
+   .home-section maxes out at 1140px wide with 48px of padding: at or above that
+   the shell is a CONSTANT 1044px, so the photo is a constant 285px tall and the
+   copy beside it wraps identically every time. That single fixed geometry is
+   what the trimmed copy above is measured against. Below 1140 the shell shrinks,
+   which shortens the photo and narrows the text column at the same time — the
+   panel would outgrow the photo through that whole band, so stack instead. */
+@media (max-width: 1140px) {
+  .hex-shell {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ==========================================================================
    2. Image + text info rows
    ========================================================================== */
 .info-rows {

@@ -241,6 +241,18 @@ Three properties are load-bearing rather than stylistic:
   *already* deleted. Giving it one would make the drift guard demand that an erasure
   delete these rows — i.e. delete the record that the bytes still need deleting. That
   exemption is only honest because object keys embed no account id either.
+- **Gallery search is an unindexable scan, and that is a measured decision.** It is a
+  leading-`%` `LIKE` over a *concatenation* of four columns (`SEARCH_HAYSTACK` in
+  `staged-renders.js`), so no index can serve it and every query scans that user's rows —
+  now unbounded, since `PRO_GALLERY_LIMIT` is `Infinity`. Measured 2026-08-04: **6 ms** per
+  debounced keystroke at 20k rows for one user, **32 ms** at 100k (62 ms when nothing
+  matches). The `COUNT(*)` is the expensive half — the page query stops once `LIMIT 60` is
+  full. **FTS5 with the `trigram` tokenizer was evaluated and declined**: it is available and
+  semantically drop-in (trigram keeps infix matching, so `%room%` still finds "Bedroom"), but
+  at 100k rows it is *a wash for terms that match* (31 ms vs 32 ms) and only wins on rare-term
+  and no-match queries, for a 25 MB index per 100k rows plus sync triggers on every write
+  path. Revisit if a single account passes ~50k renders. The full numbers are in the
+  `SEARCH_HAYSTACK` comment.
 
 ## Object storage — gallery render bytes (R2)
 

@@ -10,6 +10,7 @@ import {
   serializeLayer,
   serializeSession,
   deserializeLayer,
+  deserializeOrigin,
   isRestorableSession,
 } from '../../../public/scripts/masking-studio/session.js';
 import { createLayer } from '../../../public/scripts/masking-studio/layers.js';
@@ -66,6 +67,10 @@ test('serializeSession: wraps base blob + layers with the supplied savedAt', () 
     savedAt: 1234,
     baseBlob: baseBlob,
     layers: layers,
+    // Defaulted rather than absent, so a session saved before a photo has an origin still
+    // round-trips to the same shape.
+    sourceRenderId: null,
+    sourceName: '',
   });
 });
 
@@ -124,6 +129,23 @@ test('deserializeLayer: painted is taken from the caller (mask-decode result), n
   // Stored says painted but the mask failed to decode → not painted.
   assert.equal(deserializeLayer({ painted: true }, { ...base, painted: false }).painted, false);
   assert.equal(deserializeLayer({ painted: false }, { ...base, painted: true }).painted, true);
+});
+
+test('the photo\'s origin survives a save and restore', () => {
+  // Without this, "resume the session, then press Looks Good" would forget the render was a
+  // REFINE and fork a second gallery entry instead of updating the one the user opened.
+  const saved = serializeSession({ size: 1 }, [], 1, { sourceRenderId: 'r_7', sourceName: 'elm.jpg' });
+  assert.deepEqual(deserializeOrigin(saved), { sourceRenderId: 'r_7', sourceName: 'elm.jpg' });
+});
+
+test('a session stored before origins existed restores as a fresh photo', () => {
+  // Legacy records in a real user's IndexedDB. They must read as "came from disk", never as
+  // a refine of some render whose id is undefined.
+  assert.deepEqual(deserializeOrigin({ savedAt: 1, baseBlob: {}, layers: [] }), {
+    sourceRenderId: null,
+    sourceName: '',
+  });
+  assert.deepEqual(deserializeOrigin(null), { sourceRenderId: null, sourceName: '' });
 });
 
 test('isRestorableSession: needs a base photo blob', () => {
