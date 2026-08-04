@@ -4,8 +4,8 @@
 // worth proving here are the ones a DOM-stubbed unit test cannot:
 //
 //   - a free user SEES all four tools and can only use one of them. The lock is
-//     now presentational (a class + aria-disabled), so this drives the click and
-//     checks where the browser actually ends up;
+//     presentational (a class, deliberately not aria-disabled), so this drives the
+//     click and checks where the browser actually ends up;
 //   - "Image Staging" and "Basic Mask" open the home page's screens both in place
 //     (window hook) and after a navigation (URL fragment) — two different code
 //     paths to the same dialog, and only one of them is exercised if you always
@@ -143,11 +143,13 @@ test.describe('Staging dropdown — desktop', () => {
     const items = await openMenu(page);
     for (let i = 0; i < 4; i += 1) {
       await expect(items.nth(i)).not.toHaveClass(/is-locked/);
-      // The chip is what carries "this is Stagify+" into the a11y tree, so an
-      // unlocked row must not still be announcing it. Asserted as visibility,
-      // not text: the chip is display:none rather than absent, and textContent
-      // (what toContainText reads) includes hidden descendants.
-      await expect(items.nth(i).locator('.staging-menu__badge')).toBeHidden();
+      // The lock is what carries "this is Stagify+" into the a11y tree, so an
+      // unlocked row must not still be announcing it. Asserted as visibility AND
+      // as the computed name: the lock is display:none rather than absent, so a
+      // text assertion alone would read a hidden descendant, and a visibility
+      // assertion alone would not notice an aria-label that survived the hiding.
+      await expect(items.nth(i).locator('.staging-menu__lock')).toBeHidden();
+      await expect(items.nth(i)).not.toHaveAccessibleName(/Stagify\+/);
     }
   });
 
@@ -213,10 +215,15 @@ test.describe('Staging dropdown — desktop', () => {
     await expect(items.nth(0)).not.toHaveClass(/is-locked/);
     for (const i of [1, 2, 3]) {
       await expect(items.nth(i)).toHaveClass(/is-locked/);
-      // A locked row stays an operable link (it goes to Stagify+), so the state
-      // is announced by the visible chip rather than by aria-disabled.
-      await expect(items.nth(i).locator('.staging-menu__badge')).toBeVisible();
+      // A locked row stays an operable link (it goes to Stagify+), so the state is
+      // announced by the lock's own label rather than by aria-disabled. The lock is
+      // the only mark of it now — it used to sit beside a Stagify+ logo that said
+      // the same thing — so this checks both halves of what it has to do: be seen,
+      // and be announced. The name is computed by the browser, which is the point of
+      // asserting it here rather than in the static guard: role="img" + aria-label on
+      // an <svg> either reaches name-from-content or it does not.
       await expect(items.nth(i).locator('.staging-menu__lock')).toBeVisible();
+      await expect(items.nth(i)).toHaveAccessibleName(/Stagify\+/);
     }
   });
 
