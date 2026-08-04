@@ -221,15 +221,6 @@ function wireMenu(root) {
     }
   });
 
-  // Temporary: ?navdebug=1 paints an on-page event log, because this menu has a
-  // real-phone-only misbehaviour that no emulator here reproduces. Dynamic import so
-  // a normal load never fetches it. Remove with staging-menu-debug.js once solved.
-  if (/[?&]navdebug=1(&|$)/.test(window.location.search)) {
-    import('./staging-menu-debug.js')
-      .then((m) => m.installStagingMenuDebug(root, panel))
-      .catch(() => {});
-  }
-
   panel.addEventListener('click', (e) => {
     const item = /** @type {HTMLElement | null} */ (e.target).closest?.('.staging-menu__item');
     if (!item) return;
