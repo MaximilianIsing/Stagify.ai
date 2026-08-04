@@ -206,7 +206,11 @@
          decorative layer was ~6 s of the download budget — spent on a fixed, z-index:-1,
          opacity:.8 backdrop. A <source> whose media query does not match is never
          selected (video.networkState becomes 3, NETWORK_NO_SOURCE) and NOTHING is
-         fetched, so phones get the 12 KB `poster` instead and look near-identical.
+         fetched, so phones get the 12 KB poster image instead and look near-identical.
+         Phones are served that poster from CSS, not from the `poster` attribute below:
+         styles.css hides this element under 769px and paints the poster on a fixed
+         body::before, because a <video> the UA cannot start gets an unremovable centred
+         play glyph drawn over it. The attribute stays for the desktop first-frame.
          769px is the far side of the site's own 768px mobile line (.desktop-only,
          styles.css). Deliberately markup, not JS: the CSP has no 'unsafe-inline' for
          scripts, and this way the gate survives the SSR locale homepages
