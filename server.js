@@ -57,6 +57,8 @@ import { logger } from './lib/logger.js';
 import { applyEdgeMiddleware, applyBodyAndStatic } from './lib/http/app-middleware.js';
 import { createStagingGeneration } from './lib/staging/staging-generation.js';
 import { createVirtualStagingHandler } from './lib/staging/virtual-staging-handler.js';
+import { createExteriorHandler } from './lib/staging/exterior-handler.js';
+import { createMaskingSaveHandler } from './lib/staging/masking-save-handler.js';
 import { createLifecycleEmails } from './lib/services/lifecycle-emails.js';
 import { createTrialLifecycle } from './lib/services/trial-lifecycle.js';
 import { createEmailCatalog } from './lib/services/email-catalog.js';
@@ -270,7 +272,7 @@ const { deleteUser } = createUserDeletion({ baseDir: __dirname, getDataLogDir, f
 // GPT-vision / Gemini helpers extracted to lib/, instantiated with this server's
 // AI clients (the pure helpers they call are direct imports inside each module).
 const { annotateImage } = createImageAnnotation({ openai });
-const { reviewImageQuality, reviewMaskEdit, validateStageableImage } = createImageReview({ genAI });
+const { reviewImageQuality, reviewMaskEdit, validateStageableImage, validateExteriorImage } = createImageReview({ genAI });
 const { roomIsAlreadyEmpty, eraseFurniture } = createErase({ genAI, openai });
 const { blueprintTo3D } = createCadHandling({ genAI });
 const { getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest } = createHostedImages({ getDataLogDir });
@@ -333,6 +335,30 @@ const { handleVirtualStagingMultipart } = createVirtualStagingHandler({
   renderPersistence,
 });
 
+// The Exterior Studio handler → lib/staging/exterior-handler.js. Also instantiated AFTER
+// createStagingGeneration, and for the same reason: it consumes processStaging.
+const { handleExteriorMultipart } = createExteriorHandler({
+  genAI,
+  DEBUG_MODE,
+  authStore,
+  toPublicAuthUser,
+  enterpriseDomainForUser,
+  reportEnterpriseUsage,
+  recordStagingActivity,
+  validateExteriorImage,
+  processStaging,
+  renderPersistence,
+});
+
+// The Masking Studio's save → lib/staging/masking-save-handler.js. Takes renderPersistence
+// and nothing else: it neither calls a model nor resolves an account, because the composite
+// arrives already made and the router has already established the Stagify+ user.
+//
+// Pre-built here, like the two handlers above, so the staging router never receives
+// renderPersistence itself — which is what makes it structurally impossible for
+// createMaskEditHandler to reach the gallery.
+const { handleMaskingSave } = createMaskingSaveHandler({ renderPersistence });
+
 // Health check endpoints
 // healthHandler / protectLogs / stagingEndpointKeyGuard → lib/http/http-guards.js (instantiated above).
 
@@ -354,10 +380,10 @@ app.use(createAuthRouter({ authStore, googleOAuthClient, resend, LOGS_ACCESS_KEY
 app.use(createAdminRouter({ authStore, uptimeMonitor, enterpriseStore, hostImageUpload, DEBUG_MODE, setSensitiveHeaders, exportAllMemories, resetAllMemories, deleteUser, getDataLogDir, getHostedImagesDir, readHostedImagesManifest, writeHostedImagesManifest, protectLogs , __dirname, HOSTED_IMAGE_MIME_EXT, emailCatalog, sendTestEmail, referralLinks }));
 
 // staging routes (routes/staging.js)
-app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount, logMaskEditToFile, logRejectionToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, stagingEndpointKeyGuard }));
+app.use(createStagingRouter({ genAI, genLimiter, stagingProcessUpload, DEBUG_MODE, MAX_MASK_PROMPT_LENGTH, MAX_SEGMENT_QUERY_LENGTH, QUALITY_MAX_ATTEMPTS, setSensitiveHeaders, getAuthUserFromRequest, enterpriseDomainForUser, reportEnterpriseUsage, recordStagingActivity, requireProAccount, logMaskEditToFile, logRejectionToFile, downscaleImage, padBufferToAspectRatio, buildMarkedRoomImage, normalizeMaskOutputToRoom, reviewMaskEdit, compositeForReview, generateWithQualityRetry, maskReferencePromptSuffix, validateStageableImage, handleVirtualStagingMultipart, handleExteriorMultipart, handleMaskingSave, stagingEndpointKeyGuard }));
 
 // chat routes (routes/chat.js)
-app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, recordStagingActivity, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount }));
+app.use(createChatRouter({ openai, genLimiter, chatUpload, DEBUG_MODE, requireProAccount, recordStagingActivity, loadMemories, saveMemories, getTemperatureForModel, getGeminiImageModel, annotateImage, downscaleImageForGPT, processImageGeneration, processStaging, logChatToFile, blueprintTo3D, incPromptCount, renderPersistence }));
 
 // localized-page routes (routes/i18n.js) — /es, /fr/ai-designer.html, … rendered
 // server-side from the language JSON. Mounted before the public router; its prefixes

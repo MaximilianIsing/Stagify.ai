@@ -45,6 +45,12 @@ export function baseDeps() {
     maskReferencePromptSuffix: () => '', // handler calls this as a function (routes/staging.js)
     validateStageableImage: async () => ({ valid: true, code: null, reason: '' }),
     handleVirtualStagingMultipart: async (req, res) => res.json({ success: true, image: 'data:image/png;base64,AAAA' }),
+    handleExteriorMultipart: async (req, res) => res.json({ success: true, image: 'data:image/png;base64,AAAA' }),
+    handleMaskingSave: async (req, res) => res.json({ success: true, gallery: null }),
+    // Pass-through for the same reason as validateImageLimiter above: many cases in one
+    // file must not share the real per-IP bucket. The armed default is asserted in
+    // test/routes/masking-save-route.test.js.
+    galleryImportLimiter: pass,
   };
 }
 

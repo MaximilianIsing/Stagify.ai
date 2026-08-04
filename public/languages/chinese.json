@@ -26,8 +26,10 @@
       "imageStaging": "只用一张照片就能布置整个房间：选择房间类型和家具风格，其余交给 AI。适合空置或几乎空置的房间，想要快速、完整的效果时使用。",
       "basicMask": "在照片的某一处涂抹，然后描述你想要的改动。适合小修小改——换一张沙发、清空台面——照片其余部分已经满意时使用。",
       "pdfTo3d": "与 AI 设计师对话，由它布置房间、重新设计，并不断和你一起打磨。适合探索风格，而不是完成某一张照片。仅限电脑端。",
-      "maskingStudio": "用不同颜色标出多个区域，为每个区域指定家具照片或提示词，然后一次性全部布置。适合需要精确控制的场景——标记之外的部分保持像素级不变。"
-    }
+      "maskingStudio": "用不同颜色标出多个区域，为每个区域指定家具照片或提示词，然后一次性全部布置。适合需要精确控制的场景——标记之外的部分保持像素级不变。",
+      "exteriorStudio": "优化房产外观照片：更改一天中的时间、让天空更晴朗、移除停放的车辆和杂物。最适合正面外观、庭院和街景照片——这些正是虚拟布置工具从不处理的部分。"
+    },
+    "exteriorStudio": "外观工作室"
   },
   "hero": {
     "catchphrase": "上传。装修。想象。",
@@ -88,6 +90,24 @@
     "masking": {
       "title": "精准布置，分毫不差",
       "subtitle": "遮罩需要重新布置的区域，放入你自己的家具，其余部分保持像素级不变。<em>（Stagify+ 专属）</em>"
+    },
+    "exterior": {
+      "title": "修好房源开篇的那张照片",
+      "subtitle": "外观工作室可更改时间、放晴灰暗的天空、移除车辆和垃圾桶，房产本身保持不变。<em>（Stagify+ 专属）</em>",
+      "kicker": "外观印象",
+      "panelTitle": "唯一一张无法重拍的照片",
+      "panelBody": "每套房源都以外观开篇，而这正是天气变坏后无法重拍的一张。",
+      "points": {
+        "light": "正午拍摄，黄金时刻发布。",
+        "sky": "灰蒙蒙的天空变成晴朗蓝天或薄云。",
+        "clutter": "停放的车辆、垃圾桶、水管和标牌都会消失。",
+        "honest": "不重铺草坪，不重刷外墙，不新建车道。"
+      },
+      "comparisonAria": "外观照片优化前后对比",
+      "alts": {
+        "before": "一栋住宅在灰暗平淡的天空下拍摄，车道上停着一辆车，路边放着垃圾桶，草坪上有一条水管",
+        "after": "同一栋住宅在黄金时刻、晴朗蓝天下的样子，停放的车辆、垃圾桶和水管都已移除"
+      }
     },
     "gallery": {
       "title": "您布置的每个房间都会为您保存",
@@ -361,6 +381,8 @@
       "uploadArea": "上传图片或拖拽放置",
       "before": "之前",
       "after": "之后",
+      "refineInStudio": "在遮罩工作室中优化",
+      "refineInStudioShort": "优化",
       "downloadResult": "下载结果",
       "uploadAnother": "上传另一张",
       "noProcessedImage": "装修效果将在此处显示",
@@ -553,11 +575,11 @@
         "photoAlt": "Ryan Croman 肖像，Stagify.ai 联合创始人兼外联主管"
       },
       "emil": {
-        "name": "Emil Volvosky",
+        "name": "Emil Volvovsky",
         "email": "emvolvovsky@gmail.com",
         "phone": "(917) 691-2013",
         "title": "统计营销分析师",
-        "photoAlt": "Emil Volvosky 肖像，Stagify.ai 统计营销分析师"
+        "photoAlt": "Emil Volvovsky 肖像，Stagify.ai 统计营销分析师"
       }
     }
   },
@@ -996,6 +1018,11 @@
       "title": "遮罩工作室 | Stagify.ai - 多区域精准虚拟布置",
       "description": "在同一张房间照片上用不同颜色高亮标记多个区域，为每个区域附加一张家具照片，一次性完成全部布置。只有高亮区域会被修改——照片的其余部分保持像素级不变。",
       "keywords": "遮罩工作室, 虚拟布置蒙版, 精准虚拟布置, 多区域布置, AI家具摆放, 蒙版照片编辑, 区域编辑, 房地产照片布置, Stagify"
+    },
+    "exteriorStudio": {
+      "title": "外观工作室 | Stagify.ai - AI 房产外观照片优化",
+      "description": "把灰暗杂乱的外观照片变成房源应有的样子。更改时间、让天空放晴、移除车辆和垃圾桶——同时房产本身与拍摄时完全一致。",
+      "keywords": "房产外观, 外观照片编辑, 房地产照片优化, 换天空, 移除照片中的汽车, 黄昏房源照片, 黄金时刻, AI 图片编辑, 建筑外观, Stagify"
     }
   },
   "maskingStudio": {
@@ -1076,6 +1103,7 @@
     "resumeNo": "重新开始",
     "helpStep5": "对某个区域不满意？使用\"再试一个版本\"生成更多选项并随时切换。",
     "promptIdeas": "显示提示建议",
+    "handoffFailed": "无法打开该效果图。请改为上传照片。",
     "looksGood": "看起来不错",
     "redo": "重做",
     "toolWand": "魔棒",
@@ -1233,10 +1261,6 @@
     },
     "features": {
       "heading": "像专业人士一样布置所需的一切",
-      "model": {
-        "title": "高质量模型",
-        "desc": "我们最先进的模型可呈现更清晰、更逼真的家具、材质和光照。"
-      },
       "remove": {
         "title": "移除现有家具",
         "desc": "擦除家具、杂物和装饰，然后从空房间重新开始布置。"
@@ -1256,6 +1280,10 @@
       "references": {
         "title": "家具参考",
         "desc": "上传产品照片，用您选择的特定家具来布置房间。"
+      },
+      "exterior": {
+        "title": "外观工作室",
+        "desc": "修好每套房源的第一张照片。更改时间、放晴灰暗天空、移除停放车辆和垃圾桶——同时房产本身与拍摄时完全一致。"
       }
     },
     "compare": {
@@ -1276,7 +1304,8 @@
         "masking": "蒙版工具",
         "studio": "Masking Studio（多区域）",
         "variations": "每次生成多个变体",
-        "references": "家具参考"
+        "references": "家具参考",
+        "exterior": "外观工作室（房产外观）"
       }
     },
     "enterpriseRow": "如果是团队或企业，<a href=\"enterprise.html\">了解我们的企业方案</a>，或联系 <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> 获取个性化的订阅方案。",
@@ -1309,6 +1338,7 @@
       "rangeValue": "已布置 {percent}%"
     },
     "meta": {
+      "source": "使用工具",
       "room": "房间",
       "style": "风格",
       "prompt": "补充说明",
@@ -1339,6 +1369,7 @@
       "rateLimited": "当前请求过于频繁。请稍候片刻再试。",
       "retry": "重试"
     },
+    "refine": "在遮罩工作室中优化",
     "delete": {
       "action": "删除这张渲染图",
       "warn": "这将永久删除该渲染图以及你已经分享出去的链接，且无法撤销。",
@@ -1390,5 +1421,84 @@
       }
     },
     "loading": "正在加载你的图库…"
+  },
+  "exteriorStudio": {
+    "title": "一键提升房产外观",
+    "subtitle": "每套房源的第一张照片都是房子的外观，而这恰恰是天气变坏后无法重拍的一张。上传它，得到晴天拍摄的版本。",
+    "ctaUpgrade": "升级 Stagify+ 即可使用",
+    "features": {
+      "title": "它会改动什么，又绝不碰什么",
+      "light": {
+        "title": "时间与光线",
+        "body": "正午拍摄，黄金时刻发布。清晨、正午、黄金时刻或黄昏，阴影与窗内灯光都与所选光线一致。"
+      },
+      "sky": {
+        "title": "天空与天气",
+        "body": "灰白平淡的天空变为晴朗蓝天、薄云或更具戏剧感的层次，与建筑上的既有光线相匹配，屋顶轮廓边缘干净利落。"
+      },
+      "clutter": {
+        "title": "车辆、杂物与积雪",
+        "body": "邻居停在车道上的面包车、摆在外面的垃圾桶、草坪上的水管、路过的行人——还有拍摄当天恰好存在的积雪、雨水和水洼。临时的东西会被移除，下方的地面会按周围的材质重建。"
+      },
+      "honest": {
+        "title": "房子还是那栋房子",
+        "body": "不换草坪、不抹电线、不重铺车道、不重刷墙面。买家站在路边看到的，就是照片里的样子——这正是这张照片能用于房源的前提。"
+      }
+    },
+    "upload": {
+      "title": "将外观照片拖到这里",
+      "hint": "JPG、PNG、WebP 或 HEIC。正面外观、后院、车道——任何在室外拍摄的照片。",
+      "button": "选择照片",
+      "replace": "换一张照片"
+    },
+    "controls": {
+      "timeOfDay": "时间",
+      "sky": "天空",
+      "removeLegend": "从照片中移除",
+      "removeVehicles": "车辆",
+      "removeClutter": "垃圾桶与杂物",
+      "removePeople": "人物",
+      "removeSnow": "积雪",
+      "removeWetWeather": "雨水与水洼",
+      "notes": "还有别的吗？",
+      "notesPlaceholder": "例如：保留门廊上的旗帜"
+    },
+    "time": {
+      "morning": "上午",
+      "midday": "正午晴光",
+      "goldenHour": "黄金时刻",
+      "dusk": "黄昏"
+    },
+    "skyOptions": {
+      "clearBlue": "晴朗蓝天",
+      "lightClouds": "薄云",
+      "dramatic": "戏剧感"
+    },
+    "actions": {
+      "enhance": "优化外观",
+      "working": "处理中…",
+      "download": "下载",
+      "startOver": "重新开始"
+    },
+    "result": {
+      "title": "前后对比",
+      "hint": "拖动滑块进行对比。"
+    },
+    "errors": {
+      "generic": "这张照片无法优化。请换一张该房产的外观照片试试。",
+      "network": "照片返回前连接中断。你上传的图片还在，请重试。"
+    },
+    "gate": {
+      "title": "外观工作室属于 Stagify+",
+      "body": "你的账户目前是免费方案。Stagify+ 可解锁外观工作室，以及蒙版工作室、AI 设计师和不限量的虚拟布置。",
+      "cta": "查看 Stagify+",
+      "secondary": "返回首页"
+    },
+    "stepPhoto": "外观照片",
+    "stepPhotoHint": "在右侧工作区上传照片。",
+    "replacePhoto": "更换照片",
+    "stepChanges": "要改动什么？",
+    "stepChangesHint": "只勾选你想改动的项。未勾选的内容将与拍摄时完全一致。",
+    "enhanceHint": "请至少勾选一项改动，或在上方描述一项。"
   }
 }

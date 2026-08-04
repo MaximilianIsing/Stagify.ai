@@ -140,6 +140,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `staged-renders.js` | The render rows, and the tier caps. Eviction runs **inside the insert transaction**; a cap applied in a second statement is not a cap. |
 | `render-refs.js` | Furniture reference photos, content-addressed and deduped per user. Their lifetime is **derived** (an indexed `NOT EXISTS`), never counted — a double-decrement would delete bytes a live entry still shows. |
 | `gallery-shares.js` | Share tokens: sha256 for lookup, plaintext alongside it so the owner can copy the link again, one live link per render enforced in a transaction. Minted a page at a time by the gallery listing — there is no create step and no off switch — and revoked rather than deleted, because a delete would take the view count with it. |
+| `gallery-page-reads.js` | The three batched SQL reads behind one gallery page (blobs, references, live share links), as **text only** — each store prepares them against its own handle. Together because they share one non-obvious decision: `json_each(?)` rather than a generated `?, ?, ?` run, so the SQL text (and better-sqlite3's statement cache entry) does not vary with the page size. Exported as strings so a drift test can `EXPLAIN` the query actually prepared rather than a retyped copy. |
 | `blob-tombstones.js` | The queue of object bytes owed a deletion, and the reaper that drains it. This is what lets `deleteUser` stay **synchronous** while the bytes live in someone else's datacentre: the transaction commits the *obligation*, not the deletion. |
 
 **`lib/http/`** — request/response plumbing
@@ -432,6 +433,54 @@ prompt, or an English label, not an error:
    prompt-behavior tests to `test/staging/prompts.test.js` if you added step 2.
 
 No rebuild is needed (`build-i18n-seo.js` covers locales and pages, not room types).
+
+## Exterior prompt assembly (the Exterior Studio)
+
+The Exterior Studio does not go through `generatePrompt` at all. It has no room type and no
+furniture style — it *removes* things from a photograph and relights it, where interior
+staging *invents* a room. `buildExteriorPrompt(options)` in
+[`lib/staging/exterior-prompts.js`](../../lib/staging/exterior-prompts.js) concatenates,
+**in this order**:
+
+1. **The requested edits** — the time-of-day and sky clauses plus any cleanup clauses, one
+   bullet each. Every option is **opt-in**: a preset set to `keep` and an unticked toggle
+   contribute *nothing*. A silent no-op, deliberately — "leave the sky unchanged" reads to
+   an image model as an instruction to do something about the sky.
+2. **The user's free text**, as `ALSO APPLY …`. When there are no other edits it becomes
+   the whole request instead, so "remove the bin bags" is not padded with a generic
+   correction pass that ends "change nothing else" and contradicts it.
+3. **The realism block** — the failure modes *this* edit produces (halos along the
+   roofline, sky showing through solid walls, shadows that disagree with the new sky), not
+   the interior ones.
+4. **`IMAGE_FRAMING_PRESERVATION_RULES`**, shared with `generatePrompt` — one definition of
+   "do not move the camera".
+5. **`EXTERIOR_PRESERVATION_RULES`, last**, and last is the point: it claims to override
+   everything above it, including the user's own words, which is only true if nothing
+   follows it. Same ordering contract `ROOM_TYPE_CONSTRAINTS` relies on.
+
+`EXTERIOR_PRESERVATION_RULES` has **two tiers**, and the split is the product decision.
+Tier 1 is the property itself — structure, roofline, windows, landscaping, power lines,
+resurfacing, neighbouring land — and **no request may reach it**, because those change what
+a buyer walks up to and the listing agent answers for it under NAR Article 12. Tier 2 is
+surface finish (paint, cladding), which the free-text box *may* override, mirroring
+`generatePrompt`'s own "unless the user explicitly requested it".
+
+Two more things differ from the interior path, both on `StagingParams`:
+
+- **`promptOverride`** — supplies the whole prompt, so `generatePrompt` never runs. Without
+  it the fallback would be `generatePrompt('Exterior', …)`, and `Exterior` has no
+  `promptMatrix` entry, so it would stage *furniture onto a driveway* from the generic
+  prompt and return a plausible-looking image.
+- **`skipQualityReview`** — turns off the review-and-reshoot loop. Scoring three attempts
+  is worth it when the model is inventing a room; on this path a re-roll returns a
+  different sky, not a better one. The retry on a *thrown* provider error is unaffected,
+  and the render is **not** marked `_qaDegraded` (that flag means the reviewer broke).
+
+The option vocabulary lives in three places at once — the `<select>` values in
+`public/exterior-studio.html`, the clause tables in `exterior-prompts.js`, and
+`exteriorStudio.*` in all 11 language packs. None of them fails loudly alone, so
+[`test/i18n/exterior-options-i18n.test.js`](../../test/i18n/exterior-options-i18n.test.js)
+ties them together.
 
 ## Conventions & gotchas
 

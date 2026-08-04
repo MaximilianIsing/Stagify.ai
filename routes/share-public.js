@@ -66,6 +66,7 @@ import { sendError } from '../lib/http/http-helpers.js';
 import { reportError } from '../lib/http/error-ref.js';
 import { shareLimiter as defaultShareLimiter } from '../lib/http/rate-limiters.js';
 import { STAGING_DISCLOSURE } from '../lib/staging/staging-disclosure.js';
+import { readRenderExtra } from '../lib/data/render-extra.js';
 import { logger } from '../lib/logger.js';
 
 /** The static shell served at `/s/:token`; it fetches its own data from the manifest. */
@@ -133,6 +134,7 @@ export function buildManifest({ render, blobs, share, presign }) {
   const thumb = blobs.find((b) => b.role === 'thumb');
   // NOTE: `before` is deliberately not looked up. See the header.
   const settings = share.settings ?? {};
+  const extra = readRenderExtra(render);
 
   return {
     headline: text(settings.headline, 120),
@@ -143,6 +145,21 @@ export function buildManifest({ render, blobs, share, presign }) {
     name: text(render.custom_name, MAX_LABEL),
     roomType: text(render.room_type, MAX_LABEL),
     furnitureStyle: text(render.furniture_style, MAX_LABEL),
+    // Which studio made it, and the one setting worth naming it by. Published because they
+    // are OUR vocabulary — four tool ids and our own preset labels — with no customer data
+    // in them, and because without them this page would head an exterior render "Staged
+    // room" where its owner sees "Exterior — Golden hour". The two pages agreeing is the
+    // whole reason public/scripts/render-name.js exists.
+    //
+    // `sourceName` — the source photo's filename — is DELIBERATELY NOT HERE, and the
+    // omission is structural rather than a flag someone can flip. Listing photos are named
+    // "412-rosewood-ln-master.jpg" or "smith-listing-REDO", so publishing the stem hands
+    // the property address and the agent's private filing to whoever holds the link. This
+    // is the same line the header draws for the prompt: `custom_name` goes out because it
+    // is typed AS a caption, and nobody names a file for an audience. The derived name
+    // simply appends nothing when the entry carries no stem, so the page needs no branch.
+    source: text(extra.source, MAX_LABEL),
+    qualifier: text(extra.qualifier, MAX_LABEL),
     // Milliseconds, formatted in the reader's own locale by the page. A date formatted
     // here would be formatted in the SERVER's, which is nobody's.
     stagedAt: Number.isFinite(render.created_at) ? render.created_at : null,

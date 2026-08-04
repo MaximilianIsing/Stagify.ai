@@ -69,6 +69,10 @@ const UNTESTED = [
   'demo-player.js',
   'designer-demo.js',
   'enterprise.js',
+  // The Exterior Studio's composition root, listed for the same reason as
+  // ai-designer-app.js / masking-studio-app.js / app.js above: it is wiring, and its
+  // three islands (access, compare, enhance) each have their own suite.
+  'exterior-studio-app.js',
   'faq-redirect.js',
   'footer-year.js',
   'gallery-gate.js',

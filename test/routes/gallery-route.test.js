@@ -20,7 +20,7 @@ import { createRenderRefs } from '../../lib/data/render-refs.js';
 import { createLocalObjectStore } from '../../lib/data/object-store-local.js';
 import { createDisabledObjectStore } from '../../lib/data/object-store.js';
 import { keyForRender, newRenderId } from '../../lib/data/object-keys.js';
-import { closeDb } from '../../lib/data/db.js';
+import { getDb, closeDb } from '../../lib/data/db.js';
 
 const servers = [];
 const dirs = [];
@@ -34,12 +34,47 @@ after(() => {
 });
 
 /**
+ * Record every SQLite statement EXECUTION on the connection the stores are about to open.
+ *
+ * The stores share one memoized handle per data dir (lib/data/db.js), so taking it here —
+ * BEFORE the factories run — and wrapping `prepare` catches every statement they go on to
+ * prepare. Wrapping `get`/`all`/`run` on the returned Statement is what counts executions
+ * rather than preparations, which is the number that actually matters: a statement
+ * prepared once and run sixty times is exactly the shape being guarded against. better-
+ * sqlite3's own BEGIN/COMMIT do not travel through `db.prepare`, so a transaction adds
+ * nothing to the tally.
+ *
+ * Starts OFF: setup records renders, and only what a READER pays for is interesting.
+ * @param {string} dir @returns {{ on: boolean, sql: string[] }}
+ */
+function installStatementCounter(dir) {
+  const db = getDb(dir);
+  const state = { on: false, sql: /** @type {string[]} */ ([]) };
+  const prepare = db.prepare.bind(db);
+  db.prepare = (sql) => {
+    const stmt = prepare(sql);
+    for (const method of ['get', 'all', 'run']) {
+      const fn = stmt[method].bind(stmt);
+      stmt[method] = (/** @type {any[]} */ ...args) => {
+        if (state.on) state.sql.push(sql);
+        return fn(...args);
+      };
+    }
+    return stmt;
+  };
+  return state;
+}
+
+/**
  * Mount the real router over real stores. `as()` swaps the identity the fake auth
  * returns, so a test can change caller without a session.
  */
-async function mount({ objectStore: injected, appOrigin = 'https://stagify.test' } = {}) {
+async function mount({ objectStore: injected, appOrigin = 'https://stagify.test', countSql = false } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-galleryroute-'));
   dirs.push(dir);
+  // Before every factory below, or the statements they prepare in their constructors are
+  // the unwrapped ones and the tally reads zero.
+  const sqlCounter = countSql ? installStatementCounter(dir) : null;
   const shares = createGalleryShares(dir);
   const stagedRenders = createStagedRenders(dir);
   const renderRefs = createRenderRefs(dir);
@@ -59,10 +94,12 @@ async function mount({ objectStore: injected, appOrigin = 'https://stagify.test'
   });
   servers.push(server);
 
-  const addRender = (userId, { status = 'ok', roomType = 'Bedroom', furnitureStyle, additionalPrompt = 'keep the desk' } = {}) => {
+  const addRender = (userId, {
+    status = 'ok', roomType = 'Bedroom', furnitureStyle, additionalPrompt = 'keep the desk', extra,
+  } = {}) => {
     const id = newRenderId();
     stagedRenders.record({
-      render: { id, userId, roomType, furnitureStyle, additionalPrompt },
+      render: { id, userId, roomType, furnitureStyle, additionalPrompt, extra },
       blobs: [
         { role: 'after', storageKey: keyForRender({ renderId: id, role: 'after' }), bytes: 1 },
         { role: 'before', storageKey: keyForRender({ renderId: id, role: 'before' }), bytes: 1 },
@@ -79,7 +116,7 @@ async function mount({ objectStore: injected, appOrigin = 'https://stagify.test'
     // `plan` is what the route reads to decide whether searching is offered, so it has to
     // be settable — every other assertion in this file runs as a Pro account.
     as: (id, plan = 'pro') => { identity.current = id ? { id, plan } : null; },
-    shares, stagedRenders, addRender,
+    shares, stagedRenders, addRender, sqlCounter, objectStore,
   };
 }
 
@@ -580,6 +617,109 @@ test('the page size is the server\'s to decide', async () => {
   assert.equal(body.pageSize, PAGE_SIZE);
 });
 
+// ---- what a page COSTS ----------------------------------------------------------------
+//
+// The listing used to run three statements per row inside its map — the blobs, the
+// references and the live share, once per tile. A full page was around 180 synchronous
+// better-sqlite3 calls, every one of them blocking the event loop against every other
+// request in the process. The number was survivable; the SHAPE was not, and it lost its
+// last ceiling when PRO_GALLERY_LIMIT became Infinity, because nothing bounds how many
+// rows an account can have any more.
+//
+// These two tests are the guard. They are deliberately about shape rather than speed: a
+// wall-clock assertion would be flaky on CI and would not say what broke.
+
+test('a listing costs the same number of SQL statements whatever the page size', async () => {
+  const small = await mount({ countSql: true });
+  const large = await mount({ countSql: true });
+  for (let i = 0; i < 5; i += 1) small.addRender('user-1');
+  for (let i = 0; i < PAGE_SIZE; i += 1) large.addRender('user-1');
+  small.as('user-1');
+  large.as('user-1');
+
+  // Warm up first. The FIRST listing an account ever loads mints a share per render, and
+  // that write path is meant to be linear — there is a row to insert per render and no way
+  // around it. Steady state is what a reader actually pays, on this load and every one
+  // after it.
+  await fetch(`${small.base}/api/gallery`);
+  await fetch(`${large.base}/api/gallery`);
+
+  small.sqlCounter.on = true;
+  const fiveEntries = await json(await fetch(`${small.base}/api/gallery`));
+  small.sqlCounter.on = false;
+
+  large.sqlCounter.on = true;
+  const fullPage = await json(await fetch(`${large.base}/api/gallery`));
+  large.sqlCounter.on = false;
+
+  // The counter is worthless if the requests did not actually return the pages claimed.
+  assert.equal(fiveEntries.entries.length, 5);
+  assert.equal(fullPage.entries.length, PAGE_SIZE);
+
+  assert.equal(
+    large.sqlCounter.sql.length, small.sqlCounter.sql.length,
+    `a ${PAGE_SIZE}-entry page ran ${large.sqlCounter.sql.length} statements and a 5-entry `
+    + `page ran ${small.sqlCounter.sql.length}. Something in the listing is per-ROW again:\n`
+    + `${large.sqlCounter.sql.join('\n')}`,
+  );
+  // A bound as well as an equality: two equally-linear paths would satisfy the comparison
+  // above on their own, and this says out loud how small the number is meant to be.
+  assert.ok(large.sqlCounter.sql.length <= 8, `expected a handful, got ${large.sqlCounter.sql.length}`);
+});
+
+test('no statement in a listing runs more than once', async () => {
+  // The sharper form of the test above, and the one whose failure names the culprit: if
+  // any single piece of SQL executes twice for one page, something is being asked per row.
+  const { base, as, addRender, sqlCounter } = await mount({ countSql: true });
+  as('user-1');
+  for (let i = 0; i < 12; i += 1) addRender('user-1');
+  await fetch(`${base}/api/gallery`);
+
+  sqlCounter.on = true;
+  await fetch(`${base}/api/gallery`);
+  sqlCounter.on = false;
+
+  const runs = new Map();
+  for (const sql of sqlCounter.sql) runs.set(sql, (runs.get(sql) ?? 0) + 1);
+  const repeated = [...runs].filter(([, n]) => n > 1);
+  assert.deepEqual(
+    repeated, [],
+    `these ran once per row instead of once per page:\n${repeated.map(([sql, n]) => `${n}x ${sql.trim()}`).join('\n')}`,
+  );
+  assert.ok(sqlCounter.sql.length > 0, 'the counter was actually recording');
+});
+
+test('the FIRST listing pays only for the rows it mints, not for asking twice', async () => {
+  // The cold path is legitimately linear: an account whose renders have no links yet gets
+  // one INSERT each, and there is no way around a row per row. What it must NOT also pay
+  // is the lookup — the batched read has already established that these renders have no
+  // live share, and mintOrReuse must believe it.
+  //
+  // This is the case the `?? null` in ensureForRenders exists for, and nothing else catches
+  // it: `undefined` means "I did not look" and sends mintOrReuse back to its own SELECT for
+  // exactly the rows the batch just covered. On a WARM listing every render has a link, so
+  // that branch is never taken and the constant-cost tests above stay green either way.
+  const cost = async (n) => {
+    const { base, as, addRender, sqlCounter } = await mount({ countSql: true });
+    as('user-1');
+    for (let i = 0; i < n; i += 1) addRender('user-1');
+    sqlCounter.on = true;
+    const body = await json(await fetch(`${base}/api/gallery`));
+    sqlCounter.on = false;
+    assert.equal(body.entries.length, n, 'the page really did come back');
+    return sqlCounter.sql.length;
+  };
+
+  // Two sizes and a slope, rather than one absolute number: the constant part is nobody's
+  // business here, and pinning it would make this test fail for unrelated reasons.
+  const perRender = (await cost(14) - await cost(4)) / 10;
+  assert.equal(
+    perRender, 3,
+    `a mint should cost 3 statements per render (revoke, insert, read back) — got ${perRender}. `
+    + 'A 4th means the live-share lookup is running per row on top of the batched one.',
+  );
+});
+
 // ---- caching --------------------------------------------------------------------------
 
 test('every gallery response forbids caching', async () => {
@@ -648,4 +788,72 @@ test('a disabled object store answers an empty gallery, not a 500', async () => 
   // to happen BEFORE that — a deployment with no bucket would otherwise fill the table
   // with links to bytes it cannot serve.
   assert.equal(shares.activeForRender(id), null);
+});
+
+// ---- the naming payload ---------------------------------------------------------------
+
+test('the listing publishes what the page needs to NAME a render', async () => {
+  // Field by field, never a spread — so a new column cannot publish itself by accident and
+  // these three had to be added deliberately.
+  const { base, as, addRender } = await mount();
+  as('user-1');
+  addRender('user-1', { extra: { source: 'exterior', qualifier: 'Golden hour', sourceName: '412-rosewood' } });
+
+  const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
+  assert.equal(entry.source, 'exterior');
+  assert.equal(entry.qualifier, 'Golden hour');
+  assert.equal(entry.sourceName, '412-rosewood');
+});
+
+test('a render with no naming payload publishes three empty strings, never undefined', async () => {
+  // Every row written before this shipped is this case, and the page falls through to the
+  // original "<Style> <Room type>" ladder — so nothing in an existing gallery is renamed.
+  const { base, as, addRender } = await mount();
+  as('user-1');
+  addRender('user-1');
+  const [entry] = (await json(await fetch(`${base}/api/gallery`))).entries;
+  assert.deepEqual([entry.source, entry.qualifier, entry.sourceName], ['', '', '']);
+});
+
+// ---- the Masking Studio handoff -------------------------------------------------------
+
+test('the owner can fetch a render\'s bytes for the Masking Studio handoff', async () => {
+  // Served from OUR origin rather than a presigned URL, because a cross-origin image taints
+  // the canvas the studio has to call toDataURL on. See the route's own comment.
+  const { base, as, addRender, objectStore } = await mount();
+  as('user-1');
+  const id = addRender('user-1');
+  // The fixture records blob ROWS; the bytes have to be put for real, which is also what
+  // proves the route reads the object store rather than trusting the row.
+  await objectStore.put(keyForRender({ renderId: id, role: 'after' }), Buffer.from('WEBPBYTES'), 'image/webp');
+
+  const res = await fetch(`${base}/api/gallery/${id}/source`);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('content-type'), 'image/webp');
+  assert.equal(Buffer.from(await res.arrayBuffer()).toString(), 'WEBPBYTES');
+});
+
+test('the handoff source 404s when the row names bytes the store does not have', async () => {
+  const { base, as, addRender } = await mount();
+  as('user-1');
+  const id = addRender('user-1'); // rows only, nothing put
+  assert.equal((await fetch(`${base}/api/gallery/${id}/source`)).status, 404);
+});
+
+test('the handoff source refuses an anonymous caller and someone else\'s render', async () => {
+  const { base, as, addRender } = await mount();
+  const theirs = addRender('user-2');
+  as(null);
+  assert.equal((await fetch(`${base}/api/gallery/${theirs}/source`)).status, 401);
+  as('user-1');
+  // "Not yours" and "does not exist" answer identically, so this cannot enumerate ids.
+  assert.equal((await fetch(`${base}/api/gallery/${theirs}/source`)).status, 404);
+  assert.equal((await fetch(`${base}/api/gallery/nope/source`)).status, 404);
+});
+
+test('the handoff source 404s for a render whose bytes never landed', async () => {
+  const { base, as, addRender } = await mount();
+  as('user-1');
+  const pending = addRender('user-1', { status: 'pending' });
+  assert.equal((await fetch(`${base}/api/gallery/${pending}/source`)).status, 404);
 });

@@ -1,6 +1,7 @@
 import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
 import { syncStagingMenu } from './staging-menu.js';
 import { syncGalleryTab } from './gallery-tab.js';
+import { syncExteriorAccess } from './exterior-studio/access.js';
 
 (function () {
   var TOKEN_KEY = 'stagifyAuthToken';
@@ -134,6 +135,13 @@ import { syncGalleryTab } from './gallery-tab.js';
       // the early return below on purpose: signing OUT has to put the tab away
       // again, and that is the branch that runs when it does.
       syncGalleryTab();
+
+      // The Exterior Studio page, which shows one of three views on a single URL
+      // (pitch / pitch + upgrade dialog / the tool). Like the three writers above it
+      // is idempotent and no-ops on every page that has no studio in it — and like
+      // syncGalleryTab it is called BEFORE the early return below, because signing OUT
+      // has to put the public pitch back.
+      syncExteriorAccess();
 
       if (!u) {
         if (proPanel) proPanel.classList.add('hidden');

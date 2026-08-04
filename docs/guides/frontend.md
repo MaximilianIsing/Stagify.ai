@@ -36,6 +36,7 @@ there is **one mental model across the stack**.
 | `index.html` (staging tool) | `scripts/app.js` | `scripts/app/` |
 | `ai-designer.html` | `scripts/ai-designer-app.js` | `scripts/ai-designer/` |
 | `masking-studio.html` | `scripts/masking-studio-app.js` | `scripts/masking-studio/` |
+| `exterior-studio.html` | `scripts/exterior-studio-app.js` | `scripts/exterior-studio/` |
 
 The entry resolves the page's DOM elements once, then constructs and wires the islands
 — exactly what `server.js` does with routers and `lib/` factories, but for the browser.
@@ -569,6 +570,23 @@ way for the no-JS path. The promotion is an external script rather than an inlin
 before paint so a non-Pro visitor never flashes the studio, and the entry script removes
 it once access is verified (with a ~6s safety-net redirect if the plan check stalls).
 This one style **must** stay inline — it has to apply before any external CSS loads.
+
+**The Exterior Studio deliberately has NO gate**, and it is worth understanding why before
+adding one "for consistency". A pre-paint redirect turns away everyone without a token —
+and **Googlebot carries no token**, so `masking-studio.html` and `ai-designer.html` bounce
+the crawler despite both having a full canonical / hreflang / JSON-LD setup. That SEO work
+currently earns nothing. `exterior-studio.html` instead ships in its *anonymous* state and
+changes shape once `/api/auth/me` answers
+([`exterior-studio/access.js`](../../public/scripts/exterior-studio/access.js)): a visitor
+gets the pitch, a signed-in free account gets the pitch plus an upgrade dialog, and a
+Stagify+ account gets the tool. There is no FOUC problem because the default state is the
+one a stranger should see — the *studio* is what appears late, not the page.
+
+None of that is a security boundary. `requireProAccount` on `POST /api/enhance-exterior`
+is; revealing controls is an affordance. The pairing is pinned by the
+`data-staging-preview` guard in
+[`test/frontend/staging-menu.test.js`](../../test/frontend/staging-menu.test.js), which
+fails if that page ever grows a blocking `*-gate.js`.
 
 ### `var` is an extraction artifact — sweep it, don't pick at it
 
