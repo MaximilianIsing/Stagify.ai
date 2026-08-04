@@ -235,3 +235,172 @@ test('processStaging: a failure BEFORE the prompt exists is still counted, with 
   assert.equal(roomType, 'Bedroom');
   assert.equal(outcome.status, 'failed');
 });
+
+// --- the promptOverride / reviewBasePrompt seams ----------------------------
+//
+// Two optional StagingParams fields that let a caller whose request is not a
+// room-type + furniture-style combination reuse this whole pipeline. The Exterior
+// Studio is the first; the failure mode if either regresses is silent and expensive.
+
+test('processStaging: promptOverride REPLACES the generated prompt, it does not prepend to it', async () => {
+  // If the override were ever ignored, processStaging would fall back to
+  // generatePrompt('Exterior', …) — a room type with no promptMatrix entry, so the
+  // generic "Stage this Exterior professionally" fallback. That renders FURNITURE onto a
+  // driveway and returns a perfectly plausible-looking image, which is exactly the
+  // outcome the shared exteriors predicate exists to prevent.
+  const sent = [];
+  const gen = makeGeneration(await png(8, 8), {
+    genAI: {
+      getGenerativeModel: () => ({
+        generateContent: async (parts) => {
+          sent.push(parts[0].text);
+          return { response: { candidates: [{ content: { parts: [{ inlineData: { data: (await png(8, 8)).toString('base64') } }] } }] } };
+        },
+      }),
+    },
+  });
+  await gen.processStaging(
+    await jpg(80, 60),
+    { roomType: 'Exterior', promptOverride: 'ENHANCE-THIS-FACADE', additionalPrompt: 'summary text' },
+    { body: {} },
+  );
+  assert.equal(sent[0], 'ENHANCE-THIS-FACADE', 'the override is the whole prompt, verbatim');
+  assert.ok(!sent[0].includes('Stage this'), 'generatePrompt never ran');
+  // ...and the CSV still records what the model actually saw, not what it would have.
+  assert.equal(loggedRow(gen.rows).promptText, 'ENHANCE-THIS-FACADE');
+});
+
+test('processStaging: no promptOverride leaves the interior path completely unchanged', async () => {
+  // The no-op half. Every pre-existing caller passes nothing here.
+  const sent = [];
+  const gen = makeGeneration(await png(8, 8), {
+    genAI: {
+      getGenerativeModel: () => ({
+        generateContent: async (parts) => {
+          sent.push(parts[0].text);
+          return { response: { candidates: [{ content: { parts: [{ inlineData: { data: (await png(8, 8)).toString('base64') } }] } }] } };
+        },
+      }),
+    },
+  });
+  await gen.processStaging(
+    await jpg(80, 60),
+    { roomType: 'Bedroom', furnitureStyle: 'standard', additionalPrompt: '', removeFurniture: false },
+    { body: {} },
+  );
+  assert.match(sent[0], /KEEP EXISTING FURNITURE/, 'the assembled interior prompt still ships');
+});
+
+test('processStaging: skipQualityReview generates ONCE and never calls the reviewer', async () => {
+  // The gate costs a vision pass per attempt and re-rolls up to QUALITY_MAX_ATTEMPTS
+  // chasing a better score. Worth it when the model is inventing a room; pure waste when
+  // it is relighting a photo it was handed. The regression to catch is a silent one: if
+  // the flag stopped being honoured, renders would still succeed — just three times
+  // slower and three times dearer, with nothing failing.
+  let reviews = 0;
+  let generations = 0;
+  const gen = makeGeneration(null, {
+    genAI: {
+      getGenerativeModel: () => ({
+        generateContent: async () => {
+          generations += 1;
+          return { response: { candidates: [{ content: { parts: [{ inlineData: { data: 'iVBORw0KGgo=' } }] } }] } };
+        },
+      }),
+    },
+    // The REAL retry loop, not a passthrough — the point is what it does with a reviewer
+    // that always passes.
+    runQualityRetry: (await import('../../lib/staging/staging-pipeline.js')).generateWithQualityRetry,
+    reviewImageQuality: async () => { reviews += 1; return { perfect: false, score: 10 }; },
+    QUALITY_MAX_ATTEMPTS: 3,
+  });
+
+  await gen.processStaging(
+    await jpg(80, 60),
+    { roomType: 'Exterior', promptOverride: 'X', skipQualityReview: true },
+    { body: {} },
+  );
+  assert.equal(reviews, 0, 'no vision pass was paid for');
+  assert.equal(generations, 1, 'and the image was generated exactly once');
+});
+
+test('processStaging: without the flag, a not-perfect verdict still re-rolls', async () => {
+  // The other half — proof the test above measures the flag and not a broken harness.
+  let reviews = 0;
+  let generations = 0;
+  const gen = makeGeneration(null, {
+    genAI: {
+      getGenerativeModel: () => ({
+        generateContent: async () => {
+          generations += 1;
+          return { response: { candidates: [{ content: { parts: [{ inlineData: { data: 'iVBORw0KGgo=' } }] } }] } };
+        },
+      }),
+    },
+    runQualityRetry: (await import('../../lib/staging/staging-pipeline.js')).generateWithQualityRetry,
+    reviewImageQuality: async () => { reviews += 1; return { perfect: false, score: 10 }; },
+    QUALITY_MAX_ATTEMPTS: 3,
+  });
+
+  await gen.processStaging(
+    await jpg(80, 60),
+    { roomType: 'Bedroom', furnitureStyle: 'standard' },
+    { body: {} },
+  );
+  assert.equal(generations, 3, 'the interior path still spends its full attempt budget');
+  assert.equal(reviews, 3);
+});
+
+test('processStaging: a skipped review is NOT recorded as a degraded (broken-reviewer) run', async () => {
+  // `_qaDegraded` means "shipped unreviewed because the reviewer broke" and drives the QA
+  // dashboard. Switching the gate off deliberately must not land in the same bucket, or a
+  // real reviewer outage disappears into a pile of exterior renders.
+  const req = { body: {} };
+  const gen = makeGeneration(null, {
+    genAI: {
+      getGenerativeModel: () => ({
+        generateContent: async () => ({
+          response: { candidates: [{ content: { parts: [{ inlineData: { data: 'iVBORw0KGgo=' } }] } }] },
+        }),
+      }),
+    },
+    runQualityRetry: (await import('../../lib/staging/staging-pipeline.js')).generateWithQualityRetry,
+    reviewImageQuality: async () => ({ perfect: true, score: 100 }),
+    QUALITY_MAX_ATTEMPTS: 3,
+  });
+  await gen.processStaging(await jpg(80, 60), { roomType: 'Exterior', promptOverride: 'X', skipQualityReview: true }, req);
+  assert.equal(req._qaDegraded, undefined);
+  // Metering still counts the generation that really happened.
+  assert.equal(req._stagingGenerations, 1);
+});
+
+test('processStaging: reviewBasePrompt reaches the reviewer, and its absence keeps the default', async () => {
+  const seen = [];
+  const roomInput = await jpg(80, 60);
+  const make = (params) => {
+    const gen = makeGeneration(null, {
+      genAI: {
+        getGenerativeModel: () => ({
+          generateContent: async () => ({
+            response: { candidates: [{ content: { parts: [{ inlineData: { data: 'iVBORw0KGgo=' } }] } }] },
+          }),
+        }),
+      },
+      // Capture what the pipeline hands the reviewer rather than what the reviewer does
+      // with it — the review logic has its own tests.
+      runQualityRetry: async (generateOnce, opts) => {
+        const url = await generateOnce(1, null);
+        await opts.reviewFn(url);
+        return url;
+      },
+      reviewImageQuality: async (_url, opts) => { seen.push(opts); return { perfect: true, score: 100 }; },
+    });
+    return gen.processStaging(roomInput, params, { body: {} });
+  };
+
+  await make({ roomType: 'Exterior', promptOverride: 'X', reviewBasePrompt: 'EXTERIOR-RUBRIC' });
+  await make({ roomType: 'Bedroom', furnitureStyle: 'standard' });
+  assert.equal(seen.length, 2, 'sanity: the reviewer ran for both renders');
+  assert.equal(seen[0].basePrompt, 'EXTERIOR-RUBRIC');
+  assert.equal(seen[1].basePrompt, null, 'unset means the reviewer keeps its own default');
+});

@@ -53,7 +53,7 @@ test.describe('Staging dropdown — desktop', () => {
   // 2026-08-01 and left a phone with no nav path to any staging tool at all.)
   test.skip(({ isMobile }) => isMobile, 'asserts the desktop layout; the phone half is below');
 
-  test('lists the four tools in order and opens on click', async ({ page }) => {
+  test('lists the five tools in order and opens on click', async ({ page }) => {
     await seedProSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
@@ -63,11 +63,12 @@ test.describe('Staging dropdown — desktop', () => {
     await expect(page.locator(TRIGGER)).toHaveAttribute('aria-expanded', 'false');
 
     const items = await openMenu(page);
-    await expect(items).toHaveCount(4);
+    await expect(items).toHaveCount(5);
     await expect(items.nth(0)).toContainText('Image Staging');
     await expect(items.nth(1)).toContainText('Basic Mask');
     await expect(items.nth(2)).toContainText('AI Designer');
     await expect(items.nth(3)).toContainText('Masking Studio');
+    await expect(items.nth(4)).toContainText('Exterior Studio');
     await expect(page.locator(TRIGGER)).toHaveAttribute('aria-expanded', 'true');
   });
 
@@ -135,13 +136,13 @@ test.describe('Staging dropdown — desktop', () => {
     await expect(page.locator(TRIGGER)).toHaveClass(/is-lit/, { timeout: 5000 });
   });
 
-  test('a Pro user gets all four unlocked', async ({ page }) => {
+  test('a Pro user gets all five unlocked', async ({ page }) => {
     await seedProSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
 
     const items = await openMenu(page);
-    for (let i = 0; i < 4; i += 1) {
+    for (let i = 0; i < 5; i += 1) {
       await expect(items.nth(i)).not.toHaveClass(/is-locked/);
       // The lock is what carries "this is Stagify+" into the a11y tree, so an
       // unlocked row must not still be announcing it. Asserted as visibility AND
@@ -205,15 +206,15 @@ test.describe('Staging dropdown — desktop', () => {
     await expect(page.locator('#stage-modal')).toHaveClass(/hidden/);
   });
 
-  test('a free user sees all four but only Image Staging is live', async ({ page }) => {
+  test('a free user sees all five but only Image Staging is live', async ({ page }) => {
     await seedFreeSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
 
     const items = await openMenu(page);
-    await expect(items).toHaveCount(4, 'the studios stay visible — that is the upsell');
+    await expect(items).toHaveCount(5, 'the studios stay visible — that is the upsell');
     await expect(items.nth(0)).not.toHaveClass(/is-locked/);
-    for (const i of [1, 2, 3]) {
+    for (const i of [1, 2, 3, 4]) {
       await expect(items.nth(i)).toHaveClass(/is-locked/);
       // A locked row stays an operable link (it goes to Stagify+), so the state is
       // announced by the lock's own label rather than by aria-disabled. The lock is
@@ -272,10 +273,10 @@ test.describe('Staging dropdown — phone', () => {
 
     await expect(page.locator(TRIGGER)).toBeVisible();
     const items = await openMenu(page);
-    // All four rows stay in the DOM — one of them is hidden by CSS, not dropped, so
+    // All five rows stay in the DOM — one of them is hidden by CSS, not dropped, so
     // the markup is identical on every page and at every width.
-    await expect(items).toHaveCount(4);
-    for (const name of ['Image Staging', 'Basic Mask', 'Masking Studio']) {
+    await expect(items).toHaveCount(5);
+    for (const name of ['Image Staging', 'Basic Mask', 'Masking Studio', 'Exterior Studio']) {
       await expect(page.locator(ITEM).filter({ hasText: name })).toBeVisible();
     }
 

@@ -26,8 +26,10 @@
       "imageStaging": "Mobilia um cômodo inteiro a partir de uma única foto: escolha o tipo de ambiente e o estilo do mobiliário e a IA cuida do resto. Ideal para ambientes vazios ou quase vazios quando você quer um resultado rápido e completo.",
       "basicMask": "Pinte sobre uma parte da foto e descreva a mudança que deseja. Ideal para ajustes pequenos — trocar um sofá, limpar uma bancada — quando o restante da imagem já está bom.",
       "pdfTo3d": "Converse com um designer de IA que mobilia, redesenha e continua refinando um ambiente com você. Ideal quando você está explorando estilos em vez de finalizar uma única foto. Apenas no computador.",
-      "maskingStudio": "Destaque várias áreas em cores diferentes, dê a cada uma sua própria foto de mobiliário ou instrução e mobilie todas de uma vez. Ideal quando você precisa de controle exato: tudo o que ficar fora dos seus destaques continua idêntico."
-    }
+      "maskingStudio": "Destaque várias áreas em cores diferentes, dê a cada uma sua própria foto de mobiliário ou instrução e mobilie todas de uma vez. Ideal quando você precisa de controle exato: tudo o que ficar fora dos seus destaques continua idêntico.",
+      "exteriorStudio": "Melhora a foto do exterior de um imóvel: mude a hora do dia, limpe o céu e remova carros estacionados e desordem. Ideal para a fachada, o quintal e as fotos de rua, que as ferramentas de home staging nunca tocam."
+    },
+    "exteriorStudio": "Estúdio de Exteriores"
   },
   "hero": {
     "catchphrase": "Carregue. Decore.",
@@ -88,6 +90,24 @@
     "masking": {
       "title": "Decore com precisão exata",
       "subtitle": "Mascare as áreas a refazer, adicione seus próprios móveis e todo o resto fica idêntico ao pixel. <em>(Exclusivo do Stagify+)</em>"
+    },
+    "exterior": {
+      "title": "Corrija a foto com que o anúncio abre",
+      "subtitle": "O Estúdio de Exteriores muda a hora do dia, limpa céus cinzentos e remove carros e contentores. O imóvel fica intacto. <em>(Exclusivo do Stagify+)</em>",
+      "kicker": "Apelo exterior",
+      "panelTitle": "A única foto que não pode repetir",
+      "panelBody": "Cada anúncio abre com o exterior do imóvel, a única foto que não pode repetir quando o tempo muda.",
+      "points": {
+        "light": "Fotografe ao meio-dia, publique à hora dourada.",
+        "sky": "O cinzento passa a azul limpo ou pouco nublado.",
+        "clutter": "Carros, contentores, mangueiras e placas saem.",
+        "honest": "Sem relva nova, sem pintura, sem acesso novo."
+      },
+      "comparisonAria": "Comparação da foto exterior antes e depois da melhoria",
+      "alts": {
+        "before": "Uma moradia fotografada sob um céu cinzento uniforme, com um carro na entrada, contentores no passeio e uma mangueira no relvado",
+        "after": "A mesma casa à hora dourada sob um céu azul limpo, sem o carro estacionado, os contentores e a mangueira"
+      }
     },
     "gallery": {
       "title": "Cada ambiente que você prepara fica guardado para você",
@@ -361,6 +381,8 @@
       "uploadArea": "Envie uma imagem ou arraste e solte",
       "before": "Antes",
       "after": "Depois",
+      "refineInStudio": "Refinar no Estúdio de Máscaras",
+      "refineInStudioShort": "Refinar",
       "downloadResult": "Baixar resultado",
       "uploadAnother": "Enviar outra",
       "noProcessedImage": "Seu resultado decorado aparecerá aqui",
@@ -553,11 +575,11 @@
         "photoAlt": "Retrato de Ryan Croman, cofundador e líder de prospecção da Stagify.ai"
       },
       "emil": {
-        "name": "Emil Volvosky",
+        "name": "Emil Volvovsky",
         "email": "emvolvovsky@gmail.com",
         "phone": "(917) 691-2013",
         "title": "Analista de Marketing Estatístico",
-        "photoAlt": "Retrato de Emil Volvosky, analista de marketing estatístico da Stagify.ai"
+        "photoAlt": "Retrato de Emil Volvovsky, analista de marketing estatístico da Stagify.ai"
       }
     }
   },
@@ -996,6 +1018,11 @@
       "title": "Estúdio de Máscaras | Stagify.ai - Staging virtual de precisão em várias áreas",
       "description": "Destaque várias áreas de uma foto de cômodo em cores diferentes, anexe uma foto de móvel a cada uma e faça o staging de todas de uma vez. Apenas as áreas destacadas podem mudar — o resto da sua foto permanece intacto, pixel por pixel.",
       "keywords": "estúdio de máscaras, máscara de staging virtual, staging virtual de precisão, staging de várias áreas, posicionamento de móveis por IA, edição de fotos com máscara, edição por regiões, staging de fotos imobiliárias, Stagify"
+    },
+    "exteriorStudio": {
+      "title": "Estúdio de Exteriores | Stagify.ai - Melhoria de fotos de fachada com IA",
+      "description": "Transforme uma foto de exterior cinzenta e desordenada na imagem que o anúncio merece. Mude a hora do dia, limpe o céu e remova carros e contentores, enquanto o imóvel permanece exatamente como foi fotografado.",
+      "keywords": "apelo exterior, edição de fotos de exterior, melhoria de fotos imobiliárias, substituição de céu, remover carros da foto, foto ao crepúsculo, hora dourada, editor de fotos com IA, fachada, Stagify"
     }
   },
   "maskingStudio": {
@@ -1076,6 +1103,7 @@
     "resumeNo": "Começar do zero",
     "helpStep5": "Não gostou de uma área? Use Tentar outra versão para gerar mais opções e alternar entre elas.",
     "promptIdeas": "Mostrar ideias",
+    "handoffFailed": "Não conseguimos abrir esse render. Envie a foto em vez disso.",
     "looksGood": "Ficou bom",
     "redo": "Refazer",
     "toolWand": "Varinha",
@@ -1233,10 +1261,6 @@
     },
     "features": {
       "heading": "Tudo o que você precisa para fazer staging como um profissional",
-      "model": {
-        "title": "Modelo de alta qualidade",
-        "desc": "Nosso modelo mais avançado gera móveis, materiais e iluminação mais nítidos e realistas."
-      },
       "remove": {
         "title": "Remover móveis existentes",
         "desc": "Apague móveis, bagunça e decoração e, em seguida, refaça o staging do cômodo vazio do zero."
@@ -1256,6 +1280,10 @@
       "references": {
         "title": "Referências de móveis",
         "desc": "Envie fotos de produtos para decorar ambientes com peças de mobília específicas escolhidas por você."
+      },
+      "exterior": {
+        "title": "Estúdio de Exteriores",
+        "desc": "Corrija a foto com que cada anúncio abre. Mude a hora do dia, limpe um céu cinzento e remova carros e contentores, enquanto o imóvel permanece exatamente como foi fotografado."
       }
     },
     "compare": {
@@ -1276,7 +1304,8 @@
         "masking": "Ferramenta de máscara",
         "studio": "Masking Studio (várias áreas)",
         "variations": "Várias variações por geração",
-        "references": "Referências de móveis"
+        "references": "Referências de móveis",
+        "exterior": "Estúdio de Exteriores (fachada)"
       }
     },
     "enterpriseRow": "Para equipes ou empresas, <a href=\"enterprise.html\">conheça nosso plano enterprise</a> ou fale com <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> para opções de assinatura personalizadas.",
@@ -1309,6 +1338,7 @@
       "rangeValue": "{percent}% decorado"
     },
     "meta": {
+      "source": "Feito com",
       "room": "Ambiente",
       "style": "Estilo",
       "prompt": "Instrução extra",
@@ -1339,6 +1369,7 @@
       "rateLimited": "Muitas solicitações agora. Espere um instante e tente de novo.",
       "retry": "Tentar de novo"
     },
+    "refine": "Refinar no Estúdio de Máscaras",
     "delete": {
       "action": "Excluir esta renderização",
       "warn": "Isto exclui permanentemente a renderização e o link que você já compartilhou. Não é possível desfazer.",
@@ -1390,5 +1421,84 @@
       }
     },
     "loading": "Carregando sua galeria…"
+  },
+  "exteriorStudio": {
+    "title": "Apelo exterior, num só clique",
+    "subtitle": "A primeira foto de cada anúncio é o exterior da casa — e é a única que não pode repetir quando o tempo muda. Carregue-a aqui e receba a versão tirada num dia melhor.",
+    "ctaUpgrade": "Obtenha o Stagify+ para usar",
+    "features": {
+      "title": "O que muda — e o que nunca toca",
+      "light": {
+        "title": "Hora do dia",
+        "body": "Fotografe ao meio-dia, publique na hora dourada. Manhã, meio-dia, hora dourada ou crepúsculo, com sombras e luz interior coerentes com o sol escolhido."
+      },
+      "sky": {
+        "title": "Céu e clima",
+        "body": "Um céu cinzento e sem graça torna-se azul limpo, com nuvens leves ou algo mais dramático — ajustado à luz que já incide no edifício e com contornos limpos no telhado."
+      },
+      "clutter": {
+        "title": "Carros, tralha e neve",
+        "body": "A van do vizinho na entrada, as lixeiras deixadas para fora, a mangueira no gramado, a pessoa passando — e a neve, a chuva e as poças que estavam lá no dia da foto. O que é temporário sai, e a superfície embaixo é reconstruída para combinar."
+      },
+      "honest": {
+        "title": "A casa continua a ser a casa",
+        "body": "Sem relvado novo, sem cabos apagados, sem entrada repavimentada, sem paredes repintadas. Quem estiver no passeio vê o que a foto mostrava — e é isso que a torna utilizável num anúncio."
+      }
+    },
+    "upload": {
+      "title": "Largue aqui uma foto do exterior",
+      "hint": "JPG, PNG, WebP ou HEIC. A fachada, o quintal, a entrada — qualquer foto tirada no exterior.",
+      "button": "Escolher uma foto",
+      "replace": "Usar outra foto"
+    },
+    "controls": {
+      "timeOfDay": "Hora do dia",
+      "sky": "Céu",
+      "removeLegend": "Remover da foto",
+      "removeVehicles": "Carros",
+      "removeClutter": "Lixeiras e tralha",
+      "removePeople": "Pessoas",
+      "removeSnow": "Neve",
+      "removeWetWeather": "Chuva e poças",
+      "notes": "Mais alguma coisa?",
+      "notesPlaceholder": "ex.: manter a bandeira na varanda"
+    },
+    "time": {
+      "morning": "Meio da manhã",
+      "midday": "Meio-dia luminoso",
+      "goldenHour": "Hora dourada",
+      "dusk": "Crepúsculo"
+    },
+    "skyOptions": {
+      "clearBlue": "Azul limpo",
+      "lightClouds": "Nuvens leves",
+      "dramatic": "Dramático"
+    },
+    "actions": {
+      "enhance": "Melhorar exterior",
+      "working": "A processar…",
+      "download": "Transferir",
+      "startOver": "Recomeçar"
+    },
+    "result": {
+      "title": "Antes e depois",
+      "hint": "Arraste o cursor para comparar."
+    },
+    "errors": {
+      "generic": "Não foi possível melhorar essa foto. Experimente outra imagem do exterior do imóvel.",
+      "network": "A ligação caiu antes de a foto voltar. O seu carregamento continua aqui — tente novamente."
+    },
+    "gate": {
+      "title": "O Estúdio de Exteriores faz parte do Stagify+",
+      "body": "A sua conta está no plano gratuito. O Stagify+ desbloqueia o Estúdio de Exteriores, além do Estúdio de Máscaras, do Designer IA e do home staging ilimitado.",
+      "cta": "Ver o Stagify+",
+      "secondary": "Voltar ao início"
+    },
+    "stepPhoto": "Foto do exterior",
+    "stepPhotoHint": "Carregue uma foto na área de trabalho à direita.",
+    "replacePhoto": "Substituir foto",
+    "stepChanges": "O que deve mudar?",
+    "stepChangesHint": "Escolha apenas o que quer mudar. Tudo o que deixar por marcar fica exatamente como foi fotografado.",
+    "enhanceHint": "Escolha pelo menos uma alteração, ou descreva uma acima."
   }
 }

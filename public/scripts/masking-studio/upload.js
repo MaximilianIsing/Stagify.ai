@@ -22,7 +22,7 @@ import { MAX_IMAGE_BYTES } from '../app/image-file.js';
  *   showToast: (message: string, type?: string) => void,
  *   tx: (key: string, def: string) => string,
  *   loadImage: (src: string) => Promise<HTMLImageElement>,
- *   setBaseImage: (img: HTMLImageElement, opts?: { noLayer?: boolean }) => void,
+ *   setBaseImage: (img: HTMLImageElement, opts?: import('./types.js').MsBaseImageOpts) => void,
  *   clearBaseImage: () => void,
  *   requestDiscard: (action: () => void, strict?: boolean) => void,
  *   activeLayer: () => MsLayer | null,
@@ -135,7 +135,10 @@ export function createUpload(deps) {
     // instead of wasting a masking generation. Capturing state.base guards the
     // race where a quick re-upload replaces this photo before its verdict
     // arrives — a stale rejection must not tear down the newer photo.
-    setBaseImage(img);
+    // The photo's own name rides along so the gallery entry can be told apart from every
+    // other one. No `sourceRenderId`: a file picked off disk has no gallery entry behind
+    // it, so "Looks Good" creates one rather than replacing anything.
+    setBaseImage(img, { sourceName: file.name });
     const token = state.base;
     validateStageableRoom(img).then((stageable) => {
       if (!stageable || stageable.valid !== false) return;

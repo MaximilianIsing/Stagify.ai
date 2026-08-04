@@ -169,6 +169,12 @@ export interface FallbackImageResolution {
   buffer: Buffer;
   source: string;
   logMessage?: string;
+  /**
+   * The uploaded file's own name, for the gallery entry the render becomes. Present only
+   * on the current-upload resolver, and only when that upload is the ROOM — see
+   * lib/chat/chat-staging-fallback.js.
+   */
+  sourceName?: string;
 }
 
 /**

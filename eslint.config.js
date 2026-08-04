@@ -193,7 +193,7 @@ export default [
     files: [
       'public/scripts/ai-designer/mask-editor.js',    // 718
       'public/scripts/app/stage-mask-editor.js',      // 659
-      'public/scripts/masking-studio-app.js',         // 683
+      'public/scripts/masking-studio-app.js',         // 746
     ],
     rules: {
       'max-lines': ['error', 850],

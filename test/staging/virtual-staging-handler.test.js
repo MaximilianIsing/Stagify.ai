@@ -23,10 +23,22 @@ function fakeRes() {
 }
 
 /** A multipart request carrying one image and the given body fields. */
-function fakeReq(body = {}) {
+function fakeReq(body = {}, originalname = '123-main-mstr.jpg') {
   return {
     body,
-    files: { image: [{ buffer: Buffer.from('room-bytes') }] },
+    files: { image: [{ buffer: Buffer.from('room-bytes'), originalname }] },
+  };
+}
+
+/** A render-persistence double that records what it was handed. */
+function fakePersistence(seen) {
+  return {
+    enabled: () => true,
+    recordPending: (arg) => {
+      seen.push(arg);
+      return { entries: arg.natives.map((n, i) => ({ id: `r${i}`, native: n.buffer })), evicted: [] };
+    },
+    uploadInBackground: async () => ({ ok: 1, failed: 0 }),
   };
 }
 
@@ -74,6 +86,27 @@ test('a single variation returns one image under `image`', async () => {
   assert.equal(res.body.success, true);
   assert.ok(res.body.image, 'the single-image shape is used');
   assert.equal(res.body.images, undefined);
+});
+
+test('the row records which studio made it and which photo it came from', async () => {
+  // The filename is the whole point of this one. A user who never opens either dropdown
+  // gets roomType 'Bedroom' + style 'standard' on EVERY render, so twenty renders of twenty
+  // different houses all derived the identical name "Standard Bedroom".
+  const seen = [];
+  const { handleVirtualStagingMultipart } = makeHandler({
+    renderPersistence: fakePersistence(seen),
+    processStaging: async (_buf, params) => { params.onNative?.(Buffer.from('n'), {}); return 'img'; },
+  });
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', furnitureStyle: 'luxury' }, '412-rosewood-mstr.jpg'),
+    fakeRes(),
+    { user: PRO, recordUsage: true, treatAsPro: true },
+  );
+  assert.equal(seen.length, 1);
+  assert.deepEqual(seen[0].extra, { source: 'interior', sourceName: '412-rosewood-mstr.jpg' });
+  assert.equal(seen[0].extra.qualifier, undefined,
+    'interior stores NO qualifier — its name still derives from the room_type and '
+    + 'furniture_style columns, and a frozen copy would only go stale against them');
 });
 
 test('pro variations RUN CONCURRENTLY, not one after another', async () => {

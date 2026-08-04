@@ -26,8 +26,10 @@
       "imageStaging": "Stages a whole room from one photo: pick a room type and a furniture style and the AI furnishes it. Best for empty or nearly empty rooms when you want a fast, complete result.",
       "basicMask": "Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.",
       "pdfTo3d": "Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.",
-      "maskingStudio": "Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect."
-    }
+      "maskingStudio": "Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.",
+      "exteriorStudio": "Cleans up an exterior photo of a property: change the time of day, clear the sky, and remove parked cars and clutter. Best for the front elevation, yard and street shots, the ones the staging tools deliberately never touch."
+    },
+    "exteriorStudio": "Exterior Studio"
   },
   "hero": {
     "catchphrase": "Upload. Stage. Imagine.",
@@ -88,6 +90,24 @@
     "masking": {
       "title": "Stage with exact precision",
       "subtitle": "In the new Masking Studio, highlight the areas to restage, add your own furniture, and everything else stays pixel-perfect. <em>(Stagify+ Exclusive)</em>"
+    },
+    "exterior": {
+      "title": "Fix the photo the listing opens with",
+      "subtitle": "The Exterior Studio changes the time of day, clears grey skies and takes out cars and bins. The house stays untouched. <em>(Stagify+ Exclusive)</em>",
+      "kicker": "Curb appeal",
+      "panelTitle": "The one shot you cannot reshoot",
+      "panelBody": "Every listing opens with the outside of the property, the one photo you cannot retake once the weather turns.",
+      "points": {
+        "light": "Shoot at noon, publish at golden hour.",
+        "sky": "Flat grey sky becomes clear blue or soft cloud.",
+        "clutter": "Cars, bins, hoses and signage come out.",
+        "honest": "No re-laid lawn, no repaint, no new driveway."
+      },
+      "comparisonAria": "Before and after exterior enhancement comparison",
+      "alts": {
+        "before": "A suburban house photographed under a flat grey sky, with a car on the driveway, bins at the kerb and a hose on the lawn",
+        "after": "The same house at golden hour under a clear blue sky, with the parked car, bins and hose removed"
+      }
     },
     "gallery": {
       "title": "Every room you stage is saved for you",
@@ -361,6 +381,8 @@
       "uploadArea": "Upload an image or drag and drop",
       "before": "Before",
       "after": "After",
+      "refineInStudio": "Refine in Masking Studio",
+      "refineInStudioShort": "Refine",
       "downloadResult": "Download Result",
       "uploadAnother": "Upload Another",
       "noProcessedImage": "Your staged result will appear here",
@@ -470,7 +492,7 @@
         "slowResults": "<strong style=\"color: #6d1c2c;\">Slow results: </strong>Days of waiting",
         "longProcess": "<strong style=\"color: #6d1c2c;\">Long Process: </strong>Tedious back‑and‑forth",
         "expensive": "<strong style=\"color: #6d1c2c;\">Expensive: </strong>Costly, per‑image fees",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Ads and cookies: </strong>Instrusive experience",
+        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Ads and cookies: </strong>Intrusive",
         "accountRequired": "<strong style=\"color: #6d1c2c;\">Long Signup Process: </strong>Frustrating start",
         "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Legacy, Cheaper models: </strong>Lower quality",
         "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Unclear copyright: </strong>Legal liability"
@@ -553,11 +575,11 @@
         "photoAlt": "Portrait of Ryan Croman, Co-Founder and Head of Outreach at Stagify.ai"
       },
       "emil": {
-        "name": "Emil Volvosky",
+        "name": "Emil Volvovsky",
         "email": "emvolvovsky@gmail.com",
         "phone": "(917) 691-2013",
-        "title": "Stastical Marketing Analyst",
-        "photoAlt": "Portrait of Emil Volvosky, Statistical Marketing Analyst at Stagify.ai"
+        "title": "Statistical Marketing Analyst",
+        "photoAlt": "Portrait of Emil Volvovsky, Statistical Marketing Analyst at Stagify.ai"
       }
     }
   },
@@ -996,6 +1018,11 @@
       "title": "Masking Studio | Stagify.ai - Multi-Area Precision Virtual Staging",
       "description": "Highlight multiple areas of one room photo in different colors, attach a furniture photo to each, and stage them all at once. Only the highlighted areas can change — the rest of your photo stays pixel-perfect.",
       "keywords": "masking studio, virtual staging mask, precision virtual staging, multi area staging, AI furniture placement, masked photo editing, region editing, real estate photo staging, before after comparison, Stagify"
+    },
+    "exteriorStudio": {
+      "title": "Exterior Studio | Stagify.ai - AI Curb Appeal Photo Enhancement",
+      "description": "Turn a grey, cluttered exterior photo into the shot the listing deserves. Change the time of day, clear the sky, and remove parked cars and bins — while the property itself stays exactly as photographed.",
+      "keywords": "curb appeal, exterior photo editing, real estate photo enhancement, sky replacement, remove cars from photo, twilight photo real estate, golden hour listing photo, AI photo editor, property exterior, Stagify"
     }
   },
   "maskingStudio": {
@@ -1076,6 +1103,7 @@
     "resumeNo": "Start fresh",
     "helpStep5": "Not happy with an area? Use Try another version to generate more options and flip between them.",
     "promptIdeas": "Show prompt ideas",
+    "handoffFailed": "We couldn't open that render. Please upload the photo instead.",
     "looksGood": "Looks Good",
     "redo": "Redo",
     "toolWand": "Magic",
@@ -1233,10 +1261,6 @@
     },
     "features": {
       "heading": "Everything you need to stage like a pro",
-      "model": {
-        "title": "High-quality model",
-        "desc": "Our most advanced model renders sharper, more realistic furniture, materials, and lighting."
-      },
       "remove": {
         "title": "Remove existing furniture",
         "desc": "Erase furniture, clutter, and decor, then restage the emptied room from a clean slate."
@@ -1256,6 +1280,10 @@
       "references": {
         "title": "Furniture references",
         "desc": "Upload product photos to stage rooms with specific furniture pieces you choose."
+      },
+      "exterior": {
+        "title": "Exterior Studio",
+        "desc": "Fix the shot every listing opens with. Change the time of day, clear a flat grey sky, and remove parked cars and bins — while the property itself stays exactly as photographed."
       }
     },
     "compare": {
@@ -1276,7 +1304,8 @@
         "masking": "Masking tool",
         "studio": "Masking Studio (multi-area)",
         "variations": "Multiple variations per generation",
-        "references": "Furniture references"
+        "references": "Furniture references",
+        "exterior": "Exterior Studio (curb appeal)"
       }
     },
     "enterpriseRow": "For teams or enterprises, <a href=\"enterprise.html\">explore our enterprise plan</a> or contact <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> for personalized subscription options.",
@@ -1309,6 +1338,7 @@
       "rangeValue": "{percent}% staged"
     },
     "meta": {
+      "source": "Made with",
       "room": "Room",
       "style": "Style",
       "prompt": "Extra prompt",
@@ -1339,6 +1369,7 @@
       "rateLimited": "Too many requests just now. Give it a moment and try again.",
       "retry": "Try again"
     },
+    "refine": "Refine in Masking Studio",
     "delete": {
       "action": "Delete this render",
       "warn": "This permanently deletes the render and the link you have already shared. It cannot be undone.",
@@ -1390,5 +1421,84 @@
       }
     },
     "loading": "Loading your gallery…"
+  },
+  "exteriorStudio": {
+    "title": "Curb appeal, in one click",
+    "subtitle": "The first photo of every listing is the outside of the house, and it is the one shot you cannot reshoot when the weather turns. Upload it here and get the version taken on a better day.",
+    "ctaUpgrade": "Get Stagify+ to use it",
+    "features": {
+      "title": "What it changes — and what it never touches",
+      "light": {
+        "title": "Time of day",
+        "body": "Shoot at noon, publish at golden hour. Morning, midday, golden hour or dusk, with shadows and window light that agree with the sun you picked."
+      },
+      "sky": {
+        "title": "Sky and weather",
+        "body": "A flat grey sky becomes clear blue, light cloud or something more dramatic — matched to the light already on the building, with clean edges along the roofline."
+      },
+      "clutter": {
+        "title": "Cars, clutter and snow",
+        "body": "The neighbour’s van across the driveway, the bins left out, the hose on the lawn, the person walking past — and the snow, rain and puddles that happened to be there the day you shot it. Temporary things go, and the surface underneath is rebuilt to match."
+      },
+      "honest": {
+        "title": "The house stays the house",
+        "body": "No re-turfed lawn, no erased power lines, no resurfaced driveway, no repainted walls. A buyer standing at the kerb sees what the photo showed — which is what keeps the photo usable on a listing."
+      }
+    },
+    "upload": {
+      "title": "Drop an exterior photo here",
+      "hint": "JPG, PNG, WebP or HEIC. The front elevation, the back garden, the driveway — any shot taken outside.",
+      "button": "Choose a photo",
+      "replace": "Use a different photo"
+    },
+    "controls": {
+      "timeOfDay": "Time of day",
+      "sky": "Sky",
+      "removeLegend": "Remove from the photo",
+      "removeVehicles": "Cars",
+      "removeClutter": "Bins & clutter",
+      "removePeople": "People",
+      "removeSnow": "Snow",
+      "removeWetWeather": "Rain & puddles",
+      "notes": "Anything else?",
+      "notesPlaceholder": "e.g. keep the flag on the porch"
+    },
+    "time": {
+      "morning": "Mid-morning",
+      "midday": "Bright midday",
+      "goldenHour": "Golden hour",
+      "dusk": "Dusk"
+    },
+    "skyOptions": {
+      "clearBlue": "Clear blue",
+      "lightClouds": "Light clouds",
+      "dramatic": "Dramatic"
+    },
+    "actions": {
+      "enhance": "Enhance Exterior",
+      "working": "Working on it…",
+      "download": "Download",
+      "startOver": "Start over"
+    },
+    "result": {
+      "title": "Before and after",
+      "hint": "Drag the slider to compare."
+    },
+    "errors": {
+      "generic": "That photo could not be enhanced. Please try another shot of the property exterior.",
+      "network": "The connection dropped before the photo came back. Your upload is still here — try again."
+    },
+    "gate": {
+      "title": "Exterior Studio is part of Stagify+",
+      "body": "Your account is on the free plan. Stagify+ unlocks the Exterior Studio along with the Masking Studio, the AI Designer and unlimited staging.",
+      "cta": "View Stagify+",
+      "secondary": "Back to Home"
+    },
+    "stepPhoto": "Exterior photo",
+    "stepPhotoHint": "Upload a photo in the workspace on the right.",
+    "replacePhoto": "Replace photo",
+    "stepChanges": "What should change?",
+    "stepChangesHint": "Pick only what you want changed. Anything you leave unticked stays exactly as photographed.",
+    "enhanceHint": "Pick at least one change, or describe one above."
   }
 }

@@ -55,6 +55,20 @@ test('/api/chat-upload: an "add this furniture to the room" message suppresses t
   );
 });
 
+test('/api/chat-upload: the room photo carries its filename, for the gallery entry', () => {
+  const firstImageFile = { originalname: '412-rosewood.jpg', mimetype: 'image/png', buffer: Buffer.from('room') };
+  const out = resolveCurrentUploadFallbackImage({ firstImageFile, message: 'stage this living room' });
+  assert.equal(out.sourceName, '412-rosewood.jpg');
+});
+
+test('/api/chat: a history image carries NO filename', () => {
+  // There is no file — it is a data URL out of the conversation. An entry named after
+  // whatever the user last uploaded would be actively misleading, so absence is correct
+  // and public/scripts/render-name.js simply appends no suffix.
+  const out = resolveHistoryFallbackImage({ imageFromHistory: dataUrl('x'), isStagedImage: false });
+  assert.equal(out.sourceName, undefined);
+});
+
 test('/api/chat-upload: no image in the upload yields null', () => {
   assert.equal(resolveCurrentUploadFallbackImage({ firstImageFile: null, message: 'hello' }), null);
 });

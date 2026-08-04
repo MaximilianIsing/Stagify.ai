@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
+    <script src="scripts/gtag.js" defer></script>
+
+    <!-- NO render-blocking *-gate.js here, unlike the other Stagify+ pages, and that is
+         deliberate. This page has a PUBLIC view: an anonymous visitor gets the pitch and
+         a Stagify+ call to action, a signed-in free account gets the upgrade dialog, and
+         only a Stagify+ account is shown the tool. A gate that bounced visitors with no
+         token would take the page away from exactly the people it is written for — and
+         from Googlebot, which carries no token either. The security boundary is
+         requireProAccount on POST /api/enhance-exterior; revealing the controls is an
+         affordance, not a gate. Pinned by the data-staging-preview guard in
+         test/frontend/staging-menu.test.js. -->
+
+    <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
+    <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
+    <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
+    <link rel="manifest" href="manifest.json">
+    <title data-lang="pageMeta.exteriorStudio.title">Exterior Studio | Stagify.ai - AI Curb Appeal Photo Enhancement</title>
+    <meta name="description" data-lang-attr="pageMeta.exteriorStudio.description|content" content="Turn a grey, cluttered exterior photo into the shot the listing deserves. Change the time of day, clear the sky, and remove parked cars and bins — while the property itself stays exactly as photographed.">
+
+    <!-- SEO Meta Tags -->
+    <meta name="keywords" data-lang-attr="pageMeta.exteriorStudio.keywords|content" content="curb appeal, exterior photo editing, real estate photo enhancement, sky replacement, remove cars from photo, twilight photo real estate, golden hour listing photo, AI photo editor, property exterior, Stagify">
+    <meta name="author" content="Stagify.ai">
+    <meta name="publisher" content="Stagify.ai">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Stagify.ai Exterior Studio">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Exterior Studio | Stagify.ai - AI Curb Appeal Photo Enhancement">
+    <meta property="og:description" content="Change the time of day, clear the sky, and remove parked cars and bins from a listing's exterior photo — while the property itself stays exactly as photographed.">
+    <meta property="og:url" content="https://stagify.ai/exterior-studio.html">
+    <meta property="og:site_name" content="Stagify.ai">
+    <meta property="og:image" content="https://stagify.ai/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Stagify.ai — before and after AI virtual staging">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Exterior Studio | Stagify.ai - AI Curb Appeal Photo Enhancement">
+    <meta name="twitter:description" content="Change the time of day, clear the sky, and remove parked cars and bins from a listing's exterior photo — while the property itself stays exactly as photographed.">
+    <meta name="twitter:image" content="https://stagify.ai/og-image.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://stagify.ai/exterior-studio.html">
+    <link rel="alternate" hreflang="en" href="https://stagify.ai/exterior-studio.html">
+    <link rel="alternate" hreflang="es" href="https://stagify.ai/es/exterior-studio.html">
+    <link rel="alternate" hreflang="fr" href="https://stagify.ai/fr/exterior-studio.html">
+    <link rel="alternate" hreflang="de" href="https://stagify.ai/de/exterior-studio.html">
+    <link rel="alternate" hreflang="zh-Hans" href="https://stagify.ai/zh/exterior-studio.html">
+    <link rel="alternate" hreflang="ko" href="https://stagify.ai/ko/exterior-studio.html">
+    <link rel="alternate" hreflang="pt-BR" href="https://stagify.ai/pt/exterior-studio.html">
+    <link rel="alternate" hreflang="ru" href="https://stagify.ai/ru/exterior-studio.html">
+    <link rel="alternate" hreflang="it" href="https://stagify.ai/it/exterior-studio.html">
+    <link rel="alternate" hreflang="ja" href="https://stagify.ai/ja/exterior-studio.html">
+    <link rel="alternate" hreflang="nl" href="https://stagify.ai/nl/exterior-studio.html">
+    <link rel="alternate" hreflang="x-default" href="https://stagify.ai/exterior-studio.html">
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Exterior Studio - Stagify.ai",
+      "description": "AI curb-appeal enhancement for real-estate exterior photos: change the time of day, replace a flat grey sky, and remove parked cars and temporary clutter, while the property's architecture, landscaping and permanent fixtures stay exactly as photographed.",
+      "url": "https://stagify.ai/exterior-studio.html",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Stagify.ai"
+      },
+      "featureList": [
+        "Time-of-day relighting: morning, midday, golden hour and dusk",
+        "Sky replacement with clear, light cloud and dramatic options",
+        "Removal of parked cars and vehicles",
+        "Removal of bins, hoses, toys and temporary signage",
+        "Removal of people, pets and photographer reflections",
+        "Snow and ice clearing that keeps the season honest",
+        "Rain, puddles and wet-ground drying",
+        "Free-text instructions for one-off requests",
+        "Every change is opt-in — nothing is altered unless you ask",
+        "Architecture, landscaping and permanent fixtures preserved",
+        "Before and after compare slider",
+        "Saves straight to your Stagify gallery",
+        "Works on desktop, tablet and phone"
+      ],
+      "keywords": "curb appeal, exterior photo editing, real estate photo enhancement, sky replacement, remove cars from photo, remove people from photo, snow removal real estate photo, twilight real estate photo, golden hour, AI photo editor"
+    }
+    </script>
+
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/toast.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
+    <script type="module" src="scripts/language-detect.js"></script>
+    <script type="module" src="scripts/language-loader.js"></script>
+    <script type="module" src="scripts/language-switcher.js"></script>
+    <script type="module" src="scripts/nav-pill.js"></script>
+    <script type="module" src="scripts/auth.js"></script>
+    <script type="module" src="scripts/heic-convert.js"></script>
+    <script type="module" src="scripts/profile-menu.js"></script>
+    <link rel="stylesheet" href="styles/exterior-studio.css">
+  </head>
+  <body>
+    <!-- Background Video -->
+    <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">
+      <source src="background.mp4" type="video/mp4" media="(min-width: 769px)">
+    </video>
+
+    <header class="site-header">
+      <nav class="nav">
+        <a href="index.html" class="brand"><img src="media-webp/logo/Logo64x64.webp" data-lang-attr="navigation.logoAlt|alt" alt="Stagify.ai logo — go to homepage" class="brand-logo" fetchpriority="high"><span class="brand-strong" data-lang="navigation.brand">Stagify</span><span class="brand-light" data-lang="navigation.brandSuffix">.ai</span></a>
+        <div class="nav-center">
+          <a href="index.html" class="nav-link" data-lang="navigation.home">Home</a>
+          <div class="staging-menu" data-staging-menu data-nav-group>
+            <button type="button" class="nav-link staging-menu__trigger" aria-haspopup="true" aria-expanded="false"><span data-lang="navigation.staging">Staging</span><svg class="staging-menu__chevron" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="staging-menu__panel" role="menu">
+              <a class="staging-menu__item" href="index.html#stage" role="menuitem" aria-describedby="staging-menu-tip-stage" data-staging-open="stage"><span class="staging-menu__label" data-lang="navigation.imageStaging">Image Staging</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-stage" aria-hidden="true" data-lang="navigation.tips.imageStaging">Stages a whole room from one photo: pick a room type and a furniture style and the AI furnishes it. Best for empty or nearly empty rooms when you want a fast, complete result.</span></a>
+              <a class="staging-menu__item is-locked" href="index.html#basic-mask" role="menuitem" aria-describedby="staging-menu-tip-basic-mask" data-staging-open="basic-mask" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.basicMask">Basic Mask</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-basic-mask" aria-hidden="true" data-lang="navigation.tips.basicMask">Paint over one part of a photo, then describe the change you want. Best for small fixes (swap a sofa, clear a countertop) when the rest of the shot is already right.</span></a>
+              <a class="staging-menu__item is-locked desktop-only" href="ai-designer.html" role="menuitem" aria-describedby="staging-menu-tip-designer" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang-html="navigation.pdfTo3d">AI Designer</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-designer" aria-hidden="true" data-lang="navigation.tips.pdfTo3d">Chat with an AI designer that stages, redesigns and keeps iterating on a room with you. Best when you are exploring looks rather than finishing one photo. Desktop only.</span></a>
+              <a class="staging-menu__item is-locked" href="masking-studio.html" role="menuitem" aria-describedby="staging-menu-tip-masking" data-staging-pro><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.maskingStudio">Masking Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-masking" aria-hidden="true" data-lang="navigation.tips.maskingStudio">Highlight several areas in different colors and give each its own furniture photo or prompt, then stage them all at once. Best when you need exact control, since everything outside your highlights stays pixel-perfect.</span></a>
+              <a class="staging-menu__item is-locked" href="exterior-studio.html" role="menuitem" aria-describedby="staging-menu-tip-exterior" data-staging-pro data-staging-preview><svg class="staging-menu__lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" data-lang-attr="navigation.plusBadge|aria-label" aria-label="Stagify+"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="staging-menu__label" data-lang="navigation.exteriorStudio">Exterior Studio</span><span class="staging-menu__info" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></span><span class="staging-menu__tip" id="staging-menu-tip-exterior" aria-hidden="true" data-lang="navigation.tips.exteriorStudio">Cleans up an exterior photo of a property: change the time of day, clear the sky, and remove parked cars and clutter. Best for the front elevation, yard and street shots, the ones the staging tools deliberately never touch.</span></a>
+            </div>
+          </div>
+          <a href="gallery.html" class="nav-link desktop-only hidden" data-nav-gallery data-lang="navigation.gallery">Gallery</a>
+          <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
+          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
+          <div class="profile-menu-wrap">
+            <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" data-lang-attr="auth.accountMenu|aria-label" aria-label="Account menu">
+              <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+            <div id="profile-menu-dropdown" class="profile-menu-dropdown hidden" role="menu" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="nav-trailing">
+          <div class="mobile-test-text" data-hover-glow>
+            <div data-lang="hero.title.upload">Upload.</div>
+            <div data-lang="hero.title.stage">Stage.</div>
+            <div data-lang="hero.title.imagine">Imagine.</div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Shown only to a SIGNED-IN account that is not on Stagify+. Anonymous visitors get
+         the marketing view instead — they have not been told the price yet, so a modal is
+         the wrong first thing to show them. -->
+    <div id="ex-pro-gate" class="ex-gate" role="dialog" aria-modal="true" aria-labelledby="ex-pro-gate-title">
+      <div class="ex-gate__card">
+        <h2 id="ex-pro-gate-title" data-lang="exteriorStudio.gate.title">Exterior Studio is part of Stagify+</h2>
+        <p data-lang="exteriorStudio.gate.body">Your account is on the free plan. Stagify+ unlocks the Exterior Studio along with the Masking Studio, the AI Designer and unlimited staging.</p>
+        <div class="ex-gate__actions">
+          <a href="stagify-plus.html" class="btn btn-primary btn-lg"><strong data-lang="exteriorStudio.gate.cta">View Stagify+</strong></a>
+          <a href="index.html" class="btn btn-ghost btn-lg"><strong data-lang="exteriorStudio.gate.secondary">Back to Home</strong></a>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <div class="language-picker-container">
+        <div class="language-selector">
+          <label for="language-select" class="sr-only" data-lang="common.selectLanguage">Select language</label>
+          <select id="language-select" class="language-dropdown lang-native-select" tabindex="-1" aria-hidden="true">
+            <option value="english" selected>EN</option>
+            <option value="german">DE</option>
+            <option value="dutch">NL</option>
+            <option value="spanish">ES</option>
+            <option value="french">FR</option>
+            <option value="italian">IT</option>
+            <option value="portuguese">PT</option>
+            <option value="russian">RU</option>
+            <option value="chinese">中文</option>
+            <option value="japanese">日本語</option>
+            <option value="korean">한국어</option>
+          </select>
+          <div class="lang-switch" data-lang-switch>
+            <button type="button" class="lang-switch__trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <img class="lang-switch__flag" src="media-webp/flags/US.svg" alt="" width="20" height="14" />
+              <span class="lang-switch__label">English</span>
+              <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <section class="hero" style="grid-template-columns: 1fr; padding: 20px; width: 100%; max-width: 100%; box-sizing: border-box;">
+        <div class="ex-shell">
+          <div class="ex-intro">
+            <h1 data-lang="exteriorStudio.title">Curb appeal, in one click</h1>
+            <p data-lang="exteriorStudio.subtitle">The first photo of every listing is the outside of the house, and it is the one shot you cannot reshoot when the weather turns. Upload it here and get the version taken on a better day.</p>
+            <p class="ex-intro__actions" id="ex-hero-actions">
+              <a class="btn btn-primary btn-lg" id="ex-cta" href="stagify-plus.html"><strong data-lang="exteriorStudio.ctaUpgrade">Get Stagify+ to use it</strong></a>
+            </p>
+          </div>
+
+          <!-- The public half. Visible by default so an anonymous visitor and a crawler
+               both get a real page; exterior-studio/access.js hides it once a Stagify+
+               account is confirmed, because someone who has already bought it wants the
+               tool, not the pitch. -->
+          <section class="ex-features-section" id="ex-features" aria-labelledby="ex-features-title">
+            <h2 class="ex-section__title" id="ex-features-title" data-lang="exteriorStudio.features.title">What it changes — and what it never touches</h2>
+            <div class="ex-features">
+            <article class="ex-feature">
+              <h3 class="ex-feature__title" data-lang="exteriorStudio.features.light.title">Time of day</h3>
+              <p class="ex-feature__body" data-lang="exteriorStudio.features.light.body">Shoot at noon, publish at golden hour. Morning, midday, golden hour or dusk, with shadows and window light that agree with the sun you picked.</p>
+            </article>
+            <article class="ex-feature">
+              <h3 class="ex-feature__title" data-lang="exteriorStudio.features.sky.title">Sky and weather</h3>
+              <p class="ex-feature__body" data-lang="exteriorStudio.features.sky.body">A flat grey sky becomes clear blue, light cloud or something more dramatic — matched to the light already on the building, with clean edges along the roofline.</p>
+            </article>
+            <article class="ex-feature">
+              <h3 class="ex-feature__title" data-lang="exteriorStudio.features.clutter.title">Cars, clutter and snow</h3>
+              <p class="ex-feature__body" data-lang="exteriorStudio.features.clutter.body">The neighbour’s van across the driveway, the bins left out, the hose on the lawn, the person walking past — and the snow, rain and puddles that happened to be there the day you shot it. Temporary things go, and the surface underneath is rebuilt to match.</p>
+            </article>
+            <article class="ex-feature">
+              <h3 class="ex-feature__title" data-lang="exteriorStudio.features.honest.title">The house stays the house</h3>
+              <p class="ex-feature__body" data-lang="exteriorStudio.features.honest.body">No re-turfed lawn, no erased power lines, no resurfaced driveway, no repainted walls. A buyer standing at the kerb sees what the photo showed — which is what keeps the photo usable on a listing.</p>
+            </article>
+            </div>
+          </section>
+
+          <!-- The tool. Ships hidden and is revealed for a Stagify+ account; the real gate
+               is requireProAccount on POST /api/enhance-exterior. -->
+          <div class="ex-grid" id="ex-tool" hidden>
+            <aside class="ex-toolbar ex-panel" aria-label="Exterior Studio controls">
+              <form id="ex-form">
+                <!-- Step 1: the photo -->
+                <div class="ex-block">
+                  <div class="ex-block-head"><span class="ex-step" aria-hidden="true">1</span><h2 data-lang="exteriorStudio.stepPhoto">Exterior photo</h2></div>
+                  <p class="ex-hint" id="ex-photo-hint" data-lang="exteriorStudio.stepPhotoHint">Upload a photo in the workspace on the right.</p>
+                  <button type="button" id="ex-replace" class="ex-photo-card hidden">
+                    <img id="ex-photo-thumb" alt="">
+                    <span class="ex-photo-card__overlay">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.36-6.36L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.36 6.36L3 16"/><path d="M3 21v-5h5"/></svg>
+                      <span data-lang="exteriorStudio.replacePhoto">Replace photo</span>
+                    </span>
+                  </button>
+                </div>
+
+                <!-- Step 2: what to change. Every row is OPT-IN and starts off, so a
+                     request to clear the bins never quietly relights the scene too. -->
+                <div class="ex-block">
+                  <div class="ex-block-head"><span class="ex-step" aria-hidden="true">2</span><h2 data-lang="exteriorStudio.stepChanges">What should change?</h2></div>
+                  <p class="ex-hint" data-lang="exteriorStudio.stepChangesHint">Pick only what you want changed. Anything you leave unticked stays exactly as photographed.</p>
+
+                  <!-- The two rows that own a CHOICE keep a row each, with the select
+                       revealed beside the label rather than under it. -->
+                  <div class="ex-option ex-option--inline">
+                    <label class="ex-check">
+                      <input type="checkbox" id="ex-use-time" data-ex-reveals="ex-time-body">
+                      <span data-lang="exteriorStudio.controls.timeOfDay">Time of day</span>
+                    </label>
+                    <div class="ex-option__body" id="ex-time-body" hidden>
+                      <label class="ex-visually-hidden" for="ex-time" data-lang="exteriorStudio.controls.timeOfDay">Time of day</label>
+                      <select class="ex-select" id="ex-time" name="timeOfDay">
+                        <option value="goldenHour" selected data-lang="exteriorStudio.time.goldenHour">Golden hour</option>
+                        <option value="morning" data-lang="exteriorStudio.time.morning">Mid-morning</option>
+                        <option value="midday" data-lang="exteriorStudio.time.midday">Bright midday</option>
+                        <option value="dusk" data-lang="exteriorStudio.time.dusk">Dusk</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="ex-option ex-option--inline">
+                    <label class="ex-check">
+                      <input type="checkbox" id="ex-use-sky" data-ex-reveals="ex-sky-body">
+                      <span data-lang="exteriorStudio.controls.sky">Sky</span>
+                    </label>
+                    <div class="ex-option__body" id="ex-sky-body" hidden>
+                      <label class="ex-visually-hidden" for="ex-sky" data-lang="exteriorStudio.controls.sky">Sky</label>
+                      <select class="ex-select" id="ex-sky" name="sky">
+                        <option value="clearBlue" selected data-lang="exteriorStudio.skyOptions.clearBlue">Clear blue</option>
+                        <option value="lightClouds" data-lang="exteriorStudio.skyOptions.lightClouds">Light clouds</option>
+                        <option value="dramatic" data-lang="exteriorStudio.skyOptions.dramatic">Dramatic</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- The removals are pure on/off, so they are chips rather than rows.
+                       Five stacked checkboxes each restating "Remove …" cost five full-width
+                       rows to say one word of new information apiece; the verb belongs in
+                       the legend, said once, and the nouns wrap two-and-three to a line.
+                       Still real checkboxes with the same `name`s — the chip is styling, and
+                       the drift guards read this markup to prove the island still posts
+                       every one of them. -->
+                  <fieldset class="ex-chips">
+                    <legend class="ex-chips__legend" data-lang="exteriorStudio.controls.removeLegend">Remove from the photo</legend>
+                    <div class="ex-chips__row">
+                      <label class="ex-chip">
+                        <input type="checkbox" id="ex-vehicles" name="removeVehicles">
+                        <span class="ex-chip__face" data-lang="exteriorStudio.controls.removeVehicles">Cars</span>
+                      </label>
+                      <label class="ex-chip">
+                        <input type="checkbox" id="ex-clutter" name="removeClutter">
+                        <span class="ex-chip__face" data-lang="exteriorStudio.controls.removeClutter">Bins &amp; clutter</span>
+                      </label>
+                      <label class="ex-chip">
+                        <input type="checkbox" id="ex-people" name="removePeople">
+                        <span class="ex-chip__face" data-lang="exteriorStudio.controls.removePeople">People</span>
+                      </label>
+                      <label class="ex-chip">
+                        <input type="checkbox" id="ex-snow" name="removeSnow">
+                        <span class="ex-chip__face" data-lang="exteriorStudio.controls.removeSnow">Snow</span>
+                      </label>
+                      <label class="ex-chip">
+                        <input type="checkbox" id="ex-wet" name="removeWetWeather">
+                        <span class="ex-chip__face" data-lang="exteriorStudio.controls.removeWetWeather">Rain &amp; puddles</span>
+                      </label>
+                    </div>
+                  </fieldset>
+                </div>
+
+                <!-- Step 3: anything the checkboxes cannot say -->
+                <div class="ex-block">
+                  <div class="ex-block-head"><span class="ex-step" aria-hidden="true">3</span><h2 data-lang="exteriorStudio.controls.notes">Anything else?</h2></div>
+                  <textarea class="ex-textarea" id="ex-notes" name="additionalPrompt" rows="2" maxlength="500" data-lang-attr="exteriorStudio.controls.notesPlaceholder|placeholder" placeholder="e.g. keep the flag on the porch"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg ex-submit" id="ex-enhance" disabled data-lang="exteriorStudio.actions.enhance">Enhance Exterior</button>
+              </form>
+            </aside>
+
+            <section class="ex-workspace ex-panel" aria-label="Exterior Studio workspace">
+              <!-- No wrapper row: `.hidden` is display:none, so before a render this
+                   contributes neither height nor a column gap above the dropzone. -->
+              <div class="ex-viewer-actions hidden" id="ex-done">
+                <button type="button" id="ex-download" class="btn btn-primary"><strong data-lang="exteriorStudio.actions.download">Download</strong></button>
+                <button type="button" id="ex-startover" class="btn btn-secondary"><strong data-lang="exteriorStudio.actions.startOver">Start over</strong></button>
+              </div>
+
+              <div class="ex-dropzone" id="ex-drop" role="button" tabindex="0">
+                <div>
+                  <div class="ex-dz-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></div>
+                  <div class="ex-dz-text" data-lang="exteriorStudio.upload.title">Drop an exterior photo here</div>
+                  <div class="ex-dz-sub" data-lang="exteriorStudio.upload.hint">JPG, PNG, WebP or HEIC. The front elevation, the back garden, the driveway — any shot taken outside.</div>
+                </div>
+              </div>
+
+              <figure class="ex-preview" id="ex-preview" hidden>
+                <img class="ex-preview__img" id="ex-preview-img" alt="">
+              </figure>
+
+              <figure class="ex-result" id="ex-result" hidden aria-labelledby="ex-result-title">
+                <figcaption class="ex-result__head">
+                  <h3 class="ex-result__title" id="ex-result-title" data-lang="exteriorStudio.result.title">Before and after</h3>
+                  <p class="ex-result__hint" data-lang="exteriorStudio.result.hint">Drag the slider to compare.</p>
+                </figcaption>
+                <div class="ex-compare" id="ex-compare">
+                  <img class="ex-compare__img ex-compare__img--before" id="ex-compare-before" alt="">
+                  <div class="ex-compare__after" id="ex-compare-after-wrap">
+                    <img class="ex-compare__img" id="ex-compare-after" alt="">
+                  </div>
+                  <input class="ex-compare__range" id="ex-compare-range" type="range" min="0" max="100" value="50" data-lang-attr="exteriorStudio.result.hint|aria-label" aria-label="Drag the slider to compare.">
+                </div>
+              </figure>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <input type="file" id="ex-file" class="ex-visually-hidden" accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/heif,.heic,.heif" tabindex="-1" aria-hidden="true">
+    </main>
+
+    <div id="toast-host" aria-live="polite" aria-atomic="false"></div>
+
+    <script type="module" src="scripts/exterior-studio-app.js"></script>
+    <script type="module" src="scripts/aurora-scrollbar.js"></script>
+  </body>
+</html>

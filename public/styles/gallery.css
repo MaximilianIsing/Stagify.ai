@@ -237,10 +237,21 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
 /* The card IS the only way into the detail panel, so it needs a real keyboard ring. */
 .gal-card:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.55); outline-offset: 2px; }
 
+/* ONE ratio for every tile, not the photo's own.
+   This was `var(--gal-ar, 3 / 2)`, set per card from the render's real dimensions, which
+   meant a grid of tiles in whichever ratios the agent's camera happened to produce —
+   landscape beside portrait, each row as tall as its tallest card and dead space under
+   the rest. A thumbnail grid's job is to be scannable, so it gets a rhythm; 3/2 is the
+   ratio the homepage's mock gallery (home.css .hgal-card__img) already advertises, and
+   object-fit:cover centre-crops the odd one out. The uncropped render lives one click
+   away in .gal-compare, which still uses the photo's own shape.
+   No `height: auto` needed here, unlike .hgal-card__img: view.js builds this <img>
+   without width/height attributes, so nothing resolves a presentational height that
+   would make the browser ignore aspect-ratio. */
 .gal-card__img {
   display: block;
   width: 100%;
-  aspect-ratio: var(--gal-ar, 3 / 2);
+  aspect-ratio: 3 / 2;
   object-fit: cover;
   background: rgba(30, 58, 138, 0.06);
 }

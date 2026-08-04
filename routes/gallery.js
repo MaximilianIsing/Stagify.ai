@@ -27,6 +27,15 @@
 // page loads rather than for image requests. URLs are minted AFTER the ownership check,
 // never before.
 //
+// A full page mints 180 of them (60 entries x after/before/thumb) and that is FINE — 1.46 ms
+// and ~65 KB of body, measured 2026-08-04; see the note in lib/data/s3-presign.js. The
+// obvious trim is to leave `before` out of the listing and fetch it when a card opens, since
+// the grid only ever paints `thumb`. Deliberately not done: it saves 0.5 ms and 22 KB and
+// costs a network round-trip every time a card opens, where the detail panel currently
+// paints instantly from data the page already holds. That is a worse product for a saving
+// nothing is asking for. Caching the URLs instead is not on the table at all — s3-presign.js
+// explains why a cached presigned URL is a revocation bug.
+//
 // THE `before` PHOTO IS OWNER-ONLY. It is included here and deliberately absent from the
 // public manifest — the agent gets the before/after comparison in their private gallery,
 // the buyer sees the staged result. That asymmetry is the reason the two manifests are
@@ -34,6 +43,8 @@
 import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError, resolveAppOrigin, setSensitiveHeaders } from '../lib/http/http-helpers.js';
 import { galleryLimiter as defaultGalleryLimiter } from '../lib/http/rate-limiters.js';
+import { readRenderExtra } from '../lib/data/render-extra.js';
+import { logger } from '../lib/logger.js';
 
 /** How long a presigned URL in the owner's manifest stays valid. */
 export const GALLERY_URL_TTL_MS = 15 * 60 * 1000;
@@ -44,9 +55,16 @@ export const PAGE_SIZE = 60;
 /**
  * The deepest page this endpoint will look at.
  *
- * No account can have a row out here — PRO_GALLERY_LIMIT is 200 — so a larger number is a
- * typo or a probe, not a deeper page. Clamping rather than refusing keeps the shape of the
- * answer the same for every input: a page, possibly empty.
+ * A larger number is overwhelmingly a typo or a probe rather than a deeper page, and
+ * clamping rather than refusing keeps the shape of the answer the same for every input: a
+ * page, possibly empty.
+ *
+ * This USED to be justified by "no account can have a row out here" — PRO_GALLERY_LIMIT
+ * was 200. It now defaults to Infinity, so that is no longer a guarantee: an account past
+ * 100,000 renders would have its oldest entries unreachable through this endpoint. That is
+ * an acceptable trade at a hundred thousand photos (deep OFFSET paging is the wrong tool
+ * long before then, and search reaches them), but it is a real edge now rather than an
+ * impossible one, so it is written down rather than assumed away.
  */
 export const MAX_OFFSET = 100_000;
 
@@ -83,6 +101,7 @@ export function parseOffset(raw) {
  */
 export function shapeEntry({ render, blobs, refs, share, presign, shareOrigin = '' }) {
   const byRole = Object.fromEntries(blobs.map((b) => [b.role, b.storage_key]));
+  const extra = readRenderExtra(render);
   return {
     id: render.id,
     createdAt: render.created_at,
@@ -99,6 +118,14 @@ export function shapeEntry({ render, blobs, refs, share, presign, shareOrigin = 
     // collapsing the two would publish whatever private note an agent filed a render
     // under ("Wilson viewing, redo the lighting") to whoever holds the link.
     name: render.custom_name ?? '',
+    // Which studio made this, the one setting worth naming it by, and the stem of the photo
+    // it came from — lib/data/render-extra.js. Unpacked here rather than published as a raw
+    // `extraJson` blob so this function keeps its promise: every field the owner receives is
+    // one somebody chose to send. A row written before this shipped, or one whose JSON is
+    // damaged, yields three empty strings and the name falls back to `<Style> <Room type>`.
+    source: extra.source,
+    qualifier: extra.qualifier,
+    sourceName: extra.sourceName,
     // The prompt is what makes the gallery useful rather than decorative: it is the
     // answer to "what did I actually ask for", and the seed for running it again.
     additionalPrompt: render.additional_prompt ?? '',
@@ -222,10 +249,28 @@ export default function createGalleryRouter(deps) {
     // whoever received it. One transaction for the page, and a no-op for every render
     // that already has a link, so this is a read in the steady state.
     const links = shares.ensureForRenders({ renders: rows });
+    // ONE STATEMENT PER TABLE FOR THE PAGE, NOT ONE PER ROW. These two used to be
+    // `blobsFor(render.id)` and `forRender(render.id)` inside the map below, which made a
+    // listing cost three statements per tile — around 180 synchronous better-sqlite3 calls
+    // for a full page, every one of them blocking the event loop against every other
+    // request. The shape was the problem rather than the number: it grew with the page,
+    // and it has no ceiling now that PRO_GALLERY_LIMIT defaults to Infinity.
+    //
+    // Hoisted here rather than pushed into the store's listForUser because the mint above
+    // needs the rows first, and because a listing that joined everything in SQL would go
+    // back to being one query nobody can read.
+    const ids = rows.map((r) => r.id);
+    const blobsByRender = stagedRenders.blobsForRenders(ids);
+    const refsByRender = renderRefs.forRenders(ids);
     const entries = rows.map((render) => shapeEntry({
       render,
-      blobs: stagedRenders.blobsFor(render.id),
-      refs: renderRefs.forRender(render.id),
+      // The `?? []` is load-bearing on BOTH, for different reasons. Most renders have no
+      // reference photos, so they are legitimately absent from that map. A render absent
+      // from the BLOB map is the rarer case — its objects were tombstoned out from under a
+      // row still marked `ok` — and defaulting it means that entry paints with empty URLs
+      // instead of throwing inside shapeEntry and 500ing the whole page for it.
+      blobs: blobsByRender.get(render.id) ?? [],
+      refs: refsByRender.get(render.id) ?? [],
       share: links.get(render.id) ?? null,
       presign,
       shareOrigin: listOrigin,
@@ -245,6 +290,51 @@ export default function createGalleryRouter(deps) {
       // actually applied, which is '' for a free caller who sent one anyway.
       search: { enabled: isPro, q },
     });
+  });
+
+  // ── One entry's pixels, served by US ───────────────────────────────────────
+  //
+  // Exists for exactly one caller: "Refine in Masking Studio". That studio draws the photo
+  // onto a canvas and then calls `toDataURL` on it, and
+  //
+  //     DRAWING A CROSS-ORIGIN IMAGE TAINTS A CANVAS, AND toDataURL ON A TAINTED CANVAS
+  //     THROWS SecurityError.
+  //
+  // A presigned R2 URL is cross-origin, so handing one to the studio would break every
+  // generate and every export it does. Worse, it would pass every test and every local
+  // check: dev and CI serve blobs from routes/object-local.js, same-origin. This is a
+  // production-only failure, which is why the bytes come back through here instead — a
+  // same-origin fetch, whose blob URL does not taint anything.
+  //
+  // It also carries a bearer token, which an <img src> cannot, so the client fetches and
+  // makes an object URL rather than pointing an element at this path.
+  //
+  // This DOES put render bytes through the process, which this file's header otherwise
+  // avoids. The cost that header is about is a buyer's browser pulling share images over
+  // and over; this is one ~110KB WebP, once, for the authenticated owner, on a click. The
+  // exception is deliberate — do not widen it into a general "serve my render" route.
+  router.get('/api/gallery/:id/source', limiter, async (req, res) => {
+    const user = userFor(req);
+    if (!user) return unauthorized(res);
+    if (!objectStore.configured) return notFound(res);
+    const render = ownedRender(req, user);
+    // Ownership is checked before a single byte is read, and "not yours" is the same 404 as
+    // "does not exist", so this cannot be used to enumerate render ids.
+    if (!render) return notFound(res);
+    // The finished render, not the source photo: the studio refines what is already staged.
+    const blob = stagedRenders.blobsFor(render.id).find((b) => b.role === 'after');
+    if (!blob) return notFound(res);
+    try {
+      // Both adapters REJECT on a missing object rather than resolving null, so the catch
+      // below is the real "gone" path; the falsy check is belt and braces.
+      const bytes = await objectStore.get(blob.storage_key);
+      if (!bytes) return notFound(res);
+      res.setHeader('Content-Type', 'image/webp');
+      return res.end(bytes);
+    } catch (error) {
+      logger.error(`[gallery] could not read render ${render.id} for handoff:`, error);
+      return notFound(res);
+    }
   });
 
   // ── Name one entry ─────────────────────────────────────────────────────────

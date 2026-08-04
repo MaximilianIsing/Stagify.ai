@@ -12,6 +12,7 @@ import { createFurnitureRefs, FURNITURE_LIMIT } from './app/furniture-refs.js';
 import { createVersionCarousel } from './app/version-carousel.js';
 import { createDownloadMenu } from './app/download-menu.js';
 import { createStagingPipeline } from './app/staging-pipeline.js';
+import { createRefineHandoff } from './app/refine-handoff.js';
 import { createStagingFailure } from './app/staging-failure.js';
 import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
 import { readImageFile } from './app/image-file.js';
@@ -370,6 +371,7 @@ import { initStagingEntry } from './app/staging-entry.js';
       setAfterVersions,
       pushAfterVersion,
       setAfterIndex,
+      getAfterIndex,
     } = createVersionCarousel({
       canvas1,
       stagePreview,
@@ -401,6 +403,13 @@ import { initStagingEntry } from './app/staging-entry.js';
       getText: (key) => window.LanguageSystem?.getText(key),
     });
 
+    // Handing the finished render to the Masking Studio (scripts/app/refine-handoff.js).
+    const refineHandoff = createRefineHandoff({
+      button: document.getElementById('refine-mask-btn'),
+      getAfterIndex,
+      getSourceName: () => currentImageFile?.name || '',
+    });
+
     const { processWithAI } = createStagingPipeline({
       stagePreview, progress, progressBar, progressText, loadingMessage, processingPlaceholder,
       roomSelect, styleSelect, additionalPrompt, furnitureRefs, FURNITURE_LIMIT,
@@ -410,6 +419,7 @@ import { initStagingEntry } from './app/staging-entry.js';
       setLastEmptyRoomUrl: (v) => { lastEmptyRoomUrl = v; },
       hideStagingLimitInViewer, hideStagingError, showBeforeView, isProUser,
       showStagingError, messageForDailyLimitResponse, showStagingLimitInViewer,
+      onGalleryIds: (ids) => refineHandoff.setIds(ids),
     });
 
   

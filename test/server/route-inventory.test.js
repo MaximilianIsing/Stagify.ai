@@ -48,8 +48,13 @@ const CRITICAL_ROUTES = [
   ['POST', '/api/enterprise/create-checkout'],
   ['POST', '/api/validate-image'],
   ['POST', '/api/process-image'],
+  ['POST', '/api/enhance-exterior'],
   ['POST', '/api/chat'],
   ['POST', '/api/mask-edit'],
+  // The Masking Studio's save. Registered here because losing it is silent: the studio
+  // fires it with `void` and swallows failures, so a renamed route would simply stop
+  // saving and nobody would see an error.
+  ['POST', '/api/masking-studio/save'],
   ['POST', '/api/segment'],
   ['POST', '/api/chat-upload'],
   ['POST', '/api/send-email'],
