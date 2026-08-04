@@ -102,35 +102,50 @@ function wireMenu(root) {
   const isOpen = () => root.hasAttribute('data-open');
 
   /**
-   * Aim the panel at its trigger without letting it escape the box that clips it.
+   * Place the panel under the nav row, aimed at its trigger.
    *
-   * Phones only, and the breakpoint is never named here — offsetParent is asked
-   * instead. Above 768px the wrapper is `position:relative`, so the panel is
-   * positioned in the wrapper and the stylesheet already centres it on the trigger
-   * with `left:50%`; there is nothing to compute. Below it the wrapper is static
-   * and the panel is positioned in `.nav-center`, the element with overflow-x:clip
-   * — spanning that box cleared the clipping but left the panel pointing at the
-   * middle of the nav rather than at "Staging".
+   * Phones only, and the breakpoint is still never named here — the stylesheet's own
+   * `position` is asked instead, which is the thing that actually encodes it. Above
+   * 768px the panel is absolute inside a relative wrapper and the CSS centres it on
+   * the trigger with `left:50%`; there is nothing to compute. Below it the panel is
+   * `position:fixed` (see the long note in styles.css: it is fixed so that no
+   * ancestor's overflow can clip it, which is what erased it on iOS), and a fixed box
+   * resolves its offsets against the viewport — so "under the nav row, aimed at
+   * Staging" has to be measured and written out here.
    *
-   * Both offsets are read against that same box, and the result is clamped to it,
-   * so aiming at the trigger can never reintroduce the clipping this replaced. If
-   * the panel is too wide to leave a gutter either side, the offset is dropped and
-   * the CSS falls back to centring — the best available answer at that width.
+   * NOT offsetParent/offsetLeft any more: a fixed element has no offsetParent, so the
+   * old guard read as "desktop" and skipped the very branch that needs the work.
+   * Everything below is viewport coordinates from getBoundingClientRect, which is the
+   * same space `top`/`left` resolve in, so the two cannot drift apart.
    */
   function alignPanel() {
     // Cast at the use site, the way the rest of this file does: querySelector hands
-    // back an Element, and the offset* box metrics live on HTMLElement.
+    // back an Element, and the box metrics live on HTMLElement.
     const box = /** @type {HTMLElement} */ (panel);
     const btn = /** @type {HTMLElement} */ (trigger);
-    const clip = /** @type {HTMLElement | null} */ (box.offsetParent);
-    const clear = () => box.style.removeProperty('--staging-panel-shift');
-    if (!clip || clip === root) return clear();
+    const clear = () => {
+      box.style.removeProperty('--staging-panel-top');
+      box.style.removeProperty('--staging-panel-left');
+    };
+    if (getComputedStyle(box).position !== 'fixed') return clear();
+    // The nav row is what the panel is aimed under and clamped to. It is the menu's
+    // own parent, so this needs no class name to find.
+    const row = root.parentElement;
+    if (!row) return clear();
     const GAP = 8;
-    const room = clip.clientWidth - box.offsetWidth;
-    if (room <= GAP * 2) return clear();
-    const centred = btn.offsetLeft + (btn.offsetWidth - box.offsetWidth) / 2;
-    const shift = Math.min(Math.max(centred, GAP), room - GAP);
-    box.style.setProperty('--staging-panel-shift', `${Math.round(shift)}px`);
+    const rowBox = row.getBoundingClientRect();
+    const btnBox = btn.getBoundingClientRect();
+    const width = box.offsetWidth;
+    // Clamp inside the row, but never past the viewport either — on a narrow phone the
+    // row can be wider than the space the panel may occupy.
+    const min = Math.max(rowBox.left, 0) + GAP;
+    const max = Math.min(rowBox.right, window.innerWidth) - width - GAP;
+    const centred = btnBox.left + (btnBox.width - width) / 2;
+    // Math.max(min, max) so an over-wide panel pins to the left gutter rather than
+    // inverting the clamp and flying off to the left.
+    const left = Math.min(Math.max(centred, min), Math.max(min, max));
+    box.style.setProperty('--staging-panel-left', `${Math.round(left)}px`);
+    box.style.setProperty('--staging-panel-top', `${Math.round(rowBox.bottom + GAP)}px`);
   }
 
   function open() {
@@ -140,8 +155,14 @@ function wireMenu(root) {
     document.addEventListener('pointerdown', onOutside, true);
     document.addEventListener('keydown', onKey);
     // A rotation re-wraps the nav under an open menu, which moves the trigger and
-    // resizes the clip box — both inputs above.
+    // resizes the row — both inputs above.
     window.addEventListener('resize', alignPanel);
+    // The panel is position:fixed on phones, so it does NOT ride the page: anything
+    // that moves the nav row in viewport space has to be followed explicitly. The
+    // header is sticky at top:0 so this is usually a no-op, but a phone's collapsing
+    // URL bar moves the whole viewport out from under it, and scroll is the only
+    // event that reports it. Passive: this never calls preventDefault.
+    window.addEventListener('scroll', alignPanel, { passive: true });
   }
 
   function close() {
@@ -150,6 +171,7 @@ function wireMenu(root) {
     document.removeEventListener('pointerdown', onOutside, true);
     document.removeEventListener('keydown', onKey);
     window.removeEventListener('resize', alignPanel);
+    window.removeEventListener('scroll', alignPanel);
   }
 
   /** @param {Event} e */
