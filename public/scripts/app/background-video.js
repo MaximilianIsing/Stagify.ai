@@ -53,11 +53,14 @@ export function initBackgroundVideoSync() {
             // nothing — networkState settles at NETWORK_NO_SOURCE (3) and it can never
             // play. That is the NORMAL state on every phone: index.html gates
             // background.mp4 behind `media="(min-width: 769px)"` so mobile never spends
-            // 1.25 MB on a decorative layer, and there the `poster` IS the intended
-            // visual. So the "playback failed, fall back to a solid colour" paths below
-            // must not fire — hiding the element would throw the poster away and leave a
-            // flat #b2c4f6 page. Asked lazily, not once up front, because resource
-            // selection is a queued task that may not have settled at DOMContentLoaded.
+            // 1.25 MB on a decorative layer. The phone backdrop is therefore painted in
+            // CSS instead (styles.css hides #background-video under 769px and draws the
+            // poster on a fixed body::before, because the UA paints an unremovable play
+            // glyph over a video it cannot start). So every path below is desktop-only
+            // and must stay inert here: firing "playback failed, fall back to a solid
+            // colour" on a phone would repaint the body over a backdrop that is working
+            // as designed. Asked lazily, not once up front, because resource selection
+            // is a queued task that may not have settled at DOMContentLoaded.
             const hasSource = () => video.networkState !== 3;
             const fallBackToSolid = () => {
                 if (!hasSource()) return;

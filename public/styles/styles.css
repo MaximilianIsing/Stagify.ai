@@ -319,6 +319,37 @@ body {
 #background-video::-ms-media-controls {
   display:none!important
 }
+/* The exact logical complement of the <source media="(min-width: 769px)"> gate on the
+   background video, so the two can never disagree — including in the fractional band
+   between 768px and 769px that a zoomed desktop window lands in.
+   Below that width no <source> is selected, networkState settles at NETWORK_NO_SOURCE,
+   and the element can never play. Both WebKit and Blink then draw their own centred
+   play glyph over it — which is what showed up in the middle of the phone background.
+   That placeholder is NOT part of the media-controls shadow tree, so the rules above
+   cannot reach it; the only reliable removal is to not render a <video> at all. The
+   poster it used to carry moves to a fixed pseudo-element reproducing the desktop layer
+   exactly (cover, opacity .8, z-index:-1 over the #b2c4f6 body). That URL resolves
+   against THIS stylesheet rather than the page, so it stays right on the SSR locale
+   pages. Scoped with :has() so reset-password.html — the one styles.css page with no
+   background video — is untouched; a browser without :has() degrades to the flat
+   #b2c4f6 that background-video.js already treats as the fallback. */
+@media not all and (min-width:769px) {
+  #background-video {
+    display:none
+  }
+  body:has(#background-video)::before {
+    content:"";
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#b2c4f6 url("../media-webp/background-poster.webp") center/cover no-repeat;
+    opacity:.8;
+    z-index:-1;
+    pointer-events:none
+  }
+}
 .role-popup {
   position:fixed;
   bottom:20px;
@@ -560,15 +591,6 @@ body {
   box-shadow:0 0 0 3px rgba(59,130,246,.1)
 }
 @media (max-width:768px) {
-  #background-video {
-    -webkit-playsinline:true;
-    playsinline:true;
-    pointer-events:none;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none
-  }
   .role-popup-content {
     background:rgba(255,255,255,.6);
     backdrop-filter:blur(10px) saturate(180%);
