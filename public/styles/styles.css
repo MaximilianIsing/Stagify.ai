@@ -3400,18 +3400,37 @@ html {
   transform:translateX(-50%) translateY(0) scale(1);
   pointer-events:auto
 }
-/* Staging dropdown on phones.
-   .nav-center is `overflow-x:clip` below 768px so the wrapping nav row can never push
-   the page sideways. A panel anchored to its own trigger is a fixed 224px centred on
-   that trigger, so wherever the wrap happens to put the trigger it can run past the
-   clip and lose a row — which is why this menu was `desktop-only`, and why a phone
-   had no nav path to ANY staging tool, including the two Stagify+ is sold on.
-   Anchoring the panel to .nav-center makes the box it is positioned in the very box
-   doing the clipping, so a width capped at 100% has nothing left to clip at any
-   trigger position or viewport width. (It used to FILL that box; it is now centred in
-   it at content width — full-bleed cleared the clip but spanned the whole phone.) Only
-   the X axis is clipped (overflow-y stays visible, which `clip` permits), so the
-   panel still hangs below the nav normally.
+/* Staging dropdown on phones — position:FIXED, and that is the whole point.
+   Below 768px this panel hangs ~134px below a nav row that is only ~32px tall, so it
+   overflows every one of its ancestors, and THREE of them clip: .nav-center
+   (overflow-x:clip, styles.css above), plus .nav and .site-header on the pages that
+   load home.css. The previous approach anchored the panel INSIDE .nav-center on the
+   theory that only the X axis is clipped — `overflow-x:clip` with `overflow-y:visible`
+   is a legal pair that must not clip vertically, and Chromium and Playwright's WebKit
+   both honour it.
+
+   Real iOS Safari does not, reliably. It resolves that pair the legacy way — the clip
+   is treated as `hidden`, which forces the other axis to `auto` — and the panel is cut
+   off vertically, i.e. erased. It was reported as "opens then disappears after a
+   second", and an on-page event log from the phone is what settled it: `data-open`
+   stayed true, opacity stayed 1, the rect stayed 224x134 at y=116 — logically open and
+   correctly placed, simply never painted. No emulator here reproduces it (6 pages x 4
+   widths x 2 engines), so do not "simplify" this back to absolute because it looks
+   fine locally. It will look fine locally.
+
+   position:fixed takes the panel out of the containing-block chain entirely, so no
+   ancestor's overflow can clip it however that ancestor computes — engine-independent,
+   rather than a bet on one browser's overflow conformance. It is only safe because
+   NOTHING in the chain establishes a containing block for fixed descendants (no
+   transform / filter / backdrop-filter / will-change / contain / perspective — the
+   header's blur lives on a ::before precisely so it is not one of them, see above).
+   Adding any of those to .nav-center, .nav or .site-header silently re-traps the panel
+   and brings this bug straight back; test/frontend/staging-panel-escape.test.js fails
+   if you do.
+
+   Placement is JS's job here, because a fixed box resolves its offsets against the
+   viewport and so cannot express "under the nav row, aimed at the trigger" on its own.
+   staging-menu.js writes both customs; the fallbacks below are what a no-JS page gets.
    This block MUST stay after the base rules above: a media query adds no specificity,
    so declaring it earlier in the file loses to `.staging-menu{position:relative}`. */
 @media (max-width:768px) {
@@ -3419,26 +3438,17 @@ html {
     position:static
   }
   .staging-menu__panel {
-    /* left:0/right:0 keeps the CONTAINING BLOCK the clipping box (that is the part
-       that must not change), but stretching to fill it made a four-row menu span the
-       whole phone. Auto inline margins centre it in that box instead: an abs-pos box
-       with both offsets set and a definite width resolves the leftover space into the
-       auto margins. width:max-content sizes it to its widest row, max-width:100% caps
-       it at the clip box so no width can ever overflow, and the min-width floor keeps
-       it from looking cramped — as min(), not a flat 224px, since a bare min-width
-       BEATS max-width and would put the overflow straight back on a narrow phone.
-
-       The left margin is what aims the panel at its trigger: staging-menu.js
-       measures both against this same box on open and writes a clamped offset into
-       --staging-panel-shift. Unset it falls back to `auto auto`, i.e. centred in
-       the clip box — which is what a no-JS page and any measurement it declines to
-       make (see the desktop guard there) should get. */
-    left:0;
-    right:0;
+    position:fixed;
+    top:var(--staging-panel-top,56px);
+    left:var(--staging-panel-left,8px);
+    right:auto;
     width:max-content;
-    min-width:min(224px,100%);
-    max-width:100%;
-    margin-inline:var(--staging-panel-shift,auto) auto;
+    /* Viewport-relative now, not container-relative: the containing block IS the
+       viewport. min-width stays a min() rather than a flat 224px — a bare min-width
+       BEATS max-width and would put the overflow straight back on a narrow phone. */
+    min-width:min(224px,calc(100vw - 16px));
+    max-width:calc(100vw - 16px);
+    margin-inline:0;
     transform:translateY(-6px) scale(.98)
   }
   .staging-menu[data-open] .staging-menu__panel {

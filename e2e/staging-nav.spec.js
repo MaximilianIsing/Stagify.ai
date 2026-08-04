@@ -27,6 +27,23 @@ async function openMenu(page) {
   return page.locator(`${MENU} ${ITEM}`);
 }
 
+/**
+ * Wait out the entry transition before measuring geometry.
+ *
+ * The panel animates in with `translateY(-6px) scale(.98)` → `translateY(0) scale(1)`
+ * over .18s, and getBoundingClientRect() reports the TRANSFORMED box — so a rect read
+ * straight after `data-open` lands is up to 6px high and a few px narrow. That is the
+ * animation, not the placement, and it made the "hangs 8px under the nav row"
+ * assertion fail by 5.5px. Opacity shares the same transition, so it is the settle
+ * signal.
+ */
+async function settleMenu(page) {
+  await page.waitForFunction(() => {
+    const p = document.querySelector('.staging-menu__panel');
+    return !!p && getComputedStyle(p).opacity === '1';
+  });
+}
+
 test.describe('Staging dropdown — desktop', () => {
   // These pin the DESKTOP shape of the menu — all four rows visible, and the sliding
   // nav pill, which only exists on a pointer device. The phone shape is a different
@@ -308,81 +325,96 @@ test.describe('Staging dropdown — phone', () => {
     await expect(page.locator(ITEM).first()).toBeFocused();
   });
 
-  test('the open panel is anchored to the clipping box, so it can never be cut off', async ({ page }) => {
-    // The reason the menu was hidden on phones: .nav-center clips the X axis, and a
-    // panel anchored to its own trigger is a fixed 224px centred on that trigger —
-    // so wherever the wrapping nav happens to put the trigger, the panel can run past
-    // the clip and lose a row.
+  test('the open panel escapes every clipping ancestor and is really painted', async ({ page }) => {
+    // The panel hangs ~134px below a ~32px nav row, so it overflows all of its
+    // ancestors, and three of them clip the X axis: .nav-center always, plus .nav and
+    // .site-header on the pages loading home.css. `overflow-x:clip` with
+    // `overflow-y:visible` must not clip vertically — Chromium and Playwright's WebKit
+    // honour that, real iOS Safari does not, and it erased the panel outright. So the
+    // panel is `position:fixed` below 768px: out of the containing-block chain, where
+    // no ancestor's overflow can reach it however that ancestor computes.
     //
-    // Asserting only "the panel is on screen" is NOT enough: at this particular
-    // viewport the trigger lands near the middle and 224px fits anyway, so that
-    // assertion passes with the fix reverted. What the fix actually guarantees is
-    // that the panel is POSITIONED IN .nav-center — the very box doing the clipping —
-    // and never wider than it, leaving nothing to clip at ANY trigger position or
-    // viewport width. Pin both halves; neither alone is the property.
-    //
-    // It is deliberately no longer stretched to fill that box: spanning the whole
-    // phone for four rows is what this test used to require, so the width assertion
-    // below is upper AND lower bounded.
+    // This test used to assert `panel.offsetParent === .nav-center`, i.e. that the
+    // panel was positioned INSIDE the clipping box. That is the opposite of the
+    // property now, and it was never the real one anyway: it passed on the phone the
+    // whole time the panel was invisible there.
     await seedProSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
     await openMenu(page);
+    await settleMenu(page);
 
-    // Compare LAYOUT geometry (offsetWidth/clientWidth), not boundingBox(): the panel
-    // animates in with a scale(.98)→scale(1) transition, and a transformed bounding
-    // box is a few px narrower until it settles — which is measurement noise, not the
-    // property under test. offsetWidth ignores transforms entirely.
     const geom = await page.evaluate(() => {
-      const panel = document.querySelector('.staging-menu__panel');
-      const clip = document.querySelector('.nav-center');
+      const panel = /** @type {HTMLElement} */ (document.querySelector('.staging-menu__panel'));
+      const row = /** @type {HTMLElement} */ (document.querySelector('.nav-center'));
+      const trigger = /** @type {HTMLElement} */ (document.querySelector('.staging-menu__trigger'));
+      const p = panel.getBoundingClientRect();
+      const r = row.getBoundingClientRect();
+      const t = trigger.getBoundingClientRect();
+
+      // Does anything between the panel and the viewport establish a containing block
+      // for fixed descendants? If so the escape is void and the panel is back inside
+      // the overflow boxes — the exact regression the static guard also watches for.
+      const traps = [];
+      for (let el = panel.parentElement; el; el = el.parentElement) {
+        const cs = getComputedStyle(el);
+        if (cs.transform !== 'none' || cs.filter !== 'none' || cs.perspective !== 'none'
+          || (cs.backdropFilter && cs.backdropFilter !== 'none')
+          || cs.willChange !== 'auto' || cs.contain !== 'none') {
+          traps.push(el.tagName.toLowerCase() + '.' + String(el.className).split(' ')[0]);
+        }
+      }
+      const cx = p.x + p.width / 2;
+      const cy = p.y + p.height / 2;
+      const hit = document.elementFromPoint(cx, cy);
       return {
-        panelWidth: panel.offsetWidth,
-        clipWidth: clip.clientWidth,
-        offsetLeft: panel.offsetLeft,
-        // Same offsetParent as the panel below 768px (the wrapper is static there),
-        // so these two are directly comparable without touching bounding boxes.
-        triggerLeft: panel.parentElement.querySelector('.staging-menu__trigger').offsetLeft,
-        triggerWidth: panel.parentElement.querySelector('.staging-menu__trigger').offsetWidth,
-        // offsetLeft is measured from offsetParent's padding edge, and clientWidth IS
-        // the padding box — so these three compose only while offsetParent is the clip
-        // box. Assert that identity rather than assume it: put `position:relative` back
-        // on the wrapper and offsetLeft silently starts meaning "from the trigger",
-        // which reads as a comfortably-inset panel no matter where the panel really is.
-        anchoredToClipBox: panel.offsetParent === clip,
+        position: getComputedStyle(panel).position,
+        panel: { x: p.x, y: p.y, w: p.width, h: p.height, bottom: p.bottom, right: p.right },
+        row: { left: r.left, right: r.right, bottom: r.bottom },
+        trigger: { left: t.left, width: t.width },
+        // offsetWidth ignores the scale(.98)→scale(1) entry transform, so the aim maths
+        // below is not measuring the animation.
+        layoutWidth: panel.offsetWidth,
+        viewport: { w: window.innerWidth, h: window.innerHeight },
+        traps,
+        // THE assertion this file was missing. Geometry can be perfect while nothing is
+        // painted — on the phone the rect was a correct 224x134 at y=116 with opacity 1
+        // and the panel was simply not there. Hit-testing is the closest a DOM test gets
+        // to asking "is this actually on screen", and it fails when an ancestor clips.
+        hitsPanel: !!(hit && hit.closest('.staging-menu__panel')),
+        hitWas: hit ? hit.tagName.toLowerCase() + '.' + String(hit.className).split(' ')[0] : null,
       };
     });
 
-    expect(geom.anchoredToClipBox).toBe(true);
-    expect(geom.clipWidth).toBeGreaterThan(240);
-    // Never wider than the box that clips it, and wholly inside it.
-    expect(geom.panelWidth).toBeLessThanOrEqual(geom.clipWidth);
-    expect(geom.offsetLeft).toBeGreaterThanOrEqual(0);
-    expect(geom.offsetLeft + geom.panelWidth).toBeLessThanOrEqual(geom.clipWidth);
-    // ...but not full-bleed: content width, with real margin either side.
-    expect(geom.panelWidth).toBeLessThan(geom.clipWidth - 40);
-    expect(geom.offsetLeft).toBeGreaterThan(0);
+    expect(geom.position).toBe('fixed');
+    expect(geom.traps).toEqual([]);
+    expect(geom.hitsPanel, `centre of the panel hit ${geom.hitWas}`).toBe(true);
 
-    // And it points at "Staging" rather than at the middle of the nav. Spanning the
-    // clip box cleared the clipping but left the panel visibly adrift from its own
-    // trigger; staging-menu.js re-aims it on open, clamped to the two bounds above.
-    //
-    // Assert the clamped aim, not bare centre-to-centre. The panel is 224px and the
-    // trigger is ~77px, so centring it only fits while the trigger sits far enough from
-    // either edge — and the nav row puts the trigger second of five items, close to the
-    // left. At this viewport centring wants a -1.5px offset, i.e. outside the box, so
-    // staging-menu.js correctly clamps to GAP and the two midpoints land ~9px apart.
-    // Recompute that same clamp here: where centring fits this reduces to the old
-    // exact-centre assertion, and a panel that ignored its trigger (the pre-fix
-    // behaviour: `margin-inline: auto auto`, centred in the clip box at offsetLeft 72)
-    // still fails it.
-    const GAP = 8; // staging-menu.js's own bound
-    const wantedShift = geom.triggerLeft + (geom.triggerWidth - geom.panelWidth) / 2;
-    const room = geom.clipWidth - geom.panelWidth;
-    const aimedLeft = Math.min(Math.max(wantedShift, GAP), room - GAP);
-    expect(Math.abs(geom.offsetLeft - aimedLeft)).toBeLessThanOrEqual(2);
+    // Wholly on screen, top and bottom included — the axis that iOS clipped.
+    expect(geom.panel.y).toBeGreaterThanOrEqual(0);
+    expect(geom.panel.bottom).toBeLessThanOrEqual(geom.viewport.h);
+    expect(geom.panel.x).toBeGreaterThanOrEqual(0);
+    expect(geom.panel.right).toBeLessThanOrEqual(geom.viewport.w);
 
-    // And it is genuinely usable, not merely laid out somewhere plausible.
+    // Hung just under the nav row rather than floating somewhere arbitrary.
+    expect(Math.abs(geom.panel.y - (geom.row.bottom + 8))).toBeLessThanOrEqual(2);
+
+    // Inside the row's horizontal bounds, and not full-bleed: content width with a real
+    // gutter either side, which is what stops a four-row menu spanning the whole phone.
+    expect(geom.panel.x).toBeGreaterThanOrEqual(geom.row.left + 8 - 1);
+    expect(geom.panel.right).toBeLessThanOrEqual(geom.row.right - 8 + 1);
+    expect(geom.layoutWidth).toBeLessThan(geom.row.right - geom.row.left - 40);
+
+    // And it points at "Staging" rather than at the middle of the nav. Recompute
+    // staging-menu.js's own clamp: where centring fits this reduces to exact centring,
+    // and a panel that ignored its trigger still fails it.
+    const GAP = 8;
+    const min = Math.max(geom.row.left, 0) + GAP;
+    const max = Math.min(geom.row.right, geom.viewport.w) - geom.layoutWidth - GAP;
+    const centred = geom.trigger.left + (geom.trigger.width - geom.layoutWidth) / 2;
+    const aimed = Math.min(Math.max(centred, min), Math.max(min, max));
+    expect(Math.abs(geom.panel.x - aimed)).toBeLessThanOrEqual(2);
+
     await expect(page.locator(ITEM).filter({ hasText: 'Masking Studio' })).toBeInViewport();
   });
 
@@ -407,29 +439,37 @@ test.describe('Staging dropdown — phone', () => {
     //
     // That staleness is a MIS-AIM, not a clipping bug, and the distinction is the
     // point of this test. The panel is pinned at its `min-width:min(224px,100%)` floor
-    // and capped at `max-width:100%`, so against a ~370px clip box there is ~145px of
-    // slack and the clamp's output can never push it past the edge. Measured, not
-    // assumed — an earlier reading of this code claimed a stale shift was what cut the
-    // phone menu off, and these numbers are what disproved it. Pin the containment so
-    // a future change to either bound (a flat 224px min-width beats max-width, which
-    // is the known trap) cannot quietly turn the mis-aim into a real clip.
+    // and capped at `max-width:calc(100vw - 16px)`, so against a ~370px row there is
+    // ~145px of slack and the clamp's output can never push it past the edge.
+    // Measured, not assumed — an earlier reading of this code claimed a stale offset
+    // was what cut the phone menu off, and these numbers are what disproved it (the
+    // real cause was ancestor overflow clipping, fixed by position:fixed). Pin the
+    // containment so a future change to either bound (a flat 224px min-width beats
+    // max-width, which is the known trap) cannot turn the mis-aim into a real clip.
     await seedProSession(page);
     await page.goto('/index.html');
     await waitForHomeReady(page);
     await openMenu(page);
+    await settleMenu(page);
 
     const read = () => page.evaluate(() => {
-      const panel = document.querySelector('.staging-menu__panel');
-      const clip = document.querySelector('.nav-center');
-      const trigger = document.querySelector('.staging-menu__trigger');
+      const panel = /** @type {HTMLElement} */ (document.querySelector('.staging-menu__panel'));
+      const row = /** @type {HTMLElement} */ (document.querySelector('.nav-center'));
+      const trigger = /** @type {HTMLElement} */ (document.querySelector('.staging-menu__trigger'));
+      const p = panel.getBoundingClientRect();
+      const r = row.getBoundingClientRect();
+      const hit = document.elementFromPoint(p.x + p.width / 2, p.y + p.height / 2);
       return {
         panelWidth: panel.offsetWidth,
-        clipWidth: clip.clientWidth,
-        offsetLeft: panel.offsetLeft,
-        triggerLeft: trigger.offsetLeft,
-        triggerWidth: trigger.offsetWidth,
-        shift: panel.style.getPropertyValue('--staging-panel-shift'),
-        anchoredToClipBox: panel.offsetParent === clip,
+        rowLeft: r.left,
+        rowRight: r.right,
+        x: p.x,
+        right: p.right,
+        bottom: p.bottom,
+        triggerLeft: trigger.getBoundingClientRect().left,
+        left: panel.style.getPropertyValue('--staging-panel-left'),
+        viewportH: window.innerHeight,
+        hitsPanel: !!(hit && hit.closest('.staging-menu__panel')),
       };
     });
 
@@ -467,13 +507,14 @@ test.describe('Staging dropdown — phone', () => {
     // fails on a menu that is behaving perfectly.
     expect(after.triggerLeft).toBeGreaterThan(before.triggerLeft);
     // ...and the aim really is stale — this is the live (cosmetic) defect.
-    expect(after.shift).toBe(before.shift);
+    expect(after.left).toBe(before.left);
 
-    // The same three invariants the test above pins at open time, now re-checked
-    // AFTER the reflow. These are the property; the aim is a nicety on top of them.
-    expect(after.anchoredToClipBox).toBe(true);
-    expect(after.offsetLeft).toBeGreaterThanOrEqual(0);
-    expect(after.offsetLeft + after.panelWidth).toBeLessThanOrEqual(after.clipWidth);
+    // The invariants the test above pins at open time, now re-checked AFTER the
+    // reflow. These are the property; the aim is a nicety on top of them.
+    expect(after.hitsPanel).toBe(true);
+    expect(after.x).toBeGreaterThanOrEqual(after.rowLeft + 8 - 1);
+    expect(after.right).toBeLessThanOrEqual(after.rowRight - 8 + 1);
+    expect(after.bottom).toBeLessThanOrEqual(after.viewportH);
 
     // And the last row is still reachable rather than clipped away.
     await expect(page.locator(ITEM).filter({ hasText: 'Maskierungsstudio' })).toBeInViewport();
