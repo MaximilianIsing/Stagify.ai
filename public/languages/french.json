@@ -1488,12 +1488,6 @@
       "generic": "Cette photo n’a pas pu être améliorée. Essayez une autre prise de l’extérieur du bien.",
       "network": "La connexion a été interrompue avant le retour de la photo. Votre import est toujours là — réessayez."
     },
-    "gate": {
-      "title": "Le Studio Extérieur fait partie de Stagify+",
-      "body": "Votre compte est sur l’offre gratuite. Stagify+ débloque le Studio Extérieur ainsi que le Studio de Masquage, le Designer IA et le home staging illimité.",
-      "cta": "Voir Stagify+",
-      "secondary": "Retour à l’accueil"
-    },
     "stepPhoto": "Photo extérieure",
     "stepPhotoHint": "Importez une photo dans l’espace de travail à droite.",
     "replacePhoto": "Remplacer la photo",

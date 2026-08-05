@@ -1488,12 +1488,6 @@
       "generic": "That photo could not be enhanced. Please try another shot of the property exterior.",
       "network": "The connection dropped before the photo came back. Your upload is still here — try again."
     },
-    "gate": {
-      "title": "Exterior Studio is part of Stagify+",
-      "body": "Your account is on the free plan. Stagify+ unlocks the Exterior Studio along with the Masking Studio, the AI Designer and unlimited staging.",
-      "cta": "View Stagify+",
-      "secondary": "Back to Home"
-    },
     "stepPhoto": "Exterior photo",
     "stepPhotoHint": "Upload a photo in the workspace on the right.",
     "replacePhoto": "Replace photo",

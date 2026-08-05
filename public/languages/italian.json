@@ -1488,12 +1488,6 @@
       "generic": "Non è stato possibile migliorare questa foto. Prova un altro scatto dell’esterno dell’immobile.",
       "network": "La connessione è caduta prima che la foto tornasse. Il tuo caricamento è ancora qui: riprova."
     },
-    "gate": {
-      "title": "Lo Studio Esterni fa parte di Stagify+",
-      "body": "Il tuo account è sul piano gratuito. Stagify+ sblocca lo Studio Esterni insieme allo Studio Maschere, al Designer IA e allo staging illimitato.",
-      "cta": "Scopri Stagify+",
-      "secondary": "Torna alla home"
-    },
     "stepPhoto": "Foto esterna",
     "stepPhotoHint": "Carica una foto nell’area di lavoro a destra.",
     "replacePhoto": "Sostituisci foto",

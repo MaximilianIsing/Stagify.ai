@@ -9,14 +9,20 @@
 //   • REVERSIBILITY — signing out must put the public pitch back. applyUserToUI() calls
 //     this writer from eight sites, so a one-way writer leaves the tool on screen for a
 //     signed-out visitor, whose every click then 401s.
-//   • THE MODAL AUDIENCE — an anonymous visitor must NOT get the upgrade dialog. They
-//     have not been told what the tool does yet; a modal over the pitch is how a landing
-//     page stops converting.
+//   • NO OVERLAY, EVER — a signed-in free account used to get a full-screen, undismissable
+//     "your account is on the free plan" dialog the moment this page loaded, which for a
+//     brand-new account was the first thing the product ever said to them. It is gone, and
+//     the page must not grow another one: the assertion below is on the MARKUP, because
+//     re-adding the overlay starts with re-adding the div, and a writer-only check would
+//     pass right up until someone wired it back up.
 //   • THE CTA'S data-lang — repainting the label without moving the key means the next
 //     language switch re-renders the OLD label. Same trap custom-select.js shipped with.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { mountExteriorPage, pageIds, hiddenPageIds, pageHtml } from '../../helpers/exterior-studio-dom.js';
 import { exteriorView, applyExteriorView, syncExteriorAccess } from '../../../public/scripts/exterior-studio/access.js';
 
@@ -50,9 +56,37 @@ test('the shipped markup is the ANONYMOUS view — no-JS default, and what a cra
   assert.ok(!hidden.has('ex-features'), 'the public pitch must ship visible');
 
   const ids = pageIds();
-  for (const id of ['ex-tool', 'ex-features', 'ex-hero-actions', 'ex-cta', 'ex-pro-gate']) {
+  for (const id of ['ex-tool', 'ex-features', 'ex-hero-actions', 'ex-cta']) {
     assert.ok(ids.includes(id), `the page must carry #${id} — access.js looks it up by id`);
   }
+});
+
+// ---- the upgrade overlay stays deleted -------------------------------------
+
+test('there is NO upgrade overlay on this page — not in the markup, not in the stylesheet', () => {
+  // The dialog this replaces was full-screen, had no close button, and fired for any
+  // signed-in free account the moment the page loaded — so the first thing a brand-new
+  // account saw was a wall telling them what they had not bought. The hero's "Get
+  // Stagify+ to use it" button makes the same ask without taking the page away.
+  //
+  // Asserted on the SOURCE rather than through the writer because that is the order the
+  // regression happens in: the div comes back first, styled and translated, and only then
+  // does something toggle it. A writer-only check would still be green at that point.
+  const html = pageHtml();
+  assert.ok(!/id="ex-pro-gate"/.test(html), 'the gate dialog is back in exterior-studio.html');
+  assert.ok(!/\bex-gate\b/.test(html), 'gate markup is back in exterior-studio.html');
+  assert.ok(
+    !/exteriorStudio\.gate\./.test(html),
+    'the gate copy is back — its keys were deleted from all eleven packs, so it would render as raw English',
+  );
+
+  const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+  const css = fs.readFileSync(path.join(root, 'public', 'styles', 'exterior-studio.css'), 'utf8');
+  // Comments carry the words "gate" and "dialog" on purpose (they explain the removal), so
+  // strip them first — otherwise the note left behind for the next reader is what keeps
+  // this assertion passing, and it would keep passing with the rules restored underneath.
+  const rules = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.ok(!/\.ex-gate/.test(rules), '.ex-gate styles are back in exterior-studio.css');
 });
 
 // ---- the writer ------------------------------------------------------------
@@ -64,18 +98,16 @@ function render(view) {
     features: page.els['ex-features'],
     tool: page.els['ex-tool'],
     heroActions: page.els['ex-hero-actions'],
-    gate: page.els['ex-pro-gate'],
   };
   const revealed = applyExteriorView(view, els);
   page.restore();
   return { ...els, revealed, cta: page.els['ex-cta'] };
 }
 
-test('anonymous: the pitch, a Stagify+ link, and NO modal', () => {
+test('anonymous: the pitch, and a Stagify+ link', () => {
   const r = render('anonymous');
   assert.equal(r.features.hidden, false, 'the pitch is the page');
   assert.equal(r.tool.hidden, true);
-  assert.equal(r.gate.classList.contains('active'), false, 'never interrupt a first-time reader');
   assert.equal(r.heroActions.hidden, false, 'and the call to action is on offer');
   assert.equal(r.revealed, false);
 });
@@ -91,12 +123,21 @@ test('the hero call to action is a STATIC sales link, not a control JS repoints'
   assert.match(cta[1], /href="stagify-plus\.html"/, 'it only ever points at the plan');
 });
 
-test('signed-in free: the same pitch, plus the upgrade dialog', () => {
-  const r = render('free');
-  assert.equal(r.features.hidden, false);
-  assert.equal(r.tool.hidden, true);
-  assert.equal(r.gate.classList.contains('active'), true, 'they have an account, so the ask is concrete');
-  assert.equal(r.revealed, false);
+test('signed-in free: byte for byte the page an anonymous visitor gets', () => {
+  // Signing up must not change this page. It used to: creating an account swapped the
+  // pitch for a full-screen dialog about not having paid.
+  const free = render('free');
+  const anon = render('anonymous');
+  assert.equal(free.features.hidden, false, 'the pitch is still the page');
+  assert.equal(free.tool.hidden, true, 'the tool is still the paid half');
+  assert.equal(free.heroActions.hidden, false, 'and the ask is still the hero button');
+  assert.equal(free.revealed, false);
+
+  assert.deepEqual(
+    [free.features.hidden, free.tool.hidden, free.heroActions.hidden],
+    [anon.features.hidden, anon.tool.hidden, anon.heroActions.hidden],
+    'a signed-in free account and an anonymous visitor see the same page',
+  );
 });
 
 test('pro: the tool, and both the pitch and the sales button are taken away', () => {
@@ -104,7 +145,6 @@ test('pro: the tool, and both the pitch and the sales button are taken away', ()
   assert.equal(r.tool.hidden, false);
   assert.equal(r.features.hidden, true, 'someone who bought it does not need selling');
   assert.equal(r.heroActions.hidden, true, 'nor a button offering to sell it again');
-  assert.equal(r.gate.classList.contains('active'), false);
   assert.equal(r.revealed, true);
 });
 
@@ -112,7 +152,7 @@ test('the writer is idempotent and REVERSIBLE — signing out puts the pitch bac
   const page = mountExteriorPage();
   const els = {
     features: page.els['ex-features'], tool: page.els['ex-tool'],
-    heroActions: page.els['ex-hero-actions'], gate: page.els['ex-pro-gate'],
+    heroActions: page.els['ex-hero-actions'],
   };
 
   applyExteriorView('pro', els);
@@ -123,14 +163,14 @@ test('the writer is idempotent and REVERSIBLE — signing out puts the pitch bac
   assert.equal(els.tool.hidden, true, 'the tool goes away again');
   assert.equal(els.features.hidden, false, 'and the pitch comes back');
   assert.equal(els.heroActions.hidden, false, 'along with the button that sells it');
-  assert.equal(els.gate.classList.contains('active'), false);
 
-  // free → pro must also clear the modal, or a visitor who upgrades in another tab and
-  // returns finds the tool behind a dialog they cannot dismiss.
+  // free → pro is the upgrade path: someone who subscribes in another tab and comes back
+  // must get the tool, not the pitch they already paid to skip.
   applyExteriorView('free', els);
-  assert.equal(els.gate.classList.contains('active'), true);
+  assert.equal(els.tool.hidden, true);
   applyExteriorView('pro', els);
-  assert.equal(els.gate.classList.contains('active'), false, 'upgrading must dismiss the gate');
+  assert.equal(els.tool.hidden, false, 'upgrading reveals the tool');
+  assert.equal(els.features.hidden, true);
   page.restore();
 });
 
@@ -138,7 +178,7 @@ test('a missing region is a no-op, not a throw', () => {
   // The writer runs from applyUserToUI() on all ten nav-bearing pages, nine of which have
   // none of these elements.
   assert.doesNotThrow(() => applyExteriorView('pro', {
-    features: null, tool: null, heroActions: null, gate: null,
+    features: null, tool: null, heroActions: null,
   }));
 });
 
@@ -161,11 +201,12 @@ test('syncExteriorAccess reads the live plan off window.StagifyAuth', () => {
   const free = mountExteriorPage({ user: FREE });
   assert.equal(syncExteriorAccess(), false);
   assert.equal(free.els['ex-tool'].hidden, true);
-  assert.equal(free.els['ex-pro-gate'].classList.contains('active'), true);
+  assert.equal(free.els['ex-features'].hidden, false, 'a free account gets the pitch, not a wall');
   free.restore();
 
   const anon = mountExteriorPage({ user: null });
   assert.equal(syncExteriorAccess(), false);
-  assert.equal(anon.els['ex-pro-gate'].classList.contains('active'), false);
+  assert.equal(anon.els['ex-tool'].hidden, true);
+  assert.equal(anon.els['ex-features'].hidden, false);
   anon.restore();
 });

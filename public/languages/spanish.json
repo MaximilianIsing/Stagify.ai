@@ -1488,12 +1488,6 @@
       "generic": "No se ha podido mejorar esa foto. Prueba con otra toma del exterior de la propiedad.",
       "network": "La conexión se cortó antes de recibir la foto. Tu imagen sigue aquí: inténtalo de nuevo."
     },
-    "gate": {
-      "title": "El Estudio de Exteriores forma parte de Stagify+",
-      "body": "Tu cuenta está en el plan gratuito. Stagify+ desbloquea el Estudio de Exteriores junto con el Estudio de Máscaras, el Diseñador IA y el home staging ilimitado.",
-      "cta": "Ver Stagify+",
-      "secondary": "Volver al inicio"
-    },
     "stepPhoto": "Foto del exterior",
     "stepPhotoHint": "Sube una foto en el área de trabajo de la derecha.",
     "replacePhoto": "Cambiar foto",
