@@ -7,12 +7,20 @@
 // is redirected away, so those pages' canonical/hreflang/JSON-LD setup earns nothing.
 // Here the page stays put and changes shape instead:
 //
-//   anonymous → the pitch, and a Stagify+ call to action. No modal: they have not been
-//               told the price yet, so a dialog is the wrong first thing to show them.
-//   free      → the same pitch, plus the upgrade dialog. They have an account, so the
-//               ask is concrete.
+//   anonymous → the pitch, and a Stagify+ call to action.
+//   free      → exactly the same page. A signed-in free account USED to get a
+//               full-screen "your account is on the free plan" dialog on top of the
+//               pitch, with no close button. It fired the instant somebody created an
+//               account, which made signing up feel like hitting a wall, and it covered
+//               the very pitch that was supposed to do the selling. The hero's "Get
+//               Stagify+ to use it" button already makes the ask, in place, without
+//               taking the page away.
 //   pro       → the tool, and the pitch is taken away. Someone who already bought it
 //               does not need selling.
+//
+// So the plan is a THREE-state fact about the visitor and a TWO-shape decision about the
+// page: only `pro` changes what renders. Keep the tri-state anyway — it is what the page
+// actually knows, and collapsing it would hide which audience a future change is aimed at.
 //
 // NONE OF THIS IS A SECURITY BOUNDARY. Revealing the controls is an affordance; the
 // gate is requireProAccount on POST /api/enhance-exterior, which a free account hits
@@ -26,7 +34,7 @@
 // then take it away.
 
 /**
- * Which of the three views a visitor gets.
+ * Which audience a visitor belongs to.
  *
  * Pure so the rule is testable on its own and "is this person Pro" has exactly one
  * definition on this page. Enterprise-domain accounts arrive here already carrying
@@ -34,7 +42,7 @@
  * special case.
  *
  * @param {{ plan?: string } | null | undefined} user - The signed-in account, or null/undefined when signed out.
- * @returns {'anonymous' | 'free' | 'pro'} The view to render.
+ * @returns {'anonymous' | 'free' | 'pro'} The audience to render for.
  */
 export function exteriorView(user) {
   if (!user) return 'anonymous';
@@ -55,8 +63,8 @@ function currentUser() {
  * implementation, and no-ops entirely on the other nine nav-bearing pages (they have none
  * of these ids, so every field is null).
  *
- * @param {'anonymous' | 'free' | 'pro'} view - The view to render.
- * @param {{ features: HTMLElement | null, tool: HTMLElement | null, heroActions: HTMLElement | null, gate: HTMLElement | null }} els - The page regions this writer owns.
+ * @param {'anonymous' | 'free' | 'pro'} view - The audience to render for.
+ * @param {{ features: HTMLElement | null, tool: HTMLElement | null, heroActions: HTMLElement | null }} els - The page regions this writer owns.
  * @returns {boolean} True when the tool was revealed (i.e. the visitor is on Stagify+).
  */
 export function applyExteriorView(view, els) {
@@ -68,11 +76,10 @@ export function applyExteriorView(view, els) {
   // button is noise; the masking studio has no equivalent for exactly that reason. Hidden
   // rather than repointed, which is what it used to do (a "jump to the uploader" link),
   // because a control that changes job between views is one more thing to keep true.
+  //
+  // For everyone else it is the ONLY upgrade prompt on the page, which is why the modal
+  // that used to sit on top of it is gone: one in-place ask, never an interruption.
   if (els.heroActions) els.heroActions.hidden = pro;
-  // Only a SIGNED-IN free account gets the dialog. An anonymous visitor is reading the
-  // page for the first time; interrupting them with an upgrade modal before they know
-  // what the tool does is how a landing page stops converting.
-  if (els.gate) els.gate.classList.toggle('active', view === 'free');
   return pro;
 }
 
@@ -90,6 +97,5 @@ export function syncExteriorAccess() {
     features: document.getElementById('ex-features'),
     tool,
     heroActions: document.getElementById('ex-hero-actions'),
-    gate: document.getElementById('ex-pro-gate'),
   });
 }

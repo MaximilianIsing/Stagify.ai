@@ -22,7 +22,7 @@ const URL = '/exterior-studio.html';
 const HERO = '.ex-intro h1';
 const FEATURES = '#ex-features';
 const TOOL = '#ex-tool';
-const GATE = '#ex-pro-gate';
+const CTA = '#ex-cta';
 const NAV_ROW = '.staging-menu__panel a[href="exterior-studio.html"]';
 
 /** A visitor with no session at all: no token, and /api/auth/me answers 401. */
@@ -75,9 +75,7 @@ test.describe('Exterior Studio — the public view', () => {
     await expect(page.locator(TOOL)).toHaveCount(1);
     await expect(page.locator(TOOL)).toBeHidden();
 
-    await expect(page.locator('#ex-cta')).toHaveAttribute('href', 'stagify-plus.html');
-    // No modal over a first-time reader who has not been told the price yet.
-    await expect(page.locator(GATE)).toBeHidden();
+    await expect(page.locator(CTA)).toHaveAttribute('href', 'stagify-plus.html');
   });
 
   test('the page is indexable — no noindex, and a canonical of its own', async ({ page }) => {
@@ -93,16 +91,32 @@ test.describe('Exterior Studio — the public view', () => {
 });
 
 test.describe('Exterior Studio — signed-in free account', () => {
-  test('gets the upgrade dialog over the pitch, and still no tool', async ({ page }) => {
+  test('gets the readable pitch, with NOTHING covering it', async ({ page }) => {
+    // Signing up used to swap this page for a full-screen, undismissable "your account is
+    // on the free plan" dialog — the first thing the product said to a brand-new account.
+    // The browser is where that has to be checked: the overlay was `position: fixed` over
+    // the whole viewport, so the pitch underneath stayed "visible" to any DOM assertion
+    // while being completely unreadable on screen.
     await seedFreeSession(page);
     await page.goto(URL);
 
-    await expect(page.locator(GATE)).toBeVisible();
-    await expect(page.locator(`${GATE} a[href="stagify-plus.html"]`)).toBeVisible();
-    await expect(page.locator(TOOL)).toBeHidden();
-    // The pitch stays behind the dialog rather than being replaced by it — dismissing by
-    // navigating away must not have left them on a blank page.
     await expect(page.locator(HERO)).toBeVisible();
+    await expect(page.locator(FEATURES)).toBeVisible();
+    await expect(page.locator(TOOL)).toBeHidden();
+
+    // Hit-test the pitch: whatever the browser hands a click at the headline's centre must
+    // be the headline itself, not something painted on top of it.
+    const box = await page.locator(HERO).boundingBox();
+    const covered = await page.evaluate(([x, y]) => {
+      const el = document.elementFromPoint(x, y);
+      return el ? !el.closest('.ex-intro') : true;
+    }, [box.x + box.width / 2, box.y + box.height / 2]);
+    expect(covered, 'something is painted over the Exterior Studio pitch').toBe(false);
+
+    // Paired positive: the hit-test above would also pass on a page with no upgrade prompt
+    // at all, which is not what was wanted — the ask just moved in-page.
+    await expect(page.locator(CTA)).toBeVisible();
+    await expect(page.locator(CTA)).toHaveAttribute('href', 'stagify-plus.html');
   });
 });
 
@@ -114,7 +128,6 @@ test.describe('Exterior Studio — Stagify+', () => {
 
     await expect(page.locator(TOOL)).toBeVisible();
     await expect(page.locator(FEATURES)).toBeHidden();
-    await expect(page.locator(GATE)).toBeHidden();
     // The sales button goes too — the tool is right there, so offering to sell it again
     // is noise. The masking studio has no hero button for the same reason.
     await expect(page.locator('#ex-hero-actions')).toBeHidden();

@@ -1488,12 +1488,6 @@
       "generic": "Dieses Foto konnte nicht verbessert werden. Versuchen Sie eine andere Außenaufnahme der Immobilie.",
       "network": "Die Verbindung brach ab, bevor das Foto zurückkam. Ihr Upload ist noch da — bitte erneut versuchen."
     },
-    "gate": {
-      "title": "Das Außen-Studio gehört zu Stagify+",
-      "body": "Ihr Konto nutzt den kostenlosen Tarif. Stagify+ schaltet das Außen-Studio frei — zusammen mit dem Masken-Studio, dem KI-Designer und unbegrenztem Staging.",
-      "cta": "Stagify+ ansehen",
-      "secondary": "Zurück zur Startseite"
-    },
     "stepPhoto": "Außenfoto",
     "stepPhotoHint": "Laden Sie rechts im Arbeitsbereich ein Foto hoch.",
     "replacePhoto": "Foto ersetzen",

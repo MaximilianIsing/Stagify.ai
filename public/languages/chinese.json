@@ -1488,12 +1488,6 @@
       "generic": "这张照片无法优化。请换一张该房产的外观照片试试。",
       "network": "照片返回前连接中断。你上传的图片还在，请重试。"
     },
-    "gate": {
-      "title": "外观工作室属于 Stagify+",
-      "body": "你的账户目前是免费方案。Stagify+ 可解锁外观工作室，以及蒙版工作室、AI 设计师和不限量的虚拟布置。",
-      "cta": "查看 Stagify+",
-      "secondary": "返回首页"
-    },
     "stepPhoto": "外观照片",
     "stepPhotoHint": "在右侧工作区上传照片。",
     "replacePhoto": "更换照片",
