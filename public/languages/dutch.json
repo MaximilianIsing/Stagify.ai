@@ -1488,12 +1488,6 @@
       "generic": "Deze foto kon niet worden verbeterd. Probeer een andere opname van de buitenkant.",
       "network": "De verbinding viel weg voordat de foto terugkwam. Je upload staat er nog — probeer het opnieuw."
     },
-    "gate": {
-      "title": "De Buitenstudio hoort bij Stagify+",
-      "body": "Je account zit op het gratis plan. Stagify+ ontgrendelt de Buitenstudio, samen met de Maskeerstudio, de AI-ontwerper en onbeperkt stagen.",
-      "cta": "Bekijk Stagify+",
-      "secondary": "Terug naar home"
-    },
     "stepPhoto": "Buitenfoto",
     "stepPhotoHint": "Upload een foto in het werkgebied rechts.",
     "replacePhoto": "Foto vervangen",

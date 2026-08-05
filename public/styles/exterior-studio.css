@@ -24,44 +24,13 @@
 html { overflow-x: clip; }
 body { overflow-x: clip; max-width: 100vw; }
 
-/* --- Stagify+ gate dialog (signed-in free accounts only) ------------------- */
-.ex-gate {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(30, 58, 138, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-.ex-gate.active { display: flex; }
-
-/* The floating language pill lives in <main> at z-index 1000, so it out-stacks this
- * overlay's 300 on its own and ghosts through the backdrop wherever the card does not
- * reach. Every dialog on the site does this in the sheet that owns it — .modal and
- * .stage-mask-modal in styles.css, #auth-modal in auth.css, .ms-pro-gate in
- * masking-studio.css. This is that same rule, not a local trick. */
-body:has(.ex-gate.active) .language-picker-container { display: none; }
-
-.ex-gate__card {
-  max-width: 480px;
-  width: 100%;
-  max-height: calc(100vh - 48px);
-  overflow-y: auto;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  padding: 32px 28px;
-  box-shadow: 0 24px 60px rgba(30, 58, 138, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  text-align: center;
-}
-.ex-gate__card h2 { margin: 0 0 12px; color: var(--brand-deep); font-size: 1.5rem; }
-.ex-gate__card p { margin: 0 0 20px; color: var(--slate-deep); line-height: 1.55; font-size: 15px; }
-.ex-gate__actions { display: flex; flex-direction: column; gap: 10px; }
-.ex-gate__actions a { text-decoration: none; }
+/* NOTE: there is deliberately NO gate dialog on this page. A signed-in free account used
+ * to get a full-screen, undismissable "your account is on the free plan" overlay the
+ * moment the page loaded — so for anyone who had just made an account it was the first
+ * thing the product ever said to them, and it sat on top of the pitch that does the
+ * selling. The hero's "Get Stagify+ to use it" button is the whole ask now. Do not
+ * re-add an overlay here; requireProAccount on POST /api/enhance-exterior is the real
+ * gate, and this page's job is to be readable by everyone including Googlebot. */
 
 /* --- Shell + intro (masking-studio conventions) ---------------------------- */
 .ex-shell { width: 100%; max-width: 1400px; margin: 0 auto; }
@@ -81,11 +50,11 @@ body:has(.ex-gate.active) .language-picker-container { display: none; }
 .ex-intro__actions[hidden] { display: none; }
 .ex-intro__actions a { text-decoration: none; }
 
-/* The site's default buttons shout in uppercase; inside the studio (and its gate) they
- * read as tool controls, so use sentence case. Lifted verbatim from masking-studio.css —
- * the scope is the page's own containers, never the global .btn, because that rule is
- * what every other page's buttons look like. */
-.ex-shell .btn, .ex-gate .btn {
+/* The site's default buttons shout in uppercase; inside the studio they read as tool
+ * controls, so use sentence case. Lifted verbatim from masking-studio.css — the scope is
+ * the page's own container, never the global .btn, because that rule is what every other
+ * page's buttons look like. */
+.ex-shell .btn {
   text-transform: none;
   letter-spacing: normal;
   font-weight: 600;
@@ -384,7 +353,13 @@ body:has(.ex-gate.active) .language-picker-container { display: none; }
 /* Firefox keeps a focus ring on the text inside a styled select. */
 .ex-select:-moz-focusring { color: transparent; text-shadow: 0 0 0 var(--fg); }
 
-.ex-submit { width: 100%; margin-top: 12px; }
+/* Block-level flex with auto side margins, not the inline-flex `.ex-shell .btn` sets above:
+ * below 480px the global `.btn { max-width: 280px }` caps this button narrower than the
+ * toolbar, and an inline box lands flush against the panel's left edge instead of under the
+ * centre of the controls it submits. The auto margins centre it there and are no-ops at
+ * every width where the 100% still wins. `.btn` is in the selector only to outrank
+ * `.ex-shell .btn` (0,2,0), which is the rule that sets the display. */
+.ex-submit.btn { display: flex; width: 100%; margin: 12px auto 0; }
 .ex-submit[disabled] { opacity: 0.55; cursor: not-allowed; }
 
 /* --- Workspace ------------------------------------------------------------ */
