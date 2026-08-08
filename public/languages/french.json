@@ -381,8 +381,6 @@
       "uploadArea": "Importez une image ou glissez-déposez",
       "before": "Avant",
       "after": "Après",
-      "refineInStudio": "Affiner dans le Studio de masques",
-      "refineInStudioShort": "Affiner",
       "downloadResult": "Télécharger le résultat",
       "uploadAnother": "Importer une autre",
       "noProcessedImage": "Votre rendu meublé apparaîtra ici",
@@ -394,6 +392,8 @@
       "addPhotos": "+ Ajouter des photos",
       "tryAnotherImage": "Essayer une autre image",
       "uploadAreaAria": "Zone d'import",
+      "uploadHeadline": "Déposez ici la photo de votre pièce",
+      "uploadFormats": "JPG, PNG, WebP ou HEIC · jusqu'à 25 Mo",
       "editWithMask": "Modifier la zone sélectionnée avec l'outil de masque",
       "stagingVariations": "Variations de staging",
       "originalImage": "Photo de la pièce d'origine avant le staging virtuel",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>Résultats instantanés</strong> : ~8 secondes",
         "oneClickStaging": "<strong>Staging en un clic</strong> : sans effort",
-        "free": "<strong>50 générations gratuites par jour</strong> : Sans carte bancaire",
+        "free": "<strong>Générations gratuites illimitées</strong> : Sans carte bancaire",
         "noAds": "<strong>Expérience sans publicité</strong> : aucune distraction",
         "noLogin": "<strong>Inscription facile</strong> : commencez immédiatement",
         "unlimited": "<strong>Modèles d'image avancés</strong> : meilleure qualité",
@@ -1103,7 +1103,6 @@
     "resumeNo": "Repartir de zéro",
     "helpStep5": "Une zone ne vous plaît pas ? Utilisez Essayer une autre version pour générer d'autres options et passer de l'une à l'autre.",
     "promptIdeas": "Afficher des idées",
-    "handoffFailed": "Nous n'avons pas pu ouvrir ce rendu. Importez la photo à la place.",
     "looksGood": "C'est parfait",
     "redo": "Rétablir",
     "toolWand": "Baguette",
@@ -1369,7 +1368,6 @@
       "rateLimited": "Trop de requêtes pour le moment. Patientez un instant et réessayez.",
       "retry": "Réessayer"
     },
-    "refine": "Affiner dans le Studio de masques",
     "delete": {
       "action": "Supprimer ce rendu",
       "warn": "Cette action supprime définitivement le rendu ainsi que le lien que vous avez déjà partagé. Elle est irréversible.",

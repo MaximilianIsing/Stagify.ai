@@ -124,7 +124,6 @@ export function createSessionStore(deps) {
             // session the user just discarded.
             if (seq !== saveSeq) return;
             await sessionSave(serializeSession(baseBlob, layerData, Date.now(), {
-              sourceRenderId: state.sourceRenderId,
               sourceName: state.sourceName,
             }));
           } catch (e) {}
@@ -160,13 +159,12 @@ export function createSessionStore(deps) {
 
         async function restoreSessionInner(saved) {
           const img = await blobToImage(saved.baseBlob);
-          // The origin has to be restored WITH the photo. setBaseImage clears both fields
-          // by default, so without this a resumed refine would forget it was a refine and
-          // fork a second gallery entry on Looks Good instead of updating the original.
+          // The origin has to be restored WITH the photo. setBaseImage clears the field by
+          // default, so without this a resumed session would forget the filename its
+          // gallery entry should be named after.
           const origin = deserializeOrigin(saved);
           setBaseImage(img, {
             noLayer: true,
-            sourceRenderId: origin.sourceRenderId,
             sourceName: origin.sourceName,
           });
           for (const ld of saved.layers || []) {

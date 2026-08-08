@@ -12,15 +12,13 @@ import { createFurnitureRefs, FURNITURE_LIMIT } from './app/furniture-refs.js';
 import { createVersionCarousel } from './app/version-carousel.js';
 import { createDownloadMenu } from './app/download-menu.js';
 import { createStagingPipeline } from './app/staging-pipeline.js';
-import { createRefineHandoff } from './app/refine-handoff.js';
 import { createStagingFailure } from './app/staging-failure.js';
 import { createEmptyRoomViewer } from './app/empty-room-viewer.js';
 import { readImageFile } from './app/image-file.js';
 import { initStagingEntry } from './app/staging-entry.js';
 
     const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-  
+
     initBackgroundVideoSync();
   
     const canvas1 = $('#canvas1');
@@ -184,24 +182,16 @@ import { initStagingEntry } from './app/staging-entry.js';
         if (btn) btn.addEventListener('click', openFilePicker);
       });
   
-      // Example thumbnails to load sample images
-      $$('.thumb').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          openModal();
-          const src = btn.getAttribute('data-src');
-          stagePreview.src = src;
-          stagePreview.alt = getStagingAlt('sampleRoomAlt');
-          stagePreview.classList.remove('hidden');
-          $('.stage-dz-inner').classList.add('hidden');
-        });
-      });
-  
-      // Drag and drop on stage screen
+      // Drag and drop on stage screen. The state is a CLASS, not an inline
+      // style: this used to write style.borderColor, which outranks every rule
+      // in styles.css, so after one drag the element kept a hard-coded grey and
+      // the :hover feedback was dead for the rest of the session. Same
+      // .is-drag-over name the two studio dropzones already use.
       ;['dragenter','dragover'].forEach(evt => {
-        stageDropzone.addEventListener(evt, (e) => { e.preventDefault(); stageDropzone.style.borderColor = '#000'; });
+        stageDropzone.addEventListener(evt, (e) => { e.preventDefault(); stageDropzone.classList.add('is-drag-over'); });
       });
       ;['dragleave','drop'].forEach(evt => {
-        stageDropzone.addEventListener(evt, (e) => { e.preventDefault(); stageDropzone.style.borderColor = '#e8e8e8'; });
+        stageDropzone.addEventListener(evt, (e) => { e.preventDefault(); stageDropzone.classList.remove('is-drag-over'); });
       });
       stageDropzone.addEventListener('click', () => { stageFileInput.click(); });
       stageDropzone.addEventListener('keydown', (e) => {
@@ -371,7 +361,6 @@ import { initStagingEntry } from './app/staging-entry.js';
       setAfterVersions,
       pushAfterVersion,
       setAfterIndex,
-      getAfterIndex,
     } = createVersionCarousel({
       canvas1,
       stagePreview,
@@ -403,13 +392,6 @@ import { initStagingEntry } from './app/staging-entry.js';
       getText: (key) => window.LanguageSystem?.getText(key),
     });
 
-    // Handing the finished render to the Masking Studio (scripts/app/refine-handoff.js).
-    const refineHandoff = createRefineHandoff({
-      button: document.getElementById('refine-mask-btn'),
-      getAfterIndex,
-      getSourceName: () => currentImageFile?.name || '',
-    });
-
     const { processWithAI } = createStagingPipeline({
       stagePreview, progress, progressBar, progressText, loadingMessage, processingPlaceholder,
       roomSelect, styleSelect, additionalPrompt, furnitureRefs, FURNITURE_LIMIT,
@@ -419,7 +401,6 @@ import { initStagingEntry } from './app/staging-entry.js';
       setLastEmptyRoomUrl: (v) => { lastEmptyRoomUrl = v; },
       hideStagingLimitInViewer, hideStagingError, showBeforeView, isProUser,
       showStagingError, messageForDailyLimitResponse, showStagingLimitInViewer,
-      onGalleryIds: (ids) => refineHandoff.setIds(ids),
     });
 
   

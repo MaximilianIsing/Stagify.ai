@@ -44,7 +44,6 @@ import { createAsyncRouter } from '../lib/http/async-router.js';
 import { sendError, resolveAppOrigin, setSensitiveHeaders } from '../lib/http/http-helpers.js';
 import { galleryLimiter as defaultGalleryLimiter } from '../lib/http/rate-limiters.js';
 import { readRenderExtra } from '../lib/data/render-extra.js';
-import { logger } from '../lib/logger.js';
 
 /** How long a presigned URL in the owner's manifest stays valid. */
 export const GALLERY_URL_TTL_MS = 15 * 60 * 1000;
@@ -290,51 +289,6 @@ export default function createGalleryRouter(deps) {
       // actually applied, which is '' for a free caller who sent one anyway.
       search: { enabled: isPro, q },
     });
-  });
-
-  // ── One entry's pixels, served by US ───────────────────────────────────────
-  //
-  // Exists for exactly one caller: "Refine in Masking Studio". That studio draws the photo
-  // onto a canvas and then calls `toDataURL` on it, and
-  //
-  //     DRAWING A CROSS-ORIGIN IMAGE TAINTS A CANVAS, AND toDataURL ON A TAINTED CANVAS
-  //     THROWS SecurityError.
-  //
-  // A presigned R2 URL is cross-origin, so handing one to the studio would break every
-  // generate and every export it does. Worse, it would pass every test and every local
-  // check: dev and CI serve blobs from routes/object-local.js, same-origin. This is a
-  // production-only failure, which is why the bytes come back through here instead — a
-  // same-origin fetch, whose blob URL does not taint anything.
-  //
-  // It also carries a bearer token, which an <img src> cannot, so the client fetches and
-  // makes an object URL rather than pointing an element at this path.
-  //
-  // This DOES put render bytes through the process, which this file's header otherwise
-  // avoids. The cost that header is about is a buyer's browser pulling share images over
-  // and over; this is one ~110KB WebP, once, for the authenticated owner, on a click. The
-  // exception is deliberate — do not widen it into a general "serve my render" route.
-  router.get('/api/gallery/:id/source', limiter, async (req, res) => {
-    const user = userFor(req);
-    if (!user) return unauthorized(res);
-    if (!objectStore.configured) return notFound(res);
-    const render = ownedRender(req, user);
-    // Ownership is checked before a single byte is read, and "not yours" is the same 404 as
-    // "does not exist", so this cannot be used to enumerate render ids.
-    if (!render) return notFound(res);
-    // The finished render, not the source photo: the studio refines what is already staged.
-    const blob = stagedRenders.blobsFor(render.id).find((b) => b.role === 'after');
-    if (!blob) return notFound(res);
-    try {
-      // Both adapters REJECT on a missing object rather than resolving null, so the catch
-      // below is the real "gone" path; the falsy check is belt and braces.
-      const bytes = await objectStore.get(blob.storage_key);
-      if (!bytes) return notFound(res);
-      res.setHeader('Content-Type', 'image/webp');
-      return res.end(bytes);
-    } catch (error) {
-      logger.error(`[gallery] could not read render ${render.id} for handoff:`, error);
-      return notFound(res);
-    }
   });
 
   // ── Name one entry ─────────────────────────────────────────────────────────

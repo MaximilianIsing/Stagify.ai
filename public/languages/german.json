@@ -381,8 +381,6 @@
       "uploadArea": "Bild hochladen oder per Drag & Drop ablegen",
       "before": "Vorher",
       "after": "Nachher",
-      "refineInStudio": "Im Masken-Studio verfeinern",
-      "refineInStudioShort": "Verfeinern",
       "downloadResult": "Ergebnis herunterladen",
       "uploadAnother": "Weiteres hochladen",
       "noProcessedImage": "Ihr eingerichtetes Ergebnis erscheint hier",
@@ -394,6 +392,8 @@
       "addPhotos": "+ Fotos hinzufügen",
       "tryAnotherImage": "Anderes Bild versuchen",
       "uploadAreaAria": "Upload-Bereich",
+      "uploadHeadline": "Ziehen Sie Ihr Raumfoto hierher",
+      "uploadFormats": "JPG, PNG, WebP oder HEIC · bis 25 MB",
       "editWithMask": "Ausgewählten Bereich mit dem Maskierungstool bearbeiten",
       "stagingVariations": "Staging-Variationen",
       "originalImage": "Originalfoto des Raums vor dem virtuellen Staging",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>Sofortige Ergebnisse</strong>: ~8 Sekunden",
         "oneClickStaging": "<strong>Staging mit einem Klick</strong>: Kein Aufwand",
-        "free": "<strong>50 kostenlose Generierungen pro Tag</strong>: Ohne Kreditkarte",
+        "free": "<strong>Unbegrenzte kostenlose Generierungen</strong>: Ohne Kreditkarte",
         "noAds": "<strong>Werbefreies Erlebnis</strong>: Keine Ablenkungen",
         "noLogin": "<strong>Einfache Anmeldung</strong>: Sofort loslegen",
         "unlimited": "<strong>Fortschrittliche Bildmodelle</strong>: Höhere Qualität",
@@ -1103,7 +1103,6 @@
     "resumeNo": "Neu beginnen",
     "helpStep5": "Mit einem Bereich nicht zufrieden? Erzeugen Sie mit Weitere Version erzeugen mehr Optionen und wechseln Sie zwischen ihnen.",
     "promptIdeas": "Vorschläge anzeigen",
-    "handoffFailed": "Wir konnten dieses Rendering nicht öffnen. Bitte lade das Foto stattdessen hoch.",
     "looksGood": "Sieht gut aus",
     "redo": "Wiederholen",
     "toolWand": "Zauberstab",
@@ -1369,7 +1368,6 @@
       "rateLimited": "Zu viele Anfragen im Moment. Warten Sie einen Augenblick und versuchen Sie es erneut.",
       "retry": "Erneut versuchen"
     },
-    "refine": "Im Masken-Studio verfeinern",
     "delete": {
       "action": "Dieses Rendering löschen",
       "warn": "Damit werden das Rendering und der bereits geteilte Link dauerhaft gelöscht. Das lässt sich nicht rückgängig machen.",

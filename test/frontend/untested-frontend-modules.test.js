@@ -60,7 +60,6 @@ const UNTESTED = [
   'app/furniture-refs.js',
   'app/hero-stats.js',
   'app/stage-mask-editor.js',
-  'app/tilt-effect.js',
   'aurora-scrollbar.js',
   'auth.js',
   'card-spotlight.js',

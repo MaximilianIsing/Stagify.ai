@@ -103,15 +103,22 @@ router.get('/blog/prepare-your-listing-for-the-fall-market', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'blog', 'prepare-your-listing-for-the-fall-market.html'));
 });
 
+router.get('/blog/curb-appeal-real-estate-photos', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'curb-appeal-real-estate-photos.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));
 });
 
-router.get('/logo-full.png', (req, res) => {
-  res.setHeader('Content-Type', 'image/png');
-  res.sendFile(path.join(__dirname, 'public', 'Logo Full.png'));
-});
+// NOTE: there is deliberately no `/logo-full.png` route. The file used to be
+// `public/Logo Full.png`, whose space made the clean URL impossible to serve
+// statically, so a hand-written route mapped one to the other. Now that it is
+// `public/logo-full.png`, express.static (mounted in applyBodyAndStatic, well
+// ahead of this router) answers the URL directly — and better, since it adds the
+// immutable cache header and an ETag the old route omitted. A route here would
+// simply be unreachable.
 
 router.get('/i/:id', (req, res) => {
   const id = String(req.params.id || '');
@@ -158,7 +165,7 @@ router.get('/email/logo.png', pixelLimiter, (req, res) => {
   }
   res.setHeader('Content-Type', 'image/png');
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-  res.sendFile(path.join(__dirname, 'public', 'Logo Full.png'));
+  res.sendFile(path.join(__dirname, 'public', 'logo-full.png'));
 });
 
 // Unauthenticated, and it writes to the same volume auth-store.db lives on — the

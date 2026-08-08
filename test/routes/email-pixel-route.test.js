@@ -86,7 +86,7 @@ async function mountPixel({ realLimiter = false } = {}) {
       getPromptCount: () => 0,
       getContactCount: () => 0,
       incContactCount: () => {},
-      // The route sends public/Logo Full.png from here.
+      // The route sends public/logo-full.png from here.
       __dirname: process.cwd(),
     }),
   );
