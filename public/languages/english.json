@@ -231,6 +231,11 @@
       "subtitle": "Traditional staging works. It's just slow and expensive.",
       "colTraditional": "Traditional staging",
       "colStagify": "Stagify.ai",
+      "calc": {
+        "question": "How many listings do you stage a year?",
+        "weeks": "{n} weeks",
+        "note": "Based on $2,000 per home, the low end of the usual range, and two weeks from booking to installed."
+      },
       "rows": {
         "cost": {
           "aspect": "Cost",

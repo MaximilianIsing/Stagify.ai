@@ -231,6 +231,11 @@
       "subtitle": "传统装修确实有效，只是又慢又贵。",
       "colTraditional": "传统装修",
       "colStagify": "Stagify.ai",
+      "calc": {
+        "question": "您每年为多少套房源做装修？",
+        "weeks": "{n} 周",
+        "note": "按每套房 2,000 美元（通常区间的下限）以及从预订到布置完成两周计算。"
+      },
       "rows": {
         "cost": {
           "aspect": "费用",

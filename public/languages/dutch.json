@@ -231,6 +231,11 @@
       "subtitle": "Traditionele styling werkt. Het is alleen traag en duur.",
       "colTraditional": "Traditionele styling",
       "colStagify": "Stagify.ai",
+      "calc": {
+        "question": "Hoeveel woningen style je per jaar?",
+        "weeks": "{n} weken",
+        "note": "Gebaseerd op $2.000 per woning, de onderkant van het gebruikelijke bereik, en twee weken van boeking tot installatie."
+      },
       "rows": {
         "cost": {
           "aspect": "Kosten",

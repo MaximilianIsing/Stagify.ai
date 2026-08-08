@@ -231,6 +231,11 @@
       "subtitle": "Traditionelles Staging funktioniert. Es ist nur langsam und teuer.",
       "colTraditional": "Traditionelles Staging",
       "colStagify": "Stagify.ai",
+      "calc": {
+        "question": "Wie viele Objekte richten Sie pro Jahr ein?",
+        "weeks": "{n} Wochen",
+        "note": "Basierend auf 2.000 $ pro Objekt, dem unteren Ende der üblichen Spanne, und zwei Wochen von der Buchung bis zum Aufbau."
+      },
       "rows": {
         "cost": {
           "aspect": "Kosten",

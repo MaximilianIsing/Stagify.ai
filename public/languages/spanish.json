@@ -231,6 +231,11 @@
       "subtitle": "El diseño tradicional funciona. Solo que es lento y caro.",
       "colTraditional": "Diseño tradicional",
       "colStagify": "Stagify.ai",
+      "calc": {
+        "question": "¿Cuántas viviendas diseñas al año?",
+        "weeks": "{n} semanas",
+        "note": "Calculado sobre 2.000 $ por vivienda, el extremo inferior del rango habitual, y dos semanas desde la reserva hasta la instalación."
+      },
       "rows": {
         "cost": {
           "aspect": "Costo",
