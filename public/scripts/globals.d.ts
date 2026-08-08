@@ -47,6 +47,10 @@ declare global {
      *  classic ai-designer-model-selector.js — without it that form gave no
      *  feedback at all, on success or on a missing description. */
     showToast?: (message: string, type?: string) => void;
+    /** Mounts one walkthrough player into a `.designer-demo[data-demo]` host.
+     *  Published by designer-demo.js so studio-showcase.js can mount just the
+     *  carousel panel that is in front, instead of every player on the page. */
+    stagifyMountDemo?: (host: HTMLElement) => void;
     /** AI Designer string lookup (ai-designer/i18n.js), bridged for the same form. */
     lang?: (key: string, fallback?: string) => string;
     /** Re-localises the mask-editor dialog (ai-designer/mask-editor-i18n.js).

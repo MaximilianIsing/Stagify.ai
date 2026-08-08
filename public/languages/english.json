@@ -83,6 +83,19 @@
       "revealSliderAria": "Reveal slider",
       "exampleRoomsAria": "Example rooms"
     },
+    "showcase": {
+      "title": "Four studios, one canvas",
+      "subtitle": "Drag it, scroll it sideways, or use the arrows. Whatever is in front is live, not a screenshot.",
+      "tablistAria": "Studios",
+      "prevAria": "Previous studio",
+      "nextAria": "Next studio",
+      "tabs": {
+        "designer": "AI Designer",
+        "masking": "Masking Studio",
+        "exterior": "Exterior Studio",
+        "gallery": "Your gallery"
+      }
+    },
     "designer": {
       "title": "Let an AI stage your space",
       "subtitle": "With the AI Designer, chat to stage, redesign, and iterate on any room until it looks listing-ready. <em>(Stagify+ Exclusive)</em>"

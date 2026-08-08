@@ -10,7 +10,14 @@
   if (location.hash !== '#ai-designer-demo') return;
   function scrollToDemo() {
     var el = document.getElementById('ai-designer-demo');
-    if (el) el.scrollIntoView({ block: 'start' });
+    if (!el) return;
+    // #ai-designer-demo is now a panel of the studio showcase carousel, absolutely
+    // positioned and 3D-transformed, so its own box is a poor scroll target — scroll
+    // the section that contains it. studio-showcase.js separately reads the hash and
+    // brings this panel to the front. Falls back to the element itself so this keeps
+    // working if the carousel is ever unwound back into plain sections.
+    var target = el.closest('.home-section') || el;
+    target.scrollIntoView({ block: 'start' });
   }
   function afterLoad() {
     scrollToDemo();

@@ -83,6 +83,19 @@
       "revealSliderAria": "Vergleichsregler",
       "exampleRoomsAria": "Beispielräume"
     },
+    "showcase": {
+      "title": "Vier Studios, eine Fläche",
+      "subtitle": "Ziehen, seitlich scrollen oder die Pfeile benutzen. Was vorn liegt, funktioniert wirklich – es ist kein Screenshot.",
+      "tablistAria": "Studios",
+      "prevAria": "Vorheriges Studio",
+      "nextAria": "Nächstes Studio",
+      "tabs": {
+        "designer": "KI-Designer",
+        "masking": "Masking-Studio",
+        "exterior": "Außen-Studio",
+        "gallery": "Ihre Galerie"
+      }
+    },
     "designer": {
       "title": "Lassen Sie eine KI Ihren Raum einrichten",
       "subtitle": "Mit dem KI-Designer richten Sie per Chat jeden Raum ein, gestalten ihn um und verfeinern ihn, bis er angebotsbereit ist. <em>(Stagify+ exklusiv)</em>"

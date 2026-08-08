@@ -83,6 +83,19 @@
       "revealSliderAria": "对比滑块",
       "exampleRoomsAria": "示例房间"
     },
+    "showcase": {
+      "title": "四个工作室，一个界面",
+      "subtitle": "可以拖动、横向滚动，或使用箭头切换。位于最前面的面板是实时的，不是截图。",
+      "tablistAria": "工作室",
+      "prevAria": "上一个工作室",
+      "nextAria": "下一个工作室",
+      "tabs": {
+        "designer": "AI Designer",
+        "masking": "蒙版工作室",
+        "exterior": "外景工作室",
+        "gallery": "您的图库"
+      }
+    },
     "designer": {
       "title": "让 AI 为你的空间布置",
       "subtitle": "使用 AI Designer，通过对话对任何房间进行布置、重新设计和反复调整，直到呈现出可挂牌出售的效果。<em>（Stagify+ 专属）</em>"

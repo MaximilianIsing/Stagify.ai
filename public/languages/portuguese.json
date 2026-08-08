@@ -83,6 +83,19 @@
       "revealSliderAria": "Controle deslizante de comparação",
       "exampleRoomsAria": "Cômodos de exemplo"
     },
+    "showcase": {
+      "title": "Quatro estúdios, um só espaço",
+      "subtitle": "Arraste, role na horizontal ou use as setas. O que está à frente funciona de verdade, não é uma captura de tela.",
+      "tablistAria": "Estúdios",
+      "prevAria": "Estúdio anterior",
+      "nextAria": "Próximo estúdio",
+      "tabs": {
+        "designer": "Designer IA",
+        "masking": "Estúdio de máscaras",
+        "exterior": "Estúdio de exteriores",
+        "gallery": "Sua galeria"
+      }
+    },
     "designer": {
       "title": "Deixe uma IA decorar seu espaço",
       "subtitle": "Com o Designer IA, converse para decorar, redesenhar e refinar qualquer cômodo até que fique pronto para o anúncio. <em>(Exclusivo do Stagify+)</em>"

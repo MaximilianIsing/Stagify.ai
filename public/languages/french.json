@@ -83,6 +83,19 @@
       "revealSliderAria": "Curseur de révélation",
       "exampleRoomsAria": "Exemples de pièces"
     },
+    "showcase": {
+      "title": "Quatre studios, une seule toile",
+      "subtitle": "Faites-le glisser, faites défiler latéralement ou utilisez les flèches. Ce qui est au premier plan fonctionne vraiment, ce n'est pas une capture d'écran.",
+      "tablistAria": "Studios",
+      "prevAria": "Studio précédent",
+      "nextAria": "Studio suivant",
+      "tabs": {
+        "designer": "Designer IA",
+        "masking": "Studio de masquage",
+        "exterior": "Studio extérieur",
+        "gallery": "Votre galerie"
+      }
+    },
     "designer": {
       "title": "Laissez une IA meubler votre espace",
       "subtitle": "Avec le Designer IA, discutez pour meubler, redessiner et peaufiner n'importe quelle pièce jusqu'à ce qu'elle soit prête pour l'annonce. <em>(Exclusivité Stagify+)</em>"
