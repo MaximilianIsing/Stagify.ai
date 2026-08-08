@@ -16,6 +16,15 @@ import { LOCALES, LOCALIZED_PAGES } from '../lib/i18n/locales.js';
 import { renderLocalizedPage } from '../lib/i18n/render-page.js';
 
 /**
+ * English paths that were once in LOCALIZED_PAGES and have since been de-localized.
+ * Each still has live /<prefix>/… URLs out in Google's index, so every locale gets a
+ * 301 back to the English page rather than a 404. Entries stay here permanently —
+ * removing one resurrects the dead URLs, it doesn't clean anything up.
+ * @type {string[]}
+ */
+const RETIRED_LOCALIZED_PATHS = ['/terms.html', '/privacy.html'];
+
+/**
  * @param {{ __dirname: string, DEBUG_MODE: boolean }} deps
  * @returns {import('express').Router}
  */
@@ -86,6 +95,14 @@ export default function createI18nRouter({ __dirname, DEBUG_MODE }) {
     // non-strict routing already serves it from the /<prefix> route above, and the
     // page's self-referential canonical points search engines at /<prefix>.
     router.get(`/${locale.prefix}/index.html`, (req, res) => res.redirect(301, `/${locale.prefix}`));
+
+    // Pages that USED to be localized and no longer are (see RETIRED_LOCALIZED_PATHS).
+    // Without this they'd fall through to Express's default 404, because there is no
+    // custom 404 handler — and these URLs were in the sitemap for long enough to be
+    // indexed. 301 preserves the link equity against the surviving English page.
+    for (const retired of RETIRED_LOCALIZED_PATHS) {
+      router.get(`/${locale.prefix}${retired}`, (req, res) => res.redirect(301, retired));
+    }
   }
 
   return router;

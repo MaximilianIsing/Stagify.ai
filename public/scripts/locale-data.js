@@ -108,6 +108,4 @@ export const LOCALIZED_PATHS = new Set([
   "/guides.html",
   "/contact.html",
   "/status",
-  "/privacy.html",
-  "/terms.html",
 ]);

@@ -9,7 +9,6 @@ class StarBorder {
     this.options = {
       color: options.color || '#2563eb',
       speed: options.speed || '6s',
-      thickness: options.thickness || 1,
       ...options,
     };
     this.init();
@@ -18,7 +17,11 @@ class StarBorder {
   init() {
     this.container = document.createElement('div');
     this.container.className = 'star-border-container';
-    this.container.style.padding = `${this.options.thickness}px 0`;
+    // The transparent band the glow rings show through is `--star-pill-ring` in
+    // index.css, not an inline style here. It has to equal the MARGIN on the
+    // pre-swap `.stat-pill` in that same file — this element replaces that one, so
+    // any difference between the two is a jump the user watches happen. One token,
+    // one file, both sides; see the note above `.hero-stats` there.
 
     this.gradientBottom = document.createElement('div');
     this.gradientBottom.className = 'border-gradient-bottom';
@@ -54,14 +57,17 @@ class StarBorder {
 function mountStarBorders() {
   const pills = document.querySelectorAll('.stat-pill');
   pills.forEach((pill) => {
-    new StarBorder(pill, { color: '#70a7ff', speed: '6s', thickness: 5 });
+    new StarBorder(pill, { color: '#70a7ff', speed: '6s' });
   });
 }
 
 // Guarded rather than a bare DOMContentLoaded listener: index-deferred.js injects this
 // file after `load`, when that event has already fired. Without the guard the glow ring
 // would simply never mount — silently, since index.css carries fallback styling for
-// exactly this case and the pills still look fine.
+// exactly this case and the pills still look fine. That last part is true only because
+// test/frontend/hero-stat-pill-swap.test.js pins `.stat-pill` to the `.inner-content`
+// box this file swaps it for; before that guard the "fallback" was a different colour
+// and 14px shorter, so the mount was a visible jump rather than a no-op plus a glow.
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', mountStarBorders);
 } else {
