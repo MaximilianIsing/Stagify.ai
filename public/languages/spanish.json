@@ -83,6 +83,19 @@
       "revealSliderAria": "Control deslizante de comparación",
       "exampleRoomsAria": "Habitaciones de ejemplo"
     },
+    "showcase": {
+      "title": "Cuatro estudios, un mismo lienzo",
+      "subtitle": "Arrástralo, deslízalo en horizontal o usa las flechas. Lo que ves delante funciona de verdad, no es una captura.",
+      "tablistAria": "Estudios",
+      "prevAria": "Estudio anterior",
+      "nextAria": "Estudio siguiente",
+      "tabs": {
+        "designer": "AI Designer",
+        "masking": "Estudio de máscaras",
+        "exterior": "Estudio de exteriores",
+        "gallery": "Tu galería"
+      }
+    },
     "designer": {
       "title": "Deja que una IA prepare tu espacio",
       "subtitle": "Con AI Designer, chatea para preparar, rediseñar e iterar sobre cualquier habitación hasta que quede lista para publicar. <em>(Exclusivo de Stagify+)</em>"

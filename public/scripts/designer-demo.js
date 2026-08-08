@@ -15,7 +15,30 @@
   }
 
   function mount(host) {
-    if (host.__demoMounted || !window.SupademoPlayer) return;
+    if (host.__demoMounted) return;
+    // demo-player.js / demo-data.js may not have executed yet. index-deferred.js
+    // injects these tags dynamically, and a dynamically-inserted script is async by
+    // default — so the array order there is a statement of intent, NOT a guarantee.
+    // This used to `return` and do nothing, which was survivable while mounting ran
+    // on an idle callback ~2.5s after load (the player had always arrived by then).
+    // The showcase asks for its front panel the moment it initialises, so a silent
+    // no-op here meant the walkthrough simply never appeared. Wait for the player
+    // instead of dropping the request.
+    if (!window.SupademoPlayer || !window.STAGIFY_DEMOS) {
+      if (!host.__demoWait) {
+        host.__demoWait = setInterval(function () {
+          if (!window.SupademoPlayer || !window.STAGIFY_DEMOS) return;
+          clearInterval(host.__demoWait);
+          host.__demoWait = 0;
+          mount(host);
+        }, 100);
+        // Give up rather than poll forever if the player genuinely failed to load.
+        setTimeout(function () {
+          if (host.__demoWait) { clearInterval(host.__demoWait); host.__demoWait = 0; }
+        }, 15000);
+      }
+      return;
+    }
     var demo = demoByKey(host.getAttribute('data-demo'));
     if (!demo) return;
     host.__demoMounted = true;
@@ -28,7 +51,18 @@
   }
 
   function init() {
-    var hosts = [].slice.call(document.querySelectorAll('.designer-demo[data-demo]'));
+    // The homepage's demo hosts now live inside the studio showcase carousel, which
+    // mounts ONLY the panel that is in front (scripts/studio-showcase.js) — mounting
+    // both players here regardless meant paying for a walkthrough nobody had scrolled
+    // to. Hosts outside a showcase (guides.html) keep the original eager behaviour.
+    window.stagifyMountDemo = mount;
+    // Announce, because the deferred scripts are injected dynamically and so execute
+    // in no guaranteed order: the showcase may well have asked for its mount before
+    // this file ran, and it retries on this event.
+    document.dispatchEvent(new CustomEvent('stagify:demo-mount-ready'));
+
+    var hosts = [].slice.call(document.querySelectorAll('.designer-demo[data-demo]'))
+      .filter(function (host) { return !host.closest('[data-showcase]'); });
     if (!hosts.length) return;
     // Mount once the browser is idle (or after load) so the frames never compete
     // with first paint. Each mount only warms 1–2 images — the rest load lazily

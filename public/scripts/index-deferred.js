@@ -39,6 +39,11 @@ export const DEFERRED = [
   { src: 'scripts/demo-data.js', module: false },
   { src: 'scripts/demo-player.js', module: false },
   { src: 'scripts/designer-demo.js', module: true },
+  // The studio showcase carousel. It asks designer-demo.js to mount the front
+  // panel's player, but does NOT depend on winning that race — these tags are
+  // injected dynamically, so nothing here is ordered in practice, and the two
+  // rendezvous on the `stagify:demo-mount-ready` event instead.
+  { src: 'scripts/studio-showcase.js', module: true },
   // Below-fold section behaviour.
   { src: 'scripts/staging-studio.js', module: true },
   { src: 'scripts/home-reveal.js', module: true },

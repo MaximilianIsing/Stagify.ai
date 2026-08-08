@@ -83,6 +83,19 @@
       "revealSliderAria": "Onthulschuif",
       "exampleRoomsAria": "Voorbeeldkamers"
     },
+    "showcase": {
+      "title": "Vier studio's, één canvas",
+      "subtitle": "Sleep, scroll zijwaarts of gebruik de pijlen. Wat vooraan staat werkt echt, het is geen schermafbeelding.",
+      "tablistAria": "Studio's",
+      "prevAria": "Vorige studio",
+      "nextAria": "Volgende studio",
+      "tabs": {
+        "designer": "AI-Designer",
+        "masking": "Maskeerstudio",
+        "exterior": "Buitenstudio",
+        "gallery": "Jouw galerij"
+      }
+    },
     "designer": {
       "title": "Laat een AI je ruimte stylen",
       "subtitle": "Met de AI-Designer chat je om elke kamer te stylen, opnieuw te ontwerpen en te verfijnen tot hij advertentieklaar is. <em>(Stagify+ Exclusief)</em>"

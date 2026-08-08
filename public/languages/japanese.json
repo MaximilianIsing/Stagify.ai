@@ -83,6 +83,19 @@
       "revealSliderAria": "比較スライダー",
       "exampleRoomsAria": "部屋の例"
     },
+    "showcase": {
+      "title": "4つのスタジオを1つの画面に",
+      "subtitle": "ドラッグ、横スクロール、または矢印で切り替えられます。手前にあるパネルはスクリーンショットではなく、実際に動きます。",
+      "tablistAria": "スタジオ",
+      "prevAria": "前のスタジオ",
+      "nextAria": "次のスタジオ",
+      "tabs": {
+        "designer": "AIデザイナー",
+        "masking": "マスキングスタジオ",
+        "exterior": "エクステリアスタジオ",
+        "gallery": "マイギャラリー"
+      }
+    },
     "designer": {
       "title": "AIにあなたの空間をステージングさせましょう",
       "subtitle": "AIデザイナーを使えば、チャットしながら、どんな部屋でも掲載準備が整うまでステージング・再デザイン・調整できます。<em>（Stagify+限定）</em>"

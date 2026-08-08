@@ -83,6 +83,19 @@
       "revealSliderAria": "Cursore di confronto",
       "exampleRoomsAria": "Stanze di esempio"
     },
+    "showcase": {
+      "title": "Quattro studi, una sola tela",
+      "subtitle": "Trascinalo, scorri lateralmente o usa le frecce. Quello in primo piano funziona davvero, non è uno screenshot.",
+      "tablistAria": "Studi",
+      "prevAria": "Studio precedente",
+      "nextAria": "Studio successivo",
+      "tabs": {
+        "designer": "Designer IA",
+        "masking": "Studio maschere",
+        "exterior": "Studio esterni",
+        "gallery": "La tua galleria"
+      }
+    },
     "designer": {
       "title": "Lascia che un'IA arredi il tuo spazio",
       "subtitle": "Con il Designer IA, chatta per arredare, riprogettare e perfezionare qualsiasi stanza finché non è pronta per l'annuncio. <em>(Esclusiva Stagify+)</em>"
