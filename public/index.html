@@ -95,8 +95,14 @@
     <link rel="stylesheet" href="styles/home.css">
     <!-- index.css is render-blocking too, so it belongs here with the rest. It used to
          sit below the module <script> tags, where the preload scanner reached it late
-         while first paint was already waiting on it. Verified cascade-safe: it shares
-         no selector with the four lazy sheets below. -->
+         while first paint was already waiting on it.
+
+         Cascade note: it deliberately overrides two selectors from star-border.css —
+         `.inner-content` and `.star-border-container`, both scoped under `.stats-pills`
+         so they win on specificity rather than on load order, which is what makes the
+         override safe against a lazy sheet arriving late. That is on purpose: the hero
+         stat pills' geometry has to survive first paint, and star-border.css is loaded
+         as print below. Nothing else here touches the lazy sheets. -->
     <link rel="stylesheet" href="styles/index.css">
     <!-- Non-critical CSS (auth modals, decorative star-border, below-fold text animations) -->
     <!-- Loaded as print (non-render-blocking), then promoted to all once fetched. -->
@@ -1151,37 +1157,42 @@
                   <h3 id="stage-title" style="color: #2563eb; text-align: center; font-size: 2rem; font-weight: 700; margin: 8px 0 12px 0;" data-lang="modal.staging.title">Options</h3>
                 </div>
 
-                <div class="tool-row">
-                  <label class="label" data-lang="modal.staging.roomType">Room type</label>
-                  <div id="room-type-select" class="custom-select" data-value="Bedroom">
-                    <button class="select-trigger" type="button"><span class="select-value" data-lang="roomTypes.bedroom">Bedroom</span><span class="caret">▾</span></button>
-                    <div class="select-menu hidden" role="listbox">
-                      <div class="option selected" data-value="Bedroom" role="option" aria-selected="true" data-lang="roomTypes.bedroom">Bedroom</div>
-                      <div class="option" data-value="Living room" role="option" data-lang="roomTypes.livingRoom">Living room</div>
-                      <div class="option" data-value="Dining room" role="option" data-lang="roomTypes.diningRoom">Dining room</div>
-                      <div class="option" data-value="Kitchen" role="option" data-lang="roomTypes.kitchen">Kitchen</div>
-                      <div class="option" data-value="Bathroom" role="option" data-lang="roomTypes.bathroom">Bathroom</div>
-                      <div class="option" data-value="Office" role="option" data-lang="roomTypes.office">Office</div>
-                      <div class="option" data-value="Outdoors" role="option" data-lang="roomTypes.outdoors">Outdoors</div>
-                      <!-- data-lang overwrites textContent, so the label lives in its own
-                           span and the badge sits beside it rather than inside it. -->
-                      <div class="option option--with-badge" data-value="Dorm" role="option"><span class="option-label" data-lang="roomTypes.dorm">Dorm</span><span class="option-badge" data-lang="common.newBadge">New</span></div>
+                <!-- Room type and Furniture style share one row: two short pickers
+                     each took a full row of the toolbar, which is the scarcest
+                     space in this modal. Styling lives on .tool-row-pair. -->
+                <div class="tool-row-pair">
+                  <div class="tool-row">
+                    <label class="label" data-lang="modal.staging.roomType">Room type</label>
+                    <div id="room-type-select" class="custom-select" data-value="Bedroom">
+                      <button class="select-trigger" type="button"><span class="select-value" data-lang="roomTypes.bedroom">Bedroom</span><span class="caret">▾</span></button>
+                      <div class="select-menu hidden" role="listbox">
+                        <div class="option selected" data-value="Bedroom" role="option" aria-selected="true" data-lang="roomTypes.bedroom">Bedroom</div>
+                        <div class="option" data-value="Living room" role="option" data-lang="roomTypes.livingRoom">Living room</div>
+                        <div class="option" data-value="Dining room" role="option" data-lang="roomTypes.diningRoom">Dining room</div>
+                        <div class="option" data-value="Kitchen" role="option" data-lang="roomTypes.kitchen">Kitchen</div>
+                        <div class="option" data-value="Bathroom" role="option" data-lang="roomTypes.bathroom">Bathroom</div>
+                        <div class="option" data-value="Office" role="option" data-lang="roomTypes.office">Office</div>
+                        <div class="option" data-value="Outdoors" role="option" data-lang="roomTypes.outdoors">Outdoors</div>
+                        <!-- data-lang overwrites textContent, so the label lives in its own
+                             span and the badge sits beside it rather than inside it. -->
+                        <div class="option option--with-badge" data-value="Dorm" role="option"><span class="option-label" data-lang="roomTypes.dorm">Dorm</span><span class="option-badge" data-lang="common.newBadge">New</span></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="tool-row">
-                  <label class="label" data-lang="modal.staging.furnitureStyle">Furniture style</label>
-                  <div id="furniture-style-select" class="custom-select" data-value="standard">
-                    <button class="select-trigger" type="button"><span class="select-value" data-lang="furnitureStyles.standard">Standard</span><span class="caret">▾</span></button>
-                    <div class="select-menu hidden" role="listbox">
-                      <div class="option selected" data-value="standard" role="option" aria-selected="true" data-lang="furnitureStyles.standard">Standard</div>
-                      <div class="option" data-value="modern" role="option" data-lang="furnitureStyles.modern">Modern</div>
-                      <div class="option" data-value="midcentury" role="option" data-lang="furnitureStyles.midcentury">Midcentury</div>
-                      <div class="option" data-value="scandinavian" role="option" data-lang="furnitureStyles.scandinavian">Scandinavian</div>
-                      <div class="option" data-value="luxury" role="option" data-lang="furnitureStyles.luxury">Luxury</div>
-                      <div class="option" data-value="coastal" role="option" data-lang="furnitureStyles.coastal">Coastal</div>
-                      <div class="option" data-value="farmhouse" role="option" data-lang="furnitureStyles.farmhouse">Farmhouse</div>
-                      <div class="option" data-value="custom" role="option" data-lang="furnitureStyles.custom">Custom</div>
+                  <div class="tool-row">
+                    <label class="label" data-lang="modal.staging.furnitureStyle">Furniture style</label>
+                    <div id="furniture-style-select" class="custom-select" data-value="standard">
+                      <button class="select-trigger" type="button"><span class="select-value" data-lang="furnitureStyles.standard">Standard</span><span class="caret">▾</span></button>
+                      <div class="select-menu hidden" role="listbox">
+                        <div class="option selected" data-value="standard" role="option" aria-selected="true" data-lang="furnitureStyles.standard">Standard</div>
+                        <div class="option" data-value="modern" role="option" data-lang="furnitureStyles.modern">Modern</div>
+                        <div class="option" data-value="midcentury" role="option" data-lang="furnitureStyles.midcentury">Midcentury</div>
+                        <div class="option" data-value="scandinavian" role="option" data-lang="furnitureStyles.scandinavian">Scandinavian</div>
+                        <div class="option" data-value="luxury" role="option" data-lang="furnitureStyles.luxury">Luxury</div>
+                        <div class="option" data-value="coastal" role="option" data-lang="furnitureStyles.coastal">Coastal</div>
+                        <div class="option" data-value="farmhouse" role="option" data-lang="furnitureStyles.farmhouse">Farmhouse</div>
+                        <div class="option" data-value="custom" role="option" data-lang="furnitureStyles.custom">Custom</div>
+                      </div>
                     </div>
                   </div>
                 </div>
