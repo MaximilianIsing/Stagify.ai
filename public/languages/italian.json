@@ -231,6 +231,11 @@
       "subtitle": "Lo staging tradizionale funziona. È solo lento e costoso.",
       "colTraditional": "Staging tradizionale",
       "colStagify": "Stagify.ai",
+      "calc": {
+        "question": "Quanti immobili arredi in un anno?",
+        "weeks": "{n} settimane",
+        "note": "Calcolato su 2.000 $ per immobile, il minimo della fascia abituale, e due settimane dalla prenotazione all'allestimento."
+      },
       "rows": {
         "cost": {
           "aspect": "Costo",

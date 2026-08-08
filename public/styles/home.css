@@ -777,9 +777,14 @@
 }
 
 /* ==========================================================================
-   3. Virtual vs traditional comparison
+   3. Savings calculator + NAR citation
+
+   The calculator replaced a static "– vs ✓" comparison table; `.cmp-source` below is
+   the one survivor of that block and is still used TWICE (by #compare and by
+   #ai-shift), so it must not be folded into the .calc namespace.
+   Behaviour lives in scripts/home-figures.js.
    ========================================================================== */
-.cmp {
+.calc {
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -787,78 +792,203 @@
   border-radius: 16px;
   box-shadow: 0 16px 44px rgba(30, 58, 138, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  overflow: hidden;
+  padding: 26px 30px 22px;
 }
-.cmp-row {
+.calc__ask {
   display: grid;
-  grid-template-columns: 0.85fr 1.1fr 1.1fr;
-  align-items: stretch;
-}
-.cmp-row + .cmp-row {
-  border-top: 1px solid rgba(30, 58, 138, 0.1);
-}
-.cmp-cell {
-  padding: 14px 20px;
-  font-size: 14px;
-  line-height: 1.45;
-  color: #2b3658;
-  display: flex;
-  align-items: center;
   gap: 10px;
+  margin-bottom: 26px;
 }
-.cmp-cell--aspect {
-  font-weight: 700;
-  color: var(--brand-deep);
-  background: rgba(255, 255, 255, 0.32);
-}
-.cmp-cell--trad {
-  color: #717b8c;
-}
-.cmp-cell--stagify {
-  background: rgba(37, 99, 235, 0.07);
-  border-left: 1px solid rgba(37, 99, 235, 0.14);
-  color: #1e3a55;
-  font-weight: 600;
-}
-.cmp-mark {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 900;
-  margin-top: 1px;
-}
-.cmp-mark--no {
-  background: rgba(109, 28, 44, 0.1);
-  color: #9b2c3c;
-}
-.cmp-mark--yes {
-  background: var(--brand);
-  color: var(--bg-elevated);
-}
-.cmp-head .cmp-cell {
-  padding-top: 17px;
-  padding-bottom: 17px;
+.calc__eyebrow {
+  font-size: 12px;
   font-weight: 800;
-  font-size: 17px;
-  letter-spacing: 0.3px;
-  text-transform: none;
-  color: #46557d;
-}
-.cmp-head .cmp-cell--stagify {
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
   color: var(--brand);
 }
-.cmp-brandcell {
-  gap: 8px;
+.calc__question {
+  font-size: clamp(16px, 1.8vw, 19px);
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--brand-deep);
+  cursor: pointer;
 }
-.cmp-brandcell img {
+.calc__sliderrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.calc__range {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 8px;
+  margin: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  /* Filled to the left of the thumb. home-figures.js keeps --calc-pct in step with the
+     value; the 20% default is the position of CALC.initial (24 of 5–100), so the track
+     is already correct for the second or two before the deferred module runs. */
+  --calc-pct: 20%;
+  background: linear-gradient(
+    to right,
+    var(--brand) 0 var(--calc-pct),
+    var(--brand-tint) var(--calc-pct) 100%
+  );
+}
+.calc__range:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 4px;
+}
+.calc__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid var(--bg-elevated);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.calc__range:hover::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+.calc__range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--brand);
+  border: 2px solid var(--bg-elevated);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.calc__range:hover::-moz-range-thumb {
+  transform: scale(1.12);
+}
+.calc__readout {
+  min-width: 3.5ch;
+  text-align: right;
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: var(--brand-deep);
+  /* Without this the readout reflows on every step of a drag. */
+  font-variant-numeric: tabular-nums;
+}
+.calc__scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #717b8c;
+  font-variant-numeric: tabular-nums;
+}
+.calc__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.calc__col {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  padding: 20px 22px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(30, 58, 138, 0.1);
+}
+.calc__col--stagify {
+  background: rgba(37, 99, 235, 0.07);
+  border-color: rgba(37, 99, 235, 0.16);
+}
+.calc__colhead {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: #46557d;
+}
+.calc__colhead--brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand);
+}
+.calc__brandmark {
   width: 24px;
   height: 24px;
 }
+.calc__metric {
+  display: grid;
+  gap: 4px;
+}
+.calc__cap {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #717b8c;
+}
+.calc__val {
+  font-size: clamp(26px, 3.4vw, 38px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: var(--brand-deep);
+  /* Load-bearing: these digits are rewritten every frame of the count-up and every
+     step of a drag, and proportional figures jitter the whole column while they do. */
+  font-variant-numeric: tabular-nums;
+}
+.calc__val--sm {
+  font-size: clamp(15px, 1.6vw, 17px);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.4;
+  color: #2b3658;
+}
+.calc__val--free {
+  background: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand) 55%, var(--brand-soft) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.calc__sub {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #41507a;
+}
+.calc__note {
+  margin: 20px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #717b8c;
+}
+
+@media (max-width: 700px) {
+  .calc {
+    padding: 20px 18px 18px;
+  }
+  .calc__cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The values are computed per slider position, so home-figures.js still runs here — it
+   writes the finals synchronously instead of ramping. Dragging keeps updating: direct
+   manipulation is not motion. Nothing in this component may animate. */
+@media (prefers-reduced-motion: reduce) {
+  .calc__range::-webkit-slider-thumb,
+  .calc__range::-moz-range-thumb {
+    transition: none;
+  }
+  .calc__range:hover::-webkit-slider-thumb,
+  .calc__range:hover::-moz-range-thumb {
+    transform: none;
+  }
+}
+
 .cmp-source {
   display: flex;
   gap: 13px;
@@ -1028,17 +1158,6 @@
   .info-row--flip .info-row__media {
     order: 0;
   }
-  .cmp-row {
-    grid-template-columns: 1fr 1fr;
-  }
-  .cmp-cell--aspect {
-    grid-column: 1 / -1;
-    padding-bottom: 5px;
-    background: rgba(255, 255, 255, 0.42);
-  }
-  .cmp-head .cmp-cell--aspect {
-    display: none;
-  }
 }
 
 @media (max-width: 600px) {
@@ -1054,10 +1173,6 @@
   .home-cta__panel {
     padding: 38px 20px;
     border-radius: 18px;
-  }
-  .cmp-cell {
-    padding: 12px 14px;
-    font-size: 13px;
   }
   .ba-handle::after {
     width: 36px;
@@ -1287,6 +1402,14 @@
 .nar-bar span {
   display: block;
   height: 100%;
+  /* Each segment's share, set inline in index.html so the bar is complete with no JS
+     at all. The 0% here exists only so `var(--seg-w)` always resolves against a
+     stylesheet definition (css-tokens.test.js requires that of every fallback-less
+     var); the four real values are drift-tested against the legend percentages and the
+     bar's aria-label in test/frontend/home-figures.test.js. */
+  --seg-w: 0%;
+  width: var(--seg-w);
+  transition: opacity 0.18s ease;
 }
 .nar-seg--daily {
   background: var(--brand-deep);
@@ -1314,6 +1437,39 @@
   gap: 8px;
   font-size: 13.5px;
   color: #3a4a72;
+}
+/* A real button, not a tabbable <li> — see the note in index.html. It has to reset the
+   whole UA button appearance because the row must still read as plain legend text. */
+.nar-legend__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 2px 5px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: opacity 0.18s ease, background 0.18s ease;
+}
+.nar-legend__btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+/* `data-nar-focus` is set on the card by home-figures.js while a row is hovered,
+   focused or pinned; `.is-lit` marks that row and its matching bar segment. */
+.nar-card[data-nar-focus] .nar-bar span:not(.is-lit) {
+  opacity: 0.26;
+}
+.nar-card[data-nar-focus] .nar-legend__btn:not(.is-lit) {
+  opacity: 0.45;
+}
+.nar-card[data-nar-focus] .nar-legend__btn.is-lit {
+  background: var(--brand-wash);
 }
 .nar-legend .swatch {
   flex-shrink: 0;
@@ -1364,6 +1520,24 @@
   line-height: 1.5;
   color: #41507a;
 }
+/* Rewritten every frame of the count-up — see the note on .calc__val. */
+.nar-stat__num,
+.nar-usage__note strong {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Entrance wipe. One clip-path on the bar rather than four animated `width`s: it is a
+   single property, it never triggers layout, and — the reason it matters — the final
+   widths never leave the CSS, which is what makes the no-JS and reduced-motion paths
+   correct for free. home-figures.js only adds the two classes. */
+.nar-card.is-narm .nar-bar {
+  clip-path: inset(0 100% 0 0 round 999px);
+  transition: none;
+}
+.nar-card.is-narm.is-ncharted .nar-bar {
+  clip-path: inset(0 0 0 0 round 999px);
+  transition: clip-path 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
 
 @media (max-width: 900px) {
   .nar-card {
@@ -1375,6 +1549,22 @@
 @media (max-width: 600px) {
   .nar-legend {
     grid-template-columns: 1fr;
+  }
+}
+
+/* home-figures.js returns before touching the chart here, so the authored widths and
+   numerals are what you see. These rules make that unconditional: even a stale
+   `.is-narm` left by a motion-preference change mid-session cannot hide the bar. The
+   legend highlight stays — it is direct manipulation, not motion. */
+@media (prefers-reduced-motion: reduce) {
+  .nar-card.is-narm .nar-bar,
+  .nar-card.is-narm.is-ncharted .nar-bar {
+    clip-path: none;
+    transition: none;
+  }
+  .nar-bar span,
+  .nar-legend__btn {
+    transition: none;
   }
 }
 
@@ -2393,12 +2583,12 @@
     max-width: 100%;
   }
 
-  .cmp,
-  .cmp-row {
+  .calc,
+  .calc__cols {
     min-width: 0;
   }
 
-  .cmp-cell {
+  .calc__col {
     min-width: 0;
     overflow-wrap: anywhere;
   }

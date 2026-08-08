@@ -231,6 +231,11 @@
       "subtitle": "O staging tradicional funciona. Só que é lento e caro.",
       "colTraditional": "Staging tradicional",
       "colStagify": "Stagify.ai",
+      "calc": {
+        "question": "Quantos imóveis você decora por ano?",
+        "weeks": "{n} semanas",
+        "note": "Calculado com base em US$ 2.000 por imóvel, o limite inferior da faixa habitual, e duas semanas da reserva até a montagem."
+      },
       "rows": {
         "cost": {
           "aspect": "Custo",

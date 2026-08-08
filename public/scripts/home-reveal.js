@@ -18,7 +18,7 @@
   function warmImages() {
     document
       .querySelectorAll(
-        ".info-row__media img, .ba img, .plus-card__logo, .sponsor-logo, .cmp-brandcell img"
+        ".info-row__media img, .ba img, .plus-card__logo, .sponsor-logo, .calc__brandmark"
       )
       .forEach((img) => {
         const image = /** @type {HTMLImageElement} */ (img);

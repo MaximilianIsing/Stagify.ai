@@ -231,6 +231,11 @@
       "subtitle": "Le staging traditionnel fonctionne. Il est simplement lent et coûteux.",
       "colTraditional": "Staging traditionnel",
       "colStagify": "Stagify.ai",
+      "calc": {
+        "question": "Combien de logements mettez-vous en staging par an ?",
+        "weeks": "{n} semaines",
+        "note": "Calculé sur la base de 2 000 $ par logement, le bas de la fourchette habituelle, et deux semaines entre la réservation et l'installation."
+      },
       "rows": {
         "cost": {
           "aspect": "Coût",

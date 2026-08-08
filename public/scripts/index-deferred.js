@@ -48,6 +48,11 @@ export const DEFERRED = [
   { src: 'scripts/staging-studio.js', module: true },
   { src: 'scripts/home-reveal.js', module: true },
   { src: 'scripts/home-text-animate.js', module: true },
+  // #compare's savings calculator and #ai-shift's chart. Both mount their OWN
+  // IntersectionObserver rather than watching home-reveal.js's `.is-visible`: that
+  // script's showAll() fallback adds the class to every .reveal at once, which would
+  // fire these for a card far below the fold.
+  { src: 'scripts/home-figures.js', module: true },
   { src: 'scripts/sponsors-scroll.js', module: true },
   { src: 'scripts/star-border.js', module: true },
   { src: 'scripts/plus-cta-auth.js', module: true },

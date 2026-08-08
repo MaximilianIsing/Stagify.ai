@@ -991,42 +991,69 @@
           <h2 class="home-section__title" id="compare-title" data-tx="rise" data-lang="home.compare.title">How it compares to traditional staging</h2>
           <p class="home-section__sub" data-lang="home.compare.subtitle">Traditional staging works. It's just slow and expensive.</p>
         </div>
-        <div class="cmp reveal">
-          <div class="cmp-row cmp-head">
-            <div class="cmp-cell cmp-cell--aspect"></div>
-            <div class="cmp-cell cmp-cell--trad" data-lang="home.compare.colTraditional">Traditional staging</div>
-            <div class="cmp-cell cmp-cell--stagify cmp-brandcell"><img src="media-webp/logo/Logo32x32.webp" alt="" aria-hidden="true"><span data-lang="home.compare.colStagify">Stagify.ai</span></div>
+        <!-- This replaced a static 6-row "– vs ✓" table. The rows' strings are still in
+             all 11 language packs under home.compare.rows.* — 7 of the 18 are reused
+             below, the other 11 are left as harmless orphans (the parity gate in
+             test/server/static.test.js is one-way, english → others).
+
+             The numbers are computed in the browser, so scripts/home-figures.js owns
+             them; the authored text here is the value at CALC.initial so the pre-JS
+             paint agrees with the first render. test/frontend/home-figures.test.js
+             fails if the two drift apart. -->
+        <div class="calc reveal" data-calc>
+          <div class="calc__ask">
+            <span class="calc__eyebrow" data-lang="home.compare.eyebrow">Virtual vs. traditional</span>
+            <label class="calc__question" for="calc-listings" data-lang="home.compare.calc.question">How many listings do you stage a year?</label>
+            <div class="calc__sliderrow">
+              <input class="calc__range" type="range" id="calc-listings" data-calc-range min="5" max="100" step="1" value="24">
+              <!-- Decorative: the range input already announces its own value against the
+                   <label>, and a translated "{n} listings" here would need Russian
+                   few/many forms for 5 vs 21 vs 25. Bare numeral, hidden from AT. -->
+              <output class="calc__readout" for="calc-listings" data-calc-listings aria-hidden="true">24</output>
+            </div>
+            <div class="calc__scale" aria-hidden="true"><span>5</span><span>100</span></div>
           </div>
-          <div class="cmp-row">
-            <div class="cmp-cell cmp-cell--aspect" data-lang="home.compare.rows.cost.aspect">Cost</div>
-            <div class="cmp-cell cmp-cell--trad"><span class="cmp-mark cmp-mark--no" aria-hidden="true">–</span><span data-lang="home.compare.rows.cost.trad">$2,000–$5,000+ per home, often billed monthly until it sells</span></div>
-            <div class="cmp-cell cmp-cell--stagify"><span class="cmp-mark cmp-mark--yes" aria-hidden="true">✓</span><span data-lang="home.compare.rows.cost.stag">Free to start, stage at no cost</span></div>
+
+          <!-- aria-live is added by home-figures.js AFTER the intro count-up finishes,
+               never authored here: a live region during a 60-frame ramp is a torrent. -->
+          <div class="calc__cols" data-calc-results>
+            <div class="calc__col calc__col--trad">
+              <div class="calc__colhead" data-lang="home.compare.colTraditional">Traditional staging</div>
+              <div class="calc__metric">
+                <span class="calc__cap" data-lang="home.compare.rows.cost.aspect">Cost</span>
+                <!-- No data-lang on the computed nodes — language-loader.js would
+                     overwrite whatever the calculator had just written. -->
+                <span class="calc__val" data-calc-cost>$48,000</span>
+                <span class="calc__sub" data-lang="home.compare.rows.cost.trad">$2,000–$5,000+ per home, often billed monthly until it sells</span>
+              </div>
+              <div class="calc__metric">
+                <span class="calc__cap" data-lang="home.compare.rows.time.aspect">Turnaround</span>
+                <span class="calc__val calc__val--sm" data-calc-weeks>48 weeks</span>
+                <span class="calc__sub" data-lang="home.compare.rows.time.trad">1–3 weeks to schedule, deliver, and install</span>
+              </div>
+            </div>
+
+            <div class="calc__col calc__col--stagify">
+              <div class="calc__colhead calc__colhead--brand">
+                <img class="calc__brandmark" src="media-webp/logo/Logo32x32.webp" alt="" aria-hidden="true" width="24" height="24">
+                <span data-lang="home.compare.colStagify">Stagify.ai</span>
+              </div>
+              <div class="calc__metric">
+                <span class="calc__cap" data-lang="home.compare.rows.cost.aspect">Cost</span>
+                <span class="calc__val calc__val--free" data-calc-zero>$0</span>
+                <span class="calc__sub" data-lang="home.compare.rows.cost.stag">Free to start, stage at no cost</span>
+              </div>
+              <div class="calc__metric">
+                <span class="calc__cap" data-lang="home.compare.rows.time.aspect">Turnaround</span>
+                <!-- Deliberately does NOT scale with the slider. That contrast is the
+                     point of the column, and it sidesteps plural forms entirely. -->
+                <span class="calc__val calc__val--sm" data-lang="home.compare.rows.time.stag">About 8 seconds per photo</span>
+                <span class="calc__sub" data-lang="home.compare.rows.logistics.stag">Just upload a photo from anywhere</span>
+              </div>
+            </div>
           </div>
-          <div class="cmp-row">
-            <div class="cmp-cell cmp-cell--aspect" data-lang="home.compare.rows.time.aspect">Turnaround</div>
-            <div class="cmp-cell cmp-cell--trad"><span class="cmp-mark cmp-mark--no" aria-hidden="true">–</span><span data-lang="home.compare.rows.time.trad">1–3 weeks to schedule, deliver, and install</span></div>
-            <div class="cmp-cell cmp-cell--stagify"><span class="cmp-mark cmp-mark--yes" aria-hidden="true">✓</span><span data-lang="home.compare.rows.time.stag">About 8 seconds per photo</span></div>
-          </div>
-          <div class="cmp-row">
-            <div class="cmp-cell cmp-cell--aspect" data-lang="home.compare.rows.styles.aspect">Style options</div>
-            <div class="cmp-cell cmp-cell--trad"><span class="cmp-mark cmp-mark--no" aria-hidden="true">–</span><span data-lang="home.compare.rows.styles.trad">One look, locked in once it's installed</span></div>
-            <div class="cmp-cell cmp-cell--stagify"><span class="cmp-mark cmp-mark--yes" aria-hidden="true">✓</span><span data-lang="home.compare.rows.styles.stag">7 styles plus custom prompts, switch anytime</span></div>
-          </div>
-          <div class="cmp-row">
-            <div class="cmp-cell cmp-cell--aspect" data-lang="home.compare.rows.changes.aspect">Changing your mind</div>
-            <div class="cmp-cell cmp-cell--trad"><span class="cmp-mark cmp-mark--no" aria-hidden="true">–</span><span data-lang="home.compare.rows.changes.trad">New rental and install fees every time</span></div>
-            <div class="cmp-cell cmp-cell--stagify"><span class="cmp-mark cmp-mark--yes" aria-hidden="true">✓</span><span data-lang="home.compare.rows.changes.stag">Re-stage as many times as you like</span></div>
-          </div>
-          <div class="cmp-row">
-            <div class="cmp-cell cmp-cell--aspect" data-lang="home.compare.rows.logistics.aspect">Logistics</div>
-            <div class="cmp-cell cmp-cell--trad"><span class="cmp-mark cmp-mark--no" aria-hidden="true">–</span><span data-lang="home.compare.rows.logistics.trad">Movers, rentals, and access to the property</span></div>
-            <div class="cmp-cell cmp-cell--stagify"><span class="cmp-mark cmp-mark--yes" aria-hidden="true">✓</span><span data-lang="home.compare.rows.logistics.stag">Just upload a photo from anywhere</span></div>
-          </div>
-          <div class="cmp-row">
-            <div class="cmp-cell cmp-cell--aspect" data-lang="home.compare.rows.rights.aspect">The images</div>
-            <div class="cmp-cell cmp-cell--trad"><span class="cmp-mark cmp-mark--no" aria-hidden="true">–</span><span data-lang="home.compare.rows.rights.trad">Photos of borrowed furniture you return</span></div>
-            <div class="cmp-cell cmp-cell--stagify"><span class="cmp-mark cmp-mark--yes" aria-hidden="true">✓</span><span data-lang="home.compare.rows.rights.stag">Yours to keep, with full copyright</span></div>
-          </div>
+
+          <p class="calc__note" data-lang="home.compare.calc.note">Based on $2,000 per home, the low end of the usual range, and two weeks from booking to installed.</p>
         </div>
         <div class="cmp-source reveal">
           <svg class="cmp-source__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
@@ -1043,30 +1070,42 @@
           <h2 class="home-section__title" id="nar-title" data-tx="rise" data-lang="home.nar.title">Don't fall behind</h2>
           <p class="home-section__sub" data-lang="home.nar.subtitle">Real estate is adopting AI fast, and clients are responding to it. Staging is one of the easiest places to start.</p>
         </div>
-        <div class="nar-card reveal">
+        <!-- Every visible string here is unchanged; scripts/home-figures.js adds the
+             entrance animation and the legend highlight through the data-* hooks only.
+
+             The segment widths moved from `width:` to `--seg-w` so the CSS owns the
+             final value and JS only toggles a class — with no JS, or under reduced
+             motion, the bar is already fully drawn. Same for [data-nar-count]: the
+             attribute is the ramp target AND the authored text is the final numeral.
+             test/frontend/home-figures.test.js fails if a width, a legend percentage
+             and its aria-label ever drift apart. -->
+        <div class="nar-card reveal" data-nar-chart>
           <div class="nar-usage">
             <div class="nar-usage__label" data-lang="home.nar.usageLabel">How often agents use AI tools</div>
             <div class="nar-bar" role="img" data-lang-attr="home.nar.usageAria|aria-label" aria-label="AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet">
-              <span class="nar-seg--daily" style="width:20%"></span>
-              <span class="nar-seg--weekly" style="width:22%"></span>
-              <span class="nar-seg--monthly" style="width:27%"></span>
-              <span class="nar-seg--none" style="width:32%"></span>
+              <span class="nar-seg--daily" data-nar-seg="daily" style="--seg-w:20%"></span>
+              <span class="nar-seg--weekly" data-nar-seg="weekly" style="--seg-w:22%"></span>
+              <span class="nar-seg--monthly" data-nar-seg="monthly" style="--seg-w:27%"></span>
+              <span class="nar-seg--none" data-nar-seg="none" style="--seg-w:32%"></span>
             </div>
+            <!-- Real buttons, not tabbable <li>s: click PINS the highlight, which is the
+                 only affordance a touch visitor gets (no hover on a phone). The bar keeps
+                 role="img" and its translated aria-label, so this is decoration only. -->
             <ul class="nar-legend">
-              <li><span class="swatch nar-seg--daily"></span><span data-lang="home.nar.legend.daily">Daily</span>&nbsp;<span class="pct">20%</span></li>
-              <li><span class="swatch nar-seg--weekly"></span><span data-lang="home.nar.legend.weekly">Weekly</span>&nbsp;<span class="pct">22%</span></li>
-              <li><span class="swatch nar-seg--monthly"></span><span data-lang="home.nar.legend.monthly">A few times a month</span>&nbsp;<span class="pct">27%</span></li>
-              <li><span class="swatch nar-seg--none"></span><span data-lang="home.nar.legend.none">Not yet</span>&nbsp;<span class="pct">32%</span></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="daily" aria-pressed="false"><span class="swatch nar-seg--daily"></span><span data-lang="home.nar.legend.daily">Daily</span>&nbsp;<span class="pct" data-nar-count="20">20%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="weekly" aria-pressed="false"><span class="swatch nar-seg--weekly"></span><span data-lang="home.nar.legend.weekly">Weekly</span>&nbsp;<span class="pct" data-nar-count="22">22%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="monthly" aria-pressed="false"><span class="swatch nar-seg--monthly"></span><span data-lang="home.nar.legend.monthly">A few times a month</span>&nbsp;<span class="pct" data-nar-count="27">27%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="none" aria-pressed="false"><span class="swatch nar-seg--none"></span><span data-lang="home.nar.legend.none">Not yet</span>&nbsp;<span class="pct" data-nar-count="32">32%</span></button></li>
             </ul>
-            <p class="nar-usage__note"><strong>68%</strong> <span data-lang="home.nar.note">of agents already use AI in their business.</span></p>
+            <p class="nar-usage__note"><strong data-nar-count="68">68%</strong> <span data-lang="home.nar.note">of agents already use AI in their business.</span></p>
           </div>
           <div class="nar-stats">
             <div class="nar-stat">
-              <span class="nar-stat__num">82%</span>
+              <span class="nar-stat__num" data-nar-count="82">82%</span>
               <span class="nar-stat__txt" data-lang="home.nar.stat1">of agents say clients responded positively to technology in the buying and selling process</span>
             </div>
             <div class="nar-stat">
-              <span class="nar-stat__num">46%</span>
+              <span class="nar-stat__num" data-nar-count="46">46%</span>
               <span class="nar-stat__txt" data-lang="home.nar.stat2">already use AI to generate listing content</span>
             </div>
           </div>
