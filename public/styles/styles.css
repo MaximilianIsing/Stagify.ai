@@ -1630,6 +1630,65 @@ h2 {
   display:grid;
   gap:8px
 }
+/* Two pickers on ONE row (Room type + Furniture style). Each used to own a full
+   toolbar row, which is the scarcest space in the stage modal.
+   The children stay plain .tool-row grids so they keep the label-over-control
+   stack and the 8px gap; only their margin-top moves up to the pair, so the
+   vertical rhythm against the rows above and below is unchanged.
+   1fr 1fr rather than auto: equal columns whatever the translated label length.
+   min-width:0 releases the grid item's automatic minimum so a long translated
+   value ellipsizes (see .select-value below) instead of widening the column and
+   pushing the pair past the toolbar. */
+.tool-row-pair {
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  align-items:start
+}
+/* margin-bottom is zeroed here rather than only above because the mobile blocks
+   further down give every .tool-row one; on a grid item that would grow the
+   pair's single row. The pair takes that spacing itself down there instead. */
+.tool-row-pair>.tool-row {
+  margin-top:0;
+  margin-bottom:0;
+  min-width:0
+}
+/* The trigger keeps the shared inline-flex/width:auto hug — stretching it to
+   fill the column just parked the caret a dead inch away from the value.
+   max-width is the one addition: a shrink-to-fit box sizes to its content, so
+   without a cap a long translated value pushes the trigger past its column (the
+   pair's min-width:0 lets it, and there is no other floor). Real strings do hit
+   this — es `roomTypes.dorm` and ru `roomTypes.dorm` both run ~25px wide of a
+   170px column. Capped, the value ellipsizes instead, which needs min-width:0
+   on the value: a flex item's automatic minimum is its full text width.
+
+   The percentage resolves against .custom-select, which is why that stays a
+   plain full-column block. Shrinking it to the trigger (width:fit-content) reads
+   as tidier and lines the menu up with the button, but it makes the containing
+   block INDEFINITE — the percentage then computes to none and this cap silently
+   stops working. Don't.
+
+   .custom-select needs min-width:0 for the same reason .tool-row does: it is a
+   grid item (of .tool-row), so its automatic minimum is its min-content size,
+   and the nowrap value inside makes that the whole trigger's width. It would
+   simply grow past the column, taking the 100% the trigger is capped at with
+   it — the cap resolves, it just resolves against a box that already lost. */
+.tool-row-pair .custom-select {
+  min-width:0
+}
+.tool-row-pair .select-trigger {
+  max-width:100%
+}
+.tool-row-pair .select-value {
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.tool-row-pair .caret {
+  flex:none
+}
 .label {
   font-size:14px;
   color:var(--fg);
@@ -2499,7 +2558,7 @@ body:has(.stage-mask-modal.active) .language-picker-container {
     min-height:220px;
     padding:18px
   }
-  .tool-row {
+  .tool-row,.tool-row-pair {
     margin-bottom:12px
   }
   .label {
@@ -2687,8 +2746,23 @@ body:has(.stage-mask-modal.active) .language-picker-container {
     max-height:60vh;
     object-fit:contain
   }
-  .tool-row {
+  .tool-row,.tool-row-pair {
     margin-bottom:10px
+  }
+  /* Narrow phones: the two columns get ~135px each, so tighten the gap before
+     the value strings start ellipsizing. */
+  .tool-row-pair {
+    gap:8px
+  }
+  /* An open .select-menu is width:max-content, so in the longest packs (ja/es/ru
+     furniture styles) it is wider than its column. Left-anchored — which is what
+     it wants to be, since that lines it up under the trigger — the right column's
+     menu then runs off a ~320px viewport and gets clipped. Only down here is the
+     room that tight, so only down here does it flip to opening inward.
+     `.select-menu { left:0 }` is declared later in the file, hence the depth. */
+  .tool-row-pair>.tool-row:last-child .select-menu {
+    left:auto;
+    right:0
   }
   .text-input {
     min-height:50px

@@ -129,49 +129,12 @@
   margin-top:6px;
   text-align:center
 }
-.stats-pills {
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-top:0;
-  flex-wrap:nowrap;
-  width:100%
-}
-.stat-pill {
-  display:flex;
-  flex-direction:row;
-  align-items:center;
-  justify-content:center;
-  min-width:auto;
-  cursor:default;
-  white-space:nowrap;
-  padding:6px 14px;
-  border-radius:999px;
-  background:rgba(30,58,138,.55);
-  border:1px solid rgba(255,255,255,.28);
-  box-shadow:0 2px 10px rgba(30,58,138,.25);
-  backdrop-filter:blur(8px) saturate(150%);
-  -webkit-backdrop-filter:blur(8px) saturate(150%)
-}
-.stat-pill-number {
-  font-size:1rem;
-  font-weight:700;
-  color:var(--bg-elevated);
-  line-height:1;
-  margin-right:4px;
-  font-variant-numeric:tabular-nums;
-  display:inline-block;
-  min-width:1ch;
-  text-align:left;
-  transition:min-width .45s cubic-bezier(.22,.61,.36,1)
-}
-.stat-pill-text {
-  font-size:.875rem;
-  color:var(--bg-elevated);
-  font-weight:500;
-  text-align:center;
-  line-height:1.2
-}
+/* The hero stat pills used to be duplicated here as well. They now live ONLY in
+   index.css — see the long note above `.hero-stats` there. This sheet loads first
+   (index.html), so a second copy is shadowed at equal specificity and stays invisible
+   right up until it declares something index.css does not: that is exactly how an
+   unused `backdrop-filter` survived on a pill whose background is opaque. Guarded by
+   test/frontend/hero-stat-pill-swap.test.js. */
 @media (max-width:768px) {
   .carousel-container {
     padding:12px;
@@ -193,16 +156,6 @@
   .carousel-note {
     margin-bottom:24px
   }
-  .stats-pills {
-    gap:8px;
-    margin-top:4px
-  }
-  .stat-pill-number {
-    font-size:.9rem
-  }
-  .stat-pill-text {
-    font-size:.75rem
-  }
 }
 @media (max-width:480px) {
   .carousel-container {
@@ -219,15 +172,5 @@
   }
   .carousel-note {
     margin-bottom:16px
-  }
-  .stats-pills {
-    gap:6px;
-    margin-top:2px
-  }
-  .stat-pill-number {
-    font-size:.8rem
-  }
-  .stat-pill-text {
-    font-size:.7rem
   }
 }
