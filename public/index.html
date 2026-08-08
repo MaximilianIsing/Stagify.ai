@@ -1211,19 +1211,25 @@
                   </div>
                 </div>
                 <div id="stagify-pro-panel" class="stagify-pro-panel hidden">
-                  <div class="tool-row">
-                    <label class="label" for="stagify-model-select" data-lang="modal.staging.imageModel">Image model</label>
-                    <select id="stagify-model-select" class="text-input" style="min-height: 44px;">
-                      <option value="gpt-4o-mini" data-lang="modal.staging.fastGeneration">Fast Generation</option>
-                      <option value="gpt-5-mini" data-lang="modal.staging.qualityGeneration">Stagify+ Quality Generation</option>
-                    </select>
-                  </div>
-                  <div class="tool-row" id="variation-row">
-                    <div class="variation-slider-head">
-                      <label class="label" for="stagify-variation-count" data-lang="modal.staging.imageGenerations">Image Generations</label>
-                      <span id="stagify-variation-value" class="variation-slider-value" aria-hidden="true">1</span>
+                  <!-- Image model + Image Generations share one row, same as the
+                       Room type / Furniture style pair above. #variation-row is
+                       hidden whenever "remove existing furniture" is on, which
+                       .tool-row-pair handles by collapsing to a single column. -->
+                  <div class="tool-row-pair">
+                    <div class="tool-row">
+                      <label class="label" for="stagify-model-select" data-lang="modal.staging.imageModel">Image model</label>
+                      <select id="stagify-model-select" class="text-input" style="min-height: 44px;">
+                        <option value="gpt-4o-mini" data-lang="modal.staging.fastGeneration">Fast Model</option>
+                        <option value="gpt-5-mini" data-lang="modal.staging.qualityGeneration">Stagify+ Model</option>
+                      </select>
                     </div>
-                    <input type="range" id="stagify-variation-count" class="variation-slider" min="1" max="3" step="1" value="1" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" data-lang-attr="modal.staging.imageGenerations|aria-label" aria-label="Image Generations">
+                    <div class="tool-row" id="variation-row">
+                      <div class="variation-slider-head">
+                        <label class="label" for="stagify-variation-count" data-lang="modal.staging.imageGenerations">Image Generations</label>
+                        <span id="stagify-variation-value" class="variation-slider-value" aria-hidden="true">1</span>
+                      </div>
+                      <input type="range" id="stagify-variation-count" class="variation-slider" min="1" max="3" step="1" value="1" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" data-lang-attr="modal.staging.imageGenerations|aria-label" aria-label="Image Generations">
+                    </div>
                   </div>
                   <div class="tool-row">
                     <label class="label" data-lang="modal.staging.furniturePhotosLabel">Furniture photos (optional)</label>

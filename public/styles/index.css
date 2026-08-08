@@ -225,6 +225,18 @@
         background: var(--border);
         border-radius: 999px;
       }
+      /* Inside a .tool-row-pair the slider shares a grid row with the 44px model
+         <select>, and those margins — vertical rhythm from when it owned a
+         full-width row — pin an 8px-tall track to the top of that row. Centre it
+         instead, so the two controls read as one line.
+         The selector repeats the element+attribute of the rule above because it
+         has to outrank it; a plain .tool-row-pair .variation-slider (0,2,0)
+         loses to input.variation-slider[type='range'] (0,2,1). */
+      .tool-row-pair input.variation-slider[type='range'] {
+        align-self: center;
+        margin-top: 0;
+        margin-bottom: 0;
+      }
       input.variation-slider[type='range']::-webkit-slider-thumb {
         -webkit-appearance: none;
         width: 20px;

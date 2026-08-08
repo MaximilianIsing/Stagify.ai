@@ -8,7 +8,9 @@
 .home-section {
   width: 100%;
   max-width: 1140px;
-  margin: 56px auto;
+  /* `main` is a flex column (styles.css:886), so these margins do NOT collapse —
+     adjacent sections render 2x this value apart. 28px here = 56px on screen. */
+  margin: 28px auto;
   padding: 0 48px;
   box-sizing: border-box;
   position: relative;
@@ -699,7 +701,8 @@
    ========================================================================== */
 @media (max-width: 900px) {
   .home-section {
-    margin: 44px auto;
+    /* half the visual gap — see the note on .home-section above */
+    margin: 22px auto;
     padding: 0 28px;
   }
   .studio-shell {
@@ -731,7 +734,8 @@
 
 @media (max-width: 600px) {
   .home-section {
-    margin: 38px auto;
+    /* half the visual gap — see the note on .home-section above */
+    margin: 19px auto;
     padding: 0 18px;
   }
   .home-cta {
