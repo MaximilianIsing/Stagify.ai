@@ -23,28 +23,39 @@
 // regression ratchet rather than a wall. Raise them as coverage improves; never
 // lower them to make a red build pass.
 //
-// Measured 2026-07-28 over a green suite (1221/1221): lines 88.09% / branches
-// 81.04% / functions 86.44%. Two consecutive runs agreed to within 0.03 points,
+// Measured 2026-08-08 over a green suite (2965/2965): lines 88.51% / branches
+// 84.07% / functions 85.77%. Two consecutive runs agreed to within 0.04 points,
 // so the margins below absorb Node-minor drift, not measurement noise.
-//   lines     88.1 -> 85  (3.1 margin)
-//   branches  81.0 -> 77  (4.0 margin — branches swing most between Node minors)
-//   functions 86.4 -> 84  (2.4 margin — UNCHANGED on purpose: functions moved only
-//                          86.0 -> 86.4 since 2026-07-10, so 84 was never stale)
+//   lines     88.5 -> 85  (3.5 margin)
+//   branches  84.1 -> 80  (4.1 margin — branches swing most between Node minors.
+//                          RAISED from 77: branches gained 3 points when the
+//                          fifteen island suites landed, and the margin is kept
+//                          at the same ~4 points it was originally chosen with)
+//   functions 85.8 -> 84  (1.8 margin — deliberately NOT raised; see below)
 // The wider margins vs. the original 2026-07-10 pass are deliberate: the numbers
 // above were taken locally on Node 22.2, while CI enforces on Node 22-latest, and
 // V8's line/branch attribution shifts slightly between minors.
 //
+// WHY FUNCTIONS WENT DOWN (86.4 -> 85.8) WHILE THE SUITE GREW: these are ratios
+// over the files the run LOADS, and the 2026-08-08 pass added suites for fifteen
+// island factories that no test had imported before. Each brought its whole
+// function count into the denominator, not just the parts under test. A falling
+// percentage here therefore means MORE code is measured, not that less is tested —
+// which is exactly why the untested ledger, not these floors, is what tracks
+// coverage breadth.
+//
 // WHAT THESE FLOORS CANNOT SEE: V8 coverage only reports files the run actually
 // loaded, so a frontend module no test ever imports contributes to NEITHER the
 // numerator nor the denominator — it is invisible here, not averaged in. As of
-// 2026-07-28 that is 68 of 107 files under public/scripts/. Raising these floors
-// does not surface them; test/frontend/untested-frontend-modules.test.js is the
-// guard that does, by pinning that set so it can only shrink.
+// 2026-08-08 that is 40 of 141 files under public/scripts/ (24 untested, 8 covered
+// only by the Playwright suite, 8 classic scripts node cannot import). Raising
+// these floors does not surface them; test/frontend/untested-frontend-modules.test.js
+// is the guard that does, by pinning that set so it can only shrink.
 
 import { spawn } from 'node:child_process';
 import process from 'node:process';
 
-const THRESHOLDS = { lines: 85, branches: 77, functions: 84 };
+const THRESHOLDS = { lines: 85, branches: 80, functions: 84 };
 
 const [major, minor] = process.versions.node.split('.').map(Number);
 const canEnforce = major > 22 || (major === 22 && minor >= 8);

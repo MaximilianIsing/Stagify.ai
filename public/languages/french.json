@@ -98,11 +98,27 @@
     },
     "designer": {
       "title": "Laissez une IA meubler votre espace",
-      "subtitle": "Avec le Designer IA, discutez pour meubler, redessiner et peaufiner n'importe quelle pièce jusqu'à ce qu'elle soit prête pour l'annonce. <em>(Exclusivité Stagify+)</em>"
+      "subtitle": "Avec le Designer IA, discutez pour meubler, redessiner et peaufiner n'importe quelle pièce jusqu'à ce qu'elle soit prête pour l'annonce. <em>(Exclusivité Stagify+)</em>",
+      "kicker": "Conversationnel",
+      "panelTitle": "Décrivez la pièce, ne la décorez pas",
+      "panelBody": "Décrivez ce que vous voulez : le Designer met la pièce en scène et la garde en mémoire. Demandez un autre canapé ou des tons plus chauds, il repart de ce qu'il a déjà créé.",
+      "points": {
+        "iterate": "Continuez à affiner dans la même conversation.",
+        "furniture": "Joignez du mobilier que vous vendez, il l'intègre.",
+        "saved": "Chaque version arrive seule dans votre galerie."
+      }
     },
     "masking": {
       "title": "Meublez avec une précision exacte",
-      "subtitle": "Masquez les zones à refaire, ajoutez vos propres meubles, et tout le reste reste identique au pixel près. <em>(Exclusivité Stagify+)</em>"
+      "subtitle": "Masquez les zones à refaire, ajoutez vos propres meubles, et tout le reste reste identique au pixel près. <em>(Exclusivité Stagify+)</em>",
+      "kicker": "Au pixel près",
+      "panelTitle": "Changez un coin, pas toute la pièce",
+      "panelBody": "Peignez uniquement la zone à remettre en scène. Tout ce qui est hors du masque revient intact : le reste de la photo ne bouge pas.",
+      "points": {
+        "snap": "Peignez un masque ou laissez l'outil suivre l'objet.",
+        "own": "Ajoutez la photo d'un meuble pour le placer.",
+        "repeat": "Relancez le même masque dans un autre style."
+      }
     },
     "exterior": {
       "title": "Corrigez la photo qui ouvre l'annonce",
@@ -127,31 +143,44 @@
       "subtitle": "Votre galerie conserve chaque pièce aménagée, les réglages qui l'ont produite et les liens que vous avez partagés avec vos clients.",
       "mock": {
         "title": "Votre galerie",
-        "count": "3 pièces aménagées"
+        "count": "7 pièces mises en scène"
       },
       "dates": {
         "newest": "14 mars",
         "mid": "13 mars",
-        "older": "11 mars"
+        "older": "11 mars",
+        "four": "10 mars",
+        "five": "9 mars",
+        "six": "7 mars",
+        "seven": "5 mars"
       },
       "alts": {
         "living": "Un salon aménagé avec deux fauteuils bleus face à un canapé blanc capitonné, un tapis à motifs et une toile aux tons marins",
         "bedroom": "Une chambre aménagée avec un grand lit, une tête de lit capitonnée, un téléviseur mural et un meuble bas",
-        "dining": "Une salle à manger aménagée avec une table ovale en bois, six chaises, un lustre et des baies vitrées"
+        "dining": "Une salle à manger aménagée avec une table ovale en bois, six chaises, un lustre et des baies vitrées",
+        "kitchen": "Une cuisine mise en scène avec îlot blanc, plan de travail en marbre, tabourets bleus et suspensions",
+        "office": "Un bureau mis en scène avec table en bois, chaise tapissée, bibliothèques et lampe de bureau",
+        "guest": "Une chambre d'amis mise en scène avec lit tapissé neutre, chevets assortis et coussins bleu clair",
+        "sunroom": "Une véranda mise en scène avec fauteuils en rotin, table ronde en bois, plantes et larges fenêtres"
       },
       "addresses": {
         "one": "412 Rosewood Lane",
         "two": "88 Harborview Drive",
-        "three": "1207 Ashford Court"
+        "three": "1207 Ashford Court",
+        "four": "27 Pinehurst Way",
+        "five": "915 Marlow Street",
+        "six": "64 Ellery Road",
+        "seven": "1841 Cypress Bend"
       },
-      "panelTitle": "Réaménagez autant de fois que vous voulez. Rien n'est écrasé.",
-      "panelBody": "Pas de bouton d'enregistrement, pas de dossier à nommer. Aménagez une pièce et elle est dans votre galerie, la plus récente en tête, avant même que vous fermiez l'onglet. Ouvrez-la plus tard et vous retrouvez le comparateur avant/après ainsi que les réglages exacts qui l'ont produite : type de pièce, style, votre consigne supplémentaire, si vous avez retiré les meubles existants et les photos de meubles que vous avez jointes.",
+      "panelTitle": "Remettez en scène autant que vous voulez",
+      "panelBody": "Aucun bouton d'enregistrement, aucun dossier à nommer. Mettez une pièce en scène et elle est dans votre galerie avant que vous fermiez l'onglet, avec les réglages exacts qui l'ont produite.",
       "points": {
-        "auto": "Enregistré automatiquement. Aucune étape à oublier.",
-        "versions": "Chaque version est conservée : deux styles de la même pièce se retrouvent côte à côte.",
-        "private": "La photo d'origine, vide, reste la vôtre. Elle ne fait jamais partie de ce que voit un client.",
-        "share": "Chaque pièce est livrée avec son propre lien client. Ouvrez la pièce, copiez le lien, envoyez-le."
-      }
+        "auto": "Enregistré tout seul, rien à oublier.",
+        "versions": "Chaque version est conservée, jamais écrasée.",
+        "private": "La photo vide d'origine reste à vous seul.",
+        "share": "Chaque pièce a son propre lien client."
+      },
+      "kicker": "Conservé pour vous"
     },
     "info": {
       "eyebrow": "En bref",

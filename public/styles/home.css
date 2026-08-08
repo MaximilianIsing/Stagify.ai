@@ -310,9 +310,12 @@
   position: relative;
   perspective: 1800px;
   perspective-origin: 50% 42%;
-  /* studio-showcase.js overwrites this inline from the front panel's height, so the
-     box follows whichever panel is showing rather than being padded to the tallest of
-     the four. The value here is only what shows for the frame before it measures. */
+  /* studio-showcase.js overwrites this inline with the tallest panel's natural
+     height. It used to follow whichever panel was in FRONT, which meant the section
+     resized every time you changed tab and the four cards were visibly different
+     heights side by side in the arc. One height for all four, measured rather than
+     hard-coded so a longer translation cannot clip. The value here is only what
+     shows for the frame before it measures. */
   height: 520px;
   transition: height 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -352,7 +355,24 @@
   pointer-events: none;
 }
 
+/* Equal-height mode, switched on by studio-showcase.js once it has measured the
+   tallest panel. It is a class rather than a plain rule because the measurement
+   needs the panels back at their NATURAL heights to read them — the script drops
+   this, measures, and puts it back. */
+.shw--equal .shw__panel {
+  height: 100%;
+}
+.shw--equal .shw__panel-inner {
+  height: 100%;
+}
+
 .shw__panel-inner {
+  /* Column flex so the head stays pinned to the top of every card while the body
+     takes the slack. Centring the head too would float it to a different height on
+     each panel, and the heading is the one thing that should not move as you cycle. */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
   border-radius: 22px;
   padding: 22px 24px 26px;
   background: rgba(255, 255, 255, 0.44);
@@ -371,9 +391,22 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 .shw__panel-head {
+  flex: 0 0 auto;
   text-align: center;
   max-width: 680px;
   margin: 0 auto 18px;
+}
+/* Takes the slack under the head and centres its content in it. The exterior panel
+   is the short one — its photo sits in a grid column, so it cannot grow to fill the
+   way the two full-width demo frames do, and centring is what stops the leftover
+   room reading as a hole under the picture. min-height:0 so a tall child can shrink
+   rather than overflow the card. */
+.shw__panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .shw__panel-title {
   font-size: clamp(19px, 2.1vw, 25px);
@@ -573,17 +606,28 @@
 }
 
 /* ==========================================================================
-   1c. Exterior Studio (Stagify+)
-   A real before/after pair, so this reuses the .ba wipe from section 1 verbatim
-   — same markup, same handle, same JS (scripts/staging-studio.js mounts both
-   roots off one function). Only the frame ratio and the two-column shell are
-   specific to this section.
+   1c. The showcase split — media left, copy right
+   Used by three panels of the studio showcase: the AI Designer and Masking
+   walkthroughs and the Exterior before/after pair. It began as the exterior
+   section's own two-column shell (hence the old `hex-` prefix, now retired) and
+   was generalised when the demo panels adopted the same shape to stop them
+   towering over the exterior one.
+
+   The exterior panel additionally reuses the .ba wipe from section 1 verbatim —
+   same markup, same handle, same JS (scripts/staging-studio.js mounts both roots
+   off one function). Only the frame ratio is specific to it.
    ========================================================================== */
-.hex-shell {
+.shw__split {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(260px, 1fr);
   gap: 24px;
   align-items: stretch;
+}
+/* Same reasoning as `#exterior-studio-demo .ba` below: a stretched grid item is
+   sized by the row, which beats aspect-ratio and would squash the walkthrough
+   frame to whatever height the copy column happens to be. */
+.shw__split .designer-shell {
+  align-self: center;
 }
 
 /* The exterior pair is 1408x768 (~1.83), not the 3/2 the staging comparison
@@ -600,7 +644,7 @@
 }
 
 /* --- The copy beside it --- */
-.hex-copy {
+.shw__aside {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -610,14 +654,14 @@
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 16px;
   /* 20px, not the 24px the other glass cards use: the panel stretches to the
-     photo's row and centres its content, so the real breathing room is
+     media's row and centres its content, so the real breathing room is
      (row - content) / 2 and this value only acts as a floor. Trimming it buys
      8px of wrap headroom for the longer language packs at zero visual cost. */
   padding: 20px;
   box-shadow: 0 12px 34px rgba(30, 58, 138, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
-.hex-copy__kicker {
+.shw__kicker {
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -625,14 +669,14 @@
   color: var(--brand);
   margin-bottom: 6px;
 }
-.hex-copy__title {
+.shw__aside-title {
   font-size: 1.3rem;
   font-weight: 800;
   color: var(--brand-deep);
   margin: 0 0 9px;
   line-height: 1.25;
 }
-.hex-copy__body {
+.shw__aside-body {
   margin: 0;
   color: #46557d;
   font-size: 14.5px;
@@ -640,13 +684,17 @@
 }
 /* Stacks at 1140px, not the 900px the other two-column blocks use, because
    .home-section maxes out at 1140px wide with 48px of padding: at or above that
-   the shell is a CONSTANT 1044px, so the photo is a constant 285px tall and the
-   copy beside it wraps identically every time. That single fixed geometry is
-   what the trimmed copy above is measured against. Below 1140 the shell shrinks,
-   which shortens the photo and narrows the text column at the same time — the
-   panel would outgrow the photo through that whole band, so stack instead. */
+   the shell is a CONSTANT 1044px, so the media is a constant height and the copy
+   beside it wraps identically every time. That single fixed geometry is what the
+   trimmed copy above is measured against. Below 1140 the shell shrinks, which
+   shortens the media and narrows the text column at the same time — the copy
+   would outgrow the media through that whole band, so stack instead.
+
+   Inside the showcase, stacking makes these panels TALLER, which the carousel
+   handles: it measures the tallest panel live rather than assuming a height, so
+   the cards simply grow together through this band. */
 @media (max-width: 1140px) {
-  .hex-shell {
+  .shw__split {
     grid-template-columns: 1fr;
     gap: 16px;
   }
@@ -2648,7 +2696,13 @@
    decode(), which FORCES the fetch of a loading="lazy" image and would pull
    ~550 KB of below-fold decoration into every homepage load.
    ========================================================================== */
+/* Flex column so the card grid below can take the leftover room and scroll inside
+   it. The mock is a stretched grid item of .shw__split, so its height is the row's
+   — i.e. whatever the copy column beside it needs — and the grid absorbs the
+   difference rather than the panel growing to fit seven cards. */
 .hgal-mock {
+  display: flex;
+  flex-direction: column;
   padding: 14px 14px 16px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.42);
@@ -2679,16 +2733,59 @@
   color: var(--muted);
 }
 
-/* Three fixed columns — deliberately NOT the auto-fill this was copied from in
-   .gal-grid. auto-fill is correct there because the real gallery's card count is
-   whatever the account holds; here it is always exactly three, and a 260px floor
-   resolves to TWO columns everywhere from 769px to about 928px, stranding the
-   third card alone on a second row across the whole tablet range.
+/* Seven cards in a scrolling grid, so the mock behaves like the real gallery page
+   instead of a static row. Two columns rather than the three this had when it held
+   exactly three cards: the mock is now half of .shw__split, so three columns put the
+   cards at ~150px and the addresses all ellipsised.
+
+   `flex: 1` + `min-height: 0` is what makes it scroll rather than stretch — without
+   the min-height override a grid/flex child refuses to shrink below its content and
+   the seven cards would simply make the whole panel taller, which is the thing the
+   equal-height work exists to prevent.
+
    minmax(0, 1fr) rather than 1fr so a wide card can never push the grid out. */
 .hgal-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  /* A DEFINITE height is what makes this scroll, and flex:1 alone cannot supply one:
+     the mock is sized by its own content, so the grid row is sized by the mock, so
+     "fill the leftover space" is circular and the seven cards just made the panel
+     1159px tall. This cap breaks that loop. It is tuned so the gallery panel lands on
+     the same 457px as the tallest of the other three — bar + padding + 246 = the
+     exact split-row height the copy column beside it wants. Re-tune it if the card
+     size or the mock chrome changes. */
+  max-height: 246px;
+  /* BOTH of these are needed, and max-content is the one that actually does it.
+     Once the grid has a definite height, its implicit `auto` rows get fitted to that
+     height rather than to their contents: the four rows collapsed to 51px each — less
+     than the caption alone — and the card images were clipped away by .hgal-card's
+     `overflow: hidden`, with nothing to scroll because the content now "fit".
+     `align-content: start` alone does NOT prevent that; pinning the rows to
+     max-content does, and then start keeps them packed at the top instead of
+     distributing the leftover space. */
+  grid-auto-rows: max-content;
+  align-content: start;
+  overflow-y: auto;
+  /* The mock sits inside a carousel panel inside the page's own scroller. Without
+     this, flicking past the last card hands the scroll straight to the page and the
+     showcase jumps away mid-browse. */
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(30, 58, 138, 0.28) transparent;
+  padding-right: 6px;
+}
+.hgal-grid::-webkit-scrollbar {
+  width: 6px;
+}
+.hgal-grid::-webkit-scrollbar-thumb {
+  background: rgba(30, 58, 138, 0.28);
+  border-radius: 999px;
+}
+.hgal-grid::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* No :hover lift, unlike .gal-card — there the card IS the way into the detail
@@ -2752,55 +2849,49 @@
 }
 
 /* --- supporting copy beneath the mock ------------------------------------ */
-.hgal-copy {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
-  gap: 32px;
-  align-items: start;
-  margin-top: 28px;
-}
-/* No eyebrow above this heading. Every other section on the page has one, but
-   this one's would have read "YOUR GALLERY" barely a card-grid away from the
-   mock bar that already says "Your gallery" — the same two words twice, in one
-   sightline. The mock's copy wins because it is imitating real UI. */
-.hgal-copy__title {
-  margin: 0 0 11px;
-  font-size: clamp(19px, 2.1vw, 25px);
-  line-height: 1.2;
-  letter-spacing: -0.4px;
-  font-weight: 800;
-  color: var(--brand-deep);
-}
-.hgal-copy__body {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.55;
-  color: #3e4d73; /* same literal as .info-row__body — no token exists */
-}
-.hgal-copy__points {
-  margin-top: 4px;
-}
+/* The gallery's own copy block (.hgal-copy et al) is gone: this panel joined the
+   showcase's shared split, so the text now sits in a .shw__aside beside the mock
+   like the other three panels.
+
+   MIND THE KICKER TEXT. This block deliberately had no eyebrow, because the
+   obvious one would have read "YOUR GALLERY" barely a card-grid away from the
+   mock bar that already says "Your gallery" — the same two words twice in one
+   sightline. The split gives every panel a kicker, so this one has to say
+   something else; it is "Kept for you" (home.gallery.kicker). Do not "fix" it
+   back to the section's own name. */
 
 @media (max-width: 900px) {
   .hgal-mock { padding: 12px 12px 14px; border-radius: 18px; }
   .hgal-grid { gap: 14px; }
-  .hgal-copy { grid-template-columns: 1fr; gap: 18px; margin-top: 22px; }
 }
 
-/* Phones get ONE card, not three.
+/* Phones get ONE card, not seven, and no scroller.
    768px is the site's own mobile line — the width `desktop-only` hides at, the
    width gallery-gate.js turns visitors away at, and the width the blog teaser
    cuts itself down to a single card at (see .home-blog__card above). Using the
-   same number keeps the page cutting over in one place instead of three. */
+   same number keeps the page cutting over in one place instead of three.
+
+   It is also why the seven-card scroller is desktop-only rather than merely
+   desktop-first: there is no phone build of the gallery to preview. */
 @media (max-width: 768px) {
-  .hgal-mock { padding: 10px 10px 12px; border-radius: 16px; }
+  .hgal-mock { padding: 10px 10px 12px; border-radius: 16px; display: block; }
   .hgal-mock__bar { padding: 2px 4px 10px; margin-bottom: 10px; }
   .hgal-mock__title { font-size: 14px; }
 
   /* The single column is not optional here. Left on auto-fill the 260px floor
      still resolves to two columns at this width, so the one surviving card
-     would sit in a half-width slot with dead space beside it. */
-  .hgal-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+     would sit in a half-width slot with dead space beside it.
+     The overflow/flex resets undo the scroller: with one card there is nothing
+     to scroll, and a leftover min-height:0 would let that card collapse. */
+  .hgal-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    flex: none;
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
 
   /* Cards are ordered newest-first in the HTML, so this keeps 412 Rosewood Lane.
      display:none (not visibility/opacity) is deliberate twice over: it drops the

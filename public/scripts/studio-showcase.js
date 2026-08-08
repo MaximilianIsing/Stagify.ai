@@ -151,22 +151,43 @@ function layout(sc) {
 }
 
 /**
- * Size the stage to the front panel. Panels are absolutely positioned, so the stage
- * has no natural height of its own; without this it would have to be padded out to
- * the tallest of the four and the short ones would float in a hole.
+ * Size the stage to the TALLEST panel, so all four cards match and the section does
+ * not resize as you cycle. Panels are absolutely positioned and therefore give the
+ * stage no natural height of its own.
  *
+ * Measuring means briefly dropping equal-height mode: with `.shw--equal` on, every
+ * panel reports the stage's height and asking them how tall they want to be is
+ * circular. Two forced layouts, on init/resize/mount only — not per frame.
+ *
+ * @param {Showcase} sc
+ * @returns {number} the tallest natural panel height, or 0 if nothing measured
+ */
+function naturalMax(sc) {
+  const wasEqual = sc.root.classList.contains('shw--equal');
+  if (wasEqual) sc.root.classList.remove('shw--equal');
+  let max = 0;
+  for (const panel of sc.panels) max = Math.max(max, panel.offsetHeight);
+  if (wasEqual) sc.root.classList.add('shw--equal');
+  return max;
+}
+
+/**
  * @param {Showcase} sc
  */
 function measure(sc) {
-  const front = sc.panels[sc.active];
-  if (!front) return;
-  const h = front.offsetHeight;
+  const h = naturalMax(sc);
   if (h <= 0) return;
   // Set `height` outright rather than feeding a custom property that the stylesheet
   // then reads: one less indirection to get wrong, and an inline height cannot lose
   // to a stylesheet rule the way a var()-driven one can.
+  const next = `${h}px`;
+  // Writing the same value is skipped, not merely harmless. The ResizeObserver below
+  // watches the panels, and measuring resizes them twice — so an unconditional write
+  // gives that observer something to react to on every pass, and the two can drive
+  // each other indefinitely. A settled measurement must produce NO mutation.
+  if (sc.stage.style.height === next) return;
   if (sc.sized) {
-    sc.stage.style.height = `${h}px`;
+    sc.stage.style.height = next;
     return;
   }
   // The FIRST measurement jumps rather than animates. The stylesheet ships a
@@ -175,7 +196,7 @@ function measure(sc) {
   sc.sized = true;
   const prev = sc.stage.style.transition;
   sc.stage.style.transition = 'none';
-  sc.stage.style.height = `${h}px`;
+  sc.stage.style.height = next;
   void sc.stage.offsetHeight; // flush the change so the restored transition ignores it
   sc.stage.style.transition = prev;
 }
@@ -262,7 +283,9 @@ function wireDrag(sc) {
 
   sc.stage.addEventListener('pointerdown', (e) => {
     const target = /** @type {HTMLElement} */ (e.target);
-    if (target.closest('.ba, .designer-demo, a, button, input, [role="slider"]')) return;
+    // .hgal-grid is the gallery mock's scroller: a touch drag inside it must scroll
+    // the cards, not flick the carousel to the next studio.
+    if (target.closest('.ba, .designer-demo, .hgal-grid, a, button, input, [role="slider"]')) return;
     id = e.pointerId;
     startX = e.clientX;
     startY = e.clientY;
@@ -388,6 +411,9 @@ function init() {
   });
 
   root.classList.add('shw--ready');
+  // Equal-height mode. measure() drops this for the duration of a measurement and
+  // puts it back, so it must be on before the first select().
+  root.classList.add('shw--equal');
 
   const panelIds = sc.panels.map((p) => p.id);
   const fromHash = indexForHash(panelIds, location.hash);

@@ -98,11 +98,27 @@
     },
     "designer": {
       "title": "Lassen Sie eine KI Ihren Raum einrichten",
-      "subtitle": "Mit dem KI-Designer richten Sie per Chat jeden Raum ein, gestalten ihn um und verfeinern ihn, bis er angebotsbereit ist. <em>(Stagify+ exklusiv)</em>"
+      "subtitle": "Mit dem KI-Designer richten Sie per Chat jeden Raum ein, gestalten ihn um und verfeinern ihn, bis er angebotsbereit ist. <em>(Stagify+ exklusiv)</em>",
+      "kicker": "Dialogbasiert",
+      "panelTitle": "Beschreiben statt einrichten",
+      "panelBody": "Schreiben Sie, was Sie möchten – der Designer richtet ein und behält den Raum im Blick. Bitten Sie um ein anderes Sofa oder wärmere Farben, und er baut auf dem Vorherigen auf.",
+      "points": {
+        "iterate": "Im selben Gespräch weiter verfeinern.",
+        "furniture": "Eigene Möbelfotos anhängen – sie werden platziert.",
+        "saved": "Jede Version landet automatisch in der Galerie."
+      }
     },
     "masking": {
       "title": "Einrichten mit exakter Präzision",
-      "subtitle": "Maskieren Sie die Bereiche zum Neugestalten, fügen Sie eigene Möbel hinzu — alles andere bleibt pixelgenau. <em>(Stagify+ exklusiv)</em>"
+      "subtitle": "Maskieren Sie die Bereiche zum Neugestalten, fügen Sie eigene Möbel hinzu — alles andere bleibt pixelgenau. <em>(Stagify+ exklusiv)</em>",
+      "kicker": "Pixelgenau",
+      "panelTitle": "Eine Ecke ändern, nicht den ganzen Raum",
+      "panelBody": "Übermalen Sie nur den Bereich, der neu gestaltet werden soll. Alles außerhalb der Maske kommt unverändert zurück, der Rest des Fotos bleibt stabil.",
+      "points": {
+        "snap": "Maske malen oder am Objekt einrasten lassen.",
+        "own": "Eigenes Möbelfoto hinzufügen und platzieren.",
+        "repeat": "Dieselbe Maske in einem anderen Stil wiederholen."
+      }
     },
     "exterior": {
       "title": "Das Foto, mit dem jedes Exposé beginnt",
@@ -127,31 +143,44 @@
       "subtitle": "Ihre Galerie bewahrt jeden eingerichteten Raum auf, dazu die Einstellungen, die ihn erzeugt haben, und die Links, die Sie mit Kunden geteilt haben.",
       "mock": {
         "title": "Ihre Galerie",
-        "count": "3 eingerichtete Räume"
+        "count": "7 gestaltete Räume"
       },
       "dates": {
         "newest": "14. März",
         "mid": "13. März",
-        "older": "11. März"
+        "older": "11. März",
+        "four": "10. Mär",
+        "five": "9. Mär",
+        "six": "7. Mär",
+        "seven": "5. Mär"
       },
       "alts": {
         "living": "Ein eingerichtetes Wohnzimmer mit zwei blauen Sesseln gegenüber einem weißen Chesterfield-Sofa, einem gemusterten Teppich und einem Bild in Küstenoptik",
         "bedroom": "Ein eingerichtetes Schlafzimmer mit breitem Bett, gepolstertem Kopfteil, Wandfernseher und niedrigem Sideboard",
-        "dining": "Ein eingerichtetes Esszimmer mit ovalem Holztisch, sechs Stühlen, einem Kronleuchter und Erkerfenstern"
+        "dining": "Ein eingerichtetes Esszimmer mit ovalem Holztisch, sechs Stühlen, einem Kronleuchter und Erkerfenstern",
+        "kitchen": "Eine gestaltete Küche mit weißer Insel, Marmorplatte, blauen Barhockern und Pendelleuchten",
+        "office": "Ein gestaltetes Arbeitszimmer mit Holzschreibtisch, gepolstertem Stuhl, Regalen und Tischlampe",
+        "guest": "Ein gestaltetes Gästezimmer mit neutralem Polsterbett, passenden Nachttischen und hellblauen Kissen",
+        "sunroom": "Ein gestalteter Wintergarten mit Rattansesseln, rundem Holztisch, Pflanzen und breiten Gartenfenstern"
       },
       "addresses": {
         "one": "412 Rosewood Lane",
         "two": "88 Harborview Drive",
-        "three": "1207 Ashford Court"
+        "three": "1207 Ashford Court",
+        "four": "27 Pinehurst Way",
+        "five": "915 Marlow Street",
+        "six": "64 Ellery Road",
+        "seven": "1841 Cypress Bend"
       },
-      "panelTitle": "Richten Sie so oft neu ein, wie Sie möchten. Nichts wird überschrieben.",
-      "panelBody": "Es gibt keinen Speichern-Button und keinen Ordner, den Sie benennen müssten. Richten Sie einen Raum ein, und er ist in Ihrer Galerie, die neuesten zuerst, noch bevor Sie den Tab schließen. Öffnen Sie ihn später, und Sie erhalten den Vorher-Nachher-Regler sowie genau die Einstellungen dahinter: Raumtyp, Stil, Ihre zusätzliche Anweisung, ob Sie die vorhandenen Möbel entfernt haben, und alle Möbelfotos, die Sie angehängt haben.",
+      "panelTitle": "So oft neu gestalten, wie Sie möchten",
+      "panelBody": "Kein Speichern-Knopf, kein Ordner zum Benennen. Gestalten Sie einen Raum, und er ist in Ihrer Galerie, bevor Sie den Tab schließen – mit den genauen Einstellungen dahinter.",
       "points": {
-        "auto": "Wird automatisch gespeichert. Es gibt keinen Schritt, den man vergessen könnte.",
-        "versions": "Jede Version bleibt erhalten, sodass zwei Stile desselben Raums nebeneinander stehen.",
-        "private": "Das ursprüngliche leere Foto bleibt allein Ihres. Es ist nie Teil dessen, was ein Kunde sieht.",
-        "share": "Zu jedem Raum gehört ein eigener Kundenlink. Raum öffnen, Link kopieren, verschicken."
-      }
+        "auto": "Speichert sich selbst, nichts zu vergessen.",
+        "versions": "Jede Version bleibt, nichts wird überschrieben.",
+        "private": "Das leere Originalfoto bleibt allein Ihres.",
+        "share": "Jeder Raum hat seinen eigenen Kundenlink."
+      },
+      "kicker": "Für Sie aufbewahrt"
     },
     "info": {
       "eyebrow": "Die Kurzfassung",

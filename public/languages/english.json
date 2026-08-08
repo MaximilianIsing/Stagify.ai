@@ -98,11 +98,27 @@
     },
     "designer": {
       "title": "Let an AI stage your space",
-      "subtitle": "With the AI Designer, chat to stage, redesign, and iterate on any room until it looks listing-ready. <em>(Stagify+ Exclusive)</em>"
+      "subtitle": "With the AI Designer, chat to stage, redesign, and iterate on any room until it looks listing-ready. <em>(Stagify+ Exclusive)</em>",
+      "kicker": "Conversational",
+      "panelTitle": "Describe the room, do not decorate it",
+      "panelBody": "Type what you want and the Designer stages it, then keeps the room in mind. Ask for a different sofa or a warmer palette and it works from what it already built.",
+      "points": {
+        "iterate": "Keep refining in the same conversation.",
+        "furniture": "Attach furniture you actually sell and it places it.",
+        "saved": "Every version lands in your gallery on its own."
+      }
     },
     "masking": {
       "title": "Stage with exact precision",
-      "subtitle": "In the new Masking Studio, highlight the areas to restage, add your own furniture, and everything else stays pixel-perfect. <em>(Stagify+ Exclusive)</em>"
+      "subtitle": "In the new Masking Studio, highlight the areas to restage, add your own furniture, and everything else stays pixel-perfect. <em>(Stagify+ Exclusive)</em>",
+      "kicker": "Pixel-exact",
+      "panelTitle": "Change one corner, not the whole room",
+      "panelBody": "Brush over only the area you want restaged. Everything outside the mask comes back untouched, so the rest of the photo cannot drift.",
+      "points": {
+        "snap": "Paint a mask, or let snap-to-object trace it.",
+        "own": "Add your own furniture photo to place a piece.",
+        "repeat": "Re-run the same mask in a different style."
+      }
     },
     "exterior": {
       "title": "Fix the photo the listing opens with",
@@ -127,31 +143,44 @@
       "subtitle": "Your gallery keeps every staged room, the settings that produced it, and the links you have shared with clients.",
       "mock": {
         "title": "Your gallery",
-        "count": "3 staged rooms"
+        "count": "7 staged rooms"
       },
       "dates": {
         "newest": "Mar 14",
         "mid": "Mar 13",
-        "older": "Mar 11"
+        "older": "Mar 11",
+        "four": "Mar 10",
+        "five": "Mar 9",
+        "six": "Mar 7",
+        "seven": "Mar 5"
       },
       "alts": {
         "living": "A staged living room with two blue armchairs facing a white tufted sofa, a patterned rug and coastal artwork",
         "bedroom": "A staged bedroom with a wide bed, an upholstered headboard, a wall-mounted TV and a low media console",
-        "dining": "A staged dining room with an oval wooden table, six chairs, a chandelier and bay windows"
+        "dining": "A staged dining room with an oval wooden table, six chairs, a chandelier and bay windows",
+        "kitchen": "A staged kitchen with a white island, marble worktop, blue bar stools and pendant lights",
+        "office": "A staged home office with a wooden desk, upholstered chair, bookshelves and a table lamp",
+        "guest": "A staged guest bedroom with a neutral upholstered bed, matching nightstands and soft blue cushions",
+        "sunroom": "A staged sunroom with rattan armchairs, a round wooden table, potted plants and wide garden windows"
       },
       "addresses": {
         "one": "412 Rosewood Lane",
         "two": "88 Harborview Drive",
-        "three": "1207 Ashford Court"
+        "three": "1207 Ashford Court",
+        "four": "27 Pinehurst Way",
+        "five": "915 Marlow Street",
+        "six": "64 Ellery Road",
+        "seven": "1841 Cypress Bend"
       },
-      "panelTitle": "Re-stage as often as you like. Nothing gets overwritten.",
-      "panelBody": "There is no save button and no folder to name. Stage a room and it is in your gallery, newest first, before you close the tab. Open one later and you get the before-and-after slider plus the exact settings behind it: room type, style, your extra prompt, whether you removed the existing furniture, and any furniture photos you attached.",
+      "panelTitle": "Re-stage as often as you like",
+      "panelBody": "No save button, no folder to name. Stage a room and it is in your gallery before you close the tab, with the exact settings behind it.",
       "points": {
-        "auto": "Saved automatically. There is no save step to forget.",
-        "versions": "Every version is kept, so two styles of the same room sit side by side.",
-        "private": "The original empty photo stays yours alone. It is never part of what a client sees.",
-        "share": "Every room comes with its own client link. Open the room, copy the link, send it."
-      }
+        "auto": "Saved automatically, with nothing to forget.",
+        "versions": "Every version kept, never overwritten.",
+        "private": "The original empty photo stays yours alone.",
+        "share": "Every room comes with its own client link."
+      },
+      "kicker": "Kept for you"
     },
     "info": {
       "eyebrow": "The short version",
