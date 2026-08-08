@@ -381,8 +381,6 @@
       "uploadArea": "이미지를 업로드하거나 끌어다 놓으세요",
       "before": "비포",
       "after": "애프터",
-      "refineInStudio": "마스킹 스튜디오에서 다듬기",
-      "refineInStudioShort": "다듬기",
       "downloadResult": "결과 다운로드",
       "uploadAnother": "다른 이미지 업로드",
       "noProcessedImage": "스테이징 결과가 여기에 표시됩니다",
@@ -394,6 +392,8 @@
       "addPhotos": "+ 사진 추가",
       "tryAnotherImage": "다른 이미지 시도",
       "uploadAreaAria": "업로드 영역",
+      "uploadHeadline": "방 사진을 여기에 놓으세요",
+      "uploadFormats": "JPG, PNG, WebP 또는 HEIC · 최대 25MB",
       "editWithMask": "마스크 도구로 선택 영역 편집",
       "stagingVariations": "스테이징 변형",
       "originalImage": "가상 스테이징 전 원본 방 사진",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>즉각적인 결과</strong>: 약 8초",
         "oneClickStaging": "<strong>원클릭 스테이징</strong>: 번거로움 없음",
-        "free": "<strong>하루 50회 무료 생성</strong>: 카드 등록 불필요",
+        "free": "<strong>무제한 무료 생성</strong>: 카드 등록 불필요",
         "noAds": "<strong>광고 없는 경험</strong>: 방해 요소 없음",
         "noLogin": "<strong>간편한 가입</strong>: 즉시 시작",
         "unlimited": "<strong>고급 이미지 모델</strong>: 더 높은 품질",
@@ -1103,7 +1103,6 @@
     "resumeNo": "새로 시작",
     "helpStep5": "어떤 영역이 마음에 들지 않나요? 다른 버전 시도로 여러 옵션을 만들어 서로 전환해 보세요.",
     "promptIdeas": "프롬프트 아이디어 보기",
-    "handoffFailed": "해당 렌더를 열지 못했습니다. 사진을 직접 업로드해 주세요.",
     "looksGood": "좋아요",
     "redo": "다시 실행",
     "toolWand": "자동 선택",
@@ -1369,7 +1368,6 @@
       "rateLimited": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
       "retry": "다시 시도"
     },
-    "refine": "마스킹 스튜디오에서 다듬기",
     "delete": {
       "action": "이 이미지 삭제",
       "warn": "이 이미지와 이미 공유한 링크가 영구적으로 삭제됩니다. 되돌릴 수 없습니다.",

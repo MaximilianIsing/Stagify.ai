@@ -381,8 +381,6 @@
       "uploadArea": "上传图片或拖拽放置",
       "before": "之前",
       "after": "之后",
-      "refineInStudio": "在遮罩工作室中优化",
-      "refineInStudioShort": "优化",
       "downloadResult": "下载结果",
       "uploadAnother": "上传另一张",
       "noProcessedImage": "装修效果将在此处显示",
@@ -394,6 +392,8 @@
       "addPhotos": "+ 添加照片",
       "tryAnotherImage": "尝试另一张图片",
       "uploadAreaAria": "上传区域",
+      "uploadHeadline": "将房间照片拖放到此处",
+      "uploadFormats": "JPG、PNG、WebP 或 HEIC · 最大 25MB",
       "editWithMask": "使用蒙版工具编辑选定区域",
       "stagingVariations": "装修方案",
       "originalImage": "虚拟装修前的原始房间照片",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>即时结果</strong>：约8秒",
         "oneClickStaging": "<strong>一键装修</strong>：无麻烦",
-        "free": "<strong>每天 50 次免费生成</strong>：无需信用卡",
+        "free": "<strong>无限次免费生成</strong>：无需信用卡",
         "noAds": "<strong>无广告体验</strong>：无干扰",
         "noLogin": "<strong>轻松注册</strong>：立即开始",
         "unlimited": "<strong>高级图像模型</strong>：更高质量",
@@ -1103,7 +1103,6 @@
     "resumeNo": "重新开始",
     "helpStep5": "对某个区域不满意？使用\"再试一个版本\"生成更多选项并随时切换。",
     "promptIdeas": "显示提示建议",
-    "handoffFailed": "无法打开该效果图。请改为上传照片。",
     "looksGood": "看起来不错",
     "redo": "重做",
     "toolWand": "魔棒",
@@ -1369,7 +1368,6 @@
       "rateLimited": "当前请求过于频繁。请稍候片刻再试。",
       "retry": "重试"
     },
-    "refine": "在遮罩工作室中优化",
     "delete": {
       "action": "删除这张渲染图",
       "warn": "这将永久删除该渲染图以及你已经分享出去的链接，且无法撤销。",

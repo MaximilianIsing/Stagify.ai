@@ -1,10 +1,11 @@
 // Tier 1 — static checks (no server, no network).
 //
-// Three cheap gates that catch the mistakes a boot test won't:
+// Four cheap gates that catch the mistakes a boot test won't:
 //   1. Syntax of server.js + every lib/*.js (a parse error = dead deploy).
 //   2. Local asset references in public/*.html actually exist on disk
 //      (catches broken <script>/<link>/<img> paths after file reworks/renames).
-//   3. Every languages/*.json parses and carries english.json's keys.
+//   3. No served path contains a space (it would become %20 in every URL).
+//   4. Every languages/*.json parses and carries english.json's keys.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -103,6 +104,28 @@ test('local asset references in public/*.html exist on disk', () => {
   }
 
   assert.equal(missing.length, 0, `Broken asset reference(s):\n${missing.join('\n')}`);
+});
+
+// Everything under public/ is reachable over HTTP, so a space in a name is a space
+// in a URL: the browser sends %20, and the raw space is invalid unencoded in the
+// href/src that points at it (which is how they were written). It works often
+// enough to look fine and fails in the odd cache/CDN layer. Six sponsor logos, the
+// guide icons and the full logo shipped this way; this keeps the next asset drop
+// from quietly re-adding one. Whole relative path, not just the basename, so a
+// spaced *directory* is caught too. Safe to walk all of public/: nothing
+// runtime-generated lands here (hosted-images/ resolves under the data dir, and
+// ds-bundle/ — the one gitignored build output — sits at the repo root).
+test('no served asset path contains a space', () => {
+  const spaced = walk(PUBLIC)
+    .map((f) => path.relative(ROOT, f).split(path.sep).join('/'))
+    .filter((f) => f.includes(' '));
+
+  assert.deepEqual(
+    spaced,
+    [],
+    'Spaces force %20 into every asset URL. Rename to kebab-case '
+      + `(and update the references):\n${spaced.join('\n')}`
+  );
 });
 
 function loadLanguages() {

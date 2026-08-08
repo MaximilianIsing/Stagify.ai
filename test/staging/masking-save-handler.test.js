@@ -1,8 +1,9 @@
 // The Masking Studio's save handler (lib/staging/masking-save-handler.js).
 //
 // This is the only gallery writer that does not generate anything — the composite is made in
-// the browser and posted back — so the tests that matter are about the two decisions it
-// makes on arrival: replace or insert, and whether the payload is safe to touch at all.
+// the browser and posted back — so the tests that matter are about the one decision it makes
+// on arrival: whether the payload is safe to touch at all. Every save inserts; the replace
+// path went with the "Refine in Masking Studio" hand-off that used to feed it a renderId.
 //
 // The absence of METERING is asserted rather than assumed. The generations this image is
 // made of were already billed at /api/mask-edit, and the block that looks copyable sits two
@@ -25,7 +26,7 @@ function fakeRes() {
 }
 
 function makeHandler(over = {}) {
-  const seen = { recorded: [], uploaded: [], replaced: [] };
+  const seen = { recorded: [], uploaded: [] };
   const renderPersistence = {
     enabled: () => over.enabled !== false,
     recordPending: (arg) => {
@@ -33,11 +34,6 @@ function makeHandler(over = {}) {
       return { entries: [{ id: 'r_new', native: arg.natives[0].buffer }], evicted: over.evicted ?? [] };
     },
     uploadInBackground: async (arg) => { seen.uploaded.push(arg); return { ok: 1, failed: 0 }; },
-    replaceInBackground: async (arg) => {
-      seen.replaced.push(arg);
-      if (over.replaceThrows) throw new Error('storage is on fire');
-      return over.replaceOk ?? true;
-    },
     ...over.persistence,
   };
   const { handleMaskingSave } = createMaskingSaveHandler({ renderPersistence });
@@ -104,7 +100,6 @@ test('a photo from disk becomes a new entry named after the studio', async () =>
     PRO,
   );
   assert.equal(res.body.success, true);
-  assert.equal(res.body.replaced, false);
   assert.deepEqual(res.body.gallery.ids, ['r_new']);
   assert.deepEqual(seen.recorded[0].extra, {
     source: 'masking',
@@ -136,50 +131,6 @@ test('a non-array prompts field is ignored rather than crashing', async () => {
     PRO,
   );
   assert.equal(seen.recorded[0].params.additionalPrompt, '');
-});
-
-// ── replace ──────────────────────────────────────────────────────────────────
-
-test('a render handed off from the gallery is replaced, not duplicated', async () => {
-  const { handleMaskingSave, seen } = makeHandler();
-  const res = fakeRes();
-  await handleMaskingSave(
-    /** @type {any} */ (req({ after: IMG, before: SRC, renderId: 'r_123', areas: 2 })),
-    /** @type {any} */ (res),
-    PRO,
-  );
-  assert.equal(res.body.replaced, true);
-  assert.equal(res.body.gallery, null, 'nothing was created, so there is nothing to report');
-  assert.equal(seen.replaced[0].renderId, 'r_123');
-  assert.equal(seen.replaced[0].user, PRO);
-  assert.equal(seen.recorded.length, 0, 'and no second entry was inserted');
-});
-
-test('a replace the store refuses falls through to an insert', async () => {
-  // "Not yours", "evicted", and "still uploading its first bytes" all land here. The user
-  // pressed a button that means "keep this", and every reason a replace fails is a reason
-  // an insert is still the right answer.
-  const { handleMaskingSave, seen } = makeHandler({ replaceOk: false });
-  const res = fakeRes();
-  await handleMaskingSave(
-    /** @type {any} */ (req({ after: IMG, renderId: 'r_someone_elses', areas: 1 })),
-    /** @type {any} */ (res),
-    PRO,
-  );
-  assert.equal(res.body.replaced, false);
-  assert.equal(seen.recorded.length, 1);
-});
-
-test('a replace that throws still falls through to an insert', async () => {
-  const { handleMaskingSave, seen } = makeHandler({ replaceThrows: true });
-  const res = fakeRes();
-  await handleMaskingSave(
-    /** @type {any} */ (req({ after: IMG, renderId: 'r_1' })),
-    /** @type {any} */ (res),
-    PRO,
-  );
-  assert.equal(res.body.success, true);
-  assert.equal(seen.recorded.length, 1);
 });
 
 // ── posture ──────────────────────────────────────────────────────────────────

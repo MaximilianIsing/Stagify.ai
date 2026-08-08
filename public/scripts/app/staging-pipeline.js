@@ -48,7 +48,6 @@ const STAGING_TIMEOUT_MS = 180000;
  *   messageForDailyLimitResponse: (errorData: any) => string,
  *   showStagingLimitInViewer: (message: string) => void,
  *   galleryNotice?: { show: (gallery: any) => void, clear: () => void } | null,
- *   onGalleryIds?: (ids: string[]) => void,
  *   stagingTimeoutMs?: number,
  * }} deps - Progress/preview DOM, the room & style select handles, the
  *   furniture-reference island's handle, the shared upload-validation state as
@@ -73,10 +72,6 @@ export function createStagingPipeline(deps) {
     // querySelector. A default parameter that reaches into the DOM has to survive the
     // DOM not being there; the island itself already treats a null container as a no-op.
     galleryNotice = createGalleryNotice({ container: document?.querySelector?.('.viewer-header') ?? null }),
-    // Told the render ids of the batch just finished, so the entry can offer "Refine in
-    // Masking Studio" for a render that actually exists. Optional: the existing specs hand
-    // in no DOM to reveal a button in.
-    onGalleryIds = null,
     // Injectable so a test can drive the timeout without waiting three minutes.
     stagingTimeoutMs = STAGING_TIMEOUT_MS,
   } = deps;
@@ -531,11 +526,6 @@ export function createStagingPipeline(deps) {
       // affordance: the bytes upload after this response, so the entry is still `pending`
       // and a link minted now would 404 — see gallery-notice.js.
       galleryNotice?.show(result.gallery);
-      // "Refine in Masking Studio" needs a render ID to hand over, and `gallery.ids` is
-      // index-aligned with `urls` — both come from the variations array — so the button
-      // follows whichever variation is on screen. No ids means no gallery entry, so there
-      // is nothing to refine and the button stays hidden.
-      onGalleryIds?.(result.gallery?.ids ?? []);
       setTimeout(() => progress.classList.add('hidden'), 800);
       return urls;
     }

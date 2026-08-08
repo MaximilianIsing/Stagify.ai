@@ -124,7 +124,13 @@ import { LANGUAGES } from './locale-data.js';
       const description = getText(
         descEl ? descEl.getAttribute('data-lang-attr').split('|')[0] : 'meta.description'
       );
-      const keywords = getText('meta.keywords');
+      // Opt-in per page, and it must be the key this page authored: hardcoding
+      // 'meta.keywords' here stamped the HOMEPAGE keyword list onto every studio's
+      // JSON-LD on a language switch. Mirrors applyStructuredData() in
+      // lib/i18n/render-page.js — no fallback, so a block without the attribute
+      // keeps its authored keywords.
+      const kwKey = ldEl.getAttribute('data-lang-keywords');
+      const keywords = kwKey ? getText(kwKey) : undefined;
       if (name !== undefined) data.name = name;
       if (description !== undefined) data.description = description;
       if (keywords !== undefined) data.keywords = keywords;

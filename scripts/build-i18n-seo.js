@@ -3,11 +3,13 @@
 //
 //   node scripts/build-i18n-seo.js
 //
-// It does three things, all derived from lib/i18n/locales.js so they can't drift:
+// It does four things, all derived from lib/i18n/locales.js so they can't drift:
 //   1. Bakes the full hreflang cluster into every indexable ENGLISH page (the
 //      localized pages get theirs at render time; English pages are static files).
-//   2. Regenerates public/sitemap.xml with a <url> per language + xhtml alternates.
-//   3. Regenerates public/scripts/locale-data.js — the browser's copy of the
+//   2. Bakes the English og:locale + og:locale:alternate block into the same pages,
+//      for the ones that carry an Open Graph card at all (anchored to og:url).
+//   3. Regenerates public/sitemap.xml with a <url> per language + xhtml alternates.
+//   4. Regenerates public/scripts/locale-data.js — the browser's copy of the
 //      language set, which the frontend cannot import from lib/ directly.
 //
 // Idempotent: re-running removes the previously-injected cluster and rewrites it,
@@ -18,7 +20,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LOCALIZED_PAGES, buildHreflangCluster } from '../lib/i18n/locales.js';
+import { ENGLISH, LOCALIZED_PAGES, buildHreflangCluster, buildOgLocaleBlock } from '../lib/i18n/locales.js';
 import { buildSitemap } from '../lib/i18n/sitemap.js';
 import { buildLocaleDataModule } from '../lib/i18n/locale-data.js';
 
@@ -45,20 +47,54 @@ export function injectHreflang(html, pagePath) {
   return out.replace(/([ \t]*<link\s+rel="canonical"[^>]*>)/i, (m) => `${m}${eol}${cluster}`);
 }
 
+// Existing og:locale / og:locale:alternate lines, removed whole-line so a refresh
+// leaves no ragged indentation. Deliberately does NOT swallow following blank lines
+// (unlike EXISTING_ALTERNATE): the og block sits inside a hand-authored Open Graph
+// section whose blank-line separator before the Twitter card block is worth keeping.
+const EXISTING_OG_LOCALE = /[ \t]*<meta\s+property="og:locale(?::alternate)?"\s+content="[^"]*"[^>]*>[ \t]*\r?\n/gi;
+
+/**
+ * Inject (or refresh) the ENGLISH og:locale block in one page, right after its
+ * <meta property="og:url">. Idempotent, and preserves the file's line ending.
+ *
+ * Anchored to og:url rather than the canonical because this block only means
+ * anything as part of an Open Graph card: a page with no og:* card at all (privacy,
+ * terms) is left untouched, since a lone og:locale on a card-less page tells
+ * Facebook nothing. Returns the new HTML, unchanged when there is no anchor.
+ * @param {string} html
+ */
+export function injectOgLocale(html) {
+  if (!/<meta\s+property="og:url"/i.test(html)) return html;
+  const eol = html.includes('\r\n') ? '\r\n' : '\n';
+  const out = html.replace(EXISTING_OG_LOCALE, '');
+  return out.replace(
+    /([ \t]*)<meta\s+property="og:url"\s+content="[^"]*"[^>]*>/i,
+    (m, indent) => `${m}${eol}${buildOgLocaleBlock(ENGLISH, indent).split('\n').join(eol)}`,
+  );
+}
+
 function run() {
   let changed = 0;
+  const noOgCard = [];
   for (const page of LOCALIZED_PAGES) {
     const file = path.join(PUBLIC, page.file);
     const before = fs.readFileSync(file, 'utf8');
     if (!/<link\s+rel="canonical"/i.test(before)) {
       throw new Error(`${page.file}: no <link rel="canonical"> to anchor hreflang to`);
     }
-    const after = injectHreflang(before, page.path);
+    if (!/<meta\s+property="og:url"/i.test(before)) noOgCard.push(page.file);
+    const after = injectOgLocale(injectHreflang(before, page.path));
     if (after !== before) {
       fs.writeFileSync(file, after);
       changed += 1;
-      console.log(`hreflang → ${page.file}`);
+      console.log(`seo head → ${page.file}`);
     }
+  }
+  // Say what was skipped rather than quietly covering 9 of 11 — a page that grows an
+  // Open Graph card later should start getting the block on the next rebuild, and
+  // this line is what makes that visible.
+  if (noOgCard.length) {
+    console.log(`og:locale skipped (no og:url card): ${noOgCard.join(', ')}`);
   }
 
   const sitemap = buildSitemap();
