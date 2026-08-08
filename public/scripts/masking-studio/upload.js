@@ -136,8 +136,7 @@ export function createUpload(deps) {
     // race where a quick re-upload replaces this photo before its verdict
     // arrives — a stale rejection must not tear down the newer photo.
     // The photo's own name rides along so the gallery entry can be told apart from every
-    // other one. No `sourceRenderId`: a file picked off disk has no gallery entry behind
-    // it, so "Looks Good" creates one rather than replacing anything.
+    // other one.
     setBaseImage(img, { sourceName: file.name });
     const token = state.base;
     validateStageableRoom(img).then((stageable) => {

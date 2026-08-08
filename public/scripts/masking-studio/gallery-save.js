@@ -98,12 +98,9 @@ export function createGallerySave(deps) {
       if (digest && digest === state.savedDigest) return;
 
       const after = resultCanvas.toDataURL('image/jpeg', 0.92);
-      // The pristine original, for the before/after slider. Sent only on an INSERT: when
-      // replacing, the entry already has its own source photo, and that photo — not the
-      // image the studio was handed — is the right "before" for a refined "after".
-      const before = state.sourceRenderId
-        ? null
-        : state.base.canvas.toDataURL('image/jpeg', 0.92);
+      // The pristine original, for the before/after slider. Every save is an insert, so
+      // the photo the studio started from is always the right "before".
+      const before = state.base.canvas.toDataURL('image/jpeg', 0.92);
 
       const res = await doFetch('/api/masking-studio/save', {
         method: 'POST',
@@ -111,7 +108,6 @@ export function createGallerySave(deps) {
         body: JSON.stringify({
           after: after,
           before: before || undefined,
-          renderId: state.sourceRenderId || undefined,
           areas: state.layers.filter((l) => l.status === 'done').length,
           prompts: state.layers.filter((l) => l.status === 'done').map((l) => l.prompt || ''),
           sourceName: state.sourceName || undefined,

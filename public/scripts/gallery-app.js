@@ -20,7 +20,6 @@ import { createDeleteConfirm } from './gallery/delete-confirm.js';
 import { createSharePanel } from './gallery/share-panel.js';
 import { createRefresher, REFRESH_DEBOUNCE_MS } from './share/refresh.js';
 import { copyText } from './clipboard.js';
-import { createRefineButton } from './gallery/refine.js';
 
 /**
  * How long to wait after the last keystroke before searching.
@@ -68,8 +67,6 @@ export async function start({
   let total = 0;
   /** The last failure's status, so a language switch can restate it. */
   let errorStatus = -1;
-  /** Stagify+, as the LISTING reported it (see the header). False until the first response. */
-  let isPro = false;
   /** The query the grid on screen was built from — '' when nothing is being searched. */
   let query = '';
   /** The pending debounce, so a second keystroke replaces the first rather than queueing. */
@@ -86,8 +83,6 @@ export async function start({
 
   // The share section is its own island: it paints a link the listing already handed over.
   const share = createSharePanel({ byId, t, plural, copyText, doc });
-  // "Refine in Masking Studio" (gallery/refine.js).
-  const refine = createRefineButton({ byId, getCurrent: () => current, isPro: () => isPro });
 
   // The rename row is its own island (gallery/rename.js) — a two-mode widget whose only
   // coupling to this file is which mode it is in. `currentEntry` is a getter rather than a
@@ -158,7 +153,6 @@ export async function start({
       compareRange,
       byId('gal-share-url'),
       byId('gal-share-copy'),
-      byId('gal-refine'),
       byId('gal-delete'),
       ...del.controls(),
     ].filter((node) => node && !(/** @type {any} */ (node).hidden));
@@ -260,7 +254,6 @@ export async function start({
     compareRange = renderCompare({ container: byId('gal-compare'), entry, doc, onImage });
     renderMeta({ container: byId('gal-meta'), entry, doc });
     share.paint(entry);
-    refine.paint(entry);
     if (detail) /** @type {any} */ (detail).hidden = false;
     doc.body.setAttribute('data-gal-modal', 'open');
     inertBackground(true);
@@ -384,9 +377,6 @@ export async function start({
     // The server decides whether searching is offered — it is the same answer that decides
     // whether `q` is honoured, so the box cannot be shown for a filter that will be ignored.
     doc.body.setAttribute('data-gal-search', res.body.search?.enabled ? 'on' : 'off');
-    // The Masking Studio handoff is Stagify+ too, and this is the same answer — off the
-    // listing rather than a plan on window.StagifyAuth, for the reason in the header.
-    isPro = !!res.body.search?.enabled;
     if (!res.body.search?.enabled && query) {
       // A free account that somehow carried a query: the server returned the whole gallery,
       // so the page must stop claiming it is showing matches.
@@ -616,7 +606,6 @@ export async function start({
   rename.bind();
   share.bind();
   del.bind();
-  refine.bind();
 
   // Switching language on this page swaps the pack in place rather than navigating (see
   // the [data-lang-inplace] note in gallery.html), so the strings JS owns have to be

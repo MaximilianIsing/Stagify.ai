@@ -381,8 +381,6 @@
       "uploadArea": "Carica un'immagine o trascinala qui",
       "before": "Prima",
       "after": "Dopo",
-      "refineInStudio": "Perfeziona nello Studio maschere",
-      "refineInStudioShort": "Perfeziona",
       "downloadResult": "Scarica risultato",
       "uploadAnother": "Carica un'altra",
       "noProcessedImage": "Il tuo risultato arredato apparirà qui",
@@ -394,6 +392,8 @@
       "addPhotos": "+ Aggiungi foto",
       "tryAnotherImage": "Prova un'altra immagine",
       "uploadAreaAria": "Area di caricamento",
+      "uploadHeadline": "Trascina qui la foto della tua stanza",
+      "uploadFormats": "JPG, PNG, WebP o HEIC · fino a 25 MB",
       "editWithMask": "Modifica l'area selezionata con lo strumento maschera",
       "stagingVariations": "Variazioni di staging",
       "originalImage": "Foto originale della stanza prima dello staging virtuale",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>Risultati istantanei</strong>: ~8 secondi",
         "oneClickStaging": "<strong>Staging con un clic</strong>: senza sforzo",
-        "free": "<strong>50 generazioni gratuite al giorno</strong>: Senza carta",
+        "free": "<strong>Generazioni gratuite illimitate</strong>: Senza carta",
         "noAds": "<strong>Esperienza senza pubblicità</strong>: nessuna distrazione",
         "noLogin": "<strong>Iscrizione facile</strong>: inizia subito",
         "unlimited": "<strong>Modelli di immagine avanzati</strong>: qualità superiore",
@@ -1103,7 +1103,6 @@
     "resumeNo": "Ricomincia",
     "helpStep5": "Un'area non ti convince? Usa Prova un'altra versione per generare più opzioni e passare dall'una all'altra.",
     "promptIdeas": "Mostra idee",
-    "handoffFailed": "Non siamo riusciti ad aprire quel render. Carica invece la foto.",
     "looksGood": "Va bene così",
     "redo": "Ripeti",
     "toolWand": "Bacchetta",
@@ -1369,7 +1368,6 @@
       "rateLimited": "Troppe richieste in questo momento. Attendi un istante e riprova.",
       "retry": "Riprova"
     },
-    "refine": "Perfeziona nello Studio maschere",
     "delete": {
       "action": "Elimina questo render",
       "warn": "Questa operazione elimina definitivamente il render e il link che hai già condiviso. Non è reversibile.",

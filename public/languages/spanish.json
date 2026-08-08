@@ -381,8 +381,6 @@
       "uploadArea": "Sube una imagen o arrastra y suelta",
       "before": "Antes",
       "after": "Después",
-      "refineInStudio": "Refinar en el Estudio de Máscaras",
-      "refineInStudioShort": "Refinar",
       "downloadResult": "Descargar Resultado",
       "uploadAnother": "Subir Otra",
       "noProcessedImage": "Tu resultado aparecerá aquí",
@@ -394,6 +392,8 @@
       "addPhotos": "+ Añadir fotos",
       "tryAnotherImage": "Probar otra imagen",
       "uploadAreaAria": "Área de carga",
+      "uploadHeadline": "Suelta aquí la foto de tu habitación",
+      "uploadFormats": "JPG, PNG, WebP o HEIC · hasta 25 MB",
       "editWithMask": "Editar área seleccionada con herramienta de máscara",
       "stagingVariations": "Variaciones de staging",
       "originalImage": "Foto original de la habitación antes del home staging virtual",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>Resultados instantáneos</strong>: ~8 segundos",
         "oneClickStaging": "<strong>Crea un escenario con un solo clic</strong>: Sin complicaciones",
-        "free": "<strong>50 generaciones gratis al día</strong>: Sin tarjeta",
+        "free": "<strong>Generaciones gratis ilimitadas</strong>: Sin tarjeta",
         "noAds": "<strong>Sin anuncios</strong>: Sin distracciones",
         "noLogin": "<strong>Registro fácil</strong>: Empieza al instante",
         "unlimited": "<strong>Modelos de imagen avanzados</strong>: Mayor calidad",
@@ -1103,7 +1103,6 @@
     "resumeNo": "Empezar de nuevo",
     "helpStep5": "¿No te convence una zona? Usa Probar otra versión para generar más opciones y alternar entre ellas.",
     "promptIdeas": "Mostrar ideas de descripción",
-    "handoffFailed": "No pudimos abrir ese render. Sube la foto en su lugar.",
     "looksGood": "Se ve bien",
     "redo": "Rehacer",
     "toolWand": "Varita",
@@ -1369,7 +1368,6 @@
       "rateLimited": "Demasiadas solicitudes ahora mismo. Espera un momento e inténtalo de nuevo.",
       "retry": "Reintentar"
     },
-    "refine": "Refinar en el Estudio de Máscaras",
     "delete": {
       "action": "Eliminar este render",
       "warn": "Esto elimina de forma permanente el render y el enlace que ya has compartido. No se puede deshacer.",

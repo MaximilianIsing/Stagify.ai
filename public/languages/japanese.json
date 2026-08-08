@@ -381,8 +381,6 @@
       "uploadArea": "画像をアップロードまたはドラッグ＆ドロップ",
       "before": "ビフォー",
       "after": "アフター",
-      "refineInStudio": "マスキングスタジオで調整",
-      "refineInStudioShort": "調整",
       "downloadResult": "結果をダウンロード",
       "uploadAnother": "別の画像をアップロード",
       "noProcessedImage": "ステージング結果はここに表示されます",
@@ -394,6 +392,8 @@
       "addPhotos": "+ 写真を追加",
       "tryAnotherImage": "別の画像を試す",
       "uploadAreaAria": "アップロードエリア",
+      "uploadHeadline": "部屋の写真をここにドロップ",
+      "uploadFormats": "JPG、PNG、WebP、HEIC · 最大25MB",
       "editWithMask": "マスクツールで選択したエリアを編集",
       "stagingVariations": "ステージングのバリエーション",
       "originalImage": "バーチャルステージング前の元の部屋の写真",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>即座に結果</strong>：約8秒",
         "oneClickStaging": "<strong>ワンクリックステージング</strong>：手間いらず",
-        "free": "<strong>1日50回まで無料生成</strong>：カード登録不要",
+        "free": "<strong>無料生成が無制限</strong>：カード登録不要",
         "noAds": "<strong>広告なしの体験</strong>：気を散らすものなし",
         "noLogin": "<strong>簡単な登録</strong>：すぐに開始",
         "unlimited": "<strong>先進的な画像モデル</strong>：より高品質",
@@ -1103,7 +1103,6 @@
     "resumeNo": "最初から",
     "helpStep5": "エリアの仕上がりに満足できないときは、「別のバージョンを試す」で複数の候補を生成して切り替えられます。",
     "promptIdeas": "入力例を表示",
-    "handoffFailed": "その画像を開けませんでした。写真をアップロードしてください。",
     "looksGood": "これでOK",
     "redo": "やり直す",
     "toolWand": "自動選択",
@@ -1369,7 +1368,6 @@
       "rateLimited": "リクエストが多すぎます。少し時間をおいて、もう一度お試しください。",
       "retry": "再試行"
     },
-    "refine": "マスキングスタジオで調整",
     "delete": {
       "action": "この画像を削除",
       "warn": "この画像と、すでに共有したリンクが完全に削除されます。元に戻すことはできません。",

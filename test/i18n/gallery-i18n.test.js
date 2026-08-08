@@ -142,6 +142,29 @@ test('every language states the 15-minute delay on taking a share link down', ()
   }
 });
 
+test('no pack still offers to refine a render in the Masking Studio', () => {
+  // "Refine in Masking Studio" was removed from the product entirely — both entry points
+  // (the gallery's detail panel and the staging result modal), the sessionStorage hand-off
+  // between them, GET /api/gallery/:id/source, and the replace-in-place save path.
+  //
+  // Only `gallery.refine` is covered by the stale-key test above; `modal.staging.*` and
+  // `maskingStudio.*` have NO namespace-scoped stale guard, so leaving those keys in all
+  // eleven packs would pass the whole suite silently and forever. This is the only thing
+  // that would notice. Copy coming back before the feature does is the drift to catch:
+  // a button whose click handler no longer exists.
+  for (const lang of LANGS) {
+    const pack = packFor(lang);
+    assert.ok(!('refine' in pack.gallery), `${lang}.json: gallery.refine names a button that no longer exists`);
+    for (const dead of ['refineInStudio', 'refineInStudioShort']) {
+      assert.ok(!(dead in (pack.modal?.staging ?? {})), `${lang}.json: modal.staging.${dead} is dead copy`);
+    }
+    assert.ok(
+      !('handoffFailed' in (pack.maskingStudio ?? {})),
+      `${lang}.json: maskingStudio.handoffFailed reports a hand-off that cannot happen`,
+    );
+  }
+});
+
 test('no pack still offers to create a link or turn one off', () => {
   // The keys are gone from english.json, so the stale-key test above already fails a pack
   // that keeps them — this states WHY, and catches the reverse mistake of somebody adding

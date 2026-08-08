@@ -1,19 +1,16 @@
-// Sending a finished composite to the gallery (public/scripts/masking-studio/gallery-save.js)
-// and the handoff that decides whether it replaces an existing entry
-// (public/scripts/masking-handoff.js).
+// Sending a finished composite to the gallery (public/scripts/masking-studio/gallery-save.js).
 //
 // The requirement these tests exist for is a negative one: mask OPERATIONS must never create
 // gallery entries. That is enforced structurally — nothing but the "Looks Good" handler can
 // reach this module — so the last three tests are source scans that fail if the structure
-// erodes. The rest is about the two ways a save goes wrong in practice: firing twice for one
-// result, and carrying a stale render id onto a different photo.
+// erodes. The rest is about the way a save goes wrong in practice: firing twice for one
+// result.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createGallerySave, canvasDigest } from '../../../public/scripts/masking-studio/gallery-save.js';
-import { HANDOFF_KEY, sendToMaskingStudio, receiveHandoff } from '../../../public/scripts/masking-handoff.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..').replace(/\\/g, '/');
 const read = (rel) => fs.readFileSync(path.join(ROOT, 'public/scripts', rel), 'utf8');
@@ -69,7 +66,6 @@ function makeSave(over = {}) {
       { status: 'done', prompt: 'add a rug' },
       { status: 'idle', prompt: 'ignored' },
     ],
-    sourceRenderId: null,
     sourceName: 'elm-st-04.jpg',
     savedDigest: '',
     ...over.state,
@@ -155,19 +151,14 @@ test('a network failure is swallowed — the user still has their image', async 
   await assert.doesNotReject(() => save.saveToGallery());
 });
 
-test('an entry handed off from the gallery replaces it, and sends no "before"', async () => {
-  // The original entry already has its own source photo, and THAT is the right before for a
-  // refined after — sending the studio's input would compare the image against itself.
-  const { save, calls } = makeSave({ state: { sourceRenderId: 'r_123' } });
-  await save.saveToGallery();
-  assert.equal(calls[0].body.renderId, 'r_123');
-  assert.equal(calls[0].body.before, undefined);
-});
-
-test('a photo from disk sends its "before" and asks for no replacement', async () => {
+test('every save sends its "before" and never asks to replace an entry', async () => {
+  // There is one outcome now: insert. The studio's input photo is always the right "before"
+  // for the composite, and `renderId` — which used to ask for a replace when the photo had
+  // been handed off from the gallery — must not come back without that hand-off returning
+  // too. A stray one would overwrite an unrelated render.
   const { save, calls } = makeSave();
   await save.saveToGallery();
-  assert.equal(calls[0].body.renderId, undefined);
+  assert.equal(calls[0].body.renderId, undefined, 'no replace is ever requested');
   assert.equal(calls[0].body.before, 'data:image/jpeg;base64,PIXELS9', 'the pristine original');
 });
 
@@ -192,105 +183,6 @@ test('nothing is posted when there is no photo', async () => {
   const { save, calls } = makeSave({ state: { base: null } });
   await save.saveToGallery();
   assert.equal(calls.length, 0);
-});
-
-// ── the handoff ──────────────────────────────────────────────────────────────
-
-function fakeStorage() {
-  const map = new Map();
-  return {
-    getItem: (k) => (map.has(k) ? map.get(k) : null),
-    setItem: (k, v) => map.set(k, v),
-    removeItem: (k) => map.delete(k),
-    size: () => map.size,
-  };
-}
-
-test('the handoff carries the render id and the filename', () => {
-  const storage = fakeStorage();
-  assert.equal(sendToMaskingStudio({ renderId: 'r_1', sourceName: 'a.jpg', storage }), true);
-  assert.deepEqual(JSON.parse(storage.getItem(HANDOFF_KEY)), { renderId: 'r_1', sourceName: 'a.jpg' });
-});
-
-test('a handoff with no render id is refused, so the caller does not navigate', () => {
-  const storage = fakeStorage();
-  assert.equal(sendToMaskingStudio({ renderId: '', storage }), false);
-  assert.equal(storage.size(), 0);
-});
-
-test('storage that refuses is reported, rather than opening an empty studio', () => {
-  const blocked = { setItem() { throw new Error('quota'); }, getItem: () => null, removeItem() {} };
-  assert.equal(sendToMaskingStudio({ renderId: 'r_1', storage: /** @type {any} */ (blocked) }), false);
-});
-
-test('taking delivery loads the photo and marks it as a refine of that render', async () => {
-  const storage = fakeStorage();
-  sendToMaskingStudio({ renderId: 'r_9', sourceName: '412-rosewood.jpg', storage });
-  const seen = [];
-  global.URL.createObjectURL = () => 'blob:x';
-  global.URL.revokeObjectURL = () => {};
-  const ok = await receiveHandoff({
-    loadImage: async () => /** @type {any} */ ({ width: 10, height: 10 }),
-    setBaseImage: (img, opts) => seen.push(opts),
-    authToken: () => 'tok',
-    onError: () => seen.push('error'),
-    storage,
-    fetchImpl: async (url) => {
-      seen.push(url);
-      return { ok: true, blob: async () => /** @type {any} */ ({}) };
-    },
-  });
-  assert.equal(ok, true);
-  assert.equal(seen[0], '/api/gallery/r_9/source', 'our own origin, never the presigned URL');
-  assert.deepEqual(seen[1], { sourceRenderId: 'r_9', sourceName: '412-rosewood.jpg' });
-});
-
-test('the handoff is consumed once, so a reload does not re-import it', async () => {
-  const storage = fakeStorage();
-  sendToMaskingStudio({ renderId: 'r_9', storage });
-  global.URL.createObjectURL = () => 'blob:x';
-  global.URL.revokeObjectURL = () => {};
-  const deps = {
-    loadImage: async () => /** @type {any} */ ({}),
-    setBaseImage: () => {},
-    authToken: () => '',
-    onError: () => {},
-    storage,
-    fetchImpl: async () => ({ ok: true, blob: async () => /** @type {any} */ ({}) }),
-  };
-  assert.equal(await receiveHandoff(deps), true);
-  assert.equal(storage.size(), 0, 'the key is deleted before it is used');
-  assert.equal(await receiveHandoff(deps), false);
-});
-
-test('no handoff at all is silent — it is the normal case', async () => {
-  const seen = [];
-  const ok = await receiveHandoff({
-    loadImage: async () => /** @type {any} */ ({}),
-    setBaseImage: () => {},
-    authToken: () => '',
-    onError: () => seen.push('error'),
-    storage: fakeStorage(),
-    fetchImpl: async () => { throw new Error('must not fetch'); },
-  });
-  assert.equal(ok, false);
-  assert.deepEqual(seen, [], 'onError is for a FAILED handoff, not an absent one');
-});
-
-test('a handoff whose bytes will not load falls back to the dropzone, loudly', async () => {
-  const storage = fakeStorage();
-  sendToMaskingStudio({ renderId: 'r_9', storage });
-  const seen = [];
-  const ok = await receiveHandoff({
-    loadImage: async () => /** @type {any} */ ({}),
-    setBaseImage: () => {},
-    authToken: () => '',
-    onError: () => seen.push('error'),
-    storage,
-    fetchImpl: async () => ({ ok: false }),
-  });
-  assert.equal(ok, false);
-  assert.deepEqual(seen, ['error']);
 });
 
 // ── DRIFT GUARDS: nothing else may save ──────────────────────────────────────

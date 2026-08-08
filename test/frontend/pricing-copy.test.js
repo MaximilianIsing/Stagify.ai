@@ -1,22 +1,25 @@
-// Drift guard: the free tier's advertised cap vs the one the server actually enforces.
+// Drift guard: advertised ceilings vs the ones the server actually enforces.
 //
 // WHY THIS EXISTS
-// The homepage used to say "Unlimited generations: Totally free", which was simply
-// untrue — free is capped at FREE_DAILY_LIMIT, and that number appeared nowhere in the
-// UI until a user hit it. It now states the real figure, which creates a NEW failure
-// mode: change FREE_DAILY_LIMIT and the marketing quietly starts lying, in eleven
-// languages, with nothing to catch it. This test is that catch.
+// Several places on the site quote a real figure that can go stale against a constant.
+// Where a page names a number, this file pins it to its source of truth so the marketing
+// cannot quietly start lying in eleven languages with nothing to catch it.
 //
-// NOTE ON THE COMPARISON TABLE: "Unlimited staging generations" is deliberately ticked
-// in BOTH columns on stagify-plus.html — a product decision (2026-08-01) that 50/day
-// reads as effectively unlimited and naming a cap there would scare people off. That is
-// why nothing here asserts on that row. The honest number lives on the homepage bullet
-// instead, and that is what is pinned below.
+// NOTE ON THE FREE GENERATION CAP: the homepage "why us" bullet
+// (whyUs.stagify.features.free) deliberately says "unlimited" while the server still
+// enforces FREE_DAILY_LIMIT — a product decision (2026-08-07) extending the same call
+// already made for the "Unlimited staging generations" row on stagify-plus.html, which
+// is ticked in BOTH columns (2026-08-01): 50/day reads as effectively unlimited and
+// naming a cap scares prospects off. So this file no longer pins that bullet to the
+// figure. What it pins instead is the INVERSE — that no pack reintroduces a number
+// there — because a figure in that bullet is read as a ceiling whatever it says, and a
+// stale one is the exact failure this file exists to catch. If you want the honest cap
+// back on the page, change the copy AND flip these two tests together.
 //
-// The gallery row above it quotes a real figure in the FREE column, so it can go stale
-// against lib/data/staged-renders.js. Pinned at the bottom of this file — including the
-// exactness of the figure, since 10 is a ceiling and anything like "10+" would invert
-// its meaning.
+// The gallery row on stagify-plus.html quotes a real figure in the FREE column, so it
+// can go stale against lib/data/staged-renders.js. Pinned at the bottom of this file —
+// including the exactness of the figure, since 10 is a ceiling and anything like "10+"
+// would invert its meaning.
 //
 // The Stagify+ column of that row says "Unlimited" (2026-08-03), and that is a claim
 // about the SERVER, not a bigger number: PRO_GALLERY_LIMIT defaults to Infinity, so
@@ -34,14 +37,6 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const PUBLIC = path.join(ROOT, 'public');
 const LANGS = path.join(PUBLIC, 'languages');
 
-/** The enforced ceiling, read from the source of truth rather than restated here. */
-function enforcedDailyLimit() {
-  const src = fs.readFileSync(path.join(ROOT, 'lib', 'data', 'auth-store.js'), 'utf8');
-  const m = /const\s+FREE_DAILY_LIMIT\s*=\s*(\d+)\s*;/.exec(src);
-  assert.ok(m, 'FREE_DAILY_LIMIT is no longer a literal in lib/data/auth-store.js — update this guard');
-  return Number(m[1]);
-}
-
 /** Resolve a dotted key in a language pack. */
 function at(json, dotted) {
   return dotted.split('.').reduce((node, key) => (node == null ? node : node[key]), json);
@@ -52,31 +47,38 @@ const packs = () =>
     .filter((f) => f.endsWith('.json'))
     .map((name) => ({ name, json: JSON.parse(fs.readFileSync(path.join(LANGS, name), 'utf8')) }));
 
-test('every language pack states the free cap the server actually enforces', () => {
-  // The homepage's "why us" bullet is the one place the real figure is quoted, so it
-  // is the one that can go stale against FREE_DAILY_LIMIT.
-  const limit = enforcedDailyLimit();
+test('no language pack quotes a generation figure in the free bullet', () => {
+  // The bullet says "unlimited" on purpose (see the header). A pack that "translated" it
+  // back to a number would advertise a ceiling — and, worse, one that goes stale against
+  // FREE_DAILY_LIMIT the moment that constant moves. No cross-pack parity guard covers
+  // the whyUs namespace either, so the presence check has to live here too.
   const all = packs();
   assert.ok(all.length >= 11, `expected 11 language packs, found ${all.length}`);
 
   for (const { name, json } of all) {
     const line = at(json, 'whyUs.stagify.features.free');
     assert.equal(typeof line, 'string', `${name} is missing whyUs.stagify.features.free`);
-    assert.ok(
-      line.includes(String(limit)),
-      `${name} says "${line}" but the server enforces ${limit}/day ` +
-        '(lib/data/auth-store.js FREE_DAILY_LIMIT). Update the packs, or the homepage lies.',
+    assert.ok(line.trim().length > 0, `${name} has an empty whyUs.stagify.features.free`);
+    assert.doesNotMatch(
+      line,
+      /\d/,
+      `${name} says "${line}" — a figure in the free bullet advertises a daily ceiling. ` +
+        'The copy is deliberately "unlimited"; see the header of this file.',
     );
   }
 });
 
-test('the English markup fallback quotes the same figure as the packs', () => {
+test('the English markup fallback makes the same claim as the packs', () => {
   // data-lang-html overwrites this at runtime, but it is what ships before the pack
   // loads — and it drifted from the pack once already.
-  const limit = enforcedDailyLimit();
   const html = fs.readFileSync(path.join(PUBLIC, 'index.html'), 'utf8');
-  const row = new RegExp(`whyUs\\.stagify\\.features\\.free[^>]*>[^<]*<strong>[^<]*${limit}[^<]*</strong>`);
-  assert.match(html, row, `index.html's free-tier bullet should quote ${limit}`);
+  const row = /whyUs\.stagify\.features\.free[^>]*>\s*<strong>([^<]*)<\/strong>/.exec(html);
+  assert.ok(row, "index.html no longer has a whyUs.stagify.features.free bullet with a <strong> lead-in");
+  assert.doesNotMatch(
+    row[1],
+    /\d/,
+    `index.html's free-tier bullet leads with "${row[1]}" — a figure there contradicts the packs`,
+  );
 });
 
 /**
@@ -184,14 +186,9 @@ test('no pack translates the unlimited gallery value as a number', () => {
   }
 });
 
-test('no page still claims unlimited generations are free', () => {
-  // The homepage's "Unlimited generations: Totally free" was the same message in a
-  // louder place. It is a factual claim about the free plan, so it is checked in
-  // English (the markup fallback) rather than across translations.
-  const html = fs.readFileSync(path.join(PUBLIC, 'index.html'), 'utf8');
-  assert.doesNotMatch(
-    html,
-    /<strong>Unlimited generations<\/strong>\s*:\s*Totally free/i,
-    'index.html tells free users they already have the paid tier\'s headline benefit',
-  );
-});
+// REMOVED (2026-08-07): 'no page still claims unlimited generations are free'. It banned
+// the homepage from advertising unlimited free generations, which is now the deliberate
+// copy — the assertion had survived only because its regex matched the old exact wording
+// ("Unlimited generations: Totally free") and not the new one, i.e. it was passing by
+// accident, not by agreement. Reinstating it means reversing the product decision in the
+// header of this file.

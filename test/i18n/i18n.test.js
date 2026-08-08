@@ -9,15 +9,17 @@ import { fileURLToPath } from 'node:url';
 import { startServer } from '../helpers/server.js';
 import {
   ALL_LOCALES,
+  ENGLISH,
   LOCALES,
   LOCALIZED_PAGES,
   buildHreflangCluster,
+  buildOgLocaleBlock,
   localeByPrefix,
   localizedUrl,
 } from '../../lib/i18n/locales.js';
 import { renderLocalizedPage } from '../../lib/i18n/render-page.js';
 import { buildSitemap } from '../../lib/i18n/sitemap.js';
-import { injectHreflang } from '../../scripts/build-i18n-seo.js';
+import { injectHreflang, injectOgLocale } from '../../scripts/build-i18n-seo.js';
 import { splitLocale, urlLanguage, hrefForLanguage, localizedTarget } from '../../public/scripts/i18n-routing.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -56,6 +58,36 @@ test('hreflang cluster lists every locale plus x-default', () => {
   assert.ok(cluster.includes('href="https://stagify.ai/es/guides.html"'), 'Spanish alternate URL wrong');
 });
 
+test('og:locale block names the locale itself and every OTHER locale, never itself twice', () => {
+  for (const loc of ALL_LOCALES) {
+    const block = buildOgLocaleBlock(loc);
+    assert.ok(
+      block.startsWith(`    <meta property="og:locale" content="${loc.ogLocale}">`),
+      `${loc.lang}: og:locale must be the locale's own, and come first`,
+    );
+    const alternates = [...block.matchAll(/og:locale:alternate" content="([^"]+)"/g)].map((m) => m[1]);
+    assert.equal(alternates.length, ALL_LOCALES.length - 1, `${loc.lang}: wrong alternate count`);
+    assert.ok(!alternates.includes(loc.ogLocale), `${loc.lang}: must not list itself as its own alternate`);
+    assert.equal(new Set(alternates).size, alternates.length, `${loc.lang}: duplicate alternates`);
+    for (const other of ALL_LOCALES) {
+      if (other.ogLocale === loc.ogLocale) continue;
+      assert.ok(alternates.includes(other.ogLocale), `${loc.lang}: missing alternate ${other.ogLocale}`);
+    }
+  }
+});
+
+test('every locale has a distinct, well-formed og:locale', () => {
+  const seen = new Set();
+  for (const loc of ALL_LOCALES) {
+    assert.match(loc.ogLocale, /^[a-z]{2}_[A-Z]{2}$/, `${loc.lang}: og:locale must be ll_CC`);
+    assert.ok(!seen.has(loc.ogLocale), `duplicate og:locale ${loc.ogLocale}`);
+    seen.add(loc.ogLocale);
+    // The region half is free (pt → pt_BR), but the language half must match the
+    // locale's own language — that mismatch is exactly how pt_PT survived here.
+    assert.equal(loc.ogLocale.slice(0, 2), loc.bcp47.slice(0, 2), `${loc.lang}: og:locale language ≠ bcp47`);
+  }
+});
+
 // ── Pure renderer ───────────────────────────────────────────────────────────
 
 const FIXTURE = `<!doctype html>
@@ -69,6 +101,8 @@ const FIXTURE = `<!doctype html>
 <link rel="alternate" hreflang="x-default" href="https://stagify.ai/guides.html">
 <meta property="og:url" content="https://stagify.ai/guides.html">
 <meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="ru_RU">
 <meta property="og:title" content="English OG title">
 </head>
 <body>
@@ -142,8 +176,19 @@ test('renderer applies translations, SEO head, base, and link rewriting', () => 
   assert.ok(!out.includes('Single URL serves all languages'), 'stale hreflang comment not removed');
   assert.equal((out.match(/hreflang="/g) || []).length, ALL_LOCALES.length + 1, 'expected full hreflang cluster');
   assert.ok(out.includes('content="https://stagify.ai/es/guides.html"'), 'og:url not localized');
-  assert.ok(out.includes('content="es_ES"'), 'og:locale not localized');
   assert.ok(out.includes('property="og:title" content="Título ES"'), 'og:title not localized');
+
+  // og:locale block: Spanish names ITSELF, lists the other ten (incl. en_US, which the
+  // hand-written block omitted), and — the bug this replaced — never lists es_ES as an
+  // alternate of itself. The stale hand-written en_US/ru_RU pair must be gone.
+  assert.ok(out.includes('<meta property="og:locale" content="es_ES">'), 'og:locale not localized');
+  assert.equal((out.match(/property="og:locale"/g) || []).length, 1, 'exactly one og:locale');
+  const ogAlts = [...out.matchAll(/og:locale:alternate" content="([^"]+)"/g)].map((m) => m[1]);
+  assert.equal(ogAlts.length, ALL_LOCALES.length - 1, 'expected one alternate per OTHER locale');
+  assert.ok(!ogAlts.includes('es_ES'), 'Spanish must not be an alternate of itself');
+  assert.ok(ogAlts.includes('en_US'), 'en_US must be an alternate on a non-English page');
+  assert.ok(ogAlts.includes('nl_NL'), 'Dutch must be listed — the hand-written block omitted it');
+  assert.ok(ogAlts.includes('pt_BR') && !ogAlts.includes('pt_PT'), 'Portuguese must be pt_BR, not pt_PT');
 
   // link rewriting
   assert.ok(out.includes('href="/es/contact.html"'), 'relative page link not prefixed');
@@ -206,6 +251,28 @@ test('every English indexable page carries the full baked-in hreflang cluster', 
     const cluster = buildHreflangCluster(page.path);
     assert.ok(html.includes(cluster), `${page.file} is missing/stale hreflang — run: node scripts/build-i18n-seo.js`);
   }
+});
+
+test('every English page with an Open Graph card carries the full baked-in og:locale block', () => {
+  const block = buildOgLocaleBlock(ENGLISH);
+  let withCard = 0;
+  for (const page of LOCALIZED_PAGES) {
+    const html = fs.readFileSync(path.join(PUBLIC, page.file), 'utf8').replace(/\r\n/g, '\n');
+    // Pages with no og:url have no Open Graph card at all; the builder skips them on
+    // purpose (a lone og:locale would describe a card that isn't there). Assert they
+    // carry NO stray og:locale either, so "skipped" can't quietly mean "half-done".
+    if (!/<meta\s+property="og:url"/i.test(html)) {
+      assert.ok(!/property="og:locale/i.test(html), `${page.file} has og:locale but no og:url card`);
+      continue;
+    }
+    withCard += 1;
+    assert.ok(html.includes(block), `${page.file} is missing/stale og:locale — run: node scripts/build-i18n-seo.js`);
+    assert.equal(
+      (html.match(/property="og:locale"/g) || []).length, 1,
+      `${page.file} must declare og:locale exactly once`,
+    );
+  }
+  assert.ok(withCard > 0, 'no English page had an og:url card — the guard would be vacuous');
 });
 
 // ── Client routing helpers (public/scripts/i18n-routing.js) ─────────────────
@@ -277,6 +344,37 @@ test('injectHreflang is idempotent and preserves line endings', () => {
   const crOnce = injectHreflang(crlf, '/contact.html');
   assert.ok(crOnce.includes('\r\n') && !/[^\r]\n/.test(crOnce), 'CRLF input stays CRLF (no lone LF)');
   assert.equal(crOnce, injectHreflang(crOnce, '/contact.html'), 'CRLF idempotent');
+});
+
+test('injectOgLocale replaces a stale block, is idempotent, and preserves line endings', () => {
+  const lf = [
+    '<head>',
+    '    <meta property="og:url" content="https://stagify.ai/contact.html">',
+    '    <meta property="og:locale" content="en_US">',
+    '    <meta property="og:locale:alternate" content="pt_PT">',
+    '',
+    '    <meta name="twitter:card" content="summary">',
+    '</head>',
+  ].join('\n');
+
+  const once = injectOgLocale(lf);
+  assert.ok(once.includes(buildOgLocaleBlock(ENGLISH)), 'English block not injected at the page indent');
+  assert.ok(!once.includes('pt_PT'), 'stale pt_PT alternate not removed');
+  assert.equal((once.match(/property="og:locale"/g) || []).length, 1, 'og:locale duplicated');
+  assert.equal(once, injectOgLocale(once), 'running twice must equal running once');
+  assert.ok(!once.includes('\r\n'), 'LF input stays LF');
+  // The blank line separating the OG section from the Twitter card must survive —
+  // the strip regex deliberately does not swallow following blank lines.
+  assert.ok(once.includes('\n\n    <meta name="twitter:card"'), 'blank-line separator eaten');
+
+  const crlf = lf.replace(/\n/g, '\r\n');
+  const crOnce = injectOgLocale(crlf);
+  assert.ok(crOnce.includes('\r\n') && !/[^\r]\n/.test(crOnce), 'CRLF input stays CRLF (no lone LF)');
+  assert.equal(crOnce, injectOgLocale(crOnce), 'CRLF idempotent');
+
+  // A page with no Open Graph card is left exactly as-is — no anchor, no lone og:locale.
+  const noCard = '<head>\n    <link rel="canonical" href="https://stagify.ai/terms.html">\n</head>';
+  assert.equal(injectOgLocale(noCard), noCard, 'card-less page must be untouched');
 });
 
 // ── Live routes ─────────────────────────────────────────────────────────────

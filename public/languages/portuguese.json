@@ -381,8 +381,6 @@
       "uploadArea": "Envie uma imagem ou arraste e solte",
       "before": "Antes",
       "after": "Depois",
-      "refineInStudio": "Refinar no Estúdio de Máscaras",
-      "refineInStudioShort": "Refinar",
       "downloadResult": "Baixar resultado",
       "uploadAnother": "Enviar outra",
       "noProcessedImage": "Seu resultado decorado aparecerá aqui",
@@ -394,6 +392,8 @@
       "addPhotos": "+ Adicionar fotos",
       "tryAnotherImage": "Tentar outra imagem",
       "uploadAreaAria": "Área de envio",
+      "uploadHeadline": "Solte aqui a foto do seu ambiente",
+      "uploadFormats": "JPG, PNG, WebP ou HEIC · até 25 MB",
       "editWithMask": "Editar a área selecionada com a ferramenta de máscara",
       "stagingVariations": "Variações de staging",
       "originalImage": "Foto original do cômodo antes do staging virtual",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>Resultados instantâneos</strong>: ~8 segundos",
         "oneClickStaging": "<strong>Staging com um clique</strong>: sem complicação",
-        "free": "<strong>50 gerações grátis por dia</strong>: Sem cartão",
+        "free": "<strong>Gerações grátis ilimitadas</strong>: Sem cartão",
         "noAds": "<strong>Experiência sem anúncios</strong>: sem distrações",
         "noLogin": "<strong>Cadastro fácil</strong>: comece na hora",
         "unlimited": "<strong>Modelos de imagem avançados</strong>: qualidade superior",
@@ -1103,7 +1103,6 @@
     "resumeNo": "Começar do zero",
     "helpStep5": "Não gostou de uma área? Use Tentar outra versão para gerar mais opções e alternar entre elas.",
     "promptIdeas": "Mostrar ideias",
-    "handoffFailed": "Não conseguimos abrir esse render. Envie a foto em vez disso.",
     "looksGood": "Ficou bom",
     "redo": "Refazer",
     "toolWand": "Varinha",
@@ -1369,7 +1368,6 @@
       "rateLimited": "Muitas solicitações agora. Espere um instante e tente de novo.",
       "retry": "Tentar de novo"
     },
-    "refine": "Refinar no Estúdio de Máscaras",
     "delete": {
       "action": "Excluir esta renderização",
       "warn": "Isto exclui permanentemente a renderização e o link que você já compartilhou. Não é possível desfazer.",

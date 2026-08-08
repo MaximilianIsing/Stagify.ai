@@ -381,8 +381,6 @@
       "uploadArea": "Upload een afbeelding of sleep en zet neer",
       "before": "Voor",
       "after": "Na",
-      "refineInStudio": "Verfijnen in de Masking Studio",
-      "refineInStudioShort": "Verfijnen",
       "downloadResult": "Resultaat downloaden",
       "uploadAnother": "Nog een uploaden",
       "noProcessedImage": "Je gestylede resultaat verschijnt hier",
@@ -394,6 +392,8 @@
       "addPhotos": "+ Foto's toevoegen",
       "tryAnotherImage": "Probeer een andere afbeelding",
       "uploadAreaAria": "Uploadgebied",
+      "uploadHeadline": "Sleep hier je kamerfoto naartoe",
+      "uploadFormats": "JPG, PNG, WebP of HEIC · tot 25 MB",
       "editWithMask": "Bewerk geselecteerd gebied met maskeertool",
       "stagingVariations": "Styling-variaties",
       "originalImage": "Originele kamerfoto vóór virtuele styling",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>Directe resultaten</strong>: ~8 seconden",
         "oneClickStaging": "<strong>Styling met één klik</strong>: Geen gedoe",
-        "free": "<strong>50 gratis generaties per dag</strong>: Geen creditcard nodig",
+        "free": "<strong>Onbeperkt gratis generaties</strong>: Geen creditcard nodig",
         "noAds": "<strong>Advertentievrije ervaring</strong>: Geen afleiding",
         "noLogin": "<strong>Eenvoudig aanmelden</strong>: Begin direct",
         "unlimited": "<strong>Geavanceerde afbeeldingsmodellen</strong>: Hogere kwaliteit",
@@ -1103,7 +1103,6 @@
     "resumeNo": "Opnieuw beginnen",
     "helpStep5": "Niet tevreden met een gebied? Gebruik Probeer een andere versie om meer opties te genereren en ertussen te wisselen.",
     "promptIdeas": "Toon prompt-ideeën",
-    "handoffFailed": "We konden die render niet openen. Upload de foto in plaats daarvan.",
     "looksGood": "Ziet er goed uit",
     "redo": "Opnieuw",
     "toolWand": "Magisch",
@@ -1369,7 +1368,6 @@
       "rateLimited": "Te veel verzoeken op dit moment. Wacht even en probeer het opnieuw.",
       "retry": "Opnieuw proberen"
     },
-    "refine": "Verfijnen in de Masking Studio",
     "delete": {
       "action": "Deze render verwijderen",
       "warn": "Hiermee verwijder je de render en de link die je al hebt gedeeld definitief. Dit kan niet ongedaan worden gemaakt.",

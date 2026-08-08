@@ -9,7 +9,6 @@ import { createLayersUi } from './masking-studio/layers-ui.js';
 import { createViewer } from './masking-studio/viewer.js';
 import { createUpload } from './masking-studio/upload.js';
 import { createGallerySave } from './masking-studio/gallery-save.js';
-import { receiveHandoff } from './masking-handoff.js';
 import { localizedTarget } from './i18n-routing.js';
 import { showToast } from './toast.js';
 
@@ -126,7 +125,6 @@ import { showToast } from './toast.js';
           zoom: 1,           // 1 = fit to view, up to 4x
           spaceDown: false,  // Space held → pan mode
           panning: false,
-          sourceRenderId: null, // gallery render this photo came from (handoff), else null
           sourceName: '',    // the photo's filename, for the gallery entry's name
           savedDigest: '',   // pixel digest of the last composite saved to the gallery
         };
@@ -203,14 +201,10 @@ import { showToast } from './toast.js';
           c.getContext('2d').drawImage(img, 0, 0, w, h);
           state.base = { w: w, h: h, canvas: c };
 
-          // WHERE THIS PHOTO CAME FROM — and note that both DEFAULT TO CLEARED.
-          // `sourceRenderId` decides whether "Looks Good" REPLACES an existing gallery
-          // entry or creates a new one, so a stale one is the difference between saving
-          // this photo and overwriting an unrelated render the owner still wants. Only the
-          // handoff and a restored session pass one; a fresh upload must not inherit the
-          // last one, and the default here is what guarantees that for every future caller
-          // rather than for the three that exist today.
-          state.sourceRenderId = (opts && opts.sourceRenderId) || null;
+          // WHERE THIS PHOTO CAME FROM, and note it DEFAULTS TO CLEARED: `sourceName` is
+          // what the gallery entry gets named after, so a fresh upload must not inherit
+          // the last photo's filename. The default here is what guarantees that for every
+          // future caller rather than only for the ones that exist today.
           state.sourceName = (opts && opts.sourceName) || '';
           state.savedDigest = '';
 
@@ -259,7 +253,6 @@ import { showToast } from './toast.js';
           state.segCache = null;
           state.segToken++;
           // The photo is gone, so nothing here belongs to a gallery entry any more.
-          state.sourceRenderId = null;
           state.sourceName = '';
           state.savedDigest = '';
           resetZoom();
@@ -719,20 +712,6 @@ import { showToast } from './toast.js';
         setPhase('empty');
         ensureStudioProAccess().then(async (isPro) => {
           if (!isPro) return;
-          // "Refine in Masking Studio" from the gallery or the staging studio. Consumed
-          // BEFORE the resume prompt and, when it lands, instead of it: the user just
-          // clicked a button naming a specific render, and offering to restore a different
-          // photo on top of that would be answering a question they did not ask.
-          const handedOff = await receiveHandoff({
-            loadImage,
-            setBaseImage,
-            authToken: () => (window.StagifyAuth && window.StagifyAuth.getToken()) || '',
-            onError: () => showToast(
-              tx('maskingStudio.handoffFailed', "We couldn't open that render. Please upload the photo instead."),
-              'error',
-            ),
-          });
-          if (handedOff) return;
           // A saved session takes priority over the first-visit walkthrough.
           const offeredResume = await maybeOfferResume();
           if (offeredResume) return;

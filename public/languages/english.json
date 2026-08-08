@@ -381,8 +381,6 @@
       "uploadArea": "Upload an image or drag and drop",
       "before": "Before",
       "after": "After",
-      "refineInStudio": "Refine in Masking Studio",
-      "refineInStudioShort": "Refine",
       "downloadResult": "Download Result",
       "uploadAnother": "Upload Another",
       "noProcessedImage": "Your staged result will appear here",
@@ -394,6 +392,8 @@
       "addPhotos": "+ Add photos",
       "tryAnotherImage": "Try another image",
       "uploadAreaAria": "Upload area",
+      "uploadHeadline": "Drop your room photo here",
+      "uploadFormats": "JPG, PNG, WebP or HEIC · up to 25 MB",
       "editWithMask": "Edit selected area with mask tool",
       "stagingVariations": "Staging variations",
       "originalImage": "Original room photo before virtual staging",
@@ -479,7 +479,7 @@
       "features": {
         "instantResults": "<strong>Instant results</strong>: ~8 seconds",
         "oneClickStaging": "<strong>One‑click staging</strong>: No hassle",
-        "free": "<strong>50 free generations a day</strong>: No card needed",
+        "free": "<strong>Unlimited free generations</strong>: No card needed",
         "noAds": "<strong>Ad-free experience</strong>: No distractions",
         "noLogin": "<strong>Easy sign up</strong>: Start instantly",
         "unlimited": "<strong>Advanced image models</strong>: Higher quality",
@@ -1103,7 +1103,6 @@
     "resumeNo": "Start fresh",
     "helpStep5": "Not happy with an area? Use Try another version to generate more options and flip between them.",
     "promptIdeas": "Show prompt ideas",
-    "handoffFailed": "We couldn't open that render. Please upload the photo instead.",
     "looksGood": "Looks Good",
     "redo": "Redo",
     "toolWand": "Magic",
@@ -1369,7 +1368,6 @@
       "rateLimited": "Too many requests just now. Give it a moment and try again.",
       "retry": "Try again"
     },
-    "refine": "Refine in Masking Studio",
     "delete": {
       "action": "Delete this render",
       "warn": "This permanently deletes the render and the link you have already shared. It cannot be undone.",

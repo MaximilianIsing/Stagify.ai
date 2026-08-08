@@ -73,6 +73,7 @@ test('blog hub and articles are served, and stay in sync with the sitemap', asyn
     '/blog/top-10-ai-virtual-staging-sites-2026',
     '/blog/dorm-room-design-ai-college-freshmen',
     '/blog/prepare-your-listing-for-the-fall-market',
+    '/blog/curb-appeal-real-estate-photos',
   ];
   for (const p of articles) {
     const res = await get(p);

@@ -1092,12 +1092,41 @@ main {
 .how h2,.sponsors-title,h1,h2,h3 {
   color:var(--text-heading)
 }
+/* Inner block of .stage-dropzone (the rest of it is at .stage-dropzone below).
+   The icon used to be the literal glyph ⬆︎ at font-size:28px; it is now a stroke
+   SVG on the same spec the two studio dropzones use — 1.6 weight, round caps,
+   currentColor from the parent. */
 .dz-icon {
-  font-size:28px;
-  margin-bottom:4px
+  color:var(--brand);
+  line-height:0;
+  margin-bottom:10px
+}
+.dz-icon svg {
+  transition:transform .2s ease
+}
+.stage-dropzone:hover .dz-icon svg,
+.stage-dropzone.is-drag-over .dz-icon svg {
+  transform:translateY(-3px) scale(1.06)
 }
 .dz-text {
-  font-weight:600
+  font-weight:700;
+  font-size:16px;
+  color:var(--text-heading)
+}
+.dz-sub {
+  margin:6px auto 0;
+  max-width:380px;
+  font-size:13px;
+  color:var(--muted)
+}
+@media (prefers-reduced-motion:reduce) {
+  .dz-icon svg {
+    transition:none
+  }
+  .stage-dropzone:hover .dz-icon svg,
+  .stage-dropzone.is-drag-over .dz-icon svg {
+    transform:none
+  }
 }
 #progress-text,.sponsors-title {
   font-weight:500
@@ -1666,28 +1695,49 @@ h2 {
   user-select:none;
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,"Apple Color Emoji","Segoe UI Emoji"
 }
+/* The staging dropzone, held to the same recipe as .ex-dropzone
+   (exterior-studio.css) and .ms-dropzone (masking-studio.css): brand dashes on a
+   pale wash, a stroke icon that lifts on hover, a focus-visible ring.
+   The wash is --brand-wash rather than the studios' rgba(255,255,255,.35)
+   because the parent .stage-workspace is --bg-elevated (white), so a white
+   wash would be invisible here.
+   Drag state is the .is-drag-over class those two already use. app.js used to
+   write an inline border-color instead, which outranks every rule in this file
+   — so after one drag the element kept a hard-coded grey and :hover below was
+   dead for the rest of the session.
+   Visibility is still the global .hidden class, NOT [hidden]: the two
+   .stage-workspace:has(#stage-dropzone:not(.hidden)) rules further down depend
+   on that exact name. */
 .stage-dropzone {
   width:100%;
   flex:1 1 auto;
   min-height:240px;
-  border:2px dashed var(--border);
+  border:2px dashed var(--brand-pale);
   border-radius:14px;
   display:grid;
   place-items:center;
-  background:rgba(75,85,99,.05);
+  text-align:center;
+  cursor:pointer;
+  padding:24px;
+  background:var(--brand-wash);
   outline:0;
-  transition:.2s
+  transition:border-color .15s ease,background .15s ease
 }
-.stage-dropzone.hidden {
-  border:none;
-  background:0 0
+.stage-dropzone:hover,
+.stage-dropzone.is-drag-over {
+  border-color:var(--brand);
+  background:var(--brand-tint)
 }
-.stage-dropzone:hover {
-  border-color:var(--accent);
-  background:rgba(75,85,99,.1)
+/* :focus-visible, not :focus — the whole box is click-to-browse, so :focus put a
+   ring on every mouse click. */
+.stage-dropzone:focus-visible {
+  border-color:var(--brand);
+  box-shadow:0 0 0 3px rgba(37,99,235,.15)
 }
-.stage-dropzone:focus {
-  box-shadow:0 0 0 2px var(--accent) inset
+@media (prefers-reduced-motion:reduce) {
+  .stage-dropzone {
+    transition:none
+  }
 }
 .image-viewer-container {
   width:100%;
@@ -2446,7 +2496,8 @@ body:has(.stage-mask-modal.active) .language-picker-container {
     object-fit:contain
   }
   .stage-dropzone {
-    min-height:220px
+    min-height:220px;
+    padding:18px
   }
   .tool-row {
     margin-bottom:12px
@@ -2606,7 +2657,17 @@ body:has(.stage-mask-modal.active) .language-picker-container {
     padding-bottom:0
   }
   .stage-dropzone {
-    min-height:180px
+    min-height:180px;
+    padding:14px
+  }
+  /* The width/height attributes on the SVG are a presentational fallback; these
+     win, so the icon shrinks with the box instead of crowding the two text lines. */
+  .dz-icon svg {
+    width:36px;
+    height:36px
+  }
+  .dz-sub {
+    font-size:12px
   }
   .toolbar {
     padding:10px
@@ -2983,7 +3044,7 @@ html {
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:6px;
+  gap:8px;
   /* Roughly the shape of the photo that will land in it. Left to fill the
      dialog it stretched to ~880x260 — a 3.4:1 letterbox that looked nothing
      like a room photo and put the hint text miles from the icon. */
@@ -2992,7 +3053,7 @@ html {
   margin:0 auto;
   aspect-ratio:16 / 9;
   padding:28px 20px;
-  border:2px dashed var(--border);
+  border:2px dashed var(--brand-pale);
   border-radius:12px;
   background:var(--bg-elevated);
   color:var(--fg);
@@ -3020,13 +3081,33 @@ html {
   border-color:var(--brand);
   background:var(--brand-wash)
 }
+/* Same stroke icon and lift as .stage-dropzone on the staging screen — the two
+   uploaders are one nav click apart, so they are kept visually identical. */
 .stage-mask-upload__icon {
-  font-size:26px;
-  line-height:1;
+  line-height:0;
   color:var(--brand)
 }
+.stage-mask-upload__icon svg {
+  transition:transform .2s ease
+}
+.stage-mask-upload:hover .stage-mask-upload__icon svg,
+.stage-mask-upload.is-dragging .stage-mask-upload__icon svg {
+  transform:translateY(-3px) scale(1.06)
+}
+@media (prefers-reduced-motion:reduce) {
+  .stage-mask-upload,
+  .stage-mask-upload__icon svg {
+    transition:none
+  }
+  .stage-mask-upload:hover .stage-mask-upload__icon svg,
+  .stage-mask-upload.is-dragging .stage-mask-upload__icon svg {
+    transform:none
+  }
+}
 .stage-mask-upload__text {
-  font-weight:600
+  font-weight:700;
+  font-size:16px;
+  color:var(--text-heading)
 }
 .stage-mask-upload__hint {
   font-size:13px;

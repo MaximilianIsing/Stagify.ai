@@ -53,19 +53,34 @@ test('the gate accepts a file at the limit and refuses one past it', () => {
   assert.equal(fileRejection('image/jpeg', MAX_IMAGE_BYTES + 1), 'fileTooLarge');
 });
 
-test('every language pack quotes the real ceiling in the too-large message', () => {
+/**
+ * Every translated string that states the ceiling out loud.
+ *
+ * One entry per copy site, because each one is a fresh place for the number to
+ * rot — the whole reason this file exists. `modal.staging.uploadFormats` is the
+ * staging dropzone's sub-line, which tells people the limit BEFORE they pick a
+ * file rather than after a rejected upload.
+ */
+const CEILING_COPY_KEYS = ['errors.fileTooLarge', 'modal.staging.uploadFormats'];
+
+/** @param {any} obj @param {string} dotted */
+const dig = (obj, dotted) => dotted.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
+
+test('every language pack quotes the real ceiling wherever it states one', () => {
   const dir = path.join(ROOT, 'public', 'languages');
   const packs = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
   assert.ok(packs.length >= 11, `expected 11 language packs, found ${packs.length}`);
 
   for (const name of packs) {
     const json = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
-    const msg = json?.errors?.fileTooLarge;
-    assert.equal(typeof msg, 'string', `${name} is missing errors.fileTooLarge`);
-    assert.ok(
-      msg.includes(String(MAX_IMAGE_MB)),
-      `${name} says "${msg}" but the real ceiling is ${MAX_IMAGE_MB} MB`,
-    );
+    for (const key of CEILING_COPY_KEYS) {
+      const msg = dig(json, key);
+      assert.equal(typeof msg, 'string', `${name} is missing ${key}`);
+      assert.ok(
+        msg.includes(String(MAX_IMAGE_MB)),
+        `${name} ${key} says "${msg}" but the real ceiling is ${MAX_IMAGE_MB} MB`,
+      );
+    }
   }
 });
 
