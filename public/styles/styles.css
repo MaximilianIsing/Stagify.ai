@@ -1643,8 +1643,21 @@ h2 {
   margin-top:10px;
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:12px;
+  grid-template-rows:auto auto;
+  gap:8px 12px;
   align-items:start
+}
+/* Every pair is label-over-control twice, so the two children subgrid onto the
+   pair's OWN two rows rather than each laying out its own. Without this the
+   columns are independent: es "Generaciones de imagen" wraps to two lines while
+   "Modelo de imagen" stays on one, and the slider drops half a line below the
+   select it is supposed to sit beside. Subgridded, the label row is as tall as
+   the taller label and both controls start at the same y.
+   The row gap moves to the pair (8px, what .tool-row used to apply itself)
+   because the subgridded axis takes its gutters from the parent. */
+.tool-row-pair>.tool-row {
+  grid-row:span 2;
+  grid-template-rows:subgrid
 }
 /* margin-bottom is zeroed here rather than only above because the mobile blocks
    further down give every .tool-row one; on a grid item that would grow the
@@ -1653,6 +1666,14 @@ h2 {
   margin-top:0;
   margin-bottom:0;
   min-width:0
+}
+/* One pair has a child that app.js hides: #variation-row disappears while
+   "remove existing furniture" is on, since a two-stage removal can't produce
+   variations. .hidden is display:none, so that item stops generating a box —
+   but its 1fr TRACK stays, leaving the survivor in a half-width column with
+   dead space beside it. Collapse to a single column for that case. */
+.tool-row-pair:has(>.tool-row.hidden) {
+  grid-template-columns:1fr
 }
 /* The trigger keeps the shared inline-flex/width:auto hug — stretching it to
    fill the column just parked the caret a dead inch away from the value.
@@ -1688,6 +1709,22 @@ h2 {
 }
 .tool-row-pair .caret {
   flex:none
+}
+/* Halving the column width turns any long compound noun into an overflow. A
+   box's automatic minimum is its min-content width, and nl `imageGenerations`
+   is ONE 21-character word ("Afbeeldingsgeneraties") — it sized its column to
+   185px inside a 169px track and pushed the slider past the toolbar's edge.
+   overflow-wrap:anywhere (not break-word — only `anywhere` actually lowers the
+   min-content size) lets such a label break mid-word; min-width:0 releases the
+   automatic minimum on the flex/grid boxes between the label and the column.
+   Both no-op for labels that already fit. */
+.tool-row-pair .label {
+  min-width:0;
+  overflow-wrap:anywhere;
+  hyphens:auto
+}
+.tool-row-pair .variation-slider-head {
+  min-width:0
 }
 .label {
   font-size:14px;
