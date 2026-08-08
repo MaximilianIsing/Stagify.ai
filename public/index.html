@@ -654,11 +654,25 @@
                     <h3 class="shw__panel-title" id="designer-title" data-lang="home.designer.title">Let an AI stage your space</h3>
                     <p class="shw__panel-sub" data-lang-html="home.designer.subtitle">With the AI Designer, chat to stage, redesign, and iterate on any room until it looks listing-ready. <em>(Stagify+ Exclusive)</em></p>
                   </header>
-                  <div class="designer-shell">
-                    <div class="designer-demo" data-demo="designer" data-demo-title="Stagify AI Designer Demo">
-                      <div class="designer-demo__placeholder" aria-hidden="true">
-                        <span class="designer-demo__spinner"></span>
+                  <div class="shw__panel-body">
+                    <div class="shw__split">
+                      <div class="designer-shell">
+                        <div class="designer-demo" data-demo="designer" data-demo-title="Stagify AI Designer Demo">
+                          <div class="designer-demo__placeholder" aria-hidden="true">
+                            <span class="designer-demo__spinner"></span>
+                          </div>
+                        </div>
                       </div>
+                      <aside class="shw__aside">
+                        <div class="shw__kicker" data-lang="home.designer.kicker">Conversational</div>
+                        <h4 class="shw__aside-title" data-lang="home.designer.panelTitle">Describe the room, do not decorate it</h4>
+                        <p class="shw__aside-body" data-lang="home.designer.panelBody">Type what you want and the Designer stages it, then keeps the room in mind. Ask for a different sofa or a warmer palette and it works from what it already built.</p>
+                        <ul class="home-list">
+                          <li data-lang="home.designer.points.iterate">Keep refining in the same conversation.</li>
+                          <li data-lang="home.designer.points.furniture">Attach furniture you actually sell and it places it.</li>
+                          <li data-lang="home.designer.points.saved">Every version lands in your gallery on its own.</li>
+                        </ul>
+                      </aside>
                     </div>
                   </div>
                 </div>
@@ -670,11 +684,25 @@
                     <h3 class="shw__panel-title" id="masking-title" data-lang="home.masking.title">Stage with exact precision</h3>
                     <p class="shw__panel-sub" data-lang-html="home.masking.subtitle">In the new Masking Studio, highlight the areas to restage, add your own furniture, and everything else stays pixel-perfect. <em>(Stagify+ Exclusive)</em></p>
                   </header>
-                  <div class="designer-shell">
-                    <div class="designer-demo" data-demo="masking" data-demo-title="Stagify Masking Studio Demo">
-                      <div class="designer-demo__placeholder" aria-hidden="true">
-                        <span class="designer-demo__spinner"></span>
+                  <div class="shw__panel-body">
+                    <div class="shw__split">
+                      <div class="designer-shell">
+                        <div class="designer-demo" data-demo="masking" data-demo-title="Stagify Masking Studio Demo">
+                          <div class="designer-demo__placeholder" aria-hidden="true">
+                            <span class="designer-demo__spinner"></span>
+                          </div>
+                        </div>
                       </div>
+                      <aside class="shw__aside">
+                        <div class="shw__kicker" data-lang="home.masking.kicker">Pixel-exact</div>
+                        <h4 class="shw__aside-title" data-lang="home.masking.panelTitle">Change one corner, not the whole room</h4>
+                        <p class="shw__aside-body" data-lang="home.masking.panelBody">Brush over only the area you want restaged. Everything outside the mask comes back untouched, so the rest of the photo cannot drift.</p>
+                        <ul class="home-list">
+                          <li data-lang="home.masking.points.snap">Paint a mask, or let snap-to-object trace it.</li>
+                          <li data-lang="home.masking.points.own">Add your own furniture photo to place a piece.</li>
+                          <li data-lang="home.masking.points.repeat">Re-run the same mask in a different style.</li>
+                        </ul>
+                      </aside>
                     </div>
                   </div>
                 </div>
@@ -713,8 +741,9 @@
                     <h3 class="shw__panel-title" id="exterior-title" data-lang="home.exterior.title">Fix the photo the listing opens with</h3>
                     <p class="shw__panel-sub" data-lang-html="home.exterior.subtitle">The Exterior Studio changes the time of day, clears grey skies and takes out cars and bins. The house stays untouched. <em>(Stagify+ Exclusive)</em></p>
                   </header>
+                  <div class="shw__panel-body">
 
-        <div class="hex-shell">
+        <div class="shw__split">
           <div class="ba" data-lang-attr="home.exterior.comparisonAria|aria-label" aria-label="Before and after exterior enhancement comparison">
             <!-- No width/height attrs, matching the staging comparison above: .ba is
                  aspect-ratio'd and .ba img is inset-0/height:100%, so the box does not
@@ -731,10 +760,10 @@
             </div>
           </div>
 
-          <aside class="hex-copy">
-            <div class="hex-copy__kicker" data-lang="home.exterior.kicker">Curb appeal</div>
-            <h4 class="hex-copy__title" data-lang="home.exterior.panelTitle">The one shot you cannot reshoot</h4>
-            <p class="hex-copy__body" data-lang="home.exterior.panelBody">Every listing opens with the outside of the property, the one photo you cannot retake once the weather turns.</p>
+          <aside class="shw__aside">
+            <div class="shw__kicker" data-lang="home.exterior.kicker">Curb appeal</div>
+            <h4 class="shw__aside-title" data-lang="home.exterior.panelTitle">The one shot you cannot reshoot</h4>
+            <p class="shw__aside-body" data-lang="home.exterior.panelBody">Every listing opens with the outside of the property, the one photo you cannot retake once the weather turns.</p>
             <!-- Kept deliberately terse: the panel is a grid item that stretches to the
                  row, and the photo beside it is align-self:center at a fixed 1408/768,
                  so the two boxes only match in height while this copy stays SHORTER
@@ -749,6 +778,7 @@
             </ul>
           </aside>
         </div>
+                  </div>
                 </div>
               </article>
 
@@ -768,13 +798,17 @@
                     <h3 class="shw__panel-title" id="gallery-title" data-lang="home.gallery.title">Every room you stage is saved for you</h3>
                     <p class="shw__panel-sub" data-lang="home.gallery.subtitle">Your gallery keeps every staged room, the settings that produced it, and the links you have shared with clients.</p>
                   </header>
+                  <div class="shw__panel-body">
+                    <div class="shw__split">
 
         <div class="hgal-mock">
           <div class="hgal-mock__bar">
             <span class="hgal-mock__title" data-lang="home.gallery.mock.title">Your gallery</span>
-            <!-- "3" describes the three cards below. Change the card count and this
-                 string changes too, in all eleven packs. -->
-            <span class="hgal-mock__count" data-lang="home.gallery.mock.count">3 staged rooms</span>
+            <!-- "7" describes the seven cards below. Change the card count and this
+                 string changes too, in all eleven packs. It is hidden below 768px,
+                 where only the first card survives — which is what keeps the number
+                 honest at every width it is actually visible. -->
+            <span class="hgal-mock__count" data-lang="home.gallery.mock.count">7 staged rooms</span>
           </div>
           <!-- Three rooms, deliberately: one screenful of a gallery, not the gallery.
                Images live in media-webp/Homepage/Gallery/ and are used ONLY here, so
@@ -814,21 +848,62 @@
               </figcaption>
             </figure>
 
+            <!-- Cards 4-7 exist to make the mock scroll like the real gallery does.
+                 They are generated images (Fal.ai flux/dev, prompts in the repo's
+                 scratch script) matched to the three above: same staging style, same
+                 1200x800 frame. Below 768px every card past the first is hidden and the
+                 scroller is switched off, so these only ever render on desktop — which
+                 is also the only place the real gallery exists (gallery-gate.js turns
+                 away every viewport <=768px). -->
+            <figure class="hgal-card">
+              <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-kitchen.webp" data-lang-attr="home.gallery.alts.kitchen|alt" alt="A staged kitchen with a white island, marble worktop, blue bar stools and pendant lights" width="1200" height="800" loading="lazy" fetchpriority="low" decoding="async">
+              <figcaption class="hgal-card__body">
+                <span class="hgal-card__addr" data-lang="home.gallery.addresses.four">27 Pinehurst Way</span>
+                <span class="hgal-card__when" data-lang="home.gallery.dates.four">Mar 10</span>
+              </figcaption>
+            </figure>
+
+            <figure class="hgal-card">
+              <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-office.webp" data-lang-attr="home.gallery.alts.office|alt" alt="A staged home office with a wooden desk, upholstered chair, bookshelves and a table lamp" width="1200" height="800" loading="lazy" fetchpriority="low" decoding="async">
+              <figcaption class="hgal-card__body">
+                <span class="hgal-card__addr" data-lang="home.gallery.addresses.five">915 Marlow Street</span>
+                <span class="hgal-card__when" data-lang="home.gallery.dates.five">Mar 9</span>
+              </figcaption>
+            </figure>
+
+            <figure class="hgal-card">
+              <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-guest.webp" data-lang-attr="home.gallery.alts.guest|alt" alt="A staged guest bedroom with a neutral upholstered bed, matching nightstands and soft blue cushions" width="1200" height="800" loading="lazy" fetchpriority="low" decoding="async">
+              <figcaption class="hgal-card__body">
+                <span class="hgal-card__addr" data-lang="home.gallery.addresses.six">64 Ellery Road</span>
+                <span class="hgal-card__when" data-lang="home.gallery.dates.six">Mar 7</span>
+              </figcaption>
+            </figure>
+
+            <figure class="hgal-card">
+              <img class="hgal-card__img" src="media-webp/Homepage/Gallery/room-sunroom.webp" data-lang-attr="home.gallery.alts.sunroom|alt" alt="A staged sunroom with rattan armchairs, a round wooden table, potted plants and wide garden windows" width="1200" height="800" loading="lazy" fetchpriority="low" decoding="async">
+              <figcaption class="hgal-card__body">
+                <span class="hgal-card__addr" data-lang="home.gallery.addresses.seven">1841 Cypress Bend</span>
+                <span class="hgal-card__when" data-lang="home.gallery.dates.seven">Mar 5</span>
+              </figcaption>
+            </figure>
+
           </div>
         </div>
 
-        <div class="hgal-copy">
-          <div class="hgal-copy__text">
-            <h4 class="hgal-copy__title" data-lang="home.gallery.panelTitle">Re-stage as often as you like. Nothing gets overwritten.</h4>
-            <p class="hgal-copy__body" data-lang="home.gallery.panelBody">There is no save button and no folder to name. Stage a room and it is in your gallery, newest first, before you close the tab. Open one later and you get the before-and-after slider plus the exact settings behind it: room type, style, your extra prompt, whether you removed the existing furniture, and any furniture photos you attached.</p>
-          </div>
-          <ul class="home-list hgal-copy__points">
-            <li data-lang="home.gallery.points.auto">Saved automatically. There is no save step to forget.</li>
-            <li data-lang="home.gallery.points.versions">Every version is kept, so two styles of the same room sit side by side.</li>
-            <li data-lang="home.gallery.points.private">The original empty photo stays yours alone. It is never part of what a client sees.</li>
-            <li data-lang="home.gallery.points.share">Every room comes with its own client link. Open the room, copy the link, send it.</li>
-          </ul>
-        </div>
+          <aside class="shw__aside">
+            <div class="shw__kicker" data-lang="home.gallery.kicker">Kept for you</div>
+            <h4 class="shw__aside-title" data-lang="home.gallery.panelTitle">Re-stage as often as you like</h4>
+            <p class="shw__aside-body" data-lang="home.gallery.panelBody">No save button, no folder to name. Stage a room and it is in your gallery before you close the tab, with the exact settings behind it.</p>
+            <ul class="home-list">
+              <li data-lang="home.gallery.points.auto">Saved automatically, with nothing to forget.</li>
+              <li data-lang="home.gallery.points.versions">Every version kept, never overwritten.</li>
+              <li data-lang="home.gallery.points.private">The original empty photo stays yours alone.</li>
+              <li data-lang="home.gallery.points.share">Every room comes with its own client link.</li>
+            </ul>
+          </aside>
+
+                    </div>
+                  </div>
                 </div>
               </article>
 

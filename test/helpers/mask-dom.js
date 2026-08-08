@@ -38,14 +38,24 @@ export class FakeEl {
     // and the slices rely on that: clearing the mobile pin assigns '' and tests
     // compare against it. A bare object would report undefined and make "never
     // set" look different from "explicitly cleared".
+    // A real CSSStyleDeclaration also carries setProperty/getPropertyValue/
+    // removeProperty, which is the only way to write a custom property
+    // (`--layer-color`) — several islands set their theming that way, and a bare
+    // property bag makes them throw rather than fail an assertion.
     this.style = new Proxy({}, {
-      get: (t, k) => (k in t ? t[k] : ''),
+      get: (t, k) => {
+        if (k === 'setProperty') return (name, value) => { t[name] = String(value); };
+        if (k === 'getPropertyValue') return (name) => (name in t ? t[name] : '');
+        if (k === 'removeProperty') return (name) => { const v = t[name]; delete t[name]; return v ?? ''; };
+        return k in t ? t[k] : '';
+      },
       set: (t, k, v) => { t[k] = v; return true; },
     });
     this.dataset = {};
     this.attrs = {};
     this.listeners = new Map();
-    this.textContent = '';
+    this._textContent = '';
+    this._innerHTML = '';
     this.disabled = false;
     this._className = '';
     this._uid = ++idSeq;
@@ -58,13 +68,67 @@ export class FakeEl {
     this.classList.set = new Set(this._className.split(/\s+/).filter(Boolean));
   }
 
+  get textContent() { return this._textContent; }
+  /**
+   * Assigning textContent REPLACES the element's contents, children included — that
+   * is how `host.textContent = ''` empties a list in the real DOM, and several
+   * islands rely on exactly that idiom to clear a container before refilling it.
+   * A shim that kept the children made "it clears before it refills" impossible to
+   * assert, because a stacking bug and a working clear looked identical.
+   */
+  set textContent(v) {
+    this._textContent = String(v == null ? '' : v);
+    this._detachChildren();
+  }
+
+  get innerHTML() { return this._innerHTML; }
+  /** Same contract as textContent: assigning replaces the children. */
+  set innerHTML(v) {
+    this._innerHTML = String(v == null ? '' : v);
+    this._detachChildren();
+  }
+
+  _detachChildren() {
+    this.children.forEach((c) => { c.parent = null; });
+    this.children.length = 0;
+  }
+
   appendChild(child) { child.parent = this; this.children.push(child); return child; }
+  removeChild(child) {
+    const i = this.children.indexOf(child);
+    if (i !== -1) { this.children.splice(i, 1); child.parent = null; }
+    return child;
+  }
+
+  /**
+   * Attached to a root, as Node.isConnected reports. Derived from the parent chain
+   * rather than stored, because the interesting case is an element that WAS in the
+   * document and has since been re-rendered away — focus-restore code guards on
+   * exactly that, and a stored flag would never go stale the way the real one does.
+   * Assignable so a test can state the answer outright.
+   */
+  get isConnected() {
+    if (this._connected !== undefined) return this._connected;
+    let node = this;
+    while (node.parent) node = node.parent;
+    return node !== this;
+  }
+
+  set isConnected(v) { this._connected = v; }
   insertBefore(child, ref) {
     child.parent = this;
     const i = ref ? this.children.indexOf(ref) : -1;
     if (i === -1) this.children.push(child); else this.children.splice(i, 0, child);
     return child;
   }
+  /** Detach from the parent, as Element.remove() does. */
+  remove() {
+    if (!this.parent) return;
+    const i = this.parent.children.indexOf(this);
+    if (i !== -1) this.parent.children.splice(i, 1);
+    this.parent = null;
+  }
+
   removeAttribute(name) { delete this.attrs[name]; if (name === 'src') this.src = undefined; }
   setAttribute(name, value) { this.attrs[name] = String(value); }
   getAttribute(name) { return Object.prototype.hasOwnProperty.call(this.attrs, name) ? this.attrs[name] : null; }
@@ -86,6 +150,27 @@ export class FakeEl {
   }
   click() { this.emit('click', {}); }
 
+  /**
+   * A copy of this element, with `deep` cloning its subtree.
+   *
+   * Listeners are deliberately NOT copied, matching the real Node.cloneNode: code
+   * that clones a button and expects it to still work is broken in a browser too,
+   * and a shim that carried the handlers over would hide that.
+   */
+  cloneNode(deep = false) {
+    const copy = new FakeEl(this.tagName);
+    copy.className = this._className;
+    copy.attrs = { ...this.attrs };
+    copy.dataset = { ...this.dataset };
+    copy._textContent = this._textContent;
+    copy._innerHTML = this._innerHTML;
+    for (const k of ['src', 'href', 'alt', 'title', 'type', 'value', 'loading', 'disabled']) {
+      if (this[k] !== undefined) copy[k] = this[k];
+    }
+    if (deep) this.children.forEach((c) => copy.appendChild(c.cloneNode(true)));
+    return copy;
+  }
+
   /** Depth-first descendants including self. */
   walk() {
     return [this, ...this.children.flatMap((c) => c.walk())];
@@ -97,6 +182,39 @@ export class FakeEl {
   }
   querySelector(sel) { return this.walk().slice(1).find((el) => el.matches(sel)) || null; }
   querySelectorAll(sel) { return this.walk().slice(1).filter((el) => el.matches(sel)); }
+}
+
+/**
+ * A real @napi-rs/canvas wearing the node surface an island expects of an element
+ * it creates and inserts: classList, style, and remove().
+ *
+ * The bare Canvas is not a DOM node, so an island that appends one to a container
+ * and later detaches it (the Masking Studio creates one canvas per area) throws
+ * rather than failing an assertion. Everything else — width/height, getContext,
+ * toDataURL — is the genuine article, so the pixel work stays real.
+ */
+export function domCanvas(w = 1, h = 1) {
+  const c = createCanvas(w, h);
+  const classes = new Set();
+  c.classList = {
+    add: (...n) => n.forEach((x) => classes.add(x)),
+    remove: (...n) => n.forEach((x) => classes.delete(x)),
+    contains: (n) => classes.has(n),
+    toggle: (n, force) => {
+      const on = force === undefined ? !classes.has(n) : !!force;
+      if (on) classes.add(n); else classes.delete(n);
+      return on;
+    },
+  };
+  c.style = {};
+  c.parent = null;
+  c.remove = () => {
+    if (!c.parent) return;
+    const i = c.parent.children.indexOf(c);
+    if (i !== -1) c.parent.children.splice(i, 1);
+    c.parent = null;
+  };
+  return c;
 }
 
 /**
@@ -121,11 +239,7 @@ export function installMaskDom({ mobile = false, visualViewport = null } = {}) {
     head,
     body,
     createElement(tag) {
-      if (tag === 'canvas') {
-        const c = createCanvas(1, 1);
-        // The slices only ever set width/height then draw + toDataURL.
-        return c;
-      }
+      if (tag === 'canvas') return domCanvas();
       return new FakeEl(tag);
     },
     getElementById(id) { return byId.get(id) || null; },

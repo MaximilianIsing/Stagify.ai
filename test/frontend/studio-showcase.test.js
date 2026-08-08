@@ -264,6 +264,139 @@ test('home.showcase is complete in all eleven packs', () => {
   }
 });
 
+test('the two demo panels have their full aside copy in all eleven packs', () => {
+  // The AI Designer and Masking panels grew a copy column beside their walkthrough
+  // (kicker / title / body / three points) to match the exterior panel's shape. Same
+  // gap as above: nothing else checks that a namespace exists in every pack, and a
+  // missing key here falls back to English silently rather than failing a build.
+  const dir = path.join(ROOT, 'public', 'languages');
+  const shape = {
+    designer: ['iterate', 'furniture', 'saved'],
+    masking: ['snap', 'own', 'repeat'],
+    gallery: ['auto', 'versions', 'private', 'share'],
+  };
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
+    const home = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')).home;
+    for (const [section, points] of Object.entries(shape)) {
+      const block = home?.[section];
+      assert.ok(block, `${file}: home.${section} is missing`);
+      for (const key of ['kicker', 'panelTitle', 'panelBody']) {
+        assert.equal(typeof block[key], 'string', `${file}: home.${section}.${key} is a string`);
+        assert.ok(block[key].trim().length > 0, `${file}: home.${section}.${key} is not blank`);
+      }
+      for (const key of points) {
+        const point = block.points?.[key];
+        assert.equal(typeof point, 'string', `${file}: home.${section}.points.${key} is a string`);
+        assert.ok(point.trim().length > 0, `${file}: home.${section}.points.${key} is not blank`);
+      }
+    }
+  }
+});
+
+test('every panel uses the shared split markup', () => {
+  // The class began as the exterior section's `hex-shell` and was renamed as each
+  // panel adopted it — the demo pair first, then the gallery. All four are on it now,
+  // which is what keeps their heights within ~44px of each other; a panel that opts
+  // out goes back to being whatever height its content wants and drags the shared
+  // card height with it. If a rename ever half-lands, this catches the stragglers.
+  const panels = panelsFromMarkup().length;
+  assert.equal([...INDEX.matchAll(/class="shw__split"/g)].length, panels, 'every panel splits');
+  assert.equal([...INDEX.matchAll(/class="shw__aside"/g)].length, panels, 'every panel has a copy column');
+  for (const dead of ['hex-shell', 'hex-copy']) {
+    assert.equal(INDEX.includes(dead), false, `the old ${dead} class is fully retired`);
+  }
+});
+
+// --------------------------------------------------------------------------
+// The gallery mock's seven cards
+// --------------------------------------------------------------------------
+
+/** The gallery panel's markup, sliced out of index.html. */
+function galleryMarkup() {
+  const start = INDEX.indexOf('id="gallery-showcase"');
+  return INDEX.slice(start, INDEX.indexOf('</article>', start));
+}
+
+test('the gallery mock ships seven cards, each with its own image', () => {
+  const gal = galleryMarkup();
+  const cards = [...gal.matchAll(/<figure class="hgal-card">/g)].length;
+  assert.equal(cards, 7, 'seven cards');
+  const srcs = [...gal.matchAll(/src="(media-webp\/Homepage\/Gallery\/[^"]+)"/g)].map((m) => m[1]);
+  assert.equal(srcs.length, 7, 'one image per card');
+  assert.equal(new Set(srcs).size, 7, 'no image is used twice');
+});
+
+test('every gallery image the markup points at exists on disk', () => {
+  for (const [, src] of galleryMarkup().matchAll(/src="(media-webp\/Homepage\/Gallery\/[^"]+)"/g)) {
+    const file = path.join(ROOT, 'public', ...src.split('/'));
+    assert.ok(fs.existsSync(file), `${src} is missing — the card would render a broken image`);
+  }
+});
+
+test('the "N staged rooms" count names the number of cards, in every pack', () => {
+  // The count is a literal number in prose, so it silently goes stale the moment a
+  // card is added or removed — the very thing that just happened going 3 -> 7. It is
+  // hidden below 768px where only one card survives, so the number only has to be
+  // true at the widths it is actually visible.
+  const cards = [...galleryMarkup().matchAll(/<figure class="hgal-card">/g)].length;
+  const dir = path.join(ROOT, 'public', 'languages');
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
+    const count = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')).home?.gallery?.mock?.count;
+    assert.equal(typeof count, 'string', `${file}: home.gallery.mock.count is a string`);
+    assert.match(
+      count,
+      new RegExp(`\\b${cards}\\b|${cards}`),
+      `${file}: mock.count is "${count}" but the mock ships ${cards} cards`
+    );
+  }
+});
+
+test('every card key the gallery markup asks for exists in all eleven packs', () => {
+  const keys = [...galleryMarkup().matchAll(/data-lang(?:-attr)?="([^"|]+)/g)].map((m) => m[1]);
+  const unique = [...new Set(keys)];
+  assert.ok(unique.length >= 25, `expected the full card set, saw ${unique.length} keys`);
+  const dir = path.join(ROOT, 'public', 'languages');
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
+    const pack = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+    for (const key of unique) {
+      const value = key.split('.').reduce((/** @type {any} */ o, k) => (o || {})[k], pack);
+      assert.equal(typeof value, 'string', `${file}: ${key} is missing`);
+      assert.ok(value.trim().length > 0, `${file}: ${key} is blank`);
+    }
+  }
+});
+
+test('the mock grid scrolls rather than growing the panel', () => {
+  // These four together are what keep seven cards from making the gallery panel
+  // taller than the other three: the grid takes the leftover row height and scrolls
+  // inside it. Drop min-height:0 and a grid child refuses to shrink below its
+  // content, so the panel grows instead and the shared card height goes with it.
+  const css = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'home.css'), 'utf8');
+  const rule = css.slice(css.indexOf('.hgal-grid {'), css.indexOf('}', css.indexOf('.hgal-grid {')));
+  for (const decl of [
+    'flex: 1',
+    'min-height: 0',
+    'max-height:',
+    'overflow-y: auto',
+    'overscroll-behavior: contain',
+    // The subtle one. With a definite height, implicit `auto` rows are fitted to the
+    // container rather than to their content — the rows collapsed to 51px and the
+    // images were clipped by .hgal-card's overflow:hidden, leaving nothing to scroll.
+    'grid-auto-rows: max-content',
+  ]) {
+    assert.ok(rule.includes(decl), `.hgal-grid needs "${decl}"`);
+  }
+});
+
+test('the carousel drag ignores the gallery scroller', () => {
+  // Without this the mock cannot be scrolled by dragging: the pointer gesture is
+  // taken by the carousel and flicks to the next studio instead.
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const guard = js.match(/if \(target\.closest\((['"])(.+?)\1\)\) return;/);
+  assert.ok(guard, 'wireDrag still has its ignore list');
+  assert.match(guard[2], /\.hgal-grid/, 'the gallery scroller is in the drag ignore list');
+});
+
 test('the tab labels the markup asks for are the ones the packs define', () => {
   // The markup names its keys; the packs must answer to exactly those names. Catches a
   // rename on either side, which the English fallback would otherwise paper over.

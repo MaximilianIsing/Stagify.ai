@@ -98,11 +98,27 @@
     },
     "designer": {
       "title": "Lascia che un'IA arredi il tuo spazio",
-      "subtitle": "Con il Designer IA, chatta per arredare, riprogettare e perfezionare qualsiasi stanza finché non è pronta per l'annuncio. <em>(Esclusiva Stagify+)</em>"
+      "subtitle": "Con il Designer IA, chatta per arredare, riprogettare e perfezionare qualsiasi stanza finché non è pronta per l'annuncio. <em>(Esclusiva Stagify+)</em>",
+      "kicker": "Conversazionale",
+      "panelTitle": "Descrivi la stanza, non arredarla",
+      "panelBody": "Scrivi ciò che vuoi e il Designer arreda la stanza, tenendola a mente. Chiedi un altro divano o una palette più calda e riparte da quanto ha già creato.",
+      "points": {
+        "iterate": "Continua a perfezionare nella stessa conversazione.",
+        "furniture": "Allega mobili che vendi davvero e li inserisce.",
+        "saved": "Ogni versione finisce da sola nella tua galleria."
+      }
     },
     "masking": {
       "title": "Arreda con precisione esatta",
-      "subtitle": "Maschera le aree da rifare, aggiungi i tuoi mobili e tutto il resto resta identico al pixel. <em>(Esclusiva Stagify+)</em>"
+      "subtitle": "Maschera le aree da rifare, aggiungi i tuoi mobili e tutto il resto resta identico al pixel. <em>(Esclusiva Stagify+)</em>",
+      "kicker": "Preciso al pixel",
+      "panelTitle": "Cambia un angolo, non tutta la stanza",
+      "panelBody": "Colora solo l'area da riarredare. Tutto ciò che resta fuori dalla maschera torna intatto, così il resto della foto non cambia.",
+      "points": {
+        "snap": "Dipingi una maschera o lascia che segua l'oggetto.",
+        "own": "Aggiungi la foto di un tuo mobile per inserirlo.",
+        "repeat": "Riusa la stessa maschera con un altro stile."
+      }
     },
     "exterior": {
       "title": "Sistema la foto con cui si apre l'annuncio",
@@ -127,31 +143,44 @@
       "subtitle": "La tua galleria conserva ogni stanza allestita, le impostazioni che l'hanno prodotta e i link che hai condiviso con i clienti.",
       "mock": {
         "title": "La tua galleria",
-        "count": "3 stanze allestite"
+        "count": "7 stanze arredate"
       },
       "dates": {
         "newest": "14 mar",
         "mid": "13 mar",
-        "older": "11 mar"
+        "older": "11 mar",
+        "four": "10 mar",
+        "five": "9 mar",
+        "six": "7 mar",
+        "seven": "5 mar"
       },
       "alts": {
         "living": "Un soggiorno allestito con due poltrone blu di fronte a un divano bianco capitonné, un tappeto fantasia e un quadro dai toni marini",
         "bedroom": "Una camera da letto allestita con letto ampio, testiera imbottita, TV a parete e mobile basso",
-        "dining": "Una sala da pranzo allestita con tavolo ovale in legno, sei sedie, un lampadario e finestre a bovindo"
+        "dining": "Una sala da pranzo allestita con tavolo ovale in legno, sei sedie, un lampadario e finestre a bovindo",
+        "kitchen": "Una cucina arredata con isola bianca, piano in marmo, sgabelli blu e lampade a sospensione",
+        "office": "Uno studio arredato con scrivania in legno, sedia imbottita, librerie e lampada da tavolo",
+        "guest": "Una camera degli ospiti arredata con letto imbottito neutro, comodini abbinati e cuscini azzurri",
+        "sunroom": "Una veranda arredata con poltrone in rattan, tavolo rotondo in legno, piante e ampie finestre"
       },
       "addresses": {
         "one": "412 Rosewood Lane",
         "two": "88 Harborview Drive",
-        "three": "1207 Ashford Court"
+        "three": "1207 Ashford Court",
+        "four": "27 Pinehurst Way",
+        "five": "915 Marlow Street",
+        "six": "64 Ellery Road",
+        "seven": "1841 Cypress Bend"
       },
-      "panelTitle": "Riallestisci quante volte vuoi. Non si sovrascrive nulla.",
-      "panelBody": "Non c'è nessun pulsante di salvataggio né cartelle da nominare. Allestisci una stanza ed è già nella tua galleria, dalla più recente, prima ancora che tu chiuda la scheda. Riaprila più tardi e trovi il cursore prima/dopo insieme alle impostazioni esatte che l'hanno prodotta: tipo di stanza, stile, il tuo prompt aggiuntivo, se hai rimosso i mobili esistenti e le eventuali foto di mobili che hai allegato.",
+      "panelTitle": "Riarreda tutte le volte che vuoi",
+      "panelBody": "Nessun pulsante di salvataggio, nessuna cartella da nominare. Arreda una stanza ed è nella tua galleria prima che tu chiuda la scheda, con le impostazioni esatte che l'hanno creata.",
       "points": {
-        "auto": "Salvata automaticamente. Non c'è nessun passaggio da ricordare.",
-        "versions": "Ogni versione viene conservata, così due stili della stessa stanza restano affiancati.",
-        "private": "La foto originale vuota resta solo tua. Non fa mai parte di ciò che vede il cliente.",
-        "share": "Ogni stanza ha il suo link per il cliente. Apri la stanza, copia il link e invialo."
-      }
+        "auto": "Si salva da solo, senza nulla da ricordare.",
+        "versions": "Ogni versione resta, mai sovrascritta.",
+        "private": "La foto vuota originale resta solo tua.",
+        "share": "Ogni stanza ha il suo link per il cliente."
+      },
+      "kicker": "Conservato per te"
     },
     "info": {
       "eyebrow": "In breve",

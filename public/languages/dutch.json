@@ -98,11 +98,27 @@
     },
     "designer": {
       "title": "Laat een AI je ruimte stylen",
-      "subtitle": "Met de AI-Designer chat je om elke kamer te stylen, opnieuw te ontwerpen en te verfijnen tot hij advertentieklaar is. <em>(Stagify+ Exclusief)</em>"
+      "subtitle": "Met de AI-Designer chat je om elke kamer te stylen, opnieuw te ontwerpen en te verfijnen tot hij advertentieklaar is. <em>(Stagify+ Exclusief)</em>",
+      "kicker": "In gesprek",
+      "panelTitle": "Beschrijf de kamer, richt hem niet in",
+      "panelBody": "Typ wat je wilt en de Designer richt de kamer in en onthoudt hem. Vraag om een andere bank of warmere kleuren en hij bouwt verder op wat er al staat.",
+      "points": {
+        "iterate": "Blijf bijschaven in hetzelfde gesprek.",
+        "furniture": "Voeg meubels toe die je verkoopt; hij plaatst ze.",
+        "saved": "Elke versie belandt vanzelf in je galerij."
+      }
     },
     "masking": {
       "title": "Style met exacte precisie",
-      "subtitle": "In de nieuwe Maskeerstudio markeer je de gebieden om te herstylen, voeg je je eigen meubilair toe, en al het andere blijft pixel-perfect. <em>(Stagify+ Exclusief)</em>"
+      "subtitle": "In de nieuwe Maskeerstudio markeer je de gebieden om te herstylen, voeg je je eigen meubilair toe, en al het andere blijft pixel-perfect. <em>(Stagify+ Exclusief)</em>",
+      "kicker": "Pixelnauwkeurig",
+      "panelTitle": "Verander één hoek, niet de hele kamer",
+      "panelBody": "Schilder alleen het gebied dat opnieuw ingericht moet worden. Alles buiten het masker komt onveranderd terug, de rest van de foto blijft staan.",
+      "points": {
+        "snap": "Teken een masker of laat het om het object snappen.",
+        "own": "Voeg je eigen meubelfoto toe om iets te plaatsen.",
+        "repeat": "Gebruik hetzelfde masker in een andere stijl."
+      }
     },
     "exterior": {
       "title": "Herstel de foto waarmee de advertentie opent",
@@ -127,31 +143,44 @@
       "subtitle": "Je galerij bewaart elke ingerichte kamer, de instellingen die hem hebben gemaakt en de links die je met klanten hebt gedeeld.",
       "mock": {
         "title": "Jouw galerij",
-        "count": "3 ingerichte kamers"
+        "count": "7 ingerichte kamers"
       },
       "dates": {
         "newest": "14 mrt",
         "mid": "13 mrt",
-        "older": "11 mrt"
+        "older": "11 mrt",
+        "four": "10 mrt",
+        "five": "9 mrt",
+        "six": "7 mrt",
+        "seven": "5 mrt"
       },
       "alts": {
         "living": "Een ingerichte woonkamer met twee blauwe fauteuils tegenover een witte gecapitonneerde bank, een gedessineerd vloerkleed en een kustschilderij",
         "bedroom": "Een ingerichte slaapkamer met een breed bed, gestoffeerd hoofdbord, wandtelevisie en een laag dressoir",
-        "dining": "Een ingerichte eetkamer met een ovale houten tafel, zes stoelen, een kroonluchter en erkerramen"
+        "dining": "Een ingerichte eetkamer met een ovale houten tafel, zes stoelen, een kroonluchter en erkerramen",
+        "kitchen": "Een ingerichte keuken met wit kookeiland, marmeren blad, blauwe barkrukken en hanglampen",
+        "office": "Een ingerichte werkkamer met houten bureau, gestoffeerde stoel, boekenkasten en een tafellamp",
+        "guest": "Een ingerichte logeerkamer met neutraal gestoffeerd bed, bijpassende nachtkastjes en zachtblauwe kussens",
+        "sunroom": "Een ingerichte serre met rieten fauteuils, ronde houten tafel, planten en brede tuinramen"
       },
       "addresses": {
         "one": "412 Rosewood Lane",
         "two": "88 Harborview Drive",
-        "three": "1207 Ashford Court"
+        "three": "1207 Ashford Court",
+        "four": "27 Pinehurst Way",
+        "five": "915 Marlow Street",
+        "six": "64 Ellery Road",
+        "seven": "1841 Cypress Bend"
       },
-      "panelTitle": "Richt zo vaak opnieuw in als je wilt. Er wordt niets overschreven.",
-      "panelBody": "Er is geen opslaanknop en geen map die je een naam moet geven. Richt een kamer in en hij staat in je galerij, nieuwste eerst, nog voordat je het tabblad sluit. Open hem later en je krijgt de voor-en-naschuifbalk plus precies de instellingen erachter: type kamer, stijl, je extra prompt, of je de bestaande meubels hebt verwijderd, en eventuele meubelfoto's die je hebt toegevoegd.",
+      "panelTitle": "Zo vaak opnieuw inrichten als je wilt",
+      "panelBody": "Geen opslaanknop, geen map om te benoemen. Richt een kamer in en hij staat in je galerij voordat je het tabblad sluit, met de precieze instellingen erachter.",
       "points": {
-        "auto": "Wordt automatisch bewaard. Er is geen opslagstap die je kunt vergeten.",
-        "versions": "Elke versie blijft bewaard, dus twee stijlen van dezelfde kamer staan naast elkaar.",
-        "private": "De originele lege foto blijft alleen van jou. Die is nooit onderdeel van wat een klant ziet.",
-        "share": "Elke kamer heeft zijn eigen klantlink. Open de kamer, kopieer de link en stuur hem door."
-      }
+        "auto": "Slaat zichzelf op, niets om te vergeten.",
+        "versions": "Elke versie blijft bewaard, nooit overschreven.",
+        "private": "De originele lege foto blijft alleen van jou.",
+        "share": "Elke kamer heeft zijn eigen klantlink."
+      },
+      "kicker": "Voor je bewaard"
     },
     "info": {
       "eyebrow": "De korte versie",

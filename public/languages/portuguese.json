@@ -98,11 +98,27 @@
     },
     "designer": {
       "title": "Deixe uma IA decorar seu espaço",
-      "subtitle": "Com o Designer IA, converse para decorar, redesenhar e refinar qualquer cômodo até que fique pronto para o anúncio. <em>(Exclusivo do Stagify+)</em>"
+      "subtitle": "Com o Designer IA, converse para decorar, redesenhar e refinar qualquer cômodo até que fique pronto para o anúncio. <em>(Exclusivo do Stagify+)</em>",
+      "kicker": "Conversacional",
+      "panelTitle": "Descreva o ambiente, não o decore",
+      "panelBody": "Escreva o que você quer e o Designer prepara o ambiente, mantendo-o em mente. Peça outro sofá ou uma paleta mais quente e ele parte do que já criou.",
+      "points": {
+        "iterate": "Continue ajustando na mesma conversa.",
+        "furniture": "Anexe móveis que você vende e ele os posiciona.",
+        "saved": "Cada versão vai sozinha para a sua galeria."
+      }
     },
     "masking": {
       "title": "Decore com precisão exata",
-      "subtitle": "Mascare as áreas a refazer, adicione seus próprios móveis e todo o resto fica idêntico ao pixel. <em>(Exclusivo do Stagify+)</em>"
+      "subtitle": "Mascare as áreas a refazer, adicione seus próprios móveis e todo o resto fica idêntico ao pixel. <em>(Exclusivo do Stagify+)</em>",
+      "kicker": "Exato ao pixel",
+      "panelTitle": "Mude um canto, não o ambiente inteiro",
+      "panelBody": "Pinte apenas a área que quiser redecorar. Tudo fora da máscara volta intacto, então o resto da foto não muda.",
+      "points": {
+        "snap": "Pinte uma máscara ou deixe ajustar ao objeto.",
+        "own": "Adicione a foto de um móvel para colocá-lo.",
+        "repeat": "Reaplique a mesma máscara em outro estilo."
+      }
     },
     "exterior": {
       "title": "Corrija a foto com que o anúncio abre",
@@ -127,31 +143,44 @@
       "subtitle": "A sua galeria guarda cada ambiente preparado, as configurações que o geraram e os links que você compartilhou com clientes.",
       "mock": {
         "title": "Sua galeria",
-        "count": "3 ambientes preparados"
+        "count": "7 ambientes preparados"
       },
       "dates": {
         "newest": "14 de mar",
         "mid": "13 de mar",
-        "older": "11 de mar"
+        "older": "11 de mar",
+        "four": "10 mar",
+        "five": "9 mar",
+        "six": "7 mar",
+        "seven": "5 mar"
       },
       "alts": {
         "living": "Uma sala de estar preparada com duas poltronas azuis de frente para um sofá branco capitonê, tapete estampado e um quadro de temática litorânea",
         "bedroom": "Um quarto preparado com cama ampla, cabeceira estofada, TV na parede e um rack baixo",
-        "dining": "Uma sala de jantar preparada com mesa oval de madeira, seis cadeiras, lustre e janelas em sacada"
+        "dining": "Uma sala de jantar preparada com mesa oval de madeira, seis cadeiras, lustre e janelas em sacada",
+        "kitchen": "Uma cozinha preparada com ilha branca, bancada de mármore, banquetas azuis e luminárias pendentes",
+        "office": "Um home office preparado com mesa de madeira, cadeira estofada, estantes e luminária de mesa",
+        "guest": "Um quarto de hóspedes preparado com cama estofada neutra, criados-mudos iguais e almofadas azuis",
+        "sunroom": "Uma varanda envidraçada preparada com poltronas de rattan, mesa redonda, plantas e janelas amplas"
       },
       "addresses": {
         "one": "412 Rosewood Lane",
         "two": "88 Harborview Drive",
-        "three": "1207 Ashford Court"
+        "three": "1207 Ashford Court",
+        "four": "27 Pinehurst Way",
+        "five": "915 Marlow Street",
+        "six": "64 Ellery Road",
+        "seven": "1841 Cypress Bend"
       },
-      "panelTitle": "Prepare de novo quantas vezes quiser. Nada é sobrescrito.",
-      "panelBody": "Não há botão de salvar nem pasta para nomear. Prepare um ambiente e ele já está na sua galeria, do mais recente para o mais antigo, antes mesmo de você fechar a aba. Abra depois e você tem o comparador de antes e depois mais as configurações exatas por trás dele: tipo de ambiente, estilo, seu comando extra, se você removeu os móveis existentes e as fotos de móveis que anexou.",
+      "panelTitle": "Refaça quantas vezes quiser",
+      "panelBody": "Sem botão de salvar, sem pasta para nomear. Prepare um ambiente e ele estará na sua galeria antes de você fechar a aba, com as configurações exatas por trás dele.",
       "points": {
-        "auto": "Salvo automaticamente. Não há etapa de salvar para esquecer.",
-        "versions": "Todas as versões ficam guardadas, então dois estilos do mesmo ambiente aparecem lado a lado.",
-        "private": "A foto original vazia continua sendo só sua. Ela nunca faz parte do que o cliente vê.",
-        "share": "Cada ambiente vem com seu próprio link para o cliente. Abra o ambiente, copie o link e envie."
-      }
+        "auto": "Salva sozinho, sem nada para esquecer.",
+        "versions": "Cada versão é mantida, nunca sobrescrita.",
+        "private": "A foto vazia original continua só sua.",
+        "share": "Cada ambiente vem com seu próprio link de cliente."
+      },
+      "kicker": "Guardado para você"
     },
     "info": {
       "eyebrow": "Em resumo",
