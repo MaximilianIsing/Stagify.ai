@@ -53,7 +53,7 @@ test('every pack carries the option label, its tooltip and its aria-label', asyn
   }
 });
 
-test('every pack names all three badge styles', async () => {
+test('every pack names every badge style', async () => {
   // Keyed by the STYLE NAME the server knows, not by position, so adding a fourth style to
   // STAMP_STYLES fails here until every pack can name it — the same rule the unstageable
   // rejection codes follow, and for the same reason: the English fallback would otherwise

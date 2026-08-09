@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "Dunkel",
         "light": "Hell",
-        "minimal": "Minimal"
+        "minimal": "Minimal",
+        "banner": "Banner"
       },
       "stampSizeLabel": "Hinweis-Größe",
       "stampPreview": "Vorschau",

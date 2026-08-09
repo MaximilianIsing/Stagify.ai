@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "Тёмный",
         "light": "Светлый",
-        "minimal": "Минимальный"
+        "minimal": "Минимальный",
+        "banner": "Полоса"
       },
       "stampSizeLabel": "Размер надписи",
       "stampPreview": "Предпросмотр",

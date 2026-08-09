@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "Dark",
         "light": "Light",
-        "minimal": "Minimal"
+        "minimal": "Minimal",
+        "banner": "Banner"
       },
       "stampSizeLabel": "Label size",
       "stampPreview": "Preview",

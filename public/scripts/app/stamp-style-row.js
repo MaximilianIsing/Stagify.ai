@@ -1,4 +1,4 @@
-// The strip of badge controls under "Label as virtually staged": three styles, a size
+// The strip of badge controls under "Label as virtually staged": four styles, a size
 // slider, and the preview that shows what the two of them produce.
 //
 // WHY THE PREVIEW IS A SERVER IMAGE AND NOT CSS

@@ -1897,7 +1897,7 @@ h2 {
 /* ── How the disclosure badge looks: style, size, preview ────────────────────
    One line under the "Label as virtually staged" checkbox, revealed by
    scripts/app/stamp-style-row.js while that box is ticked.
-   nowrap is the layout: three swatches + a slider + a preview trigger have to
+   nowrap is the layout: four swatches + a slider + a preview trigger have to
    read as one control strip, and a wrapped slider on its own line looks like a
    second, unrelated setting. The slider is the only elastic member (the others
    are fixed-size), so it absorbs every width the toolbar column has left.
@@ -1960,9 +1960,13 @@ h2 {
   display:flex;
   align-items:center;
   justify-content:center;
-  width:46px;
-  height:28px;
-  border-radius:7px;
+  /* Sized by the arithmetic of the strip, not by taste: four of these plus the slider's
+     56px floor plus the preview pill plus the gaps has to clear the ~327px the toolbar
+     column leaves. A fifth style would not fit — it would need the swatches to become a
+     dropdown, which is the point at which they stop being comparable at a glance. */
+  width:38px;
+  height:26px;
+  border-radius:6px;
   background:linear-gradient(145deg,#b9a993,#6f6152);
   font-size:9px;
   font-weight:600;
@@ -1972,11 +1976,15 @@ h2 {
   transition:box-shadow .15s ease,transform .15s ease
 }
 .stamp-swatch__art--dark::after,
-.stamp-swatch__art--light::after {
+.stamp-swatch__art--light::after,
+.stamp-swatch__art--banner::after {
   content:"";
   position:absolute;
-  inset:8px 7px;
-  z-index:-1;
+  z-index:-1
+}
+.stamp-swatch__art--dark::after,
+.stamp-swatch__art--light::after {
+  inset:7px 6px;
   border-radius:999px
 }
 /* The two glyph colours below are exempt from the palette (see the marker, and
@@ -2000,6 +2008,20 @@ h2 {
 .stamp-swatch__art--minimal {
   color:#fff; /* not-a-token: burnt-in glyph colour */
   text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 5px rgba(0,0,0,.75)
+}
+/* The band spans the swatch and sits on its floor, with the text pushed right — the
+   silhouette IS the difference between this style and the dark chip, so the miniature has
+   to show the shape rather than just the colour. */
+.stamp-swatch__art--banner {
+  align-items:flex-end;
+  justify-content:flex-end;
+  padding:0 4px 1px 0;
+  color:#fff /* not-a-token: burnt-in glyph colour */
+}
+.stamp-swatch__art--banner::after {
+  inset:auto 0 0 0;
+  height:10px;
+  background:rgba(0,0,0,.58)
 }
 .stamp-swatch:hover .stamp-swatch__art {
   transform:translateY(-1px)

@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "深色",
         "light": "浅色",
-        "minimal": "简约"
+        "minimal": "简约",
+        "banner": "横幅"
       },
       "stampSizeLabel": "标注大小",
       "stampPreview": "预览",
