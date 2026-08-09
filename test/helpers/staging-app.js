@@ -51,6 +51,9 @@ export function baseDeps() {
     // file must not share the real per-IP bucket. The armed default is asserted in
     // test/routes/masking-save-route.test.js.
     galleryImportLimiter: pass,
+    // Same again — the armed default is asserted in
+    // test/routes/disclosure-preview-route.test.js.
+    disclosurePreviewLimiter: pass,
   };
 }
 

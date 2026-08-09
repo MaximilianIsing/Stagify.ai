@@ -88,12 +88,26 @@
       "subtitle": "Live demo's. Sleep om te wisselen.",
       "tablistAria": "Studio's",
       "tabs": {
+        "staging": "Styling",
         "designer": "AI-Designer",
         "masking": "Maskeerstudio",
         "exterior": "Buitenstudio",
-        "gallery": "Jouw galerij"
+        "gallery": "Galerij"
       },
       "fullscreen": "Volledig scherm"
+    },
+    "staging": {
+      "title": "Style een lege kamer in seconden",
+      "subtitle": "Upload de foto, kies de kamer en een stijl, en Stagify richt hem in. Met dit proces begint elk abonnement.",
+      "kicker": "Hier begint het",
+      "panelTitle": "Lege foto erin, ingerichte kamer eruit",
+      "panelBody": "Niets te schrijven en niets te leren. Kies het kamertype en de look die je wilt, en de foto komt ingericht terug, met muren, ramen en vloer onaangeroerd.",
+      "points": {
+        "upload": "Upload een foto en style hem in ongeveer 8 seconden.",
+        "styles": "Kies uit inrichtingsstijlen voor elk kamertype.",
+        "restage": "Net niet goed? Herstyle zo vaak je wilt.",
+        "rights": "Elke afbeelding is van jou, met volledig auteursrecht."
+      }
     },
     "designer": {
       "title": "Laat een AI je ruimte stylen",
@@ -274,7 +288,7 @@
     },
     "nar": {
       "title": "Blijf niet achter",
-      "subtitle": "De vastgoedsector adopteert AI razendsnel, en klanten reageren erop. Styling is een van de makkelijkste plekken om te beginnen.",
+      "subtitle": "Makelaars omarmen AI snel en klanten zijn positief. Styling is de makkelijkste start.",
       "usageLabel": "Hoe vaak makelaars AI-tools gebruiken",
       "legend": {
         "daily": "Dagelijks",
@@ -291,7 +305,7 @@
     },
     "plus": {
       "title": "Ga verder met Stagify+",
-      "subtitle": "Meubels verwijderen, de AI Designer en de Masking Studio, plus een verbruiksplan voor hele teams.",
+      "subtitle": "Twee manieren om te upgraden: vast maandbedrag of betalen naar gebruik voor je team.",
       "pro": {
         "name": "Stagify+",
         "tag": "Voor individuen",
@@ -328,7 +342,7 @@
       "note": "Erkend door Compass, Centennial en meer."
     },
     "whyus": {
-      "subtitle": "Andere virtuele styling-tools zijn traag, duur en dichtgetimmerd. Stagify is gebouwd om het tegenovergestelde te zijn."
+      "subtitle": "Andere virtuele styling-tools zijn traag, duur en gesloten. Stagify is precies andersom."
     },
     "testimonials": {
       "title": "Wat makelaars zeggen",
@@ -353,18 +367,18 @@
     },
     "blog": {
       "title": "Van de Stagify-blog",
-      "subtitle": "Gidsen en tips over virtuele styling, MLS-vermelding en het sneller vermarkten van je woningen.",
+      "subtitle": "Gidsen en tips over virtuele styling, MLS-vermelding en sneller vermarkten.",
       "viewAll": "Bezoek de Stagify-blog →"
     },
     "contactCta": {
       "title": "Onze inbox staat altijd open",
-      "subtitle": "Vragen, feedback of ideeën voor samenwerking? We lezen elk bericht en reageren zo snel als we kunnen.",
+      "subtitle": "Vragen, feedback of ideeën? We lezen elk bericht en reageren zo snel als we kunnen.",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Geniet je van Stagify?",
-      "subtitle": "Blij met hoe je advertenties eruitzien? Laat een korte Google-review achter en help andere makelaars ons te vinden.",
+      "subtitle": "Blij met je advertenties? Laat een Google-review achter en help anderen ons te vinden.",
       "button": "Laat een Google-review achter",
       "aria": "Laat een Google-review achter (opent in een nieuw tabblad)"
     }
@@ -406,7 +420,16 @@
       "removeFurniture": "Verwijder bestaand meubilair",
       "labelVirtuallyStaged": "Markeren als virtueel ingericht",
       "labelVirtuallyStagedInfo": "Wat doet markeren als virtueel ingericht?",
-      "labelVirtuallyStagedTip": "Voegt rechtsonder in de definitieve foto een kleine vermelding “Deze afbeelding is virtueel ingericht” toe, in jouw taal. De vermelding hoort bij de afbeelding en gaat dus mee met het bestand, waar je het ook publiceert. Het vervangt niet de vermelding die je MLS in de advertentietekst kan vereisen.",
+      "labelVirtuallyStagedTip": "Voegt rechtsonder in de definitieve foto een kleine vermelding “Virtueel ingericht” toe, in jouw taal. De vermelding hoort bij de afbeelding en gaat dus mee met het bestand, waar je het ook publiceert. Het vervangt niet de vermelding die je MLS in de advertentietekst kan vereisen.",
+      "stampStyleLabel": "Stijl van de vermelding",
+      "stampStyles": {
+        "dark": "Donker",
+        "light": "Licht",
+        "minimal": "Minimaal"
+      },
+      "stampSizeLabel": "Grootte van de vermelding",
+      "stampPreview": "Voorbeeld",
+      "stampPreviewAlt": "Voorbeeldfoto met de vermelding virtueel ingericht",
       "keepFurnitureLabel": "Bestaand meubilair om te behouden (optioneel)",
       "keepFurniturePlaceholder": "bijv. behoud de eettafel en de inbouwkasten",
       "emptyRoomView": "Bekijk de leeggemaakte kamer",
@@ -476,7 +499,7 @@
           "De laatste hand aanleggen",
           "Je visie tot leven brengen"
         ],
-        "cancel": "Annuleren"
+        "stop": "Generatie stoppen"
       },
       "downloadSizeMenu": "Downloadresolutie kiezen",
       "downloadOriginal": "Origineel",

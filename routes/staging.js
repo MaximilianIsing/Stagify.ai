@@ -9,7 +9,13 @@ import { logger } from '../lib/logger.js';
 import {
   validateImageLimiter as defaultValidateImageLimiter,
   galleryImportLimiter as defaultGalleryImportLimiter,
+  disclosurePreviewLimiter as defaultDisclosurePreviewLimiter,
 } from '../lib/http/rate-limiters.js';
+import {
+  normalizePreviewParams,
+  renderDisclosurePreview,
+  PREVIEW_CONTENT_TYPE,
+} from '../lib/image/disclosure-preview.js';
 
 // A validate-image payload must be a base64 image data URL — both studios build one
 // with canvas.toDataURL() — so anything else is not a real upload. Checking the shape
@@ -46,6 +52,7 @@ const MAX_VALIDATE_IMAGE_BYTES = 8 * 1024 * 1024;
  *   handleExteriorMultipart: (req: import('express').Request, res: import('express').Response, user: any) => Promise<import('express').Response | void>,
  *   handleMaskingSave: (req: import('express').Request, res: import('express').Response, user: any) => Promise<import('express').Response | void>,
  *   galleryImportLimiter?: import('express').RequestHandler,
+ *   disclosurePreviewLimiter?: import('express').RequestHandler,
  *   downscaleImage: typeof import('../lib/image/image-primitives.js').downscaleImage,
  *   padBufferToAspectRatio: typeof import('../lib/image/image-primitives.js').padBufferToAspectRatio,
  *   buildMarkedRoomImage: typeof import('../lib/image/image-primitives.js').buildMarkedRoomImage,
@@ -65,7 +72,8 @@ const MAX_VALIDATE_IMAGE_BYTES = 8 * 1024 * 1024;
  *   mask-edit / segment factories, which each type their own slice.
  *   `validateImageLimiter` is a test seam only: omitted (or null) it falls back to
  *   the shared `validateImageLimiter`, so the pre-check is never mounted with
- *   genLimiter as its only ceiling.
+ *   genLimiter as its only ceiling. `disclosurePreviewLimiter` is the same seam for the
+ *   badge preview, which has no other ceiling at all.
  */
 export default function createStagingRouter(deps) {
   // Names used by the handlers still inlined below. The /api/mask-edit and
@@ -78,6 +86,34 @@ export default function createStagingRouter(deps) {
   const router = createAsyncRouter();
   const preCheckLimiter = validateImageLimiter ?? defaultValidateImageLimiter;
   const galleryImportLimiter = injectedGalleryImportLimiter ?? defaultGalleryImportLimiter;
+  const previewLimiter = deps.disclosurePreviewLimiter ?? defaultDisclosurePreviewLimiter;
+
+// What the "Preview" hover in the staging modal shows: the user's chosen badge style and
+// size, stamped onto a sample photo by the SAME code that will stamp their render. See
+// lib/image/disclosure-preview.js for why this is drawn here rather than mocked in CSS,
+// and why an unauthenticated renderer is safe.
+//
+// Unauthenticated on purpose. The controls it serves sit in a modal any visitor can open,
+// and gating the preview behind sign-in would mean the one explanation of what the option
+// does is missing for the people deciding whether to sign up. It renders nothing the
+// visitor supplies: every input is snapped to a closed set before it reaches sharp.
+router.get('/api/disclosure-preview', previewLimiter, async (req, res) => {
+  const params = normalizePreviewParams(req.query);
+  try {
+    const image = await renderDisclosurePreview(params);
+    // Short max-age rather than immutable: the URL carries the CONFIGURATION, not a build
+    // id, so the same URL legitimately renders different bytes after a deploy that retunes
+    // the badge. An hour kills the repeat traffic from dragging the slider without letting
+    // a stale preview outlive a design change by a week.
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.type(PREVIEW_CONTENT_TYPE);
+    return res.send(image);
+  } catch (error) {
+    // A broken preview must never look like a broken FEATURE: the badge itself is fine, so
+    // answer with a status the frontend can hide the popup on rather than an error card.
+    return sendError(res, 500, 'Preview unavailable', { ref: reportError('staging.disclosure-preview', error) });
+  }
+});
 
 router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, res) => {
   try {

@@ -451,7 +451,7 @@
 
       <!-- ===================== BEFORE / AFTER STUDIO ===================== -->
       <section class="home-section home-studio" id="staging-studio" aria-labelledby="studio-title">
-        <div class="home-section__head reveal">
+        <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="studio-title" data-tx="blur" data-lang="home.studio.title">Drag to see what staging does</h2>
           <p class="home-section__sub" data-lang="home.studio.subtitle">The same listing photo, before and after Stagify. No movers, no rentals, no waiting.</p>
         </div>
@@ -616,9 +616,10 @@
       <!-- ===================== STUDIO SHOWCASE ===================== -->
       <!-- The AI Designer, Masking Studio, Exterior Studio and gallery blocks used to
            be four stacked full-width sections (~2,900px, a quarter of the page) that
-           repeated the same shape one after another. They are now four panels of one
-           3D carousel: the front panel sits flat and fully interactive, its neighbours
-           are rotated back on the Y axis and dimmed.
+           repeated the same shape one after another. They are now panels of one
+           3D carousel — five, since the main staging flow joined them at the front:
+           the front panel sits flat and fully interactive, its neighbours are rotated
+           back on the Y axis and dimmed.
 
            THE PANEL IDS ARE LOAD-BEARING — they are the ids the four old sections had,
            kept so every existing deep link still resolves. #ai-designer-demo especially:
@@ -639,16 +640,66 @@
 
         <div class="shw reveal" data-showcase>
           <div class="shw__tabs" role="tablist" data-lang-attr="home.showcase.tablistAria|aria-label" aria-label="Studios">
-            <button type="button" class="shw__tab is-active" role="tab" id="shw-tab-0" aria-controls="ai-designer-demo" aria-selected="true" data-shw-tab="0" data-lang="home.showcase.tabs.designer">AI Designer</button>
-            <button type="button" class="shw__tab" role="tab" id="shw-tab-1" aria-controls="masking-studio-demo" aria-selected="false" tabindex="-1" data-shw-tab="1" data-lang="home.showcase.tabs.masking">Masking Studio</button>
-            <button type="button" class="shw__tab" role="tab" id="shw-tab-2" aria-controls="exterior-studio-demo" aria-selected="false" tabindex="-1" data-shw-tab="2" data-lang="home.showcase.tabs.exterior">Exterior Studio</button>
-            <button type="button" class="shw__tab" role="tab" id="shw-tab-3" aria-controls="gallery-showcase" aria-selected="false" tabindex="-1" data-shw-tab="3" data-lang="home.showcase.tabs.gallery">Your gallery</button>
+            <button type="button" class="shw__tab is-active" role="tab" id="shw-tab-0" aria-controls="staging-studio-demo" aria-selected="true" data-shw-tab="0" data-lang="home.showcase.tabs.staging">Staging</button>
+            <button type="button" class="shw__tab" role="tab" id="shw-tab-1" aria-controls="ai-designer-demo" aria-selected="false" tabindex="-1" data-shw-tab="1" data-lang="home.showcase.tabs.designer">AI Designer</button>
+            <button type="button" class="shw__tab" role="tab" id="shw-tab-2" aria-controls="masking-studio-demo" aria-selected="false" tabindex="-1" data-shw-tab="2" data-lang="home.showcase.tabs.masking">Masking Studio</button>
+            <button type="button" class="shw__tab" role="tab" id="shw-tab-3" aria-controls="exterior-studio-demo" aria-selected="false" tabindex="-1" data-shw-tab="3" data-lang="home.showcase.tabs.exterior">Exterior Studio</button>
+            <button type="button" class="shw__tab" role="tab" id="shw-tab-4" aria-controls="gallery-showcase" aria-selected="false" tabindex="-1" data-shw-tab="4" data-lang="home.showcase.tabs.gallery">Gallery</button>
           </div>
 
           <div class="shw__stage">
             <div class="shw__track">
 
-              <article class="shw__panel" id="ai-designer-demo" role="tabpanel" aria-labelledby="shw-tab-0" data-shw-panel="0">
+              <!-- ===================== STAGING (THE MAIN FLOW) ===================== -->
+              <!-- The panel the carousel opens on, and the only one describing the flow
+                   every plan gets: upload a photo, pick the room and a style, get it back
+                   staged. The three studios behind it are refinements of this.
+
+                   The walkthrough is the SAME recording guides.html shows under its
+                   "Stagify+" tab (key `plus`, "Your first Stagify+ staging" in
+                   demo-data.js) — the paid flow, because that is the recording that
+                   exists. So the copy here stays about staging itself and carries no
+                   "(Stagify+ Exclusive)" tag, unlike the three sibling panels: free
+                   accounts stage too, and tagging this one would say otherwise. If a
+                   free-plan recording is ever cut, `data-demo="free"` is the swap. -->
+              <article class="shw__panel" id="staging-studio-demo" role="tabpanel" aria-labelledby="shw-tab-0" data-shw-panel="0">
+                <div class="shw__panel-inner">
+                  <header class="shw__panel-head">
+                    <h3 class="shw__panel-title" id="staging-title" data-lang="home.staging.title">Stage an empty room in seconds</h3>
+                    <p class="shw__panel-sub" data-lang="home.staging.subtitle">Upload the photo, pick the room and a style, and Stagify furnishes it. This is the flow every plan starts in.</p>
+                  </header>
+                  <div class="shw__panel-body">
+                    <div class="shw__split">
+                      <div class="shw__media">
+                        <div class="designer-shell">
+                          <div class="designer-demo" data-demo="plus" data-demo-title="Stagify Staging Demo">
+                            <div class="designer-demo__placeholder" aria-hidden="true">
+                              <span class="designer-demo__spinner"></span>
+                            </div>
+                          </div>
+                        </div>
+                        <button type="button" class="shw__fs" data-shw-fullscreen aria-pressed="false" data-lang-attr="home.showcase.fullscreen|aria-label" aria-label="Toggle fullscreen">
+                          <svg class="shw__fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                          <svg class="shw__fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h3V5M19 8h-3V5M5 16h3v3M19 16h-3v3"/></svg>
+                        </button>
+                      </div>
+                      <aside class="shw__aside">
+                        <div class="shw__kicker" data-lang="home.staging.kicker">Where it starts</div>
+                        <h4 class="shw__aside-title" data-lang="home.staging.panelTitle">Empty photo in, furnished room out</h4>
+                        <p class="shw__aside-body" data-lang="home.staging.panelBody">No brief to write and nothing to learn. Choose the room type and the look you want, and the photo comes back staged with the walls, windows and floor untouched.</p>
+                        <ul class="home-list">
+                          <li data-lang="home.staging.points.upload">Upload a photo and stage it in about 8 seconds.</li>
+                          <li data-lang="home.staging.points.styles">Pick from furnishing styles for any room type.</li>
+                          <li data-lang="home.staging.points.restage">Not quite right? Re-stage it as often as you like.</li>
+                          <li data-lang="home.staging.points.rights">Every image is yours, with full copyright.</li>
+                        </ul>
+                      </aside>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="shw__panel" id="ai-designer-demo" role="tabpanel" aria-labelledby="shw-tab-1" data-shw-panel="1">
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="designer-title" data-lang="home.designer.title">Let an AI stage your space</h3>
@@ -684,7 +735,7 @@
                 </div>
               </article>
 
-              <article class="shw__panel" id="masking-studio-demo" role="tabpanel" aria-labelledby="shw-tab-1" data-shw-panel="1">
+              <article class="shw__panel" id="masking-studio-demo" role="tabpanel" aria-labelledby="shw-tab-2" data-shw-panel="2">
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="masking-title" data-lang="home.masking.title">Stage with exact precision</h3>
@@ -748,7 +799,7 @@
            way in; exterior-studio.html is marked `data-staging-preview`
            (scripts/staging-menu.js), so signed-out and free visitors reaching it
            from there land on the public explainer rather than a redirect. -->
-              <article class="shw__panel" id="exterior-studio-demo" role="tabpanel" aria-labelledby="shw-tab-2" data-shw-panel="2">
+              <article class="shw__panel" id="exterior-studio-demo" role="tabpanel" aria-labelledby="shw-tab-3" data-shw-panel="3">
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="exterior-title" data-lang="home.exterior.title">Fix the photo the listing opens with</h3>
@@ -811,7 +862,7 @@
                    Exclusive)" tag. Keep it that way if the copy is ever rewritten; the three
                    sibling panels sitting either side of it make the omission easy to "fix"
                    by mistake. -->
-              <article class="shw__panel" id="gallery-showcase" role="tabpanel" aria-labelledby="shw-tab-3" data-shw-panel="3">
+              <article class="shw__panel" id="gallery-showcase" role="tabpanel" aria-labelledby="shw-tab-4" data-shw-panel="4">
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="gallery-title" data-lang="home.gallery.title">Every room you stage is saved for you</h3>
@@ -941,9 +992,13 @@
            instead of two data-heavy sections away from it. Keep it adjacent to the
            showcase if these get reordered again. -->
       <section class="home-section home-plus" id="plans" aria-labelledby="plus-title">
-        <div class="home-section__head reveal">
+        <!-- Subtitle names the CHOICE (flat monthly vs per-generation), not the
+             features — the three features it used to list are the first three
+             bullets of the card immediately below it, and the feature framing
+             already has a home in stagifyPlus.hero.subtitle on the plus page. -->
+        <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="plus-title" data-tx="shiny" data-lang="home.plus.title">Go further with Stagify+</h2>
-          <p class="home-section__sub" data-lang="home.plus.subtitle">Furniture removal, the AI Designer and the Masking Studio, plus a usage-based plan built for whole teams.</p>
+          <p class="home-section__sub" data-lang="home.plus.subtitle">Two ways to upgrade: a flat monthly plan, or usage-based billing for your team.</p>
         </div>
         <div class="plus-grid">
           <article class="plus-card plus-card--pro reveal reveal--left">
@@ -1069,9 +1124,11 @@
 
       <!-- ===================== DON'T FALL BEHIND (NAR) ===================== -->
       <section class="home-section home-nar" id="ai-shift" aria-labelledby="nar-title">
-        <div class="home-section__head reveal">
+        <!-- "Agents", not "Real estate": every figure in the card below is from
+             NAR's survey of agents, not an industry-wide measure. -->
+        <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="nar-title" data-tx="rise" data-lang="home.nar.title">Don't fall behind</h2>
-          <p class="home-section__sub" data-lang="home.nar.subtitle">Real estate is adopting AI fast, and clients are responding to it. Staging is one of the easiest places to start.</p>
+          <p class="home-section__sub" data-lang="home.nar.subtitle">Agents are adopting AI fast, and clients approve. Staging is the easiest place to start.</p>
         </div>
         <!-- Every visible string here is unchanged; scripts/home-figures.js adds the
              entrance wipe and the legend highlight through the data-* hooks only.
@@ -1132,9 +1189,9 @@
 
       <!-- ===================== WHY CHOOSE US ===================== -->
       <section class="home-section home-whyus" id="why" aria-labelledby="whyus-title">
-        <div class="home-section__head reveal">
+        <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="whyus-title" data-tx="clip" data-lang="whyUs.title">Why Choose Us?</h2>
-          <p class="home-section__sub" data-lang="home.whyus.subtitle">Other virtual staging tools are slow, costly, and locked down. Stagify is built to be the opposite.</p>
+          <p class="home-section__sub" data-lang="home.whyus.subtitle">Other virtual staging tools are slow, costly, and locked down. Stagify is the opposite.</p>
         </div>
         <div class="whyus-grid">
           <article class="whyus-card whyus-card--us reveal reveal--left">
@@ -1178,7 +1235,7 @@
 
       <!-- ========================= INSTAGRAM ========================= -->
       <section class="home-section home-ig" id="instagram" aria-labelledby="ig-title">
-        <div class="home-section__head reveal">
+        <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="ig-title" data-tx="fade" data-lang="home.instagram.title">See it in action on Instagram</h2>
           <p class="home-section__sub" data-lang="home.instagram.subtitle">Real staging transformations, quick tips, and behind-the-scenes from the Stagify team.</p>
         </div>
@@ -1241,7 +1298,7 @@
 
       <!-- ========================= BLOG ========================= -->
       <section class="home-section home-blog" id="blog-teaser" aria-labelledby="blog-teaser-title">
-        <div class="home-section__head reveal">
+        <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="blog-teaser-title" data-tx="rise" data-lang="home.blog.title">From the Stagify blog</h2>
           <p class="home-section__sub" data-lang="home.blog.subtitle">Guides and tips on virtual staging, MLS disclosure, and marketing your listings faster.</p>
         </div>
@@ -1302,16 +1359,16 @@
 
       <!-- ========================= CONTACT ========================= -->
       <section class="home-section home-contact-cta" id="contact-cta" aria-labelledby="contact-cta-title">
-        <div class="home-section__head reveal">
+        <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="contact-cta-title" data-tx="fade" data-lang="home.contactCta.title">Our inbox is always open</h2>
-          <p class="home-section__sub" data-lang="home.contactCta.subtitle">Questions, feedback, or partnership ideas? We read every message and reply as soon as we can.</p>
+          <p class="home-section__sub" data-lang="home.contactCta.subtitle">Questions, feedback, or ideas? We read every message and reply as soon as we can.</p>
           <a class="contact-cta-email" href="mailto:team@stagify.ai" data-lang="home.contactCta.email">team@stagify.ai</a>
           <a class="contact-cta-phone" href="tel:+19292514372" data-lang="home.contactCta.phone">(929) 251-4372</a>
         </div>
       </section>
 
       <section class="home-section home-review-cta" id="review-cta" aria-labelledby="review-cta-title">
-        <div class="home-section__head reveal">
+        <div class="home-section__head home-section__head--wide reveal">
           <style>
             #review-cta .review-cta-stars{display:inline-flex;gap:7px;margin-bottom:14px}
             #review-cta .review-star{width:34px;height:34px;display:block;filter:drop-shadow(0 2px 5px rgba(245,158,11,.45));animation:reviewStarGlow 3.6s ease-in-out infinite}
@@ -1339,205 +1396,259 @@
       <div class="modal hidden" id="stage-modal">
         <div class="modal-backdrop" id="modal-backdrop"></div>
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="stage-title">
-          <button class="modal-close" id="modal-close" data-lang-attr="common.close|aria-label" aria-label="Close" data-lang="modal.staging.close">✕</button>
-          <section class="stage" id="stage">
-            <div class="stage-inner">
-              <div class="toolbar">
-                <div class="tool-header">
-                  <h3 id="stage-title" style="color: #2563eb; text-align: center; font-size: 2rem; font-weight: 700; margin: 8px 0 12px 0;" data-lang="modal.staging.title">Options</h3>
-                </div>
+          <!-- The dialog itself does NOT scroll: it clips (overflow:hidden) so its 16px
+               corners round off this inner scroller's scrollbar. When the scrollbar lived on
+               the rounded box itself the browser painted it as a full-height rectangle, whose
+               square ends poked out of the curve at the top-right and bottom-right corners. -->
+          <div class="modal-scroll">
+            <button class="modal-close" id="modal-close" data-lang-attr="common.close|aria-label" aria-label="Close" data-lang="modal.staging.close">✕</button>
+            <section class="stage" id="stage">
+              <div class="stage-inner">
+                <div class="toolbar">
+                  <div class="tool-header">
+                    <h3 id="stage-title" style="color: #2563eb; text-align: center; font-size: 2rem; font-weight: 700; margin: 8px 0 12px 0;" data-lang="modal.staging.title">Options</h3>
+                  </div>
 
-                <!-- Room type and Furniture style share one row: two short pickers
-                     each took a full row of the toolbar, which is the scarcest
-                     space in this modal. Styling lives on .tool-row-pair. -->
-                <div class="tool-row-pair">
-                  <div class="tool-row">
-                    <label class="label" data-lang="modal.staging.roomType">Room type</label>
-                    <div id="room-type-select" class="custom-select" data-value="Bedroom">
-                      <button class="select-trigger" type="button"><span class="select-value" data-lang="roomTypes.bedroom">Bedroom</span><span class="caret">▾</span></button>
-                      <div class="select-menu hidden" role="listbox">
-                        <div class="option selected" data-value="Bedroom" role="option" aria-selected="true" data-lang="roomTypes.bedroom">Bedroom</div>
-                        <div class="option" data-value="Living room" role="option" data-lang="roomTypes.livingRoom">Living room</div>
-                        <div class="option" data-value="Dining room" role="option" data-lang="roomTypes.diningRoom">Dining room</div>
-                        <div class="option" data-value="Kitchen" role="option" data-lang="roomTypes.kitchen">Kitchen</div>
-                        <div class="option" data-value="Bathroom" role="option" data-lang="roomTypes.bathroom">Bathroom</div>
-                        <div class="option" data-value="Office" role="option" data-lang="roomTypes.office">Office</div>
-                        <div class="option" data-value="Outdoors" role="option" data-lang="roomTypes.outdoors">Outdoors</div>
-                        <!-- data-lang overwrites textContent, so the label lives in its own
-                             span and the badge sits beside it rather than inside it. -->
-                        <div class="option option--with-badge" data-value="Dorm" role="option"><span class="option-label" data-lang="roomTypes.dorm">Dorm</span><span class="option-badge" data-lang="common.newBadge">New</span></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="tool-row">
-                    <label class="label" data-lang="modal.staging.furnitureStyle">Furniture style</label>
-                    <div id="furniture-style-select" class="custom-select" data-value="standard">
-                      <button class="select-trigger" type="button"><span class="select-value" data-lang="furnitureStyles.standard">Standard</span><span class="caret">▾</span></button>
-                      <div class="select-menu hidden" role="listbox">
-                        <div class="option selected" data-value="standard" role="option" aria-selected="true" data-lang="furnitureStyles.standard">Standard</div>
-                        <div class="option" data-value="modern" role="option" data-lang="furnitureStyles.modern">Modern</div>
-                        <div class="option" data-value="midcentury" role="option" data-lang="furnitureStyles.midcentury">Midcentury</div>
-                        <div class="option" data-value="scandinavian" role="option" data-lang="furnitureStyles.scandinavian">Scandinavian</div>
-                        <div class="option" data-value="luxury" role="option" data-lang="furnitureStyles.luxury">Luxury</div>
-                        <div class="option" data-value="coastal" role="option" data-lang="furnitureStyles.coastal">Coastal</div>
-                        <div class="option" data-value="farmhouse" role="option" data-lang="furnitureStyles.farmhouse">Farmhouse</div>
-                        <div class="option" data-value="custom" role="option" data-lang="furnitureStyles.custom">Custom</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="tool-row">
-                  <label class="label" for="additional-prompt" data-lang="modal.staging.additionalPrompt">Additional prompting</label>
-                  <textarea id="additional-prompt" class="text-input" data-lang="modal.staging.additionalPromptPlaceholder" placeholder="Add specific details or requests for your staging..." rows="3" maxlength="2000"></textarea>
-                </div>
-                <div class="tool-row hidden" id="remove-furniture-row">
-                  <div class="checkbox-container">
-                    <input type="checkbox" id="remove-furniture" class="checkbox-input">
-                    <label for="remove-furniture" class="checkbox-label" data-lang="modal.staging.removeFurniture">Remove existing furniture</label>
-                  </div>
-                  <div id="keep-furniture-row" class="keep-furniture-row hidden">
-                    <label class="label" for="keep-furniture" data-lang="modal.staging.keepFurnitureLabel">Existing furniture to keep (optional)</label>
-                    <textarea id="keep-furniture" class="text-input" data-lang="modal.staging.keepFurniturePlaceholder" placeholder="e.g. keep the dining table and the built-in shelves" rows="3" maxlength="500"></textarea>
-                  </div>
-                </div>
-                <div id="stagify-pro-panel" class="stagify-pro-panel hidden">
-                  <!-- Image model + Image Generations share one row, same as the
-                       Room type / Furniture style pair above. #variation-row is
-                       hidden whenever "remove existing furniture" is on, which
-                       .tool-row-pair handles by collapsing to a single column. -->
+                  <!-- Room type and Furniture style share one row: two short pickers
+                       each took a full row of the toolbar, which is the scarcest
+                       space in this modal. Styling lives on .tool-row-pair. -->
                   <div class="tool-row-pair">
                     <div class="tool-row">
-                      <label class="label" for="stagify-model-select" data-lang="modal.staging.imageModel">Image model</label>
-                      <select id="stagify-model-select" class="text-input" style="min-height: 44px;">
-                        <option value="gpt-4o-mini" data-lang="modal.staging.fastGeneration">Fast Model</option>
-                        <option value="gpt-5-mini" data-lang="modal.staging.qualityGeneration">Stagify+ Model</option>
-                      </select>
-                    </div>
-                    <div class="tool-row" id="variation-row">
-                      <div class="variation-slider-head">
-                        <label class="label" for="stagify-variation-count" data-lang="modal.staging.imageGenerations">Image Generations</label>
-                        <span id="stagify-variation-value" class="variation-slider-value" aria-hidden="true">1</span>
+                      <label class="label" data-lang="modal.staging.roomType">Room type</label>
+                      <div id="room-type-select" class="custom-select" data-value="Bedroom">
+                        <button class="select-trigger" type="button"><span class="select-value" data-lang="roomTypes.bedroom">Bedroom</span><span class="caret">▾</span></button>
+                        <div class="select-menu hidden" role="listbox">
+                          <div class="option selected" data-value="Bedroom" role="option" aria-selected="true" data-lang="roomTypes.bedroom">Bedroom</div>
+                          <div class="option" data-value="Living room" role="option" data-lang="roomTypes.livingRoom">Living room</div>
+                          <div class="option" data-value="Dining room" role="option" data-lang="roomTypes.diningRoom">Dining room</div>
+                          <div class="option" data-value="Kitchen" role="option" data-lang="roomTypes.kitchen">Kitchen</div>
+                          <div class="option" data-value="Bathroom" role="option" data-lang="roomTypes.bathroom">Bathroom</div>
+                          <div class="option" data-value="Office" role="option" data-lang="roomTypes.office">Office</div>
+                          <div class="option" data-value="Outdoors" role="option" data-lang="roomTypes.outdoors">Outdoors</div>
+                          <!-- data-lang overwrites textContent, so the label lives in its own
+                               span and the badge sits beside it rather than inside it. -->
+                          <div class="option option--with-badge" data-value="Dorm" role="option"><span class="option-label" data-lang="roomTypes.dorm">Dorm</span><span class="option-badge" data-lang="common.newBadge">New</span></div>
+                        </div>
                       </div>
-                      <input type="range" id="stagify-variation-count" class="variation-slider" min="1" max="3" step="1" value="1" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" data-lang-attr="modal.staging.imageGenerations|aria-label" aria-label="Image Generations">
+                    </div>
+                    <div class="tool-row">
+                      <label class="label" data-lang="modal.staging.furnitureStyle">Furniture style</label>
+                      <div id="furniture-style-select" class="custom-select" data-value="standard">
+                        <button class="select-trigger" type="button"><span class="select-value" data-lang="furnitureStyles.standard">Standard</span><span class="caret">▾</span></button>
+                        <div class="select-menu hidden" role="listbox">
+                          <div class="option selected" data-value="standard" role="option" aria-selected="true" data-lang="furnitureStyles.standard">Standard</div>
+                          <div class="option" data-value="modern" role="option" data-lang="furnitureStyles.modern">Modern</div>
+                          <div class="option" data-value="midcentury" role="option" data-lang="furnitureStyles.midcentury">Midcentury</div>
+                          <div class="option" data-value="scandinavian" role="option" data-lang="furnitureStyles.scandinavian">Scandinavian</div>
+                          <div class="option" data-value="luxury" role="option" data-lang="furnitureStyles.luxury">Luxury</div>
+                          <div class="option" data-value="coastal" role="option" data-lang="furnitureStyles.coastal">Coastal</div>
+                          <div class="option" data-value="farmhouse" role="option" data-lang="furnitureStyles.farmhouse">Farmhouse</div>
+                          <div class="option" data-value="custom" role="option" data-lang="furnitureStyles.custom">Custom</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div class="tool-row">
-                    <label class="label" data-lang="modal.staging.furniturePhotosLabel">Furniture photos (optional)</label>
-                    <input type="file" id="stagify-furniture-file" accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/heif,.heic,.heif" multiple>
-                    <button type="button" id="stagify-furniture-add-btn" class="furniture-add-btn" data-lang="modal.staging.addPhotos">+ Add photos</button>
-                    <div id="stagify-furniture-list"></div>
-                    <span class="microcopy" data-lang="modal.staging.furniturePhotosHint">Up to 5 reference photos of furniture or decor to feature in the staged room</span>
+                    <label class="label" for="additional-prompt" data-lang="modal.staging.additionalPrompt">Additional prompting</label>
+                    <textarea id="additional-prompt" class="text-input" data-lang="modal.staging.additionalPromptPlaceholder" placeholder="Add specific details or requests for your staging..." rows="3" maxlength="2000"></textarea>
                   </div>
-                </div>
-                <!-- Sits OUTSIDE #stagify-pro-panel and below it on purpose. It is a
-                     delivery option rather than a generation one, and it is available on
-                     every plan — a legal disclosure is not an upsell — so it must land in
-                     the same place for a free account, whose pro panel above is hidden.
-                     Nothing may toggle this row's visibility; unlike #remove-furniture-row
-                     it has no gate, so it deliberately has no writer either. -->
-                <div class="tool-row" id="label-staged-row">
-                  <div class="checkbox-container">
-                    <input type="checkbox" id="label-virtually-staged" class="checkbox-input" aria-describedby="label-staged-tip">
-                    <!-- The (i) button is a SIBLING of the label, never a child: data-lang
-                         replaces an element's textContent wholesale and would eat the SVG
-                         (same trap as the room-type badge above). Hence data-lang-attr on
-                         the button, which only writes the attribute. -->
-                    <label for="label-virtually-staged" class="checkbox-label" data-lang="modal.staging.labelVirtuallyStaged">Label as virtually staged</label>
-                    <span class="opt-info">
-                      <button type="button" class="opt-info__btn" data-lang-attr="modal.staging.labelVirtuallyStagedInfo|aria-label" aria-label="What does labelling as virtually staged do?"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></button>
-                      <span class="opt-info__tip" id="label-staged-tip" data-lang="modal.staging.labelVirtuallyStagedTip">Adds a small &quot;This image has been virtually staged&quot; note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.</span>
-                    </span>
-                  </div>
-                </div>
-                <div class="process-cta">
-                  <button id="process-btn" class="btn btn-primary btn-lg"><strong data-lang="modal.staging.processButton">Process photo</strong></button>
-                </div>
-                <div class="progress hidden" id="progress" aria-live="polite">
-                  <div class="bar" id="progress-bar"></div>
-                  <span id="progress-text" data-lang="modal.staging.progress.preparing">Preparing…</span>
-                </div>
-                <div id="loading-message" class="loading-message hidden" data-lang="modal.staging.progress.preparing">Preparing AI model</div>
-                <!-- A render had no timeout and no way out: the bar crept to 70% and
-                     stopped there for as long as the request hung, with nothing to
-                     click. The guides told people to refresh after a minute, which
-                     abandons renders that are still legitimately running. -->
-                <button type="button" id="stage-cancel-btn" class="stage-cancel-btn hidden" data-lang="modal.staging.progress.cancel">Cancel</button>
-              </div>
-
-              <div class="stage-workspace">
-                <!-- Upload area when no image is uploaded -->
-                <div id="stage-dropzone" class="stage-dropzone" role="button" tabindex="0" data-lang-attr="modal.staging.uploadAreaAria|aria-label" aria-label="Upload area">
-                  <input id="stage-file-input" type="file" accept="image/*,.heic,.heif" hidden>
-                  <div class="stage-dz-inner">
-                    <!-- data-lang stays on the leaf text nodes: render-page.js replaces a
-                         translated element's content up to its balanced close tag, so a
-                         data-lang wrapper would swallow this SVG on /es, /fr, … -->
-                    <div class="dz-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v13"/><path d="M7.5 7.5 12 3l4.5 4.5"/></svg>
+                  <div class="tool-row hidden" id="remove-furniture-row">
+                    <div class="checkbox-container">
+                      <input type="checkbox" id="remove-furniture" class="checkbox-input">
+                      <label for="remove-furniture" class="checkbox-label" data-lang="modal.staging.removeFurniture">Remove existing furniture</label>
                     </div>
-                    <div class="dz-text" data-lang="modal.staging.uploadHeadline">Drop your room photo here</div>
-                    <div class="dz-sub" data-lang="modal.staging.uploadFormats">JPG, PNG, WebP or HEIC · up to 25 MB</div>
-                  </div>
-                </div>
-                
-                <!-- Full-size image viewer with before/after toggle -->
-                <div id="image-viewer-container" class="image-viewer-container hidden">
-                  <div class="viewer-header">
-                    <div class="toggle-container">
-                      <button id="toggle-before" class="toggle-btn active" data-lang="modal.staging.before">Before</button>
-                      <button id="toggle-after" class="toggle-btn" data-lang="modal.staging.after">After</button>
+                    <div id="keep-furniture-row" class="keep-furniture-row hidden">
+                      <label class="label" for="keep-furniture" data-lang="modal.staging.keepFurnitureLabel">Existing furniture to keep (optional)</label>
+                      <textarea id="keep-furniture" class="text-input" data-lang="modal.staging.keepFurniturePlaceholder" placeholder="e.g. keep the dining table and the built-in shelves" rows="3" maxlength="500"></textarea>
                     </div>
-                    <div class="viewer-actions">
-                      <button id="new-upload" class="btn btn-ghost"><strong class="label-full" data-lang="modal.staging.uploadAnother">Upload Another</strong><strong class="label-short" data-lang="modal.staging.uploadAnotherShort">Reupload</strong></button>
-                      <div id="download-split" class="download-split">
-                        <button id="download-btn" class="btn btn-primary" disabled><strong class="label-full" data-lang="modal.staging.downloadResult">Download Result</strong><strong class="label-short" data-lang="modal.staging.downloadResultShort">Download</strong></button>
-                        <button id="download-size-toggle" class="btn btn-primary download-caret" type="button" disabled aria-haspopup="menu" aria-expanded="false" data-lang-attr="modal.staging.downloadSizeMenu|aria-label" aria-label="Choose download resolution">
-                          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
-                        </button>
-                        <div id="download-size-menu" class="select-menu download-size-menu hidden" role="menu"></div>
+                  </div>
+                  <div id="stagify-pro-panel" class="stagify-pro-panel hidden">
+                    <!-- Image model + Image Generations share one row, same as the
+                         Room type / Furniture style pair above. #variation-row is
+                         hidden whenever "remove existing furniture" is on, which
+                         .tool-row-pair handles by collapsing to a single column. -->
+                    <div class="tool-row-pair">
+                      <div class="tool-row">
+                        <label class="label" for="stagify-model-select" data-lang="modal.staging.imageModel">Image model</label>
+                        <select id="stagify-model-select" class="text-input" style="min-height: 44px;">
+                          <option value="gpt-4o-mini" data-lang="modal.staging.fastGeneration">Fast Model</option>
+                          <option value="gpt-5-mini" data-lang="modal.staging.qualityGeneration">Stagify+ Model</option>
+                        </select>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div class="image-viewer">
-                    <img id="stage-preview" class="viewer-image" data-lang-attr="modal.staging.originalImage|alt" alt="Original room photo before virtual staging">
-                    <canvas id="canvas1" class="viewer-image hidden"></canvas>
-                    <button id="mask-edit-btn" class="stage-mask-fab hidden" type="button" data-lang-attr="modal.staging.editWithMask|aria-label" aria-label="Edit selected area with mask tool" title="Edit with mask">
-                      <img src="media-webp/Mask.webp" data-lang-attr="modal.staging.maskIcon|alt" alt="" aria-hidden="true">
-                    </button>
-                    <button id="empty-room-btn" class="stage-mask-fab empty-room-fab hidden" type="button" data-lang-attr="modal.staging.emptyRoomView|aria-label" aria-label="View the emptied room" title="View empty room">
-                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="8.5" y="8.5" width="7" height="7"/><path d="M3 3l5.5 5.5M21 3l-5.5 5.5M3 21l5.5-5.5M21 21l-5.5-5.5"/></svg>
-                    </button>
-                    <div id="variation-thumbs" class="variation-thumbs hidden" data-lang-attr="modal.staging.stagingVariations|aria-label" aria-label="Staging variations"></div>
-                    <button id="carousel-prev" class="stage-carousel-nav prev hidden" type="button" data-lang-attr="modal.staging.prevVersion|aria-label" aria-label="Previous version">‹</button>
-                    <button id="carousel-next" class="stage-carousel-nav next hidden" type="button" data-lang-attr="modal.staging.nextVersion|aria-label" aria-label="Next version">›</button>
-                    <div id="carousel-dots" class="stage-carousel-dots hidden" role="tablist" data-lang-attr="modal.staging.imageVersions|aria-label" aria-label="Image versions"></div>
-                    <div id="processing-placeholder" class="processing-placeholder">
-                      <div class="placeholder-content">
-                        <div class="placeholder-icon">
-                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;margin:0 auto;opacity:0.45;color:var(--muted,#6b7280)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      <div class="tool-row" id="variation-row">
+                        <div class="variation-slider-head">
+                          <label class="label" for="stagify-variation-count" data-lang="modal.staging.imageGenerations">Image Generations</label>
+                          <span id="stagify-variation-value" class="variation-slider-value" aria-hidden="true">1</span>
                         </div>
-                        <div class="placeholder-text" data-lang="modal.staging.noProcessedImage">Your staged result will appear here</div>
-                        <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Click "Process photo" to generate an AI-staged version of your image</div>
+                        <input type="range" id="stagify-variation-count" class="variation-slider" min="1" max="3" step="1" value="1" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" data-lang-attr="modal.staging.imageGenerations|aria-label" aria-label="Image Generations">
                       </div>
                     </div>
-                    <div id="staging-limit-viewer" class="staging-limit-viewer hidden" role="alert">
-                      <div class="staging-limit-viewer__inner">
-                        <p id="staging-limit-viewer-text" class="staging-limit-viewer__text"></p>
-                        <a href="stagify-plus.html" class="btn btn-primary staging-limit-viewer__cta" data-lang="errors.dailyLimitCta">View Stagify+</a>
+                    <div class="tool-row">
+                      <label class="label" data-lang="modal.staging.furniturePhotosLabel">Furniture photos (optional)</label>
+                      <input type="file" id="stagify-furniture-file" accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/heif,.heic,.heif" multiple>
+                      <button type="button" id="stagify-furniture-add-btn" class="furniture-add-btn" data-lang="modal.staging.addPhotos">+ Add photos</button>
+                      <div id="stagify-furniture-list"></div>
+                      <span class="microcopy" data-lang="modal.staging.furniturePhotosHint">Up to 5 reference photos of furniture or decor to feature in the staged room</span>
+                    </div>
+                  </div>
+                  <!-- Sits OUTSIDE #stagify-pro-panel and below it on purpose. It is a
+                       delivery option rather than a generation one, and it is available on
+                       every plan — a legal disclosure is not an upsell — so it must land in
+                       the same place for a free account, whose pro panel above is hidden.
+                       Nothing may toggle this row's visibility; unlike #remove-furniture-row
+                       it has no gate, so it deliberately has no writer either. -->
+                  <div class="tool-row" id="label-staged-row">
+                    <div class="checkbox-container">
+                      <input type="checkbox" id="label-virtually-staged" class="checkbox-input" aria-describedby="label-staged-tip">
+                      <!-- The (i) button is a SIBLING of the label, never a child: data-lang
+                           replaces an element's textContent wholesale and would eat the SVG
+                           (same trap as the room-type badge above). Hence data-lang-attr on
+                           the button, which only writes the attribute. -->
+                      <label for="label-virtually-staged" class="checkbox-label" data-lang="modal.staging.labelVirtuallyStaged">Label as virtually staged</label>
+                      <span class="opt-info">
+                        <button type="button" class="opt-info__btn" data-lang-attr="modal.staging.labelVirtuallyStagedInfo|aria-label" aria-label="What does labelling as virtually staged do?"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></button>
+                        <span class="opt-info__tip" id="label-staged-tip" data-lang="modal.staging.labelVirtuallyStagedTip">Adds a small &quot;Virtually staged&quot; note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.</span>
+                      </span>
+                    </div>
+                    <!-- How the badge looks, on ONE line: three styles, a size slider, and a
+                         preview. Shown only while the checkbox above is ticked — see
+                         scripts/app/stamp-style-row.js, which owns the reveal.
+                         Real radio inputs rather than buttons with role="radio": same-name
+                         radios already give arrow-key navigation, a single tab stop and the
+                         right announcement, and every one of those would have to be
+                         hand-built otherwise. The visible swatch is the sibling <span>; the
+                         input itself is clipped, not display:none, so it stays focusable. -->
+                    <div class="stamp-opts" id="stamp-opts" hidden>
+                      <div class="stamp-opts__styles" role="group" aria-labelledby="stamp-style-legend">
+                        <span class="sr-only" id="stamp-style-legend" data-lang="modal.staging.stampStyleLabel">Label style</span>
+                        <label class="stamp-swatch">
+                          <input type="radio" name="stamp-style" value="dark" class="stamp-swatch__input" checked>
+                          <span class="stamp-swatch__art stamp-swatch__art--dark" aria-hidden="true">Aa</span>
+                          <span class="sr-only" data-lang="modal.staging.stampStyles.dark">Dark</span>
+                        </label>
+                        <label class="stamp-swatch">
+                          <input type="radio" name="stamp-style" value="light" class="stamp-swatch__input">
+                          <span class="stamp-swatch__art stamp-swatch__art--light" aria-hidden="true">Aa</span>
+                          <span class="sr-only" data-lang="modal.staging.stampStyles.light">Light</span>
+                        </label>
+                        <label class="stamp-swatch">
+                          <input type="radio" name="stamp-style" value="minimal" class="stamp-swatch__input">
+                          <span class="stamp-swatch__art stamp-swatch__art--minimal" aria-hidden="true">Aa</span>
+                          <span class="sr-only" data-lang="modal.staging.stampStyles.minimal">Minimal</span>
+                        </label>
+                      </div>
+                      <input type="range" id="stamp-scale" class="stamp-opts__size" min="0.7" max="1.6" step="0.1" value="1" data-lang-attr="modal.staging.stampSizeLabel|aria-label" aria-label="Label size" aria-valuetext="100%">
+                      <span class="stamp-preview">
+                        <button type="button" class="stamp-preview__btn" aria-describedby="stamp-preview-pop">
+                          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+                          <span class="stamp-preview__label" data-lang="modal.staging.stampPreview">Preview</span>
+                        </button>
+                        <span class="stamp-preview__pop" id="stamp-preview-pop" role="tooltip">
+                          <img id="stamp-preview-img" class="stamp-preview__img" alt="Sample photo showing the virtually staged label" data-lang-attr="modal.staging.stampPreviewAlt|alt" width="340" height="227" decoding="async">
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="process-cta">
+                    <button id="process-btn" class="btn btn-primary btn-lg"><strong data-lang="modal.staging.processButton">Process photo</strong></button>
+                  </div>
+                  <!-- The stop button rides INLINE at the right end of the bar, so the way
+                       out sits next to the thing it stops. A render had no timeout and no
+                       way out: the bar crept to 70% and stopped there for as long as the
+                       request hung, with nothing to click. The guides told people to
+                       refresh after a minute, which abandons renders that are still
+                       legitimately running. -->
+                  <div class="progress-row">
+                    <div class="progress hidden" id="progress" aria-live="polite">
+                      <div class="bar" id="progress-bar"></div>
+                      <span id="progress-text" data-lang="modal.staging.progress.preparing">Preparing…</span>
+                    </div>
+                    <!-- Icon-only, so the label goes on the attribute: data-lang replaces an
+                         element's textContent wholesale and would eat the SVG. data-lang-attr
+                         carries exactly ONE key|attr pair, so the hover tooltip is mirrored
+                         from the translated aria-label in staging-pipeline.js. -->
+                    <button type="button" id="stage-cancel-btn" class="stage-cancel-btn hidden" data-lang-attr="modal.staging.progress.stop|aria-label" aria-label="Stop generation" title="Stop generation">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true" focusable="false"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>
+                    </button>
+                  </div>
+                  <div id="loading-message" class="loading-message hidden" data-lang="modal.staging.progress.preparing">Preparing AI model</div>
+                </div>
+
+                <div class="stage-workspace">
+                  <!-- Upload area when no image is uploaded -->
+                  <div id="stage-dropzone" class="stage-dropzone" role="button" tabindex="0" data-lang-attr="modal.staging.uploadAreaAria|aria-label" aria-label="Upload area">
+                    <input id="stage-file-input" type="file" accept="image/*,.heic,.heif" hidden>
+                    <div class="stage-dz-inner">
+                      <!-- data-lang stays on the leaf text nodes: render-page.js replaces a
+                           translated element's content up to its balanced close tag, so a
+                           data-lang wrapper would swallow this SVG on /es, /fr, … -->
+                      <div class="dz-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v13"/><path d="M7.5 7.5 12 3l4.5 4.5"/></svg>
+                      </div>
+                      <div class="dz-text" data-lang="modal.staging.uploadHeadline">Drop your room photo here</div>
+                      <div class="dz-sub" data-lang="modal.staging.uploadFormats">JPG, PNG, WebP or HEIC · up to 25 MB</div>
+                    </div>
+                  </div>
+                
+                  <!-- Full-size image viewer with before/after toggle -->
+                  <div id="image-viewer-container" class="image-viewer-container hidden">
+                    <div class="viewer-header">
+                      <div class="toggle-container">
+                        <button id="toggle-before" class="toggle-btn active" data-lang="modal.staging.before">Before</button>
+                        <button id="toggle-after" class="toggle-btn" data-lang="modal.staging.after">After</button>
+                      </div>
+                      <div class="viewer-actions">
+                        <button id="new-upload" class="btn btn-ghost"><strong class="label-full" data-lang="modal.staging.uploadAnother">Upload Another</strong><strong class="label-short" data-lang="modal.staging.uploadAnotherShort">Reupload</strong></button>
+                        <div id="download-split" class="download-split">
+                          <button id="download-btn" class="btn btn-primary" disabled><strong class="label-full" data-lang="modal.staging.downloadResult">Download Result</strong><strong class="label-short" data-lang="modal.staging.downloadResultShort">Download</strong></button>
+                          <button id="download-size-toggle" class="btn btn-primary download-caret" type="button" disabled aria-haspopup="menu" aria-expanded="false" data-lang-attr="modal.staging.downloadSizeMenu|aria-label" aria-label="Choose download resolution">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
+                          </button>
+                          <div id="download-size-menu" class="select-menu download-size-menu hidden" role="menu"></div>
+                        </div>
                       </div>
                     </div>
-                    <div id="staging-error-viewer" class="staging-limit-viewer hidden" role="alert">
-                      <div class="staging-limit-viewer__inner">
-                        <p id="staging-error-viewer-text" class="staging-limit-viewer__text"></p>
-                        <button id="staging-error-retry-btn" class="btn btn-primary staging-limit-viewer__cta" data-lang="modal.staging.tryAnotherImage">Try another image</button>
+                  
+                    <div class="image-viewer">
+                      <img id="stage-preview" class="viewer-image" data-lang-attr="modal.staging.originalImage|alt" alt="Original room photo before virtual staging">
+                      <canvas id="canvas1" class="viewer-image hidden"></canvas>
+                      <button id="mask-edit-btn" class="stage-mask-fab hidden" type="button" data-lang-attr="modal.staging.editWithMask|aria-label" aria-label="Edit selected area with mask tool" title="Edit with mask">
+                        <img src="media-webp/Mask.webp" data-lang-attr="modal.staging.maskIcon|alt" alt="" aria-hidden="true">
+                      </button>
+                      <button id="empty-room-btn" class="stage-mask-fab empty-room-fab hidden" type="button" data-lang-attr="modal.staging.emptyRoomView|aria-label" aria-label="View the emptied room" title="View empty room">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="8.5" y="8.5" width="7" height="7"/><path d="M3 3l5.5 5.5M21 3l-5.5 5.5M3 21l5.5-5.5M21 21l-5.5-5.5"/></svg>
+                      </button>
+                      <div id="variation-thumbs" class="variation-thumbs hidden" data-lang-attr="modal.staging.stagingVariations|aria-label" aria-label="Staging variations"></div>
+                      <button id="carousel-prev" class="stage-carousel-nav prev hidden" type="button" data-lang-attr="modal.staging.prevVersion|aria-label" aria-label="Previous version">‹</button>
+                      <button id="carousel-next" class="stage-carousel-nav next hidden" type="button" data-lang-attr="modal.staging.nextVersion|aria-label" aria-label="Next version">›</button>
+                      <div id="carousel-dots" class="stage-carousel-dots hidden" role="tablist" data-lang-attr="modal.staging.imageVersions|aria-label" aria-label="Image versions"></div>
+                      <div id="processing-placeholder" class="processing-placeholder">
+                        <div class="placeholder-content">
+                          <div class="placeholder-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;margin:0 auto;opacity:0.45;color:var(--muted,#6b7280)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                          </div>
+                          <div class="placeholder-text" data-lang="modal.staging.noProcessedImage">Your staged result will appear here</div>
+                          <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Click "Process photo" to generate an AI-staged version of your image</div>
+                        </div>
+                      </div>
+                      <div id="staging-limit-viewer" class="staging-limit-viewer hidden" role="alert">
+                        <div class="staging-limit-viewer__inner">
+                          <p id="staging-limit-viewer-text" class="staging-limit-viewer__text"></p>
+                          <a href="stagify-plus.html" class="btn btn-primary staging-limit-viewer__cta" data-lang="errors.dailyLimitCta">View Stagify+</a>
+                        </div>
+                      </div>
+                      <div id="staging-error-viewer" class="staging-limit-viewer hidden" role="alert">
+                        <div class="staging-limit-viewer__inner">
+                          <p id="staging-error-viewer-text" class="staging-limit-viewer__text"></p>
+                          <button id="staging-error-retry-btn" class="btn btn-primary staging-limit-viewer__cta" data-lang="modal.staging.tryAnotherImage">Try another image</button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
+          </div>
         </div>
       </div>
     </main>

@@ -101,6 +101,8 @@ afterEach(() => {
  *   keepFurniture?: string,
  *   labelVirtuallyStaged?: boolean,
  *   labelCheckboxPresent?: boolean,
+ *   stampStyle?: string | null,
+ *   stampScale?: string | null,
  *   selectedLanguage?: string | null,
  *   furnitureFiles?: File[],
  *   validationResult?: { valid: boolean, code?: string, reason?: string } | null,
@@ -117,6 +119,10 @@ function harness(opts = {}) {
     keepFurniture = '',
     labelVirtuallyStaged = false,
     labelCheckboxPresent = true,
+    // The badge style/size strip. `null` means the control is absent from the page, which
+    // is the real state on every studio that reuses this pipeline without the strip.
+    stampStyle = 'dark',
+    stampScale = '1',
     selectedLanguage = null,
     furnitureFiles = [],
     validationResult = null,
@@ -150,6 +156,11 @@ function harness(opts = {}) {
     const labelCheckbox = el();
     labelCheckbox.checked = labelVirtuallyStaged;
     byId.set('label-virtually-staged', labelCheckbox);
+  }
+  if (stampScale !== null) {
+    const scaleInput = el();
+    scaleInput.value = stampScale;
+    byId.set('stamp-scale', scaleInput);
   }
   // The Cancel control under the progress bar. A minimal event-target stand-in:
   // `click()` runs whatever the pipeline registered, so a test can press it.
@@ -209,7 +220,19 @@ function harness(opts = {}) {
     return id;
   };
 
-  globalThis.document = { getElementById: (id) => byId.get(id) || null };
+  globalThis.document = {
+    getElementById: (id) => byId.get(id) || null,
+    // The style swatches are radios read by selector, not by id — there are three of them
+    // and only the checked one matters. Modelled rather than stubbed away so a test can
+    // remove the control entirely (stampStyle: null) and prove the pipeline still posts.
+    querySelector: (sel) => {
+      if (sel !== '.stamp-swatch__input:checked' || stampStyle === null) return null;
+      const radio = el();
+      radio.value = stampStyle;
+      radio.checked = true;
+      return radio;
+    },
+  };
   globalThis.localStorage = {
     getItem: (k) => ({ userRole: 'agent', userReferralSource: 'google', userEmail: 'a@b.co', selectedLanguage })[k] ?? null,
   };
@@ -632,6 +655,35 @@ test('label: the UI language rides along, defaulting to English when unset', asy
   const noLang = harness({ labelVirtuallyStaged: true, selectedLanguage: null });
   await run(noLang, response({ body: OK_BODY }));
   assert.equal(noLang.form().get('stampLang'), 'english', 'a browser that never picked a language');
+});
+
+test('label: the chosen style and size ride along with the flag', async () => {
+  const h = harness({ labelVirtuallyStaged: true, stampStyle: 'minimal', stampScale: '1.4' });
+  await run(h, response({ body: OK_BODY }));
+  assert.equal(h.form().get('stampStyle'), 'minimal');
+  assert.equal(h.form().get('stampScale'), '1.4');
+});
+
+test('label: style and size are sent even with the option OFF', async () => {
+  // Deliberate, and the opposite of keepFurniture (which IS gated on its checkbox). These
+  // two are inert server-side unless the flag is set, so gating them here would buy nothing
+  // and cost the one thing that matters: the values would then depend on whether the strip
+  // happened to be visible when the user pressed the button, rather than on what they picked.
+  const h = harness({ labelVirtuallyStaged: false, stampStyle: 'light', stampScale: '0.8' });
+  await run(h, response({ body: OK_BODY }));
+  assert.equal(h.form().get('labelVirtuallyStaged'), 'false');
+  assert.equal(h.form().get('stampStyle'), 'light');
+  assert.equal(h.form().get('stampScale'), '0.8');
+});
+
+test('label: a page without the style strip still posts usable defaults', async () => {
+  // The studios that reuse this pipeline do not render the strip, and neither does the
+  // modal before app.js wires it. A bare read there would post `undefined`/`NaN`, which the
+  // server would have to guess at — so the reader falls back instead.
+  const h = harness({ labelVirtuallyStaged: true, stampStyle: null, stampScale: null });
+  await run(h, response({ body: OK_BODY }));
+  assert.equal(h.form().get('stampStyle'), 'dark');
+  assert.equal(h.form().get('stampScale'), '1');
 });
 
 test('label: a missing checkbox element does not break staging', async () => {

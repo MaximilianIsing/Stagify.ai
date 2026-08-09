@@ -351,13 +351,68 @@ test('stampLang is validated against the real locale set, never trusted into a f
   }
 });
 
+test('stampStyle is an allow-list, because it picks a code path', async () => {
+  // Unlike the language, an unknown style cannot become a filename — but it does select a
+  // branch in the compositor, so it is snapped to the known set here rather than being
+  // handed on and resolved somewhere further in. Same rule, one layer earlier.
+  for (const [input, expected] of [
+    ['dark', 'dark'], ['light', 'light'], ['minimal', 'minimal'],
+    ['neon', 'dark'], ['', 'dark'], ['DARK', 'dark'], [undefined, 'dark'],
+  ]) {
+    const cap = captureParams();
+    const { handleVirtualStagingMultipart } = makeHandler({ processStaging: cap.processStaging });
+    const body = { roomType: 'Bedroom', labelVirtuallyStaged: 'true' };
+    if (input !== undefined) body.stampStyle = input;
+    await handleVirtualStagingMultipart(fakeReq(body), fakeRes(), { user: FREE, recordUsage: true, treatAsPro: false });
+    assert.equal(cap.seen[0].stampStyle, expected, `${JSON.stringify(input)} → ${expected}`);
+  }
+});
+
+test('stampScale is clamped, so the slider cannot be posted past its range', async () => {
+  // The form sends whatever the range input holds, but nothing stops a hand-rolled POST
+  // from sending 500 — which would ask sharp for a badge many times wider than the photo.
+  for (const [input, expected] of [
+    ['1', 1], ['0.7', 0.7], ['1.6', 1.6], ['1.35', 1.35],
+    ['500', 1.6], ['-2', 0.7], ['abc', 1], ['', 1], [undefined, 1],
+  ]) {
+    const cap = captureParams();
+    const { handleVirtualStagingMultipart } = makeHandler({ processStaging: cap.processStaging });
+    const body = { roomType: 'Bedroom', labelVirtuallyStaged: 'true' };
+    if (input !== undefined) body.stampScale = input;
+    await handleVirtualStagingMultipart(fakeReq(body), fakeRes(), { user: FREE, recordUsage: true, treatAsPro: false });
+    assert.equal(cap.seen[0].stampScale, expected, `${JSON.stringify(input)} → ${expected}`);
+  }
+});
+
+test('the badge options are NOT pro-gated either', async () => {
+  // The flag deliberately skips `isPro &&` (see above); its style and size have to travel
+  // the same way, or a free account would tick the box, pick a style, and silently get the
+  // default one. Nothing about that failure is visible until the render comes back.
+  const cap = captureParams();
+  const { handleVirtualStagingMultipart } = makeHandler({ processStaging: cap.processStaging });
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', labelVirtuallyStaged: 'true', stampStyle: 'minimal', stampScale: '1.4' }),
+    fakeRes(),
+    { user: FREE, recordUsage: true, treatAsPro: false },
+  );
+  assert.equal(cap.seen[0].stampStyle, 'minimal', 'a free account keeps its chosen style');
+  assert.equal(cap.seen[0].stampScale, 1.4, 'and its chosen size');
+});
+
 test('every variation of a multi-variation render carries the disclosure flag', async () => {
   // The flag rides stagingParamsBase, which is spread per variation. If it were attached to
   // only the first, a pro user asking for three images would publish two unlabelled ones.
   const cap = captureParams();
   const { handleVirtualStagingMultipart } = makeHandler({ processStaging: cap.processStaging });
   await handleVirtualStagingMultipart(
-    fakeReq({ roomType: 'Bedroom', variationCount: '3', labelVirtuallyStaged: 'true', stampLang: 'italian' }),
+    fakeReq({
+      roomType: 'Bedroom',
+      variationCount: '3',
+      labelVirtuallyStaged: 'true',
+      stampLang: 'italian',
+      stampStyle: 'light',
+      stampScale: '1.2',
+    }),
     fakeRes(),
     { user: PRO, recordUsage: true, treatAsPro: true },
   );
@@ -365,5 +420,9 @@ test('every variation of a multi-variation render carries the disclosure flag', 
   for (const [i, params] of cap.seen.entries()) {
     assert.equal(params.labelVirtuallyStaged, true, `variation ${i + 1} is labelled`);
     assert.equal(params.stampLang, 'italian', `variation ${i + 1} keeps the language`);
+    // The look has to ride along with the flag: three images from one submission that do
+    // not match each other are unusable as a set, and the user only asked once.
+    assert.equal(params.stampStyle, 'light', `variation ${i + 1} keeps the style`);
+    assert.equal(params.stampScale, 1.2, `variation ${i + 1} keeps the size`);
   }
 });

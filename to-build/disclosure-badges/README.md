@@ -8,11 +8,19 @@ The files in `lib/image/badges/` are generated and must not be hand-edited.
 ## What is in `lib/image/badges/`
 
 One alpha PNG per language (`english.png`, `japanese.png`, …) plus
-`manifest.json`. Each PNG is the language's badge sentence from
+`manifest.json`. Each PNG is the language's badge tag from
 `STAGING_DISCLOSURE_BADGE` (`lib/staging/staging-disclosure.js`), rendered once
-at 128px SemiBold as **white text on transparency**, cropped tight to its ink
-bounds. `lib/image/stamp-disclosure.js` scales the master down and composites it
-onto the finished render when the user ticks "Label as virtually staged".
+at 128px SemiBold with 2px tracking as **white text on transparency**, cropped
+tight to its ink horizontally and to one shared height vertically.
+`lib/image/stamp-disclosure.js` scales the master down and composites it onto
+the finished render when the user ticks "Label as virtually staged".
+
+That shared height is why every language's badge comes out the same optical
+size: the scale factor the stamp applies is `fontPx / 128`, so a master that was
+cropped to its own ink height would render a language with no descender larger
+than one with. Within the shared height each language is centred **on its own
+ink**, which is what puts the text in the middle of the pill rather than
+floating at the top of it.
 
 They live under `lib/`, not `public/`, because they are **server-side render
 inputs** — nothing ever serves them to a browser.
@@ -82,6 +90,11 @@ exists to prevent.
   variable Noto builds report identical advance widths for weight 400 and 600
   even though the glyphs visibly bolden, so the metrics would size the pill too
   narrow and clip the last character.
+- The badge strings are **tags, not sentences** ("Virtually staged", not "This
+  image has been virtually staged"). The stamp sits on the thing it describes,
+  so the subject only buys width, and width is the constraint — the pill has to
+  read as a caption in the corner of a listing photo, not as a bar across it.
+  `test/image/badge-manifest.test.js` caps their length for that reason.
 - Transparent pixels are forced to RGB white before the PNG is written. Canvas
   leaves them at RGB 0, and downscaling that would bleed black into the glyph
   edges — a grey halo around white text on every stamped image.

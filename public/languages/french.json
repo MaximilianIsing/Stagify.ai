@@ -88,12 +88,26 @@
       "subtitle": "Démos en direct. Glissez pour changer.",
       "tablistAria": "Studios",
       "tabs": {
+        "staging": "Staging",
         "designer": "Designer IA",
         "masking": "Studio de masquage",
         "exterior": "Studio extérieur",
-        "gallery": "Votre galerie"
+        "gallery": "Galerie"
       },
       "fullscreen": "Plein écran"
+    },
+    "staging": {
+      "title": "Meublez une pièce vide en quelques secondes",
+      "subtitle": "Importez la photo, choisissez la pièce et un style, et Stagify la meuble. C'est le parcours par lequel commence chaque formule.",
+      "kicker": "Le point de départ",
+      "panelTitle": "Une photo vide entre, une pièce meublée sort",
+      "panelBody": "Rien à rédiger, rien à apprendre. Choisissez le type de pièce et le rendu voulu : la photo revient meublée, murs, fenêtres et sol intacts.",
+      "points": {
+        "upload": "Importez une photo et meublez-la en 8 secondes environ.",
+        "styles": "Choisissez parmi des styles d'ameublement pour chaque pièce.",
+        "restage": "Pas tout à fait ça ? Recommencez autant de fois que vous voulez.",
+        "rights": "Chaque image vous appartient, avec tous les droits d’auteur."
+      }
     },
     "designer": {
       "title": "Laissez une IA meubler votre espace",
@@ -274,7 +288,7 @@
     },
     "nar": {
       "title": "Ne prenez pas de retard",
-      "subtitle": "L'immobilier adopte l'IA rapidement, et les clients y réagissent. Le staging est l'un des points de départ les plus simples.",
+      "subtitle": "Les agents adoptent l’IA vite et les clients approuvent. Commencez par le staging.",
       "usageLabel": "À quelle fréquence les agents utilisent des outils d'IA",
       "legend": {
         "daily": "Tous les jours",
@@ -291,7 +305,7 @@
     },
     "plus": {
       "title": "Allez plus loin avec Stagify+",
-      "subtitle": "Suppression des meubles, le Designer IA et le Studio de Masquage, ainsi qu’une offre à l’usage conçue pour les équipes.",
+      "subtitle": "Deux façons d’évoluer : forfait mensuel fixe ou facturation à l’usage pour votre équipe.",
       "pro": {
         "name": "Stagify+",
         "tag": "Pour les particuliers",
@@ -318,7 +332,7 @@
     },
     "instagram": {
       "title": "Voyez-le en action sur Instagram",
-      "subtitle": "De vraies transformations de staging, des astuces rapides et les coulisses de l'équipe Stagify.",
+      "subtitle": "De vraies transformations, des astuces rapides et les coulisses de l’équipe Stagify.",
       "follow": "Suivre @stagify.ai"
     },
     "finalCta": {
@@ -328,7 +342,7 @@
       "note": "Reconnu par Compass, Centennial et bien d'autres."
     },
     "whyus": {
-      "subtitle": "Les autres outils de staging virtuel sont lents, coûteux et verrouillés. Stagify est conçu pour être tout le contraire."
+      "subtitle": "Les autres outils de staging virtuel sont lents, coûteux et verrouillés. Stagify est l’inverse."
     },
     "testimonials": {
       "title": "Ce que disent les agents",
@@ -353,18 +367,18 @@
     },
     "blog": {
       "title": "Le blog de Stagify",
-      "subtitle": "Guides et conseils sur le staging virtuel, la divulgation MLS et la promotion plus rapide de vos annonces.",
+      "subtitle": "Guides et conseils : staging virtuel, divulgation MLS, promotion de vos annonces.",
       "viewAll": "Visiter le blog de Stagify →"
     },
     "contactCta": {
       "title": "Notre boîte de réception est toujours ouverte",
-      "subtitle": "Des questions, des retours ou des idées de partenariat ? Nous lisons chaque message et répondons dès que possible.",
+      "subtitle": "Questions, retours ou idées ? Nous lisons chaque message et répondons au plus vite.",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Vous aimez Stagify ?",
-      "subtitle": "Vous adorez le rendu de vos annonces ? Laissez un avis Google et aidez d'autres agents à nous trouver.",
+      "subtitle": "Vous aimez vos annonces ? Un avis Google aide d’autres agents à nous trouver.",
       "button": "Laisser un avis Google",
       "aria": "Laisser un avis Google (ouvre dans un nouvel onglet)"
     }
@@ -406,7 +420,16 @@
       "removeFurniture": "Supprimer le mobilier existant",
       "labelVirtuallyStaged": "Marquer comme meublé virtuellement",
       "labelVirtuallyStagedInfo": "À quoi sert le marquage « meublé virtuellement » ?",
-      "labelVirtuallyStagedTip": "Ajoute une petite mention « Cette image a été meublée virtuellement » en bas à droite de la photo finale, dans votre langue. Elle fait partie de l’image et suit donc le fichier partout où vous le publiez. Elle ne remplace pas la mention que votre MLS peut exiger dans les remarques de l’annonce.",
+      "labelVirtuallyStagedTip": "Ajoute une petite mention « Meublée virtuellement » en bas à droite de la photo finale, dans votre langue. Elle fait partie de l’image et suit donc le fichier partout où vous le publiez. Elle ne remplace pas la mention que votre MLS peut exiger dans les remarques de l’annonce.",
+      "stampStyleLabel": "Style de la mention",
+      "stampStyles": {
+        "dark": "Sombre",
+        "light": "Clair",
+        "minimal": "Minimal"
+      },
+      "stampSizeLabel": "Taille de la mention",
+      "stampPreview": "Aperçu",
+      "stampPreviewAlt": "Photo d'exemple montrant la mention de meublé virtuellement",
       "keepFurnitureLabel": "Mobilier existant à conserver (facultatif)",
       "keepFurniturePlaceholder": "ex. conserver la table à manger et les étagères encastrées",
       "emptyRoomView": "Voir la pièce vidée",
@@ -476,7 +499,7 @@
           "Ajouter les touches finales",
           "Donner vie à votre vision"
         ],
-        "cancel": "Annuler"
+        "stop": "Arrêter la génération"
       },
       "downloadSizeMenu": "Choisir la résolution de téléchargement",
       "downloadOriginal": "Originale",
