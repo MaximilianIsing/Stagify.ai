@@ -446,58 +446,118 @@ body.page-home main {
   font-weight: 600;
 }
 
-/* --- Arrows + position readout --- */
-.shw__nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  margin-top: 24px;
-}
-.shw__arrow {
+/* --- Fullscreen control --------------------------------------------------
+   Sits over the top-right corner of the media. Only the FRONT panel's button is
+   clickable — the pointer-events rule on side panels already covers that — so it
+   also fades out on the panels behind, where it would be decoration you cannot
+   press. studio-showcase.js hides it entirely when document.fullscreenEnabled is
+   false rather than leaving a button that does nothing. */
+.shw__fs {
+  position: absolute;
+  /* BOTTOM-right, not top-right: the exterior panel's own "After" tag occupies the
+     top-right corner of .ba and the button landed exactly on it. The bottom-right is
+     clear on all three media — the before/after handle rides the vertical centre and
+     the walkthrough player is chrome-free (mounted with dots:false). */
+  bottom: 10px;
+  right: 10px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(14px) saturate(170%);
-  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
   color: var(--brand-deep);
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
 }
-.shw__arrow svg {
-  width: 20px;
-  height: 20px;
+.shw__fs svg {
+  width: 17px;
+  height: 17px;
 }
-.shw__arrow:hover {
+.shw__fs-close {
+  display: none;
+}
+.shw__fs.is-fs .shw__fs-open {
+  display: none;
+}
+.shw__fs.is-fs .shw__fs-close {
+  display: block;
+}
+/* Revealed on hover of the front panel, and always for keyboard users. Hidden by
+   default so it does not sit on top of the artwork in a screenshot-still page. */
+.shw__panel[data-shw-state="front"]:hover .shw__fs,
+.shw__fs:focus-visible,
+.shw__fs.is-fs {
+  opacity: 1;
+}
+.shw__fs:hover {
   background: var(--bg-elevated);
-  transform: translateY(-1px);
 }
-.shw__arrow:focus-visible {
+.shw__fs:focus-visible {
   outline: 3px solid var(--brand);
   outline-offset: 2px;
 }
-.shw__dots {
+
+/* --- The fullscreen presentation ---
+   The media element is promoted into the browser's top layer, so every ancestor
+   transform, clip and stacking context above it stops applying — which is exactly
+   why this works from inside a 3D-transformed carousel panel at all. It also means
+   the layout here is written from scratch rather than inherited. */
+.shw__media:fullscreen {
   display: flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 3vmin;
+  background: #0b1020;
+  box-sizing: border-box;
 }
-.shw__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(30, 58, 138, 0.22);
-  transition: width 0.35s ease, background 0.35s ease;
+/* Height-driven, because width-driven overflows. The exterior pair is 1408/768; at a
+   1707px-wide screen a full-width fit is 931px tall, taller than the 898px viewport,
+   so the bottom would be cut off. With a DEFINITE height and width:auto, aspect-ratio
+   derives the width instead and the media letterboxes into the screen.
+
+   It has to be applied to whichever box actually carries the ratio, which is not the
+   same element in both cases: .ba has it directly, but .designer-shell does NOT — the
+   walkthrough's ratio lives on .designer-demo before the player mounts and moves to
+   .sdp__frame after (the player sets .designer-demo to aspect-ratio:auto). Targeting
+   only the shell would leave the demo sized by width and spilling off the screen. */
+.shw__media:fullscreen .ba {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
 }
-.shw__dot.is-active {
-  width: 22px;
-  border-radius: 999px;
-  background: var(--brand);
+.shw__media:fullscreen .designer-shell {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shw__media:fullscreen .designer-demo,
+.shw__media:fullscreen .sdp__frame {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+.shw__media:fullscreen .sdp {
+  height: 100%;
+  width: fit-content;
+  max-width: 100%;
+}
+.shw__media:fullscreen .shw__fs {
+  bottom: 24px;
+  right: 24px;
+  opacity: 1;
 }
 
 /* --- No-JS / pre-upgrade fallback ---
@@ -506,8 +566,7 @@ body.page-home main {
    this replaced. Absolute positioning and the 3D layout only switch on once the
    script is there to drive them, so a dead script degrades to the old page
    rather than to four panels piled on top of each other. */
-.shw:not(.shw--ready) .shw__tabs,
-.shw:not(.shw--ready) .shw__nav {
+.shw:not(.shw--ready) .shw__tabs {
   display: none;
 }
 .shw:not(.shw--ready) .shw__stage {
@@ -524,8 +583,7 @@ body.page-home main {
 
 @media (prefers-reduced-motion: reduce) {
   .shw__stage,
-  .shw__panel,
-  .shw__dot {
+  .shw__panel {
     transition: none;
   }
 }
@@ -641,11 +699,20 @@ body.page-home main {
   gap: 24px;
   align-items: stretch;
 }
-/* Same reasoning as `#exterior-studio-demo .ba` below: a stretched grid item is
-   sized by the row, which beats aspect-ratio and would squash the walkthrough
-   frame to whatever height the copy column happens to be. */
-.shw__split .designer-shell {
+/* The media half of the split, and the thing that goes fullscreen. It wraps the
+   walkthrough frame / before-after pair so the fullscreen button has something to
+   anchor to without sitting INSIDE the media itself — a button inside .ba would be
+   in the path of its drag handling.
+
+   align-self:center rather than the row's default stretch: a stretched grid item is
+   sized by the row, which beats aspect-ratio and would squash the media to whatever
+   height the copy column happens to be. (The gallery panel deliberately has no
+   .shw__media — its mock must stretch, because that is what gives its card scroller
+   a definite height to scroll inside.) */
+.shw__split > .shw__media {
+  position: relative;
   align-self: center;
+  min-width: 0;
 }
 
 /* The exterior pair is 1408x768 (~1.83), not the 3/2 the staging comparison
@@ -658,7 +725,6 @@ body.page-home main {
    to whatever height the copy column happens to be. */
 #exterior-studio-demo .ba {
   aspect-ratio: 1408 / 768;
-  align-self: center;
 }
 
 /* --- The copy beside it --- */

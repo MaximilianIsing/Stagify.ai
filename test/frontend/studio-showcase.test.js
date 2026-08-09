@@ -246,7 +246,7 @@ test('home.showcase is complete in all eleven packs', () => {
   const packs = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
   assert.equal(packs.length, 11, 'eleven language packs');
 
-  const LEAVES = ['title', 'subtitle', 'tablistAria', 'prevAria', 'nextAria'];
+  const LEAVES = ['title', 'subtitle', 'tablistAria'];
   const TABS = ['designer', 'masking', 'exterior', 'gallery'];
 
   for (const file of packs) {
@@ -385,6 +385,75 @@ test('the mock grid scrolls rather than growing the panel', () => {
     'grid-auto-rows: max-content',
   ]) {
     assert.ok(rule.includes(decl), `.hgal-grid needs "${decl}"`);
+  }
+});
+
+// --------------------------------------------------------------------------
+// Fullscreen
+// --------------------------------------------------------------------------
+
+test('the three media panels carry a fullscreen control; the gallery does not', () => {
+  const panels = panelsFromMarkup().map((p) => p.id);
+  for (const id of panels) {
+    const start = INDEX.indexOf(`id="${id}"`);
+    const markup = INDEX.slice(start, INDEX.indexOf('</article>', start));
+    const wants = id !== 'gallery-showcase';
+    assert.equal(
+      markup.includes('data-shw-fullscreen'),
+      wants,
+      wants
+        ? `${id} should have a fullscreen button`
+        : // The gallery mock is a static mock, and its .hgal-mock MUST stay a stretched
+          // grid item so its card scroller has a definite height — wrapping it in a
+          // .shw__media would take that away.
+          `${id} deliberately has none`
+    );
+    assert.equal(markup.includes('class="shw__media"'), wants, `${id} media wrapper`);
+  }
+});
+
+test('the fullscreen button is a labelled toggle', () => {
+  const btn = INDEX.match(/<button[^>]*data-shw-fullscreen[^>]*>/);
+  assert.ok(btn, 'the fullscreen button exists');
+  // aria-pressed carries the state, which is why the label can stay constant and the
+  // packs need one key rather than separate enter/exit strings.
+  assert.match(btn[0], /aria-pressed="false"/, 'starts unpressed');
+  assert.match(btn[0], /data-lang-attr="home\.showcase\.fullscreen\|aria-label"/, 'localised label');
+  assert.match(btn[0], /type="button"/, 'not a submit button');
+});
+
+test('fullscreen degrades and does not fight the carousel', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  assert.match(code, /document\.fullscreenEnabled/, 'hides the control where fullscreen is unavailable');
+  // Cycling while expanded would swap the fullscreen content out from under the
+  // viewer, who cannot see the carousel behind it to know what happened.
+  const bails = [...code.matchAll(/if \(document\.fullscreenElement\) return;/g)].length;
+  assert.ok(bails >= 2, `drag and wheel must both bail while fullscreen (found ${bails})`);
+});
+
+test('fullscreen sizes the element that actually carries the aspect ratio', () => {
+  // The subtle one. .ba has aspect-ratio directly, but .designer-shell does NOT — the
+  // walkthrough's ratio sits on .designer-demo before the player mounts and moves to
+  // .sdp__frame after. Height-driven sizing applied only to the shell would leave the
+  // demo sized by width and spilling off the bottom of the screen.
+  const css = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'home.css'), 'utf8');
+  const code = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const sel of ['.ba', '.designer-demo', '.sdp__frame']) {
+    assert.ok(
+      new RegExp(`\\.shw__media:fullscreen\\s+\\${sel}\\b`).test(code) ||
+        new RegExp(`\\.shw__media:fullscreen\\s+[^{]*\\${sel}[,\\s{]`).test(code),
+      `:fullscreen must size ${sel}`
+    );
+  }
+});
+
+test('the fullscreen label is in all eleven packs', () => {
+  const dir = path.join(ROOT, 'public', 'languages');
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
+    const value = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')).home?.showcase?.fullscreen;
+    assert.equal(typeof value, 'string', `${file}: home.showcase.fullscreen is missing`);
+    assert.ok(value.trim().length > 0, `${file}: home.showcase.fullscreen is blank`);
   }
 });
 

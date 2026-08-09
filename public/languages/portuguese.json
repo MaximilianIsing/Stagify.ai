@@ -84,23 +84,22 @@
       "exampleRoomsAria": "Cômodos de exemplo"
     },
     "showcase": {
-      "title": "Quatro estúdios, um só espaço",
-      "subtitle": "Arraste, role na horizontal ou use as setas. O que está à frente funciona de verdade, não é uma captura de tela.",
+      "title": "Veja você mesmo",
+      "subtitle": "Demos ao vivo. Arraste para trocar.",
       "tablistAria": "Estúdios",
-      "prevAria": "Estúdio anterior",
-      "nextAria": "Próximo estúdio",
       "tabs": {
         "designer": "Designer IA",
         "masking": "Estúdio de máscaras",
         "exterior": "Estúdio de exteriores",
         "gallery": "Sua galeria"
-      }
+      },
+      "fullscreen": "Tela cheia"
     },
     "designer": {
       "title": "Deixe uma IA decorar seu espaço",
       "subtitle": "Com o Designer IA, converse para decorar, redesenhar e refinar qualquer cômodo até que fique pronto para o anúncio. <em>(Exclusivo do Stagify+)</em>",
       "kicker": "Conversacional",
-      "panelTitle": "Descreva o ambiente, não o decore",
+      "panelTitle": "Continue conversando até o ambiente ficar certo",
       "panelBody": "Escreva o que você quer e o Designer prepara o ambiente, mantendo-o em mente. Peça outro sofá ou uma paleta mais quente e ele parte do que já criou.",
       "points": {
         "iterate": "Continue ajustando na mesma conversa.",
@@ -112,7 +111,7 @@
       "title": "Decore com precisão exata",
       "subtitle": "Mascare as áreas a refazer, adicione seus próprios móveis e todo o resto fica idêntico ao pixel. <em>(Exclusivo do Stagify+)</em>",
       "kicker": "Exato ao pixel",
-      "panelTitle": "Mude um canto, não o ambiente inteiro",
+      "panelTitle": "Só o que você pinta é redecorado",
       "panelBody": "Pinte apenas a área que quiser redecorar. Tudo fora da máscara volta intacto, então o resto da foto não muda.",
       "points": {
         "snap": "Pinte uma máscara ou deixe ajustar ao objeto.",
@@ -348,7 +347,7 @@
       }
     },
     "faq": {
-      "subtitle": "Respostas rápidas para as perguntas mais frequentes. Ainda com dúvidas? Acesse os <a href=\"guides.html\">Guias</a> ou entre em contato."
+      "subtitle": "Respostas rápidas às dúvidas comuns. Veja os <a href=\"guides.html\">Guias</a> ou fale conosco."
     },
     "blog": {
       "title": "Do blog da Stagify",
@@ -582,7 +581,7 @@
       },
       "whatMakesDifferent": {
         "question": "O que torna o Stagify diferente de outras ferramentas de staging virtual?",
-        "answer": "Algumas coisas. Primeiro, o preço: você pode começar a decorar de graça, e o Stagify+ custa apenas $11.99 por mês para staging ilimitado — enquanto o staging tradicional pode custar centenas ou milhares de dólares por ambiente. Segundo, o Designer IA permite conversar com nossa IA para redesenhar um ambiente inteiro e refinar o resultado ao longo da conversa, em vez de apenas aplicar predefinições. Terceiro, o Estúdio de Máscaras oferece precisão ao nível do pixel — marque exatamente quais áreas de uma foto podem mudar e associe um móvel específico a cada uma, para que tudo o que você não selecionar permaneça intacto. A maioria das ferramentas faz bem apenas uma dessas coisas; o Stagify reúne preço acessível, controle criativo e precisão."
+        "answer": "Algumas coisas. Primeiro, o preço: você pode começar a decorar de graça, e o Stagify+ custa apenas $11.99 por mês para staging ilimitado, enquanto o staging tradicional pode custar centenas ou milhares de dólares por ambiente. Segundo, o Designer IA permite conversar com nossa IA para redesenhar um ambiente inteiro e refinar o resultado ao longo da conversa, em vez de apenas aplicar predefinições. Terceiro, o Estúdio de Máscaras oferece precisão ao nível do pixel: marque exatamente quais áreas de uma foto podem mudar e associe um móvel específico a cada uma, para que tudo o que você não selecionar permaneça intacto. A maioria das ferramentas faz bem apenas uma dessas coisas; o Stagify reúne preço acessível, controle criativo e precisão."
       },
       "mlsAllowed": {
         "question": "Posso usar fotos decoradas virtualmente nos meus anúncios imobiliários?",

@@ -84,23 +84,22 @@
       "exampleRoomsAria": "Stanze di esempio"
     },
     "showcase": {
-      "title": "Quattro studi, una sola tela",
-      "subtitle": "Trascinalo, scorri lateralmente o usa le frecce. Quello in primo piano funziona davvero, non è uno screenshot.",
+      "title": "Guarda con i tuoi occhi",
+      "subtitle": "Demo dal vivo. Trascina per cambiare.",
       "tablistAria": "Studi",
-      "prevAria": "Studio precedente",
-      "nextAria": "Studio successivo",
       "tabs": {
         "designer": "Designer IA",
         "masking": "Studio maschere",
         "exterior": "Studio esterni",
         "gallery": "La tua galleria"
-      }
+      },
+      "fullscreen": "Schermo intero"
     },
     "designer": {
       "title": "Lascia che un'IA arredi il tuo spazio",
       "subtitle": "Con il Designer IA, chatta per arredare, riprogettare e perfezionare qualsiasi stanza finché non è pronta per l'annuncio. <em>(Esclusiva Stagify+)</em>",
       "kicker": "Conversazionale",
-      "panelTitle": "Descrivi la stanza, non arredarla",
+      "panelTitle": "Continua a parlare finché la stanza non ti convince",
       "panelBody": "Scrivi ciò che vuoi e il Designer arreda la stanza, tenendola a mente. Chiedi un altro divano o una palette più calda e riparte da quanto ha già creato.",
       "points": {
         "iterate": "Continua a perfezionare nella stessa conversazione.",
@@ -112,7 +111,7 @@
       "title": "Arreda con precisione esatta",
       "subtitle": "Maschera le aree da rifare, aggiungi i tuoi mobili e tutto il resto resta identico al pixel. <em>(Esclusiva Stagify+)</em>",
       "kicker": "Preciso al pixel",
-      "panelTitle": "Cambia un angolo, non tutta la stanza",
+      "panelTitle": "Viene riarredato solo ciò che colori",
       "panelBody": "Colora solo l'area da riarredare. Tutto ciò che resta fuori dalla maschera torna intatto, così il resto della foto non cambia.",
       "points": {
         "snap": "Dipingi una maschera o lascia che segua l'oggetto.",
@@ -348,7 +347,7 @@
       }
     },
     "faq": {
-      "subtitle": "Risposte rapide alle domande più frequenti. Ancora bloccato? Visita le <a href=\"guides.html\">Guide</a> o contattaci."
+      "subtitle": "Risposte rapide alle domande frequenti. Dubbi? Vai alle <a href=\"guides.html\">Guide</a> o scrivici."
     },
     "blog": {
       "title": "Dal blog di Stagify",
@@ -582,7 +581,7 @@
       },
       "whatMakesDifferent": {
         "question": "Cosa distingue Stagify dagli altri strumenti di staging virtuale?",
-        "answer": "Diverse cose. Primo, il prezzo: puoi iniziare ad arredare gratis e Stagify+ costa solo $11.99 al mese per uno staging illimitato — mentre lo staging tradizionale può costare centinaia o migliaia di dollari a stanza. Secondo, il Designer IA ti permette di chattare con la nostra IA per riprogettare un'intera stanza e perfezionare il risultato conversando, invece di applicare solo preset. Terzo, lo Studio Maschere offre una precisione al pixel — indica esattamente quali aree di una foto possono cambiare e associa a ciascuna un mobile specifico, così tutto ciò che non selezioni resta intatto. La maggior parte degli strumenti fa bene solo una di queste cose; Stagify unisce convenienza, controllo creativo e precisione."
+        "answer": "Diverse cose. Primo, il prezzo: puoi iniziare ad arredare gratis e Stagify+ costa solo $11.99 al mese per uno staging illimitato, mentre lo staging tradizionale può costare centinaia o migliaia di dollari a stanza. Secondo, il Designer IA ti permette di chattare con la nostra IA per riprogettare un'intera stanza e perfezionare il risultato conversando, invece di applicare solo preset. Terzo, lo Studio Maschere offre una precisione al pixel: indica esattamente quali aree di una foto possono cambiare e associa a ciascuna un mobile specifico, così tutto ciò che non selezioni resta intatto. La maggior parte degli strumenti fa bene solo una di queste cose; Stagify unisce convenienza, controllo creativo e precisione."
       },
       "mlsAllowed": {
         "question": "Posso usare foto arredate virtualmente nei miei annunci immobiliari?",

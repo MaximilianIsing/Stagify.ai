@@ -84,23 +84,22 @@
       "exampleRoomsAria": "Exemples de pièces"
     },
     "showcase": {
-      "title": "Quatre studios, une seule toile",
-      "subtitle": "Faites-le glisser, faites défiler latéralement ou utilisez les flèches. Ce qui est au premier plan fonctionne vraiment, ce n'est pas une capture d'écran.",
+      "title": "Voyez par vous-même",
+      "subtitle": "Démos en direct. Glissez pour changer.",
       "tablistAria": "Studios",
-      "prevAria": "Studio précédent",
-      "nextAria": "Studio suivant",
       "tabs": {
         "designer": "Designer IA",
         "masking": "Studio de masquage",
         "exterior": "Studio extérieur",
         "gallery": "Votre galerie"
-      }
+      },
+      "fullscreen": "Plein écran"
     },
     "designer": {
       "title": "Laissez une IA meubler votre espace",
       "subtitle": "Avec le Designer IA, discutez pour meubler, redessiner et peaufiner n'importe quelle pièce jusqu'à ce qu'elle soit prête pour l'annonce. <em>(Exclusivité Stagify+)</em>",
       "kicker": "Conversationnel",
-      "panelTitle": "Décrivez la pièce, ne la décorez pas",
+      "panelTitle": "Discutez jusqu'à ce que la pièce vous convienne",
       "panelBody": "Décrivez ce que vous voulez : le Designer met la pièce en scène et la garde en mémoire. Demandez un autre canapé ou des tons plus chauds, il repart de ce qu'il a déjà créé.",
       "points": {
         "iterate": "Continuez à affiner dans la même conversation.",
@@ -112,7 +111,7 @@
       "title": "Meublez avec une précision exacte",
       "subtitle": "Masquez les zones à refaire, ajoutez vos propres meubles, et tout le reste reste identique au pixel près. <em>(Exclusivité Stagify+)</em>",
       "kicker": "Au pixel près",
-      "panelTitle": "Changez un coin, pas toute la pièce",
+      "panelTitle": "Seul ce que vous peignez est remis en scène",
       "panelBody": "Peignez uniquement la zone à remettre en scène. Tout ce qui est hors du masque revient intact : le reste de la photo ne bouge pas.",
       "points": {
         "snap": "Peignez un masque ou laissez l'outil suivre l'objet.",
@@ -348,7 +347,7 @@
       }
     },
     "faq": {
-      "subtitle": "Des réponses rapides aux questions les plus fréquentes. Toujours bloqué ? Consultez les <a href=\"guides.html\">Guides</a> ou contactez-nous."
+      "subtitle": "Réponses rapides. Toujours bloqué ? Voir les <a href=\"guides.html\">Guides</a> ou nous écrire."
     },
     "blog": {
       "title": "Le blog de Stagify",
@@ -582,7 +581,7 @@
       },
       "whatMakesDifferent": {
         "question": "Qu'est-ce qui distingue Stagify des autres outils de staging virtuel ?",
-        "answer": "Plusieurs choses. D'abord, le prix : vous pouvez commencer à aménager gratuitement, et Stagify+ ne coûte que $11.99 par mois pour un aménagement illimité — alors que le staging traditionnel peut coûter des centaines, voire des milliers de dollars par pièce. Ensuite, le Designer IA vous permet de discuter avec notre IA pour réaménager une pièce entière et d'affiner le résultat au fil de la conversation, au lieu de simplement appliquer des préréglages. Enfin, le Studio de masquage offre une précision au pixel près — indiquez exactement quelles zones d'une photo peuvent changer et associez un meuble précis à chacune, afin que tout ce que vous ne sélectionnez pas reste intact. La plupart des outils ne font bien qu'une seule de ces choses ; Stagify réunit accessibilité, contrôle créatif et précision."
+        "answer": "Plusieurs choses. D'abord, le prix : vous pouvez commencer à aménager gratuitement, et Stagify+ ne coûte que $11.99 par mois pour un aménagement illimité, alors que le staging traditionnel peut coûter des centaines, voire des milliers de dollars par pièce. Ensuite, le Designer IA vous permet de discuter avec notre IA pour réaménager une pièce entière et d'affiner le résultat au fil de la conversation, au lieu de simplement appliquer des préréglages. Enfin, le Studio de masquage offre une précision au pixel près : indiquez exactement quelles zones d'une photo peuvent changer et associez un meuble précis à chacune, afin que tout ce que vous ne sélectionnez pas reste intact. La plupart des outils ne font bien qu'une seule de ces choses ; Stagify réunit accessibilité, contrôle créatif et précision."
       },
       "mlsAllowed": {
         "question": "Puis-je utiliser des photos aménagées virtuellement dans mes annonces immobilières ?",
