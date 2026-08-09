@@ -268,3 +268,102 @@ test('a request with no image is rejected before anything else', async () => {
   });
   assert.equal(res.statusCode, 400);
 });
+
+// ── "Label as virtually staged" ──────────────────────────────────────────────────────
+//
+// The disclosure option is UNGATED by plan, which is the opposite of every other option
+// this handler resolves. That asymmetry is deliberate (an MLS/NAR compliance control is not
+// an upsell) and therefore fragile: the obvious "consistency" cleanup is to fold it in
+// beside removeBool's `isPro &&`, which would silently paywall it. These pin it down.
+
+/** Capture the full stagingParams object(s) handed to processStaging. */
+function captureParams() {
+  const seen = [];
+  return {
+    seen,
+    processStaging: async (_buf, params, req) => {
+      seen.push(params);
+      if (req) req._stagingGenerations = (req._stagingGenerations || 0) + 1;
+      return 'img';
+    },
+  };
+}
+
+test('labelVirtuallyStaged is available to FREE accounts — it is not a pro feature', async () => {
+  const cap = captureParams();
+  const { handleVirtualStagingMultipart } = makeHandler({ processStaging: cap.processStaging });
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', labelVirtuallyStaged: 'true' }),
+    fakeRes(),
+    { user: FREE, recordUsage: true, treatAsPro: false },
+  );
+  assert.equal(cap.seen.length, 1);
+  assert.equal(
+    cap.seen[0].labelVirtuallyStaged, true,
+    'a free account asking for the disclosure gets it — do NOT add `isPro &&` to this coercion',
+  );
+});
+
+test('removeFurniture is STILL pro-gated (proving the two were not merged)', async () => {
+  // The regression guard for the cleanup described above: if someone unifies the two
+  // coercions, one of these two tests fails whichever direction they unify in.
+  const cap = captureParams();
+  const { handleVirtualStagingMultipart } = makeHandler({ processStaging: cap.processStaging });
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', removeFurniture: 'true' }),
+    fakeRes(),
+    { user: FREE, recordUsage: true, treatAsPro: false },
+  );
+  assert.equal(cap.seen[0].removeFurniture, false, 'a free account does not get furniture removal');
+});
+
+test('labelVirtuallyStaged: multipart string forms coerce, everything else is false', async () => {
+  // multer delivers every field as a string, so the truthy set has to be explicit —
+  // `!!'false'` is true, which would stamp every render for users who never ticked the box.
+  for (const [input, expected] of [
+    ['true', true], ['on', true], [true, true],
+    ['false', false], ['off', false], ['0', false], ['', false], ['1', false],
+    [undefined, false], [null, false], ['TRUE', false],
+  ]) {
+    const cap = captureParams();
+    const { handleVirtualStagingMultipart } = makeHandler({ processStaging: cap.processStaging });
+    const body = { roomType: 'Bedroom' };
+    if (input !== undefined) body.labelVirtuallyStaged = input;
+    await handleVirtualStagingMultipart(fakeReq(body), fakeRes(), { user: FREE, recordUsage: true, treatAsPro: false });
+    assert.equal(cap.seen[0].labelVirtuallyStaged, expected, `${JSON.stringify(input)} → ${expected}`);
+  }
+});
+
+test('stampLang is validated against the real locale set, never trusted into a filename', async () => {
+  // It arrives from the browser's localStorage and ends up selecting a PNG on disk, so a
+  // traversal-shaped value must not survive the handler. Unknown values become English.
+  for (const [input, expected] of [
+    ['german', 'german'], ['japanese', 'japanese'], ['english', 'english'],
+    ['klingon', 'english'], ['', 'english'], ['../../etc/passwd', 'english'],
+    ['English', 'english'], [undefined, 'english'],
+  ]) {
+    const cap = captureParams();
+    const { handleVirtualStagingMultipart } = makeHandler({ processStaging: cap.processStaging });
+    const body = { roomType: 'Bedroom', labelVirtuallyStaged: 'true' };
+    if (input !== undefined) body.stampLang = input;
+    await handleVirtualStagingMultipart(fakeReq(body), fakeRes(), { user: FREE, recordUsage: true, treatAsPro: false });
+    assert.equal(cap.seen[0].stampLang, expected, `${JSON.stringify(input)} → ${expected}`);
+  }
+});
+
+test('every variation of a multi-variation render carries the disclosure flag', async () => {
+  // The flag rides stagingParamsBase, which is spread per variation. If it were attached to
+  // only the first, a pro user asking for three images would publish two unlabelled ones.
+  const cap = captureParams();
+  const { handleVirtualStagingMultipart } = makeHandler({ processStaging: cap.processStaging });
+  await handleVirtualStagingMultipart(
+    fakeReq({ roomType: 'Bedroom', variationCount: '3', labelVirtuallyStaged: 'true', stampLang: 'italian' }),
+    fakeRes(),
+    { user: PRO, recordUsage: true, treatAsPro: true },
+  );
+  assert.equal(cap.seen.length, 3, 'sanity: three variations ran');
+  for (const [i, params] of cap.seen.entries()) {
+    assert.equal(params.labelVirtuallyStaged, true, `variation ${i + 1} is labelled`);
+    assert.equal(params.stampLang, 'italian', `variation ${i + 1} keeps the language`);
+  }
+});

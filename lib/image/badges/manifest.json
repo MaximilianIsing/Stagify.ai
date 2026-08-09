@@ -1,0 +1,84 @@
+{
+  "baseFontPx": 128,
+  "fontWeight": 600,
+  "bandHeight": 144,
+  "entries": {
+    "english": {
+      "file": "english.png",
+      "text": "This image has been virtually staged",
+      "sha256": "470bc5b43995e975dc670a4f8172e4119e08687a55ce2523842e2c6110a7600d",
+      "width": 2182,
+      "height": 144
+    },
+    "spanish": {
+      "file": "spanish.png",
+      "text": "Esta imagen ha sido amueblada virtualmente",
+      "sha256": "9027a0b218567fed1843664e071ce448ed4fdb9d118f3931d0bfa02d6d037ac3",
+      "width": 2706,
+      "height": 144
+    },
+    "french": {
+      "file": "french.png",
+      "text": "Cette image a été meublée virtuellement",
+      "sha256": "02206388bdc27f308d1bf7d0856721de52b7099ecd2ef371b4777dd24acdea82",
+      "width": 2448,
+      "height": 144
+    },
+    "german": {
+      "file": "german.png",
+      "text": "Dieses Bild wurde virtuell möbliert",
+      "sha256": "19136442233f55c17f6a2a2451db850cd9e89dcf04a88f69d43b125d521dec34",
+      "width": 2053,
+      "height": 144
+    },
+    "dutch": {
+      "file": "dutch.png",
+      "text": "Deze afbeelding is virtueel ingericht",
+      "sha256": "399eb387be3f053d74735591f456c4412873644ff9e8e083a52697b955545aa8",
+      "width": 2145,
+      "height": 144
+    },
+    "italian": {
+      "file": "italian.png",
+      "text": "Questa immagine è stata arredata virtualmente",
+      "sha256": "5dfa951556295751a89cc5d39009d593d79f71071e94f04b4796c6fcd8f72c99",
+      "width": 2851,
+      "height": 144
+    },
+    "portuguese": {
+      "file": "portuguese.png",
+      "text": "Esta imagem foi mobiliada virtualmente",
+      "sha256": "1c7cb8bc70fcfab24826b671a279870d916ed5d7950333425f3df25c2e1f51a4",
+      "width": 2387,
+      "height": 144
+    },
+    "russian": {
+      "file": "russian.png",
+      "text": "Это изображение виртуально меблировано",
+      "sha256": "8e25e42220c067dd387dc38a511993f6c84d19ff28c525ce38a7649e07d2274e",
+      "width": 2719,
+      "height": 144
+    },
+    "chinese": {
+      "file": "chinese.png",
+      "text": "此图片经过虚拟布置",
+      "sha256": "49388e3a4fbf084d4d409e7827aadda5ca2f66f8379f0457b64db86c5ec223f5",
+      "width": 1143,
+      "height": 144
+    },
+    "japanese": {
+      "file": "japanese.png",
+      "text": "この画像はバーチャルステージングされています",
+      "sha256": "3c1e21b386b70375549fc2b8ecc3868f891a4dde06f1e9baeaea4d9b41978c82",
+      "width": 2778,
+      "height": 144
+    },
+    "korean": {
+      "file": "korean.png",
+      "text": "이 이미지는 가상으로 스테이징되었습니다",
+      "sha256": "418751e56a0ad36c44171255cee9bec0e238c4a9e368a4e06a75a735448d214b",
+      "width": 2193,
+      "height": 144
+    }
+  }
+}

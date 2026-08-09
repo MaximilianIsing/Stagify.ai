@@ -1429,6 +1429,26 @@
                     <span class="microcopy" data-lang="modal.staging.furniturePhotosHint">Up to 5 reference photos of furniture or decor to feature in the staged room</span>
                   </div>
                 </div>
+                <!-- Sits OUTSIDE #stagify-pro-panel and below it on purpose. It is a
+                     delivery option rather than a generation one, and it is available on
+                     every plan — a legal disclosure is not an upsell — so it must land in
+                     the same place for a free account, whose pro panel above is hidden.
+                     Nothing may toggle this row's visibility; unlike #remove-furniture-row
+                     it has no gate, so it deliberately has no writer either. -->
+                <div class="tool-row" id="label-staged-row">
+                  <div class="checkbox-container">
+                    <input type="checkbox" id="label-virtually-staged" class="checkbox-input" aria-describedby="label-staged-tip">
+                    <!-- The (i) button is a SIBLING of the label, never a child: data-lang
+                         replaces an element's textContent wholesale and would eat the SVG
+                         (same trap as the room-type badge above). Hence data-lang-attr on
+                         the button, which only writes the attribute. -->
+                    <label for="label-virtually-staged" class="checkbox-label" data-lang="modal.staging.labelVirtuallyStaged">Label as virtually staged</label>
+                    <span class="opt-info">
+                      <button type="button" class="opt-info__btn" data-lang-attr="modal.staging.labelVirtuallyStagedInfo|aria-label" aria-label="What does labelling as virtually staged do?"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></button>
+                      <span class="opt-info__tip" id="label-staged-tip" data-lang="modal.staging.labelVirtuallyStagedTip">Adds a small &quot;This image has been virtually staged&quot; note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.</span>
+                    </span>
+                  </div>
+                </div>
                 <div class="process-cta">
                   <button id="process-btn" class="btn btn-primary btn-lg"><strong data-lang="modal.staging.processButton">Process photo</strong></button>
                 </div>

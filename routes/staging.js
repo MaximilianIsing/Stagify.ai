@@ -109,6 +109,17 @@ router.post('/api/process-image', genLimiter, stagingProcessUpload, async (req, 
         code: 'NO_IMAGE_GENERATED',
       });
     }
+    // The disclosure stamp fails CLOSED (lib/image/stamp-disclosure.js), so the render
+    // completed and was then withheld rather than shipped unlabelled. Say exactly that,
+    // and offer the one action that gets the user their image — the alternative reads as
+    // a random failure and they simply retry into the same wall. Still reported: this is
+    // an environment/asset fault, so every occurrence should reach Sentry.
+    if (error && /** @type {any} */ (error).code === 'DISCLOSURE_STAMP_FAILED') {
+      return sendError(res, 500, 'We couldn\'t add the "virtually staged" label, so your image wasn\'t delivered. Untick that option to stage without it.', {
+        code: 'DISCLOSURE_STAMP_FAILED',
+        ref: reportError('staging.disclosure-stamp', error),
+      });
+    }
     return sendError(res, 500, 'Image processing failed', { ref: reportError('staging.process-image', error) });
   }
 });
@@ -206,6 +217,16 @@ router.post('/api/stage-by-endpoint-key', stagingEndpointKeyGuard, stagingProces
   } catch (error) {
     const ref = reportError('staging.stage-by-endpoint-key', error);
     if (!res.headersSent) {
+      // Same fail-closed disclosure branch as /api/process-image. A partner integration can
+      // request the label too (it rides the same handler), so it needs the same distinct
+      // code — otherwise a withheld-but-successful render is indistinguishable from a
+      // generation failure and gets retried forever.
+      if (error && /** @type {any} */ (error).code === 'DISCLOSURE_STAMP_FAILED') {
+        return sendError(res, 500, 'We couldn\'t add the "virtually staged" label, so your image wasn\'t delivered. Retry without that option to stage without it.', {
+          code: 'DISCLOSURE_STAMP_FAILED',
+          ref,
+        });
+      }
       return sendError(res, 500, 'Image processing failed', { ref });
     }
   }
