@@ -1071,14 +1071,22 @@
           <p class="home-section__sub" data-lang="home.nar.subtitle">Real estate is adopting AI fast, and clients are responding to it. Staging is one of the easiest places to start.</p>
         </div>
         <!-- Every visible string here is unchanged; scripts/home-figures.js adds the
-             entrance animation and the legend highlight through the data-* hooks only.
+             entrance wipe and the legend highlight through the data-* hooks only.
 
              The segment widths moved from `width:` to `--seg-w` so the CSS owns the
              final value and JS only toggles a class — with no JS, or under reduced
-             motion, the bar is already fully drawn. Same for [data-nar-count]: the
-             attribute is the ramp target AND the authored text is the final numeral.
-             test/frontend/home-figures.test.js fails if a width, a legend percentage
-             and its aria-label ever drift apart. -->
+             motion, the bar is already fully drawn.
+
+             THE PERCENTAGES ARE PLAIN TEXT AND STAY THAT WAY. They were briefly
+             animated (counted up from 0%) and it read as nonsense — a survey share is
+             a measured fact, not a running total, so ramping it implies a process that
+             never happened. Do not re-add a counter here; #compare's calculator ramps
+             because its numbers really are a total the visitor is building.
+
+             The same four numbers appear in four places — the bar widths, the legend,
+             the note, and the bar's aria-label (which is all a screen reader gets,
+             since the bar is role="img"). test/frontend/home-figures.test.js fails if
+             they drift apart. -->
         <div class="nar-card reveal" data-nar-chart>
           <div class="nar-usage">
             <div class="nar-usage__label" data-lang="home.nar.usageLabel">How often agents use AI tools</div>
@@ -1092,20 +1100,20 @@
                  only affordance a touch visitor gets (no hover on a phone). The bar keeps
                  role="img" and its translated aria-label, so this is decoration only. -->
             <ul class="nar-legend">
-              <li><button type="button" class="nar-legend__btn" data-nar-key="daily" aria-pressed="false"><span class="swatch nar-seg--daily"></span><span data-lang="home.nar.legend.daily">Daily</span>&nbsp;<span class="pct" data-nar-count="20">20%</span></button></li>
-              <li><button type="button" class="nar-legend__btn" data-nar-key="weekly" aria-pressed="false"><span class="swatch nar-seg--weekly"></span><span data-lang="home.nar.legend.weekly">Weekly</span>&nbsp;<span class="pct" data-nar-count="22">22%</span></button></li>
-              <li><button type="button" class="nar-legend__btn" data-nar-key="monthly" aria-pressed="false"><span class="swatch nar-seg--monthly"></span><span data-lang="home.nar.legend.monthly">A few times a month</span>&nbsp;<span class="pct" data-nar-count="27">27%</span></button></li>
-              <li><button type="button" class="nar-legend__btn" data-nar-key="none" aria-pressed="false"><span class="swatch nar-seg--none"></span><span data-lang="home.nar.legend.none">Not yet</span>&nbsp;<span class="pct" data-nar-count="32">32%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="daily" aria-pressed="false"><span class="swatch nar-seg--daily"></span><span data-lang="home.nar.legend.daily">Daily</span>&nbsp;<span class="pct">20%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="weekly" aria-pressed="false"><span class="swatch nar-seg--weekly"></span><span data-lang="home.nar.legend.weekly">Weekly</span>&nbsp;<span class="pct">22%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="monthly" aria-pressed="false"><span class="swatch nar-seg--monthly"></span><span data-lang="home.nar.legend.monthly">A few times a month</span>&nbsp;<span class="pct">27%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="none" aria-pressed="false"><span class="swatch nar-seg--none"></span><span data-lang="home.nar.legend.none">Not yet</span>&nbsp;<span class="pct">32%</span></button></li>
             </ul>
-            <p class="nar-usage__note"><strong data-nar-count="68">68%</strong> <span data-lang="home.nar.note">of agents already use AI in their business.</span></p>
+            <p class="nar-usage__note"><strong>68%</strong> <span data-lang="home.nar.note">of agents already use AI in their business.</span></p>
           </div>
           <div class="nar-stats">
             <div class="nar-stat">
-              <span class="nar-stat__num" data-nar-count="82">82%</span>
+              <span class="nar-stat__num">82%</span>
               <span class="nar-stat__txt" data-lang="home.nar.stat1">of agents say clients responded positively to technology in the buying and selling process</span>
             </div>
             <div class="nar-stat">
-              <span class="nar-stat__num" data-nar-count="46">46%</span>
+              <span class="nar-stat__num">46%</span>
               <span class="nar-stat__txt" data-lang="home.nar.stat2">already use AI to generate listing content</span>
             </div>
           </div>

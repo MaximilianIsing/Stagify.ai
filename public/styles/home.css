@@ -258,6 +258,24 @@
    Geometry is written by scripts/studio-showcase.js as inline transforms; this
    file owns the look, the transition and the no-JS fallback. */
 
+/* The side panels are translated well past the section on purpose, so the arc runs
+   off the edge of the screen rather than stopping at a 1140px boundary. That bleed
+   has to be CLIPPED, and the page does not clip it by default:
+
+   `body, main { overflow-y: auto }` (styles.css) makes <main> the page's scroll
+   container, and a box with overflow-y:auto and overflow-x:visible resolves its
+   overflow-x to `auto` too — so the bleed became ~220px of real horizontal scroll
+   next to the showcase. <html> and <body> already carry overflow-x:clip, but <main>
+   scrolls inside them, so their clipping never applied to it.
+
+   Scoped to the homepage, matching the existing precedent at admin.css:33. Written
+   as `clip` (the site's preference over `hidden` — see the note on `overflow-x` in
+   styles.css) though it resolves to `hidden` here, because the other axis is `auto`;
+   either way it clips horizontally and keeps scrolling vertically. */
+body.page-home main {
+  overflow-x: clip;
+}
+
 .shw {
   position: relative;
 }
@@ -1520,12 +1538,6 @@
   line-height: 1.5;
   color: #41507a;
 }
-/* Rewritten every frame of the count-up — see the note on .calc__val. */
-.nar-stat__num,
-.nar-usage__note strong {
-  font-variant-numeric: tabular-nums;
-}
-
 /* Entrance wipe. One clip-path on the bar rather than four animated `width`s: it is a
    single property, it never triggers layout, and — the reason it matters — the final
    widths never leave the CSS, which is what makes the no-JS and reduced-motion paths
