@@ -42,7 +42,6 @@ const {
   weeksFor,
   weeksAtRamp,
   formatCurrency,
-  percentText,
   fillCount,
 } = await import('../../public/scripts/home-figures.js');
 
@@ -129,12 +128,6 @@ test('no frame of the intro ramp can render a singular week count', () => {
     assert.equal(weeksAtRamp(target, 0), floor, 'the ramp starts at the floor');
     assert.equal(weeksAtRamp(target, 1), target, 'and lands exactly on target');
   }
-});
-
-test('percentText renders the displayed integer', () => {
-  assert.equal(percentText(0), '0%');
-  assert.equal(percentText(19.6), '20%', 'rounds to what the eye sees');
-  assert.equal(percentText(68), '68%');
 });
 
 test('fillCount substitutes {n} and tolerates a template that lost it', () => {
@@ -228,14 +221,21 @@ test('the old comparison table is gone but its citation block survives', () => {
 // Markup drift — the chart's four representations of the same four numbers
 // --------------------------------------------------------------------------
 
-test('every [data-nar-count] target matches its authored numeral', () => {
-  const counts = [...INDEX.matchAll(/data-nar-count="(\d+)"[^>]*>([^<]*)</g)];
-  assert.equal(counts.length, 7, 'four legend rows, the 68% note, and two stat tiles');
-  for (const [, target, text] of counts) {
-    // The attribute is the ramp target; the text is the no-JS and reduced-motion value.
-    // A mismatch means the two paths show different figures, which no browser reveals.
-    assert.equal(text, percentText(Number(target)), `data-nar-count="${target}" vs its text`);
-  }
+test('the chart percentages are static text, never animated', () => {
+  // A survey share is a measured fact, not a running total, so counting it up from 0%
+  // implies a process that never happened — and paints six wrong figures on the way to
+  // the right one. This was built, judged nonsense, and removed; the guard stops it
+  // coming back by the usual route (a ramp needs a target attribute to ramp toward).
+  assert.ok(
+    !INDEX.includes('data-nar-count'),
+    'data-nar-count is back — the chart numerals are being animated again'
+  );
+  const chart = (INDEX.match(/<div class="nar-card[^"]*"[^>]*>[\s\S]*?<\/div>\s*<\/div>/) || [])[0] || '';
+  assert.ok(chart, 'the NAR card is still there');
+  assert.ok(
+    !/data-count|data-ramp|data-countup/i.test(chart),
+    'no count-up hook of any name belongs on the chart'
+  );
 });
 
 test('the bar segments, the legend and the aria-label agree', () => {
@@ -254,9 +254,13 @@ test('the bar segments, the legend and the aria-label agree', () => {
     `the segment widths sum to ${total}%, which is too far from 100 to be survey rounding`
   );
 
+  // Read the VISIBLE text, not an attribute — it is the only representation left, and
+  // it is what a reader actually compares against the bar. `.pct` carries no data-lang,
+  // so "20%" is stable across all 11 packs.
   const legend = [...INDEX.matchAll(
-    /data-nar-key="([^"]+)"[\s\S]*?<span class="pct" data-nar-count="(\d+)"/g
+    /data-nar-key="([^"]+)"[\s\S]*?<span class="pct">(\d+)%<\/span>/g
   )].map((m) => ({ key: m[1], pct: Number(m[2]) }));
+  assert.equal(legend.length, 4, 'four legend percentages');
   assert.deepEqual(
     legend.map((l) => l.key),
     segments.map((s) => s.key),

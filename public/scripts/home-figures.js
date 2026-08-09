@@ -20,11 +20,6 @@
 
 import { rampValue } from "./count-up.js";
 
-/** How long the chart's numerals take to count up, in ms. The bar's own wipe is a CSS
- *  transition (see `.nar-card.is-narm.is-ncharted .nar-bar` in home.css) and is a touch
- *  shorter, so the bar settles just before the numbers do. */
-const NAR_COUNT_MS = 1400;
-
 /** The calculator's one-time intro ramp. Dragging never ramps — see initCalculator. */
 const CALC_INTRO_MS = 1200;
 
@@ -92,11 +87,6 @@ export function weeksFor(listings) {
 export function weeksAtRamp(target, t) {
   const floor = weeksFor(CALC.min);
   return floor + rampValue(Math.max(target - floor, 0), t);
-}
-
-/** @param {number} value @returns {string} e.g. "20%" */
-export function percentText(value) {
-  return String(Math.round(value)) + "%";
 }
 
 /**
@@ -346,20 +336,17 @@ function initNarChart() {
   // The highlight is direct manipulation, not motion — it stays on under reduced motion.
   wireNarLegend(card);
 
-  // Everything below is the entrance animation only. The markup already carries the
-  // final widths and numerals, so returning here leaves the chart complete.
+  // Everything below is the entrance wipe only. The markup already carries the final
+  // widths, so returning here leaves the chart complete.
+  //
+  // THE PERCENTAGES ARE NEVER ANIMATED, deliberately. They were counted up from 0% at
+  // first, and it read as nonsense: a survey share is a fixed measured fact, not a
+  // quantity accumulating, so ramping "68%" up from "0%" implies a process that never
+  // happened and shows six wrong figures on the way to the right one. (The calculator
+  // in #compare ramps because its numbers ARE a running total the visitor is building.)
   if (prefersReducedMotion() || !("IntersectionObserver" in window)) return;
 
-  const counters = Array.from(card.querySelectorAll("[data-nar-count]")).filter((el) =>
-    Number.isFinite(Number(el.getAttribute("data-nar-count")))
-  );
-  if (!counters.length) return;
-  const targets = counters.map((el) => Number(el.getAttribute("data-nar-count")));
-
   card.classList.add("is-narm");
-  counters.forEach((el) => {
-    el.textContent = percentText(0);
-  });
 
   playWhenInView(card, () => {
     // Commit the collapsed clip-path before the transition class lands. Without the
@@ -367,11 +354,6 @@ function initNarChart() {
     // and the bar simply appears at full width with no wipe.
     void card.offsetWidth;
     requestAnimationFrame(() => card.classList.add("is-ncharted"));
-    ramp(NAR_COUNT_MS, (t) => {
-      counters.forEach((el, i) => {
-        el.textContent = percentText(rampValue(targets[i], t));
-      });
-    });
   });
 }
 

@@ -388,6 +388,27 @@ test('the mock grid scrolls rather than growing the panel', () => {
   }
 });
 
+test('the homepage clips the arc that bleeds past the viewport', () => {
+  // The side panels are translated well past the section so the arc runs off-screen.
+  // `body, main { overflow-y: auto }` (styles.css) makes <main> the scroll container,
+  // and overflow-y:auto next to overflow-x:visible resolves overflow-x to `auto` —
+  // which turned that deliberate bleed into ~220px of real horizontal scrolling on the
+  // homepage. html and body clip already, but main scrolls inside them, so it needs
+  // its own rule. Without this the page scrolls sideways into empty space.
+  const css = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'home.css'), 'utf8');
+  // Comments stripped FIRST: the fix carries a long explanatory comment that names
+  // `overflow-x` several times, so a scan of the raw file would still pass with the
+  // declaration itself deleted.
+  const code = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const rule = code.match(/body\.page-home\s+main\s*\{([^}]*)\}/);
+  assert.ok(rule, 'home.css still scopes an overflow rule to body.page-home main');
+  assert.match(
+    rule[1],
+    /overflow-x:\s*(clip|hidden)/,
+    'body.page-home main must clip horizontally, or the showcase arc becomes scrollable space'
+  );
+});
+
 test('the carousel drag ignores the gallery scroller', () => {
   // Without this the mock cannot be scrolled by dragging: the pointer gesture is
   // taken by the carousel and flicks to the next studio instead.
