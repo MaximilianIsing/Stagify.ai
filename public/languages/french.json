@@ -115,6 +115,7 @@
       "panelBody": "Peignez uniquement la zone à remettre en scène. Tout ce qui est hors du masque revient intact : le reste de la photo ne bouge pas.",
       "points": {
         "snap": "Peignez un masque ou laissez l'outil suivre l'objet.",
+        "areas": "Marquez plusieurs zones et meublez-les en même temps.",
         "own": "Ajoutez la photo d'un meuble pour le placer.",
         "repeat": "Relancez le même masque dans un autre style."
       }
@@ -176,6 +177,7 @@
       "points": {
         "auto": "Enregistré tout seul, rien à oublier.",
         "versions": "Chaque version est conservée, jamais écrasée.",
+        "search": "Retrouvez un rendu par nom, pièce ou style.",
         "private": "La photo vide d'origine reste à vous seul.",
         "share": "Chaque pièce a son propre lien client."
       },

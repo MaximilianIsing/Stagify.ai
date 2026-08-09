@@ -115,6 +115,7 @@
       "panelBody": "Colora solo l'area da riarredare. Tutto ciò che resta fuori dalla maschera torna intatto, così il resto della foto non cambia.",
       "points": {
         "snap": "Dipingi una maschera o lascia che segua l'oggetto.",
+        "areas": "Segna più aree e arredale tutte insieme.",
         "own": "Aggiungi la foto di un tuo mobile per inserirlo.",
         "repeat": "Riusa la stessa maschera con un altro stile."
       }
@@ -176,6 +177,7 @@
       "points": {
         "auto": "Si salva da solo, senza nulla da ricordare.",
         "versions": "Ogni versione resta, mai sovrascritta.",
+        "search": "Cerca per nome, stanza o stile per ritrovarla.",
         "private": "La foto vuota originale resta solo tua.",
         "share": "Ogni stanza ha il suo link per il cliente."
       },

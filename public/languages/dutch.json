@@ -115,6 +115,7 @@
       "panelBody": "Schilder alleen het gebied dat opnieuw ingericht moet worden. Alles buiten het masker komt onveranderd terug, de rest van de foto blijft staan.",
       "points": {
         "snap": "Teken een masker of laat het om het object snappen.",
+        "areas": "Markeer meerdere gebieden en style ze allemaal tegelijk.",
         "own": "Voeg je eigen meubelfoto toe om iets te plaatsen.",
         "repeat": "Gebruik hetzelfde masker in een andere stijl."
       }
@@ -176,6 +177,7 @@
       "points": {
         "auto": "Slaat zichzelf op, niets om te vergeten.",
         "versions": "Elke versie blijft bewaard, nooit overschreven.",
+        "search": "Zoek op naam, ruimte of stijl om er een terug te vinden.",
         "private": "De originele lege foto blijft alleen van jou.",
         "share": "Elke kamer heeft zijn eigen klantlink."
       },

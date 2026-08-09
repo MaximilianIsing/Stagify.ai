@@ -115,6 +115,7 @@
       "panelBody": "Pinte apenas a área que quiser redecorar. Tudo fora da máscara volta intacto, então o resto da foto não muda.",
       "points": {
         "snap": "Pinte uma máscara ou deixe ajustar ao objeto.",
+        "areas": "Marque várias áreas e decore todas de uma vez.",
         "own": "Adicione a foto de um móvel para colocá-lo.",
         "repeat": "Reaplique a mesma máscara em outro estilo."
       }
@@ -176,6 +177,7 @@
       "points": {
         "auto": "Salva sozinho, sem nada para esquecer.",
         "versions": "Cada versão é mantida, nunca sobrescrita.",
+        "search": "Pesquise por nome, divisão ou estilo para reencontrar.",
         "private": "A foto vazia original continua só sua.",
         "share": "Cada ambiente vem com seu próprio link de cliente."
       },
