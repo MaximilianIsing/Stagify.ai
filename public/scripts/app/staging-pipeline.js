@@ -97,6 +97,18 @@ export function createStagingPipeline(deps) {
     const keepFurnitureEl = /** @type {HTMLTextAreaElement} */ (document.getElementById('keep-furniture'));
     formData.append('keepFurniture', (removeChecked && keepFurnitureEl?.value) ? keepFurnitureEl.value.trim() : '');
 
+    // "Label as virtually staged" burns the disclosure into the delivered pixels.
+    // DELIBERATELY OUTSIDE the isProUser() block below: it is available on every plan,
+    // because a compliance control that only paying users get pushes everyone else into
+    // publishing undisclosed staged photos. Moving these two lines into that block is the
+    // easiest way to break this feature without breaking any obvious behaviour — the
+    // server would just silently stop stamping for free accounts.
+    const labelCheckbox = /** @type {HTMLInputElement} */ (document.getElementById('label-virtually-staged'));
+    formData.append('labelVirtuallyStaged', String(labelCheckbox?.checked || false));
+    // Which pre-rendered badge master the server composites. The server validates this
+    // against lib/i18n/locales.js and falls back to English, so a stale value is harmless.
+    formData.append('stampLang', localStorage.getItem('selectedLanguage') || 'english');
+
     // INERT, deliberately kept. NOTHING writes these three localStorage keys — the
     // only keys ever set anywhere in public/ are stagifyAuthToken, selectedModel,
     // selectedLanguage, userId, msHelpSeen, stagifyBackgroundVideoTime and adm_ts —
@@ -456,6 +468,20 @@ export function createStagingPipeline(deps) {
         const noImgErr = /** @type {Error & { code?: string }} */ (new Error(msg));
         noImgErr.code = 'NO_IMAGE_GENERATED';
         throw markSurfaced(noImgErr);
+      }
+      // The disclosure stamp fails closed, so the render actually succeeded and was then
+      // withheld rather than shipped unlabelled. This MUST stay above the generic 500
+      // branch below, which would otherwise report it as "Bad prompt inputted" — sending
+      // the user off to rewrite a prompt that was never the problem.
+      if (errorData.code === 'DISCLOSURE_STAMP_FAILED') {
+        const msg =
+          window.LanguageSystem?.getText('errors.disclosureStampFailed') ||
+          errorData.error ||
+          'We couldn\'t add the "virtually staged" label, so your image wasn\'t delivered. Untick that option to stage without it.';
+        showStagingError(msg);
+        const stampErr = /** @type {Error & { code?: string }} */ (new Error(msg));
+        stampErr.code = 'DISCLOSURE_STAMP_FAILED';
+        throw markSurfaced(stampErr);
       }
       const errMsg =
         response.status === 500

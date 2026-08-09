@@ -74,6 +74,32 @@ export interface StagingParams {
    * broke.
    */
   skipQualityReview?: boolean;
+  /**
+   * Burn the short "virtually staged" disclosure into the finished pixels, bottom-right.
+   *
+   * Available on EVERY plan — free and Stagify+ alike. Unlike `removeFurniture`, this is
+   * deliberately not gated: it is a legal disclosure (MLS / NAR Article 12), not an upsell,
+   * and a paywalled compliance control is worse than no control.
+   *
+   * Applied inside processStaging BEFORE the `onNative` hook, so the one call covers the
+   * delivered image AND the gallery master. Moving it later would leave the stored copy
+   * unlabelled — the copy an agent re-downloads months later and publishes.
+   *
+   * The stamp FAILS CLOSED: if it cannot be applied, processStaging rejects with
+   * `DISCLOSURE_STAMP_FAILED` rather than delivering an unlabelled image the user believes
+   * is labelled. See lib/image/stamp-disclosure.js.
+   *
+   * Only the main staging studio sets it. The AI Designer, chat staging, Exterior Studio
+   * and Masking Studio build their own params and leave it falsy — a decision, not an
+   * omission: they are not producing an MLS listing photo of a furnished room.
+   */
+  labelVirtuallyStaged?: boolean;
+  /**
+   * UI language for `labelVirtuallyStaged`, as a `lang` name from lib/i18n/locales.js
+   * ('german', 'japanese', …). Unknown or missing values fall back to English rather than
+   * failing the render — it arrives from the browser's localStorage.
+   */
+  stampLang?: string;
   [key: string]: unknown;
 }
 

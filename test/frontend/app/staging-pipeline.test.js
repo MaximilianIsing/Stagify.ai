@@ -99,6 +99,9 @@ afterEach(() => {
  *   proPanel?: 'visible' | 'hidden-class' | 'display-none' | 'absent',
  *   removeFurniture?: boolean,
  *   keepFurniture?: string,
+ *   labelVirtuallyStaged?: boolean,
+ *   labelCheckboxPresent?: boolean,
+ *   selectedLanguage?: string | null,
  *   furnitureFiles?: File[],
  *   validationResult?: { valid: boolean, code?: string, reason?: string } | null,
  *   validationPromise?: Promise<any> | null,
@@ -112,6 +115,9 @@ function harness(opts = {}) {
     proPanel = 'visible',
     removeFurniture = false,
     keepFurniture = '',
+    labelVirtuallyStaged = false,
+    labelCheckboxPresent = true,
+    selectedLanguage = null,
     furnitureFiles = [],
     validationResult = null,
     validationPromise = null,
@@ -137,6 +143,14 @@ function harness(opts = {}) {
   const keepEl = el();
   keepEl.value = keepFurniture;
   byId.set('keep-furniture', keepEl);
+  // Registered UNCONDITIONALLY, outside the `if (pro)` block below that builds the pro
+  // panel — the disclosure checkbox exists for every plan, and putting it there would
+  // make the free-account test below silently vacuous.
+  if (labelCheckboxPresent) {
+    const labelCheckbox = el();
+    labelCheckbox.checked = labelVirtuallyStaged;
+    byId.set('label-virtually-staged', labelCheckbox);
+  }
   // The Cancel control under the progress bar. A minimal event-target stand-in:
   // `click()` runs whatever the pipeline registered, so a test can press it.
   const cancelBtn = el();
@@ -197,7 +211,7 @@ function harness(opts = {}) {
 
   globalThis.document = { getElementById: (id) => byId.get(id) || null };
   globalThis.localStorage = {
-    getItem: (k) => ({ userRole: 'agent', userReferralSource: 'google', userEmail: 'a@b.co' })[k] ?? null,
+    getItem: (k) => ({ userRole: 'agent', userReferralSource: 'google', userEmail: 'a@b.co', selectedLanguage })[k] ?? null,
   };
   globalThis.window = {
     StagifyAuth: { getToken: () => 'tok-123', user: null, applyUserToUI() { this.appliedToUI = true; } },
@@ -582,4 +596,67 @@ timed('a pre-check rejection still wins over the timeout wording', async () => {
   });
   assert.equal(h.calls.showStagingError.length, 1);
   assert.match(h.calls.showStagingError[0], /pet/i);
+});
+
+// ── arm: "Label as virtually staged" ─────────────────────────────────────────
+//
+// The disclosure option is the only staging control that is available on every plan, so
+// the thing worth pinning is that it is sent by a FREE account. The pro-only fields are
+// appended inside an `isProUser() && proPanelUsable` block a few lines below these two
+// appends; sliding them in there is the easy mistake, and it would break nothing visible
+// — the server would simply stop stamping for everyone who is not paying.
+
+test('label: a FREE account sends the disclosure flag (it is not gated with the pro fields)', async () => {
+  const h = harness({ pro: false, proPanel: 'absent', labelVirtuallyStaged: true });
+  await run(h, response({ body: OK_BODY }));
+  assert.equal(h.form().get('labelVirtuallyStaged'), 'true');
+  assert.equal(h.form().get('model'), null, 'sanity: the pro-only fields really were skipped');
+});
+
+test('label: the checkbox state is sent verbatim as "true"/"false"', async () => {
+  const on = harness({ labelVirtuallyStaged: true });
+  await run(on, response({ body: OK_BODY }));
+  assert.equal(on.form().get('labelVirtuallyStaged'), 'true');
+
+  const off = harness({ labelVirtuallyStaged: false });
+  await run(off, response({ body: OK_BODY }));
+  assert.equal(off.form().get('labelVirtuallyStaged'), 'false',
+    'sent explicitly rather than omitted — the server default must never be the source of truth');
+});
+
+test('label: the UI language rides along, defaulting to English when unset', async () => {
+  const withLang = harness({ labelVirtuallyStaged: true, selectedLanguage: 'japanese' });
+  await run(withLang, response({ body: OK_BODY }));
+  assert.equal(withLang.form().get('stampLang'), 'japanese');
+
+  const noLang = harness({ labelVirtuallyStaged: true, selectedLanguage: null });
+  await run(noLang, response({ body: OK_BODY }));
+  assert.equal(noLang.form().get('stampLang'), 'english', 'a browser that never picked a language');
+});
+
+test('label: a missing checkbox element does not break staging', async () => {
+  // The pipeline reads the box straight out of the DOM with getElementById, which returns
+  // null on any page that mounts this module without the staging modal markup. A bare
+  // `.checked` read there would throw and take the whole render down.
+  const h = harness({ labelCheckboxPresent: false });
+  await run(h, response({ body: OK_BODY }));
+  assert.equal(h.form().get('labelVirtuallyStaged'), 'false', 'absent box reads as unticked');
+});
+
+test('label: DISCLOSURE_STAMP_FAILED surfaces its own message, not "Bad prompt inputted"', async () => {
+  // It arrives as a 500, and the generic 500 branch rewrites every message to
+  // errors.badPrompt — which would send the user off to rewrite a prompt that was never
+  // the problem. The coded branch has to win.
+  const h = harness({ labelVirtuallyStaged: true });
+  const err = await run(h, response({
+    ok: false,
+    status: 500,
+    body: { code: 'DISCLOSURE_STAMP_FAILED', error: 'We couldn\'t add the "virtually staged" label, so your image wasn\'t delivered.' },
+  })).then(() => null, (e) => e);
+
+  assert.ok(err, 'the render rejects rather than resolving with an unlabelled image');
+  assert.equal(err.code, 'DISCLOSURE_STAMP_FAILED');
+  assert.equal(h.calls.showStagingError.length, 1, 'the user is told, once');
+  assert.match(h.calls.showStagingError[0], /virtually staged/i);
+  assert.doesNotMatch(h.calls.showStagingError[0], /Bad prompt/i);
 });

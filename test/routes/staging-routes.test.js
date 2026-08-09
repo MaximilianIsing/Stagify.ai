@@ -190,3 +190,27 @@ test('process-image: NO_IMAGE_GENERATED maps to 422, other errors to 500', async
   });
   assert.equal((await postJson(app.baseUrl, '/api/process-image', {})).status, 500);
 });
+
+test('process-image: DISCLOSURE_STAMP_FAILED is a distinct 500, not a generic failure', async () => {
+  // The stamp fails CLOSED, so this response means "your render succeeded and we withheld
+  // it", not "generation broke". It needs its own code for two reasons: the browser shows a
+  // different message, and a client that cannot tell the difference retries into the same
+  // wall forever. The generic 500 above carries no `code` at all, which is what makes this
+  // distinguishable.
+  app = await mountStaging({
+    getAuthUserFromRequest: () => ({ id: 'u1', plan: 'free' }),
+    handleVirtualStagingMultipart: async () => {
+      const e = new Error('badge master unreadable');
+      e.code = 'DISCLOSURE_STAMP_FAILED';
+      throw e;
+    },
+  });
+  const res = await postJson(app.baseUrl, '/api/process-image', {});
+  assert.equal(res.status, 500);
+  const body = await res.json();
+  assert.equal(body.code, 'DISCLOSURE_STAMP_FAILED', 'the frontend branches on this code');
+  assert.match(body.error, /virtually staged/i, 'the message names the option that caused it');
+  assert.ok(body.ref, 'still reported — an unstampable environment must reach Sentry');
+  // The underlying reason must not leak to the client; only the ref identifies it.
+  assert.doesNotMatch(body.error, /badge master unreadable/, 'internal detail stays server-side');
+});

@@ -53,6 +53,10 @@ blob-report/
 # Litestream binary — downloaded into ./bin during the Render build, never committed
 bin/
 
+# Noto font masters for scripts/build-disclosure-badges.js — ~40 MB, downloaded on demand.
+# The RENDERED output (lib/image/badges/) IS committed; see to-build/disclosure-badges/README.md
+to-build/disclosure-badges/fonts/
+
 # Text files (but allow specific ones)
 *.txt
 !public/robots.txt

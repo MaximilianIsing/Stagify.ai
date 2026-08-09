@@ -6,6 +6,9 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { createStagingGeneration } from '../../lib/staging/staging-generation.js';
 
@@ -403,4 +406,144 @@ test('processStaging: reviewBasePrompt reaches the reviewer, and its absence kee
   assert.equal(seen.length, 2, 'sanity: the reviewer ran for both renders');
   assert.equal(seen[0].basePrompt, 'EXTERIOR-RUBRIC');
   assert.equal(seen[1].basePrompt, null, 'unset means the reviewer keeps its own default');
+});
+
+// ── "Label as virtually staged" (lib/image/stamp-disclosure.js) ──────────────────────
+//
+// The disclosure is burned into the pixels at ONE call site, deliberately placed between
+// the aspect-ratio crop and the onNative hook so that a single call covers both the
+// delivered image and the gallery master. These tests exist to make that placement, and the
+// fail-closed policy around it, expensive to break by accident.
+
+const BR = { left: 600, top: 400, width: 600, height: 400 }; // bottom-right quadrant of 1200×800
+const TL = { left: 0, top: 0, width: 600, height: 400 };     // top-left quadrant
+
+/** Run one render and return the NATIVE (pre-upscale) buffer handed to the gallery hook. */
+async function nativeBuffer(params) {
+  const modelPng = await png(1200, 800);
+  const { processStaging } = makeGeneration(modelPng);
+  /** @type {Buffer | null} */
+  let native = null;
+  await processStaging(
+    await jpg(1200, 800),
+    { roomType: 'Living room', furnitureStyle: 'standard', additionalPrompt: '', onNative: (buf) => { native = buf; }, ...params },
+    { body: {} },
+    null,
+    'gemini-2.5-flash-image',
+  );
+  assert.ok(native, 'sanity: the onNative hook fired');
+  return native;
+}
+
+const quadrant = (buf, box) => sharp(buf).extract(box).raw().toBuffer();
+
+test('labelVirtuallyStaged: the GALLERY MASTER is stamped, in the bottom-right only', async () => {
+  // THE TRIPWIRE. Delete the stampVirtuallyStaged call in staging-generation.js and these
+  // two renders become byte-identical, so this fails. It asserts against the onNative
+  // buffer rather than the returned image on purpose: onNative is what the gallery stores
+  // and what the user re-downloads months later, and stamping only the delivered copy
+  // would leave that one unlabelled — the failure that actually reaches a buyer.
+  const off = await nativeBuffer({ labelVirtuallyStaged: false });
+  const on = await nativeBuffer({ labelVirtuallyStaged: true, stampLang: 'english' });
+
+  assert.ok(
+    Buffer.compare(await quadrant(on, TL), await quadrant(off, TL)) === 0,
+    'top-left quadrant is untouched — the stamp is not painting over the room',
+  );
+  assert.ok(
+    Buffer.compare(await quadrant(on, BR), await quadrant(off, BR)) !== 0,
+    'bottom-right quadrant carries the disclosure (if this fails, the stamp call is gone)',
+  );
+});
+
+test('labelVirtuallyStaged: off means byte-identical to a render that never knew about it', async () => {
+  // Nobody who leaves the box unticked should get different pixels than before the feature
+  // shipped. Guards an always-on stamp and a truthiness slip on the flag.
+  const absent = await nativeBuffer({});
+  const explicitlyOff = await nativeBuffer({ labelVirtuallyStaged: false });
+  assert.ok(Buffer.compare(absent, explicitlyOff) === 0, 'unset and false produce identical bytes');
+});
+
+test('labelVirtuallyStaged: the language reaches the compositor', async () => {
+  // If stampLang were dropped anywhere between the form body and the stamp module, every
+  // locale would silently ship the English sentence and nothing would look broken.
+  const en = await nativeBuffer({ labelVirtuallyStaged: true, stampLang: 'english' });
+  const ja = await nativeBuffer({ labelVirtuallyStaged: true, stampLang: 'japanese' });
+  assert.ok(Buffer.compare(en, ja) !== 0, 'a Japanese render differs from an English one');
+});
+
+test('labelVirtuallyStaged: the delivered image is still upscaled WebP', async () => {
+  // The stamp returns PNG; the delivery step must still run after it. A regression here
+  // would ship the un-upscaled PNG and quietly triple the payload.
+  const modelPng = await png(800, 600);
+  const { processStaging } = makeGeneration(modelPng);
+  const out = await processStaging(
+    await jpg(800, 600),
+    { roomType: 'Living room', furnitureStyle: 'standard', additionalPrompt: '', labelVirtuallyStaged: true, stampLang: 'english' },
+    { body: {} },
+    null,
+    'gemini-2.5-flash-image',
+  );
+  assert.match(out, /^data:image\/webp;base64,/, 'still delivered as WebP');
+  const m = await meta(decode(out));
+  assert.equal(m.width, 1600, 'still upscaled ×2 for delivery');
+  assert.equal(m.height, 1200);
+});
+
+test('labelVirtuallyStaged: the QA reviewer grades the UNSTAMPED image', async () => {
+  // The reviewer's rubric is about melted sofas, not about a caption it has never been told
+  // to expect. Grading a stamped image invites it to score the badge as a defect and burn
+  // paid retries chasing a "fix" that cannot happen.
+  /** @type {string[]} */
+  const reviewed = [];
+  const modelPng = await png(1200, 800);
+  const gen = createStagingGeneration({
+    genAI: fakeGenAI(modelPng),
+    DEBUG_MODE: false,
+    runQualityRetry: async (generateOnce, opts) => {
+      const url = await generateOnce(1, null);
+      await opts.reviewFn(url);
+      return url;
+    },
+    reviewImageQuality: async (url) => { reviewed.push(url); return { perfect: true, score: 100 }; },
+    QUALITY_MAX_ATTEMPTS: 1,
+    logPromptToFile: () => {},
+  });
+  let native = null;
+  await gen.processStaging(
+    await jpg(1200, 800),
+    { roomType: 'Living room', furnitureStyle: 'standard', additionalPrompt: '', labelVirtuallyStaged: true, stampLang: 'english', onNative: (b) => { native = b; } },
+    { body: {} },
+    null,
+    'gemini-2.5-flash-image',
+  );
+  assert.equal(reviewed.length, 1, 'sanity: the reviewer ran');
+  const graded = decode(reviewed[0]);
+  assert.ok(
+    Buffer.compare(await quadrant(graded, BR), await quadrant(native, BR)) !== 0,
+    'the reviewer saw a different bottom-right than the stamped native — i.e. it graded the clean render',
+  );
+});
+
+test('labelVirtuallyStaged: the stamp call is NOT wrapped in its own try/catch', async () => {
+  // The stamp fails CLOSED (see lib/image/stamp-disclosure.js): a failure must unwind and
+  // fail the render, not deliver an unlabelled image the user believes is labelled. The
+  // likeliest bad refactor is someone "hardening" this one call with a try/catch, which
+  // silently converts a compliance feature into a liability. Comments are stripped first —
+  // otherwise the comment at the call site, which says the words "try/catch", would satisfy
+  // any naive scan and the guard would pass with the protection removed.
+  const src = fs.readFileSync(
+    path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'lib', 'staging', 'staging-generation.js'),
+    'utf8',
+  );
+  const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+  const idx = code.indexOf('stampVirtuallyStaged(finalDataUrl');
+  assert.ok(idx > 0, 'the stamp call is still at the expected call site in processStaging');
+  // An unclosed `try {` in the run-up to the call means the call sits inside a fresh try
+  // block. The enclosing whole-body try is far above and separated by closed braces.
+  const runUp = code.slice(Math.max(0, idx - 400), idx);
+  assert.ok(
+    !/try\s*\{[^}]*$/.test(runUp),
+    'stampVirtuallyStaged must not be wrapped in its own try/catch — it fails closed by design',
+  );
 });
