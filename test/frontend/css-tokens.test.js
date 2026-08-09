@@ -206,9 +206,21 @@ test('sheets with the palette in scope do not hard-code a colour that has a toke
 
 test('styles.css itself uses its own tokens', () => {
   // The palette's own sheet is the easiest place for a literal to creep back in.
+  //
+  // ONE EXEMPTION, spelled `/* not-a-token: why */` on the declaration itself. Some
+  // colours in this sheet are not UI at all — the badge-style swatches under "Label as
+  // virtually staged" are miniatures of pixels lib/image/stamp-disclosure.js burns into a
+  // photo, and their white is that white, not --bg-elevated's. Tokenizing them would make
+  // a future palette change silently desync the swatch from the render it is previewing.
+  // Written as a marker rather than a filename allowlist so the reason travels with the
+  // line, and so `grep not-a-token` lists every exemption in the codebase.
+  const raw = fs.readFileSync(path.join(STYLES, 'styles.css'), 'utf8').split('\n');
   const offenders = [];
   codeLines('styles.css').forEach((line, i) => {
     if (/^\s*--[\w-]+\s*:/.test(line) || /url\(/i.test(line)) return;
+    // codeLines blanks comments in place, so the marker has to be read off the raw line;
+    // the blanking preserves newlines, which is what keeps the two indexes aligned.
+    if (/not-a-token:/.test(raw[i])) return;
     for (const m of line.matchAll(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)) {
       const token = sharedColorTokens.get(norm(m[0]));
       if (token) offenders.push(`styles.css:${i + 1}  ${m[0]} → var(${token})`);

@@ -100,6 +100,17 @@ export interface StagingParams {
    * failing the render — it arrives from the browser's localStorage.
    */
   stampLang?: string;
+  /**
+   * Which of the three looks the badge is drawn in — a key of STAMP_STYLES in
+   * lib/image/stamp-disclosure.js ('dark', 'light', 'minimal'). Anything else falls back to
+   * the default rather than failing the render.
+   */
+  stampStyle?: string;
+  /**
+   * The size slider's multiplier on the badge's type size, clamped to
+   * [STAMP_SCALE_MIN, STAMP_SCALE_MAX]. 1 is the size the badge gets on its own.
+   */
+  stampScale?: number;
   [key: string]: unknown;
 }
 

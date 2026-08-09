@@ -44,6 +44,11 @@ const DEFAULT_FONT_DIR = path.join(ROOT, 'to-build', 'disclosure-badges', 'fonts
 // upscale (which would not).
 const BASE_FONT_PX = 128;
 const FONT_WEIGHT = 600; // SemiBold — holds up against a busy photo better than Regular
+// A touch of tracking (~1.6% of the type size). At the size this ends up on the image —
+// 13-40px over photographic noise — a hair of extra space between glyphs is the difference
+// between a legible tag and a smudge, and it is what makes the badge read as a deliberate
+// caption rather than as compressed body text.
+const LETTER_SPACING_PX = 2;
 const CANVAS_W = 6000;   // generous; the master is cropped to its ink bounds anyway
 const CANVAS_H = 400;
 
@@ -74,6 +79,10 @@ function draw(text, family) {
   const canvas = createCanvas(CANVAS_W, CANVAS_H);
   const ctx = canvas.getContext('2d');
   ctx.font = `${FONT_WEIGHT} ${BASE_FONT_PX}px "${family}"`;
+  // Tracking is applied here rather than by spacing the crop, so the space lands BETWEEN
+  // glyphs only; the trailing gap canvas adds after the last one is cropped off with the
+  // rest of the empty canvas below.
+  ctx.letterSpacing = `${LETTER_SPACING_PX}px`;
   ctx.fillStyle = '#ffffff';
   ctx.textBaseline = 'middle';
   ctx.fillText(text, 40, CANVAS_H / 2);
@@ -94,26 +103,33 @@ function draw(text, family) {
 }
 
 /**
- * Crop a drawn sentence to its own ink horizontally but to a SHARED vertical band.
+ * Crop a drawn sentence to its own ink horizontally, into a SHARED-HEIGHT band that its
+ * own ink is centred inside.
  *
- * The shared band is the point. Cropping vertically to each sentence's own ink would make
- * the master's height depend on whether that translation happens to contain a descender:
- * "Dieses Bild wurde virtuell möbliert" has none and measured 103px tall, while "This image
- * has been virtually staged" has g and y and measured 133px. Scaling each master to a
- * common on-image height would then render German ~29% larger than English. One band for
- * every language keeps the optical size identical and makes every pill the same height.
+ * The shared height is the point. Cropping to each sentence's own ink would make the
+ * master's height depend on whether that translation happens to contain a descender:
+ * "Virtuell möbliert" has none, while "Virtually staged" has y and g. Scaling each master
+ * to a common on-image height would then render German visibly larger than English. One
+ * height for every language keeps the optical size identical and every pill the same.
+ *
+ * Within that fixed height each language is CENTRED ON ITS OWN INK rather than pasted at a
+ * shared band offset. Both keep the height constant, but only centring puts the glyphs in
+ * the middle of the pill: at a shared offset, a language with no descender ("Virtuell
+ * möbliert", "虚拟布置") sits high with a band of dead space under it, which on the image
+ * reads as a badge whose text has slipped upwards. Only one language is ever composited at
+ * a time, so there is nothing for them to line up with except the pill around them.
  * @param {ReturnType<typeof draw>} drawn - Output of draw().
- * @param {number} bandTop - Shared band top edge, in scratch-canvas coordinates.
- * @param {number} bandH - Shared band height in px.
+ * @param {number} bandH - Shared band height in px, the same for every language.
  * @returns {{ data: Buffer, width: number, height: number }} RGBA pixels of the master.
  */
-function crop(drawn, bandTop, bandH) {
-  const { px, minX, maxX } = drawn;
+function crop(drawn, bandH) {
+  const { px, minX, maxX, minY, maxY } = drawn;
   const w = maxX - minX + 1;
+  const top = Math.round(minY - (bandH - (maxY - minY + 1)) / 2);
   const out = Buffer.alloc(w * bandH * 4);
   for (let y = 0; y < bandH; y++) {
     for (let x = 0; x < w; x++) {
-      const src = ((y + bandTop) * CANVAS_W + (x + minX)) * 4;
+      const src = ((y + top) * CANVAS_W + (x + minX)) * 4;
       const dst = (y * w + x) * 4;
       // Force RGB to white everywhere, including fully transparent pixels. Canvas leaves
       // RGB at 0 where alpha is 0, and resampling that on the way down would bleed black
@@ -144,22 +160,28 @@ for (const { family, file } of FONT_FILES) {
 fs.mkdirSync(OUT_DIR, { recursive: true });
 const sharp = (await import('sharp')).default;
 
-// Pass 1: draw every language and find the vertical band that contains all of their ink,
-// so pass 2 can crop them all to the same height. Padded by 4px so antialiasing at the
-// extremes is never clipped.
+// Pass 1: draw every language and take the tallest ink, so pass 2 can crop them all to
+// that one height with each centred inside it. Padded by 4px top and bottom so
+// antialiasing at the extremes is never clipped.
 const drawn = Object.entries(STAGING_DISCLOSURE_BADGE).map(([lang, text]) => ({
   lang,
   text,
   family: FAMILY_FOR_LANG[lang] || 'Noto Sans',
   ink: draw(text, FAMILY_FOR_LANG[lang] || 'Noto Sans'),
 }));
-const bandTop = Math.min(...drawn.map((d) => d.ink.minY)) - 4;
-const bandH = Math.max(...drawn.map((d) => d.ink.maxY)) + 4 - bandTop + 1;
+const bandH = Math.max(...drawn.map((d) => d.ink.maxY - d.ink.minY + 1)) + 8;
+for (const { lang, ink } of drawn) {
+  const top = Math.round(ink.minY - (bandH - (ink.maxY - ink.minY + 1)) / 2);
+  if (top < 0 || top + bandH > CANVAS_H) {
+    console.error(`${lang}: centred band [${top}, ${top + bandH}) falls outside the ${CANVAS_H}px scratch canvas — raise CANVAS_H`);
+    process.exit(1);
+  }
+}
 
 /** @type {Record<string, { file: string, text: string, sha256: string, width: number, height: number }>} */
 const entries = {};
 for (const { lang, text, family, ink } of drawn) {
-  const { data, width, height } = crop(ink, bandTop, bandH);
+  const { data, width, height } = crop(ink, bandH);
   const file = `${lang}.png`;
   await sharp(data, { raw: { width, height, channels: 4 } }).png({ compressionLevel: 9 }).toFile(path.join(OUT_DIR, file));
   entries[lang] = {

@@ -18,6 +18,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { LOCALES } from '../../lib/i18n/locales.js';
+import { STAMP_STYLE_NAMES } from '../../lib/image/stamp-disclosure.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const LANG_DIR = path.join(ROOT, 'public', 'languages');
@@ -28,7 +29,18 @@ const LANGS = [...new Set(['english', ...LOCALES.map((l) => l.lang)])];
 const packFor = (lang) => JSON.parse(fs.readFileSync(path.join(LANG_DIR, `${lang}.json`), 'utf8'));
 const html = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
 
-const STAGING_KEYS = ['labelVirtuallyStaged', 'labelVirtuallyStagedInfo', 'labelVirtuallyStagedTip'];
+const STAGING_KEYS = [
+  'labelVirtuallyStaged',
+  'labelVirtuallyStagedInfo',
+  'labelVirtuallyStagedTip',
+  // The badge-style strip revealed under the checkbox. Its style swatches are pictures, so
+  // their names exist ONLY as screen-reader text — a missing one is invisible to everyone
+  // who can see the control and total to everyone who cannot.
+  'stampStyleLabel',
+  'stampSizeLabel',
+  'stampPreview',
+  'stampPreviewAlt',
+];
 
 test('every pack carries the option label, its tooltip and its aria-label', async () => {
   for (const lang of LANGS) {
@@ -38,6 +50,26 @@ test('every pack carries the option label, its tooltip and its aria-label', asyn
       assert.equal(typeof value, 'string', `${lang}: modal.staging.${key} is missing`);
       assert.ok(value.trim().length > 0, `${lang}: modal.staging.${key} is empty`);
     }
+  }
+});
+
+test('every pack names all three badge styles', async () => {
+  // Keyed by the STYLE NAME the server knows, not by position, so adding a fourth style to
+  // STAMP_STYLES fails here until every pack can name it — the same rule the unstageable
+  // rejection codes follow, and for the same reason: the English fallback would otherwise
+  // hide the omission.
+  for (const lang of LANGS) {
+    const names = packFor(lang)?.modal?.staging?.stampStyles || {};
+    for (const style of STAMP_STYLE_NAMES) {
+      const value = names[style];
+      assert.equal(typeof value, 'string', `${lang}: modal.staging.stampStyles.${style} is missing`);
+      assert.ok(value.trim().length > 0, `${lang}: modal.staging.stampStyles.${style} is empty`);
+    }
+    assert.deepEqual(
+      Object.keys(names).sort(),
+      [...STAMP_STYLE_NAMES].sort(),
+      `${lang}: stampStyles must name exactly the styles the server renders`,
+    );
   }
 });
 

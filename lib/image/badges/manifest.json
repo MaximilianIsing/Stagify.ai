@@ -1,84 +1,84 @@
 {
   "baseFontPx": 128,
   "fontWeight": 600,
-  "bandHeight": 144,
+  "bandHeight": 143,
   "entries": {
     "english": {
       "file": "english.png",
-      "text": "This image has been virtually staged",
-      "sha256": "470bc5b43995e975dc670a4f8172e4119e08687a55ce2523842e2c6110a7600d",
-      "width": 2182,
-      "height": 144
+      "text": "Virtually staged",
+      "sha256": "a23952d2cf67517522347a9df32fa19a776f36961f471c18d2ae466bf6f870b0",
+      "width": 958,
+      "height": 143
     },
     "spanish": {
       "file": "spanish.png",
-      "text": "Esta imagen ha sido amueblada virtualmente",
-      "sha256": "9027a0b218567fed1843664e071ce448ed4fdb9d118f3931d0bfa02d6d037ac3",
-      "width": 2706,
-      "height": 144
+      "text": "Amueblada virtualmente",
+      "sha256": "a1e18e22f34ba51eb40ea9ca378a29017f99143309478c080a14190fd9d4c361",
+      "width": 1531,
+      "height": 143
     },
     "french": {
       "file": "french.png",
-      "text": "Cette image a été meublée virtuellement",
-      "sha256": "02206388bdc27f308d1bf7d0856721de52b7099ecd2ef371b4777dd24acdea82",
-      "width": 2448,
-      "height": 144
+      "text": "Meublée virtuellement",
+      "sha256": "0c22bfd8e4d1a4b692e3a281bf999e9a641c87e579018fa3cf79f2f3bf1571b4",
+      "width": 1390,
+      "height": 143
     },
     "german": {
       "file": "german.png",
-      "text": "Dieses Bild wurde virtuell möbliert",
-      "sha256": "19136442233f55c17f6a2a2451db850cd9e89dcf04a88f69d43b125d521dec34",
-      "width": 2053,
-      "height": 144
+      "text": "Virtuell möbliert",
+      "sha256": "84b797d7f0a1dc5fc4402c74f9a16c9fe95a5a7d0a2645e4d100b536816a8e04",
+      "width": 1007,
+      "height": 143
     },
     "dutch": {
       "file": "dutch.png",
-      "text": "Deze afbeelding is virtueel ingericht",
-      "sha256": "399eb387be3f053d74735591f456c4412873644ff9e8e083a52697b955545aa8",
-      "width": 2145,
-      "height": 144
+      "text": "Virtueel ingericht",
+      "sha256": "f717eb5422db42a2a90de9420fa3aeb464719f55bda89e35c20351bc4d8f78f3",
+      "width": 1071,
+      "height": 143
     },
     "italian": {
       "file": "italian.png",
-      "text": "Questa immagine è stata arredata virtualmente",
-      "sha256": "5dfa951556295751a89cc5d39009d593d79f71071e94f04b4796c6fcd8f72c99",
-      "width": 2851,
-      "height": 144
+      "text": "Arredata virtualmente",
+      "sha256": "eef44f5a8c9e27e2766ce4627643cffdf4ebf545513c9c0458d8f8e2bc7e3309",
+      "width": 1368,
+      "height": 143
     },
     "portuguese": {
       "file": "portuguese.png",
-      "text": "Esta imagem foi mobiliada virtualmente",
-      "sha256": "1c7cb8bc70fcfab24826b671a279870d916ed5d7950333425f3df25c2e1f51a4",
-      "width": 2387,
-      "height": 144
+      "text": "Mobiliada virtualmente",
+      "sha256": "3e812e8122896e1246888c1a57401b99e4094339ac8ebea15bee2f32063b5222",
+      "width": 1425,
+      "height": 143
     },
     "russian": {
       "file": "russian.png",
-      "text": "Это изображение виртуально меблировано",
-      "sha256": "8e25e42220c067dd387dc38a511993f6c84d19ff28c525ce38a7649e07d2274e",
-      "width": 2719,
-      "height": 144
+      "text": "Виртуально меблировано",
+      "sha256": "72f7a1bae58f490ff6b58e4e21577eec7b1e98931b0b2900613ab87f56c045af",
+      "width": 1647,
+      "height": 143
     },
     "chinese": {
       "file": "chinese.png",
-      "text": "此图片经过虚拟布置",
-      "sha256": "49388e3a4fbf084d4d409e7827aadda5ca2f66f8379f0457b64db86c5ec223f5",
-      "width": 1143,
-      "height": 144
+      "text": "虚拟布置",
+      "sha256": "e417ece3d411717e5809aac13993ddabe1947f27120f6c4c4261cde58a58c532",
+      "width": 510,
+      "height": 143
     },
     "japanese": {
       "file": "japanese.png",
-      "text": "この画像はバーチャルステージングされています",
-      "sha256": "3c1e21b386b70375549fc2b8ecc3868f891a4dde06f1e9baeaea4d9b41978c82",
-      "width": 2778,
-      "height": 144
+      "text": "バーチャルステージング",
+      "sha256": "7c0124e3d6022ede7e9d5af549000795e6f6de6fa16f2477f678b381a5c9928c",
+      "width": 1411,
+      "height": 143
     },
     "korean": {
       "file": "korean.png",
-      "text": "이 이미지는 가상으로 스테이징되었습니다",
-      "sha256": "418751e56a0ad36c44171255cee9bec0e238c4a9e368a4e06a75a735448d214b",
-      "width": 2193,
-      "height": 144
+      "text": "가상 스테이징",
+      "sha256": "1d9cb2a7c68189e33d2b9b7105c4d4c54002e7e98ced81fa9246eed5462f65ff",
+      "width": 724,
+      "height": 143
     }
   }
 }

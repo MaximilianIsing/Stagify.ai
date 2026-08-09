@@ -88,12 +88,26 @@
       "subtitle": "Live-Demos. Zum Wechseln ziehen.",
       "tablistAria": "Studios",
       "tabs": {
+        "staging": "Staging",
         "designer": "KI-Designer",
         "masking": "Masking-Studio",
         "exterior": "Außen-Studio",
-        "gallery": "Ihre Galerie"
+        "gallery": "Galerie"
       },
       "fullscreen": "Vollbild"
+    },
+    "staging": {
+      "title": "Richten Sie einen leeren Raum in Sekunden ein",
+      "subtitle": "Foto hochladen, Raum und Stil wählen – Stagify richtet ein. Mit diesem Ablauf startet jeder Tarif.",
+      "kicker": "Hier beginnt es",
+      "panelTitle": "Leeres Foto rein, eingerichteter Raum raus",
+      "panelBody": "Kein Briefing, nichts zu lernen. Wählen Sie Raumtyp und Look, und das Foto kommt eingerichtet zurück – Wände, Fenster und Boden bleiben unberührt.",
+      "points": {
+        "upload": "Foto hochladen und in etwa 8 Sekunden einrichten.",
+        "styles": "Einrichtungsstile für jeden Raumtyp zur Auswahl.",
+        "restage": "Noch nicht ganz? Richten Sie neu ein, so oft Sie möchten.",
+        "rights": "Jedes Bild gehört Ihnen, mit vollem Urheberrecht."
+      }
     },
     "designer": {
       "title": "Lassen Sie eine KI Ihren Raum einrichten",
@@ -274,7 +288,7 @@
     },
     "nar": {
       "title": "Bleiben Sie nicht zurück",
-      "subtitle": "Die Immobilienbranche setzt KI schnell ein, und Kunden reagieren darauf. Staging ist einer der einfachsten Einstiegspunkte.",
+      "subtitle": "Makler setzen schnell auf KI, und Kunden mögen es. Staging ist der einfachste Einstieg.",
       "usageLabel": "Wie oft Makler KI-Tools nutzen",
       "legend": {
         "daily": "Täglich",
@@ -291,7 +305,7 @@
     },
     "plus": {
       "title": "Gehen Sie weiter mit Stagify+",
-      "subtitle": "Möbel entfernen, der KI-Designer und das Masking Studio – dazu ein nutzungsbasierter Tarif für ganze Teams.",
+      "subtitle": "Zwei Wege zum Upgrade: fester Monatstarif oder Abrechnung nach Nutzung fürs Team.",
       "pro": {
         "name": "Stagify+",
         "tag": "Für Einzelpersonen",
@@ -318,7 +332,7 @@
     },
     "instagram": {
       "title": "Sehen Sie es in Aktion auf Instagram",
-      "subtitle": "Echte Staging-Verwandlungen, schnelle Tipps und Einblicke hinter die Kulissen vom Stagify-Team.",
+      "subtitle": "Echte Staging-Verwandlungen, schnelle Tipps und Einblicke hinter die Kulissen.",
       "follow": "@stagify.ai folgen"
     },
     "finalCta": {
@@ -328,7 +342,7 @@
       "note": "Anerkannt von Compass, Centennial und mehr."
     },
     "whyus": {
-      "subtitle": "Andere Tools für virtuelles Staging sind langsam, teuer und eingeschränkt. Stagify ist dafür gemacht, das Gegenteil zu sein."
+      "subtitle": "Andere Staging-Tools sind langsam, teuer und eingeschränkt. Stagify ist das Gegenteil."
     },
     "testimonials": {
       "title": "Was Makler sagen",
@@ -353,18 +367,18 @@
     },
     "blog": {
       "title": "Aus dem Stagify-Blog",
-      "subtitle": "Anleitungen und Tipps zu virtuellem Staging, MLS-Kennzeichnung und schnellerem Vermarkten deiner Angebote.",
+      "subtitle": "Anleitungen und Tipps: virtuelles Staging, MLS-Kennzeichnung, schnellere Vermarktung.",
       "viewAll": "Zum Stagify-Blog →"
     },
     "contactCta": {
       "title": "Unser Postfach ist immer offen",
-      "subtitle": "Fragen, Feedback oder Ideen für Partnerschaften? Wir lesen jede Nachricht und antworten so schnell wie möglich.",
+      "subtitle": "Fragen, Feedback oder Ideen? Wir lesen jede Nachricht und antworten schnellstmöglich.",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Gefällt dir Stagify?",
-      "subtitle": "Gefällt dir, wie deine Inserate aussehen? Hinterlasse eine kurze Google-Bewertung und hilf anderen Maklern, uns zu finden.",
+      "subtitle": "Gefallen dir deine Inserate? Eine Google-Bewertung hilft anderen, uns zu finden.",
       "button": "Google-Bewertung abgeben",
       "aria": "Google-Bewertung abgeben (öffnet in neuem Tab)"
     }
@@ -406,7 +420,16 @@
       "removeFurniture": "Vorhandene Möbel entfernen",
       "labelVirtuallyStaged": "Als virtuell möbliert kennzeichnen",
       "labelVirtuallyStagedInfo": "Was bewirkt die Kennzeichnung „virtuell möbliert“?",
-      "labelVirtuallyStagedTip": "Fügt unten rechts in das fertige Foto einen kleinen Hinweis „Dieses Bild wurde virtuell möbliert“ in Ihrer Sprache ein. Er ist Teil des Bildes und begleitet die Datei überall, wo Sie sie veröffentlichen. Er ersetzt nicht den Hinweis, den Ihr MLS in den Objektbemerkungen verlangen kann.",
+      "labelVirtuallyStagedTip": "Fügt unten rechts in das fertige Foto einen kleinen Hinweis „Virtuell möbliert“ in Ihrer Sprache ein. Er ist Teil des Bildes und begleitet die Datei überall, wo Sie sie veröffentlichen. Er ersetzt nicht den Hinweis, den Ihr MLS in den Objektbemerkungen verlangen kann.",
+      "stampStyleLabel": "Hinweis-Stil",
+      "stampStyles": {
+        "dark": "Dunkel",
+        "light": "Hell",
+        "minimal": "Minimal"
+      },
+      "stampSizeLabel": "Hinweis-Größe",
+      "stampPreview": "Vorschau",
+      "stampPreviewAlt": "Beispielfoto mit dem Hinweis auf virtuelle Möblierung",
       "keepFurnitureLabel": "Vorhandene Möbel, die behalten werden sollen (optional)",
       "keepFurniturePlaceholder": "z. B. den Esstisch und die Einbauregale behalten",
       "emptyRoomView": "Den geleerten Raum ansehen",
@@ -476,7 +499,7 @@
           "Letzte Feinheiten hinzufügen",
           "Ihre Vision zum Leben erwecken"
         ],
-        "cancel": "Abbrechen"
+        "stop": "Generierung stoppen"
       },
       "downloadSizeMenu": "Download-Auflösung wählen",
       "downloadOriginal": "Original",

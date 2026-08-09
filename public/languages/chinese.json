@@ -88,12 +88,26 @@
       "subtitle": "实时演示，拖动即可切换。",
       "tablistAria": "工作室",
       "tabs": {
+        "staging": "虚拟装修",
         "designer": "AI Designer",
         "masking": "蒙版工作室",
         "exterior": "外景工作室",
-        "gallery": "您的图库"
+        "gallery": "图库"
       },
       "fullscreen": "全屏显示"
+    },
+    "staging": {
+      "title": "几秒钟就能装修一间空房",
+      "subtitle": "上传照片，选择房间类型和风格，Stagify 就会为它布置家具。任何套餐都从这一步开始。",
+      "kicker": "一切的起点",
+      "panelTitle": "进去是空房照片，出来是布置好的房间",
+      "panelBody": "无需撰写说明，也不用学习任何操作。选好房间类型和想要的风格，照片就会带着家具回来，墙面、窗户和地板保持原样。",
+      "points": {
+        "upload": "上传照片，约 8 秒即可完成装修。",
+        "styles": "为任意房间类型挑选家具风格。",
+        "restage": "不太满意？可以重新装修，次数不限。",
+        "rights": "每张图片都归您所有，拥有完整版权。"
+      }
     },
     "designer": {
       "title": "让 AI 为你的空间布置",
@@ -274,7 +288,7 @@
     },
     "nar": {
       "title": "别掉队",
-      "subtitle": "房地产行业正在快速采用 AI，客户也对此积极响应。装修是最容易上手的切入点之一。",
+      "subtitle": "经纪人正快速采用 AI，客户也很认可。虚拟布置是最容易上手的起点。",
       "usageLabel": "经纪人使用 AI 工具的频率",
       "legend": {
         "daily": "每天",
@@ -291,7 +305,7 @@
     },
     "plus": {
       "title": "用 Stagify+ 更进一步",
-      "subtitle": "移除现有家具、AI 设计师与蒙版工作室，另有专为团队打造的按用量计费方案。",
+      "subtitle": "两种升级方式：固定月费方案，或面向团队的按用量计费。",
       "pro": {
         "name": "Stagify+",
         "tag": "面向个人",
@@ -328,7 +342,7 @@
       "note": "已获 Compass、Centennial 等机构认可。"
     },
     "whyus": {
-      "subtitle": "其他虚拟布置工具速度慢、价格高、限制多。Stagify 的设计恰恰相反。"
+      "subtitle": "其他虚拟布置工具速度慢、价格高、限制多。Stagify 恰恰相反。"
     },
     "testimonials": {
       "title": "经纪人怎么说",
@@ -358,7 +372,7 @@
     },
     "contactCta": {
       "title": "我们随时查收邮件",
-      "subtitle": "有问题、反馈或合作想法 — 我们会阅读每一封邮件并尽快回复。",
+      "subtitle": "有问题、反馈或想法？我们会阅读每一条消息，并尽快回复。",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
@@ -406,7 +420,16 @@
       "removeFurniture": "移除现有家具",
       "labelVirtuallyStaged": "标注为虚拟布置",
       "labelVirtuallyStagedInfo": "标注为虚拟布置有什么作用？",
-      "labelVirtuallyStagedTip": "在最终照片的右下角添加一条“此图片经过虚拟布置”的小字说明，使用您的语言。它是图片的一部分，因此无论您在哪里发布，说明都会随文件一起保留。它不能替代您所在 MLS 可能要求在房源备注中作出的披露。",
+      "labelVirtuallyStagedTip": "在最终照片的右下角添加一条“虚拟布置”的小字说明，使用您的语言。它是图片的一部分，因此无论您在哪里发布，说明都会随文件一起保留。它不能替代您所在 MLS 可能要求在房源备注中作出的披露。",
+      "stampStyleLabel": "标注样式",
+      "stampStyles": {
+        "dark": "深色",
+        "light": "浅色",
+        "minimal": "简约"
+      },
+      "stampSizeLabel": "标注大小",
+      "stampPreview": "预览",
+      "stampPreviewAlt": "带虚拟布置标注的示例照片",
       "keepFurnitureLabel": "需要保留的现有家具（可选）",
       "keepFurniturePlaceholder": "例如：保留餐桌和嵌入式书架",
       "emptyRoomView": "查看清空后的房间",
@@ -476,7 +499,7 @@
           "添加最后的修饰",
           "实现您的愿景"
         ],
-        "cancel": "取消"
+        "stop": "停止生成"
       },
       "downloadSizeMenu": "选择下载分辨率",
       "downloadOriginal": "原始尺寸",

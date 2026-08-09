@@ -3,6 +3,7 @@ import { showErrorToast } from './toast.js';
 import { createStageMaskEditor } from './app/stage-mask-editor.js';
 import { initCustomSelect } from './app/custom-select.js';
 import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
+import { initStampStyleRow } from './app/stamp-style-row.js';
 import { initBackgroundVideoSync } from './app/background-video.js';
 import { init3DTiltEffect } from './app/tilt-effect.js';
 import { loadHeroStats, updateHeroFreeGensLine } from './app/hero-stats.js';
@@ -59,6 +60,10 @@ import { initStagingEntry } from './app/staging-entry.js';
     }
     if (removeFurnitureCheckbox) removeFurnitureCheckbox.addEventListener('change', syncRemoveFurnitureUI);
     syncRemoveFurnitureUI();
+
+    // The badge style/size strip owns its own reveal (the checkbox above it is its only
+    // gate), so unlike syncRemoveFurnitureUI there is nothing for app.js to re-run.
+    initStampStyleRow();
 
     const heroUpload = $('#hero-upload');
     const navUpload = $('#nav-upload');

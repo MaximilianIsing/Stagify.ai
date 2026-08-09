@@ -38,6 +38,17 @@
   margin: 0 auto;
   max-width: 600px;
 }
+/* Opt-in wider measure for a head whose subtitle reads best on one line. At the
+   16.5px top of the clamp the studio subtitle needs 645px in Inter (every
+   fallback in the stack is narrower), so 700px keeps it unwrapped down to a
+   ~660px viewport and still sits well inside the section's 1044px content box.
+   Scoped as a modifier on purpose: raising the base 600px would rewrap the
+   dozen other .home-section__sub blocks on this page. Longer translations wrap
+   to two lines here exactly as they do today. */
+.home-section__head--wide,
+.home-section__head--wide .home-section__sub {
+  max-width: 700px;
+}
 
 /* --- Reveal on scroll ---------------------------------------------------- */
 .reveal {
@@ -3041,9 +3052,15 @@ body.page-home main {
      this, flicking past the last card hands the scroll straight to the page and the
      showcase jumps away mid-browse. */
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(30, 58, 138, 0.28) transparent;
   padding-right: 6px;
+}
+/* Firefox only — see the note in styles.css: in Chrome these two properties would swap
+   the 6px bar below for the OS scrollbar, arrows and all. */
+@supports (-moz-appearance: none) {
+  .hgal-grid {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(30, 58, 138, 0.28) transparent;
+  }
 }
 .hgal-grid::-webkit-scrollbar {
   width: 6px;

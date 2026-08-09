@@ -69,21 +69,66 @@ test('each master PNG decodes and matches its recorded dimensions', async () => 
 
 test('all masters share one height, so type size does not depend on the translation', async () => {
   // Cropping each master to its own ink would make the height depend on whether that
-  // language's sentence happens to contain a descender: German ("Dieses Bild wurde virtuell
-  // möbliert") has none and measured 103px against English's 133, which rendered German ~29%
-  // larger at the same nominal size. The generator crops to a shared vertical band instead.
+  // language's tag happens to contain a descender: "Virtuell möbliert" has none while
+  // "Virtually staged" has y and g, so at the same nominal size German would render
+  // visibly larger. The stamp scales by height, so one height for all of them is what
+  // keeps the optical size equal. Centring INSIDE that height is the next test.
   const heights = new Set(Object.values(manifest.entries).map((e) => e.height));
   assert.equal(heights.size, 1, `masters must all share one height, saw ${[...heights].join(', ')} — ${REBUILD}`);
   assert.equal([...heights][0], manifest.bandHeight, 'the shared height is the manifest band height');
 });
 
-test('the badge is short, and is not the long-form share-page disclosure', async () => {
+test('each master is vertically centred in that shared height', async () => {
+  // The visual half of the rule above. A fixed height can be filled two ways: paste every
+  // language at one shared band offset, or centre each one on its own ink. Both keep the
+  // masters the same height, so the test above passes either way — but the first leaves a
+  // language with no descender ("Virtuell möbliert", "虚拟布置") sitting high with dead
+  // space beneath it, which on the photo reads as a badge whose text has slipped upwards.
+  // Nothing else would catch that: it is not an error, just a lopsided pill in some
+  // languages and not others.
+  for (const [lang, entry] of Object.entries(manifest.entries)) {
+    const { data, info } = await sharp(path.join(BADGE_DIR, entry.file))
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    let inkTop = -1;
+    let inkBottom = -1;
+    for (let y = 0; y < info.height; y++) {
+      let row = false;
+      for (let x = 0; x < info.width && !row; x++) row = data[(y * info.width + x) * 4 + 3] > 0;
+      if (!row) continue;
+      if (inkTop < 0) inkTop = y;
+      inkBottom = y;
+    }
+    assert.ok(inkTop >= 0, `${lang}: master is entirely transparent — ${REBUILD}`);
+
+    const above = inkTop;
+    const below = info.height - 1 - inkBottom;
+    // 1px of slack for the odd/even rounding when the ink height and the band height do
+    // not share a parity; anything beyond that is a real offset.
+    assert.ok(
+      Math.abs(above - below) <= 1,
+      `${lang}: ink sits ${above}px from the top and ${below}px from the bottom — the master is `
+        + `not centred, so the pill's text will look off-centre. ${REBUILD}`,
+    );
+    assert.ok(above >= 1, `${lang}: ink touches the master's top edge, so antialiasing is clipped — ${REBUILD}`);
+  }
+});
+
+test('the badge is a short tag, not the long-form share-page disclosure', async () => {
   // The two strings have different jobs (see the header of lib/staging/staging-disclosure.js).
   // Pasting the ~200-char paragraph in here would produce a stamp nobody can read, which
   // discloses nothing.
+  //
+  // The 32-char cap is tighter than "must fit": at 2% of the long edge, a full sentence
+  // still technically fits — the badge started life as one — it just turns the corner of
+  // every listing photo into a caption bar, and drives the fit guard in stamp-disclosure.js
+  // to shrink the type on portrait renders until the disclosure is the least readable thing
+  // in the frame. The elliptical tag form ("Virtually staged") is the decision; this pins it.
   for (const [lang, text] of Object.entries(STAGING_DISCLOSURE_BADGE)) {
     assert.notEqual(text, STAGING_DISCLOSURE, `${lang}: the badge must not be the long-form disclosure`);
-    assert.ok(text.length <= 60, `${lang}: badge is ${text.length} chars; keep it to one short line`);
+    assert.ok(text.length <= 32, `${lang}: badge is ${text.length} chars; it is a corner tag, not a sentence`);
     assert.ok(!/\r|\n/.test(text), `${lang}: badge must be a single line`);
   }
 });

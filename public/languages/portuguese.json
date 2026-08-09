@@ -88,12 +88,26 @@
       "subtitle": "Demos ao vivo. Arraste para trocar.",
       "tablistAria": "Estúdios",
       "tabs": {
+        "staging": "Staging",
         "designer": "Designer IA",
         "masking": "Estúdio de máscaras",
         "exterior": "Estúdio de exteriores",
-        "gallery": "Sua galeria"
+        "gallery": "Galeria"
       },
       "fullscreen": "Tela cheia"
+    },
+    "staging": {
+      "title": "Decore um cômodo vazio em segundos",
+      "subtitle": "Envie a foto, escolha o cômodo e um estilo, e a Stagify decora. É o fluxo em que todo plano começa.",
+      "kicker": "É por aqui que começa",
+      "panelTitle": "Entra uma foto vazia, sai um cômodo decorado",
+      "panelBody": "Nada para escrever e nada para aprender. Escolha o tipo de cômodo e o visual que quer, e a foto volta decorada, com paredes, janelas e piso intactos.",
+      "points": {
+        "upload": "Envie uma foto e decore em cerca de 8 segundos.",
+        "styles": "Escolha entre estilos de mobília para qualquer cômodo.",
+        "restage": "Não ficou como queria? Refaça quantas vezes quiser.",
+        "rights": "Cada imagem é sua, com direitos autorais completos."
+      }
     },
     "designer": {
       "title": "Deixe uma IA decorar seu espaço",
@@ -274,7 +288,7 @@
     },
     "nar": {
       "title": "Não fique para trás",
-      "subtitle": "O mercado imobiliário está adotando a IA rapidamente, e os clientes estão respondendo a isso. O staging é um dos pontos de partida mais fáceis.",
+      "subtitle": "Os agentes adotam a IA depressa e os clientes aprovam. O staging é o início mais fácil.",
       "usageLabel": "Com que frequência os corretores usam ferramentas de IA",
       "legend": {
         "daily": "Diariamente",
@@ -291,7 +305,7 @@
     },
     "plus": {
       "title": "Vá além com o Stagify+",
-      "subtitle": "Remoção de móveis, o Designer de IA e o Masking Studio, além de um plano por uso pensado para equipas inteiras.",
+      "subtitle": "Duas formas de evoluir: uma mensalidade fixa ou faturação por uso para a sua equipa.",
       "pro": {
         "name": "Stagify+",
         "tag": "Para pessoas físicas",
@@ -328,7 +342,7 @@
       "note": "Reconhecido pela Compass, Centennial e mais."
     },
     "whyus": {
-      "subtitle": "Outras ferramentas de staging virtual são lentas, caras e limitadas. O Stagify foi feito para ser o oposto."
+      "subtitle": "Outras ferramentas de staging virtual são lentas, caras e limitadas. O Stagify é o oposto."
     },
     "testimonials": {
       "title": "O que os corretores dizem",
@@ -353,18 +367,18 @@
     },
     "blog": {
       "title": "Do blog da Stagify",
-      "subtitle": "Guias e dicas sobre staging virtual, divulgação no MLS e como divulgar seus anúncios mais rápido.",
+      "subtitle": "Guias e dicas sobre staging virtual, divulgação no MLS e marketing mais rápido.",
       "viewAll": "Visite o blog da Stagify →"
     },
     "contactCta": {
       "title": "Nossa caixa de entrada está sempre aberta",
-      "subtitle": "Dúvidas, feedback ou ideias de parceria? Lemos cada mensagem e respondemos assim que possível.",
+      "subtitle": "Dúvidas, feedback ou ideias? Lemos tudo e respondemos assim que possível.",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Gostando do Stagify?",
-      "subtitle": "Gostou de como ficaram seus anúncios? Deixe uma avaliação no Google e ajude outros corretores a nos encontrar.",
+      "subtitle": "Gostou dos seus anúncios? Uma avaliação no Google ajuda outros a nos encontrar.",
       "button": "Deixar uma avaliação no Google",
       "aria": "Deixar uma avaliação no Google (abre em uma nova aba)"
     }
@@ -406,7 +420,16 @@
       "removeFurniture": "Remover os móveis existentes",
       "labelVirtuallyStaged": "Marcar como mobiliado virtualmente",
       "labelVirtuallyStagedInfo": "O que faz marcar como mobiliado virtualmente?",
-      "labelVirtuallyStagedTip": "Adiciona uma pequena nota “Esta imagem foi mobiliada virtualmente” no canto inferior direito da foto final, no seu idioma. Faz parte da imagem, por isso acompanha o arquivo onde quer que você o publique. Não substitui o aviso que o seu MLS pode exigir nas observações do anúncio.",
+      "labelVirtuallyStagedTip": "Adiciona uma pequena nota “Mobiliada virtualmente” no canto inferior direito da foto final, no seu idioma. Faz parte da imagem, por isso acompanha o arquivo onde quer que você o publique. Não substitui o aviso que o seu MLS pode exigir nas observações do anúncio.",
+      "stampStyleLabel": "Estilo da nota",
+      "stampStyles": {
+        "dark": "Escuro",
+        "light": "Claro",
+        "minimal": "Mínimo"
+      },
+      "stampSizeLabel": "Tamanho da nota",
+      "stampPreview": "Pré-visualização",
+      "stampPreviewAlt": "Foto de exemplo com a nota de mobiliado virtualmente",
       "keepFurnitureLabel": "Móveis existentes a manter (opcional)",
       "keepFurniturePlaceholder": "ex.: manter a mesa de jantar e as prateleiras embutidas",
       "emptyRoomView": "Ver o cômodo esvaziado",
@@ -476,7 +499,7 @@
           "Adicionando os toques finais",
           "Dando vida à sua visão"
         ],
-        "cancel": "Cancelar"
+        "stop": "Parar a geração"
       },
       "downloadSizeMenu": "Escolher resolução de download",
       "downloadOriginal": "Original",

@@ -1,6 +1,7 @@
 // Tier: pure frontend logic + markup/i18n drift guards — public/scripts/studio-showcase.js.
 //
-// The showcase carousel folded four homepage sections into four panels of one widget.
+// The showcase carousel folded four homepage sections into panels of one widget (five
+// now, since the main staging flow was added at the front).
 // Two things about that are genuinely fragile, and this file exists for them:
 //
 //  1. THE PANEL IDS ARE REDIRECT TARGETS, not just anchors. ai-designer-gate.js and
@@ -31,7 +32,7 @@ import { offsetOf, geometryFor, indexForHash } from '../../public/scripts/studio
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INDEX = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
 
-/** The four panels, in document order, as `{ id, tabIndexAttr, labelledBy }`. */
+/** The panels, in document order, as `{ id, labelledBy, index }`. */
 function panelsFromMarkup() {
   return [...INDEX.matchAll(/<article\b([^>]*\bclass="shw__panel"[^>]*)>/g)].map((m) => {
     const attrs = m[1];
@@ -70,6 +71,21 @@ test('offsetOf wraps from either end', () => {
     for (let i = 0; i < 4; i++) {
       assert.ok(Math.abs(offsetOf(i, active, 4)) <= 2, `|offset| <= n/2 for i=${i} active=${active}`);
     }
+  }
+});
+
+test('the shipped odd ring (n=5) still gives one neighbour per side', () => {
+  // The staging panel made the ring ODD, which is the case the n=4 assertions above
+  // cannot exercise: with n=5 the wrap threshold falls between two integers, so a
+  // panel is either a side (|d|=1) or hidden (|d|=2) and never lands exactly on n/2.
+  for (let active = 0; active < 5; active++) {
+    const dists = [0, 1, 2, 3, 4].map((i) => offsetOf(i, active, 5));
+    assert.equal(dists.filter((d) => d === 1).length, 1, 'exactly one right neighbour');
+    assert.equal(dists.filter((d) => d === -1).length, 1, 'exactly one left neighbour');
+    assert.ok(
+      dists.every((d) => Math.abs(d) <= 2),
+      `nothing travels more than half the ring (active=${active})`
+    );
   }
 });
 
@@ -174,17 +190,17 @@ test('indexForHash reports -1 rather than defaulting to the first panel', () => 
 // Markup contract
 // --------------------------------------------------------------------------
 
-test('the homepage ships four panels carrying the four old section ids', () => {
+test('the homepage ships five panels, four carrying the old section ids', () => {
   const panels = panelsFromMarkup();
   assert.deepEqual(
     panels.map((p) => p.id),
-    ['ai-designer-demo', 'masking-studio-demo', 'exterior-studio-demo', 'gallery-showcase'],
+    ['staging-studio-demo', 'ai-designer-demo', 'masking-studio-demo', 'exterior-studio-demo', 'gallery-showcase'],
     'panel ids, in order'
   );
 });
 
 test('the old standalone sections are gone, so each id appears exactly once', () => {
-  for (const id of ['ai-designer-demo', 'masking-studio-demo', 'exterior-studio-demo', 'gallery-showcase']) {
+  for (const id of ['staging-studio-demo', 'ai-designer-demo', 'masking-studio-demo', 'exterior-studio-demo', 'gallery-showcase']) {
     const hits = [...INDEX.matchAll(new RegExp(`\\bid="${id}"`, 'g'))].length;
     assert.equal(hits, 1, `id="${id}" is declared once (duplicate ids break getElementById)`);
   }
@@ -247,7 +263,7 @@ test('home.showcase is complete in all eleven packs', () => {
   assert.equal(packs.length, 11, 'eleven language packs');
 
   const LEAVES = ['title', 'subtitle', 'tablistAria'];
-  const TABS = ['designer', 'masking', 'exterior', 'gallery'];
+  const TABS = ['staging', 'designer', 'masking', 'exterior', 'gallery'];
 
   for (const file of packs) {
     const showcase = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')).home?.showcase;
@@ -264,13 +280,14 @@ test('home.showcase is complete in all eleven packs', () => {
   }
 });
 
-test('the two demo panels have their full aside copy in all eleven packs', () => {
+test('the walkthrough panels have their full aside copy in all eleven packs', () => {
   // The AI Designer and Masking panels grew a copy column beside their walkthrough
   // (kicker / title / body / three points) to match the exterior panel's shape. Same
   // gap as above: nothing else checks that a namespace exists in every pack, and a
   // missing key here falls back to English silently rather than failing a build.
   const dir = path.join(ROOT, 'public', 'languages');
   const shape = {
+    staging: ['upload', 'styles', 'restage', 'rights'],
     designer: ['iterate', 'furniture', 'saved'],
     masking: ['snap', 'areas', 'own', 'repeat'],
     gallery: ['auto', 'versions', 'search', 'private', 'share'],
@@ -290,6 +307,22 @@ test('the two demo panels have their full aside copy in all eleven packs', () =>
         assert.ok(point.trim().length > 0, `${file}: home.${section}.points.${key} is not blank`);
       }
     }
+  }
+});
+
+test('every walkthrough key the panels ask for exists in demo-data.js', () => {
+  // designer-demo.js's demoByKey() returns null for an unknown key and mount() then
+  // returns without a word — the panel keeps its skeleton spinner for as long as the
+  // page is open, which looks like a slow load rather than a typo. Nothing else in the
+  // suite connects the homepage's data-demo attributes to the generated demo data.
+  const keys = [...INDEX.matchAll(/class="designer-demo" data-demo="([\w-]+)"/g)].map((m) => m[1]);
+  assert.ok(keys.length >= 3, `expected the walkthrough panels, saw ${keys.length}`);
+  const data = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'demo-data.js'), 'utf8');
+  /** @type {{ demos: { key: string }[] }} */
+  const demos = JSON.parse(data.slice(data.indexOf('{'), data.lastIndexOf('}') + 1));
+  const known = new Set(demos.demos.map((d) => d.key));
+  for (const key of keys) {
+    assert.ok(known.has(key), `data-demo="${key}" names no demo in demo-data.js (spinner forever)`);
   }
 });
 
@@ -392,7 +425,7 @@ test('the mock grid scrolls rather than growing the panel', () => {
 // Fullscreen
 // --------------------------------------------------------------------------
 
-test('the three media panels carry a fullscreen control; the gallery does not', () => {
+test('every media panel carries a fullscreen control; the gallery does not', () => {
   const panels = panelsFromMarkup().map((p) => p.id);
   for (const id of panels) {
     const start = INDEX.indexOf(`id="${id}"`);
@@ -491,7 +524,7 @@ test('the tab labels the markup asks for are the ones the packs define', () => {
   // The markup names its keys; the packs must answer to exactly those names. Catches a
   // rename on either side, which the English fallback would otherwise paper over.
   const asked = [...INDEX.matchAll(/data-lang="home\.showcase\.tabs\.(\w+)"/g)].map((m) => m[1]);
-  assert.deepEqual(asked, ['designer', 'masking', 'exterior', 'gallery']);
+  assert.deepEqual(asked, ['staging', 'designer', 'masking', 'exterior', 'gallery']);
   const english = JSON.parse(
     fs.readFileSync(path.join(ROOT, 'public', 'languages', 'english.json'), 'utf8')
   );

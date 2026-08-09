@@ -1,5 +1,6 @@
 import { createGalleryNotice } from './gallery-notice.js';
 import { unstageableMessage } from '../unstageable-message.js';
+import { readStampOptions } from './stamp-style-row.js';
 
 // How long a single staging request may run before the client gives up on it.
 //
@@ -78,6 +79,18 @@ export function createStagingPipeline(deps) {
 
   const cancelBtn = /** @type {HTMLButtonElement | null} */ (document.getElementById('stage-cancel-btn'));
 
+  // The button is a bare stop glyph, so the hover tooltip is the only thing that tells a
+  // sighted user what it does. data-lang-attr localizes exactly ONE attribute per element,
+  // and it is spent on aria-label — so mirror that (already-translated) value into title
+  // here, and again whenever the language changes. Optional-chained throughout because the
+  // island's specs hand in a minimal document shim with no window and no real element.
+  const syncCancelTooltip = () => {
+    const label = cancelBtn?.getAttribute?.('aria-label');
+    if (label) cancelBtn.title = label;
+  };
+  syncCancelTooltip();
+  globalThis.window?.addEventListener?.('languagechange', syncCancelTooltip);
+
   async function processWithAI(imageFile) {
     hideStagingLimitInViewer();
     hideStagingError();
@@ -108,6 +121,13 @@ export function createStagingPipeline(deps) {
     // Which pre-rendered badge master the server composites. The server validates this
     // against lib/i18n/locales.js and falls back to English, so a stale value is harmless.
     formData.append('stampLang', localStorage.getItem('selectedLanguage') || 'english');
+    // …and how it is drawn. Sent unconditionally, exactly like the flag above: the server
+    // ignores both unless the flag is on, and reading them only when the row happens to be
+    // visible would mean the values depended on the UI's state rather than the user's
+    // choice. Both are re-validated server-side (allow-list + clamp).
+    const stampOptions = readStampOptions();
+    formData.append('stampStyle', stampOptions.style);
+    formData.append('stampScale', String(stampOptions.scale));
 
     // INERT, deliberately kept. NOTHING writes these three localStorage keys — the
     // only keys ever set anywhere in public/ are stagifyAuthToken, selectedModel,

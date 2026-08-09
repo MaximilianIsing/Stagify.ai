@@ -1091,7 +1091,6 @@
         gap: 8px;
         overflow-x: auto;
         padding-bottom: 4px;
-        scrollbar-width: thin;
       }
 
       .image-thumbnail-item {
@@ -2027,12 +2026,16 @@
         }
       }
       
-      /* Custom Stagify Scrollbar */
-      * {
-        scrollbar-width: thin;
-        scrollbar-color: var(--brand) rgba(255, 255, 255, 0.2);
+      /* Custom Stagify Scrollbar. The standard pair is gated the same way as in
+         styles.css: setting it in Chrome switches the whole scrollbar to the OS one,
+         which ignores the pseudo-elements below and caps the bar with stepper arrows. */
+      @supports (-moz-appearance: none) {
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: var(--brand) rgba(255, 255, 255, 0.2);
+        }
       }
-      
+
       *::-webkit-scrollbar {
         width: 10px;
         height: 10px;
