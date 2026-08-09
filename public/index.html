@@ -1193,6 +1193,17 @@
           <h2 class="home-section__title" id="whyus-title" data-tx="clip" data-lang="whyUs.title">Why Choose Us?</h2>
           <p class="home-section__sub" data-lang="home.whyus.subtitle">Other virtual staging tools are slow, costly, and locked down. Stagify is the opposite.</p>
         </div>
+        <!-- The two lists are seven matched PAIRS, not two independent columns: row N
+             on the left is the direct rebuttal to row N on the right. `data-vs` names
+             each pair so home-whyus.js can light both halves together — that
+             correspondence is the whole argument of the section and is invisible
+             otherwise. Keep the two lists in the same order, or the pairing lies.
+
+             The button wraps a span carrying `data-lang-html`, rather than the <li>
+             carrying it directly: language-loader.js:86 assigns `el.innerHTML` on
+             every [data-lang-html] node, so a button nested INSIDE one is destroyed
+             on the first language load. Same reason the NAR legend above puts its
+             `data-lang` on an inner span. -->
         <div class="whyus-grid">
           <article class="whyus-card whyus-card--us reveal reveal--left">
             <div class="whyus-card__head">
@@ -1200,8 +1211,8 @@
               <span class="whyus-brand"><span class="brand-strong">Stagify</span><span class="brand-light">.ai</span></span>
             </div>
             <ul class="whyus-list whyus-list--yes">
-              <li data-lang-html="whyUs.stagify.features.instantResults"><strong>Instant results</strong>: ~8 seconds</li>
-              <li data-lang-html="whyUs.stagify.features.oneClickStaging"><strong>One‑click staging</strong>: No hassle</li>
+              <li data-vs="speed"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.instantResults"><strong>Instant results</strong>: ~8 seconds</span></button></li>
+              <li data-vs="effort"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.oneClickStaging"><strong>One‑click staging</strong>: No hassle</span></button></li>
               <!-- Deliberately says "unlimited" even though free is capped at
                    FREE_DAILY_LIMIT (lib/data/auth-store.js, still 50/day). Product
                    decision: 50/day reads as effectively unlimited to a prospect, and
@@ -1209,11 +1220,11 @@
                    "Unlimited staging generations" row on stagify-plus.html, which is
                    ticked in BOTH columns. Do not "fix" this back to the number — the
                    copy is intentionally looser than the enforced limit. -->
-              <li data-lang-html="whyUs.stagify.features.free"><strong>Unlimited free generations</strong>: No card needed</li>
-              <li data-lang-html="whyUs.stagify.features.noAds"><strong>Ad-free experience</strong>: No distractions</li>
-              <li data-lang-html="whyUs.stagify.features.noLogin"><strong>Easy sign up</strong>: Start instantly</li>
-              <li data-lang-html="whyUs.stagify.features.unlimited"><strong>Advanced image models</strong>: Higher quality</li>
-              <li data-lang-html="whyUs.stagify.features.copyright"><strong>Full copyright</strong>: Use anywhere</li>
+              <li data-vs="price"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.free"><strong>Unlimited free generations</strong>: No card needed</span></button></li>
+              <li data-vs="ads"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.noAds"><strong>Ad-free experience</strong>: No distractions</span></button></li>
+              <li data-vs="signup"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.noLogin"><strong>Easy sign up</strong>: Start instantly</span></button></li>
+              <li data-vs="quality"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.unlimited"><strong>Advanced image models</strong>: Higher quality</span></button></li>
+              <li data-vs="rights"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.copyright"><strong>Full copyright</strong>: Use anywhere</span></button></li>
             </ul>
           </article>
           <article class="whyus-card whyus-card--them reveal reveal--right" style="--reveal-delay:90ms">
@@ -1221,13 +1232,13 @@
               <span data-lang="whyUs.others.title">Others</span>
             </div>
             <ul class="whyus-list whyus-list--no">
-              <li data-lang-html="whyUs.others.features.slowResults"><strong>Slow results: </strong>Days of waiting</li>
-              <li data-lang-html="whyUs.others.features.longProcess"><strong>Long Process: </strong>Tedious back‑and‑forth</li>
-              <li data-lang-html="whyUs.others.features.expensive"><strong>Expensive: </strong>Costly, per‑image fees</li>
-              <li data-lang-html="whyUs.others.features.adsAndCookies"><strong>Ads and cookies: </strong>Intrusive</li>
-              <li data-lang-html="whyUs.others.features.accountRequired"><strong>Long Signup Process: </strong>Frustrating start</li>
-              <li data-lang-html="whyUs.others.features.limitedGenerations"><strong>Legacy, Cheaper models: </strong>Lower quality</li>
-              <li data-lang-html="whyUs.others.features.unclearCopyright"><strong>Unclear copyright: </strong>Legal liability</li>
+              <li data-vs="speed"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.slowResults"><strong>Slow results: </strong>Days of waiting</span></button></li>
+              <li data-vs="effort"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.longProcess"><strong>Long Process: </strong>Tedious back‑and‑forth</span></button></li>
+              <li data-vs="price"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.expensive"><strong>Expensive: </strong>Costly, per‑image fees</span></button></li>
+              <li data-vs="ads"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.adsAndCookies"><strong>Ads and cookies: </strong>Intrusive</span></button></li>
+              <li data-vs="signup"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.accountRequired"><strong>Long Signup Process: </strong>Frustrating start</span></button></li>
+              <li data-vs="quality"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.limitedGenerations"><strong>Legacy, Cheaper models: </strong>Lower quality</span></button></li>
+              <li data-vs="rights"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.unclearCopyright"><strong>Unclear copyright: </strong>Legal liability</span></button></li>
             </ul>
           </article>
         </div>
@@ -1357,41 +1368,44 @@
         </div>
       </section>
 
-      <!-- ========================= CONTACT ========================= -->
-      <section class="home-section home-contact-cta" id="contact-cta" aria-labelledby="contact-cta-title">
-        <div class="home-section__head home-section__head--wide reveal">
-          <h2 class="home-section__title" id="contact-cta-title" data-tx="fade" data-lang="home.contactCta.title">Our inbox is always open</h2>
-          <p class="home-section__sub" data-lang="home.contactCta.subtitle">Questions, feedback, or ideas? We read every message and reply as soon as we can.</p>
-          <a class="contact-cta-email" href="mailto:team@stagify.ai" data-lang="home.contactCta.email">team@stagify.ai</a>
-          <a class="contact-cta-phone" href="tel:+19292514372" data-lang="home.contactCta.phone">(929) 251-4372</a>
-        </div>
-      </section>
-
-      <section class="home-section home-review-cta" id="review-cta" aria-labelledby="review-cta-title">
-        <div class="home-section__head home-section__head--wide reveal">
-          <style>
-            #review-cta .review-cta-stars{display:inline-flex;gap:7px;margin-bottom:14px}
-            #review-cta .review-star{width:34px;height:34px;display:block;filter:drop-shadow(0 2px 5px rgba(245,158,11,.45));animation:reviewStarGlow 3.6s ease-in-out infinite}
-            #review-cta .review-star:nth-child(2){animation-delay:.45s}
-            #review-cta .review-star:nth-child(3){animation-delay:.9s}
-            #review-cta .review-star:nth-child(4){animation-delay:1.35s}
-            #review-cta .review-star:nth-child(5){animation-delay:1.8s}
-            @keyframes reviewStarGlow{0%,100%{filter:drop-shadow(0 2px 5px rgba(245,158,11,.4));transform:translateY(0)}50%{filter:drop-shadow(0 5px 13px rgba(245,158,11,.9));transform:translateY(-3px)}}
-            @media (prefers-reduced-motion:reduce){#review-cta .review-star{animation:none}}
-          </style>
-          <svg width="0" height="0" aria-hidden="true" style="position:absolute;width:0;height:0"><defs><linearGradient id="reviewStarGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient></defs></svg>
-          <div class="review-cta-stars" aria-hidden="true">
-            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            <svg class="review-star" viewBox="0 0 24 24"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      <!-- ==================== CONTACT + REVIEW (outro) ====================
+           Two closing sections that were each just a heading, stacked, reading as
+           dead space. `.home-outro` sits them side by side as one band; below
+           760px it falls back to the stacked layout. Both stay real <section>s
+           with their own id, heading and aria-labelledby — this is a layout
+           change only, so the page's heading outline is untouched. -->
+      <div class="home-outro">
+        <section class="home-section home-contact-cta" id="contact-cta" aria-labelledby="contact-cta-title">
+          <div class="home-section__head home-section__head--wide reveal">
+            <h2 class="home-section__title" id="contact-cta-title" data-tx="fade" data-lang="home.contactCta.title">Our inbox is always open</h2>
+            <p class="home-section__sub" data-lang="home.contactCta.subtitle">Questions, feedback, or ideas? We read every message and reply as soon as we can.</p>
+            <a class="contact-cta-email" href="mailto:team@stagify.ai" data-lang="home.contactCta.email">team@stagify.ai</a>
+            <a class="contact-cta-phone" href="tel:+19292514372" data-lang="home.contactCta.phone">(929) 251-4372</a>
           </div>
-          <h2 class="home-section__title" id="review-cta-title" data-tx="fade" data-lang="home.reviewCta.title">Enjoying Stagify?</h2>
-          <p class="home-section__sub" data-lang="home.reviewCta.subtitle">Love how your listings look? Leave a quick Google review and help other agents find us.</p>
-          <a class="btn btn-primary review-cta-btn" style="margin-top:18px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;padding:12px 26px;border-radius:10px;text-decoration:none;font-weight:600;width:auto;max-width:none;" href="https://g.page/r/Cd6NiqfUAJ7bEAE/review" target="_blank" rel="noopener noreferrer" data-lang-attr="home.reviewCta.aria|aria-label" aria-label="Leave a Google review (opens in a new tab)" data-lang="home.reviewCta.button">Leave a Google review</a>
-        </div>
-      </section>
+        </section>
+
+        <section class="home-section home-review-cta" id="review-cta" aria-labelledby="review-cta-title">
+          <div class="home-section__head home-section__head--wide reveal">
+            <svg width="0" height="0" aria-hidden="true" class="review-star-defs"><defs><linearGradient id="reviewStarGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient></defs></svg>
+            <h2 class="home-section__title" id="review-cta-title" data-tx="fade" data-lang="home.reviewCta.title">Enjoying Stagify?</h2>
+            <!-- ONE link across all five stars, not five per-star buttons. A
+                 five-star picker that opens the same URL whichever star you press
+                 and records nothing would imply we captured the rating you chose;
+                 we don't. It reuses the button's own aria-label key, so the stars
+                 cost no new translation strings. The left-to-right sweep on hover
+                 is pure CSS (staggered transition-delay) — see home.css. -->
+            <a class="review-cta-stars" href="https://g.page/r/Cd6NiqfUAJ7bEAE/review" target="_blank" rel="noopener noreferrer" data-lang-attr="home.reviewCta.aria|aria-label" aria-label="Leave a Google review (opens in a new tab)">
+              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </a>
+            <p class="home-section__sub" data-lang="home.reviewCta.subtitle">Love how your listings look? Leave a quick Google review and help other agents find us.</p>
+            <a class="btn btn-primary review-cta-btn" href="https://g.page/r/Cd6NiqfUAJ7bEAE/review" target="_blank" rel="noopener noreferrer" data-lang-attr="home.reviewCta.aria|aria-label" aria-label="Leave a Google review (opens in a new tab)" data-lang="home.reviewCta.button">Leave a Google review</a>
+          </div>
+        </section>
+      </div>
 
       <div class="modal hidden" id="stage-modal">
         <div class="modal-backdrop" id="modal-backdrop"></div>

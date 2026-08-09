@@ -1967,6 +1967,11 @@ h2 {
   width:38px;
   height:26px;
   border-radius:6px;
+  /* Clips the inner artwork to those rounded corners. The banner swatch's band runs edge
+     to edge along the bottom, so without this its square corners sit outside the swatch's
+     curve — two black nubs in the corners of a rounded tile. Set on the box rather than
+     rounding the band itself, so any future inner shape is contained by construction. */
+  overflow:hidden;
   background:linear-gradient(145deg,#b9a993,#6f6152);
   font-size:9px;
   font-weight:600;
