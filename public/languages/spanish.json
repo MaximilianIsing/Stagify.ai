@@ -115,6 +115,7 @@
       "panelBody": "Pinta solo la zona que quieres volver a preparar. Todo lo que queda fuera de la máscara vuelve intacto, así el resto de la foto no cambia.",
       "points": {
         "snap": "Pinta una máscara o deja que se ajuste al objeto.",
+        "areas": "Marca varias zonas y escenifícalas todas a la vez.",
         "own": "Añade la foto de un mueble tuyo para colocarlo.",
         "repeat": "Repite la misma máscara con otro estilo."
       }
@@ -176,6 +177,7 @@
       "points": {
         "auto": "Se guarda solo, sin nada que recordar.",
         "versions": "Cada versión se conserva, nunca se sobrescribe.",
+        "search": "Busca por nombre, estancia o estilo para reencontrarla.",
         "private": "La foto vacía original sigue siendo solo tuya.",
         "share": "Cada sala trae su propio enlace para clientes."
       },

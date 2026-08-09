@@ -115,6 +115,7 @@
       "panelBody": "Brush over only the area you want restaged. Everything outside the mask comes back untouched, so the rest of the photo cannot drift.",
       "points": {
         "snap": "Paint a mask, or let snap-to-object trace it.",
+        "areas": "Mark several areas and stage them all at once.",
         "own": "Add your own furniture photo to place a piece.",
         "repeat": "Re-run the same mask in a different style."
       }
@@ -176,6 +177,7 @@
       "points": {
         "auto": "Saved automatically, with nothing to forget.",
         "versions": "Every version kept, never overwritten.",
+        "search": "Search by name, room or style to find one again.",
         "private": "The original empty photo stays yours alone.",
         "share": "Every room comes with its own client link."
       },

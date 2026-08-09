@@ -115,6 +115,7 @@
       "panelBody": "Übermalen Sie nur den Bereich, der neu gestaltet werden soll. Alles außerhalb der Maske kommt unverändert zurück, der Rest des Fotos bleibt stabil.",
       "points": {
         "snap": "Maske malen oder am Objekt einrasten lassen.",
+        "areas": "Mehrere Bereiche markieren und gleichzeitig einrichten.",
         "own": "Eigenes Möbelfoto hinzufügen und platzieren.",
         "repeat": "Dieselbe Maske in einem anderen Stil wiederholen."
       }
@@ -176,6 +177,7 @@
       "points": {
         "auto": "Speichert sich selbst, nichts zu vergessen.",
         "versions": "Jede Version bleibt, nichts wird überschrieben.",
+        "search": "Nach Name, Raum oder Stil suchen und wiederfinden.",
         "private": "Das leere Originalfoto bleibt allein Ihres.",
         "share": "Jeder Raum hat seinen eigenen Kundenlink."
       },

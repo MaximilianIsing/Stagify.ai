@@ -272,8 +272,8 @@ test('the two demo panels have their full aside copy in all eleven packs', () =>
   const dir = path.join(ROOT, 'public', 'languages');
   const shape = {
     designer: ['iterate', 'furniture', 'saved'],
-    masking: ['snap', 'own', 'repeat'],
-    gallery: ['auto', 'versions', 'private', 'share'],
+    masking: ['snap', 'areas', 'own', 'repeat'],
+    gallery: ['auto', 'versions', 'search', 'private', 'share'],
   };
   for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
     const home = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')).home;
