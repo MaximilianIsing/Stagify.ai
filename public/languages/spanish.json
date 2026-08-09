@@ -84,23 +84,22 @@
       "exampleRoomsAria": "Habitaciones de ejemplo"
     },
     "showcase": {
-      "title": "Cuatro estudios, un mismo lienzo",
-      "subtitle": "Arrástralo, deslízalo en horizontal o usa las flechas. Lo que ves delante funciona de verdad, no es una captura.",
+      "title": "Compruébalo tú mismo",
+      "subtitle": "Demos en vivo. Arrastra para cambiar.",
       "tablistAria": "Estudios",
-      "prevAria": "Estudio anterior",
-      "nextAria": "Estudio siguiente",
       "tabs": {
         "designer": "AI Designer",
         "masking": "Estudio de máscaras",
         "exterior": "Estudio de exteriores",
         "gallery": "Tu galería"
-      }
+      },
+      "fullscreen": "Pantalla completa"
     },
     "designer": {
       "title": "Deja que una IA prepare tu espacio",
       "subtitle": "Con AI Designer, chatea para preparar, rediseñar e iterar sobre cualquier habitación hasta que quede lista para publicar. <em>(Exclusivo de Stagify+)</em>",
       "kicker": "Conversacional",
-      "panelTitle": "Describe la sala, no la decores",
+      "panelTitle": "Sigue hablando hasta que la sala quede bien",
       "panelBody": "Escribe lo que quieres y el Designer la prepara, y recuerda la sala. Pide otro sofá o una paleta más cálida y partirá de lo que ya ha creado.",
       "points": {
         "iterate": "Sigue ajustando en la misma conversación.",
@@ -112,7 +111,7 @@
       "title": "Prepara con precisión exacta",
       "subtitle": "Enmascara las áreas a rehacer, añade tus propios muebles y todo lo demás queda idéntico al píxel. <em>(Exclusivo de Stagify+)</em>",
       "kicker": "Exacto al píxel",
-      "panelTitle": "Cambia un rincón, no toda la sala",
+      "panelTitle": "Solo se vuelve a preparar lo que pintas",
       "panelBody": "Pinta solo la zona que quieres volver a preparar. Todo lo que queda fuera de la máscara vuelve intacto, así el resto de la foto no cambia.",
       "points": {
         "snap": "Pinta una máscara o deja que se ajuste al objeto.",
@@ -348,7 +347,7 @@
       }
     },
     "faq": {
-      "subtitle": "Respuestas rápidas a las preguntas más frecuentes. ¿Sigues con dudas? Visita <a href=\"guides.html\">Guías</a> o escríbenos."
+      "subtitle": "Respuestas rápidas a lo más preguntado. Visita <a href=\"guides.html\">Guías</a> o escríbenos."
     },
     "blog": {
       "title": "Del blog de Stagify",
@@ -582,7 +581,7 @@
       },
       "whatMakesDifferent": {
         "question": "¿Qué hace diferente a Stagify frente a otras herramientas de escenificación virtual?",
-        "answer": "Varias cosas. Primero, el precio: puedes empezar a ambientar gratis, y Stagify+ cuesta solo $11.99 al mes por escenificación ilimitada — mientras que la escenificación tradicional puede costar cientos o miles de dólares por habitación. Segundo, el Diseñador IA te permite conversar con nuestra IA para rediseñar una habitación entera y afinar el resultado a medida que charlas, en lugar de aplicar solo ajustes predefinidos. Tercero, el Estudio de Máscaras ofrece precisión a nivel de píxel — marca exactamente qué zonas de una foto pueden cambiar y asigna un mueble concreto a cada una, de modo que todo lo que no selecciones permanezca intacto. La mayoría de las herramientas hacen bien solo una de estas cosas; Stagify combina asequibilidad, control creativo y precisión."
+        "answer": "Varias cosas. Primero, el precio: puedes empezar a ambientar gratis, y Stagify+ cuesta solo $11.99 al mes por escenificación ilimitada, mientras que la escenificación tradicional puede costar cientos o miles de dólares por habitación. Segundo, el Diseñador IA te permite conversar con nuestra IA para rediseñar una habitación entera y afinar el resultado a medida que charlas, en lugar de aplicar solo ajustes predefinidos. Tercero, el Estudio de Máscaras ofrece precisión a nivel de píxel: marca exactamente qué zonas de una foto pueden cambiar y asigna un mueble concreto a cada una, de modo que todo lo que no selecciones permanezca intacto. La mayoría de las herramientas hacen bien solo una de estas cosas; Stagify combina asequibilidad, control creativo y precisión."
       },
       "mlsAllowed": {
         "question": "¿Puedo usar fotos con escenificación virtual en mis anuncios inmobiliarios?",

@@ -84,23 +84,22 @@
       "exampleRoomsAria": "Beispielräume"
     },
     "showcase": {
-      "title": "Vier Studios, eine Fläche",
-      "subtitle": "Ziehen, seitlich scrollen oder die Pfeile benutzen. Was vorn liegt, funktioniert wirklich – es ist kein Screenshot.",
+      "title": "Überzeugen Sie sich selbst",
+      "subtitle": "Live-Demos. Zum Wechseln ziehen.",
       "tablistAria": "Studios",
-      "prevAria": "Vorheriges Studio",
-      "nextAria": "Nächstes Studio",
       "tabs": {
         "designer": "KI-Designer",
         "masking": "Masking-Studio",
         "exterior": "Außen-Studio",
         "gallery": "Ihre Galerie"
-      }
+      },
+      "fullscreen": "Vollbild"
     },
     "designer": {
       "title": "Lassen Sie eine KI Ihren Raum einrichten",
       "subtitle": "Mit dem KI-Designer richten Sie per Chat jeden Raum ein, gestalten ihn um und verfeinern ihn, bis er angebotsbereit ist. <em>(Stagify+ exklusiv)</em>",
       "kicker": "Dialogbasiert",
-      "panelTitle": "Beschreiben statt einrichten",
+      "panelTitle": "Reden Sie weiter, bis der Raum stimmt",
       "panelBody": "Schreiben Sie, was Sie möchten – der Designer richtet ein und behält den Raum im Blick. Bitten Sie um ein anderes Sofa oder wärmere Farben, und er baut auf dem Vorherigen auf.",
       "points": {
         "iterate": "Im selben Gespräch weiter verfeinern.",
@@ -112,7 +111,7 @@
       "title": "Einrichten mit exakter Präzision",
       "subtitle": "Maskieren Sie die Bereiche zum Neugestalten, fügen Sie eigene Möbel hinzu — alles andere bleibt pixelgenau. <em>(Stagify+ exklusiv)</em>",
       "kicker": "Pixelgenau",
-      "panelTitle": "Eine Ecke ändern, nicht den ganzen Raum",
+      "panelTitle": "Nur was Sie übermalen, wird neu gestaltet",
       "panelBody": "Übermalen Sie nur den Bereich, der neu gestaltet werden soll. Alles außerhalb der Maske kommt unverändert zurück, der Rest des Fotos bleibt stabil.",
       "points": {
         "snap": "Maske malen oder am Objekt einrasten lassen.",
@@ -348,7 +347,7 @@
       }
     },
     "faq": {
-      "subtitle": "Schnelle Antworten auf die häufigsten Fragen. Immer noch unklar? Besuchen Sie die <a href=\"guides.html\">Anleitungen</a> oder melden Sie sich."
+      "subtitle": "Schnelle Antworten. Unklar? Zu den <a href=\"guides.html\">Anleitungen</a> oder melden Sie sich."
     },
     "blog": {
       "title": "Aus dem Stagify-Blog",
@@ -582,7 +581,7 @@
       },
       "whatMakesDifferent": {
         "question": "Was unterscheidet Stagify von anderen Tools für virtuelles Staging?",
-        "answer": "Einige Dinge. Erstens der Preis: Du kannst kostenlos mit dem Einrichten beginnen, und Stagify+ kostet nur $11.99 pro Monat für unbegrenztes Staging — während traditionelles Staging pro Raum Hunderte bis Tausende Dollar kosten kann. Zweitens kannst du mit dem KI-Designer im Chat mit unserer KI einen ganzen Raum neu gestalten und das Ergebnis im Gespräch verfeinern, statt nur Voreinstellungen anzuwenden. Drittens bietet das Masken-Studio pixelgenaue Präzision — markiere exakt, welche Bereiche eines Fotos verändert werden dürfen, und weise jedem ein bestimmtes Möbelstück zu, sodass alles, was du nicht auswählst, unberührt bleibt. Die meisten Tools beherrschen nur eines davon gut; Stagify vereint Erschwinglichkeit, kreative Kontrolle und Präzision."
+        "answer": "Einige Dinge. Erstens der Preis: Du kannst kostenlos mit dem Einrichten beginnen, und Stagify+ kostet nur $11.99 pro Monat für unbegrenztes Staging, während traditionelles Staging pro Raum Hunderte bis Tausende Dollar kosten kann. Zweitens kannst du mit dem KI-Designer im Chat mit unserer KI einen ganzen Raum neu gestalten und das Ergebnis im Gespräch verfeinern, statt nur Voreinstellungen anzuwenden. Drittens bietet das Masken-Studio pixelgenaue Präzision: markiere exakt, welche Bereiche eines Fotos verändert werden dürfen, und weise jedem ein bestimmtes Möbelstück zu, sodass alles, was du nicht auswählst, unberührt bleibt. Die meisten Tools beherrschen nur eines davon gut; Stagify vereint Erschwinglichkeit, kreative Kontrolle und Präzision."
       },
       "mlsAllowed": {
         "question": "Darf ich virtuell eingerichtete Fotos in meinen Immobilienanzeigen verwenden?",

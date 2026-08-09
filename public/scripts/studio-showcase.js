@@ -46,7 +46,6 @@ const FOCUSABLE = 'a[href], button, input, select, textarea, iframe, [tabindex]'
  * @property {HTMLElement} stage
  * @property {HTMLElement[]} panels
  * @property {HTMLElement[]} tabs
- * @property {HTMLElement[]} dots
  * @property {number} active
  * @property {boolean} sized whether the stage has been measured at least once
  */
@@ -222,7 +221,8 @@ function mountFrontDemo(sc) {
 }
 
 /**
- * Reflect `active` in the tablist and the dots.
+ * Reflect `active` in the tablist, which is the only chrome the carousel has:
+ * everything else is the panels themselves, plus drag / wheel / click-a-side-panel.
  * @param {Showcase} sc
  */
 function updateChrome(sc) {
@@ -234,7 +234,6 @@ function updateChrome(sc) {
     if (on) tab.removeAttribute('tabindex');
     else tab.setAttribute('tabindex', '-1');
   });
-  sc.dots.forEach((dot, i) => dot.classList.toggle('is-active', i === sc.active));
 }
 
 /**
@@ -282,6 +281,9 @@ function wireDrag(sc) {
   let axis = /** @type {'x'|'y'|null} */ (null);
 
   sc.stage.addEventListener('pointerdown', (e) => {
+    // Cycling while a panel is expanded would swap the fullscreen content out from
+    // under the viewer, who cannot see the carousel behind it to know what happened.
+    if (document.fullscreenElement) return;
     const target = /** @type {HTMLElement} */ (e.target);
     // .hgal-grid is the gallery mock's scroller: a touch drag inside it must scroll
     // the cards, not flick the carousel to the next studio.
@@ -323,6 +325,7 @@ function wireWheel(sc) {
   sc.stage.addEventListener(
     'wheel',
     (e) => {
+      if (document.fullscreenElement) return; // see the note in wireDrag
       if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
       const now = e.timeStamp;
       if (now - last < WHEEL_COOLDOWN) return;
@@ -357,6 +360,44 @@ function wireTabs(sc) {
 }
 
 /**
+ * The fullscreen control on each media panel. The button toggles rather than only
+ * entering, so the same control gets you back out — `aria-pressed` carries the state,
+ * which means the label never has to change and the i18n pack needs one key, not two.
+ *
+ * @param {Showcase} sc
+ */
+function wireFullscreen(sc) {
+  const buttons = /** @type {HTMLElement[]} */ ([].slice.call(sc.root.querySelectorAll('[data-shw-fullscreen]')));
+  if (!buttons.length) return;
+  // Some embedding contexts disallow fullscreen outright. Hide the control instead of
+  // shipping a button whose only behaviour is a rejected promise.
+  if (!document.fullscreenEnabled) {
+    buttons.forEach((btn) => { btn.hidden = true; });
+    return;
+  }
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const media = btn.closest('.shw__media');
+      if (!media) return;
+      if (document.fullscreenElement === media) document.exitFullscreen();
+      // A rejection here is normal — a user gesture can be refused — and there is
+      // nothing to recover, so swallow it rather than surfacing an unhandled rejection.
+      else media.requestFullscreen().catch(() => {});
+    });
+  });
+  document.addEventListener('fullscreenchange', () => {
+    buttons.forEach((btn) => {
+      const on = document.fullscreenElement === btn.closest('.shw__media');
+      btn.classList.toggle('is-fs', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    // The player and the before/after slider both hit-test against their own box,
+    // which just changed size — re-measure so the stage still matches on the way out.
+    measure(sc);
+  });
+}
+
+/**
  * @param {HTMLElement} root
  * @returns {Showcase|null}
  */
@@ -364,9 +405,8 @@ function build(root) {
   const stage = /** @type {HTMLElement|null} */ (root.querySelector('.shw__stage'));
   const panels = /** @type {HTMLElement[]} */ ([].slice.call(root.querySelectorAll('.shw__panel')));
   const tabs = /** @type {HTMLElement[]} */ ([].slice.call(root.querySelectorAll('.shw__tab')));
-  const dots = /** @type {HTMLElement[]} */ ([].slice.call(root.querySelectorAll('.shw__dot')));
   if (!stage || panels.length < 2 || tabs.length !== panels.length) return null;
-  return { root, stage, panels, tabs, dots, active: 0, sized: false };
+  return { root, stage, panels, tabs, active: 0, sized: false };
 }
 
 function init() {
@@ -380,13 +420,7 @@ function init() {
   wireTabs(sc);
   wireDrag(sc);
   wireWheel(sc);
-
-  root.querySelectorAll('[data-shw-step]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const step = Number(/** @type {HTMLElement} */ (btn).dataset.shwStep) || 0;
-      select(sc, sc.active + step);
-    });
-  });
+  wireFullscreen(sc);
 
   // Clicking a panel that is not in front brings it forward.
   sc.panels.forEach((panel, i) => {

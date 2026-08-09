@@ -84,23 +84,22 @@
       "exampleRoomsAria": "Example rooms"
     },
     "showcase": {
-      "title": "Four studios, one canvas",
-      "subtitle": "Drag it, scroll it sideways, or use the arrows. Whatever is in front is live, not a screenshot.",
+      "title": "See it for yourself",
+      "subtitle": "Live demos. Drag to switch.",
       "tablistAria": "Studios",
-      "prevAria": "Previous studio",
-      "nextAria": "Next studio",
       "tabs": {
         "designer": "AI Designer",
         "masking": "Masking Studio",
         "exterior": "Exterior Studio",
         "gallery": "Your gallery"
-      }
+      },
+      "fullscreen": "Toggle fullscreen"
     },
     "designer": {
       "title": "Let an AI stage your space",
       "subtitle": "With the AI Designer, chat to stage, redesign, and iterate on any room until it looks listing-ready. <em>(Stagify+ Exclusive)</em>",
       "kicker": "Conversational",
-      "panelTitle": "Describe the room, do not decorate it",
+      "panelTitle": "Keep talking until the room is right",
       "panelBody": "Type what you want and the Designer stages it, then keeps the room in mind. Ask for a different sofa or a warmer palette and it works from what it already built.",
       "points": {
         "iterate": "Keep refining in the same conversation.",
@@ -112,7 +111,7 @@
       "title": "Stage with exact precision",
       "subtitle": "In the new Masking Studio, highlight the areas to restage, add your own furniture, and everything else stays pixel-perfect. <em>(Stagify+ Exclusive)</em>",
       "kicker": "Pixel-exact",
-      "panelTitle": "Change one corner, not the whole room",
+      "panelTitle": "Only what you paint gets restaged",
       "panelBody": "Brush over only the area you want restaged. Everything outside the mask comes back untouched, so the rest of the photo cannot drift.",
       "points": {
         "snap": "Paint a mask, or let snap-to-object trace it.",
@@ -348,7 +347,7 @@
       }
     },
     "faq": {
-      "subtitle": "Quick answers to the questions we hear most. Still stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch."
+      "subtitle": "Quick answers to what we hear most. Stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch."
     },
     "blog": {
       "title": "From the Stagify blog",
@@ -582,7 +581,7 @@
       },
       "whatMakesDifferent": {
         "question": "What makes Stagify different from other virtual staging tools?",
-        "answer": "A few things. First, price: you can start staging for free, and Stagify+ is just $11.99/month for unlimited staging — while traditional staging can cost hundreds or thousands of dollars per room. Second, AI Designer lets you chat with our AI to redesign a whole room and refine the result conversationally, instead of only applying presets. Third, the Masking Studio gives you pixel-level precision — highlight exactly which areas of a photo can change and attach specific furniture to each one, so everything you don't select stays untouched. Most tools do just one of these well; Stagify brings affordability, creative control, and precision together."
+        "answer": "A few things. First, price: you can start staging for free, and Stagify+ is just $11.99/month for unlimited staging, while traditional staging can cost hundreds or thousands of dollars per room. Second, AI Designer lets you chat with our AI to redesign a whole room and refine the result conversationally, instead of only applying presets. Third, the Masking Studio gives you pixel-level precision: highlight exactly which areas of a photo can change and attach specific furniture to each one, so everything you don't select stays untouched. Most tools do just one of these well; Stagify brings affordability, creative control, and precision together."
       },
       "mlsAllowed": {
         "question": "Can I use virtually staged photos in my real estate listings?",

@@ -84,23 +84,22 @@
       "exampleRoomsAria": "Voorbeeldkamers"
     },
     "showcase": {
-      "title": "Vier studio's, één canvas",
-      "subtitle": "Sleep, scroll zijwaarts of gebruik de pijlen. Wat vooraan staat werkt echt, het is geen schermafbeelding.",
+      "title": "Zie het zelf",
+      "subtitle": "Live demo's. Sleep om te wisselen.",
       "tablistAria": "Studio's",
-      "prevAria": "Vorige studio",
-      "nextAria": "Volgende studio",
       "tabs": {
         "designer": "AI-Designer",
         "masking": "Maskeerstudio",
         "exterior": "Buitenstudio",
         "gallery": "Jouw galerij"
-      }
+      },
+      "fullscreen": "Volledig scherm"
     },
     "designer": {
       "title": "Laat een AI je ruimte stylen",
       "subtitle": "Met de AI-Designer chat je om elke kamer te stylen, opnieuw te ontwerpen en te verfijnen tot hij advertentieklaar is. <em>(Stagify+ Exclusief)</em>",
       "kicker": "In gesprek",
-      "panelTitle": "Beschrijf de kamer, richt hem niet in",
+      "panelTitle": "Blijf praten tot de kamer klopt",
       "panelBody": "Typ wat je wilt en de Designer richt de kamer in en onthoudt hem. Vraag om een andere bank of warmere kleuren en hij bouwt verder op wat er al staat.",
       "points": {
         "iterate": "Blijf bijschaven in hetzelfde gesprek.",
@@ -112,7 +111,7 @@
       "title": "Style met exacte precisie",
       "subtitle": "In de nieuwe Maskeerstudio markeer je de gebieden om te herstylen, voeg je je eigen meubilair toe, en al het andere blijft pixel-perfect. <em>(Stagify+ Exclusief)</em>",
       "kicker": "Pixelnauwkeurig",
-      "panelTitle": "Verander één hoek, niet de hele kamer",
+      "panelTitle": "Alleen wat je schildert wordt opnieuw ingericht",
       "panelBody": "Schilder alleen het gebied dat opnieuw ingericht moet worden. Alles buiten het masker komt onveranderd terug, de rest van de foto blijft staan.",
       "points": {
         "snap": "Teken een masker of laat het om het object snappen.",
@@ -348,7 +347,7 @@
       }
     },
     "faq": {
-      "subtitle": "Snelle antwoorden op de vragen die we het vaakst horen. Nog vastgelopen? Bezoek <a href=\"guides.html\">Handleidingen</a> of neem contact op."
+      "subtitle": "Snelle antwoorden. Vastgelopen? Bekijk <a href=\"guides.html\">Handleidingen</a> of mail ons."
     },
     "blog": {
       "title": "Van de Stagify-blog",
@@ -582,7 +581,7 @@
       },
       "whatMakesDifferent": {
         "question": "Wat maakt Stagify anders dan andere tools voor virtuele styling?",
-        "answer": "Een paar dingen. Ten eerste de prijs: je kunt gratis beginnen met stylen, en Stagify+ kost slechts $11.99 per maand voor onbeperkt stylen — terwijl traditionele styling honderden tot duizenden dollars per kamer kan kosten. Ten tweede kun je met de AI-Designer met onze AI chatten om een hele kamer opnieuw in te richten en het resultaat gaandeweg te verfijnen, in plaats van alleen voorinstellingen toe te passen. Ten derde biedt de Maskeerstudio precisie tot op pixelniveau — markeer precies welke delen van een foto mogen veranderen en koppel specifiek meubilair aan elk gebied, zodat alles wat je niet selecteert onaangetast blijft. De meeste tools doen slechts één van deze dingen goed; Stagify combineert betaalbaarheid, creatieve controle en precisie."
+        "answer": "Een paar dingen. Ten eerste de prijs: je kunt gratis beginnen met stylen, en Stagify+ kost slechts $11.99 per maand voor onbeperkt stylen, terwijl traditionele styling honderden tot duizenden dollars per kamer kan kosten. Ten tweede kun je met de AI-Designer met onze AI chatten om een hele kamer opnieuw in te richten en het resultaat gaandeweg te verfijnen, in plaats van alleen voorinstellingen toe te passen. Ten derde biedt de Maskeerstudio precisie tot op pixelniveau: markeer precies welke delen van een foto mogen veranderen en koppel specifiek meubilair aan elk gebied, zodat alles wat je niet selecteert onaangetast blijft. De meeste tools doen slechts één van deze dingen goed; Stagify combineert betaalbaarheid, creatieve controle en precisie."
       },
       "mlsAllowed": {
         "question": "Mag ik virtueel gestylede foto's gebruiken in mijn woningadvertenties?",
