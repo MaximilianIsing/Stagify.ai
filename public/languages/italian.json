@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "Scuro",
         "light": "Chiaro",
-        "minimal": "Minimo"
+        "minimal": "Minimo",
+        "banner": "Banda"
       },
       "stampSizeLabel": "Dimensione della nota",
       "stampPreview": "Anteprima",

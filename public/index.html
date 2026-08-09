@@ -1510,7 +1510,7 @@
                         <span class="opt-info__tip" id="label-staged-tip" data-lang="modal.staging.labelVirtuallyStagedTip">Adds a small &quot;Virtually staged&quot; note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.</span>
                       </span>
                     </div>
-                    <!-- How the badge looks, on ONE line: three styles, a size slider, and a
+                    <!-- How the badge looks, on ONE line: four styles, a size slider, and a
                          preview. Shown only while the checkbox above is ticked — see
                          scripts/app/stamp-style-row.js, which owns the reveal.
                          Real radio inputs rather than buttons with role="radio": same-name
@@ -1535,6 +1535,11 @@
                           <input type="radio" name="stamp-style" value="minimal" class="stamp-swatch__input">
                           <span class="stamp-swatch__art stamp-swatch__art--minimal" aria-hidden="true">Aa</span>
                           <span class="sr-only" data-lang="modal.staging.stampStyles.minimal">Minimal</span>
+                        </label>
+                        <label class="stamp-swatch">
+                          <input type="radio" name="stamp-style" value="banner" class="stamp-swatch__input">
+                          <span class="stamp-swatch__art stamp-swatch__art--banner" aria-hidden="true">Aa</span>
+                          <span class="sr-only" data-lang="modal.staging.stampStyles.banner">Banner</span>
                         </label>
                       </div>
                       <input type="range" id="stamp-scale" class="stamp-opts__size" min="0.7" max="1.6" step="0.1" value="1" data-lang-attr="modal.staging.stampSizeLabel|aria-label" aria-label="Label size" aria-valuetext="100%">

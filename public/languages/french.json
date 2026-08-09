@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "Sombre",
         "light": "Clair",
-        "minimal": "Minimal"
+        "minimal": "Minimal",
+        "banner": "Bandeau"
       },
       "stampSizeLabel": "Taille de la mention",
       "stampPreview": "Aperçu",

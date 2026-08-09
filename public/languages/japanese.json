@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "ダーク",
         "light": "ライト",
-        "minimal": "ミニマル"
+        "minimal": "ミニマル",
+        "banner": "バナー"
       },
       "stampSizeLabel": "注記のサイズ",
       "stampPreview": "プレビュー",

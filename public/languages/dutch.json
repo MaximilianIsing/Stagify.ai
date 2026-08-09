@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "Donker",
         "light": "Licht",
-        "minimal": "Minimaal"
+        "minimal": "Minimaal",
+        "banner": "Balk"
       },
       "stampSizeLabel": "Grootte van de vermelding",
       "stampPreview": "Voorbeeld",

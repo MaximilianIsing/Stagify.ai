@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "어둡게",
         "light": "밝게",
-        "minimal": "미니멀"
+        "minimal": "미니멀",
+        "banner": "배너"
       },
       "stampSizeLabel": "문구 크기",
       "stampPreview": "미리보기",

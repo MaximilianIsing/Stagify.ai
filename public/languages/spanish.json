@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "Oscuro",
         "light": "Claro",
-        "minimal": "Mínimo"
+        "minimal": "Mínimo",
+        "banner": "Banda"
       },
       "stampSizeLabel": "Tamaño de la etiqueta",
       "stampPreview": "Vista previa",

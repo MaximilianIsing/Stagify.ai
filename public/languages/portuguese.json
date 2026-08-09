@@ -425,7 +425,8 @@
       "stampStyles": {
         "dark": "Escuro",
         "light": "Claro",
-        "minimal": "Mínimo"
+        "minimal": "Mínimo",
+        "banner": "Faixa"
       },
       "stampSizeLabel": "Tamanho da nota",
       "stampPreview": "Pré-visualização",
