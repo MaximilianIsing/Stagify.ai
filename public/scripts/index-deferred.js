@@ -53,6 +53,10 @@ export const DEFERRED = [
   // script's showAll() fallback adds the class to every .reveal at once, which would
   // fire these for a card far below the fold.
   { src: 'scripts/home-figures.js', module: true },
+  // #why's paired ✓/✗ highlighting. Separate from home-figures.js: that module is
+  // scoped to the two data figures and shares their ramp/observer scaffolding, none
+  // of which this needs — it is plain pointer and focus wiring.
+  { src: 'scripts/home-whyus.js', module: true },
   { src: 'scripts/sponsors-scroll.js', module: true },
   { src: 'scripts/star-border.js', module: true },
   { src: 'scripts/plus-cta-auth.js', module: true },

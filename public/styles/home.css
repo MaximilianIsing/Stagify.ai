@@ -1977,6 +1977,65 @@ body.page-home main {
   background: rgba(109, 28, 44, 0.1);
   color: #9b2c3c;
 }
+
+/* --- #why paired highlighting -------------------------------------------------
+   Row N on the left is the rebuttal to row N on the right. home-whyus.js sets
+   [data-vs-focus] on the grid and .is-lit on both halves of the hovered, focused
+   or pinned pair. EVERY dim/lift rule is scoped behind [data-vs-focus], so with
+   no JS the attribute is never set and the section renders exactly as before —
+   nothing is hidden by default. */
+.whyus-row {
+  /* The -28px margin / +28px padding pair pulls the hit target left over the li's
+     own padding, so the ✓/– marker is part of the button rather than a dead strip.
+
+     `width` is stated explicitly rather than left to `auto`: a <button> does NOT
+     fill its containing block the way a plain block box does even at
+     `display:block` — Chrome shrink-to-fits it, which measured 3.3px short of the
+     row's right edge and left a dead strip down the side of all 14 rows. That is
+     worst on mobile, where the grid is one column and tapping is the ONLY way to
+     drive the pairing. calc() + border-box makes the box exactly the row.
+     Vertical padding stays 0 — the li gap (11px) is the row rhythm. */
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% + 28px);
+  margin: 0 0 0 -28px;
+  padding: 0 0 0 28px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.whyus-row:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+.whyus-grid[data-vs-focus] li:not(.is-lit) {
+  opacity: 0.38;
+}
+/* The tint sits on the li, whose box already spans the 28px marker gutter. The
+   box-shadow is the same colour as the background and exists only to bleed it a
+   few px outward — padding the li instead would move every row below it. */
+.whyus-grid[data-vs-focus] li.is-lit {
+  background: rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 7px rgba(37, 99, 235, 0.1);
+  border-radius: 6px;
+}
+.whyus-grid[data-vs-focus] .whyus-list--no li.is-lit {
+  background: rgba(155, 44, 60, 0.09);
+  box-shadow: 0 0 0 7px rgba(155, 44, 60, 0.09);
+}
+/* Motion is the enhancement; the lit and dimmed STATES still apply under reduced
+   motion, they just arrive instantly. */
+@media (prefers-reduced-motion: no-preference) {
+  .whyus-list li {
+    transition: opacity 0.22s ease, background-color 0.22s ease,
+      box-shadow 0.22s ease;
+  }
+}
+
 @media (max-width: 760px) {
   .whyus-grid {
     grid-template-columns: 1fr;
@@ -2122,6 +2181,134 @@ body.page-home main {
   color: var(--brand-strong);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* --- The closing band: #contact-cta + #review-cta side by side ---------------
+   Both were heading-only sections stacked back to back, which read as dead space
+   at the bottom of the page. The wrapper takes over `.home-section`'s page
+   constraints; the two sections keep their own padding (including the 28px/18px
+   responsive overrides above) and their own vertical margins, so nothing inside
+   them had to change. */
+.home-outro {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .home-outro {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- #review-cta stars -------------------------------------------------------
+   Lifted out of an inline <style> block in index.html — this was the only section
+   on the page carrying page-local CSS, and the button below carried ~200 chars of
+   inline style= to escape the global mobile `.btn { width:100%; max-width:280px }`.
+   `.btn.review-cta-btn` (0,2,0) outranks that rule, so the override no longer has
+   to be inline to win. */
+.review-star-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.review-cta-stars {
+  display: inline-flex;
+  gap: 7px;
+  /* The stars sit BETWEEN the heading and the subtitle, so they need air on both
+     sides. The 4px top rides on the heading's own 10px bottom margin to match the
+     14px below — when the stars led the block they needed no top margin at all. */
+  margin: 4px 0 14px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+.review-cta-stars:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 6px;
+}
+.review-star {
+  width: 34px;
+  height: 34px;
+  display: block;
+  filter: drop-shadow(0 2px 5px rgba(245, 158, 11, 0.45));
+  animation: reviewStarGlow 3.6s ease-in-out infinite;
+}
+.review-star:nth-child(2) {
+  animation-delay: 0.45s;
+}
+.review-star:nth-child(3) {
+  animation-delay: 0.9s;
+}
+.review-star:nth-child(4) {
+  animation-delay: 1.35s;
+}
+.review-star:nth-child(5) {
+  animation-delay: 1.8s;
+}
+@keyframes reviewStarGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 2px 5px rgba(245, 158, 11, 0.4));
+    transform: translateY(0);
+  }
+  50% {
+    filter: drop-shadow(0 5px 13px rgba(245, 158, 11, 0.9));
+    transform: translateY(-3px);
+  }
+}
+/* The left-to-right sweep on hover. It uses `scale`, the standalone property, NOT
+   `transform` — the idle float animation already animates `transform` and `filter`,
+   and an animation beats a plain declaration in the cascade, so a hover rule on
+   either would simply be ignored. `scale` composes with the animated transform
+   instead of fighting it. */
+.review-star {
+  scale: 1;
+  transition: scale 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+.review-cta-stars:hover .review-star,
+.review-cta-stars:focus-visible .review-star {
+  scale: 1.22;
+}
+.review-cta-stars:hover .review-star:nth-child(2),
+.review-cta-stars:focus-visible .review-star:nth-child(2) {
+  transition-delay: 0.06s;
+}
+.review-cta-stars:hover .review-star:nth-child(3),
+.review-cta-stars:focus-visible .review-star:nth-child(3) {
+  transition-delay: 0.12s;
+}
+.review-cta-stars:hover .review-star:nth-child(4),
+.review-cta-stars:focus-visible .review-star:nth-child(4) {
+  transition-delay: 0.18s;
+}
+.review-cta-stars:hover .review-star:nth-child(5),
+.review-cta-stars:focus-visible .review-star:nth-child(5) {
+  transition-delay: 0.24s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .review-star {
+    animation: none;
+    transition: none;
+  }
+  .review-cta-stars:hover .review-star,
+  .review-cta-stars:focus-visible .review-star {
+    scale: 1;
+  }
+}
+.btn.review-cta-btn {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  width: auto;
+  max-width: none;
+  padding: 12px 26px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
 }
 
 /* Guides page */
