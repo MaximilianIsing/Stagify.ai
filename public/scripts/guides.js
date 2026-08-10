@@ -249,16 +249,23 @@ function initTopicRail(doc, win) {
    * so "topmost visible" spends most of the scroll naming the card you just finished.
    */
   function pick() {
-    const line = win.innerHeight * 0.3;
+    const viewport = win.innerHeight;
+    const base = viewport * 0.3;
+    const remaining = scrollport.scrollHeight - scrollport.clientHeight - scrollport.scrollTop;
+    // The line starts 30% down the viewport and slides toward the bottom of it as the
+    // page runs out of scroll. A FIXED line leaves the trailing cards unreachable —
+    // there is not enough page left below them for their tops to climb that high, so
+    // the rail parks on the second-to-last topic however far you scroll. Measured on
+    // this page with a fixed line, the last two topics were current for 30px and 15px
+    // of scroll; sliding it gives them 120px and 225px. Continuous at the handover:
+    // when remaining === viewport - base, this is exactly base.
+    const line = remaining >= viewport - base ? base : viewport - remaining;
+
     let chosen = null;
     for (const topic of topics) {
       if (topic.card.getBoundingClientRect().top <= line) chosen = topic;
     }
-    // The last card can never reach the line — the page bottoms out first — so without
-    // this it is the one topic the rail can never point at.
-    if (scrollport.scrollTop + scrollport.clientHeight >= scrollport.scrollHeight - 4) {
-      chosen = topics[topics.length - 1];
-    }
+    // Above the first card, it is the next thing to be read — name it, not nothing.
     return chosen || topics[0];
   }
 

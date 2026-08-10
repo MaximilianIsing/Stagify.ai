@@ -36,7 +36,7 @@
 }
 @media (max-width: 768px) {
   .home-guides {
-    padding-top: 18px;
+    padding-top: 32px;
   }
 }
 
@@ -83,9 +83,12 @@
   letter-spacing: -0.3px;
   color: var(--brand-deep);
 }
+/* No max-width. A measure cap is right for a paragraph and wrong for this: it is a
+   single sentence under the heading, and 62ch broke it across two rows for no
+   reading benefit. It runs to the content column and wraps only when the viewport
+   is genuinely too narrow — which longer translations reach sooner than English. */
 .guides-sec-head__sub {
   margin: 8px 0 0;
-  max-width: 62ch;
   font-size: 14.5px;
   line-height: 1.6;
   color: var(--slate-deep);
