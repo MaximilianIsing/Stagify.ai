@@ -32,9 +32,17 @@ import { offsetOf, geometryFor, indexForHash, stageHeightFor } from '../../publi
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INDEX = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
 
-/** The panels, in document order, as `{ id, labelledBy, index }`. */
+/**
+ * The panels, in document order, as `{ id, labelledBy, index }`.
+ *
+ * They are plain <div>s ON PURPOSE: studio-showcase.js puts role="tabpanel" on them at
+ * runtime, and `tabpanel` is not an allowed role on <article> (its implicit `article`
+ * role only permits document/feed/main/region/none/presentation/application), which
+ * Lighthouse flags as a malformed accessibility tree. A <div> has no implicit role, so
+ * the applied one is legal. Do not turn these back into <article>s.
+ */
 function panelsFromMarkup() {
-  return [...INDEX.matchAll(/<article\b([^>]*\bclass="shw__panel"[^>]*)>/g)].map((m) => {
+  return [...INDEX.matchAll(/<div\b([^>]*\bclass="shw__panel"[^>]*)>/g)].map((m) => {
     const attrs = m[1];
     const pick = (/** @type {string} */ name) => (attrs.match(new RegExp(`\\b${name}="([^"]*)"`)) || [])[1];
     return { id: pick('id'), labelledBy: pick('aria-labelledby'), index: pick('data-shw-panel') };
@@ -48,6 +56,23 @@ function tabsFromMarkup() {
     const pick = (/** @type {string} */ name) => (attrs.match(new RegExp(`\\b${name}="([^"]*)"`)) || [])[1];
     return { id: pick('id'), controls: pick('aria-controls'), index: pick('data-shw-tab') };
   });
+}
+
+/**
+ * One panel's markup, sliced out of index.html.
+ *
+ * Bounded by the NEXT panel (or the end of the showcase section for the last one)
+ * rather than by a closing tag: the panels are <div>s, so `</div>` says nothing about
+ * where one ends. See the note on panelsFromMarkup for why they are not <article>s.
+ *
+ * @param {string} id
+ * @returns {string}
+ */
+function panelMarkup(id) {
+  const start = INDEX.indexOf(`id="${id}"`);
+  const next = INDEX.indexOf('class="shw__panel"', start);
+  const end = next === -1 ? INDEX.indexOf('</section>', start) : next;
+  return INDEX.slice(start, end === -1 ? INDEX.length : end);
 }
 
 // --------------------------------------------------------------------------
@@ -383,8 +408,7 @@ test('every panel uses the shared split markup', () => {
 
 /** The gallery panel's markup, sliced out of index.html. */
 function galleryMarkup() {
-  const start = INDEX.indexOf('id="gallery-showcase"');
-  return INDEX.slice(start, INDEX.indexOf('</article>', start));
+  return panelMarkup('gallery-showcase');
 }
 
 test('the gallery mock ships seven cards, each with its own image', () => {
@@ -465,8 +489,7 @@ test('the mock grid scrolls rather than growing the panel', () => {
 test('every media panel carries a fullscreen control; the gallery does not', () => {
   const panels = panelsFromMarkup().map((p) => p.id);
   for (const id of panels) {
-    const start = INDEX.indexOf(`id="${id}"`);
-    const markup = INDEX.slice(start, INDEX.indexOf('</article>', start));
+    const markup = panelMarkup(id);
     const wants = id !== 'gallery-showcase';
     assert.equal(
       markup.includes('data-shw-fullscreen'),

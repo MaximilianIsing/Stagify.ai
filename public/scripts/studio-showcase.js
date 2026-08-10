@@ -514,7 +514,13 @@ function init() {
      hides .shw__tabs and stacks the panels as plain blocks — but the panels used to
      carry role="tabpanel" regardless, leaving five tabpanels whose owning tablist
      was display:none and therefore absent from the accessibility tree. Orphaned
-     tabpanels are worse than no ARIA at all; plain <article>s degrade correctly.
+     tabpanels are worse than no ARIA at all; plain <div>s degrade correctly.
+
+     The panels are <div>s and not <article>s for the same reason from the other end:
+     `tabpanel` is not an allowed role on <article>, whose implicit `article` role only
+     permits document/feed/main/region/none/presentation/application. Lighthouse reported
+     that pairing as a malformed accessibility tree. A <div> carries no implicit role, so
+     the role applied here is legal.
 
      aria-labelledby deliberately STAYS in the markup: it is the declared pairing
      between tab i and panel i, and test/frontend/studio-showcase.test.js reads it
