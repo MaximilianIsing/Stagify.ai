@@ -11,6 +11,17 @@
         .hero-content .catchphrase {
           display: none !important;
         }
+        /* Extra breathing room above the mobile hero. MOVED HERE FROM auth.css,
+           where it was `body.page-home .hero`. index.html is the only page with
+           .page-home AND the only page that loads auth.css lazily
+           (media="print" data-lazy-css), so that rule applied to exactly one page
+           and always arrived late: the hero painted at 16px of top padding and
+           then jumped to 46px when index-lazy-css.js swapped the sheet in. It only
+           ever affected the homepage, so it belongs in the homepage's own
+           render-blocking stylesheet. Keep hero layout out of auth.css. */
+        body.page-home .hero {
+          padding-top: 46px;
+        }
       }
       
       /* Make upload button 20% larger (growing down and right only) - Desktop only */

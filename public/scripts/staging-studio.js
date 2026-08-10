@@ -48,45 +48,124 @@
     function setPos(p) {
       pos = Math.max(0, Math.min(100, p));
       ba.style.setProperty("--pos", pos + "%");
-      handle.setAttribute("aria-valuenow", String(Math.round(pos)));
+      const v = Math.round(pos);
+      handle.setAttribute("aria-valuenow", String(v));
+      // Without this the value is announced as a bare "50". Deliberately "50%"
+      // and not "50% staged": the widget is rendered in 11 languages and a screen
+      // reader speaks "%" in the user's own language, so this adds the unit without
+      // adding an English string that would need a key in every pack.
+      handle.setAttribute("aria-valuetext", v + "%");
     }
     setPos(pos);
 
-    let dragging = false;
+    /* ---- drag ----
+       Pointer Events, NOT mouse+touch, and deliberately without any
+       preventDefault() on the touch path.
+
+       The old version bound `touchstart` with {passive:false} and called
+       e.preventDefault() unconditionally, which cancelled the browser's scroll
+       gesture for ANY touch starting on .ba — including a straight vertical swipe.
+       .ba is full-width at aspect-ratio 3/2, so on a phone it covers most of the
+       screen, and there are two of these widgets: the page simply would not scroll
+       under your thumb. It also registered a non-passive `touchmove` on WINDOW,
+       which made every scroll on the site wait for this handler.
+
+       `touch-action: pan-y` (home.css) is what does the work now: the browser
+       keeps vertical panning for itself and hands us horizontal movement, so there
+       is nothing to preventDefault. When it decides the gesture is a vertical pan
+       it fires pointercancel, which ends the drag. The 12px axis lock mirrors
+       studio-showcase.js's wireDrag so both widgets feel the same.
+
+       Pointer capture replaces the old window-level move/up listeners: moves
+       outside the element still arrive, and they stop when the gesture does. */
+    const AXIS_LOCK_PX = 12;
+    let dragId = /** @type {number|null} */ (null);
+    let startX = 0;
+    let startY = 0;
+    let axis = /** @type {'x'|'y'|null} */ (null);
+
     function pct(clientX) {
       const r = ba.getBoundingClientRect();
       return ((clientX - r.left) / r.width) * 100;
     }
-    function start(e) {
-      dragging = true;
+
+    function beginDrag() {
+      axis = "x";
       ba.classList.add("is-dragging");
-      handle.focus();
-      moveTo(e);
-      e.preventDefault();
+      // preventScroll: the handle sits mid-widget, and focusing it without this
+      // yanks the page on touch — the exact jump this rewrite exists to stop.
+      handle.focus({ preventScroll: true });
     }
-    function moveTo(e) {
-      if (!dragging) return;
-      const x = e.touches ? e.touches[0].clientX : e.clientX;
-      setPos(pct(x));
-    }
-    function end() {
-      dragging = false;
+
+    function endDrag() {
+      if (dragId !== null && ba.hasPointerCapture && ba.hasPointerCapture(dragId)) {
+        ba.releasePointerCapture(dragId);
+      }
+      dragId = null;
+      axis = null;
       ba.classList.remove("is-dragging");
     }
-    ba.addEventListener("mousedown", start);
-    window.addEventListener("mousemove", moveTo);
-    window.addEventListener("mouseup", end);
-    ba.addEventListener("touchstart", start, { passive: false });
-    window.addEventListener("touchmove", moveTo, { passive: false });
-    window.addEventListener("touchend", end);
-    handle.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") {
-        setPos(pos - 4);
+
+    ba.addEventListener("pointerdown", (e) => {
+      dragId = e.pointerId;
+      startX = e.clientX;
+      startY = e.clientY;
+      axis = null;
+      if (e.pointerType === "mouse") {
+        // A mouse has no scroll gesture to protect, so keep the old feel: jump to
+        // the click position immediately. preventDefault stops the image drag-ghost.
         e.preventDefault();
-      } else if (e.key === "ArrowRight") {
-        setPos(pos + 4);
-        e.preventDefault();
+        beginDrag();
+        setPos(pct(e.clientX));
       }
+      // Guarded: capturing a pointer that the browser has already released throws
+      // NotFoundError, and losing the capture is not a reason to lose the drag.
+      try {
+        if (ba.setPointerCapture) ba.setPointerCapture(e.pointerId);
+      } catch {
+        /* capture is an optimisation here, not a requirement */
+      }
+    });
+
+    ba.addEventListener("pointermove", (e) => {
+      if (dragId === null || e.pointerId !== dragId) return;
+      if (axis === null) {
+        const dx = Math.abs(e.clientX - startX);
+        const dy = Math.abs(e.clientY - startY);
+        if (dx + dy <= AXIS_LOCK_PX) return;
+        if (dy > dx) {
+          // Vertical intent: let the page scroll and stay out of the way.
+          endDrag();
+          return;
+        }
+        beginDrag();
+      }
+      if (axis !== "x") return;
+      setPos(pct(e.clientX));
+    });
+
+    ba.addEventListener("pointerup", endDrag);
+    ba.addEventListener("pointercancel", endDrag);
+    /* The full WAI-ARIA slider key set, not just Left/Right. Up/Down are required
+       by the pattern and are what a screen-reader user reaches for first; Home/End
+       jump to the pure "before" and pure "after" frames, which is the single most
+       useful thing this control can do and was previously 25 keypresses away. */
+    const KEY_STEPS = {
+      ArrowLeft: -4,
+      ArrowDown: -4,
+      ArrowRight: 4,
+      ArrowUp: 4,
+      PageDown: -20,
+      PageUp: 20,
+    };
+    handle.addEventListener("keydown", (e) => {
+      let next;
+      if (e.key in KEY_STEPS) next = pos + KEY_STEPS[e.key];
+      else if (e.key === "Home") next = 0;
+      else if (e.key === "End") next = 100;
+      else return;
+      setPos(next);
+      e.preventDefault();
     });
 
     /* ---- one-time auto-sweep hint when scrolled into view ---- */
@@ -105,7 +184,9 @@
         return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
       }
       function frame(now) {
-        if (dragging) {
+        // Any live pointer on the widget wins over the hint — including a touch
+        // that has not locked to an axis yet, so the sweep never fights a thumb.
+        if (dragId !== null) {
           setPos(startPos);
           return;
         }
@@ -198,7 +279,14 @@
       exBtns.forEach((btn, bi) => {
         const on = bi === i;
         btn.classList.toggle("is-active", on);
-        btn.setAttribute("aria-selected", on ? "true" : "false");
+        // aria-pressed, not aria-selected. These used to be role="tab" inside a
+        // role="tablist" — but there is no tabpanel anywhere on the page for them
+        // to control, no aria-controls, and no roving tabindex or arrow keys, so a
+        // screen reader announced "tab, selected, 1 of 3" for a control that owns
+        // no panel. They are three toggle buttons that swap one image, which is
+        // exactly what aria-pressed describes — and it matches the nar-legend and
+        // whyus-row buttons elsewhere on this page.
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
       });
     }
     exBtns.forEach((btn, i) => btn.addEventListener("click", () => show(i)));

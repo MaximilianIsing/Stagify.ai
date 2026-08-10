@@ -98,30 +98,58 @@
   width:100%;
   justify-content:center
 }
+/* The dots are 8px of paint inside a 32x24 button, NOT an 8x8 target.
+   Previously .carousel-indicator WAS the 8x8 box: seven of them shared a 150px row
+   with 32px of padding, i.e. 86px of content, which on mobile narrowed to 72px and
+   left 8px targets with 2.67px between them.
+   Geometry chosen so the dots do not move: the old row was margin-top:8 + 8px tall,
+   putting dot centres 12px down; the new row is margin-top:0 + 24px tall, also 12px.
+   So this costs 8px of block height and shifts nothing.
+   24px is the WCAG 2.5.8 (AA) floor. 44px (AAA) is deliberately NOT used here —
+   7 x 44 = 308px would nearly span the 342px mobile carousel and would visibly
+   redesign the hero. Horizontal pitch is 32px, so targets never overlap. */
 .carousel-indicators {
-  margin-top:8px;
+  margin-top:0;
   display:flex;
-  width:150px;
-  justify-content:space-between;
-  padding:0 32px
+  justify-content:center
 }
 .carousel-indicator {
+  appearance:none;
+  -webkit-appearance:none;
+  background:none;
+  border:0;
+  padding:0;
+  margin:0;
+  width:32px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  cursor:pointer
+}
+.carousel-indicator::before {
+  content:"";
   height:8px;
   width:8px;
   border-radius:50%;
-  cursor:pointer;
   transition:.3s
 }
-.carousel-indicator.active {
+.carousel-indicator.active::before {
   background-color:var(--primary);
   transform:scale(1.2)
 }
-.carousel-indicator.inactive {
+.carousel-indicator.inactive::before {
   background-color:rgba(255,255,255,.4)
 }
-.carousel-indicator:hover {
+.carousel-indicator:hover::before {
   background-color:var(--primary-light);
   transform:scale(1.1)
+}
+/* They are focusable now, so they need a ring — and it goes on the button box, not
+   the 8px dot, or it would be a 2px halo nobody can see. */
+.carousel-indicator:focus-visible {
+  outline:2px solid var(--primary);
+  outline-offset:-2px;
+  border-radius:6px
 }
 .carousel-note {
   font-size:12px;
@@ -149,10 +177,10 @@
   .carousel-item-description {
     font-size:13px
   }
-  .carousel-indicators {
-    width:120px;
-    padding:0 24px
-  }
+  /* No width/padding override here any more. This used to clamp the row to 120px
+     with 24px of padding — 72px of content for 7 dots, which is what made the
+     mobile targets 8px wide with 2.67px gaps. The row is now intrinsically sized
+     (7 x 32px = 224px) and centred, which fits the 342px mobile carousel. */
   .carousel-note {
     margin-bottom:24px
   }

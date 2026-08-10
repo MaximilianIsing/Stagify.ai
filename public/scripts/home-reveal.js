@@ -14,6 +14,15 @@
       .forEach((el) => el.classList.add("is-visible"));
   }
 
+  /* Stand down the CSS reveal-failsafe (see the .reveal block in home.css).
+     Call this ONLY once the elements are genuinely going to be revealed — after
+     showAll(), or after the observer is attached — never merely on script load.
+     Arming early would cancel the safety net and then leave the page blank if the
+     work below it threw. */
+  function arm() {
+    document.documentElement.classList.add("reveal-armed");
+  }
+
   // Decode section images ahead of time so they're ready before they scroll in.
   function warmImages() {
     document
@@ -41,6 +50,7 @@
 
     if (reduceMotion || !("IntersectionObserver" in window)) {
       showAll();
+      arm();
       return;
     }
 
@@ -167,6 +177,7 @@
     );
 
     els.forEach((el) => observer.observe(el));
+    arm();
   }
 
   if (document.readyState === "loading") {

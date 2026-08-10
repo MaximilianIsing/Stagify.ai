@@ -22,6 +22,11 @@ class Carousel {
     };
     this.currentIndex = 0;
     this.isHovered = false;
+    // Keyboard equivalent of isHovered. Pause-on-hover was the only way to stop
+    // the autoplay, which is no mechanism at all for anyone not using a mouse —
+    // and tabbing onto a dot while the slides keep moving under you is worse than
+    // useless. See the focusin/focusout pair in setupEventListeners().
+    this.isFocusWithin = false;
     this.isResetting = false;
     this.autoplayTimer = null;
     this.dragStartX = 0;
@@ -106,7 +111,16 @@ class Carousel {
         `;
   }
 
-  /** The dot row. Same reasoning as slideMarkup(): one copy, used by both paths. */
+  /** The dot row. Same reasoning as slideMarkup(): one copy, used by both paths.
+   *
+   *  These are real <button>s. They used to be <div>s with a click listener and
+   *  nothing else — no role, no tabindex, no name — so the only way to jump to a
+   *  specific style was a mouse, and a screen reader saw seven empty boxes.
+   *
+   *  The label reuses the slide's OWN existing i18n key (`carouselItems.<key>`,
+   *  the same one the visible title binds to), so the dots are translated in all
+   *  11 packs without inventing a single new string. `aria-current` marks the
+   *  active one — see updateIndicators(). */
   indicatorsMarkup() {
     return `
       <div class="carousel-indicators-container">
@@ -114,7 +128,7 @@ class Carousel {
           ${this.options.items
             .map(
               (item, index) => `
-            <div class="carousel-indicator ${index === 0 ? 'active' : 'inactive'}" data-index="${index}"></div>
+            <button type="button" class="carousel-indicator ${index === 0 ? 'active' : 'inactive'}" data-index="${index}" data-lang-attr="carouselItems.${item.key}|aria-label" aria-label="${item.title}"${index === 0 ? ' aria-current="true"' : ''}></button>
           `
             )
             .join('')}
@@ -218,6 +232,18 @@ class Carousel {
         this.startAutoplay();
       });
     }
+
+    // Keyboard focus pauses, exactly as hover does. focusin/focusout bubble, so
+    // this covers the dots and the prev/next buttons without wiring each one.
+    this.container.addEventListener('focusin', () => {
+      this.isFocusWithin = true;
+      this.stopAutoplay();
+    });
+    this.container.addEventListener('focusout', (e) => {
+      if (this.container.contains(/** @type {Node} */ (e.relatedTarget))) return;
+      this.isFocusWithin = false;
+      this.startAutoplay();
+    });
 
     this.indicators.forEach((indicator, index) => {
       indicator.addEventListener('click', () => {
@@ -330,13 +356,31 @@ class Carousel {
 
   updateIndicators() {
     this.indicators.forEach((indicator, index) => {
-      indicator.classList.toggle('active', index === this.currentIndex);
-      indicator.classList.toggle('inactive', index !== this.currentIndex);
+      const isCurrent = index === this.currentIndex;
+      indicator.classList.toggle('active', isCurrent);
+      indicator.classList.toggle('inactive', !isCurrent);
+      // The class pair is purely visual; aria-current is the only part a screen
+      // reader gets. Removing rather than setting "false" keeps it out of the
+      // accessibility tree entirely for the six inactive dots.
+      if (isCurrent) indicator.setAttribute('aria-current', 'true');
+      else indicator.removeAttribute('aria-current');
     });
   }
 
+  /* Autoplay respects prefers-reduced-motion. This is the largest motion source on
+     the page — a full-width hero image swapping every 3s — and it was the only
+     animation on the homepage with no reduced-motion check at all (carousel.css
+     has no such block either). Read live rather than cached at construction so a
+     mid-session OS change is honoured on the next start/stop. */
+  prefersReducedMotion() {
+    return !!(
+      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  }
+
   startAutoplay() {
-    if (this.options.autoplay && !this.isHovered) {
+    if (this.prefersReducedMotion()) return;
+    if (this.options.autoplay && !this.isHovered && !this.isFocusWithin) {
       this.stopAutoplay();
       this.autoplayTimer = setInterval(() => {
         this.nextSlide();

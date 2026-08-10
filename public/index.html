@@ -117,6 +117,21 @@
       <link rel="stylesheet" href="styles/star-border.css">
       <link rel="stylesheet" href="styles/home-text-animate.css">
       <link rel="stylesheet" href="styles/demo-player.css">
+      <!-- home.css hides every .reveal block until home-reveal.js un-hides it, so
+           without this the whole page below the hero is invisible with JS off.
+           home.css also carries an @media (scripting: none) copy of these rules,
+           which is the primary fix; this block is the fallback for browsers that
+           do not support that media feature yet. Keep the two in step. -->
+      <style>
+        .reveal,
+        .reveal.exit-up,
+        .reveal.exit-down {
+          opacity: 1 !important;
+          transform: none !important;
+          transition: none !important;
+          animation: none !important;
+        }
+      </style>
     </noscript>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <!-- carousel.js is FIRST on purpose. It builds the hero carousel, whose <img> is the
@@ -415,34 +430,34 @@
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/brown-harris-stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>              <!-- Duplicate set for seamless loop -->
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/rock-solid.webp" alt="Rock Solid logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/tahari-capital.webp" alt="Tahari Capital logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/267-fifth-avenue.webp" alt="267 Fifth Avenue logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/mid-town-loft.webp" alt="Mid Town Loft logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/thurman-services.webp" alt="Thurman Services logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/Compass.webp" alt="Compass real estate logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/ArmoxLogo.webp" alt="Armox logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/Empire.webp" alt="Empire Office logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>
-              <div class="sponsor-item">
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/brown-harris-stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>            </div>
           </div>
@@ -456,7 +471,7 @@
           <p class="home-section__sub" data-lang="home.studio.subtitle">The same listing photo, before and after Stagify. No movers, no rentals, no waiting.</p>
         </div>
         <div class="studio-shell">
-          <div class="ba reveal reveal--left" data-lang-attr="home.studio.comparisonAria|aria-label" aria-label="Before and after staging comparison">
+          <div class="ba reveal reveal--left" role="group" data-lang-attr="home.studio.comparisonAria|aria-label" aria-label="Before and after staging comparison">
             <!-- These alts describe the DEFAULT pair (Before2/After2), which is the
                  Bedroom example — EXAMPLES[0] in staging-studio.js, matching the
                  "Bedroom" tab below. show() swaps only src, never alt, so the alt goes
@@ -485,17 +500,31 @@
               <li data-lang="home.studio.points.restage">Re-stage in any style, as often as you like</li>
               <li data-lang="home.studio.points.rights">Every image is yours, with full copyright</li>
             </ul>
-            <div class="studio-examples" role="tablist" data-lang-attr="home.studio.exampleRoomsAria|aria-label" aria-label="Example rooms">
-              <button type="button" class="studio-ex is-active" role="tab" aria-selected="true" data-ex="0" data-lang="home.studio.examples.bedroom">Bedroom</button>
-              <button type="button" class="studio-ex" role="tab" aria-selected="false" data-ex="1" data-lang="home.studio.examples.living">Living Room</button>
-              <button type="button" class="studio-ex" role="tab" aria-selected="false" data-ex="2" data-lang="home.studio.examples.dining">Dining Room</button>
+            <div class="studio-examples" role="group" data-lang-attr="home.studio.exampleRoomsAria|aria-label" aria-label="Example rooms">
+              <button type="button" class="studio-ex is-active" aria-pressed="true" data-ex="0" data-lang="home.studio.examples.bedroom">Bedroom</button>
+              <button type="button" class="studio-ex" aria-pressed="false" data-ex="1" data-lang="home.studio.examples.living">Living Room</button>
+              <button type="button" class="studio-ex" aria-pressed="false" data-ex="2" data-lang="home.studio.examples.dining">Dining Room</button>
             </div>
           </aside>
         </div>
       </section>
 
       <!-- ===================== IMAGE + TEXT INFO ROWS ===================== -->
-      <section class="home-section home-info" id="learn" aria-label="How virtual staging works">
+      <!-- This section had NO heading. Its name existed only as aria-label — never
+           rendered, and the one section label on the page with no data-lang, so it
+           was English on all 11 locales. The consequence was structural: the four
+           <h3>s below hung off the PREVIOUS section's <h2> ("Drag to see what
+           staging does"), so anyone navigating by heading got four orphans filed
+           under the wrong parent.
+           The strings below are not new — home.info.title/subtitle were already
+           authored and fully translated in all 11 packs and simply never rendered,
+           so this adds no i18n work. Now labelled the same way as every other
+           section, via aria-labelledby. -->
+      <section class="home-section home-info" id="learn" aria-labelledby="learn-title">
+        <div class="home-section__head home-section__head--wide reveal">
+          <h2 class="home-section__title" id="learn-title" data-tx="rise" data-lang="home.info.title">What virtual staging is, and why it sells</h2>
+          <p class="home-section__sub" data-lang="home.info.subtitle">A quick, honest rundown of how it works and who it's for. No jargon.</p>
+        </div>
         <div class="info-rows">
           <div class="info-row">
             <figure class="info-row__media reveal reveal--left">
@@ -567,49 +596,68 @@
         </div>
       </section>
 
-      <!-- ===================== TESTIMONIALS ===================== -->
-      <section class="home-section home-testimonials" id="testimonials" aria-labelledby="testimonials-title">
-        <div class="home-section__head reveal">
-          <h2 class="home-section__title" id="testimonials-title" data-tx="rise" data-lang="home.testimonials.title">What agents are saying</h2>
-          <p class="home-section__sub" data-lang="home.testimonials.subtitle">Straight from brokers who made the switch.</p>
+      <!-- ===================== DON'T FALL BEHIND (NAR) ===================== -->
+      <section class="home-section home-nar" id="ai-shift" aria-labelledby="nar-title">
+        <!-- "Agents", not "Real estate": every figure in the card below is from
+             NAR's survey of agents, not an industry-wide measure. -->
+        <div class="home-section__head home-section__head--wide reveal">
+          <h2 class="home-section__title" id="nar-title" data-tx="rise" data-lang="home.nar.title">Don't fall behind</h2>
+          <p class="home-section__sub" data-lang="home.nar.subtitle">Agents are adopting AI fast, and clients approve. Staging is the easiest place to start.</p>
         </div>
-        <div class="tw-grid">
-          <figure class="tw-card reveal reveal--left">
-            <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <!-- Every visible string here is unchanged; scripts/home-figures.js adds the
+             entrance wipe and the legend highlight through the data-* hooks only.
+
+             The segment widths moved from `width:` to `--seg-w` so the CSS owns the
+             final value and JS only toggles a class — with no JS, or under reduced
+             motion, the bar is already fully drawn.
+
+             THE PERCENTAGES ARE PLAIN TEXT AND STAY THAT WAY. They were briefly
+             animated (counted up from 0%) and it read as nonsense — a survey share is
+             a measured fact, not a running total, so ramping it implies a process that
+             never happened. Do not re-add a counter here; #compare's calculator ramps
+             because its numbers really are a total the visitor is building.
+
+             The same four numbers appear in four places — the bar widths, the legend,
+             the note, and the bar's aria-label (which is all a screen reader gets,
+             since the bar is role="img"). test/frontend/home-figures.test.js fails if
+             they drift apart. -->
+        <div class="nar-card reveal" data-nar-chart>
+          <div class="nar-usage">
+            <div class="nar-usage__label" data-lang="home.nar.usageLabel">How often agents use AI tools</div>
+            <div class="nar-bar" role="img" data-lang-attr="home.nar.usageAria|aria-label" aria-label="AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet">
+              <span class="nar-seg--daily" data-nar-seg="daily" style="--seg-w:20%"></span>
+              <span class="nar-seg--weekly" data-nar-seg="weekly" style="--seg-w:22%"></span>
+              <span class="nar-seg--monthly" data-nar-seg="monthly" style="--seg-w:27%"></span>
+              <span class="nar-seg--none" data-nar-seg="none" style="--seg-w:32%"></span>
             </div>
-            <blockquote class="tw-text" data-lang="home.testimonials.items.justin.quote">When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings, and the price is amazing!</blockquote>
-            <figcaption class="tw-by">
-              <span class="tw-by__meta">
-                <span class="tw-name" data-lang="home.testimonials.items.justin.author">Justin S. (Broker)</span>
-                <span class="tw-org" data-lang="home.testimonials.items.justin.role">Tahari Realty</span>
-                <span class="tw-loc" data-lang="home.testimonials.items.justin.location">Manhattan, NYC</span>
-              </span>
-              <img class="tw-logo" src="media-webp/testimonials/tahari-realty-mini.webp" alt="Tahari Realty logo" width="72" height="72" decoding="async">
-            </figcaption>
-          </figure>
-          <figure class="tw-card reveal reveal--right" style="--reveal-delay:90ms">
-            <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <!-- Real buttons, not tabbable <li>s: click PINS the highlight, which is the
+                 only affordance a touch visitor gets (no hover on a phone). The bar keeps
+                 role="img" and its translated aria-label, so this is decoration only. -->
+            <ul class="nar-legend">
+              <li><button type="button" class="nar-legend__btn" data-nar-key="daily" aria-pressed="false"><span class="swatch nar-seg--daily"></span><span data-lang="home.nar.legend.daily">Daily</span>&nbsp;<span class="pct">20%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="weekly" aria-pressed="false"><span class="swatch nar-seg--weekly"></span><span data-lang="home.nar.legend.weekly">Weekly</span>&nbsp;<span class="pct">22%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="monthly" aria-pressed="false"><span class="swatch nar-seg--monthly"></span><span data-lang="home.nar.legend.monthly">A few times a month</span>&nbsp;<span class="pct">27%</span></button></li>
+              <li><button type="button" class="nar-legend__btn" data-nar-key="none" aria-pressed="false"><span class="swatch nar-seg--none"></span><span data-lang="home.nar.legend.none">Not yet</span>&nbsp;<span class="pct">32%</span></button></li>
+            </ul>
+            <p class="nar-usage__note"><strong>68%</strong> <span data-lang="home.nar.note">of agents already use AI in their business.</span></p>
+          </div>
+          <div class="nar-stats">
+            <div class="nar-stat">
+              <span class="nar-stat__num">82%</span>
+              <span class="nar-stat__txt" data-lang="home.nar.stat1">of agents say clients responded positively to technology in the buying and selling process</span>
             </div>
-            <blockquote class="tw-text" data-lang="home.testimonials.items.andy.quote">Stagify fits right into how I already work. I’ll upload a listing photo between showings and it’s staged before I’m back at my desk. My clients are always impressed by how polished the final photos look.</blockquote>
-            <figcaption class="tw-by">
-              <span class="tw-by__meta">
-                <span class="tw-name" data-lang="home.testimonials.items.andy.author">Andy E. (Broker)</span>
-                <span class="tw-org" data-lang="home.testimonials.items.andy.role">Centennial Properties</span>
-                <span class="tw-loc" data-lang="home.testimonials.items.andy.location">Manhattan, NYC</span>
-              </span>
-              <img class="tw-logo" src="media-webp/testimonials/centennial-mini.webp" alt="Centennial Properties logo" width="72" height="72" decoding="async">
-            </figcaption>
-          </figure>
+            <div class="nar-stat">
+              <span class="nar-stat__num">46%</span>
+              <span class="nar-stat__txt" data-lang="home.nar.stat2">already use AI to generate listing content</span>
+            </div>
+          </div>
+        </div>
+        <div class="cmp-source reveal">
+          <svg class="cmp-source__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
+          <p>
+            <span data-lang="home.nar.source">Figures from the National Association of Realtors' 2025 Technology Survey of real estate agents.</span>
+            <cite><a href="https://www.nar.realtor/press-releases/realtors-embrace-ai-digital-tools-to-enhance-client-service-nar-survey-finds" target="_blank" rel="noopener noreferrer" data-lang="home.nar.sourceCite">Source: National Association of Realtors, 2025 Technology Survey</a></cite>
+          </p>
         </div>
       </section>
 
@@ -662,7 +710,7 @@
                    "(Stagify+ Exclusive)" tag, unlike the three sibling panels: free
                    accounts stage too, and tagging this one would say otherwise. If a
                    free-plan recording is ever cut, `data-demo="free"` is the swap. -->
-              <article class="shw__panel" id="staging-studio-demo" role="tabpanel" aria-labelledby="shw-tab-0" data-shw-panel="0">
+              <article class="shw__panel" id="staging-studio-demo" aria-labelledby="shw-tab-0" data-shw-panel="0">
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="staging-title" data-lang="home.staging.title">Stage an empty room in seconds</h3>
@@ -699,7 +747,7 @@
                 </div>
               </article>
 
-              <article class="shw__panel" id="ai-designer-demo" role="tabpanel" aria-labelledby="shw-tab-1" data-shw-panel="1">
+              <article class="shw__panel" id="ai-designer-demo" aria-labelledby="shw-tab-1" data-shw-panel="1">
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="designer-title" data-lang="home.designer.title">Let an AI stage your space</h3>
@@ -735,7 +783,7 @@
                 </div>
               </article>
 
-              <article class="shw__panel" id="masking-studio-demo" role="tabpanel" aria-labelledby="shw-tab-2" data-shw-panel="2">
+              <article class="shw__panel" id="masking-studio-demo" aria-labelledby="shw-tab-2" data-shw-panel="2">
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="masking-title" data-lang="home.masking.title">Stage with exact precision</h3>
@@ -799,7 +847,7 @@
            way in; exterior-studio.html is marked `data-staging-preview`
            (scripts/staging-menu.js), so signed-out and free visitors reaching it
            from there land on the public explainer rather than a redirect. -->
-              <article class="shw__panel" id="exterior-studio-demo" role="tabpanel" aria-labelledby="shw-tab-3" data-shw-panel="3">
+              <article class="shw__panel" id="exterior-studio-demo" aria-labelledby="shw-tab-3" data-shw-panel="3">
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="exterior-title" data-lang="home.exterior.title">Fix the photo the listing opens with</h3>
@@ -809,7 +857,7 @@
 
         <div class="shw__split">
           <div class="shw__media">
-          <div class="ba" data-lang-attr="home.exterior.comparisonAria|aria-label" aria-label="Before and after exterior enhancement comparison">
+          <div class="ba" role="group" data-lang-attr="home.exterior.comparisonAria|aria-label" aria-label="Before and after exterior enhancement comparison">
             <!-- No width/height attrs, matching the staging comparison above: .ba is
                  aspect-ratio'd and .ba img is inset-0/height:100%, so the box does not
                  depend on the images having loaded and there is no CLS to trade away.
@@ -862,7 +910,7 @@
                    Exclusive)" tag. Keep it that way if the copy is ever rewritten; the three
                    sibling panels sitting either side of it make the omission easy to "fix"
                    by mistake. -->
-              <article class="shw__panel" id="gallery-showcase" role="tabpanel" aria-labelledby="shw-tab-4" data-shw-panel="4">
+              <article class="shw__panel" id="gallery-showcase" aria-labelledby="shw-tab-4" data-shw-panel="4">
                 <div class="shw__panel-inner">
                   <header class="shw__panel-head">
                     <h3 class="shw__panel-title" id="gallery-title" data-lang="home.gallery.title">Every room you stage is saved for you</h3>
@@ -984,62 +1032,49 @@
         </div>
       </section>
 
-      <!-- ========================= STAGIFY+ ========================= -->
-      <!-- Sits here ON PURPOSE, directly after the studio showcase (AI Designer,
-           Masking Studio, Exterior Studio — the three "(Stagify+ Exclusive)" panels —
-           plus the gallery) rather than after the compare table and the NAR figures
-           further down. Whoever the showcase just sold is one scroll from the price,
-           instead of two data-heavy sections away from it. Keep it adjacent to the
-           showcase if these get reordered again. -->
-      <section class="home-section home-plus" id="plans" aria-labelledby="plus-title">
-        <!-- Subtitle names the CHOICE (flat monthly vs per-generation), not the
-             features — the three features it used to list are the first three
-             bullets of the card immediately below it, and the feature framing
-             already has a home in stagifyPlus.hero.subtitle on the plus page. -->
-        <div class="home-section__head home-section__head--wide reveal">
-          <h2 class="home-section__title" id="plus-title" data-tx="shiny" data-lang="home.plus.title">Go further with Stagify+</h2>
-          <p class="home-section__sub" data-lang="home.plus.subtitle">Two ways to upgrade: a flat monthly plan, or usage-based billing for your team.</p>
+      <!-- ===================== TESTIMONIALS ===================== -->
+      <section class="home-section home-testimonials" id="testimonials" aria-labelledby="testimonials-title">
+        <div class="home-section__head reveal">
+          <h2 class="home-section__title" id="testimonials-title" data-tx="rise" data-lang="home.testimonials.title">What agents are saying</h2>
+          <p class="home-section__sub" data-lang="home.testimonials.subtitle">Straight from brokers who made the switch.</p>
         </div>
-        <div class="plus-grid">
-          <article class="plus-card plus-card--pro reveal reveal--left">
-            <div class="plus-card__top">
-              <img src="media-webp/logo/Pro64x64.webp" alt="" class="plus-card__logo" aria-hidden="true">
-              <span class="plus-card__name" data-lang="home.plus.pro.name">Stagify+</span>
-              <span class="plus-card__badge" data-lang="home.plus.pro.tag">For individuals</span>
+        <div class="tw-grid">
+          <figure class="tw-card reveal reveal--left">
+            <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
             </div>
-            <div class="plus-price"><span class="plus-price__num">$11.99</span><span class="plus-price__per" data-lang="home.plus.pro.per">/ month</span></div>
-            <!-- Ordered by what free does NOT have. "Unlimited staging generations" led
-                 this list, but free already gets 50 a day — so the first thing a
-                 prospective subscriber read was the benefit least likely to make them
-                 pay. It stays (it is a real difference), just not first. -->
-            <ul class="home-list">
-              <li data-lang="home.plus.pro.f6">Remove existing furniture from rooms</li>
-              <li data-lang="home.plus.pro.f5">AI Designer: agentic staging process</li>
-              <li data-lang="home.plus.pro.f4">Masking tool to edit any area</li>
-              <li data-lang="home.plus.pro.f2">Higher-quality image model</li>
-              <li data-lang="home.plus.pro.f3">Multiple variations per generation</li>
-              <li data-lang="home.plus.pro.f1">Unlimited staging generations</li>
-            </ul>
-            <a class="plus-cta" href="stagify-plus.html" data-lang="home.plus.pro.cta">View Stagify+</a>
-          </article>
-          <article class="plus-card plus-card--ent reveal reveal--right" style="--reveal-delay:90ms">
-            <div class="plus-card__top">
-              <span class="plus-card__enticon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v16"/><path d="M13 9h5a1 1 0 0 1 1 1v11"/><path d="M8 8h.01M8 12h.01M8 16h.01"/></svg>
+            <blockquote class="tw-text" data-lang="home.testimonials.items.justin.quote">When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings, and the price is amazing!</blockquote>
+            <figcaption class="tw-by">
+              <span class="tw-by__meta">
+                <span class="tw-name" data-lang="home.testimonials.items.justin.author">Justin S. (Broker)</span>
+                <span class="tw-org" data-lang="home.testimonials.items.justin.role">Tahari Realty</span>
+                <span class="tw-loc" data-lang="home.testimonials.items.justin.location">Manhattan, NYC</span>
               </span>
-              <span class="plus-card__name" data-lang="home.plus.ent.name">Enterprise</span>
-              <span class="plus-card__badge" data-lang="home.plus.ent.tag">For teams</span>
+              <img class="tw-logo" src="media-webp/testimonials/tahari-realty-mini.webp" alt="Tahari Realty logo" width="72" height="72" decoding="async">
+            </figcaption>
+          </figure>
+          <figure class="tw-card reveal reveal--right" style="--reveal-delay:90ms">
+            <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
             </div>
-            <div class="plus-price"><span class="plus-price__num">$0.15</span><span class="plus-price__per" data-lang="home.plus.ent.per">/ generation</span></div>
-            <p class="plus-card__desc" data-lang="home.plus.ent.desc">Give your whole team Stagify+ automatically and only pay for what they actually use.</p>
-            <ul class="home-list">
-              <li data-lang="home.plus.ent.f1">Everyone with your company email included</li>
-              <li data-lang="home.plus.ent.f2">Usage-based billing, no per-seat fees</li>
-              <li data-lang="home.plus.ent.f3">One invoice, billed monthly by usage</li>
-              <li data-lang="home.plus.ent.f4">Every Stagify+ feature included for the team</li>
-            </ul>
-            <a class="plus-cta plus-cta--ghost" href="enterprise.html" data-lang="home.plus.ent.cta">Explore Enterprise</a>
-          </article>
+            <blockquote class="tw-text" data-lang="home.testimonials.items.andy.quote">Stagify fits right into how I already work. I’ll upload a listing photo between showings and it’s staged before I’m back at my desk. My clients are always impressed by how polished the final photos look.</blockquote>
+            <figcaption class="tw-by">
+              <span class="tw-by__meta">
+                <span class="tw-name" data-lang="home.testimonials.items.andy.author">Andy E. (Broker)</span>
+                <span class="tw-org" data-lang="home.testimonials.items.andy.role">Centennial Properties</span>
+                <span class="tw-loc" data-lang="home.testimonials.items.andy.location">Manhattan, NYC</span>
+              </span>
+              <img class="tw-logo" src="media-webp/testimonials/centennial-mini.webp" alt="Centennial Properties logo" width="72" height="72" decoding="async">
+            </figcaption>
+          </figure>
         </div>
       </section>
 
@@ -1063,39 +1098,39 @@
             <span class="calc__eyebrow" data-lang="home.compare.eyebrow">Virtual vs. traditional</span>
             <label class="calc__question" for="calc-listings" data-lang="home.compare.calc.question">How many listings do you stage a year?</label>
             <div class="calc__sliderrow">
-              <input class="calc__range" type="range" id="calc-listings" data-calc-range min="5" max="100" step="1" value="24">
+              <input class="calc__range" type="range" id="calc-listings" data-calc-range min="1" max="20" step="1" value="5">
               <!-- Decorative: the range input already announces its own value against the
                    <label>, and a translated "{n} listings" here would need Russian
-                   few/many forms for 5 vs 21 vs 25. Bare numeral, hidden from AT. -->
-              <output class="calc__readout" for="calc-listings" data-calc-listings aria-hidden="true">24</output>
+                   one/few/many forms for 1 vs 2 vs 5. Bare numeral, hidden from AT. -->
+              <output class="calc__readout" for="calc-listings" data-calc-listings aria-hidden="true">5</output>
             </div>
-            <div class="calc__scale" aria-hidden="true"><span>5</span><span>100</span></div>
+            <div class="calc__scale" aria-hidden="true"><span>1</span><span>20</span></div>
           </div>
 
           <!-- aria-live is added by home-figures.js AFTER the intro count-up finishes,
                never authored here: a live region during a 60-frame ramp is a torrent. -->
           <div class="calc__cols" data-calc-results>
             <div class="calc__col calc__col--trad">
-              <div class="calc__colhead" data-lang="home.compare.colTraditional">Traditional staging</div>
+              <h3 class="calc__colhead" data-lang="home.compare.colTraditional">Traditional staging</h3>
               <div class="calc__metric">
                 <span class="calc__cap" data-lang="home.compare.rows.cost.aspect">Cost</span>
                 <!-- No data-lang on the computed nodes — language-loader.js would
                      overwrite whatever the calculator had just written. -->
-                <span class="calc__val" data-calc-cost>$48,000</span>
+                <span class="calc__val" data-calc-cost>$10,000</span>
                 <span class="calc__sub" data-lang="home.compare.rows.cost.trad">$2,000–$5,000+ per home, often billed monthly until it sells</span>
               </div>
               <div class="calc__metric">
                 <span class="calc__cap" data-lang="home.compare.rows.time.aspect">Turnaround</span>
-                <span class="calc__val calc__val--sm" data-calc-weeks>48 weeks</span>
+                <span class="calc__val calc__val--sm" data-calc-weeks>10 weeks</span>
                 <span class="calc__sub" data-lang="home.compare.rows.time.trad">1–3 weeks to schedule, deliver, and install</span>
               </div>
             </div>
 
             <div class="calc__col calc__col--stagify">
-              <div class="calc__colhead calc__colhead--brand">
+              <h3 class="calc__colhead calc__colhead--brand">
                 <img class="calc__brandmark" src="media-webp/logo/Logo32x32.webp" alt="" aria-hidden="true" width="24" height="24">
                 <span data-lang="home.compare.colStagify">Stagify.ai</span>
-              </div>
+              </h3>
               <div class="calc__metric">
                 <span class="calc__cap" data-lang="home.compare.rows.cost.aspect">Cost</span>
                 <span class="calc__val calc__val--free" data-calc-zero>$0</span>
@@ -1112,78 +1147,6 @@
           </div>
 
           <p class="calc__note" data-lang="home.compare.calc.note">Based on $2,000 per home, the low end of the usual range, and two weeks from booking to installed.</p>
-        </div>
-        <div class="cmp-source reveal">
-          <svg class="cmp-source__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
-          <p>
-            <span data-lang="home.compare.source">According to the National Association of Realtors' Profile of Home Staging, most buyers' agents say staging makes it easier for buyers to picture a property as their future home.</span>
-            <cite><a href="https://www.nar.realtor/research-and-statistics/research-reports/profile-of-home-staging" target="_blank" rel="noopener noreferrer" data-lang="home.compare.sourceCite">Source: National Association of Realtors, Profile of Home Staging</a></cite>
-          </p>
-        </div>
-      </section>
-
-      <!-- ===================== DON'T FALL BEHIND (NAR) ===================== -->
-      <section class="home-section home-nar" id="ai-shift" aria-labelledby="nar-title">
-        <!-- "Agents", not "Real estate": every figure in the card below is from
-             NAR's survey of agents, not an industry-wide measure. -->
-        <div class="home-section__head home-section__head--wide reveal">
-          <h2 class="home-section__title" id="nar-title" data-tx="rise" data-lang="home.nar.title">Don't fall behind</h2>
-          <p class="home-section__sub" data-lang="home.nar.subtitle">Agents are adopting AI fast, and clients approve. Staging is the easiest place to start.</p>
-        </div>
-        <!-- Every visible string here is unchanged; scripts/home-figures.js adds the
-             entrance wipe and the legend highlight through the data-* hooks only.
-
-             The segment widths moved from `width:` to `--seg-w` so the CSS owns the
-             final value and JS only toggles a class — with no JS, or under reduced
-             motion, the bar is already fully drawn.
-
-             THE PERCENTAGES ARE PLAIN TEXT AND STAY THAT WAY. They were briefly
-             animated (counted up from 0%) and it read as nonsense — a survey share is
-             a measured fact, not a running total, so ramping it implies a process that
-             never happened. Do not re-add a counter here; #compare's calculator ramps
-             because its numbers really are a total the visitor is building.
-
-             The same four numbers appear in four places — the bar widths, the legend,
-             the note, and the bar's aria-label (which is all a screen reader gets,
-             since the bar is role="img"). test/frontend/home-figures.test.js fails if
-             they drift apart. -->
-        <div class="nar-card reveal" data-nar-chart>
-          <div class="nar-usage">
-            <div class="nar-usage__label" data-lang="home.nar.usageLabel">How often agents use AI tools</div>
-            <div class="nar-bar" role="img" data-lang-attr="home.nar.usageAria|aria-label" aria-label="AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet">
-              <span class="nar-seg--daily" data-nar-seg="daily" style="--seg-w:20%"></span>
-              <span class="nar-seg--weekly" data-nar-seg="weekly" style="--seg-w:22%"></span>
-              <span class="nar-seg--monthly" data-nar-seg="monthly" style="--seg-w:27%"></span>
-              <span class="nar-seg--none" data-nar-seg="none" style="--seg-w:32%"></span>
-            </div>
-            <!-- Real buttons, not tabbable <li>s: click PINS the highlight, which is the
-                 only affordance a touch visitor gets (no hover on a phone). The bar keeps
-                 role="img" and its translated aria-label, so this is decoration only. -->
-            <ul class="nar-legend">
-              <li><button type="button" class="nar-legend__btn" data-nar-key="daily" aria-pressed="false"><span class="swatch nar-seg--daily"></span><span data-lang="home.nar.legend.daily">Daily</span>&nbsp;<span class="pct">20%</span></button></li>
-              <li><button type="button" class="nar-legend__btn" data-nar-key="weekly" aria-pressed="false"><span class="swatch nar-seg--weekly"></span><span data-lang="home.nar.legend.weekly">Weekly</span>&nbsp;<span class="pct">22%</span></button></li>
-              <li><button type="button" class="nar-legend__btn" data-nar-key="monthly" aria-pressed="false"><span class="swatch nar-seg--monthly"></span><span data-lang="home.nar.legend.monthly">A few times a month</span>&nbsp;<span class="pct">27%</span></button></li>
-              <li><button type="button" class="nar-legend__btn" data-nar-key="none" aria-pressed="false"><span class="swatch nar-seg--none"></span><span data-lang="home.nar.legend.none">Not yet</span>&nbsp;<span class="pct">32%</span></button></li>
-            </ul>
-            <p class="nar-usage__note"><strong>68%</strong> <span data-lang="home.nar.note">of agents already use AI in their business.</span></p>
-          </div>
-          <div class="nar-stats">
-            <div class="nar-stat">
-              <span class="nar-stat__num">82%</span>
-              <span class="nar-stat__txt" data-lang="home.nar.stat1">of agents say clients responded positively to technology in the buying and selling process</span>
-            </div>
-            <div class="nar-stat">
-              <span class="nar-stat__num">46%</span>
-              <span class="nar-stat__txt" data-lang="home.nar.stat2">already use AI to generate listing content</span>
-            </div>
-          </div>
-        </div>
-        <div class="cmp-source reveal">
-          <svg class="cmp-source__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
-          <p>
-            <span data-lang="home.nar.source">Figures from the National Association of Realtors' 2025 Technology Survey of real estate agents.</span>
-            <cite><a href="https://www.nar.realtor/press-releases/realtors-embrace-ai-digital-tools-to-enhance-client-service-nar-survey-finds" target="_blank" rel="noopener noreferrer" data-lang="home.nar.sourceCite">Source: National Association of Realtors, 2025 Technology Survey</a></cite>
-          </p>
         </div>
       </section>
 
@@ -1206,10 +1169,10 @@
              `data-lang` on an inner span. -->
         <div class="whyus-grid">
           <article class="whyus-card whyus-card--us reveal reveal--left">
-            <div class="whyus-card__head">
+            <h3 class="whyus-card__head">
               <img src="media-webp/logo/Logo32x32.webp" alt="" class="whyus-card__logo" aria-hidden="true">
               <span class="whyus-brand"><span class="brand-strong">Stagify</span><span class="brand-light">.ai</span></span>
-            </div>
+            </h3>
             <ul class="whyus-list whyus-list--yes">
               <li data-vs="speed"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.instantResults"><strong>Instant results</strong>: ~8 seconds</span></button></li>
               <li data-vs="effort"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.oneClickStaging"><strong>One‑click staging</strong>: No hassle</span></button></li>
@@ -1228,9 +1191,9 @@
             </ul>
           </article>
           <article class="whyus-card whyus-card--them reveal reveal--right" style="--reveal-delay:90ms">
-            <div class="whyus-card__head whyus-card__head--them">
+            <h3 class="whyus-card__head whyus-card__head--them">
               <span data-lang="whyUs.others.title">Others</span>
-            </div>
+            </h3>
             <ul class="whyus-list whyus-list--no">
               <li data-vs="speed"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.slowResults"><strong>Slow results: </strong>Days of waiting</span></button></li>
               <li data-vs="effort"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.longProcess"><strong>Long Process: </strong>Tedious back‑and‑forth</span></button></li>
@@ -1244,28 +1207,71 @@
         </div>
       </section>
 
-      <!-- ========================= INSTAGRAM ========================= -->
-      <section class="home-section home-ig" id="instagram" aria-labelledby="ig-title">
+      <!-- ========================= STAGIFY+ ========================= -->
+      <!-- Sits here ON PURPOSE: the price is the LAST thing the argument reaches,
+           not the first. #compare runs the calculator ($10,000 of traditional
+           staging for 5 listings vs $0) and #why draws the contrast with other
+           tools; only then does $11.99/mo appear, already anchored against a
+           $2,000–5,000-per-home number. #faq follows immediately to take the
+           objections that a price raises.
+
+           This REVERSES an earlier decision. #plans used to sit directly after the
+           studio showcase, on the reasoning that whoever the demo just sold should
+           be one scroll from the price rather than two data-heavy sections away
+           from it. That is a real argument and it lost deliberately, not by
+           accident: quoting a figure before establishing what it is measured
+           against wastes the strongest number on the page. If this gets reordered
+           again, move #compare with it — the value anchor immediately before the
+           price is the point, and #plans on its own is worth less than the pair. -->
+      <section class="home-section home-plus" id="plans" aria-labelledby="plus-title">
+        <!-- Subtitle names the CHOICE (flat monthly vs per-generation), not the
+             features — the three features it used to list are the first three
+             bullets of the card immediately below it, and the feature framing
+             already has a home in stagifyPlus.hero.subtitle on the plus page. -->
         <div class="home-section__head home-section__head--wide reveal">
-          <h2 class="home-section__title" id="ig-title" data-tx="fade" data-lang="home.instagram.title">See it in action on Instagram</h2>
-          <p class="home-section__sub" data-lang="home.instagram.subtitle">Real staging transformations, quick tips, and behind-the-scenes from the Stagify team.</p>
+          <h2 class="home-section__title" id="plus-title" data-tx="shiny" data-lang="home.plus.title">Go further with Stagify+</h2>
+          <p class="home-section__sub" data-lang="home.plus.subtitle">Two ways to upgrade: a flat monthly plan, or usage-based billing for your team.</p>
         </div>
-        <div class="ig-embeds reveal">
-          <div class="ig-embed">
-            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DbMhP88TW-u/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
-          </div>
-          <div class="ig-embed">
-            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DbKIy_ojMJv/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
-          </div>
-          <div class="ig-embed">
-            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DbRw_GgxZx8/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
-          </div>
-        </div>
-        <div class="ig-cta reveal">
-          <a class="ig-follow" href="https://www.instagram.com/stagify.ai/" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.43.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.43.16-1.06.36-2.23.41-1.27.06-1.65.07-4.9.07s-3.63 0-4.9-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.43-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.43-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5 0-4.74.07-.9.04-1.38.19-1.7.32-.43.17-.74.37-1.06.69-.32.32-.52.63-.69 1.06-.13.32-.28.8-.32 1.7C3.42 8.5 3.4 8.86 3.4 12s0 3.5.07 4.74c.04.9.19 1.38.32 1.7.17.43.37.74.69 1.06.32.32.63.52 1.06.69.32.13.8.28 1.7.32 1.24.07 1.6.07 4.74.07s3.5 0 4.74-.07c.9-.04 1.38-.19 1.7-.32.43-.17.74-.37 1.06-.69.32-.32.52-.63.69-1.06.13-.32.28-.8.32-1.7.07-1.24.07-1.6.07-4.74s0-3.5-.07-4.74c-.04-.9-.19-1.38-.32-1.7a2.86 2.86 0 0 0-.69-1.06 2.86 2.86 0 0 0-1.06-.69c-.32-.13-.8-.28-1.7-.32C15.5 4 15.14 4 12 4zm0 3.06A4.94 4.94 0 1 1 12 17a4.94 4.94 0 0 1 0-9.94zm0 1.8a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28zM17.64 6.95a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3z"/></svg>
-            <span data-lang="home.instagram.follow">Follow @stagify.ai</span>
-          </a>
+        <div class="plus-grid">
+          <article class="plus-card plus-card--pro reveal reveal--left">
+            <div class="plus-card__top">
+              <img src="media-webp/logo/Pro64x64.webp" alt="" class="plus-card__logo" aria-hidden="true">
+              <h3 class="plus-card__name" data-lang="home.plus.pro.name">Stagify+</h3>
+              <span class="plus-card__badge" data-lang="home.plus.pro.tag">For individuals</span>
+            </div>
+            <div class="plus-price"><span class="plus-price__num">$11.99</span><span class="plus-price__per" data-lang="home.plus.pro.per">/ month</span></div>
+            <!-- Ordered by what free does NOT have. "Unlimited staging generations" led
+                 this list, but free already gets 50 a day — so the first thing a
+                 prospective subscriber read was the benefit least likely to make them
+                 pay. It stays (it is a real difference), just not first. -->
+            <ul class="home-list">
+              <li data-lang="home.plus.pro.f6">Remove existing furniture from rooms</li>
+              <li data-lang="home.plus.pro.f5">AI Designer: agentic staging process</li>
+              <li data-lang="home.plus.pro.f4">Masking tool to edit any area</li>
+              <li data-lang="home.plus.pro.f2">Higher-quality image model</li>
+              <li data-lang="home.plus.pro.f3">Multiple variations per generation</li>
+              <li data-lang="home.plus.pro.f1">Unlimited staging generations</li>
+            </ul>
+            <a class="plus-cta" href="stagify-plus.html" data-lang="home.plus.pro.cta">View Stagify+</a>
+          </article>
+          <article class="plus-card plus-card--ent reveal reveal--right" style="--reveal-delay:90ms">
+            <div class="plus-card__top">
+              <span class="plus-card__enticon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v16"/><path d="M13 9h5a1 1 0 0 1 1 1v11"/><path d="M8 8h.01M8 12h.01M8 16h.01"/></svg>
+              </span>
+              <h3 class="plus-card__name" data-lang="home.plus.ent.name">Enterprise</h3>
+              <span class="plus-card__badge" data-lang="home.plus.ent.tag">For teams</span>
+            </div>
+            <div class="plus-price"><span class="plus-price__num">$0.15</span><span class="plus-price__per" data-lang="home.plus.ent.per">/ generation</span></div>
+            <p class="plus-card__desc" data-lang="home.plus.ent.desc">Give your whole team Stagify+ automatically and only pay for what they actually use.</p>
+            <ul class="home-list">
+              <li data-lang="home.plus.ent.f1">Everyone with your company email included</li>
+              <li data-lang="home.plus.ent.f2">Usage-based billing, no per-seat fees</li>
+              <li data-lang="home.plus.ent.f3">One invoice, billed monthly by usage</li>
+              <li data-lang="home.plus.ent.f4">Every Stagify+ feature included for the team</li>
+            </ul>
+            <a class="plus-cta plus-cta--ghost" href="enterprise.html" data-lang="home.plus.ent.cta">Explore Enterprise</a>
+          </article>
         </div>
       </section>
 
@@ -1315,7 +1321,7 @@
         </div>
         <div class="home-blog__grid reveal">
           <a class="home-blog__card" href="/blog/free-virtual-staging">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-9.webp" alt="A staged period living room with deep green walls, a marble fireplace beneath a gilt mirror and a burnt-orange velvet sofa" width="400" height="225" loading="lazy">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-9.webp" alt="A staged green living room with a marble fireplace and a burnt-orange velvet sofa, overlaid with a price card striking out $16 to $75 per staged photo in favour of $0 on the free plan" width="400" height="225" loading="lazy">
             <div class="home-blog__body">
               <span class="home-blog__tag">Guides</span>
               <h3 class="home-blog__title">Free Virtual Staging: What "Free" Actually Gets You</h3>
@@ -1365,6 +1371,31 @@
         </div>
         <div class="home-blog__all reveal">
           <a href="/blog/" data-lang="home.blog.viewAll">Visit the Stagify blog →</a>
+        </div>
+      </section>
+
+      <!-- ========================= INSTAGRAM ========================= -->
+      <section class="home-section home-ig" id="instagram" aria-labelledby="ig-title">
+        <div class="home-section__head home-section__head--wide reveal">
+          <h2 class="home-section__title" id="ig-title" data-tx="fade" data-lang="home.instagram.title">See it in action on Instagram</h2>
+          <p class="home-section__sub" data-lang="home.instagram.subtitle">Real staging transformations, quick tips, and behind-the-scenes from the Stagify team.</p>
+        </div>
+        <div class="ig-embeds reveal">
+          <div class="ig-embed">
+            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DbMhP88TW-u/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
+          </div>
+          <div class="ig-embed">
+            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DbKIy_ojMJv/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
+          </div>
+          <div class="ig-embed">
+            <iframe class="ig-embed__frame" src="https://www.instagram.com/p/DbRw_GgxZx8/embed/" title="Stagify.ai on Instagram" loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>
+          </div>
+        </div>
+        <div class="ig-cta reveal">
+          <a class="ig-follow" href="https://www.instagram.com/stagify.ai/" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.43.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.43.16-1.06.36-2.23.41-1.27.06-1.65.07-4.9.07s-3.63 0-4.9-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.43-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.43-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.8c-3.14 0-3.5 0-4.74.07-.9.04-1.38.19-1.7.32-.43.17-.74.37-1.06.69-.32.32-.52.63-.69 1.06-.13.32-.28.8-.32 1.7C3.42 8.5 3.4 8.86 3.4 12s0 3.5.07 4.74c.04.9.19 1.38.32 1.7.17.43.37.74.69 1.06.32.32.63.52 1.06.69.32.13.8.28 1.7.32 1.24.07 1.6.07 4.74.07s3.5 0 4.74-.07c.9-.04 1.38-.19 1.7-.32.43-.17.74-.37 1.06-.69.32-.32.52-.63.69-1.06.13-.32.28-.8.32-1.7.07-1.24.07-1.6.07-4.74s0-3.5-.07-4.74c-.04-.9-.19-1.38-.32-1.7a2.86 2.86 0 0 0-.69-1.06 2.86 2.86 0 0 0-1.06-.69c-.32-.13-.8-.28-1.7-.32C15.5 4 15.14 4 12 4zm0 3.06A4.94 4.94 0 1 1 12 17a4.94 4.94 0 0 1 0-9.94zm0 1.8a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28zM17.64 6.95a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3z"/></svg>
+            <span data-lang="home.instagram.follow">Follow @stagify.ai</span>
+          </a>
         </div>
       </section>
 

@@ -662,6 +662,15 @@ body {
      and CENTRES a wrapped line instead of pinning it. `gap` is only the floor; the real
      spacing is the leftover space-around distributes. Keep flex-wrap:wrap — nowrap makes
      the row overflow, and .nav-center is overflow-x:clip, so the icon gets cut off. */
+  /* MOVED HERE FROM auth.css. index.html lazy-loads auth.css, so keeping the
+     trailing cell's placement there made the header re-lay-out when the sheet
+     swapped in. It belongs beside .nav-center, which owns the rest of this row. */
+  .nav .nav-trailing {
+    grid-column:3;
+    grid-row:1;
+    justify-self:end;
+    align-self:center
+  }
   .nav .nav-center {
     grid-column:1/-1;
     grid-row:2;
@@ -1171,6 +1180,29 @@ main {
   z-index:1;
   mask:linear-gradient(90deg,transparent 0%,black 10%,black 90%,transparent 100%);
   -webkit-mask:linear-gradient(90deg,transparent 0%,black 10%,black 90%,transparent 100%)
+}
+/* Reduced motion: sponsors-scroll.js returns early and never starts the marquee,
+   which left a 20-item track parked at translateX(0) inside `overflow:hidden`.
+   On a 390px phone that made roughly 2 of the 10 logos reachable and the other 8
+   simply unreachable — no scroll, no animation, no way to see them. (The
+   `animation:none` in the mobile blocks does nothing here: the marquee is rAF and
+   transform, not CSS animation.)
+   So in that mode the strip becomes an ordinary scroller, the loop's duplicate
+   half is dropped (it exists only to make the wrap seamless), and the edge mask is
+   removed because it would fade out the very logos you are scrolling toward.
+   The class is set by sponsors-scroll.js — CSS alone cannot see that the script
+   bailed. */
+.sponsors-container.sponsors--static {
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  mask:none;
+  -webkit-mask:none
+}
+.sponsors-container.sponsors--static .sponsors-track {
+  transform:none
+}
+.sponsors-container.sponsors--static .sponsor-item--dup {
+  display:none
 }
 .sponsors-track {
   display:flex;
@@ -4338,8 +4370,13 @@ html::-webkit-scrollbar-thumb {
   box-shadow:0 2px 4px rgba(15,23,42,.06),0 8px 20px rgba(59,130,246,.16);
   transform:translateY(-1px)
 }
+/* The ring used to be the .18-alpha shadow alone with `outline:0`. Over the
+   trigger's rgba(255,255,255,.72) background that composites to about #e2ecfd —
+   roughly 1.1:1, i.e. an indicator you cannot actually see (WCAG 1.4.11 wants 3:1).
+   A real outline carries the focus state; the soft shadow stays as the glow. */
 .lang-switch__trigger:focus-visible {
-  outline:0;
+  outline:2px solid var(--primary);
+  outline-offset:2px;
   border-color:var(--primary-light);
   box-shadow:0 0 0 3px rgba(59,130,246,.18)
 }
@@ -4511,5 +4548,22 @@ html::-webkit-scrollbar-thumb {
 @media (prefers-reduced-motion:reduce) {
   .card-spotlight {
     transition:none
+  }
+}
+
+/* --- Touch: no zoom-on-focus -------------------------------------------------
+   iOS Safari zooms the entire viewport when a form control with a font-size under
+   16px takes focus, and does not zoom back out — so tapping the staging prompt, the
+   mask prompt or the language select on a phone left the page zoomed and reflowed
+   mid-task. Raising these to 16px on coarse pointers only is the standard cure and
+   leaves desktop typography exactly as it was.
+   Placed at the end of the file on purpose: the smaller values are restated inside
+   a @media (max-width:768px) block earlier, at equal specificity, so source order
+   is what decides this. --- */
+@media (hover: none) and (pointer: coarse) {
+  .text-input,
+  .stage-mask-prompt-input,
+  .language-dropdown {
+    font-size:16px
   }
 }

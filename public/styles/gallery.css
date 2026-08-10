@@ -44,9 +44,9 @@
   background-clip: text;
   color: transparent;
 }
-/* #46557d is home.css's section-sub ink. It has no token, so the literal is correct
+/* #414f75 is home.css's section-sub ink. It has no token, so the literal is correct
    here — test/frontend/css-tokens.test.js only rejects hexes that DO have one. */
-.gal-lede { margin: 0 0 26px; max-width: 640px; font-size: clamp(14.5px, 1.4vw, 16.5px); line-height: 1.55; color: #46557d; }
+.gal-lede { margin: 0 0 26px; max-width: 640px; font-size: clamp(14.5px, 1.4vw, 16.5px); line-height: 1.55; color: #414f75; }
 .gal-count { margin: 0 0 18px; font-size: 13px; font-weight: 600; color: var(--slate); }
 
 /* The site's default buttons shout in uppercase. Inside the gallery they are tool
