@@ -26,8 +26,12 @@
   // Decode section images ahead of time so they're ready before they scroll in.
   function warmImages() {
     document
+      // `.hstrip__img` is #learn's four strip photos — renamed from .info-row__media
+      // when that section became the strip widget. A stale selector here does not
+      // throw, it just silently stops warming those decodes, so
+      // test/frontend/home-strips.test.js pins the two together.
       .querySelectorAll(
-        ".info-row__media img, .ba img, .plus-card__logo, .sponsor-logo, .calc__brandmark"
+        ".hstrip__img, .ba img, .plus-card__logo, .sponsor-logo, .calc__brandmark"
       )
       .forEach((img) => {
         const image = /** @type {HTMLImageElement} */ (img);

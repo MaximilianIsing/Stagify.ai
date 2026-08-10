@@ -87,6 +87,8 @@
       "title": "직접 확인해 보세요",
       "subtitle": "실시간 데모. 자유롭게 둘러보세요.",
       "tablistAria": "스튜디오",
+      "prevAria": "이전 스튜디오",
+      "nextAria": "다음 스튜디오",
       "tabs": {
         "staging": "스테이징",
         "designer": "AI 디자이너",

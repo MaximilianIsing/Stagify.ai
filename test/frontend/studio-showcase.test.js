@@ -324,7 +324,7 @@ test('home.showcase is complete in all eleven packs', () => {
   const packs = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
   assert.equal(packs.length, 11, 'eleven language packs');
 
-  const LEAVES = ['title', 'subtitle', 'tablistAria'];
+  const LEAVES = ['title', 'subtitle', 'tablistAria', 'prevAria', 'nextAria'];
   const TABS = ['staging', 'designer', 'masking', 'exterior', 'gallery'];
 
   for (const file of packs) {
@@ -589,4 +589,136 @@ test('the tab labels the markup asks for are the ones the packs define', () => {
     fs.readFileSync(path.join(ROOT, 'public', 'languages', 'english.json'), 'utf8')
   );
   assert.deepEqual(Object.keys(english.home.showcase.tabs).sort(), [...asked].sort());
+});
+
+// --------------------------------------------------------------------------
+// The narrow-viewport stepper
+// --------------------------------------------------------------------------
+//
+// Five tab labels do not fit across a phone in any of the eleven packs. That used to be
+// answered with a masked horizontal scroller, which read as clipped text rather than as
+// something to swipe — a sideways gesture inside a page that scrolls downwards is not one
+// anybody goes looking for, so four of the five studios were effectively invisible on
+// mobile. It is now a `‹ Masking Studio ›` stepper: the active tab is the label, the four
+// others are display:none, and two arrow buttons step through them.
+//
+// Nothing here can be asserted from behaviour — there is no DOM in this tier and the
+// difference is entirely CSS — so these are markup/stylesheet guards. The important one
+// is the one that fails if the scroller comes back.
+
+/** home.css with comments stripped, so a guard cannot pass on the strength of a comment. */
+function homeCss() {
+  const css = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'home.css'), 'utf8');
+  return css.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+/**
+ * The `@media` block whose body declares `needle`, as `{ condition, body }`.
+ * Brace-matched rather than regexed: a media block contains nested rules, so `[^}]*`
+ * would stop at the first inner closing brace.
+ *
+ * @param {string} code comment-stripped CSS
+ * @param {string} needle e.g. '.shw__arrow {'
+ */
+function mediaBlockWith(code, needle) {
+  const opener = /@media\s*([^{]+)\{/g;
+  for (let m = opener.exec(code); m; m = opener.exec(code)) {
+    let depth = 1;
+    let i = m.index + m[0].length;
+    const start = i;
+    for (; i < code.length && depth > 0; i += 1) {
+      if (code[i] === '{') depth += 1;
+      else if (code[i] === '}') depth -= 1;
+    }
+    const body = code.slice(start, i - 1);
+    if (body.includes(needle)) return { condition: m[1].trim(), body };
+  }
+  return null;
+}
+
+test('the showcase ships prev/next arrows outside the tablist', () => {
+  // Outside role="tablist" on purpose: a tablist may contain only tabs. They are the
+  // narrow layout's only way to reach the four studios the CSS has hidden.
+  const arrows = [...INDEX.matchAll(/<button\b([^>]*\bdata-shw-arrow="(-?\d+)"[^>]*)>/g)].map((m) => ({
+    attrs: m[1],
+    step: Number(m[2]),
+  }));
+  assert.equal(arrows.length, 2, 'exactly two stepper arrows');
+  assert.deepEqual(arrows.map((a) => a.step).sort((a, b) => a - b), [-1, 1], 'one back, one forward');
+  for (const arrow of arrows) {
+    assert.doesNotMatch(arrow.attrs, /\brole="tab"/, 'an arrow is not a tab');
+    assert.match(
+      arrow.attrs,
+      /data-lang-attr="home\.showcase\.(prev|next)Aria\|aria-label"/,
+      'each arrow localises its aria-label'
+    );
+    assert.match(arrow.attrs, /\baria-label="/, 'each arrow ships an English aria-label to fall back on');
+  }
+  // The wrapper is what the flex row and the arrow/label/arrow order hang off.
+  assert.match(INDEX, /<div class="shw__nav">/, 'the tablist is wrapped in .shw__nav');
+
+  const english = JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'languages', 'english.json'), 'utf8'));
+  assert.ok(english.home.showcase.prevAria && english.home.showcase.nextAria, 'both keys exist in English');
+});
+
+test('the arrows are wired to step the carousel', () => {
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const code = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  assert.match(code, /querySelectorAll\('\[data-shw-arrow\]'\)/, 'wireArrows reads the arrows from the markup');
+  assert.match(code, /select\(sc,\s*sc\.active \+ step\)/, 'a click steps by the arrow\'s own delta');
+  assert.match(code, /\bwireArrows\(sc\);/, 'init actually calls wireArrows');
+});
+
+test('all five tabs stay in the markup — the narrow layout hides them in CSS', () => {
+  // The stepper shows one label, but the other four tabs are what carry the
+  // tab->panel ARIA pairing (and the deep-linkable roving focus). Hiding them must
+  // stay a CSS concern; dropping them from the markup would take the wiring with it.
+  assert.equal(tabsFromMarkup().length, 5, 'five tab buttons in index.html');
+  const code = homeCss();
+  const flat = mediaBlockWith(code, '.shw__arrow {');
+  assert.ok(flat, 'the arrows are styled inside a media block');
+  assert.match(
+    flat.body,
+    /\.shw__tab:not\(\.is-active\)\s*\{\s*display:\s*none/,
+    'the narrow layout hides the inactive tabs rather than the markup dropping them'
+  );
+});
+
+test('the narrow tablist is not a hidden horizontal scroller', () => {
+  // THE POINT OF THIS FILE'S NEWEST GUARD. The scroller looked fine in a desktop
+  // emulator — it only failed as a thing nobody discovers, which no snapshot catches.
+  // Comments are stripped above, so the note in home.css explaining why the scroller
+  // was removed cannot itself satisfy this scan.
+  const code = homeCss();
+  const flat = mediaBlockWith(code, '.shw__arrow {');
+  assert.ok(flat, 'the stepper block is still there');
+  const tabs = flat.body.match(/\.shw__tabs\s*\{([^}]*)\}/);
+  assert.ok(tabs, 'the narrow layout still has a .shw__tabs rule');
+  for (const banned of ['overflow-x', 'mask-image', 'scroll-snap-type']) {
+    assert.doesNotMatch(
+      tabs[1],
+      new RegExp(banned),
+      `the narrow tablist must not scroll sideways again (${banned})`
+    );
+  }
+  assert.doesNotMatch(flat.body, /scroll-snap-align/, 'no leftover snap points on the tabs');
+});
+
+test('the stepper switches on at the same width as the flat carousel', () => {
+  // studio-showcase.js stops positioning the neighbouring panels at FLAT_QUERY. The
+  // stepper has to appear at exactly that width: a gap between the two leaves either a
+  // scrolling tab strip or an arc with no room, and the coupling was comment-only.
+  const js = fs.readFileSync(path.join(ROOT, 'public', 'scripts', 'studio-showcase.js'), 'utf8');
+  const flatQuery = js.match(/const FLAT_QUERY = '([^']+)'/);
+  assert.ok(flatQuery, 'studio-showcase.js still declares FLAT_QUERY');
+
+  const code = homeCss();
+  const normalise = (/** @type {string} */ s) => s.replace(/[()\s]/g, '');
+  const block = mediaBlockWith(code, '.shw__arrow {');
+  assert.ok(block, 'the arrows are styled inside a media block');
+  assert.equal(
+    normalise(block.condition),
+    normalise(flatQuery[1]),
+    'the stepper breakpoint and FLAT_QUERY must move together'
+  );
 });

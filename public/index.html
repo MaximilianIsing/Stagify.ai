@@ -515,7 +515,7 @@
         </div>
       </section>
 
-      <!-- ===================== IMAGE + TEXT INFO ROWS ===================== -->
+      <!-- ===================== WHAT VIRTUAL STAGING IS (STRIPS) ===================== -->
       <!-- This section had NO heading. Its name existed only as aria-label — never
            rendered, and the one section label on the page with no data-lang, so it
            was English on all 11 locales. The consequence was structural: the four
@@ -525,78 +525,121 @@
            The strings below are not new — home.info.title/subtitle were already
            authored and fully translated in all 11 packs and simply never rendered,
            so this adds no i18n work. Now labelled the same way as every other
-           section, via aria-labelledby. -->
+           section, via aria-labelledby.
+
+           THE FOUR ROWS ARE NOW ONE STRIP WIDGET. They used to be four stacked
+           image+text rows — ~1,780px, four full row-heights, a sixth of the page for
+           four paragraphs. They are now four photo panels side by side: the open one
+           widens and shows its copy, the other three collapse to a spine with the
+           title set vertically. Same four photos, same strings, ~66% less scroll.
+
+           NOT ONE STRING CHANGED. Every data-lang key below is the key that was on the
+           equivalent element before, so all 11 packs are untouched and routes/i18n.js
+           renders the localized pages from this markup exactly as it did.
+
+           THE `data-tx` HOOKS ARE GONE FROM THE FOUR <h3>s, deliberately. Those four
+           titles now sit rotated 90° for three of the four strips, and the rise/slide/
+           clip/fade effects in home-text-animate.js all translate along the block axis
+           — which after the rotation is the wrong axis, so the words would fly in
+           sideways. The <h2> keeps its data-tx; it never rotates.
+
+           PROGRESSIVE ENHANCEMENT, same contract as the studio showcase below. Until
+           scripts/home-strips.js adds `.hstrips--ready` these are four plain stacked
+           blocks with every panel open — see the fallback block in styles/home.css.
+           index-deferred.js injects that script after `load`, so there is a real
+           window where this markup is all the visitor has, and a script failure has
+           to land on "four readable blocks", not "four unreadable slivers". -->
       <section class="home-section home-info" id="learn" aria-labelledby="learn-title">
         <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="learn-title" data-tx="rise" data-lang="home.info.title">What virtual staging is, and why it sells</h2>
           <p class="home-section__sub" data-lang="home.info.subtitle">A quick, honest rundown of how it works and who it's for. No jargon.</p>
         </div>
-        <div class="info-rows">
-          <div class="info-row">
-            <figure class="info-row__media reveal reveal--left">
-              <img src="media-webp/Homepage/Meeting2.webp" alt="Stagify.ai founder demonstrating the product at a Compass real estate office" loading="lazy" fetchpriority="low" decoding="async">
-              <figcaption data-lang="home.info.rows.why.caption">Demoing Stagify at a Compass office in New York</figcaption>
-            </figure>
-            <div class="info-row__text reveal reveal--right" style="--reveal-delay:90ms">
-              <span class="info-row__eyebrow" data-lang="home.info.rows.why.eyebrow">Why it works</span>
-              <h3 class="info-row__title" data-tx="rise" data-lang="home.info.rows.why.title">Buyers shop with their eyes first</h3>
-              <p class="info-row__body" data-lang="home.info.rows.why.body">Almost every buyer starts online, so your listing photos are the real first showing. Empty or dated rooms are hard to read; people can't judge scale or picture living there. Staging gives each room a clear purpose and a pull, which is why agents have always relied on it.</p>
-              <ul class="home-list">
-                <li data-lang="home.info.rows.why.p1">Empty rooms photograph smaller and colder than they are</li>
-                <li data-lang="home.info.rows.why.p2">Staging shows the intended use of every space</li>
-                <li data-lang="home.info.rows.why.p3">Stronger photos earn more clicks, saves, and showings</li>
-              </ul>
+        <div class="hstrips reveal" data-strips>
+          <div class="hstrip" data-strip="0">
+            <img class="hstrip__img" src="media-webp/Homepage/Meeting2.webp" alt="Stagify.ai founder demonstrating the product at a Compass real estate office" loading="lazy" fetchpriority="low" decoding="async">
+            <div class="hstrip__scrim"></div>
+            <h3 class="hstrip__h">
+              <button type="button" class="hstrip__btn" id="learn-btn-why" aria-expanded="false" aria-controls="learn-panel-why">
+                <span class="hstrip__eyebrow" data-lang="home.info.rows.why.eyebrow">Why it works</span>
+                <span class="hstrip__title" data-lang="home.info.rows.why.title">Buyers shop with their eyes first</span>
+              </button>
+            </h3>
+            <div class="hstrip__body" id="learn-panel-why" role="region" aria-labelledby="learn-btn-why">
+              <div class="hstrip__inner">
+                <p class="hstrip__text" data-lang="home.info.rows.why.body">Almost every buyer starts online, so your listing photos are the real first showing. Empty or dated rooms are hard to read; people can't judge scale or picture living there. Staging gives each room a clear purpose and a pull, which is why agents have always relied on it.</p>
+                <ul class="home-list">
+                  <li data-lang="home.info.rows.why.p1">Empty rooms photograph smaller and colder than they are</li>
+                  <li data-lang="home.info.rows.why.p2">Staging shows the intended use of every space</li>
+                  <li data-lang="home.info.rows.why.p3">Stronger photos earn more clicks, saves, and showings</li>
+                </ul>
+                <p class="hstrip__cap" data-lang="home.info.rows.why.caption">Demoing Stagify at a Compass office in New York</p>
+              </div>
             </div>
           </div>
 
-          <div class="info-row info-row--flip">
-            <figure class="info-row__media reveal reveal--right">
-              <img src="media-webp/Homepage/Meeting1.webp" alt="Stagify.ai presentation to a room of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
-              <figcaption data-lang="home.info.rows.how.caption">Walking a room of agents through their first staged listing</figcaption>
-            </figure>
-            <div class="info-row__text reveal reveal--left" style="--reveal-delay:90ms">
-              <span class="info-row__eyebrow" data-lang="home.info.rows.how.eyebrow">How it works</span>
-              <h3 class="info-row__title" data-tx="slide" data-lang="home.info.rows.how.title">From empty photo to listing-ready in ~8 seconds</h3>
-              <p class="info-row__body" data-lang="home.info.rows.how.body">Upload a photo, pick the room type and one of seven styles, and Stagify furnishes it in about eight seconds. Want changes? Remove the existing furniture, add a custom prompt, or mask one area to adjust it without starting over.</p>
-              <ul class="home-list">
-                <li data-lang="home.info.rows.how.p1">7 styles plus custom prompts and furniture removal</li>
-                <li data-lang="home.info.rows.how.p2">Mask-edit any part of a result without redoing it</li>
-                <li data-lang="home.info.rows.how.p3">Full copyright, yours to use on the MLS or in ads</li>
-              </ul>
+          <div class="hstrip" data-strip="1">
+            <img class="hstrip__img" src="media-webp/Homepage/Meeting1.webp" alt="Stagify.ai presentation to a room of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
+            <div class="hstrip__scrim"></div>
+            <h3 class="hstrip__h">
+              <button type="button" class="hstrip__btn" id="learn-btn-how" aria-expanded="false" aria-controls="learn-panel-how">
+                <span class="hstrip__eyebrow" data-lang="home.info.rows.how.eyebrow">How it works</span>
+                <span class="hstrip__title" data-lang="home.info.rows.how.title">From empty photo to listing-ready in ~8 seconds</span>
+              </button>
+            </h3>
+            <div class="hstrip__body" id="learn-panel-how" role="region" aria-labelledby="learn-btn-how">
+              <div class="hstrip__inner">
+                <p class="hstrip__text" data-lang="home.info.rows.how.body">Upload a photo, pick the room type and one of seven styles, and Stagify furnishes it in about eight seconds. Want changes? Remove the existing furniture, add a custom prompt, or mask one area to adjust it without starting over.</p>
+                <ul class="home-list">
+                  <li data-lang="home.info.rows.how.p1">7 styles plus custom prompts and furniture removal</li>
+                  <li data-lang="home.info.rows.how.p2">Mask-edit any part of a result without redoing it</li>
+                  <li data-lang="home.info.rows.how.p3">Full copyright, yours to use on the MLS or in ads</li>
+                </ul>
+                <p class="hstrip__cap" data-lang="home.info.rows.how.caption">Walking a room of agents through their first staged listing</p>
+              </div>
             </div>
           </div>
 
-          <div class="info-row">
-            <figure class="info-row__media reveal reveal--left">
-              <img src="media-webp/Homepage/HelpingOld.webp" alt="Stagify.ai team member staging a client's photos on a laptop" loading="lazy" fetchpriority="low" decoding="async">
-              <figcaption data-lang="home.info.rows.who.caption">Sitting down one-on-one to stage an agent's photos</figcaption>
-            </figure>
-            <div class="info-row__text reveal reveal--right" style="--reveal-delay:90ms">
-              <span class="info-row__eyebrow" data-lang="home.info.rows.who.eyebrow">Who it's for</span>
-              <h3 class="info-row__title" data-tx="clip" data-lang="home.info.rows.who.title">Made for agents, sellers, and buyers</h3>
-              <p class="info-row__body" data-lang="home.info.rows.who.body">Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn CAD floor-plan PDFs into photorealistic 3D room renders.</p>
-              <ul class="home-list">
-                <li data-lang="home.info.rows.who.p1">Agents: list sooner and close more</li>
-                <li data-lang="home.info.rows.who.p2">Sellers &amp; buyers: no software, no designer needed</li>
-                <li data-lang="home.info.rows.who.p3">AI Designer: agentic room staging</li>
-              </ul>
+          <div class="hstrip" data-strip="2">
+            <img class="hstrip__img" src="media-webp/Homepage/HelpingOld.webp" alt="Stagify.ai team member staging a client's photos on a laptop" loading="lazy" fetchpriority="low" decoding="async">
+            <div class="hstrip__scrim"></div>
+            <h3 class="hstrip__h">
+              <button type="button" class="hstrip__btn" id="learn-btn-who" aria-expanded="false" aria-controls="learn-panel-who">
+                <span class="hstrip__eyebrow" data-lang="home.info.rows.who.eyebrow">Who it's for</span>
+                <span class="hstrip__title" data-lang="home.info.rows.who.title">Made for agents, sellers, and buyers</span>
+              </button>
+            </h3>
+            <div class="hstrip__body" id="learn-panel-who" role="region" aria-labelledby="learn-btn-who">
+              <div class="hstrip__inner">
+                <p class="hstrip__text" data-lang="home.info.rows.who.body">Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn CAD floor-plan PDFs into photorealistic 3D room renders.</p>
+                <ul class="home-list">
+                  <li data-lang="home.info.rows.who.p1">Agents: list sooner and close more</li>
+                  <li data-lang="home.info.rows.who.p2">Sellers &amp; buyers: no software, no designer needed</li>
+                  <li data-lang="home.info.rows.who.p3">AI Designer: agentic room staging</li>
+                </ul>
+                <p class="hstrip__cap" data-lang="home.info.rows.who.caption">Sitting down one-on-one to stage an agent's photos</p>
+              </div>
             </div>
           </div>
 
-          <div class="info-row info-row--flip">
-            <figure class="info-row__media reveal reveal--right">
-              <img src="media-webp/Homepage/BoardRoom.webp" alt="Stagify.ai founder presenting to a full office of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
-              <figcaption data-lang="home.info.rows.team.caption">Training a brokerage team on Stagify</figcaption>
-            </figure>
-            <div class="info-row__text reveal reveal--left" style="--reveal-delay:90ms">
-              <span class="info-row__eyebrow" data-lang="home.info.rows.team.eyebrow">Built for teams</span>
-              <h3 class="info-row__title" data-tx="fade" data-lang="home.info.rows.team.title">Easy enough for your whole office</h3>
-              <p class="info-row__body" data-lang="home.info.rows.team.body">There's no software to install and nothing to learn. Anyone on the team can open Stagify in a browser, upload a listing photo, and have it staged in seconds, whether on a laptop at the office or a phone in the field.</p>
-              <ul class="home-list">
-                <li data-lang="home.info.rows.team.p1">No design skills or software needed</li>
-                <li data-lang="home.info.rows.team.p2">Works in any browser, on any device</li>
-                <li data-lang="home.info.rows.team.p3">Every agent can stage their own listings</li>
-              </ul>
+          <div class="hstrip" data-strip="3">
+            <img class="hstrip__img" src="media-webp/Homepage/BoardRoom.webp" alt="Stagify.ai founder presenting to a full office of real estate agents" loading="lazy" fetchpriority="low" decoding="async">
+            <div class="hstrip__scrim"></div>
+            <h3 class="hstrip__h">
+              <button type="button" class="hstrip__btn" id="learn-btn-team" aria-expanded="false" aria-controls="learn-panel-team">
+                <span class="hstrip__eyebrow" data-lang="home.info.rows.team.eyebrow">Built for teams</span>
+                <span class="hstrip__title" data-lang="home.info.rows.team.title">Easy enough for your whole office</span>
+              </button>
+            </h3>
+            <div class="hstrip__body" id="learn-panel-team" role="region" aria-labelledby="learn-btn-team">
+              <div class="hstrip__inner">
+                <p class="hstrip__text" data-lang="home.info.rows.team.body">There's no software to install and nothing to learn. Anyone on the team can open Stagify in a browser, upload a listing photo, and have it staged in seconds, whether on a laptop at the office or a phone in the field.</p>
+                <ul class="home-list">
+                  <li data-lang="home.info.rows.team.p1">No design skills or software needed</li>
+                  <li data-lang="home.info.rows.team.p2">Works in any browser, on any device</li>
+                  <li data-lang="home.info.rows.team.p3">Every agent can stage their own listings</li>
+                </ul>
+                <p class="hstrip__cap" data-lang="home.info.rows.team.caption">Training a brokerage team on Stagify</p>
+              </div>
             </div>
           </div>
         </div>
@@ -693,12 +736,25 @@
         </div>
 
         <div class="shw reveal" data-showcase>
-          <div class="shw__tabs" role="tablist" data-lang-attr="home.showcase.tablistAria|aria-label" aria-label="Studios">
-            <button type="button" class="shw__tab is-active" role="tab" id="shw-tab-0" aria-controls="staging-studio-demo" aria-selected="true" data-shw-tab="0" data-lang="home.showcase.tabs.staging">Staging</button>
-            <button type="button" class="shw__tab" role="tab" id="shw-tab-1" aria-controls="ai-designer-demo" aria-selected="false" tabindex="-1" data-shw-tab="1" data-lang="home.showcase.tabs.designer">AI Designer</button>
-            <button type="button" class="shw__tab" role="tab" id="shw-tab-2" aria-controls="masking-studio-demo" aria-selected="false" tabindex="-1" data-shw-tab="2" data-lang="home.showcase.tabs.masking">Masking Studio</button>
-            <button type="button" class="shw__tab" role="tab" id="shw-tab-3" aria-controls="exterior-studio-demo" aria-selected="false" tabindex="-1" data-shw-tab="3" data-lang="home.showcase.tabs.exterior">Exterior Studio</button>
-            <button type="button" class="shw__tab" role="tab" id="shw-tab-4" aria-controls="gallery-showcase" aria-selected="false" tabindex="-1" data-shw-tab="4" data-lang="home.showcase.tabs.gallery">Gallery</button>
+          <!-- The tablist is the control on a wide screen, where five pills fit. Below
+               900px the CSS hides every tab but the active one and these two arrows turn
+               the same tablist into a stepper — five labels do not fit on a phone in any
+               language, and the horizontal scroller this replaced hid tabs off-screen.
+               The arrows sit OUTSIDE role="tablist", which may only contain tabs. -->
+          <div class="shw__nav">
+            <button type="button" class="shw__arrow shw__arrow--prev" data-shw-arrow="-1" data-lang-attr="home.showcase.prevAria|aria-label" aria-label="Previous studio">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="shw__tabs" role="tablist" data-lang-attr="home.showcase.tablistAria|aria-label" aria-label="Studios">
+              <button type="button" class="shw__tab is-active" role="tab" id="shw-tab-0" aria-controls="staging-studio-demo" aria-selected="true" data-shw-tab="0" data-lang="home.showcase.tabs.staging">Staging</button>
+              <button type="button" class="shw__tab" role="tab" id="shw-tab-1" aria-controls="ai-designer-demo" aria-selected="false" tabindex="-1" data-shw-tab="1" data-lang="home.showcase.tabs.designer">AI Designer</button>
+              <button type="button" class="shw__tab" role="tab" id="shw-tab-2" aria-controls="masking-studio-demo" aria-selected="false" tabindex="-1" data-shw-tab="2" data-lang="home.showcase.tabs.masking">Masking Studio</button>
+              <button type="button" class="shw__tab" role="tab" id="shw-tab-3" aria-controls="exterior-studio-demo" aria-selected="false" tabindex="-1" data-shw-tab="3" data-lang="home.showcase.tabs.exterior">Exterior Studio</button>
+              <button type="button" class="shw__tab" role="tab" id="shw-tab-4" aria-controls="gallery-showcase" aria-selected="false" tabindex="-1" data-shw-tab="4" data-lang="home.showcase.tabs.gallery">Gallery</button>
+            </div>
+            <button type="button" class="shw__arrow shw__arrow--next" data-shw-arrow="1" data-lang-attr="home.showcase.nextAria|aria-label" aria-label="Next studio">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
           </div>
 
           <div class="shw__stage">
@@ -1326,17 +1382,69 @@
                 <pattern id="fp-grid" width="22.5" height="22.5" patternUnits="userSpaceOnUse">
                   <path d="M22.5 0H0V22.5" fill="none" stroke="currentColor" stroke-width="0.8"/>
                 </pattern>
-                <symbol id="fp-sofa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1 5.5h22v13H1z"/><path d="M4.6 9.2h14.8v9.3H4.6z"/><path d="M12 9.2v9.3"/></symbol>
-                <symbol id="fp-bed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M2 1.5h20v21H2z"/><path d="M2 8.4h20"/><path d="M4.2 3h6.4v4H4.2zM13.4 3h6.4v4h-6.4z"/></symbol>
-                <symbol id="fp-table" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M5.5 7h13v10h-13z"/><path d="M7.5 3.2h3.6v3H7.5zM12.9 3.2h3.6v3h-3.6zM7.5 17.8h3.6v3H7.5zM12.9 17.8h3.6v3h-3.6z"/></symbol>
-                <symbol id="fp-round" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="5.6"/><path d="M10.2 1.8h3.6v3h-3.6zM10.2 19.2h3.6v3h-3.6zM1.8 10.2h3v3.6h-3zM19.2 10.2h3v3.6h-3z"/></symbol>
-                <symbol id="fp-chair" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M4 6.5h16v12H4z"/><path d="M7.2 10h9.6v8.5H7.2z"/></symbol>
-                <symbol id="fp-rug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1.5 3h21v18h-21z" stroke-dasharray="4 3"/></symbol>
-                <symbol id="fp-plant" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="4.2"/><path d="M12 7.8V4M12 16.2V20M7.8 12H4M16.2 12H20M9 9l-2.7-2.7M15 9l2.7-2.7M9 15l-2.7 2.7M15 15l2.7 2.7"/></symbol>
-                <symbol id="fp-lamp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="6"/><path d="M12 6v12M6 12h12"/></symbol>
-                <symbol id="fp-desk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1 5.5h22v8H1z"/><path d="M9 15h6v5H9z"/></symbol>
-                <symbol id="fp-shelf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1 8h22v8H1z"/><path d="m1 8 22 8M23 8 1 16"/></symbol>
-                <symbol id="fp-counter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1 7h22v10H1z"/><circle cx="6.5" cy="12" r="3"/><circle cx="14" cy="9.6" r="1.5"/><circle cx="19" cy="9.6" r="1.5"/><circle cx="14" cy="14.4" r="1.5"/><circle cx="19" cy="14.4" r="1.5"/></symbol>
+                <!-- FURNITURE SYMBOLS. Every one is drawn to FILL its 24x24 box and carries
+                     `preserveAspectRatio="none"`, which is the whole contract: home-faq-plan.js
+                     sizes each <use> to a real metre footprint, and without that attribute the
+                     default (xMidYMid meet) letterboxes the symbol to the SMALLER side and
+                     centres it — a 2.4 x 0.9 m sofa drew as a 0.9 m square blob, a 1.8 m
+                     bookcase as a 25-unit stub, and the metre sizes in FURNITURE were fiction.
+                     `vector-effect` is what makes filling the box safe: the stretch is wildly
+                     non-uniform (4.5x across, 1.7x down for that sofa) and would otherwise
+                     draw the horizontals almost three times heavier than the verticals.
+
+                     They are all drawn in ONE orientation — anything with a front faces SOUTH,
+                     down the sheet — and turned into place by the optional quarter-turn in the
+                     furniture table. A sofa symbol and a sofa-rotated-90 symbol would be the
+                     same drawing twice, and would drift.
+
+                     THE TWO THINGS THAT MAKE THESE READ AS FURNITURE, both learned the hard way
+                     from a first pass that came out looking like a mesh of boxes:
+
+                     CURVES AND ROUNDED SHELLS. A sofa drawn as a rectangle divided by five
+                     full-depth lines is a radiator; a chair drawn as two stacked rectangles is a
+                     filing cabinet. Upholstery gets a rounded shell, a chair back is an ARC, and
+                     a duvet turn-down is a curve. On a sheet whose every other line is straight
+                     — walls, grid, dimensions — the curves are also what separates the furniture
+                     layer from the architecture at a glance.
+
+                     DETAIL IS INSET, NOT SPANNING. Cushions are rounded rectangles floating
+                     inside the seat with gaps around them, not lines drawn wall to wall across
+                     the piece. A line that spans the whole item reads as a division of the box;
+                     a shape inside it reads as a thing sitting in the box.
+
+                     Detail also carries the lighter stroke (1.1 against the 1.5 outline), so
+                     every piece has its own small weight hierarchy, the same way the sheet does. -->
+                <symbol id="fp-sofa" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="2.8"/><path d="M5 1.6v21.6M19 1.6v21.6M5.6 8.2h12.8" stroke-width="1.1"/><rect x="5.6" y="9.2" width="3.9" height="13.2" rx=".9" stroke-width="1.1"/><rect x="10.05" y="9.2" width="3.9" height="13.2" rx=".9" stroke-width="1.1"/><rect x="14.5" y="9.2" width="3.9" height="13.2" rx=".9" stroke-width="1.1"/></symbol>
+                <symbol id="fp-armchair" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="2.8"/><path d="M6 1.6v21.6M18 1.6v21.6M6.6 8.6h10.8" stroke-width="1.1"/><rect x="6.6" y="9.6" width="10.8" height="12.8" rx="1.1" stroke-width="1.1"/></symbol>
+                <symbol id="fp-chair" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="3" y="6.4" width="18" height="16" rx="1.8"/><path d="M2.2 5.4Q12-.6 21.8 5.4" stroke-width="1.3"/></symbol>
+                <symbol id="fp-bed" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="1.6"/><rect x="3" y="2.4" width="7.6" height="5.2" rx="1.6" stroke-width="1.1"/><rect x="13.4" y="2.4" width="7.6" height="5.2" rx="1.6" stroke-width="1.1"/><path d="M.8 9.8h22.4M.8 14.2Q12 16.4 23.2 14.2" stroke-width="1.1"/></symbol>
+                <symbol id="fp-nightstand" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="1"/><path d="M3.2 8.6h17.6" stroke-width="1.1"/></symbol>
+                <symbol id="fp-wardrobe" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".8"/><path d="M.8 16.4h22.4M12 16.4v6.8" stroke-width="1.1"/><path d="M3 8.4h18" stroke-width="1.1" stroke-dasharray="3 2.4"/></symbol>
+                <symbol id="fp-desk" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="1"/><path d="M17 1.6v20.8" stroke-width="1.1"/><rect x="5.6" y="2.4" width="6.6" height="2.6" rx="1" stroke-width="1.1"/></symbol>
+                <symbol id="fp-shelf" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".6"/><path d="M.8 6.4h22.4M6.4 6.4v16.8M12 6.4v16.8M17.6 6.4v16.8" stroke-width="1.1"/></symbol>
+                <symbol id="fp-table" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="1.2"/></symbol>
+                <symbol id="fp-round" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="11.2"/></symbol>
+                <symbol id="fp-coffee" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="5.6"/></symbol>
+                <symbol id="fp-tv" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y="9.4" width="22.4" height="13.8" rx="1"/><rect x="3.4" y="1.2" width="17.2" height="2.6" rx="1.3" stroke-width="1.1"/></symbol>
+                <symbol id="fp-counter" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".6"/><path d="M.8 4.6h22.4M8 4.6v18.6M16 4.6v18.6" stroke-width="1.1"/></symbol>
+                <symbol id="fp-sink" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".8"/><rect x="3.6" y="6.4" width="16.8" height="13.6" rx="2.4" stroke-width="1.1"/><circle cx="12" cy="3.6" r="1.4" stroke-width="1.1"/></symbol>
+                <symbol id="fp-hob" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".8"/><circle cx="7.4" cy="7.4" r="3.1" stroke-width="1.1"/><circle cx="16.6" cy="7.4" r="3.1" stroke-width="1.1"/><circle cx="7.4" cy="16.6" r="3.1" stroke-width="1.1"/><circle cx="16.6" cy="16.6" r="3.1" stroke-width="1.1"/></symbol>
+                <!-- ONE dashed outline, not two. A rug is the only piece drawn as a broken
+                     line (it is a floor finish, not an object), and an inner dashed border on
+                     top of it turned every seating group into dotted noise the sofa had to
+                     compete with. It sits UNDER the furniture; it may not out-draw it. -->
+                <symbol id="fp-rug" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M.8.8h22.4v22.4H.8Z" stroke-dasharray="4 3.2"/></symbol>
+                <!-- SEVEN deep lobes, not twelve shallow ones. The canopy is the standard plan
+                     symbol for planting, but shallow lobes with flat tops read as gear teeth at
+                     the size this actually renders (~20px) — the depth of the scallop is the
+                     whole difference between a shrub and a cog. -->
+                <symbol id="fp-plant" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M19.6 12a3.57 3.57 0 0 1-2.86 5.94 3.57 3.57 0 0 1-6.43 1.47 3.57 3.57 0 0 1-5.16-4.11 3.57 3.57 0 0 1 0-6.6 3.57 3.57 0 0 1 5.16-4.11 3.57 3.57 0 0 1 6.43 1.47A3.57 3.57 0 0 1 19.6 12Z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+                <!-- A lamp ON a round side table, which is what a lamp beside a chair actually
+                     is in plan. Drawn as a bare spoked circle it was a second round symbol
+                     competing with the planting, and both read as wheels; drawn as a square with
+                     a circle in it, as a button. It is the only concentric pair on the sheet:
+                     fp-round is a bare circle, fp-plant a scalloped one. -->
+                <symbol id="fp-lamp" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="11.2"/><circle cx="12" cy="12" r="4.6" stroke-width="1.1"/></symbol>
               </defs>
 
               <rect class="fp-grid" x="0" y="0" width="1160" height="760"/>

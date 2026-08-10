@@ -35,7 +35,6 @@ const {
   FURNITURE,
   LABEL_BAND,
   rectPath,
-  perimeter,
   doorArc,
   roomMetrics,
   doorSwing,
@@ -94,18 +93,11 @@ function roomSizes() {
 // --------------------------------------------------------------------------
 
 test('rectPath traces the outline clockwise from the top-left', () => {
-  // The direction is not cosmetic: it is the order stroke-dashoffset reveals the wall
-  // in, and anticlockwise makes the draw-on read backwards.
+  // The winding used to be load-bearing — it was the order stroke-dashoffset revealed the
+  // wall in, and anticlockwise made the highlight trace backwards. That reveal is gone
+  // (the rectangle fades in finished), so this is now just the path a drafter would write.
   assert.equal(rectPath(232, 182.4), 'M0 0H232V182.4H0Z');
   assert.equal(rectPath(100.04, 50.06), 'M0 0H100V50.1H0Z', 'coordinates round to 0.1');
-});
-
-test('perimeter is the arithmetic 2(w+h), not a measured length', () => {
-  // getTotalLength() would force layout once per room on a section nobody has scrolled
-  // to. It IS used for the two hand-authored wall paths, where the length is not a
-  // formula — see armDraftIn.
-  assert.equal(perimeter(232, 182.4), 828.8);
-  assert.equal(perimeter(0, 0), 0);
 });
 
 test('doorArc hinges on the named wall and swings into the room', () => {
@@ -327,6 +319,73 @@ test('every room has furniture, drawn from symbols that exist', () => {
   }
 });
 
+test('every symbol in the defs is actually placed by a room', () => {
+  // The OTHER direction, and the one that goes wrong quietly. Restyling a room swaps
+  // `fp-round` for `fp-coffee` and the check above stays green — the symbol it stopped
+  // naming is still defined, just never drawn. It is then dead markup inside index.html's
+  // inline <defs>, which is render-blocking bytes on the page whose LCP is already the
+  // thing being budgeted, and nothing on the page can ever reveal it.
+  //
+  // <symbol> only. The two <pattern>s (fp-grid, fp-hatch) are painted by CSS `fill:
+  // url(#…)` rather than placed from this table, and fp-wall/floor/door/furn/key are
+  // classes mountRoom generates, not symbols — none of them can appear in FURNITURE, so
+  // matching on `<symbol id="fp-…"` is what keeps this check about placeable pieces.
+  const placed = new Set(Object.values(FURNITURE).flat().map(([symbol]) => symbol));
+  for (const [, id] of INDEX.matchAll(/<symbol id="(fp-[^"]+)"/g)) {
+    assert.ok(
+      placed.has(id),
+      `"${id}" is defined in index.html's <defs> but no room places it — it cannot render, ` +
+      'so either give it to a room or delete the symbol.'
+    );
+  }
+});
+
+test('every furniture symbol fills its box instead of being letterboxed into it', () => {
+  // THE ONE THAT MADE THE METRE SIZES FICTION. mountRoom sizes each <use> to a real
+  // footprint — 108 x 40.5 units for a 2.4 x 0.9 m sofa. A <symbol> without
+  // `preserveAspectRatio="none"` takes the default, xMidYMid meet, which scales its 24x24
+  // viewBox by the SMALLER of the two ratios and centres the result: that sofa drew as a
+  // 0.9 m square, a 1.8 m bookcase as a stub a third of its length, and every layout number
+  // in FURNITURE was decorative. Nothing failed. The plan just looked like a wireframe, and
+  // the reason was invisible in both the table and the symbol.
+  //
+  // Scoped to the fp-* furniture: the two <pattern>s in the same <defs> have no viewBox and
+  // are not sized to anything, and the sheet's own drawing is authored in viewBox units.
+  const symbols = [...INDEX.matchAll(/<symbol id="(fp-[^"]+)"([^>]*)>/g)];
+  assert.ok(symbols.length >= 10, 'the furniture symbols are defined in index.html');
+  for (const [, id, attrs] of symbols) {
+    assert.match(
+      attrs, /preserveAspectRatio="none"/,
+      `"${id}" would be letterboxed to its smaller side, silently ignoring the metre `
+      + 'footprint every placement of it declares'
+    );
+    assert.match(
+      attrs, /vector-effect="non-scaling-stroke"/,
+      `"${id}" is stretched non-uniformly to its footprint, so without a non-scaling stroke `
+      + 'its horizontals and verticals draw at different weights'
+    );
+  }
+});
+
+test('furniture is only ever turned by a quarter', () => {
+  // The turn is what lets one symbol serve every orientation, and mountRoom pays for it by
+  // SWAPPING the box it draws into — a piece turned 90 has its width down the sheet. That
+  // swap is exactly right for a quarter turn and wrong for anything else: at 45 the piece
+  // would cover a footprint neither this table nor the checks below it describe, so the
+  // overhang, label-band and door-swing assertions would all go on passing while a chair
+  // hung through a wall.
+  for (const [key, items] of Object.entries(FURNITURE)) {
+    for (const [symbol, , , , , turn] of items) {
+      if (turn === undefined) continue;
+      assert.ok(
+        [90, 180, 270].includes(turn),
+        `${key}: "${symbol}" is turned ${turn}°, which is not a quarter turn — the footprint `
+        + 'it declares would no longer be the footprint it covers'
+      );
+    }
+  }
+});
+
 test('no furniture intrudes into the label band at the top of a room', () => {
   // The room's name and area figure are anchored in the top LABEL_BAND of its depth, and
   // furniture starts below. Asserted against the module's own exported constant so the
@@ -358,6 +417,72 @@ test('no furniture overhangs a wall', () => {
         fx - hw >= -0.01 && fx + hw <= 1.01 && fy - hh >= -0.01 && fy + hh <= 1.01,
         `${key}: "${symbol}" (${itemW}x${itemH} m) at ${fx}/${fy} sticks out through a wall`
       );
+    }
+  }
+});
+
+/**
+ * Pieces that are SUPPOSED to share floor with something, and what each may share it with.
+ *
+ * Deliberately a pairing, not a list of exempt symbols: `fp-counter` is allowed to hold a
+ * sink and a hob, and that is the whole permission. Left as "fp-counter is exempt" it would
+ * also excuse a counter run parked through the dining table one metre below it.
+ * @type {Array<[string, string]>}
+ */
+const STACKABLE = [
+  // A rug is a floor FINISH, not an object. Every seating group is drawn on top of one.
+  ['fp-rug', '*'],
+  // Inset appliances. The sink and the hob are holes in the counter run, not free pieces
+  // standing next to it, so their footprints are inside its by construction.
+  ['fp-counter', 'fp-sink'],
+  ['fp-counter', 'fp-hob'],
+];
+
+/** @param {string} a @param {string} b */
+function mayStack(a, b) {
+  return STACKABLE.some(([one, two]) =>
+    (one === a && (two === b || two === '*')) || (one === b && (two === a || two === '*')));
+}
+
+test('no two pieces of furniture stand on the same floor', () => {
+  // THE ONE THE OTHER FOUR CHECKS LET THROUGH. Overhang, label band and door swing all
+  // measure a piece against the ROOM, so a plan can satisfy every one of them and still
+  // draw a planter through the arm of a sofa — which is exactly what basics shipped: a
+  // 0.65 m plant and a 2.3 m sofa overlapping by 0.13 x 0.65 m, rendered, with 31 tests
+  // green. Furniture is the only thing on the sheet measured against its neighbours, so
+  // it is the only clash arithmetic cannot otherwise see.
+  //
+  // Metre space, not fractions: the rooms are different shapes, so a fraction-space
+  // rectangle is a different rectangle in every room and the tolerance would mean nothing.
+  // Entries 4 and 5 are the ON-PLAN footprint whatever the turn (see FURNITURE), so
+  // rotation needs no special case here — that invariant is what this check rests on, and
+  // `furniture is only ever turned by a quarter` above is what keeps it true.
+  const TOLERANCE = 0.005; // 5 mm — pieces may touch, they may not intersect.
+  const sizes = roomSizes();
+  for (const [key, items] of Object.entries(FURNITURE)) {
+    const { wm, hm } = sizes[key];
+    const boxes = items.map(([symbol, fx, fy, itemW, itemH]) => ({
+      symbol,
+      x0: fx * wm - itemW / 2, x1: fx * wm + itemW / 2,
+      y0: fy * hm - itemH / 2, y1: fy * hm + itemH / 2,
+    }));
+    for (let i = 0; i < boxes.length; i += 1) {
+      for (let j = i + 1; j < boxes.length; j += 1) {
+        const a = boxes[i];
+        const b = boxes[j];
+        if (mayStack(a.symbol, b.symbol)) continue;
+        const over = {
+          x: Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0),
+          y: Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0),
+        };
+        assert.ok(
+          over.x <= TOLERANCE || over.y <= TOLERANCE,
+          `${key}: "${a.symbol}" and "${b.symbol}" occupy the same floor — they overlap by ` +
+            `${over.x.toFixed(2)} x ${over.y.toFixed(2)} m (${(over.x * over.y).toFixed(2)} m²). ` +
+            'Move one clear, or add the pair to STACKABLE if one is genuinely drawn under ' +
+            'or inside the other.'
+        );
+      }
     }
   }
 });
@@ -524,14 +649,21 @@ test('nothing on the sheet is sized below a readable floor', () => {
   );
 });
 
-test('reduced motion leaves the walls drawn-and-instant, not permanently on or off', () => {
-  // The house doctrine (home.css:2141, home-figures.js:336) is that STATES survive
-  // reduced motion and only arrive instantly; just autonomous motion is suppressed.
+test('the room highlight appears whole, and survives reduced motion', () => {
+  // Two rules that used to be one, and both are about the same rectangle.
   //
-  // For a stroke-drawn wall that is easy to get backwards. If visibility rode on
-  // stroke-dashoffset, a reduced-motion visitor would get either nine permanently drawn
-  // rooms (no hover feedback at all) or nine permanently blank ones. It has to ride on
-  // `opacity`, with the dashoffset animation ADDED under `no-preference`.
+  // IT APPEARS, IT DOES NOT TRACE. The highlight was revealed with a stroke-dashoffset run
+  // clockwise from the room's top-left, which is lovely once and slow nine times: at 0.42s
+  // a room you cannot skim the plan, and a plain hover reads as though it is loading
+  // something. So no rule on .fp-wall may carry a dash reveal again — not in the settled
+  // block, where it would leave the wall permanently half-drawn, and not in the motion
+  // block either, which is where it lived and where re-adding it would bring the tracing
+  // back for everyone who has not asked for less motion.
+  //
+  // VISIBILITY RIDES ON OPACITY. House doctrine (home.css:2141, home-figures.js:336):
+  // STATES survive reduced motion and only ARRIVE instantly. That is why the hidden state
+  // has to be `opacity: 0` in the settled block — a reduced-motion visitor still gets the
+  // highlight on hover, just without the fade.
   const css = fs.readFileSync(path.join(PUBLIC, 'styles', 'faq-plan.css'), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '');
   const motionStart = css.indexOf('prefers-reduced-motion: no-preference');
@@ -541,16 +673,75 @@ test('reduced motion leaves the walls drawn-and-instant, not permanently on or o
   const motion = css.slice(motionStart);
   const wall = /\.fp-wall\s*\{([^}]*)\}/.exec(settled);
   assert.ok(wall, '.fp-wall has a settled rule outside the motion block');
-  assert.match(wall[1], /stroke-dashoffset:\s*0/, '.fp-wall settles at dashoffset 0 (fully drawn)');
   assert.match(wall[1], /opacity:\s*0/, '.fp-wall hides via opacity, so reduced motion keeps hover feedback');
+
+  // Selector-scoped rather than a bare search for `stroke-dash`, because the one-time
+  // draft-in of the envelope and partitions still uses one — that is autonomous motion
+  // that plays once, correctly suppressed under reduce, and nothing to do with hover.
+  const wallRules = [...css.matchAll(/([^{};]*\.fp-wall[^{};]*)\{([^}]*)\}/g)];
+  assert.ok(wallRules.length >= 2, 'the highlight is styled in both the settled and motion blocks');
+  for (const [, selector, body] of wallRules) {
+    assert.doesNotMatch(
+      body, /stroke-dash/,
+      `the highlight must appear, not trace itself on — dash reveal found on \`${selector.trim()}\``
+    );
+  }
   assert.match(
-    motion, /\.fp-wall\s*\{[^}]*stroke-dashoffset:\s*var\(--len\)/,
-    'the undrawn start state belongs ONLY inside the no-preference block'
+    motion, /\.fp-wall\s*\{[^}]*transition:[^}]*opacity/,
+    'the fade is ADDED under no-preference, so reduce gets the same states instantly'
   );
   assert.doesNotMatch(
     settled, /@media[^{]*prefers-reduced-motion:\s*reduce/,
     'motion is added under no-preference here, never removed under reduce'
   );
+});
+
+test('the question previews at the top of the column without moving as it fades', () => {
+  // Two halves of one arrangement.
+  //
+  // WHERE IT SITS. `top: 11%` is the READING offset — it reserves the band above for the
+  // "05 / 09" key, which only exists once a room is open. Previewing there is nothing above
+  // it, so the question rides up by a transform to the top of the panel instead.
+  //
+  // WHY THE SHIFT LIVES ON THE RESTING STATE. Scoped to `:hover` it was a bug you could
+  // watch: leaving a room dropped the question back to the reading offset the same instant
+  // its 0.22s fade-out started, so it slid downwards as it disappeared. The resting state
+  // is invisible, so giving it the PREVIEW position costs nothing and means the only two
+  // states the eye ever sees between are identical in position. Nothing hover-scoped may
+  // move it again — not `top`, not `transform`.
+  //
+  // WHY THE SHIFT IS A TRANSFORM. home-faq-plan.js reads `offsetTop` here to lay each answer
+  // under its own question. A transform does not touch layout, so the measurement keeps
+  // seeing the reading offset; moving the box with `top` would feed it the preview's offset
+  // and put every answer 4.4% of the sheet too high the moment a room opened.
+  const css = fs.readFileSync(path.join(PUBLIC, 'styles', 'faq-plan.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const plan = css.slice(css.indexOf('@media'));
+
+  const resting = /\.faq-room__q\s*\{([^}]*)\}/.exec(plan);
+  assert.ok(resting, 'plan mode gives the question a resting rule');
+  assert.match(resting[1], /top:\s*[\d.]+%/, 'the reading offset is a percentage of the sheet');
+  const lift = /transform:\s*translateY\(\s*(-?[\d.]+)cq[hwbi]/.exec(resting[1]);
+  assert.ok(lift, 'the preview lift is a transform in container units, so `offsetTop` is untouched');
+  assert.ok(
+    parseFloat(lift[1]) < 0,
+    'the lift must be UPWARDS, or the preview is not at the top of the column'
+  );
+
+  const open = /\.faq-room\[open\]\s+\.faq-room__q\s*\{([^}]*)\}/.exec(plan);
+  assert.ok(open, 'opening a room drops the question to its reading offset');
+  assert.match(open[1], /transform:\s*none/, 'an open room clears the lift, making room for the key');
+
+  // THE REGRESSION ITSELF. Any rule that both selects the question and depends on a pointer
+  // or focus state, and moves it, reintroduces the slide-while-fading.
+  for (const [, selector, body] of plan.matchAll(/([^{};]*\.faq-room__q[^{};]*)\{([^}]*)\}/g)) {
+    if (!/:hover|:focus-visible/.test(selector)) continue;
+    assert.doesNotMatch(
+      body, /(^|[\s;])(top|bottom|transform|translate|margin-top):/,
+      `hover must not move the question — it fades, and a fade that also slides is the bug `
+      + `this arrangement exists to prevent. Offending rule: \`${selector.trim()}\``
+    );
+  }
 });
 
 test('the notes column hands its pointer events to the text underneath it', () => {

@@ -87,6 +87,8 @@
       "title": "亲自看看效果",
       "subtitle": "实时演示。随意看看。",
       "tablistAria": "工作室",
+      "prevAria": "上一个工作室",
+      "nextAria": "下一个工作室",
       "tabs": {
         "staging": "虚拟装修",
         "designer": "AI Designer",

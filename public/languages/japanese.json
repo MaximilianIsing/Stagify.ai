@@ -87,6 +87,8 @@
       "title": "実際にお試しください",
       "subtitle": "ライブデモ。ご自由にご覧ください。",
       "tablistAria": "スタジオ",
+      "prevAria": "前のスタジオ",
+      "nextAria": "次のスタジオ",
       "tabs": {
         "staging": "ステージング",
         "designer": "AIデザイナー",

@@ -87,6 +87,8 @@
       "title": "Veja você mesmo",
       "subtitle": "Demos ao vivo. Fique à vontade para explorar.",
       "tablistAria": "Estúdios",
+      "prevAria": "Estúdio anterior",
+      "nextAria": "Próximo estúdio",
       "tabs": {
         "staging": "Staging",
         "designer": "Designer IA",

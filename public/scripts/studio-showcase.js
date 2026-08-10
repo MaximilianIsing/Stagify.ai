@@ -52,6 +52,7 @@ const FOCUSABLE = 'a[href], button, input, select, textarea, iframe, [tabindex]'
  * @property {HTMLElement} stage
  * @property {HTMLElement[]} panels
  * @property {HTMLElement[]} tabs
+ * @property {HTMLElement[]} dots position dots for the narrow stepper; empty if unbuilt
  * @property {number} active
  * @property {boolean} sized whether the stage has been measured at least once
  */
@@ -250,40 +251,40 @@ function mountFrontDemo(sc) {
 }
 
 /**
- * Bring the active tab into view inside the tablist.
+ * Position dots for the narrow layout, where the CSS hides every tab but the active one
+ * and the strip becomes a `‹ Masking Studio ›` stepper. The label alone says WHICH studio
+ * you are on but not that there are five of them, or where in the five you are — the dots
+ * are the only thing carrying that, which is what the four hidden tabs used to carry.
  *
- * The strip only scrolls on narrow viewports (`overflow-x: auto` below 900px, where
- * five tabs do not fit in any language) — and there the tab for the panel you are
- * looking at was routinely off-screen, because the carousel can be advanced without
- * touching the tablist at all: a swipe, a deep link, or a hashchange. The strip then
- * showed a row of tabs with NONE of them highlighted, which reads as "the control is
- * broken" rather than "scroll me".
+ * Built here rather than authored in index.html so the count is derived from the panels
+ * and cannot drift from them. Decoration, not a control: `aria-hidden`, no roles, no
+ * strings — the tabs (wide) and the arrows (narrow) are the real controls, and a screen
+ * reader already gets "tab 3 of 5" from the tablist itself.
  *
- * Centred rather than merely scrolled-into-view so the neighbouring tabs stay half
- * visible, which is what shows the strip is a scroller. Deliberately scrolls the strip
- * itself (scrollBy on the element) instead of `tab.scrollIntoView()`: that walks every
- * scrollable ancestor, and <main> is the page's scroll container here — it would yank
- * the whole page as a side effect of changing tab.
- *
- * @param {Showcase} sc
+ * @param {HTMLElement} root
+ * @param {number} count
+ * @returns {HTMLElement[]} the dots, in panel order (empty if there is nowhere to put them)
  */
-function revealActiveTab(sc) {
-  const tab = sc.tabs[sc.active];
-  const strip = tab && tab.parentElement;
-  if (!strip) return;
-  // Not a scroller (wide viewport, or the tabs happen to fit) — nothing to reveal.
-  if (strip.scrollWidth <= strip.clientWidth + 1) return;
-  const t = tab.getBoundingClientRect();
-  const s = strip.getBoundingClientRect();
-  const delta = t.left - s.left - (s.width - t.width) / 2;
-  if (Math.abs(delta) < 1) return;
-  const smooth = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  strip.scrollBy({ left: delta, behavior: smooth ? 'smooth' : 'auto' });
+function buildDots(root, count) {
+  const nav = root.querySelector('.shw__nav');
+  if (!nav || !nav.parentNode) return [];
+  const wrap = document.createElement('div');
+  wrap.className = 'shw__dots';
+  wrap.setAttribute('aria-hidden', 'true');
+  const dots = [];
+  for (let i = 0; i < count; i += 1) {
+    const dot = document.createElement('span');
+    dot.className = 'shw__dot';
+    wrap.appendChild(dot);
+    dots.push(dot);
+  }
+  nav.parentNode.insertBefore(wrap, nav.nextSibling);
+  return dots;
 }
 
 /**
- * Reflect `active` in the tablist, which is the only chrome the carousel has:
- * everything else is the panels themselves, plus drag / wheel / click-a-side-panel.
+ * Reflect `active` in the tablist and its dots, which is the only chrome the carousel
+ * has: everything else is the panels themselves, plus drag / wheel / click-a-side-panel.
  * @param {Showcase} sc
  */
 function updateChrome(sc) {
@@ -295,7 +296,9 @@ function updateChrome(sc) {
     if (on) tab.removeAttribute('tabindex');
     else tab.setAttribute('tabindex', '-1');
   });
-  revealActiveTab(sc);
+  // Every route into select() lands here — arrows, a swipe, a wheel flick, a deep link —
+  // so the dots follow the carousel however it was moved, not only when a tab was clicked.
+  sc.dots.forEach((dot, i) => dot.classList.toggle('is-active', i === sc.active));
 }
 
 /**
@@ -422,6 +425,29 @@ function wireTabs(sc) {
 }
 
 /**
+ * The prev/next arrows either side of the tablist. They are the narrow layout's control:
+ * below 900px the CSS shows only the active tab, so the pair steps through the studios
+ * one at a time instead of asking for a sideways scroll inside a page that scrolls down.
+ *
+ * They wrap rather than dead-ending at the ends — select() already reduces modulo the
+ * panel count, and the drag and wheel paths wrap too, so a disabled state at the ends
+ * would be the odd one out. That also means neither arrow ever needs `aria-disabled`.
+ *
+ * Not folded into wireTabs(): these sit OUTSIDE role="tablist", which may contain only
+ * tabs, and the keydown gate there is scoped to `.shw__tabs` for that reason.
+ *
+ * @param {Showcase} sc
+ */
+function wireArrows(sc) {
+  const arrows = /** @type {HTMLElement[]} */ ([].slice.call(sc.root.querySelectorAll('[data-shw-arrow]')));
+  arrows.forEach((arrow) => {
+    const step = Number(arrow.dataset.shwArrow);
+    if (!step) return;
+    arrow.addEventListener('click', () => select(sc, sc.active + step));
+  });
+}
+
+/**
  * The fullscreen control on each media panel. The button toggles rather than only
  * entering, so the same control gets you back out — `aria-pressed` carries the state,
  * which means the label never has to change and the i18n pack needs one key, not two.
@@ -468,7 +494,7 @@ function build(root) {
   const panels = /** @type {HTMLElement[]} */ ([].slice.call(root.querySelectorAll('.shw__panel')));
   const tabs = /** @type {HTMLElement[]} */ ([].slice.call(root.querySelectorAll('.shw__tab')));
   if (!stage || panels.length < 2 || tabs.length !== panels.length) return null;
-  return { root, stage, panels, tabs, active: 0, sized: false };
+  return { root, stage, panels, tabs, dots: buildDots(root, panels.length), active: 0, sized: false };
 }
 
 function init() {
@@ -480,6 +506,7 @@ function init() {
   if (!sc) return;
 
   wireTabs(sc);
+  wireArrows(sc);
   wireDrag(sc);
   wireWheel(sc);
   wireFullscreen(sc);
@@ -504,9 +531,6 @@ function init() {
   window.addEventListener('resize', () => {
     layout(sc);
     measure(sc);
-    // A rotation changes both which tabs fit and the height rule (flat vs arc), so the
-    // strip has to be re-centred too — updateChrome does not run on a resize.
-    revealActiveTab(sc);
   });
 
   /* role="tabpanel" is applied HERE, not authored in index.html, because it is only

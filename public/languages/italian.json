@@ -87,6 +87,8 @@
       "title": "Guarda con i tuoi occhi",
       "subtitle": "Demo dal vivo. Dai un'occhiata.",
       "tablistAria": "Studi",
+      "prevAria": "Studio precedente",
+      "nextAria": "Studio successivo",
       "tabs": {
         "staging": "Staging",
         "designer": "Designer IA",

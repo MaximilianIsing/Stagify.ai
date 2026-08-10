@@ -87,6 +87,8 @@
       "title": "Compruébalo tú mismo",
       "subtitle": "Demos en vivo. Echa un vistazo.",
       "tablistAria": "Estudios",
+      "prevAria": "Estudio anterior",
+      "nextAria": "Estudio siguiente",
       "tabs": {
         "staging": "Staging",
         "designer": "AI Designer",

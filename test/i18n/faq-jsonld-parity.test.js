@@ -202,12 +202,19 @@ test('no pack left a question or answer in English', () => {
   }
 });
 
-test('no question outgrows the two lines the title block reserves for it', () => {
-  // In plan mode the question is positioned into the title block at
-  // `top: calc(100% + 24px)` with the answer pinned 54px below it, so a question that
-  // wraps to three lines collides with its own answer. 140 characters is the measured
-  // two-line ceiling at the narrowest plan width (1001px). This fails in German and
-  // Russian long before it fails in English, which is exactly why it is a test.
+test('no question outgrows the space the static fallback reserves for it', () => {
+  // WHAT THIS GUARDS IS NOW THE FALLBACK PATH, not the normal one. It used to be the
+  // normal one: the question sat in a title block at `top: calc(100% + 24px)` with the
+  // answer pinned 54px below it, so a third line collided with the answer. Both the title
+  // block and that fixed offset are gone — home-faq-plan.js's wireAnswerOffsets measures
+  // the question and writes `--a-top` under it, so today a long question PUSHES its answer
+  // down rather than running into it.
+  //
+  // The cap survives because the measurement is an enhancement, not a guarantee. With no
+  // ResizeObserver the answer falls back to `top: var(--a-top, 27%)` in faq-plan.css, which
+  // is a fixed reserve sized for three lines — and there the old collision is still real.
+  // 140 characters is the measured three-line ceiling at the narrowest plan width (1001px).
+  // German and Russian reach it long before English, which is exactly why it is a test.
   const CAP = 140;
   for (const { name, json } of packs()) {
     for (const key of ROOM_KEYS) {
@@ -215,19 +222,27 @@ test('no question outgrows the two lines the title block reserves for it', () =>
       assert.ok(
         q.length <= CAP,
         `${name}: faq.rooms.${key}.question is ${q.length} chars, over the ${CAP} cap — it ` +
-          'would wrap to a third line and collide with the answer plaque. Shorten the ' +
-          'question; the room label carries the topic.'
+          'would outgrow the 27% the answer falls back to when nothing measures it. Shorten ' +
+          'the question; the room label carries the topic.'
       );
     }
   }
 });
 
 test('no answer outgrows the notes column', () => {
-  // The answer is set in a fixed column beside the drawing, above a title block pinned
-  // to its foot. Run long and it simply prints over the title block — which is what
-  // shipped the first time, and only in the locales whose answers happen to be longest.
+  // The answer is set in a fixed column beside the drawing. What it runs out of is the
+  // notes panel's own floor — `.faq-plan__notes` is `bottom: 2.5%` in faq-plan.css, and
+  // because that panel has an EDGE, an overrun does not fade quietly into the grid the way
+  // it did when the column was open at the bottom: it runs off the paper. (It used to run
+  // over a title block pinned to the column's foot. That block is retired; the floor is
+  // now the panel edge itself.)
+  //
   // The column is ~31% of the sheet at ~1.15cqw type, which measures out at roughly 560
-  // effective characters before the two collide. The worst pack today is French at 506.
+  // effective characters. The binding case is a short window, where the sheet is
+  // height-capped near 640px but the type has already hit its clamp floor and stopped
+  // shrinking with it. Measured today at the smallest sheet the CSS can produce
+  // (--sheet-w 696px, 456px tall), the worst German and Russian answers still clear the
+  // floor by 30-107px, so this cap is conservative rather than tight.
   //
   // "Effective" doubles CJK, whose glyphs are about twice as wide as Latin ones, so one
   // budget covers all eleven packs.
@@ -240,7 +255,7 @@ test('no answer outgrows the notes column', () => {
       assert.ok(
         effective <= CAP,
         `${name}: faq.rooms.${key}.answer is ${effective} effective chars, over the ${CAP} ` +
-          'the notes column fits. It would print over the title block. Tighten the copy.'
+          'the notes column fits. It would run off the bottom of the panel. Tighten the copy.'
       );
     }
   }
