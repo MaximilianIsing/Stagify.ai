@@ -336,13 +336,27 @@ body.page-home main {
   position: relative;
 }
 
-/* --- The labelled control. Dots are decoration; these are the real tabs. --- */
+/* --- The labelled control. Dots are decoration; these are the real tabs. ---
+   Two shapes from one markup. Wide: five pills, wrapped and centred, and the arrows
+   and dots are display:none. Narrow (the ≤900px block near the bottom of this file):
+   four of the five tabs go display:none and the arrows either side step through them,
+   because five labels do not fit on a phone in ANY of the eleven packs. */
+.shw__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .shw__tabs {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
   margin: 0 auto 26px;
+}
+/* Stepper chrome — narrow only; the ≤900px block turns both on. */
+.shw__arrow,
+.shw__dots {
+  display: none;
 }
 .shw__tab {
   appearance: none;
@@ -645,7 +659,8 @@ body.page-home main {
    this replaced. Absolute positioning and the 3D layout only switch on once the
    script is there to drive them, so a dead script degrades to the old page
    rather than to four panels piled on top of each other. */
-.shw:not(.shw--ready) .shw__tabs {
+.shw:not(.shw--ready) .shw__tabs,
+.shw:not(.shw--ready) .shw__arrow {
   display: none;
 }
 .shw:not(.shw--ready) .shw__stage {
@@ -864,79 +879,259 @@ body.page-home main {
 }
 
 /* ==========================================================================
-   2. Image + text info rows
-   ========================================================================== */
-.info-rows {
+   2. "What virtual staging is" — the four photo strips (#learn)
+   ==========================================================================
+   Four photo panels side by side. The open one widens and shows its copy; the other
+   three collapse to a spine carrying the title, set vertically. Replaces four stacked
+   image+text rows that cost ~1,780px of scroll for four paragraphs.
+
+   THE FALLBACK IS THE FIRST BLOCK, NOT AN AFTERTHOUGHT. Everything that makes this a
+   strip widget is gated behind `.hstrips--ready`, which scripts/home-strips.js adds.
+   index-deferred.js injects that file after `load`, so there is a real window — and a
+   real failure mode (JS off, a 404, a parse error anywhere in the injected batch) —
+   where this markup is all the visitor gets. Un-upgraded it must read as four ordinary
+   photo cards with all the copy showing, which is what the rules below give it. */
+
+.hstrips {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 22px;
 }
-.info-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  align-items: center;
-}
-.info-row--flip .info-row__media {
-  order: 2;
-}
-.info-row__media {
+.hstrip {
   position: relative;
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 16px 40px rgba(30, 58, 138, 0.22);
   border: 1px solid rgba(255, 255, 255, 0.45);
-  background: #b2c4f6;
+  box-shadow: 0 16px 40px rgba(30, 58, 138, 0.22);
 }
-.info-row__media img {
+.hstrip__img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  /* No width/height attributes on the <img> in index.html, on purpose: those resolve
+     as a presentational height, which makes `aspect-ratio` a no-op unless height:auto
+     is also set. Leaving them off keeps this ratio authoritative. */
+  aspect-ratio: 16 / 9;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.16, 0.84, 0.44, 1);
 }
-.info-row__media:hover img {
-  transform: scale(1.04);
-}
-.info-row__media figcaption {
+.hstrip__scrim {
   position: absolute;
-  left: 14px;
-  bottom: 12px;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  max-width: calc(100% - 28px);
-  padding: 6px 13px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--bg-elevated);
-  background: rgba(15, 23, 42, 0.58);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border-radius: 999px;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.12) 0%, rgba(15, 23, 42, 0.55) 45%, rgba(15, 23, 42, 0.9) 100%);
 }
-.info-row__eyebrow {
-  display: inline-block;
-  font-size: 11.5px;
+.hstrip__h {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 0 20px;
+}
+.hstrip__btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--bg-elevated);
+  text-align: left;
+  /* Not a button until the widget exists — see the fallback note above. */
+  cursor: default;
+}
+.hstrip__eyebrow {
+  display: block;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.3px;
   text-transform: uppercase;
-  color: var(--brand);
-  margin-bottom: 9px;
+  color: var(--brand-pale);
+  margin-bottom: 4px;
 }
-.info-row__title {
-  font-size: clamp(19px, 2.1vw, 25px);
-  line-height: 1.2;
-  letter-spacing: -0.4px;
-  color: var(--brand-deep);
+.hstrip__title {
+  display: block;
+  font-size: clamp(18px, 2vw, 23px);
   font-weight: 800;
-  margin: 0 0 11px;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
 }
-.info-row__body {
+.hstrip__body {
+  position: relative;
+  z-index: 2;
+  padding: 12px 20px 20px;
+  max-width: 62ch;
+}
+.hstrip__text {
   margin: 0;
-  font-size: 15px;
+  font-size: 14.5px;
   line-height: 1.55;
-  color: #3e4d73;
+  color: #eef4ff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+.hstrip__cap {
+  margin: 12px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-pale);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+/* The checklist is authored for the light page background; over a photo it needs the
+   pale tick and the same shadow the body copy gets. */
+.hstrips .home-list li {
+  color: #e5edff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+.hstrips .home-list li::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393c5fd' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
+
+/* --- Upgraded: the actual strip widget ----------------------------------- */
+
+.hstrips--ready {
+  flex-direction: row;
+  gap: 12px;
+  /* A fixed height is the whole point: the section never reflows as you move between
+     strips, so nothing below it shifts. */
+  height: 460px;
+}
+.hstrips--ready .hstrip {
+  flex: 1 1 0;
+  /* Wide enough for the vertical title to wrap to two columns. The longest translated
+     title is 60 characters (German "how it works"), which does NOT fit one column of a
+     460px strip — see the wrapping note on .hstrip__btn below. */
+  min-width: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 18px;
+  /* 0.3s, down from 0.55s originally. This is the budget the copy's fade is tuned
+     against — see the transition-delay on .is-open .hstrip__body below. Lengthening
+     this without lengthening that makes the text arrive mid-slide; shortening it
+     without shortening that leaves the open panel visibly empty. */
+  transition: flex-grow 0.3s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.hstrips--ready .hstrip.is-open {
+  flex-grow: 5.4;
+}
+.hstrips--ready .hstrip__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  transition: transform 0.7s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.hstrips--ready .hstrip:not(.is-open):hover .hstrip__img {
+  transform: scale(1.05);
+}
+.hstrips--ready .hstrip__btn {
+  cursor: pointer;
+  /* Bounds the vertical title. In vertical writing mode the block axis is horizontal,
+     so this caps how LONG a line may run and forces a second column instead of letting
+     a 60-character German title run off the top of the strip. */
+  max-height: 100%;
+}
+.hstrips--ready .hstrip__btn:focus-visible {
+  outline: 3px solid var(--bg-elevated);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* Collapsed: the title runs up the spine.
+   The header is taken out of flow and given the whole strip so `max-height:100%` above
+   has a definite box to resolve against; in flow its height would be the text's own
+   length, which is the thing being bounded. */
+.hstrips--ready .hstrip:not(.is-open) .hstrip__h {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 18px 14px;
+}
+.hstrips--ready .hstrip:not(.is-open) .hstrip__btn {
+  writing-mode: vertical-rl;
+  /* vertical-rl reads top-to-bottom; the half turn makes it read bottom-to-top, which
+     is the convention for Latin text on a vertical spine. Wrapped lines then stack
+     left-to-right, so a two-column German title still reads in order. */
+  transform: rotate(180deg);
+}
+.hstrips--ready .hstrip:not(.is-open) .hstrip__eyebrow {
+  display: none;
+}
+.hstrips--ready .hstrip:not(.is-open) .hstrip__title {
+  font-size: 16px;
+}
+/* THE COPY IS LAID OUT AT A WIDTH THAT DOES NOT DEPEND ON THE STRIP'S ANIMATING ONE.
+   This is the whole reason the switch used to feel so busy. The body is a block inside
+   the strip, so its measure tracked the strip's width — and the strip animates from
+   ~120px to ~650px. The paragraph was re-wrapping from THIRTY lines to four, rewrapping
+   on every frame of the transition, while the reader was trying to start reading it.
+
+   `cqw` resolves against `.hstrips` (see container-type below), which never moves, so
+   the text is wrapped correctly from the very first frame and simply gets uncovered as
+   the strip widens. 52cqw is chosen to stay inside the open strip's inner width across
+   the whole range this layout runs in — ~419px at the 900px breakpoint against 441px
+   available, ~543px against 608px at the 1140px cap — so it never needs the flex maths
+   repeated here. The overflow:hidden on .hstrip clips it while the strip is narrow.
+
+   IF YOU REMOVE container-type, `cqw` silently falls back to resolving against the
+   VIEWPORT and the copy blows out to half the window. test/frontend/home-strips.test.js
+   pins the two together. */
+.hstrips--ready {
+  container-type: inline-size;
+}
+
+/* Held for one frame while home-strips.js switches the widget on, so the jump from the
+   fallback (all four panels' copy visible) to the initial state (one open) is applied
+   rather than animated. Without it the section flashes four panels of text and fades
+   three out on every page load. */
+.hstrips--no-tx,
+.hstrips--no-tx * {
+  transition: none !important;
+}
+.hstrips--ready .hstrip.is-open .hstrip__h,
+.hstrips--ready .hstrip__body {
+  width: 52cqw;
+}
+
+/* Opacity is the ONLY thing that animates on the text. There is deliberately no
+   max-height transition: the body keeps its natural height in every state, so opening a
+   strip does not shove its own heading upward. A collapsed body is invisible and clipped
+   by the strip, but still in the accessibility tree and still findable by in-page
+   search — which `display:none` would not be. */
+.hstrips--ready .hstrip__body {
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Closing fades out quickly and without delay, so the outgoing copy is gone before
+     the incoming strip has widened. */
+  transition: opacity 0.1s ease;
+  /* Stops a drag from selecting the three invisible panels' text along with the open
+     one's — they are still laid out, just not on screen. */
+  user-select: none;
+}
+.hstrips--ready .hstrip.is-open .hstrip__body {
+  opacity: 1;
+  pointer-events: auto;
+  user-select: auto;
+  /* Tuned against the 0.3s slide above. Two failure modes bracket this number and it
+     sits between them:
+
+       delay too SMALL — the copy fades in during the fast part of the travel. An
+         opening strip does not merely grow; the panels before it shrink at the same
+         time, so it slides sideways by several hundred pixels. Text arriving there
+         reads as flying in.
+       delay too LARGE — the outgoing copy has already gone (0.1s, above) and the
+         incoming has not started, so a wide panel sits visibly empty. At 0.34s that
+         hole was the most noticeable thing about the whole transition.
+
+     0.14s lands after the ease-out has spent ~85% of its travel, so the copy fades up
+     over the last few dozen pixels of a decelerating slide — it settles rather than
+     flies, and the gap between the two panels' copy is short enough to read as a
+     crossfade instead of a hole.
+
+     The heading is deliberately NOT delayed at all: it stays visible throughout so the
+     click has immediate feedback, and its fixed measure means it slides without
+     re-wrapping. */
+  transition: opacity 0.2s ease 0.14s;
 }
 
 /* ==========================================================================
@@ -1323,49 +1518,81 @@ body.page-home main {
        let the panels themselves do the moving. */
     transition: none;
   }
-  .shw__tabs {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 4px;
-    /* bleed the strip to the section edges so the last tab is reachable */
-    margin-inline: -28px;
-    padding-inline: 28px;
-    /* Five tabs never fit here, so the strip is always mid-scroll and the tab at the
-       edge is always half cut. Fading the last 24px says "there is more" instead of
-       leaving what looks like a clipped label; the scrollbar that would normally carry
-       that message is hidden two lines up. studio-showcase.js keeps the ACTIVE tab
-       centred (revealActiveTab), so the fade only ever eats a neighbour.
+  /* --- The stepper ---
+     Five labels do not fit across a phone in any of the eleven packs, so this used to be
+     a masked horizontal scroller with the active tab auto-centred. It read as clipped
+     text, not as a scroller: a sideways swipe inside a page that scrolls downwards is
+     not a gesture anyone goes looking for, so most of the studios were simply never seen.
 
-       THE 28px OFFSET IS THE BLEED ABOVE, and it is not decoration. A mask is measured
-       against the element's own box, and the negative margin has already pushed that box
-       28px off each side of the viewport — a fade starting at 0 lands entirely
-       off-screen and does visibly nothing. The stops start where the viewport does. */
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent 28px,
-      #000 52px,
-      #000 calc(100% - 52px),
-      transparent calc(100% - 28px)
-    );
-    mask-image: linear-gradient(
-      to right,
-      transparent 28px,
-      #000 52px,
-      #000 calc(100% - 52px),
-      transparent calc(100% - 28px)
-    );
-    /* A smooth scroll into a masked strip should stop with a tab centred, not parked
-       under the fade — snapping gives the same landing point when the touch scroll is
-       the one doing the moving. */
-    scroll-snap-type: x proximity;
+     So: show the active tab ONLY, and put the other four behind the arrows either side.
+     Every studio is now one tap away and nothing is parked off-screen. The four hidden
+     tabs stay in the DOM — they carry the tab↔panel ARIA wiring, and the roving tabindex
+     already means the active one is the only focusable tab, so hiding the rest costs the
+     keyboard nothing. Do NOT bring the scroller back; that is what the drift guard in
+     test/frontend/studio-showcase.test.js is pinning. */
+  .shw__nav {
+    gap: 6px;
+    margin-bottom: 10px;
   }
-  .shw__tab {
-    scroll-snap-align: center;
+  .shw__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    /* A 20px chevron is not a touch target. 44px is, and padding cannot get there on a
+       glyph this small — see the share page's 27px-target regression. */
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 999px;
+    /* Same glass as .shw__tab: the arrows read as part of the control, not as chrome. */
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.42);
+    backdrop-filter: blur(14px) saturate(170%);
+    -webkit-backdrop-filter: blur(14px) saturate(170%);
+    color: var(--brand-deep);
+    cursor: pointer;
   }
-  .shw__tabs::-webkit-scrollbar {
+  .shw__arrow:focus-visible {
+    outline: 3px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .shw__tabs {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    justify-content: center;
+    min-width: 0;
+    margin: 0;
+  }
+  .shw__tab:not(.is-active) {
     display: none;
+  }
+  .shw__tab.is-active {
+    /* The label fills the gap between the arrows, and WRAPS inside it — `Estúdio de
+       exteriores` and `익스테리어 스튜디오` are both wider than a 360px phone minus two
+       44px arrows, and nowrap would push the next arrow off the screen edge. */
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: normal;
+  }
+  /* The label names the studio you are on; the dots are the only thing left saying how
+     many there are and where you are among them. studio-showcase.js builds one per panel. */
+  .shw__dots {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    margin: 0 auto 18px;
+  }
+  .shw__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(37, 99, 235, 0.24);
+    transition: background 0.22s ease, transform 0.22s ease;
+  }
+  .shw__dot.is-active {
+    background: var(--brand);
+    transform: scale(1.35);
   }
   .shw__panel-inner {
     padding: 18px 16px 20px;
@@ -1385,15 +1612,104 @@ body.page-home main {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  .info-rows {
-    gap: 36px;
+  /* Four vertical spines do not fit a phone — there is no width left for any of them
+     to open into. Below this the strips go back to a stack, still one-open-at-a-time
+     but growing downward, with every title horizontal again.
+
+     THIS BREAKPOINT IS MIRRORED IN scripts/home-strips.js (FLAT_QUERY). Move one and
+     you must move the other; test/frontend/home-strips.test.js fails if they drift. */
+  .hstrips--ready {
+    flex-direction: column;
+    height: auto;
+    gap: 14px;
   }
-  .info-row {
-    grid-template-columns: 1fr;
-    gap: 18px;
+  .hstrips--ready .hstrip {
+    flex: 0 0 auto;
+    /* A comfortable tap target in its own right — the whole collapsed strip is
+       clickable (home-strips.js wires the strip, not just its button), so this is the
+       target size, not the 40px-tall heading inside it. */
+    min-height: 104px;
+    padding-bottom: 0;
+    /* Height follows the body's reveal below rather than being animated here. Animating
+       both fights itself: content taller than any fixed min-height snaps while the
+       min-height eases, which is visible as a stutter halfway through. */
+    transition: none;
   }
-  .info-row--flip .info-row__media {
-    order: 0;
+  /* Stacked, an OPEN strip is taller than its min-height, so its content is no longer
+     pushed to the bottom by justify-content — the eyebrow ends up 1px from the strip's
+     top edge, hard against the photo. The top padding is what gives it air.
+     The bottom is trimmed to 6px at the same time: with .hstrip__body's own top padding
+     it was putting 30px between the heading and the paragraph it belongs to, which on a
+     phone reads as two unrelated blocks rather than one. */
+  .hstrips--ready .hstrip__h {
+    padding: 16px 18px 6px;
+  }
+  /* THE COPY GOES BACK TO FILLING THE COLUMN.
+     The 52cqw measure is a desktop device — it exists only so the text does not re-wrap
+     while the strip animates its width. Stacked, the strip is already full width and
+     never animates it, so that measure is pure harm: at a 354px container it rendered
+     the body 184px wide and wrapped the paragraph to fifteen lines down one edge. */
+  .hstrips--ready .hstrip.is-open .hstrip__h,
+  .hstrips--ready .hstrip__body {
+    width: auto;
+  }
+
+  /* A collapsed body must take NO height here. On the desktop layout the strip has a
+     fixed 460px height and clips, so a hidden body that keeps its natural height costs
+     nothing. Stacked, the strips are sized by their content — so the same hidden body
+     inflated every collapsed strip to 600-800px and turned the section into ~2,900px of
+     near-empty panels. Still not `display:none`: the panel stays in the accessibility
+     tree and findable by in-page search.
+
+     `0fr` → `1fr`, NOT a max-height. A fixed cap cannot be right for eleven language
+     packs across every phone width: 460px cleared English at 390px with room to spare,
+     and clipped German (556px needed) and French (534px) at 320px — silently losing the
+     last bullet and the caption. A grid row animates to whatever the content actually
+     is, so there is no number here to get wrong. This is why .hstrip__inner exists in
+     index.html; the wrapper is what carries the overflow.
+
+     The 4px top, against the heading's 6px bottom, leaves a 10px heading-to-paragraph
+     gap — it was 30px, which on a phone read as two unrelated blocks rather than one
+     thought. 18px horizontal lines the copy up with the heading above it; the base 20px
+     left them two pixels out, which is visible once they sit this close together. */
+  .hstrips--ready .hstrip__body {
+    display: grid;
+    grid-template-rows: 1fr;
+    padding: 4px 18px 20px;
+    transition: grid-template-rows 0.32s cubic-bezier(0.16, 0.84, 0.44, 1), opacity 0.2s ease 0.1s;
+  }
+  .hstrips--ready .hstrip:not(.is-open) .hstrip__body {
+    grid-template-rows: 0fr;
+    padding-top: 0;
+    padding-bottom: 0;
+    transition: grid-template-rows 0.28s cubic-bezier(0.16, 0.84, 0.44, 1), opacity 0.12s ease;
+  }
+  .hstrips--ready .hstrip__inner {
+    overflow: hidden;
+    /* A grid item's automatic minimum size is its content, which would refuse to
+       shrink to the 0fr row and leave every collapsed panel full height — the exact
+       bug this replaced. */
+    min-height: 0;
+  }
+  /* Undo the spine: no rotation, no absolute header, eyebrow back on.
+     Keeps the 18px BOTTOM padding rather than the open panel's 6px: a collapsed label
+     sits at the foot of a 104px panel, so trimming it would drop the text onto the
+     panel edge. Only the top gains air, matching the open state. */
+  .hstrips--ready .hstrip:not(.is-open) .hstrip__h {
+    position: static;
+    display: block;
+    padding: 16px 18px 18px;
+  }
+  .hstrips--ready .hstrip:not(.is-open) .hstrip__btn {
+    writing-mode: horizontal-tb;
+    transform: none;
+    max-height: none;
+  }
+  .hstrips--ready .hstrip:not(.is-open) .hstrip__eyebrow {
+    display: block;
+  }
+  .hstrips--ready .hstrip:not(.is-open) .hstrip__title {
+    font-size: 18px;
   }
 }
 
@@ -1432,25 +1748,16 @@ body.page-home main {
   transform: translateY(34px);
 }
 
-/* staggered checklist inside info-row text */
-.info-row__text .home-list li {
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
-}
-.info-row__text.is-visible .home-list li {
-  opacity: 1;
-  transform: none;
-}
-.info-row__text.is-visible .home-list li:nth-child(1) {
-  transition-delay: 0.18s;
-}
-.info-row__text.is-visible .home-list li:nth-child(2) {
-  transition-delay: 0.28s;
-}
-.info-row__text.is-visible .home-list li:nth-child(3) {
-  transition-delay: 0.38s;
-}
+/* THE CHECKLIST NO LONGER HAS ITS OWN ENTRANCE, ON PURPOSE.
+   It used to fade the three bullets up one at a time on delays of 0.18/0.28/0.38s. That
+   was written for the old stacked rows, where it played ONCE as you scrolled past. On a
+   hover-driven strip it replays every time the pointer crosses a panel, and it was
+   stacking a second, staggered movement on top of a strip that was already sliding —
+   three things moving at once while you are trying to start reading.
+
+   The bullets now simply arrive with the rest of the copy, in one fade, already in
+   position. If you want the stagger back, it belongs on first reveal only, not on
+   every switch. */
 
 /* before/after crossfade between examples */
 .ba-before,
@@ -1536,10 +1843,17 @@ body.page-home main {
 
 /* respect reduced motion for all of the above */
 @media (prefers-reduced-motion: reduce) {
-  .info-row__text .home-list li {
-    opacity: 1;
-    transform: none;
+  /* The strip still opens and closes — that is the control working, not decoration —
+     but it does so instantly, and the photo no longer creeps on hover. The open panel's
+     copy must still end up at opacity 1; killing the transition is what makes it appear
+     at once rather than fade, so the `.is-open` rule above still supplies the value. */
+  .hstrips--ready .hstrip,
+  .hstrips--ready .hstrip__body,
+  .hstrips--ready .hstrip__img {
     transition: none;
+  }
+  .hstrips--ready .hstrip:not(.is-open):hover .hstrip__img {
+    transform: none;
   }
   .ba-handle::after {
     animation: none;

@@ -87,6 +87,8 @@
       "title": "Überzeugen Sie sich selbst",
       "subtitle": "Live-Demos. Sehen Sie sich um.",
       "tablistAria": "Studios",
+      "prevAria": "Vorheriges Studio",
+      "nextAria": "Nächstes Studio",
       "tabs": {
         "staging": "Staging",
         "designer": "KI-Designer",

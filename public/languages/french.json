@@ -87,6 +87,8 @@
       "title": "Voyez par vous-même",
       "subtitle": "Démos en direct. Explorez à votre rythme.",
       "tablistAria": "Studios",
+      "prevAria": "Studio précédent",
+      "nextAria": "Studio suivant",
       "tabs": {
         "staging": "Staging",
         "designer": "Designer IA",

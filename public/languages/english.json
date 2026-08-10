@@ -87,6 +87,8 @@
       "title": "See it for yourself",
       "subtitle": "Live demos. Have a look around.",
       "tablistAria": "Studios",
+      "prevAria": "Previous studio",
+      "nextAria": "Next studio",
       "tabs": {
         "staging": "Staging",
         "designer": "AI Designer",

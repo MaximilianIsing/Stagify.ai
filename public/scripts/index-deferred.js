@@ -47,6 +47,10 @@ export const DEFERRED = [
   // Below-fold section behaviour.
   { src: 'scripts/staging-studio.js', module: true },
   { src: 'scripts/home-reveal.js', module: true },
+  // #learn's four photo strips. Independent of home-reveal.js despite both touching
+  // that section: this one owns `.is-open`, home-reveal.js owns `.is-visible`, and the
+  // checklist stagger deliberately keys off the former (see the note in home.css).
+  { src: 'scripts/home-strips.js', module: true },
   { src: 'scripts/home-text-animate.js', module: true },
   // #compare's savings calculator and #ai-shift's chart. Both mount their OWN
   // IntersectionObserver rather than watching home-reveal.js's `.is-visible`: that

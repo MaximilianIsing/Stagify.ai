@@ -350,7 +350,28 @@
     -webkit-user-select: none;
   }
   .faq-room__q {
+    /* THE READING OFFSET — where the question sits once its room is OPEN, with the
+       "05 / 09" key in the band above it. The preview rides higher (see the transform
+       below), but this stays the LAID-OUT position in every state: home-faq-plan.js
+       measures `offsetTop` here to place the answer under this question rather than under
+       the longest possible one, and a preview that moved the box would feed it the
+       preview's offset — laying every answer 4.4% of the sheet too high the moment a room
+       opened. `transform` is invisible to `offsetTop`, which is exactly why it, and not
+       `top`, does the shifting. */
     top: 11%;
+    /* THE PREVIEW RIDES AT THE TOP OF THE COLUMN, AND SO DOES THE INVISIBLE STATE.
+       Hovering, there is nothing above the question — the key only exists once a room is
+       open — so the reading offset left the preview floating a fifth of the way down an
+       otherwise empty panel, reading as a fragment of a card rather than the top of one.
+
+       The shift belongs HERE, on the resting state, not on the `:hover` rule, and that is
+       the whole fix for a real bug: scoped to hover, the question dropped back to the
+       reading offset the instant the pointer left, so it visibly slid 4.4% of the sheet
+       downwards THROUGH its own 0.22s fade-out. Nothing can move during that fade if the
+       hidden state and the previewing state are the same position. Which they can be —
+       the resting question is invisible, so where it rests is nobody's business but the
+       one state that is actually seen from it. */
+    transform: translateY(-4.4cqh);
     /* opacity, NOT display: this span is half the <summary>'s accessible name, so it
        stays in the accessibility tree. It doubles as the hover preview for free. */
     opacity: 0;
@@ -366,7 +387,12 @@
        events go only to the one that is open. */
     pointer-events: none;
   }
+  /* Opening a room is the ONE thing that drops the question to its reading offset, because
+     it is the one thing that puts the key above it. Note this is the only rule allowed to
+     touch the question's position: anything scoped to `:hover` would move it while it is
+     visible and fading. */
   .faq-room[open] .faq-room__q {
+    transform: none;
     pointer-events: auto;
   }
   /* Written as `.faq-room > .faq-room__a`, not `.faq-room__a`, ON PURPOSE. home.css
@@ -511,14 +537,18 @@
   .faq-room[open] .fp-floor {
     fill: rgba(147, 197, 253, 0.14);
   }
-  /* The active room's own wall, drawn over the partition beneath it. */
+  /* The active room's own wall, drawn over the partition beneath it.
+
+     It APPEARS, it is not traced. This used to reveal itself with a stroke-dashoffset
+     run clockwise from the top-left, and the highlight arriving a corner at a time is
+     what made a plain hover feel like it was loading something — you cannot skim nine
+     rooms when each one takes 0.42s to finish outlining itself. Fading the finished
+     rectangle in gives the same feedback at the speed the pointer is actually moving. */
   .fp-wall {
     fill: none;
     stroke: var(--ink-hot);
     stroke-width: 4.5;
     stroke-linejoin: miter;
-    stroke-dasharray: var(--len);
-    stroke-dashoffset: 0;
     opacity: 0;
   }
   .faq-room:hover .fp-wall,
@@ -586,6 +616,14 @@
   .faq-plan__hint {
     transition: opacity 0.22s ease, color 0.18s ease;
   }
+  /* The question additionally glides between the preview offset and the reading one. That
+     move happens on open/close and NOWHERE else — hovering never shifts it — so this is
+     only ever seen when closing a room the pointer is still over, where the question stays
+     visible the whole way. Opening is covered by fpNoteIn, which animates the same
+     property and simply wins for its duration. */
+  .faq-room__q {
+    transition: opacity 0.22s ease, color 0.18s ease, transform 0.22s ease;
+  }
   .fp-floor,
   .fp-furn,
   .fp-door,
@@ -594,21 +632,12 @@
     transition: fill 0.24s ease, opacity 0.24s ease, stroke 0.2s ease, color 0.24s ease;
   }
 
-  /* The wall draws clockwise from the room's top-left, the direction a hand traces a
-     wall. --len is set by home-faq-plan.js as plain arithmetic; getTotalLength() would
-     force layout once per room on a section nobody has scrolled to yet. */
+  /* The highlight fades, it does not trace itself on. See .fp-wall above for why the
+     dashoffset reveal went: this is hover feedback, and hover feedback that takes half a
+     second to resolve makes the whole plan feel slow to skim. */
   .fp-wall {
-    stroke-dashoffset: var(--len);
-    transition: stroke-dashoffset 0.42s cubic-bezier(0.16, 0.84, 0.44, 1),
-      opacity 0.18s ease, stroke-width 0.2s ease;
+    transition: opacity 0.18s ease, stroke-width 0.2s ease;
   }
-  .faq-room:hover .fp-wall,
-  .faq-room:has(:focus-visible) .fp-wall,
-  .faq-room[open] .fp-wall {
-    stroke-dashoffset: 0;
-  }
-  /* Closing FADES the stroke rather than un-drawing it: a reversed dashoffset reads as
-     an undo, not as a room closing. */
 
   .faq-room[open] .faq-room__no {
     animation: fpKeyIn 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.4);

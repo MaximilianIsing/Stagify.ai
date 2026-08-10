@@ -87,6 +87,8 @@
       "title": "Zie het zelf",
       "subtitle": "Live demo's. Kijk gerust rond.",
       "tablistAria": "Studio's",
+      "prevAria": "Vorige studio",
+      "nextAria": "Volgende studio",
       "tabs": {
         "staging": "Styling",
         "designer": "AI-Designer",

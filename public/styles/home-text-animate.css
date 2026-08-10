@@ -4,8 +4,12 @@
    Text stays visible until JS starts an animation (no pre-hidden titles).
    ========================================================================== */
 
-.home-section__title[data-tx],
-.info-row__title[data-tx] {
+/* `.info-row__title[data-tx]` used to be listed here too. #learn's four <h3>s lost
+   their data-tx hooks when that section became the strip widget: three of the four
+   titles are rotated 90° at any moment, and every effect in home-text-animate.js
+   translates along the block axis — which after the rotation is the wrong one, so the
+   words would fly in sideways. The section's <h2> still animates; it never rotates. */
+.home-section__title[data-tx] {
   white-space: normal;
   word-spacing: normal;
 }
