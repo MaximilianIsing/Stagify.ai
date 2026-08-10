@@ -1382,69 +1382,69 @@
                 <pattern id="fp-grid" width="22.5" height="22.5" patternUnits="userSpaceOnUse">
                   <path d="M22.5 0H0V22.5" fill="none" stroke="currentColor" stroke-width="0.8"/>
                 </pattern>
-                <!-- FURNITURE SYMBOLS. Every one is drawn to FILL its 24x24 box and carries
-                     `preserveAspectRatio="none"`, which is the whole contract: home-faq-plan.js
-                     sizes each <use> to a real metre footprint, and without that attribute the
-                     default (xMidYMid meet) letterboxes the symbol to the SMALLER side and
-                     centres it — a 2.4 x 0.9 m sofa drew as a 0.9 m square blob, a 1.8 m
-                     bookcase as a 25-unit stub, and the metre sizes in FURNITURE were fiction.
-                     `vector-effect` is what makes filling the box safe: the stretch is wildly
-                     non-uniform (4.5x across, 1.7x down for that sofa) and would otherwise
-                     draw the horizontals almost three times heavier than the verticals.
-
-                     They are all drawn in ONE orientation — anything with a front faces SOUTH,
-                     down the sheet — and turned into place by the optional quarter-turn in the
-                     furniture table. A sofa symbol and a sofa-rotated-90 symbol would be the
-                     same drawing twice, and would drift.
-
-                     THE TWO THINGS THAT MAKE THESE READ AS FURNITURE, both learned the hard way
-                     from a first pass that came out looking like a mesh of boxes:
-
-                     CURVES AND ROUNDED SHELLS. A sofa drawn as a rectangle divided by five
-                     full-depth lines is a radiator; a chair drawn as two stacked rectangles is a
-                     filing cabinet. Upholstery gets a rounded shell, a chair back is an ARC, and
-                     a duvet turn-down is a curve. On a sheet whose every other line is straight
-                     — walls, grid, dimensions — the curves are also what separates the furniture
-                     layer from the architecture at a glance.
-
-                     DETAIL IS INSET, NOT SPANNING. Cushions are rounded rectangles floating
-                     inside the seat with gaps around them, not lines drawn wall to wall across
-                     the piece. A line that spans the whole item reads as a division of the box;
-                     a shape inside it reads as a thing sitting in the box.
-
-                     Detail also carries the lighter stroke (1.1 against the 1.5 outline), so
-                     every piece has its own small weight hierarchy, the same way the sheet does. -->
-                <symbol id="fp-sofa" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="2.8"/><path d="M5 1.6v21.6M19 1.6v21.6M5.6 8.2h12.8" stroke-width="1.1"/><rect x="5.6" y="9.2" width="3.9" height="13.2" rx=".9" stroke-width="1.1"/><rect x="10.05" y="9.2" width="3.9" height="13.2" rx=".9" stroke-width="1.1"/><rect x="14.5" y="9.2" width="3.9" height="13.2" rx=".9" stroke-width="1.1"/></symbol>
-                <symbol id="fp-armchair" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="2.8"/><path d="M6 1.6v21.6M18 1.6v21.6M6.6 8.6h10.8" stroke-width="1.1"/><rect x="6.6" y="9.6" width="10.8" height="12.8" rx="1.1" stroke-width="1.1"/></symbol>
-                <symbol id="fp-chair" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="3" y="6.4" width="18" height="16" rx="1.8"/><path d="M2.2 5.4Q12-.6 21.8 5.4" stroke-width="1.3"/></symbol>
-                <symbol id="fp-bed" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="1.6"/><rect x="3" y="2.4" width="7.6" height="5.2" rx="1.6" stroke-width="1.1"/><rect x="13.4" y="2.4" width="7.6" height="5.2" rx="1.6" stroke-width="1.1"/><path d="M.8 9.8h22.4M.8 14.2Q12 16.4 23.2 14.2" stroke-width="1.1"/></symbol>
-                <symbol id="fp-nightstand" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="1"/><path d="M3.2 8.6h17.6" stroke-width="1.1"/></symbol>
-                <symbol id="fp-wardrobe" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".8"/><path d="M.8 16.4h22.4M12 16.4v6.8" stroke-width="1.1"/><path d="M3 8.4h18" stroke-width="1.1" stroke-dasharray="3 2.4"/></symbol>
-                <symbol id="fp-desk" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="1"/><path d="M17 1.6v20.8" stroke-width="1.1"/><rect x="5.6" y="2.4" width="6.6" height="2.6" rx="1" stroke-width="1.1"/></symbol>
-                <symbol id="fp-shelf" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".6"/><path d="M.8 6.4h22.4M6.4 6.4v16.8M12 6.4v16.8M17.6 6.4v16.8" stroke-width="1.1"/></symbol>
-                <symbol id="fp-table" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="1.2"/></symbol>
-                <symbol id="fp-round" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="11.2"/></symbol>
-                <symbol id="fp-coffee" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx="5.6"/></symbol>
-                <symbol id="fp-tv" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y="9.4" width="22.4" height="13.8" rx="1"/><rect x="3.4" y="1.2" width="17.2" height="2.6" rx="1.3" stroke-width="1.1"/></symbol>
-                <symbol id="fp-counter" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".6"/><path d="M.8 4.6h22.4M8 4.6v18.6M16 4.6v18.6" stroke-width="1.1"/></symbol>
-                <symbol id="fp-sink" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".8"/><rect x="3.6" y="6.4" width="16.8" height="13.6" rx="2.4" stroke-width="1.1"/><circle cx="12" cy="3.6" r="1.4" stroke-width="1.1"/></symbol>
-                <symbol id="fp-hob" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x=".8" y=".8" width="22.4" height="22.4" rx=".8"/><circle cx="7.4" cy="7.4" r="3.1" stroke-width="1.1"/><circle cx="16.6" cy="7.4" r="3.1" stroke-width="1.1"/><circle cx="7.4" cy="16.6" r="3.1" stroke-width="1.1"/><circle cx="16.6" cy="16.6" r="3.1" stroke-width="1.1"/></symbol>
-                <!-- ONE dashed outline, not two. A rug is the only piece drawn as a broken
-                     line (it is a floor finish, not an object), and an inner dashed border on
-                     top of it turned every seating group into dotted noise the sofa had to
-                     compete with. It sits UNDER the furniture; it may not out-draw it. -->
-                <symbol id="fp-rug" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M.8.8h22.4v22.4H.8Z" stroke-dasharray="4 3.2"/></symbol>
-                <!-- SEVEN deep lobes, not twelve shallow ones. The canopy is the standard plan
-                     symbol for planting, but shallow lobes with flat tops read as gear teeth at
-                     the size this actually renders (~20px) — the depth of the scallop is the
-                     whole difference between a shrub and a cog. -->
-                <symbol id="fp-plant" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M19.6 12a3.57 3.57 0 0 1-2.86 5.94 3.57 3.57 0 0 1-6.43 1.47 3.57 3.57 0 0 1-5.16-4.11 3.57 3.57 0 0 1 0-6.6 3.57 3.57 0 0 1 5.16-4.11 3.57 3.57 0 0 1 6.43 1.47A3.57 3.57 0 0 1 19.6 12Z"/><circle cx="12" cy="12" r="2.6"/></symbol>
-                <!-- A lamp ON a round side table, which is what a lamp beside a chair actually
-                     is in plan. Drawn as a bare spoked circle it was a second round symbol
-                     competing with the planting, and both read as wheels; drawn as a square with
-                     a circle in it, as a button. It is the only concentric pair on the sheet:
-                     fp-round is a bare circle, fp-plant a scalloped one. -->
-                <symbol id="fp-lamp" viewBox="0 0 24 24" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="11.2"/><circle cx="12" cy="12" r="4.6" stroke-width="1.1"/></symbol>
+                <!-- FURNITURE SYMBOLS, DRAWN IN CENTIMETRES. Each viewBox is the piece's nominal footprint —
+                     a sofa is `0 0 210 90` because it is a 2.1 x 0.9 m sofa — and home-faq-plan.js sizes every
+                     <use> to a real metre footprint, so the two agree and the stretch is about 1:1.
+                     
+                     THAT IS THE POINT, and it is the third attempt at this block. Drawn in a square 24x24 box
+                     the pieces were stretched by whatever ratio their footprint happened to need: 4.3x across
+                     and 1.7x down for that sofa, which turned 49x54cm seat cushions into tall thin slots and
+                     made the whole thing read as a radiator. Nothing inside a piece can be proportioned at all
+                     until the box it is drawn in has the proportions of the thing.
+                     
+                     `preserveAspectRatio="none"` is still required and still load-bearing: without it the
+                     default (xMidYMid meet) letterboxes the symbol to its smaller side and centres it, which
+                     drew that sofa as a 0.9 m square and made every metre size in FURNITURE fiction.
+                     STROKE WIDTH AND DASHES ARE IN CENTIMETRES TOO, and that is measured, not assumed:
+                     `vector-effect="non-scaling-stroke"` cancels the page transform but NOT the scale of a
+                     nested viewBox, so a width here is a width in this symbol's units. Every symbol maps at
+                     the same 0.45 sheet units per centimetre (45 units to the metre), so one number gives the
+                     whole set an even weight — 5.2cm outlines land at ~2.3 sheet units, between the partitions
+                     at 4 and the door swings at 1.2, exactly where furniture belongs in the hierarchy. Carrying
+                     the old 24-box numbers over drew every line at a quarter of that and the layer vanished.
+                     
+                     CURVES AND INSET DETAIL are what separate furniture from architecture at a glance. A sofa
+                     divided by full-width lines is a radiator; cushions floating inside it with gaps around
+                     them are cushions. A chair back is an arc, a duvet turn-down is a curve — on a sheet where
+                     every other line is straight, that alone marks the layer. Detail carries the lighter
+                     stroke (3.8cm against the 5.2cm outline), so each piece has the sheet's weight hierarchy in
+                     miniature.
+                     
+                     NOTHING HERE MAY BE FINER THAN ~2px AT THE SIZE IT RENDERS. A room is about 180px wide, so
+                     roughly 35px per metre: a 4cm gap is a tenth of a pixel and a detail line 4cm from another
+                     one merges into a smudge. Two rails were removed for exactly this and the layer got
+                     CLEARER, not poorer. Add detail here only in centimetres you can afford. -->
+                <symbol id="fp-sofa" viewBox="0 0 210 90" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="206" height="86" rx="10"/><path d="M22 5v80M188 5v80" stroke-width="3.8"/><rect x="27" y="30" width="48.7" height="54" rx="7" stroke-width="3.8"/><rect x="80.7" y="30" width="48.7" height="54" rx="7" stroke-width="3.8"/><rect x="134.3" y="30" width="48.7" height="54" rx="7" stroke-width="3.8"/></symbol>
+                <symbol id="fp-armchair" viewBox="0 0 88 82" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="84" height="78" rx="10"/><path d="M20 5v74M68 5v74" stroke-width="3.8"/><rect x="24" y="28" width="40" height="50" rx="7" stroke-width="3.8"/></symbol>
+                <!-- A seat and a curved back rail. At 0.7 m the whole symbol renders about 24px across,
+                     so the arc is the only thing distinguishing it from every other small box on the sheet. -->
+                <symbol id="fp-chair" viewBox="0 0 70 70" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="8" y="18" width="54" height="48" rx="7"/><path d="M5 16Q35-2 65 16" stroke-width="4.4"/></symbol>
+                <symbol id="fp-bed" viewBox="0 0 170 210" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="166" height="206" rx="5"/><rect x="12" y="10" width="68" height="42" rx="9" stroke-width="3.8"/><rect x="90" y="10" width="68" height="42" rx="9" stroke-width="3.8"/><path d="M2 72h166M2 104q83 18 166 0" stroke-width="3.8"/></symbol>
+                <symbol id="fp-nightstand" viewBox="0 0 55 47" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="51" height="43" rx="4"/><path d="M8 16h39" stroke-width="3.8"/></symbol>
+                <symbol id="fp-wardrobe" viewBox="0 0 220 60" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="216" height="56" rx="3"/><path d="M2 42h216M110 42v16" stroke-width="3.8"/><path d="M14 22h192" stroke-width="3.8" stroke-dasharray="13 9"/></symbol>
+                <symbol id="fp-desk" viewBox="0 0 180 82" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="176" height="78" rx="4"/><path d="M133 5v72" stroke-width="3.8"/><rect x="30" y="10" width="58" height="16" rx="5" stroke-width="3.8"/></symbol>
+                <symbol id="fp-shelf" viewBox="0 0 165 46" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="161" height="42" rx="2"/><path d="M2 13h161M42 13v31M83 13v31M124 13v31" stroke-width="3.8"/></symbol>
+                <symbol id="fp-table" viewBox="0 0 155 88" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="151" height="84" rx="5"/></symbol>
+                <symbol id="fp-round" viewBox="0 0 115 115" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="57.5" cy="57.5" r="55.5"/></symbol>
+                <symbol id="fp-coffee" viewBox="0 0 105 55" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="101" height="51" rx="20"/></symbol>
+                <symbol id="fp-tv" viewBox="0 0 150 40" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="16" width="146" height="22" rx="3"/><rect x="20" y="3" width="110" height="7" rx="3.5" stroke-width="3.8"/></symbol>
+                <symbol id="fp-counter" viewBox="0 0 340 65" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="336" height="61" rx="2"/><path d="M2 14h336M115 14v49M228 14v49" stroke-width="3.8"/></symbol>
+                <symbol id="fp-sink" viewBox="0 0 60 45" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="56" height="41" rx="3"/><rect x="9" y="11" width="42" height="26" rx="6" stroke-width="3.8"/></symbol>
+                <symbol id="fp-hob" viewBox="0 0 60 45" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="56" height="41" rx="3"/><circle cx="18" cy="14" r="8" stroke-width="3.8"/><circle cx="42" cy="14" r="8" stroke-width="3.8"/><circle cx="18" cy="32" r="8" stroke-width="3.8"/><circle cx="42" cy="32" r="8" stroke-width="3.8"/></symbol>
+                <!-- ONE dashed outline, not two. A rug is the only piece drawn as a broken line — it is a
+                     floor finish, not an object — and an inner dashed border on top of it turned every seating
+                     group into dotted noise the sofa had to compete with. It sits UNDER the furniture; it may
+                     not out-draw it. -->
+                <symbol id="fp-rug" viewBox="0 0 260 150" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><rect x="2" y="2" width="256" height="146" rx="2" stroke-dasharray="17 12"/></symbol>
+                <!-- SEVEN deep lobes, not twelve shallow ones. The canopy is the standard plan symbol for
+                     planting, but shallow lobes with flat tops read as gear teeth at the size this actually
+                     renders (~20px) — the depth of the scallop is the whole difference between a shrub and a cog. -->
+                <symbol id="fp-plant" viewBox="0 0 60 60" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M51 30A9.9 9.9 0 0 1 43.1 46.4A9.9 9.9 0 0 1 25.3 50.5A9.9 9.9 0 0 1 11.1 39.1A9.9 9.9 0 0 1 11.1 20.9A9.9 9.9 0 0 1 25.3 9.5A9.9 9.9 0 0 1 43.1 13.6A9.9 9.9 0 0 1 51 30Z"/><circle cx="30" cy="30" r="6.5" stroke-width="3.8"/></symbol>
+                <!-- A lamp ON a round side table, which is what a lamp beside a chair actually is in plan.
+                     Drawn as a bare spoked circle it was a second round symbol competing with the planting and
+                     both read as wheels; drawn as a square with a circle in it, as a button. It is the only
+                     concentric pair on the sheet: fp-round is a bare circle, fp-plant a scalloped one. -->
+                <symbol id="fp-lamp" viewBox="0 0 50 50" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="5.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="25" cy="25" r="23"/><circle cx="25" cy="25" r="9.5" stroke-width="3.8"/></symbol>
               </defs>
 
               <rect class="fp-grid" x="0" y="0" width="1160" height="760"/>

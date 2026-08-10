@@ -367,6 +367,42 @@ test('every furniture symbol fills its box instead of being letterboxed into it'
   }
 });
 
+test('no placement stretches a symbol far from the proportions it is drawn in', () => {
+  // Each symbol's viewBox IS its nominal footprint in centimetres — `0 0 210 90` is a
+  // 2.1 x 0.9 m sofa — so a placement at that size stretches it 1:1 and everything inside it
+  // keeps the proportions it was drawn with. That is the entire reason the block was
+  // re-authored: in a square 24x24 box the sofa was stretched 4.3x across against 1.7x down,
+  // which turned 49x54cm seat cushions into tall thin slots and made the piece read as a
+  // radiator. Nothing inside a piece can be proportioned until its box has the proportions of
+  // the thing.
+  //
+  // So a placement whose aspect is nothing like its symbol's silently undoes that, and it is
+  // invisible in both files: the table looks reasonable, the symbol looks reasonable, only the
+  // render is squashed. A quarter turn draws into a SWAPPED box, which is why the turn has to
+  // be folded in here rather than compared against the raw width and depth.
+  const aspects = {};
+  for (const [, id, w, h] of INDEX.matchAll(/<symbol id="(fp-[^"]+)" viewBox="0 0 ([\d.]+) ([\d.]+)"/g)) {
+    aspects[id] = parseFloat(w) / parseFloat(h);
+  }
+  assert.ok(Object.keys(aspects).length >= 10, 'the furniture symbols declare a footprint viewBox');
+
+  for (const [key, items] of Object.entries(FURNITURE)) {
+    for (const [symbol, , , wm, hm, turn] of items) {
+      const nominal = aspects[symbol];
+      assert.ok(nominal, `"${symbol}" has no viewBox to be proportioned against`);
+      const quarter = turn === 90 || turn === 270;
+      const drawn = (quarter ? hm : wm) / (quarter ? wm : hm);
+      const stretch = drawn / nominal;
+      assert.ok(
+        stretch >= 0.8 && stretch <= 1.25,
+        `${key}: "${symbol}" at ${wm}x${hm}${turn ? ` turned ${turn}` : ''} stretches its symbol `
+        + `by ${stretch.toFixed(2)}x. Either place it nearer its drawn footprint, or redraw the `
+        + 'symbol — past about a quarter the detail inside it stops being the shape it depicts.'
+      );
+    }
+  }
+});
+
 test('furniture is only ever turned by a quarter', () => {
   // The turn is what lets one symbol serve every orientation, and mountRoom pays for it by
   // SWAPPING the box it draws into — a piece turned 90 has its width down the sheet. That
