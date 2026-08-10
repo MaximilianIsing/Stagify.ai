@@ -175,15 +175,111 @@ function prefersReducedMotion() {
   );
 }
 
-/** @param {Element} el */
-function inView(el) {
-  const r = el.getBoundingClientRect();
-  const vh = window.innerHeight || document.documentElement.clientHeight;
-  return r.top < vh * 0.92 && r.bottom > vh * 0.08;
+/**
+ * How much of an element has to be showing before its animation plays.
+ *
+ * `bottomPct` lifts the trigger line UP off the bottom edge of the scrollport (the
+ * observer's negative bottom rootMargin) and `threshold` is the share of the element
+ * that must be inside what is left.
+ *
+ * `earlyPx` does the opposite — it pushes the line DOWN past the fold, so the animation
+ * runs while the element is still below the last visible pixel and is already finished
+ * by the time it scrolls into view. Alternatives, not a pair: set one or the other.
+ *
+ * @typedef {{ threshold: number, bottomPct: number, earlyPx?: number }} ViewGate
+ */
+/** @type {ViewGate} */
+const DEFAULT_GATE = { threshold: 0.15, bottomPct: 5 };
+
+/**
+ * The trigger line for `gate`, in client coordinates: the scrollport's bottom edge,
+ * lifted by `bottomPct` or pushed past the fold by `earlyPx`.
+ *
+ * @param {{ top: number, bottom: number }} band
+ * @param {ViewGate} gate
+ */
+function triggerLine(band, gate) {
+  if (gate.earlyPx) return band.bottom + gate.earlyPx;
+  return band.bottom - ((band.bottom - band.top) * gate.bottomPct) / 100;
 }
 
 /**
- * Run `fn` once, as soon as `el` is on screen.
+ * The element the page actually scrolls in, or null for the viewport.
+ *
+ * THE HOMEPAGE DOES NOT SCROLL THE WINDOW. `<main>` is the scroll container
+ * (`overflow-y: auto`, ~8800px of content in a ~740px box) and `window.scrollY` is
+ * pinned at 0 for the entire page. So the box content is clipped to is main's border
+ * box — on a 900px viewport that is roughly [89, 831], NOT [0, 900]. Measuring against
+ * `window.innerHeight`, or letting the observer default to `root: null`, silently
+ * budgets ~70px of headroom that does not exist and fires animations below the last
+ * visible pixel. Everything here resolves this once and hands it to both call sites.
+ *
+ * @param {Element} el
+ * @returns {Element|null}
+ */
+function scrollRootOf(el) {
+  let node = el.parentElement;
+  while (node && node !== document.body && node !== document.documentElement) {
+    const oy = getComputedStyle(node).overflowY;
+    if (oy === "auto" || oy === "scroll") return node;
+    node = node.parentElement;
+  }
+  return null;
+}
+
+/**
+ * The client-coordinate band `root` actually paints — its border box, or the viewport.
+ *
+ * @param {Element|null} root
+ */
+function viewportBand(root) {
+  if (root) {
+    const r = root.getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom };
+  }
+  const vh = window.innerHeight || document.documentElement.clientHeight;
+  return { top: 0, bottom: vh };
+}
+
+/**
+ * The share of `el` inside the gate's band — the same ratio the observer below
+ * thresholds on, so the synchronous fast path and the observer agree.
+ *
+ * @param {Element} el
+ * @param {ViewGate} gate
+ * @param {Element|null} root
+ */
+function viewRatio(el, gate, root) {
+  const r = el.getBoundingClientRect();
+  const band = viewportBand(root);
+  const overlap = Math.min(r.bottom, triggerLine(band, gate)) - Math.max(r.top, band.top);
+  return Math.max(overlap, 0) / (r.height || 1);
+}
+
+/**
+ * Has `el` reached its trigger line — or gone straight past it?
+ *
+ * THE SECOND HALF IS NOT OPTIONAL. `entry.intersectionRatio` is a sample, not a
+ * history: a 16px bar crossing a 0.5 threshold occupies an 8px window, and a brisk
+ * wheel scroll moves ~40px per frame, so the observer can be handed a ratio of 0 on
+ * both sides and the animation never runs at all — leaving the bar blanked forever.
+ * Re-measuring live geometry and treating "already above the band" as reached makes
+ * the trigger impossible to outrun, at the cost of the animation sometimes playing
+ * off screen, which is the strictly better failure.
+ *
+ * @param {Element} el
+ * @param {ViewGate} gate
+ * @param {Element|null} root
+ */
+function reached(el, gate, root) {
+  const r = el.getBoundingClientRect();
+  const band = viewportBand(root);
+  if (r.bottom <= band.top) return true; // scrolled clean past
+  return viewRatio(el, gate, root) >= gate.threshold;
+}
+
+/**
+ * Run `fn` once, as soon as `el` is far enough into the scrollport for `gate`.
  *
  * DELIBERATELY ITS OWN OBSERVER, not a watch on home-reveal.js's `.is-visible` class.
  * That script's showAll() fallback (home-reveal.js, no-IO / reduced-motion path) adds
@@ -193,22 +289,32 @@ function inView(el) {
  *
  * @param {Element} el
  * @param {() => void} fn
+ * @param {ViewGate} [gate]
  */
-function playWhenInView(el, fn) {
-  if (inView(el) || !("IntersectionObserver" in window)) {
+function playWhenInView(el, fn, gate = DEFAULT_GATE) {
+  // An explicit element root, so rootMargin is a percentage OF THE SCROLLPORT rather
+  // than of a viewport the content never reaches the bottom of.
+  const root = scrollRootOf(el);
+  if (reached(el, gate, root) || !("IntersectionObserver" in window)) {
     fn();
     return;
   }
   const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        observer.disconnect();
-        fn();
-        return;
-      }
+    () => {
+      // The entries are only a nudge to look; `reached` is the decision.
+      if (!reached(el, gate, root)) return;
+      observer.disconnect();
+      fn();
     },
-    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+    // A spread of thresholds purely to get called often enough near the line. The
+    // bottom margin must be at least as LOOSE as the gate — an `earlyPx` gate wants
+    // callbacks while the element is still below the fold, and a root box that stops
+    // at the fold would not deliver one until it was already too late.
+    {
+      root,
+      threshold: [0, gate.threshold, 1],
+      rootMargin: `0px 0px ${gate.earlyPx ? `${gate.earlyPx}px` : `-${gate.bottomPct}%`} 0px`,
+    }
   );
   observer.observe(el);
 }
@@ -271,6 +377,46 @@ function tx(key, fallback) {
 /* ==========================================================================
    #ai-shift — the NAR adoption chart
    ========================================================================== */
+
+/**
+ * Gate the wipe on the BAR, never on the card, and NEVER stricter than the `onScreen`
+ * guard below.
+ *
+ * `is-narm` blanks the bar, so anything that delays the wipe past the moment the bar
+ * becomes visible opens a band of scroll positions where the card is fully painted and
+ * the bar is an empty track — and a visitor who stops scrolling inside it never sees
+ * the bar at all. Both previous gates did exactly that: gating on the card at 15% ran
+ * the 0.9s wipe 75px BELOW the last visible pixel, and `{ threshold: 0.5, bottomPct: 8 }`
+ * held the trigger 59px ABOVE the fold, leaving a 67px dead band where the bar stayed
+ * blank indefinitely. A better-framed wipe is not worth a window of missing content —
+ * the bar is the content.
+ *
+ * So the wipe runs 50px EARLY: `earlyPx: 50` puts the trigger line below the fold, so
+ * it starts while the bar is still off screen and is done, or all but done, by the time
+ * it scrolls into view. Strictly looser than `onScreen`, which makes the dead band
+ * impossible by construction — being visible now implies having triggered 50px ago.
+ *
+ * `threshold: 0.01` because one pixel of the 16px strip past the line is enough; not
+ * `0`, which `viewRatio` also returns for an element nowhere near it.
+ *
+ * @type {ViewGate}
+ */
+const NAR_GATE = { threshold: 0.01, bottomPct: 0, earlyPx: 50 };
+
+/**
+ * Any part of `el` inside the band that is actually painted right now.
+ *
+ * Deliberately the loosest possible test — one visible pixel counts. It guards the one
+ * thing that must never happen (see initNarChart), so it biases hard towards "assume
+ * they can see it".
+ *
+ * @param {Element} el
+ */
+function onScreen(el) {
+  const r = el.getBoundingClientRect();
+  const band = viewportBand(scrollRootOf(el));
+  return r.top < band.bottom && r.bottom > band.top;
+}
 
 /**
  * Hover / focus / click a legend row to light its bar segment and dim the rest.
@@ -348,14 +494,38 @@ function initNarChart() {
   // in #compare ramps because its numbers ARE a running total the visitor is building.)
   if (prefersReducedMotion() || !("IntersectionObserver" in window)) return;
 
-  card.classList.add("is-narm");
+  const bar = card.querySelector(".nar-bar");
+  if (!bar) return;
 
-  playWhenInView(card, () => {
-    // Commit the collapsed clip-path before the transition class lands. Without the
-    // forced reflow the browser coalesces both class changes into one style resolution
-    // and the bar simply appears at full width with no wipe.
-    void card.offsetWidth;
-    requestAnimationFrame(() => card.classList.add("is-ncharted"));
+  // MEASURE ONE FRAME LATE. On a deep link (/#ai-shift) or a restored scroll position
+  // the browser applies the scroll to <main> — the real scroll container — AFTER this
+  // module runs (it runs at `load` + requestIdleCallback). Measuring synchronously
+  // reads pre-scroll geometry, decides the bar is off screen, and erases one the
+  // visitor is already looking at. One rAF is enough for that scroll to have landed.
+  requestAnimationFrame(() => {
+    // THE ONE RULE HERE: never collapse a bar the visitor can already see. `is-narm`
+    // blanks it, and the markup ships it fully drawn, so applying that on screen is an
+    // erase — it visibly empties and redraws, which reads as a glitch, not an
+    // entrance. For a visitor already looking at the chart the honest answer is no
+    // animation; the authored widths are the finished chart, so returning costs
+    // nothing.
+    if (onScreen(bar)) return;
+
+    card.classList.add("is-narm");
+
+    // Gated on the BAR, not the card — see NAR_GATE. `is-narm`/`is-ncharted` still go
+    // on the card, because that is where the CSS hangs them.
+    playWhenInView(
+      bar,
+      () => {
+        // Commit the collapsed clip-path before the transition class lands. Without the
+        // forced reflow the browser coalesces both class changes into one style
+        // resolution and the bar simply appears at full width with no wipe.
+        void card.offsetWidth;
+        requestAnimationFrame(() => card.classList.add("is-ncharted"));
+      },
+      NAR_GATE
+    );
   });
 }
 

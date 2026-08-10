@@ -85,7 +85,7 @@
     },
     "showcase": {
       "title": "Zie het zelf",
-      "subtitle": "Live demo's. Sleep om te wisselen.",
+      "subtitle": "Live demo's. Kijk gerust rond.",
       "tablistAria": "Studio's",
       "tabs": {
         "staging": "Styling",
@@ -361,7 +361,7 @@
       }
     },
     "faq": {
-      "subtitle": "Snelle antwoorden. Vastgelopen? Bekijk <a href=\"guides.html\">Handleidingen</a> of mail ons."
+      "subtitle": "De vragen die we het vaakst horen. Iets anders? Bekijk de <a href=\"guides.html\">Handleidingen</a> of mail ons."
     },
     "blog": {
       "title": "Van de Stagify-blog",
@@ -585,34 +585,54 @@
   },
   "faq": {
     "title": "Veelgestelde vragen",
-    "questions": {
-      "whatIsVirtualStaging": {
+    "plan": {
+      "hint": "Elke kamer op deze plattegrond is een vraag. Selecteer er een en het antwoord verschijnt hier."
+    },
+    "rooms": {
+      "basics": {
+        "label": "Basis",
         "question": "Wat is virtuele styling?",
-        "answer": "Virtuele styling is het digitaal inrichten van een pandfoto om het potentieel te tonen, waardoor kopers zich kunnen voorstellen hoe een ruimte eruit kan zien en aanvoelt wanneer hij volledig is ingericht. Anders dan traditionele styling is het sneller, kostenefficiënter en biedt het meerdere ontwerpopties, afgestemd op verschillende kopersvoorkeuren. Met hoogwaardige beelden benadrukt virtuele styling de beste kenmerken van het pand, waardoor kopers makkelijker een emotionele band voelen en zich voorstellen er te wonen."
+        "answer": "Virtuele styling meubileert de foto van een lege of gedateerde kamer digitaal, zodat kopers zien wat de ruimte kan worden. Er verandert niets constructiefs: muren, ramen, vloeren en verhoudingen blijven precies zoals ze gefotografeerd zijn, en alleen meubels en decoratie komen erbij. Het doet hetzelfde werk als klassieke styling met een verhuiswagen, maar in seconden in plaats van weken."
       },
-      "howLong": {
-        "question": "Hoe lang duurt het?",
-        "answer": "Gemiddeld duurt virtuele styling ongeveer 8 seconden per foto om te verwerken, al kan de exacte tijd iets korter of langer zijn, afhankelijk van de complexiteit van de ruimte en de gekozen ontwerpstijl. Het resultaat is een snelle, naadloze transformatie die je pandfoto's laat opvallen."
+      "turnaround": {
+        "label": "Doorlooptijd",
+        "question": "Hoe snel is het?",
+        "answer": "Ongeveer 8 seconden per foto. Complexe kamers en zeer gedetailleerde stijlen duren iets langer, maar je wacht seconden, geen dagen: lang genoeg om drie stijlen op dezelfde kamer te proberen terwijl je kiest welke verkoopt. Geen wachtrij, geen afspraak en geen heen en weer met een stylist. Je uploadt, kiest een look en downloadt."
       },
-      "customTheme": {
-        "question": "Hoe selecteer ik een aangepast thema?",
-        "answer": "Zie je het gewenste thema niet, dan kun je \"Aangepast\" selecteren en vervolgens een specifieke prompt toevoegen voor het thema dat je wilt. We gebruiken je prompt om het gewenste thema te genereren."
+      "pricing": {
+        "label": "Prijzen",
+        "question": "Wat kost het?",
+        "answer": "Je kunt gratis stylen, zonder kaart. Stagify+ kost $ 11,99 per maand en ontgrendelt het hoogwaardigere beeldmodel, meerdere varianten per render, het verwijderen van bestaande meubels, de Masking Studio en de AI Designer. Voor teams is er Enterprise: iedereen met jullie bedrijfsmail valt er automatisch onder en je betaalt per generatie in plaats van per gebruiker. Ter vergelijking: fysieke styling van een woning kost meestal $ 2.000 tot $ 5.000."
       },
-      "idealRoom": {
-        "question": "Wat maakt een ideale kamer om te stylen?",
-        "answer": "Een ideale kamer om te stylen heeft goede verlichting, vrije muren en minimale rommel. Lege of spaarzaam gemeubileerde kamers werken het best, omdat ze een schoon canvas bieden voor de AI om meubilair en decor toe te voegen dat past bij je gekozen stijl. Bredere opnames die meer van de kamer vastleggen zijn veel beter dan strakke of bijgesneden hoeken, omdat ze de AI meer context geven om de ruimte realistisch te stylen."
+      "studios": {
+        "label": "De Studios",
+        "question": "Wat kan Stagify naast één enkele kamer?",
+        "answer": "Behoorlijk veel. De AI Designer herontwerpt een hele kamer in gesprek, dus je vraagt om een warmer palet of een grotere bank en blijft verfijnen. De Masking Studio geeft controle tot op de pixel over welke gebieden mogen veranderen. De Exterior Studio werkt aan de aanblik van buiten in plaats van het interieur. De Listing Studio haalt een hele fotoset in één keer door en levert een link die je de verkoper ter goedkeuring stuurt. Alles belandt in je galerij."
+      },
+      "control": {
+        "label": "Controle",
+        "question": "Hoeveel controle heb ik over het resultaat?",
+        "answer": "Zoveel als je wilt. Kies een vooraf ingestelde stijl en je bent in één klik klaar. Kies „Custom” en je beschrijft de look in je eigen woorden. Open de Masking Studio en je schildert precies welke delen van de foto mogen veranderen, met specifieke meubels per gebied, zodat alles wat je niet selecteert onaangeroerd blijft. De AI Designer zit ertussenin: beschrijf wat je wilt wijzigen, bekijk het resultaat en verfijn het al pratend."
+      },
+      "photos": {
+        "label": "Foto’s",
+        "question": "Welke foto werkt het beste?",
+        "answer": "Breed, licht en recht. Fotografeer vanuit een hoek zodat twee muren en veel vloer zichtbaar zijn, houd de camera ongeveer op borsthoogte en laat zoveel mogelijk daglicht binnen. Lege of licht gemeubileerde kamers geven het schoonste canvas, al kan Stagify+ bestaande meubels eerst verwijderen. Vermijd krappe uitsnedes, sterke fisheye-vervorming en foto’s waarop de vloer nauwelijks in beeld is, want dan is er nergens om meubels overtuigend neer te zetten."
+      },
+      "disclosure": {
+        "label": "Vermelding",
+        "question": "Mag ik deze foto’s in een woningadvertentie gebruiken?",
+        "answer": "Ja, en virtuele styling is gangbaar, maar vermeld het. De meeste portalen en lokale regels vragen dat een digitaal gemeubileerde foto als zodanig wordt aangeduid, meestal in het bijschrift. Stagify kan „Virtually staged” voor je op de afbeelding stempelen, bij elk abonnement. Omdat alleen meubels en decoratie veranderen en nooit de structuur van de kamer, blijft de foto een eerlijke weergave van de ruimte."
       },
       "privacy": {
-        "question": "Zijn mijn gegevens privé en veilig?",
-        "answer": "Ja. We gebruiken HTTPS-encryptie, slaan geüploade afbeeldingen na verwerking niet permanent op en verkopen je persoonlijke gegevens niet. Je behoudt de eigendom van je uploads en gegenereerde resultaten. We delen gegevens alleen met dienstverleners die nodig zijn om Stagify te laten draaien (zoals AI- en betalingsverwerkers), zoals beschreven in ons Privacybeleid."
+        "label": "Privacy",
+        "question": "Wat gebeurt er met de foto’s die ik upload?",
+        "answer": "Ze gaan over een versleutelde verbinding, worden verwerkt en blijven niet permanent op onze servers staan. Renders die je bewaart komen in je eigen galerij, die alleen jij ziet zolang je geen link deelt. We verkopen geen persoonlijke gegevens, en je houdt het eigendom van zowel je uploads als de beelden die Stagify genereert. We delen gegevens alleen met de leveranciers die nodig zijn om de dienst te draaien, zoals die voor AI en betalingen, opgesomd in het privacybeleid."
       },
-      "whatMakesDifferent": {
-        "question": "Wat maakt Stagify anders dan andere tools voor virtuele styling?",
-        "answer": "Een paar dingen. Ten eerste de prijs: je kunt gratis beginnen met stylen, en Stagify+ kost slechts $11.99 per maand voor onbeperkt stylen, terwijl traditionele styling honderden tot duizenden dollars per kamer kan kosten. Ten tweede kun je met de AI-Designer met onze AI chatten om een hele kamer opnieuw in te richten en het resultaat gaandeweg te verfijnen, in plaats van alleen voorinstellingen toe te passen. Ten derde biedt de Maskeerstudio precisie tot op pixelniveau: markeer precies welke delen van een foto mogen veranderen en koppel specifiek meubilair aan elk gebied, zodat alles wat je niet selecteert onaangetast blijft. De meeste tools doen slechts één van deze dingen goed; Stagify combineert betaalbaarheid, creatieve controle en precisie."
-      },
-      "mlsAllowed": {
-        "question": "Mag ik virtueel gestylede foto's gebruiken in mijn woningadvertenties?",
-        "answer": "Ja. Virtuele styling wordt breed gebruikt en geaccepteerd in woningadvertenties en MLS-systemen. De belangrijkste regel is transparantie: de meeste MLS-systemen en lokale regelgeving vragen je duidelijk te vermelden wanneer een foto virtueel gestyled is, bijvoorbeeld door deze in het onderschrift als ‘virtueel gestyled’ te markeren. Omdat Stagify alleen meubilair en decoratie verandert en nooit de werkelijke structuur van de kamer aanpast, blijven je foto's een eerlijke weergave van de ruimte. We raden altijd aan een vermelding van virtuele styling toe te voegen om te voldoen aan de regels van je lokale MLS en makelaarsvereniging."
+      "whyStagify": {
+        "label": "Waarom",
+        "question": "Waarin verschilt dit van andere tools?",
+        "answer": "De meeste tools doen één van deze drie dingen goed. Stagify doet ze alle drie: goedkoop genoeg om spontaan te stylen, gespreksgericht genoeg om een kamer echt te herontwerpen in plaats van alleen te decoreren, en precies genoeg om het resultaat pixel voor pixel te sturen. Tel daarbij op de buitenkant- en volledige-advertentiestromen, elf talen, volledig auteursrecht op alles wat je genereert, en geen advertenties of kosten per afbeelding."
       }
     }
   },

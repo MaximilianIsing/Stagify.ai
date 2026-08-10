@@ -85,7 +85,7 @@
     },
     "showcase": {
       "title": "Überzeugen Sie sich selbst",
-      "subtitle": "Live-Demos. Zum Wechseln ziehen.",
+      "subtitle": "Live-Demos. Sehen Sie sich um.",
       "tablistAria": "Studios",
       "tabs": {
         "staging": "Staging",
@@ -361,7 +361,7 @@
       }
     },
     "faq": {
-      "subtitle": "Schnelle Antworten. Unklar? Zu den <a href=\"guides.html\">Anleitungen</a> oder melden Sie sich."
+      "subtitle": "Die häufigsten Fragen. Etwas anderes unklar? Zu den <a href=\"guides.html\">Anleitungen</a> oder melden Sie sich."
     },
     "blog": {
       "title": "Aus dem Stagify-Blog",
@@ -585,34 +585,54 @@
   },
   "faq": {
     "title": "Häufig gestellte Fragen",
-    "questions": {
-      "whatIsVirtualStaging": {
+    "plan": {
+      "hint": "Jeder Raum in diesem Grundriss ist eine Frage. Wählen Sie einen aus, und die Antwort erscheint hier."
+    },
+    "rooms": {
+      "basics": {
+        "label": "Grundlagen",
         "question": "Was ist virtuelles Staging?",
-        "answer": "Virtuelles Staging ist das digitale Einrichten eines Immobilienfotos, um sein Potenzial zu zeigen, und hilft Käufern, sich vorzustellen, wie ein Raum vollständig gestaltet aussehen und wirken kann. Anders als traditionelles Staging ist es schneller, kostengünstiger und ermöglicht mehrere Designoptionen, die auf unterschiedliche Käuferpräferenzen zugeschnitten sind. Mit hochwertigen Visualisierungen hebt virtuelles Staging die besten Eigenschaften der Immobilie hervor und macht es Käufern leichter, eine emotionale Verbindung aufzubauen und sich vorzustellen, dort zu wohnen."
+        "answer": "Virtuelles Staging möbliert das Foto eines leeren oder in die Jahre gekommenen Raums digital, damit Käufer sehen, was daraus werden kann. An der Bausubstanz ändert sich nichts: Wände, Fenster, Böden und Proportionen bleiben exakt so, wie sie fotografiert wurden, hinzu kommen nur Möbel und Dekoration. Es leistet dasselbe wie klassisches Home Staging mit einem Möbelwagen, nur in Sekunden statt in Wochen. Bei Objekten, die sonst als leere Schachteln wirken, ist es heute Standard."
       },
-      "howLong": {
-        "question": "Wie lange dauert es?",
-        "answer": "Im Durchschnitt dauert virtuelles Staging etwa 8 Sekunden pro Foto, wobei die genaue Zeit je nach Komplexität des Raums und gewähltem Designstil etwas kürzer oder länger sein kann. Das Ergebnis ist eine schnelle, nahtlose Verwandlung, die Ihre Immobilienfotos hervorstechen lässt."
+      "turnaround": {
+        "label": "Dauer",
+        "question": "Wie schnell geht das?",
+        "answer": "Etwa 8 Sekunden pro Foto. Komplexe Räume und sehr detaillierte Stile dauern etwas länger, aber Sie warten Sekunden statt Tage: lange genug, um drei Stile am selben Raum auszuprobieren, während Sie sich entscheiden. Es gibt keine Warteschlange, keine Terminvereinbarung und kein Hin und Her mit einem Stager. Sie laden hoch, wählen einen Look und laden herunter."
       },
-      "customTheme": {
-        "question": "Wie wähle ich ein benutzerdefiniertes Thema?",
-        "answer": "Wenn Sie das gewünschte Thema nicht sehen, können Sie „Benutzerdefiniert“ auswählen und dann eine spezifische Anweisung für das gewünschte Thema hinzufügen. Wir verwenden Ihre Anweisung, um das gewünschte Thema zu erzeugen."
+      "pricing": {
+        "label": "Preise",
+        "question": "Was kostet das?",
+        "answer": "Sie können kostenlos stagen, ohne Karte. Stagify+ kostet 11,99 $ im Monat und schaltet das hochwertigere Bildmodell, mehrere Varianten pro Render, das Entfernen vorhandener Möbel, das Masking Studio und den AI Designer frei. Für Teams gibt es Enterprise: Alle mit Ihrer Firmen-E-Mail sind automatisch dabei, und Sie zahlen pro Generierung statt pro Platz. Zum Vergleich: physisches Staging kostet meist 2.000 bis 5.000 $ pro Objekt."
       },
-      "idealRoom": {
-        "question": "Was macht einen idealen Raum für das Staging aus?",
-        "answer": "Ein idealer Raum für das Staging sollte gute Beleuchtung, freie Wände und möglichst wenig Unordnung haben. Leere oder spärlich möblierte Räume eignen sich am besten, da sie der KI eine saubere Leinwand bieten, um Möbel und Dekor passend zu Ihrem gewählten Stil hinzuzufügen. Weitwinkligere Aufnahmen, die mehr vom Raum zeigen, sind viel besser als enge oder beschnittene Blickwinkel, da sie der KI mehr Kontext geben, um den Raum realistisch einzurichten."
+      "studios": {
+        "label": "Die Studios",
+        "question": "Was kann Stagify außer einem einzelnen Raum?",
+        "answer": "Einiges. Der AI Designer gestaltet einen ganzen Raum im Dialog um, Sie können also eine wärmere Farbpalette oder ein größeres Sofa verlangen und weiter verfeinern. Das Masking Studio gibt pixelgenaue Kontrolle darüber, welche Bereiche sich ändern dürfen. Das Exterior Studio kümmert sich um die Außenwirkung statt um Innenräume. Das Listing Studio bringt einen ganzen Fotosatz in einem Durchgang durch und erzeugt einen Link, den Sie Verkäufern zur Freigabe schicken. Alles landet in Ihrer Galerie."
+      },
+      "control": {
+        "label": "Kontrolle",
+        "question": "Wie viel Kontrolle habe ich über das Ergebnis?",
+        "answer": "So viel Sie möchten. Wählen Sie einen vorgefertigten Stil, und Sie sind mit einem Klick fertig. Wählen Sie „Custom“, und Sie beschreiben den Look in eigenen Worten. Im Masking Studio malen Sie genau die Bildbereiche aus, die sich ändern dürfen, und weisen jedem bestimmte Möbel zu, sodass alles Nicht-Ausgewählte unberührt bleibt. Der AI Designer liegt dazwischen: beschreiben, Ergebnis ansehen, im Gespräch verfeinern."
+      },
+      "photos": {
+        "label": "Fotos",
+        "question": "Welche Fotos funktionieren am besten?",
+        "answer": "Weit, hell und gerade. Fotografieren Sie aus einer Ecke, sodass zwei Wände und viel Boden zu sehen sind, halten Sie die Kamera etwa auf Brusthöhe und lassen Sie so viel Tageslicht wie möglich herein. Leere oder spärlich möblierte Räume bieten die sauberste Leinwand, wobei Stagify+ vorhandene Möbel zuerst entfernen kann. Vermeiden Sie enge Ausschnitte, starke Fisheye-Verzerrung und Fotos, auf denen kaum Boden zu sehen ist, denn dort lässt sich nichts überzeugend platzieren."
+      },
+      "disclosure": {
+        "label": "Kennzeichnung",
+        "question": "Darf ich diese Fotos in einem Exposé verwenden?",
+        "answer": "Ja, virtuelles Staging ist gängige Praxis, aber weisen Sie darauf hin. Die meisten Portale und lokalen Regeln verlangen, dass ein digital möbliertes Foto als solches gekennzeichnet wird, meist in der Bildunterschrift. Stagify kann „Virtually staged“ für Sie ins Bild stempeln, in jedem Tarif. Da sich nur Möbel und Dekoration ändern und nie die Struktur des Raums, bleibt das Foto eine ehrliche Darstellung. Prüfen Sie den genauen Wortlaut bei Ihrem Verband."
       },
       "privacy": {
-        "question": "Sind meine Daten privat und sicher?",
-        "answer": "Ja. Wir verwenden HTTPS-Verschlüsselung, speichern hochgeladene Bilder nach der Verarbeitung nicht dauerhaft und verkaufen Ihre persönlichen Daten nicht. Sie behalten das Eigentum an Ihren Uploads und erzeugten Ergebnissen. Wir geben Daten nur an Dienstleister weiter, die für den Betrieb von Stagify nötig sind (etwa KI- und Zahlungsdienstleister), wie in unserer Datenschutzrichtlinie beschrieben."
+        "label": "Datenschutz",
+        "question": "Was passiert mit meinen hochgeladenen Fotos?",
+        "answer": "Sie werden verschlüsselt übertragen, verarbeitet und nicht dauerhaft auf unseren Servern gespeichert. Gespeicherte Renderings landen in Ihrer eigenen Galerie, die nur Sie sehen, solange Sie keinen Link teilen. Wir verkaufen keine personenbezogenen Daten, und die Rechte an Ihren Uploads wie an den erzeugten Bildern bleiben bei Ihnen. Daten geben wir nur an die Dienstleister weiter, die für den Betrieb nötig sind, etwa KI- und Zahlungsdienstleister, die in der Datenschutzerklärung aufgeführt sind."
       },
-      "whatMakesDifferent": {
-        "question": "Was unterscheidet Stagify von anderen Tools für virtuelles Staging?",
-        "answer": "Einige Dinge. Erstens der Preis: Du kannst kostenlos mit dem Einrichten beginnen, und Stagify+ kostet nur $11.99 pro Monat für unbegrenztes Staging, während traditionelles Staging pro Raum Hunderte bis Tausende Dollar kosten kann. Zweitens kannst du mit dem KI-Designer im Chat mit unserer KI einen ganzen Raum neu gestalten und das Ergebnis im Gespräch verfeinern, statt nur Voreinstellungen anzuwenden. Drittens bietet das Masken-Studio pixelgenaue Präzision: markiere exakt, welche Bereiche eines Fotos verändert werden dürfen, und weise jedem ein bestimmtes Möbelstück zu, sodass alles, was du nicht auswählst, unberührt bleibt. Die meisten Tools beherrschen nur eines davon gut; Stagify vereint Erschwinglichkeit, kreative Kontrolle und Präzision."
-      },
-      "mlsAllowed": {
-        "question": "Darf ich virtuell eingerichtete Fotos in meinen Immobilienanzeigen verwenden?",
-        "answer": "Ja. Virtuelles Staging wird in Immobilienanzeigen und MLS weit verbreitet genutzt und akzeptiert. Die wichtigste Regel ist Transparenz: Die meisten MLS und lokalen Vorschriften verlangen, dass du deutlich kennzeichnest, wenn ein Foto virtuell eingerichtet wurde, zum Beispiel indem du es in der Bildunterschrift als „virtuell eingerichtet“ markierst. Da Stagify nur Möbel und Dekoration verändert und niemals die tatsächliche Struktur des Raums, bleiben deine Fotos eine ehrliche Darstellung des Raums. Wir empfehlen immer, einen Hinweis auf virtuelles Staging hinzuzufügen, um die Vorgaben deines lokalen MLS und deiner Immobilienbehörde einzuhalten."
+      "whyStagify": {
+        "label": "Warum Stagify",
+        "question": "Was unterscheidet Stagify von anderen Tools?",
+        "answer": "Die meisten Tools beherrschen eines dieser drei Dinge. Stagify beherrscht alle drei: günstig genug, um spontan zu stagen, dialogfähig genug, um einen Raum wirklich umzugestalten statt ihn nur zu dekorieren, und präzise genug, um das Ergebnis pixelweise zu steuern. Dazu kommen Außenaufnahmen und ganze Exposés, elf Sprachen, volles Urheberrecht an allem Erzeugten und keine Werbung oder Gebühren pro Bild."
       }
     }
   },

@@ -85,7 +85,7 @@
     },
     "showcase": {
       "title": "Compruébalo tú mismo",
-      "subtitle": "Demos en vivo. Arrastra para cambiar.",
+      "subtitle": "Demos en vivo. Echa un vistazo.",
       "tablistAria": "Estudios",
       "tabs": {
         "staging": "Staging",
@@ -361,7 +361,7 @@
       }
     },
     "faq": {
-      "subtitle": "Respuestas rápidas a lo más preguntado. Visita <a href=\"guides.html\">Guías</a> o escríbenos."
+      "subtitle": "Las preguntas que más nos hacen. ¿Es otra cosa? Visita <a href=\"guides.html\">Guías</a> o escríbenos."
     },
     "blog": {
       "title": "Del blog de Stagify",
@@ -585,34 +585,54 @@
   },
   "faq": {
     "title": "Preguntas Frecuentes",
-    "questions": {
-      "whatIsVirtualStaging": {
+    "plan": {
+      "hint": "Cada habitación de este plano es una pregunta. Selecciona una y su respuesta aparecerá aquí."
+    },
+    "rooms": {
+      "basics": {
+        "label": "Lo básico",
         "question": "¿Qué es la escenificación virtual?",
-        "answer": "La escenificación virtual es el proceso de amueblar digitalmente una foto de propiedad para mostrar su potencial, ayudando a los compradores a visualizar cómo puede verse y sentirse un espacio cuando está completamente decorado. A diferencia de la escenificación tradicional, es más rápida, más rentable y permite múltiples opciones de diseño adaptadas a diferentes preferencias de compradores. Con imágenes de alta calidad, la escenificación virtual resalta las mejores características de la propiedad, facilitando que los compradores se conecten emocionalmente e imaginen viviendo allí."
+        "answer": "La escenificación virtual amuebla digitalmente la foto de una habitación vacía o anticuada para que los compradores vean en qué puede convertirse. No cambia nada estructural: las paredes, las ventanas, los suelos y las proporciones quedan exactamente como se fotografiaron, y solo se añaden muebles y decoración. Hace el mismo trabajo que el home staging tradicional con su camión de mudanzas, pero en segundos en lugar de semanas."
       },
-      "howLong": {
-        "question": "¿Cuánto tiempo toma?",
-        "answer": "En promedio, la escenificación virtual toma alrededor de 8 segundos por foto para procesar, aunque el tiempo exacto puede ser un poco más corto o más largo dependiendo de la complejidad del espacio y el estilo de diseño elegido. El resultado es una transformación rápida y fluida que hace que las fotos de tu propiedad destaquen."
+      "turnaround": {
+        "label": "Tiempo",
+        "question": "¿Cuánto tarda?",
+        "answer": "Unos 8 segundos por foto. Las habitaciones complejas y los estilos muy detallados tardan algo más, pero esperas segundos, no días: lo suficiente para probar tres estilos en la misma habitación mientras decides cuál la vende. No hay colas, ni reservas, ni idas y venidas con un escenógrafo. Subes la foto, eliges un estilo y la descargas."
       },
-      "customTheme": {
-        "question": "¿Cómo selecciono un tema personalizado?",
-        "answer": "Si no ves el tema que quieres, puedes seleccionar \"Personalizado\" y luego añadir un prompt específico para el tema que deseas. Usaremos tu prompt para generar el tema que quieres."
+      "pricing": {
+        "label": "Precio",
+        "question": "¿Cuánto cuesta?",
+        "answer": "Puedes escenificar gratis, sin tarjeta. Stagify+ cuesta 11,99 $ al mes y desbloquea el modelo de imagen de mayor calidad, varias variantes por render, la eliminación de muebles existentes, el Masking Studio y el AI Designer. Para equipos está Enterprise: todos los que tengan el correo de tu empresa quedan cubiertos automáticamente y pagas por generación en lugar de por puesto. Como referencia, escenificar físicamente una vivienda suele costar entre 2.000 y 5.000 $."
       },
-      "idealRoom": {
-        "question": "¿Qué hace que una habitación sea ideal para el staging?",
-        "answer": "Una habitación ideal para el staging debe tener buena iluminación, paredes claras y desorden mínimo. Las habitaciones vacías o escasamente amuebladas funcionan mejor, ya que proporcionan un lienzo limpio para que la IA añada muebles y decoración que coincida con tu estilo elegido. Las tomas más amplias que capturan más de la habitación son mucho mejores que los ángulos cerrados o recortados, ya que dan a la IA más contexto para diseñar el espacio de forma realista."
+      "studios": {
+        "label": "Los Estudios",
+        "question": "¿Qué más hace Stagify además de una habitación?",
+        "answer": "Bastante. El AI Designer rediseña una habitación entera conversando, así que puedes pedir una paleta más cálida o un sofá más grande e ir refinando. El Masking Studio da control píxel a píxel sobre qué zonas pueden cambiar. El Exterior Studio trabaja el atractivo exterior en lugar del interior. El Listing Studio procesa un lote entero de fotos de una pasada y genera un enlace que puedes enviar al vendedor para su visto bueno. Todo acaba en tu galería."
+      },
+      "control": {
+        "label": "Control",
+        "question": "¿Cuánto control tengo sobre el resultado?",
+        "answer": "Todo el que quieras. Elige un estilo predefinido y terminas en un clic. Elige «Custom» y describes el resultado con tus propias palabras. Abre el Masking Studio y pintas exactamente qué partes de la foto pueden cambiar, asignando muebles concretos a cada zona, de modo que lo que no selecciones queda intacto. El AI Designer está en medio: describes lo que quieres cambiar, miras el resultado y lo refinas conversando."
+      },
+      "photos": {
+        "label": "Fotos",
+        "question": "¿Qué tipo de foto funciona mejor?",
+        "answer": "Amplia, luminosa y nivelada. Dispara desde una esquina para que se vean dos paredes y bastante suelo, mantén la cámara a la altura del pecho y deja entrar toda la luz natural que puedas. Las habitaciones vacías o con pocos muebles son el lienzo más limpio, aunque Stagify+ puede quitar antes los muebles existentes. Evita encuadres cerrados, distorsión de ojo de pez marcada y fotos donde apenas se vea el suelo, porque no hay dónde colocar muebles de forma convincente."
+      },
+      "disclosure": {
+        "label": "Aviso",
+        "question": "¿Puedo usar estas fotos en un anuncio inmobiliario?",
+        "answer": "Sí, y la escenificación virtual es práctica habitual, pero indícalo. La mayoría de los portales y normativas locales piden que una foto amueblada digitalmente se identifique como tal, normalmente en el pie de foto. Stagify puede estampar «Virtually staged» en la imagen por ti, en cualquier plan. Como solo cambian los muebles y la decoración, y nunca la estructura de la habitación, la foto sigue siendo una representación honesta del espacio."
       },
       "privacy": {
-        "question": "¿Mis datos son privados y seguros?",
-        "answer": "Sí, nos tomamos tu privacidad en serio. Tus imágenes subidas se procesan de forma segura y no se almacenan permanentemente en nuestros servidores. Utilizamos encriptación de nivel industrial y no compartimos tus datos con terceros."
+        "label": "Privacidad",
+        "question": "¿Qué pasa con las fotos que subo?",
+        "answer": "Viajan por una conexión cifrada, se procesan y no se guardan de forma permanente en nuestros servidores. Los renders que guardas van a tu propia galería, que solo ves tú mientras no compartas un enlace. No vendemos información personal y conservas la propiedad tanto de lo que subes como de las imágenes que genera Stagify. Solo compartimos datos con los proveedores necesarios para prestar el servicio, como los de IA y pagos, que la Política de Privacidad detalla."
       },
-      "whatMakesDifferent": {
-        "question": "¿Qué hace diferente a Stagify frente a otras herramientas de escenificación virtual?",
-        "answer": "Varias cosas. Primero, el precio: puedes empezar a ambientar gratis, y Stagify+ cuesta solo $11.99 al mes por escenificación ilimitada, mientras que la escenificación tradicional puede costar cientos o miles de dólares por habitación. Segundo, el Diseñador IA te permite conversar con nuestra IA para rediseñar una habitación entera y afinar el resultado a medida que charlas, en lugar de aplicar solo ajustes predefinidos. Tercero, el Estudio de Máscaras ofrece precisión a nivel de píxel: marca exactamente qué zonas de una foto pueden cambiar y asigna un mueble concreto a cada una, de modo que todo lo que no selecciones permanezca intacto. La mayoría de las herramientas hacen bien solo una de estas cosas; Stagify combina asequibilidad, control creativo y precisión."
-      },
-      "mlsAllowed": {
-        "question": "¿Puedo usar fotos con escenificación virtual en mis anuncios inmobiliarios?",
-        "answer": "Sí. La escenificación virtual se usa y se acepta ampliamente en los anuncios inmobiliarios y en los MLS. La regla principal es la transparencia: la mayoría de los MLS y las normativas locales piden que indiques claramente cuando una foto ha sido escenificada virtualmente, por ejemplo etiquetándola en el pie de foto como « escenificada virtualmente ». Como Stagify solo cambia los muebles y la decoración y nunca altera la estructura real de la habitación, tus fotos siguen siendo una representación honesta del espacio. Siempre recomendamos añadir un aviso de escenificación virtual para cumplir con las reglas de tu MLS y tu asociación inmobiliaria local."
+      "whyStagify": {
+        "label": "Por qué",
+        "question": "¿En qué se diferencia de otras herramientas?",
+        "answer": "La mayoría de las herramientas hacen bien una de estas tres cosas. Stagify hace las tres: es lo bastante barata para escenificar por capricho, lo bastante conversacional para rediseñar una habitación y no solo decorarla, y lo bastante precisa para controlar el resultado píxel a píxel. Añade los flujos de exterior y de anuncio completo, once idiomas, derechos de autor plenos sobre todo lo que generes, y ni anuncios ni tarifas por imagen."
       }
     }
   },

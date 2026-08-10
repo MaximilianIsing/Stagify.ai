@@ -111,12 +111,18 @@
     <link rel="stylesheet" href="styles/star-border.css" media="print" data-lazy-css>
     <link rel="stylesheet" href="styles/home-text-animate.css" media="print" data-lazy-css>
     <link rel="stylesheet" href="styles/demo-player.css" media="print" data-lazy-css>
+    <!-- faq-plan.css is index-only ON PURPOSE: guides.html reuses .faq-accordion /
+         .faq-q for its 17 troubleshooting items and must not download a floor plan it
+         never draws. Loading it late is safe — #faq is far below the fold AND inside a
+         .reveal, so the sheet lands long before the section can be seen. -->
+    <link rel="stylesheet" href="styles/faq-plan.css" media="print" data-lazy-css>
     <script type="module" src="scripts/index-lazy-css.js"></script>
     <noscript>
       <link rel="stylesheet" href="styles/auth.css">
       <link rel="stylesheet" href="styles/star-border.css">
       <link rel="stylesheet" href="styles/home-text-animate.css">
       <link rel="stylesheet" href="styles/demo-player.css">
+      <link rel="stylesheet" href="styles/faq-plan.css">
       <!-- home.css hides every .reveal block until home-reveal.js un-hides it, so
            without this the whole page below the hero is invisible with JS off.
            home.css also carries an @media (scripting: none) copy of these rules,
@@ -683,7 +689,7 @@
       <section class="home-section home-showcase" id="studio-showcase" aria-labelledby="showcase-title">
         <div class="home-section__head reveal">
           <h2 class="home-section__title" id="showcase-title" data-tx="wave" data-tx-stagger="22" data-lang="home.showcase.title">See it for yourself</h2>
-          <p class="home-section__sub" data-lang="home.showcase.subtitle">Live demos. Drag to switch.</p>
+          <p class="home-section__sub" data-lang="home.showcase.subtitle">Live demos. Have a look around.</p>
         </div>
 
         <div class="shw reveal" data-showcase>
@@ -1276,43 +1282,185 @@
       </section>
 
       <!-- ========================= FAQ ========================= -->
+      <!-- Drawn as an architectural sheet: one room per question, with the answer set in
+           the notes column beside the drawing.
+
+           IT IS AN ACCORDION FIRST AND A DRAWING SECOND, and that order is the design.
+           Native <details> already keeps every answer in the DOM, opens exactly one at a
+           time (name="faq-room"), and works with no CSS and no JS. Plan mode is an
+           additive layer in faq-plan.css (lazy, >=1001px only) plus home-faq-plan.js,
+           which does nothing but generate SVG. Below 1001px, in print, and if either
+           file fails to load, this is the accordion it has always been.
+
+           EVERYTHING IS POSITIONED IN PERCENTAGES OF THE SHEET, including the drawing.
+           That is why the question and answer can sit in the notes column while still
+           living inside their own <details>: their containing block is the full-sheet
+           <details> layer, so plain percentages reach it. --x/--y/--w/--h are the single
+           source of truth — CSS lays the room box out from them and home-faq-plan.js
+           derives every wall, door and window from the same four numbers, so the drawing
+           cannot drift from the boxes. A value CSS needs is a custom property; a value
+           only JS needs is a data- attribute.
+
+           The plan is a CROSS of circulation, not a grid, and the rooms are deliberately
+           different sizes. test/frontend/home-faq-plan.test.js fails if two rooms
+           overlap, if one escapes the envelope, if a room stops fronting a corridor, if
+           a room drifts out of believable proportions, or if any furniture is placed
+           where a door would swing through it. -->
       <section class="home-section home-faq" id="faq" aria-labelledby="faq-title">
         <div class="home-section__head reveal">
           <h2 class="home-section__title" id="faq-title" data-tx="blur" data-lang="faq.title">Frequently Asked Questions</h2>
-          <p class="home-section__sub" data-lang-html="home.faq.subtitle">Quick answers to what we hear most. Stuck? Visit <a href="guides.html">Guides</a> or get in touch.</p>
+          <p class="home-section__sub" data-lang-html="home.faq.subtitle">The questions we hear most. Stuck? Visit <a href="guides.html">Guides</a> or get in touch.</p>
         </div>
-        <div class="faq-accordion reveal">
-          <details class="faq-q">
-            <summary><span data-lang="faq.questions.whatIsVirtualStaging.question">What is virtual staging?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-            <p data-lang="faq.questions.whatIsVirtualStaging.answer">Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled.</p>
+        <div class="faq-plan reveal">
+          <div class="faq-plan__sheet faq-accordion">
+            <!-- Hand-authored because none of it depends on the room table, so it
+                 cannot drift: the sheet frame, the graph-paper field, the building
+                 envelope and its windows, the crossing corridors, the overall dimension
+                 strings, the scale bar and the north arrow. home-faq-plan.js adds the
+                 per-room ink and <use>s the symbols below. -->
+            <svg class="faq-plan__ink" viewBox="0 0 1160 760" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+              <defs>
+                <pattern id="fp-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="1.1"/>
+                </pattern>
+                <pattern id="fp-grid" width="22.5" height="22.5" patternUnits="userSpaceOnUse">
+                  <path d="M22.5 0H0V22.5" fill="none" stroke="currentColor" stroke-width="0.8"/>
+                </pattern>
+                <symbol id="fp-sofa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1 5.5h22v13H1z"/><path d="M4.6 9.2h14.8v9.3H4.6z"/><path d="M12 9.2v9.3"/></symbol>
+                <symbol id="fp-bed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M2 1.5h20v21H2z"/><path d="M2 8.4h20"/><path d="M4.2 3h6.4v4H4.2zM13.4 3h6.4v4h-6.4z"/></symbol>
+                <symbol id="fp-table" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M5.5 7h13v10h-13z"/><path d="M7.5 3.2h3.6v3H7.5zM12.9 3.2h3.6v3h-3.6zM7.5 17.8h3.6v3H7.5zM12.9 17.8h3.6v3h-3.6z"/></symbol>
+                <symbol id="fp-round" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="5.6"/><path d="M10.2 1.8h3.6v3h-3.6zM10.2 19.2h3.6v3h-3.6zM1.8 10.2h3v3.6h-3zM19.2 10.2h3v3.6h-3z"/></symbol>
+                <symbol id="fp-chair" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M4 6.5h16v12H4z"/><path d="M7.2 10h9.6v8.5H7.2z"/></symbol>
+                <symbol id="fp-rug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1.5 3h21v18h-21z" stroke-dasharray="4 3"/></symbol>
+                <symbol id="fp-plant" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="4.2"/><path d="M12 7.8V4M12 16.2V20M7.8 12H4M16.2 12H20M9 9l-2.7-2.7M15 9l2.7-2.7M9 15l-2.7 2.7M15 15l2.7 2.7"/></symbol>
+                <symbol id="fp-lamp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><circle cx="12" cy="12" r="6"/><path d="M12 6v12M6 12h12"/></symbol>
+                <symbol id="fp-desk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1 5.5h22v8H1z"/><path d="M9 15h6v5H9z"/></symbol>
+                <symbol id="fp-shelf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1 8h22v8H1z"/><path d="m1 8 22 8M23 8 1 16"/></symbol>
+                <symbol id="fp-counter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"><path d="M1 7h22v10H1z"/><circle cx="6.5" cy="12" r="3"/><circle cx="14" cy="9.6" r="1.5"/><circle cx="19" cy="9.6" r="1.5"/><circle cx="14" cy="14.4" r="1.5"/><circle cx="19" cy="14.4" r="1.5"/></symbol>
+              </defs>
+
+              <rect class="fp-grid" x="0" y="0" width="1160" height="760"/>
+              <rect class="fp-sheet" x="10" y="10" width="1140" height="740"/>
+              <path class="fp-rule" d="M759.8 30.4V729.6"/>
+
+              <g class="fp-hall">
+                <rect x="278.4" y="53.2" width="69.6" height="630.8"/>
+                <rect x="46.4" y="349.6" width="684.4" height="68.4"/>
+              </g>
+              <path class="fp-partition" d="M46.4 53.2h232v144.4h-232ZM46.4 197.6h232v152h-232ZM348 53.2h197.2v144.4h-197.2ZM348 197.6h197.2v152h-197.2ZM545.2 53.2h185.6v296.4h-185.6ZM46.4 418h232v266h-232ZM348 418h197.2v136.8h-197.2ZM348 554.8h197.2v129.2h-197.2ZM545.2 418h185.6v266h-185.6Z"/>
+              <path class="fp-envelope" d="M46.4 53.2H730.8V684H46.4Z"/>
+              <g class="fp-win">
+                <path class="fp-win__gap" d="M104.4 53.2L197.2 53.2"/><path class="fp-win__sill" d="M104.4 53.2L197.2 53.2"/>
+                <path class="fp-win__gap" d="M382.8 53.2L475.6 53.2"/><path class="fp-win__sill" d="M382.8 53.2L475.6 53.2"/>
+                <path class="fp-win__gap" d="M591.6 53.2L684.4 53.2"/><path class="fp-win__sill" d="M591.6 53.2L684.4 53.2"/>
+                <path class="fp-win__gap" d="M104.4 684L197.2 684"/><path class="fp-win__sill" d="M104.4 684L197.2 684"/>
+                <path class="fp-win__gap" d="M382.8 684L475.6 684"/><path class="fp-win__sill" d="M382.8 684L475.6 684"/>
+                <path class="fp-win__gap" d="M591.6 684L684.4 684"/><path class="fp-win__sill" d="M591.6 684L684.4 684"/>
+                <path class="fp-win__gap" d="M46.4 83.6L46.4 159.6"/><path class="fp-win__sill" d="M46.4 83.6L46.4 159.6"/>
+                <path class="fp-win__gap" d="M46.4 235.6L46.4 311.6"/><path class="fp-win__sill" d="M46.4 235.6L46.4 311.6"/>
+                <path class="fp-win__gap" d="M46.4 509.2L46.4 585.2"/><path class="fp-win__sill" d="M46.4 509.2L46.4 585.2"/>
+                <path class="fp-win__gap" d="M730.8 129.2L730.8 205.2"/><path class="fp-win__sill" d="M730.8 129.2L730.8 205.2"/>
+                <path class="fp-win__gap" d="M730.8 266L730.8 342"/><path class="fp-win__sill" d="M730.8 266L730.8 342"/>
+                <path class="fp-win__gap" d="M730.8 509.2L730.8 585.2"/><path class="fp-win__sill" d="M730.8 509.2L730.8 585.2"/>
+              </g>
+
+              <g class="fp-dim">
+                <path d="M46.4 705.3H730.8M46.4 700v10.6M730.8 693.9v10.6"/>
+                <path d="M18.6 53.2V684M12.8 53.2h11.6M12.8 684h11.6"/>
+                <text class="fp-t" x="388.6" y="701.5" text-anchor="middle">15.2 m</text>
+                <text class="fp-t" x="18.6" y="368.6" text-anchor="middle" transform="rotate(-90 18.6 368.6)">14.0 m</text>
+              </g>
+
+              <g class="fp-scale">
+                <rect x="46.4" y="729.6" width="45" height="7" class="fp-scale--off"/><rect x="91.4" y="729.6" width="45" height="7" class="fp-scale--on"/><rect x="136.4" y="729.6" width="45" height="7" class="fp-scale--off"/><rect x="181.4" y="729.6" width="45" height="7" class="fp-scale--on"/><rect x="226.4" y="729.6" width="45" height="7" class="fp-scale--off"/>
+                <!-- Both labels share one baseline, ABOVE the bar. They are written out
+                     rather than derived so the pair cannot drift apart again. -->
+                <text class="fp-t" x="46.4" y="724.3">0</text>
+                <text class="fp-t" x="271.4" y="724.3" text-anchor="middle">5 m</text>
+              </g>
+              <g class="fp-north" transform="translate(696 723.5)">
+                <circle r="13"/>
+                <path class="fp-north__n" d="M0 -9 4.5 5 0 1.8 -4.5 5Z"/>
+                <text class="fp-t" y="-16" text-anchor="middle">N</text>
+              </g>
+            </svg>
+          <details class="faq-q faq-room" name="faq-room" data-room="basics" data-door="e0.55" data-no="01" style="--x:4;--y:7;--w:20;--h:19">
+            <summary>
+              <span class="faq-room__label" data-lang="faq.rooms.basics.label">Basics</span>
+              <span class="faq-room__q" data-lang="faq.rooms.basics.question">What is virtual staging?</span>
+            </summary>
+            <p class="faq-room__a" data-lang="faq.rooms.basics.answer">Virtual staging digitally furnishes a photo of an empty or dated room so buyers can see what the space could become. Nothing structural changes: the walls, windows, floors and proportions stay exactly as photographed, and only furniture and decor are added. It does the same job traditional staging does with a moving truck, in seconds instead of weeks. It is now standard practice on listings that would otherwise photograph as empty boxes.</p>
           </details>
-          <details class="faq-q">
-            <summary><span data-lang="faq.questions.howLong.question">How long does it take?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-            <p data-lang="faq.questions.howLong.answer">On average, virtual staging takes around 8 seconds per photo to process.</p>
+          <details class="faq-q faq-room" name="faq-room" data-room="turnaround" data-door="e0.45" data-no="02" style="--x:4;--y:26;--w:20;--h:20">
+            <summary>
+              <span class="faq-room__label" data-lang="faq.rooms.turnaround.label">Turnaround</span>
+              <span class="faq-room__q" data-lang="faq.rooms.turnaround.question">How fast is it?</span>
+            </summary>
+            <p class="faq-room__a" data-lang="faq.rooms.turnaround.answer">About 8 seconds per photo. Complex rooms and heavily detailed styles can take a little longer, but you are waiting seconds, not days, which is long enough to try three styles on the same room while you decide which one sells it. There is no queue, no booking and no back-and-forth with a stager: you upload, pick a look, and download.</p>
           </details>
-          <details class="faq-q">
-            <summary><span data-lang="faq.questions.customTheme.question">How do I select a custom theme?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-            <p data-lang="faq.questions.customTheme.answer">If you don't see the theme you want, you can select "Custom" and then add a specific prompt for the theme you want.</p>
+          <details class="faq-q faq-room" name="faq-room" data-room="pricing" data-door="w0.55" data-no="03" style="--x:30;--y:7;--w:17;--h:19">
+            <summary>
+              <span class="faq-room__label" data-lang="faq.rooms.pricing.label">Pricing</span>
+              <span class="faq-room__q" data-lang="faq.rooms.pricing.question">What does it cost?</span>
+            </summary>
+            <p class="faq-room__a" data-lang="faq.rooms.pricing.answer">You can stage for free, with no card. Stagify+ is $11.99 a month and unlocks the higher-quality image model, multiple variations per render, furniture removal, the Masking Studio and the AI Designer. For teams there is Enterprise: everyone on your company email is covered automatically, and you pay per generation instead of per seat. For comparison, physically staging a home usually runs $2,000 to $5,000.</p>
           </details>
-          <details class="faq-q">
-            <summary><span data-lang="faq.questions.idealRoom.question">What makes an ideal room for staging?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-            <p data-lang="faq.questions.idealRoom.answer">An ideal room for staging should have good lighting, clear walls, and minimal clutter. Wider shots that capture more of the room are much better than tight or cropped angles.</p>
+          <details class="faq-q faq-room" name="faq-room" data-room="studios" data-door="w0.45" data-no="04" style="--x:30;--y:26;--w:17;--h:20">
+            <summary>
+              <span class="faq-room__label" data-lang="faq.rooms.studios.label">The Studios</span>
+              <span class="faq-room__q" data-lang="faq.rooms.studios.question">What can Stagify do besides staging one room?</span>
+            </summary>
+            <p class="faq-room__a" data-lang="faq.rooms.studios.answer">Quite a lot. The AI Designer redesigns a whole room conversationally, so you can ask for a warmer palette or a bigger sofa and keep refining. The Masking Studio gives pixel-level control over which areas may change. The Exterior Studio works on curb appeal rather than interiors. The Listing Studio takes a whole set of photos through in one pass and produces a link you can send a seller for sign-off. Everything you make lands in your gallery.</p>
           </details>
-          <details class="faq-q">
-            <summary><span data-lang="faq.questions.privacy.question">Is my data private and secure?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-            <p data-lang="faq.questions.privacy.answer">Yes, we take your privacy seriously. Your uploaded images are processed securely and are not stored permanently on our servers.</p>
+          <details class="faq-q faq-room" name="faq-room" data-room="control" data-door="s0.35" data-no="05" style="--x:47;--y:7;--w:16;--h:39">
+            <summary>
+              <span class="faq-room__label" data-lang="faq.rooms.control.label">Control</span>
+              <span class="faq-room__q" data-lang="faq.rooms.control.question">How much control do I have over the result?</span>
+            </summary>
+            <p class="faq-room__a" data-lang="faq.rooms.control.answer">As much as you want. Pick a preset style and you are done in one click. Choose "Custom" and you can describe the look in your own words. Open the Masking Studio and you can paint exactly which parts of the photo are allowed to change, attaching specific furniture to each area, so anything you did not select stays untouched. The AI Designer sits in between: describe what you want changed, look at the result, and refine it in conversation.</p>
           </details>
-          <details class="faq-q">
-            <summary><span data-lang="faq.questions.whatMakesDifferent.question">What makes Stagify different from other virtual staging tools?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-            <p data-lang="faq.questions.whatMakesDifferent.answer">A few things. First, price: you can start staging for free, and Stagify+ is just $11.99/month for unlimited staging, while traditional staging can cost hundreds or thousands of dollars per room. Second, AI Designer lets you chat with our AI to redesign a whole room and refine the result conversationally, instead of only applying presets. Third, the Masking Studio gives you pixel-level precision: highlight exactly which areas of a photo can change and attach specific furniture to each one, so everything you don't select stays untouched. Most tools do just one of these well; Stagify brings affordability, creative control, and precision together.</p>
+          <details class="faq-q faq-room" name="faq-room" data-room="photos" data-door="n0.70" data-no="06" style="--x:4;--y:55;--w:20;--h:35">
+            <summary>
+              <span class="faq-room__label" data-lang="faq.rooms.photos.label">Photos</span>
+              <span class="faq-room__q" data-lang="faq.rooms.photos.question">What kind of photo works best?</span>
+            </summary>
+            <p class="faq-room__a" data-lang="faq.rooms.photos.answer">Wide, bright and level. Shoot from a corner so two walls and plenty of floor are visible, keep the camera roughly chest height, and let in as much natural light as you can. Empty or lightly furnished rooms give the AI the cleanest canvas, though Stagify+ can remove existing furniture first. Avoid tight crops, heavy fisheye distortion, and photos where the floor is barely in frame, since there is nowhere to place furniture convincingly.</p>
           </details>
-          <details class="faq-q">
-            <summary><span data-lang="faq.questions.mlsAllowed.question">Can I use virtually staged photos in my real estate listings?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
-            <p data-lang="faq.questions.mlsAllowed.answer">Yes. Virtual staging is widely used and accepted across real estate listings and MLSs. The main rule is transparency: most MLSs and local regulations ask that you clearly disclose when a photo has been virtually staged, for example by labeling it "virtually staged" in the caption. Because Stagify only changes furniture and decor and never alters the actual structure of the room, your photos remain honest representations of the space. We always recommend adding a virtual-staging disclosure to stay compliant with your local MLS and real estate board.</p>
+          <details class="faq-q faq-room" name="faq-room" data-room="disclosure" data-door="w0.50" data-no="07" style="--x:30;--y:55;--w:17;--h:18">
+            <summary>
+              <span class="faq-room__label" data-lang="faq.rooms.disclosure.label">Disclosure</span>
+              <span class="faq-room__q" data-lang="faq.rooms.disclosure.question">Can I use these photos in an MLS listing?</span>
+            </summary>
+            <p class="faq-room__a" data-lang="faq.rooms.disclosure.answer">Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp "Virtually staged" onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects.</p>
           </details>
+          <details class="faq-q faq-room" name="faq-room" data-room="privacy" data-door="w0.50" data-no="08" style="--x:30;--y:73;--w:17;--h:17">
+            <summary>
+              <span class="faq-room__label" data-lang="faq.rooms.privacy.label">Privacy</span>
+              <span class="faq-room__q" data-lang="faq.rooms.privacy.question">What happens to the photos I upload?</span>
+            </summary>
+            <p class="faq-room__a" data-lang="faq.rooms.privacy.answer">They travel over an encrypted connection, get processed, and are not kept permanently on our servers. Renders you save go to your own gallery, which only you can see unless you share a link. We do not sell personal information, and you keep ownership of both your uploads and the images Stagify generates. We share data only with the providers needed to run the service, such as the AI and payment processors, which the Privacy Policy lists.</p>
+          </details>
+          <details class="faq-q faq-room" name="faq-room" data-room="whyStagify" data-door="n0.30" data-no="09" style="--x:47;--y:55;--w:16;--h:35;--lt:6.5cqh">
+            <summary>
+              <span class="faq-room__label" data-lang="faq.rooms.whyStagify.label">Why Stagify</span>
+              <span class="faq-room__q" data-lang="faq.rooms.whyStagify.question">How is this different from other tools?</span>
+            </summary>
+            <p class="faq-room__a" data-lang="faq.rooms.whyStagify.answer">Most tools do one of these three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot.</p>
+          </details>
+            <!-- The notes column's only static content: the idle prompt. The open
+                 room's key, question and answer are positioned over it from inside their
+                 own <details>, which is why this is not in the accessibility tree.
+                 A drafting title block used to sit at the foot of this column
+                 (Project / Drawing / Scale / Sheet). It went because every line of it
+                 restated something already on the page — the drawing IS the FAQ, and
+                 the scale is the scale bar. Authentic marginalia is not worth a
+                 quarter of the column. -->
+            <div class="faq-plan__notes" aria-hidden="true">
+              <p class="faq-plan__hint" data-lang="faq.plan.hint">Every room on this plan is a question. Select one and its answer appears here.</p>
+            </div>
+          </div>
         </div>
       </section>
-
       <!-- ========================= BLOG ========================= -->
       <section class="home-section home-blog" id="blog-teaser" aria-labelledby="blog-teaser-title">
         <div class="home-section__head home-section__head--wide reveal">
@@ -2131,55 +2279,71 @@
           "name": "What is virtual staging?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled. Unlike traditional staging, it's faster, more cost-effective, and allows for multiple design options tailored to different buyer preferences. With high-quality visuals, virtual staging highlights the property's best features, making it easier for buyers to connect emotionally and imagine themselves living there."
+            "text": "Virtual staging digitally furnishes a photo of an empty or dated room so buyers can see what the space could become. Nothing structural changes: the walls, windows, floors and proportions stay exactly as photographed, and only furniture and decor are added. It does the same job traditional staging does with a moving truck, in seconds instead of weeks. It is now standard practice on listings that would otherwise photograph as empty boxes."
           }
         },
         {
           "@type": "Question",
-          "name": "How long does it take?",
+          "name": "How fast is it?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "On average, virtual staging takes around 8 seconds per photo to process, though the exact time can be a little shorter or longer depending on the complexity of the space and the design style chosen. The result is a quick, seamless transformation that makes your property photos stand out."
+            "text": "About 8 seconds per photo. Complex rooms and heavily detailed styles can take a little longer, but you are waiting seconds, not days, which is long enough to try three styles on the same room while you decide which one sells it. There is no queue, no booking and no back-and-forth with a stager: you upload, pick a look, and download."
           }
         },
         {
           "@type": "Question",
-          "name": "How do I select a custom theme?",
+          "name": "What does it cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "If you don't see the theme you want, you can select \"Custom\" and then add a specific prompt for the theme you want. We'll use your prompt to generate the theme you want."
+            "text": "You can stage for free, with no card. Stagify+ is $11.99 a month and unlocks the higher-quality image model, multiple variations per render, furniture removal, the Masking Studio and the AI Designer. For teams there is Enterprise: everyone on your company email is covered automatically, and you pay per generation instead of per seat. For comparison, physically staging a home usually runs $2,000 to $5,000."
           }
         },
         {
           "@type": "Question",
-          "name": "What makes an ideal room for staging?",
+          "name": "What can Stagify do besides staging one room?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "An ideal room for staging should have good lighting, clear walls, and minimal clutter. Empty or sparsely furnished rooms work best, as they provide a clean canvas for the AI to add furniture and decor that matches your chosen style. Wider shots that capture more of the room are much better than tight or cropped angles, since they give the AI more context to stage the space realistically."
+            "text": "Quite a lot. The AI Designer redesigns a whole room conversationally, so you can ask for a warmer palette or a bigger sofa and keep refining. The Masking Studio gives pixel-level control over which areas may change. The Exterior Studio works on curb appeal rather than interiors. The Listing Studio takes a whole set of photos through in one pass and produces a link you can send a seller for sign-off. Everything you make lands in your gallery."
           }
         },
         {
           "@type": "Question",
-          "name": "Is my data private and secure?",
+          "name": "How much control do I have over the result?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. We use HTTPS encryption, do not permanently store uploaded images after processing, and do not sell your personal information. You retain ownership of your uploads and generated results. We share data only with service providers needed to run Stagify (such as AI and payment processors) as described in our Privacy Policy."
+            "text": "As much as you want. Pick a preset style and you are done in one click. Choose \"Custom\" and you can describe the look in your own words. Open the Masking Studio and you can paint exactly which parts of the photo are allowed to change, attaching specific furniture to each area, so anything you did not select stays untouched. The AI Designer sits in between: describe what you want changed, look at the result, and refine it in conversation."
           }
         },
         {
           "@type": "Question",
-          "name": "What makes Stagify different from other virtual staging tools?",
+          "name": "What kind of photo works best?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "A few things. First, price: you can start staging for free, and Stagify+ is just $11.99/month for unlimited staging, while traditional staging can cost hundreds or thousands of dollars per room. Second, AI Designer lets you chat with our AI to redesign a whole room and refine the result conversationally, instead of only applying presets. Third, the Masking Studio gives you pixel-level precision: highlight exactly which areas of a photo can change and attach specific furniture to each one, so everything you don't select stays untouched. Most tools do just one of these well; Stagify brings affordability, creative control, and precision together."
+            "text": "Wide, bright and level. Shoot from a corner so two walls and plenty of floor are visible, keep the camera roughly chest height, and let in as much natural light as you can. Empty or lightly furnished rooms give the AI the cleanest canvas, though Stagify+ can remove existing furniture first. Avoid tight crops, heavy fisheye distortion, and photos where the floor is barely in frame, since there is nowhere to place furniture convincingly."
           }
         },
         {
           "@type": "Question",
-          "name": "Can I use virtually staged photos in my real estate listings?",
+          "name": "Can I use these photos in an MLS listing?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. Virtual staging is widely used and accepted across real estate listings and MLSs. The main rule is transparency: most MLSs and local regulations ask that you clearly disclose when a photo has been virtually staged, for example by labeling it \"virtually staged\" in the caption. Because Stagify only changes furniture and decor and never alters the actual structure of the room, your photos remain honest representations of the space. We always recommend adding a virtual-staging disclosure to stay compliant with your local MLS and real estate board."
+            "text": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp \"Virtually staged\" onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens to the photos I upload?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They travel over an encrypted connection, get processed, and are not kept permanently on our servers. Renders you save go to your own gallery, which only you can see unless you share a link. We do not sell personal information, and you keep ownership of both your uploads and the images Stagify generates. We share data only with the providers needed to run the service, such as the AI and payment processors, which the Privacy Policy lists."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is this different from other tools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most tools do one of these three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot."
           }
         }
       ]
