@@ -114,6 +114,25 @@ function runtimeSetTokens() {
 }
 
 /**
+ * Custom properties a PAGE authors in an inline `style=` attribute — the other way a
+ * var() gets a value without any sheet declaring it. #faq's rooms carry their geometry
+ * this way (`style="--x:33;--y:68;--w:31;--h:20"`) precisely so the boxes position with
+ * no JS, and the NAR bars and .reveal delays do the same.
+ *
+ * Checked per page rather than globally: a property authored on index.html says nothing
+ * about whether a sheet's var() resolves on guides.html.
+ *
+ * @param {string} pageSrc
+ */
+function inlineStyleTokens(pageSrc) {
+  const found = new Set();
+  for (const [, decls] of pageSrc.matchAll(/\bstyle="([^"]*--[^"]*)"/g)) {
+    for (const m of decls.matchAll(/(--[\w-]+)\s*:/g)) found.add(m[1]);
+  }
+  return found;
+}
+
+/**
  * Lines of a sheet with block comments blanked IN PLACE, so reported line numbers
  * match the file. Stripping comments before splitting shifted every number after the
  * first multi-line comment — which sent the first run of this guard chasing the wrong
@@ -159,10 +178,12 @@ test('every var() resolves to a token in scope on every page serving that sheet'
       const sheetsOnPage = [...pageSrc.matchAll(/href="[^"]*?styles\/([a-z0-9-]+\.css)"/g)].map((m) => m[1]);
       const inScope = new Set();
       for (const s of sheetsOnPage) for (const name of definedTokens(s).keys()) inScope.add(name);
+      const authoredInline = inlineStyleTokens(pageSrc);
 
       for (const name of used) {
-        // A sheet may define a token for its own use (blog.css carries its own :root).
-        if (inScope.has(name) || runtimeSet.has(name)) continue;
+        // A sheet may define a token for its own use (blog.css carries its own :root),
+        // JS may setProperty it, or the page may author it in an inline style.
+        if (inScope.has(name) || runtimeSet.has(name) || authoredInline.has(name)) continue;
         problems.push(`${sheet} uses ${name} but ${page} does not load a sheet defining it`);
       }
     }

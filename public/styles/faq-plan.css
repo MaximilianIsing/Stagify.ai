@@ -1,0 +1,668 @@
+/* ==========================================================================
+   #faq — the architectural sheet (homepage only, lazy-loaded)
+   ==========================================================================
+
+   WHAT THIS SHEET IS. The FAQ markup is a plain <details> accordion and stays
+   one. This is an ADDITIVE layer that re-presents the same nine elements as
+   rooms on a drawing. Nothing here is required for the section to work.
+
+   WHY IT IS A SEPARATE, LAZY SHEET. home.css is ~100 KB and render-blocking on
+   BOTH index.html and guides.html. guides.html reuses .faq-accordion / .faq-q
+   for its 17 troubleshooting items and would download every byte of this to
+   never use it. So this lives in its own file, loaded `media="print"` +
+   [data-lazy-css] on index.html alone. It cannot flash: #faq is far below the
+   fold AND inside a .reveal (opacity 0 until home-reveal.js runs after `load`),
+   so the sheet lands long before the section can be seen.
+
+   WHY IT IS A BLUEPRINT AND NOT WHITE PAPER. Dark ink needs an opaque ground,
+   so the first attempt put the drawing on white — which then sat on the page
+   like a lightbox, fighting every glass panel around it. Inverting it solves
+   both at once: a deep indigo ground gives the linework more contrast than
+   white ever did, and it belongs to the same blue family as the rest of the
+   site instead of interrupting it. It is also, literally, what a blueprint is.
+
+   THE ONE STRUCTURAL RULE. Every plan-mode declaration sits inside the single
+   `@media screen and (min-width: 1001px)` block. Outside it this file only
+   hides the drawing and styles the label as a chip, which is what makes the
+   degradation total rather than partial:
+
+     - below 1001px  -> the accordion, with a topic chip
+     - print         -> the accordion (`screen` excludes it), all nine answers
+     - sheet fails   -> the accordion
+     - JS fails      -> the drawing, in CSS, minus furniture/doors/keys
+
+   There is no state in which the user gets half a floor plan. Anything hidden
+   by default must be given a `display` back inside the media query, or it is
+   invisible everywhere — pinned by home-faq-plan.test.js.
+
+   ONE COORDINATE SYSTEM. Everything — rooms, notes column, title block — is
+   positioned in percentages of `.faq-plan__sheet`, and the SVG's viewBox has
+   the sheet's own aspect ratio. So one viewBox unit is a fixed fraction of the
+   sheet forever, the <details> layers span the whole sheet, and the question
+   and answer reach the notes column with plain percentages while still living
+   inside their own <details> — no offset maths anywhere.
+
+   TYPE IS SIZED IN cqw, against the sheet, for the same reason the geometry is
+   in percentages of it: the sheet is capped by viewport HEIGHT, so anything
+   sized in vw grows while the sheet shrinks. That mismatch is not theoretical —
+   it is what pushed the answer down over the title block on a short window.
+
+   LINE WEIGHT IS THE WHOLE ILLUSION. A drawing reads as a drawing because its
+   linework is graded, not because it has right angles. The hierarchy here,
+   heaviest first: envelope poché > partitions > furniture > door swings >
+   dimensions > grid. Flatten it and this instantly looks like a wireframe
+   again. Weights are in viewBox units and scale with the sheet.
+
+   MOTION follows the house doctrine (home.css:2141, home-figures.js:336):
+   states apply unconditionally and only ARRIVE instantly under reduced motion.
+   Settled values live in the plain block; transitions are ADDED in the
+   `(prefers-reduced-motion: no-preference)` block. Visibility always rides on
+   `opacity`, never on stroke-dashoffset — otherwise reduced motion would leave
+   every wall permanently drawn, or permanently gone.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Accordion mode — the default, and everything below 1001px
+   -------------------------------------------------------------------------- */
+
+/* The drawing does not exist outside plan mode. `.faq-room__ink` is on this list
+   for a reason worth keeping: it is the per-room SVG home-faq-plan.js injects, and
+   every rule that styles its contents lives inside the media query. Left visible it
+   renders unstyled, and an SVG with no declared fill paints solid black — which is
+   how a full-width black slab once landed under every answer on mobile. */
+.faq-plan__ink,
+.faq-room__ink,
+.faq-plan__notes,
+.faq-room__no {
+  display: none;
+}
+
+.faq-room__q {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.faq-room__label {
+  flex: 0 0 auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--brand-wash);
+  color: var(--brand);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Plan mode
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 1001px) {
+  .faq-plan {
+    /* Height-aware so the whole sheet fits one screen: `main` is its own scroll
+       container at roughly viewport height, and a sheet taller than it would put the
+       notes column's answer below the fold — you would click a room and have to
+       scroll away from it to read the reply. 1.526 is the viewBox ratio, so the
+       aspect-ratio below is never contradicted. */
+    --sheet-w: min(100%, 1160px, 76vh * 1.5263);
+    /* The one accent. Everything on the sheet is white ink on indigo except the
+       active room, which switches to this. */
+    --ink-hot: var(--brand-pale);
+  }
+
+  .faq-plan__sheet {
+    display: block;
+    position: relative;
+    width: var(--sheet-w);
+    /* The element also carries `faq-accordion`, which is its mobile fallback — and
+       home.css caps that at `max-width: 820px` for a readable measure of body text.
+       Left standing it silently clamps the whole drawing to 820px however much room
+       there is, which drove every cqw-sized label down onto its clamp floor. */
+    max-width: none;
+    margin: 0 auto;
+    aspect-ratio: 1160 / 760;
+    overflow: hidden;
+    /* Makes cqw available to everything on the sheet, so ALL type scales with the
+       drawing. Sizing text in vw instead was a real bug: the sheet is capped by
+       viewport HEIGHT, so on a wide-but-short window the sheet shrank while the type
+       did not, and the answer overran the title block. Legal because the sheet's size
+       never depends on its contents — explicit width, height from aspect-ratio. */
+    container-type: size;
+    border: 1px solid rgba(147, 197, 253, 0.22);
+    border-radius: 4px;
+    background: linear-gradient(158deg, #24417f 0%, #1b3269 52%, #142551 100%);
+    box-shadow: 0 26px 70px rgba(12, 27, 66, 0.42),
+      0 2px 8px rgba(12, 27, 66, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+  .faq-plan__ink {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* Each <details> is a transparent full-SHEET layer, which is what puts the notes
+     column inside its own containing block. All of home.css's glass-card treatment
+     has to come off, [open] included, or every room paints a white panel over the
+     drawing. */
+  .faq-room,
+  .faq-room[open] {
+    position: absolute;
+    /* `height: 100%`, NOT `inset: 0`. Both paint the same box, but a box sized by
+       top/bottom with `height: auto` is not a DEFINITE height, so percentage heights
+       on children resolve against nothing and collapse to zero — while percentage
+       widths, which have a definite basis, resolve fine. That asymmetry flattened
+       every room's ink layer to 0px tall while leaving it the right width. */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Above .faq-plan__notes, which is last in the sheet and would otherwise paint its
+       paper backing over the question and answer positioned onto it from in here. */
+    z-index: 1;
+    pointer-events: none;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  /* The <summary> spans the sheet too, so the spans inside it can be positioned
+     anywhere on it. It takes no pointer events itself — the label is the hit target,
+     and it is sized to the room, so the whole room is clickable. */
+  .faq-room > summary {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    padding: 0;
+    background: none;
+    pointer-events: none;
+    list-style: none;
+  }
+  .faq-room > summary::-webkit-details-marker,
+  .faq-room > summary::marker {
+    display: none;
+  }
+  .faq-room .faq-q__icon {
+    display: none;
+  }
+
+  /* ---- the room box ------------------------------------------------------
+     Both cover the WHOLE room. The label's box is the hit target, so shrinking it
+     to fit its text would leave most of the room dead to the pointer — the name is
+     pushed clear of the key bubble with padding instead. cqh is a percentage of the
+     sheet's height, the only unit that expresses a fixed drawing offset from here:
+     percentage padding resolves against WIDTH, so it would differ per room. */
+  .faq-room__label,
+  .faq-room__ink {
+    position: absolute;
+    left: calc(var(--x) * 1%);
+    top: calc(var(--y) * 1%);
+    width: calc(var(--w) * 1%);
+    height: calc(var(--h) * 1%);
+  }
+  .faq-room__label {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    /* `--lt` lets one room push its name further down its own top band. A door on the
+       NORTH wall swings its leaf into exactly the strip the name sits in, and where the
+       two land on the same part of the wall the name prints through the arc. It is set
+       inline, next to that room's --x/--y/--w/--h, because it is a fact about that
+       rectangle's geometry and belongs with the rest of it. */
+    padding: var(--lt, 4cqh) 8px 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: rgba(255, 255, 255, 0.93);
+    font-size: clamp(9px, 1.15cqw, 14px);
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: normal;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  .faq-room__ink {
+    display: block;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .faq-room__label:hover,
+  .faq-room[open] .faq-room__label {
+    color: var(--ink-hot);
+  }
+  /* A solid rectangle would read as another wall. A dashed offset marquee is native
+     CAD vocabulary and unmistakably not architecture. The ring goes on the LABEL, not
+     the <summary> — the summary spans the whole sheet, so its own focus ring would be
+     a box around the entire drawing. */
+  .faq-room > summary:focus-visible {
+    outline: none;
+  }
+  .faq-room > summary:focus-visible .faq-room__label {
+    outline: 2px dashed var(--ink-hot);
+    outline-offset: -4px;
+  }
+
+  /* ---- the notes column -------------------------------------------------- */
+  .faq-plan__notes,
+  .faq-room__no,
+  .faq-room__q,
+  .faq-room__a {
+    position: absolute;
+    left: 66.5%;
+    right: 2.5%;
+  }
+  .faq-plan__notes {
+    display: block;
+    /* Deliberately larger than the text that lands on it — the key, question and answer
+       all sit at left 66.5% / right 2.5% — so the panel reads as a margin around the copy
+       instead of a box drawn tight to it. */
+    left: 64.6%;
+    right: 1.4%;
+    top: 4%;
+    /* 2.5%, not 4%: the panel now has an EDGE, so an answer that used to run quietly over
+       the grid instead runs off the paper. The longest German and Russian answers do
+       exactly that on a short window, where the sheet is height-capped near 640px but the
+       type has already hit its clamp floor and stopped shrinking with it. */
+    bottom: 2.5%;
+    width: auto;
+    padding: 3.4cqh 1.7cqw 0;
+    /* THE PAPER BACKING, and the reason it exists: the ruled grid is what makes the sheet
+       read as a drawing everywhere else, but body copy set over it is genuinely hard to
+       read — the lines cut through the x-height at arbitrary heights and the eye keeps
+       resolving them as strokes. So the grid is not removed, it is stopped exactly where
+       it turns from texture into noise. Everywhere it is decoration, it survives. */
+    background: linear-gradient(180deg, rgba(9, 19, 46, 0.9), rgba(9, 19, 46, 0.94));
+    border: 1px solid rgba(147, 197, 253, 0.16);
+    border-radius: 3px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* Painted BENEATH the rooms. This div is last in the sheet, so plain DOM order would
+       lay its backing over the very question and answer it is meant to back. Pair with the
+       `z-index: 1` on .faq-room. */
+    z-index: 0;
+    /* Hit-testable, it swallowed every pointer event over the column: the answer could not
+       be clicked into, let alone dragged across to copy. It is aria-hidden decoration with
+       nothing to click, so it takes none and the text underneath becomes reachable. */
+    pointer-events: none;
+  }
+  .faq-plan__hint {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.74);
+    font-size: clamp(11.5px, 1.4cqw, 16px);
+    line-height: 1.55;
+  }
+  .faq-plan:has(.faq-room__label:hover) .faq-plan__hint,
+  .faq-plan:has(.faq-room[open]) .faq-plan__hint {
+    opacity: 0;
+  }
+
+
+  /* The drawing's key number, repeated big in the notes so the eye can pair the
+     callout bubble on the room with the text — cheaper and more robust than a leader
+     line, and it is what a real detail key does. */
+  .faq-room__no {
+    display: block;
+    top: 6%;
+    color: var(--ink-hot);
+    font-size: clamp(13px, 1.9cqw, 23px);
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+    /* It sits in the DOM between the question and the answer, so a drag from one to the
+       other swept it up and pasted "…the result?05 / 09As much as you want…". It is an
+       aria-hidden drawing callout, not part of the text — excluded from the copy for the
+       same reason it is excluded from the accessibility tree. */
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .faq-room__q {
+    top: 11%;
+    /* opacity, NOT display: this span is half the <summary>'s accessible name, so it
+       stays in the accessibility tree. It doubles as the hover preview for free. */
+    opacity: 0;
+    color: rgba(255, 255, 255, 0.96);
+    font-size: clamp(14px, 1.85cqw, 23px);
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    line-height: 1.3;
+    text-align: left;
+    /* Every room's question sits in the same box, and a closed one is only `opacity: 0` —
+       still painted, still hit-testable. Nine stacked layers means the LAST room in the
+       DOM would take every click in this band, toggling a room nobody aimed at. So the
+       events go only to the one that is open. */
+    pointer-events: none;
+  }
+  .faq-room[open] .faq-room__q {
+    pointer-events: auto;
+  }
+  /* Written as `.faq-room > .faq-room__a`, not `.faq-room__a`, ON PURPOSE. home.css
+     styles the answer as `.faq-q > p` — margin, padding and a border-top — which is
+     (0,2,0). A single class here is (0,1,0) and loses on specificity no matter that
+     this sheet loads later, indenting the answer out of line and giving it a stray
+     rule. Matching (0,2,0) lets source order settle it. */
+  .faq-room > .faq-room__a {
+    /* `--a-top` is measured — home-faq-plan.js puts the answer directly under its OWN
+       question, because the question and the answer cannot share a normal flow (one has to
+       be inside the <summary> to be the accessible name, one has to be outside it to be
+       the disclosure content). 27% is the static fallback for when that measurement never
+       happens, and it is what the fixed layout had to be: enough room for a three-line
+       question, which is the worst German and Russian reach. A one-line English question
+       under that fallback leaves a band of empty paper — which is the whole reason the
+       measured version exists. */
+    top: var(--a-top, 27%);
+    margin: 0;
+    padding: 0;
+    border-top: 0;
+    color: rgba(255, 255, 255, 0.87);
+    font-size: clamp(11px, 1.3cqw, 16.5px);
+    line-height: 1.62;
+    pointer-events: auto;
+  }
+  /* `:has(:focus-visible)`, NOT `:focus-within`. A <summary> keeps DOM focus after being
+     clicked, so with :focus-within a room you closed with the mouse went on showing its
+     question in the notes column indefinitely — the plan said nothing was selected and the
+     column said otherwise. :focus-visible is false for a mouse click and true for Tab, so
+     the keyboard preview survives and the stale one goes.
+     Written as `:has(:focus-visible)` rather than `> summary:focus-visible` to keep the
+     selector at (0,2,0), exactly what :focus-within scored. Anything heavier would start
+     beating the `[open]` rules below it, and a focused open room would render with the
+     dimmer hover fill instead of its own. */
+  .faq-room__label:hover ~ .faq-room__q,
+  .faq-room:has(:focus-visible) .faq-room__q,
+  .faq-room[open] .faq-room__q,
+  .faq-room[open] .faq-room__no {
+    opacity: 1;
+  }
+  /* With a room open, hovering a different one would paint two questions in the same
+     place. Specificity (0,6,0) beats the show rules above, so no !important. */
+  .faq-plan__sheet:has(.faq-room[open]) .faq-room:not([open]) .faq-room__q {
+    opacity: 0;
+  }
+
+  /* ---- dimming ------------------------------------------------------------
+     Scoped to the room's own parts, NOT the whole <details>, because the <details>
+     also contains the notes column text and dimming a room you are reading would be
+     nonsense. */
+  .faq-plan__sheet:has(.faq-room__label:hover) .faq-room:not(:hover) > summary .faq-room__label,
+  .faq-plan__sheet:has(.faq-room__label:hover) .faq-room:not(:hover) .faq-room__ink,
+  .faq-plan__sheet:has(.faq-room[open]):not(:has(.faq-room__label:hover)) .faq-room:not([open]) > summary .faq-room__label,
+  .faq-plan__sheet:has(.faq-room[open]):not(:has(.faq-room__label:hover)) .faq-room:not([open]) .faq-room__ink {
+    opacity: 0.68;
+  }
+
+  /* ---- the drawing --------------------------------------------------------
+     Weight hierarchy, heaviest to lightest. These numbers are the drawing. */
+  .fp-grid {
+    fill: url(#fp-grid);
+    opacity: 0.5;
+    color: rgba(255, 255, 255, 0.13);
+  }
+  .fp-sheet {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.3);
+    stroke-width: 1.5;
+  }
+  .fp-rule {
+    stroke: rgba(255, 255, 255, 0.22);
+    stroke-width: 1.5;
+  }
+  .fp-hall rect {
+    fill: url(#fp-hatch);
+    color: rgba(255, 255, 255, 0.9);
+    opacity: 0.1;
+  }
+  /* Poché. The envelope is the heaviest line on the sheet by a wide margin — that
+     contrast is what makes the eye read "building" instead of "table". */
+  .fp-envelope {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.94);
+    stroke-width: 9;
+    stroke-linejoin: miter;
+  }
+  .fp-partition {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.5);
+    stroke-width: 4;
+    stroke-linejoin: miter;
+  }
+  /* Windows: the ground-coloured break punches through the poché and the sill line is
+     drawn back across it. Without these the envelope is just a rounded rectangle. */
+  .fp-win__gap {
+    stroke: #1c3167;
+    stroke-width: 9.5;
+  }
+  .fp-win__sill {
+    stroke: rgba(255, 255, 255, 0.72);
+    stroke-width: 1.6;
+  }
+  .fp-dim path {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.42);
+    stroke-width: 1.2;
+  }
+  .fp-t {
+    fill: rgba(255, 255, 255, 0.72);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  .fp-scale--on {
+    fill: rgba(255, 255, 255, 0.58);
+  }
+  .fp-scale--off {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.5);
+    stroke-width: 1.2;
+  }
+  .fp-north circle {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.4);
+    stroke-width: 1.2;
+  }
+  .fp-north__n {
+    fill: rgba(255, 255, 255, 0.6);
+    stroke: none;
+  }
+
+  /* ---- per-room ink -------------------------------------------------------
+     Every show/hide decision here is opacity, so reduced motion yields "fully drawn,
+     appears instantly" rather than "always on" or "never on". */
+  .fp-floor {
+    fill: transparent;
+  }
+  .faq-room:hover .fp-floor,
+  .faq-room:has(:focus-visible) .fp-floor {
+    fill: rgba(147, 197, 253, 0.07);
+  }
+  .faq-room[open] .fp-floor {
+    fill: rgba(147, 197, 253, 0.14);
+  }
+  /* The active room's own wall, drawn over the partition beneath it. */
+  .fp-wall {
+    fill: none;
+    stroke: var(--ink-hot);
+    stroke-width: 4.5;
+    stroke-linejoin: miter;
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+  .faq-room:hover .fp-wall,
+  .faq-room:has(:focus-visible) .fp-wall,
+  .faq-room[open] .fp-wall {
+    opacity: 1;
+  }
+  .faq-room[open] .fp-wall {
+    stroke-width: 6;
+  }
+  .fp-door {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.34);
+    stroke-width: 1.2;
+  }
+  .faq-room[open] .fp-door {
+    stroke: var(--ink-hot);
+  }
+  /* FURNITURE IS ALWAYS THERE. It was previously drawn only for the open room, which
+     left eight empty boxes and made the plan look unfinished rather than unfurnished.
+     A floor plan of a home has furniture in every room; opening one brightens its
+     own, it does not conjure it. */
+  .fp-furn {
+    color: rgba(255, 255, 255, 0.9);
+    opacity: 0.4;
+  }
+  .faq-room:hover .fp-furn,
+  .faq-room:has(:focus-visible) .fp-furn {
+    opacity: 0.6;
+  }
+  .faq-room[open] .fp-furn {
+    color: var(--ink-hot);
+    opacity: 1;
+  }
+  /* The callout bubble: the room's key number, matched by the big number in the notes
+     column. Always visible, so the plan is legible as a keyed drawing at rest. */
+  .fp-key circle {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.5);
+    stroke-width: 1.3;
+  }
+  .fp-key text {
+    fill: rgba(255, 255, 255, 0.82);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  .faq-room[open] .fp-key circle {
+    fill: var(--ink-hot);
+    stroke: var(--ink-hot);
+  }
+  .faq-room[open] .fp-key text {
+    fill: #16295a;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Motion — added, never removed. Everything above is the settled state.
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 1001px) and (prefers-reduced-motion: no-preference) {
+  .faq-room__label,
+  .faq-room__ink,
+  .faq-room__q,
+  .faq-room__no,
+  .faq-plan__hint {
+    transition: opacity 0.22s ease, color 0.18s ease;
+  }
+  .fp-floor,
+  .fp-furn,
+  .fp-door,
+  .fp-key circle,
+  .fp-key text {
+    transition: fill 0.24s ease, opacity 0.24s ease, stroke 0.2s ease, color 0.24s ease;
+  }
+
+  /* The wall draws clockwise from the room's top-left, the direction a hand traces a
+     wall. --len is set by home-faq-plan.js as plain arithmetic; getTotalLength() would
+     force layout once per room on a section nobody has scrolled to yet. */
+  .fp-wall {
+    stroke-dashoffset: var(--len);
+    transition: stroke-dashoffset 0.42s cubic-bezier(0.16, 0.84, 0.44, 1),
+      opacity 0.18s ease, stroke-width 0.2s ease;
+  }
+  .faq-room:hover .fp-wall,
+  .faq-room:has(:focus-visible) .fp-wall,
+  .faq-room[open] .fp-wall {
+    stroke-dashoffset: 0;
+  }
+  /* Closing FADES the stroke rather than un-drawing it: a reversed dashoffset reads as
+     an undo, not as a room closing. */
+
+  .faq-room[open] .faq-room__no {
+    animation: fpKeyIn 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+  }
+  .faq-room[open] .faq-room__q,
+  .faq-room[open] .faq-room__a {
+    animation: fpNoteIn 0.34s cubic-bezier(0.16, 0.84, 0.44, 1);
+  }
+
+  /* The one-time draft-in.
+     TWO classes, and the split is load-bearing. `.is-armed` lands the moment
+     home-faq-plan.js runs; `.is-drafted` when its OWN IntersectionObserver says the
+     section is really on screen. (It does not watch .reveal's `.is-visible` —
+     home-reveal.js's showAll() fallback sets that on every element at once, which
+     would play this for a section thousands of pixels below the fold.)
+
+     Everything that starts hidden is hidden ONLY under `.is-armed`, so if the module
+     fails to load or throws, no class is added and the sheet renders fully drawn and
+     static. Hiding these unconditionally would mean a JS failure left an empty
+     rectangle where the FAQ used to be. */
+  .faq-plan.is-armed .fp-envelope,
+  .faq-plan.is-armed .fp-partition {
+    stroke-dasharray: var(--net-len);
+    stroke-dashoffset: var(--net-len);
+  }
+  .faq-plan.is-armed.is-drafted .fp-envelope,
+  .faq-plan.is-armed.is-drafted .fp-partition {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1.05s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  .faq-plan.is-armed.is-drafted .fp-partition {
+    transition-delay: 0.25s;
+  }
+  .faq-plan.is-armed .faq-room__label,
+  .faq-plan.is-armed .fp-furn,
+  .faq-plan.is-armed .fp-key {
+    opacity: 0;
+  }
+  .faq-plan.is-armed.is-drafted .faq-room__label {
+    opacity: 1;
+    transition: opacity 0.4s ease calc(0.55s + var(--n, 0) * 45ms);
+  }
+  .faq-plan.is-armed.is-drafted .fp-furn {
+    opacity: 0.4;
+    transition: opacity 0.5s ease calc(0.75s + var(--n, 0) * 45ms);
+  }
+  .faq-plan.is-armed.is-drafted .fp-key {
+    opacity: 1;
+    transition: opacity 0.4s ease calc(0.9s + var(--n, 0) * 45ms);
+  }
+  .faq-plan.is-armed .fp-dim,
+  .faq-plan.is-armed .fp-scale,
+  .faq-plan.is-armed .fp-north,
+  .faq-plan.is-armed .fp-win {
+    opacity: 0;
+  }
+  .faq-plan.is-armed.is-drafted .fp-dim,
+  .faq-plan.is-armed.is-drafted .fp-scale,
+  .faq-plan.is-armed.is-drafted .fp-north,
+  .faq-plan.is-armed.is-drafted .fp-win {
+    opacity: 1;
+    transition: opacity 0.5s ease 1.15s;
+  }
+}
+
+@keyframes fpKeyIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes fpNoteIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+}

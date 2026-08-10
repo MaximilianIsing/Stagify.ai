@@ -98,20 +98,20 @@
   width:100%;
   justify-content:center
 }
-/* The dots are 8px of paint inside a 32x24 button, NOT an 8x8 target.
-   Previously .carousel-indicator WAS the 8x8 box: seven of them shared a 150px row
-   with 32px of padding, i.e. 86px of content, which on mobile narrowed to 72px and
-   left 8px targets with 2.67px between them.
-   Geometry chosen so the dots do not move: the old row was margin-top:8 + 8px tall,
-   putting dot centres 12px down; the new row is margin-top:0 + 24px tall, also 12px.
-   So this costs 8px of block height and shifts nothing.
-   24px is the WCAG 2.5.8 (AA) floor. 44px (AAA) is deliberately NOT used here —
-   7 x 44 = 308px would nearly span the 342px mobile carousel and would visibly
-   redesign the hero. Horizontal pitch is 32px, so targets never overlap. */
+/* Row geometry is PINNED to the shipped design: a fixed 150px row (120px on mobile)
+   with the seven dots spread by space-between, i.e. a ~13px pitch. Do not "fix" this
+   to a wider pitch — it was widened once to 32x24 buttons for the WCAG 2.5.8 (AA)
+   24px target floor, and the resulting row read as broken next to the live hero, so
+   the target size was deliberately traded back for the original spacing.
+   The dot itself is painted by ::before so the <button> can stay an 8x8 box while
+   keeping its own resets; the button semantics, aria-label/aria-current, focus ring
+   and focus-pauses-autoplay all stay — only the box size is design-locked. */
 .carousel-indicators {
-  margin-top:0;
+  margin-top:8px;
   display:flex;
-  justify-content:center
+  width:150px;
+  justify-content:space-between;
+  padding:0 32px
 }
 .carousel-indicator {
   appearance:none;
@@ -120,8 +120,8 @@
   border:0;
   padding:0;
   margin:0;
-  width:32px;
-  height:24px;
+  width:8px;
+  height:8px;
   display:grid;
   place-items:center;
   cursor:pointer
@@ -144,12 +144,13 @@
   background-color:var(--primary-light);
   transform:scale(1.1)
 }
-/* They are focusable now, so they need a ring — and it goes on the button box, not
-   the 8px dot, or it would be a 2px halo nobody can see. */
+/* They are focusable, so they need a ring. The button box is only 8x8 — the same
+   size as the dot — so the ring must sit OUTSIDE it (positive offset); an inset
+   ring on an 8px box would just repaint the dot. */
 .carousel-indicator:focus-visible {
   outline:2px solid var(--primary);
-  outline-offset:-2px;
-  border-radius:6px
+  outline-offset:2px;
+  border-radius:50%
 }
 .carousel-note {
   font-size:12px;
@@ -177,10 +178,12 @@
   .carousel-item-description {
     font-size:13px
   }
-  /* No width/padding override here any more. This used to clamp the row to 120px
-     with 24px of padding — 72px of content for 7 dots, which is what made the
-     mobile targets 8px wide with 2.67px gaps. The row is now intrinsically sized
-     (7 x 32px = 224px) and centred, which fits the 342px mobile carousel. */
+  /* Mobile clamp, part of the pinned geometry above: 120px row minus 48px of
+     padding leaves 72px of content for the seven dots. */
+  .carousel-indicators {
+    width:120px;
+    padding:0 24px
+  }
   .carousel-note {
     margin-bottom:24px
   }

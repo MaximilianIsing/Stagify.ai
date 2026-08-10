@@ -85,7 +85,7 @@
     },
     "showcase": {
       "title": "See it for yourself",
-      "subtitle": "Live demos. Drag to switch.",
+      "subtitle": "Live demos. Have a look around.",
       "tablistAria": "Studios",
       "tabs": {
         "staging": "Staging",
@@ -361,7 +361,7 @@
       }
     },
     "faq": {
-      "subtitle": "Quick answers to what we hear most. Stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch."
+      "subtitle": "The questions we hear most. Stuck? Visit <a href=\"guides.html\">Guides</a> or get in touch."
     },
     "blog": {
       "title": "From the Stagify blog",
@@ -585,34 +585,54 @@
   },
   "faq": {
     "title": "Frequently Asked Questions",
-    "questions": {
-      "whatIsVirtualStaging": {
+    "plan": {
+      "hint": "Every room on this plan is a question. Select one and its answer appears here."
+    },
+    "rooms": {
+      "basics": {
+        "label": "Basics",
         "question": "What is virtual staging?",
-        "answer": "Virtual staging is the process of digitally furnishing a property photo to showcase its potential, helping buyers envision how a space can look and feel when fully styled. Unlike traditional staging, it's faster, more cost-effective, and allows for multiple design options tailored to different buyer preferences. With high-quality visuals, virtual staging highlights the property's best features, making it easier for buyers to connect emotionally and imagine themselves living there."
+        "answer": "Virtual staging digitally furnishes a photo of an empty or dated room so buyers can see what the space could become. Nothing structural changes: the walls, windows, floors and proportions stay exactly as photographed, and only furniture and decor are added. It does the same job traditional staging does with a moving truck, in seconds instead of weeks. It is now standard practice on listings that would otherwise photograph as empty boxes."
       },
-      "howLong": {
-        "question": "How long does it take?",
-        "answer": "On average, virtual staging takes around 8 seconds per photo to process, though the exact time can be a little shorter or longer depending on the complexity of the space and the design style chosen. The result is a quick, seamless transformation that makes your property photos stand out."
+      "turnaround": {
+        "label": "Turnaround",
+        "question": "How fast is it?",
+        "answer": "About 8 seconds per photo. Complex rooms and heavily detailed styles can take a little longer, but you are waiting seconds, not days, which is long enough to try three styles on the same room while you decide which one sells it. There is no queue, no booking and no back-and-forth with a stager: you upload, pick a look, and download."
       },
-      "customTheme": {
-        "question": "How do I select a custom theme?",
-        "answer": "If you don't see the theme you want, you can select \"Custom\" and then add a specific prompt for the theme you want. We'll use your prompt to generate the theme you want."
+      "pricing": {
+        "label": "Pricing",
+        "question": "What does it cost?",
+        "answer": "You can stage for free, with no card. Stagify+ is $11.99 a month and unlocks the higher-quality image model, multiple variations per render, furniture removal, the Masking Studio and the AI Designer. For teams there is Enterprise: everyone on your company email is covered automatically, and you pay per generation instead of per seat. For comparison, physically staging a home usually runs $2,000 to $5,000."
       },
-      "idealRoom": {
-        "question": "What makes an ideal room for staging?",
-        "answer": "An ideal room for staging should have good lighting, clear walls, and minimal clutter. Empty or sparsely furnished rooms work best, as they provide a clean canvas for the AI to add furniture and decor that matches your chosen style. Wider shots that capture more of the room are much better than tight or cropped angles, since they give the AI more context to stage the space realistically."
+      "studios": {
+        "label": "The Studios",
+        "question": "What can Stagify do besides staging one room?",
+        "answer": "Quite a lot. The AI Designer redesigns a whole room conversationally, so you can ask for a warmer palette or a bigger sofa and keep refining. The Masking Studio gives pixel-level control over which areas may change. The Exterior Studio works on curb appeal rather than interiors. The Listing Studio takes a whole set of photos through in one pass and produces a link you can send a seller for sign-off. Everything you make lands in your gallery."
+      },
+      "control": {
+        "label": "Control",
+        "question": "How much control do I have over the result?",
+        "answer": "As much as you want. Pick a preset style and you are done in one click. Choose \"Custom\" and you can describe the look in your own words. Open the Masking Studio and you can paint exactly which parts of the photo are allowed to change, attaching specific furniture to each area, so anything you did not select stays untouched. The AI Designer sits in between: describe what you want changed, look at the result, and refine it in conversation."
+      },
+      "photos": {
+        "label": "Photos",
+        "question": "What kind of photo works best?",
+        "answer": "Wide, bright and level. Shoot from a corner so two walls and plenty of floor are visible, keep the camera roughly chest height, and let in as much natural light as you can. Empty or lightly furnished rooms give the AI the cleanest canvas, though Stagify+ can remove existing furniture first. Avoid tight crops, heavy fisheye distortion, and photos where the floor is barely in frame, since there is nowhere to place furniture convincingly."
+      },
+      "disclosure": {
+        "label": "Disclosure",
+        "question": "Can I use these photos in an MLS listing?",
+        "answer": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp \"Virtually staged\" onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
       },
       "privacy": {
-        "question": "Is my data private and secure?",
-        "answer": "Yes. We use HTTPS encryption, do not permanently store uploaded images after processing, and do not sell your personal information. You retain ownership of your uploads and generated results. We share data only with service providers needed to run Stagify (such as AI and payment processors) as described in our Privacy Policy."
+        "label": "Privacy",
+        "question": "What happens to the photos I upload?",
+        "answer": "They travel over an encrypted connection, get processed, and are not kept permanently on our servers. Renders you save go to your own gallery, which only you can see unless you share a link. We do not sell personal information, and you keep ownership of both your uploads and the images Stagify generates. We share data only with the providers needed to run the service, such as the AI and payment processors, which the Privacy Policy lists."
       },
-      "whatMakesDifferent": {
-        "question": "What makes Stagify different from other virtual staging tools?",
-        "answer": "A few things. First, price: you can start staging for free, and Stagify+ is just $11.99/month for unlimited staging, while traditional staging can cost hundreds or thousands of dollars per room. Second, AI Designer lets you chat with our AI to redesign a whole room and refine the result conversationally, instead of only applying presets. Third, the Masking Studio gives you pixel-level precision: highlight exactly which areas of a photo can change and attach specific furniture to each one, so everything you don't select stays untouched. Most tools do just one of these well; Stagify brings affordability, creative control, and precision together."
-      },
-      "mlsAllowed": {
-        "question": "Can I use virtually staged photos in my real estate listings?",
-        "answer": "Yes. Virtual staging is widely used and accepted across real estate listings and MLSs. The main rule is transparency: most MLSs and local regulations ask that you clearly disclose when a photo has been virtually staged, for example by labeling it \"virtually staged\" in the caption. Because Stagify only changes furniture and decor and never alters the actual structure of the room, your photos remain honest representations of the space. We always recommend adding a virtual-staging disclosure to stay compliant with your local MLS and real estate board."
+      "whyStagify": {
+        "label": "Why Stagify",
+        "question": "How is this different from other tools?",
+        "answer": "Most tools do one of these three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot."
       }
     }
   },

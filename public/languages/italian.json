@@ -85,7 +85,7 @@
     },
     "showcase": {
       "title": "Guarda con i tuoi occhi",
-      "subtitle": "Demo dal vivo. Trascina per cambiare.",
+      "subtitle": "Demo dal vivo. Dai un'occhiata.",
       "tablistAria": "Studi",
       "tabs": {
         "staging": "Staging",
@@ -361,7 +361,7 @@
       }
     },
     "faq": {
-      "subtitle": "Risposte rapide alle domande frequenti. Dubbi? Vai alle <a href=\"guides.html\">Guide</a> o scrivici."
+      "subtitle": "Le domande che ci fanno più spesso. Serve altro? Vai alle <a href=\"guides.html\">Guide</a> o scrivici."
     },
     "blog": {
       "title": "Dal blog di Stagify",
@@ -585,34 +585,54 @@
   },
   "faq": {
     "title": "Domande frequenti",
-    "questions": {
-      "whatIsVirtualStaging": {
-        "question": "Cos'è lo staging virtuale?",
-        "answer": "Lo staging virtuale è il processo di arredare digitalmente la foto di un immobile per mostrarne il potenziale, aiutando gli acquirenti a immaginare come uno spazio può apparire e farsi percepire una volta completamente arredato. A differenza dello staging tradizionale, è più veloce, più conveniente e consente più opzioni di design adattate alle diverse preferenze degli acquirenti. Con immagini di alta qualità, lo staging virtuale mette in risalto le caratteristiche migliori dell'immobile, rendendo più facile per gli acquirenti creare un legame emotivo e immaginarsi di viverci."
+    "plan": {
+      "hint": "Ogni stanza di questa piantina è una domanda. Selezionane una e la risposta compare qui."
+    },
+    "rooms": {
+      "basics": {
+        "label": "Le basi",
+        "question": "Che cos’è lo staging virtuale?",
+        "answer": "Lo staging virtuale arreda digitalmente la foto di una stanza vuota o datata, così chi compra vede che cosa potrebbe diventare. Non cambia nulla di strutturale: pareti, finestre, pavimenti e proporzioni restano esattamente come sono stati fotografati, e si aggiungono soltanto mobili e decorazioni. Fa lo stesso lavoro dello home staging tradizionale, camion dei traslochi compreso, ma in secondi anziché in settimane."
       },
-      "howLong": {
-        "question": "Quanto tempo richiede?",
-        "answer": "In media, lo staging virtuale richiede circa 8 secondi per foto, anche se il tempo esatto può essere un po' più breve o più lungo a seconda della complessità dello spazio e dello stile di design scelto. Il risultato è una trasformazione rapida e fluida che fa risaltare le foto del tuo immobile."
+      "turnaround": {
+        "label": "Tempi",
+        "question": "Quanto è veloce?",
+        "answer": "Circa 8 secondi per foto. Le stanze complesse e gli stili molto dettagliati richiedono un po’ di più, ma si tratta di secondi, non di giorni: abbastanza per provare tre stili sulla stessa stanza mentre decidi quale la vende. Nessuna coda, nessuna prenotazione, nessun rimpallo con un home stager. Carichi, scegli uno stile, scarichi."
       },
-      "customTheme": {
-        "question": "Come seleziono un tema personalizzato?",
-        "answer": "Se non vedi il tema che desideri, puoi selezionare «Personalizzato» e poi aggiungere un'istruzione specifica per il tema che vuoi. Useremo la tua istruzione per generare il tema desiderato."
+      "pricing": {
+        "label": "Prezzi",
+        "question": "Quanto costa?",
+        "answer": "Puoi fare staging gratis, senza carta. Stagify+ costa 11,99 $ al mese e sblocca il modello di immagine di qualità superiore, più varianti per render, la rimozione dei mobili esistenti, il Masking Studio e l’AI Designer. Per i team c’è Enterprise: chiunque abbia l’email aziendale è incluso automaticamente e paghi a generazione anziché a postazione. Per confronto, lo staging fisico di una casa costa di solito tra 2.000 e 5.000 $."
       },
-      "idealRoom": {
-        "question": "Cosa rende una stanza ideale per lo staging?",
-        "answer": "Una stanza ideale per lo staging dovrebbe avere una buona illuminazione, pareti libere e il minimo disordine. Le stanze vuote o scarsamente arredate funzionano meglio, perché offrono una tela pulita all'IA per aggiungere mobili e decorazioni adatti allo stile scelto. Le inquadrature più ampie che catturano più della stanza sono molto migliori degli angoli stretti o ritagliati, perché danno all'IA più contesto per arredare lo spazio in modo realistico."
+      "studios": {
+        "label": "Gli Studi",
+        "question": "Che cosa fa Stagify oltre a una singola stanza?",
+        "answer": "Parecchio. L’AI Designer ridisegna un’intera stanza conversando, così puoi chiedere una palette più calda o un divano più grande e continuare a rifinire. Il Masking Studio dà un controllo al pixel su quali aree possono cambiare. L’Exterior Studio lavora sull’aspetto esterno anziché sugli interni. Il Listing Studio processa un intero set di foto in un passaggio e produce un link da mandare al venditore per l’approvazione. Tutto finisce nella tua galleria."
+      },
+      "control": {
+        "label": "Controllo",
+        "question": "Quanto controllo ho sul risultato?",
+        "answer": "Quanto vuoi. Scegli uno stile predefinito e hai finito con un clic. Scegli «Custom» e descrivi il risultato con parole tue. Apri il Masking Studio e dipingi esattamente quali parti della foto possono cambiare, assegnando mobili specifici a ciascuna area, così tutto ciò che non hai selezionato resta intatto. L’AI Designer sta nel mezzo: descrivi che cosa vuoi cambiare, guardi il risultato e lo rifinisci conversando."
+      },
+      "photos": {
+        "label": "Foto",
+        "question": "Che tipo di foto funziona meglio?",
+        "answer": "Ampia, luminosa e dritta. Scatta da un angolo così da mostrare due pareti e molto pavimento, tieni la fotocamera all’altezza del petto e fai entrare più luce naturale possibile. Le stanze vuote o poco arredate offrono la tela più pulita, anche se Stagify+ può prima rimuovere i mobili esistenti. Evita inquadrature strette, forti distorsioni fisheye e foto in cui il pavimento si vede appena, perché non c’è dove appoggiare i mobili in modo credibile."
+      },
+      "disclosure": {
+        "label": "Trasparenza",
+        "question": "Posso usare queste foto in un annuncio immobiliare?",
+        "answer": "Sì, e lo staging virtuale è prassi comune, ma dichiaralo. La maggior parte dei portali e delle norme locali chiede che una foto arredata digitalmente sia indicata come tale, di solito nella didascalia. Stagify può stampigliare «Virtually staged» sull’immagine per te, con qualsiasi piano. Poiché cambiano solo mobili e decorazioni, mai la struttura della stanza, la foto resta una rappresentazione onesta dello spazio."
       },
       "privacy": {
-        "question": "I miei dati sono privati e sicuri?",
-        "answer": "Sì. Usiamo la crittografia HTTPS, non conserviamo in modo permanente le immagini caricate dopo l'elaborazione e non vendiamo le tue informazioni personali. Mantieni la proprietà dei tuoi caricamenti e dei risultati generati. Condividiamo i dati solo con i fornitori di servizi necessari per far funzionare Stagify (come i servizi di IA e di pagamento), come descritto nella nostra Informativa sulla privacy."
+        "label": "Privacy",
+        "question": "Che fine fanno le foto che carico?",
+        "answer": "Viaggiano su una connessione cifrata, vengono elaborate e non restano permanentemente sui nostri server. I render che salvi finiscono nella tua galleria, che vedi solo tu finché non condividi un link. Non vendiamo informazioni personali e la proprietà di ciò che carichi e delle immagini generate resta tua. Condividiamo dati solo con i fornitori necessari a far funzionare il servizio, come quelli di IA e pagamenti, elencati nell’Informativa sulla privacy."
       },
-      "whatMakesDifferent": {
-        "question": "Cosa distingue Stagify dagli altri strumenti di staging virtuale?",
-        "answer": "Diverse cose. Primo, il prezzo: puoi iniziare ad arredare gratis e Stagify+ costa solo $11.99 al mese per uno staging illimitato, mentre lo staging tradizionale può costare centinaia o migliaia di dollari a stanza. Secondo, il Designer IA ti permette di chattare con la nostra IA per riprogettare un'intera stanza e perfezionare il risultato conversando, invece di applicare solo preset. Terzo, lo Studio Maschere offre una precisione al pixel: indica esattamente quali aree di una foto possono cambiare e associa a ciascuna un mobile specifico, così tutto ciò che non selezioni resta intatto. La maggior parte degli strumenti fa bene solo una di queste cose; Stagify unisce convenienza, controllo creativo e precisione."
-      },
-      "mlsAllowed": {
-        "question": "Posso usare foto arredate virtualmente nei miei annunci immobiliari?",
-        "answer": "Sì. Lo staging virtuale è ampiamente usato e accettato negli annunci immobiliari e negli MLS. La regola principale è la trasparenza: la maggior parte degli MLS e delle normative locali chiede di indicare chiaramente quando una foto è stata sottoposta a staging virtuale, ad esempio segnalandola nella didascalia come « arredata virtualmente ». Poiché Stagify modifica solo mobili e decorazioni e non altera mai la struttura reale della stanza, le tue foto restano una rappresentazione onesta dello spazio. Consigliamo sempre di aggiungere un'indicazione di staging virtuale per rispettare le regole del tuo MLS e del tuo ente immobiliare locale."
+      "whyStagify": {
+        "label": "Perché",
+        "question": "In cosa è diverso dagli altri strumenti?",
+        "answer": "La maggior parte degli strumenti fa bene una di queste tre cose. Stagify le fa tutte e tre: costa abbastanza poco da arredare d’impulso, è abbastanza conversazionale da ripensare una stanza e non solo decorarla, ed è abbastanza precisa da controllare il risultato pixel per pixel. Aggiungi i flussi per esterni e per interi annunci, undici lingue, il pieno diritto d’autore su tutto ciò che generi, e nessuna pubblicità né costi per immagine."
       }
     }
   },
