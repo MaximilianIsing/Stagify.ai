@@ -11,10 +11,13 @@
 //     paints one number and then silently swaps to a different one. Only a test catches
 //     that, because both states look perfectly plausible on their own.
 //
-//  2. THE SLIDER FLOOR IS A GRAMMAR CONSTRAINT, not a UX preference. `min: 5` forces
-//     weeksFor() to [10, 200] and always even, which is what lets `home.compare.calc.
-//     weeks` ship as one form per language instead of one/few/many sets. Lowering it
-//     makes ten translations quietly ungrammatical with no visible failure.
+//  2. THE WEEKS MULTIPLIER IS A GRAMMAR CONSTRAINT, not a modelling detail.
+//     `weeksPerHome: 2` makes weeksFor() always even, hence never 1, which is what lets
+//     `home.compare.calc.weeks` ship as one form per language instead of a one/other
+//     pair. An odd multiplier puts "1 week" on screen at the floor and makes ten
+//     translations quietly ungrammatical with no visible failure. (The slider's `min`
+//     does NOT carry this — it used to be 5, and lowering it to 1 was safe precisely
+//     because the multiplier is what holds the invariant.)
 //
 //  3. NOTHING IN formatCurrency MAY THROW. e2e/index.spec.js fails the build on any
 //     pageerror, and `new Intl.NumberFormat('')` throws RangeError while
@@ -68,9 +71,10 @@ function attr(html, name) {
 // --------------------------------------------------------------------------
 
 test('clampListings bounds, floors, and survives a missing slider value', () => {
-  assert.equal(clampListings(24), 24);
-  assert.equal(clampListings('37'), 37, 'input.value is always a string');
-  assert.equal(clampListings(1), CALC.min, 'below the floor');
+  assert.equal(clampListings(8), 8);
+  assert.equal(clampListings('17'), 17, 'input.value is always a string');
+  assert.equal(clampListings(0), CALC.min, 'below the floor');
+  assert.equal(clampListings(-3), CALC.min, 'and well below it');
   assert.equal(clampListings(5000), CALC.max, 'above the ceiling');
   assert.equal(clampListings(12.9), 12, 'floors rather than rounds');
 
@@ -86,36 +90,39 @@ test('clampListings bounds, floors, and survives a missing slider value', () => 
 });
 
 test('costFor and weeksFor are linear and exact at both endpoints', () => {
-  assert.equal(costFor(CALC.min), 10000);
-  assert.equal(costFor(CALC.initial), 48000);
-  assert.equal(costFor(CALC.max), 200000);
-  assert.equal(weeksFor(CALC.initial), 48);
-  assert.equal(weeksFor(CALC.max), 200);
+  assert.equal(costFor(CALC.min), 2000);
+  assert.equal(costFor(CALC.initial), 10000);
+  assert.equal(costFor(CALC.max), 40000);
+  assert.equal(weeksFor(CALC.initial), 10);
+  assert.equal(weeksFor(CALC.max), 40);
 });
 
-test('the slider floor keeps the week count out of singular territory', () => {
-  // This is the whole reason CALC.min is 5 rather than 1. `home.compare.calc.weeks` is
-  // a single "{n} weeks" form in each of the 11 packs — there is no one/other pair —
-  // so the value substituted into it must never be 1. Lowering the floor would not
-  // break anything visibly in English; it would just make ten packs ungrammatical.
-  assert.ok(
-    weeksFor(CALC.min) >= 10,
-    'CALC.min must keep weeksFor() >= 10; home.compare.calc.weeks has no singular form ' +
-      'in any pack, so a value of 1 would be grammatically wrong in ten languages'
-  );
+test('the weeks multiplier keeps the week count out of singular territory', () => {
+  // `home.compare.calc.weeks` is a single "{n} weeks" form in each of the 11 packs —
+  // there is no one/other pair — so the value substituted into it must never be 1.
+  // An EVEN weeksPerHome is what guarantees that at every slider position, including
+  // the floor. Making it odd would not break anything visibly in English; it would
+  // just put "1 week" on screen and make ten packs ungrammatical.
+  //
+  // Two is also the smallest even value, so weeksFor(CALC.min) is 2 at min: 1. That is
+  // fine in every pack we ship: ja/zh/ko have no plurals, the Romance and Germanic
+  // packs pluralise from 2 up, and Russian sidesteps its own few/many split with the
+  // label form "Недель: {n}" — which it already needed, since 22 and 32 weeks were in
+  // range back when the floor was 5.
+  assert.equal(CALC.weeksPerHome % 2, 0, 'an odd multiplier would render "1 week" at the floor');
   for (let n = CALC.min; n <= CALC.max; n++) {
     assert.equal(weeksFor(n) % 2, 0, `weeksFor(${n}) must stay even`);
-    assert.ok(weeksFor(n) >= 10, `weeksFor(${n}) must stay >= 10`);
+    assert.ok(weeksFor(n) >= 2, `weeksFor(${n}) must never reach singular territory`);
   }
 });
 
 test('no frame of the intro ramp can render a singular week count', () => {
-  // CALC.min protects the SETTLED value; this protects the ~60 frames on the way there.
-  // Ramping weeks from 0 would paint "1 weeks", "2 weeks", "3 weeks" — the exact forms
-  // that ten packs have no grammar for — and it would look completely fine in English,
-  // which is why only a test catches it.
+  // The even multiplier protects the SETTLED value; this protects the ~60 frames on the
+  // way there. Ramping weeks from 0 would walk through "1 weeks" — the exact form that
+  // ten packs have no grammar for — and it would look completely fine in English, which
+  // is why only a test catches it.
   const floor = weeksFor(CALC.min);
-  for (let listings = CALC.min; listings <= CALC.max; listings += 5) {
+  for (let listings = CALC.min; listings <= CALC.max; listings++) {
     const target = weeksFor(listings);
     for (let step = 0; step <= 120; step++) {
       const t = step / 120;
@@ -140,17 +147,17 @@ test('fillCount substitutes {n} and tolerates a template that lost it', () => {
 });
 
 test('formatCurrency localises, and never throws whatever it is handed', () => {
-  assert.equal(formatCurrency(48000, 'en'), '$48,000');
+  assert.equal(formatCurrency(10000, 'en'), '$10,000');
   assert.equal(formatCurrency(0, 'en'), '$0');
-  assert.equal(formatCurrency(200000, 'en'), '$200,000');
+  assert.equal(formatCurrency(40000, 'en'), '$40,000');
 
-  const de = formatCurrency(48000, 'de');
-  assert.match(de, /48\.000/, 'German groups with dots');
+  const de = formatCurrency(10000, 'de');
+  assert.match(de, /10\.000/, 'German groups with dots');
   assert.match(de, /\$/, 'still a dollar amount');
 
   // The formatter is memoised on the resolved tag; a stale cache would return the
   // German string here.
-  assert.equal(formatCurrency(48000, 'en'), '$48,000', 'memo invalidates on tag change');
+  assert.equal(formatCurrency(10000, 'en'), '$10,000', 'memo invalidates on tag change');
 
   // The three inputs that actually throw inside Intl.
   for (const bad of ['', '   ', undefined, null, 'not-a-locale', 'e']) {
@@ -208,12 +215,13 @@ test('the old comparison table is gone but its citation block survives', () => {
   for (const dead of ['cmp-row', 'cmp-cell', 'cmp-mark', 'cmp-head', 'cmp-brandcell']) {
     assert.ok(!INDEX.includes(dead), `${dead} is left over from the deleted table`);
   }
-  // .cmp-source is shared by #compare and #ai-shift — deleting it with the table would
-  // have silently dropped both NAR citations.
+  // .cmp-source styles the NAR citation blocks. #compare's Profile-of-Home-Staging
+  // citation was removed by hand; #ai-shift's Technology-Survey one is the only
+  // remaining user of the class, so deleting the table must not take it with it.
   assert.equal(
     (INDEX.match(/class="cmp-source reveal"/g) || []).length,
-    2,
-    'both NAR citation blocks are still present'
+    1,
+    'the #ai-shift NAR citation block is still present'
   );
 });
 
@@ -323,7 +331,7 @@ test('every pack keeps the {n} placeholder in the weeks template', () => {
 });
 
 test('the footnote quotes the figure the calculator actually multiplies by', () => {
-  // The note says "$2,000 per home"; CALC.costPerHome is what turns 24 into $48,000.
+  // The note says "$2,000 per home"; CALC.costPerHome is what turns 5 into $10,000.
   // Changing one without the other makes the page cite a number it does not use.
   const digits = String(CALC.costPerHome); // "2000"
   const grouped = new RegExp(

@@ -36,14 +36,16 @@ const CALC_INTRO_MS = 1200;
  * ("$2,000–$5,000+ per home", still in the packs as home.compare.rows.cost.trad) —
  * deliberately the conservative figure, since the number is the whole argument.
  *
- * `min: 5` IS LOAD-BEARING. It forces weeksFor() into [10, 200] and always even, which
- * keeps the `{n} weeks` string out of singular territory in all 11 language packs. Drop
- * the floor and ten translations quietly become grammatically wrong.
+ * `weeksPerHome: 2` IS LOAD-BEARING. Being even is what keeps weeksFor() off 1 at every
+ * point of the range, and so keeps the `{n} weeks` string out of singular territory in
+ * all 11 language packs — none of which ship a one/other pair. An ODD weeksPerHome would
+ * put "1 week" on screen at the floor and make ten translations quietly ungrammatical.
+ * The slider floor does not carry this; the multiplier does.
  */
 export const CALC = Object.freeze({
-  min: 5,
-  max: 100,
-  initial: 24,
+  min: 1,
+  max: 20,
+  initial: 5,
   costPerHome: 2000,
   weeksPerHome: 2,
 });
@@ -75,11 +77,11 @@ export function weeksFor(listings) {
 /**
  * The week count to display at intro-ramp progress `t` (0 → 1).
  *
- * Ramps from the FLOOR, not from zero. CALC.min keeps the *settled* value out of
- * singular territory, but the intro ramp paints ~60 intermediate values, and counting
- * up from 0 parades "1 weeks", "2 weeks", "3 weeks" past the reader — the exact forms
- * the floor exists to prevent, in ten languages that have no singular for this string.
- * Starting at weeksFor(CALC.min) keeps every frame >= 10 and lands exactly on target.
+ * Ramps from the FLOOR, not from zero. weeksPerHome keeps every *settled* value even and
+ * so never 1, but the intro ramp paints ~60 intermediate values, and counting up from 0
+ * walks through 1 on the way — the exact form ten languages have no singular for.
+ * Starting at weeksFor(CALC.min) keeps every frame at or above that floor and lands
+ * exactly on target.
  *
  * @param {number} target the settled week count
  * @param {number} t ramp progress, 0 → 1

@@ -363,12 +363,10 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
     display: none !important;
   }
 }
-/* Mobile home: extra breathing room above the "Upload. Stage. Imagine." hero catchphrase */
-@media (max-width: 768px) {
-  body.page-home .hero {
-    padding-top: 46px;
-  }
-}
+/* The `body.page-home .hero { padding-top: 46px }` that used to live here has MOVED
+   to index.css. index.html lazy-loads this file, so a homepage layout rule kept here
+   paints wrong until the sheet swaps in — the same trap the comment further down at
+   `.nav .nav-trailing` warns about. Do not add hero or nav geometry to this file. */
 /* Stagify+ mobile: the language picker floats in the top-right corner (absolutely
    positioned), and this page's hero heading starts high, so give the content column
    enough top room to clear it. Higher specificity than the page's own .sp-page__inner
@@ -599,12 +597,10 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
    `@media (max-width:768px) .nav .nav-center` — not here, because index.html lazy-loads
    this file, so a layout rule kept here paints wrong on the home page until it swaps in. */
 @media (max-width: 768px) {
-  .nav .nav-trailing {
-    grid-column: 3;
-    grid-row: 1;
-    justify-self: end;
-    align-self: center;
-  }
+  /* `.nav .nav-trailing` grid placement has MOVED to styles.css, next to the
+     `.nav .nav-center` rule the comment above points at — it was the one piece of
+     nav geometry still being lazy-loaded on the home page, so the header
+     re-placed itself when this sheet swapped in. Only sizing/skin lives here now. */
   .profile-menu-btn {
     width: 32px;
     height: 32px;
@@ -765,4 +761,14 @@ body:has(#report-issue-modal:not(.hidden)) .language-picker-container {
 .report-modal__success .report-modal__actions {
   justify-content: center;
   margin-top: 16px;
+}
+
+/* Same iOS zoom-on-focus fix as the block at the end of styles.css — kept here
+   because auth.css loads AFTER styles.css, so an equal-specificity rule over there
+   would lose to `.auth-field input` above. These are the sign-in, password and
+   2FA-code fields. */
+@media (hover: none) and (pointer: coarse) {
+  .auth-field input {
+    font-size: 16px;
+  }
 }

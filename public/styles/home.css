@@ -34,7 +34,7 @@
 .home-section__sub {
   font-size: clamp(14.5px, 1.4vw, 16.5px);
   line-height: 1.55;
-  color: #46557d;
+  color: #414f75;
   margin: 0 auto;
   max-width: 600px;
 }
@@ -51,6 +51,21 @@
 }
 
 /* --- Reveal on scroll ---------------------------------------------------- */
+/* THIS RULE HIDES MOST OF THE PAGE. 37 elements on the homepage carry .reveal
+   (plus the #learn checklist below, which keys off the same .is-visible), and the
+   only thing that ever un-hides them is scripts/home-reveal.js — which is not a
+   <script> tag at all: index-deferred.js injects it on `load` + requestIdleCallback.
+   So every failure that keeps that module from running (JS disabled, a 404, a CSP
+   block, a parse error anywhere in the injected batch, no ES-module support) used
+   to leave everything below the hero permanently invisible.
+
+   Two independent escapes now exist, because the hidden state must not depend on
+   the same thing that undoes it:
+     1. `scripting: none` below — instant, for JS switched off.
+     2. The reveal-failsafe animation — for JS that is ON but never arrives. It is
+        cancelled by `html.reveal-armed`, which home-reveal.js sets once it has
+        actually attached its observer (not merely loaded).
+   Do not make this rule unconditional again. */
 .reveal {
   opacity: 0;
   transform: translateY(20px);
@@ -58,6 +73,22 @@
     transform 0.6s cubic-bezier(0.16, 0.84, 0.44, 1);
   transition-delay: var(--reveal-delay, 0ms);
   will-change: opacity, transform;
+  /* 8s, not 2s: home-reveal.js normally arms well inside that (load + idle), so
+     on a healthy page this never fires. Long enough that a slow connection does
+     not trip it, short enough that a broken page is not blank for long. */
+  animation: reveal-failsafe 1ms linear 8s forwards;
+}
+@keyframes reveal-failsafe {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The script is alive and observing — stand the failsafe down. Anything the
+   failsafe already revealed that is still out of view may re-hide here; that is
+   invisible by definition, and the observer reveals whatever is on screen. */
+html.reveal-armed .reveal {
+  animation: none;
 }
 .reveal.is-visible {
   opacity: 1;
@@ -81,6 +112,20 @@
     opacity: 1;
     transform: none;
     transition: none;
+    animation: none;
+  }
+}
+/* JS switched off: reveal immediately rather than making the visitor wait out the
+   8s failsafe. Supported in current Chrome/Safari/Firefox; the <noscript> block in
+   index.html covers browsers that do not know this media feature. */
+@media (scripting: none) {
+  .reveal,
+  .reveal.exit-up,
+  .reveal.exit-down {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: none;
   }
 }
 
@@ -245,7 +290,7 @@
 }
 .studio-side__body {
   margin: 0;
-  color: #46557d;
+  color: #414f75;
   font-size: 14.5px;
   line-height: 1.55;
 }
@@ -492,6 +537,14 @@ body.page-home main {
   width: 17px;
   height: 17px;
 }
+/* 34x34 painted, 44x44 tappable. The small visual is deliberate (it sits on the
+   artwork), but the target should not be — and nothing else is interactive in this
+   corner, so the overspill cannot steal a tap from a neighbouring control. */
+.shw__fs::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+}
 .shw__fs-close {
   display: none;
 }
@@ -507,6 +560,16 @@ body.page-home main {
 .shw__fs:focus-visible,
 .shw__fs.is-fs {
   opacity: 1;
+}
+/* A touch device has no hover, so the rule above never fires and this button was
+   invisible on every phone and tablet — while still being a live 34x34 tap target
+   sitting on the artwork, i.e. the worst of both. Show it outright where hover
+   does not exist; the "keep it off the artwork until asked" argument only applies
+   to pointers that can ask. */
+@media (hover: none) {
+  .shw__panel[data-shw-state="front"] .shw__fs {
+    opacity: 1;
+  }
 }
 .shw__fs:hover {
   background: var(--bg-elevated);
@@ -773,7 +836,7 @@ body.page-home main {
 }
 .shw__aside-body {
   margin: 0;
-  color: #46557d;
+  color: #414f75;
   font-size: 14.5px;
   line-height: 1.55;
 }
@@ -913,19 +976,40 @@ body.page-home main {
   align-items: center;
   gap: 16px;
 }
+/* The INPUT is 24px tall; the visible track is the 8px pseudo below it.
+   The element used to be 8px itself, which is what the browser hit-tests — the 22px
+   thumb is painted outside that box and does not enlarge it — so the whole control
+   was an 8px-tall target, well under the 24px WCAG 2.5.8 floor and genuinely fiddly
+   on a phone. Moving the track paint to ::-webkit-slider-runnable-track /
+   ::-moz-range-track lets the element grow to 24px without the track getting
+   thicker or moving: it stays 8px, vertically centred, and the gradient (and
+   --calc-pct, which home-figures.js drives) is unchanged. */
 .calc__range {
   appearance: none;
   -webkit-appearance: none;
   flex: 1 1 auto;
   min-width: 0;
-  height: 8px;
+  height: 24px;
   margin: 0;
-  border-radius: 999px;
+  background: transparent;
   cursor: pointer;
   /* Filled to the left of the thumb. home-figures.js keeps --calc-pct in step with the
-     value; the 20% default is the position of CALC.initial (24 of 5–100), so the track
+     value; the 21.05% default is the position of CALC.initial (5 of 1–20), so the track
      is already correct for the second or two before the deferred module runs. */
-  --calc-pct: 20%;
+  --calc-pct: 21.05%;
+}
+.calc__range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--brand) 0 var(--calc-pct),
+    var(--brand-tint) var(--calc-pct) 100%
+  );
+}
+.calc__range::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
   background: linear-gradient(
     to right,
     var(--brand) 0 var(--calc-pct),
@@ -938,6 +1022,9 @@ body.page-home main {
 }
 .calc__range::-webkit-slider-thumb {
   -webkit-appearance: none;
+  /* WebKit positions the thumb against the TRACK box, so with a 8px track and a
+     22px thumb it needs (8 - 22) / 2 to stay centred. Firefox centres its own. */
+  margin-top: -7px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -978,7 +1065,7 @@ body.page-home main {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #717b8c;
+  color: #5c6472;
   font-variant-numeric: tabular-nums;
 }
 .calc__cols {
@@ -999,11 +1086,14 @@ body.page-home main {
   background: rgba(37, 99, 235, 0.07);
   border-color: rgba(37, 99, 235, 0.16);
 }
+/* <h3> since the a11y pass — see .whyus-card__head. margin:0 cancels the UA
+   heading margin the tag change brought with it. */
 .calc__colhead {
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.3px;
-  color: #46557d;
+  color: #414f75;
+  margin: 0;
 }
 .calc__colhead--brand {
   display: flex;
@@ -1024,7 +1114,7 @@ body.page-home main {
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #717b8c;
+  color: #5c6472;
 }
 .calc__val {
   font-size: clamp(26px, 3.4vw, 38px);
@@ -1058,7 +1148,7 @@ body.page-home main {
   margin: 20px 0 0;
   font-size: 12.5px;
   line-height: 1.5;
-  color: #717b8c;
+  color: #5c6472;
 }
 
 @media (max-width: 700px) {
@@ -1117,7 +1207,7 @@ body.page-home main {
   margin-top: 3px;
   font-size: 12px;
   font-style: normal;
-  color: #6477a6;
+  color: #53638b;
 }
 .cmp-source cite a {
   color: var(--brand);
@@ -1357,7 +1447,7 @@ body.page-home main {
   font-family: inherit;
   font-size: 12.5px;
   font-weight: 700;
-  color: #46557d;
+  color: #414f75;
   padding: 7px 15px;
   border-radius: 999px;
   cursor: pointer;
@@ -1433,7 +1523,7 @@ body.page-home main {
   }
 }
 .sponsors-title {
-  color: #5b6b94;
+  color: #44506f;
   font-weight: 700;
   opacity: 1;
   font-size: 12.5px;
@@ -1484,7 +1574,7 @@ body.page-home main {
   font-weight: 700;
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  color: #46557d;
+  color: #414f75;
 }
 .nar-bar {
   display: flex;
@@ -1789,10 +1879,13 @@ body.page-home main {
   width: 24px;
   height: 24px;
 }
+/* <h3> since the a11y pass — each pricing card is a distinct offer and should be a
+   heading-navigation landmark. margin:0 cancels the UA heading margin. */
 .plus-card__name {
   font-size: 1.3rem;
   font-weight: 800;
   color: var(--brand-deep);
+  margin: 0;
 }
 .plus-card__badge {
   margin-left: auto;
@@ -1825,7 +1918,7 @@ body.page-home main {
 .plus-price__per {
   font-size: 14px;
   font-weight: 600;
-  color: #6477a6;
+  color: #53638b;
 }
 .plus-card__desc {
   margin: 4px 0 0;
@@ -1909,12 +2002,16 @@ body.page-home main {
     rgba(255, 255, 255, 0.5) 40%
   );
 }
+/* An <h3> since the a11y pass — it is the card's visible title, so it should be
+   reachable by heading navigation. margin-top:0 cancels the UA heading margin that
+   came with the tag change; every other value here already won on its own. */
 .whyus-card__head {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 1.3rem;
   font-weight: 800;
+  margin-top: 0;
   margin-bottom: 16px;
   padding-bottom: 14px;
   border-bottom: 1px solid rgba(30, 58, 138, 0.12);
@@ -1946,6 +2043,13 @@ body.page-home main {
   font-size: 14.5px;
   line-height: 1.45;
   color: #3a4a72;
+  /* Invisible until .is-lit paints a background, but it MUST live here and not in
+     that rule. Removing .is-lit drops every declaration in it at once, so a radius
+     defined there snapped to 0 while the background was still fading — the pill
+     turned into a sharp-cornered rectangle for the length of the 0.22s fade-out
+     (and took the box-shadow bleed, which follows the border-radius, with it).
+     Keeping the radius constant across both states means only the colour animates. */
+  border-radius: 6px;
 }
 .whyus-list li strong {
   color: var(--brand-deep);
@@ -1970,7 +2074,7 @@ body.page-home main {
   color: var(--bg-elevated);
 }
 .whyus-list--no li {
-  color: #717b8c;
+  color: #5c6472;
 }
 .whyus-list--no li::before {
   content: "–";
@@ -1994,12 +2098,20 @@ body.page-home main {
      row's right edge and left a dead strip down the side of all 14 rows. That is
      worst on mobile, where the grid is one column and tapping is the ONLY way to
      drive the pairing. calc() + border-box makes the box exactly the row.
-     Vertical padding stays 0 — the li gap (11px) is the row rhythm. */
+
+     The vertical pair does the same job for the 11px li gap, which used to be a
+     dead band: a cursor travelling down the column sat between two rows with
+     NEITHER lit, so the section flickered off between every pair. Each button
+     now grows 6px past its li top and bottom — slightly more than half the gap,
+     so consecutive rows overlap by 1px and at least one row is always under the
+     pointer. The negative margin cancels the padding exactly, so the li's height
+     and the 11px rhythm are unchanged; only the hit target grew. Keep the two
+     numbers equal and >= half of `.whyus-list`'s gap. */
   display: block;
   box-sizing: border-box;
   width: calc(100% + 28px);
-  margin: 0 0 0 -28px;
-  padding: 0 0 0 28px;
+  margin: -6px 0 -6px -28px;
+  padding: 6px 0 6px 28px;
   border: 0;
   border-radius: 8px;
   background: none;
@@ -2021,7 +2133,6 @@ body.page-home main {
 .whyus-grid[data-vs-focus] li.is-lit {
   background: rgba(37, 99, 235, 0.1);
   box-shadow: 0 0 0 7px rgba(37, 99, 235, 0.1);
-  border-radius: 6px;
 }
 .whyus-grid[data-vs-focus] .whyus-list--no li.is-lit {
   background: rgba(155, 44, 60, 0.09);
@@ -2084,6 +2195,15 @@ body.page-home main {
 }
 .faq-q > summary::-webkit-details-marker {
   display: none;
+}
+/* The card is `overflow: hidden` and the summary fills it edge to edge, so the UA's
+   default focus ring — drawn OUTSIDE the summary's border box — was clipped away
+   entirely: seven tab stops with no visible focus at all. A negative outline-offset
+   pulls the ring inside the clip box, where it survives. */
+.faq-q > summary:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: -3px;
+  border-radius: 14px;
 }
 .faq-q > summary:hover,
 .faq-q[open] > summary {
@@ -3036,7 +3156,13 @@ body.page-home main {
 .tw-loc {
   font-size: 11.5px;
   font-weight: 500;
-  color: var(--muted, var(--muted));
+  /* Not var(--muted). #6b7280 is 4.83:1 on white — fine where the token is normally
+     used — but these cards are rgba(255,255,255,.5) over the #b2c4f6 page, i.e. an
+     effective #d9e2fb, where the same ink drops to 3.73:1. Darkened locally rather
+     than moving the global token, which would over-correct every page that uses it
+     on white. (The old value was `var(--muted, var(--muted))` — a two-arg var whose
+     fallback was itself, which could only ever resolve to the same thing.) */
+  color: #5d636f;
 }
 /* No cursor to follow on touch — keep the spotlight off. */
 @media (hover: none) {
@@ -3124,7 +3250,7 @@ body.page-home main {
 }
 .home-blog__meta {
   font-size: 12.5px;
-  color: #8a93ab;
+  color: #6e7588;
   margin-top: auto;
 }
 .home-blog__all {
@@ -3317,7 +3443,8 @@ body.page-home main {
    dead structure. .hgal-card__body already stacks it. */
 .hgal-card__when {
   font-size: 12.5px;
-  color: var(--muted);
+  /* Same reasoning as .tw-loc: --muted is tuned for white, this sits on glass. */
+  color: #5d636f;
 }
 
 /* --- supporting copy beneath the mock ------------------------------------ */

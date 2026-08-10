@@ -15,6 +15,13 @@ function initSponsorsScroll() {
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     track.style.transform = 'translateX(0)';
+    // Parking the track is not enough: it sits in an overflow:hidden box wide
+    // enough for ~2 of the 10 logos, so bailing out here used to make the other 8
+    // unreachable rather than merely still. Hand the strip to the browser as a
+    // normal scroller instead (see .sponsors--static in styles.css).
+    const box = track.closest('.sponsors-container');
+    if (box) box.classList.add('sponsors--static');
+    sponsorsInitialized = true;
     return;
   }
 

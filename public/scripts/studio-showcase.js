@@ -444,6 +444,23 @@ function init() {
     measure(sc);
   });
 
+  /* role="tabpanel" is applied HERE, not authored in index.html, because it is only
+     true once the tabbed presentation exists. Without this script the CSS fallback
+     hides .shw__tabs and stacks the panels as plain blocks — but the panels used to
+     carry role="tabpanel" regardless, leaving five tabpanels whose owning tablist
+     was display:none and therefore absent from the accessibility tree. Orphaned
+     tabpanels are worse than no ARIA at all; plain <article>s degrade correctly.
+
+     aria-labelledby deliberately STAYS in the markup: it is the declared pairing
+     between tab i and panel i, and test/frontend/studio-showcase.test.js reads it
+     out of the source to prove the positional wiring is right. On a no-JS page it
+     points at a display:none tab, which yields no accessible name — the same
+     nameless <article> you would get without it, so it costs nothing there.
+
+     The ids also stay in the markup — they are deep-link targets (see the panel-id
+     warning in index.html) and must exist whether or not this runs. */
+  sc.panels.forEach((panel) => panel.setAttribute('role', 'tabpanel'));
+
   root.classList.add('shw--ready');
   // Equal-height mode. measure() drops this for the duration of a measurement and
   // puts it back, so it must be on before the first select().
