@@ -107,6 +107,10 @@ router.get('/blog/curb-appeal-real-estate-photos', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'blog', 'curb-appeal-real-estate-photos.html'));
 });
 
+router.get('/blog/free-virtual-staging', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'free-virtual-staging.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));
