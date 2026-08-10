@@ -144,9 +144,6 @@ import { initStagingEntry } from './app/staging-entry.js';
       const template = window.LanguageSystem?.getText(key);
       return dailyLimitMessage(errorData, { template });
     }
-  
-    const yearSpan = $('#year');
-    if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
     // Version carousels: the before view holds the uploaded photo plus any
     // masked edits of it; the after view holds the staged result(s) plus any
