@@ -1586,5 +1586,12 @@
     "stepChanges": "O que deve mudar?",
     "stepChangesHint": "Escolha apenas o que quer mudar. Tudo o que deixar por marcar fica exatamente como foi fotografado.",
     "enhanceHint": "Escolha pelo menos uma alteração, ou descreva uma acima."
+  },
+  "notFound": {
+    "pageTitle": "Página não encontrada | Stagify.ai",
+    "pageDescription": "Esta página não existe ou foi movida. Volte ao Stagify.ai para continuar a decorar as fotos dos seus imóveis.",
+    "heading": "Esta página não existe",
+    "body": "O link pode estar danificado, ou a página pode ter sido movida. Tudo o resto continua onde o deixou.",
+    "homeCta": "Voltar ao início"
   }
 }

@@ -4,7 +4,8 @@
 //
 // WHAT THIS OWNS
 //   - which panel is in front, and the transform ladder that arcs the rest behind it
-//   - the stage height, which follows the FRONT panel rather than the tallest one
+//   - the stage height: the tallest panel while the arc is on show, the front panel
+//     alone once the narrow layout has hidden the neighbours
 //   - mounting the front panel's walkthrough player, and only that one
 //   - the four deep links, which are redirect targets and not merely anchors
 //
@@ -25,6 +26,11 @@
  * styles/home.css — move one and you must move the other.
  */
 const FLAT_QUERY = '(max-width: 900px)';
+
+/** @returns {boolean} whether the carousel is in the narrow, one-panel-at-a-time mode. */
+function isFlat() {
+  return window.matchMedia(FLAT_QUERY).matches;
+}
 
 /** Pointer travel (px) that commits to a step rather than being read as a stray drag. */
 const DRAG_THRESHOLD = 60;
@@ -131,7 +137,7 @@ function setPanelFocusable(panel, on) {
  * @param {Showcase} sc
  */
 function layout(sc) {
-  const flat = window.matchMedia(FLAT_QUERY).matches;
+  const flat = isFlat();
   const n = sc.panels.length;
   sc.panels.forEach((panel, i) => {
     const g = geometryFor(offsetOf(i, sc.active, n), flat);
@@ -150,31 +156,54 @@ function layout(sc) {
 }
 
 /**
- * Size the stage to the TALLEST panel, so all four cards match and the section does
- * not resize as you cycle. Panels are absolutely positioned and therefore give the
- * stage no natural height of its own.
+ * The stage height rule, split out from the DOM work so it can be tested: given every
+ * panel's natural height, which one does the stage adopt?
+ *
+ * @param {number[]} heights natural panel heights, in panel order
+ * @param {number} active index of the front panel
+ * @param {boolean} flat narrow viewport — the neighbours are not rendered
+ * @returns {number}
+ */
+export function stageHeightFor(heights, active, flat) {
+  if (!heights.length) return 0;
+  if (flat) return heights[active] || 0;
+  return heights.reduce((max, h) => Math.max(max, h), 0);
+}
+
+/**
+ * The height the stage should take, in px.
+ *
+ * WIDE: the TALLEST panel, so all five cards match and the section does not resize as
+ * you cycle — the neighbours are visible in the arc, and cards of visibly different
+ * heights side by side is the thing that rule exists to stop.
+ *
+ * FLAT (narrow): the FRONT panel only. Below 900px the neighbours are not rendered at
+ * all (geometryFor sends every non-front panel to `hidden`), so there is nothing left
+ * for a shared height to line up with — it just parks the tallest panel's height under
+ * every other one. On a phone that was up to ~270px of empty glass inside the card,
+ * split above and below the demo by .shw__panel-body's centring, on a viewport whose
+ * scrollable area is ~480px tall to begin with.
  *
  * Measuring means briefly dropping equal-height mode: with `.shw--equal` on, every
  * panel reports the stage's height and asking them how tall they want to be is
  * circular. Two forced layouts, on init/resize/mount only — not per frame.
  *
  * @param {Showcase} sc
- * @returns {number} the tallest natural panel height, or 0 if nothing measured
+ * @returns {number} the natural height to adopt, or 0 if nothing measured
  */
-function naturalMax(sc) {
+function naturalHeight(sc) {
   const wasEqual = sc.root.classList.contains('shw--equal');
   if (wasEqual) sc.root.classList.remove('shw--equal');
-  let max = 0;
-  for (const panel of sc.panels) max = Math.max(max, panel.offsetHeight);
+  const h = stageHeightFor(sc.panels.map((p) => p.offsetHeight), sc.active, isFlat());
   if (wasEqual) sc.root.classList.add('shw--equal');
-  return max;
+  return h;
 }
 
 /**
  * @param {Showcase} sc
  */
 function measure(sc) {
-  const h = naturalMax(sc);
+  const h = naturalHeight(sc);
   if (h <= 0) return;
   // Set `height` outright rather than feeding a custom property that the stylesheet
   // then reads: one less indirection to get wrong, and an inline height cannot lose
@@ -221,6 +250,38 @@ function mountFrontDemo(sc) {
 }
 
 /**
+ * Bring the active tab into view inside the tablist.
+ *
+ * The strip only scrolls on narrow viewports (`overflow-x: auto` below 900px, where
+ * five tabs do not fit in any language) — and there the tab for the panel you are
+ * looking at was routinely off-screen, because the carousel can be advanced without
+ * touching the tablist at all: a swipe, a deep link, or a hashchange. The strip then
+ * showed a row of tabs with NONE of them highlighted, which reads as "the control is
+ * broken" rather than "scroll me".
+ *
+ * Centred rather than merely scrolled-into-view so the neighbouring tabs stay half
+ * visible, which is what shows the strip is a scroller. Deliberately scrolls the strip
+ * itself (scrollBy on the element) instead of `tab.scrollIntoView()`: that walks every
+ * scrollable ancestor, and <main> is the page's scroll container here — it would yank
+ * the whole page as a side effect of changing tab.
+ *
+ * @param {Showcase} sc
+ */
+function revealActiveTab(sc) {
+  const tab = sc.tabs[sc.active];
+  const strip = tab && tab.parentElement;
+  if (!strip) return;
+  // Not a scroller (wide viewport, or the tabs happen to fit) — nothing to reveal.
+  if (strip.scrollWidth <= strip.clientWidth + 1) return;
+  const t = tab.getBoundingClientRect();
+  const s = strip.getBoundingClientRect();
+  const delta = t.left - s.left - (s.width - t.width) / 2;
+  if (Math.abs(delta) < 1) return;
+  const smooth = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  strip.scrollBy({ left: delta, behavior: smooth ? 'smooth' : 'auto' });
+}
+
+/**
  * Reflect `active` in the tablist, which is the only chrome the carousel has:
  * everything else is the panels themselves, plus drag / wheel / click-a-side-panel.
  * @param {Showcase} sc
@@ -234,6 +295,7 @@ function updateChrome(sc) {
     if (on) tab.removeAttribute('tabindex');
     else tab.setAttribute('tabindex', '-1');
   });
+  revealActiveTab(sc);
 }
 
 /**
@@ -442,6 +504,9 @@ function init() {
   window.addEventListener('resize', () => {
     layout(sc);
     measure(sc);
+    // A rotation changes both which tabs fit and the height rule (flat vs arc), so the
+    // strip has to be re-centred too — updateChrome does not run on a resize.
+    revealActiveTab(sc);
   });
 
   /* role="tabpanel" is applied HERE, not authored in index.html, because it is only

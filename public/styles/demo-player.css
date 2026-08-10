@@ -269,6 +269,17 @@
 .sdp__dot:hover { background: rgba(56, 83, 211, 0.55); }
 .sdp__dot.is-active { background: var(--accent); transform: scale(1.25); }
 
+/* Phones. The recording is the same frame everywhere — a fixed-ratio still of a
+   desktop app — but on a phone it is ~350px wide while the callout keeps a desktop
+   type size, so a three-line step grows into six and the card covers the screenshot
+   it is pointing at. Only the text shrinks: the card is `min(330px, 82%)` of the
+   frame, so type is the one lever on its height, and the Back/Next buttons keep
+   their padding because they are already at the small end for a touch target. */
+@media (max-width: 700px) {
+  .sdp__tip { padding: 12px 13px 11px; }
+  .sdp__text { font-size: 0.84rem; line-height: 1.4; margin-bottom: 10px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sdp__stage, .sdp__img, .sdp__tip, .sdp__bar span { transition: none; }
   .sdp__area::after, .sdp__dot-hs::before,

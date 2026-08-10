@@ -1,4 +1,4 @@
-// The guides page: the walkthrough tablist and the troubleshooting highlight.
+// The guides page: the walkthrough tablist and the troubleshooting topic rail.
 //
 // Each walkthrough tab mounts the self-hosted player (window.STAGIFY_DEMOS +
 // SupademoPlayer) into its panel on first activation — no third-party embed.
@@ -23,7 +23,7 @@ export function demoFromHash(win) {
  */
 export function initGuides({ doc = document, win = window } = {}) {
   initDemoPicker(doc, win);
-  initOverviewHighlight(doc, win);
+  initTopicRail(doc, win);
 }
 
 function demoByKey(win, key) {
@@ -181,34 +181,109 @@ function publishHash(win, key) {
   }
 }
 
-// When a topic card in the top grid is clicked, briefly highlight the matching
-// troubleshooting card it scrolls down to, so it's obvious which one is relevant.
-function initOverviewHighlight(doc, win) {
-  const cards = doc.querySelectorAll('.guides-overview-card');
-  if (!cards.length) return;
+/**
+ * Keep the sticky topic rail pointing at the troubleshooting card you are reading.
+ *
+ * This replaces a one-shot highlight pulse fired by the old overview grid — six cards
+ * that carried no text of their own beyond the titles of the six cards they linked to.
+ * The rail is that navigation now, so it has to stay correct while you scroll rather
+ * than flash once on click.
+ */
+function initTopicRail(doc, win) {
+  const links = Array.prototype.slice.call(doc.querySelectorAll('.guides-rail__link'));
+  if (!links.length) return;
 
-  function highlight(id) {
-    const target = doc.getElementById(id);
-    if (!target || String(target.className).indexOf('guides-trouble-card') === -1) return;
-    const all = doc.querySelectorAll('.guides-trouble-card--highlight');
-    for (let i = 0; i < all.length; i++) all[i].classList.remove('guides-trouble-card--highlight');
-    // Force a reflow so re-clicking the same card restarts the pulse animation.
-    void target.offsetWidth;
-    target.classList.add('guides-trouble-card--highlight');
+  /** @type {Array<{ id: string, link: any, card: any }>} */
+  const topics = [];
+  for (const link of links) {
+    const href = link.getAttribute('href') || '';
+    if (href.charAt(0) !== '#') continue;
+    const card = doc.getElementById(href.slice(1));
+    // Same guard the highlight used: only a troubleshooting card is a rail target, so a
+    // rail entry pointed at something else silently drops out instead of tracking it.
+    if (!card || String(card.className).indexOf('guides-trouble-card') === -1) continue;
+    topics.push({ id: href.slice(1), link, card });
+  }
+  if (!topics.length) return;
+
+  let current = '';
+  function mark(id) {
+    if (id === current) return;
+    current = id;
+    for (const topic of topics) {
+      const on = topic.id === id;
+      topic.link.classList.toggle('is-current', on);
+      if (on) topic.link.setAttribute('aria-current', 'true');
+      else topic.link.removeAttribute('aria-current');
+    }
   }
 
-  Array.prototype.forEach.call(cards, (card) => {
-    card.addEventListener('click', () => {
-      const href = card.getAttribute('href') || '';
-      if (href.charAt(0) === '#') highlight(href.slice(1));
-    });
-  });
+  // Click marks immediately. Waiting for the scroll to settle would leave the rail on
+  // the previous topic for the whole smooth glide, which reads as a dead click.
+  for (const topic of topics) {
+    topic.link.addEventListener('click', () => mark(topic.id));
+  }
 
   function fromHash() {
-    if (win.location.hash && win.location.hash.length > 1) highlight(win.location.hash.slice(1));
+    const id = (win.location.hash || '').slice(1);
+    if (topics.some((t) => t.id === id)) mark(id);
   }
   win.addEventListener('hashchange', fromHash);
   fromHash();
+
+  // This page scrolls inside <main>, not the document, so "am I at the bottom" cannot
+  // be asked of the window. Find the box that actually scrolls instead of naming it —
+  // the rail should keep working if the page ever goes back to scrolling normally.
+  const scrollport = (() => {
+    for (let node = topics[0].card.parentElement; node; node = node.parentElement) {
+      const overflowY = win.getComputedStyle(node).overflowY;
+      if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight + 1) return node;
+    }
+    return doc.scrollingElement || doc.documentElement;
+  })();
+
+  /**
+   * The card being read is the LAST one whose top has passed the reading line — not
+   * the first one intersecting the viewport. Those differ constantly: a card's tail is
+   * still on screen well after the next card's heading has reached reading position,
+   * so "topmost visible" spends most of the scroll naming the card you just finished.
+   */
+  function pick() {
+    const line = win.innerHeight * 0.3;
+    let chosen = null;
+    for (const topic of topics) {
+      if (topic.card.getBoundingClientRect().top <= line) chosen = topic;
+    }
+    // The last card can never reach the line — the page bottoms out first — so without
+    // this it is the one topic the rail can never point at.
+    if (scrollport.scrollTop + scrollport.clientHeight >= scrollport.scrollHeight - 4) {
+      chosen = topics[topics.length - 1];
+    }
+    return chosen || topics[0];
+  }
+
+  // Driven by scroll, not by an IntersectionObserver. An observer reports crossings,
+  // and the moment that matters most here is not a crossing: the page runs out of
+  // scroll while the last card's top is still well below the reading line, so nothing
+  // intersects differently over that final stretch and no callback ever arrives. The
+  // rail would sit on the second-to-last topic no matter how far down you scrolled.
+  //
+  // Coalesced onto a frame, so a fling costs one recompute per paint rather than one
+  // per scroll event, and mark() exits without touching the DOM when nothing moved.
+  let queued = false;
+  function update() {
+    queued = false;
+    mark(pick().id);
+  }
+  function onScroll() {
+    if (queued) return;
+    queued = true;
+    if (typeof win.requestAnimationFrame === 'function') win.requestAnimationFrame(update);
+    else update();
+  }
+  scrollport.addEventListener('scroll', onScroll, { passive: true });
+  win.addEventListener('resize', onScroll);
+  update();
 }
 
 // Not started under test: the spec drives initGuides() with its own document.

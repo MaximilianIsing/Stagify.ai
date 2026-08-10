@@ -1,0 +1,92 @@
+/* ==========================================================================
+   404 — the page every unknown URL lands on
+   ==========================================================================
+
+   Loaded only by public/404.html, which lib/http/not-found.js serves (rendered
+   into the visitor's locale) for anything no route claimed.
+
+   Layout note: `main` is the site's scroll container — aurora-scrollbar.js
+   anchors to its right edge — so it has to stay full-width. The content is
+   centred inside .nf-inner rather than by constraining main itself, the same
+   split status.css uses.
+
+   Colour note: this sheet is served by a page that loads styles.css, so
+   test/frontend/css-tokens.test.js requires every colour with a token in the
+   shared palette to be written as var(--token), not as a literal. The only
+   literals below are rgba() shadows and translucent whites, which have no
+   palette counterpart.
+   ========================================================================== */
+
+.not-found-page {
+  padding: 0;
+}
+
+.nf-inner {
+  width: 100%;
+  max-width: 640px;
+  /* The vertical centring: main is `flex: 1`, so growing this wrapper and
+     centring its children pins the block to the middle of whatever height is
+     left under the header, at any viewport. min-height keeps it from
+     collapsing onto the header on a short landscape phone. */
+  flex: 1;
+  min-height: 46vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 0 auto;
+  padding: 40px 20px 96px;
+}
+
+/* The numeral. Big, quiet, and behind the message rather than competing with
+   it — it is decoration (aria-hidden in the markup), the h1 carries the
+   meaning. */
+.nf-code {
+  margin: 0;
+  font-size: clamp(84px, 18vw, 168px);
+  font-weight: 800;
+  line-height: .9;
+  letter-spacing: -.045em;
+  color: var(--brand);
+  opacity: .16;
+  user-select: none;
+}
+
+.nf-heading {
+  margin: -6px 0 0;
+  font-size: clamp(26px, 4.4vw, 38px);
+  font-weight: 800;
+  letter-spacing: -.022em;
+  color: var(--text-heading);
+}
+
+.nf-body {
+  margin: 12px 0 0;
+  max-width: 46ch;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--slate-deep);
+}
+
+/* styles.css has no blanket `a { text-decoration: none }` — only .nav-link and a
+   handful of components opt out — so a link-shaped .btn underlines unless it says
+   otherwise. inline-flex also makes the vertical padding from .btn-lg count, which
+   it does not on a plain inline anchor. */
+.nf-cta {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 28px;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .nf-inner {
+    min-height: 40vh;
+    padding: 28px 18px 72px;
+  }
+
+  .nf-body {
+    font-size: 15px;
+  }
+}

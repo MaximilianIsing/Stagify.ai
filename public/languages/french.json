@@ -975,7 +975,7 @@
     "metaKeywords": "aide technique stagify, dépannage, import qui ne fonctionne pas, aide staging, assistance, problèmes courants",
     "badge": "Aide technique",
     "title": "Dépannage et problèmes courants",
-    "subtitle": "La plupart des problèmes ont une solution rapide. Trouvez le vôtre ci-dessous — et si vous êtes toujours bloqué, notre équipe est à un e-mail près.",
+    "subtitle": "La plupart des problèmes ont une solution rapide. Trouvez le vôtre ci-dessous, et si vous êtes toujours bloqué, notre équipe est à un e-mail près.",
     "upload": {
       "title": "Import et fichiers",
       "i1": {
@@ -1074,7 +1074,7 @@
   "guides": {
     "badge": "Guides",
     "title": "Guides et tutoriels",
-    "subtitle": "Des tutoriels interactifs et rapides pour commencer à meubler en quelques minutes — ainsi que des solutions aux problèmes courants.",
+    "subtitle": "Des tutoriels interactifs et rapides pour commencer à meubler en quelques minutes, ainsi que des solutions aux problèmes courants.",
     "heroBadge": "Centre d'aide",
     "liveBadge": "Démo interactive",
     "walkthroughsTitle": "Tutoriels pas à pas",
@@ -1586,5 +1586,12 @@
     "stepChanges": "Que faut-il changer ?",
     "stepChangesHint": "Ne cochez que ce que vous voulez changer. Tout ce que vous laissez décoché reste tel qu’il a été photographié.",
     "enhanceHint": "Choisissez au moins un changement, ou décrivez-en un ci-dessus."
+  },
+  "notFound": {
+    "pageTitle": "Page introuvable | Stagify.ai",
+    "pageDescription": "Cette page n'existe pas ou a été déplacée. Revenez sur Stagify.ai pour continuer à mettre en scène vos photos de biens.",
+    "heading": "Cette page n'existe pas",
+    "body": "Le lien est peut-être rompu, ou la page a été déplacée. Tout le reste est exactement là où vous l'avez laissé.",
+    "homeCta": "Retour à l'accueil"
   }
 }

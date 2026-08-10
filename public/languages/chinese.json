@@ -1586,5 +1586,12 @@
     "stepChanges": "要改动什么？",
     "stepChangesHint": "只勾选你想改动的项。未勾选的内容将与拍摄时完全一致。",
     "enhanceHint": "请至少勾选一项改动，或在上方描述一项。"
+  },
+  "notFound": {
+    "pageTitle": "页面未找到 | Stagify.ai",
+    "pageDescription": "此页面不存在或已被移动。返回 Stagify.ai，继续为您的房源照片布置软装。",
+    "heading": "此页面不存在",
+    "body": "链接可能已失效，或者页面已被移动。其他内容都还在您离开时的位置。",
+    "homeCta": "返回首页"
   }
 }

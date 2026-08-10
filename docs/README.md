@@ -80,7 +80,8 @@ This README is the entry point for the `docs/` folder. See also:
 │   ├── logger.js            # Diagnostic logger — the single stdout/stderr funnel (LOG_LEVEL)
 │   ├── config/              # config.js (secrets), model-config.js, runtime-flags.js
 │   ├── data/                # db.js (shared SQLite conn), auth-store, enterprise-store, stripe-linking, stripe-events, memory, counters, uptime-monitor
-│   ├── http/                # async-router, http-helpers (sendError), http-guards, rate-limiters, uploads, app-middleware
+│   ├── http/                # async-router, http-helpers (sendError), http-guards, rate-limiters, uploads, app-middleware, not-found (the terminal 404)
+│   ├── i18n/                # locales (the language + page set), render-page (the string transform), page-renderer (its caches), sitemap
 │   ├── image/               # image-primitives, image-annotation, image-review, erase, hosted-images
 │   ├── services/            # ai-clients, auth-helpers, email, logging (CSV), stripe-webhooks
 │   ├── staging/             # prompts, promptMatrix, room-constraints (per-room hard rules), unstageable (upload-gate prompt + reject taxonomy), staging-pipeline, staging-generation, virtual-staging-handler, mask-edit, segment, cad-handling
@@ -175,7 +176,8 @@ and no server-side rendering — `public/` is plain HTML that talks to `server.j
 
 `server.js` is a composition root: it reads config, constructs the shared stores/
 helpers, and mounts the route modules in `routes/` (`public`, `auth`, `billing`,
-`staging`, `chat`, `admin`, `i18n`), injecting the reusable pieces from `lib/`. `lib/` is
+`staging`, `chat`, `admin`, `i18n`, `gallery`, `share-public`, and `referrals` **last**),
+then the terminal 404 handler behind them, injecting the reusable pieces from `lib/`. `lib/` is
 grouped into subdirectories by concern (full breakdown in
 [`guides/architecture.md`](guides/architecture.md#backend-modules-lib)):
 
@@ -183,7 +185,8 @@ grouped into subdirectories by concern (full breakdown in
 |---|---|
 | `lib/config/` | `config.js` (secrets, env → `.txt` fallback), `model-config.js`, `runtime-flags.js` (`DEBUG_MODE` / `IS_STAGING` flags). |
 | `lib/data/` | `db.js` (the single shared `better-sqlite3` connection), `auth-store.js` (accounts/sessions, **SQLite-backed**), `session-tokens.js` (the token tables + token hashing), `password-hash.js` (the parameter-tagged password hash format + its rehash-on-login upgrade path), `enterprise-store.js`, `stripe-linking.js` (which account a subscription attaches to), `stripe-events.js` (webhook idempotency ledger), `memory.js`, `counters.js`, `uptime-monitor.js`. |
-| `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `error-ref.js` (`reportError` — 5xx bodies carry a log reference, never the exception), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`). |
+| `lib/http/` | `async-router.js` (`createAsyncRouter()`), `http-helpers.js` (`sendError`, sensitive headers), `error-ref.js` (`reportError` — 5xx bodies carry a log reference, never the exception), `http-guards.js` (`endpoint_key`), `rate-limiters.js`, `uploads.js` (multer), `app-middleware.js` (helmet/CORS/compression + body-parse/static, wired from `server.js`), `not-found.js` (`createNotFoundHandler` — the terminal 404, a plain handler rather than a router on purpose). |
+| `lib/i18n/` | `locales.js` (the single source of truth for the language set and `LOCALIZED_PAGES`), `render-page.js` (`renderLocalizedPage` — the pure string transform), `page-renderer.js` (its raw-HTML/translations/render caches, shared by `routes/i18n.js` and `lib/http/not-found.js`), `sitemap.js`. See [`guides/i18n.md`](guides/i18n.md). |
 | `lib/image/` | `image-primitives.js` (`sharp`), `image-annotation.js`, `image-review.js` (quality gate), `erase.js`, `hosted-images.js`. |
 | `lib/services/` | `ai-clients.js` (Gemini/OpenAI/Resend), `auth-helpers.js`, `email.js`, `logging.js` (append-only **CSV** business logs), `stripe-webhooks.js`. |
 | `lib/staging/` | `prompts.js` (incl. `generatePrompt`), `promptMatrix.js` (room × style style-layer), `room-constraints.js` (per-room hard rules), `staging-pipeline.js` (quality-retry loop), `staging-generation.js` (`processStaging`/`processImageGeneration`) + `virtual-staging-handler.js` (from `server.js`), `mask-edit.js` / `segment.js` (from `routes/staging.js`), `cad-handling.js` (CAD/PDF → 3D). |
@@ -198,7 +201,9 @@ Everything the browser loads is under `public/`:
   `masking-studio.html`, `stagify-plus.html`, `plus-welcome.html` (post-checkout
   "Welcome to Stagify+" confirmation — the Stripe Payment Link's after-payment
   redirect target and the Google Ads conversion page), `enterprise.html`,
-  `guides.html`, `contact.html`, `admin.html`, legal pages, plus legacy redirect
+  `guides.html`, `contact.html`, `admin.html`, legal pages, `404.html` (served by
+  `lib/http/not-found.js` at every unmatched URL, translated but deliberately outside
+  `LOCALIZED_PAGES`), plus legacy redirect
   stubs (`pro.html` → `stagify-plus.html`, `faq.html` → `index.html#faq`). Which
   pages are indexed vs `noindex` vs redirect stub — and how `robots.txt`,
   `sitemap.xml`, and `rel="canonical"` stay in sync — is documented in

@@ -40,6 +40,7 @@ import createStagingRouter from './routes/staging.js';
 import createAdminRouter from './routes/admin.js';
 import createAuthRouter from './routes/auth.js';
 import { DEBUG_MODE, EMAIL_DEBUG_MODE, DEBUG_EMAIL, IS_STAGING, HIDE_STAGING_BANNER, SHOW_STAGING_BANNER, STATS_DEBUG, DEBUG_ROOMS, DEBUG_USERS } from './lib/config/runtime-flags.js';
+import createNotFoundHandler from './lib/http/not-found.js';
 import { setSensitiveHeaders, sendError } from './lib/http/http-helpers.js';
 import { getTemperatureForModel, getGeminiImageModel } from './lib/config/model-config.js';
 import { createAuthHelpers } from './lib/services/auth-helpers.js';
@@ -423,6 +424,14 @@ if (objectStore.backend === 'local') {
 // makes it impossible for a dashboard-created link to shadow a real page. Anything
 // it does not recognise falls through to Express's 404 exactly as before.
 app.use(createReferralRouter({ referralLinks }));
+
+// Nothing claimed the path — serve the branded 404 (lib/http/not-found.js). It sits
+// after every router by definition, and is a plain handler rather than a router so it
+// does not disturb the "referral router is mounted last" guard above.
+//
+// This must be a NORMAL middleware, not a 4-arg error handler: Express only reaches
+// those via next(err), and an unmatched route never produces one.
+app.use(createNotFoundHandler({ __dirname, DEBUG_MODE }));
 
 // Multer upload errors surface here — AFTER the routers that use multer, so Express
 // actually reaches this handler (it only runs error middleware registered after the
