@@ -24,10 +24,10 @@
 
    THE ONE STRUCTURAL RULE. Every plan-mode declaration sits inside the single
    `@media screen and (min-width: 1001px)` block. Outside it this file only
-   hides the drawing and styles the label as a chip, which is what makes the
+   hides the drawing — the room names included — which is what makes the
    degradation total rather than partial:
 
-     - below 1001px  -> the accordion, with a topic chip
+     - below 1001px  -> the accordion, questions only
      - print         -> the nine questions, as a list (`screen` excludes plan mode)
      - sheet fails   -> the accordion
      - JS fails      -> the drawing, in CSS, minus furniture/doors/keys
@@ -89,18 +89,13 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+/* THE LABEL IS A ROOM NAME, AND OUTSIDE PLAN MODE THERE IS NO ROOM TO NAME. It used to
+   stay on as a topic chip beside each question — BASICS, TURNAROUND, PRICING — which is
+   the question restated in eight louder characters, taking width from the question on
+   the one layout that has none to spare. So it is hidden here and lettered onto the
+   drawing inside the gate, which is also what keeps it out of print. */
 .faq-room__label {
-  flex: 0 0 auto;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: var(--brand-wash);
-  color: var(--brand);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 1.5;
-  text-transform: uppercase;
-  white-space: nowrap;
+  display: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -245,9 +240,6 @@
        inline, next to that room's --x/--y/--w/--h, because it is a fact about that
        rectangle's geometry and belongs with the rest of it. */
     padding: var(--lt, 4cqh) 8px 0;
-    border: 0;
-    border-radius: 0;
-    background: none;
     color: rgba(255, 255, 255, 0.93);
     font-size: clamp(9px, 1.15cqw, 14px);
     font-weight: 700;
@@ -672,12 +664,31 @@
   .faq-plan__hint {
     transition: opacity 0.22s ease, color 0.18s ease;
   }
-  /* The question additionally glides between the preview offset and the reading one. That
-     move happens on open/close and NOWHERE else — hovering never shifts it — so this is
-     only ever seen when closing a room the pointer is still over, where the question stays
-     visible the whole way. Opening is covered by fpNoteIn, which animates the same
-     property and simply wins for its duration. */
+  /* THE QUESTION MUST NEVER MOVE WHILE IT IS FADING, and it has two positions to move
+     between: the preview offset it rests at, and the reading offset it takes once its room
+     is open and the "05 / 09" key sits above it. There are three ways to travel between
+     them and they do NOT want the same treatment:
+
+       opening                  -> fpNoteIn animates transform and wins for its duration.
+       closing, still hovered   -> the question does not fade at all, it stays on as the
+                                   preview. It has to GLIDE, or it teleports in full view.
+       closing, pointer gone    -> the question fades out. Any transform transition here is
+                                   the drift that made switching rooms look wrong: the old
+                                   question slid 4.4% of the sheet UPWARDS through its own
+                                   0.22s fade, which reads as the text being sucked away
+                                   rather than simply going.
+
+     So the resting rule defers the position change past the END of the fade — `0s` duration
+     with a delay longer than the opacity transition — and the move lands on an element that
+     is already invisible. Zeroing the duration alone is not enough: without the delay the
+     jump happens at full opacity, which is worse than the drift it replaces.
+     The hovered/focused rule then puts the glide back for the one case that is watched the
+     whole way through. It is (0,2,0) against this rule's (0,1,0), so it simply wins. */
   .faq-room__q {
+    transition: opacity 0.22s ease, color 0.18s ease, transform 0s linear 0.24s;
+  }
+  .faq-room__label:hover ~ .faq-room__q,
+  .faq-room:has(:focus-visible) .faq-room__q {
     transition: opacity 0.22s ease, color 0.18s ease, transform 0.22s ease;
   }
   .fp-floor,

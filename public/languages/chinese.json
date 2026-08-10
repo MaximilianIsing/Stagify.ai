@@ -232,9 +232,9 @@
           "p3": "AI Designer：智能体化房间布置"
         },
         "team": {
-          "eyebrow": "为团队打造",
-          "caption": "为一家中介团队培训 Stagify",
-          "title": "简单到整个办公室都能用",
+          "eyebrow": "不需要什么",
+          "caption": "一家中介团队初次了解 Stagify",
+          "title": "整个办公室都能用，无需培训",
           "body": "无需安装软件，也没有任何学习成本。团队中的任何人都可以在浏览器中打开 Stagify，上传一张房源照片，几秒内即可完成装修——无论是在办公室用笔记本，还是在外用手机。",
           "p1": "无需设计技能或软件",
           "p2": "在任意浏览器和设备上都能使用",
@@ -359,7 +359,36 @@
           "author": "Andy Eras（经纪人）",
           "role": "Centennial Properties",
           "location": "纽约曼哈顿"
+        },
+        "p3": {
+          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Three",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
+        },
+        "p4": {
+          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Four",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
+        },
+        "p5": {
+          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Five",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
+        },
+        "p6": {
+          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Six",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
         }
+      },
+      "deck": {
+        "label": "经纪人评价",
+        "prev": "上一条评价",
+        "next": "下一条评价"
       }
     },
     "faq": {
@@ -608,7 +637,7 @@
       },
       "studios": {
         "label": "工作室",
-        "question": "除了单个房间，Stagify 还能做什么？",
+        "question": "Stagify 还能做什么？",
         "answer": "相当多。AI Designer 通过对话重新设计整个房间，您可以要求更暖的色调或更大的沙发，并持续微调。Masking Studio 以像素级精度控制哪些区域可以改动。Exterior Studio 处理的是外观而非室内。Listing Studio 一次处理整组照片，并生成可发给卖家确认的链接。所做的一切都会进入您的图库。"
       },
       "control": {

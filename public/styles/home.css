@@ -882,8 +882,9 @@ body.page-home main {
    2. "What virtual staging is" — the four photo strips (#learn)
    ==========================================================================
    Four photo panels side by side. The open one widens and shows its copy; the other
-   three collapse to a spine carrying the title, set vertically. Replaces four stacked
-   image+text rows that cost ~1,780px of scroll for four paragraphs.
+   three collapse to a spine carrying their short label, with the full title revealed on
+   open. Replaces four stacked image+text rows that cost ~1,780px of scroll for four
+   paragraphs.
 
    THE FALLBACK IS THE FIRST BLOCK, NOT AN AFTERTHOUGHT. Everything that makes this a
    strip widget is gated behind `.hstrips--ready`, which scripts/home-strips.js adds.
@@ -1024,10 +1025,6 @@ body.page-home main {
 }
 .hstrips--ready .hstrip__btn {
   cursor: pointer;
-  /* Bounds the vertical title. In vertical writing mode the block axis is horizontal,
-     so this caps how LONG a line may run and forces a second column instead of letting
-     a 60-character German title run off the top of the strip. */
-  max-height: 100%;
 }
 .hstrips--ready .hstrip__btn:focus-visible {
   outline: 3px solid var(--bg-elevated);
@@ -1035,29 +1032,94 @@ body.page-home main {
   border-radius: 6px;
 }
 
-/* Collapsed: the title runs up the spine.
-   The header is taken out of flow and given the whole strip so `max-height:100%` above
-   has a definite box to resolve against; in flow its height would be the text's own
-   length, which is the thing being bounded. */
+/* Collapsed: THE SPINE CARRIES THE SHORT LABEL, NOT THE TITLE.
+   The titles run to 60 characters (German "how it works"), which is why this used to be
+   set sideways — upright it simply does not fit a spine this narrow. The eyebrows are the
+   same thought in 3-22 characters, so the spine shows those instead and the title appears
+   when the strip opens, where there is room for it.
+
+   THE HEADER MUST STAY OUT OF FLOW. `.hstrip` is a flex column with justify-content:
+   flex-end, and `.hstrip__body` keeps its full natural height even while invisible (see
+   the note below on why it is not display:none) — 600-800px of it. In flow, that body
+   would push the label clean off the top of a 460px strip. Bottom-pinned here rather than
+   inset:0, so the strip's own padding-bottom is not double-counted. */
 .hstrips--ready .hstrip:not(.is-open) .hstrip__h {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  padding: 18px 14px;
+  inset: auto 0 18px;
+  /* Not the base 0 20px: 40px of padding out of a 96px spine leaves nothing to set. */
+  padding: 0 12px;
 }
-.hstrips--ready .hstrip:not(.is-open) .hstrip__btn {
-  writing-mode: vertical-rl;
-  /* vertical-rl reads top-to-bottom; the half turn makes it read bottom-to-top, which
-     is the convention for Latin text on a vertical spine. Wrapped lines then stack
-     left-to-right, so a two-column German title still reads in order. */
-  transform: rotate(180deg);
-}
+/* The spine label is on its own over a photo, so it is set as display type — big, white,
+   and stacked ONE WORD PER LINE up the spine. All four English labels are three words, so
+   this is a three-row block; the packs that run to four words simply get a fourth row. */
 .hstrips--ready .hstrip:not(.is-open) .hstrip__eyebrow {
-  display: none;
+  /* THESE TWO TOGETHER ARE WHAT PUTS ONE WORD ON EACH LINE. There is no "break at every
+     space" property, so it takes both halves and neither works alone:
+
+       `width: min-content` sizes the box to the longest word. On its own it is not
+         enough — two SHORT words still share a row if they fit inside the longest one.
+         "HOW IT WORKS" came out as "HOW IT / WORKS", because HOW IT is narrower than
+         WORKS. Only "WHO IT'S FOR", whose words are all much of a muchness, stacked.
+       `word-spacing` wider than the box makes every space overflow its line, so each
+         word is pushed to the next one. On its own it is not enough either: without the
+         min-content width the oversized space counts toward the line box and the label
+         scrolls sideways inside `.hstrip`'s overflow:hidden — invisible, but a focus
+         inside a scrollable box can shift it. Sized to the longest word, the space lands
+         at a line end, where trailing spaces hang and cost nothing (measured: the label's
+         scrollWidth matches its clientWidth exactly).
+
+     max-width clamps the box back to the spine when a single word is wider than it —
+     German, where the hyphenation below takes over. */
+  width: min-content;
+  max-width: 100%;
+  word-spacing: 100vw;
+  /* Sized against `.hstrips` (the cqw container declared below) so the words track the
+     spine instead of overflowing it as the layout narrows: the label box runs ~71px at the
+     900px breakpoint to ~95px at the 1140px cap, and a five-character word (WORKS, TEAMS,
+     WARUM) is the one that has to fit across that whole range.
+
+     THESE THREE NUMBERS ARE MEASURED, NOT CHOSEN. Inter's caps run ~0.76em each here, so
+     five of them are ~3.8x the font size: 23px fills 89px of the 95px box, and the 2.2cqw
+     middle term holds that ratio down to ~18px against the 71px box. Raise any of them
+     and WORKS/TEAMS stops fitting — it does not overflow, it splits, and you get a stray
+     "S" on its own row. */
+  font-size: clamp(17px, 2.2cqw, 23px);
+  font-weight: 800;
+  line-height: 1.05;
+  /* Down from the base 1.3px: at display size that tracking is both too loose to read as
+     a block and wide enough to push a five-character word past the spine. */
+  letter-spacing: 0.4px;
+  color: var(--bg-elevated);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+  margin-bottom: 0;
+  /* A word too long for the spine hyphenates rather than spilling. `hyphens` picks the
+     right dictionary because lib/i18n/render-page.js rewrites <html lang> per locale.
+
+     `overflow-wrap: break-word`, NOT `anywhere`. They look interchangeable and are not:
+     `anywhere` counts toward MIN-CONTENT sizing, so with the width above it would resolve
+     to one character and stack every LETTER on its own row. `keep-all` is the same guard
+     for the CJK packs, whose labels have no spaces to break at. */
+  hyphens: auto;
+  /* At this size a spine fits about five characters, so an unconstrained hyphenator
+     chops a German compound into runts — "ENT- / WI- / CKELT". Four characters minimum
+     before the break and three after gives "ENTWI- / CKELT" and one row back. If no
+     break satisfies the limits the word simply is not hyphenated and the rule below
+     breaks it instead, so this can cost a hyphen but never causes an overflow. */
+  hyphenate-limit-chars: 6 4 3;
+  overflow-wrap: break-word;
+  word-break: keep-all;
 }
+/* Hidden from view but NOT from the accessibility tree: the button's accessible name stays
+   "<eyebrow> <title>" whether the strip is open or closed, so a screen-reader user hears
+   what a strip contains before deciding to open it. `display:none` would make the name
+   change on expand and drop three quarters of the section's headings from the page. */
 .hstrips--ready .hstrip:not(.is-open) .hstrip__title {
-  font-size: 16px;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 /* THE COPY IS LAID OUT AT A WIDTH THAT DOES NOT DEPEND ON THE STRIP'S ANIMATING ONE.
    This is the whole reason the switch used to feel so busy. The body is a block inside
@@ -1727,7 +1789,8 @@ body.page-home main {
        bug this replaced. */
     min-height: 0;
   }
-  /* Undo the spine: no rotation, no absolute header, eyebrow back on.
+  /* Undo the spine: the header goes back into flow, and the full title is the label again
+     — a stacked strip is full width, so there is nothing to abbreviate for.
      Keeps the 18px BOTTOM padding rather than the open panel's 6px: a collapsed label
      sits at the foot of a 104px panel, so trimming it would drop the text onto the
      panel edge. Only the top gains air, matching the open state. */
@@ -1736,15 +1799,29 @@ body.page-home main {
     display: block;
     padding: 16px 18px 18px;
   }
-  .hstrips--ready .hstrip:not(.is-open) .hstrip__btn {
-    writing-mode: horizontal-tb;
-    transform: none;
-    max-height: none;
-  }
+  /* Back to the ordinary eyebrow treatment: it sits above the title here rather than
+     standing in for it, so it needs none of the spine's display sizing — and least of all
+     `width: min-content`, which on a full-width bar would stack a three-word label into
+     three rows for no reason. */
   .hstrips--ready .hstrip:not(.is-open) .hstrip__eyebrow {
-    display: block;
+    width: auto;
+    word-spacing: normal;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: inherit;
+    letter-spacing: 1.3px;
+    color: var(--brand-pale);
+    text-shadow: none;
+    margin-bottom: 4px;
   }
+  /* Undoes the wide layout's visually-hidden clip. */
   .hstrips--ready .hstrip:not(.is-open) .hstrip__title {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
     font-size: 18px;
   }
 }
@@ -3003,39 +3080,54 @@ body.page-home main {
 }
 
 /* ==========================================================================
-   Testimonials — compact glass quotes with a living edge: a glow continuously
-   orbits each card's border (::before, animated conic ring), and a soft light
-   follows the cursor on hover (::after, --mx/--my set by the inline script).
-   Equal-height via grid stretch + a footer pinned with margin-top:auto.
+   Testimonials — a DECK of six glass quote cards. The top card is readable, the
+   rest fan out behind it, and you drag it away (or use the arrows) to advance.
+   Driven by scripts/home-testimonials.js.
+
+   PROGRESSIVE ENHANCEMENT IS THE CONTRACT. Every deck rule below is scoped behind
+   `.tw-deck--ready`, which that script adds. With no JS the markup renders as what
+   it literally is: a plain column of six readable quotes, controls hidden. Do not
+   lift a deck rule out from behind the ready class — a script failure would turn
+   the section into a pile of overlapping cards with no way to advance.
+
+   Card visuals (glass, gradient edge, cursor spotlight) are unchanged from the old
+   two-up grid; only the layout is new.
+
+   REMOVED with the grid: `@property --tw-angle` and `@keyframes tw-orbit`, plus the
+   reduced-motion rule that held the "animation" still. The comment here used to
+   promise a glow that "continuously orbits each card's border" — no `animation:`
+   property ever referenced tw-orbit, so all three were dead. The edge is, and was,
+   a static gradient.
    ========================================================================== */
-@property --tw-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-.tw-grid {
+
+/* The no-JS baseline. `gap` and `max-width` are overridden in deck mode. */
+.tw-stack {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
-  gap: 22px;
-  max-width: 860px;
+  gap: 14px;
+  max-width: 620px;
   margin: 0 auto;
 }
 .tw-card {
   --mx: 50%;
   --my: -40%;
+  /* <figure> carries a UA `margin: 1em 40px` and this codebase has no universal
+     reset, so the old .tw-card rendered 339px wide inside its 419px grid track and
+     the authored `gap: 22px` came out as 102px. */
+  margin: 0;
   position: relative;
   display: flex;
   flex-direction: column;
   padding: 26px 28px 22px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.5);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
-  box-shadow: 0 10px 26px rgba(30, 58, 138, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* Opaque, not the half-white glass the rest of the page uses. Quote text is the
+     whole point of this section and the page gradient was reading straight through it.
+     `backdrop-filter: blur(16px) saturate(160%)` went with it — an opaque face leaves
+     nothing behind to blur, so it was pure GPU cost, and six stacked backdrop layers
+     is the expensive kind. */
+  background: var(--bg-elevated);
+  box-shadow: 0 10px 26px rgba(30, 58, 138, 0.14);
 }
-/* animated orbiting glow border — faint blue ring all around, bright arc circling */
+/* static gradient edge — faint blue ring all around */
 .tw-card::before {
   content: "";
   position: absolute;
@@ -3054,11 +3146,6 @@ body.page-home main {
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-}
-@keyframes tw-orbit {
-  to {
-    --tw-angle: 360deg;
-  }
 }
 /* cursor spotlight — white core + blue halo, hidden until hover */
 .tw-card::after {
@@ -3081,10 +3168,8 @@ body.page-home main {
       transparent 72%
     );
 }
-.tw-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 20px 44px rgba(30, 58, 138, 0.18);
-}
+/* No hover lift in deck mode — `transform` there is the fan, driven by --i, and a
+   hover rule would fight it. Only the spotlight remains. */
 .tw-card:hover::after {
   opacity: 1;
 }
@@ -3152,12 +3237,11 @@ body.page-home main {
 .tw-loc {
   font-size: 11.5px;
   font-weight: 500;
-  /* Not var(--muted). #6b7280 is 4.83:1 on white — fine where the token is normally
-     used — but these cards are rgba(255,255,255,.5) over the #b2c4f6 page, i.e. an
-     effective #d9e2fb, where the same ink drops to 3.73:1. Darkened locally rather
-     than moving the global token, which would over-correct every page that uses it
-     on white. (The old value was `var(--muted, var(--muted))` — a two-arg var whose
-     fallback was itself, which could only ever resolve to the same thing.) */
+  /* Darker than var(--muted) (#6b7280). That token was measured at 4.83:1 on white,
+     which the card face now is, so the token would pass — this is kept because the
+     line is 11.5px, the smallest text in the card, and the extra margin is cheap.
+     It was ORIGINALLY needed: the card used to be rgba(255,255,255,.5) over the
+     #b2c4f6 page, an effective #d9e2fb, where the same ink fell to 3.73:1. */
   color: #5d636f;
 }
 /* No cursor to follow on touch — keep the spotlight off. */
@@ -3166,25 +3250,135 @@ body.page-home main {
     display: none;
   }
 }
-/* Respect reduced-motion: hold the glow still. */
-@media (prefers-reduced-motion: reduce) {
-  .tw-card::before {
-    animation: none;
+
+/* --- Deck mode — everything below needs home-testimonials.js -------------- */
+
+.tw-deck--ready .tw-stack {
+  /* Every card shares ONE grid cell, so the stack is automatically as tall as the
+     longest quote and nothing reflows as you advance. No measured pixel height, so
+     it re-settles by itself after a font swap or a language change — which matters
+     across 11 packs, where the longest quote is not the same card in every one. */
+  gap: 0;
+  max-width: 560px;
+  /* The fanned cards are translated DOWN out of the grid box — five layers at 12px.
+     Without this the buried cards paint over the controls below, which z-index
+     cannot fix: grid items honour z-index, so they outrank a later sibling's auto. */
+  margin-bottom: 24px;
+}
+.tw-deck--ready .tw-card {
+  --i: 0;
+  grid-area: 1 / 1;
+  transform: translateY(calc(var(--i) * 12px)) scale(calc(1 - var(--i) * 0.045))
+    rotate(calc((var(--i) - 1.5) * 0.9deg));
+  transform-origin: 50% 100%;
+  transition: transform 0.45s cubic-bezier(0.16, 0.84, 0.44, 1), opacity 0.45s ease;
+  z-index: calc(10 - var(--i));
+  /* Only the top card takes the pointer, or a drag would land on whichever buried
+     card happened to be under the cursor. */
+  pointer-events: none;
+}
+.tw-deck--ready .tw-card[data-top] {
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.tw-deck--ready .tw-card[data-top]:active {
+  cursor: grabbing;
+}
+/* Only four layers are ever visible; the rest wait with no paint cost. */
+.tw-deck--ready .tw-card[data-i="4"],
+.tw-deck--ready .tw-card[data-i="5"] {
+  opacity: 0;
+}
+.tw-deck--ready .tw-card.is-dragging {
+  transition: none;
+}
+.tw-deck--ready .tw-card.is-flying {
+  transition: transform 0.42s ease-in, opacity 0.42s ease-in;
+  opacity: 0;
+}
+
+.tw-ctl {
+  display: none;
+}
+.tw-deck--ready .tw-ctl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  /* Above any stray card layer that overhangs the stack. */
+  position: relative;
+  z-index: 20;
+}
+.tw-nav {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(30, 58, 138, 0.18);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--brand-deep);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.tw-nav:hover {
+  background: var(--brand);
+  color: var(--bg-elevated);
+  border-color: transparent;
+}
+.tw-nav svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tw-count {
+  margin: 0;
+  min-width: 52px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  font-variant-numeric: tabular-nums;
+}
+/* The stack is a keyboard target (arrow keys advance it), so it needs a visible ring. */
+.tw-deck--ready .tw-stack:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 8px;
+  border-radius: 20px;
+}
+
+@media (max-width: 768px) {
+  /* The deck is the SAME widget here — one card at a time, and a swipe is native on
+     touch. This is where the old grid used to do `.tw-card:nth-child(n + 2)
+     { display: none }`, which showed a phone visitor exactly one of the quotes and
+     silently threw the rest away. */
+  .tw-card {
+    padding: 22px 20px 18px;
+  }
+  .tw-deck--ready .tw-stack {
+    margin-bottom: 20px;
+  }
+  .tw-text {
+    font-size: 15px;
+  }
+  .tw-logo {
+    width: 56px;
+    height: 56px;
   }
 }
-@media (max-width: 768px) {
-  .tw-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  /* Two stacked quote cards run about two screens tall on a phone. Cards are in
-     document order, so this keeps Justin Stern and drops Andy Eras; display:none (not
-     visibility/opacity) also drops the hidden card out of the a11y tree. */
-  .tw-card:nth-child(n + 2) {
-    display: none;
-  }
-  .tw-card:hover {
-    transform: none;
+
+@media (prefers-reduced-motion: reduce) {
+  /* Cards snap between positions instead of sliding. home-testimonials.js separately
+     skips the fly-out animation and advances immediately. */
+  .tw-deck--ready .tw-card,
+  .tw-deck--ready .tw-card.is-flying {
+    transition: none;
   }
 }
 

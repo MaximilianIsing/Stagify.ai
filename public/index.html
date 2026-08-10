@@ -530,18 +530,19 @@
            THE FOUR ROWS ARE NOW ONE STRIP WIDGET. They used to be four stacked
            image+text rows — ~1,780px, four full row-heights, a sixth of the page for
            four paragraphs. They are now four photo panels side by side: the open one
-           widens and shows its copy, the other three collapse to a spine with the
-           title set vertically. Same four photos, same strings, ~66% less scroll.
+           widens and shows its copy, the other three collapse to a spine carrying just
+           the eyebrow. Same four photos, same strings, ~66% less scroll.
 
            NOT ONE STRING CHANGED. Every data-lang key below is the key that was on the
            equivalent element before, so all 11 packs are untouched and routes/i18n.js
            renders the localized pages from this markup exactly as it did.
 
-           THE `data-tx` HOOKS ARE GONE FROM THE FOUR <h3>s, deliberately. Those four
-           titles now sit rotated 90° for three of the four strips, and the rise/slide/
-           clip/fade effects in home-text-animate.js all translate along the block axis
-           — which after the rotation is the wrong axis, so the words would fly in
-           sideways. The <h2> keeps its data-tx; it never rotates.
+           THE `data-tx` HOOKS ARE GONE FROM THE FOUR <h3>s, deliberately. Three of the
+           four titles are visually hidden at any moment — a collapsed strip shows only
+           its eyebrow — so the effects in home-text-animate.js, which run once when the
+           section scrolls in, would play where nobody can see them and the title would
+           then simply appear, unanimated, when its strip was opened. The <h2> keeps its
+           data-tx; it is never hidden.
 
            PROGRESSIVE ENHANCEMENT, same contract as the studio showcase below. Until
            scripts/home-strips.js adds `.hstrips--ready` these are four plain stacked
@@ -583,12 +584,12 @@
             <h3 class="hstrip__h">
               <button type="button" class="hstrip__btn" id="learn-btn-how" aria-expanded="false" aria-controls="learn-panel-how">
                 <span class="hstrip__eyebrow" data-lang="home.info.rows.how.eyebrow">How it works</span>
-                <span class="hstrip__title" data-lang="home.info.rows.how.title">From empty photo to listing-ready in ~8 seconds</span>
+                <span class="hstrip__title" data-lang="home.info.rows.how.title">From empty photo to listing-ready in about 8 seconds</span>
               </button>
             </h3>
             <div class="hstrip__body" id="learn-panel-how" role="region" aria-labelledby="learn-btn-how">
               <div class="hstrip__inner">
-                <p class="hstrip__text" data-lang="home.info.rows.how.body">Upload a photo, pick the room type and one of seven styles, and Stagify furnishes it in about eight seconds. Want changes? Remove the existing furniture, add a custom prompt, or mask one area to adjust it without starting over.</p>
+                <p class="hstrip__text" data-lang="home.info.rows.how.body">Upload a photo, pick the room type and one of seven styles, and Stagify furnishes it in about eight seconds. Need changes? Remove the existing furniture, add a custom prompt, or mask one area to adjust it without starting over.</p>
                 <ul class="home-list">
                   <li data-lang="home.info.rows.how.p1">7 styles plus custom prompts and furniture removal</li>
                   <li data-lang="home.info.rows.how.p2">Mask-edit any part of a result without redoing it</li>
@@ -626,8 +627,8 @@
             <div class="hstrip__scrim"></div>
             <h3 class="hstrip__h">
               <button type="button" class="hstrip__btn" id="learn-btn-team" aria-expanded="false" aria-controls="learn-panel-team">
-                <span class="hstrip__eyebrow" data-lang="home.info.rows.team.eyebrow">Built for teams</span>
-                <span class="hstrip__title" data-lang="home.info.rows.team.title">Easy enough for your whole office</span>
+                <span class="hstrip__eyebrow" data-lang="home.info.rows.team.eyebrow">What it skips</span>
+                <span class="hstrip__title" data-lang="home.info.rows.team.title">Your whole office, no training required</span>
               </button>
             </h3>
             <div class="hstrip__body" id="learn-panel-team" role="region" aria-labelledby="learn-btn-team">
@@ -638,7 +639,7 @@
                   <li data-lang="home.info.rows.team.p2">Works in any browser, on any device</li>
                   <li data-lang="home.info.rows.team.p3">Every agent can stage their own listings</li>
                 </ul>
-                <p class="hstrip__cap" data-lang="home.info.rows.team.caption">Training a brokerage team on Stagify</p>
+                <p class="hstrip__cap" data-lang="home.info.rows.team.caption">A brokerage team's first look at Stagify</p>
               </div>
             </div>
           </div>
@@ -1100,43 +1101,147 @@
           <h2 class="home-section__title" id="testimonials-title" data-tx="rise" data-lang="home.testimonials.title">What agents are saying</h2>
           <p class="home-section__sub" data-lang="home.testimonials.subtitle">Straight from brokers who made the switch.</p>
         </div>
-        <div class="tw-grid">
-          <figure class="tw-card reveal reveal--left">
-            <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </div>
-            <blockquote class="tw-text" data-lang="home.testimonials.items.justin.quote">When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings, and the price is amazing!</blockquote>
-            <figcaption class="tw-by">
-              <span class="tw-by__meta">
-                <span class="tw-name" data-lang="home.testimonials.items.justin.author">Justin Stern (Broker)</span>
-                <span class="tw-org" data-lang="home.testimonials.items.justin.role">Tahari Realty</span>
-                <span class="tw-loc" data-lang="home.testimonials.items.justin.location">Manhattan, NYC</span>
-              </span>
-              <img class="tw-logo" src="media-webp/testimonials/tahari-realty-mini.webp" alt="Tahari Realty logo" width="72" height="72" decoding="async">
-            </figcaption>
-          </figure>
-          <figure class="tw-card reveal reveal--right" style="--reveal-delay:90ms">
-            <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </div>
-            <blockquote class="tw-text" data-lang="home.testimonials.items.andy.quote">Stagify fits right into how I already work. I’ll upload a listing photo between showings and it’s staged before I’m back at my desk. My clients are always impressed by how polished the final photos look.</blockquote>
-            <figcaption class="tw-by">
-              <span class="tw-by__meta">
-                <span class="tw-name" data-lang="home.testimonials.items.andy.author">Andy Eras (Broker)</span>
-                <span class="tw-org" data-lang="home.testimonials.items.andy.role">Centennial Properties</span>
-                <span class="tw-loc" data-lang="home.testimonials.items.andy.location">Manhattan, NYC</span>
-              </span>
-              <img class="tw-logo" src="media-webp/testimonials/centennial-mini.webp" alt="Centennial Properties logo" width="72" height="72" decoding="async">
-            </figcaption>
-          </figure>
+        <!-- A DECK, not a grid. Six quotes as one stack: the top card is readable, the
+             rest fan out behind it, and you drag it away or use the arrows to advance.
+             home-testimonials.js adds `tw-deck--ready`, and EVERY deck rule in home.css
+             is scoped behind that class — so with no JS this stays what it is in the
+             markup, a plain readable column of six quotes. Do not move the deck styling
+             out from behind the ready class.
+
+             CARDS 3-6 ARE PLACEHOLDERS. Replace the copy, the names and the
+             media-webp/testimonials/placeholder-*.svg logos with the four real agents
+             before this section goes live, and translate the four quotes into the other
+             10 packs. test/frontend/home-testimonials.test.js carries a skipped guard
+             ("no placeholder testimonials remain") — un-skip it in the same commit and it
+             will keep them from coming back. -->
+        <div class="tw-deck reveal" data-deck>
+          <!-- role="group" and tabindex are added by home-testimonials.js, since the
+               stack is only a widget once the deck arms. The aria-label lives HERE, not
+               in the script, so language-loader.js retranslates it on a switch. -->
+          <div class="tw-stack" data-deck-stack data-lang-attr="home.testimonials.deck.label|aria-label" aria-label="Agent testimonials">
+            <figure class="tw-card">
+              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </div>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.justin.quote">When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings, and the price is amazing!</blockquote>
+              <figcaption class="tw-by">
+                <span class="tw-by__meta">
+                  <span class="tw-name" data-lang="home.testimonials.items.justin.author">Justin Stern (Broker)</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.justin.role">Tahari Realty</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.justin.location">Manhattan, NYC</span>
+                </span>
+                <img class="tw-logo" src="media-webp/testimonials/tahari-realty-mini.webp" alt="Tahari Realty logo" width="72" height="72" decoding="async">
+              </figcaption>
+            </figure>
+            <figure class="tw-card">
+              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </div>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.andy.quote">Stagify fits right into how I already work. I’ll upload a listing photo between showings and it’s staged before I’m back at my desk. My clients are always impressed by how polished the final photos look.</blockquote>
+              <figcaption class="tw-by">
+                <span class="tw-by__meta">
+                  <span class="tw-name" data-lang="home.testimonials.items.andy.author">Andy Eras (Broker)</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.andy.role">Centennial Properties</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.andy.location">Manhattan, NYC</span>
+                </span>
+                <img class="tw-logo" src="media-webp/testimonials/centennial-mini.webp" alt="Centennial Properties logo" width="72" height="72" decoding="async">
+              </figcaption>
+            </figure>
+            <!-- PLACEHOLDER 1 of 4 (3rd card) — replace before launch -->
+            <figure class="tw-card" data-placeholder>
+              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </div>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.p3.quote">PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.</blockquote>
+              <figcaption class="tw-by">
+                <span class="tw-by__meta">
+                  <span class="tw-name" data-lang="home.testimonials.items.p3.author">Placeholder Agent Three</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.p3.role">Placeholder Realty</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.p3.location">City, ST</span>
+                </span>
+                <img class="tw-logo" src="media-webp/testimonials/placeholder-3.svg" alt="Placeholder logo" width="72" height="72" decoding="async">
+              </figcaption>
+            </figure>
+            <!-- PLACEHOLDER 2 of 4 (4th card) — replace before launch -->
+            <figure class="tw-card" data-placeholder>
+              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </div>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.p4.quote">PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.</blockquote>
+              <figcaption class="tw-by">
+                <span class="tw-by__meta">
+                  <span class="tw-name" data-lang="home.testimonials.items.p4.author">Placeholder Agent Four</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.p4.role">Placeholder Realty</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.p4.location">City, ST</span>
+                </span>
+                <img class="tw-logo" src="media-webp/testimonials/placeholder-4.svg" alt="Placeholder logo" width="72" height="72" decoding="async">
+              </figcaption>
+            </figure>
+            <!-- PLACEHOLDER 3 of 4 (5th card) — replace before launch -->
+            <figure class="tw-card" data-placeholder>
+              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </div>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.p5.quote">PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.</blockquote>
+              <figcaption class="tw-by">
+                <span class="tw-by__meta">
+                  <span class="tw-name" data-lang="home.testimonials.items.p5.author">Placeholder Agent Five</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.p5.role">Placeholder Realty</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.p5.location">City, ST</span>
+                </span>
+                <img class="tw-logo" src="media-webp/testimonials/placeholder-5.svg" alt="Placeholder logo" width="72" height="72" decoding="async">
+              </figcaption>
+            </figure>
+            <!-- PLACEHOLDER 4 of 4 (6th card) — replace before launch -->
+            <figure class="tw-card" data-placeholder>
+              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </div>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.p6.quote">PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.</blockquote>
+              <figcaption class="tw-by">
+                <span class="tw-by__meta">
+                  <span class="tw-name" data-lang="home.testimonials.items.p6.author">Placeholder Agent Six</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.p6.role">Placeholder Realty</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.p6.location">City, ST</span>
+                </span>
+                <img class="tw-logo" src="media-webp/testimonials/placeholder-6.svg" alt="Placeholder logo" width="72" height="72" decoding="async">
+              </figcaption>
+            </figure>
+          </div>
+          <!-- Hidden until `tw-deck--ready`: with no JS there is nothing to advance. -->
+          <div class="tw-ctl">
+            <button class="tw-nav" type="button" data-deck-prev data-lang-attr="home.testimonials.deck.prev|aria-label" aria-label="Previous testimonial">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
+            </button>
+            <p class="tw-count" aria-live="polite"><span data-deck-at>1</span> / <span data-deck-of>6</span></p>
+            <button class="tw-nav" type="button" data-deck-next data-lang-attr="home.testimonials.deck.next|aria-label" aria-label="Next testimonial">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -1540,7 +1645,7 @@
           <details class="faq-q faq-room" id="faq-studios" name="faq-room" data-room="studios" data-door="w0.45" data-no="04" style="--x:30;--y:26;--w:17;--h:20">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.studios.label">The Studios</span>
-              <span class="faq-room__q" data-lang="faq.rooms.studios.question">What can Stagify do besides staging one room?</span>
+              <span class="faq-room__q" data-lang="faq.rooms.studios.question">What else can Stagify do?</span>
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.studios.answer">Quite a lot. The AI Designer redesigns a whole room conversationally, so you can ask for a warmer palette or a bigger sofa and keep refining. The Masking Studio gives pixel-level control over which areas may change. The Exterior Studio works on curb appeal rather than interiors. The Listing Studio takes a whole set of photos through in one pass and produces a link you can send a seller for sign-off. Everything you make lands in your gallery.</p>
           </details>
@@ -2436,7 +2541,7 @@
         },
         {
           "@type": "Question",
-          "name": "What can Stagify do besides staging one room?",
+          "name": "What else can Stagify do?",
           "url": "https://stagify.ai/#faq-studios",
           "acceptedAnswer": {
             "@type": "Answer",

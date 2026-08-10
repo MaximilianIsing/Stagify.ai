@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72" role="img" aria-label="Quarry Bay Realty logo (fictional)">
+  <rect width="72" height="72" rx="16" fill="#4338ca"/>
+  <path d="M18 44l10-16 8 11 6-8 12 13z" fill="#c7d2fe"/>
+  <circle cx="47" cy="22" r="5.5" fill="#fde68a"/>
+  <path d="M14 50h44" stroke="#a5b4fc" stroke-width="3" stroke-linecap="round"/>
+  <text x="36" y="66" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8.5" font-weight="700" letter-spacing="1.4" fill="#c7d2fe">QUARRY BAY</text>
+</svg>

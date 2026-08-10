@@ -1,0 +1,1008 @@
+/* Prototype styles for the #staging-studio section redesign. Throwaway — not part
+   of the app, never served (this folder sits outside public/).
+
+   Tokens and the shared primitives below are lifted from public/styles/styles.css
+   (:root, lines 225-251) and public/styles/home.css so the concepts read like the
+   real page rather than like a generic mockup. The .ba block in section 5 is a
+   near-verbatim copy of home.css:167-260 — concept 0 has to BE today's section, or
+   the height badges and the side-by-side comparison mean nothing. */
+
+:root {
+  --bg: #ddeeff;
+  --bg-elevated: #ffffff;
+  --fg: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --brand: #2563eb;
+  --brand-strong: #1d4ed8;
+  --brand-deep: #1e3a8a;
+  --brand-soft: #60a5fa;
+  --brand-pale: #93c5fd;
+  --brand-tint: #dbeafe;
+  --brand-wash: #eff6ff;
+  --body-ink: #414f75;
+  --ok: #047857;
+  --bad: #b45309;
+
+  /* The house curve. home.css uses this on .reveal and 6 other places. */
+  --ease: cubic-bezier(0.16, 0.84, 0.44, 1);
+  /* Navy-tinted shadows, never neutral grey — the convention throughout home.css. */
+  --shadow-frame: 0 18px 48px rgba(30, 58, 138, 0.24);
+  --shadow-card: 0 12px 34px rgba(30, 58, 138, 0.12);
+  --shadow-lift: 0 26px 70px rgba(30, 58, 138, 0.22);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--fg);
+  line-height: 1.6;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, #cfe0ff 0%, rgba(207, 224, 255, 0) 60%),
+    radial-gradient(900px 600px at 95% 5%, #dbeafe 0%, rgba(219, 234, 254, 0) 55%),
+    #b2c4f6;
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: rgba(255, 255, 255, 0.62);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+/* ==========================================================================
+   Page chrome — prototype-only furniture. None of this ships.
+   ========================================================================== */
+
+.page-head {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 56px 24px 22px;
+  text-align: center;
+}
+.page-head__kicker {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.page-head__title {
+  margin: 0 0 12px;
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.12;
+  letter-spacing: -0.8px;
+  font-weight: 800;
+  color: var(--brand-deep);
+}
+.page-head__sub,
+.page-head__note {
+  margin: 0 auto;
+  max-width: 680px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #3a4a72;
+}
+.page-head__note {
+  margin-top: 12px;
+  font-size: 13.5px;
+  color: #55628a;
+}
+
+.jump {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px) saturate(170%);
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+}
+.jump a {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  text-decoration: none;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(30, 58, 138, 0.12);
+  white-space: nowrap;
+}
+.jump a:hover { background: var(--brand); color: #fff; border-color: transparent; }
+.jump a.jump--base { opacity: 0.72; }
+
+/* ==========================================================================
+   Concept scaffold
+   ========================================================================== */
+
+main { padding-bottom: 90px; }
+
+.concept {
+  max-width: 1140px;
+  margin: 0 auto 46px;
+  padding: 0 48px;
+  scroll-margin-top: 64px;
+}
+.concept__head { margin-bottom: 18px; }
+.concept__heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.concept__num {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand-deep);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+.concept__heading h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--brand-deep);
+  letter-spacing: -0.4px;
+}
+.pick {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: 3px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--ok);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.concept__blurb {
+  margin: 0 0 10px;
+  max-width: 780px;
+  font-size: 14.5px;
+  color: #3a4a72;
+}
+.concept__tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+}
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px 3px 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(30, 58, 138, 0.1);
+  position: relative;
+}
+.tag::before {
+  position: absolute;
+  left: 8px;
+  font-weight: 900;
+}
+.tag--pro { color: var(--ok); }
+.tag--pro::before { content: "+"; }
+.tag--con { color: var(--bad); }
+.tag--con::before { content: "\2212"; }
+
+/* The cost strip — four hand-authored numbers per concept, so the pick is
+   informed rather than only aesthetic. */
+.cost {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0 0 10px;
+  border: 1px solid rgba(30, 58, 138, 0.14);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.5);
+  width: fit-content;
+  max-width: 100%;
+}
+.cost__item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 13px;
+  border-right: 1px solid rgba(30, 58, 138, 0.12);
+  font-size: 12.5px;
+}
+.cost__item:last-child { border-right: 0; }
+.cost__k {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.cost__v { font-weight: 600; color: #35426b; }
+.cost__v--warn { color: var(--bad); }
+.cost__v--good { color: var(--ok); }
+
+.badge {
+  display: inline-block;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(30, 58, 138, 0.14);
+  border-radius: 999px;
+  padding: 4px 13px;
+}
+.badge--save { color: var(--ok); }
+.badge--cost { color: var(--bad); }
+
+/* The stage holds exactly the real content box: .home-section is max-width 1140px
+   with 48px side padding, so the section's inner width is 1044px. Every concept
+   renders into that same width, which is what makes the height badges fair. */
+.concept__stage {
+  border: 1px dashed rgba(30, 58, 138, 0.22);
+  border-radius: 18px;
+  padding: 20px 0;
+  background: rgba(255, 255, 255, 0.14);
+}
+.concept__demo { width: 100%; }
+
+/* ==========================================================================
+   Shared section primitives — copies of .home-section__* and .home-list
+   ========================================================================== */
+
+.hs__head { margin-bottom: 16px; }
+.hs__head--center { text-align: center; }
+.hs__eyebrow {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin: 0 0 6px;
+}
+.hs__title {
+  margin: 0 0 8px;
+  font-size: clamp(23px, 2.8vw, 33px);
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.5px;
+  color: var(--brand-deep);
+}
+.hs__sub {
+  margin: 0;
+  font-size: clamp(14.5px, 1.4vw, 16.5px);
+  line-height: 1.55;
+  color: var(--body-ink);
+  max-width: 700px;
+}
+.hs__head--center .hs__sub { margin-inline: auto; }
+
+.home-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.home-list li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--body-ink);
+}
+.home-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--brand-tint)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E")
+    center / 10px no-repeat;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Stamped on any frame showing a colour-graded stand-in rather than a real
+   render. Seven style renders of one room do not exist yet; see the README. */
+.standin {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  z-index: 6;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(120, 53, 15, 0.58);
+  border-radius: 4px;
+  padding: 2px 5px;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   The .ba wipe — lifted from home.css:167-260 so concept 0 is honest, and
+   reused by concept 7.
+   ========================================================================== */
+
+.ba {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-frame);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: #b2c4f6;
+  user-select: none;
+  touch-action: pan-y;
+  --pos: 52%;
+}
+.ba img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease), filter 0.35s var(--ease);
+}
+.ba-after { z-index: 1; }
+.ba-before {
+  z-index: 2;
+  clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+}
+.ba-tag {
+  position: absolute;
+  top: 12px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 999px;
+  pointer-events: none;
+}
+.ba-tag--before { left: 12px; }
+.ba-tag--after { right: 12px; }
+.ba-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--pos);
+  width: 2px;
+  transform: translateX(-1px);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 1px rgba(30, 58, 138, 0.25);
+  z-index: 5;
+  cursor: ew-resize;
+}
+.ba-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.4);
+}
+.ba-handle__grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  color: var(--brand-deep);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  pointer-events: none;
+}
+.ba-handle:focus-visible { outline: none; }
+.ba-handle:focus-visible::after {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.5), 0 4px 14px rgba(30, 58, 138, 0.4);
+}
+
+/* ==========================================================================
+   0. Baseline — today's section
+   ========================================================================== */
+
+.studio-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(250px, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+.studio-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px;
+}
+.studio-side__kicker {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 6px;
+}
+.studio-side__title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--brand-deep);
+  margin: 0 0 9px;
+  line-height: 1.25;
+}
+.studio-side__body {
+  margin: 0;
+  color: var(--body-ink);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+.studio-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+.studio-ex {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(30, 58, 138, 0.16);
+  border-radius: 999px;
+  padding: 6px 13px;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.studio-ex.is-active {
+  color: #fff;
+  border-color: transparent;
+  background: radial-gradient(120% 160% at 20% 0%, var(--brand-soft), var(--brand-strong));
+}
+
+/* ==========================================================================
+   1-3. The style family — one markup path, three modifier classes
+   ========================================================================== */
+
+.look__frame {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 3 / 2;
+  background: #b2c4f6;
+  box-shadow: var(--shadow-frame);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.look__frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.look__frame .look__staged { transition: opacity 0.32s var(--ease), filter 0.42s var(--ease); }
+.look__frame .look__empty { z-index: 0; }
+.look__frame .look__staged { z-index: 1; }
+.look__caption {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.look__caption b { font-weight: 800; }
+.look__caption span { opacity: 0.7; font-weight: 600; }
+
+.look__tiles {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.tile {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 11px;
+  overflow: hidden;
+  background: #b2c4f6;
+  cursor: pointer;
+  aspect-ratio: 3 / 2;
+  box-shadow: 0 6px 18px rgba(30, 58, 138, 0.14);
+  transition: transform 0.24s var(--ease), box-shadow 0.24s var(--ease),
+    border-color 0.2s var(--ease);
+}
+.tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tile__label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  padding: 16px 8px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-align: left;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0));
+}
+.tile:hover,
+.tile:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+  outline: none;
+}
+.tile.is-active {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.28), var(--shadow-lift);
+}
+.tile--empty img { filter: none; }
+
+/* 1 — Look Board: big frame beside a 2-column tile grid.
+
+   The 2fr/1fr split is not a taste call, it's the ratio that makes the two
+   columns the same height. Eight 3:2 tiles in 2 columns is 4 rows, so the tile
+   column is 4 x (colWidth / 2) / 1.5 tall. Setting that equal to the frame's
+   own 3:2 height solves to colWidth = frameWidth / 2 — i.e. exactly 2fr : 1fr.
+   At 1.55fr the tile column ran 134px past the bottom of the frame and left a
+   hole under it. */
+.look--board {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(200px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.look--board .look__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* 2 — Mosaic: eight equal cells, no big frame, no required interaction */
+.look--mosaic .look__tiles {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.look--mosaic .tile { aspect-ratio: 4 / 3; }
+.look--mosaic .tile__label {
+  font-size: 11.5px;
+  padding: 18px 10px 8px;
+}
+.look--mosaic .tile.is-active { border-color: transparent; box-shadow: 0 6px 18px rgba(30, 58, 138, 0.14); }
+.look--mosaic .tile:hover { border-color: var(--brand-pale); }
+
+/* 3 — Frame + rail: one frame, chips below, press-and-hold to peek */
+.look--rail { display: grid; gap: 12px; }
+.look--rail .look__frame { max-width: 760px; margin: 0 auto; width: 100%; cursor: grab; }
+.look--rail .look__frame:active { cursor: grabbing; }
+.look--rail .look__frame.is-peeking .look__staged { opacity: 0; }
+.rail {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.rail__chip {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(30, 58, 138, 0.16);
+  border-radius: 999px;
+  padding: 7px 15px;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.rail__chip:hover { transform: translateY(-1px); }
+.rail__chip.is-active {
+  color: #fff;
+  border-color: transparent;
+  background: radial-gradient(120% 160% at 20% 0%, var(--brand-soft), var(--brand-strong));
+}
+.rail__chip--custom {
+  border-style: dashed;
+  border-color: var(--brand);
+  color: var(--brand);
+  background: transparent;
+}
+.peek {
+  display: block;
+  margin: 0 auto;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(30, 58, 138, 0.18);
+  border-radius: 999px;
+  padding: 7px 17px;
+  cursor: pointer;
+  user-select: none;
+}
+.peek.is-held { background: var(--brand-deep); color: #fff; border-color: transparent; }
+
+/* ==========================================================================
+   4. Shuffle deck
+   ========================================================================== */
+
+.deck {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(250px, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.deck__stack {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  min-width: 0;
+}
+.deck__card {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #b2c4f6;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: var(--shadow-frame);
+  transform-origin: 50% 120%;
+  transition: transform 0.55s var(--ease), opacity 0.45s var(--ease);
+  will-change: transform;
+}
+.deck__card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.deck__card.is-gone {
+  transform: translateX(58%) rotate(11deg) scale(0.94) !important;
+  opacity: 0;
+}
+.deck__badge {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 3;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.deck__side { padding: 22px; }
+.deck__count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.btn-primary {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: radial-gradient(120% 160% at 20% 0%, var(--brand-soft), var(--brand-strong));
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.4);
+  margin-top: 16px;
+  transition: transform 0.18s var(--ease);
+}
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+/* ==========================================================================
+   5. Listing reel
+   ========================================================================== */
+
+.reel__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.reel__addr { font-size: 13.5px; font-weight: 700; color: var(--brand-deep); }
+.toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(30, 58, 138, 0.14);
+}
+.toggle button {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+.toggle button.is-active {
+  color: #fff;
+  background: radial-gradient(120% 160% at 20% 0%, var(--brand-soft), var(--brand-strong));
+}
+.reel__track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+}
+.reel__frame {
+  position: relative;
+  flex: 0 0 300px;
+  aspect-ratio: 3 / 2;
+  border-radius: 14px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: #b2c4f6;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 28px rgba(30, 58, 138, 0.18);
+}
+.reel__frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.reel__frame .reel__after {
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+.reel__frame.is-staged .reel__after { opacity: 1; }
+.reel__room {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 3;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ==========================================================================
+   6. Live stage
+   ========================================================================== */
+
+.live {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(250px, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.live__frame {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #b2c4f6;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-frame);
+  min-width: 0;
+}
+.live__frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.live__after {
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+.live.is-done .live__after { opacity: 1; }
+.live__scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 34%;
+  z-index: 3;
+  background: linear-gradient(
+    to bottom,
+    rgba(96, 165, 250, 0) 0%,
+    rgba(96, 165, 250, 0.28) 62%,
+    rgba(255, 255, 255, 0.92) 96%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+.live.is-scanning .live__scan { opacity: 1; }
+.live__clock {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.62);
+  border-radius: 8px;
+  padding: 4px 10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.steps li {
+  position: relative;
+  padding: 7px 0 7px 30px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: color 0.25s var(--ease);
+}
+.steps li::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 12px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid rgba(30, 58, 138, 0.26);
+  background: rgba(255, 255, 255, 0.7);
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.steps li::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 24px;
+  width: 2px;
+  height: 12px;
+  background: rgba(30, 58, 138, 0.16);
+}
+.steps li:last-child::after { display: none; }
+.steps li.is-on { color: var(--brand-deep); font-weight: 800; }
+.steps li.is-on::before { background: var(--brand); border-color: var(--brand); }
+.live__side { padding: 22px; }
+
+/* ==========================================================================
+   7. Wipe, evolved
+   ========================================================================== */
+
+.wipe2 { display: grid; gap: 14px; }
+.wipe2 .ba { max-width: 820px; margin: 0 auto; width: 100%; }
+.wipe2 .rail { margin-top: 2px; }
+.wipe2__note {
+  text-align: center;
+  margin: 0;
+  font-size: 13px;
+  color: var(--body-ink);
+}
+
+/* ==========================================================================
+   Responsive — the real breakpoints. home.css collapses .studio-shell to one
+   column at 900px and shrinks the handle knob at 600px.
+   ========================================================================== */
+
+@media (max-width: 980px) {
+  .concept { padding: 0 24px; }
+  .look--mosaic .look__tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .studio-shell,
+  .look--board,
+  .deck,
+  .live {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .look--board .look__tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .deck__stack { max-width: 560px; }
+}
+
+@media (max-width: 600px) {
+  .concept { padding: 0 18px; }
+  .concept__stage { padding: 14px 0; }
+  .ba-handle::after { width: 36px; height: 36px; }
+  .look--mosaic .look__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .look--board .look__tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .studio-examples { flex-wrap: nowrap; }
+  .studio-ex { flex: 1 1 0; font-size: 11.5px; padding: 6px 4px; text-align: center; }
+  .reel__frame { flex-basis: 240px; }
+  .cost { width: 100%; }
+  .cost__item { flex: 1 1 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .deck__card,
+  .btn-primary,
+  .look__frame .look__staged,
+  .reel__frame .reel__after,
+  .live__after {
+    transition-duration: 0.01ms !important;
+  }
+}

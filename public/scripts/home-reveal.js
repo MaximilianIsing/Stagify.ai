@@ -30,8 +30,11 @@
       // when that section became the strip widget. A stale selector here does not
       // throw, it just silently stops warming those decodes, so
       // test/frontend/home-strips.test.js pins the two together.
+      // `.tw-logo` is the six testimonial brokerage marks. They sit in a deck, so five
+      // of the six are behind the top card when the section scrolls in and would
+      // otherwise decode one at a time as you advance — visible as a pop on each card.
       .querySelectorAll(
-        ".hstrip__img, .ba img, .plus-card__logo, .sponsor-logo, .calc__brandmark"
+        ".hstrip__img, .ba img, .plus-card__logo, .sponsor-logo, .calc__brandmark, .tw-logo"
       )
       .forEach((img) => {
         const image = /** @type {HTMLImageElement} */ (img);

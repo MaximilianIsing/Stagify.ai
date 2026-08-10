@@ -232,9 +232,9 @@
           "p3": "AI Designer: staging de habitaciones con agentes de IA"
         },
         "team": {
-          "eyebrow": "Hecho para equipos",
-          "caption": "Capacitando a un equipo de una agencia con Stagify",
-          "title": "Tan fácil que lo usa toda la oficina",
+          "eyebrow": "Lo que evita",
+          "caption": "Un equipo de una agencia conoce Stagify",
+          "title": "Toda tu oficina, sin formación",
           "body": "No hay software que instalar ni nada que aprender. Cualquier persona del equipo puede abrir Stagify en el navegador, subir una foto de una propiedad y tenerla diseñada en segundos, ya sea en un portátil en la oficina o en el móvil sobre el terreno.",
           "p1": "Sin conocimientos de diseño ni software",
           "p2": "Funciona en cualquier navegador y dispositivo",
@@ -359,7 +359,36 @@
           "author": "Andy Eras (Agente)",
           "role": "Centennial Properties",
           "location": "Manhattan, Nueva York"
+        },
+        "p3": {
+          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Three",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
+        },
+        "p4": {
+          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Four",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
+        },
+        "p5": {
+          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Five",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
+        },
+        "p6": {
+          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Six",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
         }
+      },
+      "deck": {
+        "label": "Testimonios de agentes",
+        "prev": "Testimonio anterior",
+        "next": "Testimonio siguiente"
       }
     },
     "faq": {
@@ -608,7 +637,7 @@
       },
       "studios": {
         "label": "Los Estudios",
-        "question": "¿Qué más hace Stagify además de una habitación?",
+        "question": "¿Qué más hace Stagify?",
         "answer": "Bastante. El AI Designer rediseña una habitación entera conversando, así que puedes pedir una paleta más cálida o un sofá más grande e ir refinando. El Masking Studio da control píxel a píxel sobre qué zonas pueden cambiar. El Exterior Studio trabaja el atractivo exterior en lugar del interior. El Listing Studio procesa un lote entero de fotos de una pasada y genera un enlace que puedes enviar al vendedor para su visto bueno. Todo acaba en tu galería."
       },
       "control": {

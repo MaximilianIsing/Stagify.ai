@@ -620,7 +620,13 @@ test('faq-plan.css confines the whole drawing to one media query, and hides its 
 
   const defaultBlock = css.slice(0, css.indexOf('@media'));
   const planBlock = css.slice(css.indexOf('@media'));
-  for (const cls of ['.faq-plan__ink', '.faq-room__ink', '.faq-plan__notes', '.faq-room__no']) {
+  // `.faq-room__label` is on this list for a different reason than the other four, and it
+  // is the reason it must stay: it is not drawing furniture, it is the room NAME, so both
+  // halves of the pair are a live requirement pulling opposite ways. Drop the default hide
+  // and the name comes back as a topic chip beside every question on mobile — the question
+  // restated in eight louder characters, which is what it was doing before. Drop the
+  // `display` inside the gate and every room on the drawing goes nameless.
+  for (const cls of ['.faq-plan__ink', '.faq-room__ink', '.faq-plan__notes', '.faq-room__no', '.faq-room__label']) {
     assert.ok(
       new RegExp(`\\${cls}[,\\s]`).test(defaultBlock),
       `${cls} is not hidden outside plan mode — it will render unstyled below 1001px, in ` +
@@ -1162,6 +1168,60 @@ test('the open room\'s name leaves the accent, because the accent cannot carry i
   const hover = css.indexOf('.faq-room__label:hover {');
   assert.ok(hover > -1 && css.indexOf('.faq-room[open] .faq-room__label {') > hover,
     'the [open] rule must follow the :hover rule — they are both (0,2,0), so order settles it');
+});
+
+test('the question never changes position while it is fading', () => {
+  // THE BUG THIS PINS was visible on every click from one room to another: the outgoing
+  // question slid 4.4% of the sheet upwards THROUGH its own 0.22s fade, which reads as the
+  // text being sucked away rather than simply going. It came from one symmetric
+  // `transform 0.22s` covering three different journeys — and only one of them is watched
+  // the whole way through (closing a room the pointer is still on, where the question does
+  // not fade at all, it stays on as the preview).
+  //
+  // The fix is a zero-duration transform with a delay PAST the end of the fade, so the
+  // position change lands on an already-invisible element. Zeroing the duration alone is
+  // the trap: without the delay the jump happens at full opacity, which is worse.
+  const css = fs.readFileSync(path.join(PUBLIC, 'styles', 'faq-plan.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const motion = css.slice(css.indexOf('prefers-reduced-motion: no-preference'));
+  assert.ok(motion, 'the motion block exists');
+
+  /** @param {string} block @returns {{duration: number, delay: number} | null} */
+  const transformTiming = (block) => {
+    const part = block.split(',').map((s) => s.trim()).find((s) => /^transform\b/.test(s));
+    if (!part) return null;
+    const times = [...part.matchAll(/([\d.]+)s\b/g)].map((m) => Number(m[1]));
+    return { duration: times[0] ?? 0, delay: times[1] ?? 0 };
+  };
+
+  const rest = /\n\s*\.faq-room__q\s*\{([^}]*)\}/.exec(motion);
+  assert.ok(rest, 'the resting question declares its own transition');
+  const opacity = rest[1].split(',').map((s) => s.trim()).find((s) => /opacity/.test(s));
+  const fade = Number((/([\d.]+)s\b/.exec(/** @type {string} */ (opacity)) || [])[1]);
+  assert.ok(fade > 0, 'the question fades on a timer');
+
+  const resting = transformTiming(rest[1]);
+  assert.ok(resting, 'the resting rule still governs transform — leaving it out inherits nothing');
+  assert.equal(
+    resting.duration, 0,
+    `the outgoing question transitions transform over ${resting.duration}s — that is the ` +
+    'upward drift through the fade. It must move instantly, after the fade.'
+  );
+  assert.ok(
+    resting.delay >= fade,
+    `the position change is delayed ${resting.delay}s but the fade takes ${fade}s — the jump ` +
+    'would land while the question is still visible'
+  );
+
+  // And the one journey that IS watched end to end keeps its glide.
+  const glide = /\.faq-room__label:hover\s*~\s*\.faq-room__q\s*,[^{]*\{([^}]*)\}/.exec(motion);
+  assert.ok(glide, 'the hovered/focused question overrides the transition');
+  const glideTiming = transformTiming(glide[1]);
+  assert.ok(
+    glideTiming && glideTiming.duration > 0,
+    'closing a room the pointer is still on leaves the question visible — without a glide ' +
+    'it teleports between the reading and preview offsets in full view'
+  );
 });
 
 test('printing gives the questions and stops there', () => {
