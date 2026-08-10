@@ -91,7 +91,12 @@ mounted between them so the Stripe webhook still sees the raw body):
    long-lived immutable cache headers for images/fonts/media, `no-cache` for
    html/css/js/json). This is why `/` serves `public/index.html`.
 6. **Routers** (`app.use(createXRouter(...))`) — the API and dynamic routes.
-7. **Explicit fallback routes** and a default 404.
+7. **The 404 handler** (`createNotFoundHandler`, [`lib/http/not-found.js`](../../lib/http/not-found.js))
+   — nothing claimed the path, so it answers. Mounted after every router (including the
+   referral router, which is otherwise last) and before the error middleware. It is a
+   **normal** middleware, not a 4-arg error handler: Express only reaches those via
+   `next(err)`, and an unmatched route never produces one. See
+   [The 404 handler](#the-404-handler).
 8. **Error-handling middleware** (registered last, see [Error handling](#error-handling)):
    the JSON body-parse handler, the multer upload handler (after the routers so Express
    reaches it), the Sentry capture hook, and a final catch-all that returns a clean JSON
@@ -154,6 +159,7 @@ Each module is a `createX(deps)` factory or a set of pure helpers.
 | `rate-limiters.js` | The `express-rate-limit` configs (`RL_AUTH` / `RL_EMAIL` / `RL_GEN` / `RL_CHECKOUT` / `RL_ENDPOINT_KEY` / …). |
 | `uploads.js` | The multer upload configs (staging / chat / hosted-image). |
 | `app-middleware.js` | The base HTTP middleware, lifted out of `server.js`. `applyEdgeMiddleware(app)` (helmet/CSP, CORS allow-list, compression — mounted **before** the billing router) and `applyBodyAndStatic(app)` (JSON body parsing + its error handler, `express.static` — mounted **after**, so Stripe's webhook still sees the raw body). |
+| `not-found.js` | `createNotFoundHandler({ __dirname, DEBUG_MODE })` — the terminal 404. Deliberately a plain handler rather than a `createXRouter` factory, so it does not trip the "the referral router is mounted last" guard it sits behind. See [The 404 handler](#the-404-handler). |
 
 **`lib/image/`** — image processing
 
@@ -233,6 +239,10 @@ request hangs. Two pieces close that gap:
   Express's pipeline into a clean JSON `500`. Without it, an unhandled error falls through
   to Express's built-in handler, which renders the full stack trace to the client.
 
+The same argument applies one step earlier, to requests that never reach a handler at all:
+an unmatched *route* used to fall through to Express's built-in 404 (`Cannot GET /whatever`).
+[The 404 handler](#the-404-handler) closes that half.
+
 Within a handler, emit error responses through **`sendError(res, status, msg, { code, details, ref })`**
 ([`lib/http/http-helpers.js`](../../lib/http/http-helpers.js)) so every error body has the same
 shape (`{ error }`, optionally `code` / `details` / `ref`).
@@ -278,6 +288,50 @@ Each is a factory returning a router (built with `createAsyncRouter()`), mounted
 | `staging.js` | Core AI: `process-image`, `mask-edit`, `segment`, `validate-image`, `stage-by-endpoint-key`. |
 | `chat.js` | AI Designer chat: `/api/chat`, `/api/chat-upload`, `welcome-message`. |
 | `billing.js` | Stripe checkout, customer portal, `stripe-webhook`, enterprise checkout. |
+
+Not in the table, because it is not a router: `referrals.js` (operator-created campaign
+short-URLs) is mounted **after** all of the above, and the 404 handler after that.
+
+## The 404 handler
+
+[`lib/http/not-found.js`](../../lib/http/not-found.js) answers everything no route and no
+static file claimed. It negotiates on the request:
+
+- **`/api/*`, or any client that does not accept HTML** (fetch, XHR, curl) → `sendError(res, 404, 'Not found')`,
+  the same JSON shape as every other error on the server.
+- **Everything else** → `public/404.html`, at HTTP status `404`, with `Cache-Control: no-cache`.
+  The first path segment picks the locale, so `/es/nope` is Spanish and `/nope` is English.
+
+Three decisions in it are load-bearing and each looks arbitrary on its own:
+
+> **It is a plain `app.use`, not a `createXRouter` factory.** `routes/referrals.js` matches
+> `/:slug`, and the only reason an operator-created campaign link cannot shadow a real page
+> is that it is mounted after every other router — a rule
+> `test/server/router-mount-order.test.js` enforces by scanning `server.js` for
+> `create\w+Router(` and asserting the last one is `createReferralRouter`. A router mounted
+> behind it would trip that guard for no reason: this handler claims no paths, it answers
+> what is left. The name `createNotFoundHandler` keeps the guard meaningful.
+
+> **`public/404.html` carries no `<link rel="canonical">` and no `og:url`.** `applySeoHead`
+> in `lib/i18n/render-page.js` anchors the hreflang cluster to the canonical tag and the
+> `og:locale` block to `og:url`; with neither present both steps no-op. That is how one
+> source file serves eleven locales while emitting zero `hreflang` — a page reachable at
+> every unknown URL has no canonical address to advertise. Adding a canonical back silently
+> resurrects the whole cluster. See [`i18n.md`](i18n.md#the-localized-page-set).
+
+> **English is rendered, not `sendFile`d.** 404.html's asset URLs are relative
+> (`styles/styles.css`, `scripts/…`), and this handler answers at *every* path depth. Sent
+> raw, a 404 at `/blog/nope` resolves them against `/blog/` and renders unstyled and
+> scriptless. `renderLocalizedPage` injects `<base href="/">`, so the English branch goes
+> through the same renderer as every locale rather than short-circuiting.
+
+One hole is accepted rather than closed: `express.static` mounts before every router and
+has no `extensions` option, so `/404.html` is still reachable as a plain file with a
+**200**. No route can intercept it. `<meta name="robots" content="noindex, follow">` on the
+page is the mitigation.
+
+Covered by `test/routes/not-found.test.js`, which full-boots the real `server.js` — a
+handler defined by its position in the pipeline proves nothing when mounted alone.
 
 ## Configuration & secrets
 

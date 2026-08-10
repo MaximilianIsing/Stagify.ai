@@ -1,6 +1,6 @@
 # Stagify API & server routes
 
-This document describes HTTP endpoints for the Stagify server. Routes are registered across `routes/*.js` (`public.js`, `auth.js`, `billing.js`, `staging.js`, `chat.js`, `admin.js`) and mounted from `server.js`; static files are also served from `public/` (not every path is listed here). Default port: **`process.env.PORT` or `3000`**.
+This document describes HTTP endpoints for the Stagify server. Routes are registered across `routes/*.js` (`public.js`, `auth.js`, `billing.js`, `staging.js`, `chat.js`, `admin.js`, `i18n.js`, `gallery.js`, `share-public.js`, `referrals.js`) and mounted from `server.js`; static files are also served from `public/`, and anything still unmatched reaches the catch-all 404 in `lib/http/not-found.js` (not every path is listed here). Default port: **`process.env.PORT` or `3000`**.
 
 ## Authentication helpers (used by several routes)
 
@@ -29,10 +29,11 @@ This document describes HTTP endpoints for the Stagify server. Routes are regist
 | `GET` | `/blog/<slug>` | Serves an article via an **explicit clean, extensionless route** in `public.js` — e.g. `/blog/is-virtual-staging-allowed-on-the-mls`, `/blog/masking-studio-and-ai-designer`, `/blog/does-virtual-staging-help-sell-homes`. Route registration + sitemap sync are guarded by `test/server/public-endpoints.test.js`. |
 | `GET` | `/i/:id` | **Public hosted-image serve.** `:id` is a 16–64-char hex id minted by `POST /api/host-image`. Streams the stored image with `Cache-Control: public, max-age=31536000, immutable` and `X-Content-Type-Options: nosniff`. `404` (plain text) for an invalid or unknown id. |
 | `GET` | `/email/logo.png` | Email logo **and open-tracking pixel.** With `?email=<addr>`, logs an email open (only when the request looks like a genuine email-client fetch) to `email_open_logs.csv`, then serves the logo PNG with `Cache-Control: no-store`. |
-| `GET` | `/<campaign-slug>` | **Referral / campaign short-URL** — `/columbia`, and any other link created in the admin **Referrals** tab. Records one arrival (`referral_hits`) and **`302`s to `/`** with `Cache-Control: no-store`. Slugs are operator data in `referral_links`, not routes: `routes/referrals.js` matches `/:slug` and resolves per request, and is **mounted last in `server.js`** so it only ever sees paths nothing else claimed — an unknown or retired slug falls through to a normal `404`. `HEAD` redirects without counting. Automated traffic is flagged `is_bot` and excluded from click totals. See [`admin-dashboard.md`](../guides/admin-dashboard.md#referrals-tab). |
+| `GET` | `/<campaign-slug>` | **Referral / campaign short-URL** — `/columbia`, and any other link created in the admin **Referrals** tab. Records one arrival (`referral_hits`) and **`302`s to `/`** with `Cache-Control: no-store`. Slugs are operator data in `referral_links`, not routes: `routes/referrals.js` matches `/:slug` and resolves per request, and is **the last router mounted in `server.js`** so it only ever sees paths nothing else claimed — an unknown or retired slug `next('route')`s through to the catch-all `404` below. `HEAD` redirects without counting. Automated traffic is flagged `is_bot` and excluded from click totals. See [`admin-dashboard.md`](../guides/admin-dashboard.md#referrals-tab). |
 | `GET` | `/bimi-logo.svg` | BIMI brand mark, served with an explicit content type. |
+| `*` | *anything unmatched* | **The catch-all `404`** (`lib/http/not-found.js`), mounted after every router. Serves `public/404.html` at status `404` with `Cache-Control: no-cache`, localized off the URL's first path segment (`/es/nope` → Spanish, `/nope` → English). Under `/api/*`, or for any client that does not accept HTML, it returns the standard JSON body instead. Rationale for its three non-obvious choices: [`architecture.md`](../guides/architecture.md#the-404-handler). |
 
-Other `.html` and assets are served by **`express.static('public')`** (e.g. `/stagify-plus.html`, `/ai-designer.html`, `/plus-welcome.html`, `/logo-full.png`).
+Other `.html` and assets are served by **`express.static('public')`** (e.g. `/stagify-plus.html`, `/ai-designer.html`, `/plus-welcome.html`, `/logo-full.png`). That mount runs **before** every router, and has no `extensions` option — which is why `/404.html` is reachable as a plain file with a `200` that no route can intercept, and why the page carries `noindex`.
 
 ### Indexing policy (robots.txt / sitemap.xml / canonical / hreflang)
 
@@ -56,6 +57,14 @@ three buckets — keep `robots.txt` and the canonical/sitemap in sync when addin
 - **Internal** — `noindex, nofollow`, **absent** from the sitemap, and listed under
   `Disallow:` in `robots.txt`: `admin.html` (`/admin`), `reset-password.html`,
   `getpro.html` (`/getpro`), `plus-welcome.html`, and everything under `legal/`.
+
+`404.html` fits **none** of the three buckets, and that is deliberate rather than an
+oversight. It is `noindex, **follow**` (a lost crawler should still follow the nav out),
+absent from the sitemap, and **not** in `robots.txt` — a `Disallow:` would stop the
+crawler reading the `noindex` it needs to see. It is also the only page with no
+`rel="canonical"`, because it answers at every unknown URL and so has no canonical
+address; that absence is what suppresses its hreflang cluster. See
+[`i18n.md`](../guides/i18n.md#the-localized-page-set).
 **Every page carries exactly one `<h1>`**, and it is the page's own subject rather than
 a section title — the crawler weighs it against the `<title>`, and a screen reader's
 "jump to heading 1" has nothing to land on without it. `ai-designer.html` is the awkward
@@ -373,6 +382,9 @@ The admin dashboard (`admin.html`) collects the `LOGS_ACCESS_KEY` client-side an
 - **Error shape** is uniform: failures return `{ error }` (plus optional machine-readable
   `code`, a fixed-string `details` hint, and `ref`) via `sendError()`. An unhandled error
   still returns a clean JSON `500` — never a stack-trace page (catch-all in `server.js`).
+- **An unmatched path** is content-negotiated, and this is the one place the server answers
+  in two formats: `{ "error": "Not found" }` under `/api/*` or when the client does not
+  accept HTML, and the branded `public/404.html` page otherwise. Both carry status `404`.
 - **`ref` on a 5xx** is an 8-char hex reference to the logged failure
   (`lib/http/error-ref.js`), e.g. `{ "error": "Image processing failed", "ref": "3f9a1c02" }`.
   A caught exception's message is **never** returned — quote the `ref` to support and the

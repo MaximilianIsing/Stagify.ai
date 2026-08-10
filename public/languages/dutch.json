@@ -975,7 +975,7 @@
     "metaKeywords": "stagify technische hulp, probleemoplossing, upload werkt niet, styling-hulp, ondersteuning, veelvoorkomende problemen",
     "badge": "Technische hulp",
     "title": "Probleemoplossing & veelvoorkomende problemen",
-    "subtitle": "De meeste problemen hebben een snelle oplossing. Vind hieronder je probleem — en als je nog vastzit, is ons team één e-mail verwijderd.",
+    "subtitle": "De meeste problemen hebben een snelle oplossing. Vind hieronder je probleem, en als je nog vastzit, is ons team één e-mail verwijderd.",
     "upload": {
       "title": "Uploaden & bestanden",
       "i1": {
@@ -1074,7 +1074,7 @@
   "guides": {
     "badge": "Handleidingen",
     "title": "Handleidingen & uitleg",
-    "subtitle": "Snelle interactieve uitleg om je in minuten aan het stylen te krijgen — plus oplossingen voor veelvoorkomende problemen.",
+    "subtitle": "Snelle interactieve uitleg om je in minuten aan het stylen te krijgen, plus oplossingen voor veelvoorkomende problemen.",
     "heroBadge": "Helpcentrum",
     "liveBadge": "Interactieve demo",
     "walkthroughsTitle": "Stapsgewijze uitleg",
@@ -1586,5 +1586,12 @@
     "stepChanges": "Wat moet er veranderen?",
     "stepChangesHint": "Vink alleen aan wat je wilt veranderen. Alles wat je niet aanvinkt blijft precies zoals gefotografeerd.",
     "enhanceHint": "Kies minstens één wijziging, of beschrijf er één hierboven."
+  },
+  "notFound": {
+    "pageTitle": "Pagina niet gevonden | Stagify.ai",
+    "pageDescription": "Deze pagina bestaat niet of is verplaatst. Ga terug naar Stagify.ai om je woningfoto's verder in te richten.",
+    "heading": "Deze pagina bestaat niet",
+    "body": "De link klopt misschien niet, of de pagina is verplaatst. De rest staat nog precies waar je het achterliet.",
+    "homeCta": "Terug naar home"
   }
 }

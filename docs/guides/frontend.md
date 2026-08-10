@@ -489,7 +489,8 @@ gets the files as authored (same [no-build-step decision](architecture.md#decisi
 - **Per-page — `styles/<page>.css`.** One file per page's own layout: `home.css`
   (the index/marketing page), `ai-designer.css`, `masking-studio.css`, `stagify-plus.css`,
   `plus-welcome.css` (the post-checkout confirmation card), `enterprise.css`, `status.css`,
-  `admin.css`, `getpro.css`, `reset-password.css`, `index.css`. Legal pages share
+  `admin.css`, `getpro.css`, `reset-password.css`, `index.css`, `not-found.css` (the 404
+  page — full chrome, so it loads `styles.css` and its colours must be tokenized). Legal pages share
   `legal.css` (privacy + terms) and `enterprise-msa.css`. A page file may declare its own
   local custom properties where its palette/scale genuinely differs from the site's —
   `admin.css` does, on `.page-admin`, for the dashboard's denser data UI.

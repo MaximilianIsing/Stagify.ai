@@ -78,6 +78,7 @@
     <link rel="stylesheet" href="styles/toast.css">
     <link rel="stylesheet" href="styles/auth.css">
     <link rel="stylesheet" href="styles/home.css">
+    <link rel="stylesheet" href="styles/guides.css">
     <link rel="stylesheet" href="styles/demo-player.css">
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script type="module" src="scripts/language-detect.js"></script>
@@ -88,7 +89,7 @@
     <script type="module" src="scripts/profile-menu.js"></script>
     <script src="scripts/demo-data.js" defer></script>
     <script src="scripts/demo-player.js" defer></script>
-    <script type="module" src="scripts/guides.js?v=6"></script>
+    <script type="module" src="scripts/guides.js?v=7"></script>
     <script type="module" src="scripts/home-reveal.js"></script>
     <script type="module" src="scripts/app.js"></script>
     <style>
@@ -96,7 +97,15 @@
         scroll-behavior: smooth;
       }
       /* Scroll inside <main> (like the rest of the site) so the scrollbar
-         starts below the sticky header instead of running the full viewport. */
+         starts below the sticky header instead of running the full viewport.
+
+         `hidden` rather than the `clip` used elsewhere, and it matters here:
+         <main> is deliberately the scrollport on this page, so overflow-y is
+         already `auto` — and per spec a `clip` on one axis computes to `hidden`
+         anyway once the other axis scrolls. Writing `clip` would say the
+         opposite of what this rule does. The troubleshooting topic rail is
+         `position: sticky` and pins against THIS box, which is why its offset
+         and .home-guides [id]'s scroll-margin-top are the same 96px. */
       body:has(.home-guides) main {
         overflow-x: hidden;
       }
@@ -212,65 +221,24 @@
       </div>
 
       <section class="home-section home-guides" id="guides" aria-labelledby="guides-title">
+        <!--
+          Every data-lang key on this page sits on a LEAF element.
+          lib/i18n/render-page.js replaces the whole inner content of the element
+          carrying the key, so a key on a wrapper deletes that wrapper's children in
+          all ten localized renders — the topic icons below would vanish everywhere
+          except English.
+        -->
         <div class="home-section__head reveal">
           <h1 class="home-section__title guides-hero-title" id="guides-title" data-lang="guides.title">Guides &amp; walkthroughs</h1>
-          <p class="home-section__sub" data-lang="guides.subtitle">Quick interactive walkthroughs to get you staging in minutes — plus fixes for common issues.</p>
+          <p class="home-section__sub" data-lang="guides.subtitle">Quick interactive walkthroughs to get you staging in minutes, plus fixes for common issues.</p>
         </div>
 
-        <!-- Quick navigation -->
-        <nav class="guides-overview" aria-label="Guide topics">
-          <div class="guides-overview-grid">
-            <a href="#th-tips" class="guides-overview-card reveal" style="--guide-accent: #4f46e5; --reveal-delay: 0ms">
-              <span class="guides-overview-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
-              </span>
-              <span class="guides-overview-card__title" data-lang="techHelp.tips.title">Better results &amp; pro tips</span>
-              <span class="guides-overview-card__arrow" aria-hidden="true">→</span>
-            </a>
-            <a href="#th-upload" class="guides-overview-card reveal" style="--guide-accent: #059669; --reveal-delay: 50ms">
-              <span class="guides-overview-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              </span>
-              <span class="guides-overview-card__title" data-lang="techHelp.upload.title">Uploading &amp; files</span>
-              <span class="guides-overview-card__arrow" aria-hidden="true">→</span>
-            </a>
-            <a href="#th-generate" class="guides-overview-card reveal" style="--guide-accent: #7c3aed; --reveal-delay: 100ms">
-              <span class="guides-overview-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-              </span>
-              <span class="guides-overview-card__title" data-lang="techHelp.generate.title">Generating &amp; results</span>
-              <span class="guides-overview-card__arrow" aria-hidden="true">→</span>
-            </a>
-            <a href="#th-account" class="guides-overview-card reveal" style="--guide-accent: #d97706; --reveal-delay: 150ms">
-              <span class="guides-overview-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              </span>
-              <span class="guides-overview-card__title" data-lang="techHelp.account.title">Account &amp; sign-in</span>
-              <span class="guides-overview-card__arrow" aria-hidden="true">→</span>
-            </a>
-            <a href="#th-billing" class="guides-overview-card reveal" style="--guide-accent: #e11d48; --reveal-delay: 200ms">
-              <span class="guides-overview-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-              </span>
-              <span class="guides-overview-card__title" data-lang="techHelp.billing.title">Billing &amp; Stagify+</span>
-              <span class="guides-overview-card__arrow" aria-hidden="true">→</span>
-            </a>
-            <a href="#th-performance" class="guides-overview-card reveal" style="--guide-accent: #0891b2; --reveal-delay: 250ms">
-              <span class="guides-overview-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              </span>
-              <span class="guides-overview-card__title" data-lang="techHelp.performance.title">Browser &amp; performance</span>
-              <span class="guides-overview-card__arrow" aria-hidden="true">→</span>
-            </a>
-          </div>
-        </nav>
-
         <!-- Interactive walkthrough -->
-        <section class="guides-walkthrough reveal" id="walkthrough" aria-labelledby="guides-walkthrough-title" style="--reveal-delay: 120ms">
-          <div class="guides-walkthrough__panel">
-            <div class="guides-walkthrough__top">
-              <h3 class="guides-heading" id="guides-walkthrough-title" data-lang="guides.walkthroughsTitle">Step-by-step walkthroughs</h3>
-            </div>
+        <section class="guides-walkthrough" id="walkthrough" aria-labelledby="guides-walkthrough-title">
+          <div class="guides-sec-head reveal">
+            <h2 class="guides-sec-head__title" id="guides-walkthrough-title" data-lang="guides.walkthroughsTitle">Step-by-step walkthroughs</h2>
+          </div>
+          <div class="guides-walkthrough__panel reveal" style="--reveal-delay: 80ms">
 
           <!--
             A real ARIA tablist: each tab NAMES the panel it controls, each panel points
@@ -284,23 +252,23 @@
               <img src="media-webp/logo/Logo64x64.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerFree">Free</span>
             </button>
-            <button type="button" id="guide-tab-plus" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-plus" tabindex="-1" data-demo="plus">
+            <button type="button" id="guide-tab-plus" class="guide-demo-picker__btn" role="tab" aria-selected="false" aria-controls="guide-demo-plus" tabindex="-1" data-demo="plus">
               <img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerPlus">Stagify+</span>
             </button>
-            <button type="button" id="guide-tab-designer" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-designer" tabindex="-1" data-demo="designer">
+            <button type="button" id="guide-tab-designer" class="guide-demo-picker__btn" role="tab" aria-selected="false" aria-controls="guide-demo-designer" tabindex="-1" data-demo="designer">
               <img src="media-webp/guides/ai-designer.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerDesigner">AI Designer</span>
             </button>
-            <button type="button" id="guide-tab-masking" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-masking" tabindex="-1" data-demo="masking">
+            <button type="button" id="guide-tab-masking" class="guide-demo-picker__btn" role="tab" aria-selected="false" aria-controls="guide-demo-masking" tabindex="-1" data-demo="masking">
               <img src="media-webp/guides/masking-studio.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerMasking">Masking Studio</span>
             </button>
-            <button type="button" id="guide-tab-prompt" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-prompt" tabindex="-1" data-demo="prompt">
+            <button type="button" id="guide-tab-prompt" class="guide-demo-picker__btn" role="tab" aria-selected="false" aria-controls="guide-demo-prompt" tabindex="-1" data-demo="prompt">
               <img src="media-webp/guides/prompt-bar.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerPromptBar">Prompt Bar</span>
             </button>
-            <button type="button" id="guide-tab-furniture" class="guide-demo-picker__btn guide-demo-picker__btn--plus" role="tab" aria-selected="false" aria-controls="guide-demo-furniture" tabindex="-1" data-demo="furniture">
+            <button type="button" id="guide-tab-furniture" class="guide-demo-picker__btn" role="tab" aria-selected="false" aria-controls="guide-demo-furniture" tabindex="-1" data-demo="furniture">
               <img src="media-webp/guides/Furniture.webp" alt="" width="18" height="18" aria-hidden="true">
               <span data-lang="guides.pickerFurniture">Furniture</span>
             </button>
@@ -368,17 +336,87 @@
         </section>
 
         <!-- Troubleshooting -->
-        <section class="guides-troubleshooting reveal" id="troubleshooting" aria-labelledby="guides-trouble-title" style="--reveal-delay: 160ms">
-          <h3 class="guides-heading guides-heading--spaced" id="guides-trouble-title" data-lang="guides.troubleshootingTitle">Troubleshooting &amp; common issues</h3>
-          <div class="guides-trouble-grid">
+        <section class="guides-troubleshooting" id="troubleshooting" aria-labelledby="guides-trouble-title">
+          <div class="guides-sec-head reveal">
+            <h2 class="guides-sec-head__title" id="guides-trouble-title" data-lang="guides.troubleshootingTitle">Troubleshooting &amp; common issues</h2>
+            <p class="guides-sec-head__sub" data-lang="techHelp.subtitle">Most problems have a quick fix. Find your issue below — and if you're still stuck, our team is one email away.</p>
+          </div>
+
+          <!--
+            The rail and the cards, side by side. What used to sit above this was a
+            grid of six cards whose entire content was the same six techHelp.*.title
+            strings as the cards below them — the page said everything twice and
+            navigated to itself. The rail is now the navigation, the cards are the
+            content, and scripts/guides.js scroll-spies one against the other.
+
+            No `.reveal` on .guides-help: the reveal system re-applies a transform
+            via `.exit-up` / `.exit-down` as you scroll past (home.css), and a
+            transformed ancestor drags the sticky rail with it. The reveal lives on
+            the head and on each card instead.
+          -->
+          <div class="guides-help">
+            <nav class="guides-rail" aria-label="Guide topics">
+              <ul class="guides-rail__list">
+                <li>
+                  <a class="guides-rail__link" href="#th-tips">
+                    <span class="guides-rail__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+                    </span>
+                    <span class="guides-rail__label" data-lang="techHelp.tips.title">Better results &amp; pro tips</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="guides-rail__link" href="#th-upload">
+                    <span class="guides-rail__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </span>
+                    <span class="guides-rail__label" data-lang="techHelp.upload.title">Uploading &amp; files</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="guides-rail__link" href="#th-generate">
+                    <span class="guides-rail__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                    </span>
+                    <span class="guides-rail__label" data-lang="techHelp.generate.title">Generating &amp; results</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="guides-rail__link" href="#th-account">
+                    <span class="guides-rail__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </span>
+                    <span class="guides-rail__label" data-lang="techHelp.account.title">Account &amp; sign-in</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="guides-rail__link" href="#th-billing">
+                    <span class="guides-rail__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    </span>
+                    <span class="guides-rail__label" data-lang="techHelp.billing.title">Billing &amp; Stagify+</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="guides-rail__link" href="#th-performance">
+                    <span class="guides-rail__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    </span>
+                    <span class="guides-rail__label" data-lang="techHelp.performance.title">Browser &amp; performance</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+
+            <div class="guides-help__col">
           <!-- Better results & pro tips -->
-          <article class="guides-trouble-card reveal" id="th-tips" style="--guide-accent: #4f46e5; --reveal-delay: 0ms">
-            <header class="guides-trouble-card__head">
+          <article class="guides-trouble-card reveal" id="th-tips">
+            <div class="guides-trouble-card__head">
               <span class="guides-trouble-card__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
               </span>
-              <h4 class="guides-trouble-card__title" data-lang="techHelp.tips.title">Better results &amp; pro tips</h4>
-            </header>
+              <h3 class="guides-trouble-card__title" data-lang="techHelp.tips.title">Better results &amp; pro tips</h3>
+            </div>
             <div class="faq-accordion">
               <details class="faq-q">
                 <summary><span data-lang="techHelp.tips.i1.q">How do I get the most realistic staging?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
@@ -400,13 +438,13 @@
           </article>
 
           <!-- Uploading & files -->
-          <article class="guides-trouble-card reveal" id="th-upload" style="--guide-accent: #059669; --reveal-delay: 0ms">
-            <header class="guides-trouble-card__head">
+          <article class="guides-trouble-card reveal" id="th-upload" style="--reveal-delay: 60ms">
+            <div class="guides-trouble-card__head">
               <span class="guides-trouble-card__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               </span>
-              <h4 class="guides-trouble-card__title" data-lang="techHelp.upload.title">Uploading &amp; files</h4>
-            </header>
+              <h3 class="guides-trouble-card__title" data-lang="techHelp.upload.title">Uploading &amp; files</h3>
+            </div>
             <div class="faq-accordion">
               <details class="faq-q">
                 <summary><span data-lang="techHelp.upload.i1.q">My photo won't upload.</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
@@ -423,13 +461,13 @@
           </article>
 
           <!-- Generating & results -->
-          <article class="guides-trouble-card reveal" id="th-generate" style="--guide-accent: #7c3aed; --reveal-delay: 80ms">
-            <header class="guides-trouble-card__head">
+          <article class="guides-trouble-card reveal" id="th-generate" style="--reveal-delay: 120ms">
+            <div class="guides-trouble-card__head">
               <span class="guides-trouble-card__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
               </span>
-              <h4 class="guides-trouble-card__title" data-lang="techHelp.generate.title">Generating &amp; results</h4>
-            </header>
+              <h3 class="guides-trouble-card__title" data-lang="techHelp.generate.title">Generating &amp; results</h3>
+            </div>
             <div class="faq-accordion">
               <details class="faq-q">
                 <summary><span data-lang="techHelp.generate.i1.q">My generation is stuck or taking too long.</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
@@ -452,13 +490,13 @@
           </article>
 
           <!-- Account & sign-in -->
-          <article class="guides-trouble-card reveal" id="th-account" style="--guide-accent: #d97706; --reveal-delay: 160ms">
-            <header class="guides-trouble-card__head">
+          <article class="guides-trouble-card reveal" id="th-account" style="--reveal-delay: 180ms">
+            <div class="guides-trouble-card__head">
               <span class="guides-trouble-card__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </span>
-              <h4 class="guides-trouble-card__title" data-lang="techHelp.account.title">Account &amp; sign-in</h4>
-            </header>
+              <h3 class="guides-trouble-card__title" data-lang="techHelp.account.title">Account &amp; sign-in</h3>
+            </div>
             <div class="faq-accordion">
               <details class="faq-q">
                 <summary><span data-lang="techHelp.account.i1.q">My verification code didn't arrive.</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
@@ -476,13 +514,13 @@
           </article>
 
           <!-- Billing & Stagify+ -->
-          <article class="guides-trouble-card reveal" id="th-billing" style="--guide-accent: #e11d48; --reveal-delay: 240ms">
-            <header class="guides-trouble-card__head">
+          <article class="guides-trouble-card reveal" id="th-billing" style="--reveal-delay: 240ms">
+            <div class="guides-trouble-card__head">
               <span class="guides-trouble-card__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
               </span>
-              <h4 class="guides-trouble-card__title" data-lang="techHelp.billing.title">Billing &amp; Stagify+</h4>
-            </header>
+              <h3 class="guides-trouble-card__title" data-lang="techHelp.billing.title">Billing &amp; Stagify+</h3>
+            </div>
             <div class="faq-accordion">
               <details class="faq-q">
                 <summary><span data-lang="techHelp.billing.i1.q">How do I manage or cancel Stagify+?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
@@ -496,13 +534,13 @@
           </article>
 
           <!-- Browser & performance -->
-          <article class="guides-trouble-card reveal" id="th-performance" style="--guide-accent: #0891b2; --reveal-delay: 320ms">
-            <header class="guides-trouble-card__head">
+          <article class="guides-trouble-card reveal" id="th-performance" style="--reveal-delay: 300ms">
+            <div class="guides-trouble-card__head">
               <span class="guides-trouble-card__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
               </span>
-              <h4 class="guides-trouble-card__title" data-lang="techHelp.performance.title">Browser &amp; performance</h4>
-            </header>
+              <h3 class="guides-trouble-card__title" data-lang="techHelp.performance.title">Browser &amp; performance</h3>
+            </div>
             <div class="faq-accordion">
               <details class="faq-q">
                 <summary><span data-lang="techHelp.performance.i1.q">Which browsers are supported?</span><span class="faq-q__icon" aria-hidden="true"></span></summary>
@@ -518,16 +556,10 @@
               </details>
             </div>
           </article>
-          </div>
+            </div><!-- /.guides-help__col -->
+          </div><!-- /.guides-help -->
         </section>
 
-        <div class="th-contact reveal" style="--reveal-delay: 200ms">
-          <div class="th-contact__card">
-            <p>
-            <span data-lang="techHelp.contact.text">Still stuck? Our team is happy to help. Email </span><a href="mailto:team@stagify.ai" data-lang="techHelp.contact.email">team@stagify.ai</a>
-            </p>
-          </div>
-        </div>
       </section>
     </main>
 

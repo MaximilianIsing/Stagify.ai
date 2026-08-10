@@ -27,7 +27,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { offsetOf, geometryFor, indexForHash } from '../../public/scripts/studio-showcase.js';
+import { offsetOf, geometryFor, indexForHash, stageHeightFor } from '../../public/scripts/studio-showcase.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INDEX = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
@@ -164,6 +164,43 @@ test('the flat (narrow) layout hides every panel but the front one', () => {
   for (const d of [1, -1, 2, -2]) {
     assert.equal(geometryFor(d, true).state, 'hidden', `distance ${d} is hidden when flat`);
   }
+});
+
+// --------------------------------------------------------------------------
+// Stage height
+// --------------------------------------------------------------------------
+
+test('the arc sizes every panel to the tallest one', () => {
+  // The neighbours are on show, so cards of visibly different heights sitting side by
+  // side is exactly what a shared height exists to prevent — and the section must not
+  // resize as you cycle. Whichever panel is in front, the answer is the same number.
+  const heights = [444, 415, 457, 422, 486];
+  for (let i = 0; i < heights.length; i++) {
+    assert.equal(stageHeightFor(heights, i, false), 486, `front panel ${i} still measures the tallest`);
+  }
+});
+
+test('the flat layout sizes the stage to the FRONT panel, not the tallest', () => {
+  // Below 900px geometryFor sends every non-front panel to `hidden` (see the test
+  // above), so there is nothing left for a shared height to line up with — it only
+  // pads the short panels out to the tallest one's height. On the shipped content that
+  // is ~260px of empty glass inside the card, on the viewport that can least afford it.
+  const heights = [790, 718, 807, 740, 978];
+  assert.equal(stageHeightFor(heights, 1, true), 718, 'the shortest panel keeps its own height');
+  assert.equal(stageHeightFor(heights, 4, true), 978, 'and the tallest still gets all of its own');
+  assert.notEqual(
+    stageHeightFor(heights, 1, true),
+    stageHeightFor(heights, 1, false),
+    'flat and arc must not agree here, or the flat branch is doing nothing'
+  );
+});
+
+test('stageHeightFor survives an empty or out-of-range read', () => {
+  // measure() bails on <= 0 rather than writing a height, so returning 0 is the
+  // contract for "nothing measurable" — never NaN or -Infinity from a bare Math.max.
+  assert.equal(stageHeightFor([], 0, false), 0);
+  assert.equal(stageHeightFor([], 0, true), 0);
+  assert.equal(stageHeightFor([300], 7, true), 0, 'an index past the end is not a height');
 });
 
 // --------------------------------------------------------------------------

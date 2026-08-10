@@ -24,8 +24,16 @@ use," which is why deploys can't serve stale code even without hashed filenames.
 
 The **localized pages** (`/es`, `/fr/…`) aren't files — `routes/i18n.js` renders them
 server-side and sets the same `Cache-Control: no-cache`, so they revalidate like the
-static `.html` pages. The render itself is memoized in-process (cleared on each deploy's
-restart), so a translation change goes live on redeploy.
+static `.html` pages. The render itself is memoized in-process by
+`lib/i18n/page-renderer.js` (cleared on each deploy's restart), so a translation change
+goes live on redeploy.
+
+The **404 page** is the other non-file HTML response, from `lib/http/not-found.js`. It
+shares that same renderer and memo, and also sends `Cache-Control: no-cache` — deliberately
+not `no-store`: the body is identical for every unknown URL in a given language, so
+revalidation is enough and there is nothing sensitive in it. Its JSON counterpart (for
+`/api/*` and non-HTML clients) sets no cache header at all, like every other `sendError()`
+response.
 
 Dynamic and sensitive responses opt out of caching entirely with `no-store`
 (e.g. the auth config, the `/getpro` grant page, hosted-image listings), so they

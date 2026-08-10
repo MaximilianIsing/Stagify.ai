@@ -975,7 +975,7 @@
     "metaKeywords": "stagify tech help, troubleshooting, upload not working, staging help, support, common issues",
     "badge": "Tech Help",
     "title": "Troubleshooting & common issues",
-    "subtitle": "Most problems have a quick fix. Find your issue below — and if you're still stuck, our team is one email away.",
+    "subtitle": "Most problems have a quick fix. Find your issue below, and if you're still stuck, our team is one email away.",
     "upload": {
       "title": "Uploading & files",
       "i1": {
@@ -1074,7 +1074,7 @@
   "guides": {
     "badge": "Guides",
     "title": "Guides & walkthroughs",
-    "subtitle": "Quick interactive walkthroughs to get you staging in minutes — plus fixes for common issues.",
+    "subtitle": "Quick interactive walkthroughs to get you staging in minutes, plus fixes for common issues.",
     "heroBadge": "Help center",
     "liveBadge": "Interactive demo",
     "walkthroughsTitle": "Step-by-step walkthroughs",
@@ -1586,5 +1586,12 @@
     "stepChanges": "What should change?",
     "stepChangesHint": "Pick only what you want changed. Anything you leave unticked stays exactly as photographed.",
     "enhanceHint": "Pick at least one change, or describe one above."
+  },
+  "notFound": {
+    "pageTitle": "Page not found | Stagify.ai",
+    "pageDescription": "This page doesn't exist or has moved. Head back to Stagify.ai to keep staging your listing photos.",
+    "heading": "This page doesn't exist",
+    "body": "The link may be broken, or the page may have moved. Everything else is still right where you left it.",
+    "homeCta": "Back to home"
   }
 }

@@ -975,7 +975,7 @@
     "metaKeywords": "stagify technische hilfe, fehlerbehebung, upload funktioniert nicht, staging-hilfe, support, häufige probleme",
     "badge": "Technische Hilfe",
     "title": "Fehlerbehebung & häufige Probleme",
-    "subtitle": "Die meisten Probleme lassen sich schnell beheben. Finden Sie Ihr Problem unten – und falls Sie nicht weiterkommen, ist unser Team nur eine E-Mail entfernt.",
+    "subtitle": "Die meisten Probleme lassen sich schnell beheben. Finden Sie Ihr Problem unten, und falls Sie nicht weiterkommen, ist unser Team nur eine E-Mail entfernt.",
     "upload": {
       "title": "Upload & Dateien",
       "i1": {
@@ -1074,7 +1074,7 @@
   "guides": {
     "badge": "Anleitungen",
     "title": "Anleitungen & Walkthroughs",
-    "subtitle": "Schnelle interaktive Walkthroughs, mit denen Sie in Minuten loslegen – plus Lösungen für häufige Probleme.",
+    "subtitle": "Schnelle interaktive Walkthroughs, mit denen Sie in Minuten loslegen, plus Lösungen für häufige Probleme.",
     "heroBadge": "Hilfecenter",
     "liveBadge": "Interaktive Demo",
     "walkthroughsTitle": "Schritt-für-Schritt-Anleitungen",
@@ -1586,5 +1586,12 @@
     "stepChanges": "Was soll sich ändern?",
     "stepChangesHint": "Wählen Sie nur, was sich ändern soll. Alles Nicht-Angehakte bleibt genau so, wie es fotografiert wurde.",
     "enhanceHint": "Wählen Sie mindestens eine Änderung, oder beschreiben Sie eine oben."
+  },
+  "notFound": {
+    "pageTitle": "Seite nicht gefunden | Stagify.ai",
+    "pageDescription": "Diese Seite existiert nicht oder wurde verschoben. Zurück zu Stagify.ai, um Ihre Immobilienfotos weiter zu inszenieren.",
+    "heading": "Diese Seite existiert nicht",
+    "body": "Der Link ist möglicherweise defekt, oder die Seite wurde verschoben. Alles andere ist noch genau dort, wo Sie es verlassen haben.",
+    "homeCta": "Zurück zur Startseite"
   }
 }

@@ -1,0 +1,437 @@
+/* ==========================================================================
+   Guides page (public/guides.html)
+   ==========================================================================
+
+   Page-scoped. Lifted out of home.css, which index.html also downloads — the
+   homepage was shipping ~10 KB of rules for a page it never renders. What did
+   NOT come with it, deliberately:
+
+     - `.faq-accordion` / `.faq-q`      stays in home.css — index.html shares it.
+     - `.stage-carousel-*`              stays in home.css — it sat inside the old
+                                        guides block but belongs to the homepage
+                                        before/after viewer.
+
+   ONE BLUE, ON PURPOSE
+   This page used to carry a `--guide-accent` custom property authored inline per
+   topic: indigo, emerald, violet, amber, rose, cyan. Six Tailwind-600 hexes on a
+   site whose every other surface is the navy/blue brand ramp, and the hue meant
+   nothing — it was not a severity, a product area, or anything a reader could
+   decode. Worse, it only reached the card FRAME. The seventeen accordions inside
+   those cards are `.faq-q`, which is shared with the homepage and hard-wired to
+   `--brand`, so every card was a coloured box full of blue. Topic identity now
+   comes from the icon, and the whole page is one colour.
+
+   Everything here resolves against the tokens in styles.css, which guides.html
+   loads first. See docs/guides/frontend.md on where tokens work.
+   ========================================================================== */
+
+.home-guides {
+  padding-bottom: 56px;
+  overflow: visible;
+}
+/* Clears the sticky site header when an anchor is jumped to. The topic rail pins
+   itself to the same offset, so the two agree by construction. */
+.home-guides [id] {
+  scroll-margin-top: 96px;
+}
+@media (max-width: 768px) {
+  .home-guides {
+    padding-top: 18px;
+  }
+}
+
+/* The hero sub is one sentence and belongs on one line. Two caps had to move for
+   that: .home-section__head at 680px and .home-section__sub at its own 600px,
+   against 712px of text. Both go to 760, which clears it with room for the font
+   to render a shade wider than measured. The sub keeps its `margin: 0 auto`, so
+   it stays centred. Longer translations still wrap, and so does anything under
+   about 860px of viewport — this asks for one line only where one line fits. */
+.home-guides .home-section__head,
+.home-guides .home-section__sub {
+  max-width: 760px;
+}
+
+/* --- Hero ----------------------------------------------------------------- */
+
+.guides-hero-title {
+  background: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand) 55%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* --- Section heads -------------------------------------------------------- */
+
+/* Left-aligned to the content column rather than centred like the marketing
+   sections: this is a reference page, and a centred head over a left-aligned
+   two-column body reads as two unrelated layouts stacked. Replaces the single
+   hairline `border-top` that used to be the page's only separator. */
+.guides-sec-head {
+  max-width: 1080px;
+  margin: 0 auto 20px;
+}
+.guides-walkthrough .guides-sec-head {
+  margin-top: 8px;
+}
+.guides-troubleshooting .guides-sec-head {
+  margin-top: 68px;
+}
+.guides-sec-head__title {
+  margin: 0;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--brand-deep);
+}
+.guides-sec-head__sub {
+  margin: 8px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--slate-deep);
+}
+
+/* --- Walkthrough ---------------------------------------------------------- */
+
+.guides-walkthrough,
+.guides-troubleshooting {
+  max-width: 1080px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.guides-walkthrough__panel {
+  padding: 18px 18px 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.48);
+  backdrop-filter: blur(18px) saturate(175%);
+  -webkit-backdrop-filter: blur(18px) saturate(175%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 16px 44px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.guide-demo-picker {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(30, 58, 138, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+.guide-demo-picker__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--slate-deep);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease,
+    border-color 0.18s ease, transform 0.18s ease;
+}
+.guide-demo-picker__btn img {
+  border-radius: 4px;
+  transition: transform 0.18s ease;
+}
+.guide-demo-picker__btn:hover {
+  color: var(--brand-deep);
+  background: var(--brand-wash);
+  transform: translateY(-1px);
+}
+.guide-demo-picker__btn--active {
+  color: var(--brand-deep);
+  background: var(--bg-elevated);
+  border-color: var(--brand-pale);
+  box-shadow: 0 6px 18px rgba(30, 58, 138, 0.14);
+}
+.guide-demo-picker__btn--active img {
+  transform: scale(1.06);
+}
+
+/* If you ever mark the five Stagify+ tours apart from the free one again, note
+   that test/helpers/guides-dom.js finds the tablist with a NON-GREEDY
+   /<div class="guide-demo-picker">…<\/div>/ — any <div> added inside the picker
+   truncates the helper at the first close tag and quietly collapses every
+   assertion in guides.test.js. Use ::after or a <span>, never a <div>. */
+.guide-demo-stage {
+  position: relative;
+  /* The step captures are 1600×900, so 720px was showing them at 45% and leaving a
+     wide band of empty glass either side once the panel grew to the content width.
+     900 is still well inside the source resolution. */
+  max-width: 900px;
+  margin: 0 auto;
+}
+.guide-demo-panel {
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.guide-demo-panel.is-active {
+  display: block;
+  opacity: 1;
+  transform: none;
+}
+.guide-demo-panel.is-entering {
+  animation: guideDemoIn 0.36s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+@keyframes guideDemoIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+
+/* --- Troubleshooting: sticky topic rail + one column of cards ------------- */
+
+/* The rail replaces a grid of six cards whose entire content was the same six
+   `techHelp.*.title` strings as the cards directly below them. It is now the
+   navigation and they are the content, so nothing is said twice. */
+.guides-help {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
+
+.guides-rail {
+  position: sticky;
+  /* Offsets from <main>, not the viewport: this page scrolls inside <main>
+     (see the inline style in guides.html), so that box is the scrollport this
+     pins against. Same 96px as .home-guides [id]'s scroll-margin-top above, so
+     a card jumped to from the rail lands level with the rail entry that named
+     it rather than above or below it. Change one and change the other. */
+  top: 96px;
+}
+.guides-rail__list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 10px 28px rgba(30, 58, 138, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+.guides-rail__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--slate-deep);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.guides-rail__link:hover {
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--brand-deep);
+}
+.guides-rail__link:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: -1px;
+}
+.guides-rail__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: var(--brand);
+  background: var(--brand-wash);
+  border: 1px solid var(--brand-tint);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.guides-rail__icon svg {
+  width: 14px;
+  height: 14px;
+}
+.guides-rail__link.is-current {
+  background: var(--brand-wash);
+  color: var(--brand-deep);
+}
+.guides-rail__link.is-current .guides-rail__icon {
+  background: var(--brand-tint);
+  border-color: var(--brand-pale);
+}
+/* The indicator bar. Scaled from 0 rather than toggled on, so the rail reads as
+   one mark sliding down the list instead of six independent lights. */
+.guides-rail__link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 2px;
+  height: 20px;
+  border-radius: 2px;
+  background: var(--brand);
+  transform: translateY(-50%) scaleY(0);
+  transition: transform 0.22s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.guides-rail__link.is-current::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+.guides-help__col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.guides-trouble-card {
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 18px;
+  padding: 20px 20px 10px;
+  box-shadow: 0 12px 32px rgba(30, 58, 138, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  transition: border-color 0.22s ease, box-shadow 0.22s ease;
+}
+.guides-trouble-card:hover {
+  border-color: color-mix(in srgb, var(--brand) 28%, white);
+  box-shadow: 0 16px 38px color-mix(in srgb, var(--brand) 14%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.guides-trouble-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.guides-trouble-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  color: var(--brand);
+  background: var(--brand-wash);
+  border: 1px solid var(--brand-tint);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.guides-trouble-card:hover .guides-trouble-card__icon {
+  background: var(--brand-tint);
+  border-color: var(--brand-pale);
+}
+.guides-trouble-card__icon svg {
+  width: 18px;
+  height: 18px;
+}
+.guides-trouble-card__title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--brand-deep);
+  letter-spacing: -0.2px;
+}
+.guides-trouble-card .faq-accordion {
+  max-width: none;
+}
+.guides-trouble-card .faq-q {
+  transition: background 0.16s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.guides-trouble-card .faq-q:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .guides-help {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  /* The rail becomes a wrapped chip row, NOT a horizontal scroller: this page
+     already scrolls inside <main>, and nesting a second scroll container in it
+     costs a swipe that goes to the wrong box on touch. Six short labels wrap
+     into two or three rows perfectly well. */
+  .guides-rail {
+    position: static;
+  }
+  .guides-rail__list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-radius: 14px;
+  }
+  .guides-rail__link {
+    padding: 7px 12px 7px 10px;
+    border-radius: 999px;
+  }
+  /* The left bar reads as a list marker; on a chip row it is just a sliver
+     hanging off the rounded edge. */
+  .guides-rail__link::before {
+    display: none;
+  }
+  .guides-rail__link.is-current {
+    background: var(--brand-tint);
+  }
+  .guides-troubleshooting .guides-sec-head {
+    margin-top: 48px;
+  }
+}
+@media (max-width: 560px) {
+  /* Force a fixed 2-wide × 3-tall grid so every tab is equal width instead of
+     wrapping based on its label length. */
+  .guide-demo-picker {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .guide-demo-picker__btn {
+    justify-content: center;
+    padding: 11px 10px;
+  }
+  .guides-walkthrough__panel {
+    padding: 14px 12px 14px;
+  }
+  .guides-trouble-card {
+    padding: 16px 16px 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-demo-panel.is-entering {
+    animation: none;
+  }
+  .guide-demo-picker__btn,
+  .guide-demo-picker__btn img,
+  .guides-rail__link,
+  .guides-rail__link::before,
+  .guides-rail__icon,
+  .guides-trouble-card,
+  .guides-trouble-card__icon {
+    transition: none;
+  }
+  .guide-demo-picker__btn:hover {
+    transform: none;
+  }
+  /* The indicator still has to be visible — only its travel is dropped. */
+  .guides-rail__link::before {
+    transform: translateY(-50%) scaleY(0);
+  }
+  .guides-rail__link.is-current::before {
+    transform: translateY(-50%) scaleY(1);
+  }
+}
