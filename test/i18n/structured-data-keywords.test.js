@@ -65,12 +65,15 @@ function assertTranslatedEverywhere(key, where) {
 }
 
 /**
- * The FIRST ld+json block in document order — the only one either renderer touches
- * (render-page.js's replace() is non-global; language-loader.js uses querySelector).
- * Returns the open tag and the parsed body, or null when the page has no block.
+ * The page-entity ld+json block — the one marked `data-lang-jsonld`, and the only one
+ * either renderer touches. It used to be the first block in document order, which on
+ * the pages that lead with a breadcrumb trail was the trail; see
+ * test/i18n/page-entity-jsonld.test.js, which pins the marking itself.
+ * Returns the open tag attrs and the parsed body, or null when the page marks none.
  */
-function firstJsonLd(html) {
-  const m = /<script([^>]*\btype="application\/ld\+json"[^>]*)>([\s\S]*?)<\/script>/i.exec(html);
+function pageEntityJsonLd(html) {
+  const m = /<script([^>]*\btype="application\/ld\+json"[^>]*\bdata-lang-jsonld\b[^>]*)>([\s\S]*?)<\/script>/i
+    .exec(html);
   if (!m) return null;
   return { attrs: m[1], data: JSON.parse(m[2]) };
 }
@@ -96,7 +99,7 @@ test('no page carries a <meta name="keywords"> tag', () => {
 test('every JSON-LD "keywords" property names a translation key that all eleven packs define', () => {
   const annotated = [];
   for (const file of pages) {
-    const block = firstJsonLd(read(file));
+    const block = pageEntityJsonLd(read(file));
     if (!block || block.data.keywords === undefined) continue;
 
     const key = /\bdata-lang-keywords="([^"]+)"/.exec(block.attrs)?.[1];
@@ -105,13 +108,14 @@ test('every JSON-LD "keywords" property names a translation key that all eleven 
       `${file}'s JSON-LD has a "keywords" property but no data-lang-keywords on the `
         + 'tag — it would stay English in all eleven locales',
     );
-    // The renderer's own regex requires the attribute to sit AFTER type=, since it
-    // matches left-to-right from `<script`. Authoring it before would parse here and
-    // silently not match there.
+    // Authoring convention, kept consistent across the pages: the renderer reads the
+    // attribute off the marked tag either way, but it used to match left-to-right from
+    // `<script`, so an attribute placed before type= parsed here and silently did not
+    // match there.
     assert.match(
       block.attrs,
       /\btype="application\/ld\+json"[^>]*\bdata-lang-keywords=/i,
-      `${file}: data-lang-keywords must come after type= to match the renderer's regex`,
+      `${file}: keep data-lang-keywords after type=, as every other page has it`,
     );
     assertTranslatedEverywhere(key, file);
     annotated.push(file);
@@ -129,37 +133,36 @@ test('the renderer localizes keywords from the attribute, and invents none witho
 
   const withAttr = renderLocalizedPage({
     html: '<html><head><title data-lang="meta.title">T</title></head><body>'
-      + '<script type="application/ld+json" data-lang-keywords="pageMeta.maskingStudio.keywords">'
+      + '<script type="application/ld+json" data-lang-jsonld data-lang-keywords="pageMeta.maskingStudio.keywords">'
       + '{"@type":"WebApplication","keywords":"english kw"}</script></body></html>',
     translations,
     locale: spanish,
     path: '/masking-studio.html',
   });
-  assert.equal(firstJsonLd(withAttr).data.keywords, 'palabras ES');
+  assert.equal(pageEntityJsonLd(withAttr).data.keywords, 'palabras ES');
 
   // No attribute → the authored keywords survive untouched. Under the old
   // meta.keywords fallback this came back as the homepage list.
   const withoutAttr = renderLocalizedPage({
     html: '<html><head><title data-lang="meta.title">T</title></head><body>'
-      + '<script type="application/ld+json">'
+      + '<script type="application/ld+json" data-lang-jsonld>'
       + '{"@type":"WebApplication","keywords":"english kw"}</script></body></html>',
     translations: { ...translations, meta: { ...translations.meta, keywords: 'HOMEPAGE ES' } },
     locale: spanish,
     path: '/masking-studio.html',
   });
-  assert.equal(firstJsonLd(withoutAttr).data.keywords, 'english kw');
+  assert.equal(pageEntityJsonLd(withoutAttr).data.keywords, 'english kw');
 
-  // …and a block with no keywords property must not grow one. This is guides.html's
-  // BreadcrumbList and contact.html's ContactPage, both of which the old fallback
-  // stamped the homepage keyword list onto.
+  // …and a block with no keywords property must not grow one. This is contact.html's
+  // ContactPage, which the old fallback stamped the homepage keyword list onto.
   const noKeywords = renderLocalizedPage({
     html: '<html><head><title data-lang="meta.title">T</title></head><body>'
-      + '<script type="application/ld+json">{"@type":"BreadcrumbList"}</script></body></html>',
+      + '<script type="application/ld+json" data-lang-jsonld>{"@type":"ContactPage"}</script></body></html>',
     translations: { ...translations, meta: { ...translations.meta, keywords: 'HOMEPAGE ES' } },
     locale: spanish,
-    path: '/guides.html',
+    path: '/contact.html',
   });
-  assert.equal(firstJsonLd(noKeywords).data.keywords, undefined);
+  assert.equal(pageEntityJsonLd(noKeywords).data.keywords, undefined);
 });
 
 test('the client mirrors the server: language-loader reads the same attribute', () => {

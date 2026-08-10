@@ -9,9 +9,14 @@
 //
 // The tests come in pairs on purpose, because this guard can fail in two directions and
 // only one of them is loud. Too permissive: a stranger's checkout reassigns a paying
-// customer's subscription (the takeover). Too strict: an ordinary signed-out purchase
-// stops activating and a real buyer pays for nothing — silent, and worse for the
-// business. Every refusal case below therefore has an allow case beside it.
+// customer's subscription (the takeover). Too strict: a reference-less purchase stops
+// activating and a real buyer pays for nothing — silent, and worse for the business.
+// Every refusal case below therefore has an allow case beside it.
+//
+// Reference-less checkouts are rarer than they were — the "Start free trial" button no
+// longer reaches Stripe while signed out — but the Payment Link is a public URL, and a
+// buyer can always type a different address into Stripe's own form, so the fallback is
+// still load-bearing.
 //
 // The end-to-end version of the attack (checkout → cancel → downgrade) lives in
 // test/services/stripe-webhooks.test.js, over real event payloads.

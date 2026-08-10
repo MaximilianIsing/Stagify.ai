@@ -15,7 +15,7 @@
     "plusBadge": "Stagify+",
     "whyUs": "Why Us?",
     "faq": "FAQ",
-    "contactUs": "Contact Us",
+    "contactUs": "Contact",
     "brand": "Stagify",
     "brandSuffix": ".ai",
     "techHelp": "Tech Help",
@@ -350,13 +350,13 @@
       "items": {
         "justin": {
           "quote": "When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings, and the price is amazing!",
-          "author": "Justin S. (Broker)",
+          "author": "Justin Stern (Broker)",
           "role": "Tahari Realty",
           "location": "Manhattan, NYC"
         },
         "andy": {
           "quote": "Stagify fits right into how I already work. I’ll upload a listing photo between showings and it’s staged before I’m back at my desk. My clients are always impressed by how polished the final photos look.",
-          "author": "Andy E. (Broker)",
+          "author": "Andy Eras (Broker)",
           "role": "Centennial Properties",
           "location": "Manhattan, NYC"
         }
@@ -1340,7 +1340,7 @@
       "subtitle": "Furniture removal, the AI Designer, the Masking Studio, and higher-quality models — every professional tool, for less than the cost of one traditional staging."
     },
     "plan": {
-      "hintSignIn": "Sign in from the profile menu first so checkout can link your payment to your Stagify account.",
+      "hintAccountFirst": "Create a free account first — that's how your subscription gets linked to you.",
       "hintTip": "Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.",
       "hintStagingDisabled": "Subscriptions are disabled on the staging site.",
       "billedMonthly": "Billed monthly · Cancel anytime",

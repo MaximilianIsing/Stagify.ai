@@ -138,41 +138,48 @@ function round(n) {
  * @type {Record<string, Array<[string, number, number, number, number] | [string, number, number, number, number, number]>>}
  */
 export const FURNITURE = {
-  // Living room: sofa facing a media unit across a rug, armchair turned in at the side.
+  // Living room: sofa facing a media unit, armchair turned in at the side.
+  //
+  // NO RUGS ANYWHERE, and it is worth saying why once here rather than rediscovering it.
+  // A rug is a floor finish, so the only way to draw it is a broken outline — and at the
+  // size a room actually renders (~180px across, ~35px per metre) a dashed rectangle
+  // stops reading as a finish and reads as a checkered box around the seating, competing
+  // with the furniture standing on it instead of sitting under it. Three rooms carried
+  // one; all three look cleaner without.
   basics: [
-    ['fp-rug', 0.37, 0.66, 2.8, 1.5], ['fp-sofa', 0.375, 0.505, 2.3, 0.9],
+    ['fp-sofa', 0.375, 0.505, 2.3, 0.9],
     ['fp-coffee', 0.36, 0.755, 1.1, 0.6], ['fp-tv', 0.36, 0.935, 1.5, 0.4, 180],
     ['fp-armchair', 0.7, 0.6, 0.9, 0.85, 90], ['fp-lamp', 0.76, 0.9, 0.5, 0.5],
     ['fp-plant', 0.085, 0.47, 0.6, 0.6],
   ],
-  // Study: desk facing the room, bookcase along the west wall, chair pushed in.
+  // Study: desk facing the room, chair pushed in.
   turnaround: [
-    ['fp-shelf', 0.075, 0.7, 0.5, 1.8, 270], ['fp-desk', 0.42, 0.5, 1.9, 0.85],
+    ['fp-desk', 0.42, 0.5, 1.9, 0.85],
     ['fp-chair', 0.42, 0.75, 0.75, 0.75, 180], ['fp-nightstand', 0.72, 0.5, 0.6, 0.5],
     ['fp-lamp', 0.66, 0.9, 0.5, 0.5], ['fp-plant', 0.9, 0.88, 0.65, 0.65],
   ],
-  // Dining: table with a chair drawn up on each side, sideboard on the south wall.
+  // Dining: table with a chair drawn up on each side.
   pricing: [
     ['fp-table', 0.58, 0.6, 1.6, 0.9], ['fp-chair', 0.315, 0.6, 0.7, 0.7, 270],
-    ['fp-chair', 0.86, 0.6, 0.7, 0.7, 90], ['fp-shelf', 0.55, 0.92, 1.8, 0.5, 180],
+    ['fp-chair', 0.86, 0.6, 0.7, 0.7, 90],
     ['fp-plant', 0.9, 0.9, 0.6, 0.6], ['fp-lamp', 0.1, 0.915, 0.5, 0.5],
   ],
   // Sitting room: sofa and armchair facing each other over a coffee table.
   studios: [
-    ['fp-rug', 0.55, 0.68, 2.4, 1.5], ['fp-sofa', 0.55, 0.49, 2, 0.85],
+    ['fp-sofa', 0.55, 0.49, 2, 0.85],
     ['fp-coffee', 0.55, 0.7, 1, 0.5], ['fp-armchair', 0.55, 0.888, 0.85, 0.75, 180],
-    ['fp-shelf', 0.93, 0.6, 0.45, 1.5, 90], ['fp-plant', 0.1, 0.9, 0.6, 0.6],
+    ['fp-plant', 0.1, 0.9, 0.6, 0.6],
   ],
-  // The deep room: a study at the top, a sitting area below it, bookcase down one wall.
+  // The deep room: a study at the top, a sitting area below it.
   control: [
     ['fp-desk', 0.5, 0.45, 1.8, 0.8], ['fp-chair', 0.5, 0.575, 0.75, 0.75, 180],
     ['fp-sofa', 0.52, 0.705, 2, 0.9], ['fp-coffee', 0.52, 0.818, 1, 0.55],
-    ['fp-shelf', 0.09, 0.62, 0.45, 1.6, 270], ['fp-armchair', 0.2, 0.93, 0.85, 0.8],
+    ['fp-armchair', 0.2, 0.93, 0.85, 0.8],
     ['fp-plant', 0.9, 0.93, 0.6, 0.6],
   ],
   // Bedroom: bed between two nightstands, wardrobe on the far wall, chair by the window.
   photos: [
-    ['fp-rug', 0.32, 0.74, 2.6, 1.5], ['fp-bed', 0.32, 0.6, 1.7, 2.1],
+    ['fp-bed', 0.32, 0.6, 1.7, 2.1],
     ['fp-nightstand', 0.09, 0.45, 0.5, 0.45], ['fp-nightstand', 0.55, 0.45, 0.5, 0.45],
     ['fp-wardrobe', 0.32, 0.94, 2.2, 0.6, 180], ['fp-armchair', 0.85, 0.55, 0.9, 0.85, 90],
     ['fp-lamp', 0.87, 0.72, 0.5, 0.5], ['fp-plant', 0.86, 0.93, 0.65, 0.65],
@@ -181,12 +188,12 @@ export const FURNITURE = {
   // however well each box is drawn, so one room gets a different geometry.
   disclosure: [
     ['fp-round', 0.58, 0.645, 1.15, 1.15], ['fp-chair', 0.33, 0.645, 0.65, 0.65, 270],
-    ['fp-chair', 0.83, 0.645, 0.65, 0.65, 90], ['fp-shelf', 0.5, 0.925, 1.7, 0.45, 180],
+    ['fp-chair', 0.83, 0.645, 0.65, 0.65, 90],
     ['fp-plant', 0.92, 0.9, 0.55, 0.55],
   ],
   privacy: [
     ['fp-desk', 0.6, 0.5, 1.7, 0.8], ['fp-chair', 0.6, 0.78, 0.75, 0.75, 180],
-    ['fp-shelf', 0.94, 0.7, 0.4, 1.3, 90], ['fp-plant', 0.3, 0.89, 0.6, 0.6],
+    ['fp-plant', 0.3, 0.89, 0.6, 0.6],
     ['fp-lamp', 0.3, 0.6, 0.45, 0.45],
   ],
   // Kitchen and dining: a run with a sink and a hob, table below it.
@@ -194,7 +201,7 @@ export const FURNITURE = {
     ['fp-counter', 0.5, 0.43, 3.4, 0.65], ['fp-sink', 0.28, 0.43, 0.6, 0.45],
     ['fp-hob', 0.7, 0.43, 0.6, 0.45], ['fp-table', 0.5, 0.7, 1.5, 0.9],
     ['fp-chair', 0.5, 0.5625, 0.7, 0.7], ['fp-chair', 0.5, 0.8375, 0.7, 0.7, 180],
-    ['fp-shelf', 0.22, 0.935, 1.45, 0.42, 180], ['fp-plant', 0.9, 0.93, 0.6, 0.6],
+    ['fp-plant', 0.9, 0.93, 0.6, 0.6],
   ],
 };
 
@@ -294,8 +301,9 @@ export function readRooms(root) {
 /**
  * Build one room's ink layer, plus the key number that appears in the notes column.
  * @param {Room} room
+ * @param {number} total how many rooms are on the sheet — the key's denominator
  */
-function mountRoom(room) {
+function mountRoom(room, total) {
   const w = room.w * UX;
   const h = room.h * UY;
 
@@ -371,7 +379,12 @@ function mountRoom(room) {
     const no$ = document.createElement('span');
     no$.className = 'faq-room__no';
     no$.setAttribute('aria-hidden', 'true');
-    no$.textContent = room.no ? `${room.no} / 09` : '';
+    // The denominator is COUNTED, not typed. It read "/ 09" for a long time, which is the
+    // kind of literal that stays right until the day it is silently wrong: adding a tenth
+    // room fails the spec's `rooms.length === 9` assertion, so the author is sent to the
+    // test — and nothing at all points at this string, which would go on telling every
+    // visitor there are nine. Padded to two digits to match `data-no`.
+    no$.textContent = room.no ? `${room.no} / ${String(total).padStart(2, '0')}` : '';
     summary.appendChild(no$);
 
   }
@@ -516,6 +529,48 @@ export function wireSelectionGuard(rooms) {
 }
 
 /**
+ * The element id a room answers to in the URL. `data-room` is the single source — the id
+ * is only ever this function of it, so nothing has to be kept in step by hand, and the
+ * spec asserts the markup agrees with this exact expression for all nine.
+ *
+ * Lower-cased because the one camelCase key (`whyStagify`) would otherwise ship a
+ * capital in a public URL, where it is both ugly and case-sensitive: `#faq-whystagify`
+ * typed by a human would silently miss.
+ * @param {string} key a `data-room` value
+ */
+export function roomId(key) {
+  return `faq-${String(key).toLowerCase()}`;
+}
+
+/**
+ * Open the room a `#faq-…` fragment names, on load and on every later hash change.
+ *
+ * WHY THIS IS NOT THE UA'S JOB. The id is on the <details> itself, so the browser scrolls
+ * to it and stops — it opens a <details> only when the target is INSIDE one. The whole
+ * point of the link is the answer, so the opening has to be done here. `name="faq-room"`
+ * then closes whichever room was open, exactly as a click would.
+ *
+ * Purely additive, like everything else in this file: with the module absent the fragment
+ * still resolves and still scrolls the FAQ into view, it just lands with the plan at rest.
+ * @param {Room[]} rooms
+ */
+export function wireDeepLinks(rooms) {
+  const byId = new Map(rooms.map(({ el }) => [el.id, /** @type {HTMLDetailsElement} */ (el)]));
+  const openFromHash = () => {
+    const el = byId.get(String(location.hash || '').replace(/^#/, ''));
+    if (!el) return;
+    el.open = true;
+    // `nearest`, so an already-visible sheet is not yanked. This module runs after `load`,
+    // by which time the UA has done its own fragment scroll — in plan mode opening a room
+    // moves nothing, so this is a no-op there and only earns its keep in accordion mode,
+    // where the answer expanding below the fold is the whole reason the link was followed.
+    if (typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest' });
+  };
+  openFromHash();
+  window.addEventListener('hashchange', openFromHash);
+}
+
+/**
  * Arm the one-time draft-in on the two hand-authored wall paths. They are already in the
  * markup at the right weights, so the animation rides on them rather than on a duplicate
  * "wall network" path drawn over the top.
@@ -546,13 +601,16 @@ export function initFaqPlan() {
 
   rooms.forEach((room, i) => {
     /** @type {HTMLElement} */ (room.el).style.setProperty('--n', String(i));
-    mountRoom(room);
+    mountRoom(room, rooms.length);
   });
 
   armDraftIn(ink);
   wireExclusiveFallback(rooms);
   wireSelectionGuard(rooms);
   wireAnswerOffsets(rooms);
+  // After wireExclusiveFallback, so a fragment that opens a room on a UA without
+  // `<details name>` still closes the others through the same path a click would.
+  wireDeepLinks(rooms);
 
   // Only now: `.is-armed` tells the stylesheet the drawing is complete and it may hide
   // the pieces the draft-in animates. Setting it earlier would leave a half-built sheet

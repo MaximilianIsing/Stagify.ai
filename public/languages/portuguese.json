@@ -350,13 +350,13 @@
       "items": {
         "justin": {
           "quote": "Quando experimentei o Stagify pela primeira vez, fiquei honestamente impressionado. Percebi que podia simplesmente usar meu celular, dispensar o fotógrafo caro e ainda ter resultados incríveis. É uma virada de jogo para meus anúncios, e o preço é sensacional!",
-          "author": "Justin S. (Corretor)",
+          "author": "Justin Stern (Corretor)",
           "role": "Tahari Realty",
           "location": "Manhattan, Nova York"
         },
         "andy": {
           "quote": "O Stagify se encaixa perfeitamente na minha rotina. Eu envio a foto de um anúncio entre uma visita e outra e ela já volta decorada antes de eu chegar à mesa. Meus clientes sempre ficam impressionados com o acabamento das fotos finais.",
-          "author": "Andy E. (Corretor)",
+          "author": "Andy Eras (Corretor)",
           "role": "Centennial Properties",
           "location": "Manhattan, Nova York"
         }
@@ -1340,7 +1340,7 @@
       "subtitle": "Remoção de móveis, o Designer de IA, o Masking Studio e modelos de maior qualidade — todas as ferramentas profissionais por menos do que custa uma única decoração tradicional."
     },
     "plan": {
-      "hintSignIn": "Entre primeiro pelo menu de perfil para que o pagamento possa ser vinculado à sua conta do Stagify.",
+      "hintAccountFirst": "Crie primeiro uma conta gratuita: é assim que sua assinatura fica vinculada a você.",
       "hintTip": "Dica: entre primeiro pelo menu de perfil para que o pagamento possa ser vinculado à sua conta do Stagify.",
       "hintStagingDisabled": "As assinaturas estão desativadas no site de staging.",
       "billedMonthly": "Cobrança mensal · Cancele quando quiser",

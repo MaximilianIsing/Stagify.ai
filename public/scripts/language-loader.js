@@ -30,7 +30,7 @@ import { LANGUAGES } from './locale-data.js';
       // Minimal built-in fallback so the page is never left showing raw keys.
       return {
         meta: { title: 'Stagify.ai', description: 'AI Home Staging Tool' },
-        navigation: { home: 'Home', whyUs: 'Why Us?', faq: 'FAQ', contactUs: 'Contact Us' },
+        navigation: { home: 'Home', whyUs: 'Why Us?', faq: 'FAQ', contactUs: 'Contact' },
         hero: { catchphrase: 'Upload. Stage. Imagine.' },
         errors: { processingFailed: 'Processing failed' },
       };
@@ -114,7 +114,12 @@ import { LANGUAGES } from './locale-data.js';
 
   function updateStructuredData() {
     if (!loaded) return;
-    const ldEl = document.querySelector('script[type="application/ld+json"]');
+    // The block the page marked as describing itself. Mirrors applyStructuredData() in
+    // lib/i18n/render-page.js: this used to be the FIRST ld+json block, which on
+    // guides/enterprise/stagify-plus is the breadcrumb trail — so a language switch
+    // localized the trail (which has no name or description of its own) and left the
+    // block describing the page in English. Unmarked pages are left alone.
+    const ldEl = document.querySelector('script[type="application/ld+json"][data-lang-jsonld]');
     if (!ldEl) return;
     try {
       const data = JSON.parse(ldEl.textContent);

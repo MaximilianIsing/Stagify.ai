@@ -40,6 +40,8 @@ const {
   doorSwing,
   readRooms,
   wireSelectionGuard,
+  wireDeepLinks,
+  roomId,
   answerTop,
   ANSWER_GAP,
 } = await import('../../public/scripts/home-faq-plan.js');
@@ -466,8 +468,10 @@ test('no furniture overhangs a wall', () => {
  * @type {Array<[string, string]>}
  */
 const STACKABLE = [
-  // A rug is a floor FINISH, not an object. Every seating group is drawn on top of one.
-  ['fp-rug', '*'],
+  // `['fp-rug', '*']` used to head this list — the one blanket permission, because a rug is
+  // a floor finish and every seating group stood on one. The rug is gone (a dashed
+  // rectangle read as a checkered box at the size a room renders), and so is its
+  // exemption: nothing else on the sheet may share floor with an arbitrary neighbour.
   // Inset appliances. The sink and the hob are holes in the counter run, not free pieces
   // standing next to it, so their footprints are inside its by construction.
   ['fp-counter', 'fp-sink'],
@@ -995,4 +999,196 @@ test('the plan assets are wired in the right places', () => {
     INDEX, /<script[^>]*src="scripts\/home-faq-plan\.js"/,
     'home-faq-plan.js must not get its own tag in <head>'
   );
+});
+
+// --------------------------------------------------------------------------
+// Deep links
+// --------------------------------------------------------------------------
+
+test('every room is addressable, under the id roomId() derives from its own key', () => {
+  // THREE COPIES OF THE SAME STRING, and only one of them is authored: the <details> id,
+  // the fragment home-faq-plan.js matches against, and the `url` each Question publishes
+  // in #faq-jsonld. The module derives its copy with roomId(), so the two that can rot
+  // are the markup and the JSON-LD — and both rot silently. A stale id in the markup
+  // makes the link a no-op that still scrolls to the section, which looks like it worked;
+  // a stale url in the JSON-LD is only ever seen by a crawler.
+  //
+  // `whyStagify` is why roomId() lower-cases at all. Left verbatim it would publish
+  // `#faq-whyStagify`, where the capital is both ugly in a shared link and load-bearing,
+  // since fragments are case-sensitive.
+  const rooms = roomsInMarkup();
+  const seen = new Set();
+  for (const room of rooms) {
+    const id = (room.tag.match(/\bid="([^"]*)"/) || [])[1] || '';
+    assert.equal(
+      id, roomId(room.key),
+      `"${room.key}" ships id="${id}" but the module will look for "${roomId(room.key)}" — ` +
+      'a #faq-… link to it would open nothing'
+    );
+    assert.ok(!seen.has(id), `two rooms answer to "${id}"`);
+    seen.add(id);
+  }
+  assert.equal(seen.size, 9, 'all nine rooms are linkable');
+
+  const ld = JSON.parse(
+    /** @type {RegExpMatchArray} */
+    (INDEX.match(/<script type="application\/ld\+json" id="faq-jsonld">([\s\S]*?)<\/script>/))[1]
+  );
+  assert.equal(ld.mainEntity.length, rooms.length);
+  ld.mainEntity.forEach((/** @type {{url: string}} */ entry, /** @type {number} */ i) => {
+    assert.equal(
+      entry.url, `https://stagify.ai/#${roomId(rooms[i].key)}`,
+      `#faq-jsonld publishes a url for "${rooms[i].key}" that no element on the page carries`
+    );
+  });
+});
+
+test('a fragment opens the room it names, and only that room', () => {
+  // The UA will not do this for us: it opens a <details> when the target is INSIDE one,
+  // and here the id is ON the <details>. Without this wiring a shared link scrolls to a
+  // closed accordion, which is the same thing as not having deep links at all.
+  /** @param {string} id */
+  const room = (id) => ({ el: { id, open: false, scrollIntoView() { this.scrolled = true; }, scrolled: false } });
+  const rooms = [room('faq-basics'), room('faq-privacy')];
+
+  const priorLocation = /** @type {any} */ (globalThis).location;
+  const priorWindow = /** @type {any} */ (globalThis).window;
+  /** @type {Array<() => void>} */
+  const hashListeners = [];
+  /** @type {any} */ (globalThis).location = { hash: '#faq-privacy' };
+  /** @type {any} */ (globalThis).window = {
+    /** @param {string} type @param {() => void} fn */
+    addEventListener(type, fn) {
+      assert.equal(type, 'hashchange');
+      hashListeners.push(fn);
+    },
+  };
+  try {
+    wireDeepLinks(/** @type {any} */ (rooms));
+    assert.equal(rooms[1].el.open, true, 'the named room opens');
+    assert.equal(rooms[0].el.open, false, 'its neighbour is left alone — <details name> closes it');
+    assert.equal(rooms[1].el.scrolled, true, 'and it is brought into view');
+
+    // A hash that names nothing must be inert, not a throw: #faq itself is a real link on
+    // this page (faq-redirect.js sends /faq.html to it) and lands here on every visit.
+    /** @type {any} */ (globalThis).location.hash = '#faq';
+    rooms[1].el.open = false;
+    hashListeners.forEach((fn) => fn());
+    assert.equal(rooms[1].el.open, false, 'an unrelated fragment opens nothing');
+
+    /** @type {any} */ (globalThis).location.hash = '#faq-basics';
+    hashListeners.forEach((fn) => fn());
+    assert.equal(rooms[0].el.open, true, 'a later hash change is honoured too');
+  } finally {
+    /** @type {any} */ (globalThis).location = priorLocation;
+    /** @type {any} */ (globalThis).window = priorWindow;
+  }
+});
+
+// --------------------------------------------------------------------------
+// Colour contracts
+// --------------------------------------------------------------------------
+
+test('the window openings are painted with the sheet\'s own ground, stop for stop', () => {
+  // `.fp-win__gap` is not a colour choice, it is the ground showing through a hole in the
+  // poché — so it has to BE the ground. The ground is a gradient, which a flat stroke can
+  // only match in one band: tuned near the 52% stop, the three north windows painted a bar
+  // visibly darker than the wall they were cutting through, and read as slots.
+  //
+  // The fix duplicates the stops into an SVG <linearGradient>, because CSS gradients and
+  // SVG paint servers cannot share one definition. This is the guard that makes the
+  // duplicate safe. Retune the sheet and it fails, naming both places.
+  const css = fs.readFileSync(path.join(PUBLIC, 'styles', 'faq-plan.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const gap = /\.fp-win__gap\s*\{([^}]*)\}/.exec(css);
+  assert.ok(gap, 'plan mode styles the window gaps');
+  assert.match(
+    gap[1], /stroke:\s*url\(#fp-ground\)/,
+    'the gap must reference the ground gradient, not restate a colour that can only match ' +
+    'one band of it'
+  );
+
+  const sheet = /\.faq-plan__sheet\s*\{([^}]*)\}/.exec(css);
+  assert.ok(sheet, 'plan mode styles the sheet');
+  const cssStops = [...sheet[1].matchAll(/(#[0-9a-f]{6})\s+([\d.]+)%/gi)].map(
+    ([, hex, pos]) => [hex.toLowerCase(), Number(pos) / 100]
+  );
+  assert.equal(cssStops.length, 3, 'the sheet ground is a three-stop gradient');
+
+  const svg = /<linearGradient id="fp-ground"([^>]*)>([\s\S]*?)<\/linearGradient>/.exec(INDEX);
+  assert.ok(svg, 'index.html defines #fp-ground');
+  const svgStops = [...svg[2].matchAll(/<stop offset="([\d.]+)" stop-color="(#[0-9a-f]{6})"/gi)].map(
+    ([, offset, hex]) => [hex.toLowerCase(), Number(offset)]
+  );
+  assert.deepEqual(
+    svgStops, cssStops,
+    '#fp-ground has drifted from the sheet background in faq-plan.css — the windows would ' +
+    'stop matching the ground they punch through'
+  );
+
+  // The gradient has to be in SHEET coordinates, or "the same stops" still paints a
+  // different colour at every window: objectBoundingBox would resolve against each path's
+  // own bounding box, which for a horizontal window line is zero-height.
+  assert.match(svg[1], /gradientUnits="userSpaceOnUse"/, '#fp-ground must span the viewBox');
+});
+
+test('the open room\'s name leaves the accent, because the accent cannot carry it', () => {
+  // --ink-hot is --brand-pale, and the room name is TEXT at up to 14px, so it owes 4.5:1.
+  // On the bare ground the accent measures ~4.7:1 and is fine. An open room also paints
+  // .fp-floor at 14%, which lifts the local ground and takes the same pair to ~3.7:1 — and
+  // no ground colour recovers it, because with the floor tint removed the accent still only
+  // reaches 4.7. So the tint is the entire margin, and the label steps up to white.
+  //
+  // The reason this is a test and not a comment: reuniting the two selectors is a one-line
+  // "simplification" that looks like tidying and silently reintroduces the failure.
+  const css = fs.readFileSync(path.join(PUBLIC, 'styles', 'faq-plan.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const open = /\.faq-room\[open\]\s+\.faq-room__label\s*\{([^}]*)\}/.exec(css);
+  assert.ok(open, 'the open room styles its label');
+  assert.doesNotMatch(
+    open[1], /--ink-hot/,
+    'the open room\'s label must not take --ink-hot — over its own floor tint that is 3.7:1'
+  );
+  // Written as the resting white at full strength rather than `#fff`: this sheet's whole
+  // vocabulary is white-at-alpha, and css-tokens.test.js would otherwise push the hex onto
+  // --bg-elevated, which is a surface token being used as ink.
+  assert.match(
+    open[1], /color:\s*rgba\(255,\s*255,\s*255,\s*1\)/,
+    'it takes full-strength white, which clears AA at ~6.6:1 over the open room\'s floor'
+  );
+
+  // And it has to come after the hover rule, at the same weight, or hovering the room that
+  // is already open drops back to the accent.
+  const hover = css.indexOf('.faq-room__label:hover {');
+  assert.ok(hover > -1 && css.indexOf('.faq-room[open] .faq-room__label {') > hover,
+    'the [open] rule must follow the :hover rule — they are both (0,2,0), so order settles it');
+});
+
+test('printing gives the questions and stops there', () => {
+  // A closed <details> prints closed in Firefox and Safari, but Chrome auto-expands them
+  // for print. With nothing declared, the same page printed a nine-question index on two
+  // engines and nine full answers on the third — and only one of those is the intent.
+  //
+  // The rule lives in home.css, and that is the load-bearing half. faq-plan.css is LAZY —
+  // it ships `media="print"` and is flipped to `all` by index-lazy-css.js — so a print
+  // rule in there would be the one rule that stops working whenever the lazy load loses
+  // its race. home.css is render-blocking and always present. (faq-plan.css also has a
+  // structural rule, enforced above, that every @media in it is the plan-mode gate.)
+  const home = fs.readFileSync(path.join(PUBLIC, 'styles', 'home.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const print = /@media print\s*\{\s*(\.faq-q\s*>\s*\.faq-room__a\s*\{[^}]*\})/.exec(home);
+  assert.ok(print, 'home.css settles what printing the homepage FAQ does');
+  assert.match(print[1], /display:\s*none/, 'print must suppress the answers');
+
+  const lazy = fs.readFileSync(path.join(PUBLIC, 'styles', 'faq-plan.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.doesNotMatch(
+    lazy, /@media print/,
+    'the print rule must not move into the lazy sheet, where it would apply only when the ' +
+    'stylesheet happens to have arrived'
+  );
+
+  // Scoped so guides.html, which shares .faq-q for 17 troubleshooting items, still prints
+  // in full — it has no .faq-room__a.
+  assert.doesNotMatch(GUIDES, /faq-room__a/, 'the print rule must not reach the guides list');
 });

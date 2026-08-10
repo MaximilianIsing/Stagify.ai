@@ -81,7 +81,7 @@
     
     <!-- Structured Data. data-lang-keywords names the translation key for the "keywords"
          property below -- see the note on index.html's block. -->
-    <script type="application/ld+json" data-lang-keywords="pdf.meta.keywords">
+    <script type="application/ld+json" data-lang-jsonld data-lang-keywords="pdf.meta.keywords">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
@@ -109,7 +109,18 @@
       "keywords": "AI Designer, AI design assistant, design consultation, AI chat, design help, interior design AI, room staging AI"
     }
     </script>
-    
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://stagify.ai/" },
+        { "@type": "ListItem", "position": 2, "name": "AI Designer", "item": "https://stagify.ai/ai-designer.html" }
+      ]
+    }
+    </script>
+
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/toast.css">
     <link rel="stylesheet" href="styles/auth.css">
@@ -146,7 +157,7 @@
           </div>
           <a href="gallery.html" class="nav-link desktop-only hidden" data-nav-gallery data-lang="navigation.gallery">Gallery</a>
           <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
-          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
+          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact</a>
           <div class="profile-menu-wrap">
             <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" data-lang-attr="auth.accountMenu|aria-label" aria-label="Account menu">
               <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">

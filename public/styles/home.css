@@ -2675,6 +2675,25 @@ body.page-home main {
     animation: none;
   }
 }
+/* PRINTING THE HOMEPAGE FAQ GIVES THE QUESTIONS, NOT THE ANSWERS.
+   Without this the same page printed two different documents: a closed <details> prints
+   closed in Firefox and Safari, but Chrome auto-expands them for print, so one engine
+   produced a nine-question index and another produced nine full answers. The index is
+   the intent — a printed homepage wants to say what the FAQ covers, not four hundred
+   words per room.
+
+   IT LIVES HERE, NOT IN faq-plan.css, for two reasons. That sheet is gated entirely
+   behind one `min-width: 1001px` media query — a structural rule its own spec enforces —
+   and, more to the point, it is LAZY: it ships `media="print"` and is flipped to `all`
+   by index-lazy-css.js. A print rule inside it would be the one rule that stops working
+   whenever the lazy load loses its race. home.css is render-blocking, so this is always
+   there. Scoped to `.faq-room__a`, which only index.html uses; guides.html shares
+   `.faq-q` for its troubleshooting list and still prints in full. */
+@media print {
+  .faq-q > .faq-room__a {
+    display: none;
+  }
+}
 .faq-q > p a {
   color: var(--brand);
   font-weight: 600;
@@ -3159,7 +3178,7 @@ body.page-home main {
     gap: 12px;
   }
   /* Two stacked quote cards run about two screens tall on a phone. Cards are in
-     document order, so this keeps Justin S. and drops Andy E.; display:none (not
+     document order, so this keeps Justin Stern and drops Andy Eras; display:none (not
      visibility/opacity) also drops the hidden card out of the a11y tree. */
   .tw-card:nth-child(n + 2) {
     display: none;

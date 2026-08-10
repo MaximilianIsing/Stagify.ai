@@ -350,13 +350,13 @@
       "items": {
         "justin": {
           "quote": "La première fois que j'ai essayé Stagify, j'ai été honnêtement bluffé. J'ai réalisé que je pouvais simplement utiliser mon téléphone, me passer du photographe coûteux et obtenir malgré tout des résultats époustouflants. C'est un vrai changement pour mes annonces, et le prix est incroyable !",
-          "author": "Justin S. (Courtier)",
+          "author": "Justin Stern (Courtier)",
           "role": "Tahari Realty",
           "location": "Manhattan, New York"
         },
         "andy": {
           "quote": "Stagify s'intègre parfaitement à ma façon de travailler. J'envoie la photo d'une annonce entre deux visites et elle revient mise en scène avant même que je sois de retour à mon bureau. Mes clients sont toujours impressionnés par le rendu soigné des photos finales.",
-          "author": "Andy E. (Courtier)",
+          "author": "Andy Eras (Courtier)",
           "role": "Centennial Properties",
           "location": "Manhattan, New York"
         }
@@ -1340,7 +1340,7 @@
       "subtitle": "Suppression des meubles, le Designer IA, le Studio de Masquage et des modèles de meilleure qualité : tous les outils professionnels pour moins cher qu’un seul home staging traditionnel."
     },
     "plan": {
-      "hintSignIn": "Connectez-vous d’abord via le menu profil pour que le paiement puisse être lié à votre compte Stagify.",
+      "hintAccountFirst": "Créez d’abord un compte gratuit : c’est ainsi que votre abonnement est lié à vous.",
       "hintTip": "Astuce : connectez-vous d’abord via le menu profil pour que le paiement puisse être lié à votre compte Stagify.",
       "hintStagingDisabled": "Les abonnements sont désactivés sur le site de préproduction.",
       "billedMonthly": "Facturation mensuelle · Annulable à tout moment",
