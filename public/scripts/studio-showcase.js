@@ -261,13 +261,17 @@ function mountFrontDemo(sc) {
  * strings — the tabs (wide) and the arrows (narrow) are the real controls, and a screen
  * reader already gets "tab 3 of 5" from the tablist itself.
  *
+ * Appended INSIDE `.shw__nav`, after both arrows. The narrow layout wraps that flex row
+ * and reorders it into `label` / `‹ ● ● ● ● ● ›`, which needs the dots and the arrows to
+ * be siblings — an element cannot be flowed into a row belonging to another parent.
+ *
  * @param {HTMLElement} root
  * @param {number} count
  * @returns {HTMLElement[]} the dots, in panel order (empty if there is nowhere to put them)
  */
 function buildDots(root, count) {
   const nav = root.querySelector('.shw__nav');
-  if (!nav || !nav.parentNode) return [];
+  if (!nav) return [];
   const wrap = document.createElement('div');
   wrap.className = 'shw__dots';
   wrap.setAttribute('aria-hidden', 'true');
@@ -278,7 +282,7 @@ function buildDots(root, count) {
     wrap.appendChild(dot);
     dots.push(dot);
   }
-  nav.parentNode.insertBefore(wrap, nav.nextSibling);
+  nav.appendChild(wrap);
   return dots;
 }
 

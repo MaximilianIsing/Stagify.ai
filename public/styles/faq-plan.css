@@ -109,6 +109,11 @@
     /* The one accent. Everything on the sheet is white ink on indigo except the
        active room, which switches to this. */
     --ink-hot: var(--brand-pale);
+    /* Furniture's resting opacity, named because it is written in TWO places that must
+       agree: the settled `.fp-furn` rule, and the value the one-time draft-in fades UP to.
+       Hard-coded, the draft-in silently pulled every room's furniture back to the old
+       number the moment it finished — visible only as "it looked right for half a second". */
+    --furn-rest: 0.55;
   }
 
   .faq-plan__sheet {
@@ -571,13 +576,20 @@
      left eight empty boxes and made the plan look unfinished rather than unfurnished.
      A floor plan of a home has furniture in every room; opening one brightens its
      own, it does not conjure it. */
+  /* 0.55, not the 0.4 this ran at for a long time. The furniture must stay LIGHTER than the
+     partitions it sits between — that is the hierarchy the whole drawing rests on — but the
+     partitions are rgba(255,255,255,0.5) at full opacity, so 0.4 x 0.9 = 0.36 put the
+     furniture a long way below them rather than just under. At the size a room actually
+     renders (~35px per metre) that was the real reason the pieces looked like mush: not too
+     little detail, too little contrast to resolve the detail already there. 0.55 x 0.9 =
+     0.495 sits immediately under the partitions, which is where it belongs. */
   .fp-furn {
     color: rgba(255, 255, 255, 0.9);
-    opacity: 0.4;
+    opacity: var(--furn-rest);
   }
   .faq-room:hover .fp-furn,
   .faq-room:has(:focus-visible) .fp-furn {
-    opacity: 0.6;
+    opacity: 0.72;
   }
   .faq-room[open] .fp-furn {
     color: var(--ink-hot);
@@ -681,7 +693,7 @@
     transition: opacity 0.4s ease calc(0.55s + var(--n, 0) * 45ms);
   }
   .faq-plan.is-armed.is-drafted .fp-furn {
-    opacity: 0.4;
+    opacity: var(--furn-rest);
     transition: opacity 0.5s ease calc(0.75s + var(--n, 0) * 45ms);
   }
   .faq-plan.is-armed.is-drafted .fp-key {

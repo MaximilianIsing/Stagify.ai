@@ -1530,35 +1530,57 @@ body.page-home main {
      already means the active one is the only focusable tab, so hiding the rest costs the
      keyboard nothing. Do NOT bring the scroller back; that is what the drift guard in
      test/frontend/studio-showcase.test.js is pinning. */
+  /* Two rows out of one flex line: the label claims a full row, then the arrows and the
+     dots share the next one as `‹ ● ● ● ● ● ›`. `order` does the reordering rather than
+     the markup, because the wide layout wants the tablist BETWEEN the arrows and the
+     source order is the one screen readers and the tab sequence follow. */
   .shw__nav {
-    gap: 6px;
-    margin-bottom: 10px;
+    flex-wrap: wrap;
+    row-gap: 2px;
+    column-gap: 4px;
+    margin-bottom: 14px;
+  }
+  .shw__arrow--prev {
+    order: 1;
+  }
+  .shw__dots {
+    order: 2;
+  }
+  .shw__arrow--next {
+    order: 3;
   }
   .shw__arrow {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    /* A 20px chevron is not a touch target. 44px is, and padding cannot get there on a
-       glyph this small — see the share page's 27px-target regression. */
-    min-width: 44px;
-    min-height: 44px;
+    /* A ~16px chevron is not a touch target, and padding cannot get a glyph this small
+       to a comfortable one — see the share page's 27px-target regression. 40px clears
+       WCAG 2.5.8 with room to spare while staying visually slight, because the button
+       carries NO fill: it is a bare chevron with a generous hit box around it. */
+    min-width: 40px;
+    min-height: 40px;
     padding: 0;
-    border-radius: 999px;
-    /* Same glass as .shw__tab: the arrows read as part of the control, not as chrome. */
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.42);
-    backdrop-filter: blur(14px) saturate(170%);
-    -webkit-backdrop-filter: blur(14px) saturate(170%);
+    border: 0;
+    background: none;
     color: var(--brand-deep);
+    opacity: 0.62;
     cursor: pointer;
   }
   .shw__arrow:focus-visible {
     outline: 3px solid var(--brand);
     outline-offset: 2px;
+    border-radius: 999px;
+  }
+  .shw__arrow svg {
+    width: 16px;
+    height: 16px;
   }
   .shw__tabs {
-    flex: 1 1 auto;
+    /* The whole first row — `flex-basis: 100%` is what breaks the line before the
+       arrows, which is what puts them beside the dots underneath. */
+    order: 0;
+    flex: 1 0 100%;
     flex-wrap: nowrap;
     justify-content: center;
     min-width: 0;
@@ -1567,32 +1589,46 @@ body.page-home main {
   .shw__tab:not(.is-active) {
     display: none;
   }
+  /* The filled brand pill is a SELECTED state, and here there is nothing to be selected
+     against — the other four tabs are hidden, so the fill was a large blue slab saying
+     something the row already said. Strip it to the label alone and let it be BIG: on a
+     phone this line is the section's own heading for whichever studio is on show, not a
+     control label, so it is sized off .home-section__title rather than off .shw__tab. */
   .shw__tab.is-active {
-    /* The label fills the gap between the arrows, and WRAPS inside it — `Estúdio de
-       exteriores` and `익스테리어 스튜디오` are both wider than a 360px phone minus two
-       44px arrows, and nowrap would push the next arrow off the screen edge. */
-    flex: 1 1 auto;
-    min-width: 0;
+    /* Wraps rather than nowrap: `Estúdio de exteriores` at this size is wider than a
+       360px phone, and an unbreakable line would push the section into a sideways scroll. */
     white-space: normal;
+    font-size: 23px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    padding: 2px 4px;
+    background: none;
+    border-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: var(--brand-deep);
   }
   /* The label names the studio you are on; the dots are the only thing left saying how
-     many there are and where you are among them. studio-showcase.js builds one per panel. */
+     many there are and where you are among them. studio-showcase.js builds one per panel,
+     inside .shw__nav so this row can hold the arrows either side of them. */
   .shw__dots {
     display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 7px;
-    margin: 0 auto 18px;
+    gap: 6px;
+    margin: 0;
   }
   .shw__dot {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: rgba(37, 99, 235, 0.24);
     transition: background 0.22s ease, transform 0.22s ease;
   }
   .shw__dot.is-active {
     background: var(--brand);
-    transform: scale(1.35);
+    transform: scale(1.3);
   }
   .shw__panel-inner {
     padding: 18px 16px 20px;
