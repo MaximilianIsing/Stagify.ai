@@ -80,6 +80,58 @@ commit destinations, and their own modes — and their own phase machines, which
 DOM toggling and would need about as much configuration as they'd save. Share the
 algorithms and the data; leave the wiring.
 
+### Shared chrome: the header and footer are copied by hand, on purpose
+
+The site header (`<header class="site-header">`, ~37 lines) is duplicated into **12**
+`public/*.html` files, and the site footer (Privacy · Terms · Status · ©) into **6**.
+This looks like the obvious thing to extract, and periodically gets flagged as such.
+**It cannot become a runtime include.**
+[`lib/i18n/render-page.js`](../../lib/i18n/render-page.js) is a *pure string transform
+over the static English HTML* — so chrome injected by client-side JS would never be
+server-side translated, and `/es`, `/fr/guides.html` … would ship an English header to
+crawlers and to no-JS clients. The markup has to stay literal in every file.
+
+Note the shape of that constraint: it rules out a *runtime* partial, not a *build-time*
+one. [`scripts/build-i18n-seo.js`](../../scripts/build-i18n-seo.js) already rewrites
+these files in place (idempotent, anchor-based, drift-tested), and a header injector
+could follow the same pattern. That has not been done — it fixes no bug and adds a build
+step that is deliberately *not* wired into `scripts/build.sh` — but it is the shape to
+reach for if nav churn ever justifies it. What is **not** available is pointing the
+renderer at the English pages: `express.static` is mounted in
+[`app-middleware.js`](../../lib/http/app-middleware.js) well before any router and
+already answers `/` and every `*.html`.
+
+Because the markup must stay duplicated, **the guard is the fix**, and each block has one:
+
+| Block | Guard |
+|---|---|
+| Whole header | [`test/frontend/site-header-parity.test.js`](../../test/frontend/site-header-parity.test.js) |
+| Staging dropdown sub-block | [`test/frontend/staging-menu.test.js`](../../test/frontend/staging-menu.test.js) |
+| Header `aria-label` i18n | [`test/i18n/nav-aria-i18n.test.js`](../../test/i18n/nav-aria-i18n.test.js) |
+| Whole footer | [`test/frontend/site-footer-parity.test.js`](../../test/frontend/site-footer-parity.test.js) |
+
+All four share discovery and extraction via
+[`test/helpers/nav-pages.js`](../../test/helpers/nav-pages.js), so they cannot disagree
+about *which* pages carry a block — a guard that quietly narrows its own file list keeps
+passing while checking less, which is the failure mode it exists to prevent. Two traps
+that helper already handles, and any future scan over this markup must too: comment
+bodies are masked length-preservingly (`gallery.html` quotes the header's opening tag
+inside a comment), and blocks are matched by **tag depth**, because several pages nest
+further `<header>` elements inside the page body.
+
+The footer is the cautionary tale. It went unguarded until 2026-08-10 and drifted into
+three variants — `guides.html` and `404.html` lost their `data-lang` attributes entirely
+and shipped an English footer on all eleven locales, while two rival year mechanisms
+(`id="year"` in `app.js` vs `.footer-year` + `scripts/footer-year.js`) meant the block
+could not be one shape. Every key involved already existed in all eleven packs; only the
+attributes were missing. Two sanctioned variations remain, each pinned by a named
+constant in the spec: `gallery.html`'s `id="gal-nav"`, the empty `.nav-trailing` on the
+three marketing pages, and `enterprise.html`'s class-styled `.ent-site-footer`.
+
+**When you add a page with this chrome, copy the block verbatim and run `npm test`** —
+the guards will tell you what you dropped. When you change the chrome, change it in every
+file; there is no shortcut, by design.
+
 **User-facing messages go through [`scripts/toast.js`](../../public/scripts/toast.js)**
 (`showToast(msg, type)` / `showErrorToast(msg)`) — the single message channel for all
 three studios. It self-creates its `#toast-host`, so a page needs no markup for it, but
