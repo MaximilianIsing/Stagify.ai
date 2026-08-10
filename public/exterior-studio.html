@@ -78,7 +78,7 @@
     <link rel="alternate" hreflang="x-default" href="https://stagify.ai/exterior-studio.html">
     <!-- Structured Data. data-lang-keywords names the translation key for the "keywords"
          property below -- see the note on index.html's block. -->
-    <script type="application/ld+json" data-lang-keywords="pageMeta.exteriorStudio.keywords">
+    <script type="application/ld+json" data-lang-jsonld data-lang-keywords="pageMeta.exteriorStudio.keywords">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
@@ -112,6 +112,17 @@
         "Works on desktop, tablet and phone"
       ],
       "keywords": "curb appeal, exterior photo editing, real estate photo enhancement, sky replacement, remove cars from photo, remove people from photo, snow removal real estate photo, twilight real estate photo, golden hour, AI photo editor"
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://stagify.ai/" },
+        { "@type": "ListItem", "position": 2, "name": "Exterior Studio", "item": "https://stagify.ai/exterior-studio.html" }
+      ]
     }
     </script>
 
@@ -151,7 +162,7 @@
           </div>
           <a href="gallery.html" class="nav-link desktop-only hidden" data-nav-gallery data-lang="navigation.gallery">Gallery</a>
           <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
-          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
+          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact</a>
           <div class="profile-menu-wrap">
             <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" data-lang-attr="auth.accountMenu|aria-label" aria-label="Account menu">
               <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">

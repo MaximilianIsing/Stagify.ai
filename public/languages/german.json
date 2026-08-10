@@ -350,13 +350,13 @@
       "items": {
         "justin": {
           "quote": "Als ich Stagify zum ersten Mal ausprobierte, war ich ehrlich gesagt begeistert. Mir wurde klar, dass ich einfach mein Handy nutzen, den teuren Fotografen weglassen und trotzdem beeindruckende Ergebnisse erzielen konnte. Es ist ein Wendepunkt für meine Objekte, und der Preis ist fantastisch!",
-          "author": "Justin S. (Makler)",
+          "author": "Justin Stern (Makler)",
           "role": "Tahari Realty",
           "location": "Manhattan, New York"
         },
         "andy": {
           "quote": "Stagify passt perfekt in meinen Arbeitsalltag. Ich lade zwischen zwei Besichtigungen ein Objektfoto hoch, und es ist fertig gestaltet, bevor ich wieder am Schreibtisch bin. Meine Kunden sind immer beeindruckt, wie professionell die fertigen Fotos aussehen.",
-          "author": "Andy E. (Makler)",
+          "author": "Andy Eras (Makler)",
           "role": "Centennial Properties",
           "location": "Manhattan, New York"
         }
@@ -1340,7 +1340,7 @@
       "subtitle": "Möbel entfernen, der KI-Designer, das Masking Studio und hochwertigere Modelle – alle Profi-Werkzeuge für weniger als ein einziges klassisches Home Staging."
     },
     "plan": {
-      "hintSignIn": "Melden Sie sich zuerst über das Profilmenü an, damit die Zahlung mit Ihrem Stagify-Konto verknüpft werden kann.",
+      "hintAccountFirst": "Erstellen Sie zuerst ein kostenloses Konto – so wird Ihr Abo mit Ihnen verknüpft.",
       "hintTip": "Tipp: Melden Sie sich zuerst über das Profilmenü an, damit die Zahlung mit Ihrem Stagify-Konto verknüpft werden kann.",
       "hintStagingDisabled": "Abonnements sind auf der Staging-Website deaktiviert.",
       "billedMonthly": "Monatliche Abrechnung · Jederzeit kündbar",

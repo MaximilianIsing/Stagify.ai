@@ -17,9 +17,10 @@
    WHY IT IS A BLUEPRINT AND NOT WHITE PAPER. Dark ink needs an opaque ground,
    so the first attempt put the drawing on white — which then sat on the page
    like a lightbox, fighting every glass panel around it. Inverting it solves
-   both at once: a deep indigo ground gives the linework more contrast than
-   white ever did, and it belongs to the same blue family as the rest of the
-   site instead of interrupting it. It is also, literally, what a blueprint is.
+   both at once: a deep blue ground gives the linework more contrast than white
+   ever did, and — held to the brand ramp's own hue, a few steps under
+   `--brand-deep` — it belongs to the same blue family as the rest of the site
+   instead of interrupting it. It is also, literally, what a blueprint is.
 
    THE ONE STRUCTURAL RULE. Every plan-mode declaration sits inside the single
    `@media screen and (min-width: 1001px)` block. Outside it this file only
@@ -27,9 +28,16 @@
    degradation total rather than partial:
 
      - below 1001px  -> the accordion, with a topic chip
-     - print         -> the accordion (`screen` excludes it), all nine answers
+     - print         -> the nine questions, as a list (`screen` excludes plan mode)
      - sheet fails   -> the accordion
      - JS fails      -> the drawing, in CSS, minus furniture/doors/keys
+
+   PRINT IS QUESTIONS ONLY, and it takes a rule to say so — but NOT one in this file.
+   A closed <details> prints closed in Firefox and Safari while Chrome auto-expands them
+   for printing, so with nothing declared the same page printed a question list on two
+   engines and nine full answers on the third. The rule that settles it sits in home.css
+   (`@media print`, next to `.faq-q > p`), because this sheet is lazy: it would be the
+   one rule that stops working whenever the lazy load loses its race.
 
    There is no state in which the user gets half a floor plan. Anything hidden
    by default must be given a `display` back inside the media query, or it is
@@ -136,7 +144,13 @@
     container-type: size;
     border: 1px solid rgba(147, 197, 253, 0.22);
     border-radius: 4px;
-    background: linear-gradient(158deg, #24417f 0%, #1b3269 52%, #142551 100%);
+    /* The ground sits on the brand ramp's deep end (--brand-deep #1e3a8a / --primary
+       #1e40af), a few steps under it rather than off in navy. An earlier, darker mix
+       read as its own colour on the page — near-black blue next to a palette whose
+       darkest blue is #1e3a8a. These stops share that hue (~223deg) and are only
+       lighter than the linework needs them to be, which is the whole tuning range:
+       light enough to belong to the site, dark enough that white ink still carries. */
+    background: linear-gradient(158deg, #2a4b9e 0%, #223c86 52%, #1b306d 100%);
     /* Deliberately restrained, and lighter than a dark panel would normally take.
        This sheet is the one dark element on a pale lavender page, so it already has
        all the separation it needs from its own edge — a deep, wide shadow on top of
@@ -251,9 +265,26 @@
     pointer-events: none;
   }
 
-  .faq-room__label:hover,
-  .faq-room[open] .faq-room__label {
+  /* HOVER TAKES THE ACCENT; OPEN GOES WHITE — and that split is a contrast floor, not a
+     preference. `--ink-hot` is --brand-pale, and this label is real text at up to 14px, so
+     it owes 4.5:1, not the 3:1 the linework gets. Against the bare ground the accent
+     measures ~4.7:1 and is fine. The open room additionally paints `.fp-floor` at 14%,
+     which lifts the local ground and drops the same pair to ~3.7:1. No ground colour fixes
+     that: with the floor tint removed entirely the accent still only reaches 4.7, so the
+     tint IS the whole margin. The label is also the one part of an open room that does not
+     have to carry the state — the wall, the floor, the key bubble and the furniture all go
+     hot — so it steps out of the accent and up to white at ~6.6:1.
+     The [open] rule is written second at the same (0,2,0) on purpose: hovering the room
+     that is already open has to land here, and source order is what settles it. */
+  .faq-room__label:hover {
     color: var(--ink-hot);
+  }
+  .faq-room[open] .faq-room__label {
+    /* Spelled as the resting white at full strength, not `#fff`, and not the
+       `--bg-elevated` token css-tokens.test.js offers for that hex — that token is a
+       SURFACE colour and this is ink. Every mark on this sheet is white at some alpha;
+       an open label is simply the only one at 1. */
+    color: rgba(255, 255, 255, 1);
   }
   /* A solid rectangle would read as another wall. A dashed offset marquee is native
      CAD vocabulary and unmistakably not architecture. The ring goes on the LABEL, not
@@ -310,7 +341,7 @@
        alpha here lets the grid back through the body copy, which is the exact problem
        this panel exists to solve. Opacity is not the dial for how present it feels —
        the colour is. */
-    background: linear-gradient(180deg, #26437f 0%, #1d3466 100%);
+    background: linear-gradient(180deg, #2c4d9e 0%, #243d80 100%);
     border: 1px solid rgba(147, 197, 253, 0.26);
     border-radius: 3px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -452,7 +483,11 @@
   .faq-plan__sheet:has(.faq-room__label:hover) .faq-room:not(:hover) .faq-room__ink,
   .faq-plan__sheet:has(.faq-room[open]):not(:has(.faq-room__label:hover)) .faq-room:not([open]) > summary .faq-room__label,
   .faq-plan__sheet:has(.faq-room[open]):not(:has(.faq-room__label:hover)) .faq-room:not([open]) .faq-room__ink {
-    opacity: 0.68;
+    /* 0.72, and the fourth decimal place matters because a dimmed ROOM NAME is still text.
+       At 0.68 the label's effective alpha is 0.93 x 0.68 = 0.632, which on the lightest
+       corner of the ground measures ~4.5:1 — right on the AA line and under it once the
+       ground is lifted at all. 0.72 puts it near 4.8 and is visually the same dim. */
+    opacity: 0.72;
   }
 
   /* ---- the drawing --------------------------------------------------------
@@ -493,7 +528,16 @@
   /* Windows: the ground-coloured break punches through the poché and the sill line is
      drawn back across it. Without these the envelope is just a rounded rectangle. */
   .fp-win__gap {
-    stroke: #1c3167;
+    /* THE GROUND, not an approximation of it. This stroke has to BE the sheet colour to
+       punch an opening through the poché, and the sheet is a gradient — so a flat hex can
+       only match one band of it. It used to be one, tuned near the 52% stop, which meant
+       the three north windows and the upper side ones painted a bar visibly darker than
+       the ground they were supposedly cutting through: dark slots rather than openings.
+       `#fp-ground` in index.html's <defs> restates the sheet's gradient in viewBox
+       coordinates, so the gap now matches at every window. The two copies of the stops are
+       pinned against each other by home-faq-plan.test.js — retune one and the build says
+       so. */
+    stroke: url(#fp-ground);
     stroke-width: 9.5;
   }
   .fp-win__sill {
@@ -613,7 +657,7 @@
     stroke: var(--ink-hot);
   }
   .faq-room[open] .fp-key text {
-    fill: #16295a;
+    fill: #1e3778;
   }
 }
 

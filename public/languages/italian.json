@@ -350,13 +350,13 @@
       "items": {
         "justin": {
           "quote": "La prima volta che ho provato Stagify sono rimasto sinceramente sbalordito. Ho capito che potevo semplicemente usare il telefono, evitare il fotografo costoso e ottenere comunque risultati straordinari. È una svolta per i miei annunci, e il prezzo è fantastico!",
-          "author": "Justin S. (Agente)",
+          "author": "Justin Stern (Agente)",
           "role": "Tahari Realty",
           "location": "Manhattan, New York"
         },
         "andy": {
           "quote": "Stagify si integra perfettamente nel mio modo di lavorare. Carico la foto di un annuncio tra una visita e l'altra ed è già arredata prima che io torni alla scrivania: i miei clienti restano sempre colpiti da quanto siano curate le foto finali.",
-          "author": "Andy E. (Agente)",
+          "author": "Andy Eras (Agente)",
           "role": "Centennial Properties",
           "location": "Manhattan, New York"
         }
@@ -1340,7 +1340,7 @@
       "subtitle": "Rimozione dei mobili, l’AI Designer, il Masking Studio e modelli di qualità superiore: tutti gli strumenti professionali per meno del costo di un singolo home staging tradizionale."
     },
     "plan": {
-      "hintSignIn": "Accedi prima dal menu del profilo, così il pagamento potrà essere collegato al tuo account Stagify.",
+      "hintAccountFirst": "Crea prima un account gratuito: è così che il tuo abbonamento viene collegato a te.",
       "hintTip": "Suggerimento: accedi prima dal menu del profilo, così il pagamento potrà essere collegato al tuo account Stagify.",
       "hintStagingDisabled": "Gli abbonamenti sono disattivati sul sito di staging.",
       "billedMonthly": "Fatturazione mensile · Disdici quando vuoi",

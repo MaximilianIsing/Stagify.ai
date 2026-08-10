@@ -34,7 +34,7 @@
       ]
     }
     </script>
-    <script type="application/ld+json">
+    <script type="application/ld+json" data-lang-jsonld>
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
@@ -128,7 +128,7 @@
           </div>
           <a href="gallery.html" class="nav-link desktop-only hidden" data-nav-gallery data-lang="navigation.gallery">Gallery</a>
           <a href="guides.html" class="nav-link" data-lang="navigation.guides">Guides</a>
-          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact Us</a>
+          <a href="contact.html" class="nav-link" data-lang="navigation.contactUs">Contact</a>
           <div class="profile-menu-wrap">
             <button type="button" id="profile-menu-btn" class="profile-menu-btn" aria-expanded="false" aria-haspopup="true" data-lang-attr="auth.accountMenu|aria-label" aria-label="Account menu">
               <svg class="profile-menu-btn__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -191,7 +191,7 @@
       </header>
 
       <section class="sp-plan-wrap" aria-label="Subscribe to Stagify+">
-        <p class="sp-hint" id="plus-checkout-hint" aria-live="polite" data-lang="stagifyPlus.plan.hintSignIn">Sign in from the profile menu first so checkout can link your payment to your Stagify account.</p>
+        <p class="sp-hint" id="plus-checkout-hint" aria-live="polite" data-lang="stagifyPlus.plan.hintAccountFirst">Create a free account first — that's how your subscription gets linked to you.</p>
         <div class="sp-plan glass">
           <!-- Trial/price copy: keep in sync with your Stripe Payment Link -->
           <div class="sp-plan-head">
@@ -209,12 +209,16 @@
           </span>
 
           <div class="bh-stage" id="bh-stage">
+            <!--
+              Ships with NO href on purpose. scripts/stagify-plus.js sets one only once
+              it knows who is buying, because a checkout with no `client_reference_id`
+              cannot be mapped back to an account. Hard-coding the Payment Link here
+              left it clickable for the whole gap between "page is interactive" and
+              "fetchMe() resolved" — the exact window a signed-out visitor clicks in.
+            -->
             <a
               id="stagify-plus-checkout-link"
               class="sp-gradient-checkout-btn"
-              href="https://buy.stripe.com/9B6cN5bC24w8aTG1Jf7EQ03"
-              rel="noopener noreferrer"
-              target="_blank"
             ><strong data-lang="stagifyPlus.plan.startTrial">Start free trial</strong></a>
           </div>
           <p class="sp-stripe-pay-note" data-lang="stagifyPlus.plan.payNote">You won't be charged until your trial ends. Cancel anytime.</p>

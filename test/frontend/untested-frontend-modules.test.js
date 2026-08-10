@@ -86,7 +86,6 @@ const UNTESTED = [
   'reset-password.js',
   'sponsors-scroll.js',
   'stagify-plus-blackhole.js',
-  'stagify-plus.js',
   'staging-studio.js',
   'star-border.js',
   'status.js',

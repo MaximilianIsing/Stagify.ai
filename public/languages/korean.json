@@ -350,13 +350,13 @@
       "items": {
         "justin": {
           "quote": "Stagify를 처음 사용해봤을 때 솔직히 깜짝 놀랐습니다. 그냥 휴대폰만 쓰고 값비싼 사진작가 없이도 멋진 결과를 얻을 수 있다는 걸 깨달았죠. 제 매물에는 게임 체인저이고, 가격도 놀랍습니다!",
-          "author": "Justin S. (중개인)",
+          "author": "Justin Stern (중개인)",
           "role": "Tahari Realty",
           "location": "뉴욕 맨해튼"
         },
         "andy": {
           "quote": "Stagify는 제 기존 업무 방식에 딱 들어맞습니다. 매물 사진을 내방 사이에 업로드하면 제가 자리에 돌아오기도 전에 스테이징이 끝나 있고, 고객들은 늘 최종 사진의 완성도에 감탄합니다.",
-          "author": "Andy E. (중개인)",
+          "author": "Andy Eras (중개인)",
           "role": "Centennial Properties",
           "location": "뉴욕 맨해튼"
         }
@@ -1340,7 +1340,7 @@
       "subtitle": "가구 제거, AI 디자이너, 마스킹 스튜디오, 그리고 더 높은 품질의 모델까지 — 모든 전문 도구를 전통적인 홈스테이징 한 번보다 저렴하게."
     },
     "plan": {
-      "hintSignIn": "결제를 Stagify 계정에 연결할 수 있도록 먼저 프로필 메뉴에서 로그인하세요.",
+      "hintAccountFirst": "먼저 무료 계정을 만드세요. 그래야 구독이 회원님 계정에 연결됩니다.",
       "hintTip": "팁: 결제를 Stagify 계정에 연결할 수 있도록 먼저 프로필 메뉴에서 로그인하세요.",
       "hintStagingDisabled": "스테이징 사이트에서는 구독이 비활성화되어 있습니다.",
       "billedMonthly": "매월 청구 · 언제든지 취소 가능",
