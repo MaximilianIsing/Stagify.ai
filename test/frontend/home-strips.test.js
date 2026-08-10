@@ -38,6 +38,19 @@ const INDEX = read('public', 'index.html');
 const HOME_CSS = read('public', 'styles', 'home.css');
 const STRIPS_JS = read('public', 'scripts', 'home-strips.js');
 const REVEAL_JS = read('public', 'scripts', 'home-reveal.js');
+const ENGLISH = JSON.parse(read('public', 'languages', 'english.json'));
+
+/** Every data-lang key the section carries, in the order the strips use them. */
+const LEARN_KEYS = ['home.info.title', 'home.info.subtitle'];
+for (const row of ['why', 'how', 'who', 'team']) {
+  for (const part of ['eyebrow', 'title', 'body', 'caption', 'p1', 'p2', 'p3']) {
+    LEARN_KEYS.push(`home.info.rows.${row}.${part}`);
+  }
+}
+
+/** Walk a dotted key path into a pack. */
+const lookup = (/** @type {string} */ key) =>
+  key.split('.').reduce((/** @type {any} */ o, k) => (o == null ? o : o[k]), ENGLISH);
 
 /** The `#learn` section, sliced out of index.html. */
 function learnSection() {
@@ -170,28 +183,49 @@ test('no data-lang key was dropped when the rows became strips', () => {
   const section = learnSection();
   const found = new Set([...section.matchAll(/data-lang="([^"]+)"/g)].map((m) => m[1]));
 
-  // The exact set the four stacked rows carried. Every one of these is authored in all
-  // 11 packs already; losing one here reverts that string to English on ten locales.
-  const required = ['home.info.title', 'home.info.subtitle'];
-  for (const row of ['why', 'how', 'who', 'team']) {
-    for (const part of ['eyebrow', 'title', 'body', 'caption', 'p1', 'p2', 'p3']) {
-      required.push(`home.info.rows.${row}.${part}`);
-    }
-  }
-
-  const missing = required.filter((k) => !found.has(k));
+  // LEARN_KEYS is the exact set the four stacked rows carried. Every one of these is
+  // authored in all 11 packs already; losing one here reverts that string to English on
+  // ten locales.
+  const missing = LEARN_KEYS.filter((k) => !found.has(k));
   assert.deepEqual(missing, [], `#learn lost i18n keys: ${missing.join(', ')}`);
+});
+
+test('the English text baked into #learn matches english.json', () => {
+  // KEYS ARE NOT ENOUGH — the test above checks that each data-lang key is PRESENT, which
+  // says nothing about the text sitting inside the element. The markup ships English
+  // inline so the section reads correctly before the language pack loads, and the pack
+  // then overwrites it. Let the two drift and the English page silently rewrites itself a
+  // beat after load; every other locale looks perfect, so it is easy to miss entirely.
+  //
+  // This is a two-file edit waiting to go wrong: the strip labels live in index.html AND
+  // in english.json, and nothing else pairs them. Same guard as
+  // test/i18n/staging-label-i18n.test.js, different feature.
+  const section = learnSection();
+  // Entities, not defensiveness: home.info.rows.who.p2 ships as "Sellers &amp; buyers" in
+  // the markup and "Sellers & buyers" in the pack, so a raw comparison fails on correct code.
+  const decode = (/** @type {string} */ s) =>
+    s.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim();
+
+  for (const key of LEARN_KEYS) {
+    // Tag-agnostic: these keys sit on h2, p, span and li.
+    const el = new RegExp(`<(\\w+)[^>]*data-lang="${key.replace(/\./g, '\\.')}"[^>]*>([\\s\\S]*?)</\\1>`);
+    const found = el.exec(section);
+    assert.ok(found, `${key} is not on an element with text content in #learn`);
+    assert.equal(decode(found[2]), lookup(key), `#learn's inline English for ${key} has drifted from english.json`);
+  }
 });
 
 test('the four strip headings no longer carry data-tx', () => {
   const section = learnSection();
-  // The <h2> keeps its effect; the rotated <h3>s must not have one, because every
-  // effect translates along the block axis and that axis is sideways once rotated.
+  // The <h2> keeps its effect; the <h3>s must not have one. Three of the four are hidden
+  // at any moment (a collapsed strip shows only its eyebrow), and the effects run once
+  // when the section scrolls in — so they would play unseen, and the title would then
+  // appear unanimated when its strip was opened.
   assert.match(section, /class="home-section__title" id="learn-title" data-tx="rise"/);
   assert.equal(
     (section.match(/class="hstrip__title"[^>]*data-tx/g) || []).length,
     0,
-    'a rotated strip title must not have a data-tx effect'
+    'a hidden strip title must not have a data-tx effect'
   );
 });
 
@@ -270,6 +304,67 @@ test('a collapsed panel is hidden visually, not removed from the accessibility t
     decls,
     /display:\s*none|visibility:\s*hidden|content-visibility:\s*hidden/,
     'a collapsed strip panel must stay in the accessibility tree and findable by in-page search'
+  );
+});
+
+test('a collapsed spine shows its short label and keeps its title in the accessible name', () => {
+  // Wide layout only: stacked, the strip is full width and the full title is the label.
+  const css = topLevelCss(stripComments(HOME_CSS));
+  const hidden = /display:\s*none|visibility:\s*hidden/;
+
+  // The eyebrow IS the spine's label — the title is too long to set upright in 72-96px,
+  // which is why it used to run sideways. Hide the eyebrow too and the strip becomes a
+  // blank clickable panel: no error, no missing-content warning, just three unlabelled
+  // photos that happen to be buttons.
+  const eyebrow = declsFor(css, '.hstrips--ready .hstrip:not(.is-open) .hstrip__eyebrow');
+  assert.ok(eyebrow, 'the collapsed spine no longer styles its label at all');
+  assert.doesNotMatch(
+    eyebrow,
+    new RegExp(`${hidden.source}|opacity:\\s*0`),
+    'the eyebrow is the collapsed spine\'s only visible label — hiding it leaves a blank panel'
+  );
+
+  // `width: min-content` is what stacks the label one word per line. Paired with it,
+  // `overflow-wrap` is a trap: `break-word` and `anywhere` differ only in that `anywhere`
+  // counts toward MIN-CONTENT sizing — so swapping it in resolves the box to one character
+  // and stacks every LETTER down the spine. Nothing errors; the label just becomes a
+  // column of single letters. `keep-all` is the same guard for the space-less CJK packs.
+  // One word per row takes BOTH of these and neither works alone: min-content alone lets
+  // two short words share a row ("HOW IT / WORKS"), and the oversized word-spacing alone
+  // makes the label scroll sideways inside .hstrip's overflow:hidden. Dropping either one
+  // still renders a label, just not the stacked one.
+  assert.match(eyebrow, /width:\s*min-content/, 'the spine label is no longer stacked by word');
+  assert.match(
+    eyebrow,
+    /word-spacing:\s*100vw/,
+    'without a word-spacing wider than the label box, short words share a row — "HOW IT / WORKS"'
+  );
+  assert.match(
+    eyebrow,
+    /overflow-wrap:\s*break-word/,
+    'the spine label must use overflow-wrap:break-word — `anywhere` feeds min-content sizing and stacks one LETTER per row'
+  );
+  assert.doesNotMatch(eyebrow, /overflow-wrap:\s*anywhere/, 'see above — `anywhere` breaks the min-content width');
+  assert.match(eyebrow, /word-break:\s*keep-all/, 'without keep-all the CJK packs stack one character per row');
+
+  // The title is hidden VISUALLY. display:none would make each button's accessible name
+  // change as it expands, and would drop three of the section's four headings from the
+  // page for anyone not opening every strip in turn.
+  const title = declsFor(css, '.hstrips--ready .hstrip:not(.is-open) .hstrip__title');
+  assert.match(title, /clip-path:\s*inset/, 'the collapsed title must be clipped, not removed');
+  assert.doesNotMatch(
+    title,
+    hidden,
+    'a collapsed strip title must stay in the accessibility tree — it is part of its button\'s name'
+  );
+
+  // THE HEADER MUST NOT GO BACK INTO FLOW. `.hstrip` is a flex column justified to
+  // flex-end and the collapsed `.hstrip__body` keeps its full 600-800px natural height
+  // while invisible, so in flow it pushes the label off the top of the 460px strip.
+  assert.match(
+    declsFor(css, '.hstrips--ready .hstrip:not(.is-open) .hstrip__h'),
+    /position:\s*absolute/,
+    'the collapsed header must stay out of flow, or the invisible panel below it shoves the label off the strip'
   );
 });
 

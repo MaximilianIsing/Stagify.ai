@@ -232,9 +232,9 @@
           "p3": "AI 디자이너: 에이전트 방식의 방 스테이징"
         },
         "team": {
-          "eyebrow": "팀을 위해 설계",
-          "caption": "한 중개 법인 팀에게 Stagify를 교육하는 모습",
-          "title": "사무실 전체가 쓸 수 있을 만큼 쉽습니다",
+          "eyebrow": "필요 없는 것",
+          "caption": "한 중개 법인 팀이 Stagify를 처음 접하는 모습",
+          "title": "사무실 전체가 쓸 수 있고, 교육도 필요 없습니다",
           "body": "설치할 소프트웨어도, 배울 것도 없습니다. 팀의 누구나 브라우저에서 Stagify를 열어 매물 사진을 업로드하면, 사무실의 노트북이든 현장의 휴대폰이든 몇 초 만에 스테이징됩니다.",
           "p1": "디자인 기술이나 소프트웨어 불필요",
           "p2": "모든 브라우저, 모든 기기에서 작동",
@@ -359,7 +359,36 @@
           "author": "Andy Eras (중개인)",
           "role": "Centennial Properties",
           "location": "뉴욕 맨해튼"
+        },
+        "p3": {
+          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Three",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
+        },
+        "p4": {
+          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Four",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
+        },
+        "p5": {
+          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Five",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
+        },
+        "p6": {
+          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
+          "author": "Placeholder Agent Six",
+          "role": "Placeholder Realty",
+          "location": "City, ST"
         }
+      },
+      "deck": {
+        "label": "중개인 후기",
+        "prev": "이전 후기",
+        "next": "다음 후기"
       }
     },
     "faq": {
@@ -608,7 +637,7 @@
       },
       "studios": {
         "label": "스튜디오",
-        "question": "한 개의 방 외에 무엇을 더 할 수 있나요?",
+        "question": "Stagify는 그 밖에 무엇을 할 수 있나요?",
         "answer": "꽤 많습니다. AI Designer는 대화하면서 방 전체를 다시 디자인하므로, 더 따뜻한 색감이나 더 큰 소파를 요청하며 계속 다듬을 수 있습니다. Masking Studio는 어느 영역을 바꿔도 되는지 픽셀 단위로 제어합니다. Exterior Studio는 실내가 아니라 외관을 다룹니다. Listing Studio는 사진 한 세트를 한 번에 처리하고, 매도인에게 확인용으로 보낼 링크를 만들어 줍니다. 만든 결과는 모두 갤러리에 저장됩니다."
       },
       "control": {

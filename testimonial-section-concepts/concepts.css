@@ -1,0 +1,925 @@
+/* Prototype styles for the #testimonials section redesign. Throwaway — not part
+   of the app, never served (this folder sits outside public/).
+
+   Tokens and the shared primitives below are lifted from public/styles/styles.css
+   (:root, lines 225-251) and public/styles/home.css so the concepts read like the
+   real page rather than like a generic mockup. The .tw block in section 5 is a
+   near-verbatim copy of home.css:3034-3218 — concept 0 has to BE today's section,
+   or the height badges and the side-by-side comparison mean nothing.
+
+   ONE STRUCTURAL DIFFERENCE FROM THE REAL SHEET, and it is deliberate: every
+   responsive rule here is an `@container`, not an `@media`. This page shows eight
+   concepts stacked in one window, so a viewport media query would flip all eight at
+   once and only when the browser window is genuinely narrow. Instead .concept__demo
+   is a size container, the header's toggle clamps it to 390px, and the concepts
+   respond to *their own* width. In the real repo these all become plain
+   `@media (max-width: 768px)` — the breakpoint value is unchanged. */
+
+:root {
+  --bg: #ddeeff;
+  --bg-elevated: #ffffff;
+  --fg: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --brand: #2563eb;
+  --brand-strong: #1d4ed8;
+  --brand-deep: #1e3a8a;
+  --brand-soft: #60a5fa;
+  --brand-pale: #93c5fd;
+  --brand-tint: #dbeafe;
+  --brand-wash: #eff6ff;
+  --body-ink: #414f75;
+  --ok: #047857;
+  --bad: #b45309;
+
+  /* The house curve. home.css uses this on .reveal and 6 other places. */
+  --ease: cubic-bezier(0.16, 0.84, 0.44, 1);
+  /* Navy-tinted shadows, never neutral grey — the convention throughout home.css. */
+  --shadow-frame: 0 18px 48px rgba(30, 58, 138, 0.24);
+  --shadow-card: 0 12px 34px rgba(30, 58, 138, 0.12);
+  --shadow-lift: 0 26px 70px rgba(30, 58, 138, 0.22);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--fg);
+  line-height: 1.6;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, #cfe0ff 0%, rgba(207, 224, 255, 0) 60%),
+    radial-gradient(900px 600px at 95% 5%, #dbeafe 0%, rgba(219, 234, 254, 0) 55%),
+    #b2c4f6;
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: rgba(255, 255, 255, 0.62);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+/* ==========================================================================
+   Page chrome — prototype-only furniture. None of this ships.
+   ========================================================================== */
+
+.page-head {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 56px 24px 22px;
+  text-align: center;
+}
+.page-head__kicker {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.page-head__title {
+  margin: 0 0 12px;
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.12;
+  letter-spacing: -0.8px;
+  font-weight: 800;
+  color: var(--brand-deep);
+}
+.page-head__sub,
+.page-head__note {
+  margin: 0 auto;
+  max-width: 680px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #3a4a72;
+}
+.page-head__note {
+  margin-top: 12px;
+  font-size: 13.5px;
+  color: #55628a;
+}
+
+.jump {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px) saturate(170%);
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+}
+.jump a {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  text-decoration: none;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(30, 58, 138, 0.12);
+  white-space: nowrap;
+}
+.jump a:hover { background: var(--brand); color: #fff; border-color: transparent; }
+.jump a.jump--base { opacity: 0.72; }
+
+/* The viewport toggle. Drives html.vp-phone, which clamps every .concept__demo to
+   390px so the container queries fire. */
+.vpbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: 10px;
+  padding: 5px 13px 5px 9px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(30, 58, 138, 0.22);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.vpbtn:hover { border-color: var(--brand); }
+.vpbtn__dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--brand-soft);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.28);
+}
+.vpbtn[aria-pressed="true"] { background: var(--brand-deep); color: #fff; border-color: transparent; }
+.vpbtn[aria-pressed="true"] .vpbtn__dot { background: #fbbf24; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.35); }
+
+/* ==========================================================================
+   Concept scaffold
+   ========================================================================== */
+
+main { padding-bottom: 90px; }
+
+.concept {
+  max-width: 1140px;
+  margin: 0 auto 46px;
+  padding: 0 48px;
+  scroll-margin-top: 64px;
+}
+.concept__head { margin-bottom: 18px; }
+.concept__heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.concept__num {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand-deep);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+.concept__heading h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--brand-deep);
+  letter-spacing: -0.4px;
+}
+.pick {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: 3px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--ok);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.concept__blurb {
+  margin: 0 0 10px;
+  max-width: 780px;
+  font-size: 14.5px;
+  color: #3a4a72;
+}
+.concept__tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+}
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px 3px 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(30, 58, 138, 0.1);
+  position: relative;
+}
+.tag::before {
+  position: absolute;
+  left: 8px;
+  font-weight: 900;
+}
+.tag--pro { color: var(--ok); }
+.tag--pro::before { content: "+"; }
+.tag--con { color: var(--bad); }
+.tag--con::before { content: "\2212"; }
+
+/* The cost strip — four hand-authored numbers per concept, so the pick is
+   informed rather than only aesthetic. */
+.cost {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0 0 10px;
+  border: 1px solid rgba(30, 58, 138, 0.14);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.5);
+  width: fit-content;
+  max-width: 100%;
+}
+.cost__item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 13px;
+  border-right: 1px solid rgba(30, 58, 138, 0.12);
+  font-size: 12.5px;
+}
+.cost__item:last-child { border-right: 0; }
+.cost__k {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.cost__v { font-weight: 600; color: #35426b; }
+.cost__v--warn { color: var(--bad); }
+.cost__v--good { color: var(--ok); }
+
+.badge {
+  display: inline-block;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(30, 58, 138, 0.14);
+  border-radius: 999px;
+  padding: 4px 13px;
+}
+.badge--save { color: var(--ok); }
+.badge--cost { color: var(--bad); }
+
+/* The stage holds exactly the real content box: .home-section is max-width 1140px
+   with 48px side padding, so the section's inner width is 1044px. Every concept
+   renders into that same width, which is what makes the height badges fair. */
+.concept__stage {
+  border: 1px dashed rgba(30, 58, 138, 0.22);
+  border-radius: 18px;
+  padding: 20px 0;
+  background: rgba(255, 255, 255, 0.14);
+}
+/* Size container, so each concept responds to its own width rather than the
+   window's. This is what makes the phone toggle work with no window resize. */
+.concept__demo {
+  width: 100%;
+  container-type: inline-size;
+  container-name: demo;
+}
+html.vp-phone .concept__demo {
+  width: 390px;
+  margin-inline: auto;
+  outline: 1px dashed rgba(30, 58, 138, 0.28);
+  outline-offset: 10px;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   Shared section primitives — copies of .home-section__*
+   ========================================================================== */
+
+.hs__head { margin-bottom: 22px; text-align: center; }
+.hs__title {
+  margin: 0 0 8px;
+  font-size: clamp(23px, 2.8vw, 33px);
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.5px;
+  color: var(--brand-deep);
+}
+.hs__sub {
+  margin: 0 auto;
+  font-size: clamp(14.5px, 1.4vw, 16.5px);
+  line-height: 1.55;
+  color: var(--body-ink);
+  max-width: 600px;
+}
+
+/* ==========================================================================
+   Shared testimonial atoms — the pieces concepts 1, 3, 4, 5, 6 all reuse, so
+   the seven options differ by LAYOUT rather than by card design. Concept 0 keeps
+   its own .tw-* copy, and 7 sets its own type scale.
+   ========================================================================== */
+
+/* The real star path and the real amber, from home.css:3134-3141. */
+.stars { display: flex; gap: 5px; margin: 0 0 13px; color: #ffb400; }
+.stars svg {
+  width: 19px; height: 19px;
+  fill: currentColor; stroke: #b06a00; stroke-width: 0.5;
+  filter: drop-shadow(0 1px 3px rgba(210, 130, 0, 0.55));
+}
+
+/* <figure> carries a UA `margin: 1em 40px`, and NOTHING in the real stylesheets
+   resets it — no universal reset exists in styles.css. That is a live bug in today's
+   section: .tw-card is a <figure>, so each card renders 339px wide inside its 419px
+   grid track and the authored `gap: 22px` shows up as 102px. Concept 0 reproduces it
+   faithfully on purpose (a baseline that quietly fixes the thing it is a baseline for
+   is worthless). Every new atom opts out here. See README. */
+.tq, .t7__slide { margin: 0; }
+
+.tq {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 22px 24px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(165%);
+  -webkit-backdrop-filter: blur(16px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow: var(--shadow-card);
+}
+.tq__text {
+  margin: 0 0 16px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--fg);
+}
+/* margin-top:auto pins the footer, which is what makes a row of cards line up. */
+.tq__by {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(30, 58, 138, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.tq__meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tq__name { font-weight: 700; font-size: 14.5px; color: #111827; }
+.tq__firm {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+  text-transform: uppercase; color: var(--primary, #1e40af);
+}
+/* Deliberately NOT var(--muted) — contrast on the glass. Same call as home.css:3181. */
+.tq__loc { font-size: 11.5px; font-weight: 500; color: #5d636f; }
+.tq__logo { flex: 0 0 auto; width: 56px; height: 56px; border-radius: 13px; object-fit: contain; }
+
+/* Shared controls: dots + arrows, used by concepts 1, 3, 5, 6, 7. */
+.ctl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+.dots { display: flex; gap: 7px; }
+.dot {
+  width: 8px; height: 8px; padding: 0;
+  border: 0; border-radius: 50%;
+  background: rgba(30, 58, 138, 0.24);
+  cursor: pointer;
+  transition: background 0.25s var(--ease), width 0.25s var(--ease);
+}
+.dot[aria-current="true"] { background: var(--brand); width: 22px; border-radius: 999px; }
+.narw {
+  width: 34px; height: 34px; padding: 0;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(30, 58, 138, 0.18);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--brand-deep);
+  cursor: pointer;
+}
+.narw:hover:not(:disabled) { background: var(--brand); color: #fff; border-color: transparent; }
+.narw:disabled { opacity: 0.35; cursor: default; }
+.narw svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+:where(button, [tabindex]):focus-visible,
+:where(.trk):focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   0. Baseline — a near-verbatim copy of home.css:3034-3218 (.tw-*), so this is
+   literally today's section. The only edit is @media -> @container.
+   ========================================================================== */
+
+.tw-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 22px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.tw-card {
+  --mx: 50%;
+  --my: -40%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 28px 22px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: 0 10px 26px rgba(30, 58, 138, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.tw-card::before {
+  content: ""; position: absolute; inset: 0; z-index: 2;
+  border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: linear-gradient(135deg, rgba(96, 165, 250, .55), rgba(37, 99, 235, .16) 42%, rgba(37, 99, 235, .1));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.tw-card::after {
+  content: ""; position: absolute; inset: 0; z-index: 0;
+  border-radius: inherit; pointer-events: none;
+  opacity: 0; transition: opacity 0.4s ease;
+  background: radial-gradient(260px circle at var(--mx) var(--my), rgba(255, 255, 255, .5), transparent 60%),
+    radial-gradient(400px circle at var(--mx) var(--my), rgba(37, 99, 235, .18), transparent 72%);
+}
+.tw-card:hover { transform: translateY(-3px); box-shadow: 0 20px 44px rgba(30, 58, 138, .18); }
+.tw-card:hover::after { opacity: 1; }
+.tw-stars, .tw-text, .tw-by { position: relative; z-index: 1; }
+.tw-stars { display: flex; gap: 5px; margin: 0 0 14px; color: #ffb400; }
+.tw-stars svg {
+  width: 22px; height: 22px;
+  fill: currentColor; stroke: #b06a00; stroke-width: 0.5;
+  filter: drop-shadow(0 1px 3px rgba(210, 130, 0, 0.55));
+}
+.tw-text { margin: 0 0 18px; font-size: 16px; line-height: 1.6; color: var(--fg); }
+.tw-by {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(30, 58, 138, 0.12);
+  display: flex; flex-direction: row; align-items: center;
+  justify-content: space-between; gap: 14px;
+}
+.tw-by__meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tw-logo { flex: 0 0 auto; width: 72px; height: 72px; object-fit: contain; }
+.tw-name { font-weight: 700; font-size: 14.5px; color: #111827; }
+.tw-org { font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: #1e40af; }
+.tw-loc { font-size: 11.5px; font-weight: 500; color: #5d636f; }
+
+@container demo (max-width: 768px) {
+  .tw-grid { grid-template-columns: 1fr; gap: 12px; }
+  /* THE PROBLEM, quoted verbatim from home.css:3211. Five of six quotes gone. */
+  .tw-card:nth-child(n + 2) { display: none; }
+  .tw-card:hover { transform: none; }
+}
+
+/* ==========================================================================
+   1. Snap rail — one code path at every width. The card basis is the only thing
+   the container query changes.
+   ========================================================================== */
+
+.t1__trk {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 2px;
+  padding: 4px 2px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(30, 58, 138, 0.3) transparent;
+}
+.t1__trk .tq {
+  flex: 0 0 41%;
+  scroll-snap-align: start;
+}
+/* The rail is scrollable, so it is a tab stop; without this the focus ring is
+   the only thing telling a keyboard user arrow keys will do something. */
+.t1__trk:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+
+@container demo (max-width: 768px) {
+  .t1__trk { gap: 12px; }
+  .t1__trk .tq { flex: 0 0 86%; }
+}
+
+/* ==========================================================================
+   2. Featured + roster — every slide sits in the SAME grid cell, so the stage is
+   automatically as tall as the longest quote and nothing reflows when you switch.
+   No JS measurement, and it re-settles by itself after a font swap or a language
+   change, which a measured pixel height would not.
+   ========================================================================== */
+
+.t2__stage { display: grid; }
+/* The panel is a plain div, not the <figure>. role="tabpanel" on a sectioning-ish
+   element is an invalid ARIA override — the same trap that got .shw panels changed
+   from <article> to <div> after PSI flagged it. The figure lives inside. */
+.t2__slide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease), visibility 0s linear 0.4s;
+}
+.t2__slide.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+.t2__slide .tq {
+  max-width: 760px;
+  margin-inline: auto;
+  text-align: center;
+  align-items: center;
+  height: 100%;
+}
+.t2__slide .stars { justify-content: center; }
+.t2__slide .tq__text { font-size: 18px; line-height: 1.62; }
+.t2__slide .tq__by { justify-content: center; border-top: 0; padding-top: 6px; }
+.t2__slide .tq__meta { text-align: left; }
+
+.t2__roster {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.t2__chip {
+  display: grid;
+  place-items: center;
+  width: 76px; height: 76px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(30, 58, 138, 0.12);
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  filter: grayscale(1);
+  opacity: 0.5;
+  transition: opacity 0.25s var(--ease), filter 0.25s var(--ease), transform 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.t2__chip:hover { opacity: 0.85; filter: grayscale(0.3); }
+.t2__chip[aria-selected="true"] {
+  opacity: 1;
+  filter: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+  transform: translateY(-3px);
+}
+.t2__chip img { width: 100%; height: 100%; object-fit: contain; }
+
+@container demo (max-width: 768px) {
+  .t2__slide .tq__text { font-size: 16px; }
+  /* The roster is 6 wide; on a phone it becomes a scrollable strip rather than
+     wrapping into two rows that push the quote around. */
+  .t2__roster {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 8px;
+    scroll-snap-type: x proximity;
+  }
+  .t2__chip { flex: 0 0 auto; width: 62px; height: 62px; scroll-snap-align: center; }
+}
+
+/* ==========================================================================
+   3. Wall of six — 3 columns x 3 rows, hero spanning 2x2. That is 4 + 5 = 9
+   cells, an exact fit; any other hero span leaves a hole.
+   ========================================================================== */
+
+.t3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 16px;
+}
+/* Grid items default to min-height:auto, which lets tall content override the
+   row track. Pinning it is what keeps the 2x2 hero from blowing out the grid. */
+.t3 > .tq { min-height: 0; }
+.t3 > .tq:first-child {
+  grid-column: span 2;
+  grid-row: span 2;
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(147, 197, 253, 0.9);
+  box-shadow: var(--shadow-lift);
+}
+/* The hero is two rows tall but its quote is one quote long, so the shared
+   `margin-top:auto` footer would leave ~300px of dead air. Centre the block and give
+   the byline a fixed offset instead. */
+.t3 > .tq:first-child { justify-content: center; }
+.t3 > .tq:first-child .tq__by { margin-top: 26px; }
+.t3 > .tq:first-child .tq__text { font-size: 20px; line-height: 1.55; }
+.t3 > .tq:first-child .stars svg { width: 23px; height: 23px; }
+.t3 > .tq:first-child .tq__logo { width: 72px; height: 72px; }
+
+@container demo (max-width: 768px) {
+  /* The grid becomes the shared phone rail. Same rule as concepts 6. */
+  .t3 {
+    display: flex;
+    grid-auto-rows: auto;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 14px;
+  }
+  .t3 > .tq { flex: 0 0 86%; scroll-snap-align: start; }
+  .t3 > .tq:first-child .tq__text { font-size: 15.5px; }
+  .t3 > .tq:first-child .tq__logo { width: 56px; height: 56px; }
+}
+
+/* ==========================================================================
+   4. Counter-marquee — the track holds the six cards twice, so translateX(-50%)
+   lands exactly back where it started and the loop is seamless. The duplicate
+   half is aria-hidden in the markup.
+   ========================================================================== */
+
+.t4__row {
+  overflow: hidden;
+  padding: 6px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.t4__row + .t4__row { margin-top: 14px; }
+/* No `gap` here on purpose. The seam only lands invisibly if half the track width
+   is exactly one set, and gap puts 5 gaps between 6 cards, not 6 — an 8px lurch on
+   every loop. Per-card margin-right gives each item a uniform 376px pitch, so
+   translateX(-50%) is exactly three pitches. */
+.t4__trk {
+  display: flex;
+  width: max-content;
+  animation: t4-run 52s linear infinite;
+}
+.t4__row--rev .t4__trk { animation-direction: reverse; }
+.t4__trk .tq { flex: 0 0 360px; margin-right: 16px; }
+@keyframes t4-run { to { transform: translateX(-50%); } }
+/* Pause on hover AND on focus-within — a keyboard user tabbing into a moving
+   card would otherwise have the card walk out from under the focus ring. */
+.t4__row:hover .t4__trk,
+.t4__row:focus-within .t4__trk { animation-play-state: paused; }
+
+@container demo (max-width: 768px) {
+  .t4__trk { animation-duration: 34s; }
+  .t4__trk .tq { flex: 0 0 300px; margin-right: 12px; }
+  /* One row on a phone: two rows of 300px cards is more motion than a small
+     screen can carry, and the second row is the duplicate content anyway. */
+  .t4__row--rev { display: none; }
+}
+
+/* ==========================================================================
+   5. Swipe deck — same single-grid-cell trick as concept 2, so the stack is as
+   tall as the longest quote. --i is the depth from the top, set by JS.
+   ========================================================================== */
+
+.t5 { display: grid; place-items: center; }
+/* The grid box is exactly one card tall, but the fanned cards are translated down
+   out of it — five layers at 12px each. Without this margin the buried cards paint
+   over the hint and the arrows, which z-index alone would not fix (grid items honour
+   z-index, so they outrank the following siblings' `auto`). */
+.t5__stack {
+  display: grid;
+  width: min(560px, 100%);
+  margin-bottom: 58px;
+  perspective: 1200px;
+}
+.t5__card {
+  grid-area: 1 / 1;
+  --i: 0;
+  transform:
+    translateY(calc(var(--i) * 12px))
+    scale(calc(1 - var(--i) * 0.045))
+    rotate(calc((var(--i) - 1.5) * 0.9deg));
+  transform-origin: 50% 100%;
+  transition: transform 0.45s var(--ease), opacity 0.45s var(--ease);
+  z-index: calc(10 - var(--i));
+  will-change: transform;
+}
+/* Only the top card takes the pointer; the ones behind must not swallow drags. */
+.t5__card { pointer-events: none; }
+.t5__card[data-top="1"] { pointer-events: auto; cursor: grab; }
+.t5__card[data-top="1"]:active { cursor: grabbing; }
+.t5__card[data-i="4"], .t5__card[data-i="5"] { opacity: 0; }
+.t5__card.is-flying { transition: transform 0.42s ease-in, opacity 0.42s ease-in; opacity: 0; }
+.t5__card.is-dragging { transition: none; }
+.t5__count {
+  font-size: 12.5px; font-weight: 700; color: var(--brand-deep);
+  min-width: 46px; text-align: center;
+}
+.t5__hint {
+  position: relative; z-index: 20;
+  margin: 0; text-align: center;
+  font-size: 12.5px; color: #55628a;
+}
+.t5 .ctl { position: relative; z-index: 20; }
+
+/* ==========================================================================
+   6. Quote + proof — photo rail beside the words.
+   ========================================================================== */
+
+.t6 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+/* NO backdrop-filter here, on purpose, and this one cost an hour to find:
+   `backdrop-filter` and `overflow: hidden` on the SAME element stops Chrome painting
+   descendant images. The photo loaded (naturalWidth 1264), had a correct 176x278 box,
+   computed to opacity 1 / visibility visible, and was the hit-test target at its own
+   centre — it simply never rendered. Either property alone is fine: the glass .tq
+   cards elsewhere here have backdrop-filter and show their logos, and .t4__row has
+   overflow:hidden over glass cards. It is the pair that breaks.
+   The rounded clip is load-bearing (the photo runs to the card edge), so the
+   backdrop-filter is what goes; the flat translucent white is bumped to compensate. */
+.t6__item {
+  display: grid;
+  grid-template-columns: 176px minmax(0, 1fr);
+  min-height: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow: var(--shadow-card);
+}
+.t6__shot { position: relative; min-height: 190px; background: var(--brand-tint); }
+.t6__shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.t6__standin {
+  position: absolute; left: 8px; top: 8px;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.8px;
+  color: #fff; background: rgba(180, 83, 9, 0.92);
+  padding: 3px 7px; border-radius: 5px;
+}
+.t6__item .tq {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 20px 22px 16px;
+}
+.t6__item .tq__text { font-size: 14.5px; }
+
+@container demo (max-width: 768px) {
+  .t6 {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 14px;
+  }
+  .t6__item {
+    flex: 0 0 86%;
+    scroll-snap-align: start;
+    /* Photo on top rather than beside — 176px of photo plus text does not fit. */
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .t6__shot { min-height: 150px; }
+}
+
+/* ==========================================================================
+   7. Editorial + rating band — one quote at display size, over the aggregate.
+   Same single-grid-cell stack as 2 and 5.
+   ========================================================================== */
+
+.t7 { text-align: center; }
+.t7__mark {
+  display: block;
+  font-size: 74px;
+  line-height: 0.6;
+  font-weight: 800;
+  color: var(--brand-pale);
+  margin-bottom: 6px;
+  user-select: none;
+}
+.t7__stage { display: grid; max-width: 880px; margin: 0 auto; }
+.t7__slide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), visibility 0s linear 0.5s;
+}
+.t7__slide.is-on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.t7__q {
+  margin: 0 0 18px;
+  font-size: clamp(19px, 2.3vw, 28px);
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: var(--brand-deep);
+}
+.t7__who {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+}
+.t7__who img { width: 44px; height: 44px; border-radius: 11px; object-fit: contain; }
+.t7__whotxt { text-align: left; }
+
+.t7__bar {
+  width: 100%;
+  max-width: 340px;
+  height: 3px;
+  margin: 22px auto 0;
+  border-radius: 999px;
+  background: rgba(30, 58, 138, 0.14);
+  overflow: hidden;
+}
+.t7__fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--brand);
+  transform-origin: left;
+}
+.t7__fill.is-running { animation: t7-fill var(--dur, 6500ms) linear forwards; }
+@keyframes t7-fill { from { width: 0; } to { width: 100%; } }
+
+.t7__band {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  padding: 16px 22px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: var(--shadow-card);
+}
+.t7__score { display: flex; align-items: center; gap: 11px; }
+.t7__num { font-size: 30px; font-weight: 800; color: var(--brand-deep); line-height: 1; }
+.t7__scoretxt { text-align: left; font-size: 11.5px; font-weight: 600; color: #55628a; }
+.t7__band .stars { margin: 0 0 3px; }
+.t7__sep { width: 1px; align-self: stretch; background: rgba(30, 58, 138, 0.14); }
+.t7__logos { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.t7__logos img {
+  width: 40px; height: 40px; border-radius: 10px; object-fit: contain;
+  filter: grayscale(1); opacity: 0.6;
+  transition: filter 0.25s var(--ease), opacity 0.25s var(--ease);
+}
+.t7__logos img:hover { filter: none; opacity: 1; }
+
+@container demo (max-width: 768px) {
+  .t7__mark { font-size: 54px; }
+  .t7__q { font-size: 18px; }
+  .t7__band { gap: 14px; padding: 14px; }
+  .t7__sep { display: none; }
+  .t7__logos img { width: 34px; height: 34px; }
+}
+
+/* ==========================================================================
+   Reduced motion — hold the two auto-running concepts still. The marquee has no
+   static fallback of its own, so it becomes a plain scroll rail; concept 7 keeps
+   its arrows and simply stops advancing (concepts.js also skips its timer).
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .t4__trk { animation: none; }
+  .t4__row {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .t4__row--rev { display: none; }
+  .t7__fill.is-running { animation: none; width: 100%; }
+  .t2__slide, .t7__slide, .t5__card, .dot, .t2__chip { transition: none; }
+  .t5__card.is-flying { transition: none; }
+}
