@@ -1,0 +1,1378 @@
+/* Prototype styles for the #learn section redesign. Throwaway — not part of the app.
+   Tokens and the shared primitives below are lifted from public/styles/styles.css and
+   public/styles/home.css so the concepts read like the real page rather than like a
+   generic mockup. */
+
+:root {
+  --bg: #ddeeff;
+  --bg-elevated: #ffffff;
+  --fg: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --brand: #2563eb;
+  --brand-strong: #1d4ed8;
+  --brand-deep: #1e3a8a;
+  --brand-soft: #60a5fa;
+  --brand-pale: #93c5fd;
+  --brand-tint: #dbeafe;
+  --brand-wash: #eff6ff;
+  --body-ink: #3e4d73;
+  --ok: #047857;
+  --bad: #b45309;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--fg);
+  line-height: 1.6;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, #cfe0ff 0%, rgba(207, 224, 255, 0) 60%),
+    radial-gradient(900px 600px at 95% 5%, #dbeafe 0%, rgba(219, 234, 254, 0) 55%),
+    #b2c4f6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+/* ==========================================================================
+   Page chrome (prototype-only furniture — none of this ships)
+   ========================================================================== */
+
+.page-head {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 56px 24px 24px;
+  text-align: center;
+}
+.page-head__kicker {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.page-head__title {
+  margin: 0 0 12px;
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.12;
+  letter-spacing: -0.8px;
+  font-weight: 800;
+  color: var(--brand-deep);
+}
+.page-head__sub,
+.page-head__note {
+  margin: 0 auto;
+  max-width: 660px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #3a4a72;
+}
+.page-head__note {
+  margin-top: 12px;
+  font-size: 13.5px;
+  color: #55628a;
+}
+
+.jump {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+}
+.jump a {
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(30, 58, 138, 0.1);
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+.jump a:hover { background: var(--brand); color: #fff; transform: translateY(-1px); }
+.jump--new { background: var(--brand-tint); border-color: rgba(37, 99, 235, 0.35); }
+
+.round-break {
+  max-width: 780px;
+  margin: 26px auto 6px;
+  padding: 22px 24px;
+  text-align: center;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+.round-break h2 {
+  margin: 0 0 8px;
+  font-size: clamp(19px, 2.2vw, 25px);
+  letter-spacing: -0.4px;
+  font-weight: 800;
+  color: var(--brand-deep);
+}
+.round-break p { margin: 0; font-size: 14.5px; line-height: 1.55; color: #3a4a72; }
+
+.concept {
+  max-width: 1180px;
+  margin: 0 auto 20px;
+  padding: 28px 20px 44px;
+  scroll-margin-top: 74px;
+}
+.concept + .concept { border-top: 1px dashed rgba(30, 58, 138, 0.22); }
+
+.concept__head {
+  max-width: 780px;
+  margin: 0 auto 26px;
+  text-align: center;
+}
+.concept__heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.concept__num {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--brand-deep);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+}
+.concept__heading h2 {
+  margin: 0;
+  font-size: clamp(19px, 2.2vw, 26px);
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  font-weight: 800;
+  color: var(--brand-deep);
+}
+.pick {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  vertical-align: 3px;
+}
+.concept__blurb {
+  margin: 0 auto 14px;
+  max-width: 640px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #3a4a72;
+}
+.concept__tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 0 14px;
+  padding: 0;
+}
+.tag {
+  padding: 4px 11px 4px 24px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  position: relative;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(30, 58, 138, 0.1);
+}
+.tag::before {
+  position: absolute;
+  left: 9px;
+  font-weight: 800;
+}
+.tag--pro { color: #0f5132; }
+.tag--pro::before { content: "+"; color: var(--ok); }
+.tag--con { color: #7c4310; }
+.tag--con::before { content: "–"; color: var(--bad); }
+
+.concept__cost {
+  display: inline-block;
+  margin: 0;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(30, 58, 138, 0.14);
+  color: var(--brand-deep);
+}
+.concept__cost.is-good { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+.concept__cost.is-bad { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+/* The demo stage reproduces .home-section's real content box: 1140px max, 48px of
+   padding, so every concept is laid out at the width it would really get. */
+.concept__stage {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+.concept__demo {
+  padding: 26px 0;
+}
+
+.page-foot {
+  padding: 30px 20px 60px;
+  text-align: center;
+  font-size: 13px;
+  color: #46557f;
+}
+
+/* ==========================================================================
+   Shared site primitives (copied from home.css so the concepts look real)
+   ========================================================================== */
+
+.home-section__head {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 28px;
+}
+.home-section__title {
+  font-size: clamp(23px, 2.8vw, 33px);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: var(--brand-deep);
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+.home-section__sub {
+  font-size: clamp(14.5px, 1.4vw, 16.5px);
+  line-height: 1.55;
+  color: #414f75;
+  margin: 0 auto;
+  max-width: 700px;
+}
+
+.home-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.home-list li {
+  position: relative;
+  padding-left: 25px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #3a4a72;
+}
+.home-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 16px no-repeat;
+}
+
+.info-row__eyebrow {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 9px;
+}
+.info-row__title {
+  font-size: clamp(19px, 2.1vw, 25px);
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  color: var(--brand-deep);
+  font-weight: 800;
+  margin: 0 0 11px;
+}
+.info-row__body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--body-ink);
+}
+
+/* The shared photo frame + caption pill, used by most concepts. */
+.info-row__media,
+.segt__media,
+.det__media,
+.xcard__media,
+.rail__media,
+.chips__media,
+.acc__fig {
+  position: relative;
+  margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(30, 58, 138, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: #b2c4f6;
+}
+.info-row__media img,
+.segt__media img,
+.det__media img,
+.xcard__media img,
+.rail__media img,
+.chips__media img,
+.acc__fig img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.info-row__media figcaption,
+.segt__media figcaption,
+.det__media figcaption,
+.xcard__media figcaption,
+.rail__media figcaption,
+.chips__media figcaption,
+.acc__fig figcaption {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  max-width: calc(100% - 28px);
+  padding: 6px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 999px;
+}
+
+/* Reusable glass card surface. */
+.glass {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 12px 34px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.chev {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--brand);
+  transition: transform 0.32s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+
+/* ==========================================================================
+   0 · Today — four stacked rows
+   ========================================================================== */
+
+.info-rows { display: flex; flex-direction: column; gap: 40px; }
+.info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+.info-row--flip .info-row__media { order: 2; }
+
+/* ==========================================================================
+   1 · Accordion + persistent media pane
+   ========================================================================== */
+
+.acc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr);
+  gap: 34px;
+  align-items: center;
+}
+
+.acc__list {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 12px 34px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.acc__item + .acc__item { border-top: 1px solid rgba(30, 58, 138, 0.12); }
+.acc__item {
+  transition: background 0.25s ease;
+}
+.acc__item.is-open { background: rgba(255, 255, 255, 0.5); }
+.acc__item:not(.is-open):hover { background: rgba(255, 255, 255, 0.35); }
+
+.acc__h { margin: 0; }
+.acc__btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 18px;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  /* The open row's left edge gets a brand rule; reserving it on every row means
+     opening one does not shift its own text sideways. */
+  border-left: 3px solid transparent;
+  transition: border-color 0.25s ease;
+}
+.acc__item.is-open .acc__btn { border-left-color: var(--brand); }
+.acc__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: -3px; }
+.acc__labels { display: block; flex: 1 1 auto; min-width: 0; }
+.acc__eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 3px;
+}
+.acc__title {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.3px;
+  color: var(--brand-deep);
+}
+.acc__item.is-open .chev { transform: rotate(180deg); }
+
+/* 0fr → 1fr rather than a measured pixel height: the panel then fits whatever the
+   translated copy needs, with nothing to re-measure on a language switch. */
+.acc__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.acc__item.is-open .acc__panel { grid-template-rows: 1fr; }
+.acc__panel-in { overflow: hidden; }
+.acc__body {
+  margin: 0;
+  padding: 0 20px 4px 21px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--body-ink);
+}
+.acc__panel-in .home-list { padding: 0 20px 18px 21px; }
+
+/* The bullet stagger keys off .is-open, NOT the scroll-reveal .is-visible class the
+   live section uses. That is the fix: a scroll-driven class fires while the panel is
+   still collapsed, so the animation is already spent by the time you open it. */
+.acc__panel-in .home-list li {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.acc__item.is-open .home-list li { opacity: 1; transform: none; }
+.acc__item.is-open .home-list li:nth-child(1) { transition-delay: 0.14s; }
+.acc__item.is-open .home-list li:nth-child(2) { transition-delay: 0.22s; }
+.acc__item.is-open .home-list li:nth-child(3) { transition-delay: 0.3s; }
+
+.acc__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+}
+/* All four photos stay in the DOM and cross-fade. Swapping one <img>'s src instead
+   would flash and refetch on every switch. */
+.acc__fig {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(1.03);
+  transition: opacity 0.45s ease, transform 0.6s cubic-bezier(0.16, 0.84, 0.44, 1);
+  pointer-events: none;
+}
+.acc__fig.is-active,
+.acc__fig.is-peek {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.acc__fig.is-peek { z-index: 2; }
+
+/* ==========================================================================
+   2 · Segmented tabs + split panel
+   ========================================================================== */
+
+.segt__tabs {
+  display: flex;
+  gap: 6px;
+  margin: 0 auto 22px;
+  padding: 6px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 999px;
+  overflow-x: auto;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 12px 34px rgba(30, 58, 138, 0.12);
+}
+.segt__tab {
+  flex: none;
+  padding: 9px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.22s ease, color 0.22s ease;
+}
+.segt__tab:hover { background: rgba(37, 99, 235, 0.1); }
+.segt__tab.is-active { background: var(--brand); color: #fff; }
+.segt__tab:focus-visible { outline: 3px solid var(--brand-deep); outline-offset: 2px; }
+
+/* `display:grid` beats the UA's `[hidden] { display:none }`, so without this rule all
+   four panels render at once and the tabs save no space at all. */
+.segt__panel[hidden] { display: none; }
+.segt__panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  animation: segt-in 0.4s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+}
+@keyframes segt-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+   3 · Native <details> stack
+   ========================================================================== */
+
+.dets {
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 12px 34px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.det + .det { border-top: 1px solid rgba(30, 58, 138, 0.12); }
+.det__sum {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 20px;
+  cursor: pointer;
+  list-style: none;
+  border-left: 3px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.det__sum::-webkit-details-marker { display: none; }
+.det__sum:hover { background: rgba(255, 255, 255, 0.35); }
+.det[open] > .det__sum { border-left-color: var(--brand); background: rgba(255, 255, 255, 0.45); }
+.det__sum:focus-visible { outline: 3px solid var(--brand); outline-offset: -3px; }
+.det__labels { flex: 1 1 auto; min-width: 0; }
+.det__eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 3px;
+}
+.det__title {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.3px;
+  color: var(--brand-deep);
+}
+.det[open] .chev { transform: rotate(180deg); }
+.det__body {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: 26px;
+  align-items: center;
+  padding: 4px 22px 22px 23px;
+}
+.det__media { max-width: 340px; }
+
+/* ==========================================================================
+   4 · Expanding 2×2 card grid
+   ========================================================================== */
+
+.xgrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+.xcard {
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 12px 34px rgba(30, 58, 138, 0.12);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.xcard:not(.is-open):hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(30, 58, 138, 0.2); }
+/* `order` puts the open card first so the three closed ones always fill one tidy row
+   of three. Visual order then differs from DOM order — fine for a prototype, but it
+   is exactly the kind of thing that trips up keyboard users, so it would need
+   rethinking before shipping. */
+.xcard.is-open {
+  order: -1;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 26px;
+  padding: 18px;
+}
+.xcard__media { border-radius: 14px; }
+.xcard:not(.is-open) .xcard__media img { aspect-ratio: 16 / 10; }
+.xcard:not(.is-open) .xcard__media figcaption { display: none; }
+.xcard__text { padding: 14px 16px 16px; min-width: 0; }
+.xcard.is-open .xcard__text {
+  padding: 6px 8px 6px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.xcard__h { margin: 0; }
+.xcard__btn {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.xcard.is-open .xcard__btn { cursor: default; }
+.xcard__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 4px; border-radius: 6px; }
+.xcard__eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 4px;
+}
+.xcard__title {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.3px;
+  color: var(--brand-deep);
+}
+.xcard.is-open .xcard__title { font-size: clamp(19px, 2.1vw, 25px); margin-bottom: 10px; }
+.xcard__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.xcard.is-open .xcard__panel { grid-template-rows: 1fr; }
+.xcard__panel-in { overflow: hidden; }
+
+/* ==========================================================================
+   5 · Horizontal image strips
+   ========================================================================== */
+
+.strips {
+  display: flex;
+  gap: 12px;
+  height: 460px;
+}
+.strip {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 78px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 16px 40px rgba(30, 58, 138, 0.22);
+  transition: flex-grow 0.55s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.strip.is-open { flex-grow: 5.4; }
+.strip__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.strip:not(.is-open):hover .strip__img { transform: scale(1.05); }
+.strip__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.35) 42%, rgba(15, 23, 42, 0.86) 100%);
+}
+.strip__h { position: relative; z-index: 2; margin: 0; }
+.strip__btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.strip__btn:focus-visible { outline: 3px solid #fff; outline-offset: 4px; border-radius: 4px; }
+.strip__eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--brand-pale);
+  margin-bottom: 4px;
+}
+.strip__title {
+  display: block;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+/* Collapsed: the title runs up the spine. writing-mode is not animatable, so this
+   snaps rather than tweening — visible mostly as a hitch under the width animation. */
+.strip:not(.is-open) .strip__btn {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+.strip:not(.is-open) .strip__eyebrow { display: none; }
+.strip:not(.is-open) .strip__title { font-size: 16px; }
+
+.strip__body {
+  position: relative;
+  z-index: 2;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  color: #eef4ff;
+  transition: max-height 0.5s cubic-bezier(0.16, 0.84, 0.44, 1), opacity 0.35s ease;
+}
+.strip.is-open .strip__body { max-height: 300px; opacity: 1; }
+.strip__body p {
+  margin: 12px 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  max-width: 62ch;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+.strip__body .home-list li { color: #e5edff; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5); }
+.strip__body .home-list li::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393c5fd' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
+.strip__cap {
+  margin-top: 12px !important;
+  font-size: 12px !important;
+  color: var(--brand-pale) !important;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   6 · Scroll-snap rail
+   ========================================================================== */
+
+.rail__track {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 4px 16px;
+  margin: 0 -4px;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+.rail__card {
+  flex: 0 0 min(880px, 90%);
+  scroll-snap-align: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 26px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 12px 34px rgba(30, 58, 138, 0.12);
+}
+.rail__dots {
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 6px;
+}
+.rail__dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(30, 58, 138, 0.28);
+  cursor: pointer;
+  transition: background 0.22s ease, transform 0.22s ease;
+}
+.rail__dot.is-active { background: var(--brand); transform: scale(1.35); }
+.rail__dot:focus-visible { outline: 3px solid var(--brand-deep); outline-offset: 3px; }
+
+/* ==========================================================================
+   5b · Strip variants — same markup, the modifier class carries the difference
+   ========================================================================== */
+
+/* --- 8 · glass copy card: text on white instead of over the photo ---------- */
+.strips--glass .strip.is-open .strip__body { max-height: 340px; }
+.strips--glass .strip__card {
+  margin-top: 12px;
+  padding: 14px 16px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.28);
+}
+.strips--glass .strip__body p {
+  margin: 0;
+  color: var(--body-ink);
+  text-shadow: none;
+}
+.strips--glass .strip__body .home-list li { color: #3a4a72; text-shadow: none; }
+.strips--glass .strip__body .home-list li::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
+.strips--glass .strip__cap { color: var(--brand) !important; }
+
+/* --- 9 · wide spines: nothing rotates, all four titles stay readable ------- */
+.strips--wide .strip { min-width: 172px; }
+.strips--wide .strip.is-open { flex-grow: 3.4; }
+.strips--wide .strip:not(.is-open) .strip__btn {
+  writing-mode: horizontal-tb;
+  transform: none;
+  white-space: normal;
+}
+.strips--wide .strip:not(.is-open) .strip__eyebrow { display: block; }
+.strips--wide .strip:not(.is-open) .strip__title { font-size: 15px; }
+
+/* --- 10 · autoplay: a progress bar showing when the next swap lands -------- */
+.strip__prog {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  height: 3px;
+  width: 0;
+  background: #fff;
+  border-radius: 0 3px 3px 0;
+  display: none;
+}
+.strips--auto .strip__prog { display: block; }
+/* The animation restarts by itself: .is-open is removed and re-added on the swap,
+   which is a fresh element match and therefore a fresh animation. */
+.strips--auto .strip.is-open .strip__prog { animation: strip-prog 5s linear forwards; }
+.strips--auto.is-paused .strip.is-open .strip__prog { animation-play-state: paused; }
+.strips--auto.is-static .strip__prog { display: none; }
+@keyframes strip-prog {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* ==========================================================================
+   7 · Horizontal bands — strips turned 90°, so no text ever rotates
+   ========================================================================== */
+
+.bands {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 560px;
+}
+.band {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 68px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 14px 34px rgba(30, 58, 138, 0.2);
+  transition: flex-grow 0.55s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.band.is-open { flex-grow: 7; }
+.band__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Collapsed bands are only ~68px tall, so the crop lands on the middle of the
+     photo rather than the top — that is where the subject is in all four. */
+  object-position: center 42%;
+  transition: transform 0.7s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.band:not(.is-open):hover .band__img { transform: scale(1.04); }
+.band__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.62) 46%, rgba(15, 23, 42, 0.2) 100%);
+}
+.band__h { position: relative; z-index: 2; margin: 0; }
+.band__btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.band__btn:focus-visible { outline: 3px solid #fff; outline-offset: 5px; border-radius: 6px; }
+.band__num {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.band.is-open .band__num { background: var(--brand); border-color: var(--brand); }
+.band__eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--brand-pale);
+  margin-bottom: 2px;
+}
+.band__title {
+  display: block;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+.band__body {
+  position: relative;
+  z-index: 2;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.16, 0.84, 0.44, 1), opacity 0.35s ease;
+}
+.band.is-open .band__body { max-height: 260px; opacity: 1; }
+.band__card { padding: 12px 0 2px 44px; max-width: 66ch; }
+.band__card p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #eef4ff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+}
+.band__card .home-list li { color: #e5edff; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55); }
+.band__card .home-list li::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393c5fd' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
+
+/* ==========================================================================
+   11 · Hero + filmstrip
+   ========================================================================== */
+
+.hero__stage {
+  position: relative;
+  aspect-ratio: 2 / 1;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 18px 44px rgba(30, 58, 138, 0.24);
+}
+.hero__fig {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 0.5s ease, transform 0.8s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.hero__fig.is-active { opacity: 1; transform: none; }
+.hero__fig img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero__copies {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-items: center;
+  padding: 26px;
+  pointer-events: none;
+}
+/* Copy on an opaque card, never straight onto the photo: the four placeholders are
+   different colours and text over an arbitrary photo is a contrast lottery. */
+.hero__copy {
+  grid-area: 1 / 1;
+  justify-self: start;
+  max-width: min(460px, 58%);
+  padding: 20px 22px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.93);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.3);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.16, 0.84, 0.44, 1);
+  pointer-events: none;
+}
+.hero__copy.is-active { opacity: 1; transform: none; pointer-events: auto; }
+.hero__title {
+  margin: 0 0 9px;
+  font-size: clamp(18px, 2vw, 23px);
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  font-weight: 800;
+  color: var(--brand-deep);
+}
+.hero__body { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--body-ink); }
+
+.hero__thumbs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.hero__thumb {
+  position: relative;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  background: none;
+  cursor: pointer;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+.hero__thumb img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.hero__thumb:hover { transform: translateY(-2px); }
+.hero__thumb.is-active { border-color: var(--brand); }
+.hero__thumb:not(.is-active)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.42);
+}
+.hero__thumb:focus-visible { outline: 3px solid var(--brand-deep); outline-offset: 3px; }
+.hero__thumb-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 14px 8px 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.7) 100%);
+}
+
+/* ==========================================================================
+   12 · Mosaic — one feature cell, three switchable tiles beside it
+   ========================================================================== */
+
+.mos {
+  display: grid;
+  grid-template-columns: minmax(0, 2.35fr) minmax(0, 1fr);
+  /* minmax(0, 1fr), not the default auto row: the side tiles hold in-flow <img>s, so
+     their min-content height (3 × the image's laid-out height) wins over `height`
+     below and the whole mosaic overflows to ~720px. The min-height:0 on the items
+     below is the other half of the same fix — grid items default to min-height:auto. */
+  grid-template-rows: minmax(0, 1fr);
+  gap: 14px;
+  height: 470px;
+}
+.mos__stage {
+  position: relative;
+  min-height: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 18px 44px rgba(30, 58, 138, 0.24);
+}
+.mos__feature {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+.mos__feature.is-active { opacity: 1; pointer-events: auto; }
+.mos__feature > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mos__card {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  padding: 16px 18px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.28);
+}
+.mos__title {
+  margin: 0 0 7px;
+  font-size: clamp(17px, 1.9vw, 22px);
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  font-weight: 800;
+  color: var(--brand-deep);
+}
+.mos__body { margin: 0; font-size: 14px; line-height: 1.5; color: var(--body-ink); }
+.mos__card .home-list { margin-top: 10px; }
+.mos__card .home-list li { font-size: 13.5px; }
+
+.mos__side { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 14px; min-height: 0; }
+.mos__tile {
+  position: relative;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+  box-shadow: 0 12px 28px rgba(30, 58, 138, 0.2);
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+/* The tile matching whatever is in the feature cell collapses out of the rail, so
+   the three remaining always fill it. Not `display:none` — that would re-layout the
+   grid rows abruptly; this keeps the three-row track and just empties one slot. */
+.mos__tile.is-hidden { display: none; }
+.mos__tile:hover { transform: translateY(-3px); box-shadow: 0 18px 36px rgba(30, 58, 138, 0.3); }
+.mos__tile:focus-visible { outline: 3px solid var(--brand-deep); outline-offset: 3px; }
+.mos__tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mos__tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0) 40%, rgba(15, 23, 42, 0.78) 100%);
+}
+.mos__tile-label {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  z-index: 2;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-align: left;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* ==========================================================================
+   13 · Chips + detail drawer
+   ========================================================================== */
+
+.chips__row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.chip { margin: 0; }
+.chip__btn {
+  width: 100%;
+  height: 100%;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(14px) saturate(170%);
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  box-shadow: 0 10px 26px rgba(30, 58, 138, 0.12);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  /* Reserved on every chip so promoting one to active does not nudge its text. */
+  border-bottom: 3px solid transparent;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+.chip__btn:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.72); }
+.chip.is-open .chip__btn {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom-color: var(--brand);
+}
+.chip__btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.chip__eyebrow {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 4px;
+}
+.chip__title {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+  color: var(--brand-deep);
+}
+
+.chips__drawer { position: relative; }
+.chips__pane {
+  display: none;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+  animation: segt-in 0.38s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+}
+.chips__pane.is-active { display: grid; }
+
+/* ==========================================================================
+   Narrow layouts
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .concept__stage { padding: 0 18px; }
+
+  .info-row { grid-template-columns: 1fr; gap: 18px; }
+  .info-row--flip .info-row__media { order: 0; }
+
+  /* Accordion goes single column and the photo moves ABOVE the list, so the pairing
+     is still visible without scrolling back up. */
+  .acc { grid-template-columns: 1fr; gap: 18px; }
+  /* Letterboxed to 16/10 rather than the 4/3 the wide layout uses: stacked, a 4/3
+     photo is three quarters of the column width tall before the list even starts,
+     which gives most of the saved scroll straight back. */
+  .acc__media { order: -1; aspect-ratio: 16 / 10; }
+
+  .segt__panel { grid-template-columns: 1fr; gap: 18px; }
+  .segt__tabs { width: 100%; justify-content: flex-start; border-radius: 16px; }
+
+  .det__body { grid-template-columns: 1fr; gap: 16px; }
+  .det__media { max-width: none; }
+
+  .xgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .xcard.is-open { grid-template-columns: 1fr; gap: 14px; }
+  .xcard.is-open .xcard__text { padding: 4px 6px 8px; }
+
+  /* Strips do not survive a phone — four vertical spines leave no room for any of
+     them to open. Fall back to a plain stack. */
+  .strips { flex-direction: column; height: auto; }
+  .strip { min-height: 190px; }
+  .strip.is-open { min-height: 420px; }
+  .strip:not(.is-open) .strip__btn { writing-mode: horizontal-tb; transform: none; }
+  .strip:not(.is-open) .strip__eyebrow { display: block; }
+
+  .rail__card { grid-template-columns: 1fr; flex-basis: 88%; }
+
+  /* Bands survive a narrow screen far better than strips do — they were already
+     stacked, so they only need more room per band. */
+  .bands { height: auto; }
+  .band { min-height: 76px; }
+  .band.is-open { min-height: 430px; }
+  .band__card { padding-left: 0; }
+
+  .hero__stage { aspect-ratio: 4 / 3; }
+  .hero__copy { max-width: none; justify-self: stretch; align-self: end; padding: 15px 16px; }
+  .hero__copies { align-items: end; padding: 14px; }
+  .hero__thumb-label { display: none; }
+
+  .mos { grid-template-columns: 1fr; height: auto; }
+  /* Portrait, not landscape: the copy card overlays the bottom of the photo, and at
+     phone width a 4:3 stage leaves that card covering nearly all of it. Nothing is
+     hidden — the stage just grows to make room. */
+  .mos__stage { aspect-ratio: 3 / 4; }
+  /* Card stays absolute — the feature's <img> is height:100%, so a static card after
+     it would be pushed straight out of the visible box. */
+  .mos__card { left: 10px; right: 10px; bottom: 10px; padding: 13px 14px; }
+  .mos__side { grid-template-rows: none; grid-template-columns: repeat(3, minmax(0, 1fr)); height: 110px; }
+
+  .chips__row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chips__pane.is-active { grid-template-columns: 1fr; gap: 16px; }
+}
+
+@media (max-width: 620px) {
+  .xgrid { grid-template-columns: 1fr; }
+  .concept__heading { flex-direction: column; gap: 8px; }
+}
+
+/* ==========================================================================
+   Reduced motion — every concept still works, nothing animates
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

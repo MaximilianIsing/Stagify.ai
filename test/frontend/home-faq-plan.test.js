@@ -642,6 +642,22 @@ test('the notes column is backed, and backed BENEATH the text it backs', () => {
   assert.match(notes[1], /background:/, 'the notes column carries the paper backing');
   assert.match(notes[1], /z-index:\s*0/, 'the backing is given an explicit stacking level');
 
+  // OPACITY IS NOT THE DIAL. The backing is a light panel on a dark sheet — it reads as a
+  // leaf of vellum rather than the near-black hole it used to be — and the only reason a
+  // light colour is safe here is that it is fully opaque. Reach for alpha to make it feel
+  // less heavy and the grid comes straight back through the body copy, which is the one
+  // thing this element exists to stop. Tune the colour, never the transparency.
+  const bg = /background:\s*([^;]*);/.exec(notes[1]);
+  assert.ok(bg, 'the backing declares a background');
+  assert.doesNotMatch(
+    bg[1], /rgba\(|hsla\(|transparent|#[0-9a-f]{4}\b|#[0-9a-f]{8}\b/i,
+    'the paper backing must be opaque — any alpha lets the ruled grid back through the copy'
+  );
+  assert.doesNotMatch(
+    notes[1], /opacity:/,
+    'fading the whole backing lets the grid through the copy exactly as an alpha fill would'
+  );
+
   const room = /\.faq-room,\s*\.faq-room\[open\]\s*\{([^}]*)\}/.exec(plan);
   assert.ok(room, 'plan mode styles the room layers');
   assert.match(
