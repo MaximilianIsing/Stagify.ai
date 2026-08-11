@@ -111,6 +111,10 @@ router.get('/blog/free-virtual-staging', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'blog', 'free-virtual-staging.html'));
 });
 
+router.get('/blog/virtual-staging-disclosure-laws-by-state', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog', 'virtual-staging-disclosure-laws-by-state.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));

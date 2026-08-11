@@ -2190,6 +2190,128 @@ h2 {
     transition:none
   }
 }
+/* ── The same badge control, in the Basic Mask dialog ────────────────────────
+   Same swatches, same slider, same preview popover as the staging strip; only
+   the container differs, because this dialog has a fixed height budget.
+   scripts/mask/fit.js measures the chrome and gives the photo whatever is left,
+   so everything here is about spending as little of it as possible:
+
+   THE CHECKBOX COSTS NOTHING. It rides in .stage-mask-toolrow, which already
+   exists and is half empty even in the longest translation.
+
+   THE OPTIONS COST ~34px, and only while the option is switched ON. They were
+   an absolutely positioned panel first — free in layout terms, but it covered a
+   third of the photo whenever it was open, which is the worse trade of the two:
+   34px off the bottom of the image beats 150px sitting on top of it. The
+   preview stays a hover popover for the same reason, so the only thing that
+   ever covers the canvas is the one control whose job is to show a picture. */
+.stage-mask-stamp {
+  /* The anchor for .opt-info__tip, which is position:absolute with left:0/right:0.
+     That tip is anchored per-surface, NOT by a shared rule — the staging modal does
+     it with `#label-staged-row{position:relative}`, keyed to an id this dialog does
+     not have. Without this the tip escapes to .stage-mask-modal (position:fixed, so
+     it IS a containing block) and stretches the width of the viewport above the
+     dialog. See .ms-label-block in this file for the third copy of the same need. */
+  position:relative;
+  /* ONE LINE with the checkbox, not stacked under it. Stacking made the wrapper
+     ~52px against the tool buttons' 41px, so ticking the box grew .stage-mask-toolrow
+     and shoved the brush slider, the prompt, the reference row and the buttons down —
+     for no reason, because this row's problem was never horizontal. Even in Russian
+     (the longest label) the tools and this whole group leave room to spare, and the
+     slider is the elastic member if a narrow window ever disagrees.
+     Side by side, the row's height stays whatever the tool buttons make it, so
+     nothing below moves at all. */
+  display:flex;
+  align-items:center;
+  gap:10px;
+  /* Contents pushed right — .stage-mask-note is the row's other end and is
+     display:none during the draw phase, so the row's own justify-content has
+     nothing to work with. */
+  justify-content:flex-end;
+  /* `flex: 1 1 0`, NOT `margin-left:auto` on an auto-width box. The row is
+     flex-wrap:wrap, and a wrapping flex line does not shrink an oversized item —
+     it moves it to the next line. So at max-content this group wrapped whole
+     (+38px, the push-down again) instead of letting its own contents give.
+     A zero basis makes its hypothetical size 0, so it can never force a wrap;
+     it then grows into whatever the tool buttons leave, and the squeeze lands
+     inside, on the label and the slider. */
+  flex:1 1 0;
+  min-width:0
+}
+/* WHAT GIVES WHEN THE ROW IS TIGHT, and the order matters. English fits with room
+   to spare; Russian's label is ~120px longer and the whole group would drop to a
+   second line, which is the exact push-down this layout exists to avoid.
+   So the label is allowed to wrap to two lines instead. Two lines of 12px text is
+   ~34px, still inside the 41px the tool buttons already set, so the row does not
+   grow and nothing below it moves. Letting the GROUP wrap costs 38px; letting the
+   LABEL wrap costs nothing. */
+.stage-mask-stamp > .checkbox-container {
+  min-width:0
+}
+.stage-mask-stamp .checkbox-label {
+  /* Overriding the shared label's nowrap, which is what forced the group to wrap. */
+  white-space:normal;
+  line-height:1.25
+}
+/* The strip shares the squeeze rather than leaving it all to the label: the slider
+   is the elastic member here as everywhere, floored where it is still draggable. */
+.stamp-opts--inline .stamp-opts__size {
+  flex:1 1 72px;
+  min-width:56px
+}
+/* PHONES: stacked again, and on a line of its own.
+   The side-by-side layout above is a desktop trade — it exists to stop the toolbar
+   row from growing, because on a PC that height comes out of the photo. On a phone
+   the row cannot hold both at any squeeze: the four swatches are fixed-size artwork
+   (167px, `flex:none`) and the slider is already at its 56px floor, so the strip was
+   handed ~68px and its contents simply painted outside it, over the label.
+   `flex-basis:100%` puts the group on its own wrapped line, where the checkbox and
+   the strip stack with the full width to work in. It costs ~26px, which is the right
+   trade here and the wrong one on a PC: the dialog scrolls on a phone, and the photo
+   is already capped by the viewport rather than by this chrome. */
+/* PHONES: a row of its own, directly above "Reference photo (optional)".
+   The element is MOVED there by scripts/app/mask-stamp.js rather than re-ordered in
+   CSS — see that file for why (`order` and `display:contents` both leave a keyboard
+   user meeting the control three rows above where it appears). So this selector is a
+   different PARENT, not a different look: `.stage-mask-controls > .stage-mask-stamp`
+   only ever matches on a phone.
+   Everything below undoes a desktop trade that does not survive the trip. Up there
+   the group rides inside .stage-mask-toolrow beside the brush tools, so it hugs the
+   far edge and takes the row's leftover width; down here it is simply another control
+   and starts on the same margin as Brush Size, the prompt label and Reference photo.
+   Kept right-aligned it read as a stray fragment floating away from the form. */
+@media (max-width:768px) {
+  .stage-mask-controls > .stage-mask-stamp {
+    /* `flex:1 1 0` up there means "take the rest of the LINE". In this column parent
+       flex-basis is a HEIGHT, so inheriting it would stretch the group down the
+       dialog. Auto, and the row is as tall as its contents. */
+    flex:0 0 auto;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+    margin-left:0
+  }
+  /* And the strip stops stretching. Growing the slider to fill the row pushed the
+     preview trigger to the far edge, so the three controls read as three unrelated
+     things spread across the width instead of one badge setting. A stated basis keeps
+     them together; the slider is still the member that gives if the row is narrower. */
+  .stage-mask-controls > .stage-mask-stamp .stamp-opts {
+    width:100%
+  }
+  .stamp-opts--inline .stamp-opts__size {
+    flex:0 1 96px
+  }
+}
+.stage-mask-stamp[hidden] {
+  display:none
+}
+/* The base .stamp-opts indents itself under the staging modal's checkbox
+   (margin:8px 0 0 24px). Here the wrapper's own gap does that job, and the
+   indent would just push the strip off its right alignment. */
+.stamp-opts--inline {
+  margin:0;
+  max-width:100%
+}
 /* The staging dropzone, held to the same recipe as .ex-dropzone
    (exterior-studio.css) and .ms-dropzone (masking-studio.css): brand dashes on a
    pale wash, a stroke icon that lifts on hover, a focus-visible ring.

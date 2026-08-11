@@ -11,8 +11,22 @@
 import { syncExteriorAccess } from './exterior-studio/access.js';
 import { createControls } from './exterior-studio/controls.js';
 import { createCompare } from './exterior-studio/compare.js';
+import { createBusyOverlay } from './exterior-studio/busy-overlay.js';
 import { enhanceExterior, EnhanceError } from './exterior-studio/enhance.js';
+import { initStampStyleRow } from './app/stamp-style-row.js';
+import { createStampOption } from './mask/stamp-option.js';
 import { showToast, showErrorToast } from './toast.js';
+
+/**
+ * "Label as virtually staged" for this page: the checkbox, and the strip it reveals.
+ *
+ * Only `badgeFields()` is used. The other half of createStampOption — the round trip to
+ * /api/stamp-image — is for surfaces whose finished pixels exist only in the browser; here
+ * POST /api/enhance-exterior is already holding the photo, so the server stamps the render
+ * before it comes back. That is also what makes the download, the compare slider and the
+ * gallery master agree by construction rather than by three call sites remembering to.
+ */
+const STAMP_IDS = { checkboxId: 'ex-label-virtually-staged', optsId: 'ex-stamp-opts' };
 
 const $ = (id) => document.getElementById(id);
 
@@ -54,7 +68,7 @@ function init() {
     enhance: /** @type {HTMLButtonElement | null} */ ($('ex-enhance')),
     done: $('ex-done'),
     download: $('ex-download'),
-    startOver: $('ex-startover'),
+    again: $('ex-again'),
   };
   if (!els.form || !els.file || !els.enhance) return;
 
@@ -62,14 +76,25 @@ function init() {
     root: /** @type {HTMLElement} */ ($('ex-compare')),
     before: /** @type {HTMLImageElement} */ ($('ex-compare-before')),
     after: /** @type {HTMLImageElement} */ ($('ex-compare-after')),
-    afterWrap: /** @type {HTMLElement} */ ($('ex-compare-after-wrap')),
     range: /** @type {HTMLInputElement} */ ($('ex-compare-range')),
+    valueText: (percent) => tx('exteriorStudio.result.rangeValue', '{percent}% enhanced').replace('{percent}', percent),
   });
+
+  // Covers the uploaded photo while the render is out. It is the only feedback in this
+  // column — the submit button lives in the other one.
+  const busyOverlay = createBusyOverlay({ host: els.preview });
 
   /** @type {{ file: File | null, previewUrl: string, resultUrl: string, busy: boolean }} */
   const state = { file: null, previewUrl: '', resultUrl: '', busy: false };
 
   const controls = createControls({ root: els.form, onChange: () => refreshSubmit() });
+
+  // Deliberately NOT part of `controls`. That island answers one question — what should
+  // change about the property — and the submit button is gated on its answer. The badge is
+  // not a change to the property, so ticking it alone must leave the button disabled:
+  // otherwise a visitor could buy a render that does nothing but add a caption.
+  const stampOption = createStampOption(STAMP_IDS);
+  initStampStyleRow(STAMP_IDS);
 
   /**
    * The submit button is live only when there is a photo AND something to do to it.
@@ -130,8 +155,17 @@ function init() {
     refreshSubmit();
   }
 
-  /** Put the tool back to its empty state. */
-  function reset() {
+  /**
+   * Clear the PHOTO — the upload, the result, and every part of the workspace that shows
+   * one — and leave the toolbar's options exactly as they are.
+   *
+   * There is deliberately no counterpart that also clears the options. "Start over" was
+   * that, and it was the wrong offer: the answer someone has just given about what to
+   * change is the part worth keeping, and a stray unticking is a click away in the toolbar
+   * anyway. Every exit from a finished render comes through here.
+   * @returns {void}
+   */
+  function clearPhoto() {
     releasePreview();
     state.file = null;
     state.resultUrl = '';
@@ -142,8 +176,20 @@ function init() {
     if (els.done) els.done.classList.add('hidden');
     els.photoCard?.classList.add('hidden');
     if (els.photoHint) els.photoHint.hidden = false;
-    controls.reset();
     refreshSubmit();
+  }
+
+  /**
+   * Next photo, same request.
+   *
+   * The common case after a good render is a second shot of the SAME property wanting the
+   * same treatment — the bins gone, the same sky — so the options stay and only the photo
+   * is asked for.
+   * @returns {void}
+   */
+  function enhanceAnother() {
+    clearPhoto();
+    els.file?.click();
   }
 
   /**
@@ -164,6 +210,10 @@ function init() {
         busy ? 'exteriorStudio.actions.working' : 'exteriorStudio.actions.enhance',
       );
     }
+    // Driven from here rather than from the submit handler so that every exit — result,
+    // error, or timeout — takes the overlay down with it. There is no second place that
+    // can leave a spinner running over a photo.
+    if (busy) busyOverlay.start(); else busyOverlay.stop();
     refreshSubmit();
   }
 
@@ -209,6 +259,7 @@ function init() {
       const body = await enhanceExterior({
         file: state.file,
         options: controls.read(),
+        badge: stampOption.badgeFields(),
         token: window.StagifyAuth?.getToken?.() || null,
         tx,
       });
@@ -241,7 +292,7 @@ function init() {
     a.remove();
   });
 
-  els.startOver?.addEventListener('click', reset);
+  els.again?.addEventListener('click', enhanceAnother);
   refreshSubmit();
 }
 

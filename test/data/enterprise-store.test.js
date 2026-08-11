@@ -139,6 +139,26 @@ test('applySubscriptionState re-activates on renewal, matching by customer id', 
   assert.equal(store.getEntryByStripeSubscriptionId('sub_new')?.domain, 'acme.com', 'the new sub id is recorded');
 });
 
+test('a stale cancellation for a REPLACED subscription leaves the domain active', () => {
+  // The per-user twin of this guard lives in lib/data/stripe-linking.js. Here the
+  // blast radius is the whole company: one out-of-order 'deleted' for a subscription
+  // the domain no longer holds would cancel every seat at once. The renewal test
+  // above is exactly how a domain comes to hold a different id than a late event
+  // carries — it matched by customer id and recorded sub_new.
+  const store = freshStore();
+  activate(store); // sub_ent / cus_ent
+  store.applySubscriptionState({ id: 'sub_ent', customer: 'cus_ent', status: 'canceled' });
+  store.applySubscriptionState({ id: 'sub_new', customer: 'cus_ent', status: 'active' });
+  assert.equal(store.isActiveDomain('acme.com'), true);
+
+  const res = store.applySubscriptionState({ id: 'sub_ent', customer: 'cus_ent', status: 'canceled' });
+
+  assert.equal(res.ok, false);
+  assert.equal(res.reason, 'stale_subscription');
+  assert.equal(store.isActiveDomain('acme.com'), true, 'every seat at the company keeps access');
+  assert.equal(store.getEntryByStripeSubscriptionId('sub_new')?.domain, 'acme.com');
+});
+
 test('applySubscriptionState rejects bad payloads and unknown subscriptions', () => {
   const store = freshStore();
   assert.equal(store.applySubscriptionState(null).reason, 'bad_payload');

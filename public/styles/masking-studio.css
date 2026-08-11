@@ -89,7 +89,15 @@
         box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
       }
 
-      .ms-toolbar { padding: 20px; display: flex; flex-direction: column; position: relative; }
+      /* min-width:0 because this is a GRID ITEM, and a track's automatic minimum is its
+         content's min-content width. The badge strip added below Step 3 is nowrap by
+         design (four fixed 38px swatches, a slider and the preview trigger read as one
+         control), so its min-content became the sidebar's — and on a phone, where the
+         grid collapses to a single 1fr column, that pushed the whole toolbar ~15px past
+         the viewport and left the preview button sitting on the screen edge. Letting the
+         item shrink below min-content is the fix; the strip's slider then gives, which is
+         what it is the elastic member for. */
+      .ms-toolbar { padding: 20px; display: flex; flex-direction: column; position: relative; min-width: 0; }
       .ms-help-btn {
         position: absolute;
         top: 14px; right: 14px;
@@ -111,6 +119,12 @@
       .ms-toolbar button, .ms-workspace button { font-family: inherit; }
       .ms-block { padding: 16px 0; border-top: 1px dashed rgba(37, 99, 235, 0.22); }
       .ms-block:first-child { padding-top: 0; border-top: none; }
+      /* The "Label as virtually staged" block's (i) explainer. .opt-info__tip (styles.css)
+         is position:absolute with left:0/right:0, and it is anchored PER SURFACE rather
+         than by a shared rule — the staging modal uses `#label-staged-row`, an id this page
+         does not have. Without this the tip escapes to the nearest positioned ancestor and
+         stretches across the whole studio. Same need as .stage-mask-stamp in styles.css. */
+      .ms-label-block { position: relative; }
       .ms-block-head { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
       .ms-block-head h2 { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-heading); }
       .ms-step {
@@ -625,7 +639,7 @@
 
       .ms-dropzone {
         width: 100%;
-        min-height: 563px;
+        min-height: 553px;
         border: 2px dashed var(--brand-pale);
         border-radius: 14px;
         display: grid;

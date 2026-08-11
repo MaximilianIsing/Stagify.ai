@@ -336,7 +336,7 @@
         "cta": "Stagify+ 보기"
       },
       "ent": {
-        "name": "엔터프라이즈",
+        "name": "Stagify 엔터프라이즈",
         "tag": "팀용",
         "per": "/ 생성",
         "desc": "팀 전체에 Stagify+를 자동으로 제공하고, 실제 사용한 만큼만 결제하세요.",
@@ -393,6 +393,18 @@
           "quote": "기숙사와 아파트, 매물 등록 모두에서 Stagify가 크게 쓰일 것 같습니다. 빈방은 머릿속에 그리기 어렵지만, 가구가 놓이는 순간 공간이 훨씬 현실감 있게 다가옵니다. 그곳에 사는 모습을 상상할 때 큰 차이를 만듭니다.",
           "author": "Jaden Lander",
           "role": "RockSolid Management",
+          "location": "뉴욕 맨해튼"
+        },
+        "jaime": {
+          "quote": "Stagify는 예전에는 복잡하게 느껴지던 일을 놀랄 만큼 간단하게 만들어 줍니다. 결과가 빠르게 나오고 플랫폼도 쓰기 쉬우며, 빈 공간이 몇 초 만에 완전히 꾸며지는 것을 보는 건 정말 인상적입니다.",
+          "author": "Jaime Castro",
+          "role": "Douglas Elliman",
+          "location": "플로리다 마이애미"
+        },
+        "thomas": {
+          "quote": "하루 종일 공간을 꾸미다 보니 속도가 중요합니다. Stagify는 전체 과정을 빠르고 쉽게 만들어 주고, 화면도 아주 깔끔합니다. 고민할 필요 없이 필요한 결과를 얻습니다.",
+          "author": "Thomas Chimber",
+          "role": "Compass",
           "location": "뉴욕 맨해튼"
         }
       },
@@ -487,7 +499,7 @@
       "maskBeforePromptPlaceholder": "예: 낡은 소파 제거, 잡동사니 정리, 벽을 흰색으로 다시 칠하기",
       "maskBeforeApply": "편집 적용",
       "basicMaskTitle": "기본 마스킹",
-      "basicMaskUploadHint": "사진에서 원하는 부분을 칠한 다음 원하는 변경 사항을 설명하세요.",
+      "basicMaskUploadHint": "사진에서 원하는 부분을 칠한 다음 원하는 변경 사항을 설명하세요",
       "maskLimitReached": "이 이미지에 대해 버전 6개 한도에 도달했습니다.",
       "prevVersion": "이전 버전",
       "nextVersion": "다음 버전",
@@ -1198,12 +1210,11 @@
     "replacePhoto": "사진 교체",
     "stepAreas": "가구 영역",
     "addArea": "+ 영역 추가",
-    "areasHint": "각 영역은 동시에, 따로따로 스테이징됩니다 — 색마다 가구 사진이나 짧은 프롬프트, 또는 둘 다를 지정하세요.",
     "areaName": "영역 {n}",
     "areaLimit": "최대 {n}개의 영역까지 하이라이트할 수 있습니다.",
     "removeAreaAria": "이 영역 제거",
     "stepBrush": "하이라이트",
-    "overlapHint": "다른 색으로 덧칠하면 그 영역으로 다시 지정됩니다 — 모든 지점은 하나의 영역에만 속합니다.",
+    "overlapHint": "영역 위에 덧칠하면 새 색으로 다시 지정됩니다.",
     "promptPlaceholder": "여기에 무엇을 추가할지 설명하세요 (가구 사진을 추가하면 생략 가능)…",
     "addFurniture": "+ 가구 사진",
     "statusEmpty": "아직 하이라이트 안 됨",
@@ -1215,7 +1226,7 @@
     "retry": "다시 시도",
     "progressCount": "{total}개 중 {done}개 영역 스테이징 완료",
     "uploadHint": "방 사진을 업로드하세요",
-    "uploadSub": "JPG, PNG, WebP 또는 HEIC — 클릭하거나 여기에 끌어다 놓으세요",
+    "uploadSub": "JPG, PNG, WebP, HEIC 파일을 클릭하거나 여기에 끌어다 놓으세요",
     "editHighlights": "편집 다듬기",
     "defaultFurniturePrompt": "참조 사진의 가구를 하이라이트한 영역에 추가하세요. 방에 맞는 올바른 원근감, 크기, 조명으로 바닥에 자연스럽게 배치하세요.",
     "needHighlight": "먼저 사진에 영역을 하나 이상 칠해 주세요.",
@@ -1549,7 +1560,12 @@
         "one": "{count}회 열람됨",
         "other": "{count}회 열람됨"
       },
-      "unavailable": "이 링크를 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요."
+      "unavailable": "이 링크를 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.",
+      "showBefore": "가구를 배치하기 전 사진 포함",
+      "showBeforeSaving": "저장 중…",
+      "showBeforeOn": "이제 가구를 배치하기 전 사진이 이 링크에 포함됩니다.",
+      "showBeforeOff": "이 링크에는 가구를 배치한 사진만 표시됩니다.",
+      "showBeforeFailed": "이 링크에 표시되는 내용을 변경하지 못했습니다. 다시 시도해 주세요."
     },
     "rename": {
       "action": "이름 변경",
@@ -1582,7 +1598,7 @@
     "loading": "갤러리를 불러오는 중…"
   },
   "exteriorStudio": {
-    "title": "클릭 한 번으로 살아나는 첫인상",
+    "title": "외관 스튜디오",
     "subtitle": "모든 매물의 첫 사진은 집의 바깥 모습이며, 날씨가 나빠지면 다시 찍을 수 없는 단 한 장입니다. 여기에 올리면 날씨 좋은 날 찍은 버전을 받아 보세요.",
     "ctaUpgrade": "Stagify+로 이용하기",
     "features": {
@@ -1606,7 +1622,7 @@
     },
     "upload": {
       "title": "외관 사진을 여기에 놓으세요",
-      "hint": "JPG, PNG, WebP 또는 HEIC. 정면, 뒷마당, 진입로 등 실외에서 찍은 사진이면 됩니다.",
+      "hint": "JPG, PNG, WebP, HEIC 파일을 클릭하거나 여기에 끌어다 놓으세요",
       "button": "사진 선택",
       "replace": "다른 사진 사용"
     },
@@ -1619,6 +1635,7 @@
       "removePeople": "사람",
       "removeSnow": "눈",
       "removeWetWeather": "비·물웅덩이",
+      "removeLeaves": "낙엽",
       "notes": "그 밖에 필요한 것이 있나요?",
       "notesPlaceholder": "예: 현관의 깃발은 그대로 두기"
     },
@@ -1637,11 +1654,19 @@
       "enhance": "외관 보정하기",
       "working": "처리 중…",
       "download": "내려받기",
-      "startOver": "처음부터"
+      "again": "다른 사진 보정"
     },
+    "loadingMessages": [
+      "외부를 정리하는 중…",
+      "빛을 맞추는 중…",
+      "하늘을 바꾸는 중…",
+      "집 자체는 그대로 유지…",
+      "마무리하는 중…"
+    ],
     "result": {
       "title": "전후 비교",
-      "hint": "슬라이더를 움직여 비교하세요."
+      "hint": "슬라이더를 움직여 비교하세요.",
+      "rangeValue": "{percent}% 보정됨"
     },
     "errors": {
       "generic": "이 사진은 보정할 수 없었습니다. 해당 건물의 다른 외관 사진으로 시도해 주세요.",
@@ -1651,7 +1676,6 @@
     "stepPhotoHint": "오른쪽 작업 영역에서 사진을 올려 주세요.",
     "replacePhoto": "사진 교체",
     "stepChanges": "무엇을 바꿀까요?",
-    "stepChangesHint": "바꾸고 싶은 항목만 고르세요. 선택하지 않은 것은 촬영된 그대로 유지됩니다.",
     "enhanceHint": "변경 사항을 하나 이상 고르거나 위에 직접 적어 주세요."
   },
   "notFound": {

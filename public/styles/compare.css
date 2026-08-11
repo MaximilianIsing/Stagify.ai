@@ -1,0 +1,116 @@
+/* The before/after comparison, shared by the owner's gallery and the public share page.
+   =====================================================================================
+   Both pages draw the same control from the same builder (public/scripts/share/compare.js),
+   so it gets one stylesheet rather than a copy in gallery.css and another in share.css.
+   That is also why nothing here is prefixed `gal-` or `sh-`: the class family belongs to
+   the control, not to either page.
+
+   IT MUST STAND ALONE. gallery.html loads styles.css and has the full token palette;
+   listing-share.html deliberately loads only its own sheet and does not. So every token
+   below carries a literal fallback — a bare var() that resolves to nothing does not fall
+   back to an initial value, it drops the whole declaration, which on this control means a
+   grip with no border or a seam with no colour. */
+
+.compare {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 18px 48px rgba(30, 58, 138, 0.24);
+  user-select: none;
+  /* A vertical swipe over the control still scrolls the page. Without this the one
+     element a phone reader most wants to touch is the one that traps them. */
+  touch-action: pan-y;
+}
+/* The `before` image is in flow and sizes the box, so the comparison keeps the photo's own
+   shape rather than a grid ratio. On the share page an aspect-ratio is ALSO set inline as
+   --sh-ar, because there the box has to be reserved before the bytes land. */
+.compare img { display: block; width: 100%; }
+.compare__after {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  clip-path: inset(0 0 0 var(--compare-split, 50%));
+}
+
+/* The range input is a TRANSPARENT, full-bleed hit layer; the divider and the grip you
+   actually see are pseudo-elements positioned from the same --compare-split the clip-path
+   reads. That is the point: a native thumb is inset by half its own width, so at 0% and
+   100% it sits visibly off the seam it is supposed to be dragging. Driving both from one
+   variable makes them incapable of disagreeing.
+   Keeping the native control rather than a mousedown-driven <div> is also what keeps the
+   comparison operable from the keyboard — and it holds buildCompare's output at exactly
+   [before, after, range], which the specs pin. */
+.compare__range {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: ew-resize;
+}
+.compare__range:focus { outline: none; }
+.compare__range::-webkit-slider-runnable-track { height: 100%; background: transparent; border: 0; }
+.compare__range::-moz-range-track { height: 100%; background: transparent; border: 0; }
+.compare__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 46px;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+}
+.compare__range::-moz-range-thumb {
+  width: 46px;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: ew-resize;
+}
+
+/* Divider and grip. `:has()` gates both on the range existing: a render whose source
+   failed to encode — or a share link whose owner has not included the before photo —
+   degrades to the staged image alone, and a seam drawn across a single photo would be
+   claiming a comparison that is not there. */
+.compare:has(.compare__range)::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--compare-split, 50%);
+  z-index: 1;
+  width: 2px;
+  margin-left: -1px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(30, 58, 138, 0.25);
+  pointer-events: none;
+}
+.compare:has(.compare__range)::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: var(--compare-split, 50%);
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94) no-repeat center / 20px 20px
+    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m9 7-5 5 5 5'/%3e%3cpath d='m15 7 5 5-5 5'/%3e%3c/svg%3e");
+  border: 2px solid var(--brand, #2563eb);
+  box-shadow: 0 8px 22px rgba(30, 58, 138, 0.32);
+  pointer-events: none;
+}
+/* The visible focus indicator, since the native outline is suppressed above. */
+.compare:has(.compare__range:focus-visible)::before {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.5), 0 8px 22px rgba(30, 58, 138, 0.32);
+}

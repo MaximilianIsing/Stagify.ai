@@ -280,18 +280,18 @@ function testimonialsSection() {
   return INDEX.slice(start, end);
 }
 
-test('index.html ships five cards in one deck, all keyed to english.json', () => {
+test('index.html ships seven cards in one deck, all keyed to english.json', () => {
   const section = testimonialsSection();
 
   const cards = section.match(/<figure class="tw-card"/g) || [];
-  assert.equal(cards.length, 5, 'five testimonials, all in the deck');
+  assert.equal(cards.length, 7, 'seven testimonials, all in the deck');
   assert.ok(section.includes('data-deck-stack'), 'the deck needs its stack hook');
   assert.match(section, /data-deck-of/, 'the total is written by JS into this span');
 
   // Every visible string must resolve, or a language switch blanks it. The
   // english→others parity gate in test/server/static.test.js covers the other 10 packs.
   const keys = [...section.matchAll(/data-lang(?:-attr)?="([^"|]+)/g)].map((m) => m[1]);
-  assert.ok(keys.length >= 23, `expected 5 cards x 4 keys + controls, saw ${keys.length}`);
+  assert.ok(keys.length >= 31, `expected 7 cards x 4 keys + controls, saw ${keys.length}`);
   for (const key of keys) {
     const value = key.split('.').reduce((/** @type {any} */ o, k) => (o == null ? o : o[k]), ENGLISH);
     assert.equal(typeof value, 'string', `english.json is missing ${key}`);
@@ -331,8 +331,8 @@ test('the deck script is registered in index-deferred.js', () => {
   );
 });
 
-test('the five brokerage logos are decode-warmed', () => {
-  // Four of five sit behind the top card when the section scrolls in, so without this
+test('the brokerage logos are decode-warmed', () => {
+  // All but the top one sit behind it when the section scrolls in, so without this
   // each one decodes as you reach it and pops in. A stale selector here does not throw.
   const reveal = fs.readFileSync(path.join(PUBLIC, 'scripts', 'home-reveal.js'), 'utf8');
   assert.match(reveal, /\.tw-logo/, 'home-reveal.js warmImages() should cover .tw-logo');

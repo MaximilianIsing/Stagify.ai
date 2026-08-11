@@ -12,7 +12,7 @@
 // gallery is uncapped, so a client-side search would quietly only look at the first
 // screenful of a set with no upper bound at all.
 
-import { listGallery, deleteRender, renameRender } from './gallery/api.js';
+import { listGallery, deleteRender, renameRender, updateShareSettings } from './gallery/api.js';
 import { renderGrid, renderCompare, renderMeta, entryName, defaultName } from './gallery/view.js';
 import { t, plural } from './gallery/i18n.js';
 import { createRenameRow } from './gallery/rename.js';
@@ -81,8 +81,9 @@ export async function start({
    */
   let searchSeq = 0;
 
-  // The share section is its own island: it paints a link the listing already handed over.
-  const share = createSharePanel({ byId, t, plural, copyText, doc });
+  // The share section is its own island: it paints a link the listing already handed over,
+  // and owns the one control over what that link publishes.
+  const share = createSharePanel({ byId, t, plural, copyText, updateShareSettings, fetchImpl, doc });
 
   // The rename row is its own island (gallery/rename.js) — a two-mode widget whose only
   // coupling to this file is which mode it is in. `currentEntry` is a getter rather than a
@@ -153,6 +154,10 @@ export async function start({
       compareRange,
       byId('gal-share-url'),
       byId('gal-share-copy'),
+      // The checkbox itself is never `hidden` — its ROW is, for an entry with no source
+      // photo — so the filter below cannot see it. Asked of the row instead, or Tab would
+      // land on a control that is not on screen.
+      /** @type {any} */ (byId('gal-share-before-row'))?.hidden ? null : byId('gal-share-before'),
       byId('gal-delete'),
       ...del.controls(),
     ].filter((node) => node && !(/** @type {any} */ (node).hidden));

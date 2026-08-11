@@ -48,40 +48,59 @@ function node(extra = {}) {
     fire: (type) => { for (const fn of listeners.get(type) || []) fn(); },
     setAttribute(name, value) { this[`attr_${name}`] = value; },
     getAttribute(name) { return this[`attr_${name}`] ?? null; },
+    hasAttribute(name) { return this[`attr_${name}`] !== undefined; },
     ...extra,
   };
 }
 
 /**
- * Build the strip's DOM as the island expects to find it.
+ * One strip: the swatches, slider and preview image, resolvable BY CLASS from the
+ * container, which is how the island finds them now that index.html carries two of these.
+ * @param {{ checked?: boolean, style?: string, scale?: string }} [opts] - Starting state.
+ * @returns {{ row: any, slider: any, image: any, radios: any[], preview: any }} The strip's nodes.
+ */
+function strip(opts = {}) {
+  const { checked = false, style = 'dark', scale = '1' } = opts;
+  const radios = STAMP_STYLE_NAMES.map((name) => node({ value: name, checked: name === style }));
+  const image = node({});
+  const slider = node({ value: scale });
+  const preview = node({});
+  const find = (sel) => {
+    if (sel === '.stamp-preview') return preview;
+    if (sel === '.stamp-opts__size') return slider;
+    if (sel === '.stamp-preview__img') return image;
+    if (sel === '.stamp-swatch__input:checked') return radios.find((r) => r.checked) || null;
+    return null;
+  };
+  const row = node({
+    hidden: !checked,
+    querySelectorAll: () => radios,
+    querySelector: find,
+  });
+  return { row, slider, image, radios, preview };
+}
+
+/**
+ * Build the staging strip's DOM as the island expects to find it.
  * @param {{ checked?: boolean, style?: string, scale?: string, lang?: string }} [opts] - Starting state.
  * @returns {{ row: any, checkbox: any, slider: any, image: any, radios: any[] }} The nodes, for driving and inspecting.
  */
 function mount(opts = {}) {
-  const { checked = false, style = 'dark', scale = '1', lang = 'english' } = opts;
-  const radios = STAMP_STYLE_NAMES.map((name) => node({ value: name, checked: name === style }));
-  const image = node({});
-  const slider = node({ value: scale });
+  const { checked = false, lang = 'english' } = opts;
+  const s = strip(opts);
   const checkbox = node({ checked });
-  const preview = node({});
-  const row = node({
-    hidden: !checked,
-    querySelectorAll: () => radios,
-    querySelector: (sel) => (sel === '.stamp-preview' ? preview : null),
-  });
 
   const byId = new Map([
-    ['stamp-opts', row],
+    ['stamp-opts', s.row],
     ['label-virtually-staged', checkbox],
-    ['stamp-preview-img', image],
-    ['stamp-scale', slider],
   ]);
   globalThis.document = {
     getElementById: (id) => byId.get(id) || null,
-    querySelector: (sel) => (sel === '.stamp-swatch__input:checked' ? radios.find((r) => r.checked) || null : null),
+    // The document-wide fallback readStampOptions() keeps for pages with a single strip.
+    querySelector: (sel) => s.row.querySelector(sel),
   };
   globalThis.localStorage = { getItem: (k) => (k === 'selectedLanguage' ? lang : null) };
-  return { row, checkbox, slider, image, radios, preview };
+  return { ...s, checkbox };
 }
 
 test('readStampOptions reports the checked swatch and the slider', async () => {
@@ -92,6 +111,19 @@ test('readStampOptions reports the checked swatch and the slider', async () => {
 test('readStampOptions falls back on a page with no strip', async () => {
   globalThis.document = { getElementById: () => null, querySelector: () => null };
   assert.deepEqual(readStampOptions(), { style: FALLBACK_STYLE, scale: FALLBACK_SCALE });
+  // …and on a container that is not there either, which is what the Basic Mask reader gets
+  // on any page carrying the dialog markup without the disclosure panel.
+  assert.deepEqual(readStampOptions(null), { style: FALLBACK_STYLE, scale: FALLBACK_SCALE });
+});
+
+test('readStampOptions reads the strip it is given, not the first one on the page', async () => {
+  // index.html has TWO of these — staging's and Basic Mask's. Unscoped, both callers get
+  // whichever comes first in the markup, so the user's Basic Mask choice would silently
+  // ride along on their next staging job (or the reverse). Nothing visible would break.
+  mount({ style: 'dark', scale: '1' });
+  const other = strip({ style: 'banner', scale: '1.5' });
+  assert.deepEqual(readStampOptions(other.row), { style: 'banner', scale: 1.5 }, 'the panel it was handed');
+  assert.deepEqual(readStampOptions(), { style: 'dark', scale: 1 }, 'and the page default is untouched');
 });
 
 test('the strip follows the checkbox, and nothing else', async () => {
@@ -185,27 +217,76 @@ test('the island fallbacks match the server defaults', async () => {
   assert.equal(FALLBACK_SCALE, STAMP_SCALE_DEFAULT);
 });
 
-test('the slider in index.html spans exactly the range the server accepts', async () => {
-  const input = /<input[^>]*id="stamp-scale"[^>]*>/.exec(html);
-  assert.ok(input, 'the size slider is still in the markup');
-  const attr = (name) => new RegExp(`${name}="([^"]*)"`).exec(input[0])?.[1];
-  assert.equal(Number(attr('min')), STAMP_SCALE_MIN, 'a narrower min hides range the server would accept');
-  assert.equal(Number(attr('max')), STAMP_SCALE_MAX, 'a wider max posts values the server will clamp away');
-  assert.equal(Number(attr('value')), STAMP_SCALE_DEFAULT, 'it starts at the size the server would have used anyway');
-  assert.equal(attr('type'), 'range');
+test('every size slider in index.html spans exactly the range the server accepts', async () => {
+  // EVERY one, found by class rather than by the staging strip's id: the Basic Mask dialog
+  // carries a second copy of this control, and a range checked on one strip only is a range
+  // the other is free to drift out of.
+  const inputs = [...html.matchAll(/<input[^>]*class="stamp-opts__size"[^>]*>/g)].map((m) => m[0]);
+  assert.equal(inputs.length, 2, 'the staging strip and the Basic Mask panel each have one');
+  for (const input of inputs) {
+    const attr = (name) => new RegExp(`${name}="([^"]*)"`).exec(input)?.[1];
+    assert.equal(Number(attr('min')), STAMP_SCALE_MIN, 'a narrower min hides range the server would accept');
+    assert.equal(Number(attr('max')), STAMP_SCALE_MAX, 'a wider max posts values the server will clamp away');
+    assert.equal(Number(attr('value')), STAMP_SCALE_DEFAULT, 'it starts at the size the server would have used anyway');
+    assert.equal(attr('type'), 'range');
+  }
 });
 
-test('the swatches offer exactly the styles the server can draw, with the default preselected', async () => {
-  const radios = [...html.matchAll(/<input[^>]*name="stamp-style"[^>]*>/g)].map((m) => m[0]);
-  const values = radios.map((r) => /value="([^"]*)"/.exec(r)?.[1]);
+test('both swatch sets offer exactly the styles the server can draw, with the default preselected', async () => {
+  for (const group of ['stamp-style', 'mask-stamp-style']) {
+    const radios = [...html.matchAll(new RegExp(`<input[^>]*name="${group}"[^>]*>`, 'g'))].map((m) => m[0]);
+    const values = radios.map((r) => /value="([^"]*)"/.exec(r)?.[1]);
+    assert.deepEqual(
+      values.sort(),
+      [...STAMP_STYLE_NAMES].sort(),
+      `${group}: a swatch with no style behind it renders the default; a style with no swatch is unreachable`,
+    );
+    const checked = radios.filter((r) => r.includes(' checked'));
+    assert.equal(checked.length, 1, `${group}: exactly one is preselected`);
+    assert.match(checked[0], new RegExp(`value="${DEFAULT_STAMP_STYLE}"`), 'and it is the server default');
+  }
+});
+
+test('the two swatch sets are separate radio groups', async () => {
+  // Both strips live in the SAME document, so a shared `name` would make them one radio
+  // group: picking a style in the Basic Mask panel would silently change what staging is
+  // about to post, and vice versa. Nothing on screen would say so — the other modal is
+  // closed. This is the only thing standing between the two controls.
+  const names = [...html.matchAll(/<input[^>]*class="stamp-swatch__input"[^>]*>/g)]
+    .map((m) => /name="([^"]*)"/.exec(m[0])?.[1]);
+  assert.equal(names.length, STAMP_STYLE_NAMES.length * 2, 'four swatches per strip, two strips');
   assert.deepEqual(
-    values.sort(),
-    [...STAMP_STYLE_NAMES].sort(),
-    'a swatch with no style behind it renders the default; a style with no swatch is unreachable',
+    [...new Set(names)].sort(),
+    ['mask-stamp-style', 'stamp-style'],
+    'exactly two distinct group names',
   );
-  const checked = radios.filter((r) => r.includes(' checked'));
-  assert.equal(checked.length, 1, 'exactly one is preselected');
-  assert.match(checked[0], new RegExp(`value="${DEFAULT_STAMP_STYLE}"`), 'and it is the server default');
+});
+
+test('the Basic Mask options stay IN FLOW, so they cannot cover the photo', async () => {
+  // This strip was an absolutely positioned panel first. That cost the layout nothing —
+  // scripts/mask/fit.js never saw it — but it hung over a third of the image whenever it
+  // was open, which is the worse of the two trades: the ~34px it now takes off the bottom
+  // of the canvas beats 150px sitting on top of it.
+  //
+  // Pinned as a source scan because neither cost shows up as a failure anywhere else. Going
+  // back to absolute would look fine in every screenshot that happens to have the option
+  // switched off, and the only person who notices is the one masking near the top edge.
+  const css = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'styles.css'), 'utf8');
+  const rule = /\.stamp-opts--inline\s*\{([^}]*)\}/.exec(css);
+  assert.ok(rule, 'the strip still has its own rule');
+  assert.doesNotMatch(rule[1], /position\s*:\s*(absolute|fixed)/, 'in flow, not floating over the canvas');
+  assert.doesNotMatch(css, /\.stamp-opts--pop\b/, 'the floating panel is gone, not merely unused');
+});
+
+test('the only thing that overlays the photo is the preview, and only on hover', async () => {
+  // The preview is the one control whose job IS to show a picture, so it earns the overlay
+  // — and it is transient, driven by :hover/:focus-within rather than by a checkbox that
+  // stays ticked. An inline thumbnail here instead would cost the canvas ~200px permanently.
+  const html = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
+  const strip = /<div class="stamp-opts stamp-opts--inline"[\s\S]*?\n {14}<\/div>/.exec(html);
+  assert.ok(strip, 'the Basic Mask strip is still there');
+  assert.match(strip[0], /class="stamp-preview__pop"/, 'the preview image lives behind the popover');
+  assert.match(strip[0], /class="stamp-preview__btn"/, 'reached from the same hover button as staging');
 });
 
 test('every swatch carries a text name, because the visible part is a picture', async () => {

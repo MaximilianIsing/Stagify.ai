@@ -244,7 +244,7 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
    the rest. A thumbnail grid's job is to be scannable, so it gets a rhythm; 3/2 is the
    ratio the homepage's mock gallery (home.css .hgal-card__img) already advertises, and
    object-fit:cover centre-crops the odd one out. The uncropped render lives one click
-   away in .gal-compare, which still uses the photo's own shape.
+   away in the comparison (.compare), which still uses the photo's own shape.
    No `height: auto` needed here, unlike .hgal-card__img: view.js builds this <img>
    without width/height attributes, so nothing resolves a presentational height that
    would make the browser ignore aspect-ratio. */
@@ -433,102 +433,9 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
 
 /* ---- before / after --------------------------------------------------------------- */
 
-.gal-compare {
-  position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 18px 48px rgba(30, 58, 138, 0.24);
-  user-select: none;
-  touch-action: pan-y;
-}
-.gal-compare img { display: block; width: 100%; }
-.gal-compare__after {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  clip-path: inset(0 0 0 var(--gal-split, 50%));
-}
-
-/* The range input is a TRANSPARENT, full-bleed hit layer; the divider and the grip you
-   actually see are pseudo-elements positioned from the same --gal-split the clip-path
-   reads. That is the point: a native thumb is inset by half its own width, so at 0% and
-   100% it sits visibly off the seam it is supposed to be dragging. Driving both from one
-   variable makes them incapable of disagreeing.
-   Keeping the native control rather than a mousedown-driven <div> is also what keeps the
-   comparison operable from the keyboard — and it holds renderCompare's output at exactly
-   [before, after, range], which the specs pin. */
-.gal-compare__range {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  cursor: ew-resize;
-}
-.gal-compare__range:focus { outline: none; }
-.gal-compare__range::-webkit-slider-runnable-track { height: 100%; background: transparent; border: 0; }
-.gal-compare__range::-moz-range-track { height: 100%; background: transparent; border: 0; }
-.gal-compare__range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 46px;
-  height: 100%;
-  border: 0;
-  background: transparent;
-  cursor: ew-resize;
-}
-.gal-compare__range::-moz-range-thumb {
-  width: 46px;
-  height: 100%;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  cursor: ew-resize;
-}
-
-/* Divider and grip. `:has()` gates both on the range existing: a render whose source
-   failed to encode degrades to the staged image alone, and a seam drawn across a single
-   photo would be claiming a comparison that is not there. */
-.gal-compare:has(.gal-compare__range)::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: var(--gal-split, 50%);
-  z-index: 1;
-  width: 2px;
-  margin-left: -1px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 0 0 1px rgba(30, 58, 138, 0.25);
-  pointer-events: none;
-}
-.gal-compare:has(.gal-compare__range)::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: var(--gal-split, 50%);
-  z-index: 2;
-  width: 44px;
-  height: 44px;
-  margin: -22px 0 0 -22px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.94) no-repeat center / 20px 20px
-    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m9 7-5 5 5 5'/%3e%3cpath d='m15 7 5 5-5 5'/%3e%3c/svg%3e");
-  border: 2px solid var(--brand);
-  box-shadow: 0 8px 22px rgba(30, 58, 138, 0.32);
-  pointer-events: none;
-}
-.gal-compare:has(.gal-compare__range:focus-visible)::before {
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.5), 0 8px 22px rgba(30, 58, 138, 0.32);
-}
+/* Lives in styles/compare.css, loaded by this page and by the public share page: both
+   draw the same control from the same builder, so the rules are not copied per page.
+   The container keeps its `gal-compare` id here; only the classes are page-neutral. */
 
 /* ---- what was asked for ----------------------------------------------------------- */
 

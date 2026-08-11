@@ -20,6 +20,23 @@
         return fallback;
       }
 
+      /**
+       * The language the "Virtually staged" badge is rendered in, when the Designer
+       * decides a render should carry one.
+       *
+       * Sent on every turn as plain request context, NOT as a control — this page
+       * deliberately has no disclosure UI, because the request is already in words. It
+       * rides the request rather than the routing decision for the same reason as on the
+       * four checkbox surfaces: the badge follows the SITE language, which is the
+       * browser's to know and not something the model should be picking. The server
+       * validates it against the real locale list and falls back to English, so an unset
+       * value is safe. Reads the same key the shared stamp option does.
+       * @returns {string} The current site language name.
+       */
+      export function stampLang() {
+        return localStorage.getItem('selectedLanguage') || 'english';
+      }
+
       export function getPdfAlt(key, replacements = {}) {
         let text = (window.LanguageSystem && window.LanguageSystem.isLoaded())
           ? window.LanguageSystem.getText('pdf.alt.' + key)

@@ -95,6 +95,28 @@ test('a model that returned no image is a 422 with its own code, not a 500', asy
   } finally { await app.close(); }
 });
 
+test('a withheld disclosure stamp is named, not reported as a failed render', async () => {
+  // The stamp fails CLOSED, so this error means the photo WAS enhanced and then held back
+  // rather than shipped unlabelled. Falling through to the generic 500 below would tell the
+  // user their enhancement failed — and the only thing they can do with that is retry, into
+  // exactly the same wall, paying for a render each time. The copy has to name the option.
+  const app = await mountStaging({
+    requireProAccount: () => PRO,
+    handleExteriorMultipart: async () => {
+      throw Object.assign(new Error('badge master missing'), { code: 'DISCLOSURE_STAMP_FAILED' });
+    },
+  });
+  try {
+    const { status, json } = await post(app.baseUrl);
+    assert.equal(status, 500);
+    assert.equal(json.code, 'DISCLOSURE_STAMP_FAILED', 'distinct from a generic failure');
+    assert.match(json.error, /untick/i, 'the one action that gets them their photo');
+    assert.match(json.error, /label/i);
+    assert.ok(json.ref, 'still reported — this is an environment fault worth a Sentry entry');
+    assert.ok(!JSON.stringify(json).includes('badge master missing'), 'never the raw exception');
+  } finally { await app.close(); }
+});
+
 test('any other throw is a 500 carrying a reference, never the error message', async () => {
   const app = await mountStaging({
     requireProAccount: () => PRO,

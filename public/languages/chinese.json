@@ -336,7 +336,7 @@
         "cta": "查看 Stagify+"
       },
       "ent": {
-        "name": "企业版",
+        "name": "Stagify 企业版",
         "tag": "面向团队",
         "per": "/ 次生成",
         "desc": "让整个团队自动获得 Stagify+，仅按实际用量付费。",
@@ -393,6 +393,18 @@
           "quote": "我觉得 Stagify 在学生宿舍、公寓和房源展示上都会大有作为。空房间很难想象，但布置好之后，空间立刻真实了许多。当你想象自己住在那里时，这个差别非常明显。",
           "author": "Jaden Lander",
           "role": "RockSolid Management",
+          "location": "纽约曼哈顿"
+        },
+        "jaime": {
+          "quote": "Stagify 把过去觉得复杂的事情变得异常简单。结果出得很快，平台也很好上手，几秒钟就能看到空房间被完整布置好，真的很惊艳。",
+          "author": "Jaime Castro",
+          "role": "Douglas Elliman",
+          "location": "佛罗里达迈阿密"
+        },
+        "thomas": {
+          "quote": "我整天都在布置空间，所以速度很重要。Stagify 让整个流程又快又轻松，界面也非常清爽。我不用多想就能拿到需要的效果。",
+          "author": "Thomas Chimber",
+          "role": "Compass",
           "location": "纽约曼哈顿"
         }
       },
@@ -487,7 +499,7 @@
       "maskBeforePromptPlaceholder": "例如：移除旧沙发、清除杂物、把墙刷成白色",
       "maskBeforeApply": "应用编辑",
       "basicMaskTitle": "基础遮罩",
-      "basicMaskUploadHint": "在照片的任意区域涂抹，然后描述你想要的更改。",
+      "basicMaskUploadHint": "在照片的任意区域涂抹，然后描述你想要的更改",
       "maskLimitReached": "该图片已达到 6 个版本的上限。",
       "prevVersion": "上一个版本",
       "nextVersion": "下一个版本",
@@ -1198,12 +1210,11 @@
     "replacePhoto": "更换照片",
     "stepAreas": "家具区域",
     "addArea": "+ 添加区域",
-    "areasHint": "每个区域会同时单独进行布置——请为每种颜色提供一张家具照片、一段简短提示，或两者都有。",
     "areaName": "区域 {n}",
     "areaLimit": "最多可以高亮标记 {n} 个区域。",
     "removeAreaAria": "移除此区域",
     "stepBrush": "高亮标记",
-    "overlapHint": "用不同颜色涂抹某个区域即可重新分配——每个位置只属于一个区域。",
+    "overlapHint": "在区域上涂抹即可将其重新分配给新颜色。",
     "promptPlaceholder": "描述要在此处添加的内容（如已添加家具照片则可选）…",
     "addFurniture": "+ 家具照片",
     "statusEmpty": "尚未高亮标记",
@@ -1215,7 +1226,7 @@
     "retry": "重试",
     "progressCount": "已布置 {done} / {total} 个区域",
     "uploadHint": "上传您的房间照片",
-    "uploadSub": "支持 JPG、PNG、WebP 或 HEIC——点击或拖放到此处",
+    "uploadSub": "点击或拖放 JPG、PNG、WebP 或 HEIC 文件到此处",
     "editHighlights": "优化编辑",
     "defaultFurniturePrompt": "将参考照片中的家具添加到高亮区域内。使其自然地摆放在地面上，并与房间的透视、比例和光线保持一致。",
     "needHighlight": "请先在照片上涂抹至少一个区域。",
@@ -1549,7 +1560,12 @@
         "one": "已被打开 {count} 次",
         "other": "已被打开 {count} 次"
       },
-      "unavailable": "无法加载此链接。请刷新页面后重试。"
+      "unavailable": "无法加载此链接。请刷新页面后重试。",
+      "showBefore": "包含布置前的照片",
+      "showBeforeSaving": "保存中…",
+      "showBeforeOn": "布置前的照片现在包含在此链接中。",
+      "showBeforeOff": "此链接仅显示布置后的照片。",
+      "showBeforeFailed": "无法更改此链接显示的内容。请重试。"
     },
     "rename": {
       "action": "重命名",
@@ -1582,7 +1598,7 @@
     "loading": "正在加载你的图库…"
   },
   "exteriorStudio": {
-    "title": "一键提升房产外观",
+    "title": "外观工作室",
     "subtitle": "每套房源的第一张照片都是房子的外观，而这恰恰是天气变坏后无法重拍的一张。上传它，得到晴天拍摄的版本。",
     "ctaUpgrade": "升级 Stagify+ 即可使用",
     "features": {
@@ -1606,7 +1622,7 @@
     },
     "upload": {
       "title": "将外观照片拖到这里",
-      "hint": "JPG、PNG、WebP 或 HEIC。正面外观、后院、车道——任何在室外拍摄的照片。",
+      "hint": "点击或拖放 JPG、PNG、WebP 或 HEIC 文件到此处",
       "button": "选择照片",
       "replace": "换一张照片"
     },
@@ -1619,6 +1635,7 @@
       "removePeople": "人物",
       "removeSnow": "积雪",
       "removeWetWeather": "雨水与水洼",
+      "removeLeaves": "落叶",
       "notes": "还有别的吗？",
       "notesPlaceholder": "例如：保留门廊上的旗帜"
     },
@@ -1637,11 +1654,19 @@
       "enhance": "优化外观",
       "working": "处理中…",
       "download": "下载",
-      "startOver": "重新开始"
+      "again": "处理下一张"
     },
+    "loadingMessages": [
+      "正在清理房屋外部…",
+      "正在平衡光线…",
+      "正在更新天空…",
+      "房屋本身保持原样…",
+      "正在进行最后润色…"
+    ],
     "result": {
       "title": "前后对比",
-      "hint": "拖动滑块进行对比。"
+      "hint": "拖动滑块进行对比。",
+      "rangeValue": "已优化 {percent}%"
     },
     "errors": {
       "generic": "这张照片无法优化。请换一张该房产的外观照片试试。",
@@ -1651,7 +1676,6 @@
     "stepPhotoHint": "在右侧工作区上传照片。",
     "replacePhoto": "更换照片",
     "stepChanges": "要改动什么？",
-    "stepChangesHint": "只勾选你想改动的项。未勾选的内容将与拍摄时完全一致。",
     "enhanceHint": "请至少勾选一项改动，或在上方描述一项。"
   },
   "notFound": {

@@ -75,6 +75,8 @@ function makeSave(over = {}) {
     resultCanvas: over.resultCanvas || fakeCanvas(1),
     authToken: () => 'tok',
     onEvicted: (g) => calls.push({ evicted: g }),
+    onLabelFailed: (m) => calls.push({ labelFailed: m }),
+    badgeFields: over.badgeFields,
     doc: fakeDoc(),
     fetchImpl: over.fetchImpl || (async (url, opts) => {
       calls.push({ url, body: JSON.parse(opts.body) });
@@ -97,6 +99,58 @@ test('a canvas that cannot be read yields no digest rather than throwing', () =>
 });
 
 // ── saving ───────────────────────────────────────────────────────────────────
+
+// ── "Label as virtually staged" ──────────────────────────────────────────────
+
+test('the badge settings ride along, so the SERVER can stamp the stored master', async () => {
+  // Stamped server-side rather than here: this request already carries the composite, so
+  // routing it through /api/stamp-image first would upload the same megabyte twice.
+  const { save, calls } = makeSave({
+    badgeFields: () => ({
+      labelVirtuallyStaged: true, stampLang: 'german', stampStyle: 'banner', stampScale: 1.4,
+    }),
+  });
+  await save.saveToGallery();
+  assert.equal(calls[0].body.labelVirtuallyStaged, true);
+  assert.equal(calls[0].body.stampLang, 'german');
+  assert.equal(calls[0].body.stampStyle, 'banner');
+  assert.equal(calls[0].body.stampScale, 1.4);
+  // The disclosure describes the staged result, never the room photo it started from.
+  assert.ok(calls[0].body.before, 'the before photo is still sent');
+});
+
+test('with no badge supplier the save is unlabelled, exactly as it always was', async () => {
+  const { save, calls } = makeSave();
+  await save.saveToGallery();
+  assert.equal(calls[0].body.labelVirtuallyStaged, undefined);
+  assert.equal(calls[0].body.stampStyle, undefined);
+});
+
+test('a refused disclosure breaks this module\'s silence, and only that one does', async () => {
+  // Saving is a background nicety, so every other failure is swallowed on purpose. This one
+  // is different: the user asked for the label, it is why nothing was stored, and unticking
+  // the option is an action only they can take. Silence would leave them believing a
+  // labelled copy is in their gallery.
+  const { save, calls, state } = makeSave({
+    fetchImpl: async () => ({
+      ok: false,
+      json: async () => ({ error: 'We couldn\'t add the label.', code: 'DISCLOSURE_STAMP_FAILED' }),
+    }),
+  });
+  await save.saveToGallery();
+  assert.deepEqual(calls, [{ labelFailed: 'We couldn\'t add the label.' }]);
+  assert.equal(state.savedDigest, '', 'and the save stays retryable');
+});
+
+test('an ordinary save failure stays silent', async () => {
+  // The pairing for the test above: without it, "reports the disclosure failure" would
+  // also pass on a module that shouted about every 500.
+  const { save, calls } = makeSave({
+    fetchImpl: async () => ({ ok: false, json: async () => ({ error: 'sqlite is on fire' }) }),
+  });
+  await save.saveToGallery();
+  assert.deepEqual(calls, [], 'nothing is surfaced to the user');
+});
 
 test('Looks Good posts the composite, the areas and the prompts', async () => {
   const { save, calls } = makeSave();

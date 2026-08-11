@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
     <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
     <script src="scripts/gtag.js" defer></script>
 
@@ -265,17 +266,17 @@
               <svg class="lang-switch__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             <ul class="lang-switch__menu" role="listbox" aria-label="Select language" data-lang-attr="common.selectLanguage|aria-label">
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
-              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="english"><img loading="lazy" decoding="async" src="media-webp/flags/US.svg" alt="" width="20" height="14" /><span>English</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="german"><img loading="lazy" decoding="async" src="media-webp/flags/Germany.svg" alt="" width="20" height="14" /><span>Deutsch</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="dutch"><img loading="lazy" decoding="async" src="media-webp/flags/Netherlands.svg" alt="" width="20" height="14" /><span>Nederlands</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="spanish"><img loading="lazy" decoding="async" src="media-webp/flags/Spain.svg" alt="" width="20" height="14" /><span>Español</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="french"><img loading="lazy" decoding="async" src="media-webp/flags/France.svg" alt="" width="20" height="14" /><span>Français</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="italian"><img loading="lazy" decoding="async" src="media-webp/flags/Italy.svg" alt="" width="20" height="14" /><span>Italiano</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="portuguese"><img loading="lazy" decoding="async" src="media-webp/flags/Brazil.svg" alt="" width="20" height="14" /><span>Português</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="russian"><img loading="lazy" decoding="async" src="media-webp/flags/Russia.svg" alt="" width="20" height="14" /><span>Русский</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="chinese"><img loading="lazy" decoding="async" src="media-webp/flags/China.svg" alt="" width="20" height="14" /><span>中文</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="japanese"><img loading="lazy" decoding="async" src="media-webp/flags/Japan.svg" alt="" width="20" height="14" /><span>日本語</span></li>
+              <li class="lang-switch__option" role="option" tabindex="-1" data-value="korean"><img loading="lazy" decoding="async" src="media-webp/flags/Korea.svg" alt="" width="20" height="14" /><span>한국어</span></li>
             </ul>
           </div>
         </div>
@@ -309,7 +310,6 @@
                 <div class="ms-block-head"><span class="ms-step" aria-hidden="true">2</span><h2 data-lang="maskingStudio.stepAreas">Furniture areas</h2></div>
                 <div id="ms-layer-list" class="ms-layer-list" role="list"></div>
                 <button type="button" id="ms-add-layer" class="btn btn-secondary ms-add-layer" disabled data-lang="maskingStudio.addArea">+ Add area</button>
-                <p class="ms-hint" data-lang="maskingStudio.areasHint">Each area is staged separately, at the same time — give every color a furniture photo, a short prompt, or both.</p>
               </div>
 
               <!-- Step 3: highlight tools -->
@@ -354,7 +354,67 @@
                   <p class="ms-wand-hint" data-lang="maskingStudio.wandHint">Click an object in the photo to select it.</p>
                   <p class="ms-wand-busy hidden" id="ms-wand-busy" data-lang="maskingStudio.wandBusy">Analyzing your photo…</p>
                 </div>
-                <p class="ms-hint" data-lang="maskingStudio.overlapHint">Paint over an area with a different color to reassign it — every spot belongs to one area only.</p>
+                <p class="ms-hint" data-lang="maskingStudio.overlapHint">Painting over an area reassigns it to the new color.</p>
+              </div>
+
+              <!-- Delivery, not generation: the badge is burned in on the way OUT, by both
+                   "Looks Good" (which writes the gallery entry) and Download. It sits in the
+                   sidebar rather than next to those two buttons because it has to be set
+                   BEFORE the first of them is pressed, and the sidebar is the one part of
+                   this page visible in every phase.
+                   The radios are name="ms-stamp-style" for the same reason the Basic Mask
+                   dialog’s are name="mask-stamp-style": one name per document, or two
+                   controls silently share a radio group. This page carries only its own
+                   copy today, and keeping the name surface-specific is what stops that from
+                   being an accident waiting for the next page that embeds both. -->
+              <div class="ms-block ms-label-block" id="ms-label-block">
+                <div class="checkbox-container">
+                  <input type="checkbox" id="ms-label-virtually-staged" class="checkbox-input" aria-describedby="ms-label-staged-tip">
+                  <!-- (i) as a SIBLING of the label, never a child — data-lang replaces
+                       textContent wholesale and would eat the SVG. -->
+                  <label for="ms-label-virtually-staged" class="checkbox-label" data-lang="modal.staging.labelVirtuallyStaged">Label as virtually staged</label>
+                  <span class="opt-info">
+                    <button type="button" class="opt-info__btn" data-lang-attr="modal.staging.labelVirtuallyStagedInfo|aria-label" aria-label="What does labelling as virtually staged do?"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></button>
+                    <span class="opt-info__tip" id="ms-label-staged-tip" data-lang="modal.staging.labelVirtuallyStagedTip">Adds a small “Virtually staged” note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.</span>
+                  </span>
+                </div>
+                <!-- The staging modal’s strip verbatim, not the Basic Mask dialog’s floating
+                     panel: this sidebar scrolls, so a row costs nothing here. -->
+                <div class="stamp-opts" id="ms-stamp-opts" hidden>
+                  <div class="stamp-opts__styles" role="group" aria-labelledby="ms-stamp-style-legend">
+                    <span class="sr-only" id="ms-stamp-style-legend" data-lang="modal.staging.stampStyleLabel">Label style</span>
+                    <label class="stamp-swatch">
+                      <input type="radio" name="ms-stamp-style" value="dark" class="stamp-swatch__input" checked>
+                      <span class="stamp-swatch__art stamp-swatch__art--dark" aria-hidden="true">Aa</span>
+                      <span class="sr-only" data-lang="modal.staging.stampStyles.dark">Dark</span>
+                    </label>
+                    <label class="stamp-swatch">
+                      <input type="radio" name="ms-stamp-style" value="light" class="stamp-swatch__input">
+                      <span class="stamp-swatch__art stamp-swatch__art--light" aria-hidden="true">Aa</span>
+                      <span class="sr-only" data-lang="modal.staging.stampStyles.light">Light</span>
+                    </label>
+                    <label class="stamp-swatch">
+                      <input type="radio" name="ms-stamp-style" value="minimal" class="stamp-swatch__input">
+                      <span class="stamp-swatch__art stamp-swatch__art--minimal" aria-hidden="true">Aa</span>
+                      <span class="sr-only" data-lang="modal.staging.stampStyles.minimal">Minimal</span>
+                    </label>
+                    <label class="stamp-swatch">
+                      <input type="radio" name="ms-stamp-style" value="banner" class="stamp-swatch__input">
+                      <span class="stamp-swatch__art stamp-swatch__art--banner" aria-hidden="true">Aa</span>
+                      <span class="sr-only" data-lang="modal.staging.stampStyles.banner">Banner</span>
+                    </label>
+                  </div>
+                  <input type="range" id="ms-stamp-scale" class="stamp-opts__size" min="0.7" max="1.6" step="0.1" value="1" data-lang-attr="modal.staging.stampSizeLabel|aria-label" aria-label="Label size" aria-valuetext="100%">
+                  <span class="stamp-preview">
+                    <button type="button" class="stamp-preview__btn" aria-describedby="ms-stamp-preview-pop">
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+                      <span class="stamp-preview__label" data-lang="modal.staging.stampPreview">Preview</span>
+                    </button>
+                    <span class="stamp-preview__pop" id="ms-stamp-preview-pop" role="tooltip">
+                      <img class="stamp-preview__img" alt="Sample photo showing the virtually staged label" data-lang-attr="modal.staging.stampPreviewAlt|alt" width="340" height="227" decoding="async">
+                    </span>
+                  </span>
+                </div>
               </div>
 
               <!-- Generate -->
@@ -394,7 +454,7 @@
                       <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                     </div>
                     <div class="ms-dz-text" data-lang="maskingStudio.uploadHint">Upload a photo of your room</div>
-                    <div class="ms-dz-sub" data-lang="maskingStudio.uploadSub">JPG, PNG, WebP, or HEIC — click or drop it here</div>
+                    <div class="ms-dz-sub" data-lang="maskingStudio.uploadSub">Click or drop a JPG, PNG, WebP, or HEIC file here</div>
                     <div class="ms-dz-dots" aria-hidden="true">
                       <span style="background:#2563eb"></span>
                       <span style="background:#16a34a"></span>

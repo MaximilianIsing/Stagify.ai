@@ -11,6 +11,8 @@ import { createUpload } from './masking-studio/upload.js';
 import { createGallerySave } from './masking-studio/gallery-save.js';
 import { localizedTarget } from './i18n-routing.js';
 import { showToast } from './toast.js';
+import { createStampOption } from './mask/stamp-option.js';
+import { initStampStyleRow } from './app/stamp-style-row.js';
 
         // ---------------------------------------------------------------------
         // Access gate: Masking Studio is Stagify+ only. Anonymous visitors were
@@ -184,6 +186,11 @@ import { showToast } from './toast.js';
         const editHighlightsBtn = $('#ms-edit-highlights');
         const viewResultBtn = $('#ms-view-result');
         const downloadBtn = $('#ms-download');
+
+        // "Label as virtually staged", applied at BOTH exits — see scripts/mask/stamp-option.js.
+        const stampIds = { checkboxId: 'ms-label-virtually-staged', optsId: 'ms-stamp-opts' };
+        const stampOption = createStampOption(stampIds);
+        initStampStyleRow(stampIds);
 
         // ---------------------------------------------------------------------
         // Room photo → base canvas (upload intake lives in masking-studio/upload.js)
@@ -450,13 +457,22 @@ import { showToast } from './toast.js';
           void saveToGallery();
         });
 
-        downloadBtn.addEventListener('click', () => {
-          if (!state.layers.some((l) => l.status === 'done')) return;
+        // The badge costs a round trip (the composite is only in this browser), so this is
+        // async and guarded. On failure it downloads NOTHING. The name carries no extension:
+        // stamp-option.js appends one for whatever came back — PNG stamped, JPEG when not.
+        downloadBtn.addEventListener('click', async () => {
+          if (!state.layers.some((l) => l.status === 'done') || downloadBtn.disabled) return;
           compositeAll(); // strokes may have changed since the last composite
-          const link = document.createElement('a');
-          link.download = 'stagify-masking-studio-' + Date.now() + '.jpg';
-          link.href = resultCanvas.toDataURL('image/jpeg', 0.92);
-          link.click();
+          downloadBtn.disabled = true;
+          try {
+            const name = 'stagify-masking-studio-' + Date.now();
+            await stampOption.downloadWithLabel(resultCanvas.toDataURL('image/jpeg', 0.92), name);
+          } catch (err) {
+            showToast(err.message || tx('errors.disclosureStampFailed',
+              'We couldn\'t add the "virtually staged" label.'), 'error');
+          } finally {
+            downloadBtn.disabled = false;
+          }
         });
 
 
@@ -580,6 +596,9 @@ import { showToast } from './toast.js';
           state,
           resultCanvas,
           authToken: () => (window.StagifyAuth && window.StagifyAuth.getToken()) || '',
+          // The gallery copy is stamped by the SAVE HANDLER, which already holds these
+          // bytes — routing it through /api/stamp-image would upload the megabyte twice.
+          badgeFields: () => stampOption.badgeFields(),
           // The ONE thing worth interrupting for, and the same sentence the staging studio
           // shows for it (scripts/app/gallery-notice.js): a link the agent already sent a
           // client has stopped working. The cap itself is never named here — this studio is
@@ -592,6 +611,11 @@ import { showToast } from './toast.js';
               tx('modal.staging.galleryEvictedShared', 'An older staging had an active share link, which no longer works.'),
               'error',
             );
+          },
+          // The save is silent by design; this is its one exception — see gallery-save.js.
+          onLabelFailed: (message) => {
+            showToast(message || tx('errors.disclosureStampFailed',
+              'We couldn\'t add the "virtually staged" label.'), 'error');
           },
         });
 

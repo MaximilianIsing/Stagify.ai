@@ -125,7 +125,10 @@ export function createStagingPipeline(deps) {
     // ignores both unless the flag is on, and reading them only when the row happens to be
     // visible would mean the values depended on the UI's state rather than the user's
     // choice. Both are re-validated server-side (allow-list + clamp).
-    const stampOptions = readStampOptions();
+    // Scoped to THIS modal's strip. index.html also carries the Basic Mask dialog's copy of
+    // the same controls, and an unscoped read would return whichever comes first in the
+    // markup — handing staging a style the user picked on a different screen, silently.
+    const stampOptions = readStampOptions(document.getElementById('stamp-opts'));
     formData.append('stampStyle', stampOptions.style);
     formData.append('stampScale', String(stampOptions.scale));
 

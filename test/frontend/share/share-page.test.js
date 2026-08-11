@@ -208,6 +208,126 @@ test('a frame with no thumbnail offers no srcset rather than a one-candidate one
   assert.equal(img.getAttribute('srcset'), null);
 });
 
+// ---- the before/after variant --------------------------------------------------------
+//
+// Drawn only when the manifest carries a `beforeUrl`, which the server sends only when the
+// render's owner has ticked "include the before photo". The default shape above — the
+// staged photo as the button — is what every link ships with, and the specs above are what
+// pin that it is untouched.
+
+/** The same manifest with the owner's opt-in applied. */
+const WITH_BEFORE = {
+  ...MANIFEST,
+  rooms: [{
+    ...MANIFEST.rooms[0],
+    frames: [{ ...MANIFEST.rooms[0].frames[0], beforeUrl: 'https://r2.example/before.webp?sig=1' }],
+  }],
+};
+
+test('a frame with no beforeUrl draws no comparison at all', () => {
+  // The seam and the grip are gated on the range existing (compare.css), so a stray
+  // container here would claim a comparison the page cannot make.
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  renderGallery({ gallery, manifest: MANIFEST, doc: document, onOpen: () => {} });
+
+  const rendered = gallery.descendants();
+  assert.ok(!rendered.some((n) => String(n.className).includes('compare')), 'a comparison appeared by default');
+  assert.ok(!rendered.some((n) => n.getAttribute?.('type') === 'range'), 'a slider appeared by default');
+});
+
+test('a frame with a beforeUrl draws the comparison, in the order the CSS reads', () => {
+  // [before, after, range]: the before image is in flow and sizes the box, the after is
+  // clipped over it, and the range is the transparent hit layer above both. Any other order
+  // and the control is either invisible or undraggable.
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  renderGallery({ gallery, manifest: WITH_BEFORE, doc: document, onOpen: () => {} });
+
+  const box = gallery.children[0].children[0];
+  assert.match(String(box.className), /\bcompare\b/);
+  assert.equal(box.style.props['--sh-ar'], '1024 / 683', 'the comparison must reserve its box too');
+
+  const [before, after, range] = box.children;
+  assert.equal(before.getAttribute('src'), 'https://r2.example/before.webp?sig=1');
+  assert.equal(after.getAttribute('src'), MANIFEST.rooms[0].frames[0].url);
+  assert.equal(after.className, 'compare__after', 'the staged image is the clipped layer');
+  assert.equal(range.getAttribute('type'), 'range');
+});
+
+test('the staged image keeps its srcset and its lightbox data inside the comparison', () => {
+  // It is handed to the builder rather than rebuilt by it. Rebuilding would drop the srcset
+  // the sharpness fix added and the fullUrl the lightbox reads.
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  renderGallery({ gallery, manifest: WITH_BEFORE, doc: document, onOpen: () => {} });
+
+  const after = gallery.children[0].children[0].children[1];
+  const frame = MANIFEST.rooms[0].frames[0];
+  assert.equal(after.getAttribute('srcset'), `${frame.thumbUrl} 480w, ${frame.url} 1024w`);
+  assert.equal(after.dataset.fullUrl, frame.url);
+  assert.equal(after.dataset.renderId, 'abc');
+});
+
+test('both images are handed back, so an expired URL re-mints the whole comparison', () => {
+  // They are presigned in the same manifest and age out together. A refresher watching only
+  // the staged one leaves the reader dragging a slider over half a blank box.
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  const images = renderGallery({ gallery, manifest: WITH_BEFORE, doc: document, onOpen: () => {} });
+
+  const sources = images.map((i) => i.getAttribute('src')).sort();
+  assert.deepEqual(sources, ['https://r2.example/after.webp?sig=1', 'https://r2.example/before.webp?sig=1']);
+});
+
+test('the range announces which half of the comparison it is on', () => {
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  renderGallery({ gallery, manifest: WITH_BEFORE, doc: document, onOpen: () => {} });
+
+  const range = gallery.children[0].children[0].children[2];
+  assert.ok(range.getAttribute('aria-label'), 'a range with no label is announced as a bare number');
+  assert.equal(range.getAttribute('aria-valuetext'), '50% staged');
+
+  range.value = '80';
+  range.fire('input');
+  assert.equal(range.getAttribute('aria-valuetext'), '80% staged');
+  assert.equal(
+    gallery.children[0].children[0].style.props['--compare-split'],
+    '80%',
+    'the clip and the two pseudo-elements all read this one property',
+  );
+});
+
+test('the full-size view moves to its own button, and still opens the staged photo', () => {
+  // A <button> may not contain the range input, so the lightbox cannot stay on the image.
+  // What it opens is unchanged: the staged render, not the source photo.
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  const opened = [];
+  renderGallery({ gallery, manifest: WITH_BEFORE, doc: document, onOpen: (url) => opened.push(url) });
+
+  const box = gallery.children[0].children[0];
+  assert.ok(!box.descendants().some((n) => n.tagName === 'BUTTON'), 'a button may not wrap the range');
+
+  const full = gallery.children[0].children[1];
+  assert.equal(full.tagName, 'BUTTON');
+  assert.equal(full.getAttribute('type'), 'button');
+  assert.ok(full.textContent.trim(), 'a button with no label is unreachable by name');
+  full.fire('click');
+  assert.deepEqual(opened, [MANIFEST.rooms[0].frames[0].url]);
+});
+
+test('the facts strip still follows the comparison', () => {
+  const { document } = shareDocument();
+  const gallery = document.createElement('div');
+  renderGallery({ gallery, manifest: WITH_BEFORE, doc: document, onOpen: () => {} });
+
+  const figure = gallery.children[0];
+  assert.equal(figure.children.length, 3, 'comparison, full-size button, facts');
+  assert.match(String(figure.children[2].className), /sh-facts/);
+});
+
 test('the lightbox opens the same URL the page is already showing', () => {
   // They were different — that is the whole reason the photo appeared to sharpen on tap.
   const { document } = shareDocument();

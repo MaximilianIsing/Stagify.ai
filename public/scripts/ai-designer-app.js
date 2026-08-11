@@ -8,7 +8,7 @@ import {
   getBaseImageIndexForRequest as _getBaseImageIndexForRequest,
   resolveStagingRootBaseName as _resolveStagingRootBaseName,
 } from './ai-designer/image-history.js';
-import { lang } from './ai-designer/i18n.js';
+import { lang, stampLang } from './ai-designer/i18n.js';
 import { localizedTarget } from './i18n-routing.js';
 import { showToast } from './toast.js';
 import { summariseBugReportHistory } from './bug-report-history.js'; // bridged onto window below
@@ -502,9 +502,7 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
             if (filesToSend.length > 0) {
               // Send with files
               const formData = new FormData();
-              filesToSend.forEach(file => {
-                formData.append('files', file);
-              });
+              filesToSend.forEach((file) => formData.append('files', file));
               if (message) {
                 formData.append('message', message);
               }
@@ -526,6 +524,7 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
               }
 
               formData.append('streamResponse', 'true');
+              formData.append('stampLang', stampLang());
               pendingStagingRootBaseName = resolveStagingRootBaseName(filesToSend);
               const baseImageIndex = getBaseImageIndexForRequest();
               if (baseImageIndex !== undefined) {
@@ -557,6 +556,7 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
                   model: window.getSelectedModelApiName ? window.getSelectedModelApiName() : 'gpt-4o-mini',
                   messageTag: messageTagValue && messageTagValue !== 'auto' ? messageTagValue : undefined,
                   authToken: chatAuthTok || undefined,
+                  stampLang: stampLang(),
                   streamResponse: true,
                   ...(baseImageIndexChat !== undefined ? { baseImageIndex: baseImageIndexChat } : {}),
                 }),

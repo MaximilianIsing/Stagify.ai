@@ -45,9 +45,19 @@
 // REVOCATION IS EVENTUAL, because a URL already handed out keeps working until it
 // expires. The hard revoke is deleting the entry, which tombstones the object.
 //
-// THE SOURCE PHOTO IS NEVER PUBLISHED. `before` exists for the owner's private gallery
-// only. A URL for it is not minted here, so no amount of guessing at the manifest shape
-// produces one — the omission is structural, not a flag someone can flip.
+// THE SOURCE PHOTO IS PUBLISHED ONLY WHEN THE OWNER ASKS, AND NEVER BY DEFAULT. It used
+// to be withheld unconditionally. It is now behind `settings.showBefore`, which the owner
+// ticks per render in their gallery and which defaults off — because the recipient is
+// usually the seller whose empty room that is, and the pair is what the link is for.
+//
+// Two properties keep the reversal narrow. The blob is not even LOOKED UP unless the
+// setting is on, so the default path mints no presigned URL for it and cannot leak one
+// through a manifest field somebody forgets to clear. And the setting is a strict `true`
+// out of the store (lib/data/gallery-shares.js), so nothing truthy publishes a house.
+//
+// The source photo's FILENAME is a different question and still answered no — see the
+// `sourceName` note in buildManifest. Pixels of an empty room are what the owner chose to
+// send; "412-rosewood-ln-master.jpg" is their filing system.
 //
 // CROSS-TENANT: NEVER TRUST AN ID
 // The render is servable only after the token resolves to a share AND the row's user_id
@@ -132,8 +142,11 @@ export function isPublishable(render, share) {
 export function buildManifest({ render, blobs, share, presign }) {
   const after = blobs.find((b) => b.role === 'after');
   const thumb = blobs.find((b) => b.role === 'thumb');
-  // NOTE: `before` is deliberately not looked up. See the header.
   const settings = share.settings ?? {};
+  // Gated BEFORE the lookup, not after: with the setting off there is no source blob in
+  // hand to presign, so the default manifest cannot carry one however this function is
+  // later edited. See the header.
+  const before = settings.showBefore === true ? blobs.find((b) => b.role === 'before') : null;
   const extra = readRenderExtra(render);
 
   return {
@@ -175,6 +188,11 @@ export function buildManifest({ render, blobs, share, presign }) {
         renderId: render.id,
         url: after ? presign(after.storage_key) : '',
         thumbUrl: thumb ? presign(thumb.storage_key) : '',
+        // '' whenever the owner has not opted in OR the entry has no source blob — an
+        // older render, or one whose upload never landed. The page reads the empty string
+        // as "no comparison to offer" and draws the staged image alone, so a missing blob
+        // degrades rather than showing half a slider.
+        beforeUrl: before ? presign(before.storage_key) : '',
         width: render.width ?? null,
         height: render.height ?? null,
       }],

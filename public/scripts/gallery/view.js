@@ -6,6 +6,7 @@
 // what test/frontend/share/share-page.test.js sweeps for.
 
 import { el, replaceChildren } from '../share/dom.js';
+import { buildCompare } from '../share/compare.js';
 import { LANG_BCP47 } from '../locale-data.js';
 import { styleLabel, sourceLabel, defaultName as baseDefaultName, entryName as baseEntryName } from '../render-name.js';
 import { t } from './i18n.js';
@@ -261,6 +262,10 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false, onImage
  * — the source failed to encode — it degrades to the staged image on its own, with no
  * control to drag.
  *
+ * The mechanism itself is ../share/compare.js, shared with the public share page. What
+ * stays here is the degrade branch and the translated strings: this page has a language
+ * pack and that one does not.
+ *
  * The slider is returned rather than looked up again: it is the one control in the panel
  * with no id, and handing it back keeps the caller off querySelectorAll.
  *
@@ -271,44 +276,24 @@ export function renderGrid({ grid, entries, doc, onOpen, append = false, onImage
  * @returns {any} The range input, or null when there is nothing to compare.
  */
 export function renderCompare({ container, entry, doc, onImage }) {
-  const after = el('img', {
-    doc,
-    attrs: { src: entry.urls.after, alt: stagedAlt(entry) },
-  });
-  onImage?.(after);
   if (!entry.urls.before) {
+    const after = el('img', { doc, attrs: { src: entry.urls.after, alt: stagedAlt(entry) } });
+    onImage?.(after);
     replaceChildren(container, [after]);
     return null;
   }
 
-  const before = el('img', {
+  return buildCompare({
+    container,
     doc,
-    attrs: { src: entry.urls.before, alt: t('gallery.compare.beforeAlt', 'The room before staging') },
+    onImage,
+    beforeUrl: entry.urls.before,
+    afterUrl: entry.urls.after,
+    beforeAlt: t('gallery.compare.beforeAlt', 'The room before staging'),
+    afterAlt: stagedAlt(entry),
+    rangeLabel: t('gallery.compare.rangeLabel', 'Reveal the staged room'),
+    valueText: (percent) => t('gallery.compare.rangeValue', '{percent}% staged', { percent }),
   });
-  onImage?.(before);
-  after.className = 'gal-compare__after';
-  // A bare number is what a screen reader announces for a range without this — "50",
-  // with no unit and no clue which half of the comparison it refers to.
-  const valueText = (v) => t('gallery.compare.rangeValue', '{percent}% staged', { percent: v });
-  const range = el('input', {
-    doc,
-    className: 'gal-compare__range',
-    attrs: {
-      type: 'range',
-      min: '0',
-      max: '100',
-      value: '50',
-      'aria-label': t('gallery.compare.rangeLabel', 'Reveal the staged room'),
-      'aria-valuetext': valueText('50'),
-    },
-  });
-  range.addEventListener('input', () => {
-    const value = /** @type {any} */ (range).value;
-    /** @type {any} */ (container).style.setProperty('--gal-split', `${value}%`);
-    range.setAttribute('aria-valuetext', valueText(value));
-  });
-  replaceChildren(container, [before, after, range]);
-  return range;
 }
 
 /**

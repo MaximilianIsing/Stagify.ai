@@ -96,6 +96,37 @@ test('subscription.deleted calls onSubscriptionCanceled; subscription.updated do
   assert.equal(lifecycle.calls.canceled.length, 1, 'a deletion triggers the win-back');
 });
 
+test('a stale subscription.deleted sends no win-back to a customer who is still paying', async () => {
+  // The win-back is gated on result.ok, so the store-level stale guard suppresses this
+  // email for free — but that coupling is the whole point of the test: someone who
+  // cancelled and resubscribed would otherwise be told "sorry to see you go" while
+  // their new subscription is being charged.
+  const store = freshStore();
+  const user = registerUser(store);
+  const lifecycle = spyLifecycle();
+  const checkout = (subscription) => handleStripeEvent(
+    { type: 'checkout.session.completed', data: { object: { mode: 'subscription', metadata: {}, subscription, customer: 'cus_r', client_reference_id: user.id } } },
+    store, { lifecycle },
+  );
+
+  await checkout('sub_a');
+  await handleStripeEvent(
+    { type: 'customer.subscription.deleted', data: { object: { id: 'sub_a', customer: 'cus_r', status: 'canceled' } } },
+    store, { lifecycle },
+  );
+  assert.equal(lifecycle.calls.canceled.length, 1, 'the genuine cancellation does mail them');
+  await checkout('sub_b');
+
+  const res = await handleStripeEvent(
+    { type: 'customer.subscription.deleted', data: { object: { id: 'sub_a', customer: 'cus_r', status: 'canceled' } } },
+    store, { lifecycle },
+  );
+
+  assert.equal(res.result.reason, 'stale_subscription');
+  assert.equal(lifecycle.calls.canceled.length, 1, 'the stale replay must not mail them again');
+  assert.equal(store.findUserByEmail(user.email).plan, 'pro');
+});
+
 test('a throwing lifecycle side-effect does not fail the webhook', async () => {
   const store = freshStore();
   const user = registerUser(store);

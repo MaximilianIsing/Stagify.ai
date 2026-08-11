@@ -174,6 +174,10 @@
 }
 .guide-demo-panel {
   display: none;
+  /* The mount makes this the player root (.sdp), which is positioned — but the
+     fullscreen button ships in the markup and would otherwise anchor to the stage
+     until (or unless) the player script arrives. */
+  position: relative;
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.16, 0.84, 0.44, 1);
@@ -189,6 +193,132 @@
 @keyframes guideDemoIn {
   from { opacity: 0; transform: translateY(10px) scale(0.99); }
   to { opacity: 1; transform: none; }
+}
+
+/* --- Fullscreen control ---------------------------------------------------
+   Sits over the top-right of the player frame. The bottom-right corner is where
+   the frame's progress bar runs and where a "bottom" callout card is clamped, so
+   the top corner is the one that stays clear across all six walkthroughs.
+   scripts/guides.js hides the button outright when document.fullscreenEnabled is
+   false, rather than leaving a control whose only behaviour is a rejected promise. */
+.guide-demo-fs {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  color: var(--brand-deep);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+.guide-demo-fs svg {
+  width: 17px;
+  height: 17px;
+}
+/* 34x34 painted, 44x44 tappable — the small visual is deliberate (it sits on the
+   screenshot), the target should not be. Nothing else is interactive in this
+   corner, so the overspill cannot steal a tap from a neighbouring control. */
+.guide-demo-fs::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+}
+.guide-demo-fs__close {
+  display: none;
+}
+.guide-demo-fs.is-fs .guide-demo-fs__open {
+  display: none;
+}
+.guide-demo-fs.is-fs .guide-demo-fs__close {
+  display: block;
+}
+/* Revealed on hover, and always for keyboard users, so it does not sit on the
+   capture while you are reading the step it points at. */
+.guide-demo-panel:hover .guide-demo-fs,
+.guide-demo-fs:focus-visible,
+.guide-demo-fs.is-fs {
+  opacity: 1;
+}
+/* A touch device never fires the hover rule, which left a live 34x34 target
+   invisible on top of the artwork. Show it outright where hover does not exist. */
+@media (hover: none) {
+  .guide-demo-fs {
+    opacity: 1;
+  }
+}
+.guide-demo-fs:hover {
+  background: var(--bg-elevated);
+}
+.guide-demo-fs:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* --- The fullscreen presentation ---
+   The PANEL is the fullscreen element, because the panel is the player's root
+   (the mount adds .sdp to it) — promoting it takes the frame, the callout card,
+   the dots and this button together. It is also promoted into the top layer, so
+   the panel's own entry state (opacity/transform) stops being inherited context
+   and has to be neutralised here. Ordered after `.is-active` on purpose: equal
+   specificity, so source order is what makes `display` land. */
+.guide-demo-panel:fullscreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 3vmin;
+  /* --frame-bg is the player's own frame colour, set on this element by .sdp. */
+  background: var(--frame-bg, #0b1020);
+  box-sizing: border-box;
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+/* Derive the frame's width from the available HEIGHT and let aspect-ratio compute
+   the height back. Width-driven (`width:100%`) overflows — a 16:9 frame across a
+   16:10 screen is taller than the screen and the bottom is cut off — while a fixed
+   `height:100%` with `max-width:100%` keeps the height and CROPS instead, since the
+   step images are object-fit:cover. This letterboxes either way. `--ar` is the
+   ratio the player writes onto this same element; 34px covers the dot row. */
+.guide-demo-panel:fullscreen .sdp__frame {
+  width: min(100%, calc((100vh - 6vmin - 34px) * var(--ar, 1.7778)));
+  height: auto;
+  max-width: 100%;
+  /* No shrinking. The width above already guarantees the frame fits, and a flex
+     item that carries an aspect-ratio does not letterbox when it shrinks — it
+     keeps the width and squashes the height, and the step images (object-fit:
+     cover) are then cropped. Overflow would at least be visible; silent
+     distortion would not. */
+  flex: 0 0 auto;
+}
+/* The dots are brand blue for the page's light background and all but vanish on
+   the fullscreen backdrop. */
+.guide-demo-panel:fullscreen .sdp__dot {
+  background: rgba(255, 255, 255, 0.32);
+}
+.guide-demo-panel:fullscreen .sdp__dot:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+.guide-demo-panel:fullscreen .sdp__dot.is-active {
+  background: var(--bg-elevated);
+}
+.guide-demo-panel:fullscreen .guide-demo-fs {
+  top: 24px;
+  right: 24px;
+  opacity: 1;
 }
 
 /* --- Troubleshooting: sticky topic rail + one column of cards ------------- */

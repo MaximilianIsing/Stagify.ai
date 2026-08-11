@@ -118,7 +118,12 @@ body { overflow-x: clip; max-width: 100vw; }
   box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-.ex-toolbar { padding: 20px; }
+/* min-width:0 for the stacked layout below 900px, where the 380px track becomes 1fr and a
+ * grid item's automatic minimum is its MIN-CONTENT width. .stamp-opts is flex-wrap:nowrap
+ * around four fixed 38px swatches, so its min-content is large enough to push the whole
+ * sidebar past a phone viewport — with no page-level scrollbar to show it happening. The
+ * masking studio's toolbar needed exactly this, for exactly this control. */
+.ex-toolbar { padding: 20px; min-width: 0; }
 .ex-toolbar button, .ex-workspace button { font-family: inherit; }
 .ex-block { padding: 16px 0; border-top: 1px dashed rgba(37, 99, 235, 0.22); }
 .ex-block:first-child { padding-top: 0; border-top: none; }
@@ -264,6 +269,40 @@ body { overflow-x: clip; max-width: 100vw; }
   cursor: pointer;
   z-index: 1;
 }
+/* --- "Label as virtually staged" ------------------------------------------
+ * The control itself is the shared one from styles.css (.checkbox-container, .stamp-opts,
+ * .stamp-swatch, .opt-info). Only its ANCHORING is per-surface: .opt-info__tip is
+ * position:absolute with left:0/right:0, and the staging modal anchors it with an id rule
+ * this page does not have. Unanchored it escapes to the nearest positioned ancestor and
+ * stretches across the panel. Every copy of this control needs its own positioned wrapper. */
+.ex-label-block { position: relative; }
+
+/* ONE ROW, in all eleven languages. The strip does not fit this panel at its default
+ * settings, and that is arithmetic rather than bad luck: 380px of sidebar leaves 314px
+ * inside the default 24px indent, while four 38px swatches, the slider at its 56px floor
+ * and a labelled preview button need 320px. Left alone it painted 6px outside itself — no
+ * page scrollbar, nothing to notice. Three changes, in the order they matter:
+ *
+ * 1. THE PREVIEW LABEL GOES, leaving the eye. It is the only part of this strip whose
+ *    width depends on the language — "Pré-visualização" is some 60px wider than "Preview"
+ *    — so it is also the only part that can decide the row's shape differently in half the
+ *    packs. Icon-only it is ~30px everywhere, which is what makes one row a promise rather
+ *    than a thing that happens to hold in English. The button keeps its name: the span is
+ *    display:none, so the markup carries a localized aria-label instead (a display:none
+ *    span is out of the accessibility tree, not merely invisible).
+ * 2. No 24px indent. It hangs the strip off the checkbox's label, but this block is already
+ *    fenced by .ex-block's own rule with the option as the only thing in it — so it buys
+ *    grouping that was not in question and costs width that is.
+ * 3. The slider stops growing. .stamp-opts__size is flex:1 1 auto, which in a row with
+ *    slack left over means it eats ALL of it: a 161px track for a nine-step control, next
+ *    to a preview button it had shoved onto a line of its own. Capped, the leftover width
+ *    stays leftover and the row reads as three controls rather than one long rail. */
+.ex-label-block .stamp-opts { margin-left: 0; flex-wrap: nowrap; }
+.ex-label-block .stamp-opts__size { flex: 0 1 110px; }
+.ex-label-block .stamp-preview__label { display: none; }
+/* The eye needs the same hit area it had with a label beside it. */
+.ex-label-block .stamp-preview__btn { padding-left: 9px; padding-right: 9px; }
+
 .ex-chip__face {
   display: inline-flex;
   align-items: center;
@@ -368,7 +407,7 @@ body { overflow-x: clip; max-width: 100vw; }
  * rather than leaving a band of empty panel under it, and its own 420px min stays
  * non-binding at this width. The phone breakpoints below reset this to 0 and size the
  * dropzone directly, so they are unaffected. */
-.ex-workspace { padding: 18px; display: flex; flex-direction: column; gap: 14px; min-height: 584px; min-width: 0; }
+.ex-workspace { padding: 18px; display: flex; flex-direction: column; gap: 14px; min-height: 605px; min-width: 0; }
 .ex-viewer-actions { display: flex; align-self: flex-end; gap: 8px; flex-wrap: wrap; }
 .ex-viewer-actions.hidden { display: none; }
 
@@ -400,64 +439,130 @@ body { overflow-x: clip; max-width: 100vw; }
 .ex-dz-sub { color: var(--muted); font-size: 13px; margin-top: 6px; max-width: 380px; }
 
 /* Chosen photo, before enhancement */
-.ex-preview { margin: 0; }
+/* position: relative so the busy overlay below can pin itself to the photo rather than to
+ * the panel — the figure is only as tall as the image, the panel has a 584px floor. */
+.ex-preview { margin: 0; position: relative; }
 .ex-preview[hidden] { display: none; }
+/* Framed exactly like the .compare box the result replaces it with — same radius, same
+ * hairline, same shadow. Without that the workspace changes character the instant a render
+ * lands: a bare photo becomes a framed one, and the panel appears to redraw itself. */
 .ex-preview__img {
   display: block;
   width: 100%;
   height: auto;
   max-height: 70vh;
   object-fit: contain;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(30, 58, 138, 0.24);
   background: var(--brand-wash);
 }
 
-/* Result + compare slider */
-.ex-result { margin: 0; }
-.ex-result[hidden] { display: none; }
-.ex-result__head { margin-bottom: 12px; text-align: center; }
-.ex-result__title { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--brand-deep); }
-.ex-result__hint { margin: 0; font-size: 13px; color: var(--muted); }
-
-.ex-compare {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--brand-wash);
-  /* Set from the loaded image's own dimensions by compare.js, so the box never jumps
-   * between the before and after frames. */
-  aspect-ratio: var(--ex-ar, 3 / 2);
-  max-height: 70vh;
-  margin: 0 auto;
-}
-.ex-compare__img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-/* The AFTER image is clipped to the slider position and sits on top; the BEFORE image
- * underneath is what shows through the uncovered part. Both are absolutely positioned so
- * they occupy exactly the same box — a flow-positioned pair would offset by a hairline at
- * some zoom levels and read as a seam. */
-.ex-compare__img--before { position: absolute; inset: 0; }
-.ex-compare__after {
+/* --- Working overlay ------------------------------------------------------ */
+/* A render is one 180s call with nothing to report in between, so this stands in for
+ * progress: blurred photo + spinner + rotating copy. Built in JS
+ * (exterior-studio/busy-overlay.js), which is why nothing here is in the markup. */
+.ex-preview.is-busy .ex-preview__img { filter: blur(2.5px) brightness(0.98); }
+.ex-busy {
   position: absolute;
   inset: 0;
-  width: var(--ex-split, 50%);
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 14px; /* matches .ex-preview__img, or the corners show through */
+  z-index: 2;
 }
-.ex-compare__after .ex-compare__img { width: var(--ex-after-width, 100%); }
+.ex-busy.hidden { display: none; }
+.ex-busy__spin {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 4px solid rgba(37, 99, 235, 0.25);
+  border-top-color: var(--brand);
+  animation: ex-spin 0.9s linear infinite;
+}
+@keyframes ex-spin { to { transform: rotate(360deg); } }
+.ex-busy__msg {
+  font-weight: 600;
+  color: var(--text-heading);
+  font-size: 14px;
+  text-align: center;
+  max-width: 80%;
+  padding: 0 12px;
+  line-height: 1.4;
+}
+/* Slowed, not stopped: a frozen spinner over a blurred photo reads as a crashed page. */
+@media (prefers-reduced-motion: reduce) {
+  .ex-busy__spin { animation-duration: 2.4s; }
+}
 
-.ex-compare__range {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 12px;
-  width: calc(100% - 24px);
-  margin: 0 12px;
-  cursor: ew-resize;
+/* --- Result ---------------------------------------------------------------- */
+.ex-result { margin: 0; }
+.ex-result[hidden] { display: none; }
+
+/* Title left, actions right, one row — the same header shape as the masking studio's
+ * .ms-viewer-header. The buttons used to sit in a row of their own ABOVE the title, hard
+ * right against a column of empty panel, which read as three unrelated things stacked up
+ * rather than one result with its controls. */
+.ex-result__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
 }
+.ex-result__heading { min-width: 0; }
+.ex-result__title { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--brand-deep); }
+.ex-result__hint { margin: 0; font-size: 13px; color: var(--muted); }
+.ex-viewer-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ex-viewer-actions.hidden { display: none; }
+/* The row carries three buttons now, and .btn's default padding makes that a wide row that
+ * wraps under the title on a narrow column before it needs to. */
+.ex-viewer-actions .btn { padding: 9px 16px; font-size: 14px; }
+
+/* --- The before/after box -------------------------------------------------- */
+/* The control itself is styles/compare.css (border, shadow, seam, grip, hit layer),
+ * shared with the gallery and the share page. Only the SIZING is ours. */
+.ex-compare {
+  /* Both set by compare.js from the result's own pixel dimensions. */
+  aspect-ratio: var(--ex-ar, 3 / 2);
+  /* Cap by width, not height. `max-height` on a ratio box leaves the ratio broken and
+   * object-fit cropping the render — in a studio the whole point is seeing all of it. This
+   * says the same thing (never taller than 70vh) in the axis that preserves the shape.
+   * --ex-ar-num is --ex-ar as a bare number, because calc() cannot divide by a ratio. */
+  max-width: min(100%, calc(70vh * var(--ex-ar-num, 1.5)));
+  margin: 0 auto;
+  background: var(--brand-wash);
+}
+.ex-compare img { height: 100%; object-fit: cover; }
+
+/* Which side is which. On a subtle enhance — a sky swap, a cleared driveway — the two
+ * halves can look near enough alike that the seam is the only clue there are two of them,
+ * and nothing said which way round they were. Same idea as .ms-compare-label. */
+.ex-compare__tag {
+  position: absolute;
+  top: 10px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.62);
+  color: var(--bg-elevated);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.ex-compare__tag--before { left: 10px; }
+.ex-compare__tag--after { right: 10px; }
+/* Each tag belongs to the half it names, so it goes when its half is dragged away.
+ * Without this "BEFORE" sits over the enhanced photo at a 0% split, labelling it wrong. */
+.ex-compare:has(.compare__range) .ex-compare__tag--before { opacity: clamp(0, calc(var(--compare-split-n, 0.5) * 8), 1); }
+.ex-compare:has(.compare__range) .ex-compare__tag--after { opacity: clamp(0, calc((1 - var(--compare-split-n, 0.5)) * 8), 1); }
 
 .ex-visually-hidden {
   position: absolute;

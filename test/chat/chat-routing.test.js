@@ -49,3 +49,41 @@ test('chatIntentType: CAD and staging map to "staging", generate to "generating"
   assert.equal(chatIntentType(null, { shouldGenerate: true }, null), 'generating');
   assert.equal(chatIntentType(null, null, null), 'general');
 });
+
+test('aiResponseDefersImageAction: the disclosure question defers, but only when it is the whole turn', () => {
+  // The "Virtually staged" label is decided in conversation, so the assistant asks about it
+  // when a request is listing-bound but silent on disclosure. None of the original defer
+  // patterns reach that question — they are all about style, colour, or which image — so
+  // without this the suppression would let a model ask AND stage in the same turn, billing
+  // a render for the very thing it was asking permission for.
+  assert.equal(
+    aiResponseDefersImageAction('Before I stage it — would you like me to add the "Virtually staged" label to the photo?'),
+    true,
+  );
+  assert.equal(
+    aiResponseDefersImageAction('Most MLSs expect a disclosure. Shall I add the virtually staged label?'),
+    true,
+  );
+  assert.equal(
+    aiResponseDefersImageAction('Do you want me to label it as virtually staged?'),
+    true,
+  );
+
+  // THE OTHER DIRECTION, and the one that costs a working feature if it breaks: offering
+  // the label AFTER doing the work is an ACTION turn. Suppressing it would throw away the
+  // render the user just asked for, every time the assistant is helpful about disclosure.
+  assert.equal(
+    aiResponseDefersImageAction("I've staged your living room. Would you like me to add the \"Virtually staged\" label too?"),
+    false,
+  );
+  assert.equal(
+    aiResponseDefersImageAction('Here is your staged room — want the virtually staged label on it?'),
+    false,
+  );
+
+  // And a statement about the label is not a question about it.
+  assert.equal(
+    aiResponseDefersImageAction('I added the "Virtually staged" label to the bottom-right corner.'),
+    false,
+  );
+});

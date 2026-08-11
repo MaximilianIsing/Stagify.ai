@@ -29,6 +29,7 @@ export const KEEP = 'keep';
  * @property {boolean} removePeople - Clear people, their pets, and photographer reflections.
  * @property {boolean} removeSnow - Clear lying snow and ice, keeping the season otherwise.
  * @property {boolean} removeWetWeather - Dry off rain, puddles and wet surfaces.
+ * @property {boolean} removeLeaves - Clear fallen leaves and garden debris, keeping the season otherwise.
  * @property {string} additionalPrompt - The free-text box, unclamped here; the server clamps.
  */
 
@@ -36,7 +37,7 @@ export const KEEP = 'keep';
  * Wire up the opt-in rows and report when the selection changes.
  *
  * @param {{ root: HTMLElement, onChange?: (() => void) | null }} deps - The container holding the rows, and a callback fired whenever the request changes.
- * @returns {{ read: () => ExteriorRequest, hasRequest: () => boolean, reset: () => void }} Readers for the current request.
+ * @returns {{ read: () => ExteriorRequest, hasRequest: () => boolean }} Readers for the current request.
  */
 export function createControls({ root, onChange = null }) {
   const $ = (/** @type {string} */ id) => /** @type {any} */ (root.querySelector(`#${id}`));
@@ -65,6 +66,7 @@ export function createControls({ root, onChange = null }) {
     'ex-people': 'removePeople',
     'ex-snow': 'removeSnow',
     'ex-wet': 'removeWetWeather',
+    'ex-leaves': 'removeLeaves',
   };
 
   /** @type {Array<[string, any]>} Field name → its checkbox, resolved once. */
@@ -120,21 +122,11 @@ export function createControls({ root, onChange = null }) {
       || r.additionalPrompt.trim().length > 0;
   }
 
-  /** Put every control back to its untouched state. */
-  function reset() {
-    for (const box of root.querySelectorAll('input[type="checkbox"]')) {
-      /** @type {HTMLInputElement} */ (box).checked = false;
-    }
-    if (notes) notes.value = '';
-    syncReveals();
-    if (onChange) onChange();
-  }
-
   root.addEventListener('change', () => { syncReveals(); if (onChange) onChange(); });
   // `change` on a textarea only fires on blur, so the submit button would stay disabled
   // while someone typed the only thing they wanted.
   notes?.addEventListener('input', () => { if (onChange) onChange(); });
 
   syncReveals();
-  return { read, hasRequest, reset };
+  return { read, hasRequest };
 }

@@ -7,7 +7,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { enhanceExterior, EnhanceError, ENHANCE_TIMEOUT_MS } from '../../../public/scripts/exterior-studio/enhance.js';
+import { enhanceExterior, EnhanceError, ENHANCE_TIMEOUT_MS, BADGE_FIELDS } from '../../../public/scripts/exterior-studio/enhance.js';
 import { pageHtml } from '../../helpers/exterior-studio-dom.js';
 
 // A browser always has a `window`; the shared unstageable localizer reads it directly.
@@ -96,8 +96,77 @@ test('DRIFT GUARD: every removal row on the real page is actually POSTED', async
 
   // And nothing extra: a retired row still being posted would keep working server-side
   // long after the control that asked for it was taken off the page.
-  const posted = [...form.keys()].filter((k) => !['image', 'timeOfDay', 'sky', 'additionalPrompt'].includes(k));
+  // BADGE_FIELDS are excluded rather than expected: they ride the same request but they are
+  // not removal rows, and the page's disclosure checkbox deliberately carries no `name` so
+  // that the scrape above cannot mistake it for one. It describes the delivered FILE, while
+  // every row this guard covers describes an edit to the property.
+  const notRemovals = ['image', 'timeOfDay', 'sky', 'additionalPrompt', ...BADGE_FIELDS];
+  const posted = [...form.keys()].filter((k) => !notRemovals.includes(k));
   assert.deepEqual(posted.sort(), [...rows].sort(), 'the wire and the markup must agree exactly');
+});
+
+// ---- the disclosure badge ---------------------------------------------------
+
+test('the badge fields ride the same request, as strings multipart can carry', async () => {
+  const f = fakeFetch(200, { image: 'x' });
+  await run(f.impl, {
+    badge: { labelVirtuallyStaged: true, stampLang: 'german', stampStyle: 'banner', stampScale: 1.3 },
+  });
+  const form = f.calls[0].init.body;
+
+  // FormData has no booleans and no numbers; the server's readStampRequest is built for
+  // exactly these strings, which is why the flag is coerced here and not there.
+  assert.equal(form.get('labelVirtuallyStaged'), 'true');
+  assert.equal(form.get('stampLang'), 'german');
+  assert.equal(form.get('stampStyle'), 'banner');
+  assert.equal(form.get('stampScale'), '1.3');
+});
+
+test('an untouched checkbox says so explicitly rather than going missing', async () => {
+  const f = fakeFetch(200, { image: 'x' });
+  await run(f.impl, {
+    badge: { labelVirtuallyStaged: false, stampLang: 'english', stampStyle: 'dark', stampScale: 1 },
+  });
+  assert.equal(f.calls[0].init.body.get('labelVirtuallyStaged'), 'false');
+});
+
+test('a caller that never wired the control posts NO badge fields at all', async () => {
+  // Not the same as posting "off". A page with no disclosure control has not made a
+  // statement about the badge, and inventing one here would put this island in the business
+  // of answering for markup it cannot see.
+  const f = fakeFetch(200, { image: 'x' });
+  await run(f.impl);
+  const posted = [...f.calls[0].init.body.keys()];
+  for (const name of BADGE_FIELDS) {
+    assert.ok(!posted.includes(name), `${name} was posted by a page that has no such control`);
+  }
+});
+
+test('DRIFT GUARD: the page ships every control BADGE_FIELDS claims to send', () => {
+  // The mirror of the removal-row guard above, for the other half of this request. A field
+  // listed here but missing from the page is a value invented by the island; a control on
+  // the page with no field is a setting the user picks and the server never hears about —
+  // and the badge's failure mode is the quiet one, a photo that looks right and is not
+  // labelled.
+  const html = pageHtml();
+  assert.ok(html.includes('id="ex-label-virtually-staged"'), 'the checkbox behind labelVirtuallyStaged');
+  assert.ok(html.includes('id="ex-stamp-scale"'), 'the slider behind stampScale');
+  assert.match(html, /name="ex-stamp-style"/, 'the swatches behind stampStyle');
+  // stampLang has no control: it follows the SITE language, read from localStorage by the
+  // shared option. Named here so the absence is a decision rather than an oversight.
+  assert.deepEqual(
+    BADGE_FIELDS, ['labelVirtuallyStaged', 'stampLang', 'stampStyle', 'stampScale'],
+    'a new badge field needs a control on the page and a reader on the server',
+  );
+});
+
+test('the disclosure checkbox is NOT one of the removal rows', () => {
+  // It must stay nameless in the markup. Give it a `name` and the two drift guards above
+  // start demanding that read() report it as a removal flag and that the prompt table carry
+  // a clause for it — none of which exist, because it never goes near the model.
+  const box = /<input type="checkbox"[^>]*id="ex-label-virtually-staged"[^>]*>/.exec(pageHtml());
+  assert.ok(box, 'the disclosure checkbox must still be a plain checkbox in the markup');
+  assert.ok(!/\sname="/.test(box[0]), 'the disclosure checkbox must not carry a name attribute');
 });
 
 test('a signed-out caller sends no Authorization header rather than "Bearer null"', async () => {

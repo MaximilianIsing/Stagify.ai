@@ -270,10 +270,19 @@ test('the source photo FILENAME is never published to a stranger', async () => {
   assert.equal(manifest.sourceName, undefined);
 });
 
-test('the source photo is never published, and no setting can publish it', async () => {
-  // `before` exists on the row and in the store. The owner sees it in their private
-  // gallery; the buyer never does. The omission is structural — there is no showBefore
-  // flag to flip, which is why the settings allowlist drops one if somebody sends it.
+test('the source photo is NOT published by default', async () => {
+  // `before` exists on the row and in the store for every render. A link the owner has not
+  // touched still shows the staged result alone — the default is what keeps the reversal
+  // narrow, and it is the state every link ships in.
+  const { base, shares, addRender } = await mount();
+  const id = addRender('user-1');
+  const { token } = shares.ensureShare({ renderId: id, userId: 'user-1' });
+
+  const manifest = await (await fetch(`${base}/api/share/${token}`)).json();
+  assert.equal(manifest.rooms[0].frames[0].beforeUrl, '', 'the default link published the source photo');
+});
+
+test('the source photo is published only when the owner has ticked the box', async () => {
   const { base, shares, addRender } = await mount();
   const id = addRender('user-1');
   const { token } = shares.ensureShare({
@@ -281,9 +290,36 @@ test('the source photo is never published, and no setting can publish it', async
   });
 
   const manifest = await (await fetch(`${base}/api/share/${token}`)).json();
-  const serialized = JSON.stringify(manifest);
-  assert.ok(!serialized.includes('before'), 'no before URL, and no key hinting at one');
-  assert.ok(!('showBefore' in manifest), 'no flag that a future edit could turn on');
+  const frame = manifest.rooms[0].frames[0];
+  assert.ok(frame.beforeUrl, 'the opted-in link carries no source photo');
+  assert.notEqual(frame.beforeUrl, frame.url, 'the before URL is the staged image again');
+  // Signed like every other URL on this surface — the tenancy check happened before it was
+  // minted, and it ages out on the same clock.
+  assert.match(frame.beforeUrl, /[?&](X-Amz-Signature|sig)=/i);
+});
+
+test('a truthy-but-not-true setting does not publish the source photo', async () => {
+  // The store is what enforces this (normalizeShareSettings), but the property that
+  // matters is the one visible from out here: what the stranger holding the link receives.
+  const { base, shares, addRender } = await mount();
+  const id = addRender('user-1');
+  const { token } = shares.ensureShare({
+    renderId: id, userId: 'user-1', settings: { showBefore: 'true' },
+  });
+
+  const manifest = await (await fetch(`${base}/api/share/${token}`)).json();
+  assert.equal(manifest.rooms[0].frames[0].beforeUrl, '');
+});
+
+test('the setting is never echoed to the reader', async () => {
+  // The manifest says what to draw, not what the owner configured. Publishing the flag
+  // would tell a recipient there is a photo they are not being shown.
+  const { base, shares, addRender } = await mount();
+  const id = addRender('user-1');
+  const { token } = shares.ensureShare({ renderId: id, userId: 'user-1' });
+
+  const manifest = await (await fetch(`${base}/api/share/${token}`)).json();
+  assert.ok(!('showBefore' in manifest), 'the manifest echoed the setting');
 });
 
 test('image URLs point at the object store, not at this origin', async () => {

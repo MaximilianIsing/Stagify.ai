@@ -403,6 +403,48 @@ test('localized subpages render for other locales', async () => {
   assert.ok(html.includes('<link rel="canonical" href="https://stagify.ai/fr/guides.html">'));
 });
 
+test('a localized page preloads ITS OWN language pack, not english.json', async () => {
+  // The English source hard-codes `preload href="languages/english.json"`. Passed through
+  // unchanged it was a guaranteed-unused high-priority fetch of 84 KB on every localized
+  // URL — the browser then downloaded the real pack anyway (russian.json is 131 KB), so it
+  // was pure waste competing with the LCP image. Both halves matter: the right pack must be
+  // named AND english.json must be gone, since a preload that is never used is the bug.
+  const res = await get('/ru/guides.html');
+  assert.equal(res.status, 200);
+  const html = await res.text();
+  assert.ok(
+    html.includes('<link rel="preload" href="languages/russian.json" as="fetch" crossorigin>'),
+    'the preload should name the Russian pack, which is what language-loader.js actually fetches',
+  );
+  assert.ok(!html.includes('languages/english.json'), 'the unused English pack preload must be gone');
+});
+
+test('every locale rewrites the language-pack preload to its own pack', async () => {
+  // One locale passing is not evidence the mapping is right — locale.lang is the
+  // languages/<lang>.json basename and differs from the URL prefix on every one of them
+  // (es/spanish, zh/chinese, pt/portuguese …), so a wrong token would still look plausible.
+  for (const locale of LOCALES) {
+    const res = await get(`/${locale.prefix}/contact.html`);
+    assert.equal(res.status, 200, `/${locale.prefix}/contact.html should render`);
+    const html = await res.text();
+    assert.ok(
+      html.includes(`href="languages/${locale.lang}.json"`),
+      `/${locale.prefix}/contact.html should preload languages/${locale.lang}.json`,
+    );
+    assert.ok(
+      !html.includes('languages/english.json'),
+      `/${locale.prefix}/contact.html still preloads the English pack`,
+    );
+  }
+});
+
+test('the static English page still preloads english.json', async () => {
+  // The rewrite must be localized-render-only; English is served as a plain static file.
+  const res = await get('/contact.html');
+  assert.equal(res.status, 200);
+  assert.ok((await res.text()).includes('languages/english.json'));
+});
+
 test('localized home /prefix/index.html 301s to /prefix', async () => {
   const res = await get('/es/index.html', { redirect: 'manual' });
   assert.equal(res.status, 301);

@@ -1717,7 +1717,7 @@ body.page-home main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: 16px;
+  column-gap: 12px;
   /* The row is as tall as the readout, so the 24px input sits off its bottom —
      the gap you actually see under the track is this plus that slack. */
   row-gap: 3px;
@@ -1797,9 +1797,11 @@ body.page-home main {
   transform: scale(1.12);
 }
 .calc__readout {
-  min-width: 3.5ch;
+  /* Max value is 20, so two tabular digits is the widest it ever gets; the extra
+     half-ch keeps the "1"→"2" step from nudging the track. */
+  min-width: 2.5ch;
   text-align: right;
-  font-size: clamp(52px, 6.4vw, 76px);
+  font-size: clamp(42px, 5.2vw, 60px);
   font-weight: 900;
   letter-spacing: -0.5px;
   line-height: 1;
@@ -4056,9 +4058,11 @@ body.page-home main {
   cursor: grabbing;
 }
 /* Only four layers are ever visible; anything deeper waits with no paint cost. With
-   five cards that is just depth 4 — the one you last advanced past. Add a selector
+   seven cards that is depths 4–6 — the ones you last advanced past. Add a selector
    per extra depth if the deck ever grows. */
-.tw-deck--ready .tw-card[data-i="4"] {
+.tw-deck--ready .tw-card[data-i="4"],
+.tw-deck--ready .tw-card[data-i="5"],
+.tw-deck--ready .tw-card[data-i="6"] {
   opacity: 0;
 }
 .tw-deck--ready .tw-card.is-dragging {

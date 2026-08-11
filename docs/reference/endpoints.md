@@ -218,7 +218,7 @@ must not be held by an intermediary or replayed from the back/forward cache.
 | `GET` | `/api/gallery` | The caller's saved renders, newest first. `?offset=` pages by 60 — **floored, clamped to `MAX_OFFSET` (100 000) and forgiving**: a fractional, negative, non-numeric or repeated value lands on the first page rather than 400ing, and the response echoes the offset actually applied. (Anything less was a `500`: better-sqlite3 binds `LIMIT ? OFFSET ?` directly and rejects a non-integer from inside the statement.) The page size is the server's alone — no `limit` parameter is read. Each entry carries the room type, style, the **prompt that produced it**, the owner's `name` for it (`''` when unnamed — see below), short-TTL **presigned URLs** for `after` / `before` / `thumb` — bytes come straight from R2, never through this process — and `share.url`, the render's client link. Returns `{ entries, total, offset, pageSize, enabled, urlTtlMs, search }`. **`?q=` searches (Stagify+ only — see below).** **`enabled: false`** with an empty list when the object store is unconfigured (the gallery is off on Render without R2) — a `200`, not a `500`, so the page can explain itself. `401` `AUTH_REQUIRED` when signed out. |
 | `DELETE` | `/api/gallery/:id` | Delete one entry, and **the only way to take a link down**: it tombstones the bytes, so any outstanding presigned URL starts 404ing as soon as the reaper runs. `404` if the render is not the caller's. |
 | `PATCH` | `/api/gallery/:id` | Name one render. **Body:** `{ name: string }` — required and required to be a *string*; anything else is a `400` `INVALID_NAME` rather than a silent clear. `name: ""` is a **reset**, storing `NULL` so the page goes back to deriving the default. The store trims, collapses whitespace, strips control characters and clamps to **80 code points**, and the response returns `{ success, name }` with what was actually **stored** — not what was submitted. `404` if the render is not the caller's, or has been evicted. |
-| `PATCH` | `/api/gallery/:id/share` | Edit a link's presentation **without rotating it** — an agent fixing a typo in their own phone number must not invalidate the link they already sent. **Body:** `{ settings?: { headline, note, agentName, agentEmail, agentPhone } }` — an allowlist, unknown keys are dropped. |
+| `PATCH` | `/api/gallery/:id/share` | Edit a link's presentation **without rotating it** — an agent fixing a typo in their own phone number must not invalidate the link they already sent. **Body:** `{ settings?: { headline, note, agentName, agentEmail, agentPhone, showBefore } }` — an allowlist, unknown keys are dropped. `showBefore` (default `false`, strict boolean) is what puts the source photo on the shared page; the rest have no UI yet. **Send the whole bag, not a delta:** the store rebuilds settings from what arrives, so an omitted key is a reset. |
 
 > **A share link is not created and cannot be switched off.** Every finished render has
 > one for its lifetime, minted by `GET /api/gallery` (`shares.ensureForRenders`, one
@@ -270,16 +270,22 @@ no matter how many images they scroll.
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/s/:token` | The share page shell. **Performs no lookup at all**, so the response is byte-identical for a real token and an invented one — not because the comparison is careful, but because there is no comparison. Headers: `Referrer-Policy: no-referrer`, `X-Robots-Tag: noindex, nofollow`, `Cache-Control: private, no-store`. |
-| `GET` | `/api/share/:token` | The manifest: headline, note, agent card, the staged image as a **presigned R2 URL**, the MLS/NAR disclosure, and what the photo is — `name` (the owner's own label, so the page heads itself with the same title their gallery shows), `roomType`, `furnitureStyle` and `stagedAt`. The **prompt** behind the render stays out. **One identical `404`** — same status, body *and* headers — for unknown, revoked, expired, cross-tenant, deleted and not-yet-uploaded. A caller who could tell "revoked" from "never existed" would have learned that a token was once real. Counts a view, debounced to once per 30 min. |
+| `GET` | `/api/share/:token` | The manifest: headline, note, agent card, the staged image as a **presigned R2 URL** (plus `beforeUrl`, the source photo, only when the owner opted in — see below), the MLS/NAR disclosure, and what the photo is — `name` (the owner's own label, so the page heads itself with the same title their gallery shows), `roomType`, `furnitureStyle` and `stagedAt`. The **prompt** behind the render stays out. **One identical `404`** — same status, body *and* headers — for unknown, revoked, expired, cross-tenant, deleted and not-yet-uploaded. A caller who could tell "revoked" from "never existed" would have learned that a token was once real. Counts a view, debounced to once per 30 min. |
 
 > ⚠️ **A takedown is eventual for bytes.** Deleting the entry stops the manifest at once,
 > but a presigned image URL already handed out keeps working until it expires (≤15 min).
 > UI copy must say *"within 15 minutes"*, never *"immediately"*. It is still the hard
 > option — a presigned URL to a deleted object 404s however valid its signature is.
 >
-> The source ("before") photo is **never** published here. It exists for the owner's
-> private gallery only, and no setting can turn it on — the omission is structural, not a
-> flag.
+> The source ("before") photo is published **only when the render's owner has ticked
+> "include the before photo"**, and never by default. It used to be withheld
+> unconditionally; the recipient is usually the seller whose empty room it is, so the pair
+> is now offerable — behind `settings.showBefore`, which is a strict `true` (nothing merely
+> truthy publishes a house) and which `buildManifest` checks *before* it looks the blob up,
+> so the default path has no URL to leak. The frame carries `beforeUrl: ''` when the owner
+> has not opted in **or** the entry has no source blob, and the page draws the staged image
+> alone rather than half a slider. The source photo's **filename** is still never published
+> — listing photos are named for the property address.
 
 `GET /api/object/*` also exists in **dev and CI only**, mounted solely when the local
 object backend is active; in production nothing serves render bytes from this process.

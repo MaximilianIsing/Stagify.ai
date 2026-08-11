@@ -375,3 +375,106 @@ test('the response carries the refreshed user so the client can update its plan 
   assert.equal(res.body.success, true);
   assert.equal(res.body.images, undefined, 'one photo, one image — never the array shape');
 });
+
+// ---- "Label as virtually staged" -------------------------------------------
+//
+// An enhanced facade is still an altered photograph of the property, so NAR Article 12
+// applies to it exactly as it does to a staged room. The handler's whole job here is to
+// hand the flag through; what makes that worth pinning is that the failure is silent in
+// the direction that matters — a request asking for the badge, rendered and billed without
+// one, looks like a perfectly good photo.
+
+test('the badge fields reach processStaging, coerced by the shared validator', async () => {
+  const { handleExteriorMultipart, seen } = makeHandler();
+  // Multipart, so every field arrives a STRING. 'true' is what a checkbox posts through
+  // enhance.js; a raw boolean never appears on this path.
+  await handleExteriorMultipart(fakeReq({
+    labelVirtuallyStaged: 'true', stampLang: 'french', stampStyle: 'banner', stampScale: '1.4',
+  }), fakeRes(), PRO);
+
+  const { params } = seen.staging[0];
+  assert.equal(params.labelVirtuallyStaged, true, 'the string "true" must enable the badge');
+  assert.equal(params.stampLang, 'french');
+  assert.equal(params.stampStyle, 'banner');
+  assert.equal(params.stampScale, 1.4);
+});
+
+test('an unasked-for badge is off, and junk falls back rather than reaching sharp', async () => {
+  const { handleExteriorMultipart, seen } = makeHandler();
+  await handleExteriorMultipart(fakeReq(), fakeRes(), PRO);
+  assert.equal(seen.staging[0].params.labelVirtuallyStaged, false, 'the default is OFF');
+
+  // A tampered style is snapped to the renderable set rather than passed through: the
+  // badge masters are files on disk, so an arbitrary name is a failed render.
+  await handleExteriorMultipart(fakeReq({
+    labelVirtuallyStaged: 'on', stampLang: '../../etc', stampStyle: 'neon', stampScale: '99',
+  }), fakeRes(), PRO);
+  const { params } = seen.staging[1];
+  assert.equal(params.labelVirtuallyStaged, true, "a checkbox posts 'on'");
+  assert.equal(params.stampLang, 'english');
+  assert.equal(params.stampStyle, 'dark');
+  assert.ok(params.stampScale >= 0.7 && params.stampScale <= 1.6, 'the scale is clamped');
+});
+
+test('the badge is NEVER folded into the prompt the model sees', async () => {
+  // It describes the delivered file, not the property. buildExteriorPrompt's preservation
+  // block exists to stop the model editing anything it was not asked to, so "label as
+  // virtually staged" arriving as an instruction is exactly the wrong kind of input — and
+  // it would be graded, retried and billed as though the model had failed to draw a caption.
+  const { handleExteriorMultipart, seen } = makeHandler();
+  await handleExteriorMultipart(fakeReq({
+    labelVirtuallyStaged: 'true', stampStyle: 'banner', removeSnow: 'true',
+  }), fakeRes(), PRO);
+
+  const { params } = seen.staging[0];
+  assert.doesNotMatch(params.promptOverride, /virtually staged|banner|stamp/i);
+  // ...and it is not smuggled in through the summary that DOES reach the reviewer clause,
+  // the CSV row and the gallery card either.
+  assert.doesNotMatch(params.additionalPrompt, /virtually staged|banner|stamp/i);
+  assert.match(params.promptOverride, /snow/i, 'the real request still made it through');
+});
+
+test('the stamp fails CLOSED — a withheld render is a rejection, not an unlabelled photo', async () => {
+  // processStaging stamps before it returns, so a throw here means the render succeeded
+  // and was then withheld. The handler must let that unwind to the route, which turns it
+  // into the DISCLOSURE_STAMP_FAILED sentence naming the option to untick. Swallowing it
+  // and shipping the image is the one outcome the whole feature exists to prevent.
+  const boom = Object.assign(new Error('badge master missing'), { code: 'DISCLOSURE_STAMP_FAILED' });
+  const { handleExteriorMultipart } = makeHandler({
+    processStaging: async () => { throw boom; },
+  });
+  const res = fakeRes();
+  await assert.rejects(
+    () => handleExteriorMultipart(fakeReq({ labelVirtuallyStaged: 'true' }), res, PRO),
+    /badge master missing/,
+  );
+  assert.equal(res.body, null, 'nothing may be sent to the client');
+});
+
+test('the gallery master carries the badge too, without a second stamp', async () => {
+  // processStaging burns the badge in BEFORE the onNative hook, so the bytes the gallery
+  // stores are already labelled. That is what makes the downloaded photo and the copy an
+  // agent re-downloads months later structurally unable to disagree — the handler must not
+  // reach for the pre-stamp buffer for either one.
+  const seenLocal = { gallery: [] };
+  let renders = 0;
+  const { handleExteriorMultipart } = makeHandler({
+    renderPersistence: fakePersistence(seenLocal),
+    processStaging: async (_b, params) => {
+      renders += 1;
+      assert.equal(params.labelVirtuallyStaged, true);
+      // Stand in for the real order of operations: stamp, then hand over the native.
+      params.onNative(Buffer.from('STAMPED-NATIVE'), { format: 'png' });
+      return 'data:image/webp;base64,STAMPED-DELIVERY';
+    },
+  });
+  const res = fakeRes();
+  await handleExteriorMultipart(fakeReq({ labelVirtuallyStaged: 'true' }), res, PRO);
+
+  assert.equal(res.body.image, 'data:image/webp;base64,STAMPED-DELIVERY');
+  assert.equal(
+    seenLocal.gallery[0].natives[0].buffer.toString(), 'STAMPED-NATIVE',
+    'the gallery stored a buffer that never went through the stamp',
+  );
+  assert.equal(renders, 1, 'one render, one stamp — the badge is not applied twice');
+});
