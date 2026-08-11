@@ -10,6 +10,7 @@
 // the moment the two differ.
 
 import { el, replaceChildren, contactHref } from './dom.js';
+import { buildCompare } from './compare.js';
 import { styleLabel, entryName } from '../render-name.js';
 
 /**
@@ -91,6 +92,13 @@ function renderFacts({ manifest, doc }) {
  * page does not reflow when they land — a jump while somebody is looking at it reads as a
  * broken page, and on a phone it moves the thing they were about to tap.
  *
+ * TWO SHAPES, decided by `frame.beforeUrl`. Without one — the default for every link, and
+ * the only shape this page had until the setting existed — the staged photo IS the button,
+ * exactly as before. With one, the box becomes the drag comparison (../share/compare.js,
+ * the same builder the owner's own gallery uses) and the lightbox moves to a button of its
+ * own beneath it, because a <button> may not contain the range input and the full-size view
+ * is still the staged photo alone.
+ *
  * @param {{ gallery: Element | null, manifest: any, doc?: Document,
  *   onOpen: (url: string, label: string) => void }} arg
  * @returns {HTMLImageElement[]} The <img> elements, in order, so the refresher can
@@ -130,22 +138,65 @@ export function renderGallery({ gallery, manifest, onOpen, doc }) {
       /** @type {any} */ (img).dataset.fullUrl = frame.url;
       /** @type {any} */ (img).dataset.renderId = frame.renderId || '';
 
-      const button = el('button', {
-        doc,
-        className: 'sh-frame__button',
-        attrs: { type: 'button', 'aria-label': `View ${label || 'room'} full size` },
-        children: [img],
-      });
-      if (frame.width && frame.height) {
-        button.style.setProperty('--sh-ar', `${frame.width} / ${frame.height}`);
+      /** @param {any} node */
+      const pinRatio = (node) => {
+        if (frame.width && frame.height) node.style.setProperty('--sh-ar', `${frame.width} / ${frame.height}`);
+      };
+
+      /** The image box, and whatever opens the full-size view. */
+      const parts = [];
+      if (frame.beforeUrl) {
+        const before = /** @type {HTMLImageElement} */ (el('img', {
+          doc,
+          attrs: {
+            src: frame.beforeUrl,
+            // Named against the same label as the staged one, so a screen reader hears
+            // which half of the pair it is on rather than two identical descriptions.
+            alt: label ? `${label}, before staging` : 'The room before staging',
+            loading: 'lazy',
+            decoding: 'async',
+          },
+        }));
+        const box = el('div', { doc, className: 'compare sh-frame__compare' });
+        pinRatio(box);
+        // The staged <img> built above is handed in rather than rebuilt: it carries the
+        // srcset, the fullUrl and the renderId the lightbox and the refresher read off it.
+        buildCompare({
+          container: box,
+          doc,
+          beforeImg: before,
+          afterImg: img,
+          rangeLabel: 'Reveal the staged room',
+          valueText: (percent) => `${percent}% staged`,
+        });
+        const full = el('button', {
+          doc,
+          className: 'sh-frame__full',
+          attrs: { type: 'button' },
+          text: 'View the staged photo full size',
+        });
+        full.addEventListener('click', () => onOpen(frame.url, label));
+        parts.push(box, full);
+        // Both images, so an expired presigned URL re-mints the whole comparison. They are
+        // signed in the same manifest and age out together.
+        frames.push(before);
+      } else {
+        const button = el('button', {
+          doc,
+          className: 'sh-frame__button',
+          attrs: { type: 'button', 'aria-label': `View ${label || 'room'} full size` },
+          children: [img],
+        });
+        pinRatio(button);
+        button.addEventListener('click', () => onOpen(frame.url, label));
+        parts.push(button);
       }
-      button.addEventListener('click', () => onOpen(frame.url, label));
 
       nodes.push(el('figure', {
         doc,
         className: 'sh-frame',
         children: [
-          button,
+          ...parts,
           // The caption used to repeat the room type, which the heading above already
           // says. It carries the settings behind the photo instead.
           renderFacts({ manifest, doc }),

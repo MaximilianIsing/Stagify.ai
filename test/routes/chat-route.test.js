@@ -45,6 +45,10 @@ const STAGING_ROUTING = {
       usePreviousImage: false,
       furnitureImageIndex: null,
       styleReference: false,
+      // The routing schema is `strict: true`, so a real model emits every property — this
+      // is what "the user did not ask for the virtually staged label" looks like on the
+      // wire, and it is by far the common case.
+      disclosure: null,
     },
   ],
 };
@@ -641,4 +645,70 @@ test('/api/chat runs image generation BEFORE staging', async () => {
   assert.equal(body.stagedImage, 'data:staged');
   assert.equal(body.generatedImage, 'data:generated');
   assert.deepEqual(order, ['generate', 'staging']);
+});
+
+// ─ The disclosure badge, end to end through the real router.
+//
+// The only test that walks schema → routing → suppression → dispatch → staging params.
+// Every other check on this feature holds one link of that chain still: the drift guards
+// compare the schema to its consumer, and the chat-staging specs call the dispatcher
+// directly. Neither would notice if the router stopped forwarding the field, or if the
+// defer-suppression started eating a turn that asked for a label.
+test('a routed disclosure reaches processStaging, and its absence leaves the badge off', async () => {
+  const withLabel = JSON.parse(JSON.stringify(STAGING_ROUTING));
+  withLabel.staging[0].disclosure = { style: 'banner', scale: 1.3 };
+  app = await mountChat({ routing: withLabel });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{ role: 'user', content: [
+      { type: 'text', text: 'stage this and label it as virtually staged' },
+      { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+    ] }],
+    // The badge language rides the request, not the routing decision — it follows the site
+    // language, which is the browser's to know.
+    stampLang: 'german',
+  });
+  assert.equal(res.status, 200);
+  await res.json();
+
+  const params = app.calls.processStaging.lastArgs[1];
+  assert.equal(params.labelVirtuallyStaged, true);
+  assert.equal(params.stampStyle, 'banner');
+  assert.equal(params.stampScale, 1.3);
+  assert.equal(params.stampLang, 'german');
+  await app.close();
+
+  // The pair, and the one that matters more: the default staging turn must come back
+  // unlabelled. A disclosure appearing on every render would be a change to every photo
+  // the Designer has ever produced.
+  app = await mountChat({ routing: STAGING_ROUTING });
+  await postChat(app.baseUrl, {
+    messages: [{ role: 'user', content: [
+      { type: 'text', text: 'stage this' },
+      { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+    ] }],
+  });
+  assert.equal(app.calls.processStaging.lastArgs[1].labelVirtuallyStaged, false);
+});
+
+test('asking about the label stages NOTHING, so the question cannot bill a render', async () => {
+  // The ask branch has no machinery of its own: it relies on the model writing questions
+  // only and on aiResponseDefersImageAction nulling the staging request if it does not.
+  // This asserts the second half, because the first half is the model's behaviour and no
+  // test can hold it to that.
+  const asking = JSON.parse(JSON.stringify(STAGING_ROUTING));
+  asking.response = 'Before I stage it — would you like me to add the "Virtually staged" label to the photo?';
+  app = await mountChat({ routing: asking });
+
+  const res = await postChat(app.baseUrl, {
+    messages: [{ role: 'user', content: [
+      { type: 'text', text: 'get this one ready for the MLS' },
+      { type: 'image_url', image_url: { url: ROOM_IMAGE } },
+    ] }],
+  });
+  const body = await res.json();
+
+  assert.equal(app.calls.processStaging.calls, 0, 'the question turn must not stage');
+  assert.match(body.response, /Virtually staged/, 'and the user is asked');
+  assert.equal(body.stagedImage, undefined);
 });

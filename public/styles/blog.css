@@ -190,6 +190,18 @@ a { color: var(--brand); }
 .article-body a { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
 .article-body strong { color: var(--ink); }
 
+/* Quoted statute / rule text. Kept visually distinct from .article-callout: a callout is
+   our own aside, a blockquote is somebody else's words, so it stays serif and un-tinted. */
+.article-body blockquote {
+  margin: 1.5rem 0;
+  padding: 2px 0 2px 20px;
+  border-left: 3px solid #cbd5e1;
+  color: #374151;
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+.article-body blockquote p:last-child { margin-bottom: 0; }
+
 .article-callout {
   font-family: var(--sans);
   font-size: 1rem;

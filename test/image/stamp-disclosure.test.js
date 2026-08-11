@@ -14,10 +14,13 @@ import {
   badgeGeometry,
   stampVirtuallyStaged,
   clampStampScale,
+  normalizeStampOptions,
+  readStampRequest,
   STAMP_STYLE_NAMES,
   DEFAULT_STAMP_STYLE,
   STAMP_SCALE_MIN,
   STAMP_SCALE_MAX,
+  STAMP_SCALE_DEFAULT,
 } from '../../lib/image/stamp-disclosure.js';
 import { STAGING_DISCLOSURE_BADGE } from '../../lib/staging/staging-disclosure.js';
 
@@ -261,6 +264,65 @@ test('clampStampScale pins the slider to its range', async () => {
   assert.equal(clampStampScale(-4), STAMP_SCALE_MIN, 'below it');
   assert.equal(clampStampScale('huge'), 1, 'nonsense falls back to the default');
   assert.equal(clampStampScale(undefined), 1, 'so does nothing at all');
+});
+
+// ── the one definition of "what can this badge be" ───────────────────────────
+// FOUR surfaces now ask that question — /api/process-image and /api/stage-by-endpoint-key
+// through virtual-staging-handler, /api/masking-studio/save, /api/stamp-image and
+// /api/disclosure-preview — because the badge is applied wherever the finished pixels
+// happen to be, and that stopped being one place. Separate copies would let the preview
+// promise a badge a render refuses, or one studio accept a style another drops.
+
+test('normalizeStampOptions snaps every input to something renderable', async () => {
+  assert.deepEqual(
+    normalizeStampOptions({ lang: 'german', style: 'banner', scale: 1.4 }),
+    { lang: 'german', style: 'banner', scale: 1.4 },
+    'a real configuration survives untouched',
+  );
+  // A traversal-shaped language would select a file on disk if it were ever trusted; a
+  // traversal-shaped style would select a code path. Both collapse to the defaults.
+  for (const junk of [
+    { lang: '../../etc/passwd', style: '../../lib' },
+    { lang: 'klingon', style: 'neon' },
+    {},
+  ]) {
+    assert.deepEqual(
+      normalizeStampOptions(junk),
+      { lang: 'english', style: DEFAULT_STAMP_STYLE, scale: STAMP_SCALE_DEFAULT },
+      `${JSON.stringify(junk)} falls back rather than rejecting`,
+    );
+  }
+  assert.equal(normalizeStampOptions({ style: 'BANNER' }).style, 'banner', 'case is not a rejection');
+});
+
+test('readStampRequest reads the flag off both wires it arrives on', async () => {
+  // multipart from /api/process-image sends the STRING "true"; the two studios send JSON
+  // booleans. A check that only understood one would silently stop labelling on the other.
+  for (const flag of [true, 'true', 'on']) {
+    assert.equal(readStampRequest({ labelVirtuallyStaged: flag }).enabled, true, `${JSON.stringify(flag)} means yes`);
+  }
+  for (const flag of [false, 'false', '', undefined, null, 0, 'yes']) {
+    assert.equal(readStampRequest({ labelVirtuallyStaged: flag }).enabled, false, `${JSON.stringify(flag)} means no`);
+  }
+  assert.deepEqual(
+    readStampRequest({ labelVirtuallyStaged: true, stampLang: 'japanese', stampStyle: 'minimal', stampScale: '0.7' }),
+    { enabled: true, lang: 'japanese', style: 'minimal', scale: 0.7 },
+    'the stamp* field names are the studios\' wire shape',
+  );
+});
+
+test('the preview route normalizes through the same definition as the renders', async () => {
+  // The preview exists to be TRUE. If it validated separately it could show a badge the
+  // stamp would refuse — and the first person to find out would be an agent looking at a
+  // published listing photo (see lib/image/disclosure-preview.js).
+  const { normalizePreviewParams } = await import('../../lib/image/disclosure-preview.js');
+  for (const params of [
+    { lang: 'french', style: 'light', scale: 1.1 },
+    { lang: 'klingon', style: 'neon', scale: 'abc' },
+    {},
+  ]) {
+    assert.deepEqual(normalizePreviewParams(params), normalizeStampOptions(params));
+  }
 });
 
 test('a scaled-up badge is drawn larger, not just measured larger', async () => {

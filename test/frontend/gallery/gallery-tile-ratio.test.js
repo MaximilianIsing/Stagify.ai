@@ -23,6 +23,8 @@ import { galleryDocument } from '../../helpers/gallery-dom.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const CSS = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'gallery.css'), 'utf8');
+/** The before/after moved to its own sheet when the share page started drawing it too. */
+const COMPARE_CSS = fs.readFileSync(path.join(ROOT, 'public', 'styles', 'compare.css'), 'utf8');
 
 /** Renders in three different shapes — landscape, phone, portrait — as a real page has. */
 const MIXED = [
@@ -33,10 +35,10 @@ const MIXED = [
 
 /** The CSS block for one selector, comments stripped — a comment naming a declaration is
  *  not that declaration, and this guard would otherwise pass on the fix's own prose. */
-function ruleFor(selector) {
-  const bare = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+function ruleFor(selector, source = CSS, sourceName = 'gallery.css') {
+  const bare = source.replace(/\/\*[\s\S]*?\*\//g, '');
   const match = new RegExp(`(^|})\\s*${selector.replace('.', '\\.')}\\s*\\{([^}]*)}`, 'm').exec(bare);
-  assert.ok(match, `${selector} is gone from gallery.css`);
+  assert.ok(match, `${selector} is gone from ${sourceName}`);
   return match[2];
 }
 
@@ -69,7 +71,13 @@ test('the tile ratio is a literal in the sheet, not a variable a card can overri
 
 test('the detail panel still shows the render in its own shape', () => {
   // The crop is acceptable on a thumbnail only because it is undone one click away. If
-  // .gal-compare ever pins a ratio too, the uncropped view is gone from the product.
-  const rule = ruleFor('.gal-compare');
+  // .compare ever pins a ratio too, the uncropped view is gone from the product.
+  //
+  // Read from compare.css, where the control moved when the public share page started
+  // drawing it as well. Note the share page DOES pin a ratio, on its own
+  // `.sh-frame__compare` — it has to reserve the box before the bytes land, and it is not
+  // the panel this guard is about. Sharing the sheet is what makes that distinction
+  // visible rather than a second copy of the rules quietly diverging.
+  const rule = ruleFor('.compare', COMPARE_CSS, 'compare.css');
   assert.doesNotMatch(rule, /aspect-ratio/, 'the before/after must keep the photo\'s own shape');
 });

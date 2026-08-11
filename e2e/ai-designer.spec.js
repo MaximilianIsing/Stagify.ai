@@ -41,6 +41,38 @@ test.describe('AI Designer — happy path', () => {
     expect(chatCalls).toBeGreaterThan(0);
   });
 
+  test('every turn carries the badge language, so a labelled render is disclosed in it', async ({ page }) => {
+    // The AI Designer decides the "Virtually staged" label in conversation and has no UI
+    // for it — but the badge follows the SITE language, which the model has no business
+    // choosing and the server cannot know. So the language rides the request instead.
+    //
+    // This is the only test on that link. The server side reads req.body.stampLang and is
+    // covered by unit tests, but "the browser actually sends it" is a claim only a real
+    // page can make — and its failure is the quiet kind: the request still succeeds, the
+    // render still happens, and a German agent's disclosure comes back in English.
+    await page.addInitScript(() => localStorage.setItem('selectedLanguage', 'german'));
+
+    /** @type {string[]} */
+    const bodies = [];
+    await page.route('**/api/chat', (route) => {
+      bodies.push(route.request().postData() || '');
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ response: 'ok', memories: { stores: [], forgets: [] } }),
+      });
+    });
+
+    await page.goto('/ai-designer.html');
+    const input = page.locator('#chat-input');
+    await expect(input).toBeVisible();
+    await input.fill('stage this and label it as virtually staged');
+    await page.locator('#send-btn').click();
+
+    await expect(page.locator('.message.assistant .message-content').last()).toContainText('ok');
+    expect(JSON.parse(bodies[0]).stampLang).toBe('german');
+  });
+
   test('renders a staged image when /api/chat returns one', async ({ page }) => {
     await page.route('**/api/chat', (route) =>
       route.fulfill({

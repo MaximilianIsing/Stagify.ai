@@ -336,7 +336,7 @@
         "cta": "Stagify+を見る"
       },
       "ent": {
-        "name": "Enterprise",
+        "name": "Stagify Enterprise",
         "tag": "チーム向け",
         "per": "/ 生成",
         "desc": "チーム全員に自動でStagify+を付与し、実際に使った分だけお支払いいただけます。",
@@ -393,6 +393,18 @@
           "quote": "学生寮やアパート、物件掲載でも Stagify は大きな力を発揮すると思います。空室は想像しにくいものですが、家具が入った途端に空間がぐっと現実味を帯びます。自分が住む姿を思い描くうえで、その差はとても大きいです。",
           "author": "Jaden Lander",
           "role": "RockSolid Management",
+          "location": "ニューヨーク・マンハッタン"
+        },
+        "jaime": {
+          "quote": "Stagify は、これまで複雑に感じていたことを驚くほど簡単にしてくれます。結果が返ってくるのが速く、操作もわかりやすく、空っぽの空間が数秒で完全に家具付きになるのは本当に見事です。",
+          "author": "Jaime Castro",
+          "role": "Douglas Elliman",
+          "location": "フロリダ州マイアミ"
+        },
+        "thomas": {
+          "quote": "一日中空間を仕上げているので、スピードが重要です。Stagify は工程全体を速く手軽にしてくれますし、画面もとてもすっきりしています。あれこれ考えずに必要なものが手に入ります。",
+          "author": "Thomas Chimber",
+          "role": "Compass",
           "location": "ニューヨーク・マンハッタン"
         }
       },
@@ -487,7 +499,7 @@
       "maskBeforePromptPlaceholder": "例：古いソファを除去、散らかりを片付け、壁を白く塗り直す",
       "maskBeforeApply": "編集を適用",
       "basicMaskTitle": "ベーシックマスク",
-      "basicMaskUploadHint": "写真の好きな部分を塗り、変更したい内容を入力してください。",
+      "basicMaskUploadHint": "写真の好きな部分を塗り、変更したい内容を入力してください",
       "maskLimitReached": "この画像のバージョンは上限の6つに達しました。",
       "prevVersion": "前のバージョン",
       "nextVersion": "次のバージョン",
@@ -1198,12 +1210,11 @@
     "replacePhoto": "写真を差し替える",
     "stepAreas": "家具エリア",
     "addArea": "+ エリアを追加",
-    "areasHint": "各エリアは同時に個別にステージングされます。それぞれの色に家具写真、短いプロンプト、またはその両方を設定してください。",
     "areaName": "エリア{n}",
     "areaLimit": "ハイライトできるのは最大{n}エリアまでです。",
     "removeAreaAria": "このエリアを削除",
     "stepBrush": "ハイライト",
-    "overlapHint": "別の色でエリアの上を塗ると割り当てが変わります。各箇所は1つのエリアにのみ属します。",
+    "overlapHint": "エリアの上を塗ると、新しい色に割り当てが変わります。",
     "promptPlaceholder": "ここに追加するものを記述してください（家具写真を追加する場合は省略可）…",
     "addFurniture": "+ 家具写真",
     "statusEmpty": "まだハイライトされていません",
@@ -1215,7 +1226,7 @@
     "retry": "再試行",
     "progressCount": "{total}エリア中{done}エリアをステージング済み",
     "uploadHint": "部屋の写真をアップロード",
-    "uploadSub": "JPG、PNG、WebP、またはHEIC — クリックまたはここにドロップ",
+    "uploadSub": "JPG、PNG、WebP、HEIC のファイルをクリックまたはドロップ",
     "editHighlights": "編集を調整",
     "defaultFurniturePrompt": "参考写真の家具をハイライトしたエリアに追加してください。部屋に合った正しい遠近感、スケール、照明で、床に自然に配置してください。",
     "needHighlight": "まず写真上に少なくとも1つのエリアを塗ってください。",
@@ -1549,7 +1560,12 @@
         "one": "{count} 回開かれました",
         "other": "{count} 回開かれました"
       },
-      "unavailable": "このリンクを読み込めませんでした。ページを再読み込みしてお試しください。"
+      "unavailable": "このリンクを読み込めませんでした。ページを再読み込みしてお試しください。",
+      "showBefore": "家具を配置する前の写真を含める",
+      "showBeforeSaving": "保存中…",
+      "showBeforeOn": "家具を配置する前の写真がこのリンクに含まれるようになりました。",
+      "showBeforeOff": "このリンクでは家具を配置した写真のみが表示されます。",
+      "showBeforeFailed": "このリンクの表示内容を変更できませんでした。もう一度お試しください。"
     },
     "rename": {
       "action": "名前を変更",
@@ -1582,7 +1598,7 @@
     "loading": "ギャラリーを読み込んでいます…"
   },
   "exteriorStudio": {
-    "title": "ワンクリックで映える外観",
+    "title": "外観スタジオ",
     "subtitle": "すべての物件で最初の一枚は建物の外観です。そして天気が崩れたら撮り直せない唯一の写真でもあります。ここにアップロードして、晴れた日に撮ったような一枚を手に入れましょう。",
     "ctaUpgrade": "Stagify+ で利用する",
     "features": {
@@ -1606,7 +1622,7 @@
     },
     "upload": {
       "title": "外観写真をここにドロップ",
-      "hint": "JPG・PNG・WebP・HEIC に対応。正面外観、裏庭、進入路など、屋外で撮った写真ならなんでも。",
+      "hint": "JPG、PNG、WebP、HEIC のファイルをクリックまたはドロップ",
       "button": "写真を選ぶ",
       "replace": "別の写真を使う"
     },
@@ -1619,6 +1635,7 @@
       "removePeople": "人物",
       "removeSnow": "雪",
       "removeWetWeather": "雨・水たまり",
+      "removeLeaves": "落ち葉",
       "notes": "ほかに何かありますか？",
       "notesPlaceholder": "例：ポーチの旗はそのままに"
     },
@@ -1637,11 +1654,19 @@
       "enhance": "外観を補正",
       "working": "処理中…",
       "download": "ダウンロード",
-      "startOver": "やり直す"
+      "again": "別の写真を補正"
     },
+    "loadingMessages": [
+      "外まわりを整えています…",
+      "光を調整しています…",
+      "空を入れ替えています…",
+      "建物自体はそのままです…",
+      "仕上げをしています…"
+    ],
     "result": {
       "title": "ビフォー・アフター",
-      "hint": "スライダーをドラッグして比較できます。"
+      "hint": "スライダーをドラッグして比較できます。",
+      "rangeValue": "補正後 {percent}%"
     },
     "errors": {
       "generic": "この写真は補正できませんでした。物件外観の別の写真でお試しください。",
@@ -1651,7 +1676,6 @@
     "stepPhotoHint": "右側の作業エリアで写真をアップロードしてください。",
     "replacePhoto": "写真を差し替える",
     "stepChanges": "何を変えますか？",
-    "stepChangesHint": "変えたい項目だけを選んでください。チェックしなかったものは撮影時のまま残ります。",
     "enhanceHint": "変更を1つ以上選ぶか、上に書いてください。"
   },
   "notFound": {

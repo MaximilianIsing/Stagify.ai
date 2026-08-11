@@ -157,11 +157,30 @@ function harness(opts = {}) {
     labelCheckbox.checked = labelVirtuallyStaged;
     byId.set('label-virtually-staged', labelCheckbox);
   }
-  if (stampScale !== null) {
-    const scaleInput = el();
-    scaleInput.value = stampScale;
-    byId.set('stamp-scale', scaleInput);
-  }
+  // The badge strip as a CONTAINER, which is how the pipeline reads it: index.html now
+  // carries two of these (staging's and the Basic Mask dialog's), so the read is scoped to
+  // #stamp-opts rather than sweeping the document — an unscoped one would hand staging the
+  // style the user picked in the other modal.
+  const stampOpts = el();
+  stampOpts.querySelector = (sel) => {
+    if (sel === '.stamp-swatch__input:checked') {
+      if (stampStyle === null) return null;
+      const radio = el();
+      radio.value = stampStyle;
+      radio.checked = true;
+      return radio;
+    }
+    if (sel === '.stamp-opts__size') {
+      if (stampScale === null) return null;
+      const scaleInput = el();
+      scaleInput.value = stampScale;
+      return scaleInput;
+    }
+    return null;
+  };
+  // Absent entirely when neither control is modelled — that is the "page with no strip"
+  // case, and registering an empty container would make it assert nothing.
+  if (stampStyle !== null || stampScale !== null) byId.set('stamp-opts', stampOpts);
   // The Cancel control under the progress bar. A minimal event-target stand-in:
   // `click()` runs whatever the pipeline registered, so a test can press it.
   const cancelBtn = el();
@@ -222,16 +241,11 @@ function harness(opts = {}) {
 
   globalThis.document = {
     getElementById: (id) => byId.get(id) || null,
-    // The style swatches are radios read by selector, not by id — there are three of them
-    // and only the checked one matters. Modelled rather than stubbed away so a test can
-    // remove the control entirely (stampStyle: null) and prove the pipeline still posts.
-    querySelector: (sel) => {
-      if (sel !== '.stamp-swatch__input:checked' || stampStyle === null) return null;
-      const radio = el();
-      radio.value = stampStyle;
-      radio.checked = true;
-      return radio;
-    },
+    // Nothing resolves the strip's controls from the document any more — they are found
+    // within #stamp-opts above. Left throwing-by-absence (null) so a regression back to a
+    // document-wide sweep shows up as a missing value rather than quietly working here and
+    // reading the wrong modal's controls in the browser.
+    querySelector: () => null,
   };
   globalThis.localStorage = {
     getItem: (k) => ({ userRole: 'agent', userReferralSource: 'google', userEmail: 'a@b.co', selectedLanguage })[k] ?? null,

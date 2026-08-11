@@ -68,15 +68,21 @@ export function canvasDigest(canvas, doc) {
  *   resultCanvas: HTMLCanvasElement,
  *   authToken: () => string,
  *   onEvicted: (gallery: any) => void,
+ *   onLabelFailed?: (message: string) => void,
+ *   badgeFields?: () => Record<string, unknown>,
  *   fetchImpl?: typeof fetch,
  *   doc?: Document,
  * }} deps - `onEvicted` receives the response's `gallery` payload so the entry can hand it
- *   to the shared eviction notice; it is not called when nothing was evicted. `doc` is a
- *   test seam.
+ *   to the shared eviction notice; it is not called when nothing was evicted.
+ *   `badgeFields` supplies the "virtually staged" disclosure settings for the SERVER to
+ *   burn into the stored master (see scripts/mask/stamp-option.js); omitted, the save is
+ *   unlabelled exactly as before. `onLabelFailed` is the one failure this module reports —
+ *   the disclosure could not be applied, so nothing was saved. `doc` is a test seam.
  * @returns {{ saveToGallery: () => Promise<void> }}
  */
 export function createGallerySave(deps) {
-  const { state, resultCanvas, authToken, onEvicted, fetchImpl, doc } = deps;
+  const { state, resultCanvas, authToken, onEvicted, badgeFields, fetchImpl, doc } = deps;
+  const onLabelFailed = deps.onLabelFailed || (() => {});
   const doFetch = fetchImpl || ((...args) => fetch(...args));
 
   /**
@@ -112,10 +118,23 @@ export function createGallerySave(deps) {
           prompts: state.layers.filter((l) => l.status === 'done').map((l) => l.prompt || ''),
           sourceName: state.sourceName || undefined,
           authToken: authToken() || undefined,
+          // The disclosure applies to `after` only. `before` is the pristine room photo —
+          // it is not virtually staged, and labelling it would be a false claim on the one
+          // image in the pair that is honest by construction.
+          ...(badgeFields ? badgeFields() : {}),
         }),
       });
-      if (!res || !res.ok) return;
       const data = await res.json().catch(() => null);
+      if (!res || !res.ok) {
+        // The ONE save failure worth a sentence, and the exception to this module's silence.
+        // Everything else here is a background nicety the user did not ask for — but they
+        // DID ask for the disclosure, this is the reason it is not in their gallery, and
+        // unticking the option is an action only they can take. Staying quiet would leave
+        // them believing a labelled copy was saved; they would find out at Download, or
+        // never.
+        if (data && data.code === 'DISCLOSURE_STAMP_FAILED') onLabelFailed(data.error || '');
+        return;
+      }
       if (!data || !data.success) return;
 
       // Only now — a failed save must be retryable by pressing the button again.

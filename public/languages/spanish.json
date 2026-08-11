@@ -336,7 +336,7 @@
         "cta": "Ver Stagify+"
       },
       "ent": {
-        "name": "Enterprise",
+        "name": "Stagify Enterprise",
         "tag": "Para equipos",
         "per": "/ generación",
         "desc": "Dale a todo tu equipo Stagify+ automáticamente y paga solo por lo que realmente usen.",
@@ -393,6 +393,18 @@
           "quote": "Veo a Stagify siendo enorme para residencias estudiantiles, apartamentos y anuncios. Las habitaciones vacías cuestan de imaginar, pero una vez decoradas el espacio se siente mucho más real. Marca una gran diferencia cuando intentas imaginarte viviendo ahí.",
           "author": "Jaden Lander",
           "role": "RockSolid Management",
+          "location": "Manhattan, Nueva York"
+        },
+        "jaime": {
+          "quote": "Stagify convierte en algo increíblemente sencillo lo que antes parecía complicado. Los resultados llegan rápido, la plataforma es fácil de usar y ver un espacio vacío completamente amueblado en segundos impresiona de verdad.",
+          "author": "Jaime Castro",
+          "role": "Douglas Elliman",
+          "location": "Miami, Florida"
+        },
+        "thomas": {
+          "quote": "Me paso el día preparando espacios, así que la rapidez importa. Stagify hace que todo el proceso sea rápido y sencillo, y la interfaz es clarísima. Consigo lo que necesito sin darle vueltas.",
+          "author": "Thomas Chimber",
+          "role": "Compass",
           "location": "Manhattan, Nueva York"
         }
       },
@@ -487,7 +499,7 @@
       "maskBeforePromptPlaceholder": "p. ej., quita el sofá viejo, despeja el desorden, pinta la pared de blanco",
       "maskBeforeApply": "Aplicar edición",
       "basicMaskTitle": "Máscara básica",
-      "basicMaskUploadHint": "Pinta sobre cualquier parte de la foto y describe el cambio que quieres.",
+      "basicMaskUploadHint": "Pinta sobre cualquier parte de la foto y describe el cambio que quieres",
       "maskLimitReached": "Has alcanzado el límite de 6 versiones para esta imagen.",
       "prevVersion": "Versión anterior",
       "nextVersion": "Versión siguiente",
@@ -1198,12 +1210,11 @@
     "replacePhoto": "Reemplazar foto",
     "stepAreas": "Zonas de muebles",
     "addArea": "+ Añadir zona",
-    "areasHint": "Cada zona se escenifica por separado, al mismo tiempo — dale a cada color una foto de mueble, un prompt breve o ambos.",
     "areaName": "Zona {n}",
     "areaLimit": "Puedes resaltar hasta {n} zonas.",
     "removeAreaAria": "Eliminar esta zona",
     "stepBrush": "Resaltar",
-    "overlapHint": "Pinta sobre una zona con un color distinto para reasignarla — cada punto pertenece a una sola zona.",
+    "overlapHint": "Pintar encima de una zona la reasigna al nuevo color.",
     "promptPlaceholder": "Describe qué añadir aquí (opcional si añades una foto de mueble)…",
     "addFurniture": "+ Foto de mueble",
     "statusEmpty": "Sin resaltar aún",
@@ -1215,7 +1226,7 @@
     "retry": "Reintentar",
     "progressCount": "{done} de {total} zonas escenificadas",
     "uploadHint": "Sube una foto de tu habitación",
-    "uploadSub": "JPG, PNG, WebP o HEIC — haz clic o suéltala aquí",
+    "uploadSub": "Haz clic o suelta aquí un archivo JPG, PNG, WebP o HEIC",
     "editHighlights": "Refinar edición",
     "defaultFurniturePrompt": "Añade el mueble de la foto de referencia en la zona resaltada. Colócalo de forma natural sobre el suelo con la perspectiva, escala e iluminación correctas para la habitación.",
     "needHighlight": "Primero pinta al menos una zona sobre la foto.",
@@ -1549,7 +1560,12 @@
         "one": "Abierto {count} vez",
         "other": "Abierto {count} veces"
       },
-      "unavailable": "No se ha podido cargar este enlace. Recarga la página e inténtalo de nuevo."
+      "unavailable": "No se ha podido cargar este enlace. Recarga la página e inténtalo de nuevo.",
+      "showBefore": "Incluir la foto antes de amueblar",
+      "showBeforeSaving": "Guardando…",
+      "showBeforeOn": "La foto antes de amueblar ahora forma parte de este enlace.",
+      "showBeforeOff": "Este enlace muestra solo la foto amueblada.",
+      "showBeforeFailed": "No se ha podido cambiar lo que muestra este enlace. Inténtalo de nuevo."
     },
     "rename": {
       "action": "Cambiar nombre",
@@ -1582,7 +1598,7 @@
     "loading": "Cargando tu galería…"
   },
   "exteriorStudio": {
-    "title": "Atractivo exterior, en un clic",
+    "title": "Estudio de Exteriores",
     "subtitle": "La primera foto de cada anuncio es el exterior de la casa, y es la única toma que no puedes repetir cuando cambia el tiempo. Súbela aquí y obtén la versión tomada en un día mejor.",
     "ctaUpgrade": "Consigue Stagify+ para usarlo",
     "features": {
@@ -1606,7 +1622,7 @@
     },
     "upload": {
       "title": "Suelta aquí una foto del exterior",
-      "hint": "JPG, PNG, WebP o HEIC. La fachada, el jardín trasero, la entrada: cualquier toma hecha en el exterior.",
+      "hint": "Haz clic o suelta aquí un archivo JPG, PNG, WebP o HEIC",
       "button": "Elegir una foto",
       "replace": "Usar otra foto"
     },
@@ -1616,9 +1632,10 @@
       "removeLegend": "Eliminar de la foto",
       "removeVehicles": "Coches",
       "removeClutter": "Cubos y trastos",
-      "removePeople": "Personas",
+      "removePeople": "Gente",
       "removeSnow": "Nieve",
       "removeWetWeather": "Lluvia y charcos",
+      "removeLeaves": "Hojas",
       "notes": "¿Algo más?",
       "notesPlaceholder": "p. ej. conserva la bandera del porche"
     },
@@ -1637,11 +1654,19 @@
       "enhance": "Mejorar exterior",
       "working": "Trabajando…",
       "download": "Descargar",
-      "startOver": "Empezar de nuevo"
+      "again": "Mejorar otra"
     },
+    "loadingMessages": [
+      "Limpiando el exterior…",
+      "Equilibrando la luz…",
+      "Renovando el cielo…",
+      "La casa se mantiene intacta…",
+      "Dando los últimos retoques…"
+    ],
     "result": {
       "title": "Antes y después",
-      "hint": "Arrastra el control para comparar."
+      "hint": "Arrastra el control para comparar.",
+      "rangeValue": "{percent}% mejorado"
     },
     "errors": {
       "generic": "No se ha podido mejorar esa foto. Prueba con otra toma del exterior de la propiedad.",
@@ -1651,7 +1676,6 @@
     "stepPhotoHint": "Sube una foto en el área de trabajo de la derecha.",
     "replacePhoto": "Cambiar foto",
     "stepChanges": "¿Qué quieres cambiar?",
-    "stepChangesHint": "Elige solo lo que quieras cambiar. Todo lo que dejes sin marcar se queda tal y como se fotografió.",
     "enhanceHint": "Elige al menos un cambio, o descríbelo arriba."
   },
   "notFound": {

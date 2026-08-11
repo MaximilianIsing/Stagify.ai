@@ -7,7 +7,11 @@
     <script src="scripts/gtag.js" defer></script>
     <title>FAQ | Stagify.ai</title>
     <meta name="description" content="Frequently asked questions about Stagify.ai virtual staging.">
-    <link rel="canonical" href="https://stagify.ai/index.html#faq">
+    <!-- Canonical is the bare origin, NOT /index.html#faq. A fragment is discarded by
+         crawlers, which left this pointing at /index.html — itself a non-canonical URL that
+         canonicalizes to https://stagify.ai/. That made a canonical chain. The meta-refresh
+         below still carries humans to the #faq section; only the canonical is de-fragmented. -->
+    <link rel="canonical" href="https://stagify.ai/">
     <meta http-equiv="refresh" content="0;url=index.html#faq">
     <script src="scripts/faq-redirect.js"></script>
   </head>

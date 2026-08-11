@@ -68,6 +68,21 @@ export function renameRender(id, name, fetchImpl = fetch) {
   }, fetchImpl);
 }
 
+/**
+ * Change what a live link publishes, without rotating it.
+ *
+ * `settings` is the WHOLE bag, never a delta: the store rebuilds it from what arrives, so
+ * sending `{ showBefore }` alone would blank the headline, note and contact details that
+ * came back with the entry. Callers merge onto `entry.share.settings` and send the result.
+ *
+ * @param {string} id @param {Record<string, any>} settings @param {typeof fetch} [fetchImpl]
+ */
+export function updateShareSettings(id, settings, fetchImpl = fetch) {
+  return call(`/api/gallery/${encodeURIComponent(id)}/share`, {
+    method: 'PATCH', body: JSON.stringify({ settings }),
+  }, fetchImpl);
+}
+
 /** @param {string} id @param {typeof fetch} [fetchImpl] */
 export function deleteRender(id, fetchImpl = fetch) {
   return call(`/api/gallery/${encodeURIComponent(id)}`, { method: 'DELETE' }, fetchImpl);

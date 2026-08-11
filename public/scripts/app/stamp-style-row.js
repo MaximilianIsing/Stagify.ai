@@ -34,13 +34,23 @@ const PREVIEW_DEBOUNCE_MS = 180;
  * Falls back to the defaults on any page without the row (the studios that reuse this
  * pipeline do not render it) and on a scale that is somehow not a number, so a caller can
  * always append the fields without checking.
+ *
+ * SCOPED, because index.html now carries TWO of these strips — the staging modal's and the
+ * Basic Mask dialog's. Reading them off the document would hand whichever one happens to
+ * come first in the markup to both callers, and the bug would be silent: the user gets a
+ * badge they configured on the other screen. Callers pass their own container; the
+ * document-wide default is only for the single-strip case and for pages with none.
+ * @param {ParentNode | null} [root] - The `.stamp-opts` element to read, or the document.
  * @returns {{ style: string, scale: number }} The chosen style and size multiplier.
  */
-export function readStampOptions() {
+export function readStampOptions(root) {
+  const scope = root || document;
   const checked = /** @type {HTMLInputElement | null} */ (
-    document.querySelector('.stamp-swatch__input:checked')
+    scope.querySelector('.stamp-swatch__input:checked')
   );
-  const slider = /** @type {HTMLInputElement | null} */ (document.getElementById('stamp-scale'));
+  // By class, not by id: the two strips cannot share an id, and this is the one lookup
+  // that would otherwise have to be told which page it is on.
+  const slider = /** @type {HTMLInputElement | null} */ (scope.querySelector('.stamp-opts__size'));
   const scale = parseFloat(slider?.value ?? '');
   return {
     style: checked?.value || FALLBACK_STYLE,
@@ -53,10 +63,11 @@ export function readStampOptions() {
  *
  * Rebuilt from scratch every time rather than patched, so switching site language while
  * the modal is open cannot leave a preview captioned in the previous one.
+ * @param {ParentNode | null} [root] - The strip whose values to read.
  * @returns {string} A same-origin `/api/disclosure-preview?…` URL.
  */
-function previewUrl() {
-  const { style, scale } = readStampOptions();
+export function previewUrl(root) {
+  const { style, scale } = readStampOptions(root);
   const lang = localStorage.getItem('selectedLanguage') || 'english';
   return `/api/disclosure-preview?lang=${encodeURIComponent(lang)}`
     + `&style=${encodeURIComponent(style)}&scale=${encodeURIComponent(String(scale))}`;
@@ -69,16 +80,21 @@ function previewUrl() {
  * Safe on pages without the row, and safe to call more than once — it is idempotent by
  * way of a marker on the container, because app.js initialises the stage modal from more
  * than one entry point and a second set of listeners would fire a second preview request
- * per keystroke.
+ * per keystroke. That marker lives on the container, so it already scopes per instance.
+ *
+ * Parameterised for the second instance in the Basic Mask dialog. Everything inside is
+ * found WITHIN the container rather than by document id, so the two differ only in the two
+ * ids passed here.
+ * @param {{ optsId?: string, checkboxId?: string }} [ids] - Container and checkbox ids;
+ *   defaults are the staging modal's.
  * @returns {void}
  */
-export function initStampStyleRow() {
-  const row = document.getElementById('stamp-opts');
-  const checkbox = /** @type {HTMLInputElement | null} */ (
-    document.getElementById('label-virtually-staged')
-  );
-  const image = /** @type {HTMLImageElement | null} */ (document.getElementById('stamp-preview-img'));
+export function initStampStyleRow(ids = {}) {
+  const { optsId = 'stamp-opts', checkboxId = 'label-virtually-staged' } = ids;
+  const row = document.getElementById(optsId);
+  const checkbox = /** @type {HTMLInputElement | null} */ (document.getElementById(checkboxId));
   if (!row || !checkbox || row.dataset.wired === 'true') return;
+  const image = /** @type {HTMLImageElement | null} */ (row.querySelector('.stamp-preview__img'));
   row.dataset.wired = 'true';
 
   /** @type {ReturnType<typeof setTimeout> | undefined} */
@@ -93,7 +109,7 @@ export function initStampStyleRow() {
    */
   function refreshPreview() {
     if (!image || row.hidden) return;
-    const next = previewUrl();
+    const next = previewUrl(row);
     // Re-setting the same src re-decodes the image and flashes the popup for no reason.
     if (image.getAttribute('src') !== next) image.setAttribute('src', next);
   }
@@ -116,6 +132,11 @@ export function initStampStyleRow() {
    */
   function syncVisibility() {
     row.hidden = !checkbox.checked;
+    // Only where the checkbox declares itself the panel's trigger — the staging strip is a
+    // plain revealed row, and claiming it is expandable would announce a widget that isn't.
+    if (checkbox.hasAttribute('aria-expanded')) {
+      checkbox.setAttribute('aria-expanded', checkbox.checked ? 'true' : 'false');
+    }
     if (checkbox.checked) refreshPreview();
   }
 
@@ -125,7 +146,7 @@ export function initStampStyleRow() {
     input.addEventListener('change', refreshPreview);
   }
 
-  const slider = /** @type {HTMLInputElement | null} */ (document.getElementById('stamp-scale'));
+  const slider = /** @type {HTMLInputElement | null} */ (row.querySelector('.stamp-opts__size'));
   if (slider) {
     slider.addEventListener('input', () => {
       // The raw value is a multiplier ("1.3"), which is meaningless read aloud. A percentage
@@ -137,11 +158,11 @@ export function initStampStyleRow() {
 
   // Rebuild on the way in as well as on change: the UI language is not one of this row's
   // controls, but it does change the badge, and nothing here is notified when it changes.
-  const preview = row.querySelector('.stamp-preview');
-  if (preview) {
-    preview.addEventListener('pointerenter', refreshPreview);
-    preview.addEventListener('focusin', refreshPreview);
-  }
+  // The Basic Mask panel shows its preview inline with no hover trigger, so the row itself
+  // is the host there.
+  const preview = row.querySelector('.stamp-preview') || row;
+  preview.addEventListener('pointerenter', refreshPreview);
+  preview.addEventListener('focusin', refreshPreview);
 
   syncVisibility();
 }

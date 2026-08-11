@@ -10,6 +10,7 @@
 // files away in exterior-handler.js.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import sharp from 'sharp';
 import { createMaskingSaveHandler, areasQualifier } from '../../lib/staging/masking-save-handler.js';
 
 const PRO = { id: 'u_pro', email: 'pro@x.com', plan: 'pro' };
@@ -165,4 +166,136 @@ test('a store failure is a 500 with no partial success claimed', async () => {
   const res = fakeRes();
   await handleMaskingSave(/** @type {any} */ (req({ after: IMG })), /** @type {any} */ (res), PRO);
   assert.equal(res.statusCode, 500);
+});
+
+// ── "Label as virtually staged" ──────────────────────────────────────────────
+// The badge is burned in HERE for the gallery copy, rather than by the client posting an
+// already-stamped image, because this request is already carrying those bytes. The stored
+// master is also the copy that outlives the session: it is what the owner re-downloads
+// months later and what a share link serves, so an unlabelled one is the version that
+// actually reaches a buyer.
+
+/** A real image, since these cases run the real stamper. @returns {Promise<string>} */
+async function realPhoto(w = 1200, h = 800) {
+  const buf = await sharp({ create: { width: w, height: h, channels: 3, background: { r: 90, g: 110, b: 130 } } })
+    .jpeg().toBuffer();
+  return `data:image/jpeg;base64,${buf.toString('base64')}`;
+}
+
+test('with the option OFF the stored bytes are exactly what was posted', async () => {
+  // The baseline the two tests below are measured against. Without it, "stamped" could be
+  // passing because the handler mangles every save the same way.
+  const after = await realPhoto();
+  const { handleMaskingSave, seen } = makeHandler();
+  await handleMaskingSave(/** @type {any} */ (req({ after })), /** @type {any} */ (fakeRes()), PRO);
+  assert.deepEqual(
+    seen.recorded[0].natives[0].buffer,
+    Buffer.from(after.split(',')[1], 'base64'),
+    'untouched',
+  );
+});
+
+test('with the option ON the gallery master is stamped before it is stored', async () => {
+  const after = await realPhoto();
+  const { handleMaskingSave, seen } = makeHandler();
+  const res = fakeRes();
+  await handleMaskingSave(
+    /** @type {any} */ (req({ after, labelVirtuallyStaged: true, stampLang: 'english', stampStyle: 'dark', stampScale: 1 })),
+    /** @type {any} */ (res),
+    PRO,
+  );
+  assert.equal(res.body.success, true);
+
+  const stored = seen.recorded[0].natives[0].buffer;
+  assert.notDeepEqual(stored, Buffer.from(after.split(',')[1], 'base64'), 'something was drawn on');
+  // Still the same photo at the same size — a badge, not a replacement.
+  const meta = await sharp(stored).metadata();
+  assert.equal(meta.width, 1200);
+  assert.equal(meta.height, 800);
+});
+
+test('the BEFORE photo is never stamped — it is not virtually staged', async () => {
+  // The one image in the pair that is honest by construction. Labelling it would be a false
+  // claim, and it is the half a share page shows as the original room.
+  const after = await realPhoto();
+  const before = await realPhoto(800, 600);
+  const { handleMaskingSave, seen } = makeHandler();
+  await handleMaskingSave(
+    /** @type {any} */ (req({ after, before, labelVirtuallyStaged: true, stampStyle: 'banner' })),
+    /** @type {any} */ (fakeRes()),
+    PRO,
+  );
+  assert.deepEqual(
+    seen.uploaded[0].sourceBuffer,
+    Buffer.from(before.split(',')[1], 'base64'),
+    'the source photo goes to storage byte-for-byte',
+  );
+});
+
+test('the style and size the user picked are the ones burned in', async () => {
+  const after = await realPhoto();
+  const store = async (body) => {
+    const { handleMaskingSave, seen } = makeHandler();
+    await handleMaskingSave(/** @type {any} */ (req({ after, labelVirtuallyStaged: true, ...body })), /** @type {any} */ (fakeRes()), PRO);
+    return seen.recorded[0].natives[0].buffer;
+  };
+  const base = await store({ stampStyle: 'dark', stampScale: 1, stampLang: 'english' });
+  assert.notDeepEqual(await store({ stampStyle: 'banner', stampScale: 1, stampLang: 'english' }), base);
+  assert.notDeepEqual(await store({ stampStyle: 'dark', stampScale: 1.6, stampLang: 'english' }), base);
+  assert.notDeepEqual(await store({ stampStyle: 'dark', stampScale: 1, stampLang: 'japanese' }), base);
+});
+
+test('junk style and language fall back rather than costing the user their save', async () => {
+  // Same rule as every other path to this badge: a badge in the wrong style still
+  // discloses, and no badge does not.
+  const after = await realPhoto();
+  const { handleMaskingSave, seen } = makeHandler();
+  const res = fakeRes();
+  await handleMaskingSave(
+    /** @type {any} */ (req({ after, labelVirtuallyStaged: true, stampStyle: '../../lib', stampLang: 'klingon', stampScale: 'abc' })),
+    /** @type {any} */ (res),
+    PRO,
+  );
+  assert.equal(res.body.success, true);
+  assert.notDeepEqual(seen.recorded[0].natives[0].buffer, Buffer.from(after.split(',')[1], 'base64'));
+});
+
+test('the flag survives the wire as a string, not just a boolean', async () => {
+  // It arrives as JSON from this studio but as multipart text from /api/process-image, and
+  // both go through the same readStampRequest.
+  const after = await realPhoto();
+  const { handleMaskingSave, seen } = makeHandler();
+  await handleMaskingSave(/** @type {any} */ (req({ after, labelVirtuallyStaged: 'true' })), /** @type {any} */ (fakeRes()), PRO);
+  assert.notDeepEqual(seen.recorded[0].natives[0].buffer, Buffer.from(after.split(',')[1], 'base64'));
+});
+
+test('a stamp failure saves NOTHING and says why', async () => {
+  // FAILS CLOSED, like every other path to this badge. Storing the unlabelled composite
+  // would put an undisclosed photo in the gallery under a request that asked for a
+  // disclosure — and unlike a failed download, nothing on screen would ever say so.
+  // The code is what lets the studio break its own silence about save failures.
+  const { handleMaskingSave, seen } = makeHandler();
+  const res = fakeRes();
+  await handleMaskingSave(
+    // Shaped like an image data URL; decodes to four bytes sharp cannot read.
+    /** @type {any} */ (req({ after: 'data:image/png;base64,AAAA', labelVirtuallyStaged: true })),
+    /** @type {any} */ (res),
+    PRO,
+  );
+  assert.equal(res.statusCode, 500);
+  assert.equal(res.body.code, 'DISCLOSURE_STAMP_FAILED');
+  assert.equal(seen.recorded.length, 0, 'nothing reached the store');
+  assert.equal(seen.uploaded.length, 0, 'and nothing reached object storage');
+});
+
+test('the size ceiling is measured on what the CLIENT sent, before any stamping', async () => {
+  // Stamping re-encodes to PNG, which is larger than the posted JPEG — so checking after
+  // would reject saves that are perfectly legal, and checking only after would let a
+  // hostile payload allocate its buffer first. The gate has to come first.
+  const huge = 'data:image/jpeg;base64,' + Buffer.alloc(9 * 1024 * 1024).toString('base64');
+  const { handleMaskingSave, seen } = makeHandler();
+  const res = fakeRes();
+  await handleMaskingSave(/** @type {any} */ (req({ after: huge, labelVirtuallyStaged: true })), /** @type {any} */ (res), PRO);
+  assert.equal(res.statusCode, 413, 'the size refusal wins over the stamp attempt');
+  assert.equal(seen.recorded.length, 0);
 });

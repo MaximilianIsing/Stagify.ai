@@ -23,7 +23,52 @@ export function demoFromHash(win) {
  */
 export function initGuides({ doc = document, win = window } = {}) {
   initDemoPicker(doc, win);
+  initDemoFullscreen(doc);
   initTopicRail(doc, win);
+}
+
+/**
+ * The fullscreen control on each walkthrough panel — the same affordance the home
+ * page's showcase carries, on the six full-chrome walkthroughs.
+ *
+ * The panel itself is what goes fullscreen: it is the player's root, so the frame,
+ * the callout card and the step dots travel together. The button toggles rather than
+ * only entering, so the same control gets you back out — `aria-pressed` carries the
+ * state, which means the label never changes and the i18n pack needs one key.
+ *
+ * @param {any} doc
+ */
+function initDemoFullscreen(doc) {
+  const buttons = Array.prototype.slice.call(doc.querySelectorAll('[data-guide-fullscreen]'));
+  if (!buttons.length) return;
+  // Some embedding contexts disallow fullscreen outright. Hide the control instead of
+  // shipping a button whose only behaviour is a rejected promise.
+  if (!doc.fullscreenEnabled) {
+    buttons.forEach((btn) => { btn.hidden = true; });
+    return;
+  }
+  const panelOf = (btn) => btn.closest('.guide-demo-panel');
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const panel = panelOf(btn);
+      if (!panel) return;
+      if (doc.fullscreenElement === panel) doc.exitFullscreen();
+      // A rejection here is normal — a user gesture can be refused — and there is
+      // nothing to recover, so swallow it rather than surfacing an unhandled rejection.
+      else panel.requestFullscreen().catch(() => {});
+    });
+  });
+  doc.addEventListener('fullscreenchange', () => {
+    buttons.forEach((btn) => {
+      const panel = panelOf(btn);
+      const on = doc.fullscreenElement === panel;
+      btn.classList.toggle('is-fs', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      // The callout card is placed in frame pixels and the frame just changed size —
+      // re-place it, on the way in and again on the way out.
+      if (panel && panel.__player) panel.__player.reflow();
+    });
+  });
 }
 
 function demoByKey(win, key) {

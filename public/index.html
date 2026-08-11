@@ -396,8 +396,8 @@
         <div class="sponsors-content">
           <h2 class="sponsors-title" data-lang="sponsors.title">Trusted by agents at:</h2>
           <div class="sponsors-container">
-            <!-- fetchpriority="low" rather than loading="lazy", deliberately. These 20
-                 tags are 10 unique logos duplicated for the marquee loop, and
+            <!-- fetchpriority="low" rather than loading="lazy", deliberately. These 22
+                 tags are 11 unique logos duplicated for the marquee loop, and
                  sponsors-scroll.js computes its wrap point by summing
                  `items[i].offsetWidth` over the first half — lazy images have no
                  intrinsic width until they load, which would corrupt that measurement
@@ -435,6 +435,9 @@
               </div>
               <div class="sponsor-item">
                 <img src="media-webp/sponsors/brown-harris-stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+              </div>
+              <div class="sponsor-item">
+                <img src="media-webp/sponsors/DouglasElliman.webp" alt="Douglas Elliman logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>              <!-- Duplicate set for seamless loop -->
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/Centennial.webp" alt="Centennial logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
@@ -465,6 +468,9 @@
               </div>
               <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
                 <img src="media-webp/sponsors/brown-harris-stevens.webp" alt="Brown Harris Stevens logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
+              </div>
+              <div class="sponsor-item sponsor-item--dup" aria-hidden="true">
+                <img src="media-webp/sponsors/DouglasElliman.webp" alt="Douglas Elliman logo — Stagify.ai partner" class="sponsor-logo" decoding="async" fetchpriority="low">
               </div>            </div>
           </div>
         </div>
@@ -1169,16 +1175,16 @@
           <h2 class="home-section__title" id="testimonials-title" data-tx="rise" data-lang="home.testimonials.title">What agents are saying</h2>
           <p class="home-section__sub" data-lang="home.testimonials.subtitle">Straight from brokers who made the switch.</p>
         </div>
-        <!-- A DECK, not a grid. Five quotes as one stack: the top card is readable, the
+        <!-- A DECK, not a grid. Seven quotes as one stack: the top card is readable, the
              rest fan out behind it, and you drag it away or use the arrows to advance.
              home-testimonials.js adds `tw-deck--ready`, and EVERY deck rule in home.css
              is scoped behind that class — so with no JS this stays what it is in the
              markup, a plain readable column of five quotes. Do not move the deck styling
              out from behind the ready class.
 
-             All five are real, named agents. A guard in
+             All seven are real, named agents. A guard in
              test/frontend/home-testimonials.test.js ("no placeholder testimonials
-             remain") keeps the old dummy cards from coming back. Adding a sixth means a
+             remain") keeps the old dummy cards from coming back. Adding an eighth means a
              card here plus its four keys in all 11 language packs — the count in the
              controls is written by JS from the real card count, so it follows. -->
         <div class="tw-deck reveal" data-deck>
@@ -1276,13 +1282,49 @@
                 <img class="tw-logo" src="media-webp/testimonials/rocksolid-mini.webp" alt="RockSolid Management logo" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
+            <figure class="tw-card">
+              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </div>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.jaime.quote">Stagify makes something that used to feel complicated incredibly simple. The results come back fast, the platform is easy to use, and being able to see an empty space fully staged in seconds is genuinely impressive.</blockquote>
+              <figcaption class="tw-by">
+                <span class="tw-by__meta">
+                  <span class="tw-name" data-lang="home.testimonials.items.jaime.author">Jaime Castro</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.jaime.role">Douglas Elliman</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.jaime.location">Miami, FL</span>
+                </span>
+                <img class="tw-logo" src="media-webp/testimonials/elliman-mini.webp" alt="Douglas Elliman logo" width="72" height="72" decoding="async">
+              </figcaption>
+            </figure>
+            <figure class="tw-card">
+              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </div>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.thomas.quote">I’m staging spaces all day, so speed matters. Stagify makes the whole process quick and easy, and the UI is super clean. I can get what I need without overthinking it.</blockquote>
+              <figcaption class="tw-by">
+                <span class="tw-by__meta">
+                  <span class="tw-name" data-lang="home.testimonials.items.thomas.author">Thomas Chimber</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.thomas.role">Compass</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.thomas.location">Manhattan, NYC</span>
+                </span>
+                <img class="tw-logo" src="media-webp/testimonials/compass-mini.webp" alt="Compass logo" width="72" height="72" decoding="async">
+              </figcaption>
+            </figure>
           </div>
           <!-- Hidden until `tw-deck--ready`: with no JS there is nothing to advance. -->
           <div class="tw-ctl">
             <button class="tw-nav" type="button" data-deck-prev data-lang-attr="home.testimonials.deck.prev|aria-label" aria-label="Previous testimonial">
               <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
             </button>
-            <p class="tw-count" aria-live="polite"><span data-deck-at>1</span> / <span data-deck-of>5</span></p>
+            <p class="tw-count" aria-live="polite"><span data-deck-at>1</span> / <span data-deck-of>7</span></p>
             <button class="tw-nav" type="button" data-deck-next data-lang-attr="home.testimonials.deck.next|aria-label" aria-label="Next testimonial">
               <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg>
             </button>
@@ -1545,7 +1587,7 @@
           <article class="plus-card plus-card--ent reveal reveal--right" style="--reveal-delay:90ms">
             <div class="plus-card__top">
               <img src="media-webp/logo/Enterprise64x64.webp" alt="" class="plus-card__logo" aria-hidden="true">
-              <h3 class="plus-card__name" data-lang="home.plus.ent.name">Enterprise</h3>
+              <h3 class="plus-card__name" data-lang="home.plus.ent.name">Stagify Enterprise</h3>
               <span class="plus-card__badge" data-lang="home.plus.ent.tag">For teams</span>
             </div>
             <div class="plus-price"><span class="plus-price__num">$0.15</span><span class="plus-price__per" data-lang="home.plus.ent.per">/ generation</span></div>
@@ -1828,6 +1870,14 @@
           <p class="home-section__sub" data-lang="home.blog.subtitle">Guides and tips on virtual staging, MLS disclosure, and marketing your listings faster.</p>
         </div>
         <div class="home-blog__grid reveal">
+          <a class="home-blog__card" href="/blog/virtual-staging-disclosure-laws-by-state">
+            <img class="home-blog__thumb" src="media-webp/blog/cover-10.webp" alt="A virtually staged living room overlaid with a white card headed “Who actually requires it”, listing California, Wisconsin and every other state" width="400" height="225" loading="lazy">
+            <div class="home-blog__body">
+              <span class="home-blog__tag">Compliance</span>
+              <h3 class="home-blog__title">Do You Have to Disclose Virtual Staging? The 2026 Rules, State by State</h3>
+              <span class="home-blog__meta">9 min read</span>
+            </div>
+          </a>
           <a class="home-blog__card" href="/blog/free-virtual-staging">
             <img class="home-blog__thumb" src="media-webp/blog/cover-9.webp" alt="A staged green living room with a marble fireplace and a burnt-orange velvet sofa, overlaid with a price card striking out $16 to $75 per staged photo in favour of $0 on the free plan" width="400" height="225" loading="lazy">
             <div class="home-blog__body">
@@ -1866,14 +1916,6 @@
               <span class="home-blog__tag">Comparison</span>
               <h3 class="home-blog__title">The Top 10 AI Virtual Staging Sites for 2026, Ranked</h3>
               <span class="home-blog__meta">10 min read</span>
-            </div>
-          </a>
-          <a class="home-blog__card" href="/blog/does-virtual-staging-help-sell-homes">
-            <img class="home-blog__thumb" src="media-webp/blog/cover-3.webp" alt="A staged living room with an upward sales-trend chart" width="400" height="225" loading="lazy">
-            <div class="home-blog__body">
-              <span class="home-blog__tag">Real Estate</span>
-              <h3 class="home-blog__title">Does Virtual Staging Actually Help Sell Homes?</h3>
-              <span class="home-blog__meta">7 min read</span>
             </div>
           </a>
         </div>
@@ -2228,7 +2270,7 @@
             <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v13"/><path d="M7.5 7.5 12 3l4.5 4.5"/></svg>
           </div>
           <div class="stage-mask-upload__text" data-lang="modal.staging.uploadArea">Upload an image or drag and drop</div>
-          <div class="stage-mask-upload__hint" data-lang="modal.staging.basicMaskUploadHint">Paint over any part of the photo, then describe the change you want.</div>
+          <div class="stage-mask-upload__hint" data-lang="modal.staging.basicMaskUploadHint">Paint over any part of the photo, then describe the change you want</div>
         </div>
         <div class="stage-mask-canvas-container">
           <canvas id="stage-mask-base-canvas" class="stage-mask-canvas"></canvas>
@@ -2246,6 +2288,75 @@
               <span data-lang="pdf.maskEditor.erase">Erase</span>
             </button>
           </div>
+            <!-- Basic Mask only (shown by syncStandaloneActions in
+                 scripts/app/stage-mask-editor.js): the same "virtually staged" disclosure
+                 the staging modal offers, for the standalone editor’s own Download.
+
+                 It lives HERE, in the slack to the right of the brush/erase pair, so the
+                 checkbox itself costs no height — this row already exists and is half empty.
+                 The options sit BELOW it, in flow.
+
+                 They used to float in an absolutely positioned panel, which cost the layout
+                 nothing but covered a third of the photo whenever it was open. That is the
+                 wrong trade: scripts/mask/fit.js will shrink the canvas by the ~34px this
+                 strip occupies, and 34px off the bottom of the image beats 150px sitting on
+                 top of it. The cost is also only paid while the option is switched ON.
+
+                 The radios are name="mask-stamp-style", NOT "stamp-style": the staging modal
+                 lives in this same document, and one shared name would put both controls in
+                 a single radio group where each silently overwrites the other’s choice. -->
+            <div class="stage-mask-stamp" id="mask-stamp" hidden>
+              <div class="checkbox-container">
+                <input type="checkbox" id="mask-label-virtually-staged" class="checkbox-input" aria-describedby="mask-label-staged-tip" aria-expanded="false" aria-controls="mask-stamp-opts">
+                <!-- (i) as a SIBLING of the label, never a child — data-lang replaces
+                     textContent wholesale and would eat the SVG. -->
+                <label for="mask-label-virtually-staged" class="checkbox-label" data-lang="modal.staging.labelVirtuallyStaged">Label as virtually staged</label>
+                <span class="opt-info">
+                  <button type="button" class="opt-info__btn" data-lang-attr="modal.staging.labelVirtuallyStagedInfo|aria-label" aria-label="What does labelling as virtually staged do?"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></button>
+                  <span class="opt-info__tip" id="mask-label-staged-tip" data-lang="modal.staging.labelVirtuallyStagedTip">Adds a small “Virtually staged” note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.</span>
+                </span>
+              </div>
+              <!-- The staging row’s strip, verbatim: four styles, a slider and a Preview
+                   behind a hover popover. The preview is a popover rather than an inline
+                   thumbnail because a 200px image in this row would cost the photo far more
+                   height than the badge is worth — and unlike the old panel, it only covers
+                   the image while the pointer is actually on the button. -->
+              <div class="stamp-opts stamp-opts--inline" id="mask-stamp-opts" hidden>
+                <div class="stamp-opts__styles" role="group" aria-labelledby="mask-stamp-style-legend">
+                  <span class="sr-only" id="mask-stamp-style-legend" data-lang="modal.staging.stampStyleLabel">Label style</span>
+                  <label class="stamp-swatch">
+                    <input type="radio" name="mask-stamp-style" value="dark" class="stamp-swatch__input" checked>
+                    <span class="stamp-swatch__art stamp-swatch__art--dark" aria-hidden="true">Aa</span>
+                    <span class="sr-only" data-lang="modal.staging.stampStyles.dark">Dark</span>
+                  </label>
+                  <label class="stamp-swatch">
+                    <input type="radio" name="mask-stamp-style" value="light" class="stamp-swatch__input">
+                    <span class="stamp-swatch__art stamp-swatch__art--light" aria-hidden="true">Aa</span>
+                    <span class="sr-only" data-lang="modal.staging.stampStyles.light">Light</span>
+                  </label>
+                  <label class="stamp-swatch">
+                    <input type="radio" name="mask-stamp-style" value="minimal" class="stamp-swatch__input">
+                    <span class="stamp-swatch__art stamp-swatch__art--minimal" aria-hidden="true">Aa</span>
+                    <span class="sr-only" data-lang="modal.staging.stampStyles.minimal">Minimal</span>
+                  </label>
+                  <label class="stamp-swatch">
+                    <input type="radio" name="mask-stamp-style" value="banner" class="stamp-swatch__input">
+                    <span class="stamp-swatch__art stamp-swatch__art--banner" aria-hidden="true">Aa</span>
+                    <span class="sr-only" data-lang="modal.staging.stampStyles.banner">Banner</span>
+                  </label>
+                </div>
+                <input type="range" id="mask-stamp-scale" class="stamp-opts__size" min="0.7" max="1.6" step="0.1" value="1" data-lang-attr="modal.staging.stampSizeLabel|aria-label" aria-label="Label size" aria-valuetext="100%">
+                <span class="stamp-preview">
+                  <button type="button" class="stamp-preview__btn" aria-describedby="mask-stamp-preview-pop">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+                    <span class="stamp-preview__label" data-lang="modal.staging.stampPreview">Preview</span>
+                  </button>
+                  <span class="stamp-preview__pop" id="mask-stamp-preview-pop" role="tooltip">
+                    <img class="stamp-preview__img" alt="Sample photo showing the virtually staged label" data-lang-attr="modal.staging.stampPreviewAlt|alt" width="340" height="227" decoding="async">
+                  </span>
+                </span>
+              </div>
+            </div>
             <p class="stage-mask-note" style="display:none"></p>
           </div>
           <!-- A relative scale, not a pixel count — see scripts/mask/brush-scale.js.

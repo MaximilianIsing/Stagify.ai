@@ -251,13 +251,43 @@ test('settings are an ALLOWLIST, so a future owner-side field cannot leak', () =
     agentName: 'A. Broker',
     agentEmail: 'a@example.com',
     agentPhone: '+1 555 0100',
+    showBefore: true,
     // Everything below is dropped rather than stored.
     internalNotes: 'seller is desperate',
     userId: 'someone-else',
-    showBefore: true,
   });
-  assert.deepEqual(Object.keys(out).sort(), ['agentEmail', 'agentName', 'agentPhone', 'headline', 'note']);
-  assert.ok(!('showBefore' in out), 'the share page never shows the source photo, so the key must not exist');
+  assert.deepEqual(
+    Object.keys(out).sort(),
+    ['agentEmail', 'agentName', 'agentPhone', 'headline', 'note', 'showBefore'],
+  );
+});
+
+test('showBefore defaults OFF, and only a real `true` turns it on', () => {
+  // This is the switch that decides whether a photograph of somebody's actual empty house
+  // goes out to whoever holds the link, so it is the one setting that must not be decided
+  // by truthiness. A form serializer sending "false", a query string sending "0", a bag
+  // rebuilt from JSON with the key missing — all of them mean off.
+  assert.equal(normalizeShareSettings({}).showBefore, false, 'the default is off');
+  assert.equal(normalizeShareSettings(null).showBefore, false);
+  assert.equal(normalizeShareSettings({ showBefore: true }).showBefore, true);
+  for (const truthy of ['true', 'false', 1, 'on', 'yes', {}, []]) {
+    assert.equal(
+      normalizeShareSettings({ showBefore: truthy }).showBefore,
+      false,
+      `${JSON.stringify(truthy)} published the source photo`,
+    );
+  }
+});
+
+test('a settings write that omits showBefore turns it OFF, like every other key', () => {
+  // normalizeShareSettings rebuilds the whole bag rather than merging, so a caller sending
+  // a delta blanks what it left out — which is why the gallery UI PATCHes the entry's full
+  // settings. Pinned because the failure is silent: the link quietly stops showing a photo
+  // the owner still believes is on it.
+  const kept = normalizeShareSettings({ headline: 'Kept', showBefore: true });
+  assert.equal(kept.showBefore, true);
+  const delta = normalizeShareSettings({ headline: 'Kept' });
+  assert.equal(delta.showBefore, false, 'a partial write is a reset, not a merge');
 });
 
 test('settings are clamped and trimmed', () => {

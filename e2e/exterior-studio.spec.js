@@ -217,7 +217,7 @@ test.describe('Exterior Studio — Stagify+', () => {
 
     const sent = calls[0].postData || '';
     expect(sent).toMatch(/name="removeSnow"[\s\S]*?true/);
-    for (const off of ['removeVehicles', 'removeClutter', 'removePeople', 'removeWetWeather']) {
+    for (const off of ['removeVehicles', 'removeClutter', 'removePeople', 'removeWetWeather', 'removeLeaves']) {
       expect(sent).toMatch(new RegExp(`name="${off}"[\\s\\S]*?false`));
     }
     expect(sent).toMatch(/name="timeOfDay"[\s\S]*?keep/);
@@ -280,6 +280,142 @@ test.describe('Exterior Studio — Stagify+', () => {
     expect(sent).toMatch(/name="removeClutter"[\s\S]*?false/);
   });
 
+  test('the comparison is the SHARED control, driven from one split', async ({ page }) => {
+    // The studio used to carry its own: a clipping wrapper whose after image had to be
+    // counter-sized against it, and a native range bar parked across the bottom of the
+    // photo. It now draws styles/compare.css, the same control as the gallery and the
+    // share page — so the assertion is that the shared classes are really in play and
+    // that dragging moves the ONE variable the seam, the grip and the clip all read.
+    await stubEnhance(page);
+    await page.goto(URL);
+    await page.setInputFiles('#ex-file', {
+      name: 'house.png', mimeType: 'image/png', buffer: await roomPngBuffer(640, 420),
+    });
+    await page.check('#ex-clutter');
+    await page.click('#ex-enhance');
+    await expect(page.locator('#ex-result')).toBeVisible();
+
+    const box = page.locator('#ex-compare');
+    await expect(box).toHaveClass(/(^|\s)compare(\s|$)/);
+    await expect(page.locator('#ex-compare-after')).toHaveClass(/compare__after/);
+    // The grip is a pseudo-element on .compare, gated on the range existing. If the shared
+    // sheet were not loaded at all the classes above would still match and nothing would
+    // be drawn, so read a property that only that stylesheet sets.
+    await expect(page.locator('#ex-compare-range')).toHaveCSS('position', 'absolute');
+
+    const split = () => box.evaluate((n) => getComputedStyle(n).getPropertyValue('--compare-split').trim());
+    expect(await split()).toBe('50%');
+    await page.locator('#ex-compare-range').fill('20');
+    expect(await split()).toBe('20%');
+    // Same position again as a bare number, for the BEFORE/AFTER tags' fade.
+    expect(await box.evaluate((n) => getComputedStyle(n).getPropertyValue('--compare-split-n').trim())).toBe('0.2');
+  });
+
+  test('the two halves say which is which, and each tag leaves with its half', async ({ page }) => {
+    await stubEnhance(page);
+    await page.goto(URL);
+    await page.setInputFiles('#ex-file', {
+      name: 'house.png', mimeType: 'image/png', buffer: await roomPngBuffer(640, 420),
+    });
+    await page.check('#ex-clutter');
+    await page.click('#ex-enhance');
+    await expect(page.locator('#ex-result')).toBeVisible();
+
+    const beforeTag = page.locator('.ex-compare__tag--before');
+    const afterTag = page.locator('.ex-compare__tag--after');
+    await expect(beforeTag).toBeVisible();
+    await expect(afterTag).toBeVisible();
+
+    // Dragged fully to the AFTER end there is no before half left, so a tag still sitting
+    // there would be labelling the enhanced photo "BEFORE".
+    await page.locator('#ex-compare-range').fill('0');
+    await expect(beforeTag).toHaveCSS('opacity', '0');
+    await expect(afterTag).toHaveCSS('opacity', '1');
+
+    await page.locator('#ex-compare-range').fill('100');
+    await expect(beforeTag).toHaveCSS('opacity', '1');
+    await expect(afterTag).toHaveCSS('opacity', '0');
+  });
+
+  test('"Enhance another" clears the photo and KEEPS the request', async ({ page }) => {
+    // The one exit from a finished render, and the assertion that matters is the negative:
+    // it must not tidy up the options too. This replaced a "Start over" that did, which
+    // made the common case — a second shot of the same property wanting the same treatment
+    // — a full re-tick every time.
+    await stubEnhance(page);
+    await page.goto(URL);
+    await page.setInputFiles('#ex-file', {
+      name: 'house.png', mimeType: 'image/png', buffer: await roomPngBuffer(640, 420),
+    });
+    await page.check('#ex-clutter');
+    await page.check('#ex-use-sky');
+    await page.selectOption('#ex-sky', 'dramatic');
+    await page.click('#ex-enhance');
+    await expect(page.locator('#ex-result')).toBeVisible();
+
+    await page.click('#ex-again');
+    // The photo is gone — and so is the result, or the next upload would land under a
+    // comparison of the last one.
+    await expect(page.locator('#ex-drop')).toBeVisible();
+    await expect(page.locator('#ex-result')).toBeHidden();
+    await expect(page.locator('#ex-preview')).toBeHidden();
+    // The request survives, so submit is waiting only on a photo.
+    await expect(page.locator('#ex-clutter')).toBeChecked();
+    await expect(page.locator('#ex-sky')).toHaveValue('dramatic');
+    await expect(page.locator('#ex-enhance')).toBeDisabled();
+
+    // Dropping in the next photo is the only step left, and it renders on the same terms.
+    await page.setInputFiles('#ex-file', {
+      name: 'house2.png', mimeType: 'image/png', buffer: await roomPngBuffer(640, 420),
+    });
+    await expect(page.locator('#ex-enhance')).toBeEnabled();
+    await page.click('#ex-enhance');
+    await expect(page.locator('#ex-result')).toBeVisible();
+  });
+
+  test('there is no way to wipe the options from the result — only the toolbar clears them', async ({ page }) => {
+    // "Start over" was removed, not renamed. Without this the button could come back by
+    // accident and quietly take the request with it again.
+    await page.goto(URL);
+    await expect(page.locator('#ex-startover')).toHaveCount(0);
+    await expect(page.locator('#ex-done button')).toHaveCount(2);
+  });
+
+  test('the photo goes under a spinner while the render is out, and comes back out', async ({ page }) => {
+    // The stub everywhere else answers instantly, which is exactly the condition under
+    // which a permanently-stuck overlay would still pass. So hold the response open and
+    // look at the pane the way a user waiting three minutes does.
+    /** @type {() => void} */
+    let release = () => {};
+    const held = new Promise((resolve) => { release = resolve; });
+    await page.route('**/api/enhance-exterior', async (route) => {
+      await held;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, image: TINY_PNG_DATA_URL, user: PRO_ME.user }),
+      });
+    });
+
+    await page.goto(URL);
+    await page.setInputFiles('#ex-file', {
+      name: 'house.png', mimeType: 'image/png', buffer: await roomPngBuffer(640, 420),
+    });
+    await page.check('#ex-clutter');
+    await page.click('#ex-enhance');
+
+    const busy = page.locator('.ex-busy');
+    await expect(busy).toBeVisible();
+    await expect(page.locator('#ex-preview')).toHaveClass(/is-busy/);
+    // Non-empty, not a specific line: the copy rotates, and pinning one string here would
+    // fail on whichever language the run happens to resolve.
+    await expect(busy.locator('.ex-busy__msg')).not.toBeEmpty();
+
+    release();
+    await expect(page.locator('#ex-result')).toBeVisible();
+    await expect(busy).toBeHidden();
+  });
+
   test('a rejected upload shows the category message and keeps the photo on screen', async ({ page }) => {
     // The whole point of the 422 copy: the visitor should know to try a different photo,
     // and should not have to re-pick the one they already chose.
@@ -299,23 +435,13 @@ test.describe('Exterior Studio — Stagify+', () => {
     await expect(page.locator('#ex-result')).toBeHidden();
     // And the form is usable again rather than stuck in its working state.
     await expect(page.locator('#ex-enhance')).toBeEnabled();
+    // Including the overlay: a failed render that leaves the photo blurred under a
+    // spinner is indistinguishable from one still running, and the toast has already
+    // faded by the time anyone wonders.
+    await expect(page.locator('.ex-busy')).toBeHidden();
+    await expect(page.locator('#ex-preview')).not.toHaveClass(/is-busy/);
   });
 
-  test('start over returns the tool to its empty state', async ({ page }) => {
-    await stubEnhance(page);
-    await page.goto(URL);
-    await page.setInputFiles('#ex-file', {
-      name: 'house.png', mimeType: 'image/png', buffer: await roomPngBuffer(640, 420),
-    });
-    await page.check('#ex-vehicles');
-    await page.click('#ex-enhance');
-    await expect(page.locator('#ex-result')).toBeVisible();
-
-    await page.click('#ex-startover');
-    await expect(page.locator('#ex-drop')).toBeVisible();
-    await expect(page.locator('#ex-result')).toBeHidden();
-    await expect(page.locator('#ex-preview')).toBeHidden();
-  });
 });
 
 test.describe('Exterior Studio — the nav row', () => {

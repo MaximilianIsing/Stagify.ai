@@ -26,6 +26,7 @@ import { maskCopy } from '../mask/copy.js';
 import { maskGrowths, snapshotCanvas, renderRefinePreview } from '../mask/refine.js';
 import { requestMaskEdit } from '../mask/generate.js';
 import { readImageFile } from './image-file.js';
+import { downloadWithLabel } from './mask-stamp.js';
 
 /**
  * @param {{
@@ -85,6 +86,10 @@ export function createStageMaskEditor(deps) {
       const noteEl = maskModal.querySelector('.stage-mask-note');
       const actionsRow = maskModal.querySelector('.stage-mask-actions');
       const content = maskModal.querySelector('.stage-mask-content');
+      // Basic Mask's "Label as virtually staged" wrapper. Optional: it only exists in
+      // index.html, and this editor is also built on pages that carry the dialog markup
+      // without it.
+      const stampRow = $('#mask-stamp');
       const uploadZone = $('#stage-mask-upload');
       const uploadInput = /** @type {HTMLInputElement} */ ($('#stage-mask-upload-input'));
 
@@ -215,6 +220,11 @@ export function createStageMaskEditor(deps) {
         const standaloneDraw = editorMode === 'standalone' && phase === 'draw';
         anotherBtn.classList.toggle('hidden', !standaloneDraw);
         downloadBtn.classList.toggle('hidden', !(standaloneDraw && standaloneUrl));
+        // The disclosure option belongs to Basic Mask alone: it is applied on the way to
+        // THIS dialog's Download, and the before/after modes have no download here — they
+        // commit into the staging carousel, which stamps on its own server round trip.
+        // Offering it there would be a control wired to nothing.
+        if (stampRow) stampRow.hidden = editorMode !== 'standalone';
         if (standaloneDraw) {
           // The staging screen already says both of these, in all 11 packs —
           // reuse its keys rather than adding two more that must be translated
@@ -629,14 +639,20 @@ export function createStageMaskEditor(deps) {
         setUploadState(true);
       });
 
-      downloadBtn.addEventListener('click', () => {
-        if (!standaloneUrl) return;
-        const a = document.createElement('a');
-        a.href = standaloneUrl;
-        a.download = `stagify-basic-mask-${Date.now()}.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+      downloadBtn.addEventListener('click', async () => {
+        if (!standaloneUrl || downloadBtn.disabled) return;
+        // The composite lives only in this browser, so the "virtually staged" badge — drawn
+        // server-side — costs one round trip, taken at the last possible moment. On failure
+        // NOTHING is saved: see scripts/app/mask-stamp.js.
+        downloadBtn.disabled = true;
+        try {
+          await downloadWithLabel(standaloneUrl, `stagify-basic-mask-${Date.now()}`);
+        } catch (err) {
+          showErrorToast(err.message || tx('errors.disclosureStampFailed',
+            'We couldn\'t add the "virtually staged" label. Untick that option to download without it.'));
+        } finally {
+          downloadBtn.disabled = false;
+        }
       });
 
       if (uploadZone && uploadInput) {

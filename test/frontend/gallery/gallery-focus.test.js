@@ -83,7 +83,8 @@ test('a card that is gone by close time does not get focus thrown at it', async 
 test('Tab cycles the panel controls instead of escaping to the page behind', async () => {
   const { document, byId } = await openFirstCard();
 
-  // close → rename → the compare slider → the link box → copy → delete, then back round.
+  // close → rename → the compare slider → the link box → copy → the before-photo
+  // checkbox → delete, then back round.
   tab(document);
   assert.notEqual(document.activeElement, byId('gal-detail-close'), 'Tab did not move at all');
   assert.equal(document.activeElement, byId('gal-rename'));
@@ -98,10 +99,29 @@ test('Tab cycles the panel controls instead of escaping to the page behind', asy
   assert.equal(document.activeElement, byId('gal-share-copy'));
 
   tab(document);
+  assert.equal(document.activeElement, byId('gal-share-before'));
+
+  tab(document);
   assert.equal(document.activeElement, byId('gal-delete'));
 
   tab(document);
   assert.equal(document.activeElement, byId('gal-detail-close'), 'the last control must wrap to the first');
+});
+
+test('the before-photo checkbox leaves the cycle when its row is hidden', async () => {
+  // The row is removed for a render with no source photo, but the input itself is never
+  // `hidden` — so the trap has to ask the row, not the control. Getting this wrong puts Tab
+  // on a checkbox that is not on screen, which is the exact failure the trap exists to stop.
+  const { document, byId } = await openFirstCard({ urls: { after: '/a.webp', before: '', thumb: '/t.webp' } });
+  assert.equal(byId('gal-share-before-row').hidden, true, 'the fixture must have no before photo');
+
+  tab(document);            // rename
+  tab(document);            // the link box — no slider either, for the same reason
+  assert.equal(document.activeElement, byId('gal-share-url'));
+  tab(document);
+  assert.equal(document.activeElement, byId('gal-share-copy'));
+  tab(document);
+  assert.equal(document.activeElement, byId('gal-delete'), 'Tab stopped on the hidden checkbox');
 });
 
 test('the rename box joins the cycle only while it is open', async () => {

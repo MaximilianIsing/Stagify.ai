@@ -336,7 +336,7 @@
         "cta": "Bekijk Stagify+"
       },
       "ent": {
-        "name": "Enterprise",
+        "name": "Stagify Enterprise",
         "tag": "Voor teams",
         "per": "/ generatie",
         "desc": "Geef je hele team automatisch Stagify+ en betaal alleen voor wat ze daadwerkelijk gebruiken.",
@@ -393,6 +393,18 @@
           "quote": "Ik zie Stagify enorm worden voor studentenkamers, appartementen en advertenties. Lege kamers zijn lastig voor te stellen, maar zodra ze zijn ingericht voelt de ruimte meteen echter. Dat scheelt enorm als je jezelf er wilt zien wonen.",
           "author": "Jaden Lander",
           "role": "RockSolid Management",
+          "location": "Manhattan, New York"
+        },
+        "jaime": {
+          "quote": "Stagify maakt iets wat vroeger ingewikkeld voelde ongelooflijk eenvoudig. De resultaten komen snel terug, het platform is makkelijk in gebruik, en een lege ruimte in seconden volledig ingericht zien is echt indrukwekkend.",
+          "author": "Jaime Castro",
+          "role": "Douglas Elliman",
+          "location": "Miami, Florida"
+        },
+        "thomas": {
+          "quote": "Ik richt de hele dag ruimtes in, dus snelheid telt. Stagify maakt het hele proces snel en makkelijk, en de interface is superstrak. Ik krijg wat ik nodig heb zonder erover na te hoeven denken.",
+          "author": "Thomas Chimber",
+          "role": "Compass",
           "location": "Manhattan, New York"
         }
       },
@@ -487,7 +499,7 @@
       "maskBeforePromptPlaceholder": "bijv. verwijder de oude bank, ruim de rommel op, schilder de muur wit",
       "maskBeforeApply": "Bewerking toepassen",
       "basicMaskTitle": "Basismasker",
-      "basicMaskUploadHint": "Schilder over een willekeurig deel van de foto en beschrijf de gewenste wijziging.",
+      "basicMaskUploadHint": "Schilder over een willekeurig deel van de foto en beschrijf de gewenste wijziging",
       "maskLimitReached": "Je hebt de limiet van 6 versies voor deze afbeelding bereikt.",
       "prevVersion": "Vorige versie",
       "nextVersion": "Volgende versie",
@@ -1198,12 +1210,11 @@
     "replacePhoto": "Foto vervangen",
     "stepAreas": "Meubelgebieden",
     "addArea": "+ Gebied toevoegen",
-    "areasHint": "Elk gebied wordt apart gestyled, tegelijkertijd — geef elke kleur een meubelfoto, een korte prompt, of beide.",
     "areaName": "Gebied {n}",
     "areaLimit": "Je kunt tot {n} gebieden markeren.",
     "removeAreaAria": "Verwijder dit gebied",
     "stepBrush": "Markeren",
-    "overlapHint": "Schilder over een gebied met een andere kleur om het opnieuw toe te wijzen — elke plek hoort bij slechts één gebied.",
+    "overlapHint": "Over een gebied schilderen wijst het toe aan de nieuwe kleur.",
     "promptPlaceholder": "Beschrijf wat je hier wilt toevoegen (optioneel als je een meubelfoto toevoegt)…",
     "addFurniture": "+ Meubelfoto",
     "statusEmpty": "Nog niet gemarkeerd",
@@ -1215,7 +1226,7 @@
     "retry": "Opnieuw proberen",
     "progressCount": "{done} van {total} gebieden gestyled",
     "uploadHint": "Upload een foto van je kamer",
-    "uploadSub": "JPG, PNG, WebP of HEIC — klik of sleep het hierheen",
+    "uploadSub": "Klik of sleep hier een JPG-, PNG-, WebP- of HEIC-bestand",
     "editHighlights": "Bewerking verfijnen",
     "defaultFurniturePrompt": "Voeg het meubilair uit de referentiefoto toe in het gemarkeerde gebied. Plaats het natuurlijk op de vloer met correct perspectief, schaal en verlichting voor de kamer.",
     "needHighlight": "Schilder eerst minstens één gebied op de foto.",
@@ -1549,7 +1560,12 @@
         "one": "{count} keer geopend",
         "other": "{count} keer geopend"
       },
-      "unavailable": "Deze link kon niet worden geladen. Ververs de pagina en probeer het opnieuw."
+      "unavailable": "Deze link kon niet worden geladen. Ververs de pagina en probeer het opnieuw.",
+      "showBefore": "De foto vóór het inrichten toevoegen",
+      "showBeforeSaving": "Opslaan…",
+      "showBeforeOn": "De foto vóór het inrichten hoort nu bij deze link.",
+      "showBeforeOff": "Deze link toont alleen de ingerichte foto.",
+      "showBeforeFailed": "Kon niet wijzigen wat deze link toont. Probeer het opnieuw."
     },
     "rename": {
       "action": "Naam wijzigen",
@@ -1582,7 +1598,7 @@
     "loading": "Je galerij wordt geladen…"
   },
   "exteriorStudio": {
-    "title": "Uitstraling, met één klik",
+    "title": "Buitenstudio",
     "subtitle": "De eerste foto van elke advertentie is de buitenkant van het huis — en dat is de ene opname die je niet opnieuw maakt als het weer omslaat. Upload hem hier en krijg de versie van een mooiere dag.",
     "ctaUpgrade": "Krijg Stagify+ om het te gebruiken",
     "features": {
@@ -1606,7 +1622,7 @@
     },
     "upload": {
       "title": "Sleep hier een buitenfoto naartoe",
-      "hint": "JPG, PNG, WebP of HEIC. De voorgevel, de achtertuin, de oprit — elke foto die buiten is gemaakt.",
+      "hint": "Klik of sleep hier een JPG-, PNG-, WebP- of HEIC-bestand",
       "button": "Kies een foto",
       "replace": "Andere foto gebruiken"
     },
@@ -1619,6 +1635,7 @@
       "removePeople": "Mensen",
       "removeSnow": "Sneeuw",
       "removeWetWeather": "Regen & plassen",
+      "removeLeaves": "Bladeren",
       "notes": "Nog iets anders?",
       "notesPlaceholder": "bijv. laat de vlag op de veranda staan"
     },
@@ -1637,11 +1654,19 @@
       "enhance": "Buitenkant verbeteren",
       "working": "Bezig…",
       "download": "Downloaden",
-      "startOver": "Opnieuw beginnen"
+      "again": "Nog een foto"
     },
+    "loadingMessages": [
+      "De buitenkant wordt opgeruimd…",
+      "Het licht wordt uitgebalanceerd…",
+      "De lucht wordt opgefrist…",
+      "Het huis zelf blijft ongewijzigd…",
+      "Laatste puntjes op de i…"
+    ],
     "result": {
       "title": "Voor en na",
-      "hint": "Sleep de schuifregelaar om te vergelijken."
+      "hint": "Sleep de schuifregelaar om te vergelijken.",
+      "rangeValue": "{percent}% verbeterd"
     },
     "errors": {
       "generic": "Deze foto kon niet worden verbeterd. Probeer een andere opname van de buitenkant.",
@@ -1651,7 +1676,6 @@
     "stepPhotoHint": "Upload een foto in het werkgebied rechts.",
     "replacePhoto": "Foto vervangen",
     "stepChanges": "Wat moet er veranderen?",
-    "stepChangesHint": "Vink alleen aan wat je wilt veranderen. Alles wat je niet aanvinkt blijft precies zoals gefotografeerd.",
     "enhanceHint": "Kies minstens één wijziging, of beschrijf er één hierboven."
   },
   "notFound": {

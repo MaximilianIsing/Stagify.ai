@@ -54,6 +54,8 @@ export function baseDeps() {
     // Same again — the armed default is asserted in
     // test/routes/disclosure-preview-route.test.js.
     disclosurePreviewLimiter: pass,
+    // …and in test/routes/stamp-image-route.test.js for this one.
+    stampImageLimiter: pass,
   };
 }
 

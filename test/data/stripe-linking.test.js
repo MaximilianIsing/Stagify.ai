@@ -273,3 +273,52 @@ test('a subscription nobody holds is a no_user, and a junk payload is bad_payloa
   assert.equal(store.applyStripeSubscriptionState({ id: 'sub_x', customer: 'cus_x', status: 'active' }).reason, 'no_user');
   assert.equal(store.applyStripeSubscriptionState(null).reason, 'bad_payload');
 });
+
+test('a stale cancellation for a REPLACED subscription does not downgrade the payer', () => {
+  // The customer-id fallback above is what makes this reachable: cancel-and-resubscribe
+  // reuses the Stripe customer, so a late 'deleted' for the DEAD subscription still
+  // finds the account — which by then holds the live one. Stripe does not order its
+  // deliveries and retries a failed one for ~3 days, and the stripe_events ledger
+  // dedupes by event id, so it stops replays but not reordering.
+  const store = freshStore();
+  const user = registerUser(store, 'resubscribed@example.com');
+  store.activateProFromStripeCheckout({ userId: user.id, stripeCustomerId: 'cus_1', stripeSubscriptionId: 'sub_a' });
+  store.applyStripeSubscriptionState({ id: 'sub_a', customer: 'cus_1', status: 'canceled' });
+  store.activateProFromStripeCheckout({ userId: user.id, stripeCustomerId: 'cus_1', stripeSubscriptionId: 'sub_b' });
+
+  const res = store.applyStripeSubscriptionState({ id: 'sub_a', customer: 'cus_1', status: 'canceled' });
+
+  assert.equal(res.ok, false, 'ok:false is also what suppresses the win-back email');
+  assert.equal(res.reason, 'stale_subscription');
+  const after = store.findUserByEmail(user.email);
+  assert.equal(after.plan, 'pro', 'still holds a live subscription and is still being charged');
+  assert.equal(after.stripeSubscriptionId, 'sub_b');
+});
+
+test('the stale guard still lets a real cancellation through, and stays idempotent', () => {
+  // The guard keys on "is this the subscription the account holds", so the two cases
+  // it must NOT swallow are the held one being cancelled, and a replay arriving once
+  // nothing is held at all.
+  const store = freshStore();
+  const user = registerUser(store, 'cancelling@example.com');
+  store.activateProFromStripeCheckout({ userId: user.id, stripeCustomerId: 'cus_2', stripeSubscriptionId: 'sub_z' });
+
+  assert.equal(store.applyStripeSubscriptionState({ id: 'sub_z', customer: 'cus_2', status: 'canceled' }).ok, true);
+  assert.equal(store.findUserByEmail(user.email).plan, 'free');
+  // Cleared, not "cleared to null" — a round-trip through SQLite reads the absent
+  // column back as undefined, so assert the property that matters: nothing is held.
+  assert.ok(!store.findUserByEmail(user.email).stripeSubscriptionId, 'no subscription is held');
+
+  const replay = store.applyStripeSubscriptionState({ id: 'sub_z', customer: 'cus_2', status: 'canceled' });
+  assert.equal(replay.ok, true, 'nothing held → nothing to protect, so the replay is a plain no-op');
+  assert.equal(store.findUserByEmail(user.email).plan, 'free');
+});
+
+test('past_due keeps access — the guard did not narrow the dunning grace', () => {
+  const store = freshStore();
+  const user = registerUser(store, 'dunning@example.com');
+  store.activateProFromStripeCheckout({ userId: user.id, stripeCustomerId: 'cus_3', stripeSubscriptionId: 'sub_p' });
+
+  assert.equal(store.applyStripeSubscriptionState({ id: 'sub_p', customer: 'cus_3', status: 'past_due' }).ok, true);
+  assert.equal(store.findUserByEmail(user.email).plan, 'pro');
+});

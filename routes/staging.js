@@ -4,18 +4,20 @@ import { sendError } from '../lib/http/http-helpers.js';
 import { reportError } from '../lib/http/error-ref.js';
 import { createMaskEditHandler } from '../lib/staging/mask-edit.js';
 import { createSegmentHandler } from '../lib/staging/segment.js';
-import { IMAGE_DATA_URL_RE } from '../lib/staging/data-url.js';
+import { IMAGE_DATA_URL_RE, isImageDataUrl } from '../lib/staging/data-url.js';
 import { logger } from '../lib/logger.js';
 import {
   validateImageLimiter as defaultValidateImageLimiter,
   galleryImportLimiter as defaultGalleryImportLimiter,
   disclosurePreviewLimiter as defaultDisclosurePreviewLimiter,
+  stampImageLimiter as defaultStampImageLimiter,
 } from '../lib/http/rate-limiters.js';
 import {
   normalizePreviewParams,
   renderDisclosurePreview,
   PREVIEW_CONTENT_TYPE,
 } from '../lib/image/disclosure-preview.js';
+import { stampVirtuallyStaged } from '../lib/image/stamp-disclosure.js';
 
 // A validate-image payload must be a base64 image data URL — both studios build one
 // with canvas.toDataURL() — so anything else is not a real upload. Checking the shape
@@ -28,6 +30,17 @@ import {
 // generous room for the rare fallback that posts the original photo, while stopping a
 // caller from pushing the full 25MB JSON limit through a paid vision call.
 const MAX_VALIDATE_IMAGE_BYTES = 8 * 1024 * 1024;
+
+// Ceiling on the image POST /api/stamp-image will stamp, enforced the same way and for the
+// same reason. Larger than the pre-check's because this one is NOT a downscaled probe: it is
+// the finished full-resolution composite the user is about to download, straight off a
+// canvas as PNG, which is a far heavier encoding than the JPEG the studios send above.
+//
+// Deliberately BELOW what the body parser would allow: /api/stamp-image is on
+// JSON_LARGE_LIMIT_PATHS, whose 25MB applies to the ENCODED body, i.e. ~18.7MB decoded. A
+// ceiling above that would never fire, and the caller would get the parser's generic 413
+// instead of a message naming the image.
+const MAX_STAMP_IMAGE_BYTES = 16 * 1024 * 1024;
 
 /**
  * Build the virtual-staging router. `deps` is the full injection bag shared by
@@ -53,6 +66,7 @@ const MAX_VALIDATE_IMAGE_BYTES = 8 * 1024 * 1024;
  *   handleMaskingSave: (req: import('express').Request, res: import('express').Response, user: any) => Promise<import('express').Response | void>,
  *   galleryImportLimiter?: import('express').RequestHandler,
  *   disclosurePreviewLimiter?: import('express').RequestHandler,
+ *   stampImageLimiter?: import('express').RequestHandler,
  *   downscaleImage: typeof import('../lib/image/image-primitives.js').downscaleImage,
  *   padBufferToAspectRatio: typeof import('../lib/image/image-primitives.js').padBufferToAspectRatio,
  *   buildMarkedRoomImage: typeof import('../lib/image/image-primitives.js').buildMarkedRoomImage,
@@ -73,7 +87,8 @@ const MAX_VALIDATE_IMAGE_BYTES = 8 * 1024 * 1024;
  *   `validateImageLimiter` is a test seam only: omitted (or null) it falls back to
  *   the shared `validateImageLimiter`, so the pre-check is never mounted with
  *   genLimiter as its only ceiling. `disclosurePreviewLimiter` is the same seam for the
- *   badge preview, which has no other ceiling at all.
+ *   badge preview, which has no other ceiling at all, and `stampImageLimiter` for
+ *   /api/stamp-image, which likewise has no genLimiter in front of it.
  */
 export default function createStagingRouter(deps) {
   // Names used by the handlers still inlined below. The /api/mask-edit and
@@ -87,6 +102,7 @@ export default function createStagingRouter(deps) {
   const preCheckLimiter = validateImageLimiter ?? defaultValidateImageLimiter;
   const galleryImportLimiter = injectedGalleryImportLimiter ?? defaultGalleryImportLimiter;
   const previewLimiter = deps.disclosurePreviewLimiter ?? defaultDisclosurePreviewLimiter;
+  const stampLimiter = deps.stampImageLimiter ?? defaultStampImageLimiter;
 
 // What the "Preview" hover in the staging modal shows: the user's chosen badge style and
 // size, stamped onto a sample photo by the SAME code that will stamp their render. See
@@ -239,6 +255,18 @@ router.post('/api/enhance-exterior', genLimiter, stagingProcessUpload, async (re
         code: 'NO_IMAGE_GENERATED',
       });
     }
+    // Same fail-closed disclosure branch as /api/process-image, and it has to be repeated
+    // here because this route has its own catch: the stamp throws rather than shipping an
+    // unlabelled photo, so the render succeeded and was then WITHHELD. Without this branch
+    // that arrives as "Exterior enhancement failed" — a generic fault, which the user
+    // answers by retrying into the same wall forever. The one action that gets them their
+    // photo is naming the option to untick.
+    if (error && /** @type {any} */ (error).code === 'DISCLOSURE_STAMP_FAILED') {
+      return sendError(res, 500, 'We couldn\'t add the "virtually staged" label, so your photo wasn\'t delivered. Untick that option to enhance without it.', {
+        code: 'DISCLOSURE_STAMP_FAILED',
+        ref: reportError('staging.disclosure-stamp', error),
+      });
+    }
     return sendError(res, 500, 'Exterior enhancement failed', { ref: reportError('staging.enhance-exterior', error) });
   }
 });
@@ -295,6 +323,64 @@ router.post('/api/masking-studio/save', galleryImportLimiter, genLimiter, async 
     if (res.headersSent) return undefined;
     return sendError(res, 500, 'Could not save that to your gallery', {
       ref: reportError('staging.masking-save', error),
+    });
+  }
+});
+
+// Burn the "virtually staged" disclosure into a finished image the CLIENT built.
+//
+// Every other user of stampVirtuallyStaged() reaches it from inside a render the server was
+// already holding. Basic Mask cannot: it composites its result in the browser
+// (compositeMaskedEdit in public/scripts/mask-core.js) and downloads that canvas directly,
+// so the finished pixels exist nowhere else. Hence one round trip, at download time.
+//
+// It cannot be folded into /api/mask-edit either. That route returns the model's edit, which
+// the browser then composites BACK over the untouched original everywhere outside the
+// painted mask — a badge stamped there would be erased by the very next step unless the user
+// happened to paint the bottom-right corner.
+//
+// Stamping and only stamping: nothing is stored, nothing is metered, no model is called. The
+// response is the input with a badge on it, or an error — never the input unchanged. See
+// lib/image/stamp-disclosure.js for why that module fails closed, and note the same
+// reasoning applies with more force here, because the user has explicitly asked for the
+// label and is about to save the file believing it carries one.
+router.post('/api/stamp-image', stampLimiter, async (req, res) => {
+  try {
+    // Stagify+ only: this serves Basic Mask, which is itself Stagify+ only (the nav row is
+    // locked and /api/mask-edit gates the same way). Answers 401/403 itself and returns null.
+    const proUser = requireProAccount(req, res);
+    if (!proUser) return undefined;
+
+    const { image } = req.body || {};
+    if (!isImageDataUrl(image)) {
+      return sendError(res, 400, 'Image must be a base64 image data URL');
+    }
+    // Bound the decode from the ENCODED length, before a buffer exists for it — the same
+    // 3-bytes-per-4-characters arithmetic /api/validate-image uses above.
+    if ((image.length - image.indexOf(',') - 1) * 0.75 > MAX_STAMP_IMAGE_BYTES) {
+      return sendError(res, 413, 'Image is too large to label');
+    }
+
+    // The SAME normalizer the preview route uses, so the badge the user approved in the
+    // popover and the badge burned into their download are configured identically. Re-deriving
+    // the allow-lists here is exactly how the two would drift.
+    const params = normalizePreviewParams(req.body || {});
+    const stamped = await stampVirtuallyStaged(image, params);
+    setSensitiveHeaders(res);
+    return res.json({ success: true, image: stamped });
+  } catch (error) {
+    if (res.headersSent) return undefined;
+    // Distinct code, same contract as /api/process-image: the client must be able to tell
+    // "we could not label it" from "the request failed", because only the first one has an
+    // action attached — and it must never quietly save the unlabelled file instead.
+    if (error && /** @type {any} */ (error).code === 'DISCLOSURE_STAMP_FAILED') {
+      return sendError(res, 500, 'We couldn\'t add the "virtually staged" label, so your image wasn\'t delivered. Untick that option to download without it.', {
+        code: 'DISCLOSURE_STAMP_FAILED',
+        ref: reportError('staging.stamp-image', error),
+      });
+    }
+    return sendError(res, 500, 'Could not label that image', {
+      ref: reportError('staging.stamp-image', error),
     });
   }
 });

@@ -47,6 +47,22 @@ async function uploadRoom(page) {
   await expect(page.locator('.stage-mask-canvas-container')).toBeVisible();
 }
 
+/** The toolbar row's shape: its height, and whether the badge group is still on its line. */
+function rowGeometry(page) {
+  return page.evaluate(() => {
+    const r = (sel) => document.querySelector(sel).getBoundingClientRect();
+    const tools = r('.stage-mask-tools');
+    const stamp = r('#mask-stamp');
+    const opts = r('#mask-stamp-opts');
+    return {
+      toolrowH: Math.round(r('.stage-mask-toolrow').height),
+      sameLineAsTools: stamp.top < tools.bottom,
+      // The checkbox and the strip beside it, rather than the strip having dropped under it.
+      stripIntact: Math.abs(opts.top - stamp.top) < 14,
+    };
+  });
+}
+
 /** One stroke across the middle of the draw canvas. */
 async function paintStroke(page) {
   const box = await page.locator('#stage-mask-draw-canvas').boundingBox();
@@ -153,6 +169,172 @@ test.describe('Basic Mask (standalone)', () => {
       page.locator('#stage-mask-download').click(),
     ]);
     expect(download.suggestedFilename()).toMatch(/^stagify-basic-mask-\d+\.png$/);
+  });
+
+  // ── "Label as virtually staged" ───────────────────────────────────────────
+  // Basic Mask composites in the browser and downloads that canvas, so unlike staging
+  // there is no server round trip to hang the disclosure on — the badge costs an explicit
+  // POST to /api/stamp-image at download time. Intercepted here: the real endpoint needs
+  // sharp and a pro session, and what these prove is the WIRING either side of it.
+
+  /** Upload, paint, apply and commit — leaves the editor on a downloadable result. */
+  async function commitOneEdit(page) {
+    await uploadRoom(page);
+    await page.locator('#stage-mask-prompt').fill('repaint the wall white');
+    await paintStroke(page);
+    await page.locator('#stage-mask-submit').click();
+    await page.locator('#stage-mask-done').click();
+    await expect(page.locator('#stage-mask-download')).toBeVisible();
+  }
+
+  test('ticking the option moves NOTHING and covers nothing', async ({ page }) => {
+    // Two failed layouts are behind this one assertion, and it is the only thing that would
+    // have caught either. A floating panel cost the layout nothing but hung over a third of
+    // the photo. Stacking the strip UNDER the checkbox fixed that and grew
+    // .stage-mask-toolrow instead, shoving the brush slider, the prompt, the reference row
+    // and the buttons down — for nothing, since the row's problem was never horizontal.
+    // The strip now sits BESIDE the checkbox, inside the height the tool buttons already
+    // set, so every row below holds its exact position.
+    await openBasicMask(page);
+    await uploadRoom(page);
+
+    const rows = () => page.evaluate(() => {
+      const y = (sel) => Math.round(document.querySelector(sel).getBoundingClientRect().top);
+      const h = (sel) => Math.round(document.querySelector(sel).getBoundingClientRect().height);
+      return {
+        toolrowH: h('.stage-mask-toolrow'),
+        controlsH: h('.stage-mask-controls'),
+        canvasH: h('#stage-mask-base-canvas'),
+        brushY: y('.stage-mask-brush-controls'),
+        promptY: y('#stage-mask-prompt'),
+        refY: y('.stage-mask-ref-container'),
+        actionsY: y('.stage-mask-actions'),
+      };
+    });
+
+    const strip = page.locator('#mask-stamp-opts');
+    await expect(strip).toBeHidden();
+    const before = await rows();
+
+    await page.locator('#mask-label-virtually-staged').check();
+    await expect(strip).toBeVisible();
+    expect(await rows()).toEqual(before);
+
+    // In flow, beside the checkbox — so it cannot be over the photo either.
+    const stripBox = await strip.boundingBox();
+    const canvasBox = await page.locator('#stage-mask-base-canvas').boundingBox();
+    expect(stripBox.y).toBeGreaterThanOrEqual(
+      canvasBox.y + canvasBox.height,
+      'the strip starts below the photo, it does not overlap it',
+    );
+  });
+
+  test('the longest label still holds one line, so nothing moves in any language', async ({ page }) => {
+    // English fits with room to spare; Russian's label is ~120px longer, and the row is
+    // flex-wrap:wrap — which does NOT shrink an oversized item, it moves it to the next
+    // line. That put the push-down straight back for six of the eleven packs while looking
+    // perfect in the one this suite reads by default.
+    await openBasicMask(page);
+    await uploadRoom(page);
+    await page.locator('#mask-label-virtually-staged').check();
+
+    const label = page.locator('label[for="mask-label-virtually-staged"]');
+    const baseline = await rowGeometry(page);
+
+    for (const lang of ['russian', 'italian', 'german', 'portuguese', 'japanese']) {
+      const text = await page.evaluate(async (l) => {
+        const pack = await (await fetch(`/languages/${l}.json`)).json();
+        return pack.modal.staging.labelVirtuallyStaged;
+      }, lang);
+      await label.evaluate((el, t) => { el.textContent = t; }, text);
+
+      const geo = await rowGeometry(page);
+      expect(geo.toolrowH, `${lang}: the toolbar row grew`).toBe(baseline.toolrowH);
+      expect(geo.sameLineAsTools, `${lang}: the group wrapped below the tool buttons`).toBe(true);
+      expect(geo.stripIntact, `${lang}: the strip broke away from the checkbox`).toBe(true);
+    }
+  });
+
+  test('the panel is not offered when the editor is refining a staged photo', async ({ page }) => {
+    // It applies to THIS dialog's download, and the staging modes have none — they commit
+    // into the before/after carousel, which is stamped on its own server round trip.
+    await openBasicMask(page);
+    await expect(page.locator('#mask-stamp')).toBeHidden();
+    await uploadRoom(page);
+    await expect(page.locator('#mask-stamp')).toBeVisible();
+  });
+
+  test('with the option ticked, the download is the stamped image', async ({ page }) => {
+    const posted = [];
+    await page.route('**/api/stamp-image', async (route) => {
+      posted.push(route.request().postDataJSON());
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, image: TINY_PNG_DATA_URL }),
+      });
+    });
+
+    await openBasicMask(page);
+    await commitOneEdit(page);
+    await page.locator('#mask-label-virtually-staged').check();
+    // The swatch LABEL, not the input: the radio is deliberately clipped rather than
+    // display:none (so it stays focusable), and the label is what a user clicks.
+    await page.locator('#mask-stamp-opts .stamp-swatch', { has: page.locator('input[value="banner"]') }).click();
+    await expect(page.locator('#mask-stamp-opts input[value="banner"]')).toBeChecked();
+
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.locator('#stage-mask-download').click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/^stagify-basic-mask-\d+\.png$/);
+
+    expect(posted).toHaveLength(1);
+    expect(posted[0].style).toBe('banner', 'the style the user picked, not the default');
+    expect(posted[0].image).toMatch(/^data:image\//);
+    expect(posted[0].lang).toBeTruthy();
+  });
+
+  test('a failed stamp downloads NOTHING', async ({ page }) => {
+    // The pairing for the test above, and the one that matters: falling back to the
+    // unstamped composite would write an undisclosed photo to disk under a name the user
+    // believes carries a disclosure. Nothing on screen would say so.
+    await page.route('**/api/stamp-image', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'We couldn\'t add the label.', code: 'DISCLOSURE_STAMP_FAILED' }),
+      }),
+    );
+
+    await openBasicMask(page);
+    await commitOneEdit(page);
+    await page.locator('#mask-label-virtually-staged').check();
+
+    let downloaded = false;
+    page.on('download', () => { downloaded = true; });
+    await page.locator('#stage-mask-download').click();
+
+    // The error surfaces, and the button comes back so they can untick and retry. Asserted
+    // on the TEXT in one shot: the toast removes itself after 4.2s plus a fade, so a
+    // toBeVisible() followed by a second query against it is a race.
+    await expect(page.locator('#toast-host .toast').first()).toContainText(/label/i);
+    await expect(page.locator('#stage-mask-download')).toBeEnabled();
+    expect(downloaded).toBe(false);
+  });
+
+  test('with the option OFF the download never touches the network', async ({ page }) => {
+    let called = 0;
+    await page.route('**/api/stamp-image', (route) => { called += 1; return route.abort(); });
+
+    await openBasicMask(page);
+    await commitOneEdit(page);
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.locator('#stage-mask-download').click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/^stagify-basic-mask-\d+\.png$/);
+    expect(called).toBe(0);
   });
 
   test('"Upload another" returns to the uploader', async ({ page }) => {

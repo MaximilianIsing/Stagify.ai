@@ -162,7 +162,7 @@ test('whitespace-only free text is not a request', () => {
   assert.equal(m.api.hasRequest(), false, 'the server would fall through to a billed no-op');
 });
 
-// ---- change notification + reset -------------------------------------------
+// ---- change notification ----------------------------------------------------
 
 test('onChange fires on a checkbox change and on TYPING in the notes box', () => {
   // `change` on a textarea only fires on blur, so without the extra `input` listener the
@@ -178,19 +178,10 @@ test('onChange fires on a checkbox change and on TYPING in the notes box', () =>
   assert.equal(m.changes(), before + 2, 'and so does a keystroke in the notes box');
 });
 
-test('reset clears every control and reports the change', () => {
-  const m = mount();
-  m.els['ex-use-time'].checked = true;
-  m.els['ex-clutter'].checked = true;
-  m.els['ex-notes'].value = 'something';
-  m.root.fire('change');
-
-  const before = m.changes();
-  m.api.reset();
-  assert.equal(m.api.hasRequest(), false);
-  assert.equal(m.els['ex-time-body'].hidden, true, 'and the revealed body closes again');
-  assert.ok(m.changes() > before, 'the submit button has to be re-evaluated');
-});
+// There was a `reset()` here too, which unticked everything and closed the revealed
+// bodies. It existed for one caller — the "Start over" button — and went when that button
+// did. Nothing else ever wanted the options cleared: the whole point of what replaced it
+// is that a finished render keeps the request and asks only for the next photo.
 
 // ---- the markup this island is wired to ------------------------------------
 

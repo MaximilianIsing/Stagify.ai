@@ -4,6 +4,7 @@ import { createStageMaskEditor } from './app/stage-mask-editor.js';
 import { initCustomSelect } from './app/custom-select.js';
 import { syncRemoveFurnitureRow } from './app/remove-furniture-gate.js';
 import { initStampStyleRow } from './app/stamp-style-row.js';
+import { initMaskStampPlacement } from './app/mask-stamp.js';
 import { initBackgroundVideoSync } from './app/background-video.js';
 import { init3DTiltEffect } from './app/tilt-effect.js';
 import { loadHeroStats, updateHeroFreeGensLine } from './app/hero-stats.js';
@@ -64,6 +65,12 @@ import { initStagingEntry } from './app/staging-entry.js';
     // The badge style/size strip owns its own reveal (the checkbox above it is its only
     // gate), so unlike syncRemoveFurnitureUI there is nothing for app.js to re-run.
     initStampStyleRow();
+    // The same control again, in the Basic Mask dialog — same module, different container.
+    // Its options float over the canvas instead of sitting in a row (the dialog's height is
+    // spoken for), but the behaviour is identical, so there is nothing extra to wire.
+    initStampStyleRow({ optsId: 'mask-stamp-opts', checkboxId: 'mask-label-virtually-staged' });
+    // …and it sits in a different PARENT on a phone — see mask-stamp.js.
+    initMaskStampPlacement();
 
     const heroUpload = $('#hero-upload');
     const navUpload = $('#nav-upload');

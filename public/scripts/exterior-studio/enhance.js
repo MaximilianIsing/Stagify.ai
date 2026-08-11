@@ -31,12 +31,21 @@ export class EnhanceError extends Error {
 }
 
 /**
+ * The "Label as virtually staged" fields, exactly as every server-side surface names them.
+ *
+ * Listed here so the FormData below and the drift guard in enhance.test.js read from one
+ * place, and so the badge is visibly NOT one of the removal rows: those describe an edit to
+ * the property, these describe the file that comes back.
+ */
+export const BADGE_FIELDS = ['labelVirtuallyStaged', 'stampLang', 'stampStyle', 'stampScale'];
+
+/**
  * Send one exterior photo for enhancement.
  *
- * @param {{ file: File, options: import('./controls.js').ExteriorRequest, token: string | null, fetchImpl?: typeof fetch, timeoutMs?: number, tx?: (key: string, fallback: string) => string }} arg - The photo, the chosen options, the auth token, and test seams.
+ * @param {{ file: File, options: import('./controls.js').ExteriorRequest, badge?: Record<string, unknown> | null, token: string | null, fetchImpl?: typeof fetch, timeoutMs?: number, tx?: (key: string, fallback: string) => string }} arg - The photo, the chosen options, the disclosure-badge fields, the auth token, and test seams.
  * @returns {Promise<{ image: string, gallery?: unknown, user?: unknown }>} The enhanced image as a data URL, plus whatever else the server returned.
  */
-export async function enhanceExterior({ file, options, token, fetchImpl, timeoutMs = ENHANCE_TIMEOUT_MS, tx }) {
+export async function enhanceExterior({ file, options, badge = null, token, fetchImpl, timeoutMs = ENHANCE_TIMEOUT_MS, tx }) {
   const doFetch = fetchImpl || globalThis.fetch.bind(globalThis);
   const say = tx || ((_key, fallback) => fallback);
 
@@ -54,10 +63,17 @@ export async function enhanceExterior({ file, options, token, fetchImpl, timeout
   // test/frontend/exterior-studio/enhance.test.js checks this list against the checkbox
   // names in the real markup, so a removal added to the page but not sent from here fails
   // the build rather than becoming a tickbox with no effect.
-  for (const name of ['removeVehicles', 'removeClutter', 'removePeople', 'removeSnow', 'removeWetWeather']) {
+  for (const name of ['removeVehicles', 'removeClutter', 'removePeople', 'removeSnow', 'removeWetWeather', 'removeLeaves']) {
     form.append(name, String(!!(/** @type {any} */ (options)[name])));
   }
   form.append('additionalPrompt', options.additionalPrompt || '');
+
+  // The disclosure badge. Sent only when the caller supplied it, so a page that never wired
+  // the control posts nothing rather than an explicit "no label" — and every field is sent
+  // together, because a style with no flag would configure an option that is off.
+  if (badge) {
+    for (const name of BADGE_FIELDS) form.append(name, String(badge[name]));
+  }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);

@@ -336,7 +336,7 @@
         "cta": "View Stagify+"
       },
       "ent": {
-        "name": "Enterprise",
+        "name": "Stagify Enterprise",
         "tag": "For teams",
         "per": "/ generation",
         "desc": "Give your whole team Stagify+ automatically and only pay for what they actually use.",
@@ -393,6 +393,18 @@
           "quote": "I could see Stagify being huge for dorms, apartments, and listings. Empty rooms are hard to picture, but once they’re staged, the space instantly feels more real. It makes a big difference when you’re trying to imagine yourself living there.",
           "author": "Jaden Lander",
           "role": "RockSolid Management",
+          "location": "Manhattan, NYC"
+        },
+        "jaime": {
+          "quote": "Stagify makes something that used to feel complicated incredibly simple. The results come back fast, the platform is easy to use, and being able to see an empty space fully staged in seconds is genuinely impressive.",
+          "author": "Jaime Castro",
+          "role": "Douglas Elliman",
+          "location": "Miami, FL"
+        },
+        "thomas": {
+          "quote": "I’m staging spaces all day, so speed matters. Stagify makes the whole process quick and easy, and the UI is super clean. I can get what I need without overthinking it.",
+          "author": "Thomas Chimber",
+          "role": "Compass",
           "location": "Manhattan, NYC"
         }
       },
@@ -487,7 +499,7 @@
       "maskBeforePromptPlaceholder": "e.g., remove the old sofa, clear the clutter, repaint the wall white",
       "maskBeforeApply": "Apply edit",
       "basicMaskTitle": "Basic Mask",
-      "basicMaskUploadHint": "Paint over any part of the photo, then describe the change you want.",
+      "basicMaskUploadHint": "Paint over any part of the photo, then describe the change you want",
       "maskLimitReached": "You’ve reached the limit of 6 versions for this image.",
       "prevVersion": "Previous version",
       "nextVersion": "Next version",
@@ -1198,12 +1210,11 @@
     "replacePhoto": "Replace photo",
     "stepAreas": "Furniture areas",
     "addArea": "+ Add area",
-    "areasHint": "Each area is staged separately, at the same time — give every color a furniture photo, a short prompt, or both.",
     "areaName": "Area {n}",
     "areaLimit": "You can highlight up to {n} areas.",
     "removeAreaAria": "Remove this area",
     "stepBrush": "Highlight",
-    "overlapHint": "Paint over an area with a different color to reassign it — every spot belongs to one area only.",
+    "overlapHint": "Painting over an area reassigns it to the new color.",
     "promptPlaceholder": "Describe what to add here (optional if you add a furniture photo)…",
     "addFurniture": "+ Furniture photo",
     "statusEmpty": "Not highlighted yet",
@@ -1215,7 +1226,7 @@
     "retry": "Retry",
     "progressCount": "{done} of {total} areas staged",
     "uploadHint": "Upload a photo of your room",
-    "uploadSub": "JPG, PNG, WebP, or HEIC — click or drop it here",
+    "uploadSub": "Click or drop a JPG, PNG, WebP, or HEIC file here",
     "editHighlights": "Refine Edit",
     "defaultFurniturePrompt": "Add the furniture from the reference photo into the highlighted area. Place it naturally on the floor with correct perspective, scale, and lighting for the room.",
     "needHighlight": "Paint at least one area on the photo first.",
@@ -1549,7 +1560,12 @@
         "one": "Opened {count} time",
         "other": "Opened {count} times"
       },
-      "unavailable": "This link could not be loaded. Reload the page and try again."
+      "unavailable": "This link could not be loaded. Reload the page and try again.",
+      "showBefore": "Include the before photo",
+      "showBeforeSaving": "Saving…",
+      "showBeforeOn": "The before photo is now part of this link.",
+      "showBeforeOff": "The link shows the staged photo only.",
+      "showBeforeFailed": "Could not change what this link shows. Try again."
     },
     "rename": {
       "action": "Rename",
@@ -1582,7 +1598,7 @@
     "loading": "Loading your gallery…"
   },
   "exteriorStudio": {
-    "title": "Curb appeal, in one click",
+    "title": "Exterior Studio",
     "subtitle": "The first photo of every listing is the outside of the house, and it is the one shot you cannot reshoot when the weather turns. Upload it here and get the version taken on a better day.",
     "ctaUpgrade": "Get Stagify+ to use it",
     "features": {
@@ -1606,7 +1622,7 @@
     },
     "upload": {
       "title": "Drop an exterior photo here",
-      "hint": "JPG, PNG, WebP or HEIC. The front elevation, the back garden, the driveway — any shot taken outside.",
+      "hint": "Click or drop a JPG, PNG, WebP, or HEIC file here",
       "button": "Choose a photo",
       "replace": "Use a different photo"
     },
@@ -1619,6 +1635,7 @@
       "removePeople": "People",
       "removeSnow": "Snow",
       "removeWetWeather": "Rain & puddles",
+      "removeLeaves": "Leaves",
       "notes": "Anything else?",
       "notesPlaceholder": "e.g. keep the flag on the porch"
     },
@@ -1637,11 +1654,19 @@
       "enhance": "Enhance Exterior",
       "working": "Working on it…",
       "download": "Download",
-      "startOver": "Start over"
+      "again": "Enhance another"
     },
+    "loadingMessages": [
+      "Cleaning up the exterior…",
+      "Balancing the light…",
+      "Refreshing the sky…",
+      "Keeping the house itself untouched…",
+      "Adding finishing touches…"
+    ],
     "result": {
       "title": "Before and after",
-      "hint": "Drag the slider to compare."
+      "hint": "Drag the slider to compare.",
+      "rangeValue": "{percent}% enhanced"
     },
     "errors": {
       "generic": "That photo could not be enhanced. Please try another shot of the property exterior.",
@@ -1651,7 +1676,6 @@
     "stepPhotoHint": "Upload a photo in the workspace on the right.",
     "replacePhoto": "Replace photo",
     "stepChanges": "What should change?",
-    "stepChangesHint": "Pick only what you want changed. Anything you leave unticked stays exactly as photographed.",
     "enhanceHint": "Pick at least one change, or describe one above."
   },
   "notFound": {
