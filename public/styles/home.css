@@ -158,12 +158,11 @@ html.reveal-armed .reveal {
 /* ==========================================================================
    1. Before / after studio
    ========================================================================== */
-.studio-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(250px, 1fr);
-  gap: 24px;
-  align-items: stretch;
-}
+/* The `.ba` wipe below is NO LONGER USED BY THIS SECTION. #restage replaced it; the
+   only surviving mount is #exterior-studio-demo inside the studio showcase carousel
+   (see section 8b and the note at index.html's exterior panel), which still uses every
+   `.ba*` rule here plus scripts/staging-studio.js's mountWipe(). Do not delete them as
+   dead — grep `.ba-handle` before touching anything in this block. */
 .ba {
   position: relative;
   width: 100%;
@@ -259,8 +258,168 @@ html.reveal-armed .reveal {
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.5), 0 4px 14px rgba(30, 58, 138, 0.4);
 }
 
-/* side writeup panel */
-.studio-side {
+/* ==========================================================================
+   1a. #restage — "press it again, get a different room"
+   ========================================================================== */
+
+.rs {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(250px, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* The frame is pinned to the source photo's own 1216x832, NOT a rounded 3/2. The empty
+   room and every staged render are the same photograph, so a couple of percent of
+   mismatch reads as the furniture sliding when a card lands. */
+/* NOT `overflow: hidden`. The departing card is thrown clear of the frame, and clipping
+   here would cut it off at the left edge — the throw would read as a wipe rather than as
+   the card leaving. Each layer therefore rounds its own corners instead. */
+.rs__stack {
+  position: relative;
+  aspect-ratio: 1216 / 832;
+  border-radius: 16px;
+  min-width: 0;
+  background: #b2c4f6;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 18px 48px rgba(30, 58, 138, 0.24);
+  /* `align-self: start` IS THE FIX FOR AN OVERLAP BUG, not alignment taste. Do not
+     change it back to `stretch` (or delete it and inherit `.rs`'s `align-items:
+     stretch`) without re-reading this.
+     Stretching makes this box's HEIGHT definite. `aspect-ratio` then runs backwards —
+     with `width: auto` it computes the WIDTH from that height — and the frame silently
+     grows past its own grid track and out over the copy panel, which is translucent, so
+     the photo shows through it. Measured at a 920px container: the track is 551px and
+     the frame rendered 841px, a 290px overlap.
+     It is width-dependent because the trigger is the PANEL getting taller: the narrower
+     the right column, the more its copy wraps, the taller the row, the wider this box.
+     So it looks fine at full width and breaks as the window narrows — which is why it
+     survived review. `start` leaves the height to come from the width, and the frame
+     then matches its track exactly at every size.
+     Pinning `width: 100%` instead would also stop the overflow, but by making the height
+     definite and overriding the ratio — the frame would stop being 1216:832 and every
+     render would crop. The ratio is load-bearing here (see the note above .rs__stack's
+     aspect-ratio), so the alignment is what gives. */
+  align-self: start;
+}
+/* Gated on `.rs--ready` for the same reason the button is: home-restage.js arrives after
+   `load`, and a pointer cursor over a photo that cannot yet stage is the same broken
+   promise as a live-looking dead button. */
+.rs--ready .rs__stack {
+  cursor: pointer;
+}
+/* Press feedback for the photo. It exists because of mobile: once the section stacks the
+   button's own bounce is ~290px off screen, so a tap on the room has to be acknowledged
+   where the finger actually is.
+   ON A PSEUDO-ELEMENT, and that is not a style preference — it is the only place the
+   effect can live without breaking something else.
+     - Not `transform` on `.rs__stack`: it carries `.reveal`, whose entrance animation
+       drives its transform, so a press scale snaps the photo to its pre-reveal offset.
+     - Not `transform` on `.rs__card` either: that is the throw, and `.is-leaving`
+       replaces the transition wholesale, so a scale on the same property lands mid-flight.
+     - And NOT a `transition` on `.rs__stack` itself, which is the trap that actually
+       shipped. `.reveal` sets `transition: opacity .6s, transform .6s` at (0,1,0); a
+       `transition` on `.rs__stack` is also (0,1,0) but later in this file, so it REPLACED
+       the reveal's transition outright — the frame stopped animating in on scroll and
+       teleported into place instead. Nothing about a rule named "press feedback" suggests
+       it would disable a section's entrance, and no test caught it.
+   A pseudo-element owns its own transition, so the frame's stays untouched. Dimming
+   reads as the photo taking the press, and it cannot collide with anything above. */
+.rs__stack::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Above the cards (1, and 2 while leaving), below the loading sheen (5). */
+  z-index: 4;
+  border-radius: 15px;
+  pointer-events: none;
+  background: rgba(30, 58, 138, 0.16);
+  opacity: 0;
+  transition: opacity 0.16s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+.rs__stack.is-tapped::before {
+  opacity: 1;
+}
+/* No `backdrop-filter` on this element or on .rs__card. Pairing it with `overflow:
+   hidden` stops Chrome painting descendant <img>s outright, while every diagnostic still
+   reports the image as healthy. The pills blur; the cards clip. Keep them separate. */
+.rs__stack img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.rs__empty {
+  z-index: 0;
+  border-radius: 15px;
+}
+.rs__card {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 1;
+  transform: none;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: opacity 0.42s cubic-bezier(0.16, 0.84, 0.44, 1),
+    transform 0.6s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+/* THERE IS NO ENTRANCE ANIMATION, deliberately. An arriving card is opaque from the
+   moment it is inserted, and the departing card is what reveals it.
+   A fade-in used to live here, from when the first press had nothing on top to throw.
+   Once the ghost was added there is ALWAYS a card flying off, so the fade only did harm:
+   the departing card would slide away and uncover a still-transparent new card, letting
+   the empty room show through it for a few frames before it resolved. It read as the new
+   photo being recessed and then snapping forward. */
+/* The departing card is thrown clear off the left, uncovering the new one already
+   sitting behind it.
+   Three things make the throw readable, and it is weak without any of them:
+     - z-index 2, or the arriving card paints on top and the exit happens underneath;
+     - a travel further than the card's own width, so it genuinely leaves rather than
+       sliding partway and vanishing;
+     - a LATE opacity fade. Fading from the start hides the motion behind a cross-fade;
+       holding opacity for the first 0.45s means the card is solid for most of the
+       flight and only dissolves once it is already outside the frame. */
+.rs__card.is-leaving {
+  z-index: 2;
+  opacity: 0;
+  transform: translateX(-118%) rotate(-16deg) scale(0.86);
+  /* Fast out of the gate and settling at the end, which is what reads as a flick rather
+     than a slide. An ease-in-out curve over 0.72s covered the same distance but felt
+     like the card was being dragged off. */
+  transition: transform 0.46s cubic-bezier(0.22, 0.75, 0.36, 1),
+    opacity 0.2s ease 0.24s;
+}
+/* A sheen, deliberately not a spinner: the wait is one image fetch over the network,
+   and a spinner would imply the render is happening live. The pool is pre-generated. */
+.rs__stack.is-working::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: 15px;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.42) 50%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  background-size: 220% 100%;
+  animation: rsSheen 1s linear infinite;
+}
+@keyframes rsSheen {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -60% 0;
+  }
+}
+
+.rs__side {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -269,11 +428,16 @@ html.reveal-armed .reveal {
   -webkit-backdrop-filter: blur(16px) saturate(170%);
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 16px;
-  padding: 24px;
+  /* 20px, not 24px, and the 8px it gives back is spent keeping this panel level with the
+     photo. The frame beside it is ratio-locked to the source photograph, so its height is
+     fixed by the column width and cannot grow to meet the copy — whatever the copy needs
+     beyond that is a visible mismatch between the two columns. English needed 439px
+     against a 429px frame; this and the two margins below close that. */
+  padding: 20px;
   box-shadow: 0 12px 34px rgba(30, 58, 138, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
-.studio-side__kicker {
+.rs__kicker {
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -281,18 +445,330 @@ html.reveal-armed .reveal {
   color: var(--brand);
   margin-bottom: 6px;
 }
-.studio-side__title {
+.rs__title {
   font-size: 1.3rem;
   font-weight: 800;
   color: var(--brand-deep);
   margin: 0 0 9px;
   line-height: 1.25;
 }
-.studio-side__body {
+.rs__body {
   margin: 0;
   color: #414f75;
   font-size: 14.5px;
   line-height: 1.55;
+}
+
+/* The button ships `disabled` in the markup and is invisible until home-restage.js adds
+   `.rs--ready`. index-deferred.js injects that module after `load`, so there is a real
+   window — and a permanent one if the batch fails — in which the markup is all the
+   visitor has. `visibility` rather than `display` so reserving its space costs no
+   layout shift when it appears, and so it stays out of the accessibility tree until it
+   actually works. */
+/* `display: grid` with both labels in the SAME cell is what keeps the width identical
+   between "Stage this room" and "Stage it again". The button sizes to the wider of the
+   two and never reflows when it flips — and because it is layout, not a measured pixel
+   value, it holds in all eleven languages for free. */
+.rs__btn {
+  align-self: flex-start;
+  /* 14px rather than 18px — see the note on .rs__side's padding. */
+  margin-top: 14px;
+  display: grid;
+  place-items: center;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bg-elevated);
+  cursor: pointer;
+  visibility: hidden;
+  background: radial-gradient(circle at 30% 30%, var(--brand-soft) 0, transparent 60%),
+    radial-gradient(circle at 70% 70%, var(--brand-strong) 0, transparent 60%), var(--brand);
+  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.4);
+  /* Short, and NOT the throw's easing. This transition only carries the hover lift and
+     the ride down into the squash; the release is an animation (`.is-boing` below) and
+     overrides it while it runs. Anything longer than ~0.12s here and the sink lags the
+     finger, which is the exact complaint the squash exists to answer. */
+  transition: transform 0.12s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+.rs--ready .rs__btn {
+  visibility: visible;
+}
+.rs__btn-label {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+/* One <span> per character, written by home-restage.js and rewritten every time the
+   language loader repaints the label. `inline-block` is what makes them transformable
+   at all — an inline box ignores translate. Spaces are left as bare text nodes rather
+   than wrapped, so the label keeps real word boundaries for the accessible name and
+   for line breaking; only the glyphs hop. */
+.rs__btn-char {
+  display: inline-block;
+}
+
+/* WHY THE NEXT SELECTORS ARE THREE AND FOUR CLASSES DEEP.
+   styles.css's i18n anti-FOUC pair ends with
+       body.language-loaded [data-lang] { visibility: visible }
+   which is specificity (0,2,1) and matches EVERY translatable element on the site. Both
+   button labels and the revert control carry data-lang, so the obvious
+   `.rs__btn-label--again { visibility: hidden }` — (0,1,0) — loses to it outright. The
+   symptom is not subtle once you know it: both labels paint on top of each other inside
+   the button, and the "hidden" revert control stays in the accessibility tree and
+   keyboard tab order while being invisible. Three classes (0,3,0) outranks (0,2,1)
+   because class count is compared before element count.
+
+   `visibility` and not `opacity` ALONE is also deliberate: the inactive label has to keep
+   its grid cell, so it goes on holding the button's width open, while leaving the
+   accessibility tree — otherwise the button's accessible name reads as both labels run
+   together.
+
+   THE SWAP IS A TRUE CROSS-FADE, and `visibility` plays NO part in it. The two wordings
+   overlap: one fades and lifts out while the other rises in over the same 0.24s, so there
+   is never an instant with no text on the pill. An earlier version sequenced them —
+   out first, then in — precisely so that only one was ever `visibility: visible` and the
+   accessible name could not read as both at once. It was correct and it looked wrong: for
+   ~40ms in the middle the button was simply blank.
+
+   So the accessible name is handled by `aria-hidden`, which home-restage.js flips on the
+   two labels the moment the state changes, rather than by visibility riding along behind
+   the fade. That decouples the two concerns entirely — the name is right from the first
+   frame of the transition, and the pixels are free to overlap.
+
+   `visibility` survives in exactly one place: hiding both labels BEFORE `.rs--ready`. The
+   button itself is `visibility: hidden` until then, but visibility inherits and the
+   anti-FOUC rule above sets it back to `visible` on every [data-lang] element — so
+   without this the two labels paint on top of each other inside a button that is supposed
+   to be invisible. `:not()` carries the specificity needed to outrank (0,2,1). */
+.rs:not(.rs--ready) .rs__btn .rs__btn-label {
+  visibility: hidden;
+}
+.rs .rs__btn .rs__btn-label {
+  transition: opacity 0.24s ease, transform 0.24s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+/* The resting pair: first-press wording showing, repeat wording waiting below. */
+.rs .rs__btn .rs__btn-label--first {
+  opacity: 1;
+  transform: none;
+}
+.rs .rs__btn .rs__btn-label--again {
+  opacity: 0;
+  transform: translateY(3px);
+}
+/* The swap, and its exact reverse. The old wording leaves UPWARD while the new one rises
+   from below, so the two are never travelling the same way at the same time — fading them
+   in place with no movement read as the text smudging into itself. */
+.rs.has-staged .rs__btn .rs__btn-label--first {
+  opacity: 0;
+  transform: translateY(-3px);
+}
+.rs.has-staged .rs__btn .rs__btn-label--again {
+  opacity: 1;
+  transform: none;
+}
+
+/* "See original" — throws the current card away to reveal the untouched photo. Only
+   meaningful while something is staged, so it fades in with the first card and fades
+   back out the moment the original is showing again. The delayed `visibility` keeps it
+   out of the accessibility tree while hidden without cutting the fade short. */
+.rs__revert {
+  align-self: flex-start;
+  margin-top: 10px;
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.28s ease, color 0.18s ease, visibility 0s linear 0.28s;
+}
+.rs__revert:hover {
+  color: var(--brand);
+}
+/* WCAG 2.5.8 wants 24x24. Unpadded this control measured 15x70 — it only passed at all
+   via the spacing exception, and it is the ONLY way back to the original photo.
+   The padding goes on the control and the margin comes off by the same amount, so the
+   hit box grows without the gap under the button changing. `inline-block` is what lets
+   the vertical padding count toward the box at all; on an inline element it would paint
+   but not affect layout or the hit target. The underline stays tight to the text because
+   text-decoration follows the text, not the padding. */
+.rs__revert {
+  display: inline-block;
+  padding: 5px 4px;
+  margin-top: 5px;
+  margin-left: -4px;
+}
+/* Three/four classes deep for the same reason as the button labels above: this control
+   carries data-lang, so a one-class `visibility: hidden` loses to the i18n anti-FOUC
+   rule and leaves an invisible button sitting in the keyboard tab order. */
+.rs .rs__side .rs__revert {
+  visibility: hidden;
+}
+.rs.has-staged .rs__side .rs__revert {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.28s ease, color 0.18s ease, visibility 0s;
+}
+.rs__btn:hover {
+  transform: translateY(-1px);
+}
+/* `:disabled` is the PRE-READY state only. Once home-restage.js has mounted, the button
+   is never disabled again — see the "no cooldown" note in that module. So this styles a
+   control that has not come alive yet, not one that is busy. */
+.rs__btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+}
+
+/* Focus rings. These two were the only interactive controls in this file without one —
+   every sibling has the house recipe (.shw__tab, .shw__fs, .shw__arrow, .hstrip__btn,
+   .faq-q > summary, .tw-stack), so they fell back to the unstyled UA ring.
+   The pill does NOT use `var(--brand)`: its own background IS a --brand gradient, and a
+   brand-blue ring on brand-blue is very nearly invisible. `--brand-deep` reads against
+   both the pill and the pale panel behind it, and the wider offset keeps the ring clear
+   of the gradient's lighter top-left lobe. The revert control sits on the light panel,
+   so it takes the standard recipe unchanged. */
+.rs__btn:focus-visible {
+  outline: 3px solid var(--brand-deep);
+  outline-offset: 3px;
+}
+.rs__revert:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* The failed-press line. `height: 0` with the text allowed to overflow is the whole
+   trick, and it satisfies two requirements that pull against each other.
+     - It must not RESERVE space. The panel is stretched to the frame's height, and the
+       frame is ratio-locked, so every px the copy needs is a px that has to come from
+       somewhere. An earlier version held a ~26px box open for this line and that alone
+       made the panel taller than the photo at any width under ~1140px.
+     - It must not ADD space when it appears either. `.rs__side` is a flex column with
+       `justify-content: center`, so a plain `display: none` toggle re-centres the whole
+       panel and every control above jumps ~13px upward at the exact moment a visitor is
+       reaching for the button again.
+   A zero-height box contributes nothing to the panel in either state, while the text
+   still paints where it naturally falls — directly under the revert control. The nudge
+   is `transform`, not margin, for the same reason: margin would count, transform does
+   not.
+   THREE CLASSES on the visibility rules below, for the same reason as the button labels
+   and the revert control: `body.language-loaded [data-lang] { visibility: visible }` in
+   styles.css is (0,2,1) and matches this element, so a one-class `visibility: hidden`
+   loses outright and the line would ship permanently visible, announcing a failure that
+   never happened. */
+.rs__error {
+  height: 0;
+  margin: 0;
+  transform: translateY(6px);
+  max-width: 26ch;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: #9a3412;
+}
+.rs .rs__side .rs__error {
+  visibility: hidden;
+}
+.rs.has-error .rs__side .rs__error {
+  visibility: visible;
+}
+
+/* --- The press: squash on the way down, overshoot on the way back up. ---------------
+   MUST STAY AFTER `:hover`. A press is also a hover, and `.rs__btn:hover` and
+   `.rs__btn:active` are both (0,2,0) — identical specificity, so source order is the
+   only thing that lets the squash beat the 1px lift. Move this block above the hover
+   rule and the button goes back to doing nothing under the finger. */
+.rs__btn:active {
+  transform: scaleX(1.06) scaleY(0.86) translateY(2px);
+}
+/* Release. The keyframes start from the pressed pose rather than from rest, so the
+   handoff from `:active` (which stops applying the instant the pointer lifts) is
+   seamless; starting at `transform: none` would snap the button back to full size for
+   one frame before the bounce, which reads as a flicker. Two decaying wobbles, then
+   rest — a single overshoot looked like a mistake rather than like rubber. */
+.rs__btn.is-boing {
+  animation: rsBtnBoing 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes rsBtnBoing {
+  0% {
+    transform: scaleX(1.06) scaleY(0.86) translateY(2px);
+  }
+  32% {
+    transform: scaleX(0.93) scaleY(1.12) translateY(-4px);
+  }
+  58% {
+    transform: scaleX(1.035) scaleY(0.96) translateY(1px);
+  }
+  80% {
+    transform: scaleX(0.985) scaleY(1.02) translateY(-1px);
+  }
+  100% {
+    transform: none;
+  }
+}
+/* The label rides the rubber instead of being painted on it: each glyph hops on a short
+   stagger, so the type arrives a beat after the pill does.
+
+   ON ITS OWN CLASS, not on `.is-boing`, because the two restart differently. The pill
+   restarts flat — a press that produced no squash is the original complaint. The wave
+   restarts SOFTLY: it re-fires on every press too, but from wherever the glyphs have got
+   to rather than from the baseline. `--from` is what carries that over, and it is the
+   whole trick (see the keyframes below).
+
+   The `--i` fallback is not decoration. A bare `var(--i)` with the property unset makes
+   the whole `animation-delay` declaration invalid at computed-value time and every glyph
+   fires at once — the stagger vanishes silently rather than erroring. home-restage.js
+   also CLAMPS the index it writes, so a long label (German runs to ~22 characters) does
+   not stretch the tail of the animation past the button's own bounce. */
+.rs__btn.is-hopping .rs__btn-char {
+  animation: rsBtnHop 0.42s cubic-bezier(0.3, 1.5, 0.5, 1);
+  animation-delay: calc(var(--i, 0) * 22ms);
+  /* `backwards` is what extends the 0% keyframe back over the animation-delay. Without
+     it a glyph applies NO animated value until its delay elapses, so it renders at its
+     base transform — the baseline — for up to a fifth of a second before jumping to
+     `--from`. That is the snap this whole mechanism exists to remove, reintroduced by
+     omission, and it is invisible on a first press because `--from` is 0 there: it only
+     shows on the mid-wave press nobody tests by accident. Measured before adding this:
+     nine of thirteen glyphs teleported, by up to 5.4px. */
+  animation-fill-mode: backwards;
+}
+/* `--from` is the glyph's CURRENT height, sampled by home-restage.js immediately before
+   it re-arms the class, and it is the only reason a press mid-wave does not stutter.
+   An animation always restarts at its own 0%, so a hard-coded `transform: none` there
+   teleports a glyph that happens to be 4px in the air back down to the baseline before
+   it may rise again — 25 letters snapping at once, and the faster the button is pressed
+   the more it looks broken. Starting at the height the glyph is already at makes the
+   restart continuous: the letter simply changes direction.
+
+   The fallback matters as much as the value. `--from` is unset on a first press and on
+   every press made after the wave has finished, and a bare `var(--from)` would make the
+   whole `transform` declaration invalid at computed-value time — the 0% keyframe would
+   drop out and the hop would silently lose its starting pose. */
+@keyframes rsBtnHop {
+  0% {
+    transform: translateY(var(--from, 0px));
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: none;
+  }
+}
+/* 10px rather than 14px — see the note on .rs__side's padding. Part of the same 16px
+   recovered to keep the panel level with the ratio-locked frame. */
+.rs__side .home-list {
+  margin-top: 10px;
 }
 
 /* ==========================================================================
@@ -1197,11 +1673,12 @@ body.page-home main {
 }
 
 /* ==========================================================================
-   3. Savings calculator + NAR citation
+   3. Savings calculator
 
-   The calculator replaced a static "– vs ✓" comparison table; `.cmp-source` below is
-   the one survivor of that block and is still used TWICE (by #compare and by
-   #ai-shift), so it must not be folded into the .calc namespace.
+   The calculator replaced a static "– vs ✓" comparison table. Its citation block
+   (`.cmp-source`) outlived the table for a while as a shared class, but #compare's
+   citation was removed and #ai-shift's is now a row inside the NAR card itself —
+   see `.nar-source` in the "Don't fall behind" section below.
    Behaviour lives in scripts/home-figures.js.
    ========================================================================== */
 .calc {
@@ -1217,14 +1694,7 @@ body.page-home main {
 .calc__ask {
   display: grid;
   gap: 10px;
-  margin-bottom: 26px;
-}
-.calc__eyebrow {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-  color: var(--brand);
+  margin-bottom: 18px;
 }
 .calc__question {
   font-size: clamp(16px, 1.8vw, 19px);
@@ -1233,10 +1703,18 @@ body.page-home main {
   color: var(--brand-deep);
   cursor: pointer;
 }
+/* Two columns, two rows: the input and the readout share row 1, and the scale sits
+   under the input in column 1. It used to be a sibling of this row, which stretched
+   it across the readout as well and left "20" ~60px right of where the track ends.
+   align-items centres the readout on the INPUT row, not on the taller column. */
 .calc__sliderrow {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  column-gap: 16px;
+  /* The row is as tall as the 30px readout, so the 24px input sits 3px off its
+     bottom — the gap you actually see under the track is this + 3. */
+  row-gap: 3px;
 }
 /* The INPUT is 24px tall; the visible track is the 8px pseudo below it.
    The element used to be 8px itself, which is what the browser hit-tests — the 22px
@@ -1249,7 +1727,7 @@ body.page-home main {
 .calc__range {
   appearance: none;
   -webkit-appearance: none;
-  flex: 1 1 auto;
+  /* Grid item: min-width:0 is what lets it shrink below the UA's intrinsic width. */
   min-width: 0;
   height: 24px;
   margin: 0;
@@ -1324,9 +1802,11 @@ body.page-home main {
   font-variant-numeric: tabular-nums;
 }
 .calc__scale {
+  grid-column: 1;
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 600;
   color: #5c6472;
   font-variant-numeric: tabular-nums;
 }
@@ -1348,8 +1828,9 @@ body.page-home main {
   background: rgba(37, 99, 235, 0.07);
   border-color: rgba(37, 99, 235, 0.16);
 }
-/* <h3> since the a11y pass — see .whyus-card__head. margin:0 cancels the UA
-   heading margin the tag change brought with it. */
+/* <h3> since the a11y pass — it is the column's visible title, so it should be
+   reachable by heading navigation. margin:0 cancels the UA heading margin the
+   tag change brought with it. */
 .calc__colhead {
   font-size: 15px;
   font-weight: 800;
@@ -1434,51 +1915,6 @@ body.page-home main {
   .calc__range:hover::-moz-range-thumb {
     transform: none;
   }
-}
-
-.cmp-source {
-  display: flex;
-  gap: 13px;
-  align-items: flex-start;
-  max-width: 1140px;
-  margin: 18px auto 0;
-  padding: 16px 22px;
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(14px) saturate(170%);
-  -webkit-backdrop-filter: blur(14px) saturate(170%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-left: 4px solid var(--brand);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(30, 58, 138, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-.cmp-source__icon {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  color: var(--brand);
-}
-.cmp-source p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.55;
-  color: #2b3658;
-}
-.cmp-source cite {
-  display: block;
-  margin-top: 3px;
-  font-size: 12px;
-  font-style: normal;
-  color: #53638b;
-}
-.cmp-source cite a {
-  color: var(--brand);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 0.15s ease;
-}
-.cmp-source cite a:hover {
-  color: var(--brand-strong);
 }
 
 /* ==========================================================================
@@ -1706,10 +2142,30 @@ body.page-home main {
   .shw__aside {
     padding: 16px;
   }
-  .studio-shell {
+  .rs {
     grid-template-columns: 1fr;
     gap: 16px;
   }
+  .rs__btn {
+    align-self: stretch;
+    text-align: center;
+  }
+  /* Match the button rather than staying pinned left under it. A full-width centred pill
+     followed by a tiny left-aligned italic link read as two unrelated controls; centring
+     the undo under the thing it undoes ties them together, and stretching gives the
+     15px-tall target the full column width to be hit in. */
+  .rs__revert {
+    align-self: stretch;
+    text-align: center;
+    margin-left: 0;
+  }
+  .rs__error {
+    max-width: none;
+    text-align: center;
+  }
+  /* The two --wide bullets are dropped ABOVE this block now — see the 1100px rule near
+     the end of this file. They still need to be gone here, and they are, because that
+     query also covers every width this one does. */
   /* Four vertical spines do not fit a phone — there is no width left for any of them
      to open into. Below this the strips go back to a stack, still one-open-at-a-time
      but growing downward, with every title horizontal again.
@@ -1900,59 +2356,9 @@ body.page-home main {
   animation: none;
 }
 
-/* example switcher (segmented control) */
-.studio-examples {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 18px;
-  padding: 4px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(30, 58, 138, 0.12);
-  border-radius: 999px;
-  align-self: flex-start;
-}
-.studio-ex {
-  appearance: none;
-  border: none;
-  background: transparent;
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #414f75;
-  padding: 7px 15px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: color 0.18s ease, background 0.18s ease;
-}
-.studio-ex:hover {
-  color: var(--brand-deep);
-}
-.studio-ex.is-active {
-  color: var(--bg-elevated);
-  background: radial-gradient(circle at 30% 30%, var(--brand-soft) 0, transparent 60%),
-    radial-gradient(circle at 70% 70%, var(--brand-strong) 0, transparent 60%), var(--brand);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.32);
-}
-/* On narrow phones the three fixed-width pills wrap onto a second line.
-   Turn the control into a full-width segmented control: three equal tabs
-   sharing one row. Placed after the base rules so it wins the cascade. */
-@media (max-width: 600px) {
-  .studio-examples {
-    display: flex;
-    flex-wrap: nowrap;
-    align-self: stretch;
-    width: 100%;
-  }
-  .studio-ex {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 8px 3px;
-    font-size: 11.5px;
-    text-align: center;
-    white-space: nowrap;
-  }
-}
+/* The Bedroom/Living/Dining segmented control that used to sit here went with the
+   before/after wipe — #restage stages one room, so there is nothing to switch between.
+   scripts/staging-studio.js's mountExamples() was retired in the same change. */
 
 /* respect reduced motion for all of the above */
 @media (prefers-reduced-motion: reduce) {
@@ -1967,6 +2373,42 @@ body.page-home main {
   }
   .hstrips--ready .hstrip:not(.is-open):hover .hstrip__img {
     transform: none;
+  }
+  /* #restage: the card still swaps — that is the button working — but it cuts rather
+     than flying off, and the loading sheen stops sweeping. */
+  .rs__card,
+  .rs__card.is-leaving {
+    transition: opacity 0.01ms;
+    transform: none;
+  }
+  .rs__stack.is-working::after {
+    animation: none;
+    opacity: 0.25;
+  }
+  .rs__btn:hover {
+    transform: none;
+  }
+  /* The press keeps a confirmation, but not a bouncing one: the button dips and returns
+     with no overshoot and no wobble, and the per-glyph hop is dropped outright. A
+     dip is the part that answers "did my press register?"; the rubber is the part that
+     is purely decorative, so that is what goes. */
+  .rs__btn:active {
+    transform: translateY(2px);
+  }
+  .rs__btn.is-boing,
+  .rs__btn.is-hopping .rs__btn-char {
+    animation: none;
+  }
+  /* The label swap cuts instead of cross-fading. `visibility` keeps its own 0s timing
+     either way, so the accessible name stays correct; only the movement and the fade go.
+     The transform must be cleared explicitly — with the transition gone it would
+     otherwise sit at its 3px offset permanently. */
+  .rs .rs__btn .rs__btn-label,
+  .rs--ready .rs__btn .rs__btn-label--first,
+  .rs--ready.has-staged .rs__btn .rs__btn-label--first,
+  .rs--ready.has-staged .rs__btn .rs__btn-label--again {
+    transform: none;
+    transition: none;
   }
   .ba-handle::after {
     animation: none;
@@ -2042,7 +2484,9 @@ body.page-home main {
 .nar-card {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
-  gap: 34px;
+  /* Row gap is tighter than the column gap: the only row seam is the one above the
+     citation footer, which carries its own rule and padding on top of this. */
+  gap: 24px 34px;
   align-items: center;
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(18px) saturate(180%);
@@ -2153,7 +2597,7 @@ body.page-home main {
   font-variant-numeric: tabular-nums;
 }
 .nar-usage__note {
-  margin: 18px 0 0;
+  margin: 15px 0 0;
   font-size: 14.5px;
   line-height: 1.5;
   color: #2b3658;
@@ -2163,33 +2607,98 @@ body.page-home main {
   font-weight: 800;
 }
 
+/* These two tiles used to be the tallest thing in the card, so they — not the chart
+   beside them — set its height. Hence the row layout: the numeral sits BESIDE its
+   sentence rather than above it, which takes the pair under the chart column's height.
+   That is where shrinking them stops buying anything, since from there the chart sets
+   the card height and a shorter tile only means more empty space around it.
+
+   `auto 1fr`, not a fixed numeral column: both figures are three characters wide, so
+   the two sentences line up on their own, and a longer figure widens its own column
+   instead of overlapping the text. */
 .nar-stats {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 .nar-stat {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
   background: rgba(37, 99, 235, 0.06);
   border: 1px solid rgba(37, 99, 235, 0.12);
   border-radius: 13px;
-  padding: 18px 20px;
+  padding: 12px 18px;
 }
+/* The ceiling has room in it but not much: on the shorter tile the numeral, not the
+   sentence, is what sets the row height, so past roughly 46px the pair grows back over
+   the chart column beside it and the card gets taller again. Anything larger has to buy
+   the height from the chart, not from here. */
 .nar-stat__num {
-  display: block;
-  font-size: clamp(32px, 4vw, 44px);
+  font-size: clamp(30px, 3.2vw, 38px);
   font-weight: 900;
   line-height: 1;
   letter-spacing: -1px;
-  margin-bottom: 8px;
   background: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand) 55%, var(--brand-soft) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .nar-stat__txt {
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13.5px;
+  line-height: 1.45;
   color: #41507a;
 }
+
+/* The survey citation, as the card's footer row rather than a box of its own. It spans
+   both columns and is separated by a hairline instead of the panel chrome (blur, border,
+   shadow) it used to carry — it is inside the glass now, so a second pane of it on top
+   read as a stacked, unrelated card. */
+.nar-source {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  padding-top: 18px;
+  border-top: 1px solid rgba(37, 99, 235, 0.14);
+}
+/* The REALTOR® logo, not a stroked glyph, so `color` no longer does anything here. It runs
+   well above the 24px box the old icon had — the mark is a solid field rather than 2px
+   strokes, but it is also the only thing in the row carrying the attribution, so it earns
+   the extra weight. Whole pixels so the square's edges land on the grid. The explicit size
+   overrides the element's `width`/`height` attributes, which are there for CLS, not sizing. */
+.nar-source__icon {
+  flex-shrink: 0;
+  width: 35px;
+  height: 36px;
+  /* Nudged off the row's flex-start so the mark sits against the block of text rather than
+     level with the first line's cap height. Margin, not `position: relative`, so it still
+     takes part in layout — the row is taller than the logo, so this changes nothing else. */
+  margin-top: 5px;
+}
+.nar-source p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #2b3658;
+}
+.nar-source cite {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-style: normal;
+  color: #53638b;
+}
+.nar-source cite a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+.nar-source cite a:hover {
+  color: var(--brand-strong);
+}
+
 /* Entrance wipe. One clip-path on the bar rather than four animated `width`s: it is a
    single property, it never triggers layout, and — the reason it matters — the final
    widths never leave the CSS, which is what makes the no-JS and reduced-motion paths
@@ -2338,14 +2847,32 @@ body.page-home main {
   box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
+/* The two cards are tinted in opposite directions so the pair reads as light/dark
+   rather than as one highlighted card and one default. Stagify+ keeps the blue but
+   sits LIGHTER than the base glass — the wash clears by 35% and the card finishes
+   whiter than plain .plus-card. Enterprise goes the other way, below. */
 .plus-card--pro {
-  border: 1px solid rgba(37, 99, 235, 0.35);
-  box-shadow: 0 18px 48px rgba(37, 99, 235, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  box-shadow: 0 18px 48px rgba(37, 99, 235, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   background: linear-gradient(
     180deg,
-    rgba(37, 99, 235, 0.08),
-    rgba(255, 255, 255, 0.5) 40%
+    rgba(37, 99, 235, 0.05),
+    rgba(255, 255, 255, 0.68) 35%
+  );
+}
+/* Same gradient SHAPE as the Stagify+ card — tint at the top only, cleared by the
+   time the bullets start — just navy instead of blue and a touch stronger, which is
+   the whole light/dark read. Held any further down it darkened the body copy
+   (#41507a on backdrop-blurred glass) and swamped the pair. */
+.plus-card--ent {
+  border: 1px solid rgba(18, 26, 48, 0.2);
+  box-shadow: 0 18px 48px rgba(18, 26, 48, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  background: linear-gradient(
+    180deg,
+    rgba(18, 26, 48, 0.11),
+    rgba(255, 255, 255, 0.5) 35%
   );
 }
 .plus-card__top {
@@ -2354,21 +2881,28 @@ body.page-home main {
   gap: 10px;
   margin-bottom: 14px;
 }
+/* Both cards lead with their product mark at the same 32px. Enterprise used to use a
+   generic stroked city glyph here; it is the real Enterprise logo now, so the two
+   marks are the same KIND of object and only the sizing is shared. */
 .plus-card__logo {
   width: 32px;
   height: 32px;
 }
-.plus-card__enticon {
-  display: inline-flex;
-  width: 32px;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  color: var(--brand);
+/* Flat on the glass the mark read as a sticker pasted on rather than a badge resting
+   there. A drop shadow fixes that relationship without touching the colour or the
+   size. drop-shadow(), not box-shadow: the filter follows the image's alpha, so a
+   round mark casts a round shadow instead of the square of the <img> border box. The
+   tight 1px pass is what gives the edge definition — the wide pass alone just looks
+   blurred. Same geometry on both marks; only the tint differs, because a shadow
+   inherits its mark's colour or it reads as a glow sitting behind the icon. The gold
+   tint under the navy Enterprise mark was exactly that — a halo, not a shadow. */
+.plus-card--pro .plus-card__logo {
+  filter: drop-shadow(0 1px 2px rgba(120, 78, 10, 0.35))
+    drop-shadow(0 7px 16px rgba(160, 105, 15, 0.45));
 }
-.plus-card__enticon svg {
-  width: 24px;
-  height: 24px;
+.plus-card--ent .plus-card__logo {
+  filter: drop-shadow(0 1px 2px rgba(18, 26, 48, 0.35))
+    drop-shadow(0 7px 16px rgba(18, 26, 48, 0.45));
 }
 /* <h3> since the a11y pass — each pricing card is a distinct offer and should be a
    heading-navigation landmark. margin:0 cancels the UA heading margin. */
@@ -2463,184 +2997,312 @@ body.page-home main {
 }
 
 /* ==========================================================================
-   Why choose us — Stagify vs others
-   ========================================================================== */
-.whyus-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: stretch;
+   Why choose us — the comparison scoreboard
+   ==========================================================================
+   Replaced the two-card "Stagify vs Others" layout (2026-08-10). See the long
+   note above .whyus-board in index.html for why the section names four
+   alternatives instead of one strawman.
+
+   Three data attributes in the markup drive everything here, and the CSS is the
+   only place two of them mean anything:
+     [data-vs-score]      -> the ✓ / ~ / ✗ glyph AND the cell's colour. The glyph is
+                             CSS content on an empty aria-hidden <i>, so the marks
+                             cost nothing to translate and never reach the
+                             accessibility tree. Three verdicts only: every cell
+                             takes a position, there is no "n/a" (2026-08-10 — an
+                             empty room cannot try a different look, so that cell
+                             LOSES the row rather than sitting it out).
+
+   CONTRAST, before you reach for a lighter grey anywhere in this block: none of
+   this text is on white. .whyus-scroller is rgba(255,255,255,.62) over a page
+   gradient that is far bluer than it looks, and sampling the live composite puts
+   the ink on #e2e9fc. Every token loses about a point there:
+     --muted-light #9ca3af  2.54 on white -> 2.08 here
+     --slate       #64748b  4.76 -> 3.91
+     --muted       #6b7280  4.83 -> 3.97   <- looks safe on paper, fails AA here
+     --slate-deep  #475569  7.58 -> 6.22   <- the lightest one that clears 4.5:1
+   Same trap is documented on .tw-loc, where the identical ink fell to 3.73:1 over
+   a bluer card. Measure against the composite, never against #fff. */
+     [data-vs-col-focus]  -> set by home-whyus.js on .whyus-board while a
+                             competitor column is hovered, focused or pinned.
+                             EVERY dim rule is scoped behind it, so at rest the
+                             table is undimmed and the no-JS render is correct.
+   The section had row-group filter pills for about an hour; they and their
+   [data-vs-group] hook are gone. Ten rows fit on a screen, so filtering only
+   hid what the visitor could already read. */
+.whyus-board {
+  max-width: 1044px;
+  margin: 0 auto;
 }
-.whyus-card {
-  display: flex;
-  flex-direction: column;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(16px) saturate(170%);
-  -webkit-backdrop-filter: blur(16px) saturate(170%);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+
+/* --- The scroll container ------------------------------------------------
+   The table has a hard min-width, so below ~900px this is what scrolls. It is
+   focusable on purpose (see index.html) and therefore needs a visible ring.
+   No backdrop-filter here: a filtered ancestor with overflow set is what made
+   the phone Staging panel vanish, and the same pair clips the sticky column. */
+.whyus-scroller {
+  overflow-x: auto;
   border-radius: 18px;
-  padding: 26px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.62);
   box-shadow: 0 14px 40px rgba(30, 58, 138, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  -webkit-overflow-scrolling: touch;
 }
-.whyus-card--us {
-  border: 1px solid rgba(37, 99, 235, 0.35);
-  box-shadow: 0 18px 48px rgba(37, 99, 235, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  background: linear-gradient(
-    180deg,
-    rgba(37, 99, 235, 0.08),
-    rgba(255, 255, 255, 0.5) 40%
-  );
-}
-/* An <h3> since the a11y pass — it is the card's visible title, so it should be
-   reachable by heading navigation. margin-top:0 cancels the UA heading margin that
-   came with the tag change; every other value here already won on its own. */
-.whyus-card__head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.3rem;
-  font-weight: 800;
-  margin-top: 0;
-  margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid rgba(30, 58, 138, 0.12);
-}
-.whyus-card__head .brand-strong {
-  color: var(--brand);
-}
-.whyus-card__head .brand-light {
-  color: var(--brand);
-  opacity: 0.8;
-}
-.whyus-card__head--them {
-  color: #6d1c2c;
-}
-.whyus-card__logo {
-  width: 26px;
-  height: 26px;
-}
-.whyus-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 11px;
-}
-.whyus-list li {
-  position: relative;
-  padding-left: 28px;
-  font-size: 14.5px;
-  line-height: 1.45;
-  color: #3a4a72;
-  /* Invisible until .is-lit paints a background, but it MUST live here and not in
-     that rule. Removing .is-lit drops every declaration in it at once, so a radius
-     defined there snapped to 0 while the background was still fading — the pill
-     turned into a sharp-cornered rectangle for the length of the 0.22s fade-out
-     (and took the box-shadow bleed, which follows the border-radius, with it).
-     Keeping the radius constant across both states means only the colour animates. */
-  border-radius: 6px;
-}
-.whyus-list li strong {
-  color: var(--brand-deep);
-}
-.whyus-list li::before {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 19px;
-  height: 19px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 900;
-  line-height: 1;
-}
-.whyus-list--yes li::before {
-  content: "✓";
-  background: var(--brand);
-  color: var(--bg-elevated);
-}
-.whyus-list--no li {
-  color: #5c6472;
-}
-.whyus-list--no li::before {
-  content: "–";
-  background: rgba(109, 28, 44, 0.1);
-  color: #9b2c3c;
-}
-
-/* --- #why paired highlighting -------------------------------------------------
-   Row N on the left is the rebuttal to row N on the right. home-whyus.js sets
-   [data-vs-focus] on the grid and .is-lit on both halves of the hovered, focused
-   or pinned pair. EVERY dim/lift rule is scoped behind [data-vs-focus], so with
-   no JS the attribute is never set and the section renders exactly as before —
-   nothing is hidden by default. */
-.whyus-row {
-  /* The -28px margin / +28px padding pair pulls the hit target left over the li's
-     own padding, so the ✓/– marker is part of the button rather than a dead strip.
-
-     `width` is stated explicitly rather than left to `auto`: a <button> does NOT
-     fill its containing block the way a plain block box does even at
-     `display:block` — Chrome shrink-to-fits it, which measured 3.3px short of the
-     row's right edge and left a dead strip down the side of all 14 rows. That is
-     worst on mobile, where the grid is one column and tapping is the ONLY way to
-     drive the pairing. calc() + border-box makes the box exactly the row.
-
-     The vertical pair does the same job for the 11px li gap, which used to be a
-     dead band: a cursor travelling down the column sat between two rows with
-     NEITHER lit, so the section flickered off between every pair. Each button
-     now grows 6px past its li top and bottom — slightly more than half the gap,
-     so consecutive rows overlap by 1px and at least one row is always under the
-     pointer. The negative margin cancels the padding exactly, so the li's height
-     and the 11px rhythm are unchanged; only the hit target grew. Keep the two
-     numbers equal and >= half of `.whyus-list`'s gap. */
-  display: block;
-  box-sizing: border-box;
-  width: calc(100% + 28px);
-  margin: -6px 0 -6px -28px;
-  padding: 6px 0 6px 28px;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.whyus-row:focus-visible {
+.whyus-scroller:focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 3px;
 }
-.whyus-grid[data-vs-focus] li:not(.is-lit) {
-  opacity: 0.38;
+.whyus-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #3a4a72;
 }
-/* The tint sits on the li, whose box already spans the 28px marker gutter. The
-   box-shadow is the same colour as the background and exists only to bleed it a
-   few px outward — padding the li instead would move every row below it. */
-.whyus-grid[data-vs-focus] li.is-lit {
-  background: rgba(37, 99, 235, 0.1);
-  box-shadow: 0 0 0 7px rgba(37, 99, 235, 0.1);
+
+/* --- Header row ---------------------------------------------------------- */
+.whyus-th {
+  padding: 14px 14px 13px;
+  text-align: center;
+  vertical-align: bottom;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--slate-deep);
+  border-bottom: 1px solid rgba(30, 58, 138, 0.14);
+  background: rgba(255, 255, 255, 0.72);
 }
-.whyus-grid[data-vs-focus] .whyus-list--no li.is-lit {
-  background: rgba(155, 44, 60, 0.09);
-  box-shadow: 0 0 0 7px rgba(155, 44, 60, 0.09);
+/* Pinned for the same reason .whyus-factor below is, and it MUST be pinned
+   together with it: leave the header corner scrollable and the first rival's
+   label slides out from under the frozen row labels while the labels stay put,
+   which reads as a broken table rather than a scrolled one. Opaque background
+   and a z-index above the body cells, so the columns pass behind it. */
+.whyus-th--factor {
+  text-align: left;
+  min-width: 190px;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #f4f9ff;
 }
-/* Motion is the enhancement; the lit and dimmed STATES still apply under reduced
-   motion, they just arrive instantly. */
+/* Our column is the fixed half of every head-to-head, so it is the one thing on
+   the board that is always painted in full brand colour. */
+/* background-IMAGE plus an explicit transparent background-COLOR, never the
+   `background` shorthand. This header is the only cell on the board painted with a
+   gradient, and the column-focus rule below deepens it by changing the colour: with
+   the shorthand, applying that rule also reset background-image to `none`, which is
+   not in the transition list, so the gradient vanished on the very first frame while
+   the flat colour was still fading up from transparent. The blue blinked out once on
+   highlight and once again on release.
+
+   Splitting them means the gradient is painted continuously and only the colour
+   beneath it animates — which is the one thing `transition` here can actually
+   interpolate. The transparent colour has to be stated: without it this inherits
+   .whyus-th's rgba(255,255,255,.72) and the header washes out at rest. */
+.whyus-th--us {
+  background-image: linear-gradient(180deg, rgba(37, 99, 235, 0.16), rgba(37, 99, 235, 0.07));
+  background-color: transparent;
+  border-bottom-color: rgba(37, 99, 235, 0.45);
+  font-size: 15px;
+}
+.whyus-th--us .brand-strong {
+  color: var(--brand-deep);
+}
+.whyus-th--us .brand-light {
+  color: var(--brand);
+}
+.whyus-th__logo {
+  width: 20px;
+  height: 20px;
+  vertical-align: -4px;
+  margin-right: 5px;
+}
+.whyus-col {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 5px 4px;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+/* The dotted underline is the only thing telling anyone these headers are buttons:
+   the section's hint line ("hover or tap a column…") was cut, and a header that
+   dims four columns when you touch it should not be a thing you discover by
+   accident. Hover/focus only, deliberately — four permanently underlined headers
+   read as clutter, and the table must not look like it needs clicking to be
+   understood. */
+.whyus-col:hover,
+.whyus-col:focus-visible {
+  color: var(--brand-deep);
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+}
+.whyus-col:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* --- Body cells ---------------------------------------------------------- */
+.whyus-factor {
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--brand-deep);
+  border-bottom: 1px solid rgba(30, 58, 138, 0.08);
+  /* Pinned so the factor stays readable once the table is scrolled sideways —
+     without it the phone view is five columns of values with no labels. The
+     background must be opaque, or the scrolled cells show through it. */
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #f4f9ff;
+}
+.whyus-cell {
+  padding: 12px 14px;
+  text-align: center;
+  border-bottom: 1px solid rgba(30, 58, 138, 0.08);
+}
+.whyus-cell[data-vs-col="us"] {
+  background: rgba(37, 99, 235, 0.06);
+  font-weight: 700;
+  color: var(--brand-deep);
+}
+/* ...but only where we actually win. The rule above is unconditional, so on the two
+   rows the board concedes it rendered our answer in confident bold brand-blue right
+   next to an amber ~ or a red ✗ — the cell arguing with its own mark. Those two
+   concessions are what make the four rows above them believable (see the note over
+   .whyus-board in index.html), so they have to LOOK conceded. */
+.whyus-cell[data-vs-col="us"][data-vs-score="0.5"],
+.whyus-cell[data-vs-col="us"][data-vs-score="0"] {
+  font-weight: 600;
+  color: var(--slate-deep);
+}
+/* Hover-guarded: on a touch screen :hover latches on tap and the row stays lit until
+   something else is tapped, which reads as a selection the visitor cannot clear. The
+   row tint is pure decoration — nothing is lost by never showing it on touch, which
+   is why this is a plain (hover: hover) gate and not the (hover: none) fallback the
+   showcase fullscreen button needs above. */
+@media (hover: hover) {
+  .whyus-table tbody tr:hover .whyus-cell {
+    background: rgba(37, 99, 235, 0.04);
+  }
+  .whyus-table tbody tr:hover .whyus-cell[data-vs-col="us"] {
+    background: rgba(37, 99, 235, 0.11);
+  }
+  .whyus-table tbody tr:hover .whyus-factor {
+    background: #eaf3ff;
+  }
+}
+
+/* --- The score glyph -----------------------------------------------------
+   One empty <i> per cell, aria-hidden, with its content set from that cell's own
+   [data-vs-score] below. Authoring the glyph in CSS rather than in the markup is
+   what keeps the ✓/~/✗ out of all eleven language packs and out of the
+   accessibility tree — the cell's text already carries the meaning. */
+.whyus-mark {
+  display: inline-block;
+  width: 15px;
+  margin-right: 6px;
+  font-style: normal;
+  font-weight: 900;
+  font-size: 12px;
+  vertical-align: 1px;
+  /* Fail-soft only. Every verdict the board allows overrides both of these below, and
+     the drift test rejects any other value, so a visible neutral dot means a cell was
+     authored with a score nothing recognises. */
+  color: var(--slate-deep);
+}
+.whyus-mark::before {
+  content: "·";
+}
+[data-vs-score="1"] > .whyus-mark {
+  color: var(--brand);
+}
+[data-vs-score="1"] > .whyus-mark::before {
+  content: "✓";
+}
+[data-vs-score="0.5"] > .whyus-mark {
+  color: #b7791f;
+}
+[data-vs-score="0.5"] > .whyus-mark::before {
+  content: "~";
+}
+[data-vs-score="0"] > .whyus-mark {
+  color: #c0576c;
+}
+[data-vs-score="0"] > .whyus-mark::before {
+  content: "✗";
+}
+/* --- Column focus -------------------------------------------------------
+   Scoped entirely behind [data-vs-col-focus], which home-whyus.js sets only
+   while a competitor column is hovered, focused or pinned. With no JS the
+   attribute never appears and not one of these rules applies.
+
+   All three steps below are written at the SAME specificity — one class, one
+   board attribute, one cell class, one column attribute — so they resolve by
+   source order: dim everything, then bring `us` back, then bring the focused
+   rival back. Do not "simplify" the undim rules to a bare [data-vs-col="…"]:
+   that drops them a notch below the dim rule, and the focused column greys out
+   along with the ones it was supposed to stand out from. The factor column has
+   no [data-vs-col] at all, which is what keeps the row labels legible. */
+.whyus-board[data-vs-col-focus] .whyus-th[data-vs-col],
+.whyus-board[data-vs-col-focus] .whyus-cell[data-vs-col] {
+  opacity: 0.3;
+}
+/* background-COLOR, not the `background` shorthand — the shorthand would blank the
+   .whyus-th--us gradient for a frame on every highlight. See that rule. */
+.whyus-board[data-vs-col-focus] .whyus-th[data-vs-col="us"],
+.whyus-board[data-vs-col-focus] .whyus-cell[data-vs-col="us"] {
+  opacity: 1;
+  background-color: rgba(37, 99, 235, 0.13);
+}
+.whyus-board[data-vs-col-focus="stager"] .whyus-th[data-vs-col="stager"],
+.whyus-board[data-vs-col-focus="stager"] .whyus-cell[data-vs-col="stager"],
+.whyus-board[data-vs-col-focus="ai"] .whyus-th[data-vs-col="ai"],
+.whyus-board[data-vs-col-focus="ai"] .whyus-cell[data-vs-col="ai"],
+.whyus-board[data-vs-col-focus="diy"] .whyus-th[data-vs-col="diy"],
+.whyus-board[data-vs-col-focus="diy"] .whyus-cell[data-vs-col="diy"],
+.whyus-board[data-vs-col-focus="empty"] .whyus-th[data-vs-col="empty"],
+.whyus-board[data-vs-col-focus="empty"] .whyus-cell[data-vs-col="empty"] {
+  opacity: 1;
+  /* background-COLOR for the same reason as the `us` rule above. These headers carry
+     no gradient today, so the shorthand would not flicker — but it is one gradient
+     away from doing so, and only the colour is transitionable either way. */
+  background-color: rgba(155, 44, 60, 0.07);
+}
+
+/* Motion is the enhancement; the dimmed STATE still applies under reduced
+   motion, it just arrives instantly. */
 @media (prefers-reduced-motion: no-preference) {
-  .whyus-list li {
-    transition: opacity 0.22s ease, background-color 0.22s ease,
-      box-shadow 0.22s ease;
+  .whyus-cell,
+  .whyus-th {
+    transition: opacity 0.22s ease, background-color 0.22s ease;
   }
 }
 
 @media (max-width: 760px) {
-  .whyus-grid {
-    grid-template-columns: 1fr;
+  .whyus-table {
+    font-size: 12.5px;
+  }
+  .whyus-th--factor {
+    min-width: 150px;
+  }
+  .whyus-factor,
+  .whyus-cell {
+    padding: 10px;
+  }
+  /* The glyph is redundant on a phone once the text has to wrap under it, and
+     it costs 21px of a column that has none to spare. */
+  .whyus-mark {
+    width: auto;
+    margin-right: 4px;
   }
 }
 
@@ -2726,6 +3388,46 @@ body.page-home main {
   opacity: 0;
   transform: translate(-50%, -50%) rotate(0);
 }
+
+/* The homepage FAQ's affordance, where guides.html uses the +/- above.
+   IT EXISTS BECAUSE THE UA'S DOES NOT: `.faq-q > summary` sets `list-style: none` and
+   hides ::-webkit-details-marker, so without something in this slot the nine rooms are
+   nine paragraphs with no sign they open. That is the state the homepage shipped in —
+   faq-plan.css already carried the rule that hides this slot in plan mode, so the guard
+   outlived the element it was written for.
+
+   IT LIVES IN home.css, NOT faq-plan.css, for the same reason the print rule below does:
+   that sheet is lazy and desktop-gated, so an affordance defined there would be missing
+   on exactly the widths that need it. Plan mode hides it again (faq-plan.css), which is
+   the direction that degrades safely — the drawing has no room for a chevron, and if the
+   lazy sheet loses its race the accordion is what the visitor gets anyway.
+
+   Two borders on a rotated square, so it is one element and no font. The vertical offsets
+   differ per state on purpose: the "v" vertex hangs below the box's centre pointing down
+   and above it pointing up, so a single translate would make the caret visibly hop as it
+   flips. */
+.faq-q__caret {
+  position: relative;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+.faq-q__caret::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--brand);
+  border-bottom: 2px solid var(--brand);
+  border-radius: 0 0 2px 0;
+  transform: translate(-50%, -70%) rotate(45deg);
+  transition: transform 0.25s cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+.faq-q[open] .faq-q__caret::before {
+  transform: translate(-50%, -30%) rotate(-135deg);
+}
 .faq-q > p {
   margin: 0 22px;
   padding: 14px 0 19px;
@@ -2751,6 +3453,11 @@ body.page-home main {
   .faq-q[open] > p {
     animation: none;
   }
+  /* The caret still FLIPS — it is the state, not the flourish. Only the sweep between
+     the two positions goes. */
+  .faq-q__caret::before {
+    transition: none;
+  }
 }
 /* PRINTING THE HOMEPAGE FAQ GIVES THE QUESTIONS, NOT THE ANSWERS.
    Without this the same page printed two different documents: a closed <details> prints
@@ -2768,6 +3475,11 @@ body.page-home main {
    `.faq-q` for its troubleshooting list and still prints in full. */
 @media print {
   .faq-q > .faq-room__a {
+    display: none;
+  }
+  /* A control that cannot be operated on paper. The questions print as a list; a chevron
+     beside each one would read as an unfinished checkbox. */
+  .faq-q__caret {
     display: none;
   }
 }
@@ -3080,13 +3792,13 @@ body.page-home main {
 }
 
 /* ==========================================================================
-   Testimonials — a DECK of six glass quote cards. The top card is readable, the
+   Testimonials — a DECK of five glass quote cards. The top card is readable, the
    rest fan out behind it, and you drag it away (or use the arrows) to advance.
    Driven by scripts/home-testimonials.js.
 
    PROGRESSIVE ENHANCEMENT IS THE CONTRACT. Every deck rule below is scoped behind
    `.tw-deck--ready`, which that script adds. With no JS the markup renders as what
-   it literally is: a plain column of six readable quotes, controls hidden. Do not
+   it literally is: a plain column of five readable quotes, controls hidden. Do not
    lift a deck rule out from behind the ready class — a script failure would turn
    the section into a pile of overlapping cards with no way to advance.
 
@@ -3260,10 +3972,15 @@ body.page-home main {
      across 11 packs, where the longest quote is not the same card in every one. */
   gap: 0;
   max-width: 560px;
-  /* The fanned cards are translated DOWN out of the grid box — five layers at 12px.
-     Without this the buried cards paint over the controls below, which z-index
-     cannot fix: grid items honour z-index, so they outrank a later sibling's auto. */
-  margin-bottom: 24px;
+  /* Two jobs in one number, and it has to be this number rather than a margin-top on
+     .tw-ctl. The fanned cards are translated DOWN out of the grid box (five layers at
+     12px), so 24px of this is clearing them — without it the buried cards paint over
+     the controls, which z-index cannot fix, since grid items honour z-index and so
+     outrank a later sibling's `auto`. The remaining 20px is the deliberate gap under
+     the deck. Putting that 20px on .tw-ctl instead would do NOTHING: .tw-stack and
+     .tw-ctl are adjacent block-level siblings in a plain block container, so their
+     margins collapse to max(24, 20) = 24. Change the gap here. */
+  margin-bottom: 44px;
 }
 .tw-deck--ready .tw-card {
   --i: 0;
@@ -3285,9 +4002,10 @@ body.page-home main {
 .tw-deck--ready .tw-card[data-top]:active {
   cursor: grabbing;
 }
-/* Only four layers are ever visible; the rest wait with no paint cost. */
-.tw-deck--ready .tw-card[data-i="4"],
-.tw-deck--ready .tw-card[data-i="5"] {
+/* Only four layers are ever visible; anything deeper waits with no paint cost. With
+   five cards that is just depth 4 — the one you last advanced past. Add a selector
+   per extra depth if the deck ever grows. */
+.tw-deck--ready .tw-card[data-i="4"] {
   opacity: 0;
 }
 .tw-deck--ready .tw-card.is-dragging {
@@ -3362,7 +4080,8 @@ body.page-home main {
     padding: 22px 20px 18px;
   }
   .tw-deck--ready .tw-stack {
-    margin-bottom: 20px;
+    /* Same 20px gap as desktop, over a tighter fan clearance. */
+    margin-bottom: 40px;
   }
   .tw-text {
     font-size: 15px;
@@ -3694,4 +4413,41 @@ body.page-home main {
      recount — it just goes. .hgal-mock__bar is space-between with one child
      left, which lands the title flush left exactly as intended. */
   .hgal-mock__count { display: none; }
+}
+
+/* ==========================================================================
+   #restage — the copy panel must match the frame's height
+   ========================================================================== */
+/* The panel is stretched to the row, and the row is set by the frame, which is
+   ratio-locked to the source photo (1216:832). So the frame's height falls as the
+   window narrows while the copy's height RISES — the narrower the right column, the
+   more every paragraph wraps. Past a certain width the copy no longer fits the frame,
+   the panel becomes the taller item, and the two columns stop lining up.
+
+   Dropping these two bullets is what buys that width back. They already went at 900px,
+   where the section stacks; moving the cut to 1100px is the same judgement applied a
+   little earlier — by then the right column is ~370px, which is not a "wide" layout in
+   any meaningful sense, and the three bullets that remain are the ones carrying the core
+   claims (speed, restyling, rights).
+
+   Measured, panel height minus frame height across the two-column range:
+     at 900px cut, with a reserved error line   +8px at 1050,  +99px at 1000
+     with the error line out of flow            +8px at 1050,  +74px at 1000
+     and with this cut at 1100px                 0px at 1050,    0px at 1000
+   Equal down to 1000px. Below ~950px the copy genuinely cannot fit a frame that short
+   and the panel does run taller; the section stacks at 900px, so that is a 50px band.
+
+   `display: none` rather than anything visibility-based, so they leave the accessibility
+   tree too — this is a narrower story at this width, not the same story with two lines
+   hidden behind CSS. */
+/* 1140px is the section's own max-width, and that is exactly the right hinge. At any
+   viewport above it the section is capped, so the frame's height is CONSTANT and the copy
+   fits it with ~12px to spare — nothing needs cutting. The moment the viewport drops below
+   the cap the frame starts shrinking with it while the copy starts growing, and the two
+   part company within about 30px. A 1100px breakpoint left a visible mismatch across that
+   1100-1140 band. */
+@media (max-width: 1140px) {
+  .rs__li--wide {
+    display: none;
+  }
 }

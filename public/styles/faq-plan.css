@@ -17,10 +17,19 @@
    WHY IT IS A BLUEPRINT AND NOT WHITE PAPER. Dark ink needs an opaque ground,
    so the first attempt put the drawing on white — which then sat on the page
    like a lightbox, fighting every glass panel around it. Inverting it solves
-   both at once: a deep blue ground gives the linework more contrast than white
-   ever did, and — held to the brand ramp's own hue, a few steps under
-   `--brand-deep` — it belongs to the same blue family as the rest of the site
-   instead of interrupting it. It is also, literally, what a blueprint is.
+   both at once: a blue ground gives the linework more contrast than white ever
+   did, and — held to the brand ramp's own hue — it belongs to the same blue
+   family as the rest of the site instead of interrupting it. It is also,
+   literally, what a blueprint is.
+
+   THE GROUND SITS ON THE BRAND RAMP, NOT UNDER IT. It used to run a few steps
+   BELOW `--brand-deep`, which read as its own near-navy colour on a page whose
+   darkest blue is #1e3a8a. The stops now span the ramp's deep half: the light
+   corner is at `--brand-strong`'s luminance and the dark one lands just above
+   `--brand-deep`. Every ink alpha on this sheet moved up with it — a lighter
+   ground eats contrast, so holding the same alphas would have quietly dropped
+   the room names, the dimension text and the partitions below their floors.
+   The numbers that changed are called out at each rule, with the ratio.
 
    THE ONE STRUCTURAL RULE. Every plan-mode declaration sits inside the single
    `@media screen and (min-width: 1001px)` block. Outside it this file only
@@ -109,14 +118,24 @@
        scroll away from it to read the reply. 1.526 is the viewBox ratio, so the
        aspect-ratio below is never contradicted. */
     --sheet-w: min(100%, 1160px, 76vh * 1.5263);
-    /* The one accent. Everything on the sheet is white ink on indigo except the
-       active room, which switches to this. */
-    --ink-hot: var(--brand-pale);
+    /* The one accent. Everything on the sheet is white ink on blue except the active
+       room, which switches to this.
+
+       One step up the blue ramp from `--brand-pale` (#93c5fd), and that step is what the
+       lighter ground bought. --brand-pale measured 4.48:1 against the old ground's lightest
+       corner — already a hair under AA for the room name, which is real text — and the new
+       ground would have taken it to 3.7. #bfdbfe is the next rung of the same ramp
+       (admin.css already paints with it), still unmistakably blue against the white ink it
+       has to differ from, and it measures 4.65:1 on the new lightest corner. So the accent
+       is BETTER off than it was, not merely preserved. It has no token; --brand-tint
+       (#dbeafe) is the next rung after this one and is too close to white to read as an
+       accent at all. */
+    --ink-hot: #bfdbfe;
     /* Furniture's resting opacity, named because it is written in TWO places that must
        agree: the settled `.fp-furn` rule, and the value the one-time draft-in fades UP to.
        Hard-coded, the draft-in silently pulled every room's furniture back to the old
        number the moment it finished — visible only as "it looked right for half a second". */
-    --furn-rest: 0.55;
+    --furn-rest: 0.62;
   }
 
   .faq-plan__sheet {
@@ -137,15 +156,21 @@
        did not, and the answer overran the title block. Legal because the sheet's size
        never depends on its contents — explicit width, height from aspect-ratio. */
     container-type: size;
-    border: 1px solid rgba(147, 197, 253, 0.22);
+    border: 1px solid rgba(147, 197, 253, 0.28);
     border-radius: 4px;
-    /* The ground sits on the brand ramp's deep end (--brand-deep #1e3a8a / --primary
-       #1e40af), a few steps under it rather than off in navy. An earlier, darker mix
-       read as its own colour on the page — near-black blue next to a palette whose
-       darkest blue is #1e3a8a. These stops share that hue (~223deg) and are only
-       lighter than the linework needs them to be, which is the whole tuning range:
-       light enough to belong to the site, dark enough that white ink still carries. */
-    background: linear-gradient(158deg, #2a4b9e 0%, #223c86 52%, #1b306d 100%);
+    /* THE GROUND, and it is the brand ramp's deep half rather than something under it.
+       #2f57b8 is --brand-strong's (#1d4ed8) luminance at the sheet's hue, and #1f3d92 sits
+       just above --brand-deep (#1e3a8a) — so the drawing now runs BETWEEN two palette
+       colours instead of below both. The previous stops (#2a4b9e / #223c86 / #1b306d) were
+       a third darker at the top and nearly half as bright at the bottom, which is what made
+       the section read as a navy slab dropped onto a pale lavender page.
+       Not written as var(--brand-strong)/var(--brand-deep): these have to be literal hexes,
+       because #fp-ground in index.html restates them as SVG stops and the drift test that
+       pins the two copies together compares hex for hex.
+       The tuning range is unchanged, only its floor moved: light enough to belong to the
+       site, dark enough that white ink still carries (6.1:1 for the envelope poché at the
+       lightest corner, 6.0:1 for a resting room name). */
+    background: linear-gradient(158deg, #2f57b8 0%, #274aa2 52%, #1f3d92 100%);
     /* Deliberately restrained, and lighter than a dark panel would normally take.
        This sheet is the one dark element on a pale lavender page, so it already has
        all the separation it needs from its own edge — a deep, wide shadow on top of
@@ -212,7 +237,13 @@
   .faq-room > summary::marker {
     display: none;
   }
-  .faq-room .faq-q__icon {
+  /* Accordion-mode affordances, both of them. A room on a drawing is opened by clicking
+     the room; a chevron floating over the linework would be the one piece of UI chrome on
+     a sheet that is otherwise all ink. (`.faq-q__icon` is guides.html's +/-; this file is
+     index-only, but the rule is kept scoped to `.faq-room` so it stays true if the
+     homepage ever adopts it.) */
+  .faq-room .faq-q__icon,
+  .faq-room .faq-q__caret {
     display: none;
   }
 
@@ -258,14 +289,14 @@
   }
 
   /* HOVER TAKES THE ACCENT; OPEN GOES WHITE — and that split is a contrast floor, not a
-     preference. `--ink-hot` is --brand-pale, and this label is real text at up to 14px, so
-     it owes 4.5:1, not the 3:1 the linework gets. Against the bare ground the accent
-     measures ~4.7:1 and is fine. The open room additionally paints `.fp-floor` at 14%,
-     which lifts the local ground and drops the same pair to ~3.7:1. No ground colour fixes
-     that: with the floor tint removed entirely the accent still only reaches 4.7, so the
-     tint IS the whole margin. The label is also the one part of an open room that does not
-     have to carry the state — the wall, the floor, the key bubble and the furniture all go
-     hot — so it steps out of the accent and up to white at ~6.6:1.
+     preference. This label is real text at up to 14px, so it owes 4.5:1, not the 3:1 the
+     linework gets. Against the bare ground `--ink-hot` measures ~4.7:1 and is fine. The
+     open room additionally paints `.fp-floor` at 17%, which lifts the local ground and
+     drops the same pair to ~3.6:1. No ground colour fixes that: with the floor tint removed
+     entirely the accent still only reaches 4.7, so the tint IS the whole margin. The label
+     is also the one part of an open room that does not have to carry the state — the wall,
+     the floor, the key bubble and the furniture all go hot — so it steps out of the accent
+     and up to white at ~5.2:1.
      The [open] rule is written second at the same (0,2,0) on purpose: hovering the room
      that is already open has to land here, and source order is what settles it. */
   .faq-room__label:hover {
@@ -332,9 +363,15 @@
        It stays fully OPAQUE. The lighter colour is only allowed because of that: any
        alpha here lets the grid back through the body copy, which is the exact problem
        this panel exists to solve. Opacity is not the dial for how present it feels —
-       the colour is. */
-    background: linear-gradient(180deg, #2c4d9e 0%, #243d80 100%);
-    border: 1px solid rgba(147, 197, 253, 0.26);
+       the colour is.
+
+       The stops moved WITH the ground, not independently of it: what makes this read as
+       vellum is the RATIO to the ground beneath it, and the column sits over the gradient's
+       middle band, so the pairing to hold is these stops against ~#274aa2. It was 1.57x
+       there and is 1.52x now. Retune the sheet without retuning these and the panel stops
+       lifting off it. */
+    background: linear-gradient(180deg, #345cbd 0%, #2a4a9c 100%);
+    border: 1px solid rgba(147, 197, 253, 0.3);
     border-radius: 3px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
     /* Painted BENEATH the rooms. This div is last in the sheet, so plain DOM order would
@@ -348,7 +385,10 @@
   }
   .faq-plan__hint {
     margin: 0;
-    color: rgba(255, 255, 255, 0.74);
+    /* 0.86, up from the 0.74 that suited the darker panel. This is the quietest text on
+       the sheet, so it is the first thing a lighter backing pushes under AA: 0.74 on the
+       new panel measures 4.2:1. 0.86 puts it back at 5.0:1, which is where it was. */
+    color: rgba(255, 255, 255, 0.86);
     font-size: clamp(11.5px, 1.4cqw, 16px);
     line-height: 1.55;
   }
@@ -441,7 +481,9 @@
     margin: 0;
     padding: 0;
     border-top: 0;
-    color: rgba(255, 255, 255, 0.87);
+    /* 0.9, up from 0.87, for the same reason as the hint above — body copy on a panel
+       that got lighter. 5.3:1 at the panel's light end. */
+    color: rgba(255, 255, 255, 0.9);
     font-size: clamp(11px, 1.3cqw, 16.5px);
     line-height: 1.62;
     pointer-events: auto;
@@ -475,33 +517,41 @@
   .faq-plan__sheet:has(.faq-room__label:hover) .faq-room:not(:hover) .faq-room__ink,
   .faq-plan__sheet:has(.faq-room[open]):not(:has(.faq-room__label:hover)) .faq-room:not([open]) > summary .faq-room__label,
   .faq-plan__sheet:has(.faq-room[open]):not(:has(.faq-room__label:hover)) .faq-room:not([open]) .faq-room__ink {
-    /* 0.72, and the fourth decimal place matters because a dimmed ROOM NAME is still text.
-       At 0.68 the label's effective alpha is 0.93 x 0.68 = 0.632, which on the lightest
-       corner of the ground measures ~4.5:1 — right on the AA line and under it once the
-       ground is lifted at all. 0.72 puts it near 4.8 and is visually the same dim. */
-    opacity: 0.72;
+    /* 0.86, and the second decimal place matters because a dimmed ROOM NAME is still text.
+       The label's effective alpha is 0.93 x this, measured against the ground's LIGHTEST
+       corner. This ran at 0.72 for as long as the ground was darker, where it gave 4.6:1;
+       on the lifted ground the same 0.72 falls to 3.9:1 and the dimmed names stop clearing
+       AA. 0.86 restores 4.9:1 — better than it ever was — and reads as the same dim,
+       because the room it is dimming AGAINST got brighter by the same move. */
+    opacity: 0.86;
   }
 
   /* ---- the drawing --------------------------------------------------------
-     Weight hierarchy, heaviest to lightest. These numbers are the drawing. */
+     Weight hierarchy, heaviest to lightest. These numbers are the drawing.
+
+     EVERY ALPHA IN THIS BLOCK WENT UP ~12% WHEN THE GROUND DID, and that is not
+     decoration — white-on-blue ink loses contrast as the blue lifts, so holding the old
+     alphas would have flattened the exact hierarchy the section below insists on. The
+     ratios between them are untouched, which is why the drawing still reads the same:
+     envelope > partitions > furniture > door swings > dimensions > grid. */
   .fp-grid {
     fill: url(#fp-grid);
     opacity: 0.5;
-    color: rgba(255, 255, 255, 0.13);
+    color: rgba(255, 255, 255, 0.15);
   }
   .fp-sheet {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.3);
+    stroke: rgba(255, 255, 255, 0.34);
     stroke-width: 1.5;
   }
   .fp-rule {
-    stroke: rgba(255, 255, 255, 0.22);
+    stroke: rgba(255, 255, 255, 0.25);
     stroke-width: 1.5;
   }
   .fp-hall rect {
     fill: url(#fp-hatch);
     color: rgba(255, 255, 255, 0.9);
-    opacity: 0.1;
+    opacity: 0.12;
   }
   /* Poché. The envelope is the heaviest line on the sheet by a wide margin — that
      contrast is what makes the eye read "building" instead of "table". */
@@ -513,7 +563,9 @@
   }
   .fp-partition {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.5);
+    /* 0.56, holding the 3.2:1 the partitions had at 0.5 on the darker ground. This is the
+       number `.fp-furn` is tuned against — move one and move the other. */
+    stroke: rgba(255, 255, 255, 0.56);
     stroke-width: 4;
     stroke-linejoin: miter;
   }
@@ -533,36 +585,29 @@
     stroke-width: 9.5;
   }
   .fp-win__sill {
-    stroke: rgba(255, 255, 255, 0.72);
+    stroke: rgba(255, 255, 255, 0.78);
     stroke-width: 1.6;
   }
   .fp-dim path {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.42);
+    stroke: rgba(255, 255, 255, 0.48);
     stroke-width: 1.2;
   }
   .fp-t {
-    fill: rgba(255, 255, 255, 0.72);
+    /* Dimension strings ("4.2 m") are TEXT, so 4.5:1, and at 0.72 the lifted ground took
+       them to 4.2. 0.8 gives 4.9. */
+    fill: rgba(255, 255, 255, 0.8);
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.06em;
   }
   .fp-scale--on {
-    fill: rgba(255, 255, 255, 0.58);
+    fill: rgba(255, 255, 255, 0.64);
   }
   .fp-scale--off {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.5);
+    stroke: rgba(255, 255, 255, 0.56);
     stroke-width: 1.2;
-  }
-  .fp-north circle {
-    fill: none;
-    stroke: rgba(255, 255, 255, 0.4);
-    stroke-width: 1.2;
-  }
-  .fp-north__n {
-    fill: rgba(255, 255, 255, 0.6);
-    stroke: none;
   }
 
   /* ---- per-room ink -------------------------------------------------------
@@ -573,10 +618,13 @@
   }
   .faq-room:hover .fp-floor,
   .faq-room:has(:focus-visible) .fp-floor {
-    fill: rgba(147, 197, 253, 0.07);
+    fill: rgba(147, 197, 253, 0.09);
   }
   .faq-room[open] .fp-floor {
-    fill: rgba(147, 197, 253, 0.14);
+    /* 0.17, up from 0.14: the tint is a pale blue over a ground that is now itself paler,
+       so the old value had less to say. It is still the reason the open room's NAME cannot
+       take the accent — see .faq-room[open] .faq-room__label above. */
+    fill: rgba(147, 197, 253, 0.17);
   }
   /* The active room's own wall, drawn over the partition beneath it.
 
@@ -602,7 +650,7 @@
   }
   .fp-door {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.34);
+    stroke: rgba(255, 255, 255, 0.4);
     stroke-width: 1.2;
   }
   .faq-room[open] .fp-door {
@@ -625,7 +673,7 @@
   }
   .faq-room:hover .fp-furn,
   .faq-room:has(:focus-visible) .fp-furn {
-    opacity: 0.72;
+    opacity: 0.78;
   }
   .faq-room[open] .fp-furn {
     color: var(--ink-hot);
@@ -635,11 +683,11 @@
      column. Always visible, so the plan is legible as a keyed drawing at rest. */
   .fp-key circle {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.5);
+    stroke: rgba(255, 255, 255, 0.56);
     stroke-width: 1.3;
   }
   .fp-key text {
-    fill: rgba(255, 255, 255, 0.82);
+    fill: rgba(255, 255, 255, 0.88);
     font-size: 10.5px;
     font-weight: 800;
     letter-spacing: 0.02em;
@@ -649,7 +697,11 @@
     stroke: var(--ink-hot);
   }
   .faq-room[open] .fp-key text {
-    fill: #1e3778;
+    /* The one place on the sheet where ink is DARK: a number knocked out of the accent-
+       filled bubble. It was a bespoke #1e3778 chosen to sit near the old ground; now that
+       the ground is on the ramp there is no reason not to use the ramp's own floor, which
+       is also the higher contrast of the two (7.3:1 on --ink-hot, against 6.2). */
+    fill: var(--brand-deep);
   }
 }
 
@@ -724,7 +776,26 @@
      Everything that starts hidden is hidden ONLY under `.is-armed`, so if the module
      fails to load or throws, no class is added and the sheet renders fully drawn and
      static. Hiding these unconditionally would mean a JS failure left an empty
-     rectangle where the FAQ used to be. */
+     rectangle where the FAQ used to be.
+
+     ONE SWEEP, NOT THREE PASSES — and the offsets below are a set, not six independent
+     knobs. Within a single room the label, its furniture and its key bubble start 80ms
+     apart (0.26 / 0.34 / 0.42), so the room resolves as a unit ~160ms after it begins;
+     the next room is only 22ms behind it. That ratio — the intra-room spread being
+     several times the room-to-room step — is what makes the eye read a wave crossing the
+     drawing instead of the labels, then the furniture, then the keys each restaging all
+     nine rooms in turn. Widen the 22ms step or narrow the 80ms spacing and it goes back
+     to being three passes. `--n` is the room's position along the sweep, ranked by
+     geometry in home-faq-plan.js's sweepOrder(), not its source order.
+
+     The whole thing lands inside ~0.88s (last key: 0.42 + 8 x 22ms, + 0.28s to fade).
+     It was 1.7s, which is long enough for the section to feel like it is loading. */
+  .faq-plan {
+    /* The site's standard reveal curve (home.css `.reveal`). The container's own fade
+       uses it, so the contents matching it is what makes sheet and ink read as one
+       motion rather than as a box that arrives and a drawing that follows. */
+    --faq-draft-ease: cubic-bezier(0.16, 0.84, 0.44, 1);
+  }
   .faq-plan.is-armed .fp-envelope,
   .faq-plan.is-armed .fp-partition {
     stroke-dasharray: var(--net-len);
@@ -733,10 +804,11 @@
   .faq-plan.is-armed.is-drafted .fp-envelope,
   .faq-plan.is-armed.is-drafted .fp-partition {
     stroke-dashoffset: 0;
-    transition: stroke-dashoffset 1.05s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: stroke-dashoffset 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
   .faq-plan.is-armed.is-drafted .fp-partition {
-    transition-delay: 0.25s;
+    transition-duration: 0.52s;
+    transition-delay: 0.1s;
   }
   .faq-plan.is-armed .faq-room__label,
   .faq-plan.is-armed .fp-furn,
@@ -745,28 +817,26 @@
   }
   .faq-plan.is-armed.is-drafted .faq-room__label {
     opacity: 1;
-    transition: opacity 0.4s ease calc(0.55s + var(--n, 0) * 45ms);
+    transition: opacity 0.34s var(--faq-draft-ease) calc(0.26s + var(--n, 0) * 22ms);
   }
   .faq-plan.is-armed.is-drafted .fp-furn {
     opacity: var(--furn-rest);
-    transition: opacity 0.5s ease calc(0.75s + var(--n, 0) * 45ms);
+    transition: opacity 0.36s var(--faq-draft-ease) calc(0.34s + var(--n, 0) * 22ms);
   }
   .faq-plan.is-armed.is-drafted .fp-key {
     opacity: 1;
-    transition: opacity 0.4s ease calc(0.9s + var(--n, 0) * 45ms);
+    transition: opacity 0.28s var(--faq-draft-ease) calc(0.42s + var(--n, 0) * 22ms);
   }
   .faq-plan.is-armed .fp-dim,
   .faq-plan.is-armed .fp-scale,
-  .faq-plan.is-armed .fp-north,
   .faq-plan.is-armed .fp-win {
     opacity: 0;
   }
   .faq-plan.is-armed.is-drafted .fp-dim,
   .faq-plan.is-armed.is-drafted .fp-scale,
-  .faq-plan.is-armed.is-drafted .fp-north,
   .faq-plan.is-armed.is-drafted .fp-win {
     opacity: 1;
-    transition: opacity 0.5s ease 1.15s;
+    transition: opacity 0.3s var(--faq-draft-ease) 0.55s;
   }
 }
 

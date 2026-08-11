@@ -83,6 +83,23 @@
       "revealSliderAria": "对比滑块",
       "exampleRoomsAria": "示例房间"
     },
+    "restage": {
+      "title": "点击看看软装的效果",
+      "subtitle": "同一个空房间，一次次重新布置。不用搬运、不用租赁、不用等待。",
+      "kicker": "设计完全掌控",
+      "panelTitle": "每次运行都会重新布置",
+      "panelBody": "传统软装只给你一种布局和一份租赁合同。再运行一次，房间就会以另一种方式呈现：不同的布局、不同的配色、不同的材质。",
+      "button": "布置这个房间",
+      "buttonAgain": "再布置一次",
+      "seeOriginal": "查看原图",
+      "loadFailed": "这张图片加载失败，请再试一次。",
+      "points": {
+        "rooms": "八种房间类型，从卧室到厨房",
+        "browser": "无需安装，在浏览器中即可使用"
+      },
+      "emptyAlt": "虚拟软装前的空客厅",
+      "stagedAlt": "同一个客厅，由 Stagify 布置"
+    },
     "showcase": {
       "title": "亲自看看效果",
       "subtitle": "实时演示。随意看看。",
@@ -202,7 +219,7 @@
     "info": {
       "eyebrow": "简而言之",
       "title": "什么是虚拟装修，为何它能促成成交",
-      "subtitle": "快速、诚实地讲清它如何运作、为谁而用——没有术语。",
+      "subtitle": "快速、诚实地讲清它如何运作、为谁而用。",
       "rows": {
         "why": {
           "eyebrow": "为何有效",
@@ -216,7 +233,7 @@
         "how": {
           "eyebrow": "如何运作",
           "caption": "带领一屋子的经纪人完成他们的第一套装修房源",
-          "title": "从空房照片到可发布，约 8 秒完成",
+          "title": "从空房照片到可发布，几秒完成",
           "body": "上传照片，选择房间类型和七种风格之一，Stagify 便会在约八秒内完成布置。想要修改？移除现有家具、添加自定义提示，或对单个区域进行蒙版编辑——无需从头再来。",
           "p1": "7 种风格，外加自定义提示和家具移除",
           "p2": "对结果的任意部分进行蒙版编辑，无需重做",
@@ -342,7 +359,7 @@
       "note": "已获 Compass、Centennial 等机构认可。"
     },
     "whyus": {
-      "subtitle": "其他虚拟布置工具速度慢、价格高、限制多。Stagify 恰恰相反。"
+      "subtitle": "另外四种布置房源的方式，与我们并列打分。"
     },
     "testimonials": {
       "title": "经纪人怎么说",
@@ -350,39 +367,33 @@
       "items": {
         "justin": {
           "quote": "我第一次试用 Stagify 时，说实话被震撼到了。我意识到只需用手机，省下昂贵的摄影师，依然能得到惊艳的效果。这对我的房源来说是颠覆性的，而且价格好得不可思议！",
-          "author": "Justin Stern（经纪人）",
+          "author": "Justin Stern",
           "role": "Tahari Realty",
           "location": "纽约曼哈顿"
         },
         "andy": {
           "quote": "Stagify 完美融入了我原本的工作方式。我在两场看房之间上传一张房源照片，等我回到办公桌前它就已经布置好了。客户总是对最终照片的精致效果印象深刻。",
-          "author": "Andy Eras（经纪人）",
+          "author": "Andy Eras",
           "role": "Centennial Properties",
           "location": "纽约曼哈顿"
         },
-        "p3": {
-          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Three",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "travonte": {
+          "quote": "Stagify 让整个过程变得毫不费力。上传一张空房间的照片，等上几秒钟，空间一下子就有了个性。简单、干净，而且真的好用。",
+          "author": "Travonte Taylor",
+          "role": "Compass",
+          "location": "纽约布鲁克林"
         },
-        "p4": {
-          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Four",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jack": {
+          "quote": "Stagify 最让我佩服的是它有多实用。它不是那种只惊艳一秒的 AI 工具，而是把经纪人、租客和业主天天都要面对的事情变得更快、更轻松。",
+          "author": "Jack Sash",
+          "role": "Tahari Realty",
+          "location": "纽约曼哈顿"
         },
-        "p5": {
-          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Five",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
-        },
-        "p6": {
-          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Six",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jaden": {
+          "quote": "我觉得 Stagify 在学生宿舍、公寓和房源展示上都会大有作为。空房间很难想象，但布置好之后，空间立刻真实了许多。当你想象自己住在那里时，这个差别非常明显。",
+          "author": "Jaden Lander",
+          "role": "RockSolid Management",
+          "location": "纽约曼哈顿"
         }
       },
       "deck": {
@@ -579,38 +590,63 @@
   "whyUs": {
     "title": "为什么选择我们？",
     "stagify": {
-      "title": "stagify.ai",
       "features": {
-        "instantResults": "<strong>即时结果</strong>：约8秒",
-        "oneClickStaging": "<strong>一键装修</strong>：无麻烦",
-        "free": "<strong>无限次免费生成</strong>：无需信用卡",
-        "noAds": "<strong>无广告体验</strong>：无干扰",
-        "noLogin": "<strong>轻松注册</strong>：立即开始",
-        "unlimited": "<strong>高级图像模型</strong>：更高质量",
-        "copyright": "<strong>完整版权</strong>：随处使用"
+        "free": "免费，想改多少次都行"
       }
     },
-    "others": {
-      "title": "其他",
-      "features": {
-        "slowResults": "<strong style=\"color: #6d1c2c;\">结果缓慢：</strong>等待数天",
-        "longProcess": "<strong style=\"color: #6d1c2c;\">过程冗长：</strong>繁琐的来回沟通",
-        "expensive": "<strong style=\"color: #6d1c2c;\">昂贵：</strong>按图片收费，成本高昂",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">广告和Cookie：</strong>侵入式体验",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">冗长的注册流程：</strong>令人沮丧的开始",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">老旧、低价的模型：</strong>质量较低",
-        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">版权不明确：</strong>法律责任"
-      }
-    },
-    "keyFeatures": {
-      "title": "关键特性",
-      "unlimitedVariations": {
-        "title": "无限变化",
-        "description": "探索多种风格，直到适合您的品牌和买家档案。"
+    "board": {
+      "caption": "Stagify.ai 与另外四种房源布置方式在六个维度上的对比。",
+      "headers": {
+        "factor": "维度",
+        "stager": "传统实体布置",
+        "ai": "按张计费的 AI 工具",
+        "diy": "自己修图",
+        "empty": "空房间"
       },
-      "fastTurnarounds": {
-        "title": "快速周转",
-        "description": "约8秒内装修照片，让您更快上市并完成更多交易。"
+      "values": {
+        "yes": "是",
+        "no": "否"
+      },
+      "rows": {
+        "speed": {
+          "factor": "速度",
+          "us": "约 8 秒",
+          "stager": "1–3 周",
+          "ai": "1–3 天",
+          "diy": "每张 2–4 小时",
+          "empty": "即时"
+        },
+        "cost": {
+          "factor": "每套房源的花费",
+          "us": "$0，或每月 $11.99",
+          "stager": "$2,000–$5,000",
+          "ai": "$550–850",
+          "diy": "你一个下午的时间",
+          "empty": "$0"
+        },
+        "redo": {
+          "factor": "换一种风格试试",
+          "stager": "按小时计费",
+          "ai": "按张计费",
+          "diy": "再搭上你的时间",
+          "empty": "没什么可换的"
+        },
+        "quality": {
+          "factor": "照片质量",
+          "us": "接近真实照片",
+          "stager": "真实房间的实拍",
+          "ai": "能看出 AI 痕迹",
+          "diy": "取决于修图水平",
+          "empty": "一间空房"
+        },
+        "ownership": {
+          "factor": "照片归你所有",
+          "stager": "归摄影师所有",
+          "ai": "只是授权，并非所有权"
+        },
+        "furniture": {
+          "factor": "看房时有真家具"
+        }
       }
     }
   },
@@ -718,7 +754,7 @@
       "UNSTAGEABLE": "这看起来不像房间、空间或家具。请上传您想装修的室内房间、室外空间或家具的照片。"
     },
     "heicConvert": "无法读取该 HEIC 照片。请尝试 JPG 或 PNG。",
-    "fileType": "请上传PNG、JPG、JPEG、WebP或GIF图片文件。",
+    "fileType": "请上传 JPG、PNG、WebP 或 HEIC 图片文件。",
     "fileTooLarge": "文件太大。请上传小于 25MB 的图片。",
     "uploadFirst": "请先上传图片",
     "badPrompt": "输入了错误的提示",
@@ -1011,7 +1047,7 @@
       "title": "上传与文件",
       "i1": {
         "q": "我的照片无法上传。",
-        "a": "请确认文件为 JPG、PNG 或 WEBP 格式且小于 25 MB。手机拍摄的超大照片有时会失败——请缩小图片或对其截图后重新上传。若仍然失败，请刷新页面再试。"
+        "a": "请确认文件为 JPG、PNG、WebP 或 HEIC 格式且小于 25 MB。手机拍摄的超大照片有时会失败——请缩小图片或对其截图后重新上传。若仍然失败，请刷新页面再试。"
       },
       "i2": {
         "q": "哪种照片效果最好？",

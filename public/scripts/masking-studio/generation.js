@@ -51,7 +51,7 @@ export function requestError(status, result, translate, onGate) {
     if (onGate) onGate();
     return translate('maskingStudio.gateTitle', 'Masking Studio is a Stagify+ feature');
   }
-  if (status === 429) return translate('maskingStudio.rateLimited', "You're generating too quickly — wait a minute and try again.");
+  if (status === 429) return translate('maskingStudio.rateLimited', "You’re generating too quickly — wait a minute and try again.");
   if (status === 413) return translate('errors.fileTooLarge', 'That image is too large.');
   return (result && result.error) || translate('errors.processingFailed', 'Something went wrong. Please try again.');
 }

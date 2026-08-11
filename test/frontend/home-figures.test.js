@@ -215,14 +215,19 @@ test('the old comparison table is gone but its citation block survives', () => {
   for (const dead of ['cmp-row', 'cmp-cell', 'cmp-mark', 'cmp-head', 'cmp-brandcell']) {
     assert.ok(!INDEX.includes(dead), `${dead} is left over from the deleted table`);
   }
-  // .cmp-source styles the NAR citation blocks. #compare's Profile-of-Home-Staging
-  // citation was removed by hand; #ai-shift's Technology-Survey one is the only
-  // remaining user of the class, so deleting the table must not take it with it.
+  // The citation block outlived the table. #compare's Profile-of-Home-Staging citation
+  // was removed by hand; #ai-shift's Technology-Survey one survives — it is no longer a
+  // free-floating `.cmp-source` box below the card but a `.nar-source` row INSIDE it, so
+  // the old class is gone from the page entirely.
+  assert.ok(!INDEX.includes('cmp-source'), 'cmp-source is left over from the deleted table');
   assert.equal(
-    (INDEX.match(/class="cmp-source reveal"/g) || []).length,
+    (INDEX.match(/class="nar-source"/g) || []).length,
     1,
     'the #ai-shift NAR citation block is still present'
   );
+  // It has to sit inside the card, not after it — that is the whole point of the move.
+  const card = (INDEX.match(/<div class="nar-card[\s\S]*?\n {8}<\/div>/) || [])[0] || '';
+  assert.ok(card.includes('class="nar-source"'), 'the citation is a row of the NAR card');
 });
 
 // --------------------------------------------------------------------------
@@ -348,12 +353,13 @@ test('the footnote quotes the figure the calculator actually multiplies by', () 
 
 test('the keys the calculator reuses from the deleted table still exist', () => {
   // 11 of the old home.compare.rows.* keys are now orphans, deliberately left in place.
-  // These ten are NOT orphans — the calculator's eyebrow, column heads, captions and
-  // sub-lines are all built from them. A future dead-key sweep must fail here rather
-  // than silently blanking half the component (a missing key falls back to the English
-  // markup, so on english.json alone the damage would be invisible).
+  // home.compare.eyebrow joined them when the "Virtual vs. traditional" line was removed
+  // from above the question — the key stays in all 11 packs, unused, like the other 11.
+  // These nine are NOT orphans — the calculator's column heads, captions and sub-lines
+  // are all built from them. A future dead-key sweep must fail here rather than silently
+  // blanking half the component (a missing key falls back to the English markup, so on
+  // english.json alone the damage would be invisible).
   const REUSED = [
-    'eyebrow',
     'colTraditional',
     'colStagify',
     'rows.cost.aspect',

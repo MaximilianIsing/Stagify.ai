@@ -70,8 +70,13 @@ import { lang, esc } from './profile-menu/dom-utils.js';
       dd.classList.remove('profile-menu-dropdown--guest');
       let planLine;
       if (u.plan === 'pro') {
-        // The "Stripe help center" button is hidden on the staging site.
-        const portalHelp = auth.isStagingMode()
+        // The "Stripe help center" button is hidden on the staging site, and from
+        // enterprise seats: their access is billed to the org's domain, so the portal
+        // login would only ever tell them their email is unknown. (`manageRow` below
+        // gates on canManageSubscription instead, which is a stricter test — it also
+        // requires a stripeCustomerId — so it can legitimately still appear for a seat
+        // whose own past subscription left a customer behind.)
+        const portalHelp = auth.isStagingMode() || u.enterprise
           ? ''
           : '<a class="profile-menu__portal-help" href="' +
             STRIPE_CUSTOMER_PORTAL_LOGIN +
@@ -82,10 +87,17 @@ import { lang, esc } from './profile-menu/dom-utils.js';
             '">' +
             PORTAL_STRIPE_ICON +
             '</a>';
+        // Enterprise seats are pro accounts granted by their email domain, so the
+        // badge keeps saying "Stagify+" — same plan, same entitlements — and only
+        // swaps the mark for the Enterprise one. `u.enterprise` rides along on the
+        // /api/auth/me payload (lib/data/auth-store.js publicUser).
+        const planMark = u.enterprise
+          ? 'media-webp/logo/Enterprise32x32.webp'
+          : 'media-webp/logo/Pro32x32.webp';
         planLine =
           '<div class="profile-menu__plan-row">' +
           '<a href="stagify-plus.html" class="profile-menu__plan profile-menu__plan--plus">' +
-          '<img src="media-webp/logo/Pro32x32.webp" alt="" width="18" height="18" aria-hidden="true"> Stagify+</a>' +
+          '<img src="' + planMark + '" alt="" width="18" height="18" aria-hidden="true"> Stagify+</a>' +
           portalHelp +
           '</div>';
       } else {

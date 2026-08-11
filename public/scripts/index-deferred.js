@@ -46,6 +46,10 @@ export const DEFERRED = [
   { src: 'scripts/studio-showcase.js', module: true },
   // Below-fold section behaviour.
   { src: 'scripts/staging-studio.js', module: true },
+  // #restage's "stage it again" button. Imports scripts/restage-pool.js, so the browser
+  // fetches two files here — that pair is the whole cost, because the 100 renders
+  // themselves are fetched one per press and never warmed.
+  { src: 'scripts/home-restage.js', module: true },
   { src: 'scripts/home-reveal.js', module: true },
   // #learn's four photo strips. Independent of home-reveal.js despite both touching
   // that section: this one owns `.is-open`, home-reveal.js owns `.is-visible`, and the

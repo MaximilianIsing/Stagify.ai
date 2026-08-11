@@ -39,6 +39,7 @@ const {
   roomMetrics,
   doorSwing,
   readRooms,
+  sweepOrder,
   wireSelectionGuard,
   wireDeepLinks,
   roomId,
@@ -194,6 +195,85 @@ test('readRooms skips a room missing a coordinate instead of emitting NaN', () =
   withFakeDom(rooms, () => {
     assert.deepEqual(readRooms(root).map((r) => r.key), ['good']);
   });
+});
+
+// --------------------------------------------------------------------------
+// The draft-in sweep order
+// --------------------------------------------------------------------------
+
+test('the sweep runs down the diagonal, not down the source order', () => {
+  // WHY THIS IS NOT `map((_, i) => i)`: the markup is column-major — 01,02 fill the left
+  // bay, 03,04 the middle, 05 is the tall right one, and 06 starts again at the far left.
+  // A stagger on the source index therefore throws the eye back across the sheet, which is
+  // what made three separate waves out of one entrance.
+  //
+  // The assertion is that the sweep never doubles back along the diagonal. Note the weaker
+  // check this replaces: "no room starts before one strictly above AND left of it" LOOKS
+  // like the same property and passes for the DOM order too, because the source happens to
+  // fill the top band before the bottom one. It caught nothing.
+  const rooms = roomsInMarkup();
+  const n = sweepOrder(rooms);
+  assert.deepEqual([...n].sort((p, q) => p - q), rooms.map((_, i) => i), 'a permutation');
+
+  const maxX = Math.max(...rooms.map((r) => r.x + r.w));
+  const maxY = Math.max(...rooms.map((r) => r.y + r.h));
+  const diagonal = (/** @type {{x:number,y:number,w:number,h:number}} */ r) =>
+    (r.x + r.w / 2) / maxX + (r.y + r.h / 2) / maxY;
+
+  const order = rooms.map((r, i) => ({ r, i })).sort((a, b) => n[a.i] - n[b.i]);
+  for (let k = 1; k < order.length; k += 1) {
+    const [prev, cur] = [order[k - 1].r, order[k].r];
+    assert.ok(
+      diagonal(cur) >= diagonal(prev),
+      `the sweep goes backwards at step ${k}: ${cur.key} sits up-sheet of ${prev.key}`
+    );
+  }
+  // The shipped markup must actually need the reorder — if this ever coincides with the
+  // source order, sweepOrder has quietly become a no-op and the room table moved under it.
+  assert.notDeepEqual(n, rooms.map((_, i) => i), 'the room table is not already in sweep order');
+});
+
+test('the plan drafts on the same gate that fades its own container in', () => {
+  // `.faq-plan` is itself a `.reveal`, so home-reveal.js's 20px rise and this module's
+  // wall-drawing play on the same pixels. They used different thresholds (0.18 vs 0.12)
+  // and different root margins, so the walls started tracing themselves while the box was
+  // still sliding up — one section, two animations, visibly out of phase.
+  //
+  // The two numbers cannot be shared: home-faq-plan.js deliberately does NOT watch
+  // `.is-visible`, because home-reveal.js's showAll() fallback sets it on every element
+  // at once and the sheet would draft in far below the fold. So they are copies, and a
+  // copy needs a guard. Read out of the source rather than by running either module —
+  // both are `load`-time side-effect scripts.
+  const src = (/** @type {string} */ name) =>
+    fs.readFileSync(path.join(PUBLIC, 'scripts', name), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const reveal = src('home-reveal.js');
+  const plan = src('home-faq-plan.js');
+
+  const showAt = /SHOW_AT\s*=\s*([\d.]+)/.exec(reveal);
+  assert.ok(showAt, 'home-reveal.js still names its show threshold SHOW_AT');
+  const revealMargin = /rootMargin:\s*["']([^"']+)["']/.exec(reveal);
+  assert.ok(revealMargin, 'home-reveal.js still passes a rootMargin');
+
+  const gate = /\{\s*threshold:\s*([\d.]+),\s*rootMargin:\s*["']([^"']+)["']\s*\}/.exec(plan);
+  assert.ok(gate, 'home-faq-plan.js still gates the draft-in on a single-threshold observer');
+
+  assert.equal(gate[1], showAt[1], 'the draft-in threshold must equal home-reveal.js SHOW_AT');
+  assert.equal(gate[2], revealMargin[1], 'the draft-in rootMargin must equal home-reveal.js rootMargin');
+});
+
+test('the sweep index is a stable permutation even when the ranks tie', () => {
+  // Two rooms stacked at the same centre have the same rank. Without the DOM-index
+  // tiebreak the engine's sort decides, and the delays would differ between browsers for
+  // no visible reason — the kind of drift nobody thinks to look for.
+  const stacked = [
+    { key: 'a', x: 0, y: 0, w: 10, h: 10 },
+    { key: 'b', x: 0, y: 0, w: 10, h: 10 },
+    { key: 'c', x: 10, y: 10, w: 10, h: 10 },
+  ];
+  assert.deepEqual(sweepOrder(/** @type {any} */ (stacked)), [0, 1, 2]);
+  // A single room divides by its own extent; the rank is finite but the fallback must
+  // hold regardless, so the one room is still index 0 rather than undefined.
+  assert.deepEqual(sweepOrder(/** @type {any} */ ([stacked[0]])), [0]);
 });
 
 // --------------------------------------------------------------------------
@@ -555,6 +635,48 @@ test('data-lang sits on the sibling spans, never on the summary or the details',
   }
 });
 
+test('every room shows it opens, on the widths where nothing else says so', () => {
+  // `.faq-q > summary` sets `list-style: none` AND hides ::-webkit-details-marker, so
+  // below 1001px — where the drawing is gone and the accordion is the whole section —
+  // there is no UA affordance left. The homepage shipped with none of its own: nine rows
+  // of text that happened to be clickable. guides.html had its +/- the whole time.
+  //
+  // Both halves are asserted because either alone is a silent failure. Without the span
+  // the affordance is missing on mobile; without plan mode hiding it again, a chevron
+  // floats over the linework on desktop. faq-plan.css already carried the hide rule for
+  // `.faq-q__icon` before any element existed to hide — a guard can outlive its subject,
+  // so this one names the markup too.
+  const rooms = roomsInMarkup();
+  for (const room of rooms) {
+    assert.match(
+      room.body, /<span class="faq-q__caret" aria-hidden="true"><\/span>/,
+      `room ${room.no} (${room.key}) has no open/close affordance in accordion mode`
+    );
+  }
+
+  const home = fs.readFileSync(path.join(PUBLIC, 'styles', 'home.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(home, /\.faq-q__caret\s*\{[^}]*\}/, 'the caret is styled in home.css');
+  assert.match(
+    home, /\.faq-q\[open\]\s+\.faq-q__caret::before\s*\{[^}]*transform:/,
+    'the caret must turn over when the room opens, or it is decoration rather than state'
+  );
+  // home.css, not faq-plan.css: that sheet is lazy AND gated at 1001px, so an affordance
+  // defined there would be absent on exactly the widths that need it.
+  const plan = fs.readFileSync(path.join(PUBLIC, 'styles', 'faq-plan.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const gateAt = plan.indexOf('@media screen and (min-width: 1001px)');
+  assert.ok(gateAt > 0, 'faq-plan.css still opens with the plan-mode gate');
+  assert.doesNotMatch(
+    plan.slice(0, gateAt), /\.faq-q__caret\s*\{/,
+    'the caret must not be defined in the lazy sheet — it has to survive that sheet failing'
+  );
+  assert.match(
+    plan.slice(gateAt), /\.faq-room\s+\.faq-q__caret[^{]*\{[^}]*display:\s*none/,
+    'plan mode must hide the caret; the drawing has no room for one'
+  );
+});
+
 test('the accordion fallback survives on both pages that use it', () => {
   const rooms = roomsInMarkup();
   // .faq-q is what home.css styles; losing it strips the section on every phone.
@@ -740,6 +862,58 @@ test('the room highlight appears whole, and survives reduced motion', () => {
     settled, /@media[^{]*prefers-reduced-motion:\s*reduce/,
     'motion is added under no-preference here, never removed under reduce'
   );
+});
+
+test('the draft-in is one sweep across the sheet, and it is over inside a second', () => {
+  // WHAT WENT WRONG THE FIRST TIME, because the numbers alone do not say it. The labels,
+  // the furniture and the key bubbles each staggered all nine rooms independently over a
+  // ~1.7s span, so room 01's key landed AFTER room 09's label — three passes over the
+  // same drawing, and the section read as slow and out of step with its own container.
+  //
+  // The fix is a ratio, not a duration: each room's three pieces start close together
+  // (they resolve as one room) while consecutive rooms are much closer still (the rooms
+  // read as a wave). Widen the per-room step or narrow the intra-room spacing and it
+  // silently degrades back to three passes, with nothing else failing — hence this guard.
+  const css = fs.readFileSync(path.join(PUBLIC, 'styles', 'faq-plan.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+
+  /** The `calc(<base>s + var(--n, 0) * <step>ms)` delay on one of the staggered waves. */
+  const wave = (/** @type {string} */ sel) => {
+    const rule = new RegExp(`\\.is-drafted\\s+${sel}\\s*\\{([^}]*)\\}`).exec(css);
+    assert.ok(rule, `no drafted rule for ${sel}`);
+    const m = /transition:\s*opacity\s+([\d.]+)s\s+[^;]*?calc\(\s*([\d.]+)s\s*\+\s*var\(--n[^)]*\)\s*\*\s*([\d.]+)ms\s*\)/.exec(rule[1]);
+    assert.ok(m, `${sel} has no calc() stagger delay: ${rule[1].trim()}`);
+    return { dur: Number(m[1]) * 1000, base: Number(m[2]) * 1000, step: Number(m[3]) };
+  };
+
+  const label = wave('\\.faq-room__label');
+  const furn = wave('\\.fp-furn');
+  const key = wave('\\.fp-key');
+
+  const steps = new Set([label.step, furn.step, key.step]);
+  assert.equal(steps.size, 1, `the three waves must share one per-room step, got ${[...steps]}`);
+  const step = label.step;
+
+  const spread = key.base - label.base;
+  assert.ok(label.base < furn.base && furn.base < key.base, 'a room draws itself label, furniture, key');
+  assert.ok(
+    spread >= step * 3,
+    `intra-room spread (${spread}ms) must dominate the per-room step (${step}ms), or the `
+      + 'waves restage the whole sheet three times instead of sweeping across it once'
+  );
+
+  // Nine rooms is what index.html authors; asserted against the markup so a tenth room
+  // extending the tail past the budget is caught here rather than on the live site.
+  const last = roomsInMarkup().length - 1;
+  const end = key.base + last * step + key.dur;
+  assert.ok(end <= 1000, `the sweep must be settled inside 1s; the last key ends at ${end}ms`);
+
+  // The walls are the floor of the whole thing — nothing can be quick while they are not.
+  const walls = /\.is-drafted\s+\.fp-envelope,[^{]*\{([^}]*)\}/.exec(css);
+  assert.ok(walls, 'no drafted rule for the wall network');
+  const draw = /transition:\s*stroke-dashoffset\s+([\d.]+)s/.exec(walls[1]);
+  assert.ok(draw, 'the wall network still draws itself on with a dashoffset transition');
+  assert.ok(Number(draw[1]) <= 0.6, `walls draw in ${draw[1]}s; past ~0.6s the sheet reads as loading`);
 });
 
 test('the question previews at the top of the column without moving as it fades', () => {
@@ -1139,11 +1313,12 @@ test('the window openings are painted with the sheet\'s own ground, stop for sto
 });
 
 test('the open room\'s name leaves the accent, because the accent cannot carry it', () => {
-  // --ink-hot is --brand-pale, and the room name is TEXT at up to 14px, so it owes 4.5:1.
-  // On the bare ground the accent measures ~4.7:1 and is fine. An open room also paints
-  // .fp-floor at 14%, which lifts the local ground and takes the same pair to ~3.7:1 — and
-  // no ground colour recovers it, because with the floor tint removed the accent still only
-  // reaches 4.7. So the tint is the entire margin, and the label steps up to white.
+  // --ink-hot is one rung up the blue ramp from --brand-pale, and the room name is TEXT at
+  // up to 14px, so it owes 4.5:1. On the bare ground the accent measures ~4.7:1 and is fine.
+  // An open room also paints .fp-floor at 17%, which lifts the local ground and takes the
+  // same pair to ~3.6:1 — and no ground colour recovers it, because with the floor tint
+  // removed the accent still only reaches 4.7. So the tint is the entire margin, and the
+  // label steps up to white.
   //
   // The reason this is a test and not a comment: reuniting the two selectors is a one-line
   // "simplification" that looks like tidying and silently reintroduces the failure.

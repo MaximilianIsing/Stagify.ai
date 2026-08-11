@@ -196,7 +196,7 @@ class Carousel {
         ${this.options.items.map((item) => this.slideMarkup(item, itemWidth)).join('')}
       </div>
       ${this.indicatorsMarkup()}
-      <div class="carousel-note" data-lang="hero.carouselNote">Example preview — upload your photo to stage</div>
+      <div class="carousel-note" data-lang="hero.carouselNote">Example preview, upload your photo to stage.</div>
     `;
     }
 

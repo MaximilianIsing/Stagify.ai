@@ -83,6 +83,23 @@
       "revealSliderAria": "Controle deslizante de comparação",
       "exampleRoomsAria": "Cômodos de exemplo"
     },
+    "restage": {
+      "title": "Clique para ver o que o home staging faz",
+      "subtitle": "O mesmo ambiente vazio, decorado vez após vez. Sem transporte, sem aluguel, sem espera.",
+      "kicker": "Controlo total do design",
+      "panelTitle": "Cada execução mobilia tudo de novo",
+      "panelBody": "O home staging tradicional dá a você uma única disposição e um contrato de aluguel. Execute de novo e o ambiente volta mobiliado de outro jeito: outra disposição, outra paleta, outros materiais.",
+      "button": "Decorar este ambiente",
+      "buttonAgain": "Decorar outra vez",
+      "seeOriginal": "Ver original",
+      "loadFailed": "Essa não carregou. Tente novamente.",
+      "points": {
+        "rooms": "Oito tipos de ambiente, de quartos a cozinhas",
+        "browser": "Nada para instalar, funciona no seu navegador"
+      },
+      "emptyAlt": "Uma sala de estar vazia antes do home staging virtual",
+      "stagedAlt": "A mesma sala de estar, decorada pela Stagify"
+    },
     "showcase": {
       "title": "Veja você mesmo",
       "subtitle": "Demos ao vivo. Fique à vontade para explorar.",
@@ -202,7 +219,7 @@
     "info": {
       "eyebrow": "Em resumo",
       "title": "O que é o home staging virtual e por que ele vende",
-      "subtitle": "Um resumo rápido e honesto de como funciona e para quem é. Sem jargões.",
+      "subtitle": "Um resumo rápido e honesto de como funciona e para quem é.",
       "rows": {
         "why": {
           "eyebrow": "Por que funciona",
@@ -216,7 +233,7 @@
         "how": {
           "eyebrow": "Como funciona",
           "caption": "Uma sala de corretores é guiada pelo seu primeiro anúncio decorado",
-          "title": "De foto vazia a anúncio pronto em cerca de 8 segundos",
+          "title": "De foto vazia a anúncio pronto em segundos",
           "body": "Envie uma foto, escolha o tipo de cômodo e um dos sete estilos, e o Stagify o decora em cerca de oito segundos. Precisa de mudanças? Remova os móveis existentes, adicione uma instrução personalizada ou mascare uma área para ajustá-la sem começar de novo.",
           "p1": "7 estilos mais instruções personalizadas e remoção de móveis",
           "p2": "Edite com máscara qualquer parte de um resultado sem refazê-lo",
@@ -342,7 +359,7 @@
       "note": "Reconhecido pela Compass, Centennial e mais."
     },
     "whyus": {
-      "subtitle": "Outras ferramentas de staging virtual são lentas, caras e limitadas. O Stagify é o oposto."
+      "subtitle": "Outras quatro formas de preparar um imóvel, avaliadas ao lado da nossa."
     },
     "testimonials": {
       "title": "O que os corretores dizem",
@@ -350,39 +367,33 @@
       "items": {
         "justin": {
           "quote": "Quando experimentei o Stagify pela primeira vez, fiquei honestamente impressionado. Percebi que podia simplesmente usar meu celular, dispensar o fotógrafo caro e ainda ter resultados incríveis. É uma virada de jogo para meus anúncios, e o preço é sensacional!",
-          "author": "Justin Stern (Corretor)",
+          "author": "Justin Stern",
           "role": "Tahari Realty",
           "location": "Manhattan, Nova York"
         },
         "andy": {
           "quote": "O Stagify se encaixa perfeitamente na minha rotina. Eu envio a foto de um anúncio entre uma visita e outra e ela já volta decorada antes de eu chegar à mesa. Meus clientes sempre ficam impressionados com o acabamento das fotos finais.",
-          "author": "Andy Eras (Corretor)",
+          "author": "Andy Eras",
           "role": "Centennial Properties",
           "location": "Manhattan, Nova York"
         },
-        "p3": {
-          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Three",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "travonte": {
+          "quote": "O Stagify faz o processo parecer sem esforço. Você envia a foto de um cômodo vazio, espera alguns segundos e de repente o espaço ganha personalidade. É simples, limpo e realmente útil.",
+          "author": "Travonte Taylor",
+          "role": "Compass",
+          "location": "Brooklyn, Nova York"
         },
-        "p4": {
-          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Four",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jack": {
+          "quote": "O que mais me impressionou no Stagify foi o quanto ele é prático. Não é mais uma ferramenta de IA que impressiona por um segundo. Ele pega algo que corretores, inquilinos e proprietários enfrentam o tempo todo e torna tudo mais rápido e fácil.",
+          "author": "Jack Sash",
+          "role": "Tahari Realty",
+          "location": "Manhattan, Nova York"
         },
-        "p5": {
-          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Five",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
-        },
-        "p6": {
-          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Six",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jaden": {
+          "quote": "Consigo ver o Stagify sendo enorme para alojamentos, apartamentos e anúncios. Cômodos vazios são difíceis de imaginar, mas depois de decorados o espaço fica instantaneamente mais real. Faz uma enorme diferença quando você tenta se imaginar morando ali.",
+          "author": "Jaden Lander",
+          "role": "RockSolid Management",
+          "location": "Manhattan, Nova York"
         }
       },
       "deck": {
@@ -579,38 +590,63 @@
   "whyUs": {
     "title": "Por que nos escolher?",
     "stagify": {
-      "title": "stagify.ai",
       "features": {
-        "instantResults": "<strong>Resultados instantâneos</strong>: ~8 segundos",
-        "oneClickStaging": "<strong>Staging com um clique</strong>: sem complicação",
-        "free": "<strong>Gerações grátis ilimitadas</strong>: Sem cartão",
-        "noAds": "<strong>Experiência sem anúncios</strong>: sem distrações",
-        "noLogin": "<strong>Cadastro fácil</strong>: comece na hora",
-        "unlimited": "<strong>Modelos de imagem avançados</strong>: qualidade superior",
-        "copyright": "<strong>Direitos autorais completos</strong>: use em qualquer lugar"
+        "free": "Grátis, quantas vezes quiser"
       }
     },
-    "others": {
-      "title": "Outros",
-      "features": {
-        "slowResults": "<strong style=\"color: #6d1c2c;\">Resultados lentos: </strong>Dias de espera",
-        "longProcess": "<strong style=\"color: #6d1c2c;\">Processo longo: </strong>Idas e vindas cansativas",
-        "expensive": "<strong style=\"color: #6d1c2c;\">Caro: </strong>Taxas altas por imagem",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Anúncios e cookies: </strong>Experiência invasiva",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">Cadastro demorado: </strong>Início frustrante",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Modelos antigos e mais baratos: </strong>Qualidade inferior",
-        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Direitos autorais incertos: </strong>Risco jurídico"
-      }
-    },
-    "keyFeatures": {
-      "title": "Recursos principais",
-      "unlimitedVariations": {
-        "title": "Variações ilimitadas",
-        "description": "Explore vários estilos até combinar com a sua marca e o perfil dos seus compradores."
+    "board": {
+      "caption": "Stagify.ai comparado com outras quatro formas de preparar um imóvel, em seis fatores.",
+      "headers": {
+        "factor": "Fator",
+        "stager": "Home staging tradicional",
+        "ai": "Ferramenta de IA por imagem",
+        "diy": "Editar você mesmo",
+        "empty": "Cômodo vazio"
       },
-      "fastTurnarounds": {
-        "title": "Entregas rápidas",
-        "description": "Decore fotos em cerca de 8 segundos para anunciar mais cedo e fechar mais negócios."
+      "values": {
+        "yes": "Sim",
+        "no": "Não"
+      },
+      "rows": {
+        "speed": {
+          "factor": "Rapidez",
+          "us": "~8 segundos",
+          "stager": "1–3 semanas",
+          "ai": "1–3 dias",
+          "diy": "2–4 horas por foto",
+          "empty": "Imediato"
+        },
+        "cost": {
+          "factor": "Custo por imóvel",
+          "us": "$0, ou $11.99 por mês",
+          "stager": "$2,000–$5,000",
+          "ai": "$550–850",
+          "diy": "Uma tarde do seu tempo",
+          "empty": "$0"
+        },
+        "redo": {
+          "factor": "Testar outro estilo",
+          "stager": "Cobrado por hora",
+          "ai": "Cobrado por imagem",
+          "diy": "Mais tempo seu",
+          "empty": "Nada para testar"
+        },
+        "quality": {
+          "factor": "Qualidade da foto",
+          "us": "Renders quase fotorrealistas",
+          "stager": "Fotos de cômodos reais",
+          "ai": "Falhas de IA visíveis",
+          "diy": "Depende do seu editor",
+          "empty": "Um cômodo vazio"
+        },
+        "ownership": {
+          "factor": "As fotos são suas",
+          "stager": "São do fotógrafo",
+          "ai": "Licenciado, não é seu"
+        },
+        "furniture": {
+          "factor": "Móveis reais na visita"
+        }
       }
     }
   },
@@ -718,7 +754,7 @@
       "UNSTAGEABLE": "Isto não parece um cômodo, espaço ou móvel. Envie a foto de um cômodo, área externa ou móvel que você quer decorar."
     },
     "heicConvert": "Não foi possível ler essa foto HEIC. Tente um JPG ou PNG.",
-    "fileType": "Envie um arquivo de imagem PNG, JPG, JPEG, WebP ou GIF.",
+    "fileType": "Envie um arquivo de imagem JPG, PNG, WebP ou HEIC.",
     "fileTooLarge": "O ficheiro é demasiado grande. Carregue uma imagem com menos de 25 MB.",
     "uploadFirst": "Envie uma imagem primeiro",
     "badPrompt": "Instrução inválida inserida",
@@ -1011,7 +1047,7 @@
       "title": "Envio e arquivos",
       "i1": {
         "q": "Minha foto não envia.",
-        "a": "Certifique-se de que o ficheiro é um JPG, PNG ou WEBP com menos de 25 MB. Fotos de telemóvel muito grandes às vezes falham — redimensione a imagem ou tire uma captura de ecrã e carregue novamente. Se continuar a falhar, atualize a página e tente de novo."
+        "a": "Certifique-se de que o ficheiro é um JPG, PNG, WebP ou HEIC com menos de 25 MB. Fotos de telemóvel muito grandes às vezes falham — redimensione a imagem ou tire uma captura de ecrã e carregue novamente. Se continuar a falhar, atualize a página e tente de novo."
       },
       "i2": {
         "q": "Quais fotos funcionam melhor?",
@@ -1366,7 +1402,7 @@
   "stagifyPlus": {
     "hero": {
       "title": "Tudo no Stagify, <span class=\"sp-grad\">desbloqueado</span>.",
-      "subtitle": "Remoção de móveis, o Designer de IA, o Masking Studio e modelos de maior qualidade — todas as ferramentas profissionais por menos do que custa uma única decoração tradicional."
+      "subtitle": "Remoção de móveis, o Designer de IA, o Masking Studio e modelos de maior qualidade: todas as ferramentas profissionais por menos do que custa uma única decoração tradicional."
     },
     "plan": {
       "hintAccountFirst": "Crie primeiro uma conta gratuita: é assim que sua assinatura fica vinculada a você.",

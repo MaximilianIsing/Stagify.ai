@@ -98,7 +98,7 @@ export function createUpload(deps) {
         file = await window.StagifyHeic.toDisplayableFile(file);
       }
     } catch (e) {
-      showToast(tx('errors.heicConvert', "We couldn't read that HEIC photo. Please try a JPG or PNG."), 'error');
+      showToast(tx('errors.heicConvert', "We couldn’t read that HEIC photo. Please try a JPG or PNG."), 'error');
       return;
     }
     if (ROOM_TYPES.indexOf((file.type || '').toLowerCase()) === -1) {
@@ -108,7 +108,7 @@ export function createUpload(deps) {
     // Same ceiling the staging studio uses, and the one multer actually enforces —
     // this said 100 MB, so the Masking Studio accepted files the server would refuse.
     if (file.size > MAX_IMAGE_BYTES) {
-      showToast(tx('errors.fileTooLarge', 'File is too large. Please upload an image smaller than 25MB.'), 'error');
+      showToast(tx('errors.fileTooLarge', 'File is too large. Please upload an image smaller than 25 MB.'), 'error');
       return;
     }
     const dataUrl = await new Promise((resolve, reject) => {

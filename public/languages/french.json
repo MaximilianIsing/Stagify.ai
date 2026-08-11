@@ -10,7 +10,7 @@
     "pdfTo3d": "Designer IA",
     "maskingStudio": "Studio de masquage",
     "staging": "Staging",
-    "imageStaging": "Staging d'image",
+    "imageStaging": "Staging d’image",
     "basicMask": "Masque simple",
     "plusBadge": "Stagify+",
     "whyUs": "Pourquoi nous ?",
@@ -21,13 +21,13 @@
     "techHelp": "Aide technique",
     "gallery": "Galerie",
     "guides": "Guides",
-    "logoAlt": "Logo Stagify.ai — aller à l'accueil",
+    "logoAlt": "Logo Stagify.ai — aller à l’accueil",
     "tips": {
-      "imageStaging": "Meuble une pièce entière à partir d'une seule photo : choisissez le type de pièce et le style de mobilier, l'IA s'occupe du reste. Idéal pour les pièces vides ou presque vides quand vous voulez un résultat rapide et complet.",
-      "basicMask": "Peignez sur une partie de la photo, puis décrivez la modification souhaitée. Idéal pour les petites retouches — changer un canapé, dégager un plan de travail — quand le reste de l'image convient déjà.",
+      "imageStaging": "Meuble une pièce entière à partir d’une seule photo : choisissez le type de pièce et le style de mobilier, l’IA s’occupe du reste. Idéal pour les pièces vides ou presque vides quand vous voulez un résultat rapide et complet.",
+      "basicMask": "Peignez sur une partie de la photo, puis décrivez la modification souhaitée. Idéal pour les petites retouches — changer un canapé, dégager un plan de travail — quand le reste de l’image convient déjà.",
       "pdfTo3d": "Discutez avec un designer IA qui aménage une pièce, la redessine et la fait évoluer avec vous. Idéal pour explorer des styles plutôt que finaliser une seule photo. Ordinateur uniquement.",
       "maskingStudio": "Surlignez plusieurs zones dans des couleurs différentes, donnez à chacune sa photo de mobilier ou sa consigne, puis aménagez-les toutes en même temps. Idéal quand il vous faut un contrôle exact : tout ce qui est hors de vos zones reste au pixel près.",
-      "exteriorStudio": "Améliore la photo de l'extérieur d'un bien : changez l'heure de la journée, dégagez le ciel et supprimez les voitures garées et le désordre. Idéal pour la façade, le jardin et les vues depuis la rue, que les outils de home staging ne touchent jamais."
+      "exteriorStudio": "Améliore la photo de l’extérieur d’un bien : changez l’heure de la journée, dégagez le ciel et supprimez les voitures garées et le désordre. Idéal pour la façade, le jardin et les vues depuis la rue, que les outils de home staging ne touchent jamais."
     },
     "exteriorStudio": "Studio Extérieur"
   },
@@ -46,10 +46,10 @@
       "imagine": "Imaginez."
     },
     "cta": "Importez gratuitement",
-    "freeGensLeft": "{n} générations gratuites restantes aujourd'hui, ",
+    "freeGensLeft": "{n} générations gratuites restantes aujourd’hui, ",
     "freeGensLeftUpgrade": "Mettre à niveau",
-    "freeGensUpgrade": "Essayez Stagify+ dès aujourd'hui. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mettre à niveau</a>",
-    "carouselNote": "Aperçu d'exemple. Importez votre photo pour la meubler",
+    "freeGensUpgrade": "Essayez Stagify+ dès aujourd’hui. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mettre à niveau</a>",
+    "carouselNote": "Aperçu d’exemple. Importez votre photo pour la meubler",
     "stats": {
       "roomsStaged": "Pièces meublées",
       "usersServed": "Utilisateurs servis",
@@ -62,17 +62,17 @@
   "home": {
     "studio": {
       "eyebrow": "Avant & après",
-      "title": "Faites glisser pour voir l'effet du staging",
-      "subtitle": "La même photo d'annonce, avant et après Stagify. Sans déménageurs, sans location, sans attente.",
+      "title": "Faites glisser pour voir l’effet du staging",
+      "subtitle": "La même photo d’annonce, avant et après Stagify. Sans déménageurs, sans location, sans attente.",
       "beforeLabel": "Avant",
       "afterLabel": "Après",
       "kicker": "Le rendu",
       "panelTitle": "La même pièce, meublée en quelques secondes",
-      "panelBody": "Faites glisser la poignée. À gauche, la photo d'origine ; tout ce qui est à droite a été mis en scène par Stagify en quelques secondes.",
+      "panelBody": "Faites glisser la poignée. À gauche, la photo d’origine ; tout ce qui est à droite a été mis en scène par Stagify en quelques secondes.",
       "points": {
         "speed": "Environ 8 secondes par photo",
-        "restage": "Re-meublez dans n'importe quel style, aussi souvent que vous le souhaitez",
-        "rights": "Chaque image vous appartient, avec tous les droits d'auteur"
+        "restage": "Re-meublez dans n’importe quel style, aussi souvent que vous le souhaitez",
+        "rights": "Chaque image vous appartient, avec tous les droits d’auteur"
       },
       "examples": {
         "bedroom": "Chambre",
@@ -82,6 +82,23 @@
       "comparisonAria": "Comparaison avant et après le staging",
       "revealSliderAria": "Curseur de révélation",
       "exampleRoomsAria": "Exemples de pièces"
+    },
+    "restage": {
+      "title": "Cliquez pour voir ce que l’aménagement change",
+      "subtitle": "La même pièce vide, aménagée encore et encore. Pas de déménageurs, pas de location, pas d’attente.",
+      "kicker": "Maîtrise totale du design",
+      "panelTitle": "Chaque essai la meuble à nouveau",
+      "panelBody": "Le home staging traditionnel vous donne un seul agencement et un contrat de location. Relancez et la pièce revient meublée autrement : autre agencement, autre palette, autres matériaux.",
+      "button": "Aménager cette pièce",
+      "buttonAgain": "Aménager à nouveau",
+      "seeOriginal": "Voir l’original",
+      "loadFailed": "Celle-ci n’a pas pu être chargée. Réessayez.",
+      "points": {
+        "rooms": "Huit types de pièces, de la chambre à la cuisine",
+        "browser": "Rien à installer, tout se passe dans le navigateur"
+      },
+      "emptyAlt": "Un salon vide avant le home staging virtuel",
+      "stagedAlt": "Le même salon, aménagé par Stagify"
     },
     "showcase": {
       "title": "Voyez par vous-même",
@@ -100,26 +117,26 @@
     },
     "staging": {
       "title": "Meublez une pièce vide en quelques secondes",
-      "subtitle": "Importez la photo, choisissez la pièce et un style, et Stagify la meuble. C'est le parcours par lequel commence chaque formule.",
+      "subtitle": "Importez la photo, choisissez la pièce et un style, et Stagify la meuble. C’est le parcours par lequel commence chaque formule.",
       "kicker": "Le point de départ",
       "panelTitle": "Une photo vide entre, une pièce meublée sort",
       "panelBody": "Rien à rédiger, rien à apprendre. Choisissez le type de pièce et le rendu voulu : la photo revient meublée, murs, fenêtres et sol intacts.",
       "points": {
         "upload": "Importez une photo et meublez-la en 8 secondes environ.",
-        "styles": "Choisissez parmi des styles d'ameublement pour chaque pièce.",
+        "styles": "Choisissez parmi des styles d’ameublement pour chaque pièce.",
         "restage": "Pas tout à fait ça ? Recommencez autant de fois que vous voulez.",
         "rights": "Chaque image vous appartient, avec tous les droits d’auteur."
       }
     },
     "designer": {
       "title": "Laissez une IA meubler votre espace",
-      "subtitle": "Avec le Designer IA, discutez pour meubler, redessiner et peaufiner n'importe quelle pièce jusqu'à ce qu'elle soit prête pour l'annonce. <em>(Exclusivité Stagify+)</em>",
+      "subtitle": "Avec le Designer IA, discutez pour meubler, redessiner et peaufiner n’importe quelle pièce jusqu’à ce qu’elle soit prête pour l’annonce. <em>(Exclusivité Stagify+)</em>",
       "kicker": "Conversationnel",
-      "panelTitle": "Discutez jusqu'à ce que la pièce vous convienne",
-      "panelBody": "Décrivez ce que vous voulez : le Designer met la pièce en scène et la garde en mémoire. Demandez un autre canapé ou des tons plus chauds, il repart de ce qu'il a déjà créé.",
+      "panelTitle": "Discutez jusqu’à ce que la pièce vous convienne",
+      "panelBody": "Décrivez ce que vous voulez : le Designer met la pièce en scène et la garde en mémoire. Demandez un autre canapé ou des tons plus chauds, il repart de ce qu’il a déjà créé.",
       "points": {
         "iterate": "Continuez à affiner dans la même conversation.",
-        "furniture": "Joignez du mobilier que vous vendez, il l'intègre.",
+        "furniture": "Joignez du mobilier que vous vendez, il l’intègre.",
         "saved": "Chaque version arrive seule dans votre galerie."
       }
     },
@@ -130,33 +147,33 @@
       "panelTitle": "Seul ce que vous peignez est remis en scène",
       "panelBody": "Peignez uniquement la zone à remettre en scène. Tout ce qui est hors du masque revient intact : le reste de la photo ne bouge pas.",
       "points": {
-        "snap": "Peignez un masque ou laissez l'outil suivre l'objet.",
+        "snap": "Peignez un masque ou laissez l’outil suivre l’objet.",
         "areas": "Marquez plusieurs zones et meublez-les en même temps.",
-        "own": "Ajoutez la photo d'un meuble pour le placer.",
+        "own": "Ajoutez la photo d’un meuble pour le placer.",
         "repeat": "Relancez le même masque dans un autre style."
       }
     },
     "exterior": {
-      "title": "Corrigez la photo qui ouvre l'annonce",
-      "subtitle": "Le Studio Extérieur change l'heure, dégage le ciel gris et supprime voitures et poubelles. Le bien reste intact. <em>(Exclusivité Stagify+)</em>",
+      "title": "Corrigez la photo qui ouvre l’annonce",
+      "subtitle": "Le Studio Extérieur change l’heure, dégage le ciel gris et supprime voitures et poubelles. Le bien reste intact. <em>(Exclusivité Stagify+)</em>",
       "kicker": "Attrait extérieur",
       "panelTitle": "La seule photo impossible à refaire",
-      "panelBody": "Chaque annonce s'ouvre sur l'extérieur du bien, la seule photo que vous ne pouvez pas refaire.",
+      "panelBody": "Chaque annonce s’ouvre sur l’extérieur du bien, la seule photo que vous ne pouvez pas refaire.",
       "points": {
-        "light": "Photographiez à midi, publiez à l'heure dorée.",
+        "light": "Photographiez à midi, publiez à l’heure dorée.",
         "sky": "Le gris uniforme devient bleu limpide ou nuageux.",
         "clutter": "Voitures, poubelles et panneaux disparaissent.",
         "honest": "Pas de pelouse refaite, ni peinture, ni allée neuve."
       },
-      "comparisonAria": "Comparaison de la photo extérieure avant et après l'amélioration",
+      "comparisonAria": "Comparaison de la photo extérieure avant et après l’amélioration",
       "alts": {
-        "before": "Une maison de banlieue photographiée sous un ciel gris uniforme, avec une voiture dans l'allée, des poubelles au bord du trottoir et un tuyau sur la pelouse",
-        "after": "La même maison à l'heure dorée sous un ciel bleu limpide, sans la voiture garée, les poubelles ni le tuyau"
+        "before": "Une maison de banlieue photographiée sous un ciel gris uniforme, avec une voiture dans l’allée, des poubelles au bord du trottoir et un tuyau sur la pelouse",
+        "after": "La même maison à l’heure dorée sous un ciel bleu limpide, sans la voiture garée, les poubelles ni le tuyau"
       }
     },
     "gallery": {
       "title": "Chaque pièce que vous aménagez est conservée pour vous",
-      "subtitle": "Votre galerie conserve chaque pièce aménagée, les réglages qui l'ont produite et les liens que vous avez partagés avec vos clients.",
+      "subtitle": "Votre galerie conserve chaque pièce aménagée, les réglages qui l’ont produite et les liens que vous avez partagés avec vos clients.",
       "mock": {
         "title": "Votre galerie",
         "count": "7 pièces mises en scène"
@@ -176,7 +193,7 @@
         "dining": "Une salle à manger aménagée avec une table ovale en bois, six chaises, un lustre et des baies vitrées",
         "kitchen": "Une cuisine mise en scène avec îlot blanc, plan de travail en marbre, tabourets bleus et suspensions",
         "office": "Un bureau mis en scène avec table en bois, chaise tapissée, bibliothèques et lampe de bureau",
-        "guest": "Une chambre d'amis mise en scène avec lit tapissé neutre, chevets assortis et coussins bleu clair",
+        "guest": "Une chambre d’amis mise en scène avec lit tapissé neutre, chevets assortis et coussins bleu clair",
         "sunroom": "Une véranda mise en scène avec fauteuils en rotin, table ronde en bois, plantes et larges fenêtres"
       },
       "addresses": {
@@ -189,53 +206,53 @@
         "seven": "1841 Cypress Bend"
       },
       "panelTitle": "Remettez en scène autant que vous voulez",
-      "panelBody": "Aucun bouton d'enregistrement, aucun dossier à nommer. Mettez une pièce en scène et elle est dans votre galerie avant que vous fermiez l'onglet, avec les réglages exacts qui l'ont produite.",
+      "panelBody": "Aucun bouton d’enregistrement, aucun dossier à nommer. Mettez une pièce en scène et elle est dans votre galerie avant que vous fermiez l’onglet, avec les réglages exacts qui l’ont produite.",
       "points": {
         "auto": "Enregistré tout seul, rien à oublier.",
         "versions": "Chaque version est conservée, jamais écrasée.",
         "search": "Retrouvez un rendu par nom, pièce ou style.",
-        "private": "La photo vide d'origine reste à vous seul.",
+        "private": "La photo vide d’origine reste à vous seul.",
         "share": "Chaque pièce a son propre lien client."
       },
       "kicker": "Conservé pour vous"
     },
     "info": {
       "eyebrow": "En bref",
-      "title": "Ce qu'est le home staging virtuel, et pourquoi il fait vendre",
-      "subtitle": "Un récapitulatif rapide et honnête de son fonctionnement et de son public. Sans jargon.",
+      "title": "Ce qu’est le home staging virtuel, et pourquoi il fait vendre",
+      "subtitle": "Un récapitulatif rapide et honnête de son fonctionnement et de son public.",
       "rows": {
         "why": {
           "eyebrow": "Pourquoi ça marche",
           "caption": "Démonstration de Stagify dans un bureau Compass à New York",
-          "title": "Les acheteurs achètent d'abord avec les yeux",
-          "body": "Presque tous les acheteurs commencent en ligne : vos photos d'annonce sont donc la véritable première visite. Les pièces vides ou démodées sont difficiles à appréhender ; on ne perçoit ni les volumes ni la vie qu'on pourrait y avoir. Le staging donne à chaque pièce une fonction claire et un attrait, et c'est pourquoi les agents s'y fient depuis toujours.",
-          "p1": "Les pièces vides paraissent plus petites et plus froides qu'elles ne le sont",
-          "p2": "Le staging montre l'usage prévu de chaque espace",
-          "p3": "De meilleures photos génèrent plus de clics, d'enregistrements et de visites"
+          "title": "Les acheteurs achètent d’abord avec les yeux",
+          "body": "Presque tous les acheteurs commencent en ligne : vos photos d’annonce sont donc la véritable première visite. Les pièces vides ou démodées sont difficiles à appréhender ; on ne perçoit ni les volumes ni la vie qu’on pourrait y avoir. Le staging donne à chaque pièce une fonction claire et un attrait, et c’est pourquoi les agents s’y fient depuis toujours.",
+          "p1": "Les pièces vides paraissent plus petites et plus froides qu’elles ne le sont",
+          "p2": "Le staging montre l’usage prévu de chaque espace",
+          "p3": "De meilleures photos génèrent plus de clics, d’enregistrements et de visites"
         },
         "how": {
           "eyebrow": "Comment ça marche",
-          "caption": "Accompagner une salle d'agents pour leur première annonce meublée",
-          "title": "D'une photo vide à une annonce prête en environ 8 secondes",
-          "body": "Importez une photo, choisissez le type de pièce et l'un des sept styles, et Stagify la meuble en environ huit secondes. Besoin de modifications ? Supprimez le mobilier existant, ajoutez une consigne personnalisée, ou masquez une zone pour l'ajuster sans tout recommencer.",
+          "caption": "Accompagner une salle d’agents pour leur première annonce meublée",
+          "title": "D’une photo vide à une annonce prête en quelques secondes",
+          "body": "Importez une photo, choisissez le type de pièce et l’un des sept styles, et Stagify la meuble en environ huit secondes. Besoin de modifications ? Supprimez le mobilier existant, ajoutez une consigne personnalisée, ou masquez une zone pour l’ajuster sans tout recommencer.",
           "p1": "7 styles, plus des consignes personnalisées et la suppression du mobilier",
-          "p2": "Modifiez par masque n'importe quelle partie d'un rendu sans le refaire",
-          "p3": "Tous les droits d'auteur, à vous pour le MLS ou la publicité"
+          "p2": "Modifiez par masque n’importe quelle partie d’un rendu sans le refaire",
+          "p3": "Tous les droits d’auteur, à vous pour le MLS ou la publicité"
         },
         "who": {
-          "eyebrow": "À qui ça s'adresse",
-          "caption": "S'asseoir en tête-à-tête pour meubler les photos d'un agent",
+          "eyebrow": "À qui ça s’adresse",
+          "caption": "S’asseoir en tête-à-tête pour meubler les photos d’un agent",
           "title": "Conçu pour les agents, les vendeurs et les acheteurs",
-          "body": "Les agents commercialisent chaque annonce en quelques minutes au lieu d'attendre une équipe de staging. Les vendeurs meublent leurs propres photos sans engager personne. Les acheteurs prévisualisent une rénovation avant de s'engager. Et avec le Designer IA, vous pouvez transformer des PDF de plans CAO en rendus 3D photoréalistes.",
+          "body": "Les agents commercialisent chaque annonce en quelques minutes au lieu d’attendre une équipe de staging. Les vendeurs meublent leurs propres photos sans engager personne. Les acheteurs prévisualisent une rénovation avant de s’engager. Et avec le Designer IA, vous pouvez transformer des PDF de plans CAO en rendus 3D photoréalistes.",
           "p1": "Agents : publiez plus tôt et concluez davantage",
           "p2": "Vendeurs & acheteurs : aucun logiciel, aucun designer nécessaire",
           "p3": "Designer IA : mise en scène autonome de pièces"
         },
         "team": {
           "eyebrow": "Ce que ça évite",
-          "caption": "Une équipe d'agence découvre Stagify",
+          "caption": "Une équipe d’agence découvre Stagify",
           "title": "Tout votre bureau, sans formation",
-          "body": "Aucun logiciel à installer, rien à apprendre. N'importe qui dans l'équipe peut ouvrir Stagify dans un navigateur, importer une photo d'annonce et la faire meubler en quelques secondes, que ce soit sur un ordinateur portable au bureau ou un téléphone sur le terrain.",
+          "body": "Aucun logiciel à installer, rien à apprendre. N’importe qui dans l’équipe peut ouvrir Stagify dans un navigateur, importer une photo d’annonce et la faire meubler en quelques secondes, que ce soit sur un ordinateur portable au bureau ou un téléphone sur le terrain.",
           "p1": "Aucune compétence en design ni logiciel requis",
           "p2": "Fonctionne dans tout navigateur, sur tout appareil",
           "p3": "Chaque agent peut meubler ses propres annonces"
@@ -251,12 +268,12 @@
       "calc": {
         "question": "Combien de logements mettez-vous en staging par an ?",
         "weeks": "{n} semaines",
-        "note": "Calculé sur la base de 2 000 $ par logement, le bas de la fourchette habituelle, et deux semaines entre la réservation et l'installation."
+        "note": "Calculé sur la base de 2 000 $ par logement, le bas de la fourchette habituelle, et deux semaines entre la réservation et l’installation."
       },
       "rows": {
         "cost": {
           "aspect": "Coût",
-          "trad": "2 000–5 000 $ et plus par logement, souvent facturé mensuellement jusqu'à la vente",
+          "trad": "2 000–5 000 $ et plus par logement, souvent facturé mensuellement jusqu’à la vente",
           "stag": "Gratuit pour commencer, meublez sans frais"
         },
         "time": {
@@ -270,8 +287,8 @@
           "stag": "7 styles plus des consignes personnalisées, changez à tout moment"
         },
         "changes": {
-          "aspect": "Changer d'avis",
-          "trad": "Nouveaux frais de location et d'installation à chaque fois",
+          "aspect": "Changer d’avis",
+          "trad": "Nouveaux frais de location et d’installation à chaque fois",
           "stag": "Re-meublez autant de fois que vous le souhaitez"
         },
         "logistics": {
@@ -282,26 +299,26 @@
         "rights": {
           "aspect": "Les images",
           "trad": "Photos de meubles empruntés que vous rendez",
-          "stag": "À vous de les garder, avec tous les droits d'auteur"
+          "stag": "À vous de les garder, avec tous les droits d’auteur"
         }
       }
     },
     "nar": {
       "title": "Ne prenez pas de retard",
       "subtitle": "Les agents adoptent l’IA vite et les clients approuvent. Commencez par le staging.",
-      "usageLabel": "À quelle fréquence les agents utilisent des outils d'IA",
+      "usageLabel": "À quelle fréquence les agents utilisent des outils d’IA",
       "legend": {
         "daily": "Tous les jours",
         "weekly": "Chaque semaine",
         "monthly": "Quelques fois par mois",
         "none": "Pas encore"
       },
-      "note": "des agents utilisent déjà l'IA dans leur activité.",
-      "stat1": "des agents déclarent que leurs clients ont réagi positivement à la technologie dans le processus d'achat et de vente",
-      "stat2": "utilisent déjà l'IA pour générer le contenu de leurs annonces",
-      "source": "Chiffres issus de l'enquête technologique 2025 de la National Association of Realtors auprès des agents immobiliers.",
+      "note": "des agents utilisent déjà l’IA dans leur activité.",
+      "stat1": "des agents déclarent que leurs clients ont réagi positivement à la technologie dans le processus d’achat et de vente",
+      "stat2": "utilisent déjà l’IA pour générer le contenu de leurs annonces",
+      "source": "Chiffres issus de l’enquête technologique 2025 de la National Association of Realtors auprès des agents immobiliers.",
       "sourceCite": "Source : National Association of Realtors, enquête technologique 2025",
-      "usageAria": "Utilisation de l'IA chez les agents : 20 % tous les jours, 22 % chaque semaine, 27 % quelques fois par mois, 32 % pas encore"
+      "usageAria": "Utilisation de l’IA chez les agents : 20 % tous les jours, 22 % chaque semaine, 27 % quelques fois par mois, 32 % pas encore"
     },
     "plus": {
       "title": "Allez plus loin avec Stagify+",
@@ -311,9 +328,9 @@
         "tag": "Pour les particuliers",
         "per": "/ mois",
         "f1": "Générations de staging illimitées",
-        "f2": "Modèle d'image de meilleure qualité",
+        "f2": "Modèle d’image de meilleure qualité",
         "f3": "Plusieurs variations par génération",
-        "f4": "Outil de masquage pour modifier n'importe quelle zone",
+        "f4": "Outil de masquage pour modifier n’importe quelle zone",
         "f5": "Designer IA : processus de staging autonome",
         "f6": "Supprimez le mobilier existant des pièces",
         "cta": "Voir Stagify+"
@@ -322,11 +339,11 @@
         "name": "Enterprise",
         "tag": "Pour les équipes",
         "per": "/ génération",
-        "desc": "Offrez automatiquement Stagify+ à toute votre équipe et ne payez que ce qu'elle utilise réellement.",
-        "f1": "Toute personne avec votre e-mail d'entreprise incluse",
-        "f2": "Facturation à l'usage, sans frais par utilisateur",
-        "f3": "Une seule facture, facturée mensuellement selon l'usage",
-        "f4": "Toutes les fonctionnalités Stagify+ incluses pour l'équipe",
+        "desc": "Offrez automatiquement Stagify+ à toute votre équipe et ne payez que ce qu’elle utilise réellement.",
+        "f1": "Toute personne avec votre e-mail d’entreprise incluse",
+        "f2": "Facturation à l’usage, sans frais par utilisateur",
+        "f3": "Une seule facture, facturée mensuellement selon l’usage",
+        "f4": "Toutes les fonctionnalités Stagify+ incluses pour l’équipe",
         "cta": "Découvrir Enterprise"
       }
     },
@@ -339,54 +356,48 @@
       "title": "Essayez-le sur votre propre annonce",
       "subtitle": "Importez une pièce vide et voyez-la meublée en environ huit secondes. Essai gratuit.",
       "button": "Importer une photo",
-      "note": "Reconnu par Compass, Centennial et bien d'autres."
+      "note": "Reconnu par Compass, Centennial et bien d’autres."
     },
     "whyus": {
-      "subtitle": "Les autres outils de staging virtuel sont lents, coûteux et verrouillés. Stagify est l’inverse."
+      "subtitle": "Quatre autres façons de préparer un bien, notées à côté de la nôtre."
     },
     "testimonials": {
       "title": "Ce que disent les agents",
       "subtitle": "Directement des agents qui ont franchi le pas.",
       "items": {
         "justin": {
-          "quote": "La première fois que j'ai essayé Stagify, j'ai été honnêtement bluffé. J'ai réalisé que je pouvais simplement utiliser mon téléphone, me passer du photographe coûteux et obtenir malgré tout des résultats époustouflants. C'est un vrai changement pour mes annonces, et le prix est incroyable !",
-          "author": "Justin Stern (Courtier)",
+          "quote": "La première fois que j’ai essayé Stagify, j’ai été honnêtement bluffé. J’ai réalisé que je pouvais simplement utiliser mon téléphone, me passer du photographe coûteux et obtenir malgré tout des résultats époustouflants. C’est un vrai changement pour mes annonces, et le prix est incroyable !",
+          "author": "Justin Stern",
           "role": "Tahari Realty",
           "location": "Manhattan, New York"
         },
         "andy": {
-          "quote": "Stagify s'intègre parfaitement à ma façon de travailler. J'envoie la photo d'une annonce entre deux visites et elle revient mise en scène avant même que je sois de retour à mon bureau. Mes clients sont toujours impressionnés par le rendu soigné des photos finales.",
-          "author": "Andy Eras (Courtier)",
+          "quote": "Stagify s’intègre parfaitement à ma façon de travailler. J’envoie la photo d’une annonce entre deux visites et elle revient mise en scène avant même que je sois de retour à mon bureau. Mes clients sont toujours impressionnés par le rendu soigné des photos finales.",
+          "author": "Andy Eras",
           "role": "Centennial Properties",
           "location": "Manhattan, New York"
         },
-        "p3": {
-          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Three",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "travonte": {
+          "quote": "Stagify rend le processus vraiment simple. Vous téléversez la photo d’une pièce vide, vous patientez quelques secondes et, soudain, l’espace a du caractère. C’est simple, net et réellement utile.",
+          "author": "Travonte Taylor",
+          "role": "Compass",
+          "location": "Brooklyn, New York"
         },
-        "p4": {
-          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Four",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jack": {
+          "quote": "Ce qui m’a le plus impressionné avec Stagify, c’est son côté concret. Ce n’est pas un énième outil d’IA joli deux secondes. Il prend un problème que les agents, les locataires et les propriétaires vivent en permanence et le rend plus rapide et plus facile.",
+          "author": "Jack Sash",
+          "role": "Tahari Realty",
+          "location": "Manhattan, New York"
         },
-        "p5": {
-          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Five",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
-        },
-        "p6": {
-          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Six",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jaden": {
+          "quote": "Je vois Stagify devenir incontournable pour les résidences étudiantes, les appartements et les annonces. Une pièce vide est difficile à se représenter, mais une fois aménagée l’espace paraît aussitôt plus réel. Ça change tout quand on essaie de s’y projeter.",
+          "author": "Jaden Lander",
+          "role": "RockSolid Management",
+          "location": "Manhattan, New York"
         }
       },
       "deck": {
-        "label": "Témoignages d'agents",
+        "label": "Témoignages d’agents",
         "prev": "Témoignage précédent",
         "next": "Témoignage suivant"
       }
@@ -459,7 +470,7 @@
       },
       "stampSizeLabel": "Taille de la mention",
       "stampPreview": "Aperçu",
-      "stampPreviewAlt": "Photo d'exemple montrant la mention de meublé virtuellement",
+      "stampPreviewAlt": "Photo d’exemple montrant la mention de meublé virtuellement",
       "keepFurnitureLabel": "Mobilier existant à conserver (facultatif)",
       "keepFurniturePlaceholder": "ex. conserver la table à manger et les étagères encastrées",
       "emptyRoomView": "Voir la pièce vidée",
@@ -467,20 +478,20 @@
       "emptyRoomDownload": "Télécharger la pièce vide",
       "emptyRoomAlt": "Pièce dont le mobilier existant a été supprimé",
       "furniturePhotosLabel": "Photos de mobilier (facultatif)",
-      "furniturePhotosHint": "Jusqu'à 5 photos de référence de meubles ou de décoration à intégrer dans la pièce meublée",
+      "furniturePhotosHint": "Jusqu’à 5 photos de référence de meubles ou de décoration à intégrer dans la pièce meublée",
       "processButton": "Traiter la photo",
       "maskBeforeButton": "Masquer & modifier la photo",
-      "maskBeforeHint": "Peignez une zone de la photo d'origine à modifier (ex. retirer le désordre). Tout le reste demeure intact. Puis lancez le traitement pour meubler la version qui vous convient.",
+      "maskBeforeHint": "Peignez une zone de la photo d’origine à modifier (ex. retirer le désordre). Tout le reste demeure intact. Puis lancez le traitement pour meubler la version qui vous convient.",
       "maskBeforeTitle": "Masquer & modifier la photo",
       "maskBeforePromptLabel": "Que souhaitez-vous changer dans la zone peinte ?",
       "maskBeforePromptPlaceholder": "ex. retirer le vieux canapé, dégager le désordre, repeindre le mur en blanc",
       "maskBeforeApply": "Appliquer la modification",
       "basicMaskTitle": "Masque simple",
-      "basicMaskUploadHint": "Peignez sur n'importe quelle partie de la photo, puis décrivez le changement souhaité.",
+      "basicMaskUploadHint": "Peignez sur n’importe quelle partie de la photo, puis décrivez le changement souhaité.",
       "maskLimitReached": "Vous avez atteint la limite de 6 versions pour cette image.",
       "prevVersion": "Version précédente",
       "nextVersion": "Version suivante",
-      "imageVersions": "Versions de l'image",
+      "imageVersions": "Versions de l’image",
       "versionLabel": "Version {index}",
       "uploadArea": "Importez une image ou glissez-déposez",
       "before": "Avant",
@@ -489,22 +500,22 @@
       "uploadAnother": "Importer une autre",
       "noProcessedImage": "Votre rendu meublé apparaîtra ici",
       "noProcessedImageSubtext": "Cliquez sur « Traiter la photo » pour générer une version meublée par IA de votre image",
-      "imageModel": "Modèle d'image",
+      "imageModel": "Modèle d’image",
       "fastGeneration": "Modèle rapide",
       "qualityGeneration": "Modèle Stagify+",
-      "imageGenerations": "Générations d'images",
+      "imageGenerations": "Générations d’images",
       "addPhotos": "+ Ajouter des photos",
       "tryAnotherImage": "Essayer une autre image",
-      "uploadAreaAria": "Zone d'import",
+      "uploadAreaAria": "Zone d’import",
       "uploadHeadline": "Déposez ici la photo de votre pièce",
-      "uploadFormats": "JPG, PNG, WebP ou HEIC · jusqu'à 25 Mo",
-      "editWithMask": "Modifier la zone sélectionnée avec l'outil de masque",
+      "uploadFormats": "JPG, PNG, WebP ou HEIC · jusqu’à 25 Mo",
+      "editWithMask": "Modifier la zone sélectionnée avec l’outil de masque",
       "stagingVariations": "Variations de staging",
-      "originalImage": "Photo de la pièce d'origine avant le staging virtuel",
+      "originalImage": "Photo de la pièce d’origine avant le staging virtuel",
       "stagedImage": "Aperçu de la pièce meublée par IA",
       "warningAlt": "Avis important sur le staging",
-      "downloadIcon": "Télécharger l'image",
-      "maskIcon": "Icône de l'outil de masquage",
+      "downloadIcon": "Télécharger l’image",
+      "maskIcon": "Icône de l’outil de masquage",
       "variationAlt": "Variation de staging virtuel {index} sur {total}",
       "furnitureReferenceAlt": "Photo de référence du mobilier : {filename}",
       "uploadedRoomAlt": "Votre photo de pièce importée{filenameSuffix}",
@@ -512,9 +523,9 @@
       "stagedResultAlt": "Résultat de pièce meublée par IA{suffix}",
       "progress": {
         "preparing": "Préparation…",
-        "uploading": "Import de l'image…",
+        "uploading": "Import de l’image…",
         "preparingAI": "Préparation du modèle IA…",
-        "staging": "L'IA meuble votre pièce…",
+        "staging": "L’IA meuble votre pièce…",
         "complete": "Terminé !",
         "error": "Erreur : ",
         "loadingMessages": [
@@ -522,10 +533,10 @@
           "Mettre en scène votre pièce idéale",
           "Sélectionner de beaux éléments de décoration",
           "Disposer le mobilier pour un attrait maximal",
-          "Créer l'ambiance parfaite",
+          "Créer l’ambiance parfaite",
           "Sublimer votre espace avec style",
-          "Concevoir l'intérieur de vos rêves",
-          "Optimiser l'agencement et la circulation",
+          "Concevoir l’intérieur de vos rêves",
+          "Optimiser l’agencement et la circulation",
           "Ajouter les touches finales",
           "Donner vie à votre vision"
         ],
@@ -579,45 +590,70 @@
   "whyUs": {
     "title": "Pourquoi nous choisir ?",
     "stagify": {
-      "title": "stagify.ai",
       "features": {
-        "instantResults": "<strong>Résultats instantanés</strong> : ~8 secondes",
-        "oneClickStaging": "<strong>Staging en un clic</strong> : sans effort",
-        "free": "<strong>Générations gratuites illimitées</strong> : Sans carte bancaire",
-        "noAds": "<strong>Expérience sans publicité</strong> : aucune distraction",
-        "noLogin": "<strong>Inscription facile</strong> : commencez immédiatement",
-        "unlimited": "<strong>Modèles d'image avancés</strong> : meilleure qualité",
-        "copyright": "<strong>Tous les droits d'auteur</strong> : utilisez-les partout"
+        "free": "Gratuit, autant de fois que vous voulez"
       }
     },
-    "others": {
-      "title": "Les autres",
-      "features": {
-        "slowResults": "<strong style=\"color: #6d1c2c;\">Résultats lents : </strong>Des jours d'attente",
-        "longProcess": "<strong style=\"color: #6d1c2c;\">Processus long : </strong>Des allers-retours fastidieux",
-        "expensive": "<strong style=\"color: #6d1c2c;\">Coûteux : </strong>Des frais élevés par image",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Publicités et cookies : </strong>Expérience intrusive",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">Inscription longue : </strong>Un démarrage frustrant",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Modèles anciens et bas de gamme : </strong>Qualité inférieure",
-        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Droits d'auteur flous : </strong>Risque juridique"
-      }
-    },
-    "keyFeatures": {
-      "title": "Fonctionnalités clés",
-      "unlimitedVariations": {
-        "title": "Variations illimitées",
-        "description": "Explorez plusieurs styles jusqu'à ce que cela corresponde à votre marque et au profil de vos acheteurs."
+    "board": {
+      "caption": "Stagify.ai comparé à quatre autres façons de mettre un bien en valeur, sur six critères.",
+      "headers": {
+        "factor": "Critère",
+        "stager": "Home staging traditionnel",
+        "ai": "Outil IA à l’image",
+        "diy": "Retoucher vous-même",
+        "empty": "Pièce vide"
       },
-      "fastTurnarounds": {
-        "title": "Délais rapides",
-        "description": "Meublez des photos en environ 8 secondes pour publier plus tôt et conclure davantage de transactions."
+      "values": {
+        "yes": "Oui",
+        "no": "Non"
+      },
+      "rows": {
+        "speed": {
+          "factor": "Rapidité",
+          "us": "~8 secondes",
+          "stager": "1–3 semaines",
+          "ai": "1–3 jours",
+          "diy": "2–4 heures par photo",
+          "empty": "Immédiat"
+        },
+        "cost": {
+          "factor": "Coût par bien",
+          "us": "$0, ou $11.99 par mois",
+          "stager": "$2,000–$5,000",
+          "ai": "$550–850",
+          "diy": "Une après-midi de votre temps",
+          "empty": "$0"
+        },
+        "redo": {
+          "factor": "Essayer un autre style",
+          "stager": "Facturé à l’heure",
+          "ai": "Facturé à l’image",
+          "diy": "Encore de votre temps",
+          "empty": "Rien à essayer"
+        },
+        "quality": {
+          "factor": "Qualité de la photo",
+          "us": "Rendus quasi photoréalistes",
+          "stager": "Photos de pièces réelles",
+          "ai": "Défauts d’IA visibles",
+          "diy": "Selon votre retoucheur",
+          "empty": "Une pièce vide"
+        },
+        "ownership": {
+          "factor": "Les photos vous appartiennent",
+          "stager": "Celles du photographe",
+          "ai": "Sous licence, pas en propriété"
+        },
+        "furniture": {
+          "factor": "Vrais meubles lors de la visite"
+        }
       }
     }
   },
   "faq": {
     "title": "Foire aux questions",
     "plan": {
-      "hint": "Chaque pièce de ce plan est une question. Sélectionnez-en une et sa réponse s'affiche ici."
+      "hint": "Chaque pièce de ce plan est une question. Sélectionnez-en une et sa réponse s’affiche ici."
     },
     "rooms": {
       "basics": {
@@ -669,7 +705,7 @@
   },
   "contact": {
     "title": "Contactez-nous",
-    "description": "Nous serions ravis d'avoir de vos nouvelles. Écrivez-nous individuellement ou contactez-nous à <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a> ou appelez-nous au <a href=\"tel:+19292514372\" style=\"color: #1e3a8a; text-decoration: underline;\">(929) 251-4372</a>.",
+    "description": "Nous serions ravis d’avoir de vos nouvelles. Écrivez-nous individuellement ou contactez-nous à <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a> ou appelez-nous au <a href=\"tel:+19292514372\" style=\"color: #1e3a8a; text-decoration: underline;\">(929) 251-4372</a>.",
     "social": "Suivez-nous sur <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a>, ou <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> pour des actualités et des exemples !",
     "labels": {
       "name": "Nom",
@@ -681,8 +717,8 @@
         "name": "Maximilian Ising",
         "email": "maximilianbising@gmail.com",
         "phone": "(917) 690-6253",
-        "title": "Cofondateur, Responsable du développement et de l'IA",
-        "photoAlt": "Portrait de Maximilian Ising, cofondateur et responsable du développement et de l'IA chez Stagify.ai"
+        "title": "Cofondateur, Responsable du développement et de l’IA",
+        "photoAlt": "Portrait de Maximilian Ising, cofondateur et responsable du développement et de l’IA chez Stagify.ai"
       },
       "lucas": {
         "name": "Lucas Shtainer",
@@ -703,29 +739,29 @@
         "email": "emvolvovsky@gmail.com",
         "phone": "(917) 691-2013",
         "title": "Analyste marketing statistique",
-        "photoAlt": "Portrait d'Emil Volvovsky, analyste marketing statistique chez Stagify.ai"
+        "photoAlt": "Portrait d’Emil Volvovsky, analyste marketing statistique chez Stagify.ai"
       }
     }
   },
   "errors": {
     "unstageable": {
-      "PERSON_PORTRAIT": "Cette photo semble représenter une personne. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
-      "ANIMAL": "Cette photo semble représenter un animal. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
-      "FOOD": "Cette photo semble représenter de la nourriture. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
-      "DOCUMENT": "Cela ressemble à une capture d'écran ou à un document. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
-      "VEHICLE": "Cette photo semble représenter un véhicule. Veuillez importer la photo d'une pièce, d'un espace ou d'un meuble.",
-      "UNRELATED_OBJECT": "Cela ne ressemble ni à une pièce, ni à un espace, ni à un meuble. Veuillez importer la photo de l'espace ou du meuble que vous souhaitez aménager.",
-      "UNSTAGEABLE": "Cela ne ressemble ni à une pièce, ni à un espace, ni à un meuble. Veuillez importer la photo d'une pièce, d'un espace extérieur ou d'un meuble que vous souhaitez aménager."
+      "PERSON_PORTRAIT": "Cette photo semble représenter une personne. Veuillez importer la photo d’une pièce, d’un espace ou d’un meuble.",
+      "ANIMAL": "Cette photo semble représenter un animal. Veuillez importer la photo d’une pièce, d’un espace ou d’un meuble.",
+      "FOOD": "Cette photo semble représenter de la nourriture. Veuillez importer la photo d’une pièce, d’un espace ou d’un meuble.",
+      "DOCUMENT": "Cela ressemble à une capture d’écran ou à un document. Veuillez importer la photo d’une pièce, d’un espace ou d’un meuble.",
+      "VEHICLE": "Cette photo semble représenter un véhicule. Veuillez importer la photo d’une pièce, d’un espace ou d’un meuble.",
+      "UNRELATED_OBJECT": "Cela ne ressemble ni à une pièce, ni à un espace, ni à un meuble. Veuillez importer la photo de l’espace ou du meuble que vous souhaitez aménager.",
+      "UNSTAGEABLE": "Cela ne ressemble ni à une pièce, ni à un espace, ni à un meuble. Veuillez importer la photo d’une pièce, d’un espace extérieur ou d’un meuble que vous souhaitez aménager."
     },
     "heicConvert": "Impossible de lire cette photo HEIC. Essayez un JPG ou un PNG.",
-    "fileType": "Veuillez importer une image PNG, JPG, JPEG, WebP ou GIF.",
+    "fileType": "Veuillez importer une image JPG, PNG, WebP ou HEIC.",
     "fileTooLarge": "Le fichier est trop volumineux. Veuillez importer une image de moins de 25 Mo.",
-    "uploadFirst": "Veuillez d'abord importer une image",
+    "uploadFirst": "Veuillez d’abord importer une image",
     "badPrompt": "Consigne incorrecte saisie",
     "disclosureStampFailed": "Nous n’avons pas pu ajouter la mention « meublé virtuellement », votre image n’a donc pas été livrée. Décochez cette option pour générer sans elle.",
     "processingFailed": "Échec du traitement",
-    "noImageData": "Aucune donnée d'image reçue",
-    "dailyLimitFree": "Vous avez utilisé vos {limit} essais de staging gratuits pour aujourd'hui (réinitialisation à minuit UTC). Passez à Stagify+ pour un staging illimité.",
+    "noImageData": "Aucune donnée d’image reçue",
+    "dailyLimitFree": "Vous avez utilisé vos {limit} essais de staging gratuits pour aujourd’hui (réinitialisation à minuit UTC). Passez à Stagify+ pour un staging illimité.",
     "dailyLimitAnonymous": "Vous avez atteint la limite gratuite pour ce réseau ({limit} essais par jour, UTC). Connectez-vous pour associer le staging à votre compte, ou réessayez demain.",
     "dailyLimitCta": "Voir Stagify+",
     "stagingTimeout": "Cela prend plus de temps que d’habitude et a été interrompu. Veuillez réessayer."
@@ -737,7 +773,7 @@
   },
   "footer": {
     "privacy": "Politique de confidentialité",
-    "terms": "Conditions d'utilisation",
+    "terms": "Conditions d’utilisation",
     "contact": "Contact",
     "status": "Statut",
     "copyright": "Stagify.ai"
@@ -780,14 +816,14 @@
     "enterEmail": "Saisissez votre adresse e-mail.",
     "resendFailed": "Impossible de renvoyer le code. Réessayez.",
     "resendSuccess": "Nous avons envoyé un nouveau code de vérification.",
-    "resetSomethingWrong": "Une erreur s'est produite. Veuillez réessayer dans quelques minutes.",
+    "resetSomethingWrong": "Une erreur s’est produite. Veuillez réessayer dans quelques minutes.",
     "resetLinkSent": "Nous avons envoyé un lien de réinitialisation du mot de passe. Vérifiez votre e-mail (et les spams).",
-    "noAccountForEmail": "Aucun compte n'a été trouvé pour cet e-mail.",
-    "resetTryLater": "Une erreur s'est produite. Réessayez plus tard.",
+    "noAccountForEmail": "Aucun compte n’a été trouvé pour cet e-mail.",
+    "resetTryLater": "Une erreur s’est produite. Réessayez plus tard.",
     "enterVerificationCode": "Saisissez le code de vérification à 6 chiffres reçu par e-mail.",
     "verificationFailed": "Échec de la vérification",
     "passwordsNoMatch": "Les mots de passe ne correspondent pas.",
-    "somethingWrong": "Une erreur s'est produite",
+    "somethingWrong": "Une erreur s’est produite",
     "checkEmailForCode": "Vérifiez votre e-mail pour un code de vérification.",
     "agreeTerms": "En créant un compte, vous acceptez les <a href=\"terms.html\">Conditions</a> &amp; la <a href=\"privacy.html\">Confidentialité</a>"
   },
@@ -796,10 +832,10 @@
     "createAccount": "Créer un compte",
     "freePlan": "Forfait gratuit",
     "upgradeToPlus": "Passer à Stagify+",
-    "manageSubscription": "Gérer l'abonnement",
+    "manageSubscription": "Gérer l’abonnement",
     "signOut": "Se déconnecter",
     "manageBillingAria": "Gérer la facturation dans Stripe",
-    "stripeHelp": "Centre d'aide Stripe",
+    "stripeHelp": "Centre d’aide Stripe",
     "reportIssue": "Signaler un problème",
     "report": {
       "title": "Signaler un problème",
@@ -822,15 +858,15 @@
   },
   "pdf": {
     "meta": {
-      "title": "Designer IA | Stagify.ai - Assistant de design propulsé par l'IA",
-      "description": "Discutez avec le Designer IA pour obtenir de l'aide sur vos questions de design, importer des fichiers à analyser et recevoir des conseils de design professionnels instantanément.",
-      "keywords": "Designer IA, assistant de design IA, consultation en design, chat IA, aide au design, IA de design d'intérieur"
+      "title": "Designer IA | Stagify.ai - Assistant de design propulsé par l’IA",
+      "description": "Discutez avec le Designer IA pour obtenir de l’aide sur vos questions de design, importer des fichiers à analyser et recevoir des conseils de design professionnels instantanément.",
+      "keywords": "Designer IA, assistant de design IA, consultation en design, chat IA, aide au design, IA de design d’intérieur"
     },
     "title": "Designer IA",
-    "description": "Convertissez vos PDF de plans CAO en visualisations d'intérieur 3D photoréalistes",
+    "description": "Convertissez vos PDF de plans CAO en visualisations d’intérieur 3D photoréalistes",
     "statusMessages": {
       "generating": [
-        "génération de l'image...",
+        "génération de l’image...",
         "création de votre image...",
         "donne vie à votre vision...",
         "élaboration des détails...",
@@ -847,25 +883,25 @@
         "agencement des éléments...",
         "application des styles...",
         "création du design...",
-        "génération de l'agencement...",
+        "génération de l’agencement...",
         "affinage des détails...",
         "presque prêt..."
       ],
       "analyzing": [
-        "analyse de l'image...",
+        "analyse de l’image...",
         "examen des détails...",
         "identification des éléments...",
         "traitement des données visuelles...",
-        "compréhension de l'espace...",
+        "compréhension de l’espace...",
         "examen de la composition...",
-        "étude de l'agencement...",
+        "étude de l’agencement...",
         "presque fini..."
       ],
       "welcome": [
         "préparation de votre accueil...",
         "préparation pour vous...",
         "mise en place...",
-        "préparation d'un accueil chaleureux...",
+        "préparation d’un accueil chaleureux...",
         "tout préparer pour vous...",
         "presque prêt à vous accueillir...",
         "configuration de votre espace...",
@@ -883,7 +919,7 @@
       ]
     },
     "emptyState": "Démarrez une conversation en saisissant un message ou en important un fichier",
-    "welcomeFallback": "Bonjour ! Je suis votre Designer IA Stagify. Dites-moi ce que vous imaginez, ou téléchargez la photo d'une pièce, et nous la concevrons ensemble. Quelques choses que je peux faire :\n• **Aménager des pièces vides** : meublez un espace nu dans n'importe quel style\n• **Réaménager des pièces existantes** : changez le style, les meubles ou toute l'ambiance\n• **Plan → pièce** : transformez un plan en un rendu meublé et photoréaliste\n• **Affiner au fil de la discussion** : ajustez les couleurs, les éléments et l'agencement jusqu'à ce que ce soit parfait\nPar où souhaitez-vous commencer ?",
+    "welcomeFallback": "Bonjour ! Je suis votre Designer IA Stagify. Dites-moi ce que vous imaginez, ou téléchargez la photo d’une pièce, et nous la concevrons ensemble. Quelques choses que je peux faire :\n• **Aménager des pièces vides** : meublez un espace nu dans n’importe quel style\n• **Réaménager des pièces existantes** : changez le style, les meubles ou toute l’ambiance\n• **Plan → pièce** : transformez un plan en un rendu meublé et photoréaliste\n• **Affiner au fil de la discussion** : ajustez les couleurs, les éléments et l’agencement jusqu’à ce que ce soit parfait\nPar où souhaitez-vous commencer ?",
     "uploadFile": "Importer un fichier",
     "inputPlaceholder": "Saisissez votre message...",
     "sendButton": "Envoyer",
@@ -895,7 +931,7 @@
       "skipHint": "Ignorer les pages de couverture et de titre",
       "concurrency": "Vitesse de traitement",
       "concurrencyHint": "Des vitesses plus élevées peuvent augmenter le temps de traitement par pièce",
-      "dpi": "Qualité d'image (DPI)",
+      "dpi": "Qualité d’image (DPI)",
       "dpiHint": "Un DPI plus élevé produit une meilleure qualité mais prend plus de temps"
     },
     "processButton": "Traiter le PDF",
@@ -937,7 +973,7 @@
     },
     "thumbnailStrip": {
       "label": "Image de base pour le prochain message",
-      "help": "Choisissez l'image de pièce que l'IA doit modifier lorsque vous envoyez votre prochain message — surtout pour ajouter du mobilier. Utile lorsque vous avez plusieurs imports ou versions meublées.",
+      "help": "Choisissez l’image de pièce que l’IA doit modifier lorsque vous envoyez votre prochain message — surtout pour ajouter du mobilier. Utile lorsque vous avez plusieurs imports ou versions meublées.",
       "helpAria": "Que signifie image de base ?"
     },
     "alt": {
@@ -952,10 +988,10 @@
       "generatedImage": "Image de design générée par IA{suffix}",
       "cadRender": "Rendu 3D à partir du plan{suffix}",
       "recalledImage": "Image précédemment partagée dans cette conversation",
-      "requestedImage": "Image demandée depuis l'historique de la conversation",
+      "requestedImage": "Image demandée depuis l’historique de la conversation",
       "editedImage": "Image de design modifiée par masque{suffix}",
-      "originalCarouselImage": "Image d'origine avant les modifications par masque",
-      "enlargedImage": "Vue en taille réelle de l'image de design",
+      "originalCarouselImage": "Image d’origine avant les modifications par masque",
+      "enlargedImage": "Vue en taille réelle de l’image de design",
       "thumbnailSelected": "{label} — sélectionnée comme image de base pour votre prochain message",
       "thumbnailOption": "{label} — image {index} de la conversation"
     },
@@ -976,10 +1012,10 @@
       "rerun": "Régénérer",
       "done": "Ça me convient",
       "refineTitle": "Affiner la modification",
-      "refineNote": "Peignez pour révéler davantage la modification, gommez pour la masquer — cela ne fait que recadrer, l'IA n'est pas relancée.",
-      "refineHelp": "Cette étape ajuste simplement l'endroit où la modification de l'IA apparaît — elle ne relance pas l'IA. Peignez pour révéler davantage la modification, gommez pour la réduire. C'est un filet de sécurité : la modification ne touche que la zone que vous avez choisie et ne peut pas abîmer le reste de votre photo. L'aperçu atténué affiché par-dessus sert uniquement à voir toute la modification pendant que vous l'affinez ; il n'apparaîtra pas dans l'image finale.",
+      "refineNote": "Peignez pour révéler davantage la modification, gommez pour la masquer — cela ne fait que recadrer, l’IA n’est pas relancée.",
+      "refineHelp": "Cette étape ajuste simplement l’endroit où la modification de l’IA apparaît — elle ne relance pas l’IA. Peignez pour révéler davantage la modification, gommez pour la réduire. C’est un filet de sécurité : la modification ne touche que la zone que vous avez choisie et ne peut pas abîmer le reste de votre photo. L’aperçu atténué affiché par-dessus sert uniquement à voir toute la modification pendant que vous l’affinez ; il n’apparaîtra pas dans l’image finale.",
       "promptHint": "Soyez très précis sur l’emplacement et la disposition — par exemple : « placez le canapé contre le milieu du mur du fond ».",
-      "refineHelpAria": "Ce que fait l'étape d'affinage",
+      "refineHelpAria": "Ce que fait l’étape d’affinage",
       "loadApplying": "Application de votre modification…",
       "referenceLabel": "Photo de référence (facultatif)",
       "referenceAdd": "+ Ajouter une photo",
@@ -995,7 +1031,7 @@
     "errors": {
       "invalidFileType": "Veuillez importer un fichier PDF.",
       "fileTooLarge": "Le fichier est trop volumineux. Veuillez importer un PDF de moins de 100 Mo.",
-      "noFile": "Veuillez d'abord importer un fichier PDF",
+      "noFile": "Veuillez d’abord importer un fichier PDF",
       "processingFailed": "Échec du traitement. Veuillez réessayer.",
       "noProcessedFile": "Aucun PDF traité disponible."
     }
@@ -1010,27 +1046,27 @@
     "upload": {
       "title": "Import et fichiers",
       "i1": {
-        "q": "Ma photo ne s'importe pas.",
-        "a": "Vérifiez que le fichier est au format JPG, PNG ou WEBP et pèse moins de 25 Mo. Les très grandes photos de téléphone échouent parfois : redimensionnez l’image ou faites-en une capture d’écran, puis réimportez-la. Si cela échoue encore, actualisez la page et réessayez."
+        "q": "Ma photo ne s’importe pas.",
+        "a": "Vérifiez que le fichier est au format JPG, PNG, WebP ou HEIC et pèse moins de 25 Mo. Les très grandes photos de téléphone échouent parfois : redimensionnez l’image ou faites-en une capture d’écran, puis réimportez-la. Si cela échoue encore, actualisez la page et réessayez."
       },
       "i2": {
         "q": "Quelles photos fonctionnent le mieux ?",
-        "a": "Utilisez une photo nette et bien éclairée, prise de face, avec toute la pièce visible et un minimum de désordre. Les prises floues, sombres ou en grand-angle extrême donnent de moins bons résultats. Nouveau ici ? Regardez d'abord le <a href=\"#walkthrough\">tutoriel pas à pas</a>."
+        "a": "Utilisez une photo nette et bien éclairée, prise de face, avec toute la pièce visible et un minimum de désordre. Les prises floues, sombres ou en grand-angle extrême donnent de moins bons résultats. Nouveau ici ? Regardez d’abord le <a href=\"#walkthrough\">tutoriel pas à pas</a>."
       }
     },
     "tips": {
       "title": "Meilleurs résultats & astuces de pro",
       "i1": {
         "q": "Comment obtenir le staging le plus réaliste ?",
-        "a": "Photographiez la pièce de face à la lumière du jour, avec tout l'espace dans le cadre et les surfaces dégagées. Choisissez le type de pièce et le style exacts avant de générer, puis créez deux ou trois variations et gardez la meilleure. <a href=\"index.html#stage\">Ouvrez le studio de staging</a> pour essayer."
+        "a": "Photographiez la pièce de face à la lumière du jour, avec tout l’espace dans le cadre et les surfaces dégagées. Choisissez le type de pièce et le style exacts avant de générer, puis créez deux ou trois variations et gardez la meilleure. <a href=\"index.html#stage\">Ouvrez le studio de staging</a> pour essayer."
       },
       "i2": {
         "q": "Quel forfait ou outil dois-je utiliser ?",
-        "a": "La version gratuite est parfaite pour des pièces ponctuelles. <a href=\"stagify-plus.html\">Stagify+</a> débloque les générations illimitées, des modèles de meilleure qualité, l'outil de masquage et la barre de consignes. <a href=\"ai-designer.html\">Designer IA</a> redessine une pièce entière à partir d'une courte conversation — idéal quand vous voulez qu'il prenne les décisions à votre place."
+        "a": "La version gratuite est parfaite pour des pièces ponctuelles. <a href=\"stagify-plus.html\">Stagify+</a> débloque les générations illimitées, des modèles de meilleure qualité, l’outil de masquage et la barre de consignes. <a href=\"ai-designer.html\">Designer IA</a> redessine une pièce entière à partir d’une courte conversation — idéal quand vous voulez qu’il prenne les décisions à votre place."
       },
       "i3": {
-        "q": "Puis-je contrôler le mobilier et l'agencement ?",
-        "a": "Oui. Avec <a href=\"stagify-plus.html\">Stagify+</a>, la barre de consignes vous permet de décrire des détails comme « ajouter un canapé d'angle et un grand tapis », et l'outil Mobilier intègre vos propres pièces. Si une seule zone semble incorrecte, masquez-la et régénérez uniquement cet endroit au lieu de refaire toute l'image."
+        "q": "Puis-je contrôler le mobilier et l’agencement ?",
+        "a": "Oui. Avec <a href=\"stagify-plus.html\">Stagify+</a>, la barre de consignes vous permet de décrire des détails comme « ajouter un canapé d’angle et un grand tapis », et l’outil Mobilier intègre vos propres pièces. Si une seule zone semble incorrecte, masquez-la et régénérez uniquement cet endroit au lieu de refaire toute l’image."
       },
       "masking": {
         "title": "Meublez avec une précision exacte",
@@ -1038,7 +1074,7 @@
       },
       "i4": {
         "q": "Comment meubler plusieurs zones à la fois ?",
-        "a": "Avec Stagify+, le <a href=\"masking-studio.html\">Studio de masquage</a> vous permet de surligner jusqu'à six zones de couleurs différentes, de donner à chacune sa photo de meuble ou sa description, et de les meubler toutes en parallèle. Seuls les endroits surlignés peuvent changer, et chaque zone peut générer plusieurs versions pour garder la meilleure."
+        "a": "Avec Stagify+, le <a href=\"masking-studio.html\">Studio de masquage</a> vous permet de surligner jusqu’à six zones de couleurs différentes, de donner à chacune sa photo de meuble ou sa description, et de les meubler toutes en parallèle. Seuls les endroits surlignés peuvent changer, et chaque zone peut générer plusieurs versions pour garder la meilleure."
       }
     },
     "generate": {
@@ -1049,22 +1085,22 @@
       },
       "i2": {
         "q": "Le résultat présente du mobilier étrange ou des artefacts.",
-        "a": "Le staging par IA n'est pas parfait à chaque passage. Générez à nouveau pour une nouvelle variation, changez de style, ou utilisez l'<a href=\"ai-designer.html\">outil de masquage</a> pour corriger uniquement la zone problématique au lieu de refaire toute l'image."
+        "a": "Le staging par IA n’est pas parfait à chaque passage. Générez à nouveau pour une nouvelle variation, changez de style, ou utilisez l'<a href=\"ai-designer.html\">outil de masquage</a> pour corriger uniquement la zone problématique au lieu de refaire toute l’image."
       },
       "i3": {
-        "q": "Rien n'a changé ou la pièce semble toujours vide.",
-        "a": "Cela signifie généralement qu'un type de pièce ou un style n'a pas été sélectionné, ou que la photo était trop sombre pour le modèle. Choisissez un type de pièce et un style, puis essayez une photo plus lumineuse. Vous voulez que l'IA s'en charge de bout en bout ? Essayez <a href=\"ai-designer.html\">Designer IA</a>."
+        "q": "Rien n’a changé ou la pièce semble toujours vide.",
+        "a": "Cela signifie généralement qu’un type de pièce ou un style n’a pas été sélectionné, ou que la photo était trop sombre pour le modèle. Choisissez un type de pièce et un style, puis essayez une photo plus lumineuse. Vous voulez que l’IA s’en charge de bout en bout ? Essayez <a href=\"ai-designer.html\">Designer IA</a>."
       }
     },
     "account": {
       "title": "Compte et connexion",
       "i1": {
-        "q": "Mon code de vérification n'est pas arrivé.",
-        "a": "Vérifiez votre dossier spam ou promotions — les codes peuvent prendre une minute. S'il n'arrive toujours pas, utilisez « Renvoyer le code » et assurez-vous que votre e-mail est correctement saisi."
+        "q": "Mon code de vérification n’est pas arrivé.",
+        "a": "Vérifiez votre dossier spam ou promotions — les codes peuvent prendre une minute. S’il n’arrive toujours pas, utilisez « Renvoyer le code » et assurez-vous que votre e-mail est correctement saisi."
       },
       "i2": {
-        "q": "J'ai oublié mon mot de passe.",
-        "a": "Sur l'écran de connexion, choisissez « Mot de passe oublié ? » et nous vous enverrons un lien de réinitialisation par e-mail. Le lien expire au bout d'une heure."
+        "q": "J’ai oublié mon mot de passe.",
+        "a": "Sur l’écran de connexion, choisissez « Mot de passe oublié ? » et nous vous enverrons un lien de réinitialisation par e-mail. Le lien expire au bout d’une heure."
       },
       "i3": {
         "q": "La connexion Google ne fonctionne pas.",
@@ -1075,26 +1111,26 @@
       "title": "Facturation et Stagify+",
       "i1": {
         "q": "Comment gérer ou annuler Stagify+ ?",
-        "a": "Cliquez sur l'icône de profil en haut à droite, puis appuyez sur l'icône Stripe à côté de Stagify+ pour ouvrir votre tableau de bord de facturation, où vous pouvez mettre à jour ou annuler votre abonnement. Vous pouvez aussi ouvrir directement le <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">portail de facturation Stripe</a>. Vous conservez l'accès jusqu'à la fin de la période de facturation en cours."
+        "a": "Cliquez sur l’icône de profil en haut à droite, puis appuyez sur l’icône Stripe à côté de Stagify+ pour ouvrir votre tableau de bord de facturation, où vous pouvez mettre à jour ou annuler votre abonnement. Vous pouvez aussi ouvrir directement le <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">portail de facturation Stripe</a>. Vous conservez l’accès jusqu’à la fin de la période de facturation en cours."
       },
       "i2": {
-        "q": "J'ai été facturé mais je ne vois pas les fonctionnalités Stagify+.",
-        "a": "Déconnectez-vous puis reconnectez-vous pour actualiser votre compte. Si les fonctionnalités n'apparaissent toujours pas, écrivez-nous à <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> depuis l'adresse que vous avez utilisée."
+        "q": "J’ai été facturé mais je ne vois pas les fonctionnalités Stagify+.",
+        "a": "Déconnectez-vous puis reconnectez-vous pour actualiser votre compte. Si les fonctionnalités n’apparaissent toujours pas, écrivez-nous à <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> depuis l’adresse que vous avez utilisée."
       }
     },
     "performance": {
       "title": "Navigateur et performances",
       "i1": {
         "q": "Quels navigateurs sont pris en charge ?",
-        "a": "Utilisez une version à jour de Chrome, Safari, Edge ou Firefox. Les navigateurs anciens peuvent ne pas prendre en charge l'éditeur ou les outils de comparaison par glissement."
+        "a": "Utilisez une version à jour de Chrome, Safari, Edge ou Firefox. Les navigateurs anciens peuvent ne pas prendre en charge l’éditeur ou les outils de comparaison par glissement."
       },
       "i2": {
         "q": "La page est lente ou les boutons ne répondent pas.",
-        "a": "Forcez l'actualisation de la page (Ctrl/Cmd + Maj + R) pour effacer une version obsolète, fermez les onglets inutilisés et désactivez les bloqueurs de publicité pour stagify.ai, qui peuvent gêner les imports."
+        "a": "Forcez l’actualisation de la page (Ctrl/Cmd + Maj + R) pour effacer une version obsolète, fermez les onglets inutilisés et désactivez les bloqueurs de publicité pour stagify.ai, qui peuvent gêner les imports."
       },
       "i3": {
         "q": "Le site ne se charge pas du tout.",
-        "a": "Vérifiez votre connexion Internet, puis essayez une fenêtre privée/incognito. S'il se charge là, videz le cache de votre navigateur pour stagify.ai."
+        "a": "Vérifiez votre connexion Internet, puis essayez une fenêtre privée/incognito. S’il se charge là, videz le cache de votre navigateur pour stagify.ai."
       }
     },
     "contact": {
@@ -1106,7 +1142,7 @@
     "badge": "Guides",
     "title": "Guides et tutoriels",
     "subtitle": "Des tutoriels interactifs et rapides pour commencer à meubler en quelques minutes, ainsi que des solutions aux problèmes courants.",
-    "heroBadge": "Centre d'aide",
+    "heroBadge": "Centre d’aide",
     "liveBadge": "Démo interactive",
     "walkthroughsTitle": "Tutoriels pas à pas",
     "demo1Title": "Votre premier staging gratuit",
@@ -1119,7 +1155,7 @@
     "pickerMasking": "Studio de masquage",
     "pickerPromptBar": "Barre de consignes",
     "pickerFurniture": "Mobilier",
-    "demo3Desc": "Regardez le Designer IA meubler et redessiner une pièce de façon autonome à partir d'une simple conversation.",
+    "demo3Desc": "Regardez le Designer IA meubler et redessiner une pièce de façon autonome à partir d’une simple conversation.",
     "troubleshootingTitle": "Dépannage et problèmes courants"
   },
   "pageMeta": {
@@ -1129,24 +1165,24 @@
     },
     "contact": {
       "title": "Contact | Stagify.ai",
-      "description": "Contactez l'équipe Stagify.ai pour de l'assistance, des partenariats ou des questions sur notre outil gratuit de home staging par IA."
+      "description": "Contactez l’équipe Stagify.ai pour de l’assistance, des partenariats ou des questions sur notre outil gratuit de home staging par IA."
     },
     "stagifyPlus": {
       "title": "Stagify+ — Forfaits et tarifs | Stagify.ai",
       "description": "Stagify+ : suppression des meubles, le Designer IA, le Studio de Masquage, des modèles de meilleure qualité et un home staging illimité. Voir les offres et les tarifs."
     },
     "enterprise": {
-      "title": "Stagify Enterprise — Staging par IA à l'usage pour les équipes",
-      "description": "Offrez à toute votre équipe un staging par IA illimité avec une facturation à l'usage de 0,15 $ par génération. Une seule facture, sans frais par utilisateur."
+      "title": "Stagify Enterprise — Staging par IA à l’usage pour les équipes",
+      "description": "Offrez à toute votre équipe un staging par IA illimité avec une facturation à l’usage de 0,15 $ par génération. Une seule facture, sans frais par utilisateur."
     },
     "maskingStudio": {
       "title": "Studio de masquage | Stagify.ai - Staging virtuel de précision multi-zones",
-      "description": "Surlignez plusieurs zones d'une même photo de pièce dans des couleurs différentes, associez une photo de meuble à chacune et meublez-les toutes en une seule fois. Seules les zones surlignées peuvent changer — le reste de votre photo reste intact au pixel près.",
+      "description": "Surlignez plusieurs zones d’une même photo de pièce dans des couleurs différentes, associez une photo de meuble à chacune et meublez-les toutes en une seule fois. Seules les zones surlignées peuvent changer — le reste de votre photo reste intact au pixel près.",
       "keywords": "studio de masquage, masque de staging virtuel, staging virtuel de précision, staging multi-zones, placement de meubles par IA, retouche photo masquée, édition par zones, staging photo immobilier, Stagify"
     },
     "exteriorStudio": {
       "title": "Studio Extérieur | Stagify.ai - Amélioration de photos de façade par IA",
-      "description": "Transformez une photo d'extérieur grise et encombrée en l'image que l'annonce mérite. Changez l'heure, dégagez le ciel et supprimez voitures et poubelles, pendant que le bien reste exactement tel qu'il a été photographié.",
+      "description": "Transformez une photo d’extérieur grise et encombrée en l’image que l’annonce mérite. Changez l’heure, dégagez le ciel et supprimez voitures et poubelles, pendant que le bien reste exactement tel qu’il a été photographié.",
       "keywords": "attrait extérieur, retouche photo extérieur, amélioration photo immobilière, remplacement de ciel, supprimer voitures photo, photo crépusculaire immobilier, heure dorée, éditeur photo IA, façade, Stagify"
     }
   },
@@ -1154,21 +1190,21 @@
     "title": "Studio de masquage",
     "subtitle": "Surlignez des zones de votre pièce en différentes couleurs, attribuez à chacune son propre meuble et meublez-les toutes à la fois. Seules les zones surlignées peuvent changer, le reste de votre photo reste parfaitement intact.",
     "gateTitle": "Le Studio de masquage est une fonctionnalité Stagify+",
-    "gateBody": "Connectez-vous avec un compte Stagify+ pour surligner plusieurs zones d'une photo, attribuer à chacune son propre mobilier et les meubler toutes en une seule fois — avec un masquage au pixel près qui ne peut pas toucher le reste de votre photo.",
+    "gateBody": "Connectez-vous avec un compte Stagify+ pour surligner plusieurs zones d’une photo, attribuer à chacune son propre mobilier et les meubler toutes en une seule fois — avec un masquage au pixel près qui ne peut pas toucher le reste de votre photo.",
     "gateCta": "Voir Stagify+",
-    "gateBack": "Retour à l'accueil",
+    "gateBack": "Retour à l’accueil",
     "stepPhoto": "Photo de la pièce",
-    "stepPhotoHint": "Importez une photo de votre pièce dans l'espace de travail à droite.",
+    "stepPhotoHint": "Importez une photo de votre pièce dans l’espace de travail à droite.",
     "replacePhoto": "Remplacer la photo",
     "stepAreas": "Zones de mobilier",
     "addArea": "+ Ajouter une zone",
     "areasHint": "Chaque zone est meublée séparément, en même temps — donnez à chaque couleur une photo de meuble, une courte consigne, ou les deux.",
     "areaName": "Zone {n}",
-    "areaLimit": "Vous pouvez surligner jusqu'à {n} zones.",
+    "areaLimit": "Vous pouvez surligner jusqu’à {n} zones.",
     "removeAreaAria": "Supprimer cette zone",
     "stepBrush": "Surligner",
-    "overlapHint": "Peignez par-dessus une zone avec une autre couleur pour la réattribuer — chaque endroit n'appartient qu'à une seule zone.",
-    "promptPlaceholder": "Décrivez ce qu'il faut ajouter ici (facultatif si vous ajoutez une photo de meuble)…",
+    "overlapHint": "Peignez par-dessus une zone avec une autre couleur pour la réattribuer — chaque endroit n’appartient qu’à une seule zone.",
+    "promptPlaceholder": "Décrivez ce qu’il faut ajouter ici (facultatif si vous ajoutez une photo de meuble)…",
     "addFurniture": "+ Photo de meuble",
     "statusEmpty": "Pas encore surlignée",
     "statusNeedsDetails": "Consigne ou photo requise",
@@ -1182,9 +1218,9 @@
     "uploadSub": "JPG, PNG, WebP ou HEIC — cliquez ou déposez-la ici",
     "editHighlights": "Affiner la modification",
     "defaultFurniturePrompt": "Ajoutez le meuble de la photo de référence dans la zone surlignée. Placez-le naturellement sur le sol avec une perspective, une échelle et un éclairage adaptés à la pièce.",
-    "needHighlight": "Peignez d'abord au moins une zone sur la photo.",
-    "needPromptOrFurniture": "Chaque zone surlignée a besoin d'une courte consigne ou d'une photo de meuble.",
-    "doneToast": "Toutes les zones sont meublées ! Retouchez vos zones ou appuyez sur C'est parfait pour voir le résultat.",
+    "needHighlight": "Peignez d’abord au moins une zone sur la photo.",
+    "needPromptOrFurniture": "Chaque zone surlignée a besoin d’une courte consigne ou d’une photo de meuble.",
+    "doneToast": "Toutes les zones sont meublées ! Retouchez vos zones ou appuyez sur C’est parfait pour voir le résultat.",
     "partialToast": "{done} zones sur {total} meublées — réessayez celles qui ont échoué.",
     "failedToast": "Le staging a échoué. Veuillez réessayer.",
     "rateLimited": "Vous générez trop vite — attendez une minute et réessayez.",
@@ -1195,8 +1231,8 @@
     "compareHandleAria": "Faites glisser pour comparer avant et après",
     "helpTitle": "Comment fonctionne le Studio de masquage",
     "helpStep1": "Téléversez une photo de votre pièce.",
-    "helpStep2": "Surlignez l'emplacement de chaque meuble : peignez, tracez un rectangle, ou utilisez la Baguette pour sélectionner un objet ou une zone en un clic. Une couleur par zone.",
-    "helpStep3": "Donnez à chaque zone une photo de meuble, une courte description, ou les deux. Ou passez une zone en Retirer l'objet pour vider ce qu'elle couvre.",
+    "helpStep2": "Surlignez l’emplacement de chaque meuble : peignez, tracez un rectangle, ou utilisez la Baguette pour sélectionner un objet ou une zone en un clic. Une couleur par zone.",
+    "helpStep3": "Donnez à chaque zone une photo de meuble, une courte description, ou les deux. Ou passez une zone en Retirer l’objet pour vider ce qu’elle couvre.",
     "helpStep4": "Cliquez sur Appliquer la modification. Toutes les zones sont meublées en même temps et seuls les endroits surlignés peuvent changer. Le reste de votre photo reste intact.",
     "helpShortcuts": "Raccourcis clavier",
     "helpClose": "Compris",
@@ -1205,7 +1241,7 @@
     "confirmDiscard": "Abandonner et continuer",
     "confirmKeep": "Garder mes résultats",
     "zoomHint": "Ctrl+molette ou pincez pour zoomer ; maintenez Espace (ou le bouton central de la souris) pour vous déplacer",
-    "presetSofa": "Canapé|Ajoutez un canapé moderne et confortable qui s'accorde au style de la pièce.",
+    "presetSofa": "Canapé|Ajoutez un canapé moderne et confortable qui s’accorde au style de la pièce.",
     "presetArmchair": "Fauteuil|Ajoutez un fauteuil confortable assorti à la pièce.",
     "presetRug": "Tapis|Ajoutez un grand tapis sous les meubles.",
     "presetPlant": "Plante|Ajoutez une grande plante en pot.",
@@ -1216,19 +1252,19 @@
     "versionPrev": "Version précédente",
     "versionNext": "Version suivante",
     "clearHighlight": "Effacer le surlignage",
-    "snapToObject": "Ajuster à l'objet",
-    "snapToObjectHint": "Étend ce surlignage jusqu'aux bords de ce que l'IA a réellement dessiné, pour que rien ne soit coupé.",
-    "spillFlag": "Cette modification dépasse le surlignage — Ajuster à l'objet disponible.",
-    "snapToast": "Certains éléments générés dépassent votre surlignage — ouvrez cette zone et appuyez sur « Ajuster à l'objet » pour inclure le reste.",
+    "snapToObject": "Ajuster à l’objet",
+    "snapToObjectHint": "Étend ce surlignage jusqu’aux bords de ce que l’IA a réellement dessiné, pour que rien ne soit coupé.",
+    "spillFlag": "Cette modification dépasse le surlignage — Ajuster à l’objet disponible.",
+    "snapToast": "Certains éléments générés dépassent votre surlignage — ouvrez cette zone et appuyez sur « Ajuster à l’objet » pour inclure le reste.",
     "toolRect": "Rectangle",
     "renameAria": "Renommer cette zone",
     "resumeTitle": "Reprendre votre dernière session ?",
     "resumeBody": "Nous avons enregistré la photo et les zones surlignées de votre dernière visite. Reprenez où vous en étiez ou repartez de zéro.",
     "resumeYes": "Reprendre",
     "resumeNo": "Repartir de zéro",
-    "helpStep5": "Une zone ne vous plaît pas ? Utilisez Essayer une autre version pour générer d'autres options et passer de l'une à l'autre.",
+    "helpStep5": "Une zone ne vous plaît pas ? Utilisez Essayer une autre version pour générer d’autres options et passer de l’une à l’autre.",
     "promptIdeas": "Afficher des idées",
-    "looksGood": "C'est parfait",
+    "looksGood": "C’est parfait",
     "redo": "Rétablir",
     "toolWand": "Baguette",
     "wandHint": "Cliquez sur un objet de la photo pour le sélectionner.",
@@ -1239,13 +1275,13 @@
       "Délimitation des objets trouvés…",
       "Presque terminé…"
     ],
-    "wandMiss": "Aucun objet trouvé à cet endroit. Essayez de cliquer au centre de l'objet, ou surlignez-le avec le pinceau.",
+    "wandMiss": "Aucun objet trouvé à cet endroit. Essayez de cliquer au centre de l’objet, ou surlignez-le avec le pinceau.",
     "modeAria": "Ce qui se passe dans cette zone",
     "modeStage": "Ajouter un meuble",
-    "modeRemove": "Retirer l'objet",
+    "modeRemove": "Retirer l’objet",
     "removeHint": "Tout ce qui est surligné est retiré et la pièce vide est reconstruite derrière.",
-    "removePlaceholder": "Facultatif : ce qu'il faut garder ou des détails (p. ex. garder le tapis)…",
-    "removePrompt": "Retire tout ce qui se trouve dans la zone surlignée. Reconstruis ce qui se trouve derrière (sol, murs, plinthes et moulures) en prolongeant sans raccord les surfaces, textures et l'éclairage existants de la pièce. N'ajoute aucun meuble ni objet nouveau.",
+    "removePlaceholder": "Facultatif : ce qu’il faut garder ou des détails (p. ex. garder le tapis)…",
+    "removePrompt": "Retire tout ce qui se trouve dans la zone surlignée. Reconstruis ce qui se trouve derrière (sol, murs, plinthes et moulures) en prolongeant sans raccord les surfaces, textures et l’éclairage existants de la pièce. N’ajoute aucun meuble ni objet nouveau.",
     "loadingMessages": [
       "Placement de vos meubles…",
       "Harmonisation de la lumière et des ombres…",
@@ -1407,7 +1443,7 @@
       },
       "exterior": {
         "title": "Studio Extérieur",
-        "desc": "Corrigez la photo qui ouvre chaque annonce. Changez l'heure, dégagez un ciel gris et supprimez voitures et poubelles, pendant que le bien reste exactement tel qu'il a été photographié."
+        "desc": "Corrigez la photo qui ouvre chaque annonce. Changez l’heure, dégagez un ciel gris et supprimez voitures et poubelles, pendant que le bien reste exactement tel qu’il a été photographié."
       }
     },
     "compare": {
@@ -1523,7 +1559,7 @@
       "saving": "Enregistrement…",
       "saved": "Nom enregistré.",
       "cleared": "Retour au nom par défaut.",
-      "failed": "Impossible d'enregistrer ce nom. Réessayez."
+      "failed": "Impossible d’enregistrer ce nom. Réessayez."
     },
     "search": {
       "label": "Rechercher dans votre galerie",
@@ -1546,8 +1582,8 @@
     "loading": "Chargement de votre galerie…"
   },
   "exteriorStudio": {
-    "title": "L'attrait extérieur, en un clic",
-    "subtitle": "La première photo de chaque annonce, c'est l'extérieur — et c'est la seule prise que vous ne pouvez pas refaire quand le temps se gâte. Importez-la ici et obtenez la version prise par beau temps.",
+    "title": "L’attrait extérieur, en un clic",
+    "subtitle": "La première photo de chaque annonce, c’est l’extérieur — et c’est la seule prise que vous ne pouvez pas refaire quand le temps se gâte. Importez-la ici et obtenez la version prise par beau temps.",
     "ctaUpgrade": "Passez à Stagify+ pour l’utiliser",
     "features": {
       "title": "Ce qu’il change — et ce qu’il ne touche jamais",
@@ -1620,9 +1656,9 @@
   },
   "notFound": {
     "pageTitle": "Page introuvable | Stagify.ai",
-    "pageDescription": "Cette page n'existe pas ou a été déplacée. Revenez sur Stagify.ai pour continuer à mettre en scène vos photos de biens.",
-    "heading": "Cette page n'existe pas",
-    "body": "Le lien est peut-être rompu, ou la page a été déplacée. Tout le reste est exactement là où vous l'avez laissé.",
-    "homeCta": "Retour à l'accueil"
+    "pageDescription": "Cette page n’existe pas ou a été déplacée. Revenez sur Stagify.ai pour continuer à mettre en scène vos photos de biens.",
+    "heading": "Cette page n’existe pas",
+    "body": "Le lien est peut-être rompu, ou la page a été déplacée. Tout le reste est exactement là où vous l’avez laissé.",
+    "homeCta": "Retour à l’accueil"
   }
 }

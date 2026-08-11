@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Stagify.ai – Gratis virtuele styling met één klik",
-    "description": "Transformeer lege kamers met AI-styling. Upload foto's en krijg in seconden professioneel gestylede resultaten. Gratis AI-woningstyling voor makelaars, verkopers en kopers.",
+    "description": "Transformeer lege kamers met AI-styling. Upload foto’s en krijg in seconden professioneel gestylede resultaten. Gratis AI-woningstyling voor makelaars, verkopers en kopers.",
     "keywords": "AI-styling, home staging, woningstyling, virtuele styling, AI-woningstyling, vastgoedstyling, vastgoedfotografie, styling-tool, virtueel meubilair"
   },
   "navigation": {
@@ -83,10 +83,27 @@
       "revealSliderAria": "Onthulschuif",
       "exampleRoomsAria": "Voorbeeldkamers"
     },
+    "restage": {
+      "title": "Klik om te zien wat styling doet",
+      "subtitle": "Dezelfde lege kamer, keer op keer opnieuw ingericht. Geen verhuizers, geen huur, geen wachttijd.",
+      "kicker": "Volledige ontwerpcontrole",
+      "panelTitle": "Elke run meubileert opnieuw",
+      "panelBody": "Traditionele styling geeft je één opstelling en een huurcontract. Voer het opnieuw uit en de kamer komt anders gemeubileerd terug: andere opstelling, ander kleurenpalet, andere materialen.",
+      "button": "Richt deze kamer in",
+      "buttonAgain": "Richt opnieuw in",
+      "seeOriginal": "Bekijk origineel",
+      "loadFailed": "Die kon niet worden geladen. Probeer het opnieuw.",
+      "points": {
+        "rooms": "Acht kamertypes, van slaapkamer tot keuken",
+        "browser": "Niets te installeren, het werkt in je browser"
+      },
+      "emptyAlt": "Een lege woonkamer vóór virtuele styling",
+      "stagedAlt": "Dezelfde woonkamer, ingericht door Stagify"
+    },
     "showcase": {
       "title": "Zie het zelf",
-      "subtitle": "Live demo's. Kijk gerust rond.",
-      "tablistAria": "Studio's",
+      "subtitle": "Live demo’s. Kijk gerust rond.",
+      "tablistAria": "Studio’s",
       "prevAria": "Vorige studio",
       "nextAria": "Volgende studio",
       "tabs": {
@@ -202,21 +219,21 @@
     "info": {
       "eyebrow": "De korte versie",
       "title": "Wat virtuele styling is, en waarom het verkoopt",
-      "subtitle": "Een korte, eerlijke uitleg over hoe het werkt en voor wie het is. Geen jargon.",
+      "subtitle": "Een korte, eerlijke uitleg over hoe het werkt en voor wie het is.",
       "rows": {
         "why": {
           "eyebrow": "Waarom het werkt",
           "caption": "Stagify demonstreren op een Compass-kantoor in New York",
           "title": "Kopers kijken eerst met hun ogen",
-          "body": "Bijna elke koper begint online, dus je advertentiefoto's zijn de echte eerste bezichtiging. Lege of gedateerde kamers zijn lastig in te schatten; mensen kunnen de schaal niet beoordelen of zich voorstellen er te wonen. Styling geeft elke kamer een duidelijk doel en aantrekkingskracht, en daarom vertrouwen makelaars er altijd al op.",
-          "p1": "Lege kamers ogen op foto's kleiner en kouder dan ze zijn",
+          "body": "Bijna elke koper begint online, dus je advertentiefoto’s zijn de echte eerste bezichtiging. Lege of gedateerde kamers zijn lastig in te schatten; mensen kunnen de schaal niet beoordelen of zich voorstellen er te wonen. Styling geeft elke kamer een duidelijk doel en aantrekkingskracht, en daarom vertrouwen makelaars er altijd al op.",
+          "p1": "Lege kamers ogen op foto’s kleiner en kouder dan ze zijn",
           "p2": "Styling toont het bedoelde gebruik van elke ruimte",
-          "p3": "Sterkere foto's leveren meer klikken, opslagen en bezichtigingen op"
+          "p3": "Sterkere foto’s leveren meer klikken, opslagen en bezichtigingen op"
         },
         "how": {
           "eyebrow": "Hoe het werkt",
           "caption": "Een zaal vol makelaars door hun eerste gestylede advertentie leiden",
-          "title": "Van lege foto tot advertentieklaar in ongeveer 8 seconden",
+          "title": "Van lege foto tot advertentieklaar in seconden",
           "body": "Upload een foto, kies het kamertype en een van de zeven stijlen, en Stagify richt hem in ongeveer acht seconden in. Aanpassingen nodig? Verwijder het bestaande meubilair, voeg een eigen prompt toe, of maskeer één gebied om het aan te passen zonder opnieuw te beginnen.",
           "p1": "7 stijlen plus eigen prompts en meubelverwijdering",
           "p2": "Bewerk met een masker elk deel van een resultaat zonder het over te doen",
@@ -224,9 +241,9 @@
         },
         "who": {
           "eyebrow": "Voor wie het is",
-          "caption": "Eén-op-één de foto's van een makelaar stylen",
+          "caption": "Eén-op-één de foto’s van een makelaar stylen",
           "title": "Gemaakt voor makelaars, verkopers en kopers",
-          "body": "Makelaars promoten elke advertentie in minuten in plaats van te wachten op een stylingteam. Verkopers stylen hun eigen foto's zonder iemand in te huren. Kopers bekijken een verbouwing voordat ze zich vastleggen. En met AI-Designer verander je CAD-plattegrond-PDF's in fotorealistische 3D-kamerrenders.",
+          "body": "Makelaars promoten elke advertentie in minuten in plaats van te wachten op een stylingteam. Verkopers stylen hun eigen foto’s zonder iemand in te huren. Kopers bekijken een verbouwing voordat ze zich vastleggen. En met AI-Designer verander je CAD-plattegrond-PDF’s in fotorealistische 3D-kamerrenders.",
           "p1": "Makelaars: sneller adverteren en meer deals sluiten",
           "p2": "Verkopers & kopers: geen software, geen ontwerper nodig",
           "p3": "AI-Designer: agentische kamerstyling"
@@ -281,7 +298,7 @@
         },
         "rights": {
           "aspect": "De afbeeldingen",
-          "trad": "Foto's van geleend meubilair dat je teruggeeft",
+          "trad": "Foto’s van geleend meubilair dat je teruggeeft",
           "stag": "Van jou om te houden, met volledig auteursrecht"
         }
       }
@@ -342,7 +359,7 @@
       "note": "Erkend door Compass, Centennial en meer."
     },
     "whyus": {
-      "subtitle": "Andere virtuele styling-tools zijn traag, duur en gesloten. Stagify is precies andersom."
+      "subtitle": "Vier andere manieren om een woning te stylen, beoordeeld naast de onze."
     },
     "testimonials": {
       "title": "Wat makelaars zeggen",
@@ -350,39 +367,33 @@
       "items": {
         "justin": {
           "quote": "Toen ik Stagify voor het eerst probeerde, was ik oprecht verbluft. Ik besefte dat ik gewoon mijn telefoon kon gebruiken, de dure fotograaf kon overslaan en toch prachtige resultaten had. Het is een gamechanger voor mijn advertenties, en de prijs is geweldig!",
-          "author": "Justin Stern (Makelaar)",
+          "author": "Justin Stern",
           "role": "Tahari Realty",
           "location": "Manhattan, New York"
         },
         "andy": {
-          "quote": "Stagify past perfect in mijn manier van werken. Ik upload tussen twee bezichtigingen door een foto van een woning en die is gestyled voordat ik terug ben op kantoor. Mijn klanten zijn altijd onder de indruk van hoe verzorgd de uiteindelijke foto's eruitzien.",
-          "author": "Andy Eras (Makelaar)",
+          "quote": "Stagify past perfect in mijn manier van werken. Ik upload tussen twee bezichtigingen door een foto van een woning en die is gestyled voordat ik terug ben op kantoor. Mijn klanten zijn altijd onder de indruk van hoe verzorgd de uiteindelijke foto’s eruitzien.",
+          "author": "Andy Eras",
           "role": "Centennial Properties",
           "location": "Manhattan, New York"
         },
-        "p3": {
-          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Three",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "travonte": {
+          "quote": "Stagify laat het hele proces moeiteloos aanvoelen. Je uploadt een foto van een lege kamer, wacht een paar seconden en opeens heeft de ruimte karakter. Het is simpel, strak en echt bruikbaar.",
+          "author": "Travonte Taylor",
+          "role": "Compass",
+          "location": "Brooklyn, New York"
         },
-        "p4": {
-          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Four",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jack": {
+          "quote": "Wat me het meest aan Stagify opviel, is hoe praktisch het is. Het is niet zomaar weer een AI-tool die er even leuk uitziet. Het pakt iets aan waar makelaars, huurders en eigenaren voortdurend mee te maken hebben en maakt het sneller en makkelijker.",
+          "author": "Jack Sash",
+          "role": "Tahari Realty",
+          "location": "Manhattan, New York"
         },
-        "p5": {
-          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Five",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
-        },
-        "p6": {
-          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Six",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jaden": {
+          "quote": "Ik zie Stagify enorm worden voor studentenkamers, appartementen en advertenties. Lege kamers zijn lastig voor te stellen, maar zodra ze zijn ingericht voelt de ruimte meteen echter. Dat scheelt enorm als je jezelf er wilt zien wonen.",
+          "author": "Jaden Lander",
+          "role": "RockSolid Management",
+          "location": "Manhattan, New York"
         }
       },
       "deck": {
@@ -466,8 +477,8 @@
       "emptyRoomTitle": "Lege kamer (meubilair verwijderd)",
       "emptyRoomDownload": "Download lege kamer",
       "emptyRoomAlt": "Kamer met bestaand meubilair verwijderd",
-      "furniturePhotosLabel": "Meubelfoto's (optioneel)",
-      "furniturePhotosHint": "Tot 5 referentiefoto's van meubilair of decor om in de gestylede kamer te tonen",
+      "furniturePhotosLabel": "Meubelfoto’s (optioneel)",
+      "furniturePhotosHint": "Tot 5 referentiefoto’s van meubilair of decor om in de gestylede kamer te tonen",
       "processButton": "Foto verwerken",
       "maskBeforeButton": "Foto maskeren & bewerken",
       "maskBeforeHint": "Schilder een deel van de originele foto om te bewerken (bijv. rommel verwijderen). Al het andere blijft onaangeroerd. Verwerk daarna om de versie te stylen die je bevalt.",
@@ -493,7 +504,7 @@
       "fastGeneration": "Snel model",
       "qualityGeneration": "Stagify+ model",
       "imageGenerations": "Afbeeldingsgeneraties",
-      "addPhotos": "+ Foto's toevoegen",
+      "addPhotos": "+ Foto’s toevoegen",
       "tryAnotherImage": "Probeer een andere afbeelding",
       "uploadAreaAria": "Uploadgebied",
       "uploadHeadline": "Sleep hier je kamerfoto naartoe",
@@ -579,38 +590,63 @@
   "whyUs": {
     "title": "Waarom voor ons kiezen?",
     "stagify": {
-      "title": "stagify.ai",
       "features": {
-        "instantResults": "<strong>Directe resultaten</strong>: ~8 seconden",
-        "oneClickStaging": "<strong>Styling met één klik</strong>: Geen gedoe",
-        "free": "<strong>Onbeperkt gratis generaties</strong>: Geen creditcard nodig",
-        "noAds": "<strong>Advertentievrije ervaring</strong>: Geen afleiding",
-        "noLogin": "<strong>Eenvoudig aanmelden</strong>: Begin direct",
-        "unlimited": "<strong>Geavanceerde afbeeldingsmodellen</strong>: Hogere kwaliteit",
-        "copyright": "<strong>Volledig auteursrecht</strong>: Overal te gebruiken"
+        "free": "Gratis, zo vaak je wilt"
       }
     },
-    "others": {
-      "title": "Anderen",
-      "features": {
-        "slowResults": "<strong style=\"color: #6d1c2c;\">Trage resultaten: </strong>Dagen wachten",
-        "longProcess": "<strong style=\"color: #6d1c2c;\">Lang proces: </strong>Vervelend heen-en-weer",
-        "expensive": "<strong style=\"color: #6d1c2c;\">Duur: </strong>Kostbare kosten per afbeelding",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Advertenties en cookies: </strong>Opdringerige ervaring",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">Lang aanmeldproces: </strong>Frustrerende start",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Verouderde, goedkopere modellen: </strong>Lagere kwaliteit",
-        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Onduidelijk auteursrecht: </strong>Juridische aansprakelijkheid"
-      }
-    },
-    "keyFeatures": {
-      "title": "Belangrijkste functies",
-      "unlimitedVariations": {
-        "title": "Onbeperkte variaties",
-        "description": "Ontdek meerdere stijlen tot het past bij je merk en kopersprofiel."
+    "board": {
+      "caption": "Stagify.ai vergeleken met vier andere manieren om een woning te stylen, op zes factoren.",
+      "headers": {
+        "factor": "Factor",
+        "stager": "Traditionele styling",
+        "ai": "AI-tool per afbeelding",
+        "diy": "Zelf bewerken",
+        "empty": "Lege kamer"
       },
-      "fastTurnarounds": {
-        "title": "Snelle doorlooptijden",
-        "description": "Style foto's in ongeveer 8 seconden zodat je sneller kunt adverteren en meer deals afrondt."
+      "values": {
+        "yes": "Ja",
+        "no": "Nee"
+      },
+      "rows": {
+        "speed": {
+          "factor": "Snelheid",
+          "us": "~8 seconden",
+          "stager": "1–3 weken",
+          "ai": "1–3 dagen",
+          "diy": "2–4 uur per foto",
+          "empty": "Direct"
+        },
+        "cost": {
+          "factor": "Kosten per woning",
+          "us": "$0, of $11.99 per maand",
+          "stager": "$2,000–$5,000",
+          "ai": "$550–850",
+          "diy": "Een middag van je tijd",
+          "empty": "$0"
+        },
+        "redo": {
+          "factor": "Een andere look proberen",
+          "stager": "Per uur gefactureerd",
+          "ai": "Per afbeelding gefactureerd",
+          "diy": "Nog meer van je tijd",
+          "empty": "Niets om te proberen"
+        },
+        "quality": {
+          "factor": "Fotokwaliteit",
+          "us": "Vrijwel fotorealistisch",
+          "stager": "Foto’s van echte kamers",
+          "ai": "Zichtbare AI-fouten",
+          "diy": "Zo goed als je retoucheur",
+          "empty": "Een lege kamer"
+        },
+        "ownership": {
+          "factor": "De foto’s zijn van jou",
+          "stager": "Van de fotograaf",
+          "ai": "Gelicentieerd, niet in eigendom"
+        },
+        "furniture": {
+          "factor": "Echte meubels bij de bezichtiging"
+        }
       }
     }
   },
@@ -717,7 +753,7 @@
       "UNRELATED_OBJECT": "Dit lijkt geen kamer, ruimte of meubelstuk. Upload een foto van de ruimte of het meubelstuk dat je wilt stylen.",
       "UNSTAGEABLE": "Dit lijkt geen kamer, ruimte of meubelstuk. Upload een foto van een kamer, buitenruimte of meubelstuk dat je wilt stylen."
     },
-    "fileType": "Upload een PNG-, JPG-, JPEG-, WebP- of GIF-afbeeldingsbestand.",
+    "fileType": "Upload een JPG-, PNG-, WebP- of HEIC-afbeeldingsbestand.",
     "fileTooLarge": "Het bestand is te groot. Upload een afbeelding van minder dan 25 MB.",
     "heicConvert": "We konden die HEIC-foto niet lezen. Probeer een JPG of PNG.",
     "uploadFirst": "Upload eerst een afbeelding",
@@ -745,7 +781,7 @@
   "auth": {
     "yourEmail": "je e-mail",
     "welcomeTitle": "Welkom bij Stagify",
-    "welcomeSub": "Maak een gratis account om je foto's te uploaden en te stylen.",
+    "welcomeSub": "Maak een gratis account om je foto’s te uploaden en te stylen.",
     "registerTitle": "Maak je gratis account",
     "registerSub": "Meld je aan om afbeeldingen te uploaden en te stylen.",
     "signInTitle": "Inloggen",
@@ -827,7 +863,7 @@
       "keywords": "AI-Designer, AI-ontwerpassistent, ontwerpconsultatie, AI-chat, ontwerphulp, interieurontwerp AI"
     },
     "title": "AI-Designer",
-    "description": "Zet je CAD-plattegrond-PDF's om in fotorealistische 3D-interieurvisualisaties",
+    "description": "Zet je CAD-plattegrond-PDF’s om in fotorealistische 3D-interieurvisualisaties",
     "statusMessages": {
       "generating": [
         "afbeelding genereren...",
@@ -891,8 +927,8 @@
     "uploadSubtext": "Ondersteund: PDF-bestanden",
     "options": {
       "title": "Verwerkingsopties",
-      "skip": "Eerste pagina's overslaan",
-      "skipHint": "Sla omslag- en titelpagina's over",
+      "skip": "Eerste pagina’s overslaan",
+      "skipHint": "Sla omslag- en titelpagina’s over",
       "concurrency": "Verwerkingssnelheid",
       "concurrencyHint": "Hogere snelheden kunnen de verwerkingstijd per kamer verhogen",
       "dpi": "Afbeeldingskwaliteit (DPI)",
@@ -1011,10 +1047,10 @@
       "title": "Uploaden & bestanden",
       "i1": {
         "q": "Mijn foto wil niet uploaden.",
-        "a": "Zorg dat het bestand een JPG, PNG of WEBP van minder dan 25 MB is. Heel grote telefoonfoto’s mislukken soms — verklein de afbeelding of maak er een schermafbeelding van en upload opnieuw. Als het dan nog misgaat, ververs de pagina en probeer het opnieuw."
+        "a": "Zorg dat het bestand een JPG, PNG, WebP of HEIC van minder dan 25 MB is. Heel grote telefoonfoto’s mislukken soms — verklein de afbeelding of maak er een schermafbeelding van en upload opnieuw. Als het dan nog misgaat, ververs de pagina en probeer het opnieuw."
       },
       "i2": {
-        "q": "Welke foto's werken het best?",
+        "q": "Welke foto’s werken het best?",
         "a": "Gebruik een scherpe, goed verlichte foto recht van voren, met de hele kamer zichtbaar en minimale rommel. Wazige, donkere of extreme groothoekopnames leveren zwakkere resultaten. Nieuw hier? Bekijk eerst de <a href=\"#walkthrough\">stapsgewijze uitleg</a>."
       }
     },
@@ -1366,7 +1402,7 @@
   "stagifyPlus": {
     "hero": {
       "title": "Alles in Stagify, <span class=\"sp-grad\">ontgrendeld</span>.",
-      "subtitle": "Meubels verwijderen, de AI Designer, de Masking Studio en modellen van hogere kwaliteit — elk professioneel gereedschap, voor minder dan de kosten van één traditionele styling."
+      "subtitle": "Meubels verwijderen, de AI Designer, de Masking Studio en modellen van hogere kwaliteit: elk professioneel gereedschap, voor minder dan de kosten van één traditionele styling."
     },
     "plan": {
       "hintAccountFirst": "Maak eerst een gratis account aan — zo wordt je abonnement aan jou gekoppeld.",
@@ -1407,7 +1443,7 @@
       },
       "exterior": {
         "title": "Buitenstudio",
-        "desc": "Herstel de foto waarmee elke advertentie opent. Verander het tijdstip, maak een grauwe lucht helder en verwijder auto’s en containers — terwijl de woning zelf precies blijft zoals gefotografeerd."
+        "desc": "Herstel de foto waarmee elke advertentie opent. Verander het tijdstip, maak een grauwe lucht helder en verwijder auto’s en containers, terwijl de woning zelf precies blijft zoals gefotografeerd."
       }
     },
     "compare": {
@@ -1560,7 +1596,7 @@
         "body": "Een vlakke grijze lucht wordt helderblauw, licht bewolkt of juist dramatischer — afgestemd op het licht dat al op het pand valt, met schone randen langs de daklijn."
       },
       "clutter": {
-        "title": "Auto's, rommel en sneeuw",
+        "title": "Auto’s, rommel en sneeuw",
         "body": "Het busje van de buren op de oprit, de containers die buiten staan, de tuinslang op het gazon, de voorbijganger — en de sneeuw, regen en plassen die er toevallig lagen op de dag van de opname. Tijdelijke dingen verdwijnen, en het oppervlak eronder wordt passend hersteld."
       },
       "honest": {
@@ -1578,7 +1614,7 @@
       "timeOfDay": "Tijdstip",
       "sky": "Lucht",
       "removeLegend": "Uit de foto verwijderen",
-      "removeVehicles": "Auto's",
+      "removeVehicles": "Auto’s",
       "removeClutter": "Containers & rommel",
       "removePeople": "Mensen",
       "removeSnow": "Sneeuw",
@@ -1620,7 +1656,7 @@
   },
   "notFound": {
     "pageTitle": "Pagina niet gevonden | Stagify.ai",
-    "pageDescription": "Deze pagina bestaat niet of is verplaatst. Ga terug naar Stagify.ai om je woningfoto's verder in te richten.",
+    "pageDescription": "Deze pagina bestaat niet of is verplaatst. Ga terug naar Stagify.ai om je woningfoto’s verder in te richten.",
     "heading": "Deze pagina bestaat niet",
     "body": "De link klopt misschien niet, of de pagina is verplaatst. De rest staat nog precies waar je het achterliet.",
     "homeCta": "Terug naar home"

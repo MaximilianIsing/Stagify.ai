@@ -83,6 +83,23 @@
       "revealSliderAria": "공개 슬라이더",
       "exampleRoomsAria": "예시 방"
     },
+    "restage": {
+      "title": "클릭해서 홈스테이징 효과를 확인하세요",
+      "subtitle": "같은 빈 방을 몇 번이고 다시 꾸벝니다. 이사도, 렌털도, 기다림도 없습니다.",
+      "kicker": "디자인을 완전히 제어",
+      "panelTitle": "실행할 때마다 새로 꾸메집니다",
+      "panelBody": "전통적인 홈스테이징은 배치 하나와 렌털 계약을 줍니다. 다시 실행하면 배치도, 색감도, 소재도 다른 방이 돌아옵니다.",
+      "button": "이 방 꾸미기",
+      "buttonAgain": "다시 꾸미기",
+      "seeOriginal": "원본 보기",
+      "loadFailed": "이미지를 불러오지 못했습니다. 다시 시도해 주세요.",
+      "points": {
+        "rooms": "침실부터 주방까지, 여덟 가지 공간 유형",
+        "browser": "설치 없이 브라우저에서 바로"
+      },
+      "emptyAlt": "가상 홈스테이징 전의 빈 거실",
+      "stagedAlt": "Stagify가 꾸민 같은 거실"
+    },
     "showcase": {
       "title": "직접 확인해 보세요",
       "subtitle": "실시간 데모. 자유롭게 둘러보세요.",
@@ -202,7 +219,7 @@
     "info": {
       "eyebrow": "요약하자면",
       "title": "가상 스테이징이란 무엇이며, 왜 잘 팔리는가",
-      "subtitle": "어떻게 작동하고 누구를 위한 것인지 빠르고 솔직하게 정리했습니다. 어려운 용어는 없습니다.",
+      "subtitle": "어떻게 작동하고 누구를 위한 것인지 빠르고 솔직하게 정리했습니다.",
       "rows": {
         "why": {
           "eyebrow": "효과가 있는 이유",
@@ -216,7 +233,7 @@
         "how": {
           "eyebrow": "작동 방식",
           "caption": "중개인들에게 첫 스테이징 매물을 안내하는 모습",
-          "title": "빈 사진에서 매물 준비 완료까지 약 8초",
+          "title": "빈 사진에서 매물 준비 완료까지 단 몇 초",
           "body": "사진을 업로드하고, 방 유형과 7가지 스타일 중 하나를 고르면 Stagify가 약 8초 만에 가구를 배치합니다. 변경이 필요하신가요? 기존 가구를 제거하거나, 맞춤 프롬프트를 추가하거나, 한 영역만 마스킹해 처음부터 다시 하지 않고 조정할 수 있습니다.",
           "p1": "7가지 스타일과 맞춤 프롬프트, 가구 제거 기능",
           "p2": "결과물의 어떤 부분이든 다시 만들지 않고 마스크 편집",
@@ -342,7 +359,7 @@
       "note": "Compass, Centennial 등에서 인정받았습니다."
     },
     "whyus": {
-      "subtitle": "다른 가상 스테이징 도구는 느리고 비싸고 제약이 많습니다. Stagify는 그 반대입니다."
+      "subtitle": "매물을 꾸미는 다른 네 가지 방법을 우리와 나란히 채점했습니다."
     },
     "testimonials": {
       "title": "중개인들의 이야기",
@@ -350,39 +367,33 @@
       "items": {
         "justin": {
           "quote": "Stagify를 처음 사용해봤을 때 솔직히 깜짝 놀랐습니다. 그냥 휴대폰만 쓰고 값비싼 사진작가 없이도 멋진 결과를 얻을 수 있다는 걸 깨달았죠. 제 매물에는 게임 체인저이고, 가격도 놀랍습니다!",
-          "author": "Justin Stern (중개인)",
+          "author": "Justin Stern",
           "role": "Tahari Realty",
           "location": "뉴욕 맨해튼"
         },
         "andy": {
           "quote": "Stagify는 제 기존 업무 방식에 딱 들어맞습니다. 매물 사진을 내방 사이에 업로드하면 제가 자리에 돌아오기도 전에 스테이징이 끝나 있고, 고객들은 늘 최종 사진의 완성도에 감탄합니다.",
-          "author": "Andy Eras (중개인)",
+          "author": "Andy Eras",
           "role": "Centennial Properties",
           "location": "뉴욕 맨해튼"
         },
-        "p3": {
-          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Three",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "travonte": {
+          "quote": "Stagify를 쓰면 이 과정이 정말 수월하게 느껴집니다. 빈방 사진을 올리고 몇 초만 기다리면 공간에 갑자기 개성이 생깁니다. 단순하고 깔끔하면서 실제로 쓸모가 있습니다.",
+          "author": "Travonte Taylor",
+          "role": "Compass",
+          "location": "뉴욕 브루클린"
         },
-        "p4": {
-          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Four",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jack": {
+          "quote": "Stagify에서 가장 인상 깊었던 건 얼마나 실용적인가 하는 점이었습니다. 잠깐 멋져 보이는 흔한 AI 도구가 아닙니다. 중개인과 세입자, 집주인이 늘 겪는 문제를 더 빠르고 쉽게 만들어 줍니다.",
+          "author": "Jack Sash",
+          "role": "Tahari Realty",
+          "location": "뉴욕 맨해튼"
         },
-        "p5": {
-          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Five",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
-        },
-        "p6": {
-          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Six",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jaden": {
+          "quote": "기숙사와 아파트, 매물 등록 모두에서 Stagify가 크게 쓰일 것 같습니다. 빈방은 머릿속에 그리기 어렵지만, 가구가 놓이는 순간 공간이 훨씬 현실감 있게 다가옵니다. 그곳에 사는 모습을 상상할 때 큰 차이를 만듭니다.",
+          "author": "Jaden Lander",
+          "role": "RockSolid Management",
+          "location": "뉴욕 맨해튼"
         }
       },
       "deck": {
@@ -577,40 +588,65 @@
     "farmhousePhotoAlt": "팜하우스 가상 스테이징 스타일의 예시 방"
   },
   "whyUs": {
-    "title": "왜 저희를 선택해야 할까요?",
+    "title": "왜 우리를 선택할까요?",
     "stagify": {
-      "title": "stagify.ai",
       "features": {
-        "instantResults": "<strong>즉각적인 결과</strong>: 약 8초",
-        "oneClickStaging": "<strong>원클릭 스테이징</strong>: 번거로움 없음",
-        "free": "<strong>무제한 무료 생성</strong>: 카드 등록 불필요",
-        "noAds": "<strong>광고 없는 경험</strong>: 방해 요소 없음",
-        "noLogin": "<strong>간편한 가입</strong>: 즉시 시작",
-        "unlimited": "<strong>고급 이미지 모델</strong>: 더 높은 품질",
-        "copyright": "<strong>완전한 저작권</strong>: 어디에나 사용"
+        "free": "무료, 몇 번이든"
       }
     },
-    "others": {
-      "title": "다른 곳",
-      "features": {
-        "slowResults": "<strong style=\"color: #6d1c2c;\">느린 결과: </strong>며칠씩 기다림",
-        "longProcess": "<strong style=\"color: #6d1c2c;\">긴 과정: </strong>지루한 주고받기",
-        "expensive": "<strong style=\"color: #6d1c2c;\">비쌈: </strong>이미지당 높은 비용",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">광고와 쿠키: </strong>방해되는 경험",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">긴 가입 절차: </strong>답답한 시작",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">구형, 저렴한 모델: </strong>낮은 품질",
-        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">불분명한 저작권: </strong>법적 책임"
-      }
-    },
-    "keyFeatures": {
-      "title": "주요 기능",
-      "unlimitedVariations": {
-        "title": "무제한 변형",
-        "description": "브랜드와 구매자 프로필에 맞을 때까지 다양한 스타일을 탐색하세요."
+    "board": {
+      "caption": "Stagify.ai와 매물을 꾸미는 다른 네 가지 방법을 여섯 가지 항목으로 비교한 표.",
+      "headers": {
+        "factor": "항목",
+        "stager": "전통적인 홈스테이징",
+        "ai": "장당 과금 AI 도구",
+        "diy": "직접 보정하기",
+        "empty": "빈방"
       },
-      "fastTurnarounds": {
-        "title": "빠른 처리 속도",
-        "description": "약 8초 만에 사진을 스테이징해 더 빨리 등록하고 더 많은 거래를 마무리하세요."
+      "values": {
+        "yes": "예",
+        "no": "아니요"
+      },
+      "rows": {
+        "speed": {
+          "factor": "속도",
+          "us": "약 8초",
+          "stager": "1~3주",
+          "ai": "1~3일",
+          "diy": "사진 한 장에 2~4시간",
+          "empty": "즉시"
+        },
+        "cost": {
+          "factor": "매물당 비용",
+          "us": "$0 또는 월 $11.99",
+          "stager": "$2,000–$5,000",
+          "ai": "$550–850",
+          "diy": "당신의 반나절",
+          "empty": "$0"
+        },
+        "redo": {
+          "factor": "다른 스타일 시도하기",
+          "stager": "시간당 청구",
+          "ai": "장당 청구",
+          "diy": "당신의 시간 추가",
+          "empty": "바꿔볼 것이 없음"
+        },
+        "quality": {
+          "factor": "사진 품질",
+          "us": "실사에 가까운 렌더",
+          "stager": "실제 공간을 찍은 사진",
+          "ai": "AI 티가 남",
+          "diy": "보정 실력만큼",
+          "empty": "빈방 그대로"
+        },
+        "ownership": {
+          "factor": "사진은 당신 것",
+          "stager": "사진작가에게 귀속",
+          "ai": "소유가 아닌 이용 허락"
+        },
+        "furniture": {
+          "factor": "집을 보여줄 때 실제 가구가 있음"
+        }
       }
     }
   },
@@ -718,7 +754,7 @@
       "UNSTAGEABLE": "방, 공간 또는 가구로 보이지 않습니다. 실내 공간, 실외 공간 또는 스테이징하려는 가구 사진을 업로드해 주세요."
     },
     "heicConvert": "해당 HEIC 사진을 읽을 수 없습니다. JPG 또는 PNG를 사용해 보세요.",
-    "fileType": "PNG, JPG, JPEG, WebP 또는 GIF 이미지 파일을 업로드해 주세요.",
+    "fileType": "JPG, PNG, WebP 또는 HEIC 이미지 파일을 업로드해 주세요.",
     "fileTooLarge": "파일이 너무 큽니다. 25MB 미만의 이미지를 업로드해 주세요.",
     "uploadFirst": "먼저 이미지를 업로드해 주세요",
     "badPrompt": "잘못된 프롬프트가 입력되었습니다",
@@ -1011,7 +1047,7 @@
       "title": "업로드 & 파일",
       "i1": {
         "q": "사진이 업로드되지 않아요.",
-        "a": "파일이 JPG, PNG 또는 WEBP이고 25 MB 미만인지 확인하세요. 용량이 아주 큰 휴대폰 사진은 실패할 때가 있습니다. 이미지 크기를 줄이거나 스크린샷을 찍어 다시 업로드해 보세요. 그래도 안 되면 페이지를 새로 고친 뒤 다시 시도하세요."
+        "a": "파일이 JPG, PNG, WebP 또는 HEIC이고 25 MB 미만인지 확인하세요. 용량이 아주 큰 휴대폰 사진은 실패할 때가 있습니다. 이미지 크기를 줄이거나 스크린샷을 찍어 다시 업로드해 보세요. 그래도 안 되면 페이지를 새로 고친 뒤 다시 시도하세요."
       },
       "i2": {
         "q": "어떤 사진이 가장 좋나요?",
@@ -1196,7 +1232,7 @@
     "helpTitle": "마스킹 스튜디오 사용 방법",
     "helpStep1": "방 사진을 업로드하세요.",
     "helpStep2": "각 가구가 들어갈 자리를 하이라이트하세요. 칠하거나, 사각형을 드래그하거나, 자동 선택 도구로 물체나 영역을 한 번의 클릭으로 선택할 수 있습니다. 영역마다 색은 하나입니다.",
-    "helpStep3": "각 영역에 가구 사진, 짧은 설명 또는 둘 다를 지정하세요. 영역을 '물체 제거'로 전환해 덮고 있는 것을 비울 수도 있습니다.",
+    "helpStep3": "각 영역에 가구 사진, 짧은 설명 또는 둘 다를 지정하세요. 영역을 '물체 제거’로 전환해 덮고 있는 것을 비울 수도 있습니다.",
     "helpStep4": "편집 적용을 클릭하세요. 모든 영역이 동시에 스테이징되며, 표시한 부분만 바뀝니다. 사진의 나머지 부분은 그대로 유지됩니다.",
     "helpShortcuts": "키보드 단축키",
     "helpClose": "확인",
@@ -1218,8 +1254,8 @@
     "clearHighlight": "하이라이트 지우기",
     "snapToObject": "개체에 맞추기",
     "snapToObjectHint": "AI가 실제로 그린 부분의 가장자리까지 이 하이라이트를 넓혀서 잘리지 않도록 합니다.",
-    "spillFlag": "이 편집이 하이라이트를 벗어났습니다 — '개체에 맞추기'를 사용할 수 있습니다.",
-    "snapToast": "생성된 일부 항목이 하이라이트를 벗어났습니다 — 해당 영역을 열고 '개체에 맞추기'를 눌러 나머지를 포함하세요.",
+    "spillFlag": "이 편집이 하이라이트를 벗어났습니다 — '개체에 맞추기’를 사용할 수 있습니다.",
+    "snapToast": "생성된 일부 항목이 하이라이트를 벗어났습니다 — 해당 영역을 열고 '개체에 맞추기’를 눌러 나머지를 포함하세요.",
     "toolRect": "사각형",
     "renameAria": "이 영역 이름 바꾸기",
     "resumeTitle": "지난 세션을 이어서 할까요?",
@@ -1366,7 +1402,7 @@
   "stagifyPlus": {
     "hero": {
       "title": "Stagify의 모든 것을 <span class=\"sp-grad\">잠금 해제</span>.",
-      "subtitle": "가구 제거, AI 디자이너, 마스킹 스튜디오, 그리고 더 높은 품질의 모델까지 — 모든 전문 도구를 전통적인 홈스테이징 한 번보다 저렴하게."
+      "subtitle": "가구 제거, AI 디자이너, 마스킹 스튜디오, 그리고 더 높은 품질의 모델까지, 모든 전문 도구를 전통적인 홈스테이징 한 번보다 저렴하게."
     },
     "plan": {
       "hintAccountFirst": "먼저 무료 계정을 만드세요. 그래야 구독이 회원님 계정에 연결됩니다.",

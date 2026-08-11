@@ -174,7 +174,7 @@ export function createFurnitureRefs(deps) {
             return window.StagifyHeic.isHeic(f) ? window.StagifyHeic.toDisplayableFile(f) : f;
           }));
         } catch (e) {
-          showErrorToast(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn't read that HEIC photo. Please try a JPG or PNG.");
+          showErrorToast(window.LanguageSystem?.getText('errors.heicConvert') || "We couldn’t read that HEIC photo. Please try a JPG or PNG.");
           return;
         }
       }

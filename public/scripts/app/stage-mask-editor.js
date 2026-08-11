@@ -317,7 +317,7 @@ export function createStageMaskEditor(deps) {
         const list = kind === 'before' ? getBeforeVersions() : getAfterVersions();
         if (list.length < maxVersions) return false;
         showErrorToast(tx('modal.staging.maskLimitReached',
-          "You've reached the limit of " + maxVersions + ' versions for this image.'));
+          "You’ve reached the limit of " + maxVersions + ' versions for this image.'));
         return true;
       }
 

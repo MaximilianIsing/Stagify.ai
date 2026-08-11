@@ -23,11 +23,11 @@
     "guides": "Guide",
     "logoAlt": "Logo Stagify.ai – vai alla home",
     "tips": {
-      "imageStaging": "Arreda un'intera stanza da una sola foto: scegli il tipo di ambiente e lo stile d'arredo, al resto pensa l'IA. Ideale per stanze vuote o quasi vuote quando vuoi un risultato rapido e completo.",
-      "basicMask": "Dipingi su una parte della foto e descrivi la modifica che desideri. Ideale per piccoli ritocchi — cambiare un divano, liberare un piano — quando il resto dell'immagine va già bene.",
+      "imageStaging": "Arreda un’intera stanza da una sola foto: scegli il tipo di ambiente e lo stile d’arredo, al resto pensa l’IA. Ideale per stanze vuote o quasi vuote quando vuoi un risultato rapido e completo.",
+      "basicMask": "Dipingi su una parte della foto e descrivi la modifica che desideri. Ideale per piccoli ritocchi — cambiare un divano, liberare un piano — quando il resto dell’immagine va già bene.",
       "pdfTo3d": "Chatta con un designer IA che arreda, ridisegna e continua a rifinire una stanza insieme a te. Ideale quando esplori idee invece di completare una singola foto. Solo da computer.",
-      "maskingStudio": "Evidenzia più aree con colori diversi, assegna a ciascuna la sua foto d'arredo o istruzione e arredale tutte in una volta. Ideale quando serve un controllo esatto: tutto ciò che resta fuori dalle evidenziazioni non cambia di un pixel.",
-      "exteriorStudio": "Sistema la foto dell'esterno di un immobile: cambia l'ora del giorno, schiarisce il cielo e rimuove auto parcheggiate e disordine. Ideale per facciata, giardino e riprese dalla strada, che gli strumenti di home staging non toccano mai."
+      "maskingStudio": "Evidenzia più aree con colori diversi, assegna a ciascuna la sua foto d’arredo o istruzione e arredale tutte in una volta. Ideale quando serve un controllo esatto: tutto ciò che resta fuori dalle evidenziazioni non cambia di un pixel.",
+      "exteriorStudio": "Sistema la foto dell’esterno di un immobile: cambia l’ora del giorno, schiarisce il cielo e rimuove auto parcheggiate e disordine. Ideale per facciata, giardino e riprese dalla strada, che gli strumenti di home staging non toccano mai."
     },
     "exteriorStudio": "Studio Esterni"
   },
@@ -45,10 +45,10 @@
       "stage": "Arreda.",
       "imagine": "Immagina."
     },
-    "cta": "Carica un'immagine gratis",
+    "cta": "Carica un’immagine gratis",
     "freeGensLeft": "{n} generazioni gratuite rimaste oggi, ",
-    "freeGensLeftUpgrade": "Esegui l'upgrade",
-    "freeGensUpgrade": "Prova Stagify+ oggi stesso. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Esegui l'upgrade</a>",
+    "freeGensLeftUpgrade": "Esegui l’upgrade",
+    "freeGensUpgrade": "Prova Stagify+ oggi stesso. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Esegui l’upgrade</a>",
     "carouselNote": "Anteprima di esempio. Carica la tua foto per arredarla",
     "stats": {
       "roomsStaged": "Stanze arredate",
@@ -62,17 +62,17 @@
   "home": {
     "studio": {
       "eyebrow": "Prima e dopo",
-      "title": "Trascina per vedere l'effetto dello staging",
-      "subtitle": "La stessa foto dell'annuncio, prima e dopo Stagify. Niente traslochi, niente noleggi, nessuna attesa.",
+      "title": "Trascina per vedere l’effetto dello staging",
+      "subtitle": "La stessa foto dell’annuncio, prima e dopo Stagify. Niente traslochi, niente noleggi, nessuna attesa.",
       "beforeLabel": "Prima",
       "afterLabel": "Dopo",
-      "kicker": "Com'è",
+      "kicker": "Com’è",
       "panelTitle": "La stessa stanza, arredata in pochi secondi",
-      "panelBody": "Trascina la maniglia. A sinistra c'è la foto originale; tutto ciò che è a destra è stato arredato da Stagify in pochi secondi.",
+      "panelBody": "Trascina la maniglia. A sinistra c’è la foto originale; tutto ciò che è a destra è stato arredato da Stagify in pochi secondi.",
       "points": {
         "speed": "Circa 8 secondi per foto",
         "restage": "Riarreda in qualsiasi stile, quante volte vuoi",
-        "rights": "Ogni immagine è tua, con pieni diritti d'autore"
+        "rights": "Ogni immagine è tua, con pieni diritti d’autore"
       },
       "examples": {
         "bedroom": "Camera da letto",
@@ -83,9 +83,26 @@
       "revealSliderAria": "Cursore di confronto",
       "exampleRoomsAria": "Stanze di esempio"
     },
+    "restage": {
+      "title": "Fai clic per vedere cosa fa l’home staging",
+      "subtitle": "La stessa stanza vuota, arredata ancora e ancora. Nessun trasloco, nessun noleggio, nessuna attesa.",
+      "kicker": "Controllo totale del design",
+      "panelTitle": "Ogni esecuzione la arreda da capo",
+      "panelBody": "L’home staging tradizionale ti dà una sola disposizione e un contratto di noleggio. Rilancialo e la stanza torna arredata in un altro modo: altra disposizione, altra palette, altri materiali.",
+      "button": "Arreda questa stanza",
+      "buttonAgain": "Arreda di nuovo",
+      "seeOriginal": "Vedi l’originale",
+      "loadFailed": "Quella non si è caricata. Riprova.",
+      "points": {
+        "rooms": "Otto tipi di stanza, dalle camere alle cucine",
+        "browser": "Niente da installare, funziona nel browser"
+      },
+      "emptyAlt": "Un soggiorno vuoto prima dell’home staging virtuale",
+      "stagedAlt": "Lo stesso soggiorno, arredato da Stagify"
+    },
     "showcase": {
       "title": "Guarda con i tuoi occhi",
-      "subtitle": "Demo dal vivo. Dai un'occhiata.",
+      "subtitle": "Demo dal vivo. Dai un’occhiata.",
       "tablistAria": "Studi",
       "prevAria": "Studio precedente",
       "nextAria": "Studio successivo",
@@ -108,12 +125,12 @@
         "upload": "Carica una foto e arredala in circa 8 secondi.",
         "styles": "Scegli tra stili di arredo per ogni tipo di stanza.",
         "restage": "Non è quello che volevi? Rifallo quante volte vuoi.",
-        "rights": "Ogni immagine è tua, con pieni diritti d'autore."
+        "rights": "Ogni immagine è tua, con pieni diritti d’autore."
       }
     },
     "designer": {
-      "title": "Lascia che un'IA arredi il tuo spazio",
-      "subtitle": "Con il Designer IA, chatta per arredare, riprogettare e perfezionare qualsiasi stanza finché non è pronta per l'annuncio. <em>(Esclusiva Stagify+)</em>",
+      "title": "Lascia che un’IA arredi il tuo spazio",
+      "subtitle": "Con il Designer IA, chatta per arredare, riprogettare e perfezionare qualsiasi stanza finché non è pronta per l’annuncio. <em>(Esclusiva Stagify+)</em>",
       "kicker": "Conversazionale",
       "panelTitle": "Continua a parlare finché la stanza non ti convince",
       "panelBody": "Scrivi ciò che vuoi e il Designer arreda la stanza, tenendola a mente. Chiedi un altro divano o una palette più calda e riparte da quanto ha già creato.",
@@ -128,35 +145,35 @@
       "subtitle": "Maschera le aree da rifare, aggiungi i tuoi mobili e tutto il resto resta identico al pixel. <em>(Esclusiva Stagify+)</em>",
       "kicker": "Preciso al pixel",
       "panelTitle": "Viene riarredato solo ciò che colori",
-      "panelBody": "Colora solo l'area da riarredare. Tutto ciò che resta fuori dalla maschera torna intatto, così il resto della foto non cambia.",
+      "panelBody": "Colora solo l’area da riarredare. Tutto ciò che resta fuori dalla maschera torna intatto, così il resto della foto non cambia.",
       "points": {
-        "snap": "Dipingi una maschera o lascia che segua l'oggetto.",
+        "snap": "Dipingi una maschera o lascia che segua l’oggetto.",
         "areas": "Segna più aree e arredale tutte insieme.",
         "own": "Aggiungi la foto di un tuo mobile per inserirlo.",
         "repeat": "Riusa la stessa maschera con un altro stile."
       }
     },
     "exterior": {
-      "title": "Sistema la foto con cui si apre l'annuncio",
-      "subtitle": "Lo Studio Esterni cambia l'ora del giorno, schiarisce i cieli grigi e rimuove auto e bidoni. L'immobile stesso resta intatto. <em>(Esclusiva Stagify+)</em>",
+      "title": "Sistema la foto con cui si apre l’annuncio",
+      "subtitle": "Lo Studio Esterni cambia l’ora del giorno, schiarisce i cieli grigi e rimuove auto e bidoni. L’immobile stesso resta intatto. <em>(Esclusiva Stagify+)</em>",
       "kicker": "Appeal esterno",
-      "panelTitle": "L'unico scatto che non puoi rifare",
-      "panelBody": "Ogni annuncio si apre con l'esterno, l'unica foto che non puoi rifare quando il tempo cambia.",
+      "panelTitle": "L’unico scatto che non puoi rifare",
+      "panelBody": "Ogni annuncio si apre con l’esterno, l’unica foto che non puoi rifare quando il tempo cambia.",
       "points": {
-        "light": "Scatta a mezzogiorno, pubblica all'ora dorata.",
+        "light": "Scatta a mezzogiorno, pubblica all’ora dorata.",
         "sky": "Il grigio piatto diventa azzurro o poco nuvoloso.",
         "clutter": "Auto, bidoni, tubi e cartelli spariscono.",
         "honest": "Nessun prato, muro o vialetto rifatto."
       },
       "comparisonAria": "Confronto della foto esterna prima e dopo il miglioramento",
       "alts": {
-        "before": "Una casa unifamiliare fotografata sotto un cielo grigio piatto, con un'auto nel vialetto, i bidoni sul marciapiede e un tubo sul prato",
-        "after": "La stessa casa all'ora dorata sotto un cielo azzurro limpido, senza l'auto parcheggiata, i bidoni e il tubo"
+        "before": "Una casa unifamiliare fotografata sotto un cielo grigio piatto, con un’auto nel vialetto, i bidoni sul marciapiede e un tubo sul prato",
+        "after": "La stessa casa all’ora dorata sotto un cielo azzurro limpido, senza l’auto parcheggiata, i bidoni e il tubo"
       }
     },
     "gallery": {
       "title": "Ogni stanza che allestisci viene salvata per te",
-      "subtitle": "La tua galleria conserva ogni stanza allestita, le impostazioni che l'hanno prodotta e i link che hai condiviso con i clienti.",
+      "subtitle": "La tua galleria conserva ogni stanza allestita, le impostazioni che l’hanno prodotta e i link che hai condiviso con i clienti.",
       "mock": {
         "title": "La tua galleria",
         "count": "7 stanze arredate"
@@ -189,7 +206,7 @@
         "seven": "1841 Cypress Bend"
       },
       "panelTitle": "Riarreda tutte le volte che vuoi",
-      "panelBody": "Nessun pulsante di salvataggio, nessuna cartella da nominare. Arreda una stanza ed è nella tua galleria prima che tu chiuda la scheda, con le impostazioni esatte che l'hanno creata.",
+      "panelBody": "Nessun pulsante di salvataggio, nessuna cartella da nominare. Arreda una stanza ed è nella tua galleria prima che tu chiuda la scheda, con le impostazioni esatte che l’hanno creata.",
       "points": {
         "auto": "Si salva da solo, senza nulla da ricordare.",
         "versions": "Ogni versione resta, mai sovrascritta.",
@@ -201,8 +218,8 @@
     },
     "info": {
       "eyebrow": "In breve",
-      "title": "Cos'è il home staging virtuale e perché fa vendere",
-      "subtitle": "Una panoramica rapida e onesta su come funziona e a chi è rivolto. Senza tecnicismi.",
+      "title": "Cos’è il home staging virtuale e perché fa vendere",
+      "subtitle": "Una panoramica rapida e onesta su come funziona e a chi è rivolto.",
       "rows": {
         "why": {
           "eyebrow": "Perché funziona",
@@ -210,17 +227,17 @@
           "title": "Gli acquirenti comprano prima con gli occhi",
           "body": "Quasi tutti gli acquirenti iniziano online, quindi le foto del tuo annuncio sono la vera prima visita. Le stanze vuote o datate sono difficili da interpretare; non si riesce a valutare le proporzioni né a immaginarsi di viverci. Lo staging dà a ogni stanza uno scopo chiaro e un richiamo, ed è per questo che gli agenti vi si affidano da sempre.",
           "p1": "Le stanze vuote in foto sembrano più piccole e fredde di quanto siano",
-          "p2": "Lo staging mostra l'uso previsto di ogni spazio",
+          "p2": "Lo staging mostra l’uso previsto di ogni spazio",
           "p3": "Foto migliori generano più clic, salvataggi e visite"
         },
         "how": {
           "eyebrow": "Come funziona",
           "caption": "Una sala di agenti viene guidata nel suo primo annuncio arredato",
-          "title": "Da foto vuota ad annuncio pronto in circa 8 secondi",
-          "body": "Carica una foto, scegli il tipo di stanza e uno dei sette stili, e Stagify la arreda in circa otto secondi. Servono modifiche? Rimuovi i mobili esistenti, aggiungi un'istruzione personalizzata o maschera un'area per regolarla senza ricominciare.",
+          "title": "Da foto vuota ad annuncio pronto in pochi secondi",
+          "body": "Carica una foto, scegli il tipo di stanza e uno dei sette stili, e Stagify la arreda in circa otto secondi. Servono modifiche? Rimuovi i mobili esistenti, aggiungi un’istruzione personalizzata o maschera un’area per regolarla senza ricominciare.",
           "p1": "7 stili più istruzioni personalizzate e rimozione dei mobili",
           "p2": "Modifica con maschera qualsiasi parte di un risultato senza rifarlo",
-          "p3": "Pieni diritti d'autore, tuoi da usare sull'MLS o nelle inserzioni"
+          "p3": "Pieni diritti d’autore, tuoi da usare sull’MLS o nelle inserzioni"
         },
         "who": {
           "eyebrow": "A chi è rivolto",
@@ -235,7 +252,7 @@
           "eyebrow": "Cosa eviti",
           "caption": "Un team di agenzia scopre Stagify",
           "title": "Tutto il tuo ufficio, senza formazione",
-          "body": "Non c'è alcun software da installare e niente da imparare. Chiunque nel team può aprire Stagify nel browser, caricare la foto di un annuncio e farla arredare in pochi secondi, sia da un laptop in ufficio sia da un telefono sul campo.",
+          "body": "Non c’è alcun software da installare e niente da imparare. Chiunque nel team può aprire Stagify nel browser, caricare la foto di un annuncio e farla arredare in pochi secondi, sia da un laptop in ufficio sia da un telefono sul campo.",
           "p1": "Nessuna competenza di design o software necessari",
           "p2": "Funziona in qualsiasi browser, su qualsiasi dispositivo",
           "p3": "Ogni agente può arredare i propri annunci"
@@ -251,7 +268,7 @@
       "calc": {
         "question": "Quanti immobili arredi in un anno?",
         "weeks": "{n} settimane",
-        "note": "Calcolato su 2.000 $ per immobile, il minimo della fascia abituale, e due settimane dalla prenotazione all'allestimento."
+        "note": "Calcolato su 2.000 $ per immobile, il minimo della fascia abituale, e due settimane dalla prenotazione all’allestimento."
       },
       "rows": {
         "cost": {
@@ -276,13 +293,13 @@
         },
         "logistics": {
           "aspect": "Logistica",
-          "trad": "Traslocatori, noleggi e accesso all'immobile",
+          "trad": "Traslocatori, noleggi e accesso all’immobile",
           "stag": "Carica semplicemente una foto, da ovunque"
         },
         "rights": {
           "aspect": "Le immagini",
           "trad": "Foto di mobili presi in prestito che restituisci",
-          "stag": "Tue da tenere, con pieni diritti d'autore"
+          "stag": "Tue da tenere, con pieni diritti d’autore"
         }
       }
     },
@@ -296,12 +313,12 @@
         "monthly": "Qualche volta al mese",
         "none": "Non ancora"
       },
-      "note": "degli agenti usa già l'IA nella propria attività.",
+      "note": "degli agenti usa già l’IA nella propria attività.",
       "stat1": "degli agenti afferma che i clienti hanno risposto positivamente alla tecnologia nel processo di acquisto e vendita",
-      "stat2": "usa già l'IA per generare i contenuti degli annunci",
+      "stat2": "usa già l’IA per generare i contenuti degli annunci",
       "source": "Dati dal sondaggio tecnologico 2025 della National Association of Realtors tra gli agenti immobiliari.",
       "sourceCite": "Fonte: National Association of Realtors, sondaggio tecnologico 2025",
-      "usageAria": "Uso dell'IA tra gli agenti: 20% ogni giorno, 22% ogni settimana, 27% qualche volta al mese, 32% non ancora"
+      "usageAria": "Uso dell’IA tra gli agenti: 20% ogni giorno, 22% ogni settimana, 27% qualche volta al mese, 32% non ancora"
     },
     "plus": {
       "title": "Vai oltre con Stagify+",
@@ -342,7 +359,7 @@
       "note": "Riconosciuto da Compass, Centennial e altri."
     },
     "whyus": {
-      "subtitle": "Gli altri strumenti di staging virtuale sono lenti, costosi e bloccati. Stagify è l’opposto."
+      "subtitle": "Altri quattro modi di allestire un immobile, valutati accanto al nostro."
     },
     "testimonials": {
       "title": "Cosa dicono gli agenti",
@@ -350,39 +367,33 @@
       "items": {
         "justin": {
           "quote": "La prima volta che ho provato Stagify sono rimasto sinceramente sbalordito. Ho capito che potevo semplicemente usare il telefono, evitare il fotografo costoso e ottenere comunque risultati straordinari. È una svolta per i miei annunci, e il prezzo è fantastico!",
-          "author": "Justin Stern (Agente)",
+          "author": "Justin Stern",
           "role": "Tahari Realty",
           "location": "Manhattan, New York"
         },
         "andy": {
-          "quote": "Stagify si integra perfettamente nel mio modo di lavorare. Carico la foto di un annuncio tra una visita e l'altra ed è già arredata prima che io torni alla scrivania: i miei clienti restano sempre colpiti da quanto siano curate le foto finali.",
-          "author": "Andy Eras (Agente)",
+          "quote": "Stagify si integra perfettamente nel mio modo di lavorare. Carico la foto di un annuncio tra una visita e l’altra ed è già arredata prima che io torni alla scrivania: i miei clienti restano sempre colpiti da quanto siano curate le foto finali.",
+          "author": "Andy Eras",
           "role": "Centennial Properties",
           "location": "Manhattan, New York"
         },
-        "p3": {
-          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Three",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "travonte": {
+          "quote": "Stagify rende il processo davvero semplice. Carichi la foto di una stanza vuota, aspetti qualche secondo e all’improvviso lo spazio ha personalità. È semplice, pulito e realmente utile.",
+          "author": "Travonte Taylor",
+          "role": "Compass",
+          "location": "Brooklyn, New York"
         },
-        "p4": {
-          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Four",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jack": {
+          "quote": "Di Stagify mi ha colpito soprattutto quanto sia pratico. Non è l’ennesimo strumento di IA che fa scena per un attimo. Prende una cosa con cui agenti, inquilini e proprietari fanno i conti ogni giorno e la rende più veloce e più facile.",
+          "author": "Jack Sash",
+          "role": "Tahari Realty",
+          "location": "Manhattan, New York"
         },
-        "p5": {
-          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Five",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
-        },
-        "p6": {
-          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Six",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jaden": {
+          "quote": "Vedo Stagify diventare enorme per studentati, appartamenti e annunci. Le stanze vuote sono difficili da immaginare, ma una volta arredate lo spazio sembra subito più reale. Fa una grande differenza quando provi a immaginarti lì.",
+          "author": "Jaden Lander",
+          "role": "RockSolid Management",
+          "location": "Manhattan, New York"
         }
       },
       "deck": {
@@ -470,9 +481,9 @@
       "furniturePhotosHint": "Fino a 5 foto di riferimento di mobili o decorazioni da includere nella stanza arredata",
       "processButton": "Elabora foto",
       "maskBeforeButton": "Maschera e modifica la foto",
-      "maskBeforeHint": "Dipingi un'area della foto originale da modificare (es. rimuovere il disordine). Tutto il resto rimane intatto. Poi elabora per arredare la versione che preferisci.",
+      "maskBeforeHint": "Dipingi un’area della foto originale da modificare (es. rimuovere il disordine). Tutto il resto rimane intatto. Poi elabora per arredare la versione che preferisci.",
       "maskBeforeTitle": "Maschera e modifica la foto",
-      "maskBeforePromptLabel": "Cosa vorresti cambiare nell'area dipinta?",
+      "maskBeforePromptLabel": "Cosa vorresti cambiare nell’area dipinta?",
       "maskBeforePromptPlaceholder": "es. rimuovere il vecchio divano, eliminare il disordine, ridipingere la parete di bianco",
       "maskBeforeApply": "Applica modifica",
       "basicMaskTitle": "Maschera base",
@@ -480,13 +491,13 @@
       "maskLimitReached": "Hai raggiunto il limite di 6 versioni per questa immagine.",
       "prevVersion": "Versione precedente",
       "nextVersion": "Versione successiva",
-      "imageVersions": "Versioni dell'immagine",
+      "imageVersions": "Versioni dell’immagine",
       "versionLabel": "Versione {index}",
-      "uploadArea": "Carica un'immagine o trascinala qui",
+      "uploadArea": "Carica un’immagine o trascinala qui",
       "before": "Prima",
       "after": "Dopo",
       "downloadResult": "Scarica risultato",
-      "uploadAnother": "Carica un'altra",
+      "uploadAnother": "Carica un’altra",
       "noProcessedImage": "Il tuo risultato arredato apparirà qui",
       "noProcessedImageSubtext": "Clicca su «Elabora foto» per generare una versione arredata con IA della tua immagine",
       "imageModel": "Modello di immagine",
@@ -494,11 +505,11 @@
       "qualityGeneration": "Modello Stagify+",
       "imageGenerations": "Generazioni di immagini",
       "addPhotos": "+ Aggiungi foto",
-      "tryAnotherImage": "Prova un'altra immagine",
+      "tryAnotherImage": "Prova un’altra immagine",
       "uploadAreaAria": "Area di caricamento",
       "uploadHeadline": "Trascina qui la foto della tua stanza",
       "uploadFormats": "JPG, PNG, WebP o HEIC · fino a 25 MB",
-      "editWithMask": "Modifica l'area selezionata con lo strumento maschera",
+      "editWithMask": "Modifica l’area selezionata con lo strumento maschera",
       "stagingVariations": "Variazioni di staging",
       "originalImage": "Foto originale della stanza prima dello staging virtuale",
       "stagedImage": "Anteprima della stanza arredata con IA",
@@ -514,15 +525,15 @@
         "preparing": "Preparazione…",
         "uploading": "Caricamento immagine…",
         "preparingAI": "Preparazione del modello IA…",
-        "staging": "L'IA sta arredando la tua stanza…",
+        "staging": "L’IA sta arredando la tua stanza…",
         "complete": "Completato!",
         "error": "Errore: ",
         "loadingMessages": [
           "Trovare i mobili perfetti per te",
           "Allestire la tua stanza ideale",
-          "Selezionare bellissimi elementi d'arredo",
+          "Selezionare bellissimi elementi d’arredo",
           "Disporre i mobili per il massimo impatto",
-          "Creare l'atmosfera perfetta",
+          "Creare l’atmosfera perfetta",
           "Valorizzare il tuo spazio con stile",
           "Progettare gli interni dei tuoi sogni",
           "Ottimizzare disposizione e flusso della stanza",
@@ -577,40 +588,65 @@
     "farmhousePhotoAlt": "Stanza di esempio con stile di staging virtuale rustico"
   },
   "whyUs": {
-    "title": "Perché scegliere noi?",
+    "title": "Perché sceglierci?",
     "stagify": {
-      "title": "stagify.ai",
       "features": {
-        "instantResults": "<strong>Risultati istantanei</strong>: ~8 secondi",
-        "oneClickStaging": "<strong>Staging con un clic</strong>: senza sforzo",
-        "free": "<strong>Generazioni gratuite illimitate</strong>: Senza carta",
-        "noAds": "<strong>Esperienza senza pubblicità</strong>: nessuna distrazione",
-        "noLogin": "<strong>Iscrizione facile</strong>: inizia subito",
-        "unlimited": "<strong>Modelli di immagine avanzati</strong>: qualità superiore",
-        "copyright": "<strong>Pieni diritti d'autore</strong>: usali ovunque"
+        "free": "Gratis, tutte le volte che vuoi"
       }
     },
-    "others": {
-      "title": "Gli altri",
-      "features": {
-        "slowResults": "<strong style=\"color: #6d1c2c;\">Risultati lenti: </strong>Giorni di attesa",
-        "longProcess": "<strong style=\"color: #6d1c2c;\">Processo lungo: </strong>Tedioso avanti e indietro",
-        "expensive": "<strong style=\"color: #6d1c2c;\">Costoso: </strong>Tariffe elevate per immagine",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Pubblicità e cookie: </strong>Esperienza invadente",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">Lungo processo di iscrizione: </strong>Avvio frustrante",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Modelli datati ed economici: </strong>Qualità inferiore",
-        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Diritti d'autore poco chiari: </strong>Rischio legale"
-      }
-    },
-    "keyFeatures": {
-      "title": "Funzioni principali",
-      "unlimitedVariations": {
-        "title": "Variazioni illimitate",
-        "description": "Esplora più stili finché non si adatta al tuo brand e al profilo dei tuoi acquirenti."
+    "board": {
+      "caption": "Stagify.ai a confronto con altri quattro modi di allestire un immobile, su sei fattori.",
+      "headers": {
+        "factor": "Fattore",
+        "stager": "Home staging tradizionale",
+        "ai": "Strumento IA a immagine",
+        "diy": "Modificarle da soli",
+        "empty": "Stanza vuota"
       },
-      "fastTurnarounds": {
-        "title": "Tempi rapidi",
-        "description": "Arreda le foto in circa 8 secondi così pubblichi prima e chiudi più trattative."
+      "values": {
+        "yes": "Sì",
+        "no": "No"
+      },
+      "rows": {
+        "speed": {
+          "factor": "Velocità",
+          "us": "~8 secondi",
+          "stager": "1–3 settimane",
+          "ai": "1–3 giorni",
+          "diy": "2–4 ore per foto",
+          "empty": "Immediato"
+        },
+        "cost": {
+          "factor": "Costo per immobile",
+          "us": "$0, oppure $11.99 al mese",
+          "stager": "$2,000–$5,000",
+          "ai": "$550–850",
+          "diy": "Un pomeriggio del tuo tempo",
+          "empty": "$0"
+        },
+        "redo": {
+          "factor": "Provare un altro stile",
+          "stager": "Fatturato a ore",
+          "ai": "Fatturato a immagine",
+          "diy": "Altro tuo tempo",
+          "empty": "Niente da provare"
+        },
+        "quality": {
+          "factor": "Qualità della foto",
+          "us": "Render quasi fotorealistici",
+          "stager": "Foto di stanze vere",
+          "ai": "Difetti IA visibili",
+          "diy": "Quanto il tuo ritoccatore",
+          "empty": "Una stanza vuota"
+        },
+        "ownership": {
+          "factor": "Le foto sono tue",
+          "stager": "Sono del fotografo",
+          "ai": "In licenza, non di proprietà"
+        },
+        "furniture": {
+          "factor": "Mobili veri durante la visita"
+        }
       }
     }
   },
@@ -669,7 +705,7 @@
   },
   "contact": {
     "title": "Mettiti in contatto",
-    "description": "Ci farebbe piacere sentirti. Scrivici singolarmente o contattaci all'indirizzo <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a> o chiamaci al <a href=\"tel:+19292514372\" style=\"color: #1e3a8a; text-decoration: underline;\">(929) 251-4372</a>.",
+    "description": "Ci farebbe piacere sentirti. Scrivici singolarmente o contattaci all’indirizzo <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a> o chiamaci al <a href=\"tel:+19292514372\" style=\"color: #1e3a8a; text-decoration: underline;\">(929) 251-4372</a>.",
     "social": "Seguici su <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a> o <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> per aggiornamenti ed esempi!",
     "labels": {
       "name": "Nome",
@@ -718,9 +754,9 @@
       "UNSTAGEABLE": "Questa non sembra una stanza, uno spazio o un mobile. Carica la foto di una stanza, di uno spazio esterno o di un mobile che vuoi arredare."
     },
     "heicConvert": "Non siamo riusciti a leggere quella foto HEIC. Prova con un JPG o PNG.",
-    "fileType": "Carica un file immagine PNG, JPG, JPEG, WebP o GIF.",
+    "fileType": "Carica un file immagine JPG, PNG, WebP o HEIC.",
     "fileTooLarge": "Il file è troppo grande. Carica un’immagine di meno di 25 MB.",
-    "uploadFirst": "Carica prima un'immagine",
+    "uploadFirst": "Carica prima un’immagine",
     "badPrompt": "Istruzione non valida inserita",
     "disclosureStampFailed": "Non siamo riusciti ad aggiungere la dicitura «arredato virtualmente», quindi la tua immagine non è stata consegnata. Deseleziona quell’opzione per procedere senza.",
     "processingFailed": "Elaborazione non riuscita",
@@ -753,7 +789,7 @@
     "verifyTitle": "Verifica la tua email",
     "verifyCopy": "Inserisci il codice di 6 cifre che abbiamo inviato a {email}.",
     "resetTitle": "Reimposta la password",
-    "resetCopy": "Ti invieremo via email un link monouso per impostare una nuova password. Il link scade tra un'ora.",
+    "resetCopy": "Ti invieremo via email un link monouso per impostare una nuova password. Il link scade tra un’ora.",
     "email": "Email",
     "emailPlaceholder": "tu@esempio.com",
     "password": "Password",
@@ -770,11 +806,11 @@
     "continue": "Continua",
     "signIn": "Accedi",
     "sendResetLink": "Invia link di reimpostazione",
-    "backToSignIn": "Torna all'accesso",
+    "backToSignIn": "Torna all’accesso",
     "alreadyHaveAccount": "Hai già un account?",
     "newHere": "Nuovo qui?",
     "accountMenu": "Menu account",
-    "googleCancelled": "L'accesso con Google è stato annullato.",
+    "googleCancelled": "L’accesso con Google è stato annullato.",
     "googleFailed": "Accesso con Google non riuscito",
     "networkError": "Errore di rete. Riprova.",
     "enterEmail": "Inserisci il tuo indirizzo email.",
@@ -782,7 +818,7 @@
     "resendSuccess": "Abbiamo inviato un nuovo codice di verifica.",
     "resetSomethingWrong": "Qualcosa è andato storto. Riprova tra qualche minuto.",
     "resetLinkSent": "Abbiamo inviato un link per reimpostare la password. Controlla la tua email (e lo spam).",
-    "noAccountForEmail": "Nessun account trovato per quell'email.",
+    "noAccountForEmail": "Nessun account trovato per quell’email.",
     "resetTryLater": "Qualcosa è andato storto. Riprova più tardi.",
     "enterVerificationCode": "Inserisci il codice di verifica di 6 cifre dalla tua email.",
     "verificationFailed": "Verifica non riuscita",
@@ -822,15 +858,15 @@
   },
   "pdf": {
     "meta": {
-      "title": "Designer IA | Stagify.ai – Assistente di design basato sull'IA",
-      "description": "Chatta con il Designer IA per ricevere aiuto su domande di design, caricare file da analizzare e ottenere consigli di design professionali all'istante.",
-      "keywords": "Designer IA, assistente di design IA, consulenza di design, chat IA, aiuto al design, IA per l'interior design"
+      "title": "Designer IA | Stagify.ai – Assistente di design basato sull’IA",
+      "description": "Chatta con il Designer IA per ricevere aiuto su domande di design, caricare file da analizzare e ottenere consigli di design professionali all’istante.",
+      "keywords": "Designer IA, assistente di design IA, consulenza di design, chat IA, aiuto al design, IA per l’interior design"
     },
     "title": "Designer IA",
     "description": "Converti i tuoi PDF di planimetrie CAD in visualizzazioni 3D fotorealistiche degli interni",
     "statusMessages": {
       "generating": [
-        "generazione dell'immagine...",
+        "generazione dell’immagine...",
         "creazione della tua immagine...",
         "diamo vita alla tua visione...",
         "elaborazione dei dettagli...",
@@ -843,7 +879,7 @@
       "staging": [
         "allestimento della tua stanza...",
         "aggiunta dei mobili...",
-        "selezione dell'arredo...",
+        "selezione dell’arredo...",
         "disposizione degli elementi...",
         "applicazione degli stili...",
         "creazione del design...",
@@ -852,7 +888,7 @@
         "quasi pronto..."
       ],
       "analyzing": [
-        "analisi dell'immagine...",
+        "analisi dell’immagine...",
         "esame dei dettagli...",
         "identificazione degli elementi...",
         "elaborazione dei dati visivi...",
@@ -883,7 +919,7 @@
       ]
     },
     "emptyState": "Avvia una conversazione digitando un messaggio o caricando un file",
-    "welcomeFallback": "Ciao! Sono il tuo Designer IA di Stagify. Dimmi cosa immagini, o carica la foto di una stanza, e la progetteremo insieme. Alcune cose che posso fare:\n• **Arredare stanze vuote**: arreda uno spazio spoglio in qualsiasi stile\n• **Riprogettare stanze esistenti**: cambia stile, sostituisci i mobili o modifica l'intera atmosfera\n• **Piantina → stanza**: trasforma una piantina in un render arredato e fotorealistico\n• **Perfezionare mentre chattiamo**: regola i colori, gli elementi e la disposizione finché non è perfetto\nDa dove vuoi iniziare?",
+    "welcomeFallback": "Ciao! Sono il tuo Designer IA di Stagify. Dimmi cosa immagini, o carica la foto di una stanza, e la progetteremo insieme. Alcune cose che posso fare:\n• **Arredare stanze vuote**: arreda uno spazio spoglio in qualsiasi stile\n• **Riprogettare stanze esistenti**: cambia stile, sostituisci i mobili o modifica l’intera atmosfera\n• **Piantina → stanza**: trasforma una piantina in un render arredato e fotorealistico\n• **Perfezionare mentre chattiamo**: regola i colori, gli elementi e la disposizione finché non è perfetto\nDa dove vuoi iniziare?",
     "uploadFile": "Carica file",
     "inputPlaceholder": "Digita il tuo messaggio...",
     "sendButton": "Invia",
@@ -916,7 +952,7 @@
       "step2": "La nostra IA identifica le stanze ed estrae i dettagli della planimetria",
       "step3": "Ogni stanza viene convertita in una visualizzazione 3D fotorealistica",
       "step4": "Scarica il tuo PDF elaborato con i rendering 3D (di solito richiede 2 minuti)",
-      "note": "Nota: l'elaborazione richiede di solito circa 2 minuti. Ti preghiamo di pazientare mentre la nostra IA genera i tuoi rendering 3D."
+      "note": "Nota: l’elaborazione richiede di solito circa 2 minuti. Ti preghiamo di pazientare mentre la nostra IA genera i tuoi rendering 3D."
     },
     "status": {
       "fileReady": "File pronto"
@@ -937,7 +973,7 @@
     },
     "thumbnailStrip": {
       "label": "Immagine di base per il prossimo messaggio",
-      "help": "Scegli quale immagine della stanza l'IA deve modificare quando invii il prossimo messaggio, specialmente quando aggiungi mobili. Utile quando hai più caricamenti o versioni arredate.",
+      "help": "Scegli quale immagine della stanza l’IA deve modificare quando invii il prossimo messaggio, specialmente quando aggiungi mobili. Utile quando hai più caricamenti o versioni arredate.",
       "helpAria": "Cosa significa immagine di base?"
     },
     "alt": {
@@ -955,7 +991,7 @@
       "requestedImage": "Immagine richiesta dalla cronologia della conversazione",
       "editedImage": "Immagine di design modificata con maschera{suffix}",
       "originalCarouselImage": "Immagine originale prima delle modifiche con maschera",
-      "enlargedImage": "Visualizzazione a grandezza naturale dell'immagine di design",
+      "enlargedImage": "Visualizzazione a grandezza naturale dell’immagine di design",
       "thumbnailSelected": "{label} – selezionata come immagine di base per il tuo prossimo messaggio",
       "thumbnailOption": "{label} – immagine {index} nella conversazione"
     },
@@ -963,12 +999,12 @@
       "title": "Modifica con maschera",
       "brush": "Pennello",
       "erase": "Cancella",
-      "brushAllNote": "Assicurati di dipingere tutta l'area che vuoi mascherare.",
+      "brushAllNote": "Assicurati di dipingere tutta l’area che vuoi mascherare.",
       "toolsAria": "Strumento maschera",
       "brushSize": "Dimensione pennello:",
       "brushSmall": "Piccolo",
       "brushLarge": "Grande",
-      "promptLabel": "Cosa vorresti cambiare nell'area mascherata?",
+      "promptLabel": "Cosa vorresti cambiare nell’area mascherata?",
       "promptPlaceholder": "es. cambia il colore della parete in blu, sostituisci il divano con una poltrona moderna...",
       "cancel": "Annulla",
       "clearMask": "Cancella maschera",
@@ -976,21 +1012,21 @@
       "rerun": "Rigenera",
       "done": "Va bene così",
       "refineTitle": "Perfeziona la modifica",
-      "refineNote": "Dipingi per rivelare di più della modifica, cancella per nasconderla: questo ritaglia soltanto, non riesegue l'IA.",
-      "refineHelp": "Questo passaggio regola soltanto dove appare la modifica dell'IA, non riesegue l'IA. Dipingi per rivelare di più della modifica, cancella per ridurla. È una rete di sicurezza, così la modifica tocca solo l'area che hai scelto e non può rovinare il resto della tua foto. L'anteprima sfumata mostrata sopra serve solo a farti vedere l'intera modifica mentre la perfezioni; non comparirà nell'immagine finale.",
+      "refineNote": "Dipingi per rivelare di più della modifica, cancella per nasconderla: questo ritaglia soltanto, non riesegue l’IA.",
+      "refineHelp": "Questo passaggio regola soltanto dove appare la modifica dell’IA, non riesegue l’IA. Dipingi per rivelare di più della modifica, cancella per ridurla. È una rete di sicurezza, così la modifica tocca solo l’area che hai scelto e non può rovinare il resto della tua foto. L’anteprima sfumata mostrata sopra serve solo a farti vedere l’intera modifica mentre la perfezioni; non comparirà nell’immagine finale.",
       "promptHint": "Sii molto specifico su posizione e collocazione — per esempio: “metti il divano a filo contro il centro della parete di fondo.”",
       "refineHelpAria": "Cosa fa il passaggio di perfezionamento",
       "loadApplying": "Applicazione della tua modifica…",
       "referenceLabel": "Foto di riferimento (facoltativo)",
       "referenceAdd": "+ Aggiungi foto",
-      "referenceHint": "Facoltativo: una foto di mobili o decorazioni da inserire nell'area mascherata",
+      "referenceHint": "Facoltativo: una foto di mobili o decorazioni da inserire nell’area mascherata",
       "referenceRemove": "Rimuovi foto di riferimento",
       "referenceAlt": "Riferimento per la modifica mascherata",
       "referenceTooLarge": "Questa immagine è troppo grande: scegline una sotto i 25 MB.",
-      "referenceInvalid": "Scegli un'immagine JPG, PNG o WebP valida.",
+      "referenceInvalid": "Scegli un’immagine JPG, PNG o WebP valida.",
       "processing": "Elaborazione...",
-      "pleaseDrawMask": "Disegna una maschera sull'area che vuoi modificare.",
-      "pleaseDescribeChange": "Descrivi cosa vuoi cambiare nell'area mascherata."
+      "pleaseDrawMask": "Disegna una maschera sull’area che vuoi modificare.",
+      "pleaseDescribeChange": "Descrivi cosa vuoi cambiare nell’area mascherata."
     },
     "errors": {
       "invalidFileType": "Carica un file PDF.",
@@ -1011,7 +1047,7 @@
       "title": "Caricamento e file",
       "i1": {
         "q": "La mia foto non si carica.",
-        "a": "Assicurati che il file sia un JPG, PNG o WEBP sotto i 25 MB. Le foto da telefono molto grandi a volte non funzionano: ridimensiona l’immagine o fanne uno screenshot, poi ricaricala. Se continua a non funzionare, aggiorna la pagina e riprova."
+        "a": "Assicurati che il file sia un JPG, PNG, WebP o HEIC sotto i 25 MB. Le foto da telefono molto grandi a volte non funzionano: ridimensiona l’immagine o fanne uno screenshot, poi ricaricala. Se continua a non funzionare, aggiorna la pagina e riprova."
       },
       "i2": {
         "q": "Quali foto funzionano meglio?",
@@ -1022,15 +1058,15 @@
       "title": "Risultati migliori e consigli da pro",
       "i1": {
         "q": "Come ottengo lo staging più realistico?",
-        "a": "Fotografa la stanza frontalmente alla luce del giorno, con tutto lo spazio nell'inquadratura e le superfici sgombre. Scegli il tipo di stanza e lo stile esatti prima di generare, poi crea due o tre variazioni e tieni la migliore. <a href=\"index.html#stage\">Apri lo studio di staging</a> per provarlo."
+        "a": "Fotografa la stanza frontalmente alla luce del giorno, con tutto lo spazio nell’inquadratura e le superfici sgombre. Scegli il tipo di stanza e lo stile esatti prima di generare, poi crea due o tre variazioni e tieni la migliore. <a href=\"index.html#stage\">Apri lo studio di staging</a> per provarlo."
       },
       "i2": {
         "q": "Quale piano o strumento dovrei usare?",
-        "a": "La versione gratuita è perfetta per stanze singole occasionali. <a href=\"stagify-plus.html\">Stagify+</a> sblocca generazioni illimitate, modelli di qualità superiore, lo strumento di mascheratura e la barra delle istruzioni. <a href=\"ai-designer.html\">Designer IA</a> riprogetta un'intera stanza da una breve chat: ideale quando vuoi che sia lui a prendere le decisioni per te."
+        "a": "La versione gratuita è perfetta per stanze singole occasionali. <a href=\"stagify-plus.html\">Stagify+</a> sblocca generazioni illimitate, modelli di qualità superiore, lo strumento di mascheratura e la barra delle istruzioni. <a href=\"ai-designer.html\">Designer IA</a> riprogetta un’intera stanza da una breve chat: ideale quando vuoi che sia lui a prendere le decisioni per te."
       },
       "i3": {
         "q": "Posso controllare i mobili e la disposizione?",
-        "a": "Sì. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra delle istruzioni ti permette di descrivere dettagli come «aggiungi un divano ad angolo e un grande tappeto», e lo strumento Mobili inserisce i tuoi pezzi. Se solo un'area non va, mascherala e rigenera solo quel punto invece di rifare tutta l'immagine."
+        "a": "Sì. Con <a href=\"stagify-plus.html\">Stagify+</a> la barra delle istruzioni ti permette di descrivere dettagli come «aggiungi un divano ad angolo e un grande tappeto», e lo strumento Mobili inserisce i tuoi pezzi. Se solo un’area non va, mascherala e rigenera solo quel punto invece di rifare tutta l’immagine."
       },
       "masking": {
         "title": "Arreda con precisione esatta",
@@ -1049,11 +1085,11 @@
       },
       "i2": {
         "q": "Il risultato ha mobili strani o artefatti.",
-        "a": "Lo staging IA non è perfetto a ogni passaggio. Genera di nuovo per una nuova variazione, cambia stile o usa lo <a href=\"ai-designer.html\">strumento di mascheratura</a> per correggere solo l'area che non va invece di rifare tutta l'immagine."
+        "a": "Lo staging IA non è perfetto a ogni passaggio. Genera di nuovo per una nuova variazione, cambia stile o usa lo <a href=\"ai-designer.html\">strumento di mascheratura</a> per correggere solo l’area che non va invece di rifare tutta l’immagine."
       },
       "i3": {
         "q": "Non è cambiato nulla o la stanza sembra ancora vuota.",
-        "a": "Di solito significa che non è stato selezionato un tipo di stanza o uno stile, o che la foto era troppo scura per il modello. Scegli un tipo di stanza e uno stile, poi prova una foto più luminosa. Vuoi che l'IA se ne occupi dall'inizio alla fine? Prova <a href=\"ai-designer.html\">Designer IA</a>."
+        "a": "Di solito significa che non è stato selezionato un tipo di stanza o uno stile, o che la foto era troppo scura per il modello. Scegli un tipo di stanza e uno stile, poi prova una foto più luminosa. Vuoi che l’IA se ne occupi dall’inizio alla fine? Prova <a href=\"ai-designer.html\">Designer IA</a>."
       }
     },
     "account": {
@@ -1064,10 +1100,10 @@
       },
       "i2": {
         "q": "Ho dimenticato la password.",
-        "a": "Nella schermata di accesso scegli «Password dimenticata?» e ti invieremo via email un link di reimpostazione. Il link scade dopo un'ora."
+        "a": "Nella schermata di accesso scegli «Password dimenticata?» e ti invieremo via email un link di reimpostazione. Il link scade dopo un’ora."
       },
       "i3": {
-        "q": "L'accesso con Google non funziona.",
+        "q": "L’accesso con Google non funziona.",
         "a": "Consenti i pop-up per stagify.ai e assicurati che i cookie di terze parti non siano completamente bloccati, poi riprova. Puoi anche accedere con la tua email e la tua password."
       }
     },
@@ -1075,18 +1111,18 @@
       "title": "Fatturazione e Stagify+",
       "i1": {
         "q": "Come gestisco o annullo Stagify+?",
-        "a": "Clicca sull'icona del profilo in alto a destra, poi tocca l'icona Stripe accanto a Stagify+ per aprire la tua dashboard di fatturazione, dove puoi aggiornare o annullare il tuo abbonamento. Puoi anche aprire direttamente il <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">portale di fatturazione Stripe</a>. Mantieni l'accesso fino alla fine del periodo di fatturazione corrente."
+        "a": "Clicca sull’icona del profilo in alto a destra, poi tocca l’icona Stripe accanto a Stagify+ per aprire la tua dashboard di fatturazione, dove puoi aggiornare o annullare il tuo abbonamento. Puoi anche aprire direttamente il <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">portale di fatturazione Stripe</a>. Mantieni l’accesso fino alla fine del periodo di fatturazione corrente."
       },
       "i2": {
         "q": "Mi è stato addebitato ma non vedo le funzioni di Stagify+.",
-        "a": "Esci e accedi di nuovo per aggiornare il tuo account. Se le funzioni continuano a non comparire, scrivici a <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> dall'indirizzo che hai usato."
+        "a": "Esci e accedi di nuovo per aggiornare il tuo account. Se le funzioni continuano a non comparire, scrivici a <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> dall’indirizzo che hai usato."
       }
     },
     "performance": {
       "title": "Browser e prestazioni",
       "i1": {
         "q": "Quali browser sono supportati?",
-        "a": "Usa una versione aggiornata di Chrome, Safari, Edge o Firefox. I browser più vecchi potrebbero non supportare l'editor o gli strumenti di confronto a trascinamento."
+        "a": "Usa una versione aggiornata di Chrome, Safari, Edge o Firefox. I browser più vecchi potrebbero non supportare l’editor o gli strumenti di confronto a trascinamento."
       },
       "i2": {
         "q": "La pagina è lenta o i pulsanti non rispondono.",
@@ -1146,7 +1182,7 @@
     },
     "exteriorStudio": {
       "title": "Studio Esterni | Stagify.ai - Miglioramento foto di facciata con IA",
-      "description": "Trasforma una foto esterna grigia e disordinata nello scatto che l'annuncio merita. Cambia l'ora del giorno, schiarisci il cielo e rimuovi auto e bidoni, mentre l'immobile resta esattamente come è stato fotografato.",
+      "description": "Trasforma una foto esterna grigia e disordinata nello scatto che l’annuncio merita. Cambia l’ora del giorno, schiarisci il cielo e rimuovi auto e bidoni, mentre l’immobile resta esattamente come è stato fotografato.",
       "keywords": "appeal esterno, editing foto esterni, miglioramento foto immobiliari, sostituzione cielo, rimuovere auto dalle foto, foto al crepuscolo immobiliare, ora dorata, editor foto IA, facciata, Stagify"
     }
   },
@@ -1158,7 +1194,7 @@
     "gateCta": "Vedi Stagify+",
     "gateBack": "Torna alla home",
     "stepPhoto": "Foto della stanza",
-    "stepPhotoHint": "Carica una foto della tua stanza nell'area di lavoro a destra.",
+    "stepPhotoHint": "Carica una foto della tua stanza nell’area di lavoro a destra.",
     "replacePhoto": "Sostituisci foto",
     "stepAreas": "Aree per i mobili",
     "addArea": "+ Aggiungi area",
@@ -1167,11 +1203,11 @@
     "areaLimit": "Puoi evidenziare fino a {n} aree.",
     "removeAreaAria": "Rimuovi questa area",
     "stepBrush": "Evidenzia",
-    "overlapHint": "Dipingi sopra un'area con un colore diverso per riassegnarla: ogni punto appartiene a una sola area.",
+    "overlapHint": "Dipingi sopra un’area con un colore diverso per riassegnarla: ogni punto appartiene a una sola area.",
     "promptPlaceholder": "Descrivi cosa aggiungere qui (facoltativo se aggiungi una foto di mobili)…",
     "addFurniture": "+ Foto di mobili",
     "statusEmpty": "Non ancora evidenziata",
-    "statusNeedsDetails": "Serve un'istruzione o una foto",
+    "statusNeedsDetails": "Serve un’istruzione o una foto",
     "statusReady": "Pronta",
     "statusGenerating": "Staging in corso…",
     "statusDone": "Fatto",
@@ -1181,8 +1217,8 @@
     "uploadHint": "Carica una foto della tua stanza",
     "uploadSub": "JPG, PNG, WebP o HEIC — clicca o trascinala qui",
     "editHighlights": "Rifinisci modifica",
-    "defaultFurniturePrompt": "Aggiungi i mobili della foto di riferimento nell'area evidenziata. Posizionali in modo naturale sul pavimento, con prospettiva, scala e illuminazione corrette per la stanza.",
-    "needHighlight": "Prima dipingi almeno un'area sulla foto.",
+    "defaultFurniturePrompt": "Aggiungi i mobili della foto di riferimento nell’area evidenziata. Posizionali in modo naturale sul pavimento, con prospettiva, scala e illuminazione corrette per la stanza.",
+    "needHighlight": "Prima dipingi almeno un’area sulla foto.",
     "needPromptOrFurniture": "Ogni area evidenziata ha bisogno di una breve istruzione o di una foto di mobili.",
     "doneToast": "Tutte le aree arredate! Ritocca le evidenziazioni o premi Va bene così per vedere il risultato.",
     "partialToast": "{done} di {total} aree arredate — riprova quelle non riuscite.",
@@ -1195,8 +1231,8 @@
     "compareHandleAria": "Trascina per confrontare prima e dopo",
     "helpTitle": "Come funziona lo Studio Maschere",
     "helpStep1": "Carica una foto della tua stanza.",
-    "helpStep2": "Evidenzia dove deve andare ogni mobile: dipingi, trascina un rettangolo o usa la Bacchetta per selezionare un oggetto o un'area con un clic. Un colore per area.",
-    "helpStep3": "Assegna a ogni area una foto del mobile, una breve descrizione o entrambe. Oppure imposta un'area su Rimuovi oggetto per svuotare ciò che copre.",
+    "helpStep2": "Evidenzia dove deve andare ogni mobile: dipingi, trascina un rettangolo o usa la Bacchetta per selezionare un oggetto o un’area con un clic. Un colore per area.",
+    "helpStep3": "Assegna a ogni area una foto del mobile, una breve descrizione o entrambe. Oppure imposta un’area su Rimuovi oggetto per svuotare ciò che copre.",
     "helpStep4": "Fai clic su Applica modifica. Tutte le aree vengono arredate contemporaneamente e solo i punti evidenziati possono cambiare. Il resto della foto resta intatto.",
     "helpShortcuts": "Scorciatoie da tastiera",
     "helpClose": "Ho capito",
@@ -1211,22 +1247,22 @@
     "presetPlant": "Pianta|Aggiungi una pianta alta in vaso.",
     "presetLamp": "Lampada da terra|Aggiungi una lampada da terra elegante.",
     "presetArt": "Quadri|Aggiungi quadri incorniciati adatti alla stanza.",
-    "tryAnother": "Prova un'altra versione",
+    "tryAnother": "Prova un’altra versione",
     "versionLabel": "Versione {i} di {n}",
     "versionPrev": "Versione precedente",
     "versionNext": "Versione successiva",
     "clearHighlight": "Cancella evidenziazione",
-    "snapToObject": "Adatta all'oggetto",
-    "snapToObjectHint": "Estende questa evidenziazione fino ai bordi di ciò che l'IA ha effettivamente disegnato, così non viene tagliato nulla.",
-    "spillFlag": "Questa modifica supera l'evidenziazione — Adatta all'oggetto disponibile.",
-    "snapToast": "Alcuni elementi generati superano la tua evidenziazione — apri quell'area e tocca «Adatta all'oggetto» per includere il resto.",
+    "snapToObject": "Adatta all’oggetto",
+    "snapToObjectHint": "Estende questa evidenziazione fino ai bordi di ciò che l’IA ha effettivamente disegnato, così non viene tagliato nulla.",
+    "spillFlag": "Questa modifica supera l’evidenziazione — Adatta all’oggetto disponibile.",
+    "snapToast": "Alcuni elementi generati superano la tua evidenziazione — apri quell’area e tocca «Adatta all’oggetto» per includere il resto.",
     "toolRect": "Rettangolo",
     "renameAria": "Rinomina questa area",
-    "resumeTitle": "Riprendere l'ultima sessione?",
+    "resumeTitle": "Riprendere l’ultima sessione?",
     "resumeBody": "Abbiamo salvato la foto e le aree evidenziate della tua ultima visita. Riprendi da dove eri o ricomincia da capo.",
     "resumeYes": "Riprendi",
     "resumeNo": "Ricomincia",
-    "helpStep5": "Un'area non ti convince? Usa Prova un'altra versione per generare più opzioni e passare dall'una all'altra.",
+    "helpStep5": "Un’area non ti convince? Usa Prova un’altra versione per generare più opzioni e passare dall’una all’altra.",
     "promptIdeas": "Mostra idee",
     "looksGood": "Va bene così",
     "redo": "Ripeti",
@@ -1239,13 +1275,13 @@
       "Delimitazione degli oggetti trovati…",
       "Quasi fatto…"
     ],
-    "wandMiss": "Nessun oggetto trovato lì. Prova a cliccare al centro dell'oggetto oppure evidenzialo con il pennello.",
-    "modeAria": "Cosa succede in quest'area",
+    "wandMiss": "Nessun oggetto trovato lì. Prova a cliccare al centro dell’oggetto oppure evidenzialo con il pennello.",
+    "modeAria": "Cosa succede in quest’area",
     "modeStage": "Aggiungi mobile",
     "modeRemove": "Rimuovi oggetto",
     "removeHint": "Tutto ciò che è evidenziato viene rimosso e la stanza vuota viene ricostruita dietro.",
     "removePlaceholder": "Facoltativo: cosa conservare o dettagli da rispettare (es. conserva il tappeto)…",
-    "removePrompt": "Rimuovi tutto ciò che si trova nell'area evidenziata. Ricostruisci ciò che c'è dietro (pavimento, pareti, battiscopa e cornici) proseguendo senza stacchi le superfici, le texture e l'illuminazione esistenti della stanza. Non aggiungere nuovi mobili o oggetti.",
+    "removePrompt": "Rimuovi tutto ciò che si trova nell’area evidenziata. Ricostruisci ciò che c’è dietro (pavimento, pareti, battiscopa e cornici) proseguendo senza stacchi le superfici, le texture e l’illuminazione esistenti della stanza. Non aggiungere nuovi mobili o oggetti.",
     "loadingMessages": [
       "Posizioniamo i tuoi mobili…",
       "Abbiniamo luci e ombre…",
@@ -1407,7 +1443,7 @@
       },
       "exterior": {
         "title": "Studio Esterni",
-        "desc": "Sistema la foto con cui si apre ogni annuncio. Cambia l'ora del giorno, schiarisci un cielo grigio e rimuovi auto e bidoni, mentre l'immobile resta esattamente come è stato fotografato."
+        "desc": "Sistema la foto con cui si apre ogni annuncio. Cambia l’ora del giorno, schiarisci un cielo grigio e rimuovi auto e bidoni, mentre l’immobile resta esattamente come è stato fotografato."
       }
     },
     "compare": {
@@ -1547,7 +1583,7 @@
   },
   "exteriorStudio": {
     "title": "Appeal esterno, in un clic",
-    "subtitle": "La prima foto di ogni annuncio è l'esterno della casa, ed è l'unico scatto che non puoi rifare quando il tempo cambia. Caricala qui e ottieni la versione scattata in una giornata migliore.",
+    "subtitle": "La prima foto di ogni annuncio è l’esterno della casa, ed è l’unico scatto che non puoi rifare quando il tempo cambia. Caricala qui e ottieni la versione scattata in una giornata migliore.",
     "ctaUpgrade": "Passa a Stagify+ per usarlo",
     "features": {
       "title": "Cosa cambia e cosa non tocca mai",
@@ -1622,7 +1658,7 @@
     "pageTitle": "Pagina non trovata | Stagify.ai",
     "pageDescription": "Questa pagina non esiste o è stata spostata. Torna su Stagify.ai per continuare ad arredare le foto dei tuoi immobili.",
     "heading": "Questa pagina non esiste",
-    "body": "Il link potrebbe essere errato, oppure la pagina è stata spostata. Tutto il resto è rimasto dove l'hai lasciato.",
+    "body": "Il link potrebbe essere errato, oppure la pagina è stata spostata. Tutto il resto è rimasto dove l’hai lasciato.",
     "homeCta": "Torna alla home"
   }
 }

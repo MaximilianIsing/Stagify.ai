@@ -11,7 +11,7 @@
 // Last-resort copy: shown only when the server sent neither a usable code nor a reason
 // (e.g. a hand-rolled client, or an older cached bundle talking to a newer server).
 export const DEFAULT_UNSTAGEABLE_MESSAGE =
-  "This doesn't look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you'd like to stage.";
+  "This doesn’t look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you’d like to stage.";
 
 /**
  * Resolve the display message for a validation rejection.

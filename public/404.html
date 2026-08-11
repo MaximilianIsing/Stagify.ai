@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="media-webp/logo/Logo180x180.webp">
     <link rel="manifest" href="manifest.json">
     <title data-lang="notFound.pageTitle">Page not found | Stagify.ai</title>
-    <meta name="description" data-lang-attr="notFound.pageDescription|content" content="This page doesn't exist or has moved. Head back to Stagify.ai to keep staging your listing photos.">
+    <meta name="description" data-lang-attr="notFound.pageDescription|content" content="This page doesn’t exist or has moved. Head back to Stagify.ai to keep staging your listing photos.">
 
     <!-- NO canonical, NO hreflang alternates, NO og:url / og:locale — on purpose.
          This page is served at every unknown URL, so it has no canonical address to
@@ -20,7 +20,7 @@
              and the og:locale block to <meta property="og:url">. With neither tag here,
              both steps no-op, which is exactly what we want from the localized renders.
            - test/i18n/delocalized-pages.test.js enforces the "no hreflang outside
-             LOCALIZED_PAGES" half. Do not paste status.html's cluster in here.
+             LOCALIZED_PAGES" half. Do not paste status.html’s cluster in here.
          The page IS still reachable at /404.html as a plain static file with a 200
          (express.static has no `extensions` option), hence noindex. -->
     <meta name="robots" content="noindex, follow">
@@ -127,10 +127,10 @@
         <!-- The numeral is the same in every language the site ships, so it carries no
              data-lang key. It is decorative next to the h1, hence aria-hidden. -->
         <p class="nf-code" aria-hidden="true">404</p>
-        <h1 class="nf-heading" data-lang="notFound.heading">This page doesn't exist</h1>
+        <h1 class="nf-heading" data-lang="notFound.heading">This page doesn’t exist</h1>
         <p class="nf-body" data-lang="notFound.body">The link may be broken, or the page may have moved. Everything else is still right where you left it.</p>
         <!-- <strong> inside the anchor is the house pattern for a link-shaped button
-             (see exterior-studio.html's #ex-cta), so the data-lang key goes on it. -->
+             (see exterior-studio.html’s #ex-cta), so the data-lang key goes on it. -->
         <a href="index.html" class="btn btn-primary btn-lg nf-cta"><strong data-lang="notFound.homeCta">Back to home</strong></a>
       </div>
     </main>

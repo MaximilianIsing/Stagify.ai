@@ -112,7 +112,7 @@ test('readImageFile reports the size ceiling with the localized message', async 
 test('readImageFile falls back to English before the language pack loads', async () => {
   const { errors, showError } = mount();
   await readImageFile(fakeFile('application/pdf'), { showError });
-  assert.match(errors[0], /PNG, JPG/);
+  assert.match(errors[0], /JPG, PNG/);
 });
 
 test('readImageFile converts a HEIC and validates the CONVERTED file', async () => {
