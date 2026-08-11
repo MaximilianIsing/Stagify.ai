@@ -363,7 +363,7 @@ function playWhenInView(el, fn) {
         return;
       }
     },
-    { threshold: 0.18, rootMargin: '-6% 0px -6% 0px' }
+    { threshold: 0.05, rootMargin: '-6% 0px -6% 0px' }
   );
   observer.observe(el);
 }

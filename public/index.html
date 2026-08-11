@@ -1367,7 +1367,7 @@
       <section class="home-section home-whyus" id="why" aria-labelledby="whyus-title">
         <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="whyus-title" data-tx="clip" data-lang="whyUs.title">Why choose us?</h2>
-          <p class="home-section__sub" data-lang="home.whyus.subtitle">Four other ways to stage a listing, scored beside ours.</p>
+          <p class="home-section__sub" data-lang="home.whyus.subtitle">Four other ways to stage a listing, side by side with ours.</p>
         </div>
         <!-- A SCOREBOARD, not a two-column pitch. This replaced "Stagify vs Others"
              (2026-08-10): "Others" is a strawman, and the buyer is really choosing
@@ -1971,6 +1971,9 @@
                       <div id="room-type-select" class="custom-select" data-value="Bedroom">
                         <button class="select-trigger" type="button"><span class="select-value" data-lang="roomTypes.bedroom">Bedroom</span><span class="caret">▾</span></button>
                         <div class="select-menu hidden" role="listbox">
+                          <!-- data-lang overwrites textContent, so the label lives in its own
+                               span and the badge sits beside it rather than inside it. -->
+                          <div class="option option--with-badge" data-value="Dorm" role="option"><span class="option-label" data-lang="roomTypes.dorm">Dorm</span><span class="option-badge" data-lang="common.newBadge">New</span></div>
                           <div class="option selected" data-value="Bedroom" role="option" aria-selected="true" data-lang="roomTypes.bedroom">Bedroom</div>
                           <div class="option" data-value="Living room" role="option" data-lang="roomTypes.livingRoom">Living room</div>
                           <div class="option" data-value="Dining room" role="option" data-lang="roomTypes.diningRoom">Dining room</div>
@@ -1978,9 +1981,6 @@
                           <div class="option" data-value="Bathroom" role="option" data-lang="roomTypes.bathroom">Bathroom</div>
                           <div class="option" data-value="Office" role="option" data-lang="roomTypes.office">Office</div>
                           <div class="option" data-value="Outdoors" role="option" data-lang="roomTypes.outdoors">Outdoors</div>
-                          <!-- data-lang overwrites textContent, so the label lives in its own
-                               span and the badge sits beside it rather than inside it. -->
-                          <div class="option option--with-badge" data-value="Dorm" role="option"><span class="option-label" data-lang="roomTypes.dorm">Dorm</span><span class="option-badge" data-lang="common.newBadge">New</span></div>
                         </div>
                       </div>
                     </div>

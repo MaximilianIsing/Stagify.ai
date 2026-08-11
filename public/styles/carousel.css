@@ -30,11 +30,18 @@
   --outer-r:24px;
   --p-distance:12px
 }
+/* The `100% - Npx` is a BUDGET, not a margin. .carousel-container has a fixed
+   aspect-ratio and overflow:hidden, so whatever this leaves below the slide is all the
+   room the indicator row and the note will ever get — overrun it and the note is cut
+   off silently, with no scrollbar and nothing in the console. It was 50px against a
+   16px row; the row is now 32px, which left the note about 0.2px of clearance on a
+   desktop viewport. Any future change to the button size or the row's margin has to
+   come back here and pay for itself. See the <=480 override for the two-line case. */
 .carousel-track {
   display:flex;
   transition:transform .5s cubic-bezier(.4, 0, .2, 1);
   cursor:grab;
-  height:calc(100% - 50px)
+  height:calc(100% - 60px)
 }
 .carousel-item:active,.carousel-track:active {
   cursor:grabbing
@@ -98,20 +105,40 @@
   width:100%;
   justify-content:center
 }
-/* Row geometry is PINNED to the shipped design: a fixed 150px row (120px on mobile)
-   with the seven dots spread by space-between, i.e. a ~13px pitch. Do not "fix" this
-   to a wider pitch — it was widened once to 32x24 buttons for the WCAG 2.5.8 (AA)
-   24px target floor, and the resulting row read as broken next to the live hero, so
-   the target size was deliberately traded back for the original spacing.
-   The dot itself is painted by ::before so the <button> can stay an 8x8 box while
-   keeping its own resets; the button semantics, aria-label/aria-current, focus ring
-   and focus-pauses-autoplay all stay — only the box size is design-locked. */
+/* Row geometry is now PINNED THE OTHER WAY, to the WCAG 2.5.8 (AA) 24px target floor.
+   This reverses the earlier "keep the tight spacing" decision: the row shipped as a
+   150px box (120px on mobile) holding seven 8x8 buttons at a ~13px pitch, and
+   PageSpeed Insights re-flagged every one of them under axe `target-size`. There was
+   no way to keep that spread — 24px circles centred 13px apart overlap, so the
+   spacing exception fails too — and this carousel has no prev/next arrows, so the
+   dots are its only discrete and only keyboard control and could not be made
+   decorative.
+
+   Two numbers, and only one of them is a taste call:
+     - 24px is the ACCESSIBILITY FLOOR. Nothing here may go under it.
+     - 32px is the SHIPPED size, chosen above the floor, with a 12px dot to match.
+   Seven buttons at 32px is what makes the row 224px: the row must always be at least
+   `dot count x button size`, or the buttons overlap and the spacing exception is lost
+   as well. Do not narrow the row without shrinking the buttons to match, and do not
+   reintroduce side padding — that comes straight off the same budget, which is how
+   the original `width:150px; padding:0 32px` only ever gave the dots 86px of track.
+   Guarded by test/frontend/carousel-touch-target.test.js, which derives the required
+   width from the item count in carousel.js rather than trusting the literal above.
+
+   The hit box and the dot are sized SEPARATELY — the button is the target, ::before is
+   the paint — so the spread (86px -> 192px between the outer dot centres) and the dot
+   size (8px -> 12px) are independent
+   decisions. One geometry serves every breakpoint; the old mobile clamp is gone. */
 .carousel-indicators {
-  margin-top:8px;
+  /* The button is 32px around a 12px dot, so it already carries 10px of clearance above
+     the dot — close to the 8px margin this used to hold, which is why zero is right here
+     rather than tidy. Re-adding a margin pushes all seven dots down by that much AND
+     costs the note the same amount out of the fixed band below (see .carousel-track). */
+  margin-top:0;
   display:flex;
-  width:150px;
+  width:224px;
   justify-content:space-between;
-  padding:0 32px
+  padding:0
 }
 .carousel-indicator {
   appearance:none;
@@ -120,16 +147,19 @@
   border:0;
   padding:0;
   margin:0;
-  width:8px;
-  height:8px;
+  width:32px;
+  height:32px;
   display:grid;
   place-items:center;
   cursor:pointer
 }
+/* The painted dot. Independent of the 32px hit box above: this is the only rule that
+   changes what the row LOOKS like, and the button size is the only thing that changes
+   where a tap lands. Growing this does not improve the touch target. */
 .carousel-indicator::before {
   content:"";
-  height:8px;
-  width:8px;
+  height:12px;
+  width:12px;
   border-radius:50%;
   transition:.3s
 }
@@ -144,18 +174,25 @@
   background-color:var(--primary-light);
   transform:scale(1.1)
 }
-/* They are focusable, so they need a ring. The button box is only 8x8 — the same
-   size as the dot — so the ring must sit OUTSIDE it (positive offset); an inset
-   ring on an 8px box would just repaint the dot. */
+/* They are focusable, so they need a ring — but the ring tracks the DOT, not the hit
+   box. The button is 32x32 for the touch target while the dot it paints is 12px, so a
+   ring on the button would be a 36px halo around mostly empty space — wider than the
+   32px pitch, so it would touch its neighbours. Putting it on ::before keeps the ring
+   hugging the visible dot. The pseudo already has border-radius:50%, so it is round
+   for free. */
 .carousel-indicator:focus-visible {
+  outline:none
+}
+.carousel-indicator:focus-visible::before {
   outline:2px solid var(--primary);
-  outline-offset:2px;
-  border-radius:50%
+  outline-offset:2px
 }
 .carousel-note {
   font-size:12px;
   color:var(--muted);
-  margin-top:6px;
+  /* Zero, not 6px: the button's bottom half now contributes 8px of clearance below
+     the dot, so this would double the gap. Moves the note ~2px from where it was. */
+  margin-top:0;
   text-align:center
 }
 /* The hero stat pills used to be duplicated here as well. They now live ONLY in
@@ -178,17 +215,23 @@
   .carousel-item-description {
     font-size:13px
   }
-  /* Mobile clamp, part of the pinned geometry above: 120px row minus 48px of
-     padding leaves 72px of content for the seven dots. */
-  .carousel-indicators {
-    width:120px;
-    padding:0 24px
-  }
+  /* The mobile clamp that used to live here (120px row, 0 24px padding) is GONE. It
+     left ~10.7px of pitch, the worst offender in the touch-target audit, and 168px
+     fits inside the container even at a 320px viewport — so the one geometry above
+     serves every breakpoint. Do not re-add a narrower override here. */
   .carousel-note {
     margin-bottom:24px
   }
 }
 @media (max-width:480px) {
+  /* The two-line case. At 320px the note wraps and blows the base budget above: it was
+     already clipped by ~9px before any of this (measured against the old geometry, not
+     inferred), and the bigger hit boxes added to it. 76px reserves the wrapped note with
+     a few px to spare. Scoped to <=480 so the slide keeps its full height everywhere the
+     note fits on one line. */
+  .carousel-track {
+    height:calc(100% - 76px)
+  }
   .carousel-container {
     padding:8px
   }
