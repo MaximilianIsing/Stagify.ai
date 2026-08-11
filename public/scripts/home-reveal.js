@@ -30,11 +30,15 @@
       // when that section became the strip widget. A stale selector here does not
       // throw, it just silently stops warming those decodes, so
       // test/frontend/home-strips.test.js pins the two together.
-      // `.tw-logo` is the six testimonial brokerage marks. They sit in a deck, so five
-      // of the six are behind the top card when the section scrolls in and would
+      // `.tw-logo` is the five testimonial brokerage marks. They sit in a deck, so four
+      // of the five are behind the top card when the section scrolls in and would
       // otherwise decode one at a time as you advance — visible as a pop on each card.
+      // `.rs__empty` is #restage's one shipped photo. It is a below-fold `loading="lazy"`
+      // image like `.hstrip__img`, and it sits under every render the section deals, so
+      // an undecoded copy shows as a beat of blue frame the first time a card is thrown
+      // off it. The 60-render pool is deliberately NOT warmed and must not be added here.
       .querySelectorAll(
-        ".hstrip__img, .ba img, .plus-card__logo, .sponsor-logo, .calc__brandmark, .tw-logo"
+        ".hstrip__img, .ba img, .plus-card__logo, .sponsor-logo, .calc__brandmark, .tw-logo, .rs__empty"
       )
       .forEach((img) => {
         const image = /** @type {HTMLImageElement} */ (img);

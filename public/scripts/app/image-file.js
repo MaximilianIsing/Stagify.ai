@@ -48,9 +48,9 @@ export function fileRejection(type, size) {
 
 /** English fallbacks, used when the language pack hasn't loaded. */
 const FALLBACK = {
-  heicConvert: "We couldn't read that HEIC photo. Please try a JPG or PNG.",
-  fileType: 'Please upload a PNG, JPG, JPEG, WebP, or GIF image file.',
-  fileTooLarge: 'File is too large. Please upload an image smaller than 25MB.',
+  heicConvert: "We couldn’t read that HEIC photo. Please try a JPG or PNG.",
+  fileType: 'Please upload a JPG, PNG, WebP, or HEIC image file.',
+  fileTooLarge: 'File is too large. Please upload an image smaller than 25 MB.',
 };
 
 /**

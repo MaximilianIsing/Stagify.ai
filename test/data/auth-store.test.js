@@ -339,6 +339,27 @@ test('login pays the same scrypt cost whether or not the account exists', () => 
   }
 });
 
+test('publicUser reports the enterprise flag only for a domain-granted seat', () => {
+  // The browser cannot otherwise tell an enterprise seat from an individual
+  // subscriber — enhanceUserWithEnterprise() upgrades the seat to plan 'pro' and the
+  // two payloads are identical from there. The flag it stamps on (`enterpriseDomain`)
+  // is what publicUser translates into the boolean the profile menu badges on.
+  const store = freshStore();
+  const u = registerVerifiedUser(store);
+  const stored = store.findUserByEmail(u.email);
+
+  assert.equal(store.publicUser(stored).enterprise, false, 'a plain account is not a seat');
+  assert.equal(
+    store.publicUser({ ...stored, plan: 'pro', stripeCustomerId: 'cus_123' }).enterprise,
+    false,
+    'an individual Stagify+ subscriber is not a seat either',
+  );
+  assert.equal(
+    store.publicUser({ ...stored, plan: 'pro', enterpriseDomain: 'acme.com' }).enterprise,
+    true,
+  );
+});
+
 // The free-tier daily cap IS enforced server-side, before any paid AI call:
 // freeGenerationStatus reports the remaining allowance and recordFreeGeneration
 // drives it. (recordMobileIpGeneration is retained only for backup/rollback shape;

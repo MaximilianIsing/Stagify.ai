@@ -74,7 +74,7 @@
          styles.css with font-display:swap, so it costs a brief swap instead of
          Highest-priority bandwidth competing with the render-blocking CSS and the
          LCP image.
-         And only the LATIN subset of each. `as=font` is fetched at Chrome's Highest
+         And only the LATIN subset of each. `as=font` is fetched at Chrome’s Highest
          priority — above the LCP image — so what goes here has to be the minimum that
          renders the hero. The fused `inter-all-*` files these replaced were 98 KB and
          107 KB; latin is ~24 KB each. Every other script still resolves, just on
@@ -161,7 +161,7 @@
          home-text-animate, sponsors-scroll, star-border, plus-cta-auth, index-inline,
          hover-glow, aurora-scrollbar, card-spotlight. They were ~100 KB of source being
          parsed on a throttled CPU while the browser was trying to paint the hero.
-         Add new below-fold scripts to that file's list, NOT here — and read its header
+         Add new below-fold scripts to that file’s list, NOT here — and read its header
          first: anything loaded after `load` must not register on DOMContentLoaded. -->
     <script type="module" src="scripts/index-deferred.js"></script>
     
@@ -227,7 +227,7 @@
 
     <!-- Background Video -->
     <!-- The `media` attribute is the whole mobile LCP story: background.mp4 is 1.25 MB,
-         and PageSpeed's mobile profile throttles to ~200 KB/s, so on a phone this one
+         and PageSpeed’s mobile profile throttles to ~200 KB/s, so on a phone this one
          decorative layer was ~6 s of the download budget — spent on a fixed, z-index:-1,
          opacity:.8 backdrop. A <source> whose media query does not match is never
          selected (video.networkState becomes 3, NETWORK_NO_SOURCE) and NOTHING is
@@ -236,7 +236,7 @@
          styles.css hides this element under 769px and paints the poster on a fixed
          body::before, because a <video> the UA cannot start gets an unremovable centred
          play glyph drawn over it. The attribute stays for the desktop first-frame.
-         769px is the far side of the site's own 768px mobile line (.desktop-only,
+         769px is the far side of the site’s own 768px mobile line (.desktop-only,
          styles.css). Deliberately markup, not JS: the CSP has no 'unsafe-inline' for
          scripts, and this way the gate survives the SSR locale homepages
          (lib/i18n/render-page.js) for free. A browser that ignores `media` on <source>
@@ -343,9 +343,9 @@
         </div>
         <div class="hero-media">
           <!-- Slide 0 is STATIC, and that is load-bearing for LCP. This <img> is the
-               page's LCP element; when the whole carousel was built by JS its paint was
+               page’s LCP element; when the whole carousel was built by JS its paint was
                chained behind 128 KB of HTML parsing, five render-blocking stylesheets,
-               and carousel.js's own download+execute, all while ~60 module files parsed
+               and carousel.js’s own download+execute, all while ~60 module files parsed
                on a throttled CPU. In the markup it is found by the preload scanner in
                the first packet and paints as soon as the CSSOM is ready.
 
@@ -374,7 +374,7 @@
                 </div>
               </div>
             </div>
-            <div class="carousel-note" data-lang="hero.carouselNote">Example preview. Upload your photo to stage</div>
+            <div class="carousel-note" data-lang="hero.carouselNote">Example preview, upload your photo to stage.</div>
           </div>
           <div class="hero-stats" id="hero-stats">
             <div class="stats-pills">
@@ -470,47 +470,105 @@
         </div>
       </section>
 
-      <!-- ===================== BEFORE / AFTER STUDIO ===================== -->
-      <section class="home-section home-studio" id="staging-studio" aria-labelledby="studio-title">
+      <!-- ===================== RE-STAGE ===================== -->
+      <!-- This was a before/after drag wipe ("Drag to see what staging does"), and the
+           axis was the problem rather than the execution. The page already showed that
+           exact widget a second time — #exterior-studio-demo in the showcase carousel
+           below is the same `.ba` markup mounted by the same mountWipe() — and
+           before→after is what every competitor shows. Its three bullets also restated
+           the page: "~8 seconds" appears eight times on this page, "re-stage as often as
+           you like" three times.
+
+           So the axis moved from before→after to press→press. The thing traditional
+           staging cannot do is give you a second arrangement for free, and that is now
+           the whole interaction: one empty room, one button, a different staging every
+           press out of a pool of 100.
+
+           THE POOL IS REAL PRODUCT OUTPUT. The empty room is a generated photo
+           (Fal.ai flux/dev, master in to-build/media-png/Homepage/Restage/); every
+           staged render is that exact photo put through this repo’s own staging
+           pipeline with the prompts in lib/staging/promptMatrix.js, on the free-tier
+           model, so it is what a visitor’s own render would look like. Provenance,
+           the generator and the variation axes sit beside that master, in
+           to-build/media-png/Homepage/Restage/{manifest.json,tools/}.
+
+           NOTHING IS PREFETCHED and there is no width/height on the image: `.rs__stack`
+           is aspect-ratio locked and `.rs__stack img` is absolutely positioned, so the
+           box does not depend on the image having loaded and there is no CLS to trade
+           away — the same reason the `.ba` widget below carries no dimensions either.
+           (width/height attributes would also defeat the CSS ratio outright.)
+
+           THE BUTTON SHIPS `disabled` ON PURPOSE. index-deferred.js injects
+           scripts/home-restage.js after `load`, so this markup is what every visitor
+           sees first and keeps if that batch fails. home.css hides the button until the
+           script adds `.rs--ready`, because a dead control is worse than no control;
+           the room and the copy read fine without any of it. The photo’s own
+           click-to-stage affordance is gated on the same class for the same reason. -->
+      <section class="home-section home-restage" id="restage" aria-labelledby="restage-title">
         <div class="home-section__head home-section__head--wide reveal">
-          <h2 class="home-section__title" id="studio-title" data-tx="blur" data-lang="home.studio.title">Drag to see what staging does</h2>
-          <p class="home-section__sub" data-lang="home.studio.subtitle">The same listing photo, before and after Stagify. No movers, no rentals, no waiting.</p>
+          <h2 class="home-section__title" id="restage-title" data-tx="blur" data-lang="home.restage.title">Click to see what staging does</h2>
+          <!-- Kept short on purpose: `--wide` gives this subtitle a 700px measure, and at
+               the 16.5px top of the clamp this line renders 641px in Inter. The previous
+               wording measured 732px and wrapped to two rows. -->
+          <p class="home-section__sub" data-lang="home.restage.subtitle">The same empty room, staged again and again. No movers, no rentals, no waiting.</p>
         </div>
-        <div class="studio-shell">
-          <div class="ba reveal reveal--left" role="group" data-lang-attr="home.studio.comparisonAria|aria-label" aria-label="Before and after staging comparison">
-            <!-- These alts describe the DEFAULT pair (Before2/After2), which is the
-                 Bedroom example — EXAMPLES[0] in staging-studio.js, matching the
-                 "Bedroom" tab below. show() swaps only src, never alt, so the alt goes
-                 stale once a visitor switches tabs; the load-time and no-JS state is
-                 what these describe. -->
-            <!-- Both lazy, and neither is fetchpriority=high. This widget is below the
-                 fold; .ba-before used to claim `high`, which put 71 KB ahead of the
-                 actual LCP element (the hero carousel image) in the fetch queue. Lazy is
-                 layout-safe here because .ba is `aspect-ratio: 3/2` and `.ba img` is
-                 `position:absolute; inset:0` (home.css) — the box does not depend on the
-                 images having loaded, so there is no CLS to trade away. -->
-            <img class="ba-after" src="media-webp/Homepage/BeforeAfter/After2.webp" alt="Bedroom after AI virtual staging with Stagify.ai" loading="lazy" decoding="async">
-            <img class="ba-before" src="media-webp/Homepage/BeforeAfter/Before2.webp" alt="Empty bedroom before virtual staging" loading="lazy" decoding="async">
-            <span class="ba-tag ba-tag--before" data-lang="home.studio.beforeLabel">Before</span>
-            <span class="ba-tag ba-tag--after" data-lang="home.studio.afterLabel">After</span>
-            <div class="ba-handle" role="slider" tabindex="0" data-lang-attr="home.studio.revealSliderAria|aria-label" aria-label="Reveal slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-              <span class="ba-handle__grip" aria-hidden="true">‹›</span>
-            </div>
+        <div class="rs" data-restage>
+          <!-- THE PHOTO IS A CLICK TARGET, and deliberately NOT a focusable one. The
+               heading says "Click to see what staging does", so the room itself has to
+               stage when you click it — and below 900px this section stacks, which puts
+               the button roughly 290px under the photo, far enough that on a smaller
+               phone you cannot watch the room change while you press.
+               No role="button" and no tabindex: an equivalent keyboard- and
+               screen-reader-accessible control for this exact action already sits a few
+               nodes below, so making this a second one would add a redundant tab stop
+               and announce the same thing twice. A click handler on a non-focusable
+               element is correct precisely BECAUSE that button exists. -->
+          <div class="rs__stack reveal reveal--left" data-restage-tap>
+            <img class="rs__empty" src="media-webp/Homepage/Restage/empty.webp" data-lang-attr="home.restage.emptyAlt|alt" alt="An empty living room before virtual staging" loading="lazy" decoding="async">
           </div>
-          <aside class="studio-side reveal reveal--right" style="--reveal-delay:90ms">
-            <div class="studio-side__kicker" data-lang="home.studio.kicker">How it looks</div>
-            <h3 class="studio-side__title" data-lang="home.studio.panelTitle">The same room, staged in seconds</h3>
-            <p class="studio-side__body" data-lang="home.studio.panelBody">Drag the handle. The left is the original photo; everything on the right was staged by Stagify in seconds.</p>
+          <aside class="rs__side reveal reveal--right" style="--reveal-delay:90ms">
+            <div class="rs__kicker" data-lang="home.restage.kicker">Total design control</div>
+            <h3 class="rs__title" data-lang="home.restage.panelTitle">Every run furnishes it fresh</h3>
+            <p class="rs__body" data-lang="home.restage.panelBody">Traditional staging gives you one arrangement and a rental agreement. Run it again and the room comes back furnished a different way: different layout, different palette, different materials.</p>
+            <!-- These three bullets are the ORIGINAL home.studio.points keys, unchanged.
+                 They were written for the before/after section this replaced, they say
+                 exactly what this section needs to say (speed, restyling, rights), and
+                 they are already translated in all eleven packs — so reusing them costs
+                 nothing where three new strings would have cost 33 edits. -->
+            <!-- The two `--wide` bullets are DESKTOP ONLY. home.css drops them at the
+                 same 900px where this section collapses to one column, so the phone gets
+                 the three that carry the core claims and the wide layout — which has the
+                 room for them — gets the extra breadth. `display: none` rather than
+                 anything visibility-based, so they leave the accessibility tree too: a
+                 phone user is not meant to have them read out either. -->
             <ul class="home-list">
               <li data-lang="home.studio.points.speed">About 8 seconds per photo</li>
               <li data-lang="home.studio.points.restage">Re-stage in any style, as often as you like</li>
+              <li class="rs__li--wide" data-lang="home.restage.points.rooms">Eight room types, from bedrooms to kitchens</li>
+              <li class="rs__li--wide" data-lang="home.restage.points.browser">Nothing to install, it runs in your browser</li>
               <li data-lang="home.studio.points.rights">Every image is yours, with full copyright</li>
             </ul>
-            <div class="studio-examples" role="group" data-lang-attr="home.studio.exampleRoomsAria|aria-label" aria-label="Example rooms">
-              <button type="button" class="studio-ex is-active" aria-pressed="true" data-ex="0" data-lang="home.studio.examples.bedroom">Bedroom</button>
-              <button type="button" class="studio-ex" aria-pressed="false" data-ex="1" data-lang="home.studio.examples.living">Living Room</button>
-              <button type="button" class="studio-ex" aria-pressed="false" data-ex="2" data-lang="home.studio.examples.dining">Dining Room</button>
-            </div>
+            <!-- BOTH labels ship, stacked in one grid cell (see .rs__btn in home.css).
+                 The button therefore sizes itself to whichever label is wider and never
+                 changes width when it flips — in every language, with no measuring. It
+                 also means the module never writes to the button: each label owns its
+                 own data-lang, so language-loader.js keeps both correct on a re-apply. -->
+            <button type="button" class="rs__btn" data-restage-btn disabled>
+              <span class="rs__btn-label rs__btn-label--first" data-lang="home.restage.button">Stage this room</span>
+              <span class="rs__btn-label rs__btn-label--again" data-lang="home.restage.buttonAgain">Stage it again</span>
+            </button>
+            <button type="button" class="rs__revert" data-restage-revert data-lang="home.restage.seeOriginal">See original</button>
+            <!-- A press that fetched nothing used to be indistinguishable from a broken
+                 button: the pill bounced, the sheen swept, the photo did not change. On
+                 the FIRST press it was total, because `has-staged` was never added, so
+                 "See original" did not appear either and there was no evidence anything
+                 had happened at all. This line is that evidence. It is cleared by the
+                 next press that does land.
+                 It carries data-lang, so home.css hides it with a THREE-class selector —
+                 `body.language-loaded [data-lang] { visibility: visible }` is (0,2,1) and
+                 beats anything shorter. Same trap as the two button labels above and the
+                 revert control; test/frontend/home-restage.test.js checks all four. -->
+            <p class="rs__error" data-restage-error role="alert" data-lang="home.restage.loadFailed">That one did not load. Try again.</p>
           </aside>
         </div>
       </section>
@@ -519,7 +577,7 @@
       <!-- This section had NO heading. Its name existed only as aria-label — never
            rendered, and the one section label on the page with no data-lang, so it
            was English on all 11 locales. The consequence was structural: the four
-           <h3>s below hung off the PREVIOUS section's <h2> ("Drag to see what
+           <h3>s below hung off the PREVIOUS section’s <h2> ("Drag to see what
            staging does"), so anyone navigating by heading got four orphans filed
            under the wrong parent.
            The strings below are not new — home.info.title/subtitle were already
@@ -553,7 +611,7 @@
       <section class="home-section home-info" id="learn" aria-labelledby="learn-title">
         <div class="home-section__head home-section__head--wide reveal">
           <h2 class="home-section__title" id="learn-title" data-tx="rise" data-lang="home.info.title">What virtual staging is, and why it sells</h2>
-          <p class="home-section__sub" data-lang="home.info.subtitle">A quick, honest rundown of how it works and who it's for. No jargon.</p>
+          <p class="home-section__sub" data-lang="home.info.subtitle">A quick, honest rundown of how it works and who it’s for.</p>
         </div>
         <div class="hstrips reveal" data-strips>
           <div class="hstrip" data-strip="0">
@@ -567,7 +625,7 @@
             </h3>
             <div class="hstrip__body" id="learn-panel-why" role="region" aria-labelledby="learn-btn-why">
               <div class="hstrip__inner">
-                <p class="hstrip__text" data-lang="home.info.rows.why.body">Almost every buyer starts online, so your listing photos are the real first showing. Empty or dated rooms are hard to read; people can't judge scale or picture living there. Staging gives each room a clear purpose and a pull, which is why agents have always relied on it.</p>
+                <p class="hstrip__text" data-lang="home.info.rows.why.body">Almost every buyer starts online, so your listing photos are the real first showing. Empty or dated rooms are hard to read; people can’t judge scale or picture living there. Staging gives each room a clear purpose and a pull, which is why agents have always relied on it.</p>
                 <ul class="home-list">
                   <li data-lang="home.info.rows.why.p1">Empty rooms photograph smaller and colder than they are</li>
                   <li data-lang="home.info.rows.why.p2">Staging shows the intended use of every space</li>
@@ -584,7 +642,7 @@
             <h3 class="hstrip__h">
               <button type="button" class="hstrip__btn" id="learn-btn-how" aria-expanded="false" aria-controls="learn-panel-how">
                 <span class="hstrip__eyebrow" data-lang="home.info.rows.how.eyebrow">How it works</span>
-                <span class="hstrip__title" data-lang="home.info.rows.how.title">From empty photo to listing-ready in about 8 seconds</span>
+                <span class="hstrip__title" data-lang="home.info.rows.how.title">From empty photo to listing-ready in seconds</span>
               </button>
             </h3>
             <div class="hstrip__body" id="learn-panel-how" role="region" aria-labelledby="learn-btn-how">
@@ -601,11 +659,11 @@
           </div>
 
           <div class="hstrip" data-strip="2">
-            <img class="hstrip__img" src="media-webp/Homepage/HelpingOld.webp" alt="Stagify.ai team member staging a client's photos on a laptop" loading="lazy" fetchpriority="low" decoding="async">
+            <img class="hstrip__img" src="media-webp/Homepage/HelpingOld.webp" alt="Stagify.ai team member staging a client’s photos on a laptop" loading="lazy" fetchpriority="low" decoding="async">
             <div class="hstrip__scrim"></div>
             <h3 class="hstrip__h">
               <button type="button" class="hstrip__btn" id="learn-btn-who" aria-expanded="false" aria-controls="learn-panel-who">
-                <span class="hstrip__eyebrow" data-lang="home.info.rows.who.eyebrow">Who it's for</span>
+                <span class="hstrip__eyebrow" data-lang="home.info.rows.who.eyebrow">Who it’s for</span>
                 <span class="hstrip__title" data-lang="home.info.rows.who.title">Made for agents, sellers, and buyers</span>
               </button>
             </h3>
@@ -617,7 +675,7 @@
                   <li data-lang="home.info.rows.who.p2">Sellers &amp; buyers: no software, no designer needed</li>
                   <li data-lang="home.info.rows.who.p3">AI Designer: agentic room staging</li>
                 </ul>
-                <p class="hstrip__cap" data-lang="home.info.rows.who.caption">Sitting down one-on-one to stage an agent's photos</p>
+                <p class="hstrip__cap" data-lang="home.info.rows.who.caption">Sitting down one-on-one to stage an agent’s photos</p>
               </div>
             </div>
           </div>
@@ -633,25 +691,25 @@
             </h3>
             <div class="hstrip__body" id="learn-panel-team" role="region" aria-labelledby="learn-btn-team">
               <div class="hstrip__inner">
-                <p class="hstrip__text" data-lang="home.info.rows.team.body">There's no software to install and nothing to learn. Anyone on the team can open Stagify in a browser, upload a listing photo, and have it staged in seconds, whether on a laptop at the office or a phone in the field.</p>
+                <p class="hstrip__text" data-lang="home.info.rows.team.body">There’s no software to install and nothing to learn. Anyone on the team can open Stagify in a browser, upload a listing photo, and have it staged in seconds, whether on a laptop at the office or a phone in the field.</p>
                 <ul class="home-list">
                   <li data-lang="home.info.rows.team.p1">No design skills or software needed</li>
                   <li data-lang="home.info.rows.team.p2">Works in any browser, on any device</li>
                   <li data-lang="home.info.rows.team.p3">Every agent can stage their own listings</li>
                 </ul>
-                <p class="hstrip__cap" data-lang="home.info.rows.team.caption">A brokerage team's first look at Stagify</p>
+                <p class="hstrip__cap" data-lang="home.info.rows.team.caption">A brokerage team’s first look at Stagify</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ===================== DON'T FALL BEHIND (NAR) ===================== -->
+      <!-- ===================== DON’T FALL BEHIND (NAR) ===================== -->
       <section class="home-section home-nar" id="ai-shift" aria-labelledby="nar-title">
         <!-- "Agents", not "Real estate": every figure in the card below is from
-             NAR's survey of agents, not an industry-wide measure. -->
+             NAR’s survey of agents, not an industry-wide measure. -->
         <div class="home-section__head home-section__head--wide reveal">
-          <h2 class="home-section__title" id="nar-title" data-tx="rise" data-lang="home.nar.title">Don't fall behind</h2>
+          <h2 class="home-section__title" id="nar-title" data-tx="rise" data-lang="home.nar.title">Don’t fall behind</h2>
           <p class="home-section__sub" data-lang="home.nar.subtitle">Agents are adopting AI fast, and clients approve. Staging is the easiest place to start.</p>
         </div>
         <!-- Every visible string here is unchanged; scripts/home-figures.js adds the
@@ -664,11 +722,11 @@
              THE PERCENTAGES ARE PLAIN TEXT AND STAY THAT WAY. They were briefly
              animated (counted up from 0%) and it read as nonsense — a survey share is
              a measured fact, not a running total, so ramping it implies a process that
-             never happened. Do not re-add a counter here; #compare's calculator ramps
+             never happened. Do not re-add a counter here; #compare’s calculator ramps
              because its numbers really are a total the visitor is building.
 
              The same four numbers appear in four places — the bar widths, the legend,
-             the note, and the bar's aria-label (which is all a screen reader gets,
+             the note, and the bar’s aria-label (which is all a screen reader gets,
              since the bar is role="img"). test/frontend/home-figures.test.js fails if
              they drift apart. -->
         <div class="nar-card reveal" data-nar-chart>
@@ -701,13 +759,23 @@
               <span class="nar-stat__txt" data-lang="home.nar.stat2">already use AI to generate listing content</span>
             </div>
           </div>
-        </div>
-        <div class="cmp-source reveal">
-          <svg class="cmp-source__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
-          <p>
-            <span data-lang="home.nar.source">Figures from the National Association of Realtors' 2025 Technology Survey of real estate agents.</span>
-            <cite><a href="https://www.nar.realtor/press-releases/realtors-embrace-ai-digital-tools-to-enhance-client-service-nar-survey-finds" target="_blank" rel="noopener noreferrer" data-lang="home.nar.sourceCite">Source: National Association of Realtors, 2025 Technology Survey</a></cite>
-          </p>
+          <!-- The citation belongs to the figures above it, so it sits INSIDE the card as
+               a full-width footer row rather than a second floating box below it. No
+               `.reveal` here on purpose: the card is the thing that reveals, and a nested
+               reveal would fade the footer in a second time after its own card arrived. -->
+          <div class="nar-source">
+            <!-- The REALTOR® mark stands in for the generic building glyph that used to sit
+                 here: the row cites NAR, so its own logo says that faster than an icon can.
+                 Decorative on purpose (alt="") — the sentence beside it already names the
+                 association, so announcing the logo would just read the source twice.
+                 Served at 128px square — well above the 24px slot, but the file is ~1KB at
+                 that size, so there is nothing to win by cutting it finer. -->
+            <img class="nar-source__icon" src="media-webp/Homepage/NAR128x128.webp" alt="" width="128" height="128" loading="lazy" decoding="async">
+            <p>
+              <span data-lang="home.nar.source">Figures from the National Association of Realtors’ 2025 Technology Survey of real estate agents.</span>
+              <cite><a href="https://www.nar.realtor/press-releases/realtors-embrace-ai-digital-tools-to-enhance-client-service-nar-survey-finds" target="_blank" rel="noopener noreferrer" data-lang="home.nar.sourceCite">Source: National Association of Realtors, 2025 Technology Survey</a></cite>
+            </p>
+          </div>
         </div>
       </section>
 
@@ -727,7 +795,7 @@
            reads location.hash on load and on hashchange and brings the matching panel to
            the front. Renaming a panel id silently breaks a redirect, not just an anchor.
 
-           Only the FRONT panel takes pointer events, and only the front panel's
+           Only the FRONT panel takes pointer events, and only the front panel’s
            walkthrough player is mounted — designer-demo.js used to mount both players on
            idle whether or not anyone ever scrolled this far. -->
       <section class="home-section home-showcase" id="studio-showcase" aria-labelledby="showcase-title">
@@ -888,13 +956,13 @@
            media-webp/Homepage/Exterior/ and are used ONLY here.
 
            PROVENANCE, because it matters for what this section is allowed to claim:
-           the "before" is a generated stand-in for an ordinary agent's phone snap
+           the "before" is a generated stand-in for an ordinary agent’s phone snap
            (flat overcast sky, car on the drive, bins at the kerb, hose on the lawn).
            The "after" is that exact file put through the SHIPPED Exterior Studio
            prompt — buildExteriorPrompt({timeOfDay:'goldenHour', sky:'clearBlue',
            removeVehicles:true, removeClutter:true}) from lib/staging/exterior-prompts.js
-           — so the transformation on show is the product's real output for the four
-           controls this section's copy promises, not an illustration of it. Re-shoot
+           — so the transformation on show is the product’s real output for the four
+           controls this section’s copy promises, not an illustration of it. Re-shoot
            the pair the same way if the prompt changes, or the claim goes stale.
 
            Both files are 1408x768 and MUST stay identical in size: .ba wipes one
@@ -922,10 +990,10 @@
           <div class="shw__media">
           <div class="ba" role="group" data-lang-attr="home.exterior.comparisonAria|aria-label" aria-label="Before and after exterior enhancement comparison">
             <!-- No width/height attrs, matching the staging comparison above: .ba is
-                 aspect-ratio'd and .ba img is inset-0/height:100%, so the box does not
+                 aspect-ratio’d and .ba img is inset-0/height:100%, so the box does not
                  depend on the images having loaded and there is no CLS to trade away.
                  (width/height here would resolve as a presentational height and make
-                 the container's aspect-ratio a no-op.) Lazy and not fetchpriority=high
+                 the container’s aspect-ratio a no-op.) Lazy and not fetchpriority=high
                  — this sits well below the hero, which owns the LCP. -->
             <img class="ba-after" src="media-webp/Homepage/Exterior/After.webp" data-lang-attr="home.exterior.alts.after|alt" alt="The same house at golden hour under a clear blue sky, with the parked car, bins and hose removed" loading="lazy" decoding="async">
             <img class="ba-before" src="media-webp/Homepage/Exterior/Before.webp" data-lang-attr="home.exterior.alts.before|alt" alt="A suburban house photographed under a flat grey sky, with a car on the driveway, bins at the kerb and a hose on the lawn" loading="lazy" decoding="async">
@@ -1030,7 +1098,7 @@
             </figure>
 
             <!-- Cards 4-7 exist to make the mock scroll like the real gallery does.
-                 They are generated images (Fal.ai flux/dev, prompts in the repo's
+                 They are generated images (Fal.ai flux/dev, prompts in the repo’s
                  scratch script) matched to the three above: same staging style, same
                  1200x800 frame. Below 768px every card past the first is hidden and the
                  scroller is switched off, so these only ever render on desktop — which
@@ -1101,19 +1169,18 @@
           <h2 class="home-section__title" id="testimonials-title" data-tx="rise" data-lang="home.testimonials.title">What agents are saying</h2>
           <p class="home-section__sub" data-lang="home.testimonials.subtitle">Straight from brokers who made the switch.</p>
         </div>
-        <!-- A DECK, not a grid. Six quotes as one stack: the top card is readable, the
+        <!-- A DECK, not a grid. Five quotes as one stack: the top card is readable, the
              rest fan out behind it, and you drag it away or use the arrows to advance.
              home-testimonials.js adds `tw-deck--ready`, and EVERY deck rule in home.css
              is scoped behind that class — so with no JS this stays what it is in the
-             markup, a plain readable column of six quotes. Do not move the deck styling
+             markup, a plain readable column of five quotes. Do not move the deck styling
              out from behind the ready class.
 
-             CARDS 3-6 ARE PLACEHOLDERS. Replace the copy, the names and the
-             media-webp/testimonials/placeholder-*.svg logos with the four real agents
-             before this section goes live, and translate the four quotes into the other
-             10 packs. test/frontend/home-testimonials.test.js carries a skipped guard
-             ("no placeholder testimonials remain") — un-skip it in the same commit and it
-             will keep them from coming back. -->
+             All five are real, named agents. A guard in
+             test/frontend/home-testimonials.test.js ("no placeholder testimonials
+             remain") keeps the old dummy cards from coming back. Adding a sixth means a
+             card here plus its four keys in all 11 language packs — the count in the
+             controls is written by JS from the real card count, so it follows. -->
         <div class="tw-deck reveal" data-deck>
           <!-- role="group" and tabindex are added by home-testimonials.js, since the
                stack is only a widget once the deck arms. The aria-label lives HERE, not
@@ -1155,8 +1222,7 @@
                 <img class="tw-logo" src="media-webp/testimonials/centennial-mini.webp" alt="Centennial Properties logo" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
-            <!-- PLACEHOLDER 1 of 4 (3rd card) — replace before launch -->
-            <figure class="tw-card" data-placeholder>
+            <figure class="tw-card">
               <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -1164,18 +1230,17 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               </div>
-              <blockquote class="tw-text" data-lang="home.testimonials.items.p3.quote">PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.</blockquote>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.travonte.quote">Stagify makes the process feel effortless. You upload a photo of an empty room, wait a few seconds, and suddenly the space has personality. It’s simple, clean, and actually useful.</blockquote>
               <figcaption class="tw-by">
                 <span class="tw-by__meta">
-                  <span class="tw-name" data-lang="home.testimonials.items.p3.author">Placeholder Agent Three</span>
-                  <span class="tw-org" data-lang="home.testimonials.items.p3.role">Placeholder Realty</span>
-                  <span class="tw-loc" data-lang="home.testimonials.items.p3.location">City, ST</span>
+                  <span class="tw-name" data-lang="home.testimonials.items.travonte.author">Travonte Taylor</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.travonte.role">Compass</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.travonte.location">Brooklyn, NYC</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/placeholder-3.svg" alt="Placeholder logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/compass-mini.webp" alt="Compass logo" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
-            <!-- PLACEHOLDER 2 of 4 (4th card) — replace before launch -->
-            <figure class="tw-card" data-placeholder>
+            <figure class="tw-card">
               <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -1183,18 +1248,17 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               </div>
-              <blockquote class="tw-text" data-lang="home.testimonials.items.p4.quote">PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.</blockquote>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.jack.quote">What impressed me most about Stagify was how practical it is. It’s not just another AI tool that looks cool for a second. It takes something agents, renters, and property owners deal with all the time and makes it faster and easier.</blockquote>
               <figcaption class="tw-by">
                 <span class="tw-by__meta">
-                  <span class="tw-name" data-lang="home.testimonials.items.p4.author">Placeholder Agent Four</span>
-                  <span class="tw-org" data-lang="home.testimonials.items.p4.role">Placeholder Realty</span>
-                  <span class="tw-loc" data-lang="home.testimonials.items.p4.location">City, ST</span>
+                  <span class="tw-name" data-lang="home.testimonials.items.jack.author">Jack Sash</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.jack.role">Tahari Realty</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.jack.location">Manhattan, NYC</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/placeholder-4.svg" alt="Placeholder logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/tahari-realty-mini.webp" alt="Tahari Realty logo" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
-            <!-- PLACEHOLDER 3 of 4 (5th card) — replace before launch -->
-            <figure class="tw-card" data-placeholder>
+            <figure class="tw-card">
               <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
@@ -1202,33 +1266,14 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               </div>
-              <blockquote class="tw-text" data-lang="home.testimonials.items.p5.quote">PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.</blockquote>
+              <blockquote class="tw-text" data-lang="home.testimonials.items.jaden.quote">I could see Stagify being huge for dorms, apartments, and listings. Empty rooms are hard to picture, but once they’re staged, the space instantly feels more real. It makes a big difference when you’re trying to imagine yourself living there.</blockquote>
               <figcaption class="tw-by">
                 <span class="tw-by__meta">
-                  <span class="tw-name" data-lang="home.testimonials.items.p5.author">Placeholder Agent Five</span>
-                  <span class="tw-org" data-lang="home.testimonials.items.p5.role">Placeholder Realty</span>
-                  <span class="tw-loc" data-lang="home.testimonials.items.p5.location">City, ST</span>
+                  <span class="tw-name" data-lang="home.testimonials.items.jaden.author">Jaden Lander</span>
+                  <span class="tw-org" data-lang="home.testimonials.items.jaden.role">RockSolid Management</span>
+                  <span class="tw-loc" data-lang="home.testimonials.items.jaden.location">Manhattan, NYC</span>
                 </span>
-                <img class="tw-logo" src="media-webp/testimonials/placeholder-5.svg" alt="Placeholder logo" width="72" height="72" decoding="async">
-              </figcaption>
-            </figure>
-            <!-- PLACEHOLDER 4 of 4 (6th card) — replace before launch -->
-            <figure class="tw-card" data-placeholder>
-              <div class="tw-stars" role="img" aria-label="Rated 5 out of 5 stars">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              </div>
-              <blockquote class="tw-text" data-lang="home.testimonials.items.p6.quote">PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.</blockquote>
-              <figcaption class="tw-by">
-                <span class="tw-by__meta">
-                  <span class="tw-name" data-lang="home.testimonials.items.p6.author">Placeholder Agent Six</span>
-                  <span class="tw-org" data-lang="home.testimonials.items.p6.role">Placeholder Realty</span>
-                  <span class="tw-loc" data-lang="home.testimonials.items.p6.location">City, ST</span>
-                </span>
-                <img class="tw-logo" src="media-webp/testimonials/placeholder-6.svg" alt="Placeholder logo" width="72" height="72" decoding="async">
+                <img class="tw-logo" src="media-webp/testimonials/rocksolid-mini.webp" alt="RockSolid Management logo" width="72" height="72" decoding="async">
               </figcaption>
             </figure>
           </div>
@@ -1237,7 +1282,7 @@
             <button class="tw-nav" type="button" data-deck-prev data-lang-attr="home.testimonials.deck.prev|aria-label" aria-label="Previous testimonial">
               <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
             </button>
-            <p class="tw-count" aria-live="polite"><span data-deck-at>1</span> / <span data-deck-of>6</span></p>
+            <p class="tw-count" aria-live="polite"><span data-deck-at>1</span> / <span data-deck-of>5</span></p>
             <button class="tw-nav" type="button" data-deck-next data-lang-attr="home.testimonials.deck.next|aria-label" aria-label="Next testimonial">
               <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg>
             </button>
@@ -1249,9 +1294,9 @@
       <section class="home-section home-compare" id="compare" aria-labelledby="compare-title">
         <div class="home-section__head reveal">
           <h2 class="home-section__title" id="compare-title" data-tx="rise" data-lang="home.compare.title">How it compares to traditional staging</h2>
-          <p class="home-section__sub" data-lang="home.compare.subtitle">Traditional staging works. It's just slow and expensive.</p>
+          <p class="home-section__sub" data-lang="home.compare.subtitle">Traditional staging works. It’s just slow and expensive.</p>
         </div>
-        <!-- This replaced a static 6-row "– vs ✓" table. The rows' strings are still in
+        <!-- This replaced a static 6-row "– vs ✓" table. The rows’ strings are still in
              all 11 language packs under home.compare.rows.* — 7 of the 18 are reused
              below, the other 11 are left as harmless orphans (the parity gate in
              test/server/static.test.js is one-way, english → others).
@@ -1262,7 +1307,6 @@
              fails if the two drift apart. -->
         <div class="calc reveal" data-calc>
           <div class="calc__ask">
-            <span class="calc__eyebrow" data-lang="home.compare.eyebrow">Virtual vs. traditional</span>
             <label class="calc__question" for="calc-listings" data-lang="home.compare.calc.question">How many listings do you stage a year?</label>
             <div class="calc__sliderrow">
               <input class="calc__range" type="range" id="calc-listings" data-calc-range min="1" max="20" step="1" value="5">
@@ -1270,8 +1314,10 @@
                    <label>, and a translated "{n} listings" here would need Russian
                    one/few/many forms for 1 vs 2 vs 5. Bare numeral, hidden from AT. -->
               <output class="calc__readout" for="calc-listings" data-calc-listings aria-hidden="true">5</output>
+              <!-- Inside the row, not after it: these mark the ends of the TRACK, so they
+                   have to share the input’s column rather than the row’s full width. -->
+              <div class="calc__scale" aria-hidden="true"><span>1</span><span>20</span></div>
             </div>
-            <div class="calc__scale" aria-hidden="true"><span>1</span><span>20</span></div>
           </div>
 
           <!-- aria-live is added by home-figures.js AFTER the intro count-up finishes,
@@ -1320,57 +1366,132 @@
       <!-- ===================== WHY CHOOSE US ===================== -->
       <section class="home-section home-whyus" id="why" aria-labelledby="whyus-title">
         <div class="home-section__head home-section__head--wide reveal">
-          <h2 class="home-section__title" id="whyus-title" data-tx="clip" data-lang="whyUs.title">Why Choose Us?</h2>
-          <p class="home-section__sub" data-lang="home.whyus.subtitle">Other virtual staging tools are slow, costly, and locked down. Stagify is the opposite.</p>
+          <h2 class="home-section__title" id="whyus-title" data-tx="clip" data-lang="whyUs.title">Why choose us?</h2>
+          <p class="home-section__sub" data-lang="home.whyus.subtitle">Four other ways to stage a listing, scored beside ours.</p>
         </div>
-        <!-- The two lists are seven matched PAIRS, not two independent columns: row N
-             on the left is the direct rebuttal to row N on the right. `data-vs` names
-             each pair so home-whyus.js can light both halves together — that
-             correspondence is the whole argument of the section and is invisible
-             otherwise. Keep the two lists in the same order, or the pairing lies.
+        <!-- A SCOREBOARD, not a two-column pitch. This replaced "Stagify vs Others"
+             (2026-08-10): "Others" is a strawman, and the buyer is really choosing
+             between us, a traditional stager, a per-image AI tool, doing it in
+             Photoshop, and shipping empty rooms. Naming those four and scoring all of
+             them, INCLUDING the two rows we do not win, is the whole point. Do not
+             quietly tick `quality` and delete `furniture` to tidy up our column:
+             those two are what make the other four believable, and
+             test/frontend/home-whyus.test.js fails if the board stops conceding.
 
-             The button wraps a span carrying `data-lang-html`, rather than the <li>
-             carrying it directly: language-loader.js:86 assigns `el.innerHTML` on
-             every [data-lang-html] node, so a button nested INSIDE one is destroyed
-             on the first language load. Same reason the NAR legend above puts its
-             `data-lang` on an inner span. -->
-        <div class="whyus-grid">
-          <article class="whyus-card whyus-card--us reveal reveal--left">
-            <h3 class="whyus-card__head">
-              <img src="media-webp/logo/Logo32x32.webp" alt="" class="whyus-card__logo" aria-hidden="true">
-              <span class="whyus-brand"><span class="brand-strong">Stagify</span><span class="brand-light">.ai</span></span>
-            </h3>
-            <ul class="whyus-list whyus-list--yes">
-              <li data-vs="speed"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.instantResults"><strong>Instant results</strong>: ~8 seconds</span></button></li>
-              <li data-vs="effort"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.oneClickStaging"><strong>One‑click staging</strong>: No hassle</span></button></li>
-              <!-- Deliberately says "unlimited" even though free is capped at
-                   FREE_DAILY_LIMIT (lib/data/auth-store.js, still 50/day). Product
-                   decision: 50/day reads as effectively unlimited to a prospect, and
-                   naming a cap here scares people off. Same call already applies to the
-                   "Unlimited staging generations" row on stagify-plus.html, which is
-                   ticked in BOTH columns. Do not "fix" this back to the number — the
-                   copy is intentionally looser than the enforced limit. -->
-              <li data-vs="price"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.free"><strong>Unlimited free generations</strong>: No card needed</span></button></li>
-              <li data-vs="ads"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.noAds"><strong>Ad-free experience</strong>: No distractions</span></button></li>
-              <li data-vs="signup"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.noLogin"><strong>Easy sign up</strong>: Start instantly</span></button></li>
-              <li data-vs="quality"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.unlimited"><strong>Advanced image models</strong>: Higher quality</span></button></li>
-              <li data-vs="rights"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.stagify.features.copyright"><strong>Full copyright</strong>: Use anywhere</span></button></li>
-            </ul>
-          </article>
-          <article class="whyus-card whyus-card--them reveal reveal--right" style="--reveal-delay:90ms">
-            <h3 class="whyus-card__head whyus-card__head--them">
-              <span data-lang="whyUs.others.title">Others</span>
-            </h3>
-            <ul class="whyus-list whyus-list--no">
-              <li data-vs="speed"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.slowResults"><strong>Slow results: </strong>Days of waiting</span></button></li>
-              <li data-vs="effort"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.longProcess"><strong>Long Process: </strong>Tedious back‑and‑forth</span></button></li>
-              <li data-vs="price"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.expensive"><strong>Expensive: </strong>Costly, per‑image fees</span></button></li>
-              <li data-vs="ads"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.adsAndCookies"><strong>Ads and cookies: </strong>Intrusive</span></button></li>
-              <li data-vs="signup"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.accountRequired"><strong>Long Signup Process: </strong>Frustrating start</span></button></li>
-              <li data-vs="quality"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.limitedGenerations"><strong>Legacy, Cheaper models: </strong>Lower quality</span></button></li>
-              <li data-vs="rights"><button type="button" class="whyus-row" aria-pressed="false"><span data-lang-html="whyUs.others.features.unclearCopyright"><strong>Unclear copyright: </strong>Legal liability</span></button></li>
-            </ul>
-          </article>
+             SIX outcome-led rows, ONE view. The first cut had ten rows grouped under
+             filter pills; both are gone (2026-08-10). The ten read like a spec sheet
+             (three of them were about ads, cookie walls and disclosure admin), and
+             six rows fit on a screen, so the pills only hid what was already legible
+             — while being the one part of the section that needed JS to work at all.
+             There is no footer tally either: over six rows a wins-count says "leave
+             rooms empty" is a near-peer, because doing nothing is genuinely instant
+             and genuinely free. The rows carry the argument on their own.
+
+             Two attributes carry everything, and neither is required for the table
+             to be complete — with no JS this is already the finished section:
+               data-vs-col   the column a cell belongs to. home-whyus.js dims every
+                             column except `us` and the one being hovered/pinned.
+               data-vs-score "1" clear win, "0.5" conditional, "0" loss, "" n/a. Its
+                             only job is the ✓/~/✗ glyph in CSS, which is why the
+                             marks cost nothing to translate.
+
+             Keys sit on an inner <span>, never on the <td>/<th> itself: this table has
+             `data-lang` (textContent) rather than `data-lang-html`, but keeping the
+             one shape everywhere is what stops someone reaching for `data-lang-html`
+             on a cell that contains the mark <i> and silently deleting it. Same
+             reason the NAR legend above puts its key on an inner span. -->
+        <div class="whyus-board reveal">
+          <!-- tabindex on the scroller is not decoration: below ~900px the table is
+               wider than the viewport, and a scroll container that only a pointer can
+               reach hides four of its six columns from the keyboard. -->
+          <div class="whyus-scroller" tabindex="0" role="region" aria-labelledby="whyus-title">
+            <table class="whyus-table">
+              <caption class="sr-only"><span data-lang="whyUs.board.caption">Stagify.ai compared with four other ways to stage a listing, across six factors.</span></caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="whyus-th whyus-th--factor"><span data-lang="whyUs.board.headers.factor">Factor</span></th>
+                  <th scope="col" class="whyus-th whyus-th--us" data-vs-col="us">
+                    <!-- width/height attrs are safe here, unlike most images on this
+                         page: .whyus-th__logo sets BOTH CSS dimensions, so they cannot
+                         override an aspect-ratio that nothing is relying on. -->
+                    <img src="media-webp/logo/Logo32x32.webp" alt="" class="whyus-th__logo" aria-hidden="true" width="32" height="32" loading="lazy" decoding="async">
+                    <span class="brand-strong">Stagify</span><span class="brand-light">.ai</span>
+                  </th>
+                  <th scope="col" class="whyus-th" data-vs-col="stager"><button type="button" class="whyus-col" aria-pressed="false"><span data-lang="whyUs.board.headers.stager">Traditional stager</span></button></th>
+                  <th scope="col" class="whyus-th" data-vs-col="ai"><button type="button" class="whyus-col" aria-pressed="false"><span data-lang="whyUs.board.headers.ai">Per-image AI tool</span></button></th>
+                  <th scope="col" class="whyus-th" data-vs-col="diy"><button type="button" class="whyus-col" aria-pressed="false"><span data-lang="whyUs.board.headers.diy">Edit them yourself</span></button></th>
+                  <th scope="col" class="whyus-th" data-vs-col="empty"><button type="button" class="whyus-col" aria-pressed="false"><span data-lang="whyUs.board.headers.empty">Empty room</span></button></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row" class="whyus-factor"><span data-lang="whyUs.board.rows.speed.factor">Speed</span></th>
+                  <td class="whyus-cell" data-vs-col="us" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.speed.us">~8 seconds</span></td>
+                  <td class="whyus-cell" data-vs-col="stager" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.speed.stager">1–3 weeks</span></td>
+                  <td class="whyus-cell" data-vs-col="ai" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.speed.ai">1–3 days</span></td>
+                  <td class="whyus-cell" data-vs-col="diy" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.speed.diy">2–4 hours a photo</span></td>
+                  <td class="whyus-cell" data-vs-col="empty" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.speed.empty">Instant</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="whyus-factor"><span data-lang="whyUs.board.rows.cost.factor">Cost per listing</span></th>
+                  <td class="whyus-cell" data-vs-col="us" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.cost.us">$0, or $11.99 a month</span></td>
+                  <td class="whyus-cell" data-vs-col="stager" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.cost.stager">$2,000–5,000</span></td>
+                  <td class="whyus-cell" data-vs-col="ai" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.cost.ai">$550–850</span></td>
+                  <td class="whyus-cell" data-vs-col="diy" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.cost.diy">An afternoon of your time</span></td>
+                  <td class="whyus-cell" data-vs-col="empty" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.cost.empty">$0</span></td>
+                </tr>
+                <!-- The Stagify cell here is `whyUs.stagify.features.free`, and that is
+                     not an accident of renaming: it is the homepage’s unlimited-free-
+                     generations claim, which deliberately says "free, as often as you
+                     like" even though the free tier is capped at FREE_DAILY_LIMIT
+                     (lib/data/auth-store.js, still 50/day). Product decision: 50/day
+                     reads as effectively unlimited to a prospect, and naming a cap here
+                     scares people off. Same call already applies to the "Unlimited
+                     staging generations" row on stagify-plus.html, which is ticked in
+                     BOTH columns. Do not "fix" this back to the number, and do not
+                     re-key the cell — test/frontend/pricing-copy.test.js pins the
+                     ABSENCE of a figure in exactly this key, in all eleven packs. -->
+                <tr>
+                  <th scope="row" class="whyus-factor"><span data-lang="whyUs.board.rows.redo.factor">Trying a different look</span></th>
+                  <td class="whyus-cell" data-vs-col="us" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.stagify.features.free">Free, as often as you like</span></td>
+                  <td class="whyus-cell" data-vs-col="stager" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.redo.stager">Billed by the hour</span></td>
+                  <td class="whyus-cell" data-vs-col="ai" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.redo.ai">Billed per image</span></td>
+                  <td class="whyus-cell" data-vs-col="diy" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.redo.diy">More of your time</span></td>
+                  <td class="whyus-cell" data-vs-col="empty" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.redo.empty">Nothing to try</span></td>
+                </tr>
+                <!-- We do NOT win this row, and that is the point of keeping it. A
+                     traditional stager’s photos are photographs of a real room; ours
+                     are renders, however good. Marking ourselves "conditional" here is
+                     what buys the reader’s trust on the three rows above it. -->
+                <tr>
+                  <th scope="row" class="whyus-factor"><span data-lang="whyUs.board.rows.quality.factor">Photo quality</span></th>
+                  <td class="whyus-cell" data-vs-col="us" data-vs-score="0.5"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.quality.us">Near-photoreal renders</span></td>
+                  <td class="whyus-cell" data-vs-col="stager" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.quality.stager">Photographs of real rooms</span></td>
+                  <td class="whyus-cell" data-vs-col="ai" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.quality.ai">Visible AI tells</span></td>
+                  <td class="whyus-cell" data-vs-col="diy" data-vs-score="0.5"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.quality.diy">As good as your retoucher</span></td>
+                  <td class="whyus-cell" data-vs-col="empty" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.quality.empty">An empty room</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="whyus-factor"><span data-lang="whyUs.board.rows.ownership.factor">You own the photos</span></th>
+                  <td class="whyus-cell" data-vs-col="us" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.values.yes">Yes</span></td>
+                  <td class="whyus-cell" data-vs-col="stager" data-vs-score="0.5"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.ownership.stager">The photographer’s</span></td>
+                  <td class="whyus-cell" data-vs-col="ai" data-vs-score="0.5"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.rows.ownership.ai">Licensed, not owned</span></td>
+                  <td class="whyus-cell" data-vs-col="diy" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.values.yes">Yes</span></td>
+                  <td class="whyus-cell" data-vs-col="empty" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.values.yes">Yes</span></td>
+                </tr>
+                <!-- The second row we lose outright. Same reason as `quality`. -->
+                <tr>
+                  <th scope="row" class="whyus-factor"><span data-lang="whyUs.board.rows.furniture.factor">Real furniture at the showing</span></th>
+                  <td class="whyus-cell" data-vs-col="us" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.values.no">No</span></td>
+                  <td class="whyus-cell" data-vs-col="stager" data-vs-score="1"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.values.yes">Yes</span></td>
+                  <td class="whyus-cell" data-vs-col="ai" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.values.no">No</span></td>
+                  <td class="whyus-cell" data-vs-col="diy" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.values.no">No</span></td>
+                  <td class="whyus-cell" data-vs-col="empty" data-vs-score="0"><i class="whyus-mark" aria-hidden="true"></i><span data-lang="whyUs.board.values.no">No</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </section>
 
@@ -1423,9 +1544,7 @@
           </article>
           <article class="plus-card plus-card--ent reveal reveal--right" style="--reveal-delay:90ms">
             <div class="plus-card__top">
-              <span class="plus-card__enticon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v16"/><path d="M13 9h5a1 1 0 0 1 1 1v11"/><path d="M8 8h.01M8 12h.01M8 16h.01"/></svg>
-              </span>
+              <img src="media-webp/logo/Enterprise64x64.webp" alt="" class="plus-card__logo" aria-hidden="true">
               <h3 class="plus-card__name" data-lang="home.plus.ent.name">Enterprise</h3>
               <span class="plus-card__badge" data-lang="home.plus.ent.tag">For teams</span>
             </div>
@@ -1478,7 +1597,7 @@
            where a door would swing through it. -->
       <section class="home-section home-faq" id="faq" aria-labelledby="faq-title">
         <div class="home-section__head reveal">
-          <h2 class="home-section__title" id="faq-title" data-tx="blur" data-lang="faq.title">Frequently Asked Questions</h2>
+          <h2 class="home-section__title" id="faq-title" data-tx="blur" data-lang="faq.title">Frequently asked questions</h2>
           <p class="home-section__sub" data-lang-html="home.faq.subtitle">The questions we hear most. Stuck? Visit <a href="guides.html">Guides</a> or get in touch.</p>
         </div>
         <div class="faq-plan reveal">
@@ -1486,7 +1605,7 @@
             <!-- Hand-authored because none of it depends on the room table, so it
                  cannot drift: the sheet frame, the graph-paper field, the building
                  envelope and its windows, the crossing corridors, the overall dimension
-                 strings, the scale bar and the north arrow. home-faq-plan.js adds the
+                 strings and the scale bar. home-faq-plan.js adds the
                  per-room ink and <use>s the symbols below. -->
             <svg class="faq-plan__ink" viewBox="0 0 1160 760" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
               <defs>
@@ -1496,7 +1615,7 @@
                 <pattern id="fp-grid" width="22.5" height="22.5" patternUnits="userSpaceOnUse">
                   <path d="M22.5 0H0V22.5" fill="none" stroke="currentColor" stroke-width="0.8"/>
                 </pattern>
-                <!-- THE SHEET'S OWN GROUND, restated in viewBox units so the window openings
+                <!-- THE SHEET’S OWN GROUND, restated in viewBox units so the window openings
                      can be painted WITH it. `.fp-win__gap` has to be the ground colour to cut
                      through the poché, and the ground is a gradient — a flat stroke matched one
                      band of it and drew the north windows as dark slots.
@@ -1507,11 +1626,11 @@
                      from faq-plan.css — and pinned to it by home-faq-plan.test.js, which reads
                      both and fails if they drift. -->
                 <linearGradient id="fp-ground" gradientUnits="userSpaceOnUse" x1="366.6" y1="-148.1" x2="793.4" y2="908.1">
-                  <stop offset="0" stop-color="#2a4b9e"/>
-                  <stop offset="0.52" stop-color="#223c86"/>
-                  <stop offset="1" stop-color="#1b306d"/>
+                  <stop offset="0" stop-color="#2f57b8"/>
+                  <stop offset="0.52" stop-color="#274aa2"/>
+                  <stop offset="1" stop-color="#1f3d92"/>
                 </linearGradient>
-                <!-- FURNITURE SYMBOLS, DRAWN IN CENTIMETRES. Each viewBox is the piece's nominal footprint —
+                <!-- FURNITURE SYMBOLS, DRAWN IN CENTIMETRES. Each viewBox is the piece’s nominal footprint —
                      a sofa is `0 0 210 90` because it is a 2.1 x 0.9 m sofa — and home-faq-plan.js sizes every
                      <use> to a real metre footprint, so the two agree and the stretch is about 1:1.
                      
@@ -1526,7 +1645,7 @@
                      drew that sofa as a 0.9 m square and made every metre size in FURNITURE fiction.
                      STROKE WIDTH AND DASHES ARE IN CENTIMETRES TOO, and that is measured, not assumed:
                      `vector-effect="non-scaling-stroke"` cancels the page transform but NOT the scale of a
-                     nested viewBox, so a width here is a width in this symbol's units. Every symbol maps at
+                     nested viewBox, so a width here is a width in this symbol’s units. Every symbol maps at
                      the same 0.45 sheet units per centimetre (45 units to the metre), so one number gives the
                      whole set an even weight — 5.2cm outlines land at ~2.3 sheet units, between the partitions
                      at 4 and the door swings at 1.2, exactly where furniture belongs in the hierarchy. Carrying
@@ -1536,7 +1655,7 @@
                      divided by full-width lines is a radiator; cushions floating inside it with gaps around
                      them are cushions. A chair back is an arc, a duvet turn-down is a curve — on a sheet where
                      every other line is straight, that alone marks the layer. Detail carries the lighter
-                     stroke (3.8cm against the 5.2cm outline), so each piece has the sheet's weight hierarchy in
+                     stroke (3.8cm against the 5.2cm outline), so each piece has the sheet’s weight hierarchy in
                      miniature.
                      
                      NOTHING HERE MAY BE FINER THAN ~2px AT THE SIZE IT RENDERS. A room is about 180px wide, so
@@ -1603,9 +1722,9 @@
 
               <g class="fp-dim">
                 <path d="M46.4 705.3H730.8M46.4 700v10.6M730.8 693.9v10.6"/>
-                <path d="M18.6 53.2V684M12.8 53.2h11.6M12.8 684h11.6"/>
+                <path d="M29.6 53.2V684M23.8 53.2h11.6M23.8 684h11.6"/>
                 <text class="fp-t" x="388.6" y="701.5" text-anchor="middle">15.2 m</text>
-                <text class="fp-t" x="18.6" y="368.6" text-anchor="middle" transform="rotate(-90 18.6 368.6)">14.0 m</text>
+                <text class="fp-t" x="27.6" y="368.6" text-anchor="middle" transform="rotate(-90 27.6 368.6)">14.0 m</text>
               </g>
 
               <g class="fp-scale">
@@ -1615,77 +1734,81 @@
                 <text class="fp-t" x="46.4" y="724.3">0</text>
                 <text class="fp-t" x="271.4" y="724.3" text-anchor="middle">5 m</text>
               </g>
-              <g class="fp-north" transform="translate(696 723.5)">
-                <circle r="13"/>
-                <path class="fp-north__n" d="M0 -9 4.5 5 0 1.8 -4.5 5Z"/>
-                <text class="fp-t" y="-16" text-anchor="middle">N</text>
-              </g>
             </svg>
-          <details class="faq-q faq-room" id="faq-basics" name="faq-room" data-room="basics" data-door="e0.55" data-no="01" style="--x:4;--y:7;--w:20;--h:19">
+          <details class="faq-q faq-room" id="faq-basics" name="faq-room" data-room="basics" data-door="e0.55" data-no="01" style="--x:4;--y:7;--w:20;--h:19;--lt:calc(4cqh - 11px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.basics.label">Basics</span>
               <span class="faq-room__q" data-lang="faq.rooms.basics.question">What is virtual staging?</span>
+              <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.basics.answer">Virtual staging digitally furnishes a photo of an empty or dated room so buyers can see what the space could become. Nothing structural changes: the walls, windows, floors and proportions stay exactly as photographed, and only furniture and decor are added. It does the same job traditional staging does with a moving truck, in seconds instead of weeks. It is now standard practice on listings that would otherwise photograph as empty boxes.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-turnaround" name="faq-room" data-room="turnaround" data-door="e0.45" data-no="02" style="--x:4;--y:26;--w:20;--h:20">
+          <details class="faq-q faq-room" id="faq-turnaround" name="faq-room" data-room="turnaround" data-door="e0.45" data-no="02" style="--x:4;--y:26;--w:20;--h:20;--lt:calc(4cqh + 1px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.turnaround.label">Turnaround</span>
               <span class="faq-room__q" data-lang="faq.rooms.turnaround.question">How fast is it?</span>
+              <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.turnaround.answer">About 8 seconds per photo. Complex rooms and heavily detailed styles can take a little longer, but you are waiting seconds, not days, which is long enough to try three styles on the same room while you decide which one sells it. There is no queue, no booking and no back-and-forth with a stager: you upload, pick a look, and download.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-pricing" name="faq-room" data-room="pricing" data-door="w0.55" data-no="03" style="--x:30;--y:7;--w:17;--h:19">
+          <details class="faq-q faq-room" id="faq-pricing" name="faq-room" data-room="pricing" data-door="w0.55" data-no="03" style="--x:30;--y:7;--w:17;--h:19;--lt:calc(4cqh - 11px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.pricing.label">Pricing</span>
               <span class="faq-room__q" data-lang="faq.rooms.pricing.question">What does it cost?</span>
+              <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.pricing.answer">You can stage for free, with no card. Stagify+ is $11.99 a month and unlocks the higher-quality image model, multiple variations per render, furniture removal, the Masking Studio and the AI Designer. For teams there is Enterprise: everyone on your company email is covered automatically, and you pay per generation instead of per seat. For comparison, physically staging a home usually runs $2,000 to $5,000.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-studios" name="faq-room" data-room="studios" data-door="w0.45" data-no="04" style="--x:30;--y:26;--w:17;--h:20">
+          <details class="faq-q faq-room" id="faq-studios" name="faq-room" data-room="studios" data-door="w0.45" data-no="04" style="--x:30;--y:26;--w:17;--h:20;--lt:calc(4cqh + 1px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.studios.label">The Studios</span>
               <span class="faq-room__q" data-lang="faq.rooms.studios.question">What else can Stagify do?</span>
+              <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.studios.answer">Quite a lot. The AI Designer redesigns a whole room conversationally, so you can ask for a warmer palette or a bigger sofa and keep refining. The Masking Studio gives pixel-level control over which areas may change. The Exterior Studio works on curb appeal rather than interiors. The Listing Studio takes a whole set of photos through in one pass and produces a link you can send a seller for sign-off. Everything you make lands in your gallery.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-control" name="faq-room" data-room="control" data-door="s0.35" data-no="05" style="--x:47;--y:7;--w:16;--h:39">
+          <details class="faq-q faq-room" id="faq-control" name="faq-room" data-room="control" data-door="s0.35" data-no="05" style="--x:47;--y:7;--w:16;--h:39;--lt:calc(4cqh - 11px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.control.label">Control</span>
               <span class="faq-room__q" data-lang="faq.rooms.control.question">How much control do I have over the result?</span>
+              <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
-            <p class="faq-room__a" data-lang="faq.rooms.control.answer">As much as you want. Pick a preset style and you are done in one click. Choose "Custom" and you can describe the look in your own words. Open the Masking Studio and you can paint exactly which parts of the photo are allowed to change, attaching specific furniture to each area, so anything you did not select stays untouched. The AI Designer sits in between: describe what you want changed, look at the result, and refine it in conversation.</p>
+            <p class="faq-room__a" data-lang="faq.rooms.control.answer">As much as you want. Pick a preset style and you are done in one click. Choose “Custom” and you can describe the look in your own words. Open the Masking Studio and you can paint exactly which parts of the photo are allowed to change, attaching specific furniture to each area, so anything you did not select stays untouched. The AI Designer sits in between: describe what you want changed, look at the result, and refine it in conversation.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-photos" name="faq-room" data-room="photos" data-door="n0.70" data-no="06" style="--x:4;--y:55;--w:20;--h:35">
+          <details class="faq-q faq-room" id="faq-photos" name="faq-room" data-room="photos" data-door="n0.70" data-no="06" style="--x:4;--y:55;--w:20;--h:35;--lt:calc(4cqh + 5px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.photos.label">Photos</span>
               <span class="faq-room__q" data-lang="faq.rooms.photos.question">What kind of photo works best?</span>
+              <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.photos.answer">Wide, bright and level. Shoot from a corner so two walls and plenty of floor are visible, keep the camera roughly chest height, and let in as much natural light as you can. Empty or lightly furnished rooms give the AI the cleanest canvas, though Stagify+ can remove existing furniture first. Avoid tight crops, heavy fisheye distortion, and photos where the floor is barely in frame, since there is nowhere to place furniture convincingly.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-disclosure" name="faq-room" data-room="disclosure" data-door="w0.50" data-no="07" style="--x:30;--y:55;--w:17;--h:18">
+          <details class="faq-q faq-room" id="faq-disclosure" name="faq-room" data-room="disclosure" data-door="w0.50" data-no="07" style="--x:30;--y:55;--w:17;--h:18;--lt:calc(4cqh + 5px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.disclosure.label">Disclosure</span>
               <span class="faq-room__q" data-lang="faq.rooms.disclosure.question">Can I use these photos in an MLS listing?</span>
+              <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
-            <p class="faq-room__a" data-lang="faq.rooms.disclosure.answer">Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp "Virtually staged" onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects.</p>
+            <p class="faq-room__a" data-lang="faq.rooms.disclosure.answer">Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp “Virtually staged” onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-privacy" name="faq-room" data-room="privacy" data-door="w0.50" data-no="08" style="--x:30;--y:73;--w:17;--h:17">
+          <details class="faq-q faq-room" id="faq-privacy" name="faq-room" data-room="privacy" data-door="w0.50" data-no="08" style="--x:30;--y:73;--w:17;--h:17;--lt:calc(4cqh - 16px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.privacy.label">Privacy</span>
               <span class="faq-room__q" data-lang="faq.rooms.privacy.question">What happens to the photos I upload?</span>
+              <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.privacy.answer">They travel over an encrypted connection, get processed, and are not kept permanently on our servers. Renders you save go to your own gallery, which only you can see unless you share a link. We do not sell personal information, and you keep ownership of both your uploads and the images Stagify generates. We share data only with the providers needed to run the service, such as the AI and payment processors, which the Privacy Policy lists.</p>
           </details>
-          <details class="faq-q faq-room" id="faq-whystagify" name="faq-room" data-room="whyStagify" data-door="n0.30" data-no="09" style="--x:47;--y:55;--w:16;--h:35;--lt:6.5cqh">
+          <details class="faq-q faq-room" id="faq-whystagify" name="faq-room" data-room="whyStagify" data-door="n0.30" data-no="09" style="--x:47;--y:55;--w:16;--h:35;--lt:calc(6.5cqh + 8px)">
             <summary>
               <span class="faq-room__label" data-lang="faq.rooms.whyStagify.label">Why Stagify</span>
               <span class="faq-room__q" data-lang="faq.rooms.whyStagify.question">How is this different from other tools?</span>
+              <span class="faq-q__caret" aria-hidden="true"></span>
             </summary>
             <p class="faq-room__a" data-lang="faq.rooms.whyStagify.answer">Most tools do one of these three things well. Stagify does all three: it is cheap enough to stage on a whim, conversational enough to redesign a room rather than merely decorate it, and precise enough to control the result pixel by pixel. Add the exterior and whole-listing workflows, eleven languages, full copyright on everything you generate, and no ads or per-image fees, and you get a tool you can use on every listing instead of saving for the hero shot.</p>
           </details>
-            <!-- The notes column's only static content: the idle prompt. The open
-                 room's key, question and answer are positioned over it from inside their
+            <!-- The notes column’s only static content: the idle prompt. The open
+                 room’s key, question and answer are positioned over it from inside their
                  own <details>, which is why this is not in the accessibility tree.
                  A drafting title block used to sit at the foot of this column
                  (Project / Drawing / Scale / Sheet). It went because every line of it
@@ -1709,7 +1832,7 @@
             <img class="home-blog__thumb" src="media-webp/blog/cover-9.webp" alt="A staged green living room with a marble fireplace and a burnt-orange velvet sofa, overlaid with a price card striking out $16 to $75 per staged photo in favour of $0 on the free plan" width="400" height="225" loading="lazy">
             <div class="home-blog__body">
               <span class="home-blog__tag">Guides</span>
-              <h3 class="home-blog__title">Free Virtual Staging: What "Free" Actually Gets You</h3>
+              <h3 class="home-blog__title">Free Virtual Staging: What “Free” Actually Gets You</h3>
               <span class="home-blog__meta">8 min read</span>
             </div>
           </a>
@@ -1789,7 +1912,7 @@
            dead space. `.home-outro` sits them side by side as one band; below
            760px it falls back to the stacked layout. Both stay real <section>s
            with their own id, heading and aria-labelledby — this is a layout
-           change only, so the page's heading outline is untouched. -->
+           change only, so the page’s heading outline is untouched. -->
       <div class="home-outro">
         <section class="home-section home-contact-cta" id="contact-cta" aria-labelledby="contact-cta-title">
           <div class="home-section__head home-section__head--wide reveal">
@@ -1807,7 +1930,7 @@
             <!-- ONE link across all five stars, not five per-star buttons. A
                  five-star picker that opens the same URL whichever star you press
                  and records nothing would imply we captured the rating you chose;
-                 we don't. It reuses the button's own aria-label key, so the stars
+                 we don’t. It reuses the button’s own aria-label key, so the stars
                  cost no new translation strings. The left-to-right sweep on hover
                  is pure CSS (staggered transition-delay) — see home.css. -->
             <a class="review-cta-stars" href="https://g.page/r/Cd6NiqfUAJ7bEAE/review" target="_blank" rel="noopener noreferrer" data-lang-attr="home.reviewCta.aria|aria-label" aria-label="Leave a Google review (opens in a new tab)">
@@ -1827,7 +1950,7 @@
         <div class="modal-backdrop" id="modal-backdrop"></div>
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="stage-title">
           <!-- The dialog itself does NOT scroll: it clips (overflow:hidden) so its 16px
-               corners round off this inner scroller's scrollbar. When the scrollbar lived on
+               corners round off this inner scroller’s scrollbar. When the scrollbar lived on
                the rounded box itself the browser painted it as a full-height rectangle, whose
                square ends poked out of the curve at the top-right and bottom-right corners. -->
           <div class="modal-scroll">
@@ -1925,19 +2048,19 @@
                        delivery option rather than a generation one, and it is available on
                        every plan — a legal disclosure is not an upsell — so it must land in
                        the same place for a free account, whose pro panel above is hidden.
-                       Nothing may toggle this row's visibility; unlike #remove-furniture-row
+                       Nothing may toggle this row’s visibility; unlike #remove-furniture-row
                        it has no gate, so it deliberately has no writer either. -->
                   <div class="tool-row" id="label-staged-row">
                     <div class="checkbox-container">
                       <input type="checkbox" id="label-virtually-staged" class="checkbox-input" aria-describedby="label-staged-tip">
                       <!-- The (i) button is a SIBLING of the label, never a child: data-lang
-                           replaces an element's textContent wholesale and would eat the SVG
+                           replaces an element’s textContent wholesale and would eat the SVG
                            (same trap as the room-type badge above). Hence data-lang-attr on
                            the button, which only writes the attribute. -->
                       <label for="label-virtually-staged" class="checkbox-label" data-lang="modal.staging.labelVirtuallyStaged">Label as virtually staged</label>
                       <span class="opt-info">
                         <button type="button" class="opt-info__btn" data-lang-attr="modal.staging.labelVirtuallyStagedInfo|aria-label" aria-label="What does labelling as virtually staged do?"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M12 11.25v4.5"/><path d="M12 8.25h.01"/></svg></button>
-                        <span class="opt-info__tip" id="label-staged-tip" data-lang="modal.staging.labelVirtuallyStagedTip">Adds a small &quot;Virtually staged&quot; note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.</span>
+                        <span class="opt-info__tip" id="label-staged-tip" data-lang="modal.staging.labelVirtuallyStagedTip">Adds a small “Virtually staged” note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.</span>
                       </span>
                     </div>
                     <!-- How the badge looks, on ONE line: four styles, a size slider, and a
@@ -1999,7 +2122,7 @@
                       <span id="progress-text" data-lang="modal.staging.progress.preparing">Preparing…</span>
                     </div>
                     <!-- Icon-only, so the label goes on the attribute: data-lang replaces an
-                         element's textContent wholesale and would eat the SVG. data-lang-attr
+                         element’s textContent wholesale and would eat the SVG. data-lang-attr
                          carries exactly ONE key|attr pair, so the hover tooltip is mirrored
                          from the translated aria-label in staging-pipeline.js. -->
                     <button type="button" id="stage-cancel-btn" class="stage-cancel-btn hidden" data-lang-attr="modal.staging.progress.stop|aria-label" aria-label="Stop generation" title="Stop generation">
@@ -2015,7 +2138,7 @@
                     <input id="stage-file-input" type="file" accept="image/*,.heic,.heif" hidden>
                     <div class="stage-dz-inner">
                       <!-- data-lang stays on the leaf text nodes: render-page.js replaces a
-                           translated element's content up to its balanced close tag, so a
+                           translated element’s content up to its balanced close tag, so a
                            data-lang wrapper would swallow this SVG on /es, /fr, … -->
                       <div class="dz-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v13"/><path d="M7.5 7.5 12 3l4.5 4.5"/></svg>
@@ -2063,7 +2186,7 @@
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;margin:0 auto;opacity:0.45;color:var(--muted,#6b7280)"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                           </div>
                           <div class="placeholder-text" data-lang="modal.staging.noProcessedImage">Your staged result will appear here</div>
-                          <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Click "Process photo" to generate an AI-staged version of your image</div>
+                          <div class="placeholder-subtext" data-lang="modal.staging.noProcessedImageSubtext">Click “Process photo” to generate an AI-staged version of your image</div>
                         </div>
                       </div>
                       <div id="staging-limit-viewer" class="staging-limit-viewer hidden" role="alert">
@@ -2096,7 +2219,7 @@
           <button class="stage-mask-close" id="stage-mask-close" data-lang-attr="common.close|aria-label" aria-label="Close">&times;</button>
         </div>
         <!-- Basic Mask only: this editor normally opens on an image the staging
-             flow already has, but the nav's "Basic Mask" entry opens it with
+             flow already has, but the nav’s "Basic Mask" entry opens it with
              nothing loaded, so it needs its own way in. Hidden (and the canvas
              and controls shown) in every other mode — see .is-uploading. -->
         <div id="stage-mask-upload" class="stage-mask-upload" role="button" tabindex="0" data-lang-attr="modal.staging.uploadAreaAria|aria-label" aria-label="Upload area">
@@ -2554,7 +2677,7 @@
           "url": "https://stagify.ai/#faq-control",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "As much as you want. Pick a preset style and you are done in one click. Choose \"Custom\" and you can describe the look in your own words. Open the Masking Studio and you can paint exactly which parts of the photo are allowed to change, attaching specific furniture to each area, so anything you did not select stays untouched. The AI Designer sits in between: describe what you want changed, look at the result, and refine it in conversation."
+            "text": "As much as you want. Pick a preset style and you are done in one click. Choose “Custom” and you can describe the look in your own words. Open the Masking Studio and you can paint exactly which parts of the photo are allowed to change, attaching specific furniture to each area, so anything you did not select stays untouched. The AI Designer sits in between: describe what you want changed, look at the result, and refine it in conversation."
           }
         },
         {
@@ -2572,7 +2695,7 @@
           "url": "https://stagify.ai/#faq-disclosure",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp \"Virtually staged\" onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
+            "text": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp “Virtually staged” onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
           }
         },
         {

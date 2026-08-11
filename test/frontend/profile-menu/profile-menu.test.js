@@ -105,6 +105,34 @@ test('pro plan: shows the plan badge and hides the upgrade row', () => {
     'manage appears only when the account can actually manage a subscription');
 });
 
+test('pro plan: the badge carries the Stagify+ mark, not the Enterprise one', () => {
+  const html = renderFor({ email: 'pro@example.com', plan: 'pro' });
+
+  assert.ok(html.includes('logo/Pro32x32.webp'));
+  assert.ok(!html.includes('Enterprise32x32'), 'an individual subscriber is not an org seat');
+});
+
+test('enterprise seat: same "Stagify+" wording, Enterprise mark', () => {
+  // Enterprise access is granted by email domain and arrives as plan 'pro' plus the
+  // `enterprise` flag (lib/services/auth-helpers.js enhanceUserWithEnterprise). The
+  // entitlements are identical, so the label must NOT change — only the logo does.
+  const html = renderFor({ email: 'worker@acme.com', plan: 'pro', enterprise: true });
+
+  assert.ok(html.includes('profile-menu__plan--plus'), 'still the plan badge');
+  assert.ok(html.includes('Stagify+'), 'the wording is deliberately unchanged');
+  assert.ok(html.includes('logo/Enterprise32x32.webp'), 'the Enterprise mark');
+  assert.ok(!html.includes('logo/Pro32x32.webp'), 'and not the Stagify+ one alongside it');
+});
+
+test('enterprise seat: no Stripe portal link', () => {
+  // The seat is billed to the org's domain, so the customer-portal login has no
+  // customer to match their email against — it is a dead end, not a shortcut.
+  const html = renderFor({ email: 'worker@acme.com', plan: 'pro', enterprise: true });
+
+  assert.ok(!html.includes('profile-menu__portal-help'), 'no portal shortcut for a seat');
+  assert.ok(!html.includes('billing.stripe.com'), 'and the URL is gone with it');
+});
+
 test('pro plan with a manageable subscription: the manage row appears', () => {
   const html = renderFor({ email: 'pro@example.com', plan: 'pro', canManageSubscription: true });
 

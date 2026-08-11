@@ -83,6 +83,23 @@
       "revealSliderAria": "比較スライダー",
       "exampleRoomsAria": "部屋の例"
     },
+    "restage": {
+      "title": "クリックしてステージングの効果を確認",
+      "subtitle": "同じ空の部屋を、何度でも違う家具で。運搬もレンタルも待ち時間もありません。",
+      "kicker": "デザインは思いのまま",
+      "panelTitle": "実行するたびに家具が変わります",
+      "panelBody": "従来のホームステージングでは、レイアウトは1つだけでレンタル契約が付いてきます。もう一度実行すれば、レイアウトも配色も素材も違う部屋が返ってきます。",
+      "button": "この部屋に家具を置く",
+      "buttonAgain": "もう一度実行する",
+      "seeOriginal": "元の写真を見る",
+      "loadFailed": "この画像を読み込めませんでした。もう一度お試しください。",
+      "points": {
+        "rooms": "寝室からキッチンまで、8つの部屋タイプ",
+        "browser": "インストール不要、ブラウザだけで動きます"
+      },
+      "emptyAlt": "バーチャルステージング前の空のリビング",
+      "stagedAlt": "同じリビングをStagifyが家具付きにしたもの"
+    },
     "showcase": {
       "title": "実際にお試しください",
       "subtitle": "ライブデモ。ご自由にご覧ください。",
@@ -202,7 +219,7 @@
     "info": {
       "eyebrow": "ひとことで言うと",
       "title": "バーチャルホームステージングとは何か、なぜ売れるのか",
-      "subtitle": "仕組みと対象者を、専門用語なしで手短かに正直にご紹介します。",
+      "subtitle": "仕組みと対象者を、手短かに正直にご紹介します。",
       "rows": {
         "why": {
           "eyebrow": "効果がある理由",
@@ -216,7 +233,7 @@
         "how": {
           "eyebrow": "仕組み",
           "caption": "初めてのステージング物件についてエージェントの一団に説明",
-          "title": "空室写真から掲載準備完了まで約8秒",
+          "title": "空室写真から掲載準備完了まで数秒",
           "body": "写真をアップロードし、部屋のタイプと7つのスタイルから1つを選ぶと、Stagifyが約8秒で家具を配置します。変更が必要ですか？既存の家具を取り除いたり、カスタム指示を追加したり、一部のエリアをマスクして最初からやり直さずに調整したりできます。",
           "p1": "7つのスタイルに加え、カスタム指示と家具の除去",
           "p2": "結果の任意の部分を、やり直さずにマスクで編集",
@@ -342,7 +359,7 @@
       "note": "Compass、Centennialほか多数に認められています。"
     },
     "whyus": {
-      "subtitle": "他のバーチャルステージングツールは遅く、高額で、制約だらけ。Stagifyはその真逆です。"
+      "subtitle": "物件を演出する他の4つの方法を、当社と並べて採点しました。"
     },
     "testimonials": {
       "title": "エージェントの声",
@@ -350,39 +367,33 @@
       "items": {
         "justin": {
           "quote": "初めて Stagify を試したとき、正直に言って圧倒されました。スマホだけで、高額なカメラマンを使わずに、それでも見事な仕上がりが得られると気づいたんです。私の物件にとってはゲームチェンジャーで、しかも価格が素晴らしい！",
-          "author": "Justin Stern（ブローカー）",
+          "author": "Justin Stern",
           "role": "Tahari Realty",
           "location": "ニューヨーク・マンハッタン"
         },
         "andy": {
           "quote": "Stagify は私の普段の仕事の流れにぴったり合っています。内見の合間に物件写真をアップロードすると、デスクに戻る前にはもうステージングが完成していて、クライアントはいつも仕上がりの美しさに感心してくれます。",
-          "author": "Andy Eras（ブローカー）",
+          "author": "Andy Eras",
           "role": "Centennial Properties",
           "location": "ニューヨーク・マンハッタン"
         },
-        "p3": {
-          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Three",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "travonte": {
+          "quote": "Stagify を使うと、この作業が驚くほど手軽になります。空室の写真をアップロードして数秒待つだけで、空間に一気に個性が生まれます。シンプルで、すっきりしていて、本当に役立ちます。",
+          "author": "Travonte Taylor",
+          "role": "Compass",
+          "location": "ニューヨーク・ブルックリン"
         },
-        "p4": {
-          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Four",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jack": {
+          "quote": "Stagify で一番感心したのは、その実用性です。一瞬だけ見栄えのする、よくある AI ツールとは違います。エージェントも入居者も所有者も日常的に抱えている課題を、より速く、より簡単にしてくれます。",
+          "author": "Jack Sash",
+          "role": "Tahari Realty",
+          "location": "ニューヨーク・マンハッタン"
         },
-        "p5": {
-          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Five",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
-        },
-        "p6": {
-          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Six",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jaden": {
+          "quote": "学生寮やアパート、物件掲載でも Stagify は大きな力を発揮すると思います。空室は想像しにくいものですが、家具が入った途端に空間がぐっと現実味を帯びます。自分が住む姿を思い描くうえで、その差はとても大きいです。",
+          "author": "Jaden Lander",
+          "role": "RockSolid Management",
+          "location": "ニューヨーク・マンハッタン"
         }
       },
       "deck": {
@@ -579,38 +590,63 @@
   "whyUs": {
     "title": "選ばれる理由",
     "stagify": {
-      "title": "stagify.ai",
       "features": {
-        "instantResults": "<strong>即座に結果</strong>：約8秒",
-        "oneClickStaging": "<strong>ワンクリックステージング</strong>：手間いらず",
-        "free": "<strong>無料生成が無制限</strong>：カード登録不要",
-        "noAds": "<strong>広告なしの体験</strong>：気を散らすものなし",
-        "noLogin": "<strong>簡単な登録</strong>：すぐに開始",
-        "unlimited": "<strong>先進的な画像モデル</strong>：より高品質",
-        "copyright": "<strong>完全な著作権</strong>：どこでも使用可能"
+        "free": "無料、何度でも"
       }
     },
-    "others": {
-      "title": "他社",
-      "features": {
-        "slowResults": "<strong style=\"color: #6d1c2c;\">遅い結果：</strong>何日も待つ",
-        "longProcess": "<strong style=\"color: #6d1c2c;\">長いプロセス：</strong>面倒なやり取り",
-        "expensive": "<strong style=\"color: #6d1c2c;\">高額：</strong>画像ごとに高い料金",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">広告とクッキー：</strong>煩わしい体験",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">長い登録手続き：</strong>もどかしいスタート",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">旧式で安価なモデル：</strong>低品質",
-        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">不明確な著作権：</strong>法的リスク"
-      }
-    },
-    "keyFeatures": {
-      "title": "主な機能",
-      "unlimitedVariations": {
-        "title": "無制限のバリエーション",
-        "description": "あなたのブランドと買主層に合うまで、複数のスタイルを試せます。"
+    "board": {
+      "caption": "Stagify.ai と、物件を演出する他の4つの方法を6項目で比較した表。",
+      "headers": {
+        "factor": "項目",
+        "stager": "従来のホームステージング",
+        "ai": "1枚ごと課金のAIツール",
+        "diy": "自分で加工する",
+        "empty": "空室"
       },
-      "fastTurnarounds": {
-        "title": "スピーディな仕上がり",
-        "description": "写真を約8秒でステージングし、より早く掲載してより多くの取引を成立させましょう。"
+      "values": {
+        "yes": "はい",
+        "no": "いいえ"
+      },
+      "rows": {
+        "speed": {
+          "factor": "スピード",
+          "us": "約8秒",
+          "stager": "1〜3週間",
+          "ai": "1〜3日",
+          "diy": "1枚あたり2〜4時間",
+          "empty": "即時"
+        },
+        "cost": {
+          "factor": "1物件あたりの費用",
+          "us": "$0、または月額 $11.99",
+          "stager": "$2,000–$5,000",
+          "ai": "$550–850",
+          "diy": "あなたの午後まるごと",
+          "empty": "$0"
+        },
+        "redo": {
+          "factor": "別のスタイルを試す",
+          "stager": "時間単位で課金",
+          "ai": "1枚ごとに課金",
+          "diy": "さらにあなたの時間",
+          "empty": "試すものがない"
+        },
+        "quality": {
+          "factor": "写真の品質",
+          "us": "ほぼ実写に近い仕上がり",
+          "stager": "本物の部屋の実写",
+          "ai": "AI特有の粗が見える",
+          "diy": "レタッチの腕次第",
+          "empty": "空室のまま"
+        },
+        "ownership": {
+          "factor": "写真の権利はあなたのもの",
+          "stager": "カメラマンに帰属",
+          "ai": "利用許諾のみで所有権はなし"
+        },
+        "furniture": {
+          "factor": "内覧時に本物の家具がある"
+        }
       }
     }
   },
@@ -718,7 +754,7 @@
       "UNSTAGEABLE": "これは部屋・スペース・家具のいずれにも見えません。室内の部屋、屋外スペース、またはコーディネートしたい家具の写真をアップロードしてください。"
     },
     "heicConvert": "そのHEIC写真を読み込めませんでした。JPGまたはPNGをお試しください。",
-    "fileType": "PNG、JPG、JPEG、WebP、またはGIFの画像ファイルをアップロードしてください。",
+    "fileType": "JPG、PNG、WebP、または HEIC の画像ファイルをアップロードしてください。",
     "fileTooLarge": "ファイルが大きすぎます。25MB未満の画像をアップロードしてください。",
     "uploadFirst": "まず画像をアップロードしてください",
     "badPrompt": "無効な指示が入力されました",
@@ -1011,7 +1047,7 @@
       "title": "アップロードとファイル",
       "i1": {
         "q": "写真がアップロードできません。",
-        "a": "ファイルがJPG、PNG、またはWEBPで、25 MB未満であることを確認してください。スマートフォンの非常に大きな写真は失敗することがあります。画像を縮小するか、スクリーンショットを撮ってから再度アップロードしてください。それでも失敗する場合は、ページを再読み込みしてお試しください。"
+        "a": "ファイルがJPG、PNG、WebP、または HEICで、25 MB未満であることを確認してください。スマートフォンの非常に大きな写真は失敗することがあります。画像を縮小するか、スクリーンショットを撮ってから再度アップロードしてください。それでも失敗する場合は、ページを再読み込みしてお試しください。"
       },
       "i2": {
         "q": "どんな写真が最適ですか？",

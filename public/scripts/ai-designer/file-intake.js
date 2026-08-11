@@ -117,7 +117,7 @@ export function createFileIntake(deps) {
               (f && window.StagifyHeic.isHeic(f)) ? window.StagifyHeic.toDisplayableFile(f) : f
             ));
           } catch (e) {
-            showToast("We couldn't read that HEIC photo. Please try a JPG or PNG.", 'error');
+            showToast("We couldn’t read that HEIC photo. Please try a JPG or PNG.", 'error');
             return;
           }
         }

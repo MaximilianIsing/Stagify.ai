@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!--
-  The owner's staged history.
+  The owner’s staged history.
 
   BEHIND AUTH AND NOT AN SEO SURFACE, so it is deliberately absent from LOCALIZED_PAGES
   in lib/i18n/locales.js — there is no /es/gallery.html and there should not be, for a
@@ -13,7 +13,7 @@
 
   It DOES carry data-lang, but only inside the shared site header, which is a verbatim
   copy of the one on every other nav-bearing page and localizes itself at runtime from
-  the language pack. The page's OWN copy is English-only; adding lookups for it would
+  the language pack. The page’s OWN copy is English-only; adding lookups for it would
   pull the eleven-pack drift tests onto a page with no SEO value.
 
   Unlike listing-share.html this page loads styles.css: it sits inside the signed-in app,
@@ -33,9 +33,9 @@
 
 <link rel="icon" type="image/webp" sizes="32x32" href="/media-webp/logo/Logo32x32.webp">
 <link rel="stylesheet" href="styles/styles.css">
-<!-- The account menu's stylesheet, and the one thing easy to miss here: every other
+<!-- The account menu’s stylesheet, and the one thing easy to miss here: every other
      nav-bearing page links it, and NOTHING else defines .profile-menu-dropdown or the
-     "Report an issue" dialog it opens. Without it the header's account button drops an
+     "Report an issue" dialog it opens. Without it the header’s account button drops an
      unstyled block of text over the grid. -->
 <link rel="stylesheet" href="styles/auth.css">
 <link rel="stylesheet" href="styles/gallery.css">
@@ -159,7 +159,7 @@
     NOTHING gallery-app.js writes textContent to may carry data-lang, and that is a rule
     rather than an oversight: applyLanguageToElements() runs again on every in-place
     language switch, so a data-lang on a JS-owned node would silently overwrite live
-    state — the open room's name back to "Staged room", a specific error back to the
+    state — the open room’s name back to "Staged room", a specific error back to the
     generic one, "Create a new link" back to "Create link". Those nodes take their
     strings from the pack in JS instead (scripts/gallery/i18n.js). One writer each.
   -->
@@ -260,7 +260,7 @@
              aria-live because a retry that fails again changes only this line, and focus
              stays on the button — without it nothing at all is announced. Note the honest
              limit: a retry failing with the IDENTICAL wording does not re-announce,
-             because the content did not change. The button's disabled flicker is what
+             because the content did not change. The button’s disabled flicker is what
              says something happened. -->
         <p class="gal-panel__body" id="gal-error-detail" aria-live="polite">Your renders are safe — this is the list failing to load, not the images.</p>
         <button type="button" class="btn btn-primary" id="gal-retry" data-lang="gallery.error.retry">Try again</button>
@@ -310,7 +310,7 @@
       no accessible name, so the input is a SEPARATE row that appears beneath it.
 
       No data-lang on the HEADING, and that is the page-wide rule noted above the grid:
-      gallery-app.js writes the open render's name into it, so a language re-apply would
+      gallery-app.js writes the open render’s name into it, so a language re-apply would
       flatten it back to the static English below. Every other string in this block is
       markup-owned and therefore carries data-lang as normal.
     -->
@@ -367,7 +367,7 @@
       A row rather than window.confirm for two reasons — the specs drive a document
       stand-in that has no window dialogs, and a native prompt can be neither styled nor
       translated, so the one destructive question on the page would be the one asked in
-      the browser's language instead of the reader's.
+      the browser’s language instead of the reader’s.
     -->
     <div class="gal-delete-row">
       <button type="button" class="btn gal-detail__delete" id="gal-delete"
@@ -391,7 +391,7 @@
 </div>
 
 <script type="module" src="scripts/gallery-app.js"></script>
-<!-- The site's custom scrollbar, anchored to <main>'s right edge. Every other real page
+<!-- The site’s custom scrollbar, anchored to <main>'s right edge. Every other real page
      loads it; this one was the lone exception. -->
 <script type="module" src="scripts/aurora-scrollbar.js"></script>
 </body>

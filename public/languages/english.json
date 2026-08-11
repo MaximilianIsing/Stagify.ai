@@ -49,7 +49,7 @@
     "freeGensLeft": "{n} free generations left today, ",
     "freeGensLeftUpgrade": "Upgrade",
     "freeGensUpgrade": "Try Stagify+ today. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Upgrade</a>",
-    "carouselNote": "Example preview. Upload your photo to stage",
+    "carouselNote": "Example preview, upload your photo to stage.",
     "stats": {
       "roomsStaged": "Rooms Staged",
       "usersServed": "Users Served",
@@ -82,6 +82,23 @@
       "comparisonAria": "Before and after staging comparison",
       "revealSliderAria": "Reveal slider",
       "exampleRoomsAria": "Example rooms"
+    },
+    "restage": {
+      "title": "Click to see what staging does",
+      "subtitle": "The same empty room, staged again and again. No movers, no rentals, no waiting.",
+      "kicker": "Total design control",
+      "panelTitle": "Every run furnishes it fresh",
+      "panelBody": "Traditional staging gives you one arrangement and a rental agreement. Run it again and the room comes back furnished a different way: different layout, different palette, different materials.",
+      "button": "Stage this room",
+      "buttonAgain": "Stage it again",
+      "seeOriginal": "See original",
+      "loadFailed": "That one did not load. Try again.",
+      "points": {
+        "rooms": "Eight room types, from bedrooms to kitchens",
+        "browser": "Nothing to install, it runs in your browser"
+      },
+      "emptyAlt": "An empty living room before virtual staging",
+      "stagedAlt": "The same living room, staged by Stagify"
     },
     "showcase": {
       "title": "See it for yourself",
@@ -202,13 +219,13 @@
     "info": {
       "eyebrow": "The short version",
       "title": "What virtual staging is, and why it sells",
-      "subtitle": "A quick, honest rundown of how it works and who it's for. No jargon.",
+      "subtitle": "A quick, honest rundown of how it works and who it’s for.",
       "rows": {
         "why": {
           "eyebrow": "Why it works",
           "caption": "Demoing Stagify at a Compass office in New York",
           "title": "Buyers shop with their eyes first",
-          "body": "Almost every buyer starts online, so your listing photos are the real first showing. Empty or dated rooms are hard to read; people can't judge scale or picture living there. Staging gives each room a clear purpose and a pull, which is why agents have always relied on it.",
+          "body": "Almost every buyer starts online, so your listing photos are the real first showing. Empty or dated rooms are hard to read; people can’t judge scale or picture living there. Staging gives each room a clear purpose and a pull, which is why agents have always relied on it.",
           "p1": "Empty rooms photograph smaller and colder than they are",
           "p2": "Staging shows the intended use of every space",
           "p3": "Stronger photos earn more clicks, saves, and showings"
@@ -216,15 +233,15 @@
         "how": {
           "eyebrow": "How it works",
           "caption": "Walking a room of agents through their first staged listing",
-          "title": "From empty photo to listing-ready in about 8 seconds",
+          "title": "From empty photo to listing-ready in seconds",
           "body": "Upload a photo, pick the room type and one of seven styles, and Stagify furnishes it in about eight seconds. Need changes? Remove the existing furniture, add a custom prompt, or mask one area to adjust it without starting over.",
           "p1": "7 styles plus custom prompts and furniture removal",
           "p2": "Mask-edit any part of a result without redoing it",
           "p3": "Full copyright, yours to use on the MLS or in ads"
         },
         "who": {
-          "eyebrow": "Who it's for",
-          "caption": "Sitting down one-on-one to stage an agent's photos",
+          "eyebrow": "Who it’s for",
+          "caption": "Sitting down one-on-one to stage an agent’s photos",
           "title": "Made for agents, sellers, and buyers",
           "body": "Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn CAD floor-plan PDFs into photorealistic 3D room renders.",
           "p1": "Agents: list sooner and close more",
@@ -233,9 +250,9 @@
         },
         "team": {
           "eyebrow": "What it skips",
-          "caption": "A brokerage team's first look at Stagify",
+          "caption": "A brokerage team’s first look at Stagify",
           "title": "Your whole office, no training required",
-          "body": "There's no software to install and nothing to learn. Anyone on the team can open Stagify in a browser, upload a listing photo, and have it staged in seconds, whether on a laptop at the office or a phone in the field.",
+          "body": "There’s no software to install and nothing to learn. Anyone on the team can open Stagify in a browser, upload a listing photo, and have it staged in seconds, whether on a laptop at the office or a phone in the field.",
           "p1": "No design skills or software needed",
           "p2": "Works in any browser, on any device",
           "p3": "Every agent can stage their own listings"
@@ -245,7 +262,7 @@
     "compare": {
       "eyebrow": "Virtual vs. traditional",
       "title": "How it compares to traditional staging",
-      "subtitle": "Traditional staging works. It's just slow and expensive.",
+      "subtitle": "Traditional staging works. It’s just slow and expensive.",
       "colTraditional": "Traditional staging",
       "colStagify": "Stagify.ai",
       "calc": {
@@ -266,7 +283,7 @@
         },
         "styles": {
           "aspect": "Style options",
-          "trad": "One look, locked in once it's installed",
+          "trad": "One look, locked in once it’s installed",
           "stag": "7 styles plus custom prompts, switch anytime"
         },
         "changes": {
@@ -287,7 +304,7 @@
       }
     },
     "nar": {
-      "title": "Don't fall behind",
+      "title": "Don’t fall behind",
       "subtitle": "Agents are adopting AI fast, and clients approve. Staging is the easiest place to start.",
       "usageLabel": "How often agents use AI tools",
       "legend": {
@@ -299,7 +316,7 @@
       "note": "of agents already use AI in their business.",
       "stat1": "of agents say clients responded positively to technology in the buying and selling process",
       "stat2": "already use AI to generate listing content",
-      "source": "Figures from the National Association of Realtors' 2025 Technology Survey of real estate agents.",
+      "source": "Figures from the National Association of Realtors’ 2025 Technology Survey of real estate agents.",
       "sourceCite": "Source: National Association of Realtors, 2025 Technology Survey",
       "usageAria": "AI usage among agents: 20% daily, 22% weekly, 27% a few times a month, 32% not yet"
     },
@@ -342,7 +359,7 @@
       "note": "Recognized by Compass, Centennial, and more."
     },
     "whyus": {
-      "subtitle": "Other virtual staging tools are slow, costly, and locked down. Stagify is the opposite."
+      "subtitle": "Four other ways to stage a listing, scored beside ours."
     },
     "testimonials": {
       "title": "What agents are saying",
@@ -350,39 +367,33 @@
       "items": {
         "justin": {
           "quote": "When I tried Stagify for the first time, I was honestly blown away. I realized I could just use my phone, skip the expensive photographer, and still have stunning results. It’s a game-changer for my listings, and the price is amazing!",
-          "author": "Justin Stern (Broker)",
+          "author": "Justin Stern",
           "role": "Tahari Realty",
           "location": "Manhattan, NYC"
         },
         "andy": {
           "quote": "Stagify fits right into how I already work. I’ll upload a listing photo between showings and it’s staged before I’m back at my desk. My clients are always impressed by how polished the final photos look.",
-          "author": "Andy Eras (Broker)",
+          "author": "Andy Eras",
           "role": "Centennial Properties",
           "location": "Manhattan, NYC"
         },
-        "p3": {
-          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Three",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "travonte": {
+          "quote": "Stagify makes the process feel effortless. You upload a photo of an empty room, wait a few seconds, and suddenly the space has personality. It’s simple, clean, and actually useful.",
+          "author": "Travonte Taylor",
+          "role": "Compass",
+          "location": "Brooklyn, NYC"
         },
-        "p4": {
-          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Four",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jack": {
+          "quote": "What impressed me most about Stagify was how practical it is. It’s not just another AI tool that looks cool for a second. It takes something agents, renters, and property owners deal with all the time and makes it faster and easier.",
+          "author": "Jack Sash",
+          "role": "Tahari Realty",
+          "location": "Manhattan, NYC"
         },
-        "p5": {
-          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Five",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
-        },
-        "p6": {
-          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Six",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jaden": {
+          "quote": "I could see Stagify being huge for dorms, apartments, and listings. Empty rooms are hard to picture, but once they’re staged, the space instantly feels more real. It makes a big difference when you’re trying to imagine yourself living there.",
+          "author": "Jaden Lander",
+          "role": "RockSolid Management",
+          "location": "Manhattan, NYC"
         }
       },
       "deck": {
@@ -414,7 +425,7 @@
   },
   "modal": {
     "rolePopup": {
-      "title": "Let's tailor your experience!",
+      "title": "Let’s tailor your experience!",
       "question": "What is your role?",
       "options": {
         "agent": "Agent",
@@ -424,7 +435,7 @@
       }
     },
     "referralPopup": {
-      "title": "Let's tailor your experience!",
+      "title": "Let’s tailor your experience!",
       "question": "How did you find us?",
       "options": {
         "socials": "Socials",
@@ -434,7 +445,7 @@
       }
     },
     "emailPopup": {
-      "title": "Let's tailor your experience!",
+      "title": "Let’s tailor your experience!",
       "question": "Want email updates?",
       "placeholder": "your@email.com",
       "skip": "Skip"
@@ -449,7 +460,7 @@
       "removeFurniture": "Remove existing furniture",
       "labelVirtuallyStaged": "Label as virtually staged",
       "labelVirtuallyStagedInfo": "What does labelling as virtually staged do?",
-      "labelVirtuallyStagedTip": "Adds a small \"Virtually staged\" note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.",
+      "labelVirtuallyStagedTip": "Adds a small “Virtually staged” note to the bottom-right of the finished photo, in your language. It is part of the image, so it travels with the file wherever you publish it. It does not replace the disclosure your MLS may require in the listing remarks.",
       "stampStyleLabel": "Label style",
       "stampStyles": {
         "dark": "Dark",
@@ -477,7 +488,7 @@
       "maskBeforeApply": "Apply edit",
       "basicMaskTitle": "Basic Mask",
       "basicMaskUploadHint": "Paint over any part of the photo, then describe the change you want.",
-      "maskLimitReached": "You've reached the limit of 6 versions for this image.",
+      "maskLimitReached": "You’ve reached the limit of 6 versions for this image.",
       "prevVersion": "Previous version",
       "nextVersion": "Next version",
       "imageVersions": "Image versions",
@@ -488,7 +499,7 @@
       "downloadResult": "Download Result",
       "uploadAnother": "Upload Another",
       "noProcessedImage": "Your staged result will appear here",
-      "noProcessedImageSubtext": "Click \"Process photo\" to generate an AI-staged version of your image",
+      "noProcessedImageSubtext": "Click “Process photo” to generate an AI-staged version of your image",
       "imageModel": "Image model",
       "fastGeneration": "Fast Model",
       "qualityGeneration": "Stagify+ Model",
@@ -577,45 +588,70 @@
     "farmhousePhotoAlt": "Example room with farmhouse virtual staging style"
   },
   "whyUs": {
-    "title": "Why Choose Us?",
+    "title": "Why choose us?",
     "stagify": {
-      "title": "stagify.ai",
       "features": {
-        "instantResults": "<strong>Instant results</strong>: ~8 seconds",
-        "oneClickStaging": "<strong>One‑click staging</strong>: No hassle",
-        "free": "<strong>Unlimited free generations</strong>: No card needed",
-        "noAds": "<strong>Ad-free experience</strong>: No distractions",
-        "noLogin": "<strong>Easy sign up</strong>: Start instantly",
-        "unlimited": "<strong>Advanced image models</strong>: Higher quality",
-        "copyright": "<strong>Full copyright</strong>: Use anywhere"
+        "free": "Free, as often as you like"
       }
     },
-    "others": {
-      "title": "Others",
-      "features": {
-        "slowResults": "<strong style=\"color: #6d1c2c;\">Slow results: </strong>Days of waiting",
-        "longProcess": "<strong style=\"color: #6d1c2c;\">Long Process: </strong>Tedious back‑and‑forth",
-        "expensive": "<strong style=\"color: #6d1c2c;\">Expensive: </strong>Costly, per‑image fees",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Ads and cookies: </strong>Intrusive",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">Long Signup Process: </strong>Frustrating start",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Legacy, Cheaper models: </strong>Lower quality",
-        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Unclear copyright: </strong>Legal liability"
-      }
-    },
-    "keyFeatures": {
-      "title": "Key Features",
-      "unlimitedVariations": {
-        "title": "Unlimited Variations",
-        "description": "Explore multiple styles until it fits your brand and buyer profile."
+    "board": {
+      "caption": "Stagify.ai compared with four other ways to stage a listing, across six factors.",
+      "headers": {
+        "factor": "Factor",
+        "stager": "Traditional stager",
+        "ai": "Per-image AI tool",
+        "diy": "Edit them yourself",
+        "empty": "Empty room"
       },
-      "fastTurnarounds": {
-        "title": "Fast Turnarounds",
-        "description": "Stage photos in about 8 seconds so you can list sooner and finish more deals."
+      "values": {
+        "yes": "Yes",
+        "no": "No"
+      },
+      "rows": {
+        "speed": {
+          "factor": "Speed",
+          "us": "~8 seconds",
+          "stager": "1–3 weeks",
+          "ai": "1–3 days",
+          "diy": "2–4 hours a photo",
+          "empty": "Instant"
+        },
+        "cost": {
+          "factor": "Cost per listing",
+          "us": "$0, or $11.99 a month",
+          "stager": "$2,000–$5,000",
+          "ai": "$550–850",
+          "diy": "An afternoon of your time",
+          "empty": "$0"
+        },
+        "redo": {
+          "factor": "Trying a different look",
+          "stager": "Billed by the hour",
+          "ai": "Billed per image",
+          "diy": "More of your time",
+          "empty": "Nothing to try"
+        },
+        "quality": {
+          "factor": "Photo quality",
+          "us": "Near-photoreal renders",
+          "stager": "Photographs of real rooms",
+          "ai": "Visible AI tells",
+          "diy": "As good as your retoucher",
+          "empty": "An empty room"
+        },
+        "ownership": {
+          "factor": "You own the photos",
+          "stager": "The photographer’s",
+          "ai": "Licensed, not owned"
+        },
+        "furniture": {
+          "factor": "Real furniture at the showing"
+        }
       }
     }
   },
   "faq": {
-    "title": "Frequently Asked Questions",
+    "title": "Frequently asked questions",
     "plan": {
       "hint": "Every room on this plan is a question. Select one and its answer appears here."
     },
@@ -643,7 +679,7 @@
       "control": {
         "label": "Control",
         "question": "How much control do I have over the result?",
-        "answer": "As much as you want. Pick a preset style and you are done in one click. Choose \"Custom\" and you can describe the look in your own words. Open the Masking Studio and you can paint exactly which parts of the photo are allowed to change, attaching specific furniture to each area, so anything you did not select stays untouched. The AI Designer sits in between: describe what you want changed, look at the result, and refine it in conversation."
+        "answer": "As much as you want. Pick a preset style and you are done in one click. Choose “Custom” and you can describe the look in your own words. Open the Masking Studio and you can paint exactly which parts of the photo are allowed to change, attaching specific furniture to each area, so anything you did not select stays untouched. The AI Designer sits in between: describe what you want changed, look at the result, and refine it in conversation."
       },
       "photos": {
         "label": "Photos",
@@ -653,7 +689,7 @@
       "disclosure": {
         "label": "Disclosure",
         "question": "Can I use these photos in an MLS listing?",
-        "answer": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp \"Virtually staged\" onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
+        "answer": "Yes, and virtual staging is standard practice, but disclose it. Most MLSs and local rules ask that a digitally furnished photo be labelled as such, usually in the caption. Stagify can stamp “Virtually staged” onto the image for you, on any plan. Because only furniture and decor change, and never the structure of the room, the photo stays an honest representation of the space. Check your own board for the exact wording it expects."
       },
       "privacy": {
         "label": "Privacy",
@@ -669,7 +705,7 @@
   },
   "contact": {
     "title": "Get in touch",
-    "description": "We'd love to hear from you. Reach out individually or contact us at <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a> or <a href=\"tel:+19292514372\" style=\"color: #1e3a8a; text-decoration: underline;\">(929) 251-4372</a>.",
+    "description": "We’d love to hear from you. Reach out individually or contact us at <a href=\"mailto:team@stagify.ai\" style=\"color: #1e3a8a; text-decoration: underline;\">team@stagify.ai</a> or <a href=\"tel:+19292514372\" style=\"color: #1e3a8a; text-decoration: underline;\">(929) 251-4372</a>.",
     "social": "Follow us on <a href=\"https://www.linkedin.com/company/stagify-ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">LinkedIn</a>, <a href=\"https://www.tiktok.com/@stagify.ai\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">TikTok@stagify.ai</a>, or <a href=\"https://www.instagram.com/stagify.ai/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #1e3a8a; text-decoration: underline;\">Instagram@stagify.ai</a> for updates and examples!",
     "labels": {
       "name": "Name",
@@ -714,19 +750,19 @@
       "FOOD": "This looks like a photo of food. Please upload a photo of a room, space, or piece of furniture.",
       "DOCUMENT": "This looks like a screenshot or document. Please upload a photo of a room, space, or piece of furniture.",
       "VEHICLE": "This looks like a photo of a vehicle. Please upload a photo of a room, space, or piece of furniture.",
-      "UNRELATED_OBJECT": "This doesn't look like a room, space, or furniture. Please upload a photo of a space or furniture you'd like to stage.",
-      "UNSTAGEABLE": "This doesn't look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you'd like to stage."
+      "UNRELATED_OBJECT": "This doesn’t look like a room, space, or furniture. Please upload a photo of a space or furniture you’d like to stage.",
+      "UNSTAGEABLE": "This doesn’t look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you’d like to stage."
     },
-    "fileType": "Please upload a PNG, JPG, JPEG, WebP, or GIF image file.",
-    "fileTooLarge": "File is too large. Please upload an image smaller than 25MB.",
-    "heicConvert": "We couldn't read that HEIC photo. Please try a JPG or PNG.",
+    "fileType": "Please upload a JPG, PNG, WebP, or HEIC image file.",
+    "fileTooLarge": "File is too large. Please upload an image smaller than 25 MB.",
+    "heicConvert": "We couldn’t read that HEIC photo. Please try a JPG or PNG.",
     "uploadFirst": "Please upload an image first",
-    "badPrompt": "Bad prompt inputted",
-    "disclosureStampFailed": "We couldn't add the \"virtually staged\" label, so your image wasn't delivered. Untick that option to stage without it.",
+    "badPrompt": "That prompt can’t be used. Please try different wording.",
+    "disclosureStampFailed": "We couldn’t add the “virtually staged” label, so your image wasn’t delivered. Untick that option to stage without it.",
     "processingFailed": "Processing failed",
     "noImageData": "No image data received",
-    "dailyLimitFree": "You've used all {limit} free staging runs for today (resets at midnight UTC). Upgrade to Stagify+ for unlimited staging.",
-    "dailyLimitAnonymous": "You've reached the free limit for this network ({limit} runs per day, UTC). Sign in to link staging to your account, or try again tomorrow.",
+    "dailyLimitFree": "You’ve used all {limit} free staging runs for today (resets at midnight UTC). Upgrade to Stagify+ for unlimited staging.",
+    "dailyLimitAnonymous": "You’ve reached the free limit for this network ({limit} runs per day, UTC). Sign in to link staging to your account, or try again tomorrow.",
     "dailyLimitCta": "View Stagify+",
     "stagingTimeout": "This is taking longer than usual and was stopped. Please try again."
   },
@@ -753,7 +789,7 @@
     "verifyTitle": "Verify your email",
     "verifyCopy": "Enter the 6-digit code we sent to {email}.",
     "resetTitle": "Reset password",
-    "resetCopy": "We'll email you a one-time link to set a new password. The link expires in one hour.",
+    "resetCopy": "We’ll email you a one-time link to set a new password. The link expires in one hour.",
     "email": "Email",
     "emailPlaceholder": "you@example.com",
     "password": "Password",
@@ -883,7 +919,7 @@
       ]
     },
     "emptyState": "Start a conversation by typing a message or uploading a file",
-    "welcomeFallback": "Hi! I'm your Stagify AI Designer. Tell me what you're picturing, or upload a room photo, and we'll design it together. A few things I can do:\n• **Stage empty rooms**: furnish a bare space in any style\n• **Redesign existing rooms**: restyle, swap furniture, or change the whole mood\n• **Floor plan → room**: turn a floor plan into a photorealistic, furnished render\n• **Refine as we chat**: adjust the colors, pieces, and layout until it feels right\nWhere would you like to start?",
+    "welcomeFallback": "Hi! I’m your Stagify AI Designer. Tell me what you’re picturing, or upload a room photo, and we’ll design it together. A few things I can do:\n• **Stage empty rooms**: furnish a bare space in any style\n• **Redesign existing rooms**: restyle, swap furniture, or change the whole mood\n• **Floor plan → room**: turn a floor plan into a photorealistic, furnished render\n• **Refine as we chat**: adjust the colors, pieces, and layout until it feels right\nWhere would you like to start?",
     "uploadFile": "Upload file",
     "inputPlaceholder": "Type your message...",
     "sendButton": "Send",
@@ -963,7 +999,7 @@
       "title": "Edit with Mask",
       "brush": "Brush",
       "erase": "Erase",
-      "brushAllNote": "Be sure to brush over all of the area you'd like masked.",
+      "brushAllNote": "Be sure to brush over all of the area you’d like masked.",
       "toolsAria": "Mask tool",
       "brushSize": "Brush Size:",
       "brushSmall": "Small",
@@ -974,10 +1010,10 @@
       "clearMask": "Clear Mask",
       "applyEdit": "Apply Edit",
       "rerun": "Regenerate",
-      "done": "Looks good",
+      "done": "Looks Good",
       "refineTitle": "Refine the edit",
-      "refineNote": "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI.",
-      "refineHelp": "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. Brush to reveal more of the edit, erase to pull it back. It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining — it won't be in the final image.",
+      "refineNote": "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won’t re-run the AI.",
+      "refineHelp": "This step just fine-tunes where the AI’s change shows — it doesn’t run the AI again. Brush to reveal more of the edit, erase to pull it back. It’s a safety net so the edit only touches the area you picked and can’t mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining — it won’t be in the final image.",
       "promptHint": "Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”",
       "refineHelpAria": "What the refine step does",
       "loadApplying": "Applying your edit…",
@@ -994,7 +1030,7 @@
     },
     "errors": {
       "invalidFileType": "Please upload a PDF file.",
-      "fileTooLarge": "File is too large. Please upload a PDF smaller than 100MB.",
+      "fileTooLarge": "File is too large. Please upload a PDF smaller than 100 MB.",
       "noFile": "Please upload a PDF file first",
       "processingFailed": "Processing failed. Please try again.",
       "noProcessedFile": "No processed PDF available."
@@ -1006,12 +1042,12 @@
     "metaKeywords": "stagify tech help, troubleshooting, upload not working, staging help, support, common issues",
     "badge": "Tech Help",
     "title": "Troubleshooting & common issues",
-    "subtitle": "Most problems have a quick fix. Find your issue below, and if you're still stuck, our team is one email away.",
+    "subtitle": "Most problems have a quick fix. Find your issue below, and if you’re still stuck, our team is one email away.",
     "upload": {
       "title": "Uploading & files",
       "i1": {
-        "q": "My photo won't upload.",
-        "a": "Make sure the file is a JPG, PNG, or WEBP under 25 MB. Very large phone photos sometimes fail — resize the image or take a screenshot of it, then upload again. If it still fails, refresh the page and retry."
+        "q": "My photo won’t upload.",
+        "a": "Make sure the file is a JPG, PNG, WebP, or HEIC under 25 MB. Very large phone photos sometimes fail — resize the image or take a screenshot of it, then upload again. If it still fails, refresh the page and retry."
       },
       "i2": {
         "q": "Which photos work best?",
@@ -1030,7 +1066,7 @@
       },
       "i3": {
         "q": "Can I control the furniture and layout?",
-        "a": "Yes. With <a href=\"stagify-plus.html\">Stagify+</a> the Prompt Bar lets you describe specifics like \"add a sectional sofa and a large area rug,\" and the Furniture tool brings in your own pieces. If just one area looks off, mask it and regenerate only that spot instead of redoing the whole image."
+        "a": "Yes. With <a href=\"stagify-plus.html\">Stagify+</a> the Prompt Bar lets you describe specifics like “add a sectional sofa and a large area rug,” and the Furniture tool brings in your own pieces. If just one area looks off, mask it and regenerate only that spot instead of redoing the whole image."
       },
       "masking": {
         "title": "Stage with exact precision",
@@ -1049,26 +1085,26 @@
       },
       "i2": {
         "q": "The result has odd furniture or artifacts.",
-        "a": "AI staging isn't perfect on every pass. Generate again for a new variation, switch to a different style, or use the <a href=\"ai-designer.html\">masking tool</a> to fix only the area that looks off instead of redoing the whole image."
+        "a": "AI staging isn’t perfect on every pass. Generate again for a new variation, switch to a different style, or use the <a href=\"ai-designer.html\">masking tool</a> to fix only the area that looks off instead of redoing the whole image."
       },
       "i3": {
         "q": "Nothing changed or the room still looks empty.",
-        "a": "This usually means a room type or style wasn't selected, or the photo was too dark for the model to read. Pick a room type and style, then try a brighter photo. Want the AI to handle it end-to-end? Try <a href=\"ai-designer.html\">AI Designer</a>."
+        "a": "This usually means a room type or style wasn’t selected, or the photo was too dark for the model to read. Pick a room type and style, then try a brighter photo. Want the AI to handle it end-to-end? Try <a href=\"ai-designer.html\">AI Designer</a>."
       }
     },
     "account": {
       "title": "Account & sign-in",
       "i1": {
-        "q": "My verification code didn't arrive.",
-        "a": "Check your spam or promotions folder — codes can take a minute. If it still hasn't come, use \"Resend code\" and make sure your email is typed correctly."
+        "q": "My verification code didn’t arrive.",
+        "a": "Check your spam or promotions folder — codes can take a minute. If it still hasn’t come, use “Resend code” and make sure your email is typed correctly."
       },
       "i2": {
         "q": "I forgot my password.",
-        "a": "On the sign-in screen choose \"Forgot your password?\" and we'll email you a reset link. The link expires after one hour."
+        "a": "On the sign-in screen choose “Forgot your password?” and we’ll email you a reset link. The link expires after one hour."
       },
       "i3": {
-        "q": "Google sign-in isn't working.",
-        "a": "Allow pop-ups for stagify.ai and make sure third-party cookies aren't fully blocked, then try again. You can also sign in with your email and password instead."
+        "q": "Google sign-in isn’t working.",
+        "a": "Allow pop-ups for stagify.ai and make sure third-party cookies aren’t fully blocked, then try again. You can also sign in with your email and password instead."
       }
     },
     "billing": {
@@ -1078,8 +1114,8 @@
         "a": "Click the profile icon in the top right, then tap the Stripe icon next to Stagify+ to open your billing dashboard, where you can update or cancel your subscription. You can also open the <a href=\"https://billing.stripe.com/p/login/5kQ4gz35w3s42na1Jf7EQ00\" target=\"_blank\" rel=\"noopener noreferrer\">Stripe billing portal</a> directly. You keep access until the end of the current billing period."
       },
       "i2": {
-        "q": "I was charged but don't see Stagify+ features.",
-        "a": "Sign out and back in to refresh your account. If the features still don't appear, email us at <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> from the address you used."
+        "q": "I was charged but don’t see Stagify+ features.",
+        "a": "Sign out and back in to refresh your account. If the features still don’t appear, email us at <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> from the address you used."
       }
     },
     "performance": {
@@ -1089,11 +1125,11 @@
         "a": "Use an up-to-date version of Chrome, Safari, Edge, or Firefox. Older browsers may not support the editor or the drag-to-compare tools."
       },
       "i2": {
-        "q": "The page is slow or buttons don't respond.",
+        "q": "The page is slow or buttons don’t respond.",
         "a": "Hard-refresh the page (Ctrl/Cmd + Shift + R) to clear a stale version, close unused tabs, and disable ad blockers for stagify.ai, which can interfere with uploads."
       },
       "i3": {
-        "q": "The site won't load at all.",
+        "q": "The site won’t load at all.",
         "a": "Check your internet connection, then try a private/incognito window. If it loads there, clear your browser cache for stagify.ai."
       }
     },
@@ -1154,7 +1190,7 @@
     "title": "Masking Studio",
     "subtitle": "Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only the highlighted areas can change, so the rest of your photo stays pixel-perfect.",
     "gateTitle": "Masking Studio is a Stagify+ feature",
-    "gateBody": "Sign in with a Stagify+ account to highlight multiple areas of a photo, give each one its own furniture, and stage them all at once — with pixel-perfect masking that can't touch the rest of your photo.",
+    "gateBody": "Sign in with a Stagify+ account to highlight multiple areas of a photo, give each one its own furniture, and stage them all at once — with pixel-perfect masking that can’t touch the rest of your photo.",
     "gateCta": "View Stagify+",
     "gateBack": "Back to Home",
     "stepPhoto": "Room photo",
@@ -1187,7 +1223,7 @@
     "doneToast": "All areas staged! Touch up your highlights, or press Looks Good to see the result.",
     "partialToast": "{done} of {total} areas staged — retry the failed ones.",
     "failedToast": "Staging failed. Please try again.",
-    "rateLimited": "You're generating too quickly — wait a minute and try again.",
+    "rateLimited": "You’re generating too quickly — wait a minute and try again.",
     "shortcutsHint": "<kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>W</kbd> magic select&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> redo&nbsp;· hold <kbd>H</kbd> view photo",
     "compare": "Compare",
     "undo": "Undo",
@@ -1205,7 +1241,7 @@
     "confirmDiscard": "Discard and continue",
     "confirmKeep": "Keep my results",
     "zoomHint": "Ctrl+scroll or pinch to zoom, hold Space (or the middle mouse button) to pan",
-    "presetSofa": "Sofa|Add a comfortable modern sofa that fits the room's style.",
+    "presetSofa": "Sofa|Add a comfortable modern sofa that fits the room’s style.",
     "presetArmchair": "Armchair|Add a cozy armchair that matches the room.",
     "presetRug": "Rug|Add a large area rug under the furniture.",
     "presetPlant": "Plant|Add a tall potted plant.",
@@ -1355,7 +1391,7 @@
       "domain": "Please enter a valid domain (e.g. company.com).",
       "company": "Please enter your company name.",
       "email": "Please enter a valid contact email.",
-      "publicDomain": "Stagify Enterprise requires your own company domain. Public email providers like gmail.com or yahoo.com can't be registered.",
+      "publicDomain": "Stagify Enterprise requires your own company domain. Public email providers like gmail.com or yahoo.com can’t be registered.",
       "generic": "Something went wrong. Please try again.",
       "unexpected": "Unexpected response. Please try again.",
       "network": "Network error. Please check your connection and try again."
@@ -1366,10 +1402,10 @@
   "stagifyPlus": {
     "hero": {
       "title": "Everything in Stagify, <span class=\"sp-grad\">unlocked</span>.",
-      "subtitle": "Furniture removal, the AI Designer, the Masking Studio, and higher-quality models — every professional tool, for less than the cost of one traditional staging."
+      "subtitle": "Furniture removal, the AI Designer, the Masking Studio, and higher-quality models: every professional tool, for less than the cost of one traditional staging."
     },
     "plan": {
-      "hintAccountFirst": "Create a free account first — that's how your subscription gets linked to you.",
+      "hintAccountFirst": "Create a free account first — that’s how your subscription gets linked to you.",
       "hintTip": "Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.",
       "hintStagingDisabled": "Subscriptions are disabled on the staging site.",
       "billedMonthly": "Billed monthly · Cancel anytime",
@@ -1407,7 +1443,7 @@
       },
       "exterior": {
         "title": "Exterior Studio",
-        "desc": "Fix the shot every listing opens with. Change the time of day, clear a flat grey sky, and remove parked cars and bins — while the property itself stays exactly as photographed."
+        "desc": "Fix the shot every listing opens with. Change the time of day, clear a flat grey sky, and remove parked cars and bins, while the property itself stays exactly as photographed."
       }
     },
     "compare": {
@@ -1422,7 +1458,7 @@
         "fastModel": "Fast image model",
         "unlimited": "Unlimited staging generations",
         "gallery": "Rooms saved in your gallery",
-        "hqModel": "High quality image model",
+        "hqModel": "High-quality image model",
         "remove": "Remove existing furniture",
         "designer": "AI Designer",
         "masking": "Masking tool",
@@ -1620,8 +1656,8 @@
   },
   "notFound": {
     "pageTitle": "Page not found | Stagify.ai",
-    "pageDescription": "This page doesn't exist or has moved. Head back to Stagify.ai to keep staging your listing photos.",
-    "heading": "This page doesn't exist",
+    "pageDescription": "This page doesn’t exist or has moved. Head back to Stagify.ai to keep staging your listing photos.",
+    "heading": "This page doesn’t exist",
     "body": "The link may be broken, or the page may have moved. Everything else is still right where you left it.",
     "homeCta": "Back to home"
   }

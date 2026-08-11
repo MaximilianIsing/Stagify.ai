@@ -14,14 +14,14 @@
 // to risk — there is no reason for the same paragraph to exist twice.
 
 const REFINE_HELP =
-  "This step just fine-tunes where the AI's change shows — it doesn't run the AI again. " +
+  "This step just fine-tunes where the AI’s change shows — it doesn’t run the AI again. " +
   'Brush to reveal more of the edit, erase to pull it back. ' +
-  "It's a safety net so the edit only touches the area you picked and can't mess up the rest of your photo. " +
+  "It’s a safety net so the edit only touches the area you picked and can’t mess up the rest of your photo. " +
   'The faded preview shown on top is only there so you can see the full edit while refining — ' +
-  "it won't be in the final image.";
+  "it won’t be in the final image.";
 
 const REFINE_NOTE =
-  "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won't re-run the AI.";
+  "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won’t re-run the AI.";
 
 /**
  * Resolve the phase copy through the caller's i18n lookup.

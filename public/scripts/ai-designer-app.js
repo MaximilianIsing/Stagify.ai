@@ -145,7 +145,7 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
       
       function defaultWelcomeMessage() {
         const fallback =
-          "Hi! I'm your Stagify AI Designer. Tell me what you're picturing, or upload a room photo, and we'll design it together. A few things I can do:\n" +
+          "Hi! I’m your Stagify AI Designer. Tell me what you’re picturing, or upload a room photo, and we’ll design it together. A few things I can do:\n" +
           "• **Stage empty rooms**: furnish a bare space in any style\n" +
           "• **Redesign existing rooms**: restyle, swap furniture, or change the whole mood\n" +
           "• **Floor plan → room**: turn a floor plan into a photorealistic, furnished render\n" +
@@ -262,13 +262,13 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
           return lang('pdf.error.proRequired', 'The AI Designer is available to Stagify+ members. Please sign in with a Stagify+ account.');
         }
         if (response && response.status === 429) {
-          return lang('pdf.error.rateLimited', "You've hit the generation limit for now. Please wait a moment and try again.");
+          return lang('pdf.error.rateLimited', "You’ve hit the generation limit for now. Please wait a moment and try again.");
         }
         if (typeof navigator !== 'undefined' && navigator.onLine === false) {
           return lang('pdf.error.offline', 'You appear to be offline. Check your connection and try again.');
         }
         if (error && error.name === 'TypeError') {
-          return lang('pdf.error.network', "Couldn't reach the server. Check your connection and try again.");
+          return lang('pdf.error.network', "Couldn’t reach the server. Check your connection and try again.");
         }
         if (response && response.status >= 500) {
           return lang('pdf.error.server', 'The server had a problem handling that. Please try again in a moment.');

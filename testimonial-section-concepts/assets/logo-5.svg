@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72" role="img" aria-label="Alder Lane Properties logo (fictional)">
-  <rect width="72" height="72" rx="16" fill="#f0fdf4"/>
-  <rect x="1" y="1" width="70" height="70" rx="15" fill="none" stroke="#047857" stroke-width="2"/>
-  <path d="M36 15l14 20H22z" fill="#047857"/>
-  <path d="M36 27l12 17H24z" fill="#10b981"/>
-  <path d="M33 44h6v10h-6z" fill="#047857"/>
-  <text x="36" y="66" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8.5" font-weight="700" letter-spacing="1.4" fill="#047857">ALDER LANE</text>
-</svg>

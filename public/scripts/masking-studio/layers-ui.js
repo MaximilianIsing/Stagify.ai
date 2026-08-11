@@ -315,7 +315,7 @@ export function createLayersUi(deps) {
           body.appendChild(toggle);
         } else {
           const PRESET_DEFAULTS = {
-            presetSofa: "Sofa|Add a comfortable modern sofa that fits the room's style.",
+            presetSofa: "Sofa|Add a comfortable modern sofa that fits the room’s style.",
             presetArmchair: 'Armchair|Add a cozy armchair that matches the room.',
             presetRug: 'Rug|Add a large area rug under the furniture.',
             presetPlant: 'Plant|Add a tall potted plant.',

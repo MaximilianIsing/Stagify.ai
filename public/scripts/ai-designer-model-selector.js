@@ -344,7 +344,7 @@
               const data = await response.json();
               
               if (response.ok) {
-                showToast(lang('pdf.bug.success', "Thank you for reporting this bug! We'll look into it."), 'success');
+                showToast(lang('pdf.bug.success', "Thank you for reporting this bug! We’ll look into it."), 'success');
                 closeBugReport();
               } else {
                 throw new Error(data.error || 'Failed to submit bug report');

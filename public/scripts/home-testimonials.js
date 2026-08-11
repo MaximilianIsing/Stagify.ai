@@ -1,8 +1,8 @@
-/* Stagify.ai — #testimonials, the six-quote deck.
+/* Stagify.ai — #testimonials, the five-quote deck.
  *
- * The section used to be a two-up grid of two cards. It now holds six, which a grid
- * cannot carry: six cards ran about five screens tall between the two heaviest blocks
- * on the page, and the phone rule (`.tw-card:nth-child(n + 2) { display: none }`)
+ * The section used to be a two-up grid of two cards. It now holds five, which a grid
+ * cannot carry: that many cards ran about five screens tall between the two heaviest
+ * blocks on the page, and the phone rule (`.tw-card:nth-child(n + 2) { display: none }`)
  * "solved" that by showing a phone visitor exactly ONE quote and discarding the rest.
  *
  * So: a deck. One readable card, the others fanned behind it, advanced by dragging the
@@ -12,10 +12,10 @@
  * PROGRESSIVE ENHANCEMENT IS THE CONTRACT. Every deck rule in home.css is scoped
  * behind `.tw-deck--ready`, which this module adds at the END of init. If this file
  * fails to load, throws, or is served stale, the section stays what the markup
- * literally is: a plain column of six readable quotes with the controls hidden.
+ * literally is: a plain column of five readable quotes with the controls hidden.
  * Nothing is hidden by default and no quote is unreachable without JS.
  *
- * WHY THE CARDS STAY IN THE DOM. All six are always present and always in the HTML —
+ * WHY THE CARDS STAY IN THE DOM. All five are always present and always in the HTML —
  * only `inert` moves. That keeps every testimonial crawlable (this section is social
  * proof; it should be indexed) while keeping the buried cards, which show as ~12px
  * slivers with no readable text, out of the tab order and off the screen-reader path.
@@ -77,7 +77,7 @@ export function initTestimonialDeck(opts = {}) {
   let drag = null;
 
   /** Written from cards.length rather than trusted from the markup, so adding a
-   *  seventh testimonial does not silently leave the total reading "6". */
+   *  sixth testimonial does not silently leave the total reading "5". */
   if (ofEl) ofEl.textContent = String(cards.length);
 
   function paint() {

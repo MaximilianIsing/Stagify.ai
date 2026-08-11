@@ -5,7 +5,7 @@
 // Where a page names a number, this file pins it to its source of truth so the marketing
 // cannot quietly start lying in eleven languages with nothing to catch it.
 //
-// NOTE ON THE FREE GENERATION CAP: the homepage "why us" bullet
+// NOTE ON THE FREE GENERATION CAP: the homepage "why us" claim
 // (whyUs.stagify.features.free) deliberately says "unlimited" while the server still
 // enforces FREE_DAILY_LIMIT — a product decision (2026-08-07) extending the same call
 // already made for the "Unlimited staging generations" row on stagify-plus.html, which
@@ -52,6 +52,10 @@ test('no language pack quotes a generation figure in the free bullet', () => {
   // back to a number would advertise a ceiling — and, worse, one that goes stale against
   // FREE_DAILY_LIMIT the moment that constant moves. No cross-pack parity guard covers
   // the whyUs namespace either, so the presence check has to live here too.
+  //
+  // The key survived the section's rewrite into a scoreboard (2026-08-10) on purpose:
+  // it is the Stagify cell of the "Free generations" row now rather than a bullet, but
+  // it is still the only place on the homepage that makes the unlimited claim.
   const all = packs();
   assert.ok(all.length >= 11, `expected 11 language packs, found ${all.length}`);
 
@@ -69,15 +73,18 @@ test('no language pack quotes a generation figure in the free bullet', () => {
 });
 
 test('the English markup fallback makes the same claim as the packs', () => {
-  // data-lang-html overwrites this at runtime, but it is what ships before the pack
-  // loads — and it drifted from the pack once already.
+  // data-lang overwrites this at runtime, but it is what ships before the pack loads —
+  // and it drifted from the pack once already. Matched as a whole cell rather than by
+  // the old bullet's <strong> lead-in: the claim moved into the scoreboard's "Free
+  // generations" row, where the visible text is the span's entire contents.
   const html = fs.readFileSync(path.join(PUBLIC, 'index.html'), 'utf8');
-  const row = /whyUs\.stagify\.features\.free[^>]*>\s*<strong>([^<]*)<\/strong>/.exec(html);
-  assert.ok(row, "index.html no longer has a whyUs.stagify.features.free bullet with a <strong> lead-in");
+  const cell = /data-lang="whyUs\.stagify\.features\.free"\s*>([^<]*)</.exec(html);
+  assert.ok(cell, 'index.html no longer has a whyUs.stagify.features.free cell in the #why board');
+  assert.ok(cell[1].trim().length > 0, 'the free-generations cell ships empty English');
   assert.doesNotMatch(
-    row[1],
+    cell[1],
     /\d/,
-    `index.html's free-tier bullet leads with "${row[1]}" — a figure there contradicts the packs`,
+    `index.html's free-generations cell says "${cell[1]}" — a figure there contradicts the packs`,
   );
 });
 

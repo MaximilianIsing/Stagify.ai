@@ -1,17 +1,19 @@
 // Tier: frontend island logic (DOM-stubbed) — public/scripts/home-testimonials.js.
 //
-// #testimonials went from a two-up grid of 2 quotes to a DECK of 6. The grid could not
-// carry six: they ran ~5 screens tall between the two heaviest blocks on the page, and
-// the phone rule "fixed" that by hiding cards 2-6 outright, so a phone visitor saw one
-// quote and the other five were simply thrown away.
+// #testimonials went from a two-up grid of 2 quotes to a DECK, now of 5. The grid could
+// not carry that many: they ran ~5 screens tall between the two heaviest blocks on the
+// page, and the phone rule "fixed" that by hiding every card after the first outright,
+// so a phone visitor saw one quote and the rest were simply thrown away.
 //
 // Three kinds of assertion live here:
 //
 //   1. Behaviour, against a fake DOM (no jsdom in this repo — same approach as
 //      test/frontend/home-whyus.test.js). The interesting cases are the ones a
-//      screenshot cannot show: that `inert` tracks the top card so five buried cards
+//      screenshot cannot show: that `inert` tracks the top card so the buried cards
 //      never sit in the tab order, and that a deck of one BAILS rather than arming a
-//      widget whose arrows cycle a single quote.
+//      widget whose arrows cycle a single quote. These run against a synthetic 6-card
+//      deck on purpose — the logic is count-agnostic, and pinning it to the shipped
+//      count would make every future testimonial a test edit.
 //
 //   2. Drift guards over the real index.html / home.css / index-deferred.js. The
 //      progressive-enhancement contract is the one worth pinning: every deck rule must
@@ -20,8 +22,8 @@
 //      overlapping cards with no way to advance — which looks fine in every local check,
 //      because locally the JS always loads.
 //
-//   3. A SKIPPED guard against shipping the four placeholder testimonials. Un-skip it in
-//      the commit that pastes the real quotes in; from then on it keeps them out.
+//   3. A guard against the four placeholder testimonials ever coming back. It shipped
+//      skipped while they were still on the page; the real quotes landed, so it runs.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -278,18 +280,18 @@ function testimonialsSection() {
   return INDEX.slice(start, end);
 }
 
-test('index.html ships six cards in one deck, all keyed to english.json', () => {
+test('index.html ships five cards in one deck, all keyed to english.json', () => {
   const section = testimonialsSection();
 
   const cards = section.match(/<figure class="tw-card"/g) || [];
-  assert.equal(cards.length, 6, 'six testimonials, all in the deck');
+  assert.equal(cards.length, 5, 'five testimonials, all in the deck');
   assert.ok(section.includes('data-deck-stack'), 'the deck needs its stack hook');
   assert.match(section, /data-deck-of/, 'the total is written by JS into this span');
 
   // Every visible string must resolve, or a language switch blanks it. The
   // english→others parity gate in test/server/static.test.js covers the other 10 packs.
   const keys = [...section.matchAll(/data-lang(?:-attr)?="([^"|]+)/g)].map((m) => m[1]);
-  assert.ok(keys.length >= 26, `expected 6 cards x 4 keys + controls, saw ${keys.length}`);
+  assert.ok(keys.length >= 23, `expected 5 cards x 4 keys + controls, saw ${keys.length}`);
   for (const key of keys) {
     const value = key.split('.').reduce((/** @type {any} */ o, k) => (o == null ? o : o[k]), ENGLISH);
     assert.equal(typeof value, 'string', `english.json is missing ${key}`);
@@ -329,8 +331,8 @@ test('the deck script is registered in index-deferred.js', () => {
   );
 });
 
-test('the six brokerage logos are decode-warmed', () => {
-  // Five of six sit behind the top card when the section scrolls in, so without this
+test('the five brokerage logos are decode-warmed', () => {
+  // Four of five sit behind the top card when the section scrolls in, so without this
   // each one decodes as you reach it and pops in. A stale selector here does not throw.
   const reveal = fs.readFileSync(path.join(PUBLIC, 'scripts', 'home-reveal.js'), 'utf8');
   assert.match(reveal, /\.tw-logo/, 'home-reveal.js warmImages() should cover .tw-logo');
@@ -338,24 +340,26 @@ test('the six brokerage logos are decode-warmed', () => {
 
 // ---- The placeholder guard -------------------------------------------------
 
-// SKIPPED ON PURPOSE. Un-skip this (delete the `{ skip: ... }` argument) in the same
-// commit that replaces the four placeholder testimonials with the real agents.
-test(
-  'no placeholder testimonials remain',
-  { skip: 'Un-skip when the 4 real testimonials replace the placeholders' },
-  () => {
-    const section = testimonialsSection();
-    assert.doesNotMatch(section, /data-placeholder/, 'index.html still has placeholder cards');
-    assert.doesNotMatch(section, /Placeholder Agent/, 'index.html still has placeholder names');
-    assert.doesNotMatch(section, /placeholder-\d\.svg/, 'index.html still has placeholder logos');
+// Live since the three real agents landed and the six-card deck became five. Every
+// visible string on this section is a named person's endorsement, so nothing invented
+// may ship here — not in the markup, not in any of the 11 packs.
+test('no placeholder testimonials remain', () => {
+  const section = testimonialsSection();
+  assert.doesNotMatch(section, /data-placeholder/, 'index.html still has placeholder cards');
+  assert.doesNotMatch(section, /Placeholder Agent/, 'index.html still has placeholder names');
+  assert.doesNotMatch(section, /placeholder-\d\.svg/, 'index.html still has placeholder logos');
 
-    const items = ENGLISH.home.testimonials.items;
+  // The English pack is what the parity gate copies outward, but a placeholder could
+  // just as easily be left behind in a translation — so check all 11.
+  for (const file of fs.readdirSync(path.join(PUBLIC, 'languages'))) {
+    const pack = JSON.parse(fs.readFileSync(path.join(PUBLIC, 'languages', file), 'utf8'));
+    const items = pack.home.testimonials.items;
     for (const [key, item] of Object.entries(items)) {
       assert.doesNotMatch(
         /** @type {any} */ (item).quote,
-        /PLACEHOLDER/,
-        `english.json home.testimonials.items.${key} is still a placeholder`,
+        /PLACEHOLDER/i,
+        `${file} home.testimonials.items.${key} is still a placeholder`,
       );
     }
-  },
-);
+  }
+});

@@ -83,6 +83,23 @@
       "revealSliderAria": "Control deslizante de comparación",
       "exampleRoomsAria": "Habitaciones de ejemplo"
     },
+    "restage": {
+      "title": "Haz clic para ver lo que hace el diseño",
+      "subtitle": "La misma habitación vacía, diseñada una y otra vez. Sin transportistas, sin alquileres, sin esperas.",
+      "kicker": "Control total del diseño",
+      "panelTitle": "Cada intento la amuebla de nuevo",
+      "panelBody": "El home staging tradicional te da una sola distribución y un contrato de alquiler. Vuelve a ejecutarlo y la habitación regresa amueblada de otra forma: otra distribución, otra paleta, otros materiales.",
+      "button": "Diseñar esta habitación",
+      "buttonAgain": "Diseñar otra vez",
+      "seeOriginal": "Ver original",
+      "loadFailed": "Esa no se cargó. Inténtalo de nuevo.",
+      "points": {
+        "rooms": "Ocho tipos de habitación, de dormitorios a cocinas",
+        "browser": "Nada que instalar, funciona en tu navegador"
+      },
+      "emptyAlt": "Una sala de estar vacía antes del home staging virtual",
+      "stagedAlt": "La misma sala de estar, diseñada por Stagify"
+    },
     "showcase": {
       "title": "Compruébalo tú mismo",
       "subtitle": "Demos en vivo. Echa un vistazo.",
@@ -202,7 +219,7 @@
     "info": {
       "eyebrow": "En resumen",
       "title": "Qué es el diseño virtual y por qué vende",
-      "subtitle": "Un repaso rápido y honesto de cómo funciona y para quién es — sin tecnicismos.",
+      "subtitle": "Un repaso rápido y honesto de cómo funciona y para quién es.",
       "rows": {
         "why": {
           "eyebrow": "Por qué funciona",
@@ -216,7 +233,7 @@
         "how": {
           "eyebrow": "Cómo funciona",
           "caption": "Guiando a una sala de agentes en su primera propiedad diseñada",
-          "title": "De foto vacía a lista para publicar en unos 8 segundos",
+          "title": "De foto vacía a lista para publicar en segundos",
           "body": "Sube una foto, elige el tipo de habitación y uno de los siete estilos, y Stagify la amuebla en unos ocho segundos. ¿Necesitas cambios? Quita los muebles existentes, añade un prompt personalizado o enmascara un área para ajustarla sin empezar de cero.",
           "p1": "7 estilos más prompts personalizados y eliminación de muebles",
           "p2": "Edita con máscara cualquier parte del resultado sin rehacerlo",
@@ -342,7 +359,7 @@
       "note": "Reconocido por Compass, Centennial y más."
     },
     "whyus": {
-      "subtitle": "Otras herramientas de staging son lentas, caras y restrictivas. Stagify es lo contrario."
+      "subtitle": "Cuatro formas más de preparar una propiedad, puntuadas junto a la nuestra."
     },
     "testimonials": {
       "title": "Lo que dicen los agentes",
@@ -350,39 +367,33 @@
       "items": {
         "justin": {
           "quote": "La primera vez que probé Stagify, me quedé sinceramente impresionado. Me di cuenta de que podía usar simplemente mi teléfono, ahorrarme el fotógrafo caro y aun así obtener resultados espectaculares. Es un antes y un después para mis anuncios, ¡y el precio es increíble!",
-          "author": "Justin Stern (Agente)",
+          "author": "Justin Stern",
           "role": "Tahari Realty",
           "location": "Manhattan, Nueva York"
         },
         "andy": {
           "quote": "Stagify encaja perfectamente en mi forma de trabajar. Subo la foto de un anuncio entre visitas y ya está preparada antes de volver a mi escritorio; mis clientes siempre quedan impresionados por lo pulidas que se ven las fotos finales.",
-          "author": "Andy Eras (Agente)",
+          "author": "Andy Eras",
           "role": "Centennial Properties",
           "location": "Manhattan, Nueva York"
         },
-        "p3": {
-          "quote": "PLACEHOLDER — swap in the third agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Three",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "travonte": {
+          "quote": "Stagify hace que el proceso resulte facilísimo. Subes una foto de una habitación vacía, esperas unos segundos y de repente el espacio tiene personalidad. Es sencillo, limpio y realmente útil.",
+          "author": "Travonte Taylor",
+          "role": "Compass",
+          "location": "Brooklyn, Nueva York"
         },
-        "p4": {
-          "quote": "PLACEHOLDER — swap in the fourth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Four",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jack": {
+          "quote": "Lo que más me impresionó de Stagify es lo práctico que es. No es otra herramienta de IA que solo queda bien un segundo. Toma algo con lo que agentes, inquilinos y propietarios lidian a diario y lo hace más rápido y más fácil.",
+          "author": "Jack Sash",
+          "role": "Tahari Realty",
+          "location": "Manhattan, Nueva York"
         },
-        "p5": {
-          "quote": "PLACEHOLDER — swap in the fifth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Five",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
-        },
-        "p6": {
-          "quote": "PLACEHOLDER — swap in the sixth agent’s quote before launch. This sentence is padded to roughly forty words so the card is the size the real testimonial will be, and the deck geometry stays honest in review.",
-          "author": "Placeholder Agent Six",
-          "role": "Placeholder Realty",
-          "location": "City, ST"
+        "jaden": {
+          "quote": "Veo a Stagify siendo enorme para residencias estudiantiles, apartamentos y anuncios. Las habitaciones vacías cuestan de imaginar, pero una vez decoradas el espacio se siente mucho más real. Marca una gran diferencia cuando intentas imaginarte viviendo ahí.",
+          "author": "Jaden Lander",
+          "role": "RockSolid Management",
+          "location": "Manhattan, Nueva York"
         }
       },
       "deck": {
@@ -579,43 +590,68 @@
   "whyUs": {
     "title": "¿Por qué elegirnos?",
     "stagify": {
-      "title": "stagify.ai",
       "features": {
-        "instantResults": "<strong>Resultados instantáneos</strong>: ~8 segundos",
-        "oneClickStaging": "<strong>Crea un escenario con un solo clic</strong>: Sin complicaciones",
-        "free": "<strong>Generaciones gratis ilimitadas</strong>: Sin tarjeta",
-        "noAds": "<strong>Sin anuncios</strong>: Sin distracciones",
-        "noLogin": "<strong>Registro fácil</strong>: Empieza al instante",
-        "unlimited": "<strong>Modelos de imagen avanzados</strong>: Mayor calidad",
-        "copyright": "<strong>Derechos de autor completos</strong>: uso en cualquier lugar"
+        "free": "Gratis, tantas veces como quieras"
       }
     },
-    "others": {
-      "title": "Otros",
-      "features": {
-        "slowResults": "<strong style=\"color: #6d1c2c;\">Resultados lentos: </strong>Días de espera",
-        "longProcess": "<strong style=\"color: #6d1c2c;\">Proceso largo: </strong>Ida y vuelta tediosa",
-        "expensive": "<strong style=\"color: #6d1c2c;\">Caro: </strong>tarifas costosas por imagen",
-        "adsAndCookies": "<strong style=\"color: #6d1c2c;\">Anuncios y galletas: </strong>una experiencia intrusive",
-        "accountRequired": "<strong style=\"color: #6d1c2c;\">Registro largo: </strong>Inicio frustrante",
-        "limitedGenerations": "<strong style=\"color: #6d1c2c;\">Modelos antiguos y baratos: </strong>Menor calidad",
-        "unclearCopyright": "<strong style=\"color: #6d1c2c;\">Derechos de autor poco claros: </strong>Responsabilidad legal"
-      }
-    },
-    "keyFeatures": {
-      "title": "Características Clave",
-      "unlimitedVariations": {
-        "title": "Variaciones ilimitadas",
-        "description": "Explora múltiples estilos hasta que se adapten a tu marca y al perfil de tu comprador."
+    "board": {
+      "caption": "Stagify.ai comparado con otras cuatro formas de preparar una propiedad, en seis factores.",
+      "headers": {
+        "factor": "Factor",
+        "stager": "Home staging tradicional",
+        "ai": "Herramienta de IA por imagen",
+        "diy": "Editarlas tú mismo",
+        "empty": "Sala vacía"
       },
-      "fastTurnarounds": {
-        "title": "Entrega rápida",
-        "description": "Prepara fotos en aproximadamente 8 segundos para que pueda publicar antes y cerrar más tratos."
+      "values": {
+        "yes": "Sí",
+        "no": "No"
+      },
+      "rows": {
+        "speed": {
+          "factor": "Rapidez",
+          "us": "~8 segundos",
+          "stager": "1–3 semanas",
+          "ai": "1–3 días",
+          "diy": "2–4 horas por foto",
+          "empty": "Inmediato"
+        },
+        "cost": {
+          "factor": "Coste por propiedad",
+          "us": "$0, o $11.99 al mes",
+          "stager": "$2,000–$5,000",
+          "ai": "$550–850",
+          "diy": "Una tarde de tu tiempo",
+          "empty": "$0"
+        },
+        "redo": {
+          "factor": "Probar otro estilo",
+          "stager": "Se factura por hora",
+          "ai": "Se factura por imagen",
+          "diy": "Más tiempo tuyo",
+          "empty": "Nada que probar"
+        },
+        "quality": {
+          "factor": "Calidad de la foto",
+          "us": "Renders casi fotorrealistas",
+          "stager": "Fotos de salas reales",
+          "ai": "Con fallos de IA visibles",
+          "diy": "Según tu retocador",
+          "empty": "Una sala vacía"
+        },
+        "ownership": {
+          "factor": "Las fotos son tuyas",
+          "stager": "Son del fotógrafo",
+          "ai": "Con licencia, no en propiedad"
+        },
+        "furniture": {
+          "factor": "Muebles reales durante la visita"
+        }
       }
     }
   },
   "faq": {
-    "title": "Preguntas Frecuentes",
+    "title": "Preguntas frecuentes",
     "plan": {
       "hint": "Cada habitación de este plano es una pregunta. Selecciona una y su respuesta aparecerá aquí."
     },
@@ -718,7 +754,7 @@
       "UNSTAGEABLE": "Esto no parece una habitación, un espacio ni un mueble. Sube la foto de una habitación, un espacio exterior o un mueble que quieras diseñar."
     },
     "heicConvert": "No pudimos leer esa foto HEIC. Prueba con un JPG o PNG.",
-    "fileType": "Por favor sube un archivo de imagen PNG, JPG, JPEG, WebP o GIF.",
+    "fileType": "Por favor sube un archivo de imagen JPG, PNG, WebP o HEIC.",
     "fileTooLarge": "El archivo es demasiado grande. Sube una imagen de menos de 25 MB.",
     "uploadFirst": "Por favor sube una imagen primero",
     "badPrompt": "Prompt incorrecto ingresado",
@@ -994,7 +1030,7 @@
     },
     "errors": {
       "invalidFileType": "Por favor sube un archivo PDF.",
-      "fileTooLarge": "El archivo es demasiado grande. Por favor sube un PDF menor a 100MB.",
+      "fileTooLarge": "El archivo es demasiado grande. Por favor sube un PDF menor a 100 MB.",
       "noFile": "Por favor sube un archivo PDF primero",
       "processingFailed": "El procesamiento falló. Por favor intenta de nuevo.",
       "noProcessedFile": "No hay PDF procesado disponible."
@@ -1011,7 +1047,7 @@
       "title": "Subir fotos y archivos",
       "i1": {
         "q": "Mi foto no se sube.",
-        "a": "Asegúrate de que el archivo sea JPG, PNG o WEBP y pese menos de 25 MB. Las fotos de móvil muy grandes a veces fallan: redimensiona la imagen o haz una captura de pantalla y vuelve a subirla. Si sigue fallando, actualiza la página e inténtalo de nuevo."
+        "a": "Asegúrate de que el archivo sea JPG, PNG, WebP o HEIC y pese menos de 25 MB. Las fotos de móvil muy grandes a veces fallan: redimensiona la imagen o haz una captura de pantalla y vuelve a subirla. Si sigue fallando, actualiza la página e inténtalo de nuevo."
       },
       "i2": {
         "q": "¿Qué fotos funcionan mejor?",
