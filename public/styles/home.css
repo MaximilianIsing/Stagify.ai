@@ -69,8 +69,14 @@
 .reveal {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s cubic-bezier(0.16, 0.84, 0.44, 1),
-    transform 0.6s cubic-bezier(0.16, 0.84, 0.44, 1);
+  /* 0.35s, down from 0.6s. home-reveal.js can only start this once the row is
+     genuinely on screen (its rootMargin cannot buy a head start — see the note on
+     the observer), so the duration is time spent reading a transparent element. A
+     wheel scroll covers ~300px in ~300ms; at 0.6s the row finished arriving before
+     it finished appearing. Do not stretch it back without giving the trigger a real
+     lead first. */
+  transition: opacity 0.35s cubic-bezier(0.16, 0.84, 0.44, 1),
+    transform 0.35s cubic-bezier(0.16, 0.84, 0.44, 1);
   transition-delay: var(--reveal-delay, 0ms);
   will-change: opacity, transform;
   /* 8s, not 2s: home-reveal.js normally arms well inside that (load + idle), so
@@ -1712,8 +1718,8 @@ body.page-home main {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 16px;
-  /* The row is as tall as the 30px readout, so the 24px input sits 3px off its
-     bottom — the gap you actually see under the track is this + 3. */
+  /* The row is as tall as the readout, so the 24px input sits off its bottom —
+     the gap you actually see under the track is this plus that slack. */
   row-gap: 3px;
 }
 /* The INPUT is 24px tall; the visible track is the 8px pseudo below it.
@@ -1793,7 +1799,7 @@ body.page-home main {
 .calc__readout {
   min-width: 3.5ch;
   text-align: right;
-  font-size: clamp(22px, 2.6vw, 30px);
+  font-size: clamp(52px, 6.4vw, 76px);
   font-weight: 900;
   letter-spacing: -0.5px;
   line-height: 1;
@@ -3291,10 +3297,30 @@ body.page-home main {
   .whyus-table {
     font-size: 12.5px;
   }
+  /* The frozen label column is the one thing on the board that costs width
+     without ever scrolling away, so on a phone it is squeezed hardest: it holds
+     six short labels ("Speed", "Photo quality"), while the five value columns
+     hold the sentences that actually need the room. `width` is a hint under
+     table-layout:auto, but every label here is multi-word, so min-content is one
+     word (~"furniture") and the browser can honour it — the labels wrap to two
+     lines and the space goes to the values. `hyphens` is for the packs that
+     compound instead of wrapping (German "Möblierung…"), which would otherwise
+     push min-content back past this width and undo the squeeze. */
   .whyus-th--factor {
-    min-width: 150px;
+    width: 104px;
+    min-width: 104px;
+    padding-left: 8px;
+    padding-right: 8px;
   }
-  .whyus-factor,
+  .whyus-factor {
+    font-size: 12px;
+    line-height: 1.3;
+    padding: 10px 8px;
+    /* Prefixed for iOS Safari, which still ships hyphenation behind -webkit-. */
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
   .whyus-cell {
     padding: 10px;
   }
@@ -3303,6 +3329,33 @@ body.page-home main {
   .whyus-mark {
     width: auto;
     margin-right: 4px;
+  }
+  /* Phone only. The table overflows here and nothing else says so — the sticky
+     factor column hides the usual "content is cut off" cue — so the bar is made
+     brand-blue and permanent rather than left to the overlay scrollbar that
+     iOS/Android fade out the moment the flick ends. Desktop keeps the OS bar:
+     there the board fits, and a styled bar would only appear mid-resize.
+     Firefox gets the two-property form; in Chrome those would swap this thumb
+     for the full OS widget, arrows and all — same split as .hgal-grid. */
+  @supports (-moz-appearance: none) {
+    .whyus-scroller {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(30, 58, 138, 0.5) rgba(30, 58, 138, 0.08);
+    }
+  }
+  .whyus-scroller::-webkit-scrollbar {
+    height: 8px;
+  }
+  .whyus-scroller::-webkit-scrollbar-thumb {
+    background: rgba(30, 58, 138, 0.5);
+    border-radius: 999px;
+  }
+  .whyus-scroller::-webkit-scrollbar-track {
+    background: rgba(30, 58, 138, 0.08);
+    border-radius: 999px;
+    /* Clear of the 18px corner radius, so the track does not square off the
+       rounded bottom of the panel it sits in. */
+    margin: 0 16px;
   }
 }
 

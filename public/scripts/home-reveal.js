@@ -69,10 +69,24 @@
     // zone between them. A single threshold makes rows parked near the edge
     // flicker in/out on the tiniest scroll — and on mobile the address bar
     // sliding in/out resizes the viewport (changing the ratio) with no scroll
-    // at all. Showing at 18% but only hiding once nearly gone (4%) means that
+    // at all. Showing at 5% but only hiding once all but gone (1%) means that
     // jitter lands in the dead zone, where we hold the current state.
-    const SHOW_AT = 0.18;
-    const HIDE_AT = 0.04;
+    //
+    // SHOW_AT IS DELIBERATELY TINY, and lowering it is the whole reason these two
+    // numbers moved. There is no head start available here: the fade below cannot
+    // begin until the row is genuinely painted (see the rootMargin note on the
+    // observer), so every percent of SHOW_AT is time the visitor spends looking at
+    // an element that is still transparent. At 18% a 313px card — #ai-shift's chart,
+    // where this was first noticed — needed 56px on screen before the transition even
+    // started, and a wheel scroll covers ~300px in ~300ms, so you outran it and read
+    // the card mid-fade. Showing at the first sliver gives the transition room to
+    // finish while the row is still arriving.
+    //
+    // MOVE THE PAIR OR NEITHER. HIDE_AT exists only to be far enough below SHOW_AT
+    // that near-boundary jitter cannot cross both; leaving it at 0.04 against a 0.05
+    // show point collapses the dead zone to one percent and brings the strobe back.
+    const SHOW_AT = 0.05;
+    const HIDE_AT = 0.01;
 
     // Only animate elements OUT on desktop. On phones/small screens the exit
     // transform (translateY 52px) physically moves the very element the observer
@@ -184,6 +198,16 @@
           }
         });
       },
+      // THE -6% IS CURRENTLY A NO-OP — do not tune it expecting an effect. `<main>`
+      // is the real scroll container (overflow-y: auto), and it already clips tighter
+      // than this margin does: on an 842px viewport main paints [89, 773] while -6%
+      // of the viewport gives [50, 791]. The intersection is clipped by BOTH, so main
+      // wins at each edge and the margin never changes a ratio. A positive margin
+      // would not buy an early trigger either, because rootMargin expands the root's
+      // own bounds and not an ancestor's clip rect. Making these numbers mean
+      // something requires passing `root: <main>` (the shape home-figures.js uses via
+      // scrollRootOf) and reworking evaluate()'s band to match — a bigger change than
+      // the trigger point above, and deliberately not done here.
       { threshold: [0, HIDE_AT, SHOW_AT, 0.5, 1], rootMargin: "-6% 0px -6% 0px" }
     );
 
