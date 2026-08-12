@@ -16,6 +16,14 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="referrer" content="no-referrer">
     <meta name="theme-color" content="#2563eb">
+    <!-- Only the two weights used above the fold (400 body, 700 headings), and only
+         the LATIN subset of each — the same minimal set index.html preloads, for the
+         same reason: as="font" fetches at Chrome’s Highest priority, above the LCP
+         image, so anything added here competes with it. Every other weight and
+         subset still resolves on demand from the unicode-range @font-face rules in
+         styles.css. Do not "helpfully" preload more. -->
+    <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/auth.css">
     <link rel="stylesheet" href="styles/plus-welcome.css">

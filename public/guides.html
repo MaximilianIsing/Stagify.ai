@@ -75,12 +75,36 @@
     <meta name="publisher" content="Stagify.ai">
     <meta name="theme-color" content="#2563eb">
 
+    <!-- Only the two weights used above the fold (400 body, 700 headings), and only
+         the LATIN subset of each — the same minimal set index.html preloads, for the
+         same reason: as="font" fetches at Chrome’s Highest priority, above the LCP
+         image, so anything added here competes with it. Every other weight and
+         subset still resolves on demand from the unicode-range @font-face rules in
+         styles.css. Do not "helpfully" preload more. -->
+    <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/toast.css">
-    <link rel="stylesheet" href="styles/auth.css">
+    <!-- auth.css styles the sign-in modal only, which nothing on this page opens
+         until a user clicks. Shipped as print (non-render-blocking) and promoted to
+         all by lazy-css.js once fetched — the same pattern index.html uses. The swap
+         is JS, not an inline onload= handler, so it passes the CSP’s
+         script-src-attr 'none'. -->
+    <link rel="stylesheet" href="styles/auth.css" media="print" data-lazy-css>
+    <script type="module" src="scripts/lazy-css.js"></script>
+    <noscript>
+      <!-- The promotion above is the only thing that ever loads these sheets, so
+           without this the modal and the walkthrough player are unstyled with JS off. -->
+      <link rel="stylesheet" href="styles/auth.css">
+      <link rel="stylesheet" href="styles/demo-player.css">
+    </noscript>
     <link rel="stylesheet" href="styles/home.css">
     <link rel="stylesheet" href="styles/guides.css">
-    <link rel="stylesheet" href="styles/demo-player.css">
+    <!-- demo-player.css only styles the walkthrough player, which lives below the fold
+         inside a tab panel that ships `hidden`, and whose scripts are themselves
+         deferred to after `load` (guides-deferred.js). Lazy here for the same reason
+         index.html loads it lazily. -->
+    <link rel="stylesheet" href="styles/demo-player.css" media="print" data-lazy-css>
     <link rel="preload" href="languages/english.json" as="fetch" crossorigin>
     <script type="module" src="scripts/language-detect.js"></script>
     <script type="module" src="scripts/language-loader.js"></script>
@@ -88,11 +112,16 @@
     <script type="module" src="scripts/nav-pill.js"></script>
     <script type="module" src="scripts/auth.js"></script>
     <script type="module" src="scripts/profile-menu.js"></script>
-    <script src="scripts/demo-data.js" defer></script>
-    <script src="scripts/demo-player.js" defer></script>
+    <!-- demo-data.js (41 KB) + demo-player.js (13 KB) are injected after `load` by
+         guides-deferred.js, which then calls back into guides.js to mount whatever
+         walkthrough is open. Do NOT put them back here as plain `defer` tags: that
+         runs them inside the LCP window for a player that is below the fold and
+         inside a `hidden` panel. -->
+    <script type="module" src="scripts/guides-deferred.js"></script>
     <script type="module" src="scripts/guides.js?v=8"></script>
     <script type="module" src="scripts/home-reveal.js"></script>
-    <script type="module" src="scripts/app.js"></script>
+    <!-- NOT app.js — see scripts/page-chrome.js for why. -->
+    <script type="module" src="scripts/page-chrome.js"></script>
     <style>
       html {
         scroll-behavior: smooth;

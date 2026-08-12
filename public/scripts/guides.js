@@ -188,13 +188,27 @@ function initDemoPicker(doc, win) {
   if (!applyHash()) loadPanel(keys[0]);
   win.addEventListener('hashchange', () => { applyHash({ focus: true }); });
 
-  win.addEventListener('pageshow', (event) => {
-    if (!(/** @type {any} */ (event).persisted)) return;
-    // On bfcache restore, reposition whichever player is currently visible.
+  /** Re-run loadPanel for whichever panel is currently open. */
+  function loadVisible() {
     Object.keys(panels).forEach((k) => {
       if (panels[k] && !panels[k].hidden) loadPanel(k);
     });
+  }
+
+  win.addEventListener('pageshow', (event) => {
+    if (!(/** @type {any} */ (event).persisted)) return;
+    // On bfcache restore, reposition whichever player is currently visible.
+    loadVisible();
   });
+
+  // THE RETRY FOR THE DEFERRED DEMO SCRIPTS. demo-data.js and demo-player.js are
+  // injected after `load` by guides-deferred.js, so for a moment after first paint
+  // neither window.STAGIFY_DEMOS nor window.SupademoPlayer exists yet. mountPlayer()
+  // bails silently in that window (`|| !player`) and sets no __player, and nothing
+  // else ever re-attempts it — so a visitor who lands on a deep link, or clicks a tab
+  // quickly, would be left with a permanently blank panel and no error anywhere.
+  // guides-deferred.js calls this once both files are in.
+  /** @type {any} */ (win).StagifyGuides = { remountVisible: loadVisible };
 }
 
 /**

@@ -39,3 +39,22 @@ or re-exported at a different quality later.
 
 If deploy/clone weight ever becomes a concern, move these to Git LFS or a
 separate `stagify-assets` repo — do **not** simply delete them.
+
+### Masters with a scripted export
+
+Most of these are exported by hand. One set has a build script, so re-run it rather
+than exporting by eye:
+
+| Master | Script | Produces |
+|---|---|---|
+| `media-png/blog/cover-N.png` | `node scripts/build-blog-thumbs.js` | `public/media-webp/blog/cover-N-thumb.webp` (800×450) |
+
+The blog covers ship at **two** sizes. `cover-N.webp` (1600×900) is the article hero and
+is exported by hand as usual; `cover-N-thumb.webp` is the card thumbnail used by the
+`/blog/` grid and the homepage's "from the blog" strip, where the image is painted about
+400 px wide. Serving the hero into those cards cost ~1.2 MB across the ten articles.
+
+After replacing a cover master, re-export the hero **and** re-run the script. Because
+`media-webp/` is served `immutable` for a year, a regenerated thumb under the same
+filename will not reach returning visitors — rename it or add a `?v=`, exactly as
+`docs/reference/caching.md` requires for every other image here.

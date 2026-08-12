@@ -50,69 +50,89 @@ export default function createPublicRouter(deps) {
   const router = createAsyncRouter();
   const pixelLimiter = emailPixelLimiter ?? defaultEmailPixelLimiter;
 
+  /**
+   * Send a public document with the same cache policy express.static gives the very
+   * same file when it is reached by its own URL.
+   *
+   * These routes bypass the `setHeaders` callback in lib/http/app-middleware.js
+   * entirely — that hook only runs for files express.static itself serves — so they
+   * fell back to res.sendFile's default, `Cache-Control: public, max-age=0`. The
+   * practical difference from the documented `no-cache` policy is small but real: a
+   * shared/edge cache may serve max-age=0 without revalidating in some conditions,
+   * and `/` is the homepage. Setting it explicitly also means docs/reference/caching.md
+   * describes what actually ships for every HTML response, not just most of them.
+   *
+   * @param {import('express').Response} res
+   * @param {string} file Absolute path to the document.
+   */
+  const sendPage = (res, file) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(file);
+  };
+
 router.get('/robots.txt', (req, res) => {
   res.type('text/plain');
-  res.sendFile(path.join(__dirname, 'public', 'robots.txt'));
+  sendPage(res, path.join(__dirname, 'public', 'robots.txt'));
 });
 
 router.get('/sitemap.xml', (req, res) => {
   res.type('application/xml');
-  res.sendFile(path.join(__dirname, 'public', 'sitemap.xml'));
+  sendPage(res, path.join(__dirname, 'public', 'sitemap.xml'));
 });
 
 router.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  sendPage(res, path.join(__dirname, 'public', 'index.html'));
 });
 
 router.get('/privacy', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+  sendPage(res, path.join(__dirname, 'public', 'privacy.html'));
 });
 
 router.get('/status', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'status.html'));
+  sendPage(res, path.join(__dirname, 'public', 'status.html'));
 });
 
 // The blog hub is served as a static directory index at /blog/ (public/blog/index.html);
 // express.static (mounted ahead of this router) 301-redirects /blog → /blog/. Individual
 // articles have no matching file/dir, so they fall through to these clean, extensionless routes.
 router.get('/blog/is-virtual-staging-allowed-on-the-mls', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'is-virtual-staging-allowed-on-the-mls.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'is-virtual-staging-allowed-on-the-mls.html'));
 });
 
 router.get('/blog/masking-studio-and-ai-designer', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'masking-studio-and-ai-designer.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'masking-studio-and-ai-designer.html'));
 });
 
 router.get('/blog/does-virtual-staging-help-sell-homes', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'does-virtual-staging-help-sell-homes.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'does-virtual-staging-help-sell-homes.html'));
 });
 
 router.get('/blog/stagify-vs-other-virtual-staging-tools', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'stagify-vs-other-virtual-staging-tools.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'stagify-vs-other-virtual-staging-tools.html'));
 });
 
 router.get('/blog/top-10-ai-virtual-staging-sites-2026', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'top-10-ai-virtual-staging-sites-2026.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'top-10-ai-virtual-staging-sites-2026.html'));
 });
 
 router.get('/blog/dorm-room-design-ai-college-freshmen', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'dorm-room-design-ai-college-freshmen.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'dorm-room-design-ai-college-freshmen.html'));
 });
 
 router.get('/blog/prepare-your-listing-for-the-fall-market', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'prepare-your-listing-for-the-fall-market.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'prepare-your-listing-for-the-fall-market.html'));
 });
 
 router.get('/blog/curb-appeal-real-estate-photos', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'curb-appeal-real-estate-photos.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'curb-appeal-real-estate-photos.html'));
 });
 
 router.get('/blog/free-virtual-staging', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'free-virtual-staging.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'free-virtual-staging.html'));
 });
 
 router.get('/blog/virtual-staging-disclosure-laws-by-state', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'blog', 'virtual-staging-disclosure-laws-by-state.html'));
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'virtual-staging-disclosure-laws-by-state.html'));
 });
 
 router.get('/bimi-logo.svg', (req, res) => {

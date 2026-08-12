@@ -606,15 +606,21 @@ shape means one element's rules are grouped by value rather than by element. A t
 report the cascade working as designed. The cost is readability, not correctness, and
 un-merging a 3,200-line sheet with no visual-regression coverage is not worth it.
 
-**Non-render-blocking (lazy) CSS.** The heavy home page (`index.html`) splits its
-stylesheets by criticality. `styles.css` / `carousel.css` / `home.css` load normally
-(render-blocking); the below-the-fold ones (`auth.css`, `star-border.css`,
-`home-text-animate.css`, `demo-player.css`) ship as `media="print"` with a `data-lazy-css`
-attribute so they **don't block first paint**, and [`scripts/index-lazy-css.js`](../../public/scripts/index-lazy-css.js)
+**Non-render-blocking (lazy) CSS.** Pages split their stylesheets by criticality. On
+`index.html`, `styles.css` / `carousel.css` / `home.css` load normally (render-blocking);
+the below-the-fold ones (`auth.css`, `star-border.css`, `home-text-animate.css`,
+`demo-player.css`) ship as `media="print"` with a `data-lazy-css` attribute so they
+**don't block first paint**, and [`scripts/lazy-css.js`](../../public/scripts/lazy-css.js)
 promotes each to `media="all"` once fetched. A `<noscript>` block links them the normal
 way for the no-JS path. The promotion is an external script rather than an inline
 `onload=` handler on purpose — it keeps the page under the CSP's `script-src-attr 'none'`
 (no `unsafe-inline`).
+
+The helper is page-agnostic (it was called `index-lazy-css.js` back when the homepage was
+its only caller), so adopting the pattern elsewhere needs no JS change: mark the `<link>`
+`media="print" data-lazy-css`, include the script after it, and **copy the `<noscript>`
+fallback across as well** — the flip is the only thing that ever loads those sheets, so
+without it a no-JS visitor gets none of them.
 
 **FOUC auth gates.** `ai-designer.html` and `masking-studio.html` carry a one-line inline
 `<style>html.<x>-gate-pending body{visibility:hidden!important}</style>`. The gate script
