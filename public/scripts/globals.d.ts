@@ -71,6 +71,12 @@ declare global {
     heic2any?: (options: any) => Promise<Blob | Blob[]>;
     /** Demo walkthrough data injected by demo-data.js. */
     STAGIFY_DEMOS?: any;
+    /**
+     * Bridge from guides.js to guides-deferred.js. The demo scripts land after `load`,
+     * by which point guides.js has already wired the tablist and may have tried (and
+     * silently failed) to mount a player; the loader calls remountVisible() to retry.
+     */
+    StagifyGuides?: { remountVisible: () => void };
   }
 
   // Declared as ambient `var`s (not just Window members) because the code reads

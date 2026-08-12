@@ -76,9 +76,9 @@ const UNTESTED = [
   'home-text-animate.js',
   'hover-glow.js',
   'index-inline.js',
-  'index-lazy-css.js',
   'language-detect.js',
   'language-switcher.js',
+  'lazy-css.js',
   'nav-pill.js',
   'plus-cta-auth.js',
   'plus-welcome-confetti.js',
@@ -207,10 +207,21 @@ function stripComments(src) {
 
 // Every relative module specifier in a file: `from '...'` covers static import and
 // re-export, plus bare `import '...'` side-effect imports and `import('...')`.
+//
+// The last pattern is the cache-busted dynamic form, `` import(`../x.js?v=${tag}`) ``.
+// A module whose side effects run at EVAL can only be re-tested by defeating the ESM
+// cache, so its test has no choice but to write the specifier that way — and without
+// this pattern the walk saw no edge and reported the module as untested even though a
+// suite exercises it. That is a false positive in the loud direction (it fails the
+// build rather than hiding debt), but it pushed toward listing a tested module in
+// UNTESTED, which would have been a lie in the ledger. Only the literal PREFIX is
+// captured; the `?v=` suffix is stripped by resolveSpecifier, and a fully dynamic
+// specifier (`` import(`${VAR}?v=${tag}`) ``) is still invisible here by construction.
 const SPECIFIER_PATTERNS = [
   /\bfrom\s*['"]([^'"]+)['"]/g,
   /\bimport\s*['"]([^'"]+)['"]/g,
   /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+  /\bimport\s*\(\s*`(\.[^`$?]+)(?:\?[^`]*)?`\s*\)/g,
 ];
 
 function relativeSpecifiers(file) {

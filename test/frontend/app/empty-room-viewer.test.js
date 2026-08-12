@@ -3,10 +3,16 @@
 // The modal that shows the intermediate result of two-stage furniture removal: the
 // room with the old furniture taken out, before the new furniture goes in.
 //
-// Every element in its dependency bag is allowed to be null, because the island is
-// constructed from app.js on pages that do not carry this markup. That is the thing
-// most worth pinning: a missing-element crash here happens at module eval on the
-// contact and guides pages, which would take down everything app.js wires AFTER it.
+// Every element in its dependency bag is allowed to be null, and a missing-element
+// crash here would happen at module eval — taking down everything app.js wires AFTER
+// it. That is what the null cases below pin.
+//
+// This used to be load-bearing in production: contact/status/guides all loaded app.js
+// without carrying this markup. They no longer do (they load scripts/page-chrome.js
+// instead), so index.html is now app.js's only consumer and it does carry every
+// element. The null-tolerance is therefore a module contract now rather than a live
+// dependency — keep it, because it is the thing that made app.js safe to mount on a
+// page like that in the first place, and the next page to reuse it will need it again.
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';

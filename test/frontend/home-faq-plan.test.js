@@ -1405,7 +1405,7 @@ test('printing gives the questions and stops there', () => {
   // engines and nine full answers on the third — and only one of those is the intent.
   //
   // The rule lives in home.css, and that is the load-bearing half. faq-plan.css is LAZY —
-  // it ships `media="print"` and is flipped to `all` by index-lazy-css.js — so a print
+  // it ships `media="print"` and is flipped to `all` by lazy-css.js — so a print
   // rule in there would be the one rule that stops working whenever the lazy load loses
   // its race. home.css is render-blocking and always present. (faq-plan.css also has a
   // structural rule, enforced above, that every @media in it is the plan-mode gate.)

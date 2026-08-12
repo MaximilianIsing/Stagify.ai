@@ -21,39 +21,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { stripJsComments as stripComments } from '../helpers/strip-js-comments.js';
+
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SERVER_JS = path.join(ROOT, 'server.js');
-
-/**
- * Replace comment bodies with nothing, leaving string/template literals intact so a
- * URL like 'https://x' inside a string is never mistaken for a line comment.
- * Mis-stripping fails safe: it can only lose a real call, which trips the
- * "found too few routers" assertion loudly rather than hiding a reordering.
- */
-function stripComments(src) {
-  let out = '';
-  let i = 0;
-  let quote = null;
-  while (i < src.length) {
-    const c = src[i];
-    const next = src[i + 1];
-    if (quote) {
-      if (c === '\\') { out += src.slice(i, i + 2); i += 2; continue; }
-      if (c === quote) quote = null;
-      out += c; i += 1; continue;
-    }
-    if (c === '\'' || c === '"' || c === '`') { quote = c; out += c; i += 1; continue; }
-    if (c === '/' && next === '/') { while (i < src.length && src[i] !== '\n') i += 1; continue; }
-    if (c === '/' && next === '*') {
-      i += 2;
-      while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i += 1;
-      i += 2;
-      continue;
-    }
-    out += c; i += 1;
-  }
-  return out;
-}
 
 /** Router factories INVOKED in server.js, in source order. */
 function mountedRouters() {
