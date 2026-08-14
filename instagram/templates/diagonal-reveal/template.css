@@ -1,0 +1,138 @@
+/* diagonal-reveal
+ *
+ * Two full-bleed photos stacked. The BEFORE one is clipped to the wedge above the wipe,
+ * so both photos stay at their natural scale and the seam is a straight edge rather than
+ * a resize artefact.
+ *
+ * The wipe position is `--left-y` / `--right-y` (unitless percentages of frame height) and
+ * the line itself is a separate rotated element rather than a second clip. That matters:
+ * a clip-based line is thick in the vertical axis, so its apparent weight would change
+ * with the angle and with the frame's aspect. A rotated bar has one true thickness.
+ *
+ * Everything the reel animates is a custom property, so lib/render/reel.js can walk the
+ * timeline without re-rendering the document.
+ */
+
+.photo {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.photo--before {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(var(--right-y) * 1%),
+    0 calc(var(--left-y) * 1%)
+  );
+}
+
+/* The wipe. Two stacked bars: a soft wide one for glow, a hard thin one for the edge.
+ * Width 240% so the bar still spans the frame after rotation at any plausible angle. */
+.wipe {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--mid-y) * 1%);
+  width: 240%;
+  transform: translate(-50%, -50%) rotate(var(--angle));
+  transform-origin: 50% 50%;
+  pointer-events: none;
+}
+
+.wipe--glow {
+  height: 26px;
+  background: var(--brand-soft);
+  opacity: .55;
+  filter: blur(1px);
+}
+
+.wipe--edge {
+  height: 7px;
+  background: var(--brand);
+  box-shadow: 0 0 24px rgba(37, 99, 235, .75);
+}
+
+/* Chrome ------------------------------------------------------------------- */
+
+.top {
+  position: absolute;
+  top: 52px;
+  left: 52px;
+  right: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 3;
+}
+
+/* The AFTER pill.
+ *
+ * Two anchorings, because one does not suit every wipe. `line` tracks the diagonal so the
+ * pill reads as labelling the region just below it. `corner` pins it above the bottom block
+ * so it mirrors the BEFORE pill at the opposite corner of the frame.
+ *
+ * The offset used to be a lazy +14 percent, which on a shallow wipe left the pill stranded
+ * in the middle of the frame with no relationship to anything: BEFORE looked placed and
+ * AFTER looked dropped. Whichever anchoring is used, it has to look deliberate. */
+.after-mark {
+  position: absolute;
+  right: 52px;
+  z-index: 3;
+  top: calc(var(--after-y) * 1%);
+}
+.after-mark--corner {
+  top: auto;
+  bottom: calc(var(--after-bottom) * 1px);
+}
+
+.scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46%;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0) 0%,
+    rgba(15, 23, 42, .55) 42%,
+    rgba(15, 23, 42, .93) 100%
+  );
+  z-index: 2;
+}
+
+.bottom {
+  position: absolute;
+  left: 52px;
+  right: 52px;
+  bottom: 48px;
+  z-index: 4;
+}
+
+.hl {
+  margin: 0 0 34px;
+  font-size: 84px;
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -.028em;
+}
+.hl .hl-lead,
+.hl .hl-accent { display: block; }
+.hl .hl-lead { color: #fff; }
+.hl .hl-accent { color: var(--brand-soft); }
+
+.footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+/* Story and reel are 570px taller. Give the photo the extra room rather than the copy,
+ * and push the chrome away from the platform's own overlays at top and bottom. */
+.frame--tall .top { top: 150px; }
+.frame--tall .bottom { bottom: 220px; }
+.frame--tall .hl { font-size: 92px; }
+.frame--tall .scrim { height: 38%; }

@@ -1,0 +1,46 @@
+{
+  "key": "policy",
+  "fetchedAt": "2026-08-13T19:26:05.244Z",
+  "ttlDays": 90,
+  "queries": [
+    "MLS virtual staging disclosure rules",
+    "NAR virtually staged photo requirements"
+  ],
+  "findings": [
+    {
+      "claim": "NAR Article 12 and Standard of Practice 12-5 require members to present a true picture and to disclose when a listing photograph has been digitally altered.",
+      "sourceUrl": "https://www.nar.realtor/about-nar/governing-documents/code-of-ethics",
+      "sourceTitle": "NAR Code of Ethics, Article 12 and SoP 12-5",
+      "confidence": "well-established",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Disclosure is generally satisfied by a watermark on the image itself or a notation in the photo caption, with many boards preferring text legible at thumbnail size.",
+      "sourceUrl": "https://blog.realvisionaire.com/mls-virtual-staging-guidelines-rules",
+      "sourceTitle": "MLS Virtual Staging Rules Guidelines 2026",
+      "confidence": "reported",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Virtual staging is expected to help a buyer visualise furniture placement, not to remove defects, alter dimensions or change the property's actual condition.",
+      "sourceUrl": "https://roomagen.com/blog/mls-photo-requirements-virtual-staging-disclosure-guide",
+      "sourceTitle": "MLS Photo Requirements and Virtual Staging Disclosure Guide",
+      "confidence": "reported",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "California AB 723, reported effective 1 January 2026, is said to require a conspicuous statement on or adjacent to a digitally altered listing image plus a link or QR code to the unaltered original.",
+      "sourceUrl": "https://www.meltflexai.com/blog/virtual-staging-disclosure-rules-2026",
+      "sourceTitle": "Virtual Staging Disclosure Rules 2026",
+      "confidence": "unverified-competitor-blog",
+      "caution": "Sourced only from competitor marketing pages. Do NOT state this as fact in a post without a primary legislative citation."
+    },
+    {
+      "claim": "Reported penalties for undisclosed virtual staging range from board fines to listing removal and complaints to the state real estate board.",
+      "sourceUrl": "https://www.roomstage.ai/mls-virtual-staging-rules",
+      "sourceTitle": "MLS Virtual Staging Rules and Disclosure Requirements",
+      "confidence": "unverified-competitor-blog",
+      "caution": "Specific dollar ranges vary by source and are not board-verified. Do not quote a figure."
+    }
+  ]
+}

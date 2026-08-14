@@ -1,0 +1,38 @@
+/* editorial-card
+ *
+ * The 07-27 lineage: a deep blue editorial field with the photography sitting inside it as
+ * rounded cards, rather than the photo running full bleed. Use it when the copy has real
+ * work to do, because there is room here for a headline AND a subhead AND a caption, which
+ * the full-bleed layouts do not have.
+ */
+
+.frame { padding: 64px; }
+.frame > .stack { height: 100%; gap: 40px; }
+
+.hl {
+  margin: 0;
+  font-size: 76px;
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -.028em;
+}
+.hl .hl-lead { color: #fff; }
+.hl .hl-accent { color: var(--brand-pale); }
+
+.subhead {
+  margin-top: 18px;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, .68);
+}
+
+.cards { display: flex; flex-direction: column; gap: 26px; }
+.cards .card { flex: 1 1 0; min-height: 0; }
+
+/* A single card gets the whole well; two share it with the first slightly taller, which
+ * keeps the eye moving down rather than treating them as a pair of equals. */
+.cards--two .card:first-child { flex: 1.15 1 0; }
+
+.frame--tall .hl { font-size: 84px; }
+.frame--tall .frame > .stack { gap: 52px; }

@@ -1,0 +1,89 @@
+{
+  "key": "competitors",
+  "fetchedAt": "2026-08-14T01:09:50.342Z",
+  "ttlDays": 14,
+  "queries": [
+    "virtual staging companies social media",
+    "home staging instagram accounts"
+  ],
+  "findings": [
+    {
+      "claim": "BoxBrownie.com runs an active brand Instagram account (@boxbrowniecom) with roughly 16K followers, making it one of the largest direct virtual-staging competitor accounts; its feed is built around its service lines (virtual staging, image enhancement, virtual tours, floor plans).",
+      "sourceUrl": "https://www.instagram.com/boxbrowniecom/?hl=en",
+      "sourceTitle": "BoxBrownie.com (@boxbrowniecom) - Instagram",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Before/after transformation visuals are the dominant recommended format for virtual staging companies on social media: the standard advice is to post paired before and after listing images to show the transformation.",
+      "sourceUrl": "https://www.applydesign.io/post/social-media-and-virtual-staging-a-powerful-marketing-combination",
+      "sourceTitle": "Virtual Staging and Social Media - Top Property Marketing Duo (ApplyDesign)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Trolto is an AI virtual staging startup built specifically for social media marketing: it turns a staged image into a custom-branded cinematic fly-through video with one click, aimed at Instagram Reels and TikTok distribution.",
+      "sourceUrl": "https://www.housingwire.com/articles/virtual-staging-companies-apps/",
+      "sourceTitle": "Virtual Staging: The Best Apps for 2026 + Mind-Blowing AI picks (HousingWire)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Home stagers are advised to use carousels for side-by-side transformations and short Reels for the lived-in to market-ready shift, with practitioners reporting that 20-30% of leads come from a well-executed before/after Reel.",
+      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
+      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings (Socialmon)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "The recommended posting rhythm for a growing home-stager account is 4-5 feed posts per week mixing Reels and carousels, daily Stories during active project seasons, and at least one educational piece per week that realtors can reshare to clients.",
+      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
+      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings (Socialmon)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "For hook-driven staging formats such as before/after or mistake-fix swaps, the recommended Reel length is 15-35 seconds.",
+      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
+      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings (Socialmon)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Numbered educational carousels in the staging niche (for example '5 staging mistakes that hurt your sale price') are cited as the format that gets bookmarked and forwarded to clients, versus pure visual transformation posts.",
+      "sourceUrl": "https://www.socialmon.ai/blog/68-home-stager-instagram-post-ideas-with-examples-that-sell-listings",
+      "sourceTitle": "68 Home stager Instagram post ideas with examples that sell listings (Socialmon)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "On 2026 Instagram benchmarks, carousels lead engagement rate at about 0.55%, ahead of Reels at 0.50-0.52% and single images at 0.35-0.37%, a ranking that has held since 2023.",
+      "sourceUrl": "https://www.socialinsider.io/social-media-benchmarks/instagram",
+      "sourceTitle": "2026 Instagram Organic Engagement Benchmarks (Socialinsider)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Format roles differ by objective: Reels reach roughly 2.25x more people than static posts and 1.36x more than carousels, while carousels win saves (about nine times more saves than single images).",
+      "sourceUrl": "https://collabkit.me/blog/instagram-reels-vs-carousels-vs-images-data-study-2026",
+      "sourceTitle": "Instagram Reels vs Carousels vs Images: A Data-Driven Study of 10,000 (Collabkit)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "The recommended 2026 format mix is roughly 60-70% short-form video for discovery plus 20-30% carousels built for saves, with carousels prioritized for accounts over 10K followers that are selling something.",
+      "sourceUrl": "https://contentdrips.com/blog/2026/06/instagram-reels-vs-carousels-2026-guide/",
+      "sourceTitle": "Reels vs. Carousels: The Complete 2026 Guide to Engagement on Instagram (Contentdrips)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Adjacent AI interior-design tools position around consumer-facing outputs that translate directly into social content: ReimagineHome markets uploading a room photo to get personalized designs plus shoppable products curated to space, style and budget.",
+      "sourceUrl": "https://www.reimaginehome.ai/",
+      "sourceTitle": "ReimagineHome | AI Interior Design Ideas and Virtual Staging",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Competing AI staging brands lead marketing with speed and conversion claims rather than craft: Collov AI headlines that its listings sell 73% faster and boost online engagement, and is cited at pricing as low as about 23 cents per image at volume.",
+      "sourceUrl": "https://collov.ai/",
+      "sourceTitle": "Virtual Staging AI : Elevate Your Real Estate Listings | Collov AI",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Human-edited incumbents differentiate on turnaround and revisions rather than social presence: BoxBrownie sells staging at about $24 per image with 48-hour delivery and unlimited revisions for two months, while Styldod undercuts at about $16 per room with 24-hour turnaround.",
+      "sourceUrl": "https://www.styldod.com/blog/styldod-boxbrownie-features-price-comparison",
+      "sourceTitle": "Styldod vs BoxBrownie: Features and Price Comparison",
+      "retrievedAt": "2026-08-13"
+    }
+  ]
+}

@@ -38,6 +38,7 @@ export default [
       'node_modules/**',
       'ds-bundle/**',     // generated bundle
       'supademo-local/**',
+      'instagram/**',     // local-only post generator; deliberately outside the deploy gate
       'to-build/**',      // source masters (media-png, OG_Image, demos) — not runtime code
       '**/*.min.js',
     ],

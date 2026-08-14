@@ -76,6 +76,7 @@ test('blog hub and articles are served, and stay in sync with the sitemap', asyn
     '/blog/curb-appeal-real-estate-photos',
     '/blog/free-virtual-staging',
     '/blog/virtual-staging-disclosure-laws-by-state',
+    '/blog/fsbo-listing-photos',
   ];
   for (const p of articles) {
     const res = await get(p);

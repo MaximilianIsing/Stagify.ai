@@ -351,7 +351,7 @@ export async function start({
     } else if (status === 429) {
       node.textContent = t('gallery.error.rateLimited', 'Too many requests just now. Give it a moment and try again.');
     } else {
-      node.textContent = t('gallery.error.generic', 'Your renders are safe — this is the list failing to load, not the images.');
+      node.textContent = t('gallery.error.generic', 'Your renders are safe. This is the list failing to load, not the images.');
     }
   }
 

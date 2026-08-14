@@ -123,7 +123,7 @@ export function createSharePanel({ byId, t, plural, copyText, updateShareSetting
       // paste an empty clipboard into a message to their client.
       const ok = await copyText(value, { doc });
       status(ok
-        ? t('gallery.share.copied', 'Copied — the link is on your clipboard.')
+        ? t('gallery.share.copied', 'Copied. The link is on your clipboard.')
         : t('gallery.share.copyFailed', 'Could not copy automatically. Select the link above and copy it.'));
       if (!ok && typeof input.select === 'function') input.select();
     });

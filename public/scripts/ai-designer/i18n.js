@@ -58,8 +58,8 @@
             editedImage: 'Mask-edited design image{suffix}',
             originalCarouselImage: 'Original image before mask edits',
             enlargedImage: 'Full-size view of design image',
-            thumbnailSelected: '{label} — selected as base image for your next message',
-            thumbnailOption: '{label} — image {index} in conversation',
+            thumbnailSelected: '{label}, selected as base image for your next message',
+            thumbnailOption: '{label}, image {index} in conversation',
           };
           text = fallbacks[key] || '';
         }

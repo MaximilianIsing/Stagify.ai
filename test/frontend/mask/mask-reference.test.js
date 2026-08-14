@@ -109,7 +109,7 @@ test('does not upscale an image already under the cap', async (t) => {
 for (const [label, file, expected] of [
   ['a non-image type', fakeFile({ type: 'application/pdf', size: 100 }), 'Please choose a valid JPG, PNG, or WebP image.'],
   ['a GIF (not in the allow-list)', fakeFile({ type: 'image/gif', size: 100 }), 'Please choose a valid JPG, PNG, or WebP image.'],
-  ['an oversized file', fakeFile({ type: 'image/png', size: 26 * 1024 * 1024 }), 'That image is too large — please choose one under 25 MB.'],
+  ['an oversized file', fakeFile({ type: 'image/png', size: 26 * 1024 * 1024 }), 'That image is too large. Please choose one under 25 MB.'],
 ]) {
   test(`rejects ${label} with its own message and keeps the reference empty`, async (t) => {
     const s = setup();

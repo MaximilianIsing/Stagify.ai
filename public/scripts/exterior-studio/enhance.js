@@ -90,7 +90,7 @@ export async function enhanceExterior({ file, options, badge = null, token, fetc
     // An abort and a dropped connection are the same story to the user: nothing came
     // back, their upload is still on screen, try again.
     throw new EnhanceError(
-      say('exteriorStudio.errors.network', 'The connection dropped before the photo came back. Your upload is still here — try again.'),
+      say('exteriorStudio.errors.network', 'The connection dropped before the photo came back. Your upload is still here. Try again.'),
       'NETWORK',
     );
   } finally {

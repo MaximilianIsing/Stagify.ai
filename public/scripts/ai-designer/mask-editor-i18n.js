@@ -74,7 +74,7 @@ export function updateMaskEditorTranslations() {
     const hintText = getText('pdf.maskEditor.promptHint');
     promptHint.textContent = (hintText && hintText !== 'pdf.maskEditor.promptHint')
       ? hintText
-      : 'Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”';
+      : 'Be very specific about location and placement, for example: “put the sofa flush against the middle of the back wall.”';
   }
 
   // Update buttons

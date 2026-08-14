@@ -1,0 +1,19 @@
+{
+  "id": "fixture-diagonal-reveal",
+  "template": "diagonal-reveal",
+  "formats": ["single", "story"],
+  "_note": "Offline fixture. Uses repo media as stand-in photography so the renderer can be exercised with zero API spend. Real posts source their own images; see lib/images/acquire.js.",
+  "data": {
+    "headline": {
+      "lead": "Empty to staged.",
+      "accent": "One click. Free."
+    },
+    "beforeImage": "/public/media-webp/example/Original.webp",
+    "afterImage": "/public/media-webp/example/Coastal.webp",
+    "beforeLabel": "BEFORE",
+    "afterLabel": "AFTER",
+    "cta": "Try free at Stagify.ai",
+    "disclosure": "Virtually staged with Stagify.ai",
+    "diagonal": { "leftY": 52, "rightY": 24 }
+  }
+}

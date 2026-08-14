@@ -50,8 +50,10 @@ test-results/
 playwright-report/
 blob-report/
 .playwright/
-# Litestream binary — downloaded into ./bin during the Render build, never committed
-bin/
+# Litestream binary — downloaded into ./bin during the Render build, never committed.
+# ANCHORED. Unanchored `bin/` matches at any depth, which silently swallowed every CLI in
+# instagram/bin/ and made `git add instagram/` skip the whole directory without a word.
+/bin/
 
 # Noto font masters for scripts/build-disclosure-badges.js — ~40 MB, downloaded on demand.
 # The RENDERED output (lib/image/badges/) IS committed; see to-build/disclosure-badges/README.md
@@ -60,8 +62,18 @@ to-build/disclosure-badges/fonts/
 # Text files (but allow specific ones)
 *.txt
 !public/robots.txt
+# The instagram/ hand-off files are plain text BY DESIGN (caption, hashtags, alt text)
+# and are meant to be committed. The *.txt rule above was written for the legacy
+# secret files at the repo root (key.txt, gpt-key.txt), not for these. Re-inclusion
+# works here because no ANCESTOR DIRECTORY is excluded, only the files themselves.
+!instagram/posts/**/*.txt
 
 .claude/
 # design-sync generated bundle (regenerable from design-system/ + public/fonts)
 ds-bundle/
+
+# instagram/ scratch renders. Fixtures and dry runs land here; real posts do not.
+instagram/posts/_scratch/
 CLAUDE.md
+# instagram/ per-run working files. Regenerable, and not part of the hand-off.
+instagram/posts/_work/

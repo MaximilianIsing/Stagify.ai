@@ -135,6 +135,10 @@ router.get('/blog/virtual-staging-disclosure-laws-by-state', (req, res) => {
   sendPage(res, path.join(__dirname, 'public', 'blog', 'virtual-staging-disclosure-laws-by-state.html'));
 });
 
+router.get('/blog/fsbo-listing-photos', (req, res) => {
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'fsbo-listing-photos.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));

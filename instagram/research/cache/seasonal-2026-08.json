@@ -1,0 +1,89 @@
+{
+  "key": "seasonal",
+  "fetchedAt": "2026-08-14T01:09:50.295Z",
+  "ttlDays": 30,
+  "queries": [
+    "seasonal home staging angles",
+    "real estate seasonality"
+  ],
+  "findings": [
+    {
+      "claim": "Nearly half (48%) of all U.S. listings had sat on the market at least 60 days, the highest share for any August since 2019, and 68.5% had been listed at least 30 days, up from 63.9% a year earlier.",
+      "sourceUrl": "https://investors.redfin.com/news-events/press-releases/detail/1179/half-of-all-home-listings-have-gone-extra-stale-unsold",
+      "sourceTitle": "Half of All Home Listings Have Gone Extra Stale, Unsold After 60 Days on Market (Redfin)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "In the four weeks ending August 9, 2026, U.S. pending home sales rose just 0.4% week over week and were down 1.6% year over year, sitting at their second-lowest level since March; median days on market was 42 and 21% of listings had a price drop.",
+      "sourceUrl": "https://www.redfin.com/news/housing-market-update-flicker-of-life-august/",
+      "sourceTitle": "U.S. Pending Home Sales, New Listings Show Flickers of Life to Start August (Redfin)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "New listings jumped 1.7% week over week in early August 2026, the biggest gain in five months and up 2.2% year over year, while the weekly average mortgage rate hit 6.69%, its highest level in over a year.",
+      "sourceUrl": "https://www.redfin.com/news/housing-market-update-flicker-of-life-august/",
+      "sourceTitle": "U.S. Pending Home Sales, New Listings Show Flickers of Life to Start August (Redfin)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Price cuts on for-sale homes typically peak in July and August, as sellers reduce asking prices on inventory that has lingered since spring, which shifts negotiating leverage to buyers.",
+      "sourceUrl": "https://www.zillow.com/learn/best-time-to-buy-a-house/",
+      "sourceTitle": "When Is the Best Time to Buy a House? (Zillow)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "August functions as a transition month in the housing calendar: the spring pace has settled, summer vacations wind down, and unsold listings from earlier in the season soften in price ahead of the fall market.",
+      "sourceUrl": "https://www.northendhomes.com/post/august-market-outlook-what-buyers-and-sellers-should-watch-heading-into-the-fall-market",
+      "sourceTitle": "August Market Outlook: What Buyers and Sellers Should Watch Heading Into the Fall Market",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "By mid-to-late August buyer fatigue sets in, as vacations, heat and back-to-school preparation cut showing foot traffic, while September and October draw serious, pre-approved, price-sensitive buyers who missed spring.",
+      "sourceUrl": "https://www.ownmarin.com/blog/best-time-to-sell-marin-fall-2026",
+      "sourceTitle": "Is August the Best Time to Sell in Marin County? (Own Marin)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Real estate agents advise that a large share of long days-on-market cases trace to weak listing photos, and that reviving a stale listing means new professional photos, virtual or video tours and staging rather than only a price cut; a listing with no offers and fewer than five private showings a week is likely mispriced.",
+      "sourceUrl": "https://www.homelight.com/blog/relisting-your-home/",
+      "sourceTitle": "Pros and Cons of Relisting Your Home: 5 Things to Do First (HomeLight)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "83% of buyers' agents said staging made it easier for a buyer to visualize a property as a future home, and over 41% of top agents say vacant homes benefit most from staging; professional staging runs a median of about $1,500.",
+      "sourceUrl": "https://aihomedesign.com/blog/real-estate/nars-home-staging-statistics/",
+      "sourceTitle": "NAR's Home Staging Statistics: Trends, Costs, and What Changed",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Peak rental season runs May through August with the highest competition in June and July; roughly 70% of all U.S. moves happen in this window, driven by graduations, new jobs, family moves timed to the school calendar, and students signing leases just before the school year starts.",
+      "sourceUrl": "https://www.avail.com/education/articles/when-is-peak-rental-season",
+      "sourceTitle": "Peak Rental Season: How to Prepare as a Landlord (Avail)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "The 2026 back-to-school dorm shift is from buying cheap and disposable items to curating fewer pieces: warm layered lighting replacing harsh overheads, natural wood and fabric textures replacing shiny plastics, and rooms styled to feel like an apartment and look good on camera.",
+      "sourceUrl": "https://divoom.com/blogs/industry-trends/back-to-school-2026-dorm-decor-trends",
+      "sourceTitle": "The 2026 Dorm Decor Shift: From Buying Cheap to Curating",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "The fall 2026 interior palette centers on burnt umber, burgundy, forest green and deep gold over warm neutral bases of cream, taupe and mushroom, with velvet, boucle, linen and nubby textures, plus dried botanicals such as pampas grass and eucalyptus.",
+      "sourceUrl": "https://hanodecor.com/blog/fall-interior-design-trends-seasonal-styling",
+      "sourceTitle": "Fall Interior Design Trends: Seasonal Styling for Autumn 2026 (HanoDecor)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Standard advice for the summer-to-fall styling switch is to store summer items completely out of sight and leave breathing room between objects on each surface, because seasonal coziness comes from texture, warmth, scent and light rather than added quantity.",
+      "sourceUrl": "https://jane-athome.com/fall-home-decor-trends/",
+      "sourceTitle": "Beautiful Fall Home Decor Ideas and Trends for 2026 (jane at home)",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "New listings historically fall an average of 9% heading into fall over the past seven years, and the period right after Labor Day sees a relative lull in new listings as sellers pause and buyer traffic drops with the school year.",
+      "sourceUrl": "https://thehill.com/business/5568549-september-housing-activity-unseasonably-resilient-zillow/",
+      "sourceTitle": "Fall housing market defies usual slowdown, could be a 'sweet spot' for buyers: Zillow (The Hill)",
+      "retrievedAt": "2026-08-13"
+    }
+  ]
+}

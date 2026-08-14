@@ -27,7 +27,7 @@
       "basicMask": "Schilder over één deel van de foto en beschrijf de wijziging die je wilt. Ideaal voor kleine correcties – een bank vervangen, een aanrecht leegmaken – als de rest van de foto al klopt.",
       "pdfTo3d": "Chat met een AI-designer die een kamer inricht, herontwerpt en samen met jou blijft bijschaven. Ideaal als je stijlen verkent in plaats van één foto afmaakt. Alleen op desktop.",
       "maskingStudio": "Markeer meerdere gebieden in verschillende kleuren, geef elk gebied een eigen meubelfoto of prompt en stage ze allemaal tegelijk. Ideaal als je exacte controle wilt – alles buiten je markeringen blijft pixelperfect.",
-      "exteriorStudio": "Werkt de buitenfoto van een woning bij: verander het tijdstip, maak de lucht helder en verwijder geparkeerde auto’s en rommel. Ideaal voor de voorgevel, tuin en straatbeeld — precies de foto’s die de stagingtools bewust nooit aanraken."
+      "exteriorStudio": "Werkt de buitenfoto van een woning bij: verander het tijdstip, maak de lucht helder en verwijder geparkeerde auto’s en rommel. Ideaal voor de voorgevel, tuin en straatbeeld, precies de foto’s die de stagingtools bewust nooit aanraken."
     },
     "exteriorStudio": "Buitenstudio"
   },
@@ -559,7 +559,7 @@
       "downloadNative": "native",
       "uploadAnotherShort": "Opnieuw",
       "downloadResultShort": "Download",
-      "galleryEvicted": "Oudere stagings zijn verwijderd om ruimte te maken — het gratis plan bewaart de meest recente.",
+      "galleryEvicted": "Oudere stagings zijn verwijderd om ruimte te maken. Het gratis plan bewaart de meest recente.",
       "galleryEvictedShared": "Een oudere staging had een actieve deellink, die niet meer werkt."
     }
   },
@@ -863,7 +863,7 @@
       "submitting": "Versturen…",
       "needDescription": "Beschrijf het probleem voordat je het verstuurt.",
       "failed": "We konden je melding niet versturen. Probeer het opnieuw.",
-      "successTitle": "Bedankt — we hebben het ontvangen.",
+      "successTitle": "Bedankt, we hebben het ontvangen.",
       "successBody": "Ons team kijkt ernaar. Als je een e-mailadres hebt achtergelaten, reageren we daar.",
       "done": "Klaar"
     }
@@ -985,7 +985,7 @@
     },
     "thumbnailStrip": {
       "label": "Basisafbeelding voor volgend bericht",
-      "help": "Selecteer welke kamerafbeelding de AI moet aanpassen wanneer je je volgende bericht verstuurt — vooral bij het toevoegen van meubilair. Handig als je meerdere uploads of gestylede versies hebt.",
+      "help": "Selecteer welke kamerafbeelding de AI moet aanpassen wanneer je je volgende bericht verstuurt, vooral bij het toevoegen van meubilair. Handig als je meerdere uploads of gestylede versies hebt.",
       "helpAria": "Wat betekent basisafbeelding?"
     },
     "alt": {
@@ -1004,8 +1004,8 @@
       "editedImage": "Met masker bewerkte ontwerpafbeelding{suffix}",
       "originalCarouselImage": "Originele afbeelding vóór maskerbewerkingen",
       "enlargedImage": "Volledige weergave van ontwerpafbeelding",
-      "thumbnailSelected": "{label} — geselecteerd als basisafbeelding voor je volgende bericht",
-      "thumbnailOption": "{label} — afbeelding {index} in gesprek"
+      "thumbnailSelected": "{label}, geselecteerd als basisafbeelding voor je volgende bericht",
+      "thumbnailOption": "{label}, afbeelding {index} in gesprek"
     },
     "maskEditor": {
       "title": "Bewerken met masker",
@@ -1024,9 +1024,9 @@
       "rerun": "Opnieuw genereren",
       "done": "Ziet er goed uit",
       "refineTitle": "De bewerking verfijnen",
-      "refineNote": "Schilder om meer van de bewerking te onthullen, wis om het te verbergen — dit hersnijdt alleen, het draait de AI niet opnieuw.",
-      "refineHelp": "Deze stap verfijnt alleen waar de wijziging van de AI zichtbaar is — het draait de AI niet opnieuw. Schilder om meer van de bewerking te onthullen, wis om het terug te halen. Het is een vangnet zodat de bewerking alleen het gebied raakt dat je koos en de rest van je foto niet kan verpesten. De vervaagde voorvertoning bovenop is er alleen zodat je de volledige bewerking kunt zien tijdens het verfijnen — hij komt niet in de uiteindelijke afbeelding.",
-      "promptHint": "Wees heel specifiek over locatie en plaatsing — bijvoorbeeld: “zet de bank strak tegen het midden van de achterwand.”",
+      "refineNote": "Schilder om meer van de bewerking te onthullen, wis om het te verbergen; dit hersnijdt alleen, het draait de AI niet opnieuw.",
+      "refineHelp": "Deze stap verfijnt alleen waar de wijziging van de AI zichtbaar is; het draait de AI niet opnieuw. Schilder om meer van de bewerking te onthullen, wis om het terug te halen. Het is een vangnet zodat de bewerking alleen het gebied raakt dat je koos en de rest van je foto niet kan verpesten. De vervaagde voorvertoning bovenop is er alleen zodat je de volledige bewerking kunt zien tijdens het verfijnen; hij komt niet in de uiteindelijke afbeelding.",
+      "promptHint": "Wees heel specifiek over locatie en plaatsing, bijvoorbeeld: “zet de bank strak tegen het midden van de achterwand.”",
       "refineHelpAria": "Wat de verfijnstap doet",
       "loadApplying": "Je bewerking toepassen…",
       "referenceLabel": "Referentiefoto (optioneel)",
@@ -1034,7 +1034,7 @@
       "referenceHint": "Optioneel: een foto van meubilair of decor om in het gemaskeerde gebied te plaatsen",
       "referenceRemove": "Referentiefoto verwijderen",
       "referenceAlt": "Referentie voor gemaskeerde bewerking",
-      "referenceTooLarge": "Die afbeelding is te groot — kies er een onder 25 MB.",
+      "referenceTooLarge": "Die afbeelding is te groot. Kies er een onder 25 MB.",
       "referenceInvalid": "Kies een geldige JPG-, PNG- of WebP-afbeelding.",
       "processing": "Verwerken...",
       "pleaseDrawMask": "Teken een masker over het gebied dat je wilt bewerken.",
@@ -1059,7 +1059,7 @@
       "title": "Uploaden & bestanden",
       "i1": {
         "q": "Mijn foto wil niet uploaden.",
-        "a": "Zorg dat het bestand een JPG, PNG, WebP of HEIC van minder dan 25 MB is. Heel grote telefoonfoto’s mislukken soms — verklein de afbeelding of maak er een schermafbeelding van en upload opnieuw. Als het dan nog misgaat, ververs de pagina en probeer het opnieuw."
+        "a": "Zorg dat het bestand een JPG, PNG, WebP of HEIC van minder dan 25 MB is. Heel grote telefoonfoto’s mislukken soms. Verklein de afbeelding of maak er een schermafbeelding van en upload opnieuw. Als het dan nog misgaat, ververs de pagina en probeer het opnieuw."
       },
       "i2": {
         "q": "Welke foto’s werken het best?",
@@ -1074,7 +1074,7 @@
       },
       "i2": {
         "q": "Welk plan of welke tool moet ik gebruiken?",
-        "a": "Gratis is perfect voor snelle losse kamers. <a href=\"stagify-plus.html\">Stagify+</a> ontgrendelt onbeperkte generaties, hogere-kwaliteitsmodellen, de maskeertool en de Prompt Bar. <a href=\"ai-designer.html\">AI-Designer</a> herontwerpt een hele kamer vanuit een korte chat — het best wanneer je wilt dat het de beslissingen voor je neemt."
+        "a": "Gratis is perfect voor snelle losse kamers. <a href=\"stagify-plus.html\">Stagify+</a> ontgrendelt onbeperkte generaties, hogere-kwaliteitsmodellen, de maskeertool en de Prompt Bar. <a href=\"ai-designer.html\">AI-Designer</a> herontwerpt een hele kamer vanuit een korte chat, en dat is het best wanneer je wilt dat het de beslissingen voor je neemt."
       },
       "i3": {
         "q": "Kan ik het meubilair en de indeling bepalen?",
@@ -1108,7 +1108,7 @@
       "title": "Account & inloggen",
       "i1": {
         "q": "Mijn verificatiecode is niet aangekomen.",
-        "a": "Controleer je spam- of reclamemap — codes kunnen een minuut duren. Is hij er nog steeds niet, gebruik dan \"Code opnieuw versturen\" en controleer of je e-mail goed is getypt."
+        "a": "Controleer je spam- of reclamemap. Codes kunnen een minuut duren. Is hij er nog steeds niet, gebruik dan \"Code opnieuw versturen\" en controleer of je e-mail goed is getypt."
       },
       "i2": {
         "q": "Ik ben mijn wachtwoord vergeten.",
@@ -1202,7 +1202,7 @@
     "title": "Maskeerstudio",
     "subtitle": "Markeer gebieden van je kamer in verschillende kleuren, geef elk zijn eigen meubilair en style ze allemaal tegelijk. Alleen de gemarkeerde gebieden kunnen veranderen, dus de rest van je foto blijft pixel-perfect.",
     "gateTitle": "Maskeerstudio is een Stagify+-functie",
-    "gateBody": "Meld je aan met een Stagify+-account om meerdere gebieden van een foto te markeren, elk zijn eigen meubilair te geven en ze allemaal tegelijk te stylen — met pixel-perfecte maskering die de rest van je foto niet kan raken.",
+    "gateBody": "Meld je aan met een Stagify+-account om meerdere gebieden van een foto te markeren, elk zijn eigen meubilair te geven en ze allemaal tegelijk te stylen, met pixel-perfecte maskering die de rest van je foto niet kan raken.",
     "gateCta": "Bekijk Stagify+",
     "gateBack": "Terug naar Home",
     "stepPhoto": "Kamerfoto",
@@ -1232,9 +1232,9 @@
     "needHighlight": "Schilder eerst minstens één gebied op de foto.",
     "needPromptOrFurniture": "Elk gemarkeerd gebied heeft een korte prompt of een meubelfoto nodig.",
     "doneToast": "Alle gebieden gestyled! Werk je markeringen bij, of druk op Ziet er goed uit om het resultaat te zien.",
-    "partialToast": "{done} van {total} gebieden gestyled — probeer de mislukte opnieuw.",
+    "partialToast": "{done} van {total} gebieden gestyled. Probeer de mislukte opnieuw.",
     "failedToast": "Styling mislukt. Probeer het opnieuw.",
-    "rateLimited": "Je genereert te snel — wacht een minuut en probeer het opnieuw.",
+    "rateLimited": "Je genereert te snel. Wacht een minuut en probeer het opnieuw.",
     "shortcutsHint": "<kbd>B</kbd> penseel&nbsp;· <kbd>E</kbd> wissen&nbsp;· <kbd>R</kbd> rechthoek&nbsp;· <kbd>W</kbd> magische selectie&nbsp;· <kbd>[</kbd> <kbd>]</kbd> penseelgrootte&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> gebied kiezen&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> ongedaan maken&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> opnieuw&nbsp;· houd <kbd>H</kbd> foto bekijken",
     "compare": "Vergelijken",
     "undo": "Ongedaan maken",
@@ -1265,8 +1265,8 @@
     "clearHighlight": "Markering wissen",
     "snapToObject": "Uitlijnen op object",
     "snapToObjectHint": "Vergroot deze markering tot de randen van wat de AI daadwerkelijk heeft getekend, zodat er niets wordt afgesneden.",
-    "spillFlag": "Deze bewerking reikt voorbij de markering — Uitlijnen op object beschikbaar.",
-    "snapToast": "Sommige gegenereerde onderdelen reiken voorbij je markering — open dat gebied en tik op ‘Uitlijnen op object’ om de rest mee te nemen.",
+    "spillFlag": "Deze bewerking reikt voorbij de markering. Uitlijnen op object beschikbaar.",
+    "snapToast": "Sommige gegenereerde onderdelen reiken voorbij je markering. Open dat gebied en tik op ‘Uitlijnen op object’ om de rest mee te nemen.",
     "toolRect": "Rechthoek",
     "renameAria": "Hernoem dit gebied",
     "resumeTitle": "Je laatste sessie hervatten?",
@@ -1347,7 +1347,7 @@
     "monitoring": {
       "since": "Bewaakt sinds {date} · laatste controle {ago}",
       "collecting": "Gegevens verzamelen…",
-      "error": "Kan de status-API niet bereiken — opnieuw proberen…"
+      "error": "Kan de status-API niet bereiken, opnieuw proberen…"
     },
     "tooltip": {
       "nodata": "Geen gegevens",
@@ -1362,7 +1362,7 @@
   "enterprise": {
     "hero": {
       "title": "Stagify Enterprise",
-      "subtitle": "Geef je hele team onbeperkte AI-styling. Elke medewerker met je bedrijfs-e-mail krijgt automatisch Stagify+ — je betaalt alleen voor wat ze gebruiken."
+      "subtitle": "Geef je hele team onbeperkte AI-styling. Elke medewerker met je bedrijfs-e-mail krijgt automatisch Stagify+, en je betaalt alleen voor wat ze gebruiken."
     },
     "highlights": {
       "perGenerationLabel": "per generatie",
@@ -1416,7 +1416,7 @@
       "subtitle": "Meubels verwijderen, de AI Designer, de Masking Studio en modellen van hogere kwaliteit: elk professioneel gereedschap, voor minder dan de kosten van één traditionele styling."
     },
     "plan": {
-      "hintAccountFirst": "Maak eerst een gratis account aan — zo wordt je abonnement aan jou gekoppeld.",
+      "hintAccountFirst": "Maak eerst een gratis account aan. Zo wordt je abonnement aan jou gekoppeld.",
       "hintTip": "Tip: meld je eerst aan via het profielmenu, zodat je betaling aan je Stagify-account kan worden gekoppeld.",
       "hintStagingDisabled": "Abonnementen zijn uitgeschakeld op de staging-site.",
       "billedMonthly": "Maandelijks gefactureerd · Altijd opzegbaar",
@@ -1550,10 +1550,10 @@
     },
     "share": {
       "title": "Delen",
-      "note": "Iedereen met deze link kan de ingerichte foto openen. Verwijder de render om hem weg te halen — bezoeken stoppen binnen 15 minuten.",
+      "note": "Iedereen met deze link kan de ingerichte foto openen. Verwijder de render om hem weg te halen. Bezoeken stoppen binnen 15 minuten.",
       "urlLabel": "Deellink",
       "copy": "Link kopiëren",
-      "copied": "Gekopieerd — de link staat op je klembord.",
+      "copied": "Gekopieerd. De link staat op je klembord.",
       "copyFailed": "Automatisch kopiëren lukte niet. Selecteer de link hierboven en kopieer hem.",
       "notOpened": "Nog niet geopend",
       "opened": {
@@ -1599,25 +1599,25 @@
   },
   "exteriorStudio": {
     "title": "Buitenstudio",
-    "subtitle": "De eerste foto van elke advertentie is de buitenkant van het huis — en dat is de ene opname die je niet opnieuw maakt als het weer omslaat. Upload hem hier en krijg de versie van een mooiere dag.",
+    "subtitle": "De eerste foto van elke advertentie is de buitenkant van het huis, en dat is de ene opname die je niet opnieuw maakt als het weer omslaat. Upload hem hier en krijg de versie van een mooiere dag.",
     "ctaUpgrade": "Krijg Stagify+ om het te gebruiken",
     "features": {
-      "title": "Wat het verandert — en wat het nooit aanraakt",
+      "title": "Wat het verandert, en wat het nooit aanraakt",
       "light": {
         "title": "Tijdstip van de dag",
         "body": "Fotografeer op het middaguur, publiceer in het gouden uur. Ochtend, middag, gouden uur of schemering, met schaduwen en raamlicht die kloppen met de gekozen zon."
       },
       "sky": {
         "title": "Lucht en weer",
-        "body": "Een vlakke grijze lucht wordt helderblauw, licht bewolkt of juist dramatischer — afgestemd op het licht dat al op het pand valt, met schone randen langs de daklijn."
+        "body": "Een vlakke grijze lucht wordt helderblauw, licht bewolkt of juist dramatischer, afgestemd op het licht dat al op het pand valt, met schone randen langs de daklijn."
       },
       "clutter": {
         "title": "Auto’s, rommel en sneeuw",
-        "body": "Het busje van de buren op de oprit, de containers die buiten staan, de tuinslang op het gazon, de voorbijganger — en de sneeuw, regen en plassen die er toevallig lagen op de dag van de opname. Tijdelijke dingen verdwijnen, en het oppervlak eronder wordt passend hersteld."
+        "body": "Het busje van de buren op de oprit, de containers die buiten staan, de tuinslang op het gazon, de voorbijganger, en de sneeuw, regen en plassen die er toevallig lagen op de dag van de opname. Tijdelijke dingen verdwijnen, en het oppervlak eronder wordt passend hersteld."
       },
       "honest": {
         "title": "Het huis blijft het huis",
-        "body": "Geen nieuw gazon, geen weggepoetste stroomkabels, geen nieuwe oprit, geen overgeschilderde muren. Wie aan de stoep staat ziet wat de foto liet zien — en daardoor blijft de foto bruikbaar in een advertentie."
+        "body": "Geen nieuw gazon, geen weggepoetste stroomkabels, geen nieuwe oprit, geen overgeschilderde muren. Wie aan de stoep staat ziet wat de foto liet zien, en daardoor blijft de foto bruikbaar in een advertentie."
       }
     },
     "upload": {
@@ -1670,7 +1670,7 @@
     },
     "errors": {
       "generic": "Deze foto kon niet worden verbeterd. Probeer een andere opname van de buitenkant.",
-      "network": "De verbinding viel weg voordat de foto terugkwam. Je upload staat er nog — probeer het opnieuw."
+      "network": "De verbinding viel weg voordat de foto terugkwam. Je upload staat er nog. Probeer het opnieuw."
     },
     "stepPhoto": "Buitenfoto",
     "stepPhotoHint": "Upload een foto in het werkgebied rechts.",

@@ -1,0 +1,77 @@
+/* slider-hero
+ *
+ * The site's own comparison control, made into a poster. One card, a vertical seam, and a
+ * drag handle that signals "this is interactive" even though a feed image is not.
+ *
+ * The chrome is deliberately thinner than editorial-card: no subhead, one capsule of copy.
+ * This layout is for when the pair of photos IS the argument and any sentence you add is
+ * getting in the way.
+ */
+
+.frame { padding: 56px; }
+.frame > .stack { height: 100%; gap: 30px; }
+
+.compare {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 22px 60px rgba(30, 58, 138, .3);
+}
+
+.compare__half { position: absolute; inset: 0; background-position: center; background-size: cover; }
+/* The BEFORE side is clipped to the left of the seam. Both photos stay at natural scale, so
+ * the seam is a straight edge rather than two differently squashed images meeting. */
+.compare__half--before { clip-path: inset(0 calc(100% - var(--split) * 1%) 0 0); }
+
+.seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--split) * 1%);
+  width: 6px;
+  margin-left: -3px;
+  background: #fff;
+  box-shadow: 0 0 22px rgba(15, 23, 42, .45);
+}
+
+.handle {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--split) * 1%);
+  width: 92px;
+  height: 92px;
+  margin: -46px 0 0 -46px;
+  border-radius: 999px;
+  background: var(--brand);
+  border: 5px solid #fff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, .4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #fff;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.compare .pill { position: absolute; }
+.compare .pill--before { top: 28px; left: 28px; }
+.compare .pill--after { top: 28px; right: 28px; }
+
+.caption-row { display: flex; justify-content: center; }
+
+.hl {
+  margin: 0;
+  font-size: 66px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -.028em;
+  text-align: center;
+}
+.hl .hl-lead { color: #fff; }
+.hl .hl-accent { color: var(--brand-pale); }
+
+.frame--tall .hl { font-size: 74px; }

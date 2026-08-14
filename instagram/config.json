@@ -1,0 +1,244 @@
+{
+  "account": {
+    "handle": "@stagify.ai",
+    "profileUrl": "https://www.instagram.com/stagify.ai/",
+    "bioLink": "https://stagify.ai",
+    "_bioLinkNote": "One static link. Per-post campaign slugs were considered and deliberately not built, so never invent a tracked URL for a caption."
+  },
+
+  "voice": {
+    "principles": [
+      "Short declarative sentences. The existing posts read 'Empty to staged. One click. Free.' and that cadence is the brand.",
+      "Lead with the buyer's problem, not the product's feature.",
+      "Numbers beat adjectives. '8 seconds' beats 'fast'.",
+      "Never oversell. The product is genuinely good, so claims stay checkable.",
+      "No em dashes, no en dashes. Use a period, a comma or a colon."
+    ],
+    "avoid": [
+      "game changer", "revolutionary", "unlock", "elevate", "in today's market",
+      "leverage", "seamless", "cutting edge", "transform your listings"
+    ]
+  },
+
+  "audiences": {
+    "agents": {
+      "label": "Real estate agents and brokers",
+      "caresAbout": "days on market, cost versus physical staging, MLS and NAR disclosure compliance, winning the listing appointment",
+      "clickMeans": "signs up and stages a real listing"
+    },
+    "homeowners": {
+      "label": "Homeowners about to sell",
+      "caresAbout": "sale price, what buyers notice first, doing it themselves without hiring anyone",
+      "clickMeans": "tries a free render on their own photo"
+    },
+    "design": {
+      "label": "Interior design and renovation audience",
+      "caresAbout": "style, palettes, before and after satisfaction, seeing a room change",
+      "clickMeans": "follows and shares, occasionally converts"
+    }
+  },
+
+  "hookArchetypes": [
+    "problem-reveal",
+    "cost-of-inaction",
+    "one-to-many",
+    "myth-bust",
+    "number-shock",
+    "objection-flip",
+    "buyer-psychology",
+    "process-peek",
+    "side-by-side-comparison",
+    "mistake-list",
+    "seasonal-timing",
+    "question-open"
+  ],
+
+  "ctaStyles": [
+    "try-free-pill",
+    "link-in-bio-plain",
+    "free-first-render",
+    "see-all-the-styles",
+    "save-this-for-your-next-listing"
+  ],
+
+  "roomTypes": {
+    "_source": "lib/staging/promptMatrix.js. A room type outside this list is rejected by processStaging.",
+    "valid": ["Bedroom", "Living room", "Dining room", "Kitchen", "Office", "Bathroom", "Outdoors", "Dorm"],
+    "aliases": {
+      "nursery": "Bedroom",
+      "patio": "Outdoors",
+      "backyard": "Outdoors",
+      "deck": "Outdoors",
+      "entryway": "Living room",
+      "den": "Living room",
+      "home office": "Office",
+      "studio": "Living room",
+      "basement": "Living room"
+    }
+  },
+
+  "styles": {
+    "_source": "lib/staging/promptMatrix.js, identical set for all 8 room types.",
+    "valid": ["standard", "modern", "midcentury", "scandinavian", "luxury", "coastal", "farmhouse"]
+  },
+
+  "features": {
+    "_note": "featureShown is a hard cooldown dimension. This catalog is what stops the account posting the same empty living room forever. Each entry names the proof a post about it has to actually show.",
+    "core-staging": {
+      "label": "Plain virtual staging",
+      "proof": "Upload an empty room, get it furnished. The most common post and the baseline claim, so it needs the strongest single image rather than a clever angle.",
+      "suits": ["diagonal-reveal", "slider-hero", "process-strip"]
+    },
+    "style-presets": {
+      "label": "Style presets",
+      "proof": "One room rendered in several of the seven presets, side by side.",
+      "suits": ["style-grid", "editorial-card", "carousel-deck"]
+    },
+    "room-breadth": {
+      "label": "Room type coverage",
+      "proof": "Rooms competitors skip. Bathroom, Office and especially Dorm.",
+      "suits": ["style-grid", "process-strip", "carousel-deck"]
+    },
+    "exterior-studio": {
+      "label": "Exterior Studio",
+      "proof": "Curb appeal, with the time of day or sky preset visibly changed.",
+      "suits": ["diagonal-reveal", "slider-hero", "stat-card"]
+    },
+    "furniture-removal": {
+      "label": "Furniture removal",
+      "proof": "A cluttered room emptied cleanly. The hardest edit to fake, so it is the most persuasive.",
+      "suits": ["diagonal-reveal", "slider-hero", "annotated-callout"]
+    },
+    "masking-studio": {
+      "label": "Masking Studio",
+      "proof": "One region brushed and changed while everything else stays pixel identical.",
+      "suits": ["annotated-callout", "process-strip"]
+    },
+    "ai-designer": {
+      "label": "AI Designer",
+      "proof": "A chat instruction and the render that came back from it.",
+      "suits": ["process-strip", "carousel-deck"]
+    },
+    "furniture-reference": {
+      "label": "Furniture reference upload",
+      "proof": "A client's own furniture placed into the room, up to five reference images.",
+      "suits": ["annotated-callout", "editorial-card"]
+    },
+    "cad-to-3d": {
+      "label": "Floor plan to 3D",
+      "proof": "A flat blueprint and the rendered room built from it.",
+      "suits": ["diagonal-reveal", "process-strip"]
+    },
+    "prompt-bar": {
+      "label": "Prompt bar",
+      "proof": "The one specific request a preset cannot express, and the result.",
+      "suits": ["annotated-callout", "quote-card"]
+    },
+    "client-share-links": {
+      "label": "Client share links",
+      "proof": "Sending a broker a link that needs no account.",
+      "suits": ["process-strip", "stat-card"]
+    },
+    "disclosure-stamping": {
+      "label": "Virtual staging disclosure",
+      "proof": "MLS and NAR compliant labelling, applied automatically. A genuine differentiator most competitors ignore.",
+      "suits": ["myth-fact", "editorial-card", "stat-card"]
+    },
+    "languages": {
+      "label": "Eleven languages",
+      "proof": "The same studio in another language. The product is not English only.",
+      "suits": ["style-grid", "stat-card"]
+    },
+    "free-tier": {
+      "label": "Free tier",
+      "proof": "Real renders with no card. State the actual limit, do not imply unlimited.",
+      "suits": ["stat-card", "myth-fact", "quote-card"]
+    }
+  },
+
+  "layoutFamilies": {
+    "_note": "The coarse visual shape, one level above template. Two templates can be different ids and still look like the same post at thumbnail size, which is exactly how three consecutive frame-divided-by-a-blue-line posts passed every other cooldown. Derived from each template's meta.layoutFamily; never declared by hand on a candidate.",
+    "fullbleed": "Photo fills the frame and a seam divides before from after. The account's default move, and the one that needs holding back.",
+    "editorial": "Type led field with the photography sitting inside it as cards.",
+    "grid": "Several images arranged as a grid.",
+    "type-first": "A number or a phrase dominates and the photo supports it.",
+    "card": "A discrete card is the subject, such as a quote or a pair of panels.",
+    "annotated": "One image marked up in place.",
+    "sequence": "Ordered steps or slides that build.",
+    "illustrated": "Drawn or composited elements carry the frame rather than photography."
+  },
+
+  "cooldowns": {
+    "_note": "A candidate is hard blocked if the value was used within the window, counted in posts. Tune here, not in code.",
+    "hard": {
+      "featureShown": 8,
+      "template": 6,
+      "hookArchetype": 5,
+      "layoutFamily": 3,
+      "roomType": 4,
+      "style": 4,
+      "palette": 4,
+      "audience": 2,
+      "ctaStyle": 3
+    },
+    "_windowCeiling": "A window must stay below the number of values the dimension has, or every value ends up blocked forever. audience is 2 because there are only 3 audiences. cooldown.js clamps anything wider and reports it, but fix the number here rather than relying on the clamp.",
+    "similarity": {
+      "topic": { "window": 30, "maxJaccard": 0.5 },
+      "visualSummary": { "window": 10, "maxJaccard": 0.45 },
+      "headline": { "window": 30, "maxJaccard": 0.45 }
+    },
+    "warn": {
+      "hashtagSet": { "window": 3, "maxOverlap": 0.6 }
+    },
+    "relaxOrder": [
+      "ctaStyle", "palette", "style", "audience",
+      "roomType", "hookArchetype", "template", "layoutFamily", "featureShown"
+    ]
+  },
+
+  "caption": {
+    "maxChars": 2200,
+    "hookWithinChars": 125,
+    "hashtagRange": [5, 15],
+    "altMaxChars": 100
+  },
+
+  "hashtagPools": {
+    "shared": [
+      "#virtualstaging", "#homestaging", "#realestate", "#aistaging", "#stagify"
+    ],
+    "agents": [
+      "#realtorlife", "#realestateagent", "#listingagent", "#realestatemarketing",
+      "#realestatetips", "#justlisted", "#realtortips", "#brokerlife"
+    ],
+    "homeowners": [
+      "#sellingmyhome", "#homeselling", "#curbappeal", "#hometips",
+      "#movingsoon", "#homevalue", "#sellyourhome"
+    ],
+    "design": [
+      "#interiordesign", "#homedecor", "#interiorstyling", "#beforeandafter",
+      "#roommakeover", "#homeinspo", "#designinspo", "#interiors"
+    ]
+  },
+
+  "models": {
+    "_note": "Quality first by decision. Never skipQualityReview, always the full retry loop.",
+    "staging": "gemini-3.1-flash-image",
+    "textToImage": "gemini-2.5-flash-image",
+    "fal": "fal-ai/flux/dev",
+    "qualityMaxAttempts": 3
+  },
+
+  "stock": {
+    "_note": "Free-license APIs only. Downloading image bytes from any other host is refused in code, not by convention.",
+    "allowedHosts": ["images.pexels.com", "images.unsplash.com"],
+    "alwaysAttribute": true
+  },
+
+  "render": {
+    "scale": 2,
+    "uploadQuality": 92,
+    "archiveQuality": 95,
+    "thumbWidth": 400
+  }
+}

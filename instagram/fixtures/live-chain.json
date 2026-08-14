@@ -1,0 +1,19 @@
+{
+  "id": "fixture-live-chain",
+  "template": "diagonal-reveal",
+  "formats": ["single"],
+  "_note": "Real output from bin/smoke-images.js: a Gemini-invented empty room staged by the actual processStaging pipeline. Regenerate the hashes by rerunning the smoke script.",
+  "data": {
+    "headline": {
+      "lead": "This room was empty",
+      "accent": "eighteen seconds ago."
+    },
+    "beforeImage": "/instagram/assets/sources/e4b8a766297e33ab4620e8cf35d1d4ce3111d6c68d5d6a4d2ad4fd548550ac73.webp",
+    "afterImage": "/instagram/assets/sources/f1765ebc9a30481b180617bf244518064bfe41424fbc5bdb340f01cd15c62242.webp",
+    "beforeLabel": "BEFORE",
+    "afterLabel": "AFTER",
+    "cta": "Try free at Stagify.ai",
+    "disclosure": "Virtually staged with Stagify.ai",
+    "diagonal": { "leftY": 58, "rightY": 30 }
+  }
+}

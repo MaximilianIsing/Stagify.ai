@@ -179,7 +179,7 @@ export function createUpload(deps) {
 
   function refErrorMessage(err) {
     return err && err.message === 'size'
-      ? tx('pdf.maskEditor.referenceTooLarge', 'That image is too large — please choose one under 25 MB.')
+      ? tx('pdf.maskEditor.referenceTooLarge', 'That image is too large. Please choose one under 25 MB.')
       : tx('pdf.maskEditor.referenceInvalid', 'Please choose a valid JPG, PNG, or WebP image.');
   }
 

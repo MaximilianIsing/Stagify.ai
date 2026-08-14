@@ -24,7 +24,7 @@
     "logoAlt": "Logo Stagify.ai – vai alla home",
     "tips": {
       "imageStaging": "Arreda un’intera stanza da una sola foto: scegli il tipo di ambiente e lo stile d’arredo, al resto pensa l’IA. Ideale per stanze vuote o quasi vuote quando vuoi un risultato rapido e completo.",
-      "basicMask": "Dipingi su una parte della foto e descrivi la modifica che desideri. Ideale per piccoli ritocchi — cambiare un divano, liberare un piano — quando il resto dell’immagine va già bene.",
+      "basicMask": "Dipingi su una parte della foto e descrivi la modifica che desideri. Ideale per piccoli ritocchi (cambiare un divano, liberare un piano) quando il resto dell’immagine va già bene.",
       "pdfTo3d": "Chatta con un designer IA che arreda, ridisegna e continua a rifinire una stanza insieme a te. Ideale quando esplori idee invece di completare una singola foto. Solo da computer.",
       "maskingStudio": "Evidenzia più aree con colori diversi, assegna a ciascuna la sua foto d’arredo o istruzione e arredale tutte in una volta. Ideale quando serve un controllo esatto: tutto ciò che resta fuori dalle evidenziazioni non cambia di un pixel.",
       "exteriorStudio": "Sistema la foto dell’esterno di un immobile: cambia l’ora del giorno, schiarisce il cielo e rimuove auto parcheggiate e disordine. Ideale per facciata, giardino e riprese dalla strada, che gli strumenti di home staging non toccano mai."
@@ -1026,7 +1026,7 @@
       "refineTitle": "Perfeziona la modifica",
       "refineNote": "Dipingi per rivelare di più della modifica, cancella per nasconderla: questo ritaglia soltanto, non riesegue l’IA.",
       "refineHelp": "Questo passaggio regola soltanto dove appare la modifica dell’IA, non riesegue l’IA. Dipingi per rivelare di più della modifica, cancella per ridurla. È una rete di sicurezza, così la modifica tocca solo l’area che hai scelto e non può rovinare il resto della tua foto. L’anteprima sfumata mostrata sopra serve solo a farti vedere l’intera modifica mentre la perfezioni; non comparirà nell’immagine finale.",
-      "promptHint": "Sii molto specifico su posizione e collocazione — per esempio: “metti il divano a filo contro il centro della parete di fondo.”",
+      "promptHint": "Sii molto specifico su posizione e collocazione, per esempio: “metti il divano a filo contro il centro della parete di fondo.”",
       "refineHelpAria": "Cosa fa il passaggio di perfezionamento",
       "loadApplying": "Applicazione della tua modifica…",
       "referenceLabel": "Foto di riferimento (facoltativo)",
@@ -1232,7 +1232,7 @@
     "needHighlight": "Prima dipingi almeno un’area sulla foto.",
     "needPromptOrFurniture": "Ogni area evidenziata ha bisogno di una breve istruzione o di una foto di mobili.",
     "doneToast": "Tutte le aree arredate! Ritocca le evidenziazioni o premi Va bene così per vedere il risultato.",
-    "partialToast": "{done} di {total} aree arredate — riprova quelle non riuscite.",
+    "partialToast": "{done} di {total} aree arredate. Riprova quelle non riuscite.",
     "failedToast": "Staging non riuscito. Riprova.",
     "rateLimited": "Stai generando troppo in fretta: aspetta un minuto e riprova.",
     "shortcutsHint": "<kbd>B</kbd> pennello&nbsp;· <kbd>E</kbd> gomma&nbsp;· <kbd>R</kbd> rettangolo&nbsp;· <kbd>W</kbd> bacchetta&nbsp;· <kbd>[</kbd> <kbd>]</kbd> dimensione pennello&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> scegli area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> annulla&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> ripeti&nbsp;· tieni premuto <kbd>H</kbd> vedi foto",
@@ -1265,8 +1265,8 @@
     "clearHighlight": "Cancella evidenziazione",
     "snapToObject": "Adatta all’oggetto",
     "snapToObjectHint": "Estende questa evidenziazione fino ai bordi di ciò che l’IA ha effettivamente disegnato, così non viene tagliato nulla.",
-    "spillFlag": "Questa modifica supera l’evidenziazione — Adatta all’oggetto disponibile.",
-    "snapToast": "Alcuni elementi generati superano la tua evidenziazione — apri quell’area e tocca «Adatta all’oggetto» per includere il resto.",
+    "spillFlag": "Questa modifica supera l’evidenziazione. Adatta all’oggetto disponibile.",
+    "snapToast": "Alcuni elementi generati superano la tua evidenziazione. Apri quell’area e tocca «Adatta all’oggetto» per includere il resto.",
     "toolRect": "Rettangolo",
     "renameAria": "Rinomina questa area",
     "resumeTitle": "Riprendere l’ultima sessione?",
@@ -1347,7 +1347,7 @@
     "monitoring": {
       "since": "Monitoraggio da {date} · ultimo controllo {ago}",
       "collecting": "Raccolta dei dati…",
-      "error": "Impossibile raggiungere l’API di stato — nuovo tentativo…"
+      "error": "Impossibile raggiungere l’API di stato, nuovo tentativo…"
     },
     "tooltip": {
       "nodata": "Nessun dato",
@@ -1609,11 +1609,11 @@
       },
       "sky": {
         "title": "Cielo e meteo",
-        "body": "Un cielo grigio e piatto diventa azzurro limpido, con nuvole leggere o più drammatico — coerente con la luce già presente sull’edificio e con bordi puliti lungo il tetto."
+        "body": "Un cielo grigio e piatto diventa azzurro limpido, con nuvole leggere o più drammatico, coerente con la luce già presente sull’edificio e con bordi puliti lungo il tetto."
       },
       "clutter": {
         "title": "Auto, ingombri e neve",
-        "body": "Il furgone del vicino nel vialetto, i bidoni lasciati fuori, il tubo sul prato, il passante — e la neve, la pioggia e le pozzanghere che c’erano il giorno dello scatto. Ciò che è temporaneo sparisce, e la superficie sottostante viene ricostruita in modo coerente."
+        "body": "Il furgone del vicino nel vialetto, i bidoni lasciati fuori, il tubo sul prato, il passante, e la neve, la pioggia e le pozzanghere che c’erano il giorno dello scatto. Ciò che è temporaneo sparisce, e la superficie sottostante viene ricostruita in modo coerente."
       },
       "honest": {
         "title": "La casa resta la casa",

@@ -1,0 +1,173 @@
+{
+  "_note": "Offline fixtures for bin/templates.js --smoke. Uses repo media only, so it needs no keys and no network. The copy here is deliberately near the length limits, because a fixture with three-word headlines proves nothing about a template that has to hold a real one.",
+
+  "diagonal-reveal": {
+    "headline": { "lead": "This room was empty", "accent": "eight seconds ago." },
+    "beforeImage": "/public/media-webp/Homepage/Restage/empty.webp",
+    "afterImage": "/public/media-webp/Homepage/Restage/r07.webp",
+    "cta": "Try free at Stagify.ai",
+    "disclosure": "Virtually staged with Stagify.ai",
+    "diagonal": { "leftY": 55, "rightY": 26 }
+  },
+
+  "editorial-card": {
+    "eyebrow": "AI VIRTUAL STAGING",
+    "headline": { "lead": "Buyers decide in three photos.", "accent": "Make yours count." },
+    "subhead": "The listing photo they linger on is almost never the kitchen. It is the room they can picture living in.",
+    "cards": [
+      {
+        "image": "/public/media-webp/Homepage/Restage/r12.webp",
+        "pill": "SCANDINAVIAN",
+        "caption": "Light, plain, and easy to imagine your own things in"
+      },
+      {
+        "image": "/public/media-webp/Homepage/Restage/r31.webp",
+        "pill": "LUXURY",
+        "caption": "For the move-up buyer who wants to be sold to"
+      }
+    ],
+    "cta": "Stage one free",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+
+  "style-grid": {
+    "eyebrow": "AI VIRTUAL STAGING",
+    "headline": { "lead": "One empty room.", "accent": "Four different buyers." },
+    "subhead": "Same photograph, four presets, four people who each think it was staged for them.",
+    "sourceImage": "/public/media-webp/Homepage/Restage/empty.webp",
+    "sourceLabel": "EMPTY ROOM",
+    "variants": [
+      { "image": "/public/media-webp/Homepage/Restage/r03.webp", "pill": "MIDCENTURY", "caption": "The design-led buyer" },
+      { "image": "/public/media-webp/Homepage/Restage/r18.webp", "pill": "SCANDINAVIAN", "caption": "The urban minimalist" },
+      { "image": "/public/media-webp/Homepage/Restage/r44.webp", "pill": "LUXURY", "caption": "The move-up buyer" },
+      { "image": "/public/media-webp/Homepage/Restage/r61.webp", "pill": "FARMHOUSE", "caption": "The suburban family" }
+    ],
+    "cta": "See all seven",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+
+  "stat-card": {
+    "eyebrow": "AI VIRTUAL STAGING",
+    "figure": "8",
+    "unit": "s",
+    "claim": "That is the whole job now.",
+    "support": "Physical staging takes a week to book, a day to install, and comes back out before closing.",
+    "source": "Measured on Stagify renders, not a market estimate.",
+    "image": "/public/media-webp/Homepage/Restage/r22.webp",
+    "imagePill": "COASTAL",
+    "cta": "Stage one free",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+
+  "slider-hero": {
+    "headline": { "lead": "Same room.", "accent": "Same afternoon." },
+    "beforeImage": "/public/media-webp/Homepage/Restage/empty.webp",
+    "afterImage": "/public/media-webp/Homepage/Restage/r55.webp",
+    "caption": "Drag the line on any listing photo",
+    "split": 46,
+    "cta": "Try it free",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+
+  "myth-fact": {
+    "headline": { "lead": "The disclosure question,", "accent": "answered properly." },
+    "pairs": [
+      {
+        "myth": "Virtual staging is basically lying to buyers.",
+        "mythNote": "The objection most agents raise first, and the one competitors avoid answering.",
+        "fact": "It is legal, expected, and labelled.",
+        "factNote": "MLS and NAR rules ask for disclosure, not abstinence. Every Stagify render carries the tag automatically.",
+        "image": "/public/media-webp/Homepage/Restage/r09.webp"
+      },
+      {
+        "myth": "Buyers feel cheated when they walk in.",
+        "fact": "They feel cheated when nobody told them.",
+        "factNote": "A labelled render sets the expectation. An unlabelled one is the thing that breaks trust.",
+        "image": "/public/media-webp/Homepage/Restage/r27.webp"
+      }
+    ],
+    "cta": "See how it labels",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+
+  "annotated-callout": {
+    "headline": { "lead": "Three decisions", "accent": "in one render." },
+    "image": "/public/media-webp/Homepage/Restage/r41.webp",
+    "callouts": [
+      { "x": 30, "y": 62, "text": "Seating pulled off the wall so the room reads deeper than it is" },
+      { "x": 66, "y": 40, "text": "Art hung at eye height, which is where a buyer's camera phone lands" },
+      { "x": 80, "y": 74, "text": "A rug sized to the sofa, the single most common staging mistake" }
+    ],
+    "cta": "Stage one free",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+
+  "quote-card": {
+    "quote": "I stopped booking the staging company for anything under four hundred thousand. This does the photos in an afternoon.",
+    "name": "Placeholder Name",
+    "role": "Fixture only, replace before shipping",
+    "image": "/public/media-webp/Homepage/Restage/r16.webp",
+    "imagePill": "MIDCENTURY",
+    "cta": "Try it free",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+
+  "process-strip": {
+    "headline": { "lead": "Upload, pick, done.", "accent": "That is the product." },
+    "steps": [
+      {
+        "title": "Upload the listing photo",
+        "note": "Straight off the camera roll. No measuring, no floor plan.",
+        "image": "/public/media-webp/Homepage/Restage/empty.webp"
+      },
+      {
+        "title": "Pick a style",
+        "note": "Seven presets, or describe what you want in the prompt bar.",
+        "image": "/public/media-webp/Homepage/Restage/r33.webp"
+      },
+      {
+        "title": "Download it labelled",
+        "note": "The virtual staging disclosure is already on it.",
+        "image": "/public/media-webp/Homepage/Restage/r72.webp"
+      }
+    ],
+    "cta": "Start free",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+
+  "carousel-deck": {
+    "slideCount": 5,
+    "hook": {
+      "question": "Your worst listing photo",
+      "accent": "is the empty one.",
+      "image": "/public/media-webp/Homepage/Restage/empty.webp",
+      "swipeLabel": "Here is the fix"
+    },
+    "proofs": [
+      {
+        "line": "An empty room gives a buyer nothing to hold onto.",
+        "note": "They cannot judge scale, so they judge the photo instead.",
+        "image": "/public/media-webp/Homepage/Restage/r05.webp",
+        "pill": "SCANDINAVIAN"
+      },
+      {
+        "line": "Furniture tells them what fits.",
+        "note": "A sofa in frame is the cheapest way to answer the only question they have.",
+        "image": "/public/media-webp/Homepage/Restage/r24.webp",
+        "pill": "MIDCENTURY"
+      },
+      {
+        "line": "And it costs nothing to try.",
+        "note": "One photo, one preset, no card.",
+        "image": "/public/media-webp/Homepage/Restage/r48.webp",
+        "pill": "LUXURY"
+      }
+    ],
+    "close": {
+      "line": "Stage the empty one first.",
+      "note": "It is the photo doing the least work in your listing right now."
+    },
+    "cta": "Start free at Stagify.ai",
+    "disclosure": "Virtually staged with Stagify.ai"
+  }
+}

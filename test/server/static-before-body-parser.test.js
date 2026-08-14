@@ -76,9 +76,9 @@ test('every HTML/document route in routes/public.js goes through sendPage', () =
     'sendPage must set no-cache before sending',
   );
 
-  // The ten blog articles plus /, /privacy, /status, robots.txt and sitemap.xml.
+  // The eleven blog articles plus /, /privacy, /status, robots.txt and sitemap.xml.
   const sendPageCalls = (publicRoutes.match(/sendPage\(res,/g) || []).length;
-  assert.equal(sendPageCalls, 15, `expected 15 sendPage() call sites, found ${sendPageCalls}`);
+  assert.equal(sendPageCalls, 16, `expected 16 sendPage() call sites, found ${sendPageCalls}`);
 
   // The remaining bare res.sendFile calls are deliberate, and each one is a NON-document
   // response that already owns its caching:

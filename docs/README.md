@@ -94,6 +94,8 @@ This README is the entry point for the `docs/` folder. See also:
 ├── e2e/                     # Playwright browser smokes of the two studios (npm run test:e2e)
 ├── ds-bundle/               # design-system bundle (generated)
 ├── to-build/                # source masters: media-png, OG_Image, demos (see to-build/README.md)
+├── instagram/               # local-only post generator (see instagram/README.md) — never
+│                            #   served, eslint-ignored, outside the deploy gate entirely
 └── docs/                    # You are here
 ```
 

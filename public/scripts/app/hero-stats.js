@@ -18,7 +18,7 @@ export function updateHeroFreeGensLine() {
       return;
     }
     el.innerHTML = window.LanguageSystem?.getText('hero.freeGensUpgrade') ||
-      'Try Stagify+ today — <a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a>';
+      'Try Stagify+ today. <a class="hero-free-gens-upgrade" href="stagify-plus.html">Upgrade</a>';
     el.classList.remove('hidden');
 }
 

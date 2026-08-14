@@ -84,7 +84,7 @@ export function createMaskReference({ lang, showError, onChange }) {
     return lang(
       tooBig ? 'pdf.maskEditor.referenceTooLarge' : 'pdf.maskEditor.referenceInvalid',
       tooBig
-        ? 'That image is too large — please choose one under 25 MB.'
+        ? 'That image is too large. Please choose one under 25 MB.'
         : 'Please choose a valid JPG, PNG, or WebP image.',
     );
   }

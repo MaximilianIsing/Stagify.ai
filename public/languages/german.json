@@ -27,7 +27,7 @@
       "basicMask": "Übermalen Sie eine Stelle des Fotos und beschreiben Sie die gewünschte Änderung. Ideal für kleine Korrekturen – Sofa tauschen, Arbeitsplatte leeren –, wenn der Rest des Bildes schon stimmt.",
       "pdfTo3d": "Chatten Sie mit einem KI-Designer, der einen Raum einrichtet, umgestaltet und gemeinsam mit Ihnen weiterentwickelt. Ideal, wenn Sie Stile erkunden statt ein einzelnes Foto fertigzustellen. Nur am Desktop.",
       "maskingStudio": "Markieren Sie mehrere Bereiche in verschiedenen Farben, geben Sie jedem ein eigenes Möbelfoto oder einen Prompt und stagen Sie alle auf einmal. Ideal, wenn Sie exakte Kontrolle brauchen – alles außerhalb Ihrer Markierungen bleibt pixelgenau.",
-      "exteriorStudio": "Verbessert das Außenfoto einer Immobilie: Tageszeit ändern, Himmel aufklaren, geparkte Autos und Unordnung entfernen. Ideal für Fassade, Garten und Straßenansicht — genau die Aufnahmen, die die Staging-Werkzeuge bewusst nie anfassen."
+      "exteriorStudio": "Verbessert das Außenfoto einer Immobilie: Tageszeit ändern, Himmel aufklaren, geparkte Autos und Unordnung entfernen. Ideal für Fassade, Garten und Straßenansicht, also genau die Aufnahmen, die die Staging-Werkzeuge bewusst nie anfassen."
     },
     "exteriorStudio": "Außen-Studio"
   },
@@ -142,7 +142,7 @@
     },
     "masking": {
       "title": "Einrichten mit exakter Präzision",
-      "subtitle": "Maskieren Sie die Bereiche zum Neugestalten, fügen Sie eigene Möbel hinzu — alles andere bleibt pixelgenau. <em>(Stagify+ exklusiv)</em>",
+      "subtitle": "Maskieren Sie die Bereiche zum Neugestalten, fügen Sie eigene Möbel hinzu, alles andere bleibt pixelgenau. <em>(Stagify+ exklusiv)</em>",
       "kicker": "Pixelgenau",
       "panelTitle": "Nur was Sie übermalen, wird neu gestaltet",
       "panelBody": "Übermalen Sie nur den Bereich, der neu gestaltet werden soll. Alles außerhalb der Maske kommt unverändert zurück, der Rest des Fotos bleibt stabil.",
@@ -559,7 +559,7 @@
       "downloadNative": "nativ",
       "uploadAnotherShort": "Neu laden",
       "downloadResultShort": "Download",
-      "galleryEvicted": "Ältere Renderings wurden entfernt, um Platz zu schaffen — der kostenlose Plan behält die neuesten.",
+      "galleryEvicted": "Ältere Renderings wurden entfernt, um Platz zu schaffen. Der kostenlose Plan behält die neuesten.",
       "galleryEvictedShared": "Ein älteres Rendering hatte einen aktiven Freigabelink, der nicht mehr funktioniert."
     }
   },
@@ -863,7 +863,7 @@
       "submitting": "Wird gesendet…",
       "needDescription": "Bitte beschreiben Sie das Problem, bevor Sie es senden.",
       "failed": "Ihre Meldung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
-      "successTitle": "Danke — wir haben es erhalten.",
+      "successTitle": "Danke, wir haben es erhalten.",
       "successBody": "Unser Team sieht sich das an. Wenn Sie eine E-Mail-Adresse hinterlassen haben, melden wir uns dort.",
       "done": "Fertig"
     }
@@ -1082,7 +1082,7 @@
       },
       "masking": {
         "title": "Einrichten mit exakter Präzision",
-        "subtitle": "Maskieren Sie die Bereiche zum Neugestalten, fügen Sie eigene Möbel hinzu — alles andere bleibt pixelgenau. <em>(Stagify+ exklusiv)</em>"
+        "subtitle": "Maskieren Sie die Bereiche zum Neugestalten, fügen Sie eigene Möbel hinzu, alles andere bleibt pixelgenau. <em>(Stagify+ exklusiv)</em>"
       },
       "i4": {
         "q": "Wie richte ich mehrere Bereiche gleichzeitig ein?",
@@ -1347,7 +1347,7 @@
     "monitoring": {
       "since": "Überwacht seit {date} · letzte Prüfung {ago}",
       "collecting": "Daten werden erfasst…",
-      "error": "Status-API nicht erreichbar — erneuter Versuch…"
+      "error": "Status-API nicht erreichbar, erneuter Versuch…"
     },
     "tooltip": {
       "nodata": "Keine Daten",
@@ -1362,7 +1362,7 @@
   "enterprise": {
     "hero": {
       "title": "Stagify Enterprise",
-      "subtitle": "Geben Sie Ihrem gesamten Team unbegrenztes KI-Staging. Jeder Mitarbeiter mit Ihrer Firmen-E-Mail erhält automatisch Stagify+ — Sie zahlen nur für die tatsächliche Nutzung."
+      "subtitle": "Geben Sie Ihrem gesamten Team unbegrenztes KI-Staging. Jeder Mitarbeiter mit Ihrer Firmen-E-Mail erhält automatisch Stagify+, und Sie zahlen nur für die tatsächliche Nutzung."
     },
     "highlights": {
       "perGenerationLabel": "pro Generierung",
@@ -1599,17 +1599,17 @@
   },
   "exteriorStudio": {
     "title": "Außen-Studio",
-    "subtitle": "Das erste Foto jedes Exposés zeigt das Haus von außen — und es ist die eine Aufnahme, die sich bei schlechtem Wetter nicht wiederholen lässt. Laden Sie es hoch und erhalten Sie die Version von einem besseren Tag.",
+    "subtitle": "Das erste Foto jedes Exposés zeigt das Haus von außen, und es ist die eine Aufnahme, die sich bei schlechtem Wetter nicht wiederholen lässt. Laden Sie es hoch und erhalten Sie die Version von einem besseren Tag.",
     "ctaUpgrade": "Mit Stagify+ freischalten",
     "features": {
-      "title": "Was es verändert — und was nie",
+      "title": "Was es verändert, und was nie",
       "light": {
         "title": "Tageszeit",
-        "body": "Mittags fotografieren, zur goldenen Stunde veröffentlichen. Morgen, Mittag, goldene Stunde oder Dämmerung — mit Schatten und Fensterlicht passend zur gewählten Sonne."
+        "body": "Mittags fotografieren, zur goldenen Stunde veröffentlichen. Morgen, Mittag, goldene Stunde oder Dämmerung, mit Schatten und Fensterlicht passend zur gewählten Sonne."
       },
       "sky": {
         "title": "Himmel und Wetter",
-        "body": "Aus flachem Grau wird klares Blau, leichte Bewölkung oder etwas Dramatischeres — abgestimmt auf das Licht am Gebäude, mit sauberen Kanten entlang der Dachlinie."
+        "body": "Aus flachem Grau wird klares Blau, leichte Bewölkung oder etwas Dramatischeres, abgestimmt auf das Licht am Gebäude, mit sauberen Kanten entlang der Dachlinie."
       },
       "clutter": {
         "title": "Autos, Gerümpel und Schnee",
@@ -1617,7 +1617,7 @@
       },
       "honest": {
         "title": "Das Haus bleibt das Haus",
-        "body": "Kein neu verlegter Rasen, keine wegretuschierten Stromleitungen, keine neue Einfahrt, keine umgestrichenen Wände. Wer am Bordstein steht, sieht das Foto — und genau das macht es für ein Exposé verwendbar."
+        "body": "Kein neu verlegter Rasen, keine wegretuschierten Stromleitungen, keine neue Einfahrt, keine umgestrichenen Wände. Wer am Bordstein steht, sieht das Foto, und genau das macht es für ein Exposé verwendbar."
       }
     },
     "upload": {
@@ -1670,7 +1670,7 @@
     },
     "errors": {
       "generic": "Dieses Foto konnte nicht verbessert werden. Versuchen Sie eine andere Außenaufnahme der Immobilie.",
-      "network": "Die Verbindung brach ab, bevor das Foto zurückkam. Ihr Upload ist noch da — bitte erneut versuchen."
+      "network": "Die Verbindung brach ab, bevor das Foto zurückkam. Ihr Upload ist noch da. Bitte erneut versuchen."
     },
     "stepPhoto": "Außenfoto",
     "stepPhotoHint": "Laden Sie rechts im Arbeitsbereich ein Foto hoch.",

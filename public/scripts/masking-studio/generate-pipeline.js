@@ -375,13 +375,13 @@ export function createGeneratePipeline(deps) {
           if (done === participating.length) {
             showToast(tx('maskingStudio.doneToast', 'All areas staged!'), 'success');
           } else if (done > 0) {
-            const t = tx('maskingStudio.partialToast', '{done} of {total} areas staged — retry the failed ones.');
+            const t = tx('maskingStudio.partialToast', '{done} of {total} areas staged. Retry the failed ones.');
             showToast(t.replace('{done}', String(done)).replace('{total}', String(participating.length)), 'error');
           } else {
             showToast(tx('maskingStudio.failedToast', 'Staging failed. Please try again.'), 'error');
           }
           if (spillCount > 0) {
-            showToast(tx('maskingStudio.snapToast', 'Some staged items reach past your highlight — open that area and tap “Snap to object” to include the rest.'));
+            showToast(tx('maskingStudio.snapToast', 'Some staged items reach past your highlight. Open that area and tap “Snap to object” to include the rest.'));
           }
         }
         generateBtn.addEventListener('click', generate);

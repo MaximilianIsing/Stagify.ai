@@ -24,7 +24,7 @@
     "logoAlt": "Logo da Stagify.ai – ir para a página inicial",
     "tips": {
       "imageStaging": "Mobilia um cômodo inteiro a partir de uma única foto: escolha o tipo de ambiente e o estilo do mobiliário e a IA cuida do resto. Ideal para ambientes vazios ou quase vazios quando você quer um resultado rápido e completo.",
-      "basicMask": "Pinte sobre uma parte da foto e descreva a mudança que deseja. Ideal para ajustes pequenos — trocar um sofá, limpar uma bancada — quando o restante da imagem já está bom.",
+      "basicMask": "Pinte sobre uma parte da foto e descreva a mudança que deseja. Ideal para ajustes pequenos (trocar um sofá, limpar uma bancada) quando o restante da imagem já está bom.",
       "pdfTo3d": "Converse com um designer de IA que mobilia, redesenha e continua refinando um ambiente com você. Ideal quando você está explorando estilos em vez de finalizar uma única foto. Apenas no computador.",
       "maskingStudio": "Destaque várias áreas em cores diferentes, dê a cada uma sua própria foto de mobiliário ou instrução e mobilie todas de uma vez. Ideal quando você precisa de controle exato: tudo o que ficar fora dos seus destaques continua idêntico.",
       "exteriorStudio": "Melhora a foto do exterior de um imóvel: mude a hora do dia, limpe o céu e remova carros estacionados e desordem. Ideal para a fachada, o quintal e as fotos de rua, que as ferramentas de home staging nunca tocam."
@@ -559,7 +559,7 @@
       "downloadNative": "nativa",
       "uploadAnotherShort": "Reenviar",
       "downloadResultShort": "Baixar",
-      "galleryEvicted": "Montagens antigas foram removidas para abrir espaço — o plano gratuito mantém as mais recentes.",
+      "galleryEvicted": "Montagens antigas foram removidas para abrir espaço. O plano gratuito mantém as mais recentes.",
       "galleryEvictedShared": "Uma montagem mais antiga tinha um link de compartilhamento ativo, que não funciona mais."
     }
   },
@@ -863,7 +863,7 @@
       "submitting": "Enviando…",
       "needDescription": "Descreva o problema antes de enviar.",
       "failed": "Não foi possível enviar seu relato. Tente novamente.",
-      "successTitle": "Obrigado — recebemos.",
+      "successTitle": "Obrigado, recebemos.",
       "successBody": "Nossa equipe vai analisar. Se você deixou um e-mail, responderemos por lá.",
       "done": "Concluído"
     }
@@ -1026,7 +1026,7 @@
       "refineTitle": "Refinar a edição",
       "refineNote": "Pinte para revelar mais da edição, apague para ocultá-la: isso apenas recorta novamente, não executa a IA de novo.",
       "refineHelp": "Esta etapa apenas ajusta onde a mudança da IA aparece, ela não executa a IA de novo. Pinte para revelar mais da edição, apague para reduzi-la. É uma rede de segurança, para que a edição toque apenas na área que você escolheu e não possa estragar o resto da sua foto. A pré-visualização esmaecida mostrada por cima serve apenas para você ver a edição completa enquanto a ajusta; ela não aparecerá na imagem final.",
-      "promptHint": "Seja bem específico sobre o local e o posicionamento — por exemplo: “encoste o sofá no centro da parede dos fundos.”",
+      "promptHint": "Seja bem específico sobre o local e o posicionamento, por exemplo: “encoste o sofá no centro da parede dos fundos.”",
       "refineHelpAria": "O que a etapa de refinamento faz",
       "loadApplying": "Aplicando sua edição…",
       "referenceLabel": "Foto de referência (opcional)",
@@ -1059,7 +1059,7 @@
       "title": "Envio e arquivos",
       "i1": {
         "q": "Minha foto não envia.",
-        "a": "Certifique-se de que o ficheiro é um JPG, PNG, WebP ou HEIC com menos de 25 MB. Fotos de telemóvel muito grandes às vezes falham — redimensione a imagem ou tire uma captura de ecrã e carregue novamente. Se continuar a falhar, atualize a página e tente de novo."
+        "a": "Certifique-se de que o ficheiro é um JPG, PNG, WebP ou HEIC com menos de 25 MB. Fotos de telemóvel muito grandes às vezes falham. Redimensione a imagem ou tire uma captura de ecrã e carregue novamente. Se continuar a falhar, atualize a página e tente de novo."
       },
       "i2": {
         "q": "Quais fotos funcionam melhor?",
@@ -1202,7 +1202,7 @@
     "title": "Estúdio de Máscaras",
     "subtitle": "Destaque áreas do seu ambiente em cores diferentes, dê a cada uma o seu próprio móvel e mobílie todas de uma vez. Apenas as áreas destacadas podem mudar, então o resto da sua foto permanece intacto.",
     "gateTitle": "O Estúdio de Máscaras é um recurso do Stagify+",
-    "gateBody": "Entre com uma conta Stagify+ para destacar várias áreas de uma foto, dar a cada uma seus próprios móveis e fazer o staging de todas de uma vez — com máscaras de precisão que não podem tocar o resto da sua foto.",
+    "gateBody": "Entre com uma conta Stagify+ para destacar várias áreas de uma foto, dar a cada uma seus próprios móveis e fazer o staging de todas de uma vez, com máscaras de precisão que não podem tocar o resto da sua foto.",
     "gateCta": "Ver Stagify+",
     "gateBack": "Voltar ao início",
     "stepPhoto": "Foto do cômodo",
@@ -1232,9 +1232,9 @@
     "needHighlight": "Pinte pelo menos uma área na foto primeiro.",
     "needPromptOrFurniture": "Cada área destacada precisa de uma breve instrução ou de uma foto de móvel.",
     "doneToast": "Todas as áreas mobiliadas! Retoque seus destaques ou toque em Ficou bom para ver o resultado.",
-    "partialToast": "{done} de {total} áreas concluídas — tente novamente as que falharam.",
+    "partialToast": "{done} de {total} áreas concluídas. Tente novamente as que falharam.",
     "failedToast": "O staging falhou. Tente novamente.",
-    "rateLimited": "Você está gerando rápido demais — aguarde um minuto e tente de novo.",
+    "rateLimited": "Você está gerando rápido demais. Aguarde um minuto e tente de novo.",
     "shortcutsHint": "<kbd>B</kbd> pincel&nbsp;· <kbd>E</kbd> apagar&nbsp;· <kbd>R</kbd> retângulo&nbsp;· <kbd>W</kbd> varinha&nbsp;· <kbd>[</kbd> <kbd>]</kbd> tamanho do pincel&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> escolher área&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfazer&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> refazer&nbsp;· segure <kbd>H</kbd> ver foto",
     "compare": "Comparar",
     "undo": "Desfazer",
@@ -1265,8 +1265,8 @@
     "clearHighlight": "Limpar destaque",
     "snapToObject": "Ajustar ao objeto",
     "snapToObjectHint": "Expande este destaque até as bordas do que a IA realmente desenhou, para que nada fique cortado.",
-    "spillFlag": "Esta edição ultrapassa o destaque — Ajustar ao objeto disponível.",
-    "snapToast": "Alguns itens gerados ultrapassam o seu destaque — abra essa área e toque em «Ajustar ao objeto» para incluir o restante.",
+    "spillFlag": "Esta edição ultrapassa o destaque. Ajustar ao objeto disponível.",
+    "snapToast": "Alguns itens gerados ultrapassam o seu destaque. Abra essa área e toque em «Ajustar ao objeto» para incluir o restante.",
     "toolRect": "Retângulo",
     "renameAria": "Renomear esta área",
     "resumeTitle": "Retomar sua última sessão?",
@@ -1347,7 +1347,7 @@
     "monitoring": {
       "since": "Monitorando desde {date} · última verificação {ago}",
       "collecting": "Coletando dados…",
-      "error": "Não foi possível acessar a API de status — tentando novamente…"
+      "error": "Não foi possível acessar a API de status, tentando novamente…"
     },
     "tooltip": {
       "nodata": "Sem dados",
@@ -1362,7 +1362,7 @@
   "enterprise": {
     "hero": {
       "title": "Stagify Enterprise",
-      "subtitle": "Ofereça a toda a sua equipe staging com IA ilimitado. Cada funcionário com o e-mail da sua empresa recebe o Stagify+ automaticamente — você paga apenas pelo que usar."
+      "subtitle": "Ofereça a toda a sua equipe staging com IA ilimitado. Cada funcionário com o e-mail da sua empresa recebe o Stagify+ automaticamente, e você paga apenas pelo que usar."
     },
     "highlights": {
       "perGenerationLabel": "por geração",
@@ -1599,25 +1599,25 @@
   },
   "exteriorStudio": {
     "title": "Estúdio de Exteriores",
-    "subtitle": "A primeira foto de cada anúncio é o exterior da casa — e é a única que não pode repetir quando o tempo muda. Carregue-a aqui e receba a versão tirada num dia melhor.",
+    "subtitle": "A primeira foto de cada anúncio é o exterior da casa, e é a única que não pode repetir quando o tempo muda. Carregue-a aqui e receba a versão tirada num dia melhor.",
     "ctaUpgrade": "Obtenha o Stagify+ para usar",
     "features": {
-      "title": "O que muda — e o que nunca toca",
+      "title": "O que muda, e o que nunca toca",
       "light": {
         "title": "Hora do dia",
         "body": "Fotografe ao meio-dia, publique na hora dourada. Manhã, meio-dia, hora dourada ou crepúsculo, com sombras e luz interior coerentes com o sol escolhido."
       },
       "sky": {
         "title": "Céu e clima",
-        "body": "Um céu cinzento e sem graça torna-se azul limpo, com nuvens leves ou algo mais dramático — ajustado à luz que já incide no edifício e com contornos limpos no telhado."
+        "body": "Um céu cinzento e sem graça torna-se azul limpo, com nuvens leves ou algo mais dramático, ajustado à luz que já incide no edifício e com contornos limpos no telhado."
       },
       "clutter": {
         "title": "Carros, tralha e neve",
-        "body": "A van do vizinho na entrada, as lixeiras deixadas para fora, a mangueira no gramado, a pessoa passando — e a neve, a chuva e as poças que estavam lá no dia da foto. O que é temporário sai, e a superfície embaixo é reconstruída para combinar."
+        "body": "A van do vizinho na entrada, as lixeiras deixadas para fora, a mangueira no gramado, a pessoa passando, e a neve, a chuva e as poças que estavam lá no dia da foto. O que é temporário sai, e a superfície embaixo é reconstruída para combinar."
       },
       "honest": {
         "title": "A casa continua a ser a casa",
-        "body": "Sem relvado novo, sem cabos apagados, sem entrada repavimentada, sem paredes repintadas. Quem estiver no passeio vê o que a foto mostrava — e é isso que a torna utilizável num anúncio."
+        "body": "Sem relvado novo, sem cabos apagados, sem entrada repavimentada, sem paredes repintadas. Quem estiver no passeio vê o que a foto mostrava, e é isso que a torna utilizável num anúncio."
       }
     },
     "upload": {
@@ -1670,7 +1670,7 @@
     },
     "errors": {
       "generic": "Não foi possível melhorar essa foto. Experimente outra imagem do exterior do imóvel.",
-      "network": "A ligação caiu antes de a foto voltar. O seu carregamento continua aqui — tente novamente."
+      "network": "A ligação caiu antes de a foto voltar. O seu carregamento continua aqui. Tente novamente."
     },
     "stepPhoto": "Foto do exterior",
     "stepPhotoHint": "Carregue uma foto na área de trabalho à direita.",
