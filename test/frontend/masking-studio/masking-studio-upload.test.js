@@ -27,6 +27,7 @@ import { createCanvas } from '@napi-rs/canvas';
 
 import { installMaskDom, FakeEl } from '../../helpers/mask-dom.js';
 import { createUpload } from '../../../public/scripts/masking-studio/upload.js';
+import { unstageableCta } from '../../../public/scripts/unstageable-cta.js';
 import { MAX_IMAGE_BYTES } from '../../../public/scripts/app/image-file.js';
 
 const REAL = {
@@ -352,6 +353,128 @@ test('a non-room photo is pulled back out once the verdict lands', async () => {
   assert.equal(h.calls.clearBaseImage, 1, 'and withdrawn when the verdict arrived');
   assert.equal(h.calls.toasts.length, 1);
   assert.equal(h.calls.toasts[0].type, 'error');
+});
+
+// ---- the one rejection that has somewhere to go ------------------------------
+//
+// A building exterior is not a bad photo, it is a photo for a different tool. So it gets
+// a dialog with a link instead of the usual toast — toast.js is textContent-only and
+// clears itself after 4.2s, which can hold a sentence but not a call to action.
+
+/** Register the hand-off dialog's elements, which masking-studio.html ships statically. */
+function mountExteriorGate({ pro = true } = {}) {
+  const gate = new FakeEl('div');
+  const body = new FakeEl('p');
+  const go = new FakeEl('a');
+  const back = new FakeEl('button');
+  go.focused = 0;
+  go.focus = () => { go.focused += 1; };
+  dom.doc._register(gate, 'ms-exterior-gate');
+  dom.doc._register(body, 'ms-exterior-body');
+  dom.doc._register(go, 'ms-exterior-go');
+  dom.doc._register(back, 'ms-exterior-back');
+  // The island reads the plan through unstageableCta(); keep getToken, which the
+  // pre-check itself needs.
+  globalThis.window.StagifyAuth.user = { plan: pro ? 'pro' : 'free' };
+  globalThis.window.StagifyAuth.isProUser = () => pro;
+  /** @type {any} */ (globalThis).location = { pathname: '/masking-studio.html', hash: '' };
+  return { gate, body, go, back };
+}
+
+const EXTERIOR_VERDICT = { valid: false, code: 'EXTERIOR', reason: 'That is the outside of a house.' };
+
+test('a building exterior opens the hand-off dialog instead of a toast', async () => {
+  const h = mount({ verdict: EXTERIOR_VERDICT });
+  const els = mountExteriorGate();
+
+  await h.island.handleRoomFile(file());
+  await settle();
+
+  assert.equal(h.calls.clearBaseImage, 1, 'the photo still comes back out — this studio cannot use it');
+  assert.deepEqual(h.calls.toasts, [], 'a 4.2s toast cannot carry a link; the dialog replaces it');
+  assert.equal(els.gate.classList.contains('active'), true);
+  assert.equal(els.body.textContent, 'That is the outside of a house.');
+  assert.equal(els.go.focused, 1, 'a dialog that opens itself must move focus into itself');
+});
+
+test('the hand-off always OPENS the studio here — this page is Stagify+ only', () => {
+  // masking-studio-app.js redirects anonymous visitors and shows #ms-pro-gate to free
+  // accounts before any upload happens, so the upsell branch is unreachable from here.
+  // Asserted rather than branched on, so this is what speaks up if that gating changes
+  // and a free account starts meeting a button that opens a tool they cannot use.
+  mount({ verdict: EXTERIOR_VERDICT });
+  mountExteriorGate();
+  const action = unstageableCta(EXTERIOR_VERDICT);
+  assert.equal(action.upgrade, false);
+  assert.match(action.href, /exterior-studio\.html$/);
+});
+
+test('the dialog links to the Exterior Studio, inside the visitor’s locale', async () => {
+  const h = mount({ verdict: EXTERIOR_VERDICT });
+  const els = mountExteriorGate();
+  /** @type {any} */ (globalThis).location = { pathname: '/de/masking-studio.html', hash: '' };
+
+  await h.island.handleRoomFile(file());
+  await settle();
+
+  assert.equal(els.go.href, '/de/exterior-studio.html', 'a German visitor must not be dropped on the English page');
+});
+
+test('the corner × closes the dialog and nothing else', async () => {
+  // It must NOT re-open the file picker. The photo is already out, so closing reveals
+  // the dropzone; a picker springing open unasked is the thing an × is an escape from.
+  const h = mount({ verdict: EXTERIOR_VERDICT });
+  const els = mountExteriorGate();
+
+  await h.island.handleRoomFile(file());
+  await settle();
+  const before = h.fileInput.opened;
+  els.back.onclick();
+
+  assert.equal(els.gate.classList.contains('active'), false);
+  assert.equal(h.fileInput.opened, before, 'closing is not the same as asking for the picker');
+});
+
+test('clicking the backdrop dismisses it too', async () => {
+  const h = mount({ verdict: EXTERIOR_VERDICT });
+  const els = mountExteriorGate();
+
+  await h.island.handleRoomFile(file());
+  await settle();
+  els.gate.onclick({ target: els.gate });
+  assert.equal(els.gate.classList.contains('active'), false);
+
+  // ...but a click INSIDE the card must not, or the link is unclickable on a slow tap.
+  els.gate.classList.add('active');
+  els.gate.onclick({ target: els.go });
+  assert.equal(els.gate.classList.contains('active'), true);
+});
+
+test('every other rejection still takes the toast path', async () => {
+  // The dialog is for the one category with a destination. A selfie has none, and
+  // interrupting with a modal to say so would be worse than the toast.
+  const h = mount({ verdict: { valid: false, code: 'PERSON_PORTRAIT', reason: 'That is a selfie.' } });
+  const els = mountExteriorGate();
+
+  await h.island.handleRoomFile(file());
+  await settle();
+
+  assert.equal(els.gate.classList.contains('active'), false, 'no dialog for a category with nowhere to go');
+  assert.equal(h.calls.toasts.length, 1);
+  assert.equal(h.calls.toasts[0].type, 'error');
+});
+
+test('with the dialog markup missing, the message still reaches the user', async () => {
+  // The island is shared code; a page that never got the markup must degrade to the
+  // toast rather than swallow the rejection and leave a torn-down studio unexplained.
+  const h = mount({ verdict: EXTERIOR_VERDICT });
+  /** @type {any} */ (globalThis).location = { pathname: '/masking-studio.html', hash: '' };
+
+  await h.island.handleRoomFile(file());
+  await settle();
+
+  assert.equal(h.calls.toasts.length, 1, 'falls back to the toast');
+  assert.equal(h.calls.toasts[0].message, 'That is the outside of a house.');
 });
 
 test('a stale rejection cannot tear down the photo that replaced it', async () => {

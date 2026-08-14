@@ -249,6 +249,26 @@
       </div>
     </div>
 
+    <!-- An exterior photo landed in the wrong studio: point at the tool built for it.
+         Everyone who reaches this page is on Stagify+ (masking-studio-app.js redirects
+         anonymous visitors and shows #ms-pro-gate to free accounts), so this is never an
+         upsell — the link always opens the studio. A dialog rather than the usual toast
+         because toast.js is textContent-only and clears itself after 4.2s; a call to
+         action cannot live in either of those. -->
+    <div id="ms-exterior-gate" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-exterior-title">
+      <div class="ms-pro-gate__card ms-exterior-card">
+        <!-- A corner × rather than a second full-width button. The photo is already back
+             out of the studio by the time this opens, so dismissing lands on the empty
+             dropzone — which IS "try another image", spelled out in its own words. -->
+        <button type="button" id="ms-exterior-back" class="ms-help-close" data-lang-attr="common.close|aria-label" aria-label="Close">&times;</button>
+        <h2 id="ms-exterior-title" data-lang="maskingStudio.exteriorTitle">That’s one for the Exterior Studio</h2>
+        <p id="ms-exterior-body"></p>
+        <div class="ms-pro-gate__actions">
+          <a id="ms-exterior-go" href="exterior-studio.html" class="btn btn-primary btn-lg"><strong data-lang="errors.unstageableCta.exteriorOpen">Open the Exterior Studio</strong></a>
+        </div>
+      </div>
+    </div>
+
     <!-- Shown to signed-in free users instead of the tool. -->
     <div id="ms-pro-gate" class="ms-pro-gate" role="dialog" aria-modal="true" aria-labelledby="ms-pro-gate-title">
       <div class="ms-pro-gate__card">

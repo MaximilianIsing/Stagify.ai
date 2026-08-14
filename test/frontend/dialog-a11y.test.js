@@ -96,6 +96,17 @@ const DIALOGS = [
     scope: tagWithId('gal-detail'),
   },
   {
+    label: 'Masking Studio Exterior Studio hand-off',
+    // The one Masking Studio dialog that is not a variation on "are you sure": it fires
+    // from a network verdict rather than a click, so it is the one a keyboard user meets
+    // without having asked for it. masking-studio.html holds four dialogs sharing the
+    // .ms-pro-gate shell, hence the scope to this id's own tag.
+    file: 'public/masking-studio.html',
+    titleId: 'ms-exterior-title',
+    attr: markupAttr,
+    scope: tagWithId('ms-exterior-gate'),
+  },
+  {
     label: 'AI Designer image lightbox',
     file: 'public/ai-designer.html',
     // No heading to point at — a lightbox is one image — so it is named directly

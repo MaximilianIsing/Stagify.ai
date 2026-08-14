@@ -517,7 +517,6 @@
       "qualityGeneration": "Modello Stagify+",
       "imageGenerations": "Generazioni di immagini",
       "addPhotos": "+ Aggiungi foto",
-      "tryAnotherImage": "Prova un’altra immagine",
       "uploadAreaAria": "Area di caricamento",
       "uploadHeadline": "Trascina qui la foto della tua stanza",
       "uploadFormats": "JPG, PNG, WebP o HEIC · fino a 25 MB",
@@ -763,7 +762,12 @@
       "DOCUMENT": "Questa sembra una schermata o un documento. Carica la foto di una stanza, di uno spazio o di un mobile.",
       "VEHICLE": "Questa sembra la foto di un veicolo. Carica la foto di una stanza, di uno spazio o di un mobile.",
       "UNRELATED_OBJECT": "Questa non sembra una stanza, uno spazio o un mobile. Carica la foto dello spazio o del mobile che vuoi arredare.",
+      "EXTERIOR": "Questa sembra la facciata di un edificio. Il nostro Studio Esterni è lo strumento Stagify+ per le facciate.",
       "UNSTAGEABLE": "Questa non sembra una stanza, uno spazio o un mobile. Carica la foto di una stanza, di uno spazio esterno o di un mobile che vuoi arredare."
+    },
+    "unstageableCta": {
+      "exteriorOpen": "Apri lo Studio Esterni",
+      "exteriorUpgrade": "Ottieni Stagify+"
     },
     "heicConvert": "Non siamo riusciti a leggere quella foto HEIC. Prova con un JPG o PNG.",
     "fileType": "Carica un file immagine JPG, PNG, WebP o HEIC.",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "Studio Maschere",
     "subtitle": "Evidenzia le aree della tua stanza con colori diversi, assegna a ciascuna il proprio mobile e arredale tutte in una volta. Solo le aree evidenziate possono cambiare, quindi il resto della foto resta perfettamente intatto.",
+    "exteriorTitle": "Questa foto è per lo Studio Esterni",
     "gateTitle": "Lo Studio Maschere è una funzione Stagify+",
     "gateBody": "Accedi con un account Stagify+ per evidenziare più aree di una foto, assegnare a ciascuna i suoi mobili e arredarle tutte in una volta, con una mascheratura precisa al pixel che non può toccare il resto della tua foto.",
     "gateCta": "Vedi Stagify+",

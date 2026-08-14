@@ -119,11 +119,11 @@ test('validateStageableImage: every rejection digit maps to its own code and mes
   }
 });
 
-test('validateStageableImage: the six rejection codes and messages are all distinct', () => {
+test('validateStageableImage: the seven rejection codes and messages are all distinct', () => {
   const entries = Object.values(UNSTAGEABLE_CODES);
-  assert.equal(entries.length, 6);
-  assert.equal(new Set(entries.map((e) => e.code)).size, 6, 'duplicate code would collapse two categories');
-  assert.equal(new Set(entries.map((e) => e.message)).size, 6, 'duplicate copy defeats the point of the taxonomy');
+  assert.equal(entries.length, 7);
+  assert.equal(new Set(entries.map((e) => e.code)).size, 7, 'duplicate code would collapse two categories');
+  assert.equal(new Set(entries.map((e) => e.message)).size, 7, 'duplicate copy defeats the point of the taxonomy');
   assert.ok(!entries.some((e) => e.code === GENERIC_UNSTAGEABLE_CODE), 'generic code must not collide with a category');
 });
 
@@ -151,9 +151,10 @@ test('validateStageableImage: a thrown error fails open (allow the upload)', asy
 
 // --- validateExteriorImage --------------------------------------------------
 //
-// The Exterior Studio's own gate. Same taxonomy, same fail-open rules, one hard
-// difference: it can never reject with VEHICLE, because a car on the driveway is the
-// single most common thing this tool is asked to remove.
+// The Exterior Studio's own gate. Same taxonomy, same fail-open rules, two hard
+// differences: it can never reject with VEHICLE (a car on the driveway is the single most
+// common thing this tool is asked to remove) nor with EXTERIOR (a facade is the whole
+// point of the tool — that digit exists to hand photos TO here, not away from here).
 
 test('validateExteriorImage: asks the grader the EXTERIOR question, not the interior one', async () => {
   // The two prompts share a digit table, so pointing this gate at the wrong prompt would
@@ -186,9 +187,24 @@ test('validateExteriorImage: a VEHICLE verdict is IGNORED, not honoured', async 
   assert.equal(interior.code, 'VEHICLE');
 });
 
+test('validateExteriorImage: an EXTERIOR verdict is IGNORED, not honoured', async () => {
+  // Digit 7 is the interior gate's HAND-OFF to this studio. Honouring it here would
+  // refuse a front elevation at the tool built to enhance front elevations, and the
+  // browser would then offer the user a link to the page they are already standing on.
+  const { validateExteriorImage } = createImageReview({ genAI: fakeGrader('CODE: 7') });
+  assert.deepEqual(await validateExteriorImage(await roomBuffer()), VALID);
+
+  // ...and the interior gate must keep honouring it, or the hand-off never fires.
+  const { validateStageableImage } = createImageReview({ genAI: fakeGrader('CODE: 7') });
+  const interior = await validateStageableImage(await roomBuffer());
+  assert.equal(interior.valid, false);
+  assert.equal(interior.code, 'EXTERIOR');
+});
+
 test('validateExteriorImage: still rejects the categories it shares, with the same codes', async () => {
-  // No new codes means no new errors.unstageable.* keys in eleven language packs — the
-  // browser localizes these exactly as it already does.
+  // These five carry no new errors.unstageable.* keys — the browser localizes them
+  // exactly as it already does. (EXTERIOR is the one category that did add a key, and
+  // this gate never emits it; see the test above.)
   for (const [digit, expected] of [['1', 'PERSON_PORTRAIT'], ['2', 'ANIMAL'], ['3', 'FOOD'], ['4', 'DOCUMENT'], ['6', 'UNRELATED_OBJECT']]) {
     const { validateExteriorImage } = createImageReview({ genAI: fakeGrader(`CODE: ${digit}`) });
     const r = await validateExteriorImage(await roomBuffer());

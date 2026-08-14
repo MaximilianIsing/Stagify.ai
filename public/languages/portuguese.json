@@ -517,7 +517,6 @@
       "qualityGeneration": "Modelo Stagify+",
       "imageGenerations": "Gerações de imagem",
       "addPhotos": "+ Adicionar fotos",
-      "tryAnotherImage": "Tentar outra imagem",
       "uploadAreaAria": "Área de envio",
       "uploadHeadline": "Solte aqui a foto do seu ambiente",
       "uploadFormats": "JPG, PNG, WebP ou HEIC · até 25 MB",
@@ -763,7 +762,12 @@
       "DOCUMENT": "Isto parece uma captura de tela ou documento. Envie a foto de um cômodo, espaço ou móvel.",
       "VEHICLE": "Isto parece a foto de um veículo. Envie a foto de um cômodo, espaço ou móvel.",
       "UNRELATED_OBJECT": "Isto não parece um cômodo, espaço ou móvel. Envie a foto do espaço ou do móvel que você quer decorar.",
+      "EXTERIOR": "Isto parece o exterior de um edifício. O nosso Estúdio de Exteriores é a ferramenta Stagify+ para fachadas.",
       "UNSTAGEABLE": "Isto não parece um cômodo, espaço ou móvel. Envie a foto de um cômodo, área externa ou móvel que você quer decorar."
+    },
+    "unstageableCta": {
+      "exteriorOpen": "Abrir o Estúdio de Exteriores",
+      "exteriorUpgrade": "Obter o Stagify+"
     },
     "heicConvert": "Não foi possível ler essa foto HEIC. Tente um JPG ou PNG.",
     "fileType": "Envie um arquivo de imagem JPG, PNG, WebP ou HEIC.",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "Estúdio de Máscaras",
     "subtitle": "Destaque áreas do seu ambiente em cores diferentes, dê a cada uma o seu próprio móvel e mobílie todas de uma vez. Apenas as áreas destacadas podem mudar, então o resto da sua foto permanece intacto.",
+    "exteriorTitle": "Essa foto é para o Estúdio de Exteriores",
     "gateTitle": "O Estúdio de Máscaras é um recurso do Stagify+",
     "gateBody": "Entre com uma conta Stagify+ para destacar várias áreas de uma foto, dar a cada uma seus próprios móveis e fazer o staging de todas de uma vez, com máscaras de precisão que não podem tocar o resto da sua foto.",
     "gateCta": "Ver Stagify+",

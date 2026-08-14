@@ -517,7 +517,6 @@
       "qualityGeneration": "Stagify+ model",
       "imageGenerations": "Afbeeldingsgeneraties",
       "addPhotos": "+ Foto’s toevoegen",
-      "tryAnotherImage": "Probeer een andere afbeelding",
       "uploadAreaAria": "Uploadgebied",
       "uploadHeadline": "Sleep hier je kamerfoto naartoe",
       "uploadFormats": "JPG, PNG, WebP of HEIC · tot 25 MB",
@@ -763,7 +762,12 @@
       "DOCUMENT": "Dit lijkt een schermafbeelding of document. Upload een foto van een kamer, ruimte of meubelstuk.",
       "VEHICLE": "Dit lijkt een foto van een voertuig. Upload een foto van een kamer, ruimte of meubelstuk.",
       "UNRELATED_OBJECT": "Dit lijkt geen kamer, ruimte of meubelstuk. Upload een foto van de ruimte of het meubelstuk dat je wilt stylen.",
+      "EXTERIOR": "Dit lijkt de buitenkant van een gebouw. Onze Buitenstudio is de Stagify+-tool voor gevels.",
       "UNSTAGEABLE": "Dit lijkt geen kamer, ruimte of meubelstuk. Upload een foto van een kamer, buitenruimte of meubelstuk dat je wilt stylen."
+    },
+    "unstageableCta": {
+      "exteriorOpen": "Buitenstudio openen",
+      "exteriorUpgrade": "Stagify+ aanschaffen"
     },
     "fileType": "Upload een JPG-, PNG-, WebP- of HEIC-afbeeldingsbestand.",
     "fileTooLarge": "Het bestand is te groot. Upload een afbeelding van minder dan 25 MB.",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "Maskeerstudio",
     "subtitle": "Markeer gebieden van je kamer in verschillende kleuren, geef elk zijn eigen meubilair en style ze allemaal tegelijk. Alleen de gemarkeerde gebieden kunnen veranderen, dus de rest van je foto blijft pixel-perfect.",
+    "exteriorTitle": "Die foto is er een voor de Buitenstudio",
     "gateTitle": "Maskeerstudio is een Stagify+-functie",
     "gateBody": "Meld je aan met een Stagify+-account om meerdere gebieden van een foto te markeren, elk zijn eigen meubilair te geven en ze allemaal tegelijk te stylen, met pixel-perfecte maskering die de rest van je foto niet kan raken.",
     "gateCta": "Bekijk Stagify+",

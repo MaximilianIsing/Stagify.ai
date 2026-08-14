@@ -203,6 +203,10 @@ function harness(opts = {}) {
   const calls = {
     fetch: [],
     showStagingError: [],
+    // The second argument, recorded alongside rather than folded in, so the many
+    // message-only assertions below stay readable. It is what decides whether the
+    // Exterior Studio button appears under the sentence.
+    showStagingErrorVerdicts: [],
     showStagingLimitInViewer: [],
     hideStagingLimitInViewer: 0,
     hideStagingError: 0,
@@ -282,7 +286,10 @@ function harness(opts = {}) {
     hideStagingError: () => { calls.hideStagingError += 1; },
     showBeforeView: () => { calls.showBeforeView += 1; },
     isProUser: () => pro,
-    showStagingError: (m) => calls.showStagingError.push(m),
+    showStagingError: (m, verdict) => {
+      calls.showStagingError.push(m);
+      calls.showStagingErrorVerdicts.push(verdict);
+    },
     messageForDailyLimitResponse: (d) => `limit: ${d.error || 'reached'}`,
     showStagingLimitInViewer: (m) => calls.showStagingLimitInViewer.push(m),
     stagingTimeoutMs,
@@ -330,6 +337,20 @@ timed('a photo the pre-check already rejected never reaches the server', async (
   assert.equal(h.calls.fetch.length, 0, 'a rejected photo must not cost a generation');
   await assert.rejects(p, (e) => e.code === 'NOT_STAGEABLE' && /selfie/i.test(e.message));
   assert.deepEqual(h.calls.showStagingError, ['That is a selfie.']);
+});
+
+timed('the whole verdict is handed on, not just its sentence', async () => {
+  // The panel needs the CODE, not only the copy: EXTERIOR earns a link to the Exterior
+  // Studio beside the message (public/scripts/app/staging-error-cta.js), and every other
+  // category earns that link being taken away. Dropping the second argument here would
+  // leave both studios showing the right sentence and no hand-off, silently.
+  const result = { valid: false, code: 'EXTERIOR', reason: 'That is the outside of a house.' };
+  const h = harness({ validationResult: result });
+  const p = h.pipeline.processWithAI(h.file());
+  p.catch(() => {});
+  await tick();
+  await assert.rejects(p, (e) => e.code === 'NOT_STAGEABLE');
+  assert.deepEqual(h.calls.showStagingErrorVerdicts, [result], 'the verdict object itself must reach the panel');
 });
 
 timed('the refusal tears the loading UI down before it throws', async () => {

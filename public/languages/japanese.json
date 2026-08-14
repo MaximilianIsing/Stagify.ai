@@ -517,7 +517,6 @@
       "qualityGeneration": "Stagify+モデル",
       "imageGenerations": "画像生成",
       "addPhotos": "+ 写真を追加",
-      "tryAnotherImage": "別の画像を試す",
       "uploadAreaAria": "アップロードエリア",
       "uploadHeadline": "部屋の写真をここにドロップ",
       "uploadFormats": "JPG、PNG、WebP、HEIC · 最大25MB",
@@ -763,7 +762,12 @@
       "DOCUMENT": "これはスクリーンショットまたは書類のようです。部屋、スペース、または家具の写真をアップロードしてください。",
       "VEHICLE": "これは車両の写真のようです。部屋、スペース、または家具の写真をアップロードしてください。",
       "UNRELATED_OBJECT": "これは部屋・スペース・家具のいずれにも見えません。コーディネートしたい空間や家具の写真をアップロードしてください。",
+      "EXTERIOR": "建物を外から撮影した写真のようです。外観には Stagify+ の外観スタジオをご利用ください。",
       "UNSTAGEABLE": "これは部屋・スペース・家具のいずれにも見えません。室内の部屋、屋外スペース、またはコーディネートしたい家具の写真をアップロードしてください。"
+    },
+    "unstageableCta": {
+      "exteriorOpen": "外観スタジオを開く",
+      "exteriorUpgrade": "Stagify+ を入手"
     },
     "heicConvert": "そのHEIC写真を読み込めませんでした。JPGまたはPNGをお試しください。",
     "fileType": "JPG、PNG、WebP、または HEIC の画像ファイルをアップロードしてください。",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "マスクスタジオ",
     "subtitle": "部屋のエリアを色分けしてハイライトし、それぞれに家具を割り当てて、まとめてステージングできます。変化するのはハイライトしたエリアだけなので、写真の他の部分はそのまま保たれます。",
+    "exteriorTitle": "その写真は外観スタジオ向けです",
     "gateTitle": "マスクスタジオはStagify+の機能です",
     "gateBody": "Stagify+アカウントでサインインすると、写真の複数のエリアをハイライトし、それぞれに家具を割り当てて、一度にまとめてステージングできます。ピクセル単位の正確なマスクにより、写真の他の部分には一切影響しません。",
     "gateCta": "Stagify+を見る",

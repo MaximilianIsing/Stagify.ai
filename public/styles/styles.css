@@ -3639,6 +3639,16 @@ html::-webkit-scrollbar-thumb {
   color:var(--fg);
   font-weight:500
 }
+/* The rejection panel can carry a second button (the Exterior Studio hand-off), so the
+   two share a wrapping row rather than sitting on one line. `justify-content:center`
+   rather than inheriting the panel's `text-align:center`, because flex children do not
+   answer to text-align. */
+.staging-limit-viewer__actions {
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap
+}
 .staging-limit-viewer__cta {
   display:inline-flex;
   /* Shrink-wrap to the label and stay centred by the panel's `text-align:center`.

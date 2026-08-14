@@ -517,7 +517,6 @@
       "qualityGeneration": "Modèle Stagify+",
       "imageGenerations": "Générations d’images",
       "addPhotos": "+ Ajouter des photos",
-      "tryAnotherImage": "Essayer une autre image",
       "uploadAreaAria": "Zone d’import",
       "uploadHeadline": "Déposez ici la photo de votre pièce",
       "uploadFormats": "JPG, PNG, WebP ou HEIC · jusqu’à 25 Mo",
@@ -763,7 +762,12 @@
       "DOCUMENT": "Cela ressemble à une capture d’écran ou à un document. Veuillez importer la photo d’une pièce, d’un espace ou d’un meuble.",
       "VEHICLE": "Cette photo semble représenter un véhicule. Veuillez importer la photo d’une pièce, d’un espace ou d’un meuble.",
       "UNRELATED_OBJECT": "Cela ne ressemble ni à une pièce, ni à un espace, ni à un meuble. Veuillez importer la photo de l’espace ou du meuble que vous souhaitez aménager.",
+      "EXTERIOR": "Cette photo montre un bâtiment vu de l’extérieur. Notre Studio Extérieur est l’outil Stagify+ pour les façades.",
       "UNSTAGEABLE": "Cela ne ressemble ni à une pièce, ni à un espace, ni à un meuble. Veuillez importer la photo d’une pièce, d’un espace extérieur ou d’un meuble que vous souhaitez aménager."
+    },
+    "unstageableCta": {
+      "exteriorOpen": "Ouvrir le Studio Extérieur",
+      "exteriorUpgrade": "Obtenir Stagify+"
     },
     "heicConvert": "Impossible de lire cette photo HEIC. Essayez un JPG ou un PNG.",
     "fileType": "Veuillez importer une image JPG, PNG, WebP ou HEIC.",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "Studio de masquage",
     "subtitle": "Surlignez des zones de votre pièce en différentes couleurs, attribuez à chacune son propre meuble et meublez-les toutes à la fois. Seules les zones surlignées peuvent changer, le reste de votre photo reste parfaitement intact.",
+    "exteriorTitle": "Cette photo relève du Studio Extérieur",
     "gateTitle": "Le Studio de masquage est une fonctionnalité Stagify+",
     "gateBody": "Connectez-vous avec un compte Stagify+ pour surligner plusieurs zones d’une photo, attribuer à chacune son propre mobilier et les meubler toutes en une seule fois, avec un masquage au pixel près qui ne peut pas toucher le reste de votre photo.",
     "gateCta": "Voir Stagify+",

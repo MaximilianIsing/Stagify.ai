@@ -2240,7 +2240,21 @@
                       <div id="staging-error-viewer" class="staging-limit-viewer hidden" role="alert">
                         <div class="staging-limit-viewer__inner">
                           <p id="staging-error-viewer-text" class="staging-limit-viewer__text"></p>
-                          <button id="staging-error-retry-btn" class="btn btn-primary staging-limit-viewer__cta" data-lang="modal.staging.tryAnotherImage">Try another image</button>
+                          <div class="staging-limit-viewer__actions">
+                            <!-- The panel’s ONLY button, and it is shown only for an EXTERIOR
+                                 rejection — the one category with somewhere to go. There is
+                                 deliberately no "try another image" beside it: "Upload Another"
+                                 (#new-upload) sits in the viewer header directly above and stays
+                                 enabled behind this panel, so a retry button here was the same
+                                 action twice. scripts/app/staging-error-cta.js writes the href,
+                                 the label and the data-lang key, because all three depend on the
+                                 viewer’s plan; this ships in the Stagify+ state, the same
+                                 direction every other gated control on the site ships in. Not
+                                 class="plus-cta" — that class is intercepted by plus-cta-auth.js
+                                 for signed-OUT visitors, and everyone who reaches this panel is
+                                 signed in. -->
+                            <a id="staging-error-viewer-cta" class="btn btn-primary staging-limit-viewer__cta hidden" href="exterior-studio.html" data-lang="errors.unstageableCta.exteriorOpen">Open the Exterior Studio</a>
+                          </div>
                         </div>
                       </div>
                     </div>
