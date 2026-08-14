@@ -56,6 +56,8 @@ export function baseDeps() {
     disclosurePreviewLimiter: pass,
     // …and in test/routes/stamp-image-route.test.js for this one.
     stampImageLimiter: pass,
+    // …and in test/routes/download-result-route.test.js for this one.
+    downloadResultLimiter: pass,
   };
 }
 

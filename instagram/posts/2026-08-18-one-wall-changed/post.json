@@ -18,9 +18,9 @@
   "angle": "Masking Studio changes the region you paint and nothing else. Everything outside the brush is the original photograph rather than a re-render that happens to look similar, which is the claim a whole-photo tool cannot make.",
   "visualSummary": "A two slide deep blue field. Both slides carry the same photograph of a bathroom at the same crop, marked with four numbered pins in identical positions and a numbered legend beneath. The room is a white freestanding bath against a large square tiled wall, a chrome floor standing tap rising beside it, two rolled grey towels on the rim, a window throwing daylight from the left and a pale tiled floor. Slide one is the original: the wall is plain off white ceramic. Slide two is the same frame after one brushed edit, the wall now deep emerald green on the same tile grid, the green running edge to edge and around the tap. The bath, the tap, the towels, the window, the daylight and the floor are pixel identical between the two slides. Deep emerald green and white against the blue chrome.",
   "dominantColors": [
-    "#15583d",
-    "#224a37",
-    "#dadcd9"
+    "#296649",
+    "#315743",
+    "#d5d9d6"
   ],
   "copy": {
     "headline": "One wall changed.",
@@ -47,7 +47,7 @@
           "lead": "One wall.",
           "accent": "Watch these four."
         },
-        "image": "/instagram/assets/sources/832b057739d7e0b6b1ae72bfefb9352dcd2ade906b08a5c736c546490dad2433.png",
+        "image": "/instagram/assets/sources/7bbcc0c0303e326e7d611fad96a0ac1c17841980b44a113cc9144316398e6539.png",
         "callouts": [
           {
             "x": 31,
@@ -61,12 +61,12 @@
           },
           {
             "x": 51,
-            "y": 75,
+            "y": 62,
             "text": "So does the tap, all the way down."
           },
           {
-            "x": 72,
-            "y": 80,
+            "x": 85,
+            "y": 83,
             "text": "And the towels on the rim."
           }
         ]
@@ -76,7 +76,7 @@
           "lead": "New tile.",
           "accent": "Nothing else."
         },
-        "image": "/instagram/assets/sources/5090fb72ba4ef72dd9235ef5e8bec42474c9d44b180055114dc35079785530fc.png",
+        "image": "/instagram/assets/sources/7324a80729576608b4e96e44fca6a2c248e7c66935bb724d717851c9171c5f43.png",
         "callouts": [
           {
             "x": 31,
@@ -90,12 +90,12 @@
           },
           {
             "x": 51,
-            "y": 75,
+            "y": 62,
             "text": "The tap. The same pixels."
           },
           {
-            "x": 72,
-            "y": 80,
+            "x": 85,
+            "y": 83,
             "text": "The towels. The same pixels."
           }
         ]
@@ -106,7 +106,7 @@
     {
       "role": "before",
       "source": "fal",
-      "sha256": "832b057739d7e0b6b1ae72bfefb9352dcd2ade906b08a5c736c546490dad2433",
+      "sha256": "7bbcc0c0303e326e7d611fad96a0ac1c17841980b44a113cc9144316398e6539",
       "sourceSha256": "3f0b47aad8bcf7ca3b58d0d28ec1a74ba28cd96673674c850105cfea1bffb91b",
       "license": {
         "type": "generated",
@@ -120,7 +120,7 @@
     {
       "role": "after",
       "source": "stagify",
-      "sha256": "5090fb72ba4ef72dd9235ef5e8bec42474c9d44b180055114dc35079785530fc",
+      "sha256": "7324a80729576608b4e96e44fca6a2c248e7c66935bb724d717851c9171c5f43",
       "license": {
         "type": "generated",
         "licenseName": "Stagify mask edit",
@@ -135,29 +135,28 @@
       "fn": "createMaskEditHandler",
       "route": "POST /api/mask-edit",
       "model": "gemini-2.5-flash-image",
-      "prompt": "Remove the existing pale ceramic wall tile and replace every part of it with deep emerald green glazed ceramic tiles, in the same large square format, with thin pale grout lines. The green must be strong and fully saturated, the colour of dark bottle glass, obviously and unmistakably green rather than grey, sage or off white. Colour the whole wall that same strong green from top to bottom and side to side, with no fade, no gradient back toward the original colour and no pale patches anywhere. The old pale tile must be completely gone from this wall. Keep the same wall shape, the same tile grid and spacing, the same perspective, and the same soft daylight falling from the left.",
-      "brushedFraction": 0.493,
+      "prompt": "Remove the existing pale ceramic wall tile and replace every part of it with deep emerald green glazed ceramic tile. Large plain square tiles with a smooth flat surface, thin pale grout lines, the same tile grid and the same perspective as now.",
+      "brushedFraction": 0.518,
       "quality": {
         "perfect": false,
         "attempts": 3,
         "bestScore": 85,
         "defects": [
-          "The green tile color is not fully saturated and appears slightly greyish in some areas."
+          "The green tile is not fully saturated and has a gradient across the wall."
         ],
         "outsideMaskIdentical": true,
         "measuredOnDeliveredFrames": {
-          "pixelsOutsideBrush": 185295,
-          "pixelsOutsideBrushThatDiffer": 0,
-          "pixelsInsideBrush": 270129,
-          "pixelsInsideBrushThatDiffer": 270124,
+          "pixelsStrictlyOutsideBrush": 168527,
+          "pixelsStrictlyOutsideBrushThatDiffer": 0,
           "deltaEByBandTopToBottom": [
-            37.9,
-            43.3,
-            49.6,
-            48.6
+            41.0,
+            45.0,
+            48.0,
+            42.0,
+            29.7
           ]
         },
-        "authorNote": "The residual QA complaint is that the green is not fully saturated, and it is overruled on inspection: the wall is unmistakably emerald in every band. The reviewer is grading against a prompt that asked for FULL saturation, which was itself a deliberate overcorrection. An earlier run asked for 'sea glass green, a muted grey green' and got the muted grey with no green at all: deltaE 0.40 across the lower wall, which is invisible, and an independent image reviewer rejected the post because the two slides looked like the same photograph twice. Every automated signal had been green at the time. quality.perfect was true, bestScore was 100, and a pixel diff said 98 per cent of the brushed area had changed, because a one-value shift counts as a change. That is why the band measurements above exist and are recorded: they are the only check that speaks to whether a viewer can SEE the edit, as opposed to whether it happened."
+        "authorNote": "Two things in this record were nearly shipped wrong, and both were invisible to every automated signal available at the time.\n\nFirst the colour. An earlier prompt asked for 'sea glass green, a muted grey green' and the model delivered the muted grey with no green at all, moving the wall by deltaE 0.40 across its lower half, which no eye can see. quality.perfect was true, bestScore was 100, and a pixel diff said 98 per cent of the brushed area had changed, because a one-value shift counts as a change. The deltaE bands recorded above exist because of that, and they are the only measurement here that speaks to whether a viewer can SEE the edit rather than whether it happened.\n\nSecond the fine horizontal lines that covered the finished tile. They survived four prompts, three mask geometries, five seeds and both image models, and they were in none of those: the model's raw output was clean the whole time. sharp promotes a raw single-channel buffer to sRGB across a blur, so the feathered composite mask came back with three channels where the code indexed one, and reading the interleaved bytes as single channel left every third row of the mask fully transparent. The original white wall showed through one row in three. The fix is one call and a length assertion in mask.js; the cost was most of a day."
       }
     }
   ]

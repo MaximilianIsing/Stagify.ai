@@ -34,7 +34,14 @@ const { width: EW, height: EH } = await sharp(edited).metadata();
 //
 // Full width, and the vertical window keeps the wall from well above the tap down through
 // the bath rim, which is the part of the room the post is about.
-const box = { left: 0, top: 210, width: 768, height: 593 };
+// Narrower than the frame on purpose. The far right of this room is a strip of wall between
+// the tub and the corner where three things go wrong at once: the bath's flank turns too
+// steeply for a per-column edge to follow, the wall-to-floor junction is a soft gradient with
+// no line to find, and everything there sits in deep shadow. Three separate mask attempts
+// each left either a pale wedge or green spilling onto the floor. It is a corner worth
+// losing: cropping before it costs a little of the tub, which reads as an ordinary framing
+// choice, and removes the whole class of defect.
+const box = { left: 0, top: 254, width: 655, height: 506 };
 
 // The "before" is the pipeline's own normalised source, written by edit.js, NOT the
 // original upload resized to match. This line used to say sharp(source.path).resize(...),

@@ -8,10 +8,20 @@
 // The absence of METERING is asserted rather than assumed. The generations this image is
 // made of were already billed at /api/mask-edit, and the block that looks copyable sits two
 // files away in exterior-handler.js.
-import { test } from 'node:test';
+import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import sharp from 'sharp';
 import { createMaskingSaveHandler, areasQualifier } from '../../lib/staging/masking-save-handler.js';
+import { createRenderPersistence } from '../../lib/staging/render-persistence.js';
+import { createLocalObjectStore } from '../../lib/data/object-store-local.js';
+import { createAuthStore } from '../../lib/data/auth-store.js';
+import { createStagedRenders } from '../../lib/data/staged-renders.js';
+import { createRenderRefs } from '../../lib/data/render-refs.js';
+import { closeDb } from '../../lib/data/db.js';
+import { STAGIFY_SOFTWARE_TAG } from '../../lib/image/output-metadata.js';
 
 const PRO = { id: 'u_pro', email: 'pro@x.com', plan: 'pro' };
 const IMG = 'data:image/jpeg;base64,' + Buffer.from('composited-pixels').toString('base64');
@@ -298,4 +308,64 @@ test('the size ceiling is measured on what the CLIENT sent, before any stamping'
   await handleMaskingSave(/** @type {any} */ (req({ after: huge, labelVirtuallyStaged: true })), /** @type {any} */ (res), PRO);
   assert.equal(res.statusCode, 413, 'the size refusal wins over the stamp attempt');
   assert.equal(seen.recorded.length, 0);
+});
+
+// ── invisible provenance metadata — inherited via render-persistence, no code here ──
+// lib/staging/render-persistence.js's encode() tags the `after` role with Stagify EXIF/XMP
+// whenever it runs, regardless of the visible badge. This handler makes no separate call for
+// it, so these run the REAL renderPersistence (not the recording fake above) end-to-end, to
+// prove the inheritance rather than just reading the code and assuming it.
+
+const dirs = [];
+afterEach(() => {
+  while (dirs.length) {
+    const d = dirs.pop();
+    try { closeDb(d); } catch { /* not open */ }
+    try { fs.rmSync(d, { recursive: true, force: true }); } catch { /* gone */ }
+  }
+});
+
+function realHandler() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stagify-masking-save-'));
+  dirs.push(dir);
+  const authStore = createAuthStore(dir);
+  const stagedRenders = createStagedRenders(dir);
+  const renderRefs = createRenderRefs(dir);
+  const store = createLocalObjectStore({ baseDir: dir, secret: 's' });
+  const renderPersistence = createRenderPersistence({ objectStore: store, stagedRenders, renderRefs });
+  const start = authStore.startRegistration('masker@example.com', 'CorrectHorse9!');
+  const { user } = authStore.completeRegistration('masker@example.com', start.code);
+  const { handleMaskingSave } = createMaskingSaveHandler({ renderPersistence });
+  return { handleMaskingSave, stagedRenders, store, user: { id: user.id, email: user.email, plan: 'pro' } };
+}
+
+async function afterBlobIsTagged(stagedRenders, store, renderId) {
+  const blob = stagedRenders.blobsFor(renderId).find((b) => b.role === 'after');
+  const meta = await sharp(await store.get(blob.storage_key)).metadata();
+  return !!meta.exif?.toString('latin1').includes(STAGIFY_SOFTWARE_TAG);
+}
+
+test('the stored gallery master carries provenance metadata with the badge OFF', async () => {
+  const { handleMaskingSave, stagedRenders, store, user } = realHandler();
+  const after = await realPhoto();
+  const res = fakeRes();
+  await handleMaskingSave(/** @type {any} */ (req({ after })), /** @type {any} */ (res), user);
+  assert.equal(res.body.success, true);
+  assert.ok(
+    await afterBlobIsTagged(stagedRenders, store, res.body.gallery.ids[0]),
+    'metadata is inherited via render-persistence.encode(), independent of the visible badge',
+  );
+});
+
+test('the stored gallery master carries provenance metadata with the badge ON', async () => {
+  const { handleMaskingSave, stagedRenders, store, user } = realHandler();
+  const after = await realPhoto();
+  const res = fakeRes();
+  await handleMaskingSave(
+    /** @type {any} */ (req({ after, labelVirtuallyStaged: true, stampLang: 'english', stampStyle: 'dark', stampScale: 1 })),
+    /** @type {any} */ (res),
+    user,
+  );
+  assert.equal(res.body.success, true);
+  assert.ok(await afterBlobIsTagged(stagedRenders, store, res.body.gallery.ids[0]));
 });

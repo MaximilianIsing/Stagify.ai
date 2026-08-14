@@ -1,19 +1,26 @@
 // Resolution picker for the staged-result download (scripts/app.js).
 //
 // Plain exported factory — no app state. Owns both halves of the split button:
-// "Download Result" keeps its original behaviour verbatim (full-size JPEG
-// straight off canvas1, no resample, no dimension suffix on the filename), and
-// the caret beside it opens the resolution menu. Missing nodes degrade to no-ops
-// so pages without the stage modal keep working.
+// "Download Result" keeps its original behaviour (full-size JPEG, no dimension
+// suffix on the filename), and the caret beside it opens the resolution menu.
+// Missing nodes degrade to no-ops so pages without the stage modal keep working.
 //
 // Sizes are multipliers of what the model actually produced (canvas1's natural
 // dimensions), plus "Original" — the resolution of the photo the user uploaded.
 // Every option is plain interpolation off the same canvas: upscaling adds no
 // real detail, so each row shows its true pixel dimensions rather than implying
 // otherwise.
+//
+// EVERY DOWNLOAD TRIES THE SERVER FIRST (resizeOnServer, POST /api/download-result):
+// a canvas export can never carry the invisible Stagify provenance metadata
+// (lib/image/output-metadata.js) the server embeds — browser canvas has no concept of
+// EXIF/XMP passthrough, full stop, regardless of what bytes went in. resizeOnClient below
+// is what every download did before that route existed, kept as the FAIL-OPEN fallback:
+// a network hiccup costs a user their metadata for one download, never the download
+// itself.
 
 export const MULTIPLIERS = [2, 1, 0.5];
-const JPEG_QUALITY = 0.92; // matches the plain Download Result path
+const JPEG_QUALITY = 0.92; // matches the plain Download Result path, and the server route's quality: 92
 
 const t = (key, fallback) =>
   window.LanguageSystem?.getText?.(key) || fallback;
@@ -119,6 +126,60 @@ export function probeDimensions(src, timeoutMs = PROBE_TIMEOUT_MS) {
 }
 
 /**
+ * The client-side fallback: draw the finished result onto a (possibly resized) canvas
+ * and export straight to JPEG. Everything download-menu.js did before server-side
+ * resizing existed — kept as the path taken when resizeOnServer fails.
+ * @param {HTMLCanvasElement} canvas - The staged-result canvas, already at its natural size.
+ * @param {number} width - Target width in px.
+ * @param {number} height - Target height in px.
+ * @returns {string} A `data:image/jpeg;base64,...` URL.
+ */
+function resizeOnClient(canvas, width, height) {
+  if (width === canvas.width && height === canvas.height) {
+    return canvas.toDataURL('image/jpeg', JPEG_QUALITY); // no resample needed
+  }
+  const out = document.createElement('canvas');
+  out.width = width;
+  out.height = height;
+  const ctx = out.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(canvas, 0, 0, width, height);
+  return out.toDataURL('image/jpeg', JPEG_QUALITY);
+}
+
+/**
+ * Ask the server to resize the CURRENT after-result to (width, height) and re-encode it as
+ * JPEG with Stagify's invisible provenance metadata embedded. Takes its data source as a
+ * parameter rather than a closure capture so it can be unit-tested without constructing a
+ * whole download menu.
+ * @param {() => string} getCurrentAfterSrc - Returns the currently-displayed after-result's
+ *   data URL, or '' if there isn't one.
+ * @param {number} width - Target width in px.
+ * @param {number} height - Target height in px.
+ * @returns {Promise<string>} A `data:image/jpeg;base64,...` URL.
+ * @throws {Error} On any failure — callers fall back to resizeOnClient rather than surface this.
+ */
+export async function resizeOnServer(getCurrentAfterSrc, width, height) {
+  const src = getCurrentAfterSrc();
+  if (!src) throw new Error('no result to download');
+  const token = window.StagifyAuth && window.StagifyAuth.getToken();
+  const res = await fetch('/api/download-result', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: 'Bearer ' + token } : {}),
+    },
+    body: JSON.stringify({ image: src, width, height, authToken: token || undefined }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.image) {
+    throw new Error(data?.error || 'Could not prepare that download.');
+  }
+  return data.image;
+}
+
+/**
  * Wire the download-resolution split-button menu.
  * @param {{
  *   downloadBtn: HTMLElement | null,
@@ -127,25 +188,65 @@ export function probeDimensions(src, timeoutMs = PROBE_TIMEOUT_MS) {
  *   menu: HTMLElement | null,
  *   canvas: HTMLCanvasElement | null,
  *   getOriginalSrc: () => string,
+ *   getCurrentAfterSrc?: () => string,
  *   buildFilename: (width?: number, height?: number) => string,
  * }} deps - The plain download button, split-button root, caret, menu container,
- *   the staged-result canvas, a getter for the original upload's source, and a
- *   filename builder (called with no args for the plain full-size download).
+ *   the staged-result canvas, a getter for the original upload's source, an OPTIONAL
+ *   getter for the current after-result's source (omitted → every download falls back to
+ *   resizeOnClient, exactly today's behaviour, so existing callers keep working unchanged),
+ *   and a filename builder (called with no args for the plain full-size download).
  * @returns {{ close: () => void }} Handle for closing the menu externally.
  */
 export function createDownloadMenu(deps) {
-  const { downloadBtn, split, toggle, menu, canvas, getOriginalSrc, buildFilename } = deps;
+  const { downloadBtn, split, toggle, menu, canvas, getOriginalSrc, getCurrentAfterSrc, buildFilename } = deps;
   if (!canvas) return { close() {} };
 
   const isReady = () => canvasIsReady(canvas);
+  const getAfterSrc = getCurrentAfterSrc || (() => '');
 
-  // Unchanged from the pre-menu behaviour: full-size canvas straight to JPEG.
-  if (downloadBtn) downloadBtn.addEventListener('click', () => {
-    if (!isReady()) return;
+  /**
+   * The href for a download at (width, height): the server's tagged JPEG when available,
+   * the client-side canvas export otherwise. See the file header for why this order.
+   * @param {number} width
+   * @param {number} height
+   * @returns {Promise<string>}
+   */
+  async function resolveHref(width, height) {
+    try {
+      return await resizeOnServer(getAfterSrc, width, height);
+    } catch {
+      return resizeOnClient(canvas, width, height);
+    }
+  }
+
+  /**
+   * @param {string} href
+   * @param {string} filename
+   */
+  function triggerDownload(href, filename) {
     const link = document.createElement('a');
-    link.download = buildFilename();
-    link.href = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+    link.download = filename;
+    link.href = href;
     link.click();
+  }
+
+  // Restores downloadBtn alone, WITHOUT going through the full syncEnabled() below — that
+  // one also touches `split`, which is exactly the node this page may not have (see the
+  // file header: "missing nodes degrade to no-ops"). syncEnabled() itself is still the one
+  // used by downloadAt() further down, since anything that can call downloadAt only exists
+  // once split/toggle/menu are already confirmed present.
+  function restoreDownloadBtn() {
+    /** @type {HTMLButtonElement} */ (downloadBtn).disabled = !isReady();
+  }
+
+  if (downloadBtn) downloadBtn.addEventListener('click', async () => {
+    if (!isReady()) return;
+    /** @type {HTMLButtonElement} */ (downloadBtn).disabled = true;
+    try {
+      triggerDownload(await resolveHref(canvas.width, canvas.height), buildFilename());
+    } finally {
+      restoreDownloadBtn();
+    }
   });
 
   if (!split || !toggle || !menu) return { close() {} };
@@ -171,29 +272,18 @@ export function createDownloadMenu(deps) {
   }
 
   /**
-   * Resize the staged canvas to the given pixels and download it as JPEG.
+   * Resize the staged result to the given pixels and download it as JPEG.
    * @param {number} width - Target width in px.
    * @param {number} height - Target height in px.
    */
-  function downloadAt(width, height) {
+  async function downloadAt(width, height) {
     if (!canvas.width) return;
-    let href;
-    if (width === canvas.width && height === canvas.height) {
-      href = canvas.toDataURL('image/jpeg', JPEG_QUALITY); // no resample needed
-    } else {
-      const out = document.createElement('canvas');
-      out.width = width;
-      out.height = height;
-      const ctx = out.getContext('2d');
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(canvas, 0, 0, width, height);
-      href = out.toDataURL('image/jpeg', JPEG_QUALITY);
+    for (const btn of [downloadBtn, toggle]) { if (btn) /** @type {HTMLButtonElement} */ (btn).disabled = true; }
+    try {
+      triggerDownload(await resolveHref(width, height), buildFilename(width, height));
+    } finally {
+      syncEnabled();
     }
-    const link = document.createElement('a');
-    link.download = buildFilename(width, height);
-    link.href = href;
-    link.click();
   }
 
   async function open() {

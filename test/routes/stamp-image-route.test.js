@@ -20,6 +20,7 @@
 import { test, after, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
+import { STAGIFY_SOFTWARE_TAG, DIGITAL_SOURCE_TYPE, DISCLOSURE_DESCRIPTIONS } from '../../lib/image/output-metadata.js';
 
 // Set the ceiling before anything imports the limiter — it is a singleton built at import
 // time from the env var. The production default is 30 per 15 minutes.
@@ -76,6 +77,21 @@ test('stamps the image and hands back a data URL', async () => {
   const meta = await sharp(Buffer.from(body.image.split(',')[1], 'base64')).metadata();
   assert.equal(meta.width, 1200);
   assert.equal(meta.height, 800);
+});
+
+test('also embeds invisible provenance metadata alongside the visible badge', async () => {
+  app = await mountStaging(asPro);
+  const image = await photo();
+  const res = await post(app.baseUrl, { image, lang: 'english', style: 'dark', scale: 1 });
+  const body = await res.json();
+
+  const meta = await sharp(Buffer.from(body.image.split(',')[1], 'base64')).metadata();
+  assert.ok(meta.exif, 'EXIF block present');
+  const exifText = meta.exif.toString('latin1');
+  assert.ok(exifText.includes(STAGIFY_SOFTWARE_TAG));
+  assert.ok(exifText.includes(DISCLOSURE_DESCRIPTIONS.edited), 'mode is "edited", not "staged" — this is a mask-edit/Basic Mask download');
+  assert.ok(meta.xmp, 'XMP block present');
+  assert.ok(meta.xmp.toString('utf8').includes(DIGITAL_SOURCE_TYPE));
 });
 
 test('the style, size and language all reach the stamper', async () => {
