@@ -215,16 +215,43 @@ export function createStagifyImages({ debug = false, config }) {
      *    right for a QA reviewer (better to review something than nothing) and wrong for
      *    a public advertisement, so identity is asserted rather than assumed.
      *
+     * `compositeMaskBuffer` splits the mask's two jobs apart, and they genuinely want
+     * different shapes. The mask sent to the model is a LOCATOR: buildMarkedRoomImage turns
+     * it into a magenta outline saying "change what is inside this", and that outline should
+     * be crisp, because a soft one describes a boundary the model cannot place. Feeding a
+     * feathered mask in here cost real quality: QA scores fell from 85 to 100 down to a flat
+     * 70 across four rolls, and the renders came back with half the wall in a completely
+     * different tile format. The mask used to COMPOSITE wants the opposite, since every
+     * object in a photograph has a soft edge, and a hard composite leaves a rim of the
+     * original colour around it that reads as a cut-out. Pass a crisp mask as `maskBuffer`
+     * and a feathered copy as `compositeMaskBuffer` to get both.
      * @param {{ sourceBuffer: Buffer, maskBuffer: Buffer, prompt: string,
+     *           compositeMaskBuffer?: Buffer|null,
      *           referenceBuffer?: Buffer|null, seed?: number|null }} o
      * @returns {Promise<{ buffer: Buffer, mime: string, prompt: string, model: string,
      *           quality: object, outsideMaskIdentical: boolean }>}
      */
-    async maskEdit({ sourceBuffer, maskBuffer, prompt, referenceBuffer = null, seed = null }) {
+    async maskEdit({
+      sourceBuffer, maskBuffer, prompt,
+      compositeMaskBuffer = null, referenceBuffer = null, seed = null, modelOverride = null,
+    }) {
       requireGemini('Mask editing');
 
+      // The route PINS gemini-2.5-flash-image for masked edits, while ordinary staging runs
+      // on the newer model from config. `modelOverride` swaps it by wrapping the client
+      // rather than by touching routes/ or lib/staging/, so the product keeps whatever it
+      // has chosen and this tool can still answer "is that artifact the model's fault".
+      // Leave it unset for a real post: what a post shows should be what a customer gets.
+      const client = modelOverride
+        ? {
+          ...genAI,
+          getGenerativeModel: (options) =>
+            genAI.getGenerativeModel({ ...options, model: modelOverride }),
+        }
+        : genAI;
+
       const handler = createMaskEditHandler({
-        genAI,
+        genAI: client,
         // No accounts in a local tool. The handler only reads proUser.id, and it reaches
         // this stub solely to key a CSV row we are already discarding.
         requireProAccount: () => ({ id: 'instagram-post-factory' }),
@@ -284,7 +311,9 @@ export function createStagifyImages({ debug = false, config }) {
       const normalisedRoom = await downscaleImage(sourceBuffer);
       const roomMeta = await sharp(normalisedRoom).metadata();
       const { width, height } = roomMeta;
-      const resizedMask = await sharp(maskBuffer)
+      // The composite runs through the feathered copy when one was supplied; the model was
+      // shown the crisp one.
+      const resizedMask = await sharp(compositeMaskBuffer ?? maskBuffer)
         .resize(width, height, { fit: 'fill' })
         .png()
         .toBuffer();
@@ -300,6 +329,11 @@ export function createStagifyImages({ debug = false, config }) {
         );
       }
       const { buffer, mime } = dataUrlToBuffer(compositeUrl);
+      // The model's RAW output, before it is blended back through the mask. Kept because
+      // when an artifact shows up in a finished post, the first question is whether the
+      // model produced it or the compositing did, and nothing else in the pipeline can
+      // answer that.
+      const rawModelOutput = dataUrlToBuffer(payload.editedImage).buffer;
 
       // Prove the claim instead of trusting the compositor. Everything outside the brush
       // must be the original photograph, byte for byte after the shared resize.
@@ -320,10 +354,11 @@ export function createStagifyImages({ debug = false, config }) {
         buffer,
         mime,
         prompt,
-        model: 'gemini-2.5-flash-image',
+        model: modelOverride ?? 'gemini-2.5-flash-image',
         params: { fn: 'mask-edit', prompt, referenceUsed: Boolean(payload.referenceUsed) },
         quality,
         outsideMaskIdentical,
+        rawModelOutput,
         // The exact bytes the edit started from, and the ONLY honest "before" for a post
         // that puts the two frames side by side.
         //

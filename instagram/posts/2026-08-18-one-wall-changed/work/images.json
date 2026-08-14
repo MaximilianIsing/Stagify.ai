@@ -1,32 +1,32 @@
 {
   "before": {
-    "hash": "832b057739d7e0b6b1ae72bfefb9352dcd2ade906b08a5c736c546490dad2433",
-    "path": "C:\\Users\\Maxim\\Downloads\\Stagify.ai\\instagram\\assets\\sources\\832b057739d7e0b6b1ae72bfefb9352dcd2ade906b08a5c736c546490dad2433.png",
-    "url": "/instagram/assets/sources/832b057739d7e0b6b1ae72bfefb9352dcd2ade906b08a5c736c546490dad2433.png",
-    "width": 768,
-    "height": 593,
-    "bytes": 331646
+    "hash": "7bbcc0c0303e326e7d611fad96a0ac1c17841980b44a113cc9144316398e6539",
+    "path": "C:\\Users\\Maxim\\Downloads\\Stagify.ai\\instagram\\assets\\sources\\7bbcc0c0303e326e7d611fad96a0ac1c17841980b44a113cc9144316398e6539.png",
+    "url": "/instagram/assets/sources/7bbcc0c0303e326e7d611fad96a0ac1c17841980b44a113cc9144316398e6539.png",
+    "width": 655,
+    "height": 506,
+    "bytes": 240232
   },
   "after": {
-    "hash": "5090fb72ba4ef72dd9235ef5e8bec42474c9d44b180055114dc35079785530fc",
-    "path": "C:\\Users\\Maxim\\Downloads\\Stagify.ai\\instagram\\assets\\sources\\5090fb72ba4ef72dd9235ef5e8bec42474c9d44b180055114dc35079785530fc.png",
-    "url": "/instagram/assets/sources/5090fb72ba4ef72dd9235ef5e8bec42474c9d44b180055114dc35079785530fc.png",
-    "width": 768,
-    "height": 593,
-    "bytes": 655014
+    "hash": "7324a80729576608b4e96e44fca6a2c248e7c66935bb724d717851c9171c5f43",
+    "path": "C:\\Users\\Maxim\\Downloads\\Stagify.ai\\instagram\\assets\\sources\\7324a80729576608b4e96e44fca6a2c248e7c66935bb724d717851c9171c5f43.png",
+    "url": "/instagram/assets/sources/7324a80729576608b4e96e44fca6a2c248e7c66935bb724d717851c9171c5f43.png",
+    "width": 655,
+    "height": 506,
+    "bytes": 487757
   },
   "swatches": [
-    "#8da296",
-    "#144c33",
-    "#203e2e",
-    "#91a89c",
-    "#15583d",
-    "#224a37",
-    "#96aaa0",
-    "#3a6d58",
-    "#355d4b",
-    "#a8a8a3",
-    "#dadcd9",
-    "#999a93"
+    "#9fb0a8",
+    "#307058",
+    "#2b5b46",
+    "#a2b4ac",
+    "#327c62",
+    "#2f6a53",
+    "#a0b3ab",
+    "#3d7c66",
+    "#38745f",
+    "#a5a8a3",
+    "#b9c7c2",
+    "#9daca4"
   ]
 }

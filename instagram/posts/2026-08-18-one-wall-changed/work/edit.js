@@ -28,6 +28,12 @@ const stagify = createStagifyImages({ config });
 // rather than a fault in the picture, since a glazed tile catching window light is right.
 // Do not ask for a property the post does not need and the reviewer will then grade on.
 //
+// It FORBIDS A RIBBED SURFACE explicitly. Left to itself the model kept rendering the wall's
+// specular gradient as texture, returning the left third and the right edge in a fine
+// horizontal ribbed tile and the middle in the squares that were asked for. Five rolls across
+// three different mask geometries all did it, so it is the prompt's silence rather than the
+// mask or the seed.
+//
 // It says nothing about the bath, the tap or the light either. The mask already restricts
 // the edit, so describing the rest of the room only invites drift.
 // It NAMES A SATURATED COLOUR, and this is the correction that mattered. An earlier version
@@ -40,27 +46,25 @@ const stagify = createStagifyImages({ config });
 // safety. It also forbids the fade: the previous run coloured the top of the wall and trailed
 // off to nothing by the bath rim.
 const PROMPT = 'Remove the existing pale ceramic wall tile and replace every part of it with '
-  + 'deep emerald green glazed ceramic tiles, in the same large square format, with thin pale '
-  + 'grout lines. The green must be strong and fully saturated, the colour of dark bottle '
-  + 'glass, obviously and unmistakably green rather than grey, sage or off white. Colour the '
-  + 'whole wall that same strong green from top to bottom and side to side, with no fade, no '
-  + 'gradient back toward the original colour and no pale patches anywhere. The old pale tile '
-  + 'must be completely gone from this wall. Keep the same wall shape, the same tile grid and '
-  + 'spacing, the same perspective, and the same soft daylight falling from the left.';
+  + 'deep emerald green glazed ceramic tile. Large plain square tiles with a smooth flat '
+  + 'surface, thin pale grout lines, the same tile grid and the same perspective as now.';
 
 const result = await stagify.maskEdit({
   sourceBuffer: fs.readFileSync(source.path),
   maskBuffer: fs.readFileSync(path.join(HERE, 'mask.png')),
+  compositeMaskBuffer: fs.readFileSync(path.join(HERE, 'mask-composite.png')),
   prompt: PROMPT,
   // Shifted off round one's seed on purpose: an identical seed re-courts the output the
   // reviewer already turned down three times.
-  seed: 2026081823,
+  seed: 771903,
+  modelOverride: process.env.MASK_MODEL || null,
 });
 
 const outPath = path.join(HERE, 'edited.png');
 fs.writeFileSync(outPath, result.buffer);
 // The before frame, straight from the pipeline rather than resized to match by hand.
 fs.writeFileSync(path.join(HERE, 'before-full.png'), result.normalisedSource);
+fs.writeFileSync(path.join(HERE, 'raw-model-output.png'), result.rawModelOutput);
 await sharp(result.buffer).resize(700).jpeg({ quality: 88 })
   .toFile(path.join(HERE, 'preview-edited.jpg'));
 
@@ -102,15 +106,22 @@ const rawOf = (buf) => sharp(buf).removeAlpha().raw().toBuffer();
 const [beforeRaw, afterRaw, maskRaw] = await Promise.all([
   rawOf(result.normalisedSource),
   rawOf(result.buffer),
-  sharp(path.join(HERE, 'mask.png')).resize(MW, MH, { fit: 'fill' }).extractChannel(0).raw().toBuffer(),
+  sharp(path.join(HERE, 'mask-composite.png')).resize(MW, MH, { fit: 'fill' }).extractChannel(0).raw().toBuffer(),
 ]);
 
-console.log('\nvisibility of the change, brushed pixels only:');
-const BANDS = 6;
+// Measured over the DELIVERED CROP, not the whole frame. crop.js keeps rows 210 to 803, so
+// anything above or below never reaches the post, and grading it there produces false
+// alarms: a first version failed the whole run on a band of floor below the crop line that
+// no viewer will ever see. A quality gate that cries wolf gets ignored, which defeats it.
+const CROP_TOP = 210;
+const CROP_BOTTOM = 803;
+
+console.log('\nvisibility of the change, brushed pixels inside the delivered crop:');
+const BANDS = 5;
 let worst = Infinity;
 for (let band = 0; band < BANDS; band += 1) {
-  const y0 = Math.round((band * MH) / BANDS);
-  const y1 = Math.round(((band + 1) * MH) / BANDS);
+  const y0 = CROP_TOP + Math.round((band * (CROP_BOTTOM - CROP_TOP)) / BANDS);
+  const y1 = CROP_TOP + Math.round(((band + 1) * (CROP_BOTTOM - CROP_TOP)) / BANDS);
   let sa = [0, 0, 0]; let sb = [0, 0, 0]; let n = 0;
   for (let y = y0; y < y1; y += 1) {
     for (let x = 0; x < MW; x += 1) {

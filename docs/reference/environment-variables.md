@@ -157,6 +157,19 @@ HIDE_STAGING_BANNER=false
 # RL_CHECKOUT=10
 # Upload pre-checks / 5 min. Each accepted call spends a paid Gemini vision request.
 # RL_VALIDATE_IMAGE=20
+# Disclosure-preview render (GET /api/disclosure-preview), unauthenticated, / 5 min.
+# RL_DISCLOSURE_PREVIEW=120
+# Visible-badge stamping of a client-built composite (POST /api/stamp-image), Pro-only,
+# / 15 min. Basic Mask / Masking Studio's download path.
+# RL_STAMP_IMAGE=30
+# Masking Studio's "Looks Good" gallery save (POST /api/masking-studio/save), Pro-only,
+# / 15 min -- the only endpoint that PUTs client-supplied megabytes to object storage
+# with no model call in between to brake it.
+# RL_GALLERY_IMPORT=20
+# Server-side resize + re-encode for the homepage download button (POST
+# /api/download-result), any signed-in session, / 15 min. Cheap CPU-only work (a sharp
+# resize + JPEG encode), not a paid-generation cost cap like RL_GEN.
+# RL_DOWNLOAD_RESULT=60
 # WRONG endpoint-access keys, per IP / 15 min. The whole admin surface plus
 # /api/stage-by-endpoint-key is gated by one shared static secret with no accounts
 # behind it, so guessing that secret is the only way in; this bounds the guess rate.

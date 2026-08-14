@@ -206,6 +206,7 @@ export function createVersionCarousel(deps) {
       },
       getBeforeIndex: () => beforeIndex,
       getAfterVersions: () => afterVersions,
+      getAfterIndex: () => afterIndex,
       setAfterVersions(list) { afterVersions = list; afterIndex = 0; },
       pushAfterVersion(url) {
         afterVersions.push(url);

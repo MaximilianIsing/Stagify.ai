@@ -370,6 +370,7 @@ import { initStagingEntry } from './app/staging-entry.js';
       setAfterVersions,
       pushAfterVersion,
       setAfterIndex,
+      getAfterIndex,
     } = createVersionCarousel({
       canvas1,
       stagePreview,
@@ -507,6 +508,9 @@ import { initStagingEntry } from './app/staging-entry.js';
       downloadBtn, canvas: canvas1,
       split: $('#download-split'), toggle: $('#download-size-toggle'), menu: $('#download-size-menu'),
       getOriginalSrc: () => getBeforeVersions()[0] || stagePreview?.src || '',
+      // Whatever after-version is CURRENTLY painted on canvas1 — server-side resize needs
+      // the source bytes, not just the pixels canvas.toDataURL() can already read back.
+      getCurrentAfterSrc: () => getAfterVersions()[getAfterIndex()] || '',
       buildFilename: (w, h) =>
         `stagify-${roomDownloadSlug(roomSelect?.value)}-${Date.now()}${w ? `-${w}x${h}` : ''}.jpg`,
     });

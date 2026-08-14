@@ -28,6 +28,7 @@ const {
   buildSizeRows,
   rowLabelText,
   probeDimensions,
+  resizeOnServer,
   MULTIPLIERS,
 } = await import('../../../public/scripts/app/download-menu.js');
 
@@ -210,5 +211,92 @@ test('a late callback after the timeout cannot re-resolve the promise', async ()
     captured.naturalWidth = 10;
     captured.naturalHeight = 10;
     assert.doesNotThrow(() => captured.onload());
+  } finally { restore(); }
+});
+
+// ── resizeOnServer ─────────────────────────────────────────────────────────────
+// This is the whole reason download-menu.js now tries a network round trip at all: a
+// browser canvas export can never carry the invisible provenance metadata the server
+// embeds, so every download asks the server first and falls back to the old canvas path
+// (resizeOnClient, exercised only via createDownloadMenu's DOM wiring — not unit-tested
+// here, see the file's own header) on ANY failure from this function. That fallback
+// contract is exactly what these tests pin: success returns the server's data URL, and
+// every failure mode throws rather than resolving to something silently wrong.
+
+/** Install a stub `fetch` for one test; returns a restore fn. */
+function stubFetch(impl) {
+  const prev = globalThis.fetch;
+  globalThis.fetch = impl;
+  return () => { globalThis.fetch = prev; };
+}
+
+test('resizeOnServer posts image/width/height and returns the server\'s tagged data URL', async () => {
+  let seenUrl, seenOpts;
+  const restore = stubFetch(async (url, opts) => {
+    seenUrl = url; seenOpts = opts;
+    return { ok: true, json: async () => ({ success: true, image: 'data:image/jpeg;base64,TAGGED' }) };
+  });
+  try {
+    const out = await resizeOnServer(() => 'data:image/jpeg;base64,SRC', 600, 400);
+    assert.equal(out, 'data:image/jpeg;base64,TAGGED');
+    assert.equal(seenUrl, '/api/download-result');
+    assert.equal(seenOpts.method, 'POST');
+    assert.equal(seenOpts.headers['Content-Type'], 'application/json');
+    // JSON.stringify drops keys whose value is undefined — authToken is simply absent here.
+    assert.deepEqual(JSON.parse(seenOpts.body), {
+      image: 'data:image/jpeg;base64,SRC', width: 600, height: 400,
+    });
+  } finally { restore(); }
+});
+
+test('resizeOnServer attaches a Bearer token when window.StagifyAuth has one', async () => {
+  globalThis.window.StagifyAuth = { getToken: () => 'tok123' };
+  let seenOpts;
+  const restore = stubFetch(async (url, opts) => {
+    seenOpts = opts;
+    return { ok: true, json: async () => ({ success: true, image: 'data:image/jpeg;base64,X' }) };
+  });
+  try {
+    await resizeOnServer(() => 'data:image/jpeg;base64,SRC', 100, 100);
+    assert.equal(seenOpts.headers.Authorization, 'Bearer tok123');
+    assert.equal(JSON.parse(seenOpts.body).authToken, 'tok123');
+  } finally { restore(); delete globalThis.window.StagifyAuth; }
+});
+
+test('resizeOnServer works with no window.StagifyAuth — no Authorization header, no throw', async () => {
+  delete globalThis.window.StagifyAuth;
+  let seenOpts;
+  const restore = stubFetch(async (url, opts) => {
+    seenOpts = opts;
+    return { ok: true, json: async () => ({ success: true, image: 'data:image/jpeg;base64,X' }) };
+  });
+  try {
+    await resizeOnServer(() => 'data:image/jpeg;base64,SRC', 100, 100);
+    assert.equal('Authorization' in seenOpts.headers, false);
+  } finally { restore(); }
+});
+
+test('resizeOnServer throws when there is no current result to send', async () => {
+  await assert.rejects(() => resizeOnServer(() => '', 100, 100), /no result to download/);
+});
+
+test('resizeOnServer throws on a non-OK response', async () => {
+  const restore = stubFetch(async () => ({ ok: false, json: async () => ({ error: 'nope' }) }));
+  try {
+    await assert.rejects(() => resizeOnServer(() => 'data:image/jpeg;base64,SRC', 100, 100), /nope/);
+  } finally { restore(); }
+});
+
+test('resizeOnServer throws on a malformed (non-JSON) response body', async () => {
+  const restore = stubFetch(async () => ({ ok: true, json: async () => { throw new Error('bad json'); } }));
+  try {
+    await assert.rejects(() => resizeOnServer(() => 'data:image/jpeg;base64,SRC', 100, 100));
+  } finally { restore(); }
+});
+
+test('resizeOnServer throws when fetch itself rejects (network error)', async () => {
+  const restore = stubFetch(async () => { throw new Error('network down'); });
+  try {
+    await assert.rejects(() => resizeOnServer(() => 'data:image/jpeg;base64,SRC', 100, 100), /network down/);
   } finally { restore(); }
 });

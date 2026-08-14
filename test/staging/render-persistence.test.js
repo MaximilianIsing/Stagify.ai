@@ -20,6 +20,7 @@ import { createRenderPersistence, ENCODES } from '../../lib/staging/render-persi
 import { createLocalObjectStore } from '../../lib/data/object-store-local.js';
 import { createDisabledObjectStore } from '../../lib/data/object-store.js';
 import { keyForRender } from '../../lib/data/object-keys.js';
+import { STAGIFY_SOFTWARE_TAG } from '../../lib/image/output-metadata.js';
 
 const dirs = [];
 const stores = [];
@@ -115,6 +116,28 @@ test('the before photo is never stored larger than the after', async () => {
   assert.ok(before.width <= ENCODES.before.maxEdge);
 });
 
+test('after and thumb carry Stagify provenance metadata; before does NOT (it is the honest, unedited source)', async () => {
+  const { persistence, stagedRenders, store, user } = setup();
+  const pending = persistence.recordPending({
+    user, isPro: true, natives: [{ buffer: await png(1024, 683) }], params: {},
+  });
+  await persistence.uploadInBackground({ entries: pending.entries, sourceBuffer: await png(1920, 1080), user });
+
+  const blobs = stagedRenders.blobsFor(pending.entries[0].id);
+  const bytesFor = async (role) => store.get(blobs.find((b) => b.role === role).storage_key);
+
+  for (const role of ['after', 'thumb']) {
+    const meta = await sharp(await bytesFor(role)).metadata();
+    assert.ok(meta.exif?.toString('latin1').includes(STAGIFY_SOFTWARE_TAG), `${role} carries the Stagify Software tag`);
+  }
+
+  const beforeMeta = await sharp(await bytesFor('before')).metadata();
+  assert.ok(
+    !beforeMeta.exif?.toString('latin1').includes(STAGIFY_SOFTWARE_TAG),
+    'before is the pristine source photo — tagging it would be a false provenance claim',
+  );
+});
+
 test('every variation of one request gets its own entry', async () => {
   const { persistence, stagedRenders, user } = setup();
   const natives = [{ buffer: await png() }, { buffer: await png() }, { buffer: await png() }];
@@ -208,6 +231,12 @@ test('references are deduped across the variations of one request', async () => 
   }
   const [ref] = renderRefs.forRender(pending.entries[0].id);
   assert.ok(await store.head(ref.storage_key));
+
+  const refMeta = await sharp(await store.get(ref.storage_key)).metadata();
+  assert.ok(
+    !refMeta.exif?.toString('latin1').includes(STAGIFY_SOFTWARE_TAG),
+    'a furniture reference photo is provenance display, not an AI-generated Stagify output',
+  );
 });
 
 // ---- the off switch ---------------------------------------------------------------

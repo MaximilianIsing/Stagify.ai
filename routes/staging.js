@@ -4,13 +4,17 @@ import { sendError } from '../lib/http/http-helpers.js';
 import { reportError } from '../lib/http/error-ref.js';
 import { createMaskEditHandler } from '../lib/staging/mask-edit.js';
 import { createSegmentHandler } from '../lib/staging/segment.js';
-import { IMAGE_DATA_URL_RE, isImageDataUrl } from '../lib/staging/data-url.js';
+import { IMAGE_DATA_URL_RE, isImageDataUrl, decodeImageDataUrl } from '../lib/staging/data-url.js';
+import sharp from 'sharp';
+import { withDisclosureMetadata } from '../lib/image/output-metadata.js';
+import { DELIVERY_MAX_EDGE } from '../lib/image/image-primitives.js';
 import { logger } from '../lib/logger.js';
 import {
   validateImageLimiter as defaultValidateImageLimiter,
   galleryImportLimiter as defaultGalleryImportLimiter,
   disclosurePreviewLimiter as defaultDisclosurePreviewLimiter,
   stampImageLimiter as defaultStampImageLimiter,
+  downloadResultLimiter as defaultDownloadResultLimiter,
 } from '../lib/http/rate-limiters.js';
 import {
   normalizePreviewParams,
@@ -42,6 +46,28 @@ const MAX_VALIDATE_IMAGE_BYTES = 8 * 1024 * 1024;
 // instead of a message naming the image.
 const MAX_STAMP_IMAGE_BYTES = 16 * 1024 * 1024;
 
+// Ceiling on the image POST /api/download-result will resize+re-encode, enforced the
+// same way and for the same reason as MAX_STAMP_IMAGE_BYTES: this is the finished
+// full-resolution result the user is about to download, not a downscaled probe.
+const MAX_DOWNLOAD_RESULT_BYTES = 16 * 1024 * 1024;
+
+// The largest edge a resize request may ask for. download-menu.js's own 2× row can
+// already request up to double a DELIVERY_MAX_EDGE image, so this is that same ceiling
+// doubled — generous enough for every row buildSizeRows ever computes, tight enough that
+// a forged request can't make sharp allocate an arbitrary canvas.
+const MAX_DOWNLOAD_RESULT_EDGE = DELIVERY_MAX_EDGE * 2;
+
+/**
+ * A positive integer within MAX_DOWNLOAD_RESULT_EDGE, or null.
+ * @param {unknown} value
+ * @returns {number | null}
+ */
+function clampDownloadDim(value) {
+  const n = Math.round(Number(value));
+  if (!Number.isFinite(n) || n <= 0 || n > MAX_DOWNLOAD_RESULT_EDGE) return null;
+  return n;
+}
+
 /**
  * Build the virtual-staging router. `deps` is the full injection bag shared by
  * this router's inline handlers and the sibling handler factories
@@ -67,6 +93,7 @@ const MAX_STAMP_IMAGE_BYTES = 16 * 1024 * 1024;
  *   galleryImportLimiter?: import('express').RequestHandler,
  *   disclosurePreviewLimiter?: import('express').RequestHandler,
  *   stampImageLimiter?: import('express').RequestHandler,
+ *   downloadResultLimiter?: import('express').RequestHandler,
  *   downscaleImage: typeof import('../lib/image/image-primitives.js').downscaleImage,
  *   padBufferToAspectRatio: typeof import('../lib/image/image-primitives.js').padBufferToAspectRatio,
  *   buildMarkedRoomImage: typeof import('../lib/image/image-primitives.js').buildMarkedRoomImage,
@@ -88,7 +115,8 @@ const MAX_STAMP_IMAGE_BYTES = 16 * 1024 * 1024;
  *   the shared `validateImageLimiter`, so the pre-check is never mounted with
  *   genLimiter as its only ceiling. `disclosurePreviewLimiter` is the same seam for the
  *   badge preview, which has no other ceiling at all, and `stampImageLimiter` for
- *   /api/stamp-image, which likewise has no genLimiter in front of it.
+ *   /api/stamp-image, which likewise has no genLimiter in front of it. `downloadResultLimiter`
+ *   is the same seam for /api/download-result.
  */
 export default function createStagingRouter(deps) {
   // Names used by the handlers still inlined below. The /api/mask-edit and
@@ -103,6 +131,7 @@ export default function createStagingRouter(deps) {
   const galleryImportLimiter = injectedGalleryImportLimiter ?? defaultGalleryImportLimiter;
   const previewLimiter = deps.disclosurePreviewLimiter ?? defaultDisclosurePreviewLimiter;
   const stampLimiter = deps.stampImageLimiter ?? defaultStampImageLimiter;
+  const downloadResultLimiter = deps.downloadResultLimiter ?? defaultDownloadResultLimiter;
 
 // What the "Preview" hover in the staging modal shows: the user's chosen badge style and
 // size, stamped onto a sample photo by the SAME code that will stamp their render. See
@@ -366,8 +395,23 @@ router.post('/api/stamp-image', stampLimiter, async (req, res) => {
     // the allow-lists here is exactly how the two would drift.
     const params = normalizePreviewParams(req.body || {});
     const stamped = await stampVirtuallyStaged(image, params);
+
+    // Invisible provenance metadata, layered on top of the visible badge above.
+    // stampVirtuallyStaged() itself always emits an untagged PNG and is out of scope to
+    // modify, so this is a second, cheap PNG-to-PNG pass. Best-effort, unlike the stamp
+    // above: a failure here must not block delivery of an otherwise-correctly-labelled
+    // image, so it falls back to the stamped-but-untagged bytes rather than failing closed.
+    let output = stamped;
+    try {
+      const stampedBuffer = decodeImageDataUrl(stamped);
+      const tagged = await withDisclosureMetadata(sharp(stampedBuffer), { mode: 'edited' }).png().toBuffer();
+      output = `data:image/png;base64,${tagged.toString('base64')}`;
+    } catch (error) {
+      logger.warn('[staging] could not embed disclosure metadata on /api/stamp-image:', error);
+    }
+
     setSensitiveHeaders(res);
-    return res.json({ success: true, image: stamped });
+    return res.json({ success: true, image: output });
   } catch (error) {
     if (res.headersSent) return undefined;
     // Distinct code, same contract as /api/process-image: the client must be able to tell
@@ -381,6 +425,64 @@ router.post('/api/stamp-image', stampLimiter, async (req, res) => {
     }
     return sendError(res, 500, 'Could not label that image', {
       ref: reportError('staging.stamp-image', error),
+    });
+  }
+});
+
+// Server-side resize + re-encode of a finished staging result, for the homepage tool's
+// download button and resolution menu (public/scripts/app/download-menu.js). Those used to
+// resize entirely on <canvas> and export straight to JPEG — which meant nothing downloaded
+// from that button could ever carry the invisible provenance metadata upscaleForDelivery()
+// embeds server-side, because a browser canvas export has no concept of EXIF/XMP
+// passthrough, full stop (see lib/image/output-metadata.js). Moving the resize here closes
+// that gap for every resolution the menu offers, not just one.
+//
+// Same access level as /api/process-image, NOT /api/stamp-image: any signed-in session,
+// free or Pro, since a user already had to sign in to stage the image being downloaded.
+//
+// FAILS OPEN on the client: download-menu.js falls back to its old client-side canvas path
+// on any error from this route, so a hiccup here costs a user their metadata for one
+// download, never the download itself — unlike the visible-stamp routes above, there is no
+// DISCLOSURE_STAMP_FAILED-style distinguishable error to give the client, because there is
+// nothing for the client to react to; it just retries the old way.
+router.post('/api/download-result', downloadResultLimiter, async (req, res) => {
+  try {
+    const sessionUser = getAuthUserFromRequest(req);
+    if (!sessionUser) {
+      return sendError(res, 401, 'Please sign in to download', { code: 'AUTH_REQUIRED' });
+    }
+
+    const { image, width, height } = req.body || {};
+    if (!isImageDataUrl(image)) {
+      return sendError(res, 400, 'Image must be a base64 image data URL');
+    }
+    // Bound the decode from the ENCODED length, before a buffer exists for it — the same
+    // pattern MAX_STAMP_IMAGE_BYTES uses above.
+    if ((image.length - image.indexOf(',') - 1) * 0.75 > MAX_DOWNLOAD_RESULT_BYTES) {
+      return sendError(res, 413, 'Image is too large to download');
+    }
+    const w = clampDownloadDim(width);
+    const h = clampDownloadDim(height);
+    if (!w || !h) {
+      return sendError(res, 400, 'width and height must be positive integers');
+    }
+
+    const buffer = decodeImageDataUrl(image);
+    // fit: 'fill' — an exact stretch to (w, h), matching what
+    // ctx.drawImage(canvas, 0, 0, w, h) already did client-side. download-menu.js's own row
+    // math (buildSizeRows) is what keeps w/h proportional; this route trusts that math the
+    // same way the client did, rather than re-deriving an aspect ratio here.
+    const out = await withDisclosureMetadata(
+      sharp(buffer).resize(w, h, { fit: 'fill' }),
+      { mode: 'staged' },
+    ).jpeg({ quality: 92 }).toBuffer(); // 92 matches download-menu.js's JPEG_QUALITY (0.92)
+
+    setSensitiveHeaders(res);
+    return res.json({ success: true, image: `data:image/jpeg;base64,${out.toString('base64')}` });
+  } catch (error) {
+    if (res.headersSent) return undefined;
+    return sendError(res, 500, 'Could not prepare that download', {
+      ref: reportError('staging.download-result', error),
     });
   }
 });

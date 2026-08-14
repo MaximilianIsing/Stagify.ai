@@ -21,6 +21,18 @@ import {
   cropToAspectRatio,
   detectImageMimeType,
 } from '../../lib/image/image-primitives.js';
+import { STAGIFY_SOFTWARE_TAG, DISCLOSURE_DESCRIPTIONS, DIGITAL_SOURCE_TYPE } from '../../lib/image/output-metadata.js';
+
+// Asserts a sharp metadata() result carries Stagify's provenance EXIF + XMP for `mode`.
+function assertDisclosureMetadata(m, mode) {
+  assert.ok(m.exif, 'EXIF block present');
+  const exifText = m.exif.toString('latin1');
+  assert.ok(exifText.includes(STAGIFY_SOFTWARE_TAG), 'EXIF carries the Software tag');
+  assert.ok(exifText.includes(DISCLOSURE_DESCRIPTIONS[mode]), 'EXIF carries the mode-specific description');
+  assert.ok(m.xmp, 'XMP block present');
+  const xmpText = m.xmp.toString('utf8');
+  assert.ok(xmpText.includes(DIGITAL_SOURCE_TYPE), 'XMP carries DigitalSourceType');
+}
 
 // A solid-color PNG of the given size.
 const png = (w, h, rgb = { r: 10, g: 120, b: 200 }) =>
@@ -274,6 +286,7 @@ test('upscaleForDelivery: enlarges the model output ×2 as WebP, caps the long e
   assert.equal(om.width, 1600, 'width doubled');
   assert.equal(om.height, 1200, 'height doubled');
   assert.equal(om.format, 'webp');
+  assertDisclosureMetadata(om, 'staged'); // resize branch carries Stagify provenance metadata
 
   // A large input whose ×2 would blow past the 4096 cap is only scaled up to the cap.
   const bigUrl = `data:image/png;base64,${(await png(3000, 1500)).toString('base64')}`;
@@ -289,6 +302,7 @@ test('upscaleForDelivery: enlarges the model output ×2 as WebP, caps the long e
   const acm = await meta(Buffer.from(capOut.split(',')[1], 'base64'));
   assert.equal(acm.width, 4096, 'not enlarged past the cap');
   assert.equal(acm.height, 1000);
+  assertDisclosureMetadata(acm, 'staged'); // factor<=1 branch also carries the metadata
 
   // Non-data-URL input is returned untouched (fail-open).
   assert.equal(await upscaleForDelivery('not-a-data-url'), 'not-a-data-url');
