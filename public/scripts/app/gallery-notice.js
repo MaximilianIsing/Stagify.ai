@@ -95,7 +95,7 @@ export function createGalleryNotice({ doc = document, container, lang }) {
       // says does not exist — the share-link sentence below covers what actually matters.
       if (gallery.tier !== 'pro') {
         parts.push(
-          t('modal.staging.galleryEvicted', 'Older stagings were removed to make room — the free plan keeps your most recent ones.'),
+          t('modal.staging.galleryEvicted', 'Older stagings were removed to make room. The free plan keeps your most recent ones.'),
         );
       }
       // This one is said to BOTH tiers, and it is where "do not advertise the cap"

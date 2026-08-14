@@ -1,0 +1,48 @@
+/* quote-card
+ *
+ * The pale wash ground, which almost nothing else in the library uses. That is the point:
+ * dropped between two deep blue posters it resets the eye, and a grid that alternates dark
+ * and light reads as an account rather than a template.
+ *
+ * Dark type on light here, so the usual white-on-blue rules invert. Watch contrast: the
+ * grey tokens fail AA over the wash, so body copy uses --slate-deep rather than --muted.
+ */
+
+.frame { padding: 64px; }
+.frame > .stack { height: 100%; gap: 36px; }
+
+.mark {
+  font-size: 150px;
+  font-weight: 700;
+  line-height: .6;
+  color: var(--brand-pale);
+  height: 78px;
+}
+
+.quote {
+  font-size: 58px;
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -.024em;
+  color: var(--brand-deep);
+}
+
+.attribution { display: flex; align-items: center; gap: 20px; }
+.attribution__avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 8px 22px rgba(30, 58, 138, .22);
+  flex: 0 0 auto;
+}
+.attribution__name { font-size: 28px; font-weight: 700; color: var(--text-heading); }
+.attribution__role { font-size: 24px; color: var(--slate-deep); margin-top: 4px; }
+
+.inset { flex: 1 1 auto; min-height: 0; }
+.inset .card { height: 100%; }
+
+.footer-light { display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; }
+
+.frame--tall .quote { font-size: 66px; }

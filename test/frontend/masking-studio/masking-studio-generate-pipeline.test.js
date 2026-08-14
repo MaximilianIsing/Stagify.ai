@@ -508,7 +508,7 @@ test('a partial run says how much got through', async () => {
 
   const msg = h.calls.toasts.at(-1).message;
   assert.match(msg, /1 of 2/, 'the counts are filled in, not left as placeholders');
-  assert.match(msg, /retry the failed ones/);
+  assert.match(msg, /Retry the failed ones/);
 });
 
 test('a run where everything failed goes back to the original photo', async () => {

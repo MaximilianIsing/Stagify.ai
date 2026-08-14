@@ -44,7 +44,7 @@ export const REPORT_ISSUE_HTML =
   // every page carrying the account menu links styles/toast.css, and a dialog that
   // reports its own outcome cannot be missed behind its own overlay.
   '<div id="report-issue-success" class="report-modal__success hidden">' +
-  '<p class="report-modal__success-title" data-lang="profile.report.successTitle">Thanks — we got it.</p>' +
+  '<p class="report-modal__success-title" data-lang="profile.report.successTitle">Thanks, we got it.</p>' +
   '<p class="report-modal__sub" data-lang="profile.report.successBody">Our team will look into this. If you left an email, we’ll follow up there.</p>' +
   '<div class="report-modal__actions">' +
   '<button type="button" class="btn btn-primary" id="report-issue-done" data-lang="profile.report.done">Done</button>' +

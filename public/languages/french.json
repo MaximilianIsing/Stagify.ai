@@ -24,7 +24,7 @@
     "logoAlt": "Logo Stagify.ai — aller à l’accueil",
     "tips": {
       "imageStaging": "Meuble une pièce entière à partir d’une seule photo : choisissez le type de pièce et le style de mobilier, l’IA s’occupe du reste. Idéal pour les pièces vides ou presque vides quand vous voulez un résultat rapide et complet.",
-      "basicMask": "Peignez sur une partie de la photo, puis décrivez la modification souhaitée. Idéal pour les petites retouches — changer un canapé, dégager un plan de travail — quand le reste de l’image convient déjà.",
+      "basicMask": "Peignez sur une partie de la photo, puis décrivez la modification souhaitée. Idéal pour les petites retouches (changer un canapé, dégager un plan de travail) quand le reste de l’image convient déjà.",
       "pdfTo3d": "Discutez avec un designer IA qui aménage une pièce, la redessine et la fait évoluer avec vous. Idéal pour explorer des styles plutôt que finaliser une seule photo. Ordinateur uniquement.",
       "maskingStudio": "Surlignez plusieurs zones dans des couleurs différentes, donnez à chacune sa photo de mobilier ou sa consigne, puis aménagez-les toutes en même temps. Idéal quand il vous faut un contrôle exact : tout ce qui est hors de vos zones reste au pixel près.",
       "exteriorStudio": "Améliore la photo de l’extérieur d’un bien : changez l’heure de la journée, dégagez le ciel et supprimez les voitures garées et le désordre. Idéal pour la façade, le jardin et les vues depuis la rue, que les outils de home staging ne touchent jamais."
@@ -985,7 +985,7 @@
     },
     "thumbnailStrip": {
       "label": "Image de base pour le prochain message",
-      "help": "Choisissez l’image de pièce que l’IA doit modifier lorsque vous envoyez votre prochain message — surtout pour ajouter du mobilier. Utile lorsque vous avez plusieurs imports ou versions meublées.",
+      "help": "Choisissez l’image de pièce que l’IA doit modifier lorsque vous envoyez votre prochain message, surtout pour ajouter du mobilier. Utile lorsque vous avez plusieurs imports ou versions meublées.",
       "helpAria": "Que signifie image de base ?"
     },
     "alt": {
@@ -1004,8 +1004,8 @@
       "editedImage": "Image de design modifiée par masque{suffix}",
       "originalCarouselImage": "Image d’origine avant les modifications par masque",
       "enlargedImage": "Vue en taille réelle de l’image de design",
-      "thumbnailSelected": "{label} — sélectionnée comme image de base pour votre prochain message",
-      "thumbnailOption": "{label} — image {index} de la conversation"
+      "thumbnailSelected": "{label}, sélectionnée comme image de base pour votre prochain message",
+      "thumbnailOption": "{label}, image {index} de la conversation"
     },
     "maskEditor": {
       "title": "Modifier avec un masque",
@@ -1024,9 +1024,9 @@
       "rerun": "Régénérer",
       "done": "Ça me convient",
       "refineTitle": "Affiner la modification",
-      "refineNote": "Peignez pour révéler davantage la modification, gommez pour la masquer — cela ne fait que recadrer, l’IA n’est pas relancée.",
-      "refineHelp": "Cette étape ajuste simplement l’endroit où la modification de l’IA apparaît — elle ne relance pas l’IA. Peignez pour révéler davantage la modification, gommez pour la réduire. C’est un filet de sécurité : la modification ne touche que la zone que vous avez choisie et ne peut pas abîmer le reste de votre photo. L’aperçu atténué affiché par-dessus sert uniquement à voir toute la modification pendant que vous l’affinez ; il n’apparaîtra pas dans l’image finale.",
-      "promptHint": "Soyez très précis sur l’emplacement et la disposition — par exemple : « placez le canapé contre le milieu du mur du fond ».",
+      "refineNote": "Peignez pour révéler davantage la modification, gommez pour la masquer ; cela ne fait que recadrer, l’IA n’est pas relancée.",
+      "refineHelp": "Cette étape ajuste simplement l’endroit où la modification de l’IA apparaît ; elle ne relance pas l’IA. Peignez pour révéler davantage la modification, gommez pour la réduire. C’est un filet de sécurité : la modification ne touche que la zone que vous avez choisie et ne peut pas abîmer le reste de votre photo. L’aperçu atténué affiché par-dessus sert uniquement à voir toute la modification pendant que vous l’affinez ; il n’apparaîtra pas dans l’image finale.",
+      "promptHint": "Soyez très précis sur l’emplacement et la disposition, par exemple : « placez le canapé contre le milieu du mur du fond ».",
       "refineHelpAria": "Ce que fait l’étape d’affinage",
       "loadApplying": "Application de votre modification…",
       "referenceLabel": "Photo de référence (facultatif)",
@@ -1034,7 +1034,7 @@
       "referenceHint": "Facultatif : une photo de meuble ou de décoration à placer dans la zone masquée",
       "referenceRemove": "Supprimer la photo de référence",
       "referenceAlt": "Référence pour la modification masquée",
-      "referenceTooLarge": "Cette image est trop volumineuse — veuillez en choisir une de moins de 25 Mo.",
+      "referenceTooLarge": "Cette image est trop volumineuse. Veuillez en choisir une de moins de 25 Mo.",
       "referenceInvalid": "Veuillez choisir une image JPG, PNG ou WebP valide.",
       "processing": "Traitement...",
       "pleaseDrawMask": "Veuillez dessiner un masque sur la zone à modifier.",
@@ -1074,7 +1074,7 @@
       },
       "i2": {
         "q": "Quel forfait ou outil dois-je utiliser ?",
-        "a": "La version gratuite est parfaite pour des pièces ponctuelles. <a href=\"stagify-plus.html\">Stagify+</a> débloque les générations illimitées, des modèles de meilleure qualité, l’outil de masquage et la barre de consignes. <a href=\"ai-designer.html\">Designer IA</a> redessine une pièce entière à partir d’une courte conversation — idéal quand vous voulez qu’il prenne les décisions à votre place."
+        "a": "La version gratuite est parfaite pour des pièces ponctuelles. <a href=\"stagify-plus.html\">Stagify+</a> débloque les générations illimitées, des modèles de meilleure qualité, l’outil de masquage et la barre de consignes. <a href=\"ai-designer.html\">Designer IA</a> redessine une pièce entière à partir d’une courte conversation, ce qui est idéal quand vous voulez qu’il prenne les décisions à votre place."
       },
       "i3": {
         "q": "Puis-je contrôler le mobilier et l’agencement ?",
@@ -1108,7 +1108,7 @@
       "title": "Compte et connexion",
       "i1": {
         "q": "Mon code de vérification n’est pas arrivé.",
-        "a": "Vérifiez votre dossier spam ou promotions — les codes peuvent prendre une minute. S’il n’arrive toujours pas, utilisez « Renvoyer le code » et assurez-vous que votre e-mail est correctement saisi."
+        "a": "Vérifiez votre dossier spam ou promotions. Les codes peuvent prendre une minute. S’il n’arrive toujours pas, utilisez « Renvoyer le code » et assurez-vous que votre e-mail est correctement saisi."
       },
       "i2": {
         "q": "J’ai oublié mon mot de passe.",
@@ -1202,7 +1202,7 @@
     "title": "Studio de masquage",
     "subtitle": "Surlignez des zones de votre pièce en différentes couleurs, attribuez à chacune son propre meuble et meublez-les toutes à la fois. Seules les zones surlignées peuvent changer, le reste de votre photo reste parfaitement intact.",
     "gateTitle": "Le Studio de masquage est une fonctionnalité Stagify+",
-    "gateBody": "Connectez-vous avec un compte Stagify+ pour surligner plusieurs zones d’une photo, attribuer à chacune son propre mobilier et les meubler toutes en une seule fois — avec un masquage au pixel près qui ne peut pas toucher le reste de votre photo.",
+    "gateBody": "Connectez-vous avec un compte Stagify+ pour surligner plusieurs zones d’une photo, attribuer à chacune son propre mobilier et les meubler toutes en une seule fois, avec un masquage au pixel près qui ne peut pas toucher le reste de votre photo.",
     "gateCta": "Voir Stagify+",
     "gateBack": "Retour à l’accueil",
     "stepPhoto": "Photo de la pièce",
@@ -1232,9 +1232,9 @@
     "needHighlight": "Peignez d’abord au moins une zone sur la photo.",
     "needPromptOrFurniture": "Chaque zone surlignée a besoin d’une courte consigne ou d’une photo de meuble.",
     "doneToast": "Toutes les zones sont meublées ! Retouchez vos zones ou appuyez sur C’est parfait pour voir le résultat.",
-    "partialToast": "{done} zones sur {total} meublées — réessayez celles qui ont échoué.",
+    "partialToast": "{done} zones sur {total} meublées. Réessayez celles qui ont échoué.",
     "failedToast": "Le staging a échoué. Veuillez réessayer.",
-    "rateLimited": "Vous générez trop vite — attendez une minute et réessayez.",
+    "rateLimited": "Vous générez trop vite. Attendez une minute et réessayez.",
     "shortcutsHint": "<kbd>B</kbd> pinceau&nbsp;· <kbd>E</kbd> gomme&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>W</kbd> baguette&nbsp;· <kbd>[</kbd> <kbd>]</kbd> taille du pinceau&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> choisir la zone&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir&nbsp;· maintenir <kbd>H</kbd> voir la photo",
     "compare": "Comparer",
     "undo": "Annuler",
@@ -1265,8 +1265,8 @@
     "clearHighlight": "Effacer le surlignage",
     "snapToObject": "Ajuster à l’objet",
     "snapToObjectHint": "Étend ce surlignage jusqu’aux bords de ce que l’IA a réellement dessiné, pour que rien ne soit coupé.",
-    "spillFlag": "Cette modification dépasse le surlignage — Ajuster à l’objet disponible.",
-    "snapToast": "Certains éléments générés dépassent votre surlignage — ouvrez cette zone et appuyez sur « Ajuster à l’objet » pour inclure le reste.",
+    "spillFlag": "Cette modification dépasse le surlignage. Ajuster à l’objet disponible.",
+    "snapToast": "Certains éléments générés dépassent votre surlignage. Ouvrez cette zone et appuyez sur « Ajuster à l’objet » pour inclure le reste.",
     "toolRect": "Rectangle",
     "renameAria": "Renommer cette zone",
     "resumeTitle": "Reprendre votre dernière session ?",
@@ -1347,7 +1347,7 @@
     "monitoring": {
       "since": "Surveillance depuis {date} · dernière vérification {ago}",
       "collecting": "Collecte des données…",
-      "error": "Impossible de joindre l’API d’état — nouvelle tentative…"
+      "error": "Impossible de joindre l’API d’état, nouvelle tentative…"
     },
     "tooltip": {
       "nodata": "Aucune donnée",
@@ -1362,7 +1362,7 @@
   "enterprise": {
     "hero": {
       "title": "Stagify Enterprise",
-      "subtitle": "Offrez à toute votre équipe un home staging par IA illimité. Chaque employé disposant de votre e-mail d’entreprise obtient automatiquement Stagify+ — vous ne payez que ce que vous utilisez."
+      "subtitle": "Offrez à toute votre équipe un home staging par IA illimité. Chaque employé disposant de votre e-mail d’entreprise obtient automatiquement Stagify+, et vous ne payez que ce que vous utilisez."
     },
     "highlights": {
       "perGenerationLabel": "par génération",
@@ -1599,25 +1599,25 @@
   },
   "exteriorStudio": {
     "title": "Studio Extérieur",
-    "subtitle": "La première photo de chaque annonce, c’est l’extérieur — et c’est la seule prise que vous ne pouvez pas refaire quand le temps se gâte. Importez-la ici et obtenez la version prise par beau temps.",
+    "subtitle": "La première photo de chaque annonce, c’est l’extérieur, et c’est la seule prise que vous ne pouvez pas refaire quand le temps se gâte. Importez-la ici et obtenez la version prise par beau temps.",
     "ctaUpgrade": "Passez à Stagify+ pour l’utiliser",
     "features": {
-      "title": "Ce qu’il change — et ce qu’il ne touche jamais",
+      "title": "Ce qu’il change, et ce qu’il ne touche jamais",
       "light": {
         "title": "Heure de la journée",
         "body": "Photographiez à midi, publiez à l’heure dorée. Matin, midi, heure dorée ou crépuscule, avec des ombres et une lumière intérieure cohérentes avec le soleil choisi."
       },
       "sky": {
         "title": "Ciel et météo",
-        "body": "Un ciel gris et plat devient bleu limpide, légèrement nuageux ou plus dramatique — accordé à la lumière déjà présente sur le bâtiment, avec des bords nets le long du toit."
+        "body": "Un ciel gris et plat devient bleu limpide, légèrement nuageux ou plus dramatique, accordé à la lumière déjà présente sur le bâtiment, avec des bords nets le long du toit."
       },
       "clutter": {
         "title": "Voitures, encombrants et neige",
-        "body": "La camionnette du voisin dans l’allée, les poubelles sorties, le tuyau d’arrosage sur la pelouse, le passant — et la neige, la pluie et les flaques qui se trouvaient là le jour de la prise de vue. Le temporaire disparaît, et la surface en dessous est reconstruite à l’identique."
+        "body": "La camionnette du voisin dans l’allée, les poubelles sorties, le tuyau d’arrosage sur la pelouse, le passant, et la neige, la pluie et les flaques qui se trouvaient là le jour de la prise de vue. Le temporaire disparaît, et la surface en dessous est reconstruite à l’identique."
       },
       "honest": {
         "title": "La maison reste la maison",
-        "body": "Pas de pelouse refaite, pas de lignes électriques effacées, pas d’allée refaite, pas de murs repeints. Un acheteur devant le portail voit ce que montrait la photo — c’est ce qui la rend utilisable dans une annonce."
+        "body": "Pas de pelouse refaite, pas de lignes électriques effacées, pas d’allée refaite, pas de murs repeints. Un acheteur devant le portail voit ce que montrait la photo, et c’est ce qui la rend utilisable dans une annonce."
       }
     },
     "upload": {
@@ -1670,7 +1670,7 @@
     },
     "errors": {
       "generic": "Cette photo n’a pas pu être améliorée. Essayez une autre prise de l’extérieur du bien.",
-      "network": "La connexion a été interrompue avant le retour de la photo. Votre import est toujours là — réessayez."
+      "network": "La connexion a été interrompue avant le retour de la photo. Votre import est toujours là. Réessayez."
     },
     "stepPhoto": "Photo extérieure",
     "stepPhotoHint": "Importez une photo dans l’espace de travail à droite.",

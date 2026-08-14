@@ -1,0 +1,22 @@
+{
+  "prompt": "Remove the existing pale ceramic wall tile and replace every part of it with deep emerald green glazed ceramic tiles, in the same large square format, with thin pale grout lines. The green must be strong and fully saturated, the colour of dark bottle glass, obviously and unmistakably green rather than grey, sage or off white. Colour the whole wall that same strong green from top to bottom and side to side, with no fade, no gradient back toward the original colour and no pale patches anywhere. The old pale tile must be completely gone from this wall. Keep the same wall shape, the same tile grid and spacing, the same perspective, and the same soft daylight falling from the left.",
+  "model": "gemini-2.5-flash-image",
+  "params": {
+    "fn": "mask-edit",
+    "prompt": "Remove the existing pale ceramic wall tile and replace every part of it with deep emerald green glazed ceramic tiles, in the same large square format, with thin pale grout lines. The green must be strong and fully saturated, the colour of dark bottle glass, obviously and unmistakably green rather than grey, sage or off white. Colour the whole wall that same strong green from top to bottom and side to side, with no fade, no gradient back toward the original colour and no pale patches anywhere. The old pale tile must be completely gone from this wall. Keep the same wall shape, the same tile grid and spacing, the same perspective, and the same soft daylight falling from the left.",
+    "referenceUsed": false
+  },
+  "quality": {
+    "perfect": false,
+    "attempts": 3,
+    "bestScore": 85,
+    "defects": [
+      "PERFECT: false\nSCORE: 85\nWHY: The green tile color is not fully saturated and has a slight gradient towards grey in some areas.",
+      "PERFECT: false\nSCORE: 85\nWHY: The green tile has a noticeable gradient, becoming lighter towards the top.",
+      "PERFECT: false\nSCORE: 70\nWHY: The edited tiles have a noticeable gradient, with the top appearing lighter than the bottom, and there are some pale patches visible."
+    ],
+    "reviewerUnavailable": false
+  },
+  "outsideMaskIdentical": true,
+  "outPath": "C:\\Users\\Maxim\\Downloads\\Stagify.ai\\instagram\\posts\\2026-08-18-one-wall-changed\\work\\edited.png"
+}

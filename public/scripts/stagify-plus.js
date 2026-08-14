@@ -179,7 +179,7 @@ export function applyStripeCheckout(user) {
     if (hint) {
       hint.textContent = t(
         'stagifyPlus.plan.hintAccountFirst',
-        "Create a free account first — that’s how your subscription gets linked to you."
+        "Create a free account first. That’s how your subscription gets linked to you."
       );
       hint.classList.remove('hidden');
     }

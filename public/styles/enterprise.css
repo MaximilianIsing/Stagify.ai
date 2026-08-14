@@ -339,3 +339,15 @@
         text-decoration: none;
       }
       .ent-site-footer a:hover { text-decoration: underline; }
+
+      /* This page sits on the same #b2c4f6 body as every other one — enterprise.css never
+         overrides it — so the two colours above land at 2.79:1 and 2.99:1 and fail the
+         colour-contrast audit. Mobile-only, matching the `min-width: 769px` gate above:
+         below that breakpoint #background-video is display:none and axe can resolve the
+         background down to <body>, which is when the failure is actually reported. No
+         !important needed here — unlike the other five pages, these links are not
+         inline-styled. */
+      @media (max-width: 768px) {
+        .ent-site-footer { color: var(--accent); }
+        .ent-site-footer a { color: var(--brand-deep); }
+      }

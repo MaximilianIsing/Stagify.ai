@@ -1,0 +1,54 @@
+/* stat-card
+ *
+ * Type first. One number fills the upper half and a photo band anchors the lower third.
+ *
+ * The point is to be the layout that does NOT look like a before and after, so it can sit
+ * between two photo posts without the grid reading as repetitive. Its whole job is contrast
+ * with the rest of the library.
+ *
+ * The number has to be a real figure someone could check. A fabricated statistic on a
+ * branded card is the fastest way to lose an agent audience.
+ */
+
+.frame { padding: 64px; }
+.frame > .stack { height: 100%; gap: 32px; }
+
+.stat { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; }
+
+.numeral { font-size: 280px; }
+.numeral .unit {
+  font-size: 96px;
+  letter-spacing: -.02em;
+  margin-left: 8px;
+}
+
+.claim {
+  margin-top: 20px;
+  font-size: 58px;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -.025em;
+  color: #fff;
+  max-width: 15ch;
+}
+
+.support {
+  margin-top: 20px;
+  font-size: 27px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, .66);
+  max-width: 30ch;
+}
+
+/* Source line. Small, but it is the difference between a claim and an assertion. */
+.source {
+  margin-top: 16px;
+  font-size: 20px;
+  color: rgba(255, 255, 255, .5);
+}
+
+.band { flex: 0 0 34%; min-height: 0; }
+
+.frame--tall .numeral { font-size: 340px; }
+.frame--tall .claim { font-size: 66px; }
+.frame--tall .band { flex-basis: 30%; }

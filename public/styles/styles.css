@@ -591,6 +591,20 @@ body {
   box-shadow:0 0 0 3px rgba(59,130,246,.1)
 }
 @media (max-width:768px) {
+  /* The shared footer's links are inline-styled `color:#2563eb` on all five pages that
+     carry it, so only !important can reach them. The footer is hand-copied markup with
+     no class (its shape is pinned by test/frontend/site-footer-parity.test.js), which is
+     exactly what :not([class]) keys on — every OTHER <footer> under public/ has one
+     (.ent-site-footer, .blog-footer, .pp-footer, .sh-footer) and must not be caught here.
+     #2563eb is 2.99:1 on the #b2c4f6 body and fails PageSpeed's colour-contrast audit;
+     --brand-deep is 5.98:1. Mobile-only because that is where axe can see the body
+     background at all — above 769px the fixed #background-video sits in the paint stack
+     and the check comes back "incomplete" rather than failing.
+     Do NOT "fix" this by adding class="site-footer" to the markup — the rule further up
+     this file display:none's that class and the footer would vanish. */
+  footer:not([class]) a {
+    color:var(--brand-deep)!important
+  }
   .role-popup-content {
     background:rgba(255,255,255,.6);
     backdrop-filter:blur(10px) saturate(180%);

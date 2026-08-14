@@ -62,7 +62,7 @@ test('getPdfAlt: interpolates {placeholder} replacements', () => {
   assert.equal(getPdfAlt('stagedRoom', { suffix: ' (2)' }), 'AI-staged room (2)');
   assert.equal(
     getPdfAlt('thumbnailOption', { label: 'Kitchen', index: 3 }),
-    'Kitchen — image 3 in conversation'
+    'Kitchen, image 3 in conversation'
   );
 });
 

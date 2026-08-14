@@ -40,7 +40,7 @@ test('falls back to the English copy when the pack has not loaded', () => {
   assert.match(copy.refineNote, /won’t re-run the AI\.$/);
   // The long paragraph is the one that was duplicated verbatim; pin its shape so
   // a stray edit to the concatenation cannot quietly truncate it.
-  assert.equal(copy.refineHelp.length, 369);
+  assert.equal(copy.refineHelp.length, 367);
   assert.match(copy.refineHelp, /^This step just fine-tunes/);
   assert.match(copy.refineHelp, /won’t be in the final image\.$/);
   assert.ok(!/ {2}/.test(copy.refineHelp), 'no doubled spaces from the line joins');

@@ -24,7 +24,7 @@
     "logoAlt": "Logo de Stagify.ai — ir al inicio",
     "tips": {
       "imageStaging": "Amuebla una habitación entera a partir de una sola foto: elige el tipo de estancia y el estilo de mobiliario y la IA la decora. Ideal para habitaciones vacías o casi vacías cuando quieres un resultado rápido y completo.",
-      "basicMask": "Pinta sobre una parte de la foto y describe el cambio que quieres. Ideal para retoques pequeños —cambiar un sofá, despejar una encimera— cuando el resto de la imagen ya está bien.",
+      "basicMask": "Pinta sobre una parte de la foto y describe el cambio que quieres. Ideal para retoques pequeños (cambiar un sofá, despejar una encimera) cuando el resto de la imagen ya está bien.",
       "pdfTo3d": "Chatea con un diseñador de IA que amuebla, rediseña y sigue iterando contigo sobre una estancia. Ideal cuando exploras estilos en lugar de rematar una sola foto. Solo en ordenador.",
       "maskingStudio": "Marca varias zonas en colores distintos, da a cada una su propia foto de mobiliario o instrucción y decóralas todas a la vez. Ideal cuando necesitas control exacto: todo lo que quede fuera de tus marcas se mantiene idéntico.",
       "exteriorStudio": "Mejora la foto del exterior de una propiedad: cambia la hora del día, despeja el cielo y elimina coches aparcados y desorden. Ideal para la fachada, el jardín y las tomas desde la calle, que las herramientas de home staging nunca tocan."
@@ -48,7 +48,7 @@
     "cta": "Suba su imagen gratiz",
     "freeGensLeft": "{n} generaciones gratis restantes hoy, ",
     "freeGensLeftUpgrade": "Mejorar",
-    "freeGensUpgrade": "Prueba Stagify+ hoy — <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mejorar</a>",
+    "freeGensUpgrade": "Prueba Stagify+ hoy. <a class=\"hero-free-gens-upgrade\" href=\"stagify-plus.html\">Mejorar</a>",
     "carouselNote": "Ejemplo de vista previa: sube tu foto al scenario",
     "stats": {
       "roomsStaged": "Habitaciones Escenificadas",
@@ -237,7 +237,7 @@
           "body": "Sube una foto, elige el tipo de habitación y uno de los siete estilos, y Stagify la amuebla en unos ocho segundos. ¿Necesitas cambios? Quita los muebles existentes, añade un prompt personalizado o enmascara un área para ajustarla sin empezar de cero.",
           "p1": "7 estilos más prompts personalizados y eliminación de muebles",
           "p2": "Edita con máscara cualquier parte del resultado sin rehacerlo",
-          "p3": "Derechos de autor completos — úsala en el MLS o en anuncios"
+          "p3": "Derechos de autor completos: úsala en el MLS o en anuncios"
         },
         "who": {
           "eyebrow": "Para quién es",
@@ -274,7 +274,7 @@
         "cost": {
           "aspect": "Costo",
           "trad": "2.000–5.000 $+ por vivienda, a menudo facturado mensualmente hasta que se vende",
-          "stag": "Gratis para empezar — diseña sin costo"
+          "stag": "Gratis para empezar, diseña sin costo"
         },
         "time": {
           "aspect": "Tiempo de entrega",
@@ -284,7 +284,7 @@
         "styles": {
           "aspect": "Opciones de estilo",
           "trad": "Un solo look, fijo una vez instalado",
-          "stag": "7 estilos más prompts personalizados — cambia cuando quieras"
+          "stag": "7 estilos más prompts personalizados, cambia cuando quieras"
         },
         "changes": {
           "aspect": "Cambiar de opinión",
@@ -985,7 +985,7 @@
     },
     "thumbnailStrip": {
       "label": "Imagen base para el próximo mensaje",
-      "help": "Elige qué imagen de habitación debe modificar la IA en tu próximo mensaje — especialmente al añadir muebles. Útil cuando tienes varias subidas o versiones escenificadas.",
+      "help": "Elige qué imagen de habitación debe modificar la IA en tu próximo mensaje, especialmente al añadir muebles. Útil cuando tienes varias subidas o versiones escenificadas.",
       "helpAria": "¿Qué significa imagen base?"
     },
     "alt": {
@@ -1004,8 +1004,8 @@
       "editedImage": "Imagen de diseño editada con máscara{suffix}",
       "originalCarouselImage": "Imagen original antes de ediciones con máscara",
       "enlargedImage": "Vista a tamaño completo de la imagen de diseño",
-      "thumbnailSelected": "{label} — seleccionada como imagen base para tu próximo mensaje",
-      "thumbnailOption": "{label} — imagen {index} en la conversación"
+      "thumbnailSelected": "{label}, seleccionada como imagen base para tu próximo mensaje",
+      "thumbnailOption": "{label}, imagen {index} en la conversación"
     },
     "maskEditor": {
       "title": "Editar con Máscara",
@@ -1024,7 +1024,7 @@
       "rerun": "Regenerar",
       "done": "Se ve bien",
       "refineTitle": "Refina la edición",
-      "refineNote": "Pinta para mostrar más de la edición, borra para ocultarla — esto solo recorta, no vuelve a ejecutar la IA.",
+      "refineNote": "Pinta para mostrar más de la edición, borra para ocultarla; esto solo recorta, no vuelve a ejecutar la IA.",
       "refineHelp": "Este paso solo ajusta dónde se ve el cambio de la IA, sin volver a ejecutarla. Pinta para mostrar más de la edición, borra para retirarla. Es una red de seguridad para que la edición solo afecte el área que elegiste y no estropee el resto de tu foto. La vista previa atenuada que se muestra encima solo está ahí para que veas la edición completa mientras la ajustas; no aparecerá en la imagen final.",
       "promptHint": "Sé muy específico con la ubicación y la colocación; por ejemplo: “coloca el sofá pegado al centro de la pared del fondo.”",
       "refineHelpAria": "Qué hace el paso de refinar",
@@ -1034,7 +1034,7 @@
       "referenceHint": "Opcional: una foto de muebles o decoración para colocar en el área enmascarada",
       "referenceRemove": "Quitar foto de referencia",
       "referenceAlt": "Referencia para edición con máscara",
-      "referenceTooLarge": "Esa imagen es demasiado grande — elige una de menos de 25 MB.",
+      "referenceTooLarge": "Esa imagen es demasiado grande. Elige una de menos de 25 MB.",
       "referenceInvalid": "Elige una imagen JPG, PNG o WebP válida.",
       "processing": "Procesando...",
       "pleaseDrawMask": "Por favor dibuja una máscara sobre el área que quieres editar.",
@@ -1202,7 +1202,7 @@
     "title": "Estudio de Máscaras",
     "subtitle": "Resalta zonas de tu habitación en distintos colores, dale a cada una su propio mueble y decóralas todas a la vez. Solo las zonas resaltadas pueden cambiar, así que el resto de tu foto queda intacto.",
     "gateTitle": "El Estudio de Máscaras es una función de Stagify+",
-    "gateBody": "Inicia sesión con una cuenta Stagify+ para resaltar varias zonas de una foto, darle a cada una sus propios muebles y escenificarlas todas a la vez — con máscaras de precisión que no pueden tocar el resto de tu foto.",
+    "gateBody": "Inicia sesión con una cuenta Stagify+ para resaltar varias zonas de una foto, darle a cada una sus propios muebles y escenificarlas todas a la vez, con máscaras de precisión que no pueden tocar el resto de tu foto.",
     "gateCta": "Ver Stagify+",
     "gateBack": "Volver al Inicio",
     "stepPhoto": "Foto de la habitación",
@@ -1232,9 +1232,9 @@
     "needHighlight": "Primero pinta al menos una zona sobre la foto.",
     "needPromptOrFurniture": "Cada zona resaltada necesita un prompt breve o una foto de mueble.",
     "doneToast": "¡Todas las zonas decoradas! Retoca tus zonas resaltadas o pulsa Se ve bien para ver el resultado.",
-    "partialToast": "{done} de {total} zonas escenificadas — reintenta las que fallaron.",
+    "partialToast": "{done} de {total} zonas escenificadas. Reintenta las que fallaron.",
     "failedToast": "El staging falló. Por favor, inténtalo de nuevo.",
-    "rateLimited": "Estás generando demasiado rápido — espera un minuto e inténtalo de nuevo.",
+    "rateLimited": "Estás generando demasiado rápido. Espera un minuto e inténtalo de nuevo.",
     "shortcutsHint": "<kbd>B</kbd> pincel&nbsp;· <kbd>E</kbd> borrar&nbsp;· <kbd>R</kbd> rectángulo&nbsp;· <kbd>W</kbd> varita&nbsp;· <kbd>[</kbd> <kbd>]</kbd> tamaño del pincel&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> elegir zona&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> deshacer&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> rehacer&nbsp;· mantén <kbd>H</kbd> ver foto",
     "compare": "Comparar",
     "undo": "Deshacer",
@@ -1347,7 +1347,7 @@
     "monitoring": {
       "since": "Supervisando desde {date} · última comprobación {ago}",
       "collecting": "Recopilando datos…",
-      "error": "No se pudo conectar con la API de estado — reintentando…"
+      "error": "No se pudo conectar con la API de estado, reintentando…"
     },
     "tooltip": {
       "nodata": "Sin datos",
@@ -1613,7 +1613,7 @@
       },
       "clutter": {
         "title": "Coches, trastos y nieve",
-        "body": "La furgoneta del vecino en la entrada, los cubos de basura fuera, la manguera en el césped, la persona que pasa por delante — y la nieve, la lluvia y los charcos que había el día de la sesión. Lo temporal desaparece, y la superficie de debajo se reconstruye para que encaje."
+        "body": "La furgoneta del vecino en la entrada, los cubos de basura fuera, la manguera en el césped, la persona que pasa por delante, y la nieve, la lluvia y los charcos que había el día de la sesión. Lo temporal desaparece, y la superficie de debajo se reconstruye para que encaje."
       },
       "honest": {
         "title": "La casa sigue siendo la casa",

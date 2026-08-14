@@ -219,8 +219,18 @@
      left ~10.7px of pitch, the worst offender in the touch-target audit, and 168px
      fits inside the container even at a 320px viewport — so the one geometry above
      serves every breakpoint. Do not re-add a narrower override here. */
+  /* Colour is MOBILE-ONLY on purpose. --muted on this caption is 3.14:1 against the
+     background axe composites here — rgba(255,255,255,.2) over the #b2c4f6 body — and
+     PageSpeed only reports it below 769px, where #background-video is display:none and
+     the paint stack resolves down to <body>. Above that the <video> sits in the stack,
+     axe cannot read a background through it, and the same failure comes back as
+     "incomplete" instead. --slate-deep was rejected: 4.92:1 on the panel but 4.37:1 on
+     the flat body, and axe names body.page-home in the context chain. Colour only —
+     .carousel-container's aspect-ratio budget (see the note at the top of this file)
+     clips the note silently if the type grows. */
   .carousel-note {
-    margin-bottom:24px
+    margin-bottom:24px;
+    color:var(--accent)
   }
 }
 @media (max-width:480px) {

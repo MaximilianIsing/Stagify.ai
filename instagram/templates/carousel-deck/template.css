@@ -1,0 +1,82 @@
+/* carousel-deck
+ *
+ * Carousel native: a hook slide, then proof slides, then a closing slide. Three different
+ * layouts under one template id, because they are one thought and rotating the whole deck
+ * as a unit is what the cooldown ledger should be counting.
+ *
+ * The hook slide is full bleed with a swipe chevron. That chevron is the only piece of
+ * chrome in the library that exists to change behaviour rather than to inform: on a
+ * carousel, "there is more" is the entire job of slide one.
+ */
+
+.frame { padding: 56px; }
+.frame > .stack { height: 100%; gap: 26px; }
+
+/* Hook ------------------------------------------------------------------- */
+.hook { position: absolute; inset: 0; }
+.hook__photo { position: absolute; inset: 0; background-position: center; background-size: cover; }
+.hook__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, .62) 0%, rgba(15, 23, 42, .28) 42%, rgba(15, 23, 42, .9) 100%);
+}
+.hook__inner {
+  position: absolute;
+  inset: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.hook__q {
+  font-size: 90px;
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -.03em;
+  color: #fff;
+}
+.hook__q .accent { color: var(--brand-soft); }
+
+.swipe { display: flex; align-items: center; gap: 14px; }
+.swipe__label {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .82);
+}
+.swipe__chev {
+  width: 62px;
+  height: 62px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 26px rgba(30, 58, 138, .5);
+}
+
+/* Proof ------------------------------------------------------------------ */
+.proof { flex: 1 1 auto; min-height: 0; }
+.proof .card { height: 100%; }
+.proof-line {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -.022em;
+  color: #fff;
+}
+.proof-note { margin-top: 12px; font-size: 26px; line-height: 1.36; color: rgba(255, 255, 255, .7); }
+
+/* Close ------------------------------------------------------------------ */
+.close { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+.close__line {
+  font-size: 74px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+  color: #fff;
+}
+.close__note { font-size: 30px; line-height: 1.4; color: rgba(255, 255, 255, .72); max-width: 22ch; }

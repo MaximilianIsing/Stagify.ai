@@ -241,7 +241,7 @@
           pill.classList.remove('is-loading', 'is-up');
           pill.classList.add('is-down');
           $('.up-status-text', pill).textContent = t('status.unableToLoad', 'Unable to load status');
-          $('[data-monitoring]').textContent = t('status.monitoring.error', 'Could not reach the status API — retrying…');
+          $('[data-monitoring]').textContent = t('status.monitoring.error', 'Could not reach the status API, retrying…');
           var incRoot = $('[data-incidents]');
           incRoot.textContent = '';
           var wrap = document.createElement('div');

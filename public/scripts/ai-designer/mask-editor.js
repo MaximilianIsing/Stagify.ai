@@ -263,7 +263,7 @@ export function createMaskEditor(deps) {
               <div class="mask-editor-prompt-container">
                 <label class="mask-editor-prompt-label" data-i18n="pdf.maskEditor.promptLabel">What would you like to change in the masked area?</label>
                 <input type="text" id="mask-editor-prompt" class="mask-editor-prompt-input" maxlength="1000" data-i18n-placeholder="pdf.maskEditor.promptPlaceholder" placeholder="e.g., change the wall color to blue, replace the sofa with a modern chair...">
-                <p class="mask-editor-prompt-hint" data-i18n="pdf.maskEditor.promptHint">Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”</p>
+                <p class="mask-editor-prompt-hint" data-i18n="pdf.maskEditor.promptHint">Be very specific about location and placement, for example: “put the sofa flush against the middle of the back wall.”</p>
               </div>
               <div class="mask-editor-ref-container">
                 <label class="mask-editor-ref-label" for="mask-editor-ref-file" data-i18n="pdf.maskEditor.referenceLabel">Reference photo (optional)</label>

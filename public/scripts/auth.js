@@ -188,7 +188,7 @@ import { syncExteriorAccess } from './exterior-studio/access.js';
         'background:#dc2626;color:#fff;text-align:center;text-transform:uppercase;' +
         'letter-spacing:.05em;font:700 13px/1.25 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
         'padding:7px 14px;box-shadow:0 2px 8px rgba(0,0,0,.25)';
-      bar.textContent = '⚠ Staging environment — test site, not the live stagify.ai';
+      bar.textContent = '⚠ Staging environment: test site, not the live stagify.ai';
       document.body.insertBefore(bar, document.body.firstChild);
       // Offset the sticky site header so it stacks below the banner (not under it).
       var h = bar.offsetHeight || 31;

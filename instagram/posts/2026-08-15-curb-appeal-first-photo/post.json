@@ -1,0 +1,151 @@
+{
+  "id": "2026-08-15-curb-appeal-first-photo",
+  "date": "2026-08-15",
+  "publishedAt": null,
+  "origin": "pipeline",
+  "formats": [
+    "single"
+  ],
+  "template": "stat-card",
+  "featureShown": "exterior-studio",
+  "hookArchetype": "buyer-psychology",
+  "audience": "design",
+  "roomType": "Outdoors",
+  "style": "standard",
+  "palette": "golden hour brick and clear blue sky",
+  "ctaStyle": "free-first-render",
+  "topic": "what agents say curb appeal is worth on a listing",
+  "angle": "The exterior is the first photo in every listing and the one nobody restages. Almost every agent surveyed says it is what brings the buyer, and the fix is a relight rather than a renovation.",
+  "visualSummary": "A type first card on the deep blue field. A very large brand blue numeral 97 with a smaller percent sign, a white claim line under it, a muted support sentence and a small source line naming the NAR report. Across the lower third a wide photo band showing a red brick house facade in raking golden hour light, arched upper windows, a gabled entry canopy and a porch lamp, with a strip of clear blue sky at the left. A small pill on the band reads GOLDEN HOUR.",
+  "dominantColors": [
+    "#b5643a",
+    "#8fc0dd",
+    "#2563eb"
+  ],
+  "copy": {
+    "headline": "97% of agents say curb appeal brings the buyer.",
+    "caption": "The exterior is the first photo in the listing. It is also the only one nobody restages.\n\n97% of agents told NAR that curb appeal matters for attracting a buyer. Three quarters of them called it very important. Not somewhat. Very.\n\nThen the photo goes up shot at noon under a flat grey sky, because that is when the appointment was.\n\nThis is the same photograph. Same house, same brick, same hedge, same neighbour's roofline in the corner. Golden hour and a clear sky, applied as a preset. Nothing was added to the property and nothing was taken away from it except the parked cars and the bins.\n\nThat is the whole job. You are not renovating anything. You are photographing it on the day it looks like itself.\n\nFirst render is free.\n\nSource: NAR, 2023 Remodeling Impact Report: Outdoor Features.\n\nVirtually staged with Stagify.ai",
+    "altText": "Red brick house facade in golden hour light under a clear blue sky, with arched windows."
+  },
+  "hashtagSet": [
+    "#curbappeal",
+    "#virtualstaging",
+    "#realestate",
+    "#aistaging",
+    "#beforeandafter",
+    "#interiors",
+    "#homeinspo",
+    "#stagify"
+  ],
+  "data": {
+    "eyebrow": "EXTERIOR STUDIO",
+    "figure": "97",
+    "unit": "%",
+    "claim": "of agents say curb appeal brings the buyer.",
+    "support": "Three quarters called it very important. It is the first photo in the listing and the one nobody restages.",
+    "source": "NAR, 2023 Remodeling Impact Report: Outdoor Features",
+    "image": "/instagram/assets/sources/439db944aa807c06b4c52b9d21ff6b80e1b114a9c9807008b3026fa04e2dfcba.webp",
+    "imagePill": "GOLDEN HOUR",
+    "cta": "Try your first render free",
+    "disclosure": "Virtually staged with Stagify.ai"
+  },
+  "images": [
+    {
+      "role": "before",
+      "source": "pexels",
+      "sha256": "1535e71529485c9c44111518a63739fc6353f1306e04d905ecc4990391c6baad",
+      "altText": "A red brick house photographed on an overcast afternoon under a flat grey and white sky."
+    },
+    {
+      "role": "after",
+      "source": "stagify",
+      "sha256": "91262159fe35117d7c856cc4ccf2e1c1f222ac64b1d7fd7d3dd3944f2452b5d5",
+      "license": {
+        "type": "generated",
+        "licenseName": "Stagify render",
+        "attributionRequired": false
+      },
+      "altText": "The same house relit to golden hour under a clear blue sky, with the property unchanged."
+    },
+    {
+      "role": "band",
+      "source": "stagify",
+      "sha256": "439db944aa807c06b4c52b9d21ff6b80e1b114a9c9807008b3026fa04e2dfcba",
+      "license": {
+        "type": "generated",
+        "licenseName": "Stagify render, cropped to the band",
+        "attributionRequired": false
+      },
+      "altText": "Golden hour light across a red brick facade with arched windows and a gabled entry.",
+      "note": "A crop of the delivered render, not a separate image. .band is a 2.3:1 strip and photoCard paints it with cover at the default centre position, which on a portrait render keeps the vertical middle and throws away the sky. Golden hour and a clear blue sky are what the preset changed, so a centred crop would have deleted the proof. Cut from the real file, nothing retouched."
+    }
+  ],
+  "generation": [
+    {
+      "step": "enhance-exterior",
+      "fn": "processStaging",
+      "model": "gemini-3.1-flash-image",
+      "params": {
+        "promptOverride": "buildExteriorPrompt",
+        "reviewBasePrompt": "EXTERIOR_REVIEW_PROMPT",
+        "timeOfDay": "goldenHour",
+        "sky": "clearBlue",
+        "removeVehicles": true,
+        "removeClutter": true
+      },
+      "qualifier": "Golden hour, clear sky",
+      "sourcePhotosTried": 2,
+      "keptAttempt": 1,
+      "quality": {
+        "perfect": false,
+        "attempts": 3,
+        "bestScore": 85,
+        "defects": [
+          "There is a noticeable halo effect around the roofline where it meets the sky.",
+          "There is a noticeable halo effect where the sky meets the roofline on the left side of the image."
+        ],
+        "authorNote": "Rule 4 applied: the render was opened and looked at rather than shipped on the score. The halo is real but slight, a faint light edge where the roof shingles meet the sky, and the band crop keeps only a small strip of that boundary at the left. Attempt 2 scored 80 against attempt 1's 85 and was discarded. CORRECTED AFTER REVIEW: this note originally claimed the property was preserved exactly. That is true of the facade and false of the roof, which the image reviewer caught and this author's own read had missed. See the review block."
+      },
+      "authorNote": "This post does not use acquirePair. Both of acquireBefore's screens reject a curb-appeal photograph by construction: validateSource is the INTERIOR upload gate, which answers 'not a room' at a facade and 'vehicle' when there is a car on the drive, and fitsBrief hardcodes 'Reject it if it is an exterior' in its screening prompt, so no brief wording gets past it. posts/_work/build-0815.mjs writes the sourcing loop out with the exterior gate substituted, keeping the content-addressed store, the never-reuse-a-source rule and the two-source retry. Two additive passthroughs were added to lib/images/stagify.js: reviewBasePrompt, so a facade is not graded against 'warped furniture' and 'extra legs', and validateExteriorSource. The product's own exterior route sets skipQualityReview because a retry gives a waiting customer a different sky rather than a better one; this kept the loop on, because rule 3 is about the advertisement and not about the wait."
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "rounds": 2,
+    "blocking": [],
+    "round1Blocking": [
+      "The roof was re-materialised: the source shingle is dark charcoal whose hip ridge caps and dormer roofs read LIGHTER than the field, and the render turned the field warm tan and drove the caps and dormers to near black, inverting the relationship rather than warming it.",
+      "A tall capped metal flue was invented on the main hip ridge, where the source has only a low flat ridge vent further down the same hip."
+    ],
+    "howFixed": "Not fixed, and shipped anyway with the user's approval after the two-round cap. Round two named both failure modes inside additionalPrompt, which buildExteriorPrompt appends as the highest priority clause in the prompt. It did not restore the charcoal roof, and it added lit interior windows the source does not have, so it was the worse of the two. THE REASON THIS IS SHIPPABLE IS THE CROP, and nothing else: .band shows the facade only, and the entire main roofline including both defects is outside it. The reviewer confirmed the property IS preserved within the published crop, checking brick courses, window count, mullion pattern, entry canopy, porch lamp, downpipes, hedge line and the neighbouring house against the source. Anyone reusing this render at full size, or cropping it higher, inherits a roof that misstates the product. It is kept in the record rather than deleted so that fact is visible.",
+    "nextTimeTry": "goldenHour appears to be what drives the warm cast across the whole roof. midday plus clearBlue is the preset pair to try first on a charcoal roofed property, or source a house whose roof is already warm toned so the failure mode cannot arise.",
+    "nits": [
+      "A small dark block hangs below the right end of the second floor window sill, with a smeared wedge running off the sill into the brick. Nothing corresponds to it in the source. Present in the published crop, sub legible at feed size.",
+      "The stone jamb and arch haunch of that same window lose their block joints to a soft grey blur, where the source has crisp quoins.",
+      "The GOLDEN HOUR pill sits on the most shadowed part of the band, so the label is contradicted by the pixels immediately around it.",
+      "The band crop shows no curb, front yard or landscaping, which is a gap for a post whose headline is about curb appeal. stat-card has one photo slot and the sky and facade were the higher priority.",
+      "Headline line three is the orphan word 'buyer.'",
+      "The CTA pill leaves 32px at the bottom against 64px on the other three sides."
+    ],
+    "haloVerdict": "The automated QA flagged a roofline halo twice and scored 85. Measured against the source it is a 3 to 5 level luminance lift out of 255 in the sky approaching the roof, under 2 percent, and the source itself already carries the same 2 to 3 pixel bright rim from ordinary lens and JPEG edge softness. It does not survive at feed size and the only roof to sky boundary reaching the published image is the neighbour's gable, which shows none. Not a shipping problem.",
+    "dashAudit": "Zero dash-like characters of any kind across all nine text runs. No hyphen, figure dash, en dash, em dash, minus sign or horizontal bar appears anywhere, so there was no glyph to measure against a lowercase n. The percent sign's bar is a diagonal about 55 degrees off horizontal and does not read as a dash. The only horizontal strokes in the frame are photographic: the overhead cables, the window transom bars and the stone sill line.",
+    "contrast": "4.86 to 8.31 across every text run.",
+    "samenessVerdict": "Not a rerun. All five recent posts are interiors sold on a full bleed or split photograph, and four of the five are a before and after divided by a seam. This is the only exterior, the only frame led by a large numeral, the only one where the deep blue ground is the dominant surface with the photograph demoted to a letterboxed band, and the only one carrying a cited statistic and a source line. Colour separates it too: orange brick and gold against navy, against a recent run of cool grey, warm beige and coastal aqua."
+  },
+  "devilsAdvocate": {
+    "winner": "i06",
+    "consideredCount": 18,
+    "shortlisted": [
+      "i01",
+      "i06",
+      "i09",
+      "i11",
+      "i12"
+    ],
+    "advocateWinner": "i11",
+    "whyThisOne": "Chosen by the user over the advocate's pick. Curb appeal is under-posted, it is the one staging job the design audience will argue about, and Outdoors keeps every chair out of frame so the known extra-leg artifact cannot touch the render.",
+    "residualRisk": "The band shows only the after. stat-card has one photo slot, so the relight is named by the GOLDEN HOUR pill and carried by the caption rather than shown as a pair. A reader who does not read the caption sees a nice photograph of a house and has to take the change on trust.",
+    "authorNote": "The advocate's central attack on i06 was that 'The first photo gets 3 seconds' is an invented figure, and stat-card's own rules say never invent one. A researcher subagent confirmed it: the seconds figure has no traceable primary source, drifts between 1, 2, 5 and 8 across vendor blogs that cite each other, and where a paper is named it is Seiler 2012, which does not appear to state it. The headline was replaced with a number pulled verbatim from NAR's own PDF. The 7% sale-price figure from JREFE was the alternative and was rejected for display size: the paper says UP TO 7% and bundles the seller's curb appeal with the across-the-street neighbour's, which a 280px numeral cannot hedge. The 2018 NAR '87% of buyers find photos very useful' was rejected as stale; NAR's own 2025 figure is 83%. The claim line says agents rather than buyers because that is what the survey measured."
+  },
+  "layoutFamily": "type-first"
+}

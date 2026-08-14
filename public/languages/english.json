@@ -559,7 +559,7 @@
       "downloadNative": "native",
       "uploadAnotherShort": "Reupload",
       "downloadResultShort": "Download",
-      "galleryEvicted": "Older stagings were removed to make room — the free plan keeps your most recent ones.",
+      "galleryEvicted": "Older stagings were removed to make room. The free plan keeps your most recent ones.",
       "galleryEvictedShared": "An older staging had an active share link, which no longer works."
     }
   },
@@ -863,7 +863,7 @@
       "submitting": "Sending…",
       "needDescription": "Please describe the problem before sending.",
       "failed": "We couldn’t send your report. Please try again.",
-      "successTitle": "Thanks — we got it.",
+      "successTitle": "Thanks, we got it.",
       "successBody": "Our team will look into this. If you left an email, we’ll follow up there.",
       "done": "Done"
     }
@@ -985,7 +985,7 @@
     },
     "thumbnailStrip": {
       "label": "Base image for next message",
-      "help": "Select which room image the AI should modify when you send your next message — especially when adding furniture. Helpful when you have several uploads or staged versions.",
+      "help": "Select which room image the AI should modify when you send your next message, especially when adding furniture. Helpful when you have several uploads or staged versions.",
       "helpAria": "What does base image mean?"
     },
     "alt": {
@@ -1004,8 +1004,8 @@
       "editedImage": "Mask-edited design image{suffix}",
       "originalCarouselImage": "Original image before mask edits",
       "enlargedImage": "Full-size view of design image",
-      "thumbnailSelected": "{label} — selected as base image for your next message",
-      "thumbnailOption": "{label} — image {index} in conversation"
+      "thumbnailSelected": "{label}, selected as base image for your next message",
+      "thumbnailOption": "{label}, image {index} in conversation"
     },
     "maskEditor": {
       "title": "Edit with Mask",
@@ -1024,9 +1024,9 @@
       "rerun": "Regenerate",
       "done": "Looks Good",
       "refineTitle": "Refine the edit",
-      "refineNote": "Brush to reveal more of the edit, erase to hide it — this only re-crops, it won’t re-run the AI.",
-      "refineHelp": "This step just fine-tunes where the AI’s change shows — it doesn’t run the AI again. Brush to reveal more of the edit, erase to pull it back. It’s a safety net so the edit only touches the area you picked and can’t mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining — it won’t be in the final image.",
-      "promptHint": "Be very specific about location and placement — for example: “put the sofa flush against the middle of the back wall.”",
+      "refineNote": "Brush to reveal more of the edit, erase to hide it; this only re-crops, it won’t re-run the AI.",
+      "refineHelp": "This step just fine-tunes where the AI’s change shows; it doesn’t run the AI again. Brush to reveal more of the edit, erase to pull it back. It’s a safety net so the edit only touches the area you picked and can’t mess up the rest of your photo. The faded preview shown on top is only there so you can see the full edit while refining; it won’t be in the final image.",
+      "promptHint": "Be very specific about location and placement, for example: “put the sofa flush against the middle of the back wall.”",
       "refineHelpAria": "What the refine step does",
       "loadApplying": "Applying your edit…",
       "referenceLabel": "Reference photo (optional)",
@@ -1034,7 +1034,7 @@
       "referenceHint": "Optional: a photo of furniture or decor to place in the masked area",
       "referenceRemove": "Remove reference photo",
       "referenceAlt": "Reference for masked edit",
-      "referenceTooLarge": "That image is too large — please choose one under 25 MB.",
+      "referenceTooLarge": "That image is too large. Please choose one under 25 MB.",
       "referenceInvalid": "Please choose a valid JPG, PNG, or WebP image.",
       "processing": "Processing...",
       "pleaseDrawMask": "Please draw a mask over the area you want to edit.",
@@ -1059,7 +1059,7 @@
       "title": "Uploading & files",
       "i1": {
         "q": "My photo won’t upload.",
-        "a": "Make sure the file is a JPG, PNG, WebP, or HEIC under 25 MB. Very large phone photos sometimes fail — resize the image or take a screenshot of it, then upload again. If it still fails, refresh the page and retry."
+        "a": "Make sure the file is a JPG, PNG, WebP, or HEIC under 25 MB. Very large phone photos sometimes fail. Resize the image or take a screenshot of it, then upload again. If it still fails, refresh the page and retry."
       },
       "i2": {
         "q": "Which photos work best?",
@@ -1074,7 +1074,7 @@
       },
       "i2": {
         "q": "Which plan or tool should I use?",
-        "a": "Free is perfect for quick one-off rooms. <a href=\"stagify-plus.html\">Stagify+</a> unlocks unlimited generations, higher-quality models, the masking tool and the Prompt Bar. <a href=\"ai-designer.html\">AI Designer</a> redesigns an entire room from a short chat — best when you want it to make the decisions for you."
+        "a": "Free is perfect for quick one-off rooms. <a href=\"stagify-plus.html\">Stagify+</a> unlocks unlimited generations, higher-quality models, the masking tool and the Prompt Bar. <a href=\"ai-designer.html\">AI Designer</a> redesigns an entire room from a short chat, which is best when you want it to make the decisions for you."
       },
       "i3": {
         "q": "Can I control the furniture and layout?",
@@ -1093,7 +1093,7 @@
       "title": "Generating & results",
       "i1": {
         "q": "My generation is stuck or taking too long.",
-        "a": "Most images finish in about 8 seconds, but a Stagify+ render with several variations, or one where the AI retries for a better result, can legitimately take longer. Leave it running — you can press Cancel under the progress bar at any time, and if something has genuinely gone wrong we stop it for you and say so. Avoid switching tabs or locking your phone while it runs."
+        "a": "Most images finish in about 8 seconds, but a Stagify+ render with several variations, or one where the AI retries for a better result, can legitimately take longer. Leave it running. You can press Cancel under the progress bar at any time, and if something has genuinely gone wrong we stop it for you and say so. Avoid switching tabs or locking your phone while it runs."
       },
       "i2": {
         "q": "The result has odd furniture or artifacts.",
@@ -1108,7 +1108,7 @@
       "title": "Account & sign-in",
       "i1": {
         "q": "My verification code didn’t arrive.",
-        "a": "Check your spam or promotions folder — codes can take a minute. If it still hasn’t come, use “Resend code” and make sure your email is typed correctly."
+        "a": "Check your spam or promotions folder. Codes can take a minute. If it still hasn’t come, use “Resend code” and make sure your email is typed correctly."
       },
       "i2": {
         "q": "I forgot my password.",
@@ -1202,7 +1202,7 @@
     "title": "Masking Studio",
     "subtitle": "Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only the highlighted areas can change, so the rest of your photo stays pixel-perfect.",
     "gateTitle": "Masking Studio is a Stagify+ feature",
-    "gateBody": "Sign in with a Stagify+ account to highlight multiple areas of a photo, give each one its own furniture, and stage them all at once — with pixel-perfect masking that can’t touch the rest of your photo.",
+    "gateBody": "Sign in with a Stagify+ account to highlight multiple areas of a photo, give each one its own furniture, and stage them all at once, with pixel-perfect masking that can’t touch the rest of your photo.",
     "gateCta": "View Stagify+",
     "gateBack": "Back to Home",
     "stepPhoto": "Room photo",
@@ -1232,9 +1232,9 @@
     "needHighlight": "Paint at least one area on the photo first.",
     "needPromptOrFurniture": "Each highlighted area needs a short prompt or a furniture photo.",
     "doneToast": "All areas staged! Touch up your highlights, or press Looks Good to see the result.",
-    "partialToast": "{done} of {total} areas staged — retry the failed ones.",
+    "partialToast": "{done} of {total} areas staged. Retry the failed ones.",
     "failedToast": "Staging failed. Please try again.",
-    "rateLimited": "You’re generating too quickly — wait a minute and try again.",
+    "rateLimited": "You’re generating too quickly. Wait a minute and try again.",
     "shortcutsHint": "<kbd>B</kbd> brush&nbsp;· <kbd>E</kbd> erase&nbsp;· <kbd>R</kbd> rectangle&nbsp;· <kbd>W</kbd> magic select&nbsp;· <kbd>[</kbd> <kbd>]</kbd> brush size&nbsp;· <kbd>1</kbd>–<kbd>6</kbd> pick area&nbsp;· <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo&nbsp;· <kbd>Ctrl</kbd>+<kbd>Y</kbd> redo&nbsp;· hold <kbd>H</kbd> view photo",
     "compare": "Compare",
     "undo": "Undo",
@@ -1265,8 +1265,8 @@
     "clearHighlight": "Clear highlight",
     "snapToObject": "Snap to object",
     "snapToObjectHint": "Grow this highlight to the edges of what the AI actually drew, so nothing gets cut off.",
-    "spillFlag": "This edit reaches past the highlight — Snap to object available.",
-    "snapToast": "Some staged items reach past your highlight — open that area and tap “Snap to object” to include the rest.",
+    "spillFlag": "This edit reaches past the highlight. Snap to object available.",
+    "snapToast": "Some staged items reach past your highlight. Open that area and tap “Snap to object” to include the rest.",
     "toolRect": "Rectangle",
     "renameAria": "Rename this area",
     "resumeTitle": "Resume your last session?",
@@ -1347,7 +1347,7 @@
     "monitoring": {
       "since": "Monitoring since {date} · last check {ago}",
       "collecting": "Collecting data…",
-      "error": "Could not reach the status API — retrying…"
+      "error": "Could not reach the status API, retrying…"
     },
     "tooltip": {
       "nodata": "No data",
@@ -1362,7 +1362,7 @@
   "enterprise": {
     "hero": {
       "title": "Stagify Enterprise",
-      "subtitle": "Give your entire team unlimited AI staging. Every employee with your company email gets Stagify+ automatically — you only pay for what they use."
+      "subtitle": "Give your entire team unlimited AI staging. Every employee with your company email gets Stagify+ automatically, and you only pay for what they use."
     },
     "highlights": {
       "perGenerationLabel": "per generation",
@@ -1416,7 +1416,7 @@
       "subtitle": "Furniture removal, the AI Designer, the Masking Studio, and higher-quality models: every professional tool, for less than the cost of one traditional staging."
     },
     "plan": {
-      "hintAccountFirst": "Create a free account first — that’s how your subscription gets linked to you.",
+      "hintAccountFirst": "Create a free account first. That’s how your subscription gets linked to you.",
       "hintTip": "Tip: sign in from the profile menu first so checkout can link payment to your Stagify account.",
       "hintStagingDisabled": "Subscriptions are disabled on the staging site.",
       "billedMonthly": "Billed monthly · Cancel anytime",
@@ -1526,7 +1526,7 @@
     },
     "off": {
       "title": "Saved renders are switched off",
-      "body": "This deployment cannot store renders yet, so there is nothing to show here. Your staging still works — the images just are not kept."
+      "body": "This deployment cannot store renders yet, so there is nothing to show here. Your staging still works. The images just are not kept."
     },
     "empty": {
       "title": "Nothing staged yet",
@@ -1535,7 +1535,7 @@
     },
     "error": {
       "title": "We could not load your gallery",
-      "generic": "Your renders are safe — this is the list failing to load, not the images.",
+      "generic": "Your renders are safe. This is the list failing to load, not the images.",
       "offline": "We could not reach Stagify. Check your connection and try again.",
       "rateLimited": "Too many requests just now. Give it a moment and try again.",
       "retry": "Try again"
@@ -1553,7 +1553,7 @@
       "note": "Anyone with this link can open the staged photo. Deleting the render is what takes it down, and visits stop within 15 minutes.",
       "urlLabel": "Share link",
       "copy": "Copy link",
-      "copied": "Copied — the link is on your clipboard.",
+      "copied": "Copied. The link is on your clipboard.",
       "copyFailed": "Could not copy automatically. Select the link above and copy it.",
       "notOpened": "Not opened yet",
       "opened": {
@@ -1602,22 +1602,22 @@
     "subtitle": "The first photo of every listing is the outside of the house, and it is the one shot you cannot reshoot when the weather turns. Upload it here and get the version taken on a better day.",
     "ctaUpgrade": "Get Stagify+ to use it",
     "features": {
-      "title": "What it changes — and what it never touches",
+      "title": "What it changes, and what it never touches",
       "light": {
         "title": "Time of day",
         "body": "Shoot at noon, publish at golden hour. Morning, midday, golden hour or dusk, with shadows and window light that agree with the sun you picked."
       },
       "sky": {
         "title": "Sky and weather",
-        "body": "A flat grey sky becomes clear blue, light cloud or something more dramatic — matched to the light already on the building, with clean edges along the roofline."
+        "body": "A flat grey sky becomes clear blue, light cloud or something more dramatic, matched to the light already on the building, with clean edges along the roofline."
       },
       "clutter": {
         "title": "Cars, clutter and snow",
-        "body": "The neighbour’s van across the driveway, the bins left out, the hose on the lawn, the person walking past — and the snow, rain and puddles that happened to be there the day you shot it. Temporary things go, and the surface underneath is rebuilt to match."
+        "body": "The neighbour’s van across the driveway, the bins left out, the hose on the lawn, the person walking past, and the snow, rain and puddles that happened to be there the day you shot it. Temporary things go, and the surface underneath is rebuilt to match."
       },
       "honest": {
         "title": "The house stays the house",
-        "body": "No re-turfed lawn, no erased power lines, no resurfaced driveway, no repainted walls. A buyer standing at the kerb sees what the photo showed — which is what keeps the photo usable on a listing."
+        "body": "No re-turfed lawn, no erased power lines, no resurfaced driveway, no repainted walls. A buyer standing at the kerb sees what the photo showed, which is what keeps the photo usable on a listing."
       }
     },
     "upload": {
@@ -1670,7 +1670,7 @@
     },
     "errors": {
       "generic": "That photo could not be enhanced. Please try another shot of the property exterior.",
-      "network": "The connection dropped before the photo came back. Your upload is still here — try again."
+      "network": "The connection dropped before the photo came back. Your upload is still here. Try again."
     },
     "stepPhoto": "Exterior photo",
     "stepPhotoHint": "Upload a photo in the workspace on the right.",

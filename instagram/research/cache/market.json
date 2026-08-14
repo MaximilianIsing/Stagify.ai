@@ -1,0 +1,39 @@
+{
+  "key": "market",
+  "fetchedAt": "2026-08-13T19:26:05.294Z",
+  "ttlDays": 7,
+  "queries": [
+    "housing market days on market trend",
+    "home buyer behaviour listing photos"
+  ],
+  "findings": [
+    {
+      "claim": "Nationally homes are listed roughly 78 days before an accepted offer, against a five year average near 51 days.",
+      "sourceUrl": "https://fred.stlouisfed.org/series/MEDDAYONMARUS",
+      "sourceTitle": "Housing Inventory: Median Days on Market, FRED",
+      "confidence": "reported",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Inventory has risen substantially year over year in several major metros, giving buyers more options and more negotiating room than a year ago.",
+      "sourceUrl": "https://www.northendhomes.com/post/august-2026-real-estate-market-update",
+      "sourceTitle": "August 2026 Real Estate Market Update",
+      "confidence": "reported",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "With more inventory, agents report that pricing, condition, presentation and marketing matter more than they did in a tighter market.",
+      "sourceUrl": "https://www.mynorandassociates.com/august-2026-real-estate-market-update-what-buyers-and-sellers-need-to-know/",
+      "sourceTitle": "August 2026 Real Estate Market Update, Buyers and Sellers",
+      "confidence": "reported",
+      "retrievedAt": "2026-08-13"
+    },
+    {
+      "claim": "Buyers have more time and less competition than a year ago, so a listing that does not stand out sits rather than selling below asking.",
+      "sourceUrl": "https://www.northendhomes.com/post/august-2026-real-estate-market-update",
+      "sourceTitle": "August 2026 Real Estate Market Update",
+      "confidence": "reported",
+      "retrievedAt": "2026-08-13"
+    }
+  ]
+}

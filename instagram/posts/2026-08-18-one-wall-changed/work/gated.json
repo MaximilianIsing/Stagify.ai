@@ -1,0 +1,401 @@
+[
+  {
+    "id": "i01",
+    "topic": "a dorm room staged like a real apartment instead of a catalogue cube",
+    "angle": "Every staging tool skips dorms. Stagify has a Dorm room type, and it reads like somewhere a person lives.",
+    "template": "style-grid",
+    "featureShown": "room-breadth",
+    "hookArchetype": "question-open",
+    "audience": "design",
+    "roomType": "Dorm",
+    "style": "modern",
+    "palette": "concrete grey and mustard against pale birch",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "One bare cinderblock dorm room photo across the top, then four rendered versions below in an asymmetric grid, each with a small style pill: a study-first version, a lounge version, a shared-double version and a plant-heavy version. Concrete grey walls, mustard bedding, pale birch desk.",
+    "copy": {
+      "headline": "Nobody stages a dorm room."
+    },
+    "whyNow": "Mid August is move-in week for most US campuses, so student housing is the room everyone is looking at right now.",
+    "whyThisEarnsAClick": "A design follower who has never thought about staging software will click to see whether a cinderblock box can actually be made to look good."
+  },
+  {
+    "id": "i02",
+    "topic": "brushing one wall and leaving the rest of the photo untouched",
+    "angle": "Masking Studio changes a region you paint. Everything outside the brush stays pixel identical, which is the part people do not believe.",
+    "template": "annotated-callout",
+    "featureShown": "masking-studio",
+    "hookArchetype": "process-peek",
+    "audience": "design",
+    "roomType": "Bathroom",
+    "style": "coastal",
+    "palette": "sea glass green tile with unlacquered brass",
+    "visualSummary": "One bathroom render marked with three numbered pins and a numbered legend beneath it. Pin one on the repainted vanity, pin two on the retiled shower wall, pin three on the untouched window and floor that prove nothing else moved. Sea glass green tile, unlacquered brass fittings, white plaster.",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "copy": {
+      "headline": "Only the tile changed."
+    },
+    "whyNow": "Masking Studio has never had a post. It is the feature that answers the loudest objection to AI interiors, which is that the tool changes things you did not ask it to.",
+    "whyThisEarnsAClick": "A renovation audience wants to test one material against their real room, and this is the only frame that shows the tool doing exactly that and nothing more."
+  },
+  {
+    "id": "i03",
+    "topic": "three bathroom tile directions tested on the same real bathroom",
+    "angle": "Pick the tile before the tiler arrives. The room is yours, only the surface changes.",
+    "template": "style-grid",
+    "featureShown": "masking-studio",
+    "hookArchetype": "side-by-side-comparison",
+    "audience": "design",
+    "roomType": "Bathroom",
+    "style": "modern",
+    "palette": "bone white and slate with warm chrome",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "The source bathroom photo up top, then the same bathroom three times below with three different wall treatments, each with a material pill. Bone white, slate grey, warm chrome.",
+    "copy": {
+      "headline": "Same bathroom. Three tiles."
+    },
+    "whyNow": "Tile choice is the single most reversed renovation decision and the most searched interior question in August.",
+    "whyThisEarnsAClick": "It is a decision aid, not a demo. Someone mid renovation saves it."
+  },
+  {
+    "id": "i04",
+    "topic": "a flat blueprint becoming a photoreal bedroom in four steps",
+    "angle": "You do not need the house to exist to photograph it.",
+    "template": "process-strip",
+    "featureShown": "cad-to-3d",
+    "hookArchetype": "process-peek",
+    "audience": "design",
+    "roomType": "Bedroom",
+    "style": "farmhouse",
+    "palette": "linen white and clay with blackened iron",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "visualSummary": "Four numbered horizontal bands, each with a title, a short note and a photo on the right. Band one the flat floor plan, band two the plan with the camera position marked, band three the grey massing, band four the finished farmhouse bedroom in linen and clay with a blackened iron bed.",
+    "copy": {
+      "headline": "Plan to photo in four steps."
+    },
+    "whyNow": "New construction listings are up and none of them have photos yet.",
+    "whyThisEarnsAClick": "Designers and architects want this for client presentations, which is a use case they pay for."
+  },
+  {
+    "id": "i05",
+    "topic": "eleven languages running the same studio",
+    "angle": "The tool is not English only, and the render does not change when the interface does.",
+    "template": "style-grid",
+    "featureShown": "languages",
+    "hookArchetype": "number-shock",
+    "audience": "design",
+    "roomType": "Dining room",
+    "style": "modern",
+    "palette": "ink blue and oxblood with pale ash",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "One dining room render up top, then a grid of the same render below with the interface chrome shown in six different languages, each with a language pill. Ink blue, oxblood upholstery, pale ash table.",
+    "copy": {
+      "headline": "Eleven languages. One render."
+    },
+    "whyNow": "Nothing seasonal. The feature has never been posted.",
+    "whyThisEarnsAClick": "Weak. It is a fact about the product, not a reason to open it."
+  },
+  {
+    "id": "i06",
+    "topic": "typing one specific request a preset cannot express",
+    "angle": "Presets get you to a style. The prompt bar gets you to the exact thing in your head.",
+    "template": "annotated-callout",
+    "featureShown": "prompt-bar",
+    "hookArchetype": "side-by-side-comparison",
+    "audience": "design",
+    "roomType": "Dining room",
+    "style": "farmhouse",
+    "palette": "putty green and raw oak with cream stoneware",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "One farmhouse dining room render with three numbered pins and a legend, each pin naming a phrase from the typed request that landed in the image: the bench on one side only, the pendant off centre over the table, the open shelf of cream stoneware. Putty green walls, raw oak table.",
+    "copy": {
+      "headline": "A preset cannot ask for this."
+    },
+    "whyNow": "Prompt bar last posted 07-29, so it is open but not fresh.",
+    "whyThisEarnsAClick": "It shows control, which is the objection designers actually have about AI interiors."
+  },
+  {
+    "id": "i07",
+    "topic": "what a virtual staging disclosure stamp actually looks like on the photo",
+    "angle": "Most tools leave disclosure to you. Stagify stamps it on the pixels every time, and it does not ruin the image.",
+    "template": "annotated-callout",
+    "featureShown": "disclosure-stamping",
+    "hookArchetype": "mistake-list",
+    "audience": "design",
+    "roomType": "Bedroom",
+    "style": "coastal",
+    "palette": "chalk blue and driftwood with white linen",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "visualSummary": "One coastal bedroom render with three numbered pins: the stamp itself in the lower corner, the crop that keeps it legible at thumbnail size, and the untouched window view. Legend beneath names the three mistakes that get listings pulled. Chalk blue walls, driftwood bed, white linen.",
+    "copy": {
+      "headline": "Three ways to get a listing pulled."
+    },
+    "whyNow": "California AB 723 took effect 1 January 2026 and requires a conspicuous statement on the altered image.",
+    "whyThisEarnsAClick": "It is compliance information with a deadline attached, which gets saved. Risk: the design audience does not file MLS listings."
+  },
+  {
+    "id": "i08",
+    "topic": "sending a client the room without making them sign up for anything",
+    "angle": "A share link opens for anyone. No account, no download, no app.",
+    "template": "process-strip",
+    "featureShown": "client-share-links",
+    "hookArchetype": "cost-of-inaction",
+    "audience": "design",
+    "roomType": "Dining room",
+    "style": "modern",
+    "palette": "graphite and blush with brushed nickel",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "visualSummary": "Three numbered bands: render the room, copy the link, the client opens it on a phone with no login screen. Photo on the right of each band, the last one a phone-shaped crop of the shared page. Graphite walls, blush chairs, brushed nickel.",
+    "copy": {
+      "headline": "Your client does not need an account."
+    },
+    "whyNow": "Nothing seasonal.",
+    "whyThisEarnsAClick": "Freelance designers hate asking clients to sign up for things. Risk: it is a workflow post with a boring image."
+  },
+  {
+    "id": "i09",
+    "topic": "the one room every staging tool refuses to touch",
+    "angle": "Bathrooms are skipped because the geometry is hard. Here is one done properly.",
+    "template": "slider-hero",
+    "featureShown": "room-breadth",
+    "hookArchetype": "side-by-side-comparison",
+    "audience": "design",
+    "roomType": "Bathroom",
+    "style": "farmhouse",
+    "palette": "soft charcoal and warm white with aged nickel",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "The site's before and after comparison control as a poster. One card, a vertical seam with a drag handle, empty bathroom left and staged farmhouse bathroom right, a single capsule of copy. Soft charcoal wainscot, warm white walls, aged nickel fittings.",
+    "copy": {
+      "headline": "Bathrooms are the hard ones."
+    },
+    "whyNow": "Nothing seasonal.",
+    "whyThisEarnsAClick": "It is a strong image but the argument is thin. Bathrooms are hard is a claim the viewer cannot check."
+  },
+  {
+    "id": "i10",
+    "topic": "a small bedroom read as too small until it was staged",
+    "angle": "Furniture scale is what tells a viewer how big a room is. An empty room reads smaller than it is.",
+    "template": "slider-hero",
+    "featureShown": "room-breadth",
+    "hookArchetype": "question-open",
+    "audience": "design",
+    "roomType": "Bedroom",
+    "style": "coastal",
+    "palette": "pale sand and sea blue with rattan",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "Comparison poster, vertical seam, empty small bedroom on the left and the same room staged coastal on the right with a full size bed that proves the scale. Pale sand walls, sea blue textiles, rattan headboard.",
+    "copy": {
+      "headline": "How big is this room?"
+    },
+    "whyNow": "Nothing seasonal.",
+    "whyThisEarnsAClick": "The question hook works, but the frame is another before and after."
+  },
+  {
+    "id": "i11",
+    "topic": "four dorm layouts from one move in photo",
+    "angle": "Same cinderblock box, four ways to live in it.",
+    "template": "process-strip",
+    "featureShown": "room-breadth",
+    "hookArchetype": "seasonal-timing",
+    "audience": "design",
+    "roomType": "Dorm",
+    "style": "modern",
+    "palette": "cool grey and rust with pale plywood",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "Four numbered bands, each a dorm layout with a title and a photo on the right: lofted bed, side by side, study corner, lounge corner. Cool grey block walls, rust textiles, pale plywood furniture.",
+    "copy": {
+      "headline": "Move in is next week."
+    },
+    "whyNow": "Campus move in falls in the week of 18 August for most US universities.",
+    "whyThisEarnsAClick": "Timely and specific, but process-strip is the wrong frame for four parallel options."
+  },
+  {
+    "id": "i12",
+    "topic": "changing the countertop without changing the kitchen you already photographed",
+    "angle": "Masking Studio on a surface decision.",
+    "template": "annotated-callout",
+    "featureShown": "masking-studio",
+    "hookArchetype": "question-open",
+    "audience": "design",
+    "roomType": "Dining room",
+    "style": "modern",
+    "palette": "quartz white and walnut with matte black",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "One render with three pins on a dining sideboard surface swap and a legend. Quartz white, walnut, matte black.",
+    "copy": {
+      "headline": "Which surface wins?"
+    },
+    "whyNow": "Nothing seasonal.",
+    "whyThisEarnsAClick": "Overlaps i02 and i03 without adding anything."
+  },
+  {
+    "id": "i13",
+    "topic": "the three staging mistakes that make a room look smaller",
+    "angle": "Scale, blocking the light path, and pushing everything to the walls.",
+    "template": "annotated-callout",
+    "featureShown": "room-breadth",
+    "hookArchetype": "mistake-list",
+    "audience": "design",
+    "roomType": "Bedroom",
+    "style": "modern",
+    "palette": "warm grey and ochre with smoked oak",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "visualSummary": "One staged bedroom render with three numbered pins on the mistakes and a numbered legend naming each. Warm grey walls, ochre throw, smoked oak.",
+    "copy": {
+      "headline": "Three ways to shrink a room."
+    },
+    "whyNow": "Nothing seasonal.",
+    "whyThisEarnsAClick": "Educational carousels of this shape are the most saved format in the niche. Risk: it teaches staging, not the product."
+  },
+  {
+    "id": "i15",
+    "topic": "what the studio looks like when it is not in english",
+    "angle": "Same buttons, same render, another language.",
+    "template": "process-strip",
+    "featureShown": "languages",
+    "hookArchetype": "process-peek",
+    "audience": "design",
+    "roomType": "Bathroom",
+    "style": "modern",
+    "palette": "steel blue and bone with polished chrome",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "visualSummary": "Three bands showing the upload, style pick and result with the interface in Spanish, Japanese and German. Steel blue, bone, polished chrome.",
+    "copy": {
+      "headline": "The studio speaks eleven."
+    },
+    "whyNow": "Nothing seasonal.",
+    "whyThisEarnsAClick": "It does not. Nobody opens an app because it has been translated."
+  },
+  {
+    "id": "i16",
+    "topic": "a dining room staged for a dinner party rather than for a listing",
+    "angle": "Staging is a scale and mood problem, not a furniture catalogue problem.",
+    "template": "slider-hero",
+    "featureShown": "prompt-bar",
+    "hookArchetype": "seasonal-timing",
+    "audience": "design",
+    "roomType": "Dining room",
+    "style": "farmhouse",
+    "palette": "olive and cream with unfinished pine",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "Comparison poster with a vertical seam, empty dining room left, a farmhouse dining room set for eight on the right. Olive walls, cream linen, unfinished pine table.",
+    "copy": {
+      "headline": "Set the table before you sell."
+    },
+    "whyNow": "Autumn entertaining season starts in September.",
+    "whyThisEarnsAClick": "Pretty but the claim is soft, and the seasonal hook is three weeks early."
+  },
+  {
+    "id": "i17",
+    "topic": "the dorm room your university photo does not show",
+    "angle": "The tour photo is empty and beige. Here is the same room with a person in mind.",
+    "template": "slider-hero",
+    "featureShown": "room-breadth",
+    "hookArchetype": "seasonal-timing",
+    "audience": "design",
+    "roomType": "Dorm",
+    "style": "modern",
+    "palette": "institutional beige and cobalt with birch ply",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "Comparison poster, empty cinderblock dorm left, staged dorm right. Institutional beige, cobalt textiles, birch ply.",
+    "copy": {
+      "headline": "This is the room they showed you."
+    },
+    "whyNow": "Move in week.",
+    "whyThisEarnsAClick": "Strong timing, but slider-hero gives only one alternative and the point of a dorm post is breadth."
+  },
+  {
+    "id": "i18",
+    "topic": "brushing out a radiator and leaving the wall behind it correct",
+    "angle": "The hardest part of masking is what has to be invented behind the thing you removed.",
+    "template": "annotated-callout",
+    "featureShown": "masking-studio",
+    "hookArchetype": "process-peek",
+    "audience": "design",
+    "roomType": "Bedroom",
+    "style": "farmhouse",
+    "palette": "plaster pink and umber with aged brass",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "visualSummary": "One bedroom render with three pins: the removed radiator, the reconstructed skirting line, the unchanged window reveal. Plaster pink walls, umber textiles, aged brass.",
+    "copy": {
+      "headline": "The wall behind it is the hard part."
+    },
+    "whyNow": "Nothing seasonal.",
+    "whyThisEarnsAClick": "A genuinely interesting technical claim, but hard to prove in one still without the before."
+  },
+  {
+    "id": "i19",
+    "topic": "the four steps between a phone photo and a staged room",
+    "angle": "The whole job is four steps and none of them need software you own.",
+    "template": "process-strip",
+    "featureShown": "prompt-bar",
+    "hookArchetype": "process-peek",
+    "audience": "design",
+    "roomType": "Bathroom",
+    "style": "coastal",
+    "palette": "surf blue and shell with pale teak",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "visualSummary": "Four numbered bands: photo, room type, typed request, result. Surf blue, shell white, pale teak.",
+    "copy": {
+      "headline": "Four steps. One photo."
+    },
+    "whyNow": "Nothing seasonal.",
+    "whyThisEarnsAClick": "The flow post has been made twice already in different clothes."
+  },
+  {
+    "id": "i20",
+    "topic": "a share link that outlives the project folder",
+    "angle": "The link keeps working after the job ends.",
+    "template": "annotated-callout",
+    "featureShown": "client-share-links",
+    "hookArchetype": "cost-of-inaction",
+    "audience": "design",
+    "roomType": "Bedroom",
+    "style": "modern",
+    "palette": "midnight and oat with polished steel",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "visualSummary": "One render with pins on the share page chrome. Midnight walls, oat bedding, polished steel.",
+    "copy": {
+      "headline": "The link still works."
+    },
+    "whyNow": "Nothing seasonal.",
+    "whyThisEarnsAClick": "It does not. This is a feature note, not a post."
+  },
+  {
+    "id": "i21",
+    "topic": "one dorm room shown as four different students",
+    "angle": "The room does not change. The person does, and the staging follows them.",
+    "template": "style-grid",
+    "featureShown": "room-breadth",
+    "hookArchetype": "seasonal-timing",
+    "audience": "design",
+    "roomType": "Dorm",
+    "style": "coastal",
+    "palette": "washed indigo and sand with pale pine",
+    "ctaStyle": "see-all-the-styles",
+    "visualSummary": "Empty dorm up top, four staged versions below with pills naming the student. Washed indigo, sand, pale pine.",
+    "copy": {
+      "headline": "Four students. One room."
+    },
+    "whyNow": "Move in week.",
+    "whyThisEarnsAClick": "Close to i01 but the framing invents four fictional people, which is weaker than naming the layouts."
+  },
+  {
+    "id": "i22",
+    "topic": "a compliance stamp that survives a screenshot",
+    "angle": "The disclosure is burned into the pixels, so it is still there after a repost.",
+    "template": "process-strip",
+    "featureShown": "disclosure-stamping",
+    "hookArchetype": "cost-of-inaction",
+    "audience": "design",
+    "roomType": "Dining room",
+    "style": "coastal",
+    "palette": "pale aqua and stone with weathered oak",
+    "ctaStyle": "save-this-for-your-next-listing",
+    "visualSummary": "Three bands: the render, the stamp applied, the same image screenshotted and reposted with the stamp still legible. Pale aqua, stone, weathered oak.",
+    "copy": {
+      "headline": "It survives the screenshot."
+    },
+    "whyNow": "AB 723 in force since January 2026.",
+    "whyThisEarnsAClick": "The third band is hard to make legible and the design audience does not carry this risk."
+  }
+]

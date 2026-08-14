@@ -205,7 +205,7 @@ export function createLayersUi(deps) {
         const flag = document.createElement('span');
         flag.className = 'ms-layer-spill-flag';
         flag.textContent = '⤢';
-        flag.title = tx('maskingStudio.spillFlag', 'This edit reaches past the highlight — Snap to object available.');
+        flag.title = tx('maskingStudio.spillFlag', 'This edit reaches past the highlight. Snap to object available.');
         flag.setAttribute('aria-hidden', 'true');
         head.appendChild(flag);
       }
