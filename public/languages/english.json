@@ -517,7 +517,6 @@
       "qualityGeneration": "Stagify+ Model",
       "imageGenerations": "Image Generations",
       "addPhotos": "+ Add photos",
-      "tryAnotherImage": "Try another image",
       "uploadAreaAria": "Upload area",
       "uploadHeadline": "Drop your room photo here",
       "uploadFormats": "JPG, PNG, WebP or HEIC · up to 25 MB",
@@ -763,7 +762,12 @@
       "DOCUMENT": "This looks like a screenshot or document. Please upload a photo of a room, space, or piece of furniture.",
       "VEHICLE": "This looks like a photo of a vehicle. Please upload a photo of a room, space, or piece of furniture.",
       "UNRELATED_OBJECT": "This doesn’t look like a room, space, or furniture. Please upload a photo of a space or furniture you’d like to stage.",
+      "EXTERIOR": "This looks like the outside of a building. Our Exterior Studio is the Stagify+ tool for facades.",
       "UNSTAGEABLE": "This doesn’t look like a room, space, or piece of furniture. Please upload a photo of an interior room, exterior space, or furniture you’d like to stage."
+    },
+    "unstageableCta": {
+      "exteriorOpen": "Open the Exterior Studio",
+      "exteriorUpgrade": "Get Stagify+"
     },
     "fileType": "Please upload a JPG, PNG, WebP, or HEIC image file.",
     "fileTooLarge": "File is too large. Please upload an image smaller than 25 MB.",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "Masking Studio",
     "subtitle": "Highlight areas of your room in different colors, give each one its own furniture, and stage them all at once. Only the highlighted areas can change, so the rest of your photo stays pixel-perfect.",
+    "exteriorTitle": "That’s one for the Exterior Studio",
     "gateTitle": "Masking Studio is a Stagify+ feature",
     "gateBody": "Sign in with a Stagify+ account to highlight multiple areas of a photo, give each one its own furniture, and stage them all at once, with pixel-perfect masking that can’t touch the rest of your photo.",
     "gateCta": "View Stagify+",

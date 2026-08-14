@@ -10,6 +10,7 @@ import { init3DTiltEffect } from './app/tilt-effect.js';
 import { loadHeroStats, updateHeroFreeGensLine } from './app/hero-stats.js';
 import { validateStageableUpload } from './app/stage-validation.js';
 import { unstageableMessage } from './unstageable-message.js';
+import { syncStagingErrorCta } from './app/staging-error-cta.js';
 import { createFurnitureRefs, FURNITURE_LIMIT } from './app/furniture-refs.js';
 import { createVersionCarousel } from './app/version-carousel.js';
 import { createDownloadMenu } from './app/download-menu.js';
@@ -100,13 +101,14 @@ import { initStagingEntry } from './app/staging-entry.js';
     const stagingLimitViewerText = $('#staging-limit-viewer-text');
     const stagingErrorViewer = $('#staging-error-viewer');
     const stagingErrorViewerText = $('#staging-error-viewer-text');
-    const stagingErrorRetryBtn = $('#staging-error-retry-btn');
 
-    function showStagingError(message) {
+    function showStagingError(message, verdict) {
       if (stagingErrorViewerText) stagingErrorViewerText.textContent = message || '';
+      syncStagingErrorCta(verdict);
       if (stagingErrorViewer) stagingErrorViewer.classList.remove('hidden');
     }
     function hideStagingError() {
+      syncStagingErrorCta(null);
       if (stagingErrorViewer) stagingErrorViewer.classList.add('hidden');
     }
 
@@ -121,13 +123,8 @@ import { initStagingEntry } from './app/staging-entry.js';
       canvas1.setAttribute('aria-label', getStagingAlt('stagedResultAlt', { suffix }));
     }
 
-    if (stagingErrorRetryBtn) {
-      stagingErrorRetryBtn.addEventListener('click', () => {
-        hideStagingError();
-        // Trigger the file picker so the user can upload a new image
-        if (stageFileInput) stageFileInput.click();
-      });
-    }
+    // No retry button on the rejection panel: "Upload Another" (#new-upload) is in the
+    // viewer header above it and stays live behind the panel, so one was the other twice.
     // Furniture reference photos live in their own island (scripts/app/furniture-refs.js);
     // the entry reads the accumulated files via getFiles() and resets them on new upload.
     const furnitureRefs = createFurnitureRefs({ getStagingAlt });
@@ -283,7 +280,7 @@ import { initStagingEntry } from './app/staging-entry.js';
         if (currentImageFile === checkForFile) {
           stageValidationResult = result;
           if (result.valid === false) {
-            showStagingError(unstageableMessage(result));
+            showStagingError(unstageableMessage(result), result);
           }
         }
       });

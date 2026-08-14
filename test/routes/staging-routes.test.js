@@ -88,6 +88,30 @@ test('validate-image: a refused upload is RECORDED as a rejection', async () => 
   }]);
 });
 
+test('validate-image: EXTERIOR relays and records like any other category', async () => {
+  // The category that sends the user somewhere rather than away. Two things have to
+  // survive the route: the CODE, because the browser keys the Exterior Studio button off
+  // it and a stripped code degrades to a plain sentence with no hand-off; and the log
+  // row, because the rejection funnel is the only way to learn whether the boundary was
+  // drawn in the right place once real photos meet it.
+  const rejections = [];
+  app = await mountStaging({
+    getAuthUserFromRequest: () => ({ id: 'u_test', email: 'u@x.com', plan: 'free' }),
+    validateStageableImage: async () => ({
+      valid: false, code: 'EXTERIOR', reason: 'This looks like a photo of a building from the outside.',
+    }),
+    logRejectionToFile: (kind, code, detail, who) => rejections.push({ kind, code, detail, email: who.email, userId: who.userId }),
+  });
+  const res = await postJson(app.baseUrl, '/api/validate-image', { image: IMAGE });
+  const body = await res.json();
+
+  assert.equal(res.status, 200);
+  assert.equal(body.valid, false);
+  assert.equal(body.code, 'EXTERIOR', 'without the code there is no button, only a sentence');
+  assert.equal(rejections.length, 1);
+  assert.equal(rejections[0].code, 'EXTERIOR');
+});
+
 test('validate-image: an ACCEPTED upload records nothing', async () => {
   const rejections = [];
   app = await mountStaging({

@@ -517,7 +517,6 @@
       "qualityGeneration": "Modelo Stagify+",
       "imageGenerations": "Generaciones de imagen",
       "addPhotos": "+ Añadir fotos",
-      "tryAnotherImage": "Probar otra imagen",
       "uploadAreaAria": "Área de carga",
       "uploadHeadline": "Suelta aquí la foto de tu habitación",
       "uploadFormats": "JPG, PNG, WebP o HEIC · hasta 25 MB",
@@ -763,7 +762,12 @@
       "DOCUMENT": "Esto parece una captura de pantalla o un documento. Sube la foto de una habitación, un espacio o un mueble.",
       "VEHICLE": "Esto parece la foto de un vehículo. Sube la foto de una habitación, un espacio o un mueble.",
       "UNRELATED_OBJECT": "Esto no parece una habitación, un espacio ni un mueble. Sube la foto del espacio o el mueble que quieras diseñar.",
+      "EXTERIOR": "Esto parece el exterior de un edificio. Nuestro Estudio de Exteriores es la herramienta de Stagify+ para fachadas.",
       "UNSTAGEABLE": "Esto no parece una habitación, un espacio ni un mueble. Sube la foto de una habitación, un espacio exterior o un mueble que quieras diseñar."
+    },
+    "unstageableCta": {
+      "exteriorOpen": "Abrir el Estudio de Exteriores",
+      "exteriorUpgrade": "Consigue Stagify+"
     },
     "heicConvert": "No pudimos leer esa foto HEIC. Prueba con un JPG o PNG.",
     "fileType": "Por favor sube un archivo de imagen JPG, PNG, WebP o HEIC.",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "Estudio de Máscaras",
     "subtitle": "Resalta zonas de tu habitación en distintos colores, dale a cada una su propio mueble y decóralas todas a la vez. Solo las zonas resaltadas pueden cambiar, así que el resto de tu foto queda intacto.",
+    "exteriorTitle": "Esa foto es para el Estudio de Exteriores",
     "gateTitle": "El Estudio de Máscaras es una función de Stagify+",
     "gateBody": "Inicia sesión con una cuenta Stagify+ para resaltar varias zonas de una foto, darle a cada una sus propios muebles y escenificarlas todas a la vez, con máscaras de precisión que no pueden tocar el resto de tu foto.",
     "gateCta": "Ver Stagify+",

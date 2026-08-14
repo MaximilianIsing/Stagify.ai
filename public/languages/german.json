@@ -517,7 +517,6 @@
       "qualityGeneration": "Stagify+ Modell",
       "imageGenerations": "Bildgenerierungen",
       "addPhotos": "+ Fotos hinzufügen",
-      "tryAnotherImage": "Anderes Bild versuchen",
       "uploadAreaAria": "Upload-Bereich",
       "uploadHeadline": "Ziehen Sie Ihr Raumfoto hierher",
       "uploadFormats": "JPG, PNG, WebP oder HEIC · bis 25 MB",
@@ -763,7 +762,12 @@
       "DOCUMENT": "Das sieht nach einem Screenshot oder Dokument aus. Bitte laden Sie das Foto eines Raums, einer Fläche oder eines Möbelstücks hoch.",
       "VEHICLE": "Das sieht nach dem Foto eines Fahrzeugs aus. Bitte laden Sie das Foto eines Raums, einer Fläche oder eines Möbelstücks hoch.",
       "UNRELATED_OBJECT": "Das sieht nicht nach einem Raum, einer Fläche oder einem Möbelstück aus. Bitte laden Sie das Foto des Raums oder Möbelstücks hoch, das Sie einrichten möchten.",
+      "EXTERIOR": "Das sieht nach der Außenansicht eines Gebäudes aus. Unser Außen-Studio ist das Stagify+-Werkzeug für Fassaden.",
       "UNSTAGEABLE": "Das sieht nicht nach einem Raum, einer Fläche oder einem Möbelstück aus. Bitte laden Sie das Foto eines Innenraums, eines Außenbereichs oder eines Möbelstücks hoch, das Sie einrichten möchten."
+    },
+    "unstageableCta": {
+      "exteriorOpen": "Außen-Studio öffnen",
+      "exteriorUpgrade": "Stagify+ holen"
     },
     "heicConvert": "Wir konnten dieses HEIC-Foto nicht lesen. Bitte versuchen Sie es mit JPG oder PNG.",
     "fileType": "Bitte laden Sie eine JPG-, PNG-, WebP- oder HEIC-Bilddatei hoch.",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "Masken-Studio",
     "subtitle": "Markieren Sie Bereiche Ihres Raums in verschiedenen Farben, geben Sie jedem Bereich ein eigenes Möbelstück und richten Sie alle auf einmal ein. Nur die markierten Bereiche können sich ändern, der Rest Ihres Fotos bleibt pixelgenau erhalten.",
+    "exteriorTitle": "Das ist ein Fall fürs Außen-Studio",
     "gateTitle": "Das Masken-Studio ist eine Stagify+-Funktion",
     "gateBody": "Melden Sie sich mit einem Stagify+-Konto an, um mehrere Bereiche eines Fotos zu markieren, jedem eigene Möbel zu geben und alle auf einmal einzurichten – mit pixelgenauer Maskierung, die den Rest Ihres Fotos nicht antasten kann.",
     "gateCta": "Stagify+ ansehen",

@@ -14,11 +14,29 @@
 // /api/validate-image is mocked — no real Gemini call, no cost.
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
-import { openStageModalViaUI, roomPngBuffer, seedProSession, stubAnalytics } from './fixtures.js';
+import { openStageModalViaUI, roomPngBuffer, seedFreeSession, seedProSession, stubAnalytics } from './fixtures.js';
 
 const SERVER_ENGLISH = 'Server English that the pack should override.';
-const PACK_COPY = JSON.parse(fs.readFileSync('public/languages/english.json', 'utf8'))
-  .errors.unstageable.FOOD;
+const PACK = JSON.parse(fs.readFileSync('public/languages/english.json', 'utf8'));
+const PACK_COPY = PACK.errors.unstageable.FOOD;
+const CTA = PACK.errors.unstageableCta;
+
+/** Answer the gatekeeper with a fixed verdict. */
+const mockVerdict = (page, verdict) => page.route('**/api/validate-image', (route) =>
+  route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(verdict) }),
+);
+
+const EXTERIOR = { valid: false, code: 'EXTERIOR', reason: SERVER_ENGLISH };
+
+/** Open the stage modal and hand it a photo. */
+async function upload(page) {
+  await openStageModalViaUI(page);
+  await page.locator('#stage-file-input').setInputFiles({
+    name: 'room.png',
+    mimeType: 'image/png',
+    buffer: await roomPngBuffer(),
+  });
+}
 
 test.describe('Main tool — stageability reject', () => {
   test.beforeEach(async ({ page }) => {
@@ -55,6 +73,13 @@ test.describe('Main tool — stageability reject', () => {
     // The approved-upload test below shows it visible for this same pro session,
     // so this assertion cannot pass just because the FAB is never there.
     await expect(page.locator('#mask-edit-btn')).toBeHidden();
+
+    // The negative control for the EXTERIOR tests below: food has nowhere to go, so the
+    // hand-off button must stay down. Without this, a permanently-visible button would
+    // pass every assertion in this file. The panel is then a message with no button at
+    // all — deliberately, because "Upload Another" above it is the retry.
+    await expect(page.locator('#staging-error-viewer-cta')).toBeHidden();
+    await expect(page.locator('#new-upload')).toBeVisible();
   });
 
   test('an approved upload shows no rejection error', async ({ page }) => {
@@ -81,5 +106,64 @@ test.describe('Main tool — stageability reject', () => {
     // Pro session + a loaded photo: the FAB belongs on screen here. This is what
     // makes the hidden-FAB assertion in the reject test above non-vacuous.
     await expect(page.locator('#mask-edit-btn')).toBeVisible();
+  });
+
+  test('a house exterior offers a Stagify+ user the Exterior Studio', async ({ page }) => {
+    await mockVerdict(page, EXTERIOR);
+    await upload(page);
+
+    await expect(page.locator('#staging-error-viewer-text')).toHaveText(PACK.errors.unstageable.EXTERIOR);
+
+    const cta = page.locator('#staging-error-viewer-cta');
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveText(CTA.exteriorOpen);
+    await expect(cta).toHaveAttribute('href', /exterior-studio\.html$/);
+  });
+
+  test('the hand-off survives the retry-and-succeed round trip', async ({ page }) => {
+    // The stale-CTA regression. showStagingError() is reached from six call sites and
+    // only this one wants a button; if the writer did not actively clear it, the button
+    // would sit under the next message — or under a photo that was accepted.
+    //
+    // The retry goes through "Upload Another" in the viewer header, which is the whole
+    // reason the panel carries no retry button of its own: it stays live BEHIND the
+    // panel, which this flow also proves.
+    await mockVerdict(page, EXTERIOR);
+    await upload(page);
+    await expect(page.locator('#staging-error-viewer-cta')).toBeVisible();
+
+    await mockVerdict(page, { valid: true, code: null, reason: '' });
+    await page.locator('#new-upload').click();
+    await page.locator('#stage-file-input').setInputFiles({
+      name: 'room2.png',
+      mimeType: 'image/png',
+      buffer: await roomPngBuffer(),
+    });
+
+    await expect(page.locator('#staging-error-viewer')).toBeHidden();
+    await expect(page.locator('#staging-error-viewer-cta')).toBeHidden();
+  });
+});
+
+test.describe('Main tool — the exterior hand-off for a free account', () => {
+  // The ONLY surface where the upsell branch is reachable in a browser: /api/validate-image
+  // is 401 for anonymous visitors, and the Masking Studio gates free accounts before any
+  // upload happens. If this case is not covered here it is not covered anywhere.
+  test.beforeEach(async ({ page }) => {
+    await seedFreeSession(page);
+    await stubAnalytics(page);
+  });
+
+  test('a free account is offered Stagify+, and the label matches the destination', async ({ page }) => {
+    await mockVerdict(page, EXTERIOR);
+    await upload(page);
+
+    const cta = page.locator('#staging-error-viewer-cta');
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveText(CTA.exteriorUpgrade);
+    await expect(cta).toHaveAttribute('href', /stagify-plus\.html$/);
+    // The pairing is the point: "Open the Exterior Studio" pointing at a pricing table
+    // is a bait-and-switch, and it is one wrong branch away at all times.
+    await expect(cta).not.toHaveText(CTA.exteriorOpen);
   });
 });

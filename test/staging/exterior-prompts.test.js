@@ -494,6 +494,16 @@ test('the exterior check prompt never offers the VEHICLE digit', () => {
   assert.ok(EXTERIOR_IGNORED_CODES.has('5'), 'and must drop it even if the grader answers it anyway');
 });
 
+test('the exterior check prompt never offers the EXTERIOR digit', () => {
+  // The interior gate's `7` is the HAND-OFF that sends building exteriors to this studio.
+  // Honouring it here would refuse a facade at the tool built for facades — and, because
+  // the browser pairs an EXTERIOR verdict with a link to the Exterior Studio, it would
+  // offer the user a link to the page they are already on.
+  assert.equal(UNSTAGEABLE_CODES['7'].code, 'EXTERIOR', 'sanity: 7 is still EXTERIOR upstream');
+  assert.ok(!/^7 =/m.test(EXTERIOR_CHECK_PROMPT), 'the exterior gate must not list digit 7');
+  assert.ok(EXTERIOR_IGNORED_CODES.has('7'), 'and must drop it even if the grader answers it anyway');
+});
+
 test('the check prompt keeps the SHARED digit meanings for every code it does list', () => {
   // unstageable.js's header warns that a prompt drifting from its taxonomy silently
   // mislabels rejections ("the model says 4 = document, we tell the user vehicle"). Two
@@ -503,13 +513,13 @@ test('the check prompt keeps the SHARED digit meanings for every code it does li
   const expectations = { 1: 'person', 2: 'animal', 3: 'food', 4: 'screenshot', 6: 'other object' };
   for (const [digit, text] of listed) {
     if (digit === '0') continue;
-    assert.ok(expectations[digit], `digit ${digit} is not part of the shared taxonomy`);
+    assert.ok(expectations[digit], `digit ${digit} must not be offered by the exterior gate`);
     assert.ok(text.includes(expectations[digit]), `digit ${digit} must still mean "${expectations[digit]}"`);
   }
   assert.deepEqual(
     listed.map(([d]) => d).filter((d) => d !== '0').sort(),
     ['1', '2', '3', '4', '6'],
-    'exactly the shared codes minus VEHICLE',
+    'exactly the shared codes minus VEHICLE and EXTERIOR — the two this tool exists to accept',
   );
 });
 

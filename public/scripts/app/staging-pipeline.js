@@ -45,7 +45,7 @@ const STAGING_TIMEOUT_MS = 180000;
  *   hideStagingError: () => void,
  *   showBeforeView: () => void,
  *   isProUser: () => boolean,
- *   showStagingError: (message: string) => void,
+ *   showStagingError: (message: string, verdict?: { code?: string | null } | null) => void,
  *   messageForDailyLimitResponse: (errorData: any) => string,
  *   showStagingLimitInViewer: (message: string) => void,
  *   galleryNotice?: { show: (gallery: any) => void, clear: () => void } | null,
@@ -240,7 +240,9 @@ export function createStagingPipeline(deps) {
       progress.classList.add('hidden');
       progressBar.style.width = '0%';
       const message = unstageableMessage(result);
-      showStagingError(message);
+      // The verdict rides along too: EXTERIOR earns a link to the Exterior Studio beside
+      // the sentence, and only showStagingError knows whether one is already on screen.
+      showStagingError(message, result);
       const err = /** @type {Error & { code?: string }} */ (new Error(message));
       err.code = 'NOT_STAGEABLE';
       throw markSurfaced(err);

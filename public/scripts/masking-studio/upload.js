@@ -5,6 +5,7 @@
 // entry. The pendingFurnitureLayerId cursor is encapsulated here (via
 // beginFurniturePick) so it never becomes a cross-module shared var.
 import { unstageableMessage } from '../unstageable-message.js';
+import { unstageableCta } from '../unstageable-cta.js';
 import { MAX_IMAGE_BYTES } from '../app/image-file.js';
 
 /**
@@ -91,6 +92,34 @@ export function createUpload(deps) {
     }
   }
 
+  // One rejection category has somewhere to send the user: a building exterior belongs to
+  // the Exterior Studio. A toast cannot carry that — toast.js is textContent-only and
+  // clears itself after 4.2s — so it gets the page's own dialog shell instead.
+  //
+  // The upsell half of unstageableCta() is unreachable from here: masking-studio-app.js
+  // redirects anonymous visitors and gates free accounts behind #ms-pro-gate before any
+  // upload happens, so `action.upgrade` is always false. That is asserted in the unit test
+  // rather than branched on here, so the test is what speaks up if that gating changes.
+  function openExteriorGate(message, action) {
+    const gate = document.getElementById('ms-exterior-gate');
+    const body = document.getElementById('ms-exterior-body');
+    const go = /** @type {HTMLAnchorElement | null} */ (document.getElementById('ms-exterior-go'));
+    const back = document.getElementById('ms-exterior-back');
+    if (!gate || !go) { showToast(message, 'error'); return; }
+    if (body) body.textContent = message;
+    go.href = action.href;
+    gate.classList.add('active');
+    const close = () => { gate.classList.remove('active'); };
+    // A corner × that just closes. It deliberately does NOT re-open the file picker:
+    // the photo is already back out, so closing reveals the dropzone, and a picker
+    // springing open unasked is what an × is supposed to be the escape from.
+    if (back) back.onclick = close;
+    // Click-outside dismisses too, matching #ms-confirm and #ms-help. There is nothing
+    // behind this dialog to protect — the studio is empty by the time it opens.
+    gate.onclick = (e) => { if (e.target === gate) close(); };
+    go.focus();
+  }
+
   async function handleRoomFile(file) {
     if (!file) return;
     try {
@@ -143,7 +172,10 @@ export function createUpload(deps) {
       if (!stageable || stageable.valid !== false) return;
       if (state.base !== token) return;
       clearBaseImage();
-      showToast(unstageableMessage(stageable), 'error');
+      const message = unstageableMessage(stageable);
+      const action = unstageableCta(stageable);
+      if (action) openExteriorGate(message, action);
+      else showToast(message, 'error');
     });
   }
 

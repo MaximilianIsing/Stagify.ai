@@ -517,7 +517,6 @@
       "qualityGeneration": "Stagify+ 模型",
       "imageGenerations": "图像生成数量",
       "addPhotos": "+ 添加照片",
-      "tryAnotherImage": "尝试另一张图片",
       "uploadAreaAria": "上传区域",
       "uploadHeadline": "将房间照片拖放到此处",
       "uploadFormats": "JPG、PNG、WebP 或 HEIC · 最大 25MB",
@@ -763,7 +762,12 @@
       "DOCUMENT": "这看起来像是截图或文档。请上传房间、空间或家具的照片。",
       "VEHICLE": "这看起来像是车辆照片。请上传房间、空间或家具的照片。",
       "UNRELATED_OBJECT": "这看起来不像房间、空间或家具。请上传您想装修的空间或家具的照片。",
+      "EXTERIOR": "这看起来像建筑物的外观照片。外立面请使用 Stagify+ 的外观工作室。",
       "UNSTAGEABLE": "这看起来不像房间、空间或家具。请上传您想装修的室内房间、室外空间或家具的照片。"
+    },
+    "unstageableCta": {
+      "exteriorOpen": "打开外观工作室",
+      "exteriorUpgrade": "获取 Stagify+"
     },
     "heicConvert": "无法读取该 HEIC 照片。请尝试 JPG 或 PNG。",
     "fileType": "请上传 JPG、PNG、WebP 或 HEIC 图片文件。",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "遮罩工作室",
     "subtitle": "用不同颜色标记房间的多个区域，为每个区域指定各自的家具，然后一次性完成布置。只有标记的区域会发生变化，照片的其余部分保持原样。",
+    "exteriorTitle": "这张照片适合外观工作室",
     "gateTitle": "遮罩工作室是 Stagify+ 专属功能",
     "gateBody": "使用 Stagify+ 账户登录，即可在一张照片上高亮标记多个区域，为每个区域指定各自的家具，并一次性完成全部布置，像素级精准的蒙版确保照片的其余部分不受影响。",
     "gateCta": "查看 Stagify+",

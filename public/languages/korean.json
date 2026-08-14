@@ -517,7 +517,6 @@
       "qualityGeneration": "Stagify+ 모델",
       "imageGenerations": "이미지 생성",
       "addPhotos": "+ 사진 추가",
-      "tryAnotherImage": "다른 이미지 시도",
       "uploadAreaAria": "업로드 영역",
       "uploadHeadline": "방 사진을 여기에 놓으세요",
       "uploadFormats": "JPG, PNG, WebP 또는 HEIC · 최대 25MB",
@@ -763,7 +762,12 @@
       "DOCUMENT": "스크린샷이나 문서로 보입니다. 방, 공간 또는 가구 사진을 업로드해 주세요.",
       "VEHICLE": "차량 사진으로 보입니다. 방, 공간 또는 가구 사진을 업로드해 주세요.",
       "UNRELATED_OBJECT": "방, 공간 또는 가구로 보이지 않습니다. 스테이징하려는 공간이나 가구 사진을 업로드해 주세요.",
+      "EXTERIOR": "건물 외부 사진 같습니다. 외관에는 Stagify+ 도구인 외관 스튜디오를 이용해 주세요.",
       "UNSTAGEABLE": "방, 공간 또는 가구로 보이지 않습니다. 실내 공간, 실외 공간 또는 스테이징하려는 가구 사진을 업로드해 주세요."
+    },
+    "unstageableCta": {
+      "exteriorOpen": "외관 스튜디오 열기",
+      "exteriorUpgrade": "Stagify+ 시작하기"
     },
     "heicConvert": "해당 HEIC 사진을 읽을 수 없습니다. JPG 또는 PNG를 사용해 보세요.",
     "fileType": "JPG, PNG, WebP 또는 HEIC 이미지 파일을 업로드해 주세요.",
@@ -1201,6 +1205,7 @@
   "maskingStudio": {
     "title": "마스킹 스튜디오",
     "subtitle": "방의 여러 영역을 서로 다른 색으로 표시하고, 각 영역에 가구를 지정해 한 번에 스테이징하세요. 표시한 영역만 바뀌므로 사진의 나머지 부분은 그대로 유지됩니다.",
+    "exteriorTitle": "그 사진은 외관 스튜디오용입니다",
     "gateTitle": "마스킹 스튜디오는 Stagify+ 기능입니다",
     "gateBody": "Stagify+ 계정으로 로그인하면 사진의 여러 영역을 하이라이트하고, 각 영역에 원하는 가구를 지정해 한 번에 스테이징할 수 있습니다. 사진의 나머지 부분에는 손대지 않는 픽셀 단위의 정밀한 마스킹으로요.",
     "gateCta": "Stagify+ 보기",

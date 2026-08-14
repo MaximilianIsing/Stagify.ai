@@ -2,9 +2,9 @@
 // which sentence a user sees when the upload gatekeeper rejects their photo.
 //
 // The module touches only window.LanguageSystem, so we stub that and run it directly
-// under node --test. The English-fallback branch is the one that matters today (no
-// errors.unstageable.* keys exist in the language packs yet); the translated branch is
-// what lights up as those keys land, so both are pinned here.
+// under node --test. Both branches are pinned: the translated one is what every language
+// takes today, and the English-fallback one is what a stale cached bundle takes when it
+// meets a code newer than its pack.
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -30,7 +30,7 @@ test('uses the translation when the language pack has the code', () => {
 });
 
 test('falls back to the server English when that code is not translated yet', () => {
-  // The state of every language today: pack loaded, but no errors.unstageable.* keys.
+  // A bundle older than the server: the pack loaded fine, it just predates this code.
   withLanguagePack({ 'hero.catchphrase': 'Sube. Escenifica. Imagina.' });
   const msg = unstageableMessage({ code: 'VEHICLE', reason: 'This looks like a photo of a vehicle.' });
   assert.equal(msg, 'This looks like a photo of a vehicle.', 'an untranslated code must not blank the toast');
@@ -51,6 +51,17 @@ test('a verdict with neither code nor reason falls back to the generic message',
   assert.equal(unstageableMessage({}), DEFAULT_UNSTAGEABLE_MESSAGE);
   assert.equal(unstageableMessage(null), DEFAULT_UNSTAGEABLE_MESSAGE);
   assert.equal(unstageableMessage(undefined), DEFAULT_UNSTAGEABLE_MESSAGE);
+});
+
+test('EXTERIOR resolves like any other category — the hand-off is the CTA, not the sentence', () => {
+  // The one code the browser pairs with a link. That link lives in unstageable-cta.js;
+  // this module must keep treating EXTERIOR as an ordinary rejection so the sentence
+  // still localizes and still degrades to English for an older pack.
+  withLanguagePack({ 'errors.unstageable.EXTERIOR': 'Das sieht nach einem Gebäude von außen aus.' });
+  assert.equal(
+    unstageableMessage({ code: 'EXTERIOR', reason: 'This looks like a photo of a building from the outside.' }),
+    'Das sieht nach einem Gebäude von außen aus.',
+  );
 });
 
 test('never returns an empty string — a rejection always explains itself', () => {
