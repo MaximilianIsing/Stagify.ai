@@ -143,14 +143,22 @@ export function createStagifyImages({ debug = false, config }) {
      * the prompt so the render contains those actual pieces. Null everywhere else, because
      * a normal post is staged from presets and passing references would quietly change what
      * the "after" is proving.
+     * `stampStyle` and `stampScale` are the badge controls the staging panel gives a
+     * customer: one of the four looks in lib/image/stamp-disclosure.js, and a size
+     * multiplier between 0.7 and 1.6. Undefined everywhere except a post whose SUBJECT is
+     * the badge, where the frame has to show it at a size Instagram's compression survives.
+     * They are ignored unless labelVirtuallyStaged is on, and processStaging normalises
+     * both, so a wrong value degrades to the default rather than failing the render.
      * @param {{ sourceBuffer: Buffer, roomType: string, furnitureStyle?: string,
      *           additionalPrompt?: string, removeFurniture?: boolean, promptOverride?: string,
-     *           labelVirtuallyStaged?: boolean, model?: string, reviewBasePrompt?: string,
+     *           labelVirtuallyStaged?: boolean, stampStyle?: string, stampScale?: number,
+     *           model?: string, reviewBasePrompt?: string,
      *           furnitureBuffers?: Buffer[]|null }} o
      */
     async stage({
       sourceBuffer, roomType, furnitureStyle, additionalPrompt,
       removeFurniture = false, promptOverride, labelVirtuallyStaged = false,
+      stampStyle, stampScale,
       model = config.models.staging, reviewBasePrompt, furnitureBuffers = null,
     }) {
       requireGemini('Staging');
@@ -165,6 +173,11 @@ export function createStagifyImages({ debug = false, config }) {
         roomType, furnitureStyle, additionalPrompt, removeFurniture,
         ...(promptOverride ? { promptOverride } : {}),
         ...(labelVirtuallyStaged ? { labelVirtuallyStaged: true } : {}),
+        // Only when the badge is on: stampVirtuallyStaged is the only reader, and it never
+        // runs otherwise. Kept out of params entirely when unset so an ordinary post's
+        // prompt payload is byte-identical to what it was before these two existed.
+        ...(labelVirtuallyStaged && stampStyle ? { stampStyle } : {}),
+        ...(labelVirtuallyStaged && stampScale !== undefined ? { stampScale } : {}),
         ...(reviewBasePrompt ? { reviewBasePrompt } : {}),
       };
 
