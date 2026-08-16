@@ -203,6 +203,13 @@ export function createAcquire({ config, repoRoot, stagify, stock, fal }) {
           // The disclosure lives in template chrome for these posts, matching what 07-25
           // and 07-27 already do, so a burned-in badge would repeat the same claim twice.
           labelVirtuallyStaged: brief.labelVirtuallyStaged ?? false,
+          // Both undefined unless the brief asks, and both ignored by stage() unless the
+          // badge is on. A post about the disclosure has to show the badge at a size that
+          // survives Instagram's compression, and the size slider is a control the product
+          // genuinely ships (0.7 to 1.6), so this is a real customer configuration rather
+          // than a special rendering path for the advertisement.
+          stampStyle: brief.stampStyle,
+          stampScale: brief.stampScale,
         });
 
         const candidate = { sourced, staged, attempt };
