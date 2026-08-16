@@ -14,7 +14,7 @@
 // 2. THE sendFile ROUTES SET A CACHE HEADER. The `setHeaders` callback in
 //    app-middleware.js only runs for files express.static itself serves. routes/public.js
 //    reaches around it with res.sendFile for `/`, `/privacy`, `/status`, the sitemap,
-//    robots.txt and all ten blog articles — those fell back to sendFile's default,
+//    robots.txt and all twelve blog articles — those fell back to sendFile's default,
 //    `Cache-Control: public, max-age=0`, rather than the `no-cache` that
 //    docs/reference/caching.md documents for every .html response. `/` is the homepage.
 //
@@ -76,9 +76,9 @@ test('every HTML/document route in routes/public.js goes through sendPage', () =
     'sendPage must set no-cache before sending',
   );
 
-  // The eleven blog articles plus /, /privacy, /status, robots.txt and sitemap.xml.
+  // The twelve blog articles plus /, /privacy, /status, robots.txt and sitemap.xml.
   const sendPageCalls = (publicRoutes.match(/sendPage\(res,/g) || []).length;
-  assert.equal(sendPageCalls, 16, `expected 16 sendPage() call sites, found ${sendPageCalls}`);
+  assert.equal(sendPageCalls, 17, `expected 17 sendPage() call sites, found ${sendPageCalls}`);
 
   // The remaining bare res.sendFile calls are deliberate, and each one is a NON-document
   // response that already owns its caching:

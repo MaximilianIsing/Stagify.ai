@@ -1796,7 +1796,7 @@
   </url>
   <url>
     <loc>https://stagify.ai/blog/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1863,6 +1863,12 @@
   <url>
     <loc>https://stagify.ai/blog/fsbo-listing-photos</loc>
     <lastmod>2026-08-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://stagify.ai/blog/new-construction-listing-photos</loc>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

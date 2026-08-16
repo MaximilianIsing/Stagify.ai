@@ -139,6 +139,10 @@ router.get('/blog/fsbo-listing-photos', (req, res) => {
   sendPage(res, path.join(__dirname, 'public', 'blog', 'fsbo-listing-photos.html'));
 });
 
+router.get('/blog/new-construction-listing-photos', (req, res) => {
+  sendPage(res, path.join(__dirname, 'public', 'blog', 'new-construction-listing-photos.html'));
+});
+
 router.get('/bimi-logo.svg', (req, res) => {
   res.setHeader('Content-Type', 'image/svg+xml');
   res.sendFile(path.join(__dirname, 'public', 'bimi-logo.svg'));
