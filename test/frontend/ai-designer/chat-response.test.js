@@ -424,3 +424,130 @@ test('only the most recent upload is annotated', async () => {
   assert.equal(h.history()[2].content[0].annotation, 'fresh');
   assert.equal(h.history()[0].content[0].annotation, undefined, 'the older turn is left alone');
 });
+
+// ---- blueprint (CAD) renders --------------------------------------------------
+//
+// This branch had NO coverage at all, which is how it stayed an `else if` behind
+// staging and generate while lib/chat/chat-post-routing.js ran all three
+// unconditionally. A turn that staged a room AND rendered a floor plan threw the floor
+// plan away in the browser: gone from the transcript, and gone from the history the
+// next turn is built from — so the model could not see the render it had just made.
+
+test('a CAD render is displayed and lands in the history', async () => {
+  const h = mount();
+
+  await send(h, jsonResponse({
+    response: 'Here is your floor plan, furnished.',
+    cadImage: 'blob:cad-1',
+    cadImageAnnotation: 'top-down furnished plan CAD: True',
+  }));
+
+  assert.deepEqual(h.calls.cards.map((c) => c.src), ['blob:cad-1']);
+  const images = imagesIn(h);
+  assert.equal(images.length, 1);
+  assert.equal(images[0].image_url.url, 'blob:cad-1');
+  assert.equal(images[0]._annotation, 'top-down furnished plan CAD: True',
+    'the CAD: True annotation must survive — the router reads it to keep follow-ups on the CAD path');
+  assert.deepEqual(h.calls.stripSyncs, [{ preferNewest: true }]);
+});
+
+test('a staged room AND a CAD render in the same turn both survive', async () => {
+  // The regression. As an else-if ladder this asserted 1 card and 1 history image.
+  const h = mount();
+
+  await send(h, jsonResponse({
+    response: 'Staged the bedroom and rendered the plan.',
+    stagedImage: 'blob:staged-1',
+    cadImage: 'blob:cad-1',
+  }));
+
+  assert.deepEqual(
+    h.calls.cards.map((c) => c.src),
+    ['blob:staged-1', 'blob:cad-1'],
+    'both images are rendered into the bubble',
+  );
+
+  const images = imagesIn(h);
+  assert.equal(images.length, 2, 'both images reach the history the next turn is built from');
+  assert.equal(images[0].isStaged, true);
+  assert.equal(images[1].isGenerated, true);
+
+  assert.equal(h.calls.messages.length, 1, 'the assistant text bubble is still added exactly once');
+  assert.equal(
+    h.history().filter((m) => m.role === 'assistant').length, 1,
+    'and exactly ONE history entry is pushed, carrying every image from the turn',
+  );
+});
+
+test('all three image kinds in one turn are kept, in pipeline order', async () => {
+  const h = mount();
+
+  await send(h, jsonResponse({
+    response: 'All three.',
+    stagedImages: ['blob:staged-1', 'blob:staged-2'],
+    generatedImage: 'blob:gen-1',
+    cadImages: ['blob:cad-1', 'blob:cad-2'],
+  }));
+
+  assert.deepEqual(
+    imagesIn(h).map((c) => c.image_url.url),
+    ['blob:staged-1', 'blob:staged-2', 'blob:gen-1', 'blob:cad-1', 'blob:cad-2'],
+  );
+  assert.equal(h.history().filter((m) => m.role === 'assistant').length, 1);
+});
+
+test('alt text follows the VIEW, per image', async () => {
+  // "3D render from floor plan" is right for a plan view and wrong for an eye-level one,
+  // which is a photograph of a room — and alt text is read by exactly the people who
+  // cannot see which of the two they were handed. `cadViews` ships on every CAD reply
+  // (unlike `cadParams`, which is set only in the multi-result branch), so a LONE render
+  // can be described correctly too.
+  const h = mount();
+
+  await send(h, jsonResponse({
+    response: 'Two renders.',
+    cadImages: ['blob:plan', 'blob:room'],
+    cadViews: ['top-down', 'eye-level'],
+  }));
+
+  const alts = h.calls.cards.map((c) => c.alt);
+  assert.match(alts[0], /above/i, 'the plan view is described as seen from above');
+  assert.match(alts[1], /inside/i, 'the interior view is described as photographed from inside');
+  assert.notEqual(alts[0], alts[1]);
+});
+
+test('a CAD reply with no cadViews still gets plan-view alt text', async () => {
+  // Degrades to the default rather than to an empty string — an older server, or a
+  // replayed body, must not strip the description.
+  const h = mount();
+
+  await send(h, jsonResponse({ response: 'One render.', cadImage: 'blob:plan' }));
+
+  assert.match(h.calls.cards[0].alt, /above/i);
+});
+
+test('multi-result CAD annotations are matched by index', async () => {
+  const h = mount();
+
+  await send(h, jsonResponse({
+    response: 'Two variations.',
+    cadImages: ['blob:cad-0', 'blob:cad-1'],
+    cadImageAnnotations: { cad_0: 'scandinavian CAD: True', cad_1: 'industrial CAD: True' },
+  }));
+
+  const images = imagesIn(h);
+  assert.equal(images[0]._annotation, 'scandinavian CAD: True');
+  assert.equal(images[1]._annotation, 'industrial CAD: True');
+});
+
+test('a CAD render does not consume the pending staging base name', async () => {
+  // rootBaseName names the DOWNLOAD of a staged run. A CAD render is not part of one,
+  // so it must not be tagged with the base name — but the name is still cleared, because
+  // the turn is over either way.
+  const h = mount({ pendingBase: 'living-room' });
+
+  await send(h, jsonResponse({ response: 'Rendered.', cadImage: 'blob:cad-1' }));
+
+  assert.equal(h.calls.cards[0].base, undefined, 'the CAD card carries no staging base name');
+  assert.equal(h.baseName(), null, 'the pending name is still cleared');
+});

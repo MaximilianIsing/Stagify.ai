@@ -48,11 +48,13 @@
       .ms-pro-gate__card h2 { margin: 0 0 12px; color: var(--brand-deep); font-size: 1.5rem; }
       .ms-pro-gate__card p { margin: 0 0 20px; color: #4b5563; line-height: 1.55; font-size: 15px; }
       /* The hand-off dialog is the only .ms-pro-gate card with a corner close control, so
-         it needs the positioning context .ms-help-close is absolute against — without it
+         it needs the positioning context .close-x--corner is absolute against — without it
          the × escapes to the nearest positioned ancestor, which is the full-screen
-         overlay. The heading padding keeps a long translated title clear of the glyph. */
+         overlay. The heading padding keeps a long translated title clear of the glyph:
+         the card pads 28px and the button spans 12–48px from the card edge, so it reaches
+         20px into the heading's box. */
       .ms-exterior-card { position: relative; }
-      .ms-exterior-card h2 { padding-right: 30px; }
+      .ms-exterior-card h2 { padding-right: 32px; }
       .ms-pro-gate__actions { display: flex; flex-direction: column; gap: 10px; }
       .ms-pro-gate__actions a { text-decoration: none; }
 
@@ -515,7 +517,7 @@
 
       /* --- Help dialog -------------------------------------------------------- */
       .ms-help-card { text-align: left; max-width: 540px; position: relative; }
-      .ms-help-card h2 { font-size: 1.25rem; padding-right: 30px; }
+      .ms-help-card h2 { font-size: 1.25rem; padding-right: 32px; }
       .ms-help-steps {
         margin: 0 0 18px;
         padding-left: 22px;
@@ -527,19 +529,6 @@
         gap: 8px;
       }
       .ms-help-card h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; color: var(--text-heading); }
-      .ms-help-close {
-        position: absolute;
-        top: 10px; right: 10px;
-        width: 28px; height: 28px;
-        border: none;
-        border-radius: 50%;
-        background: transparent;
-        color: var(--muted);
-        font-size: 18px;
-        line-height: 1;
-        cursor: pointer;
-      }
-      .ms-help-close:hover { background: rgba(17, 24, 39, 0.06); color: var(--text-heading); }
       /* Block + auto side margins, not the default inline-block: below 480px the global
          `.btn { max-width: 280px }` caps this button narrower than the card, and the card
          is text-align:left — so as an inline-block it lands flush against the left edge.

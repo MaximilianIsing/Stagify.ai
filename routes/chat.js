@@ -87,11 +87,18 @@ export default function createChatRouter(deps) {
    *
    * Only image-producing turns count: a plain chat message is a conversation, not a
    * render, and treating it as activation would make the signal meaningless.
+   *
+   * ALL THREE image-producing steps count — see chat-post-routing.js, which runs staging,
+   * generate and CAD unconditionally. `cadResults` was missing here, which reproduced the
+   * exact bug described above for anyone whose use of the tool is floor plans: they were
+   * classed as "signed up but never staged" and got the wrong lifecycle emails.
    * @param {any} user - The validated pro account for this request.
-   * @param {{ stagingResults?: any[], generatedImages?: any[] }} dispatch - The post-routing dispatch result.
+   * @param {{ stagingResults?: any[], generatedImages?: any[], cadResults?: any[] }} dispatch - The post-routing dispatch result.
    */
   function recordDesignerActivity(user, dispatch) {
-    const produced = (dispatch?.stagingResults?.length || 0) + (dispatch?.generatedImages?.length || 0);
+    const produced = (dispatch?.stagingResults?.length || 0)
+      + (dispatch?.generatedImages?.length || 0)
+      + (dispatch?.cadResults?.length || 0);
     if (produced > 0) recordStagingActivity(user);
   }
   const { applyMemoryActions, runGenerateRequests, resolveRecalledImage, resolveRequestedImage, runCadRequests, runStagingRequests, buildDesignerResponse, applyPostRoutingSuppression, logRoutingOutcome, beginChatStream, sendChatResponse } = createChatPipeline(deps);
@@ -258,6 +265,10 @@ router.post('/api/chat', genLimiter, async (req, res) => {
         history: messages,
         baseImageIndex,
         currentMessageHasImage: currentImage.hasImage,
+        // Same two collaborators the staging step gets: `req` carries the site language
+        // for the disclosure badge, `proUser` owns the gallery rows.
+        req,
+        user: proUser,
       },
     });
 
@@ -425,6 +436,10 @@ router.post('/api/chat-upload', genLimiter, chatUpload.array('files', 5), async 
         history: conversationHistory,
         baseImageIndex: baseImageIndexUpload,
         currentMessageHasImage,
+        // Same two collaborators the staging step gets: `req` carries the site language
+        // for the disclosure badge, `proUser` owns the gallery rows.
+        req,
+        user: proUser,
       },
     });
 

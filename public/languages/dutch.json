@@ -243,7 +243,7 @@
           "eyebrow": "Voor wie het is",
           "caption": "Eén-op-één de foto’s van een makelaar stylen",
           "title": "Gemaakt voor makelaars, verkopers en kopers",
-          "body": "Makelaars promoten elke advertentie in minuten in plaats van te wachten op een stylingteam. Verkopers stylen hun eigen foto’s zonder iemand in te huren. Kopers bekijken een verbouwing voordat ze zich vastleggen. En met AI-Designer verander je CAD-plattegrond-PDF’s in fotorealistische 3D-kamerrenders.",
+          "body": "Makelaars promoten elke advertentie in minuten in plaats van te wachten op een stylingteam. Verkopers stylen hun eigen foto’s zonder iemand in te huren. Kopers bekijken een verbouwing voordat ze zich vastleggen. En met AI-Designer maak je van een plattegrond een ingerichte weergave van bovenaf — of stap je een kamer binnen voor een fotorealistische render.",
           "p1": "Makelaars: sneller adverteren en meer deals sluiten",
           "p2": "Verkopers & kopers: geen software, geen ontwerper nodig",
           "p3": "AI-Designer: agentische kamerstyling"
@@ -327,7 +327,7 @@
         "name": "Stagify+",
         "tag": "Voor individuen",
         "per": "/ maand",
-        "f1": "Onbeperkte styling-generaties",
+        "f1": "Meubelreferenties: stylen met meubels die jij kiest",
         "f2": "Hogere-kwaliteit afbeeldingsmodel",
         "f3": "Meerdere variaties per generatie",
         "f4": "Maskeertool om elk gebied te bewerken",
@@ -424,13 +424,11 @@
     },
     "contactCta": {
       "title": "Onze inbox staat altijd open",
-      "subtitle": "Vragen, feedback of ideeën? We lezen elk bericht en reageren zo snel als we kunnen.",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Geniet je van Stagify?",
-      "subtitle": "Blij met je advertenties? Laat een Google-review achter en help anderen ons te vinden.",
       "button": "Laat een Google-review achter",
       "aria": "Laat een Google-review achter (opent in een nieuw tabblad)"
     }
@@ -464,7 +462,6 @@
     },
     "staging": {
       "title": "Opties",
-      "close": "x",
       "roomType": "Kamertype",
       "furnitureStyle": "Meubelstijl",
       "additionalPrompt": "Extra prompting",
@@ -559,7 +556,19 @@
       "uploadAnotherShort": "Opnieuw",
       "downloadResultShort": "Download",
       "galleryEvicted": "Oudere stagings zijn verwijderd om ruimte te maken. Het gratis plan bewaart de meest recente.",
-      "galleryEvictedShared": "Een oudere staging had een actieve deellink, die niet meer werkt."
+      "galleryEvictedShared": "Een oudere staging had een actieve deellink, die niet meer werkt.",
+      "plusRail": {
+        "title": "Wat Stagify+ aan deze foto kan toevoegen",
+        "hide": "Niet meer tonen",
+        "items": {
+          "remove": "Bestaande meubels verwijderen",
+          "model": "Beter afbeeldingsmodel",
+          "variations": "Meerdere afbeeldingsvarianten",
+          "references": "Meubelreferenties",
+          "mask": "Maskerbewerking",
+          "gallery": "Onbeperkte galerij"
+        }
+      }
     }
   },
   "roomTypes": {
@@ -879,7 +888,6 @@
       "keywords": "AI-Designer, AI-ontwerpassistent, ontwerpconsultatie, AI-chat, ontwerphulp, interieurontwerp AI"
     },
     "title": "AI-Designer",
-    "description": "Zet je CAD-plattegrond-PDF’s om in fotorealistische 3D-interieurvisualisaties",
     "statusMessages": {
       "generating": [
         "afbeelding genereren...",
@@ -901,6 +909,17 @@
         "het ontwerp maken...",
         "de indeling genereren...",
         "details verfijnen...",
+        "bijna klaar..."
+      ],
+      "floorplan": [
+        "je plattegrond wordt gelezen...",
+        "de kamers worden opgemeten...",
+        "de indeling wordt gemaakt...",
+        "muren, deuren en ramen plaatsen...",
+        "de kamers worden ingericht...",
+        "de verlichting wordt ingesteld...",
+        "de weergave wordt gerenderd...",
+        "de laatste details...",
         "bijna klaar..."
       ],
       "analyzing": [
@@ -935,41 +954,11 @@
       ]
     },
     "emptyState": "Begin een gesprek door een bericht te typen of een bestand te uploaden",
-    "welcomeFallback": "Hoi! Ik ben je Stagify AI-Designer. Vertel me wat je voor je ziet, of upload een kamerfoto, en we ontwerpen het samen. Een paar dingen die ik kan:\n• **Lege kamers stylen**: richt een kale ruimte in elke stijl in\n• **Bestaande kamers herontwerpen**: restyle, wissel meubilair of verander de hele sfeer\n• **Plattegrond → kamer**: verander een plattegrond in een fotorealistische, ingerichte render\n• **Verfijnen terwijl we chatten**: pas de kleuren, stukken en indeling aan tot het goed voelt\nWaar wil je beginnen?",
+    "welcomeFallback": "Hoi! Ik ben je Stagify AI-Designer. Vertel me wat je voor je ziet, of upload een kamerfoto, en we ontwerpen het samen. Een paar dingen die ik kan:\n• **Lege kamers stylen**: richt een kale ruimte in elke stijl in\n• **Bestaande kamers herontwerpen**: restyle, wissel meubilair of verander de hele sfeer\n• **Plattegrond → kamer**: richt een plattegrond van bovenaf in, of stap een kamer binnen voor een foto\n• **Verfijnen terwijl we chatten**: pas de kleuren, stukken en indeling aan tot het goed voelt\nWaar wil je beginnen?",
     "uploadFile": "Bestand uploaden",
     "inputPlaceholder": "Typ je bericht...",
     "sendButton": "Versturen",
-    "uploadArea": "Upload een PDF of sleep en zet neer",
     "uploadSubtext": "Ondersteund: PDF-bestanden",
-    "options": {
-      "title": "Verwerkingsopties",
-      "skip": "Eerste pagina’s overslaan",
-      "skipHint": "Sla omslag- en titelpagina’s over",
-      "concurrency": "Verwerkingssnelheid",
-      "concurrencyHint": "Hogere snelheden kunnen de verwerkingstijd per kamer verhogen",
-      "dpi": "Afbeeldingskwaliteit (DPI)",
-      "dpiHint": "Hogere DPI levert betere kwaliteit maar duurt langer"
-    },
-    "processButton": "PDF verwerken",
-    "progress": {
-      "uploading": "PDF uploaden…",
-      "processing": "PDF verwerken…",
-      "complete": "Klaar!"
-    },
-    "result": {
-      "title": "Verwerking voltooid!",
-      "description": "Je verwerkte PDF is klaar om te downloaden.",
-      "download": "Verwerkte PDF downloaden",
-      "uploadAnother": "Nog een PDF uploaden"
-    },
-    "info": {
-      "title": "Hoe het werkt",
-      "step1": "Upload je CAD-plattegrond-PDF",
-      "step2": "Onze AI identificeert kamers en haalt plattegronddetails eruit",
-      "step3": "Elke kamer wordt omgezet in een fotorealistische 3D-visualisatie",
-      "step4": "Download je verwerkte PDF met 3D-renders (duurt meestal 2 minuten)",
-      "note": "Let op: verwerking duurt doorgaans ongeveer 2 minuten. Heb even geduld terwijl onze AI je 3D-renders genereert."
-    },
     "status": {
       "fileReady": "Bestand klaar"
     },
@@ -1002,7 +991,8 @@
       "uploadPreview": "Voorbeeld van geüpload bestand: {filename}",
       "stagedRoom": "AI-gestylede kamer{suffix}",
       "generatedImage": "AI-gegenereerde ontwerpafbeelding{suffix}",
-      "cadRender": "3D-render van plattegrond{suffix}",
+      "cadRender": "Ingerichte plattegrond van bovenaf{suffix}",
+      "cadRenderInterior": "Kamer uit de plattegrond, van binnenuit gefotografeerd{suffix}",
       "recalledImage": "Eerder gedeelde afbeelding uit dit gesprek",
       "requestedImage": "Afbeelding opgevraagd uit gespreksgeschiedenis",
       "editedImage": "Met masker bewerkte ontwerpafbeelding{suffix}",
@@ -1435,33 +1425,6 @@
       "noCommitment": "Geen verplichtingen",
       "manage": "Abonnement beheren of opzeggen"
     },
-    "features": {
-      "heading": "Alles wat je nodig hebt om als een pro te stylen",
-      "remove": {
-        "title": "Bestaande meubels verwijderen",
-        "desc": "Wis meubels, rommel en decoratie en stijl de lege ruimte helemaal opnieuw."
-      },
-      "designer": {
-        "title": "AI Designer",
-        "desc": "Beschrijf in gewone taal wat je wilt en verfijn elk resultaat in een gesprek."
-      },
-      "masking": {
-        "title": "Maskergereedschap",
-        "desc": "Schilder over een willekeurig gebied om alleen dat deel van de foto te wijzigen of aan te passen."
-      },
-      "studio": {
-        "title": "Masking Studio",
-        "desc": "Markeer meerdere gebieden in verschillende kleuren, geef elk zijn eigen meubelfoto en stijl ze allemaal tegelijk. Genereer meerdere versies per gebied en behoud de beste."
-      },
-      "references": {
-        "title": "Meubelreferenties",
-        "desc": "Upload productfoto’s om ruimtes te stylen met specifieke meubelstukken die jij kiest."
-      },
-      "exterior": {
-        "title": "Buitenstudio",
-        "desc": "Herstel de foto waarmee elke advertentie opent. Verander het tijdstip, maak een grauwe lucht helder en verwijder auto’s en containers, terwijl de woning zelf precies blijft zoals gefotografeerd."
-      }
-    },
     "compare": {
       "heading": "Abonnementen vergelijken",
       "feature": "Functie",
@@ -1469,6 +1432,7 @@
       "included": "Inbegrepen",
       "notIncluded": "Niet inbegrepen",
       "unlimitedValue": "Onbeperkt",
+      "tipAria": "Wat dit betekent",
       "rows": {
         "customizable": "Aanpasbare styling",
         "fastModel": "Snel beeldmodel",
@@ -1482,6 +1446,20 @@
         "variations": "Meerdere variaties per generatie",
         "references": "Meubelreferenties",
         "exterior": "Buitenstudio (uitstraling)"
+      },
+      "tips": {
+        "gallery": "Opgeslagen renders blijven in je account — open ze opnieuw, download ze nog eens of stuur een klant een deellink. Een gratis galerij bewaart alleen je recentste ruimtes en laat de oudste vallen zodra er nieuwe bij komen; bij Stagify+ verdwijnt er nooit iets.",
+        "customizable": "Kies het ruimtetype en de meubelstijl voordat je genereert, zodat een babykamer niet terugkomt als thuiskantoor en een kustbriefing niet als mid-century. De volledige set ruimtes en stijlen zit in beide abonnementen.",
+        "fastModel": "De standaardgenerator, afgestemd op snelheid. Hij komt binnen enkele seconden terug, precies wat je wilt terwijl je nog ruimtetypes en stijlen tegen elkaar uitprobeert. Beschikbaar in elk abonnement.",
+        "unlimited": "Stage zoveel foto’s als je wilt. Er zijn in geen van beide abonnementen credits te kopen en er zijn geen kosten per render — Stagify+ verandert wat een generatie kan, niet hoeveel je er krijgt.",
+        "hqModel": "Een tragere, zorgvuldigere generator voor precies het beeld dat op de advertentie komt. Hij houdt rechte lijnen, raamlicht en reflecties veel beter bij elkaar, zodat de meubels in de kamer staan en niet erbovenop.",
+        "remove": "Eén vinkje en de kamer wordt eerst leeggehaald — banken, rommel, wandkunst, alles — en daarna vanaf nul opnieuw ingericht. Dit heb je nodig bij een bewoonde woning, waar stagen over de meubels van de verkoper heen er nooit goed uitziet.",
+        "designer": "Een chatvenster met je foto erin. Vraag in gewone taal wat je wilt en blijf hetzelfde beeld over meerdere beurten verfijnen — warmer hout, dat kleed weg, eens als babykamer — in plaats van elke keer een nieuwe render te starten.",
+        "masking": "Schilder over een deel van het resultaat en verander alleen dat. Alles buiten het penseel blijft pixel voor pixel onaangeroerd, zodat je één stoel kunt vervangen of één muur kunt overschilderen zonder de hele kamer opnieuw te draaien.",
+        "studio": "De volledige versie van maskeren. Markeer meerdere gebieden in verschillende kleuren, geef elk gebied een eigen briefing of een eigen meubelfoto en stage ze allemaal in één keer — genereer daarna een paar opties per gebied en houd de beste.",
+        "exterior": "Voor de foto waarmee elke advertentie opent. Verander het tijdstip van de dag, ruim een vlakke grijze lucht op en haal geparkeerde auto’s en containers weg, terwijl het pand zelf precies blijft zoals het gefotografeerd is.",
+        "variations": "Vraag in één keer meerdere versies van dezelfde briefing. Ze verschillen in indeling en meubelkeuze in plaats van twee keer dezelfde render te zijn, zodat je echt iets te kiezen hebt in plaats van te blijven draaien tot er één klopt.",
+        "references": "Upload een productfoto — een concrete bank, een bed of een eetkamerset — en de kamer wordt met dat exemplaar ingericht in plaats van met iets vaag vergelijkbaars. Handig als een klant, een bouwer of een stylist de meubels al heeft gekozen."
       }
     },
     "enterpriseRow": "Voor teams of ondernemingen <a href=\"enterprise.html\">ontdek je ons enterprise-abonnement</a> of neem contact op met <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> voor persoonlijke abonnementsopties.",
@@ -1604,25 +1582,25 @@
   },
   "exteriorStudio": {
     "title": "Buitenstudio",
-    "subtitle": "De eerste foto van elke advertentie is de buitenkant van het huis, en dat is de ene opname die je niet opnieuw maakt als het weer omslaat. Upload hem hier en krijg de versie van een mooiere dag.",
+    "subtitle": "De ene foto die u niet opnieuw kunt maken als het weer omslaat. Corrigeer het licht, de lucht en de rommel, en laat het huis met rust.",
     "ctaUpgrade": "Krijg Stagify+ om het te gebruiken",
     "features": {
-      "title": "Wat het verandert, en wat het nooit aanraakt",
+      "title": "Wat het verandert",
       "light": {
         "title": "Tijdstip van de dag",
-        "body": "Fotografeer op het middaguur, publiceer in het gouden uur. Ochtend, middag, gouden uur of schemering, met schaduwen en raamlicht die kloppen met de gekozen zon."
+        "body": "Fotografeer om twaalf uur, publiceer op het gouden uur, met schaduwen en raamlicht die kloppen."
       },
       "sky": {
         "title": "Lucht en weer",
-        "body": "Een vlakke grijze lucht wordt helderblauw, licht bewolkt of juist dramatischer, afgestemd op het licht dat al op het pand valt, met schone randen langs de daklijn."
+        "body": "Vlak grijs wordt helderblauw, lichte bewolking of iets dramatischers, met schone randen langs de daklijn."
       },
       "clutter": {
         "title": "Auto’s, rommel en sneeuw",
-        "body": "Het busje van de buren op de oprit, de containers die buiten staan, de tuinslang op het gazon, de voorbijganger, en de sneeuw, regen en plassen die er toevallig lagen op de dag van de opname. Tijdelijke dingen verdwijnen, en het oppervlak eronder wordt passend hersteld."
+        "body": "Tijdelijke dingen verdwijnen, en de grond eronder wordt passend hersteld."
       },
       "honest": {
         "title": "Het huis blijft het huis",
-        "body": "Geen nieuw gazon, geen weggepoetste stroomkabels, geen nieuwe oprit, geen overgeschilderde muren. Wie aan de stoep staat ziet wat de foto liet zien, en daardoor blijft de foto bruikbaar in een advertentie."
+        "body": "Geen nieuw gazon, geen weggehaalde stroomkabels, geen nieuwe oprit, geen verfbeurt."
       }
     },
     "upload": {

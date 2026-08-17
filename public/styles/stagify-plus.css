@@ -390,61 +390,6 @@
         cursor: wait;
       }
 
-      /* ---- Feature grid ---- */
-      .sp-features-section {
-        width: 100%;
-        max-width: 1000px;
-      }
-      .sp-feature-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 1rem;
-      }
-      @media (max-width: 840px) {
-        .sp-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      }
-      @media (max-width: 520px) {
-        .sp-feature-grid { grid-template-columns: 1fr; }
-      }
-      .sp-feature {
-        padding: 1.3rem 1.25rem;
-        border-radius: 17px;
-        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-      }
-      .sp-feature:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 20px 40px -18px rgba(30, 58, 138, 0.4);
-        border-color: rgba(37, 99, 235, 0.4);
-      }
-      .sp-feature-ico {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        display: grid;
-        place-items: center;
-        background: linear-gradient(135deg, var(--primary-light), var(--brand-deep));
-        color: var(--bg-elevated);
-        margin-bottom: 0.8rem;
-        box-shadow: 0 6px 16px -6px rgba(37, 99, 235, 0.6);
-      }
-      .sp-feature-ico svg {
-        width: 21px;
-        height: 21px;
-      }
-      .sp-feature h3 {
-        margin: 0 0 0.3rem;
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--sp-ink);
-        letter-spacing: -0.01em;
-      }
-      .sp-feature p {
-        margin: 0;
-        font-size: 0.84rem;
-        line-height: 1.5;
-        color: var(--sp-muted);
-      }
-
       /* ---- Comparison table ---- */
       .sp-compare {
         width: 100%;
@@ -536,6 +481,104 @@
       .sp-feature-table tbody tr:last-child th,
       .sp-feature-table tbody tr:last-child td {
         border-bottom: none;
+      }
+
+      /* ---- Row explanations ----
+         The ⓘ button and the label are laid out together so a wrapping label keeps the
+         button on its last line rather than orphaning it below. Baseline alignment, not
+         centre: on a two-line label a centred glyph floats between the lines. */
+      .sp-feature-table tbody th {
+        line-height: 1.4;
+      }
+      .sp-row-label {
+        margin-right: 0.34rem;
+      }
+      .sp-tip-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        vertical-align: -0.16em;
+        width: 17px;
+        height: 17px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: none;
+        color: #94a3b8;
+        cursor: help;
+        transition: color 0.15s ease, background-color 0.15s ease;
+      }
+      .sp-tip-btn svg {
+        width: 15px;
+        height: 15px;
+        display: block;
+      }
+      .sp-tip-btn:hover,
+      .sp-tip-btn[aria-expanded='true'] {
+        color: var(--sp-blue);
+      }
+      .sp-tip-btn:focus-visible {
+        outline: 2px solid var(--sp-blue);
+        outline-offset: 2px;
+        color: var(--sp-blue);
+      }
+      /* The 17px glyph is smaller than the 24px WCAG target, so the hit area is grown
+         with a pseudo-element instead of with padding — padding would push the label's
+         baseline around, and these sit inline in running text. */
+      .sp-tip-btn::before {
+        content: '';
+        position: absolute;
+        inset: -6px;
+        border-radius: 50%;
+      }
+
+      /* The portal bubble. Fixed and parented to <body> because both of the table's
+         wrappers clip (see scripts/stagify-plus-tips.js); left/top are written by that
+         script, so nothing here may position it. */
+      .sp-tip-pop {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1200;
+        max-width: min(320px, calc(100vw - 24px));
+        padding: 0.6rem 0.72rem;
+        border-radius: 10px;
+        background: var(--sp-navy);
+        color: #eef2ff;
+        font-size: 0.795rem;
+        font-weight: 400;
+        line-height: 1.5;
+        text-align: left;
+        box-shadow: 0 14px 34px -12px rgba(15, 31, 75, 0.7);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.14s ease, visibility 0.14s ease;
+      }
+      .sp-tip-pop--open {
+        opacity: 1;
+        visibility: visible;
+      }
+      /* --sp-tip-arrow is the trigger's centre measured from the bubble's own left edge,
+         so a bubble clamped against the viewport still points at its row. */
+      .sp-tip-pop::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: var(--sp-tip-arrow, 50%);
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: var(--sp-navy);
+      }
+      .sp-tip-pop--below::after {
+        top: auto;
+        bottom: 100%;
+        border-top-color: transparent;
+        border-bottom-color: var(--sp-navy);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .sp-tip-pop { transition: none; }
       }
 
       /* ---- Enterprise + footer links ---- */

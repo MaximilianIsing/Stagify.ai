@@ -116,8 +116,10 @@ export function slugifyName(s) {
 export function messageTypeFromTag(tag) {
   switch (tag) {
     case 'generate': return 'generating';
-    case 'stage':
-    case 'cad-stage': return 'staging';
+    case 'stage': return 'staging';
+    // Its own category, not 'staging': a floor-plan render is a ~30s Pro-model call, and
+    // "staging your room…" described neither the work nor the wait.
+    case 'cad-stage': return 'floorplan';
     case 'describe': return 'analyzing';
     default: return 'general';
   }

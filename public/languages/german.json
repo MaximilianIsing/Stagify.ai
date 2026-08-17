@@ -243,7 +243,7 @@
           "eyebrow": "Für wen es ist",
           "caption": "Im persönlichen Gespräch werden die Fotos eines Maklers eingerichtet",
           "title": "Gemacht für Makler, Verkäufer und Käufer",
-          "body": "Makler vermarkten jedes Angebot in Minuten, statt auf ein Staging-Team zu warten. Verkäufer richten ihre eigenen Fotos ein, ohne jemanden zu beauftragen. Käufer sehen eine Renovierung in der Vorschau, bevor sie sich festlegen. Und mit dem KI-Designer verwandeln Sie CAD-Grundriss-PDFs in fotorealistische 3D-Raumrenderings.",
+          "body": "Makler vermarkten jedes Angebot in Minuten, statt auf ein Staging-Team zu warten. Verkäufer richten ihre eigenen Fotos ein, ohne jemanden zu beauftragen. Käufer sehen eine Renovierung in der Vorschau, bevor sie sich festlegen. Und mit dem KI-Designer verwandeln Sie einen Grundriss in eine möblierte Draufsicht — oder gehen in einen beliebigen Raum hinein für ein fotorealistisches Rendering.",
           "p1": "Makler: früher inserieren und mehr abschließen",
           "p2": "Verkäufer & Käufer: keine Software, kein Designer nötig",
           "p3": "KI-Designer: agentenbasiertes Raum-Staging"
@@ -327,7 +327,7 @@
         "name": "Stagify+",
         "tag": "Für Einzelpersonen",
         "per": "/ Monat",
-        "f1": "Unbegrenzte Staging-Generierungen",
+        "f1": "Möbelreferenzen: Staging mit Möbeln Ihrer Wahl",
         "f2": "Hochwertigeres Bildmodell",
         "f3": "Mehrere Variationen pro Generierung",
         "f4": "Maskierungstool zum Bearbeiten beliebiger Bereiche",
@@ -424,13 +424,11 @@
     },
     "contactCta": {
       "title": "Unser Postfach ist immer offen",
-      "subtitle": "Fragen, Feedback oder Ideen? Wir lesen jede Nachricht und antworten schnellstmöglich.",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Gefällt dir Stagify?",
-      "subtitle": "Gefallen dir deine Inserate? Eine Google-Bewertung hilft anderen, uns zu finden.",
       "button": "Google-Bewertung abgeben",
       "aria": "Google-Bewertung abgeben (öffnet in neuem Tab)"
     }
@@ -464,7 +462,6 @@
     },
     "staging": {
       "title": "Optionen",
-      "close": "x",
       "roomType": "Raumtyp",
       "furnitureStyle": "Möbelstil",
       "additionalPrompt": "Zusätzliche Anweisung",
@@ -559,7 +556,19 @@
       "uploadAnotherShort": "Neu laden",
       "downloadResultShort": "Download",
       "galleryEvicted": "Ältere Renderings wurden entfernt, um Platz zu schaffen. Der kostenlose Plan behält die neuesten.",
-      "galleryEvictedShared": "Ein älteres Rendering hatte einen aktiven Freigabelink, der nicht mehr funktioniert."
+      "galleryEvictedShared": "Ein älteres Rendering hatte einen aktiven Freigabelink, der nicht mehr funktioniert.",
+      "plusRail": {
+        "title": "Was Stagify+ hinzufügen könnte",
+        "hide": "Nicht mehr anzeigen",
+        "items": {
+          "remove": "Vorhandene Möbel entfernen",
+          "model": "Besseres Bildmodell",
+          "variations": "Mehrere Bildvarianten",
+          "references": "Möbelreferenzen",
+          "mask": "Maskenbearbeitung",
+          "gallery": "Unbegrenzte Galerie"
+        }
+      }
     }
   },
   "roomTypes": {
@@ -879,7 +888,6 @@
       "keywords": "KI-Designer, KI-Design-Assistent, Designberatung, KI-Chat, Designhilfe, KI für Innenarchitektur"
     },
     "title": "KI-Designer",
-    "description": "Wandeln Sie Ihre CAD-Grundriss-PDFs in fotorealistische 3D-Innenraumvisualisierungen um",
     "statusMessages": {
       "generating": [
         "Bild wird erzeugt...",
@@ -902,6 +910,17 @@
         "Layout wird erzeugt...",
         "Details werden verfeinert...",
         "fast bereit..."
+      ],
+      "floorplan": [
+        "Grundriss wird gelesen...",
+        "Räume werden vermessen...",
+        "Raumaufteilung wird erstellt...",
+        "Wände, Türen und Fenster werden gesetzt...",
+        "Räume werden möbliert...",
+        "Beleuchtung wird eingestellt...",
+        "Ansicht wird gerendert...",
+        "letzter Feinschliff...",
+        "fast fertig..."
       ],
       "analyzing": [
         "Bild wird analysiert...",
@@ -935,41 +954,11 @@
       ]
     },
     "emptyState": "Starten Sie ein Gespräch, indem Sie eine Nachricht eingeben oder eine Datei hochladen",
-    "welcomeFallback": "Hallo! Ich bin Ihr KI-Designer von Stagify. Sagen Sie mir, was Ihnen vorschwebt, oder laden Sie ein Foto eines Raums hoch, und wir gestalten ihn gemeinsam. Ein paar Dinge, die ich kann:\n• **Leere Räume einrichten**: einen kahlen Raum in jedem Stil möblieren\n• **Bestehende Räume neu gestalten**: umgestalten, Möbel tauschen oder die ganze Stimmung ändern\n• **Grundriss → Raum**: einen Grundriss in ein fotorealistisches, möbliertes Rendering verwandeln\n• **Im Chat verfeinern**: Farben, Stücke und Anordnung anpassen, bis es sich richtig anfühlt\nWomit möchten Sie beginnen?",
+    "welcomeFallback": "Hallo! Ich bin Ihr KI-Designer von Stagify. Sagen Sie mir, was Ihnen vorschwebt, oder laden Sie ein Foto eines Raums hoch, und wir gestalten ihn gemeinsam. Ein paar Dinge, die ich kann:\n• **Leere Räume einrichten**: einen kahlen Raum in jedem Stil möblieren\n• **Bestehende Räume neu gestalten**: umgestalten, Möbel tauschen oder die ganze Stimmung ändern\n• **Grundriss → Raum**: einen Grundriss von oben möblieren oder für ein Foto in einen Raum hineingehen\n• **Im Chat verfeinern**: Farben, Stücke und Anordnung anpassen, bis es sich richtig anfühlt\nWomit möchten Sie beginnen?",
     "uploadFile": "Datei hochladen",
     "inputPlaceholder": "Geben Sie Ihre Nachricht ein...",
     "sendButton": "Senden",
-    "uploadArea": "PDF hochladen oder per Drag & Drop ablegen",
     "uploadSubtext": "Unterstützt: PDF-Dateien",
-    "options": {
-      "title": "Verarbeitungsoptionen",
-      "skip": "Erste Seiten überspringen",
-      "skipHint": "Deckblätter und Titelseiten überspringen",
-      "concurrency": "Verarbeitungsgeschwindigkeit",
-      "concurrencyHint": "Höhere Geschwindigkeiten können die Verarbeitungszeit pro Raum erhöhen",
-      "dpi": "Bildqualität (DPI)",
-      "dpiHint": "Höhere DPI liefern bessere Qualität, dauern aber länger"
-    },
-    "processButton": "PDF verarbeiten",
-    "progress": {
-      "uploading": "PDF wird hochgeladen…",
-      "processing": "PDF wird verarbeitet…",
-      "complete": "Fertig!"
-    },
-    "result": {
-      "title": "Verarbeitung abgeschlossen!",
-      "description": "Ihr verarbeitetes PDF steht zum Download bereit.",
-      "download": "Verarbeitetes PDF herunterladen",
-      "uploadAnother": "Weiteres PDF hochladen"
-    },
-    "info": {
-      "title": "So funktioniert es",
-      "step1": "Laden Sie Ihr CAD-Grundriss-PDF hoch",
-      "step2": "Unsere KI erkennt Räume und extrahiert Grundrissdetails",
-      "step3": "Jeder Raum wird in eine fotorealistische 3D-Visualisierung umgewandelt",
-      "step4": "Laden Sie Ihr verarbeitetes PDF mit 3D-Renderings herunter (dauert in der Regel 2 Minuten)",
-      "note": "Hinweis: Die Verarbeitung dauert in der Regel etwa 2 Minuten. Bitte haben Sie Geduld, während unsere KI Ihre 3D-Renderings erzeugt."
-    },
     "status": {
       "fileReady": "Datei bereit"
     },
@@ -1002,7 +991,8 @@
       "uploadPreview": "Vorschau der hochgeladenen Datei: {filename}",
       "stagedRoom": "KI-eingerichteter Raum{suffix}",
       "generatedImage": "KI-generiertes Designbild{suffix}",
-      "cadRender": "3D-Rendering aus Grundriss{suffix}",
+      "cadRender": "Möblierter Grundriss von oben{suffix}",
+      "cadRenderInterior": "Raum aus dem Grundriss, von innen fotografiert{suffix}",
       "recalledImage": "Zuvor in diesem Gespräch geteiltes Bild",
       "requestedImage": "Aus dem Gesprächsverlauf angefordertes Bild",
       "editedImage": "Per Maske bearbeitetes Designbild{suffix}",
@@ -1435,33 +1425,6 @@
       "noCommitment": "Keine Verpflichtung",
       "manage": "Abonnement verwalten oder kündigen"
     },
-    "features": {
-      "heading": "Alles, was Sie brauchen, um wie ein Profi zu stagen",
-      "remove": {
-        "title": "Vorhandene Möbel entfernen",
-        "desc": "Entfernen Sie Möbel, Unordnung und Deko und stagen Sie den geleerten Raum von Grund auf neu."
-      },
-      "designer": {
-        "title": "AI Designer",
-        "desc": "Beschreiben Sie in einfachen Worten, was Sie möchten, und verfeinern Sie jedes Ergebnis im Dialog."
-      },
-      "masking": {
-        "title": "Masken-Werkzeug",
-        "desc": "Übermalen Sie einen beliebigen Bereich, um genau diesen Teil des Fotos zu ändern oder umzugestalten."
-      },
-      "studio": {
-        "title": "Masking Studio",
-        "desc": "Markieren Sie mehrere Bereiche in verschiedenen Farben, geben Sie jedem sein eigenes Möbelfoto und stagen Sie alle auf einmal. Erzeugen Sie mehrere Versionen pro Bereich und behalten Sie die beste."
-      },
-      "references": {
-        "title": "Möbelreferenzen",
-        "desc": "Laden Sie Produktfotos hoch, um Räume mit bestimmten, von Ihnen gewählten Möbelstücken zu stagen."
-      },
-      "exterior": {
-        "title": "Außen-Studio",
-        "desc": "Bringen Sie das Foto in Ordnung, mit dem jedes Exposé beginnt. Tageszeit ändern, grauen Himmel aufklaren, Autos und Mülltonnen entfernen, während die Immobilie genau so bleibt, wie sie fotografiert wurde."
-      }
-    },
     "compare": {
       "heading": "Pläne vergleichen",
       "feature": "Funktion",
@@ -1469,6 +1432,7 @@
       "included": "Enthalten",
       "notIncluded": "Nicht enthalten",
       "unlimitedValue": "Unbegrenzt",
+      "tipAria": "Was das bedeutet",
       "rows": {
         "customizable": "Anpassbares Staging",
         "fastModel": "Schnelles Bildmodell",
@@ -1482,6 +1446,20 @@
         "variations": "Mehrere Variationen pro Generierung",
         "references": "Möbelreferenzen",
         "exterior": "Außen-Studio (Außenwirkung)"
+      },
+      "tips": {
+        "gallery": "Gespeicherte Renderings bleiben in Ihrem Konto — Sie können sie erneut öffnen, noch einmal herunterladen oder einem Kunden einen Freigabelink schicken. Eine kostenlose Galerie behält nur Ihre neuesten Räume und verwirft die ältesten, sobald neue hinzukommen; bei Stagify+ wird nie etwas verworfen.",
+        "customizable": "Wählen Sie Raumtyp und Möbelstil vor der Generierung, damit aus einem Kinderzimmer kein Homeoffice wird und aus einem maritimen Briefing kein Mid-Century-Look. Der komplette Satz an Räumen und Stilen ist in beiden Tarifen enthalten.",
+        "fastModel": "Der Standardgenerator, auf Tempo ausgelegt. Er liefert in Sekunden, und genau das brauchen Sie, solange Sie noch Raumtypen und Stile gegeneinander ausprobieren. In jedem Tarif verfügbar.",
+        "unlimited": "Stagen Sie so viele Fotos, wie Sie möchten. In keinem Tarif gibt es Credits zu kaufen oder Kosten pro Rendering — Stagify+ verändert, was eine Generierung kann, nicht wie viele Sie davon bekommen.",
+        "hqModel": "Ein langsamerer, sorgfältigerer Generator für genau das Bild, das später im Exposé steht. Er hält gerade Linien, Fensterlicht und Spiegelungen deutlich besser zusammen, sodass die Möbel im Raum stehen statt darauf.",
+        "remove": "Ein Häkchen genügt und der Raum wird zuerst geleert — Sofas, Gerümpel, Wandbilder, alles — und dann von Grund auf neu eingerichtet. Genau das brauchen Sie bei einer bewohnten Immobilie, wo Staging über die Möbel des Verkäufers hinweg nie gut aussieht.",
+        "designer": "Ein Chatfenster mit Ihrem Foto darin. Formulieren Sie in normaler Sprache, was Sie möchten, und verfeinern Sie dasselbe Bild über mehrere Runden — wärmere Hölzer, Teppich weg, einmal als Kinderzimmer — statt jedes Mal ein neues Rendering zu starten.",
+        "masking": "Übermalen Sie einen Teil des Ergebnisses und ändern Sie nur diesen. Alles außerhalb des Pinsels bleibt Pixel für Pixel unberührt, sodass Sie einen einzelnen Stuhl tauschen oder eine Wand neu streichen können, ohne den ganzen Raum neu zu würfeln.",
+        "studio": "Die volle Version des Maskierens. Markieren Sie mehrere Bereiche in verschiedenen Farben, geben Sie jedem ein eigenes Briefing oder ein eigenes Möbelfoto und stagen Sie alle in einem Durchgang — und erzeugen Sie dann mehrere Varianten pro Bereich und behalten Sie die beste.",
+        "exterior": "Für die Aufnahme, mit der jedes Exposé beginnt. Ändern Sie die Tageszeit, räumen Sie einen flachen grauen Himmel auf und entfernen Sie parkende Autos und Mülltonnen, während das Gebäude selbst genau so bleibt, wie es fotografiert wurde.",
+        "variations": "Fordern Sie mehrere Fassungen desselben Briefings in einem Durchgang an. Sie unterscheiden sich in Grundriss und Möbelwahl, statt zweimal dasselbe Rendering zu sein, sodass Sie wirklich etwas zur Auswahl haben, statt so lange neu zu würfeln, bis es passt.",
+        "references": "Laden Sie ein Produktfoto hoch — ein konkretes Sofa, Bett oder Esszimmerset — und der Raum wird mit genau diesem Stück eingerichtet statt mit etwas allgemein Ähnlichem. Nützlich, wenn ein Kunde, ein Bauträger oder ein Stager die Möbel bereits ausgesucht hat."
       }
     },
     "enterpriseRow": "Für Teams oder Unternehmen <a href=\"enterprise.html\">entdecken Sie unseren Enterprise-Plan</a> oder kontaktieren Sie <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> für individuelle Abo-Optionen.",
@@ -1604,25 +1582,25 @@
   },
   "exteriorStudio": {
     "title": "Außen-Studio",
-    "subtitle": "Das erste Foto jedes Exposés zeigt das Haus von außen, und es ist die eine Aufnahme, die sich bei schlechtem Wetter nicht wiederholen lässt. Laden Sie es hoch und erhalten Sie die Version von einem besseren Tag.",
+    "subtitle": "Die eine Aufnahme, die sich bei schlechtem Wetter nicht wiederholen lässt. Licht, Himmel und Störendes korrigieren, das Haus unangetastet lassen.",
     "ctaUpgrade": "Mit Stagify+ freischalten",
     "features": {
-      "title": "Was es verändert, und was nie",
+      "title": "Was es verändert",
       "light": {
         "title": "Tageszeit",
-        "body": "Mittags fotografieren, zur goldenen Stunde veröffentlichen. Morgen, Mittag, goldene Stunde oder Dämmerung, mit Schatten und Fensterlicht passend zur gewählten Sonne."
+        "body": "Mittags fotografieren, zur goldenen Stunde veröffentlichen — mit passenden Schatten und Fensterlicht."
       },
       "sky": {
         "title": "Himmel und Wetter",
-        "body": "Aus flachem Grau wird klares Blau, leichte Bewölkung oder etwas Dramatischeres, abgestimmt auf das Licht am Gebäude, mit sauberen Kanten entlang der Dachlinie."
+        "body": "Aus flachem Grau wird klares Blau, leichte Bewölkung oder etwas Dramatischeres — mit sauberen Kanten an der Dachlinie."
       },
       "clutter": {
         "title": "Autos, Gerümpel und Schnee",
-        "body": "Der Transporter des Nachbarn in der Einfahrt, die herausgestellten Mülltonnen, der Schlauch auf dem Rasen, die Person, die gerade vorbeiläuft – und der Schnee, der Regen und die Pfützen, die am Tag der Aufnahme zufällig da waren. Vorübergehendes verschwindet, und die Fläche darunter wird passend rekonstruiert."
+        "body": "Vorübergehendes verschwindet, und der Boden darunter wird passend rekonstruiert."
       },
       "honest": {
         "title": "Das Haus bleibt das Haus",
-        "body": "Kein neu verlegter Rasen, keine wegretuschierten Stromleitungen, keine neue Einfahrt, keine umgestrichenen Wände. Wer am Bordstein steht, sieht das Foto, und genau das macht es für ein Exposé verwendbar."
+        "body": "Kein neu verlegter Rasen, keine wegretuschierten Stromleitungen, keine neue Einfahrt, kein Anstrich."
       }
     },
     "upload": {

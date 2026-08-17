@@ -341,7 +341,48 @@ object backend is active; in production nothing serves render bytes from this pr
 |--------|------|-------------|
 | `GET` | `/api/welcome-message` | **Auth:** **`requireProAccount`** — the session token **must** arrive as `Authorization: Bearer`; `getAuthUserFromRequest` never reads `req.query`, so a `?authToken=` always 401s (this endpoint was dead in production for exactly that reason). **No query params** — memories are keyed on the validated session account, not a client-supplied `userId`. Returns `{ message, isReturning }` for the AI Designer welcome, using optional stored “memories”. |
 | `POST` | `/api/chat` | **Auth:** **`requireProAccount`**. **Body:** JSON with `messages` (OpenAI-style array), optional `model`, `messageTag`. Long-running: staging/CAD/generation inside JSON tool contract. Respects user message limits (e.g. 20 user messages) and may return `contextLimitReached`. When the model routes a staging request it must pick `roomType` from a **fixed enum** (`DESIGNER_ROUTING_SCHEMA` in `lib/staging/prompts.js`): every room type in **Room types** above, plus `Other` for a room with no template. A room type missing from that enum is unreachable from chat — the model falls back to `Other` and the generic prompt. |
-| `POST` | `/api/chat-upload` | **Auth:** **`requireProAccount`**. **Multipart:** up to **5** files in field `files`, plus form fields (e.g. `conversationHistory`, `messageTag`). AI Designer flow with file attachments. Implemented in `routes/chat.js`. |
+| `POST` | `/api/chat-upload` | **Auth:** **`requireProAccount`**. **Multipart:** up to **5** files in field `files`, plus form fields (e.g. `conversationHistory`, `messageTag`). AI Designer flow with file attachments. Implemented in `routes/chat.js`. **PDFs never reach the server as PDFs** — see the floor-plan note below. |
+
+### Floor plans: the `cad` routing branch
+
+Both chat endpoints can route a turn to the **floor-plan renderer** (`cad` in
+`DESIGNER_ROUTING_SCHEMA`) instead of ordinary staging. It produces **two different
+things**, and which one is not inferred from the image — it is the model's `view` field:
+
+| `view` | Output | `room` |
+|--------|--------|--------|
+| `top-down` *(default)* | A furnished 3D floor plan seen from directly above — the whole plan in frame, every room at once. | `null` |
+| `eye-level` | A photorealistic interior photograph taken standing **inside one room** of that plan. | **Required** — the room to stand in. |
+
+Notes that bite:
+
+- **The default lives at the consumer** (`normalizeCadView` in `lib/staging/cad-handling.js`),
+  not in the schema. A routing decision made before `view` existed — or one naming a view
+  that does not exist — renders `top-down` rather than failing on a field the user never saw.
+- **The schema is strict** (`additionalProperties: false`, every property also in
+  `required`). A property added to `cad.properties` but not to `cad.required` makes OpenAI
+  reject the whole request, which surfaces as the Designer failing on *every* turn. Pinned
+  by a drift guard in `test/staging/prompts.test.js`.
+- **Aspect ratio differs by view and that is deliberate.** `top-down` pins to the
+  blueprint's own ratio; `eye-level` pins to `3:2`. Pinning a room photo to the plan's
+  ratio would return a tall skinny "interior shot" for a tall skinny plan.
+- **Disclosure is not fully the model's call.** An `eye-level` render is a furnished
+  depiction of a real listing, so it is **always** stamped; a `top-down` plan render is a
+  diagram, so there the routing model's `disclosure` decision stands.
+- **PDFs are rasterized in the browser**, by `public/scripts/pdf-page-to-image.js`, before
+  upload. The server has never been able to read a PDF: `lib/chat/chat-upload-prep.js`
+  accepts `application/pdf` and reduces it to the placeholder text `[File: … Content
+  cannot be directly read]`. Page 1 only.
+- **The reply always carries `cadViews`** (one entry per render), unlike `cadParams`, which
+  is set only in the multi-result branch. The browser needs it to describe the image: the
+  two views take different alt text (`pdf.alt.cadRender` vs `pdf.alt.cadRenderInterior`),
+  and for a lone render there was otherwise nothing on the wire to tell them apart.
+- **CAD has its own status category**, `floorplan` (`chatIntentType`), not `staging`. It is
+  checked first, so a turn doing both reports the floor-plan work — that is the half the
+  user waits on (~30s on `gemini-3-pro-image` against ~8s for a staged photo).
+- Max **3** `cad` entries per turn, same cap as staging and generate. All three dispatch
+  steps run **unconditionally** (`lib/chat/chat-post-routing.js`), so one response can
+  legitimately carry `stagedImages`, `generatedImages` **and** `cadImages` together.
 
 ---
 

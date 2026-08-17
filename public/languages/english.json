@@ -243,7 +243,7 @@
           "eyebrow": "Who it’s for",
           "caption": "Sitting down one-on-one to stage an agent’s photos",
           "title": "Made for agents, sellers, and buyers",
-          "body": "Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn CAD floor-plan PDFs into photorealistic 3D room renders.",
+          "body": "Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn a floor plan into a furnished plan view — or step inside any room on it for a photorealistic render.",
           "p1": "Agents: list sooner and close more",
           "p2": "Sellers & buyers: no software, no designer needed",
           "p3": "AI Designer: agentic room staging"
@@ -327,7 +327,7 @@
         "name": "Stagify+",
         "tag": "For individuals",
         "per": "/ month",
-        "f1": "Unlimited staging generations",
+        "f1": "Furniture references: stage with pieces you choose",
         "f2": "Higher-quality image model",
         "f3": "Multiple variations per generation",
         "f4": "Masking tool to edit any area",
@@ -424,13 +424,11 @@
     },
     "contactCta": {
       "title": "Our inbox is always open",
-      "subtitle": "Questions, feedback, or ideas? We read every message and reply as soon as we can.",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "Enjoying Stagify?",
-      "subtitle": "Love how your listings look? Leave a quick Google review and help other agents find us.",
       "button": "Leave a Google review",
       "aria": "Leave a Google review (opens in a new tab)"
     }
@@ -464,7 +462,6 @@
     },
     "staging": {
       "title": "Options",
-      "close": "x",
       "roomType": "Room type",
       "furnitureStyle": "Furniture style",
       "additionalPrompt": "Additional prompting",
@@ -559,7 +556,19 @@
       "uploadAnotherShort": "Reupload",
       "downloadResultShort": "Download",
       "galleryEvicted": "Older stagings were removed to make room. The free plan keeps your most recent ones.",
-      "galleryEvictedShared": "An older staging had an active share link, which no longer works."
+      "galleryEvictedShared": "An older staging had an active share link, which no longer works.",
+      "plusRail": {
+        "title": "What Stagify+ could add to this photo",
+        "hide": "Don’t show this again",
+        "items": {
+          "remove": "Remove existing furniture",
+          "model": "Better image model",
+          "variations": "Multiple image variations",
+          "references": "Furniture references",
+          "mask": "Mask editing",
+          "gallery": "Unlimited gallery"
+        }
+      }
     }
   },
   "roomTypes": {
@@ -879,7 +888,6 @@
       "keywords": "AI Designer, AI design assistant, design consultation, AI chat, design help, interior design AI"
     },
     "title": "AI Designer",
-    "description": "Convert your CAD floorplan PDFs into photorealistic 3D interior visualizations",
     "statusMessages": {
       "generating": [
         "generating image...",
@@ -901,6 +909,17 @@
         "creating the design...",
         "generating the layout...",
         "refining details...",
+        "almost ready..."
+      ],
+      "floorplan": [
+        "reading your floor plan...",
+        "measuring the rooms...",
+        "laying out the space...",
+        "placing walls, doors, and windows...",
+        "furnishing the rooms...",
+        "setting the lighting...",
+        "rendering the view...",
+        "adding the finishing touches...",
         "almost ready..."
       ],
       "analyzing": [
@@ -935,41 +954,11 @@
       ]
     },
     "emptyState": "Start a conversation by typing a message or uploading a file",
-    "welcomeFallback": "Hi! I’m your Stagify AI Designer. Tell me what you’re picturing, or upload a room photo, and we’ll design it together. A few things I can do:\n• **Stage empty rooms**: furnish a bare space in any style\n• **Redesign existing rooms**: restyle, swap furniture, or change the whole mood\n• **Floor plan → room**: turn a floor plan into a photorealistic, furnished render\n• **Refine as we chat**: adjust the colors, pieces, and layout until it feels right\nWhere would you like to start?",
+    "welcomeFallback": "Hi! I’m your Stagify AI Designer. Tell me what you’re picturing, or upload a room photo, and we’ll design it together. A few things I can do:\n• **Stage empty rooms**: furnish a bare space in any style\n• **Redesign existing rooms**: restyle, swap furniture, or change the whole mood\n• **Floor plan → room**: furnish a plan from above, or step inside one room for a photo\n• **Refine as we chat**: adjust the colors, pieces, and layout until it feels right\nWhere would you like to start?",
     "uploadFile": "Upload file",
     "inputPlaceholder": "Type your message...",
     "sendButton": "Send",
-    "uploadArea": "Upload a PDF or drag and drop",
     "uploadSubtext": "Supported: PDF files",
-    "options": {
-      "title": "Processing Options",
-      "skip": "Skip first pages",
-      "skipHint": "Skip cover pages and title sheets",
-      "concurrency": "Processing speed",
-      "concurrencyHint": "Higher speeds may increase processing time per room",
-      "dpi": "Image Quality (DPI)",
-      "dpiHint": "Higher DPI produces better quality but takes longer"
-    },
-    "processButton": "Process PDF",
-    "progress": {
-      "uploading": "Uploading PDF…",
-      "processing": "Processing PDF…",
-      "complete": "Complete!"
-    },
-    "result": {
-      "title": "Processing Complete!",
-      "description": "Your processed PDF is ready to download.",
-      "download": "Download Processed PDF",
-      "uploadAnother": "Upload Another PDF"
-    },
-    "info": {
-      "title": "How It Works",
-      "step1": "Upload your CAD floorplan PDF",
-      "step2": "Our AI identifies rooms and extracts floorplan details",
-      "step3": "Each room is converted into a photorealistic 3D visualization",
-      "step4": "Download your processed PDF with 3D renders (usually takes 2 minutes)",
-      "note": "Note: Processing typically takes about 2 minutes. Please be patient while our AI generates your 3D renders."
-    },
     "status": {
       "fileReady": "File ready"
     },
@@ -1002,7 +991,8 @@
       "uploadPreview": "Preview of uploaded file: {filename}",
       "stagedRoom": "AI-staged room{suffix}",
       "generatedImage": "AI-generated design image{suffix}",
-      "cadRender": "3D render from floor plan{suffix}",
+      "cadRender": "Furnished floor plan seen from above{suffix}",
+      "cadRenderInterior": "Room from the floor plan, photographed from inside{suffix}",
       "recalledImage": "Previously shared image from this conversation",
       "requestedImage": "Image requested from conversation history",
       "editedImage": "Mask-edited design image{suffix}",
@@ -1435,33 +1425,6 @@
       "noCommitment": "No commitment",
       "manage": "Manage or cancel subscription"
     },
-    "features": {
-      "heading": "Everything you need to stage like a pro",
-      "remove": {
-        "title": "Remove existing furniture",
-        "desc": "Erase furniture, clutter, and decor, then restage the emptied room from a clean slate."
-      },
-      "designer": {
-        "title": "AI Designer",
-        "desc": "Describe what you want in plain language and refine each result conversationally."
-      },
-      "masking": {
-        "title": "Masking tool",
-        "desc": "Paint over any area to change or restyle just that part of the photo."
-      },
-      "studio": {
-        "title": "Masking Studio",
-        "desc": "Highlight several areas in different colors, give each its own furniture photo, and stage them all at once. Generate multiple versions per area and keep the best one."
-      },
-      "references": {
-        "title": "Furniture references",
-        "desc": "Upload product photos to stage rooms with specific furniture pieces you choose."
-      },
-      "exterior": {
-        "title": "Exterior Studio",
-        "desc": "Fix the shot every listing opens with. Change the time of day, clear a flat grey sky, and remove parked cars and bins, while the property itself stays exactly as photographed."
-      }
-    },
     "compare": {
       "heading": "Compare plans",
       "feature": "Feature",
@@ -1469,6 +1432,7 @@
       "included": "Included",
       "notIncluded": "Not included",
       "unlimitedValue": "Unlimited",
+      "tipAria": "What this means",
       "rows": {
         "customizable": "Customizable staging",
         "fastModel": "Fast image model",
@@ -1482,6 +1446,20 @@
         "variations": "Multiple variations per generation",
         "references": "Furniture references",
         "exterior": "Exterior Studio (curb appeal)"
+      },
+      "tips": {
+        "gallery": "Saved renders stay in your account — reopen them, download them again, or send a client a share link. A free gallery holds only your most recent rooms and drops the oldest as new ones arrive; on Stagify+ nothing is ever evicted.",
+        "customizable": "Choose the room type and the furniture style before you generate, so a nursery doesn’t come back as a home office and a coastal brief doesn’t come back mid-century. The full set of rooms and styles is on both plans.",
+        "fastModel": "The default generator, tuned for turnaround. It comes back in seconds, which is what you want while you are still trying room types and styles against each other. Available on every plan.",
+        "unlimited": "Stage as many photos as you like. There are no credits to buy and no per-render charge on either plan — Stagify+ changes what a generation can do, not how many of them you get.",
+        "hqModel": "A slower, more careful generator for the frame that actually goes on the listing. It holds straight lines, window light and reflections together far better, so the furniture sits in the room instead of on top of it.",
+        "remove": "Tick one box and the room is emptied first — sofas, clutter, wall art, all of it — then restaged from a clean slate. This is the one you need for an occupied listing, where staging on top of the seller’s furniture never looks right.",
+        "designer": "A chat window with your photo in it. Ask for what you want in plain language, then keep refining the same image over several turns — warmer wood, lose the rug, try it as a nursery — instead of starting a fresh render each time.",
+        "masking": "Paint over part of a result and change only that. Everything outside the brush stays untouched, pixel for pixel, so you can swap a single chair or repaint one wall without re-rolling the whole room.",
+        "studio": "The full version of masking. Mark several areas in different colors, give each one its own brief or its own furniture photo, and stage them all in a single pass — then generate a few options per area and keep the best of each.",
+        "exterior": "For the shot every listing opens with. Change the time of day, clear a flat grey sky and take out parked cars and bins, while the property itself stays exactly as photographed.",
+        "variations": "Ask for several takes on the same brief in one go. They differ in layout and furniture choice rather than being the same render twice, so you have something to choose between instead of re-rolling until one lands.",
+        "references": "Upload a product photo — an actual sofa, bed or dining set — and the room is staged with that piece rather than something generically similar. Useful when a client, a builder or a stager has already chosen the furniture."
       }
     },
     "enterpriseRow": "For teams or enterprises, <a href=\"enterprise.html\">explore our enterprise plan</a> or contact <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> for personalized subscription options.",
@@ -1604,25 +1582,25 @@
   },
   "exteriorStudio": {
     "title": "Exterior Studio",
-    "subtitle": "The first photo of every listing is the outside of the house, and it is the one shot you cannot reshoot when the weather turns. Upload it here and get the version taken on a better day.",
+    "subtitle": "The one shot you cannot retake once the weather turns. Fix the light, the sky and the clutter, and leave the house alone.",
     "ctaUpgrade": "Get Stagify+ to use it",
     "features": {
-      "title": "What it changes, and what it never touches",
+      "title": "What it changes",
       "light": {
         "title": "Time of day",
-        "body": "Shoot at noon, publish at golden hour. Morning, midday, golden hour or dusk, with shadows and window light that agree with the sun you picked."
+        "body": "Shoot at noon, publish at golden hour, with shadows and window light to match."
       },
       "sky": {
         "title": "Sky and weather",
-        "body": "A flat grey sky becomes clear blue, light cloud or something more dramatic, matched to the light already on the building, with clean edges along the roofline."
+        "body": "Flat grey becomes clear blue, light cloud or something more dramatic, with clean edges along the roofline."
       },
       "clutter": {
-        "title": "Cars, clutter and snow",
-        "body": "The neighbour’s van across the driveway, the bins left out, the hose on the lawn, the person walking past, and the snow, rain and puddles that happened to be there the day you shot it. Temporary things go, and the surface underneath is rebuilt to match."
+        "title": "Cars, clutter, and snow",
+        "body": "Temporary things go, and the ground they were standing on is rebuilt to match."
       },
       "honest": {
         "title": "The house stays the house",
-        "body": "No re-turfed lawn, no erased power lines, no resurfaced driveway, no repainted walls. A buyer standing at the kerb sees what the photo showed, which is what keeps the photo usable on a listing."
+        "body": "No re-turfed lawn, no erased power lines, no new driveway, no repaint."
       }
     },
     "upload": {

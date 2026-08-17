@@ -148,7 +148,7 @@ import { fetchWelcomeMessage } from './ai-designer/welcome.js';
           "Hi! I’m your Stagify AI Designer. Tell me what you’re picturing, or upload a room photo, and we’ll design it together. A few things I can do:\n" +
           "• **Stage empty rooms**: furnish a bare space in any style\n" +
           "• **Redesign existing rooms**: restyle, swap furniture, or change the whole mood\n" +
-          "• **Floor plan → room**: turn a floor plan into a photorealistic, furnished render\n" +
+          "• **Floor plan → room**: furnish a plan from above, or step inside one room for a photo\n" +
           "• **Refine as we chat**: adjust the colors, pieces, and layout until it feels right\n" +
           "Where would you like to start?";
         if (window.LanguageSystem && typeof LanguageSystem.getText === 'function') {

@@ -29,6 +29,16 @@ const BLOCKING_ALLOWED = {
   'masking-studio-gate.js': 'same gate for the Masking Studio',
   'gallery-gate.js': 'PC-only feature — redirects a phone-sized viewport before the grid paints',
   'faq-redirect.js': 'meta-refresh stub — must redirect before anything renders',
+  // The odd one out: it redirects nobody. The Exterior Studio ships in its anonymous
+  // shape, so a Stagify+ visitor used to watch the sales pitch paint and vanish once
+  // /api/auth/me answered — a full round trip later. This reads the plan auth.js cached
+  // and applies the Pro shape in CSS, which is worth nothing at all after first paint.
+  'exterior-studio-gate.js': 'applies the cached-Pro page shape before the first paint, so a subscriber never sees the pitch',
+  // The only one on EVERY nav-bearing page, so it is also the only one whose cost is paid
+  // site-wide. It is deliberately last in <head>: first paint is already blocked on the
+  // stylesheets above it, so a small same-origin file fetched alongside them is free,
+  // whereas putting it first would delay discovery of the CSS that paint is waiting for.
+  'session-class.js': 'sets html.has-session before first paint so the nav Gallery tab does not pop in a round trip late',
 };
 
 /** Every .html under public/, recursively. */

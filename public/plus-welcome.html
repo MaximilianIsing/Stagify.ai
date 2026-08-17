@@ -27,6 +27,10 @@
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/auth.css">
     <link rel="stylesheet" href="styles/plus-welcome.css">
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
   </head>
   <body class="page-stagify-plus">
     <video id="background-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="media-webp/background-poster.webp">

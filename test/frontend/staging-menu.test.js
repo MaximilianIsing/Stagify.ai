@@ -311,11 +311,18 @@ test('a `data-staging-preview` row is locked, has a page, and that page has NO r
   //   1. the row still LOOKS locked (the tool really does need Stagify+; only the
   //      destination differs);
   //   2. the page actually exists;
-  //   3. the page has NO render-blocking *-gate.js in its <head>. Every other Stagify+
-  //      page has one, and it `location.replace`s a visitor with no token. Add one here
-  //      and the click handler hands the visitor to a page that instantly bounces them —
-  //      the same dead end the attribute exists to avoid, plus Googlebot never sees the
-  //      public view the page was made indexable for.
+  //   3. the page's head gate, if it has one, NEVER NAVIGATES. Every other Stagify+ page
+  //      loads a render-blocking *-gate.js that `location.replace`s a visitor with no
+  //      token; one of those here and the click handler hands the visitor to a page that
+  //      instantly bounces them — the same dead end the attribute exists to avoid, plus
+  //      Googlebot never sees the public view the page was made indexable for.
+  //
+  //      A render-blocking gate that only RESHAPES the page is fine, and the preview page
+  //      has one (exterior-studio-gate.js pre-applies the Pro layout from a cached plan so
+  //      the pitch is not flashed at a subscriber). So this asserts the property that
+  //      actually matters — no navigation — rather than the absence of a filename, which
+  //      is what it used to do and which a rename would have satisfied without fixing
+  //      anything.
   const [{ html }] = navPages();
   const block = extractBlock(html);
   const rows = [...block.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]);
@@ -332,8 +339,22 @@ test('a `data-staging-preview` row is locked, has a page, and that page has NO r
   assert.ok(fs.existsSync(pagePath), `${href} must be a real page`);
 
   const head = fs.readFileSync(pagePath, 'utf8').split('</head>')[0];
-  const blockingGate = /<script(?![^>]*\b(?:defer|async|type="module")\b)[^>]*\bsrc="[^"]*-gate\.js"/.exec(head);
-  assert.equal(blockingGate, null, `${href} must not load a redirect gate — it is the public preview`);
+  const gates = [...head.matchAll(/<script(?![^>]*\b(?:defer|async|type="module")\b)[^>]*\bsrc="([^"]*-gate\.js)"/g)]
+    .map((m) => m[1]);
+
+  for (const src of gates) {
+    const gatePath = path.join(PUBLIC, src.replace(/^\//, ''));
+    assert.ok(fs.existsSync(gatePath), `${href} loads ${src}, which must be a real file`);
+    // Comments are stripped first: every one of these gates DESCRIBES the redirect it
+    // deliberately does not do, so scanning the raw source would fail on the prose.
+    const code = fs.readFileSync(gatePath, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    assert.ok(
+      !/location\s*\.\s*(?:replace|assign|href)|location\s*=/.test(code),
+      `${src} navigates — the preview page's gate may only reshape, never redirect`,
+    );
+  }
 });
 
 test('the old pro nav links are gone everywhere', () => {

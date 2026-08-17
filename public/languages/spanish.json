@@ -243,7 +243,7 @@
           "eyebrow": "Para quién es",
           "caption": "Sentándonos uno a uno para diseñar las fotos de un agente",
           "title": "Hecho para agentes, vendedores y compradores",
-          "body": "Los agentes promocionan cada propiedad en minutos en lugar de esperar a un equipo de diseño. Los vendedores diseñan sus propias fotos sin contratar a nadie. Los compradores previsualizan una reforma antes de comprometerse. Y con AI Designer, puedes convertir PDFs de planos CAD en renders 3D fotorrealistas.",
+          "body": "Los agentes promocionan cada propiedad en minutos en lugar de esperar a un equipo de diseño. Los vendedores diseñan sus propias fotos sin contratar a nadie. Los compradores previsualizan una reforma antes de comprometerse. Y con AI Designer, puedes convertir un plano en una vista amueblada desde arriba, o entrar en cualquier habitación para un render fotorrealista.",
           "p1": "Agentes: publica antes y cierra más",
           "p2": "Vendedores y compradores: sin software ni diseñador",
           "p3": "AI Designer: staging de habitaciones con agentes de IA"
@@ -327,7 +327,7 @@
         "name": "Stagify+",
         "tag": "Para individuos",
         "per": "/ mes",
-        "f1": "Generaciones de diseño ilimitadas",
+        "f1": "Referencias de muebles: decora con las piezas que elijas",
         "f2": "Modelo de imagen de mayor calidad",
         "f3": "Varias variaciones por generación",
         "f4": "Herramienta de máscara para editar cualquier área",
@@ -424,13 +424,11 @@
     },
     "contactCta": {
       "title": "Nuestra bandeja de entrada siempre está abierta",
-      "subtitle": "¿Preguntas, comentarios o ideas? Leemos todo y respondemos lo antes posible.",
       "email": "team@stagify.ai",
       "phone": "(929) 251-4372"
     },
     "reviewCta": {
       "title": "¿Te gusta Stagify?",
-      "subtitle": "¿Te gustan tus anuncios? Una reseña en Google ayuda a otros agentes a encontrarnos.",
       "button": "Deja una reseña en Google",
       "aria": "Deja una reseña en Google (se abre en una pestaña nueva)"
     }
@@ -464,7 +462,6 @@
     },
     "staging": {
       "title": "Opciones",
-      "close": "x",
       "roomType": "Tipo de habitación",
       "furnitureStyle": "Estilo de muebles",
       "additionalPrompt": "Prompt adicional",
@@ -559,7 +556,19 @@
       "uploadAnotherShort": "Resubir",
       "downloadResultShort": "Descargar",
       "galleryEvicted": "Se eliminaron montajes antiguos para hacer sitio: el plan gratuito conserva los más recientes.",
-      "galleryEvictedShared": "Un montaje anterior tenía un enlace de uso compartido activo, que ya no funciona."
+      "galleryEvictedShared": "Un montaje anterior tenía un enlace de uso compartido activo, que ya no funciona.",
+      "plusRail": {
+        "title": "Lo que Stagify+ podría añadir a esta foto",
+        "hide": "No volver a mostrar",
+        "items": {
+          "remove": "Eliminar los muebles existentes",
+          "model": "Mejor modelo de imagen",
+          "variations": "Múltiples variaciones de imagen",
+          "references": "Referencias de muebles",
+          "mask": "Edición con máscara",
+          "gallery": "Galería ilimitada"
+        }
+      }
     }
   },
   "roomTypes": {
@@ -879,7 +888,6 @@
       "keywords": "Diseñador IA, asistente de diseño IA, consultoría de diseño, chat IA, ayuda de diseño, diseño de interiores IA"
     },
     "title": "Diseñador IA",
-    "description": "Convierte tus PDFs de planos CAD en visualizaciones 3D fotorrealistas de interiores",
     "statusMessages": {
       "generating": [
         "generando imagen...",
@@ -901,6 +909,17 @@
         "creando el diseño...",
         "generando la distribución...",
         "refinando detalles...",
+        "casi listo..."
+      ],
+      "floorplan": [
+        "leyendo tu plano...",
+        "midiendo las estancias...",
+        "distribuyendo el espacio...",
+        "situando muros, puertas y ventanas...",
+        "amueblando las estancias...",
+        "ajustando la iluminación...",
+        "renderizando la vista...",
+        "dando los últimos retoques...",
         "casi listo..."
       ],
       "analyzing": [
@@ -935,41 +954,11 @@
       ]
     },
     "emptyState": "Comienza una conversación escribiendo un mensaje o subiendo un archivo",
-    "welcomeFallback": "¡Hola! Soy tu Diseñador IA de Stagify. Dime qué te imaginas, o sube la foto de una habitación, y la diseñaremos juntos. Algunas cosas que puedo hacer:\n• **Amueblar habitaciones vacías**: llena un espacio vacío en cualquier estilo\n• **Rediseñar habitaciones existentes**: cambia el estilo, los muebles o todo el ambiente\n• **Plano → habitación**: convierte un plano en un render amueblado y fotorrealista\n• **Refinar mientras chateamos**: ajusta los colores, las piezas y la distribución hasta que quede bien\n¿Por dónde te gustaría empezar?",
+    "welcomeFallback": "¡Hola! Soy tu Diseñador IA de Stagify. Dime qué te imaginas, o sube la foto de una habitación, y la diseñaremos juntos. Algunas cosas que puedo hacer:\n• **Amueblar habitaciones vacías**: llena un espacio vacío en cualquier estilo\n• **Rediseñar habitaciones existentes**: cambia el estilo, los muebles o todo el ambiente\n• **Plano → habitación**: amuebla un plano visto desde arriba, o entra en una habitación para una foto\n• **Refinar mientras chateamos**: ajusta los colores, las piezas y la distribución hasta que quede bien\n¿Por dónde te gustaría empezar?",
     "uploadFile": "Subir archivo",
     "inputPlaceholder": "Escribe tu mensaje...",
     "sendButton": "Enviar",
-    "uploadArea": "Sube un PDF o arrastra y suelta",
     "uploadSubtext": "Soportado: archivos PDF",
-    "options": {
-      "title": "Opciones de Procesamiento",
-      "skip": "Omitir primeras páginas",
-      "skipHint": "Omitir páginas de portada y hojas de título",
-      "concurrency": "Velocidad de procesamiento",
-      "concurrencyHint": "Velocidades más altas pueden aumentar el tiempo de procesamiento por habitación",
-      "dpi": "Calidad de Imagen (DPI)",
-      "dpiHint": "DPI más alto produce mejor calidad pero tarda más"
-    },
-    "processButton": "Procesar PDF",
-    "progress": {
-      "uploading": "Subiendo PDF…",
-      "processing": "Procesando PDF…",
-      "complete": "¡Completo!"
-    },
-    "result": {
-      "title": "¡Procesamiento Completo!",
-      "description": "Tu PDF procesado está listo para descargar.",
-      "download": "Descargar PDF Procesado",
-      "uploadAnother": "Subir Otro PDF"
-    },
-    "info": {
-      "title": "Cómo Funciona",
-      "step1": "Sube tu PDF de plano CAD",
-      "step2": "Nuestra IA identifica habitaciones y extrae detalles del plano",
-      "step3": "Cada habitación se convierte en una visualización 3D fotorrealista",
-      "step4": "Descarga tu PDF procesado con renders 3D (generalmente toma 2 minutos)",
-      "note": "Nota: El procesamiento generalmente toma aproximadamente 2 minutos. Por favor sé paciente mientras nuestra IA genera tus renders 3D."
-    },
     "status": {
       "fileReady": "Archivo listo"
     },
@@ -1002,7 +991,8 @@
       "uploadPreview": "Vista previa del archivo subido: {filename}",
       "stagedRoom": "Habitación escenificada con IA{suffix}",
       "generatedImage": "Imagen de diseño generada con IA{suffix}",
-      "cadRender": "Render 3D desde plano de planta{suffix}",
+      "cadRender": "Plano amueblado visto desde arriba{suffix}",
+      "cadRenderInterior": "Habitación del plano, fotografiada desde dentro{suffix}",
       "recalledImage": "Imagen compartida previamente en esta conversación",
       "requestedImage": "Imagen solicitada del historial de conversación",
       "editedImage": "Imagen de diseño editada con máscara{suffix}",
@@ -1435,33 +1425,6 @@
       "noCommitment": "Sin compromiso",
       "manage": "Gestionar o cancelar la suscripción"
     },
-    "features": {
-      "heading": "Todo lo que necesita para hacer staging como un profesional",
-      "remove": {
-        "title": "Eliminar muebles existentes",
-        "desc": "Borre muebles, desorden y decoración, y vuelva a decorar la habitación vacía desde cero."
-      },
-      "designer": {
-        "title": "AI Designer",
-        "desc": "Describa lo que quiere en lenguaje sencillo y refine cada resultado de forma conversacional."
-      },
-      "masking": {
-        "title": "Herramienta de máscara",
-        "desc": "Pinte sobre cualquier área para cambiar o redecorar solo esa parte de la foto."
-      },
-      "studio": {
-        "title": "Masking Studio",
-        "desc": "Resalte varias áreas en distintos colores, dé a cada una su propia foto de muebles y decórelas todas a la vez. Genere varias versiones por área y quédese con la mejor."
-      },
-      "references": {
-        "title": "Referencias de muebles",
-        "desc": "Suba fotos de productos para decorar habitaciones con muebles específicos que usted elija."
-      },
-      "exterior": {
-        "title": "Estudio de Exteriores",
-        "desc": "Arregla la foto con la que abre cada anuncio. Cambia la hora del día, despeja un cielo gris y elimina coches y contenedores, mientras la propiedad permanece tal y como se fotografió."
-      }
-    },
     "compare": {
       "heading": "Comparar planes",
       "feature": "Función",
@@ -1469,6 +1432,7 @@
       "included": "Incluido",
       "notIncluded": "No incluido",
       "unlimitedValue": "Ilimitadas",
+      "tipAria": "Qué significa esto",
       "rows": {
         "customizable": "Staging personalizable",
         "fastModel": "Modelo de imagen rápido",
@@ -1482,6 +1446,20 @@
         "variations": "Varias variaciones por generación",
         "references": "Referencias de muebles",
         "exterior": "Estudio de Exteriores (fachada)"
+      },
+      "tips": {
+        "gallery": "Los renders guardados se quedan en tu cuenta: puedes volver a abrirlos, descargarlos de nuevo o enviar a un cliente un enlace para compartir. Una galería gratuita conserva solo tus estancias más recientes y descarta las más antiguas a medida que llegan nuevas; en Stagify+ no se descarta nada nunca.",
+        "customizable": "Elige el tipo de estancia y el estilo de mobiliario antes de generar, para que una habitación infantil no vuelva convertida en despacho ni un encargo costero vuelva en clave mid-century. El conjunto completo de estancias y estilos está en los dos planes.",
+        "fastModel": "El generador por defecto, pensado para ir rápido. Responde en segundos, que es justo lo que quieres mientras todavía estás comparando tipos de estancia y estilos. Disponible en todos los planes.",
+        "unlimited": "Ambienta tantas fotos como quieras. En ningún plan hay créditos que comprar ni coste por render: Stagify+ cambia lo que puede hacer una generación, no cuántas te tocan.",
+        "hqModel": "Un generador más lento y más cuidadoso para la imagen que de verdad va al anuncio. Mantiene mucho mejor las líneas rectas, la luz de las ventanas y los reflejos, así que los muebles quedan dentro de la estancia y no encima.",
+        "remove": "Marca una casilla y la estancia se vacía primero (sofás, trastos, cuadros, todo) y después se ambienta desde cero. Es lo que necesitas en una vivienda habitada, donde ambientar por encima de los muebles del propietario nunca queda bien.",
+        "designer": "Una ventana de chat con tu foto dentro. Pide en lenguaje corriente lo que quieras y sigue afinando la misma imagen a lo largo de varios turnos (maderas más cálidas, fuera la alfombra, pruébalo como habitación infantil) en vez de lanzar un render nuevo cada vez.",
+        "masking": "Pinta sobre una parte del resultado y cambia solo eso. Todo lo que queda fuera del pincel sigue intacto, píxel a píxel, así que puedes sustituir una silla o repintar una pared sin volver a tirar los dados con toda la estancia.",
+        "studio": "La versión completa del enmascarado. Marca varias zonas en colores distintos, dale a cada una su propio encargo o su propia foto de mobiliario y ambiéntalas todas en una sola pasada; después genera varias opciones por zona y quédate con la mejor de cada una.",
+        "exterior": "Para la foto con la que abre cualquier anuncio. Cambia la hora del día, arregla un cielo gris y plano y quita los coches aparcados y los contenedores, mientras el inmueble en sí se queda exactamente como se fotografió.",
+        "variations": "Pide varias versiones del mismo encargo de una sola vez. Se diferencian en distribución y en elección de mobiliario en lugar de ser dos veces el mismo render, así que tienes entre qué elegir en vez de repetir hasta que salga una buena.",
+        "references": "Sube la foto de un producto (un sofá, una cama o un comedor concretos) y la estancia se ambienta con esa pieza y no con algo vagamente parecido. Útil cuando un cliente, una promotora o un estilista ya ha elegido los muebles."
       }
     },
     "enterpriseRow": "Para equipos o empresas, <a href=\"enterprise.html\">explore nuestro plan enterprise</a> o contacte con <a href=\"mailto:team@stagify.ai\">team@stagify.ai</a> para opciones de suscripción personalizadas.",
@@ -1604,25 +1582,25 @@
   },
   "exteriorStudio": {
     "title": "Estudio de Exteriores",
-    "subtitle": "La primera foto de cada anuncio es el exterior de la casa, y es la única toma que no puedes repetir cuando cambia el tiempo. Súbela aquí y obtén la versión tomada en un día mejor.",
+    "subtitle": "La única toma que no puedes repetir cuando cambia el tiempo. Corrige la luz, el cielo y el desorden, y deja la casa como está.",
     "ctaUpgrade": "Consigue Stagify+ para usarlo",
     "features": {
-      "title": "Qué cambia y qué no toca nunca",
+      "title": "Qué cambia",
       "light": {
         "title": "Hora del día",
-        "body": "Fotografía a mediodía y publica en la hora dorada. Mañana, mediodía, hora dorada o crepúsculo, con sombras y luz interior coherentes con el sol elegido."
+        "body": "Fotografía al mediodía, publica a la hora dorada, con sombras y luz en las ventanas a juego."
       },
       "sky": {
         "title": "Cielo y clima",
-        "body": "Un cielo gris y plano se convierte en azul despejado, con nubes ligeras o algo más dramático, ajustado a la luz que ya recibe el edificio y con bordes limpios en el tejado."
+        "body": "El gris plano pasa a azul limpio, nubes ligeras o algo más dramático, con bordes limpios en la cubierta."
       },
       "clutter": {
         "title": "Coches, trastos y nieve",
-        "body": "La furgoneta del vecino en la entrada, los cubos de basura fuera, la manguera en el césped, la persona que pasa por delante, y la nieve, la lluvia y los charcos que había el día de la sesión. Lo temporal desaparece, y la superficie de debajo se reconstruye para que encaje."
+        "body": "Lo temporal desaparece y el suelo que había debajo se reconstruye a juego."
       },
       "honest": {
         "title": "La casa sigue siendo la casa",
-        "body": "Sin césped nuevo, sin cables eliminados, sin entrada repavimentada, sin paredes repintadas. Quien se plante en la acera verá lo que mostraba la foto, y eso es lo que la hace utilizable en un anuncio."
+        "body": "Sin césped nuevo, sin borrar cables, sin entrada nueva, sin repintar."
       }
     },
     "upload": {

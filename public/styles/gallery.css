@@ -330,27 +330,6 @@ body[data-state='signed-out'] .gal-state--signed-out { display: block; }
   border: 1px solid var(--border);
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
 }
-.gal-detail__close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  font: inherit;
-  font-size: 24px;
-  line-height: 1;
-  background: none;
-  border: 0;
-  border-radius: 50%;
-  color: var(--slate);
-  cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease;
-}
-.gal-detail__close:hover { background: var(--brand-wash); color: var(--brand-deep); }
-.gal-detail__close:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.5); outline-offset: 2px; }
 
 /* The heading and its rename trigger on one baseline. `align-items: baseline` rather than
    center: the trigger is small text next to a 1.4rem heading, and centring it leaves it
@@ -576,8 +555,8 @@ body[data-gal-modal] .language-picker-container { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .gal-spinner { animation-duration: 3s; }
-  .gal-card,
-  .gal-detail__close { transition: none; }
+  /* .close-x carries its own reduced-motion rule in styles.css. */
+  .gal-card { transition: none; }
   .gal-card:hover { transform: none; }
 }
 

@@ -62,6 +62,12 @@ export async function mountChat(options = {}) {
   const cad = [];
   const blueprintTo3D = makeSpy(async (...args) => {
     cad.push(args);
+    // Honor onNative like the real thing: it hands over the model's own bytes (before the
+    // delivery upscale) and the gallery stores THOSE, so a fake that ignores the hook
+    // makes every gallery assertion silently vacuous. Deliberately a DIFFERENT buffer
+    // from the return value, so a test cannot pass by conflating the two.
+    const opts = args[1];
+    if (opts && typeof opts.onNative === 'function') opts.onNative(Buffer.from('cad-native'));
     return Buffer.from('cad');
   });
   const openaiCreate = makeSpy(async () => {

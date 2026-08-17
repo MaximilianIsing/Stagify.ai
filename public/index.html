@@ -165,13 +165,19 @@
          first: anything loaded after `load` must not register on DOMContentLoaded. -->
     <script type="module" src="scripts/index-deferred.js"></script>
     
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
   </head>
   <body class="page-home">
     <!-- Sign in / Create account -->
     <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
       <div class="auth-modal__backdrop" id="auth-modal-backdrop"></div>
       <div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-        <button type="button" class="auth-modal__close" id="auth-modal-close" data-lang-attr="common.close|aria-label" aria-label="Close">×</button>
+        <button type="button" class="close-x close-x--corner" id="auth-modal-close" data-lang-attr="common.close|aria-label" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
         <h2 id="auth-modal-title" data-lang="auth.welcomeTitle">Welcome to Stagify</h2>
         <p class="auth-modal__sub" id="auth-modal-sub" data-lang="auth.welcomeSub">Create a free account to upload and stage your photos.</p>
         <div id="auth-error" class="auth-error" role="alert"></div>
@@ -675,7 +681,7 @@
             </h3>
             <div class="hstrip__body" id="learn-panel-who" role="region" aria-labelledby="learn-btn-who">
               <div class="hstrip__inner">
-                <p class="hstrip__text" data-lang="home.info.rows.who.body">Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn CAD floor-plan PDFs into photorealistic 3D room renders.</p>
+                <p class="hstrip__text" data-lang="home.info.rows.who.body">Agents market every listing in minutes instead of waiting on a staging crew. Sellers stage their own photos without hiring anyone. Buyers preview a renovation before they commit. And with AI Designer, you can turn a floor plan into a furnished plan view — or step inside any room on it for a photorealistic render.</p>
                 <ul class="home-list">
                   <li data-lang="home.info.rows.who.p1">Agents: list sooner and close more</li>
                   <li data-lang="home.info.rows.who.p2">Sellers &amp; buyers: no software, no designer needed</li>
@@ -971,11 +977,16 @@
            controls this section’s copy promises, not an illustration of it. Re-shoot
            the pair the same way if the prompt changes, or the claim goes stale.
 
-           Both files are 1408x768 and MUST stay identical in size: .ba wipes one
+           Both files are 1408x734 and MUST stay identical in size: .ba wipes one
            over the other with clip-path, so a mismatch shows as a seam at the
            reveal edge. The frame is kept at the native ratio rather than the 3:2
            the other .ba uses — a centre-crop to 3:2 cut the bins off the left edge
            of the very photo whose job is to show them.
+
+           This panel is the ONLY place the pair is shown. exterior-studio.html’s
+           public pitch briefly drew it too and it was removed as redundant: this
+           panel is what links there, so a visitor arriving from it had just seen
+           the same two photographs.
 
            The drag behaviour is the same widget as the staging comparison above:
            scripts/staging-studio.js mounts BOTH roots off one shared function.
@@ -1570,17 +1581,21 @@
               <span class="plus-card__badge" data-lang="home.plus.pro.tag">For individuals</span>
             </div>
             <div class="plus-price"><span class="plus-price__num">$11.99</span><span class="plus-price__per" data-lang="home.plus.pro.per">/ month</span></div>
-            <!-- Ordered by what free does NOT have. "Unlimited staging generations" led
-                 this list, but free already gets 50 a day — so the first thing a
-                 prospective subscriber read was the benefit least likely to make them
-                 pay. It stays (it is a real difference), just not first. -->
+            <!-- Ordered by what free does NOT have. f1 was "Unlimited staging
+                 generations" and led this list, but free already gets 50 a day — so the
+                 first thing a prospective subscriber read was the benefit least likely to
+                 make them pay. It went last, and then off the card entirely (2026-08-16):
+                 f1 now carries furniture references, which free has no version of at all.
+                 The unlimited claim is not gone from the site, it just no longer spends a
+                 slot here — stagify-plus.html’s compare table still makes it.
+                 So the key numbering is historical; the DOM order is the argument. -->
             <ul class="home-list">
               <li data-lang="home.plus.pro.f6">Remove existing furniture from rooms</li>
               <li data-lang="home.plus.pro.f5">AI Designer: agentic staging process</li>
               <li data-lang="home.plus.pro.f4">Masking tool to edit any area</li>
               <li data-lang="home.plus.pro.f2">Higher-quality image model</li>
               <li data-lang="home.plus.pro.f3">Multiple variations per generation</li>
-              <li data-lang="home.plus.pro.f1">Unlimited staging generations</li>
+              <li data-lang="home.plus.pro.f1">Furniture references: stage with pieces you choose</li>
             </ul>
             <a class="plus-cta" href="stagify-plus.html" data-lang="home.plus.pro.cta">View Stagify+</a>
           </article>
@@ -1959,7 +1974,6 @@
         <section class="home-section home-contact-cta" id="contact-cta" aria-labelledby="contact-cta-title">
           <div class="home-section__head home-section__head--wide reveal">
             <h2 class="home-section__title" id="contact-cta-title" data-tx="fade" data-lang="home.contactCta.title">Our inbox is always open</h2>
-            <p class="home-section__sub" data-lang="home.contactCta.subtitle">Questions, feedback, or ideas? We read every message and reply as soon as we can.</p>
             <a class="contact-cta-email" href="mailto:team@stagify.ai" data-lang="home.contactCta.email">team@stagify.ai</a>
             <a class="contact-cta-phone" href="tel:+19292514372" data-lang="home.contactCta.phone">(929) 251-4372</a>
           </div>
@@ -1982,7 +1996,6 @@
               <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               <svg class="review-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="url(#reviewStarGrad)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
             </a>
-            <p class="home-section__sub" data-lang="home.reviewCta.subtitle">Love how your listings look? Leave a quick Google review and help other agents find us.</p>
             <a class="btn btn-primary review-cta-btn" href="https://g.page/r/Cd6NiqfUAJ7bEAE/review" target="_blank" rel="noopener noreferrer" data-lang-attr="home.reviewCta.aria|aria-label" aria-label="Leave a Google review (opens in a new tab)" data-lang="home.reviewCta.button">Leave a Google review</a>
           </div>
         </section>
@@ -1996,7 +2009,13 @@
                the rounded box itself the browser painted it as a full-height rectangle, whose
                square ends poked out of the curve at the top-right and bottom-right corners. -->
           <div class="modal-scroll">
-            <button class="modal-close" id="modal-close" data-lang-attr="common.close|aria-label" aria-label="Close" data-lang="modal.staging.close">✕</button>
+            <!-- No data-lang here. It used to carry data-lang="modal.staging.close", and the
+                 language loader assigns textContent, so the pack value ("x" in all eleven)
+                 replaced the glyph and this button rendered a lowercase letter. The icon is
+                 not a translatable string; only its aria-label is. -->
+            <button type="button" class="close-x close-x--corner" id="modal-close" data-lang-attr="common.close|aria-label" aria-label="Close">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
             <section class="stage" id="stage">
               <div class="stage-inner">
                 <div class="toolbar">
@@ -2172,6 +2191,92 @@
                     </button>
                   </div>
                   <div id="loading-message" class="loading-message hidden" data-lang="modal.staging.progress.preparing">Preparing AI model</div>
+                  <!-- What Stagify+ could add — the upsell rail for free and signed-out visitors.
+                       LAST in the toolbar and shipped collapsed on purpose: every control
+                       above it belongs to the free plan, so the configure-and-render path is
+                       exactly what it was and nobody walks past a paywall to stage a photo.
+                       See scripts/app/plus-rail.js for why that trade was taken.
+
+                       Ships WITHOUT `hidden`, the same direction the nav dropdown ships its
+                       rows locked — free/signed-out is the default state and plus-rail.js
+                       only ever takes the rail AWAY, for a pro plan.
+
+                       The five items are this rail’s OWN strings
+                       (modal.staging.plusRail.items.*), not a reuse of the homepage plan
+                       bullets or the pricing-page feature cards. It is a deliberately
+                       narrower list than either: four of the five are controls that live in
+                       THIS toolbar and are hidden from a free account — #remove-furniture-row,
+                       #stagify-model-select, #stagify-variation-count and
+                       #stagify-furniture-file — and the fifth is the mask FAB on the result.
+                       The studios and the daily cap are left to the pricing page on purpose,
+                       so the rail only promises things that would change the render being
+                       configured right now. Keep it that way when adding a Stagify+ feature:
+                       a feature with no control in this modal does not belong here.
+
+                       data-lang sits on the LEAF text nodes only. It replaces textContent
+                       wholesale and would eat the icon beside it — the same trap as the
+                       room-type badge and the dropzone above. -->
+                  <div class="plus-rail" id="plus-rail">
+                    <button type="button" class="plus-rail__bar" id="plus-rail-toggle" aria-expanded="false" aria-controls="plus-rail-body">
+                      <!-- The Stagify+ mark rather than the nav dropdown’s padlock, and the
+                           one place on this rail the two surfaces deliberately differ. A
+                           padlock is a DISCRIMINATOR: on a menu of mixed rows it separates
+                           the locked ones from the rest. Here every item is Stagify+ and the
+                           heading beside this says so in words, so a lock would carry no
+                           information and only set an exclusion tone on a panel meant to make
+                           the product look worth buying. Decorative, hence alt="" and no
+                           aria-label — the visible heading already names Stagify+, so the
+                           translated label the nav locks carry would just repeat it. -->
+                      <img class="plus-rail__mark" src="media-webp/logo/Pro64x64.webp" alt="" width="18" height="18" aria-hidden="true" loading="lazy" decoding="async">
+                      <span class="plus-rail__title" data-lang="modal.staging.plusRail.title">What Stagify+ could add to this photo</span>
+                      <svg class="plus-rail__chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="plus-rail__body" id="plus-rail-body">
+                      <ul class="plus-rail__grid">
+                        <li class="plus-rail__item">
+                          <span class="plus-rail__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21 19 9l-4-4L3 17v4z"/><path d="M14 6l4 4"/><path d="M19 2.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg></span>
+                          <span class="plus-rail__label" data-lang="modal.staging.plusRail.items.remove">Remove existing furniture</span>
+                        </li>
+                        <li class="plus-rail__item">
+                          <span class="plus-rail__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.7 8l4.5 1.7-4.5 1.7L12 15.9l-1.7-4.5L5.8 9.7 10.3 8z"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></span>
+                          <span class="plus-rail__label" data-lang="modal.staging.plusRail.items.model">Better image model</span>
+                        </li>
+                        <li class="plus-rail__item">
+                          <span class="plus-rail__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="11" height="11" rx="2"/><path d="M7 4h9a2 2 0 0 1 2 2v9"/><path d="M10.5 4h9a2 2 0 0 1 2 2v9" opacity=".45"/></svg></span>
+                          <span class="plus-rail__label" data-lang="modal.staging.plusRail.items.variations">Multiple image variations</span>
+                        </li>
+                        <li class="plus-rail__item">
+                          <span class="plus-rail__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M3 13a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4H3z"/><path d="M5 17v2M19 17v2"/></svg></span>
+                          <span class="plus-rail__label" data-lang="modal.staging.plusRail.items.references">Furniture references</span>
+                        </li>
+                        <li class="plus-rail__item">
+                          <span class="plus-rail__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 4 16a2 2 0 1 0 2.8 2.8L12 13.7"/><path d="m14 2 8 8-6 2-4-4z"/></svg></span>
+                          <span class="plus-rail__label" data-lang="modal.staging.plusRail.items.mask">Mask editing</span>
+                        </li>
+                        <li class="plus-rail__item">
+                          <span class="plus-rail__ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span>
+                          <span class="plus-rail__label" data-lang="modal.staging.plusRail.items.gallery">Unlimited gallery</span>
+                        </li>
+                      </ul>
+                      <!-- class="plus-cta" is load-bearing, and correct HERE unlike on the
+                           error panel below: plus-cta-auth.js intercepts it for signed-OUT
+                           visitors and opens the register modal first, which is exactly the
+                           flow this rail wants — you need an account before you can subscribe. -->
+                      <a class="plus-cta plus-rail__cta" href="stagify-plus.html" data-lang="home.plus.pro.cta">View Stagify+</a>
+                      <!-- The permanent opt-out, and deliberately DOWN HERE rather than as an
+                           × beside the chevron on the bar. Dismissing is irreversible from the
+                           UI — there is no “show it again” control anywhere, by design, because
+                           a re-entry point for an upsell somebody switched off is worse than
+                           the upsell — and an icon 8px from the disclosure chevron is one
+                           mis-tap away from doing that to a reader who only meant to collapse
+                           the panel. Having to open the rail first IS the confirmation step,
+                           and a sentence rather than a glyph is what makes “permanently” legible.
+                           The state lives in localStorage, so it is per browser, matching
+                           msHelpSeen in the Masking Studio; the rail is shown to signed-OUT
+                           visitors too, so there is no account to hang it on for everyone. -->
+                      <button type="button" class="plus-rail__hide" id="plus-rail-hide" data-lang="modal.staging.plusRail.hide">Don’t show this again</button>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="stage-workspace">
@@ -2272,7 +2377,9 @@
       <div class="stage-mask-content">
         <div class="stage-mask-header">
           <h2 class="stage-mask-title" id="stage-mask-title" data-lang="pdf.maskEditor.title">Edit with Mask</h2>
-          <button class="stage-mask-close" id="stage-mask-close" data-lang-attr="common.close|aria-label" aria-label="Close">&times;</button>
+          <button type="button" class="close-x" id="stage-mask-close" data-lang-attr="common.close|aria-label" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
         <!-- Basic Mask only: this editor normally opens on an image the staging
              flow already has, but the nav’s "Basic Mask" entry opens it with
@@ -2416,7 +2523,9 @@
           <h2 class="stage-mask-title" data-lang="modal.staging.emptyRoomTitle">Empty room (furniture removed)</h2>
           <div class="empty-room-header-actions">
             <button class="btn btn-primary" id="empty-room-download"><strong data-lang="modal.staging.emptyRoomDownload">Download empty room</strong></button>
-            <button class="stage-mask-close" id="empty-room-close" data-lang-attr="common.close|aria-label" aria-label="Close">&times;</button>
+            <button type="button" class="close-x" id="empty-room-close" data-lang-attr="common.close|aria-label" aria-label="Close">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
           </div>
         </div>
         <div class="empty-room-figure">

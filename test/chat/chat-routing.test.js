@@ -43,8 +43,12 @@ test('chatWillProcessSlowImages: true when any staging/generate/CAD action is re
   assert.equal(chatWillProcessSlowImages(null, null, null), false);
 });
 
-test('chatIntentType: CAD and staging map to "staging", generate to "generating", else "general"', () => {
-  assert.equal(chatIntentType(null, null, { shouldProcessCAD: true }), 'staging');
+test('chatIntentType: CAD gets its OWN category, staging/generate keep theirs, else "general"', () => {
+  // CAD used to borrow 'staging', so a ~30s gemini-3-pro-image render announced itself as
+  // "staging your room…". It is also checked FIRST: a turn doing both reports the
+  // floor-plan work, because that is the half the user is actually waiting on.
+  assert.equal(chatIntentType(null, null, { shouldProcessCAD: true }), 'floorplan');
+  assert.equal(chatIntentType({ shouldStage: true }, null, { shouldProcessCAD: true }), 'floorplan');
   assert.equal(chatIntentType({ shouldStage: true }, null, null), 'staging');
   assert.equal(chatIntentType(null, { shouldGenerate: true }, null), 'generating');
   assert.equal(chatIntentType(null, null, null), 'general');

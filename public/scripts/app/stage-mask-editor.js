@@ -148,7 +148,7 @@ export function createStageMaskEditor(deps) {
       helpTip.className = 'smask-help__tip';
       helpIcon.appendChild(helpTip);
       const maskHeader = maskModal.querySelector('.stage-mask-header');
-      if (maskHeader) maskHeader.insertBefore(helpIcon, maskHeader.querySelector('.stage-mask-close'));
+      if (maskHeader) maskHeader.insertBefore(helpIcon, maskHeader.querySelector('.close-x'));
 
       // Shared overlay. It marks the container `processing` — the same class the
       // stylesheet blurs, isProcessing() reads and the brush treats as busy — so

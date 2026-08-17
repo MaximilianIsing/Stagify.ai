@@ -116,6 +116,30 @@ test('DRIFT GUARD: every gate redirects at exactly the width the nav hides links
   );
 });
 
+test('DRIFT GUARD: the pre-paint Gallery reveal re-hides at that same width', () => {
+  // The third copy of the number, and the least obvious. `.hidden` is
+  // `display:none!important`, so showing the tab before paint (session-class.js) needs an
+  // !important rule with more specificity — which then also outranks `.desktop-only` and
+  // would put the tab back on phones for every signed-in visitor. The stylesheet therefore
+  // re-hides it inside its own media query, and if that number drifts from the one above
+  // there is a band of widths where a phone is offered a tab whose page redirects it away.
+  const breakpoint = cssBreakpoint();
+  const css = fs.readFileSync(path.join(PUBLIC, 'styles', 'styles.css'), 'utf8').replace(/\s+/g, '');
+
+  const m = /@media\(max-width:(\d+)px\)\{html\.has-session[^{]*\[data-nav-gallery\]\{display:none!important\}/.exec(css);
+  assert.ok(
+    m,
+    'the pre-paint Gallery reveal no longer re-hides itself below a breakpoint. Either the ' +
+      'reveal rule is gone (fine — delete this guard) or a signed-in phone visitor now sees ' +
+      'a tab that gallery-gate.js answers by redirecting them home.',
+  );
+  assert.equal(
+    Number(m[1]),
+    breakpoint,
+    `styles.css hides .desktop-only at ${breakpoint}px, so the pre-paint reveal must give the tab back at the same width`,
+  );
+});
+
 test('a gate for a LOCALIZED page keeps the visitor in their language', () => {
   // ai-designer.html is in LOCALIZED_PAGES, so its gate carries the inlined
   // localeTarget() copy (behaviourally tested in test/i18n/locale-data.test.js).

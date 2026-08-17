@@ -41,6 +41,12 @@ function tx(key, fallback) {
   return (sys && typeof sys.getText === 'function' && sys.getText(key, fallback)) || fallback;
 }
 
+// NOTE: the public pitch has no moving parts, and that is deliberate. It briefly carried a
+// before/after slider of the media-webp/Homepage/Exterior pair, mounted from here off the
+// same createCompare() below; it was removed as redundant with the homepage showcase, which
+// carries that exact pair in the panel that links here. So everything in this file is for
+// the Stagify+ view, and an early return costs a signed-out visitor nothing.
+
 function init() {
   const tool = $('ex-tool');
   if (!tool) return;

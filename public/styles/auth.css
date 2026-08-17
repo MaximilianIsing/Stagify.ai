@@ -56,23 +56,6 @@ body:has(#auth-modal:not(.hidden)) .language-picker-container {
   padding: 28px 24px 22px;
   box-shadow: 0 20px 50px rgba(30, 58, 138, 0.25);
 }
-.auth-modal__close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  border: 1px solid var(--border, var(--border));
-  background: var(--bg-elevated);
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  color: var(--accent);
-}
-.auth-modal__close:hover {
-  background: #f3f4f6;
-}
 .auth-modal h2 {
   margin: 0 0 6px;
   font-size: 1.35rem;
@@ -673,23 +656,6 @@ body:has(#report-issue-modal:not(.hidden)) .language-picker-container {
      scrolls itself rather than overflowing off-screen with the buttons unreachable. */
   max-height: calc(100vh - 40px);
   overflow-y: auto;
-}
-.report-modal__close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  color: var(--accent);
-}
-.report-modal__close:hover {
-  background: #f3f4f6;
 }
 .report-modal h2 {
   margin: 0 0 6px;

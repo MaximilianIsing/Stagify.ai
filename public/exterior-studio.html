@@ -7,15 +7,22 @@
     <!-- Google tag (gtag.js) — Google Ads. Config + async loader in scripts/gtag.js. -->
     <script src="scripts/gtag.js" defer></script>
 
-    <!-- NO render-blocking *-gate.js here, unlike the other Stagify+ pages, and that is
-         deliberate. This page has a PUBLIC view: an anonymous visitor gets the pitch and
-         a Stagify+ call to action, a signed-in free account gets the upgrade dialog, and
-         only a Stagify+ account is shown the tool. A gate that bounced visitors with no
-         token would take the page away from exactly the people it is written for — and
-         from Googlebot, which carries no token either. The security boundary is
-         requireProAccount on POST /api/enhance-exterior; revealing the controls is an
-         affordance, not a gate. Pinned by the data-staging-preview guard in
-         test/frontend/staging-menu.test.js. -->
+    <!-- NO REDIRECTING gate here, unlike the other Stagify+ pages, and that is deliberate.
+         This page has a PUBLIC view: an anonymous visitor gets the pitch and a Stagify+
+         call to action, a signed-in free account gets the same page, and only a Stagify+
+         account is shown the tool. A gate that bounced visitors with no token would take
+         the page away from exactly the people it is written for — and from Googlebot,
+         which carries no token either. The security boundary is requireProAccount on
+         POST /api/enhance-exterior; revealing the controls is an affordance, not a gate.
+         Pinned by the data-staging-preview guard in test/frontend/staging-menu.test.js.
+
+         The gate below only RESHAPES: it reads the plan auth.js cached on the last visit
+         and, for a Stagify+ account, pre-applies the Pro shape before the first paint so
+         the sales pitch is never flashed at somebody who already bought it. It never
+         navigates, so a visitor with no cache — every crawler included — is left with the
+         public markup exactly as it ships. Render-blocking on purpose: deferring it would
+         put it after the paint it exists to beat. -->
+    <script src="scripts/exterior-studio-gate.js"></script>
 
     <link rel="icon" type="image/webp" sizes="32x32" href="media-webp/logo/Logo32x32.webp">
     <link rel="icon" type="image/webp" sizes="64x64" href="media-webp/logo/Logo64x64.webp">
@@ -161,6 +168,10 @@
     <script type="module" src="scripts/heic-convert.js"></script>
     <script type="module" src="scripts/profile-menu.js"></script>
     <link rel="stylesheet" href="styles/exterior-studio.css">
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
   </head>
   <body>
     <!-- Background Video -->
@@ -250,7 +261,7 @@
         <div class="ex-shell">
           <div class="ex-intro">
             <h1 data-lang="exteriorStudio.title">Exterior Studio</h1>
-            <p data-lang="exteriorStudio.subtitle">The first photo of every listing is the outside of the house, and it is the one shot you cannot reshoot when the weather turns. Upload it here and get the version taken on a better day.</p>
+            <p data-lang="exteriorStudio.subtitle">The one shot you cannot retake once the weather turns. Fix the light, the sky and the clutter, and leave the house alone.</p>
             <p class="ex-intro__actions" id="ex-hero-actions">
               <a class="btn btn-primary btn-lg" id="ex-cta" href="stagify-plus.html"><strong data-lang="exteriorStudio.ctaUpgrade">Get Stagify+ to use it</strong></a>
             </p>
@@ -259,28 +270,85 @@
           <!-- The public half. Visible by default so an anonymous visitor and a crawler
                both get a real page; exterior-studio/access.js hides it once a Stagify+
                account is confirmed, because someone who has already bought it wants the
-               tool, not the pitch. -->
-          <section class="ex-features-section" id="ex-features" aria-labelledby="ex-features-title">
-            <h2 class="ex-section__title" id="ex-features-title" data-lang="exteriorStudio.features.title">What it changes, and what it never touches</h2>
-            <div class="ex-features">
-            <article class="ex-feature">
-              <h3 class="ex-feature__title" data-lang="exteriorStudio.features.light.title">Time of day</h3>
-              <p class="ex-feature__body" data-lang="exteriorStudio.features.light.body">Shoot at noon, publish at golden hour. Morning, midday, golden hour or dusk, with shadows and window light that agree with the sun you picked.</p>
-            </article>
-            <article class="ex-feature">
-              <h3 class="ex-feature__title" data-lang="exteriorStudio.features.sky.title">Sky and weather</h3>
-              <p class="ex-feature__body" data-lang="exteriorStudio.features.sky.body">A flat grey sky becomes clear blue, light cloud or something more dramatic, matched to the light already on the building, with clean edges along the roofline.</p>
-            </article>
-            <article class="ex-feature">
-              <h3 class="ex-feature__title" data-lang="exteriorStudio.features.clutter.title">Cars, clutter and snow</h3>
-              <p class="ex-feature__body" data-lang="exteriorStudio.features.clutter.body">The neighbour’s van across the driveway, the bins left out, the hose on the lawn, the person walking past, and the snow, rain and puddles that happened to be there the day you shot it. Temporary things go, and the surface underneath is rebuilt to match.</p>
-            </article>
-            <article class="ex-feature">
-              <h3 class="ex-feature__title" data-lang="exteriorStudio.features.honest.title">The house stays the house</h3>
-              <p class="ex-feature__body" data-lang="exteriorStudio.features.honest.body">No re-turfed lawn, no erased power lines, no resurfaced driveway, no repainted walls. A buyer standing at the kerb sees what the photo showed, which is what keeps the photo usable on a listing.</p>
-            </article>
-            </div>
-          </section>
+               tool, not the pitch.
+
+               ONE container for the whole pitch, and it keeps the id access.js writes.
+
+               There is deliberately NO before/after comparison here. One was built — the
+               media-webp/Homepage/Exterior pair through the shared compare control, with an
+               aside listing the four settings that produced it — and removed as REDUNDANT:
+               the homepage showcase already carries that exact pair, in the panel that sends
+               people to this page in the first place, so anyone arriving from it had just
+               seen it. Do not re-add it; the copy keys went with it. -->
+          <div class="ex-pitch" id="ex-features">
+
+            <!-- ONE surface, not four. This was three frosted cards plus a fourth frosted
+                 band, each with its own border, its own shadow and a tinted icon tile inside
+                 it — glass boxes nested in a glass page, which is what made the palette read
+                 as muddy rather than as anything deliberate. It is now a single panel with
+                 hairline rules, and the whole pitch uses ONE colour ramp: --brand-deep for
+                 every heading, --accent for prose, --slate-deep for the option lists. The
+                 near-black --text-heading that used to sit on the h2 was the only cold
+                 colour on a warm blue page and read as a heading borrowed from elsewhere.
+
+                 The option lists are the studio’s REAL vocabulary, rendered from the same
+                 keys its own dropdowns and chips use, so they cannot drift from the tool.
+                 They are plain text now, not pills: a pill on a page where nothing is
+                 clickable is a control that does not control anything, and fifteen of them
+                 was most of the visual weight here. -->
+            <section class="ex-features-section" aria-labelledby="ex-features-title">
+              <h2 class="ex-section__title" id="ex-features-title" data-lang="exteriorStudio.features.title">What it changes</h2>
+              <div class="ex-board ex-panel">
+                <div class="ex-features">
+                  <article class="ex-feature">
+                    <h3 class="ex-feature__title"><svg class="ex-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></svg><span data-lang="exteriorStudio.features.light.title">Time of day</span></h3>
+                    <p class="ex-feature__body" data-lang="exteriorStudio.features.light.body">Shoot at noon, publish at golden hour, with shadows and window light to match.</p>
+                    <ul class="ex-feature__opts">
+                      <li data-lang="exteriorStudio.time.morning">Mid-morning</li>
+                      <li data-lang="exteriorStudio.time.midday">Bright midday</li>
+                      <li data-lang="exteriorStudio.time.goldenHour">Golden hour</li>
+                      <li data-lang="exteriorStudio.time.dusk">Dusk</li>
+                    </ul>
+                  </article>
+                  <article class="ex-feature">
+                    <h3 class="ex-feature__title"><svg class="ex-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.95 12.65a4 4 0 0 0-5.93-4.13"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/></svg><span data-lang="exteriorStudio.features.sky.title">Sky and weather</span></h3>
+                    <p class="ex-feature__body" data-lang="exteriorStudio.features.sky.body">Flat grey becomes clear blue, light cloud or something more dramatic, with clean edges along the roofline.</p>
+                    <ul class="ex-feature__opts">
+                      <li data-lang="exteriorStudio.skyOptions.clearBlue">Clear blue</li>
+                      <li data-lang="exteriorStudio.skyOptions.lightClouds">Light clouds</li>
+                      <li data-lang="exteriorStudio.skyOptions.dramatic">Dramatic</li>
+                    </ul>
+                  </article>
+                  <article class="ex-feature">
+                    <h3 class="ex-feature__title"><svg class="ex-feature__icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M9 6V4h6v2"/><path d="m6 6 1 14h10l1-14"/></svg><span data-lang="exteriorStudio.features.clutter.title">Cars, clutter, and snow</span></h3>
+                    <p class="ex-feature__body" data-lang="exteriorStudio.features.clutter.body">Temporary things go, and the ground they were standing on is rebuilt to match.</p>
+                    <ul class="ex-feature__opts">
+                      <li data-lang="exteriorStudio.controls.removeVehicles">Cars</li>
+                      <li data-lang="exteriorStudio.controls.removeClutter">Bins &amp; clutter</li>
+                      <li data-lang="exteriorStudio.controls.removePeople">People</li>
+                      <li data-lang="exteriorStudio.controls.removeSnow">Snow</li>
+                      <li data-lang="exteriorStudio.controls.removeWetWeather">Rain &amp; puddles</li>
+                      <li data-lang="exteriorStudio.controls.removeLeaves">Leaves</li>
+                    </ul>
+                  </article>
+                </div>
+
+                <!-- The promise, on the same surface but under a rule: it is the constraint
+                     that makes the three above usable on a listing, not a fourth feature. -->
+                <p class="ex-honest">
+                  <strong class="ex-honest__title" data-lang="exteriorStudio.features.honest.title">The house stays the house</strong>
+                  <span class="ex-honest__body" data-lang="exteriorStudio.features.honest.body">No re-turfed lawn, no erased power lines, no new driveway, no repaint.</span>
+                </p>
+              </div>
+            </section>
+
+            <!-- There is deliberately NO repeat call to action at the foot of the pitch. One
+                 was built here ("The Exterior Studio comes with Stagify+", a second Get
+                 Stagify+ button and a link to the plan) and removed by decision: the hero’s
+                 button is the ONE ask this page makes, the same way there is no upgrade
+                 overlay. Its three copy keys were deleted from all eleven packs with it, so
+                 restoring the markup alone would render raw English. -->
+          </div>
 
           <!-- The tool. Ships hidden and is revealed for a Stagify+ account; the real gate
                is requireProAccount on POST /api/enhance-exterior. -->

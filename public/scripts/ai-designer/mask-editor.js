@@ -231,7 +231,7 @@ export function createMaskEditor(deps) {
           <div class="mask-editor-content">
             <div class="mask-editor-header">
               <h2 class="mask-editor-title" id="mask-editor-title" data-i18n="pdf.maskEditor.title">Edit with Mask</h2>
-              <button type="button" class="mask-editor-close" id="mask-editor-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <button type="button" class="close-x" id="mask-editor-close" aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
             </div>
             <div class="mask-editor-canvas-container">
               <canvas id="mask-editor-canvas" class="mask-editor-canvas"></canvas>
@@ -326,7 +326,7 @@ export function createMaskEditor(deps) {
             const helpTip = document.createElement('span');
             helpTip.className = 'smask-help__tip';
             helpIcon.appendChild(helpTip);
-            maskHeader.insertBefore(helpIcon, maskHeader.querySelector('.mask-editor-close'));
+            maskHeader.insertBefore(helpIcon, maskHeader.querySelector('.close-x'));
           }
         }
         document.getElementById('mask-editor-brush-btn').addEventListener('click', () => setMaskTool('brush'));

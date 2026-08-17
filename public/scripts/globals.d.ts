@@ -18,6 +18,10 @@ declare global {
     StagifyAuth?: any;
     /** HEIC→JPEG conversion helper installed by heic-convert.js. */
     StagifyHeic?: any;
+    /** Floor-plan PDF→PNG rasterizer installed by pdf-page-to-image.js. */
+    StagifyPdf?: any;
+    /** pdf.js UMD bundle, lazily loaded from scripts/vendor/ by pdf-page-to-image.js. */
+    pdfjsLib?: any;
     /** Profile-menu controller installed by profile-menu.js. */
     StagifyProfileMenu?: any;
     /** Hero free-generation stats controller installed by app/hero-stats.js. */

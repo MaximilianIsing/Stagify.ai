@@ -72,6 +72,10 @@
     <script type="module" src="scripts/auth.js"></script>
     <script type="module" src="scripts/profile-menu.js"></script>
     <link rel="stylesheet" href="styles/status.css">
+    <!-- Sets html.has-session from the stored token BEFORE first paint, so the nav’s
+         Gallery tab does not pop in a round trip late. Render-blocking on purpose, and
+         last in <head> so it never delays discovery of the CSS above it. -->
+    <script src="scripts/session-class.js"></script>
   </head>
   <body>
     <!-- Background Video -->

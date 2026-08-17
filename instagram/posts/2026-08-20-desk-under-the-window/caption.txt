@@ -1,0 +1,23 @@
+That sentence is the whole prompt. One line typed into the box, and the room below is what came back.
+
+Presets get you a look. They cannot tell the model anything about your room.
+
+This room has one good window and a radiator sitting under it. Put the desk against a side wall and you have wasted the only decent light in the place. No preset has an opinion about that. A sentence does.
+
+So here is what was typed, in full:
+
+"Put the desk under the window, not against the wall."
+
+That is the entire instruction. The Scandinavian preset did the rest: the oak, the white walls, the floor, the plants on the sill.
+
+The room was empty when this started. No desk, no chair, no shelves, no lamp, nothing on the sill. Every object in the photo was generated from one photograph of an empty room and that one line of text.
+
+You do not have to describe a whole room. You have to say the one thing you would tell a stager if you were paying for one.
+
+What would yours say?
+
+Try it on a photo of a room in your own house. Link in bio.
+
+Virtually staged with Stagify.ai
+
+#virtualstaging #aistaging #homestaging #homeselling #sellyourhome #hometips #homeoffice #interiors

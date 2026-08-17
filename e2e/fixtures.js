@@ -76,16 +76,22 @@ export async function hideStagingBanner(page) {
 
 // Seed the render-blocking auth gate (a token must be in localStorage at first paint)
 // and mock GET /api/auth/me → Pro, so neither studio redirects to the upsell page.
-export async function seedProSession(page, { msHelpSeen = false } = {}) {
+//
+// `stagifyPlan` is the second pre-paint fact, written by auth.js on the previous visit and
+// read by the Exterior Studio's gate: with a token alone that page cannot tell free from
+// Pro, so it leaves the public pitch up until /api/auth/me answers. Seeding it models a
+// returning subscriber, which is the visitor the gate exists for.
+export async function seedProSession(page, { msHelpSeen = false, cachedPlan = 'pro' } = {}) {
   await stubAnalytics(page);
   await hideStagingBanner(page);
 
   await page.addInitScript((flags) => {
     try {
       localStorage.setItem('stagifyAuthToken', 'e2e-token');
+      if (flags.cachedPlan) localStorage.setItem('stagifyPlan', flags.cachedPlan);
       if (flags.msHelpSeen) localStorage.setItem('msHelpSeen', '1'); // suppress first-visit help dialog
     } catch { /* ignore private-mode storage errors */ }
-  }, { msHelpSeen });
+  }, { msHelpSeen, cachedPlan });
 
   await page.route('**/api/auth/me', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(PRO_ME) }),
@@ -115,6 +121,10 @@ export async function seedFreeSession(page) {
   await page.addInitScript(() => {
     try {
       localStorage.setItem('stagifyAuthToken', 'e2e-token');
+      // The matching cached plan. 'free' must never arm the Exterior Studio's pre-paint
+      // gate, and seeding it here is what proves the gate reads the VALUE rather than
+      // treating the key's presence as Pro.
+      localStorage.setItem('stagifyPlan', 'free');
     } catch { /* ignore private-mode storage errors */ }
   });
   await page.route('**/api/auth/me', (route) =>

@@ -16,8 +16,9 @@
 
   if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
 
+  // '.sp-feature' was here until the Stagify+ feature grid was folded into the
+  // comparison table's row tooltips; those cards no longer exist on any page.
   var SELECTOR = [
-    '.sp-feature',
     '.ent-highlight', '.ent-feature',
     '.whyus-card'
   ].join(',');
