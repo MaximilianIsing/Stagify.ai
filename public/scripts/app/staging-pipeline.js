@@ -154,6 +154,12 @@ export function createStagingPipeline(deps) {
 
     const tok = window.StagifyAuth && window.StagifyAuth.getToken();
     if (tok) formData.append('authToken', tok);
+    // The same token, ALSO as a header — sent on both fetches below. /api/process-image
+    // refuses an anonymous upload before multer buffers the photo, and a pre-multer gate
+    // can only read headers: req.body does not exist until multer has read the whole body,
+    // which is the cost the gate exists to avoid. The form field above stays, because the
+    // in-handler check is still the authority and still accepts either transport.
+    const authHeaders = tok ? { Authorization: `Bearer ${tok}` } : {};
 
     const proPanel = document.getElementById('stagify-pro-panel');
     const proPanelUsable =
@@ -380,6 +386,7 @@ export function createStagingPipeline(deps) {
       try {
         response = await fetch('/api/process-image', {
           method: 'POST',
+          headers: authHeaders,
           body: formData,
           signal: genAbort.signal,
         });
@@ -434,6 +441,7 @@ export function createStagingPipeline(deps) {
       try {
         response = await fetch('/api/process-image', {
           method: 'POST',
+          headers: authHeaders,
           body: formData,
           signal: genAbort.signal,
         });
